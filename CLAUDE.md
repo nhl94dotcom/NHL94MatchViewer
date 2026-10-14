@@ -572,7 +572,9 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the
-  unknown rows in the table. The user also plans to capture a penalty shot.
+  unknown rows in the table. A penalty shot was captured (`capture3_bos_la`, Boston, 2nd 3:54: Oates' slapshot with
+  the clock stopped, saved, not counted as a shot on goal); the shot list does not tag it yet. No penalty-shot goal
+  has been captured.
 - Where the other player's controller is (in netplay, $BEEF is the local player's).
 - The `full_buttons` capture's labelled taps: A at 5.6-12.1 s, B at 13.9-19.7 s, C at 21.1-26.8 s (the C taps came
   while the skater was down, then while controlling the goalie).
