@@ -1,0 +1,2618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NHL '94 Match Viewer</title>
+<style>
+  :root { --bg: #14181d; --panel: #1e242c; --raised: #2b333d; --text: #e8edf2; --muted: #8b98a7; --team1: #e4572e; --team2: #2e86de; --accent: #f2c744; --ink: #10141a; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font: 15px/1.4 system-ui, "Segoe UI", sans-serif; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; justify-content: center; gap: 28px; padding: 10px 16px; background: var(--panel); }
+  .team { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .team .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .team .score { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .team .shots { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .swatch { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  #clock { text-align: center; font-variant-numeric: tabular-nums; }
+  #clock .time { font-size: 22px; font-weight: 600; }
+  #clock .period { color: var(--muted); font-size: 12px; }
+  main { flex: 1; min-height: 0; display: flex; }
+  #stage { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; position: relative; }
+  canvas { display: block; }
+  #rink { position: absolute; left: 0; top: 0; touch-action: none; cursor: grab; }
+  #rink.dragging { cursor: grabbing; }
+  #viewbar { position: absolute; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 4px; padding: 4px 6px;
+    border-radius: 8px; background: rgba(16, 20, 26, 0.85); font-size: 12px; opacity: .6; transition: opacity .15s; }
+  #viewbar:hover, #viewbar:focus-within { opacity: 1; }
+  #overlayInfo { position: absolute; left: 10px; bottom: 10px; max-width: min(380px, 60%); padding: 8px 10px; border-radius: 8px;
+    background: rgba(16, 20, 26, 0.88); font-size: 12px; line-height: 1.5; pointer-events: none; }
+  #overlayInfo b { font-weight: 600; }
+  #clipPanel { position: absolute; top: 10px; right: 10px; width: 330px; padding: 12px; border-radius: 10px; z-index: 15;
+    background: rgba(22, 27, 34, 0.97); border: 1px solid #3a4450; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); font-size: 13px; }
+  #clipPanel h4 { margin: 0 0 10px; font-size: 14px; }
+  #clipPanel .clipRow { display: flex; align-items: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+  #clipPanel input[type=text] { width: 64px; background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px;
+    padding: 5px 6px; font: inherit; font-variant-numeric: tabular-nums; }
+  #clipPanel button, #clipPanel select { padding: 4px 9px; }
+  #clipPanel select { max-width: 100%; }
+  #clipPick { width: 100%; }
+  #clipPanel label { color: var(--text); }
+  #clipStatus { margin: 8px 0 0; color: var(--muted); min-height: 1.4em; }
+  #clipBar { height: 4px; border-radius: 2px; background: var(--raised); overflow: hidden; }
+  #clipBar i { display: block; height: 100%; width: 0; background: var(--accent); }
+  #overlayInfo .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 4px; color: var(--muted); }
+  #overlayInfo .key span { display: inline-flex; align-items: center; gap: 5px; }
+  #viewbar button { padding: 3px 8px; min-width: 28px; }
+  #viewbar input[type=range] { width: 90px; accent-color: var(--accent); }
+  #viewbar output { color: var(--muted); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+  .lineup { width: 256px; flex: none; align-self: stretch; padding: 14vh 12px 12px; overflow-y: auto; }
+  .lineup h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .lineup h3 small { color: var(--muted); font-weight: 400; }
+  .row { display: grid; grid-template-columns: 26px 24px 1fr auto 10px; cursor: default; align-items: center; gap: 8px; padding: 5px 8px; border-left: 3px solid transparent; border-radius: 6px; font-size: 13.5px; }
+  .row .pos { color: var(--muted); font-size: 12px; }
+  .row .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .row .who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .ovr { text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .row .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .row:hover, .row.shown { outline: 1px solid #3a4450; }
+  .card { margin: 12px 0 0; padding: 10px 10px 8px; border-radius: 8px; background: var(--panel); font-size: 12px; }
+  .card h4 { margin: 0 0 8px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
+  .card h4 small { color: var(--muted); font-weight: 400; white-space: nowrap; }
+  .card .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
+  .card .stat { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 6px; color: var(--muted); white-space: nowrap; }
+  .card .stat b { color: var(--text); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .card .bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--raised); }
+  .card .bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+  .card p { margin: 0; color: var(--muted); }
+  #popover { position: fixed; z-index: 20; width: 250px; margin: 0; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); border: 1px solid #3a4450; }
+  .scoring .goal { padding: 3px 0; border-top: 1px solid var(--raised); }
+  .scoring .goal:first-of-type { border-top: 0; }
+  .scoring .goal small { color: var(--muted); display: block; }
+  .scoring .tag { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; }
+  .card h5 { margin: 10px 0 6px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .row { position: relative; }
+  .row .live { text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .row .energy { position: absolute; left: 8px; right: 8px; bottom: 1px; height: 2px; border-radius: 1px; background: var(--raised); }
+  .row .energy i { display: block; height: 100%; border-radius: 1px; background: #4fb477; }
+  .teamstats { margin: 14px 0 0; padding: 10px; border-radius: 8px; background: var(--panel); font-size: 12px; }
+  .penbox .pen { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+  .penbox .pen b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .penbox .pensum { color: var(--muted); padding: 1px 0; }
+  .penbox p { margin: 0; color: var(--muted); }
+  #callout { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); max-width: 90%; padding: 8px 14px; border-radius: 8px;
+    background: rgba(16, 20, 26, 0.92); color: #fff; font-weight: 600; font-size: 14px; text-align: center; pointer-events: none; }
+  #callout small { display: block; color: var(--accent); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+  .teamstats h4 { margin: 0 0 6px; font-size: 13px; }
+  .teamstats table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .teamstats td { padding: 2px 0; }
+  .teamstats td:first-child { text-align: left; font-weight: 600; }
+  .teamstats th { font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 0 0 6px; white-space: nowrap; }
+  .teamstats th .score { color: var(--text); font-size: 18px; margin: 0 6px; vertical-align: -2px; }
+  .teamstats th.when { color: var(--muted); font-weight: 600; text-align: center; }
+  .teamstats tr.sub td:nth-child(2) { font-size: 11px; }
+  .teamstats tr.section td { text-align: left; color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; padding: 8px 0 2px; border-top: 1px solid var(--raised); }
+  .teamstats thead + tbody tr.section:first-child td { border-top: 0; padding-top: 2px; }
+  .teamstats th:first-child { text-align: left; }
+  .teamstats th:last-child { text-align: right; }
+  .teamstats td:nth-child(2) { text-align: center; color: var(--muted); }
+  .teamstats td:last-child { text-align: right; font-weight: 600; }
+  .row.ctrl { border-left-color: var(--accent); }
+  .row.puck { background: var(--raised); font-weight: 600; }
+  .row.puck .dot { background: var(--text); }
+  .pad { display: flex; align-items: center; gap: 4px; margin: 12px 8px 0; }
+  .pad span { width: 24px; height: 24px; border-radius: 6px; background: var(--raised); color: var(--muted); display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+  .pad span.on { background: var(--accent); color: var(--ink); }
+  .pad i { width: 8px; }
+  .legend { margin: 12px 0 0; padding: 0 8px; color: var(--muted); font-size: 12px; display: grid; gap: 4px; }
+  .legend span { display: flex; align-items: center; gap: 8px; }
+  .legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  #drop { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 16px; }
+  #drop p { margin: 0; color: var(--muted); max-width: 40ch; }
+  footer { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel); }
+  button, select { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  button:hover, select:hover { background: #343d49; }
+  #play { min-width: 70px; }
+  #seek { flex: 1; min-width: 0; accent-color: var(--accent); }
+  #time { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  label { color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  [hidden] { display: none !important; }
+  @media (max-width: 900px) { .lineup { display: none; } }
+  @media (max-width: 640px) { header { gap: 12px; } .team .shots, label span { display: none; } }
+</style>
+</head>
+<body>
+<header id="hud" hidden>
+  <div class="team"><span class="swatch" style="background: var(--team1)"></span><span class="name" id="name1"></span><span class="shots" id="shots1"></span><span class="score" id="score1"></span></div>
+  <div id="clock"><div class="time" id="clockTime"></div><div class="period" id="clockPeriod"></div></div>
+  <div class="team"><span class="score" id="score2"></span><span class="shots" id="shots2"></span><span class="name" id="name2"></span><span class="swatch" style="background: var(--team2)"></span></div>
+</header>
+<main>
+  <aside class="lineup" id="lineup1" hidden></aside>
+  <div id="stage">
+    <canvas id="rink" hidden></canvas>
+    <div id="callout" hidden></div>
+    <div id="popover" class="card" hidden></div>
+    <div id="overlayInfo" hidden></div>
+    <div id="clipPanel" hidden>
+      <h4>Save a clip</h4>
+      <select id="clipPick" aria-label="Highlight"></select>
+      <div class="clipRow"><span>From</span><input type="text" id="clipFrom" aria-label="Start"><button id="clipFromNow" title="Where the replay is now">Now</button>
+        <span>to</span><input type="text" id="clipTo" aria-label="End"><button id="clipToNow" title="Where the replay is now">Now</button></div>
+      <div class="clipRow">
+        <label><input type="radio" name="clipFormat" value="video" checked> Video</label>
+        <label><input type="radio" name="clipFormat" value="gif"> GIF</label>
+        <select id="clipSpeed" aria-label="Clip speed"><option value="1">Normal speed</option><option value="0.5">Half speed</option></select>
+        <select id="clipSize" aria-label="Clip size"><option value="480">Small</option><option value="720" selected>Medium</option><option value="1080">Large</option></select>
+      </div>
+      <div class="clipRow"><button id="clipGo">Create clip</button><button id="clipClose">Close</button></div>
+      <div id="clipBar"><i></i></div>
+      <p id="clipStatus">The clip shows the ice as you see it now: angle, zoom, following and sprites.</p>
+    </div>
+    <div id="viewbar" hidden>
+      <button id="rotL" title="Rotate 90 degrees anticlockwise (Shift+R)">&#8634;</button>
+      <input id="angle" type="range" min="-180" max="180" step="1" value="0" aria-label="View angle">
+      <output id="angleOut">0&deg;</output>
+      <button id="rotR" title="Rotate 90 degrees clockwise (R)">&#8635;</button>
+      <button id="zoomOut" title="Zoom out (-)">&minus;</button>
+      <button id="zoomIn" title="Zoom in (+)">+</button>
+      <label title="Keep the puck in the middle (F)"><input type="checkbox" id="follow"> <span>Follow puck</span></label>
+      <label title="Boards, glass and nets as seen from straight above"><input type="checkbox" id="overhead"> <span>Overhead</span></label>
+      <button id="viewReset" title="Whole rink, upright (0, or double-click the ice)">Reset</button>
+    </div>
+    <div id="drop">
+      <h2 id="dropTitle">Open a match file</h2>
+      <p>Choose a file from the <code>matches</code> folder, or drop one anywhere on this page.</p>
+      <button id="pick">Choose file</button>
+      <input id="file" type="file" accept=".js,.json" hidden>
+    </div>
+  </div>
+  <aside class="lineup" id="lineup2" hidden></aside>
+</main>
+<footer id="controls" hidden>
+  <button id="play">Play</button>
+  <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position in recording">
+  <span id="time"></span>
+  <label id="spriteToggle" hidden><input type="checkbox" id="sprites"> <span>Game sprites</span></label>
+  <label><span>Speed</span>
+    <select id="speed" aria-label="Playback speed">
+      <option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
+    </select>
+  </label>
+  <label><span>Map</span>
+    <select id="overlay" aria-label="Map over the ice">
+      <option value="">None</option><option value="shots">Shot map</option><option value="heat">Heat map</option>
+      <option value="turnovers">Turnovers</option><option value="passes">Passes</option><option value="goalie">Goalie report</option>
+    </select>
+  </label>
+  <select id="overlayWho" aria-label="Whose shots or puck time" hidden></select>
+  <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
+  <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
+  <button id="clipOpen" title="Save a stretch of the replay as a video or an animated GIF">Clip</button>
+</footer>
+<script src="rink_gens.js"></script>
+<script>
+// This page as it arrived (everything above this script is still untouched), for "Save game file".
+const PAGE_SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
+// Rink geometry in game units (about 3 units per foot). Boards, goal lines and nets come from the game's own data;
+// the blue lines and centre circle are placed by real-rink proportions and are not read from the game.
+const RINK = { halfW: 130, halfL: 300, corner: 84, goalLine: 268, blueLine: 87, netHalfW: 9, netDepth: 12, creaseR: 18, centreR: 45 };
+const PLAYERS = 12, TRAIL_MS = 400, DISC = 11;
+// Position codes as the game stores them. Panels read LW, C, RW, LD, RD, G.
+const POSITIONS = ['G', 'LD', 'RD', 'LW', 'C', 'RW'], PANEL_ORDER = [3, 4, 5, 1, 2, 0];
+// Controller byte: held buttons. Letters stay lit briefly after release so that quick taps are visible.
+// Animation word (record +$58) -> what the player is doing. Only the animations identified so far are listed.
+// The two shooting animations cover every kind of shot: how long one runs separates wrist shots from slapshots,
+// and one that starts while the player does not have the puck is a one-timer.
+const ACTIONS = { '1122': 'Hook', '0b24': 'Poke check', '0c5e': 'Burst', '0718': 'Pass', '078a': 'Pass',
+  '0dd8': 'Down', '0d26': 'Down', '01ec': 'Save', '021e': 'Save', '148e': 'Save', '02f4': 'Dive' };
+// Where the posts are, in game units from centre ice (both ends, both sides).
+const POST_X = 20, POST_Y = 265, POST_FLASH_MS = 900, CALLOUT_MS = 4000;
+const SHOOTING = ['07fc', '092e'], SLAPSHOT_MS = 800, ONE_TIMER_GRACE_MS = 100, TAG_LINGER_MS = 400;
+const PAD = { up: 1, down: 2, left: 4, right: 8, B: 16, C: 32, A: 64 }, PAD_FLASH_MS = 350;
+const $ = id => document.getElementById(id);
+const canvas = $('rink'), ctx = canvas.getContext('2d');
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+// The rink picture, and where game coordinates fall on it: centre ice in image pixels, and image pixels per game
+// unit. Measured from the picture's goal lines (game Y = +/-268) and faceoff dots (game X = +/-70); the boards then
+// land at X = +/-129 and Y = +/-299, matching how far the puck travels. The picture is wider per unit than it is
+// tall (as the game looks on a TV), so markers are drawn in their own unstretched frame to stay round.
+// Strips of the rink picture (x, y, width, height in its pixels) that are not symmetric about the red line: the
+// benches on the left and the penalty boxes on the right, each with some crowd around them.
+const RINK_SIDES = [[0, 440, 118, 674], [776, 560, 124, 434]];
+const RINK_IMAGE = { src: 'rink_gens.png', w: 900, h: 1440, cx: 450.4, cy: 777, ux: 2.459, uy: 2.079 };
+// Until (or unless) the picture loads, a drawn rink with square units is used.
+let view = { w: 2 * RINK.halfW + 14, h: 2 * RINK.halfL + 14, cx: RINK.halfW + 7, cy: RINK.halfL + 7, ux: 1, uy: 1, image: null };
+let match = null, now = 0, playing = false, lastTick = 0, panelState = '';
+// Player pictures extracted from the match's ROM (sprites/<checksum>.js), keyed by animation frame number.
+let spriteLibrary = null, spritesOn = false, logoImage = null, breakaways = [], callouts = [];
+const spriteCache = new Map();
+// Saving clips (see Clips below): the job recording a video, and the clock a GIF being drawn frame by frame keeps.
+let clipJob = null, clipClock = null;
+// Live knowledge: show only what could be known at each moment (see known/resultAt), as a live view will have to.
+let liveKnowledge = new URLSearchParams(location.search).has('live');
+// Has this event (a shot, turnover, failed one-timer) happened, as far as the viewer may know at frame f? With live
+// knowledge, from the frame it could first be known; otherwise from when it happened.
+const known = (e, f) => (liveKnowledge && e.known !== undefined ? e.known : e.f) <= f;
+// A shot's result at frame f: 'pending' with live knowledge until it was settled.
+const resultAt = (sh, f) => (liveKnowledge && sh.resolved !== undefined && sh.resolved > f ? 'pending' : sh.result);
+// The rink picture rebuilt as seen from straight above (buildOverheadRink), and whether it is shown.
+let overheadRink = null, overheadOn = true;
+try { overheadOn = localStorage.getItem('nhl94-overhead') !== '0'; } catch (e) { /* default on */ }
+
+function player(f, k) {
+  // Roster entry for record k at frame f, or null when the match file has no rosters.
+  if (!match.rosters || !match.roster) return null;
+  return match.rosters[k < 6 ? 0 : 1][parseInt(match.roster[f * PLAYERS + k], 36)] || null;
+}
+
+function role(f, k) {
+  // Position code of record k at frame f, or -1 when that player is off the ice.
+  if (!match.role) return [5, 3, 4, 2, 1, 0][k % 6];  // files made before positions were read from the game
+  const c = match.role[f * PLAYERS + k];
+  return c === 'x' ? -1 : Number(c);
+}
+
+function buildPanel(el, team, name, colour) {
+  const rows = PANEL_ORDER.map(() => `<div class="row" data-team="${team}" data-k="-1"><span class="pos"></span><span class="num"></span><span class="who"></span><span class="live"></span><span class="dot"></span><span class="energy"><i></i></span></div>`).join('');
+  const legend = team === 0 ? `<div class="legend"><span><i style="border: 2.5px solid var(--accent)"></i>Controlled by a person</span><span><i style="border: 2.5px solid var(--text)"></i>Has the puck</span></div>` : '';
+  const pad = `<div class="pad" hidden><span data-b="${PAD.left}">&#9664;</span><span data-b="${PAD.up}">&#9650;</span><span data-b="${PAD.down}">&#9660;</span><span data-b="${PAD.right}">&#9654;</span><i></i><span data-b="${PAD.A}">A</span><span data-b="${PAD.B}">B</span><span data-b="${PAD.C}">C</span></div>`;
+  const teamStats = team === 1 ? `<div class="teamstats" id="teamStats" hidden><h4>Team stats</h4><table></table></div><div class="teamstats penbox" hidden></div>` : '';
+  const scoring = team === 0 ? `<div class="teamstats scoring" hidden></div>` : '';
+  el.innerHTML = `<h3><span class="swatch" style="background: ${colour}"></span><span class="tname"></span><small>on ice</small></h3>${rows}${pad}${legend}${scoring}${teamStats}`;
+  // Pointing at a row shows that player's card beside the panel; clicking him puts it away.
+  el.querySelectorAll('.row').forEach(row => {
+    const target = () => {
+      const k = Number(row.dataset.k);
+      if (!match || k < 0) return null;
+      const r = row.getBoundingClientRect();
+      return { team, idx: rosterIndex(frameAt(now), k), x: team ? r.left - 258 : r.right + 8, y: r.top };
+    };
+    row.addEventListener('mouseenter', () => hover(target()));
+    row.addEventListener('mouseleave', () => hover(null));
+    row.addEventListener('click', () => toggle(target()));
+  });
+  // Names and labels come from the match file, so they go in as text, never as markup.
+  el.querySelector('.tname').textContent = name;
+  el.hidden = false;
+}
+
+function load(m) {
+  match = m;
+  now = m.t[0];
+  panelState = '';
+  spriteCache.clear();
+  buildAnimIndex(m);
+  logoImage = buildLogo(m);
+  breakaways = findBreakaways(m);
+  callouts = findCallouts(m);
+  heat = findHeat(m);
+  possession = findPossession(m);
+  setupOverlay(m);
+  $('clipPanel').hidden = true;
+  failedOneTimerFrames = new Map();
+  for (const e of m.failedOneTimers || []) {
+    for (let k = e.team * 6; k < e.team * 6 + 6; k++) if (rosterIndex(e.f, k) === e.idx) failedOneTimerFrames.set(e.f + ':' + k, e.known !== undefined ? e.known : e.f);
+  }
+  // Frames (and players) of each pass shot's passing motion, so its tag reads "Pass shot" instead of "Pass".
+  passShotFrames = new Map();  // frame:record -> the frame it was known to be a pass shot
+  for (const sh of m.shotList || []) {
+    if (sh.kind !== 'pass shot') continue;
+    for (let k = sh.team * 6; k < sh.team * 6 + 6; k++) {
+      if (rosterIndex(sh.f, k) !== sh.idx) continue;
+      for (let i = frameAt(m.t[sh.f] - 600); i <= frameAt(m.t[sh.f] + 400); i++) passShotFrames.set(i + ':' + k, sh.known !== undefined ? sh.known : sh.f);
+    }
+  }
+  goalLights = new Map();
+  for (let i = 0; m.lights && i + 4 < m.lights.length; i += 5) {
+    goalLights.set(m.lights[i], { x: m.lights[i + 1], y: m.lights[i + 2], z: m.lights[i + 3], frame: m.lights[i + 4] });
+  }
+  buildBenches(m);
+  loadSprites(m);
+  shown = null; dismissed = null;
+  $('name1').textContent = m.team1;
+  $('name2').textContent = m.team2;
+  $('drop').hidden = true;
+  for (const id of ['hud', 'rink', 'controls', 'viewbar']) $(id).hidden = false;
+  buildPanel($('lineup1'), 0, m.team1, 'var(--team1)');
+  buildPanel($('lineup2'), 1, m.team2, 'var(--team2)');
+  const startAt = Number(new URLSearchParams(location.search).get('t'));
+  if (startAt > 0) now = Math.min(m.t[m.t.length - 1], startAt * 1000);
+  resize();
+}
+
+function parseMatchText(text) {
+  // Match files are "window.NHL94_MATCH = {...};" so they also load as a script; plain JSON works too.
+  return JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+}
+
+function openFile(file) {
+  file.text().then(text => load(parseMatchText(text))).catch(() => { $('dropTitle').textContent = 'That file is not a match file'; });
+}
+
+function frameAt(ms) {
+  // Last frame at or before ms.
+  let lo = 0, hi = match.t.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (match.t[mid] <= ms) lo = mid; else hi = mid - 1; }
+  return lo;
+}
+
+function resize() {
+  // The canvas fills the stage; where the rink sits in it is the camera's business (applyView).
+  const stage = $('stage'), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(50, stage.clientWidth), h = Math.max(50, stage.clientHeight);
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  if (match) draw();
+}
+
+// The camera: an angle in degrees (clockwise on screen), a zoom (1 = the whole rink fits), and the point in the
+// middle of the stage in rink-picture pixels, as an offset from the picture's centre, or the puck when following.
+// The rink turns as a picture would; players' pictures, numbers and tags stay upright.
+const cam = { angle: 0, zoom: 1, x: 0, y: 0, follow: false, k: 1, sx: 1, fx: 0, fy: 0 };
+// How much wider a game X unit is than a Y unit on screen, before turning (ux/uy unturned).
+const xStretch = () => view.ux * cam.sx / view.uy;
+const ZOOM_MIN = 0.5, ZOOM_MAX = 8;
+// Following the puck, loosely, like a TV camera. The camera aims at the puck (smoothed over ms) plus a little of its
+// recent travel (lead of the last leadMs), and holds still while that aim stays in the middle part of the screen
+// (zone = its half-size as a share of the screen). When the aim leaves it, the camera moves to bring it back to the
+// zone's edge, accelerating and slowing smoothly (a critically damped spring of stiffness spring), so it never jumps
+// to full speed. On rushes (the puck moving up or down the ice faster than rushFrom units/s, full effect at rushFull)
+// the aim moves ahead of the puck by rushShift of the screen and the calm zone narrows to rushZone of its size, both
+// eased in and out over rushSmoothS, so the puck drifts to the trailing side and the net it is heading for comes into
+// view sooner. The real puck is never let closer to the screen's edge than limit of its half-size.
+// Tuned by stepping playback in headless Edge at zoom 2.5: with these values the net appears when a rushing puck is
+// about 110 units up the ice (blue line 87, goal line 268), against 220 with plain easing, with smaller camera
+// accelerations than plain easing. A faster, unsmoothed version was far jerkier (95th-percentile acceleration 17x).
+const FOLLOW = { ms: 300, leadMs: 400, lead: 0.6, zone: 0.25, spring: 7, limit: 0.42,
+  rushFrom: 40, rushFull: 90, rushShift: 0.30, rushZone: 0.4, rushSmoothS: 0.5 };
+let followClock = 0, followVel = [0, 0], followAhead = 0;
+const radians = () => cam.angle * Math.PI / 180;
+function applyView(f) {
+  // World coordinates from here on: origin at centre ice, +X right, +Y up, before the camera turns them.
+  const dpr = window.devicePixelRatio || 1, a = radians(), cw = canvas.width / dpr, ch = canvas.height / dpr;
+  // The picture's pixels are TV-shaped (wider than tall). Turned, that stretch should still run across the screen,
+  // not across the rink: squeeze or widen the picture so a game X unit is (ux/uy)^cos(2a) times a Y unit, i.e. as
+  // drawn at 0 and 180 degrees, swapped at 90 and 270, square at the diagonals.
+  cam.sx = Math.pow(view.ux / view.uy, Math.cos(2 * a)) * view.uy / view.ux;
+  const bw = Math.abs(view.w * cam.sx * Math.cos(a)) + Math.abs(view.h * Math.sin(a));
+  const bh = Math.abs(view.w * cam.sx * Math.sin(a)) + Math.abs(view.h * Math.cos(a));
+  cam.k = Math.max(0.02, Math.min((cw - 16) / bw, (ch - 16) / bh)) * cam.zoom;
+  // Never show past the picture's edges: once the screen reaches an edge the camera stops there (when following,
+  // the whole end zone is already in view); where the picture is narrower than the screen, it is centred. hx, hy:
+  // half the screen's extent in picture pixels along the picture's axes (the screen's corners must all stay on it).
+  const hx = (Math.abs(Math.cos(a)) * cw / 2 + Math.abs(Math.sin(a)) * ch / 2) / (cam.k * cam.sx);
+  const hy = (Math.abs(Math.sin(a)) * cw / 2 + Math.abs(Math.cos(a)) * ch / 2) / cam.k;
+  const keep = (v, half, size) => (2 * half >= size ? 0 : Math.max(half - size / 2, Math.min(size / 2 - half, v)));
+  const keepOnPicture = () => {
+    const nx = keep(cam.x, hx, view.w), ny = keep(cam.y, hy, view.h);
+    if (Math.abs(nx - cam.x) > 0.01 || Math.abs(ny - cam.y) > 0.01) followVel = [0, 0];  // no speed left pressing on it
+    cam.x = nx; cam.y = ny;
+  };
+  if (!cam.follow || !match) keepOnPicture();
+  if (cam.follow && match) {
+    const m = match, F = FOLLOW, X = i => m.puck[3 * i], Y = i => m.puck[3 * i + 1];
+    const stamp = clipClock !== null ? clipClock : performance.now(), dt = Math.min(0.1, Math.max(0, (stamp - followClock) / 1000));
+    followClock = stamp;
+    let sx = 0, sy = 0, n = 0;
+    for (let i = f; i >= 0 && m.t[i] >= m.t[f] - F.ms; i--) { sx += X(i); sy += Y(i); n++; }
+    const back = frameAt(m.t[f] - F.leadMs);
+    const vy = (Y(f) - Y(back)) / Math.max(0.1, (m.t[f] - m.t[back]) / 1000);  // up or down the ice, units/s
+    const rush = Math.max(0, Math.min(1, (Math.abs(vy) - F.rushFrom) / (F.rushFull - F.rushFrom)));
+    // followAhead: how far (a share of the screen, signed up or down the ice) the aim runs ahead on a rush.
+    const ahead = rush * Math.sign(vy) * F.rushShift;
+    followAhead = playing ? followAhead + (ahead - followAhead) * (1 - Math.exp(-dt / F.rushSmoothS)) : ahead;
+    // Screen pixels per game unit up the ice, and the screen's extent in that direction.
+    const ux = view.uy * cam.k, along = [Math.sin(a) * ux, -Math.cos(a) * ux], perUnit = Math.hypot(along[0], along[1]);
+    const extent = (Math.abs(along[0]) * cw + Math.abs(along[1]) * ch) / perUnit;
+    const aimX = sx / n + F.lead * (X(f) - X(back)), aimY = sy / n + F.lead * (Y(f) - Y(back)) + followAhead * extent / perUnit;
+    // Where a game position is on screen now, in CSS pixels from the middle.
+    const onScreen = (gx, gy) => {
+      const ox = (view.cx + view.ux * gx - (view.w / 2 + cam.x)) * cam.k * cam.sx, oy = (view.cy - view.uy * gy - (view.h / 2 + cam.y)) * cam.k;
+      return [Math.cos(a) * ox - Math.sin(a) * oy, Math.sin(a) * ox + Math.cos(a) * oy];
+    };
+    const beyond = (v, share) => [0, 1].map(i => Math.sign(v[i]) * Math.max(0, Math.abs(v[i]) - share * (i ? ch : cw)));
+    const shift = d => { const [px, py] = screenToPicture(d[0], d[1]); cam.x += px; cam.y += py; };
+    let off = beyond(onScreen(aimX, aimY), F.zone * (1 - (1 - F.rushZone) * Math.abs(followAhead) / F.rushShift));
+    // Where that would put the camera, held back from the picture's edges, so the camera slows to a stop as it
+    // reaches an edge instead of braking there.
+    {
+      const [px, py] = screenToPicture(off[0], off[1]);
+      const ox = (keep(cam.x + px, hx, view.w) - cam.x) * cam.k * cam.sx, oy = (keep(cam.y + py, hy, view.h) - cam.y) * cam.k;
+      off = [Math.cos(a) * ox - Math.sin(a) * oy, Math.sin(a) * ox + Math.cos(a) * oy];
+    }
+    if (playing) {
+      // The spring: pulled toward bringing the aim back inside, damped by the camera's own speed (screen px/s).
+      const w = F.spring;
+      followVel = followVel.map((v, i) => v + (w * w * off[i] - 2 * w * v) * dt);
+      shift(followVel.map(v => v * dt));
+    } else {
+      shift(off); followVel = [0, 0];  // paused or seeking: straight there
+    }
+    // The picture's edge stops the camera, except that the puck itself is always kept on screen (in a turned view a
+    // net can sit closer to the picture's corner than the screen allows).
+    keepOnPicture();
+    shift(beyond(onScreen(X(f), Y(f)), F.limit));
+  }
+  cam.fx = view.w / 2 + cam.x; cam.fy = view.h / 2 + cam.y;
+  ctx.setTransform(dpr, 0, 0, dpr, dpr * cw / 2, dpr * ch / 2);
+  ctx.rotate(a); ctx.scale(cam.k * cam.sx, cam.k); ctx.translate(-cam.fx, -cam.fy);
+  ctx.transform(view.ux, 0, 0, -view.uy, view.cx, view.cy);
+}
+function screenToPicture(dx, dy) {
+  // A distance on screen (CSS pixels) as a distance in rink-picture pixels, undoing the camera's turn and zoom.
+  const a = radians();
+  return [(Math.cos(a) * dx + Math.sin(a) * dy) / cam.k / cam.sx, (-Math.sin(a) * dx + Math.cos(a) * dy) / cam.k];
+}
+function stopFollowing() {
+  // Keep looking where the camera is now, but stop chasing the puck.
+  if (!cam.follow) return;
+  cam.follow = false; $('follow').checked = false;
+}
+function setView(changes, about) {
+  // about: a stage point (CSS pixels from the canvas's top-left) that stays put while zooming.
+  const before = cam.k;
+  Object.assign(cam, changes);
+  cam.angle = ((cam.angle + 540) % 360) - 180;
+  cam.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, cam.zoom));
+  if (about && 'zoom' in changes && !cam.follow) {
+    const r = canvas.getBoundingClientRect(), after = before * cam.zoom / (changes.zoomFrom || cam.zoom);
+    const [px, py] = screenToPicture(about[0] - r.width / 2, about[1] - r.height / 2);
+    cam.x += px - px * before / after; cam.y += py - py * before / after;
+  }
+  delete cam.zoomFrom;
+  if (cam.zoom <= 1 && !cam.follow) { cam.x = 0; cam.y = 0; }  // zoomed all the way out: whole rink, centred
+  $('angle').value = Math.round(cam.angle); $('angleOut').textContent = Math.round(cam.angle) + '\u00b0';
+  $('follow').checked = cam.follow;
+  try { localStorage.setItem('nhl94-view', JSON.stringify({ angle: cam.angle, zoom: cam.zoom, follow: cam.follow })); } catch (e) { /* not remembered */ }
+  if (match) draw();
+}
+function zoomBy(factor, about) { setView({ zoom: cam.zoom * factor, zoomFrom: cam.zoom }, about); }
+
+function marker(x, y) {
+  // Starts a frame centred on a game position in which one unit is the same size in both directions (a game Y unit).
+  // It turns with the rink. Callers draw around (0, 0) and then ctx.restore().
+  ctx.save(); ctx.translate(x, y); ctx.scale(1 / xStretch(), 1);
+}
+
+function upright(x, y) {
+  // Like marker(), but upright on screen whatever the camera's angle, with y running down: for text and pictures.
+  marker(x, y); ctx.rotate(radians()); ctx.scale(1, -1);
+}
+
+function roundedRink() {
+  const { halfW: w, halfL: l, corner: r } = RINK;
+  ctx.beginPath();
+  ctx.moveTo(-w + r, -l);
+  ctx.arcTo(w, -l, w, l, r); ctx.arcTo(w, l, -w, l, r); ctx.arcTo(-w, l, -w, -l, r); ctx.arcTo(-w, -l, w, -l, r);
+  ctx.closePath();
+}
+
+function line(y, colour, width) {
+  ctx.strokeStyle = colour; ctx.lineWidth = width;
+  ctx.beginPath(); ctx.moveTo(-RINK.halfW, y); ctx.lineTo(RINK.halfW, y); ctx.stroke();
+}
+
+function drawRink() {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+  if (view.image) {
+    // The picture is drawn as if seen from below the bottom of the screen (glass leaning over the ice at the bottom
+    // end, the inside of the boards at the top). Viewed upside down, it is mirrored top to bottom about the red line
+    // instead, so the near end still leans in; the ice markings are symmetric that way and stay in place. The bench
+    // and penalty-box strips are not, so they are pasted back unmirrored (Home lower, Away upper, as in the game).
+    const picture = overheadOn && overheadRink && view.image === rinkPicture ? overheadRink : view.image;
+    const flip = picture === rinkPicture && Math.cos(radians()) < -1e-6;
+    ctx.save();
+    if (!flip) ctx.scale(1, -1);  // pictures draw top-down, the world is Y-up
+    ctx.drawImage(picture, -view.cx / view.ux, -view.cy / view.uy, view.w / view.ux, view.h / view.uy);
+    if (flip) {
+      ctx.scale(1, -1);
+      for (const [x, y, w, h] of RINK_SIDES) {
+        ctx.drawImage(view.image, x, y, w, h, (x - view.cx) / view.ux, (y - view.cy) / view.uy, w / view.ux, h / view.uy);
+      }
+    }
+    ctx.restore();
+    if (view.image === rinkPicture) drawBenches();  // the overhead rink keeps the benches where they were
+    drawLogo();
+    return;
+  }
+  roundedRink(); ctx.fillStyle = '#f3f7fa'; ctx.fill();
+  ctx.save(); roundedRink(); ctx.clip();
+  line(RINK.blueLine, '#3b6fc4', 3); line(-RINK.blueLine, '#3b6fc4', 3);
+  line(0, '#c8323c', 3);
+  line(RINK.goalLine, '#c8323c', 1.2); line(-RINK.goalLine, '#c8323c', 1.2);
+  ctx.strokeStyle = '#3b6fc4'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(0, 0, RINK.centreR, 0, 2 * Math.PI); ctx.stroke();
+  for (const end of [1, -1]) {
+    const y = end * RINK.goalLine;
+    ctx.fillStyle = '#cfe3f5'; ctx.strokeStyle = '#c8323c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, y, RINK.creaseR, end > 0 ? Math.PI : 0, end > 0 ? 2 * Math.PI : Math.PI); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#7a1d24'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.rect(-RINK.netHalfW, y, 2 * RINK.netHalfW, end * RINK.netDepth); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+  roundedRink(); ctx.strokeStyle = '#3d4854'; ctx.lineWidth = 3; ctx.stroke();
+}
+
+// The two penalty boxes on the rink picture's far side, in game units: Home's lower, Away's upper.
+const PENALTY_BOXES = [{ x: 147, y: -30 }, { x: 147, y: 58 }];
+// The game's standing-still, facing-the-ice frame: left-handed players use 31, right-handed 11 mirrored.
+const BOX_FRAMES = { left: '01f', right: '00b' };
+function boxSprite(team, p) {
+  if (!spritesOn || !spriteLibrary || !match.palettes) return null;
+  const right = p && p.a && p.a[7] % 2 === 1, key = right ? BOX_FRAMES.right : BOX_FRAMES.left, entry = spriteLibrary.frames[key];
+  if (!entry) return null;
+  const turned = turnedFrame(key, '050c', right);
+  return spriteLibrary.frames[turned] ? spriteImage(turned, spriteLibrary.frames[turned], team, right) : spriteImage(key, entry, team, right);
+}
+function drawPenaltyBoxes(f) {
+  const snap = statSnapshot(f);
+  if (snap < 0 || !match.rosters) return;
+  [0, 1].forEach(team => {
+    const serving = [];
+    match.rosters[team].forEach((p, idx) => {
+      const live = playerStats(snap, team, idx);
+      if (live && live.pen && !live.pen.delayed) serving.push({ p, live });
+    });
+    serving.forEach((s, i) => {
+      const x = PENALTY_BOXES[team].x - i * 14, y = PENALTY_BOXES[team].y;
+      const sprite = boxSprite(team, s.p);
+      if (sprite) drawSprite(x, y, sprite, '', false, false);
+      else drawPlayer(x, y, 6, team ? css('--team2') : css('--team1'), String(s.p.num), '', false, false);
+      drawTag(x, y, clockText(s.live.pen.left), -(sprite ? 14 : DISC + 9));
+    });
+  });
+}
+
+function spriteImage(key, entry, team, mirrored) {
+  // A library picture in a team's colours, built once and cached. Offsets are from the player's position to the
+  // picture's top-left corner, in game pixels (y down).
+  const m = match, cacheKey = key + team + (mirrored ? 'm' : '');
+  let image = spriteCache.get(cacheKey);
+  if (!image) {
+    image = document.createElement('canvas');
+    image.width = entry.w; image.height = entry.h;
+    const g = image.getContext('2d'), data = g.createImageData(entry.w, entry.h);
+    // Each pixel names a colour and whose palette it comes from: the team's, or one of the game's two fixed ones.
+    const fixed = spriteLibrary.fixed || [m.palettes[team], m.palettes[team]], palettes = [m.palettes[team], fixed[0], fixed[1]];
+    for (let i = 0; i < entry.p.length; i++) {
+      const code = entry.p.charCodeAt(i) - 48, c = code & 15;
+      if (!c) continue;  // colour 0 is transparent
+      const rgb = parseInt(palettes[code >> 4][c].slice(1), 16);
+      const col = i % entry.w, at = 4 * (i - col + (mirrored ? entry.w - 1 - col : col));
+      data.data[at] = rgb >> 16; data.data[at + 1] = (rgb >> 8) & 255; data.data[at + 2] = rgb & 255; data.data[at + 3] = 255;
+    }
+    g.putImageData(data, 0, 0);
+    spriteCache.set(cacheKey, image);
+  }
+  return { image, w: entry.w, h: entry.h, x: mirrored ? -(entry.x + entry.w) : entry.x, y: entry.y };
+}
+
+// Turning the view: the game draws each player from 8 directions, so a turned view swaps in the picture of the same
+// moment of the same animation facing the turned way. match.anims is the ROM's animation table (word -> 8 lists of
+// frames, one per direction: 0 = up the screen, each step 45 degrees clockwise). Right-handed players are drawn
+// from the opposite side's pictures, mirrored, so their directions count the other way.
+let animIndex = new Map();
+const distinctDirs = dirs => new Set(dirs.map(String)).size === 8;
+function buildAnimIndex(m) {
+  // Every frame's place in the table (animation, direction, step), preferring animations with all 8 directions: the
+  // animation word read with a frame can be a moment out of step with it, so the frame itself is looked up.
+  animIndex = new Map();
+  const words = Object.keys(m.anims || {}).sort((a, b) => distinctDirs(m.anims[b]) - distinctDirs(m.anims[a]));
+  for (const word of words) m.anims[word].forEach((frames, dir) => frames.forEach((frame, step) => {
+    if (!animIndex.has(frame)) animIndex.set(frame, { word, dir, step });
+  }));
+}
+function turnedFrame(key, word, mirrored) {
+  const turn = ((Math.round(cam.angle / 45) % 8) + 8) % 8, anims = match.anims;
+  if (!turn || !anims) return key;
+  const frame = parseInt(key, 16);
+  let at = null;
+  if (anims[word]) anims[word].some((frames, dir) => { const step = frames.indexOf(frame); if (step >= 0) at = { word, dir, step }; return step >= 0; });
+  at = at || animIndex.get(frame);
+  if (!at) return key;  // a picture the table does not list: left as the game drew it
+  const dirs = anims[at.word], to = (at.dir + (mirrored ? 8 - turn : turn)) % 8, list = dirs[to];
+  // An animation without its own picture for that direction (faceoffs have only up and down): stand facing it.
+  const shared = dirs.some((other, d) => d !== to && String(other) === String(list));
+  const out = shared && anims['050c'] ? anims['050c'][to][0] : list[Math.min(at.step, list.length - 1)];
+  return out.toString(16).padStart(3, '0');
+}
+
+function spriteFor(f, k) {
+  // The game's own picture of record k at frame f, in his team's colours, or null if it cannot be drawn.
+  const m = match;
+  if (!spritesOn || !spriteLibrary || !m.frame || !m.palettes) return null;
+  // Frame 0 means the game is showing no picture for him for a moment (while it repositions players, for
+  // instance after a penalty); keep his last real picture rather than dropping to a disc.
+  let g = f;
+  while (g > 0 && f - g < 600 && m.frame.substr((g * PLAYERS + k) * 3, 3) === '000') g--;
+  const mirrored = Boolean(m.mirror) && m.mirror[g * PLAYERS + k] === '1';
+  const key = turnedFrame(m.frame.substr((g * PLAYERS + k) * 3, 3), m.anim ? animAt(g, k) : '', mirrored), entry = spriteLibrary.frames[key];
+  if (!entry) return null;
+  return spriteImage(key, entry, k < 6 ? 0 : 1, mirrored);
+}
+
+function drawSprite(x, y, sprite, label, controlled, hasPuck) {
+  // Rings lie on the ice at the player's position; the picture is drawn in game pixels so it scales with the rink.
+  // The rings are drawn as the game would see them in perspective, so they stay upright with the picture.
+  upright(x, y);
+  if (controlled) { ctx.strokeStyle = css('--accent'); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(0, 0, 15, 7, 0, 0, 2 * Math.PI); ctx.stroke(); }
+  if (hasPuck) { ctx.strokeStyle = css('--ink'); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(0, 0, 11, 5, 0, 0, 2 * Math.PI); ctx.stroke(); }
+  ctx.scale(view.ux / view.uy, 1);  // game pixels, as wide as the rink picture's
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(sprite.image, sprite.x, sprite.y, sprite.w, sprite.h);
+  ctx.imageSmoothingEnabled = true;
+  ctx.restore();
+  if (label) drawTag(x, y, label, 7 - sprite.y);
+}
+
+// The puck: the game's own pictures when game sprites are on (its shadow, frame 394, on the ice and the puck raised by
+// its height, as the game draws them; frames 395-404, in the rink's fixed colours), otherwise a dot that grows with
+// height. The game hides the puck at stoppages before a faceoff, when its height reads -256; so does the viewer.
+const PUCK_SHADOW = '18a', PUCK_ON_ICE = '18b', PUCK_HIDDEN_Z = -100;
+
+// The shot map and heat map, drawn on the ice under the players. Teams change ends between periods, so each team is
+// kept attacking the same end all game: the end it attacks in the period being shown, so the maps line up with the
+// live play. ends[f] is 1 when Home's goalie is at the top end at frame f (Home attacking down). Both maps build up
+// as the match plays: at any moment they show the game so far.
+let overlay = '', overlayWho = 'both', ends = null, heatGrid = null, passShotFrames = new Map();
+const HEAT_CELL = 5, HEAT_COLS = 52, HEAT_ROWS = 120;  // game units; X -130..130, Y -300..300
+function setupOverlay(m) {
+  ends = new Uint8Array(m.t.length);
+  let last = -1, firstKnown = -1;
+  for (let f = 0; f < m.t.length; f++) {
+    for (let k = 0; k < 6; k++) if (role(f, k) === 0) { last = m.pos[(f * PLAYERS + k) * 2 + 1] > 0 ? 1 : 0; break; }
+    if (last >= 0 && firstKnown < 0) firstKnown = last;
+    ends[f] = Math.max(0, last);
+  }
+  for (let f = 0; f < m.t.length && firstKnown >= 0; f++) {  // before the first goalie sighting, use the first known end
+    let seen = false;
+    for (let k = 0; k < 6; k++) if (role(f, k) === 0) seen = true;
+    if (seen) break;
+    ends[f] = firstKnown;
+  }
+  heatGrid = null;
+  const who = $('overlayWho');
+  fillWho(m);
+  // ?map=shots or ?map=heat, and &who=t0 / t1 / p<team>:<roster index>, in the address pick them.
+  const q = new URLSearchParams(location.search);
+  if (['shots', 'heat', 'turnovers', 'passes', 'goalie'].includes(q.get('map'))) { overlay = q.get('map'); fillWho(m); }
+  who.value = overlayWho = 'both';
+  if (q.get('who') && [...who.options].some(o => o.value === q.get('who'))) who.value = overlayWho = q.get('who');
+  $('overlay').value = overlay;
+  updateOverlayControls(false);  // the match is still loading: it draws itself once laid out
+}
+function fillWho(m) {
+  // Whose shots, puck time or turnovers: both teams, one team, or one skater. For the goalie report: the goalies.
+  const who = $('overlayWho'), goalies = overlay === 'goalie';
+  who.textContent = '';
+  const add = (parent, value, text) => { const o = document.createElement('option'); o.value = value; o.textContent = text; parent.append(o); };
+  if (goalies) {
+    add(who, 'both', 'Both goalies');
+    (m.rosters || []).forEach((roster, team) => roster.forEach((p, idx) => {
+      if (p.g && (m.shotList || []).some(sh => sh.team !== team && sh.goalie === idx)) add(who, 'p' + team + ':' + idx, '#' + p.num + ' ' + p.name + ' (' + (team ? m.team2 : m.team1) + ')');
+    }));
+  } else {
+    add(who, 'both', 'Both teams'); add(who, 't0', m.team1); add(who, 't1', m.team2);
+    (m.rosters || []).forEach((roster, team) => {
+      const group = document.createElement('optgroup');
+      group.label = team ? m.team2 : m.team1;
+      roster.forEach((p, idx) => { if (!p.g) add(group, 'p' + team + ':' + idx, '#' + p.num + ' ' + p.name); });
+      who.append(group);
+    });
+  }
+  if (![...who.options].some(o => o.value === overlayWho)) overlayWho = 'both';
+  who.value = overlayWho;
+}
+function counts(team, idx) {
+  // Does this team / player pass the "whose" filter?
+  if (overlayWho === 'both') return true;
+  if (overlayWho[0] === 't') return team === Number(overlayWho[1]);
+  const [t, i] = overlayWho.slice(1).split(':').map(Number);
+  return team === t && idx === i;
+}
+const filterTeam = () => (overlayWho === 'both' ? -1 : Number(overlayWho[1]));
+// Where a game position from frame g shows at frame f: turned half a turn if the teams have changed ends since.
+const onEnds = (g, f, x, y) => (ends[g] === ends[f] ? [x, y] : [-x, -y]);
+function updateOverlayControls(redraw = true) {
+  $('overlayWho').hidden = !overlay;
+  $('overlayInfo').hidden = !overlay;
+  heatGrid = null;
+  if (redraw && match) draw();
+}
+function drawShotMarker(x, y, result, colour, square) {
+  marker(x, y);
+  if (square) {
+    // A pass shot: the same colours, as a square.
+    const missed = MISSES.includes(result), r = result === 'goal' ? 6 : missed ? 4 : 4.5;
+    ctx.beginPath(); ctx.rect(-r, -r, 2 * r, 2 * r);
+    if (missed) {
+      ctx.strokeStyle = colour; ctx.lineWidth = 2; ctx.stroke();
+      if (result === 'blocked') { ctx.beginPath(); ctx.moveTo(-r, r); ctx.lineTo(r, -r); ctx.stroke(); }
+    }
+    else {
+      ctx.fillStyle = colour; ctx.fill();
+      ctx.strokeStyle = result === 'save' ? '#ffffff' : css('--accent'); ctx.lineWidth = result === 'goal' ? 2.5 : 1.6; ctx.stroke();
+    }
+    ctx.restore();
+    return;
+  }
+  if (result === 'pending') {
+    // Live knowledge: released, result not settled yet.
+    ctx.strokeStyle = colour; ctx.lineWidth = 2; ctx.setLineDash([2, 2]);
+    ctx.beginPath(); ctx.arc(0, 0, 5, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+  } else if (result === 'goal') {
+    ctx.fillStyle = colour; ctx.strokeStyle = css('--accent'); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(0, 0, 6.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+  } else if (result === 'save') {
+    ctx.fillStyle = colour; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+  } else if (result === 'post') {
+    ctx.fillStyle = colour; ctx.strokeStyle = css('--accent'); ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(6, 0); ctx.lineTo(0, 6); ctx.lineTo(-6, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+  } else {
+    ctx.strokeStyle = colour; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, 4, 0, 2 * Math.PI); ctx.stroke();
+    if (result === 'blocked') { ctx.beginPath(); ctx.moveTo(-4.5, 4.5); ctx.lineTo(4.5, -4.5); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+// Shots that did not reach the goalie: wide of the net, or blocked by a skater ('miss' in match files made before
+// the two were told apart).
+const MISSES = ['wide', 'blocked', 'miss'];
+// Map markers that can be clicked: device-pixel position, the frame to replay from and a description.
+let overlayHits = [];
+function hitAt(x, y, f, text) {
+  const p = ctx.getTransform().transformPoint(new DOMPoint(x, y));
+  overlayHits.push({ x: p.x, y: p.y, f, text });
+}
+function drawOverlay(f) {
+  overlayHits = [];
+  if (!overlay || !ends) return;
+  const m = match, colours = [css('--team1'), css('--team2')];
+  if (overlay === 'shots') {
+    const tally = [{}, {}];
+    const shots = (m.shotList || []).filter(sh => known(sh, f) && counts(sh.team, sh.idx)).map(sh => ({ ...sh, result: resultAt(sh, f) }));
+    // Goals get a faint dashed line to the net they went into.
+    for (const sh of shots) {
+      tally[sh.team][sh.result] = (tally[sh.team][sh.result] || 0) + 1;
+      if (sh.kind === 'pass shot') tally[sh.team].passShots = (tally[sh.team].passShots || 0) + 1;
+      if (sh.result !== 'goal') continue;
+      const [x, y] = onEnds(sh.f, f, sh.x, sh.y);
+      ctx.save(); ctx.scale(1 / xStretch(), 1);
+      ctx.strokeStyle = colours[sh.team]; ctx.globalAlpha = 0.5; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(x * xStretch(), y); ctx.lineTo(0, Math.sign(y) * RINK.goalLine); ctx.stroke();
+      ctx.restore();
+    }
+    for (const result of ['pending', ...MISSES, 'save', 'post', 'goal']) for (const sh of shots) {
+      if (sh.result !== result) continue;
+      const [x, y] = onEnds(sh.f, f, sh.x, sh.y);
+      drawShotMarker(x, y, result, colours[sh.team], sh.kind === 'pass shot');
+      hitAt(x, y, sh.f, shotText(sh));
+    }
+    fillOverlayInfo(f, tally, null);
+    return;
+  }
+  if (overlay === 'turnovers') { drawTurnovers(f, colours); return; }
+  if (overlay === 'goalie') { drawGoalieReport(f, colours); return; }
+  if (overlay === 'passes') { drawPasses(f, colours); return; }
+  // Heat map: where each team (or player) had the puck, by time. Built up frame by frame; started again on a rewind.
+  if (!heatGrid || f < heatGrid.upTo) {
+    heatGrid = { upTo: -1, cells: [new Float32Array(HEAT_COLS * HEAT_ROWS), new Float32Array(HEAT_COLS * HEAT_ROWS)], image: null, seconds: [0, 0] };
+  }
+  const h = heatGrid;
+  for (let i = h.upTo + 1; i <= f && i + 1 < m.t.length; i++) {
+    const k = m.owner[i];
+    if (k < 0 || m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;
+    const team = k < 6 ? 0 : 1;
+    if (!counts(team, rosterIndex(i, k))) continue;
+    // Kept with Home attacking up: turned while Home's goalie is at the top.
+    const x = ends[i] ? -m.puck[3 * i] : m.puck[3 * i], y = ends[i] ? -m.puck[3 * i + 1] : m.puck[3 * i + 1];
+    const c = Math.floor((x + 130) / HEAT_CELL), r = Math.floor((300 - y) / HEAT_CELL);
+    if (c < 0 || c >= HEAT_COLS || r < 0 || r >= HEAT_ROWS) continue;
+    const dt = Math.min(100, m.t[i + 1] - m.t[i]);
+    h.cells[team][r * HEAT_COLS + c] += dt;
+    h.seconds[team] += dt / 1000;
+  }
+  if (h.upTo !== f || !h.image) { h.upTo = f; h.image = heatImage(h.cells, colours); }
+  ctx.save();
+  if (ends[f]) ctx.rotate(Math.PI);  // Home is attacking down at the moment
+  ctx.scale(1, -1);
+  ctx.drawImage(h.image, -130, -300, 260, 600);
+  ctx.restore();
+  fillOverlayInfo(f, null, h.seconds);
+}
+const HEAT_SCALE = v => {
+  const stops = [[255, 236, 110], [255, 150, 20], [205, 25, 25]], x = Math.min(1.999, v * 2), i = Math.floor(x), u = x - i;
+  return [0, 1, 2].map(j => Math.round(stops[i][j] + (stops[i + 1][j] - stops[i][j]) * u));
+};
+function heatImage(cells, colours) {
+  // Smooth each team's time grid (two passes of a 5-cell box blur each way), scale both by the busiest cell, and
+  // paint in team colours, more opaque where the puck spent longer. Where both teams spent time, the busier shows.
+  const blurred = cells.map(grid => {
+    const a = Float32Array.from(grid), b = new Float32Array(a.length);
+    for (let pass = 0; pass < 2; pass++) {
+      for (let r = 0; r < HEAT_ROWS; r++) for (let c = 0; c < HEAT_COLS; c++) {
+        let sum = 0;
+        for (let d = -2; d <= 2; d++) { const cc = c + d; if (cc >= 0 && cc < HEAT_COLS) sum += a[r * HEAT_COLS + cc]; }
+        b[r * HEAT_COLS + c] = sum / 5;
+      }
+      for (let r = 0; r < HEAT_ROWS; r++) for (let c = 0; c < HEAT_COLS; c++) {
+        let sum = 0;
+        for (let d = -2; d <= 2; d++) { const rr = r + d; if (rr >= 0 && rr < HEAT_ROWS) sum += b[rr * HEAT_COLS + c]; }
+        a[r * HEAT_COLS + c] = sum / 5;
+      }
+    }
+    return a;
+  });
+  // Scaled to the busy spots (the 97th percentile of the cells used), so one spot does not wash out the rest.
+  const used = [];
+  for (const a of blurred) for (const v of a) if (v > 0) used.push(v);
+  used.sort((x, y) => x - y);
+  const top = Math.max(1e-6, used.length ? used[Math.floor(used.length * 0.97)] : 1);
+  const image = document.createElement('canvas');
+  image.width = HEAT_COLS; image.height = HEAT_ROWS;
+  const g = image.getContext('2d'), data = g.createImageData(HEAT_COLS, HEAT_ROWS);
+  const rgb = colours.map(c => { const n = parseInt(c.replace('#', ''), 16); return [n >> 16, (n >> 8) & 255, n & 255]; });
+  for (let i = 0; i < HEAT_COLS * HEAT_ROWS; i++) {
+    const team = blurred[0][i] >= blurred[1][i] ? 0 : 1, v = Math.min(1, Math.pow(blurred[team][i] / top, 0.7));
+    if (v < 0.06) continue;
+    // Both teams: each in its colour. One team or player: a heat scale, yellow through orange to red.
+    const c = overlayWho === 'both' ? rgb[team] : HEAT_SCALE(v);
+    data.data[4 * i] = c[0]; data.data[4 * i + 1] = c[1]; data.data[4 * i + 2] = c[2];
+    data.data[4 * i + 3] = Math.round(255 * (overlayWho === 'both' ? 0.15 + 0.7 * v : 0.2 + 0.65 * v));
+  }
+  g.putImageData(data, 0, 0);
+  return image;
+}
+function shotText(sh) {
+  // "P2 3:15 · #8 Cam Neely · pass shot · goal"
+  const at = periodName(match.period[sh.f]) + ' ' + clockText(match.clock[sh.f]);
+  const who = sh.idx >= 0 ? playerName(sh.team, sh.idx) : (sh.team ? match.team2 : match.team1);
+  const result = { goal: 'goal', save: sh.counted === false ? 'saved (not counted by the game)' : 'saved', post: 'off the post', wide: 'wide',
+    blocked: 'blocked', miss: 'missed', pending: 'still in play' }[sh.result] || sh.result;
+  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result;
+}
+const RESULT_WORDS = { goal: ['goal', 'goals'], save: ['saved', 'saved'], post: ['post', 'posts'], wide: ['wide', 'wide'],
+  blocked: ['blocked', 'blocked'], miss: ['missed or blocked', 'missed or blocked'], pending: ['still in play', 'still in play'] };
+function fillOverlayInfo(f, tally, seconds) {
+  const box = $('overlayInfo'), m = match, names = [m.team1, m.team2], only = filterTeam();
+  const who = $('overlayWho').selectedOptions[0];
+  box.textContent = '';
+  const title = document.createElement('b');
+  title.textContent = (overlay === 'shots' ? 'Shot map' : 'Heat map: time with the puck') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  box.append(title);
+  for (const team of [0, 1]) {
+    if (only >= 0 && team !== only) continue;
+    const line = document.createElement('div');
+    if (tally) {
+      const kinds = ['goal', 'save', 'post', ...MISSES, 'pending'];
+      const c = tally[team], n = kinds.reduce((sum, r) => sum + (c[r] || 0), 0);
+      const parts = kinds.filter(r => c[r]).map(r => c[r] + ' ' + RESULT_WORDS[r][c[r] === 1 ? 0 : 1]);
+      const passes = c.passShots ? ' (' + c.passShots + ' pass shot' + (c.passShots === 1 ? '' : 's') + ')' : '';
+      line.textContent = names[team] + ': ' + n + ' shot' + (n === 1 ? '' : 's') + passes + (parts.length ? ' \u2014 ' + parts.join(', ') : '');
+    } else {
+      const sec = Math.round(seconds[team]);
+      line.textContent = names[team] + ': ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+    }
+    box.append(line);
+  }
+  const key = document.createElement('div');
+  key.className = 'key';
+  if (tally) {
+    const icons = [
+      ['<circle cx="6" cy="6" r="4.5" fill="#8b98a7" stroke="' + css('--accent') + '" stroke-width="2"/>', 'Goal'],
+      ['<circle cx="6" cy="6" r="3.5" fill="#8b98a7" stroke="#fff" stroke-width="1.2"/>', 'Saved'],
+      ['<path d="M6 1 L11 6 L6 11 L1 6 Z" fill="#8b98a7" stroke="' + css('--accent') + '" stroke-width="1.2"/>', 'Post'],
+      ['<circle cx="6" cy="6" r="3.5" fill="none" stroke="#8b98a7" stroke-width="1.6"/>', 'Wide'],
+      ['<circle cx="6" cy="6" r="3.5" fill="none" stroke="#8b98a7" stroke-width="1.6"/><path d="M2.5 9.5 L9.5 2.5" stroke="#8b98a7" stroke-width="1.6"/>', 'Blocked'],
+      ['<rect x="2" y="2" width="8" height="8" fill="#8b98a7"/>', 'Square: pass shot'],
+    ];
+    for (const [shape, text] of icons) {
+      const item = document.createElement('span');
+      item.innerHTML = '<svg width="12" height="12" aria-hidden="true">' + shape + '</svg>';
+      item.append(text);
+      key.append(item);
+    }
+  }
+  const note = document.createElement('span');
+  note.textContent = 'Each team keeps the end it attacks now, all game';
+  key.append(note);
+  box.append(key);
+}
+
+// Turnovers (match.turnovers, from the converter's find_turnovers): where the puck was lost, a hollow triangle in
+// the colour of the team that gave it away, or a filled one in the colour of the team that took it away.
+function drawTurnovers(f, colours) {
+  const list = (match.turnovers || []).filter(e => known(e, f) && e.kind !== 'dump-in' &&
+    (counts(e.from, e.giver) || (e.kind === 'takeaway' && counts(1 - e.from, e.by))));
+  const tally = [{ give: 0, pass: 0, lost: 0, take: 0, how: {} }, { give: 0, pass: 0, lost: 0, take: 0, how: {} }];
+  for (const e of list) {
+    const [x, y] = onEnds(e.lost, f, e.x, e.y);
+    hitAt(x, y, e.lost, (e.kind === 'takeaway' ? 'Takeaway: ' + (e.by >= 0 ? playerName(1 - e.from, e.by) : '') + ' (' + e.how + ') from ' + playerName(e.from, e.giver)
+      : 'Giveaway: ' + playerName(e.from, e.giver) + ' (' + e.how + ')'));
+    marker(x, y);
+    ctx.beginPath(); ctx.moveTo(0, 6); ctx.lineTo(5.5, -4); ctx.lineTo(-5.5, -4); ctx.closePath();
+    if (e.kind === 'takeaway') {
+      ctx.fillStyle = colours[1 - e.from]; ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; ctx.stroke();
+      const t = tally[1 - e.from]; t.take++; t.how[e.how] = (t.how[e.how] || 0) + 1;
+    } else {
+      ctx.strokeStyle = colours[e.from]; ctx.lineWidth = 2.2; ctx.stroke();
+      const t = tally[e.from]; t.give++; if (e.how === 'pass picked off') t.pass++; else t.lost++;
+    }
+    ctx.restore();
+  }
+  const box = $('overlayInfo'), names = [match.team1, match.team2], only = filterTeam(), who = $('overlayWho').selectedOptions[0];
+  box.textContent = '';
+  const title = document.createElement('b');
+  title.textContent = 'Turnovers' + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  box.append(title);
+  for (const team of [0, 1]) {
+    if (only >= 0 && team !== only) continue;
+    const t = tally[team], line = document.createElement('div');
+    const how = Object.entries(t.how).map(([k, n]) => n + ' ' + (n === 1 ? k : k === 'poke check' ? 'poke checks' : k === 'hook' ? 'hooks' : k === 'hit' ? 'hits' : k)).join(', ');
+    line.textContent = names[team] + ': ' + t.give + ' giveaway' + (t.give === 1 ? '' : 's') + (t.give ? ' (' + t.pass + ' passes picked off, ' + t.lost + ' lost)' : '') +
+      ' \u00b7 ' + t.take + ' takeaway' + (t.take === 1 ? '' : 's') + (how ? ' (' + how + ')' : '');
+    box.append(line);
+  }
+  const key = document.createElement('div');
+  key.className = 'key';
+  for (const [shape, text] of [
+    ['<path d="M6 11 L11 2 L1 2 Z" fill="none" stroke="#8b98a7" stroke-width="1.6"/>', 'Giveaway, in the colour of the team that lost it'],
+    ['<path d="M6 11 L11 2 L1 2 Z" fill="#8b98a7" stroke="#fff" stroke-width="1"/>', 'Takeaway, in the colour of the team that won it'],
+  ]) {
+    const item = document.createElement('span');
+    item.innerHTML = '<svg width="12" height="12" aria-hidden="true">' + shape + '</svg>';
+    item.append(text);
+    key.append(item);
+  }
+  const note = document.createElement('span');
+  note.textContent = 'Where the puck was lost; whistles, shots and dump-ins to the goalie are not turnovers';
+  key.append(note);
+  box.append(key);
+}
+
+// The passes map (match.passes, from the converter's find_passes): a line for each pass from where it left the
+// stick to where it ended. Completed: solid, team colour, arrowhead. One-timer: solid, accent colour. Intercepted:
+// dashed, ending in a cross. Failed: dotted grey. Pass shot: dashed accent. Fainter when the game did not count it
+// (no target, or a goalie's pass).
+const PASS_WORDS = { completed: 'completed', 'one-timer': 'into a one-timer', intercepted: 'intercepted', failed: 'failed', 'pass shot': 'pass shot' };
+function drawPasses(f, colours) {
+  const list = (match.passes || []).filter(e => known(e, f) && counts(e.team, e.idx));
+  const tally = [{}, {}];
+  ctx.save();
+  ctx.scale(1 / xStretch(), 1);
+  const sx = xStretch();
+  for (const e of list) {
+    tally[e.team][e.result] = (tally[e.team][e.result] || 0) + 1;
+    const [x0, y0] = onEnds(e.f, f, e.x0, e.y0), [x1, y1] = onEnds(e.f, f, e.x1, e.y1);
+    const style = {
+      completed: [colours[e.team], [], 1.8], 'one-timer': [css('--accent'), [], 2.2], intercepted: ['#e5484d', [5, 4], 1.8],
+      failed: ['#8b98a7', [1.5, 3], 1.6], 'pass shot': [css('--accent'), [6, 3], 2],
+    }[e.result] || ['#8b98a7', [], 1.5];
+    ctx.globalAlpha = e.counted === false ? 0.55 : 0.95;
+    ctx.strokeStyle = style[0]; ctx.setLineDash(style[1]); ctx.lineWidth = style[2]; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x0 * sx, y0); ctx.lineTo(x1 * sx, y1); ctx.stroke();
+    ctx.setLineDash([]);
+    const ang = Math.atan2(y1 - y0, (x1 - x0) * sx);
+    if (e.result === 'intercepted') {
+      const r = 3.5;
+      ctx.beginPath(); ctx.moveTo(x1 * sx - r, y1 - r); ctx.lineTo(x1 * sx + r, y1 + r); ctx.moveTo(x1 * sx - r, y1 + r); ctx.lineTo(x1 * sx + r, y1 - r); ctx.stroke();
+    } else if (e.result === 'completed' || e.result === 'one-timer') {
+      ctx.fillStyle = style[0];
+      ctx.beginPath(); ctx.moveTo(x1 * sx, y1);
+      ctx.lineTo(x1 * sx - 7 * Math.cos(ang - 0.45), y1 - 7 * Math.sin(ang - 0.45));
+      ctx.lineTo(x1 * sx - 7 * Math.cos(ang + 0.45), y1 - 7 * Math.sin(ang + 0.45));
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // the passer's end: a small dot
+    ctx.fillStyle = colours[e.team];
+    ctx.beginPath(); ctx.arc(x0 * sx, y0, 2.2, 0, 2 * Math.PI); ctx.fill();
+  }
+  ctx.restore();
+  for (const e of list) {
+    const [x0, y0] = onEnds(e.f, f, e.x0, e.y0);
+    hitAt(x0, y0, e.f, periodName(match.period[e.f]) + ' ' + clockText(match.clock[e.f]) + ' \u00b7 ' + playerName(e.team, e.idx) +
+      (e.to >= 0 ? ' to ' + playerName(e.team, e.to) : '') + ' \u00b7 ' + (PASS_WORDS[e.result] || e.result) +
+      (e.counted === false ? ' (not counted by the game: no target)' : ''));
+  }
+  const box = $('overlayInfo'), names = [match.team1, match.team2], only = filterTeam(), who = $('overlayWho').selectedOptions[0];
+  box.textContent = '';
+  const title = document.createElement('b');
+  title.textContent = 'Passes' + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  box.append(title);
+  for (const team of [0, 1]) {
+    if (only >= 0 && team !== only) continue;
+    const c = tally[team], n = Object.values(c).reduce((a, b) => a + b, 0), made = (c.completed || 0) + (c['one-timer'] || 0);
+    const line = document.createElement('div');
+    line.textContent = names[team] + ': ' + made + ' of ' + n + ' completed' + (c['one-timer'] ? ' (' + c['one-timer'] + ' into one-timers)' : '') +
+      (c.intercepted ? ', ' + c.intercepted + ' intercepted' : '') + (c.failed ? ', ' + c.failed + ' failed' : '') +
+      (c['pass shot'] ? ', ' + c['pass shot'] + ' pass shot' + (c['pass shot'] === 1 ? '' : 's') : '');
+    box.append(line);
+  }
+  const key = document.createElement('div');
+  key.className = 'key';
+  for (const [shape, text] of [
+    ['<path d="M1 6 H9" stroke="#8b98a7" stroke-width="2"/><path d="M11 6 L7 3 L7 9 Z" fill="#8b98a7"/>', 'Completed'],
+    ['<path d="M1 6 H11" stroke="' + css('--accent') + '" stroke-width="2"/>', 'Into a one-timer'],
+    ['<path d="M1 6 H8" stroke="#e5484d" stroke-width="2" stroke-dasharray="3 2"/><path d="M8 3 L11 9 M8 9 L11 3" stroke="#e5484d" stroke-width="1.6"/>', 'Intercepted'],
+    ['<path d="M1 6 H11" stroke="#8b98a7" stroke-width="2" stroke-dasharray="1 2"/>', 'Failed'],
+    ['<path d="M1 6 H11" stroke="' + css('--accent') + '" stroke-width="2" stroke-dasharray="4 2"/>', 'Pass shot'],
+  ]) {
+    const item = document.createElement('span');
+    item.innerHTML = '<svg width="12" height="12" aria-hidden="true">' + shape + '</svg>';
+    item.append(text);
+    key.append(item);
+  }
+  const note = document.createElement('span');
+  note.textContent = 'Fainter: the game did not count it (no target, or a goalie\u2019s pass). Point at a pass\u2019s start to see it; click to replay';
+  key.append(note);
+  box.append(key);
+}
+
+// The goalie report: every shot that reached a goalie (goals, saves the game counted and saves it did not), from
+// where it was taken, with save rates by distance and shot type and what happened after the saves.
+function drawGoalieReport(f, colours) {
+  const faced = (match.shotList || []).filter(sh => known(sh, f) && (resultAt(sh, f) === 'save' || resultAt(sh, f) === 'goal') &&
+    counts(1 - sh.team, sh.goalie));
+  for (const sh of faced) {
+    const [x, y] = onEnds(sh.f, f, sh.x, sh.y);
+    const result = resultAt(sh, f);
+    drawShotMarker(x, y, result, colours[sh.team], sh.kind === 'pass shot');
+    hitAt(x, y, sh.f, shotText({ ...sh, result }));
+  }
+  const box = $('overlayInfo');
+  box.textContent = '';
+  const title = document.createElement('b');
+  title.textContent = 'Goalie report';
+  box.append(title);
+  const keepers = new Map();
+  for (const sh of faced) {
+    const key = (1 - sh.team) + ':' + sh.goalie;
+    if (!keepers.has(key)) keepers.set(key, []);
+    keepers.get(key).push(sh);
+  }
+  if (!keepers.size) { const none = document.createElement('div'); none.textContent = 'No shots on goal yet'; box.append(none); }
+  const pct = (saves, n) => (n ? (saves / n).toFixed(3).replace(/^0/, '') : '\u2013');
+  for (const [key, shots] of keepers) {
+    const [team, idx] = key.split(':').map(Number), p = match.rosters && match.rosters[team][idx];
+    const saves = shots.filter(sh => sh.result === 'save'), counted = shots.filter(sh => sh.counted);
+    const countedSaves = counted.filter(sh => sh.result === 'save').length;
+    const head = document.createElement('div');
+    head.innerHTML = '<b></b>';
+    head.firstChild.textContent = (p ? '#' + p.num + ' ' + p.name : 'Goalie') + ' (' + (team ? match.team2 : match.team1) + ')';
+    head.append(': ' + saves.length + ' saves on ' + shots.length + ' shots, ' + pct(saves.length, shots.length) +
+      (counted.length !== shots.length ? ' (the game counts ' + countedSaves + ' on ' + counted.length + ', ' + pct(countedSaves, counted.length) + ')' : ''));
+    box.append(head);
+    const net = sh => Math.hypot(sh.x, (sh.y >= 0 ? 1 : -1) * RINK.goalLine - sh.y);
+    const split = (label, test) => { const n = shots.filter(test), s = n.filter(sh => sh.result === 'save').length; return n.length ? label + ' ' + s + '/' + n.length : ''; };
+    const lines = [
+      [split('Close (under 60)', sh => net(sh) < 60), split('mid (60-120)', sh => net(sh) >= 60 && net(sh) < 120), split('far', sh => net(sh) >= 120)],
+      [split('Wrist', sh => sh.type === 'wrist shot'), split('slap', sh => sh.type === 'slapshot'), split('one-timers', sh => sh.type === 'one-timer'),
+        split('pass shots', sh => sh.type === 'pass shot'), split('deflections', sh => sh.type === 'deflection'), split('rebounds', sh => sh.rebound)],
+    ];
+    const after = { held: 0, rebound: 0, cleared: 0, loose: 0 };
+    for (const sh of saves) after[sh.after || 'loose']++;
+    lines.push(['After saves: held ' + after.held, 'rebounds to the shooters ' + after.rebound, 'cleared ' + after.cleared + (after.loose ? ', loose ' + after.loose : '')]);
+    for (const parts of lines) {
+      const line = document.createElement('div');
+      line.className = 'key';
+      line.textContent = parts.filter(Boolean).join(' \u00b7 ');
+      box.append(line);
+    }
+  }
+  const note = document.createElement('div');
+  note.className = 'key';
+  note.textContent = 'Saves read as saves/shots. Marks as on the shot map; squares are pass shots';
+  box.append(note);
+}
+
+// Possession as "which team controls the puck", in game seconds: every second the game clock ticks off goes to Home,
+// Away or Transition, so the three add up to the game time played. With the puck on a stick, it is that team's.
+// While it is loose (a pass, a shot, a rebound), it depends on who had it before and who gets it next, within the
+// same stretch of play (a whistle, when the game hides the puck, or a new period ends one): the same team, theirs
+// (passing is not punished); the other team, Transition; nobody yet, off a faceoff, the team that wins it; nobody
+// after, before a whistle (a goal, the puck out of play), the team that had it.
+// possession.cum[c][f]: game seconds so far at frame f for c = 0 Home, 1 Away, 2 Transition; possession.tick[f]:
+// the seconds the clock ticked off arriving at frame f.
+let possession = null;
+function findPossession(m) {
+  const n = m.t.length, team = k => (k < 6 ? 0 : 1), hidden = i => m.puck[3 * i + 2] < PUCK_HIDDEN_Z;
+  const before = new Int8Array(n), after = new Int8Array(n), tick = new Int16Array(n);
+  for (let i = 0, last = -1; i < n; i++) {
+    if (hidden(i) || (i && m.period[i] !== m.period[i - 1])) last = -1;
+    if (!hidden(i) && m.owner[i] >= 0) last = team(m.owner[i]);
+    before[i] = last;
+  }
+  for (let i = n - 1, next = -1; i >= 0; i--) {
+    if (hidden(i) || (i < n - 1 && m.period[i] !== m.period[i + 1])) next = -1;
+    if (!hidden(i) && m.owner[i] >= 0) next = team(m.owner[i]);
+    after[i] = next;
+  }
+  const control = i => {
+    if (m.owner[i] >= 0) return team(m.owner[i]);
+    const a = before[i], b = after[i];
+    return a < 0 && b < 0 ? 2 : a < 0 ? b : b < 0 ? a : a === b ? a : 2;
+  };
+  const cum = [new Int32Array(n), new Int32Array(n), new Int32Array(n)];
+  // A second counts when the clock reaches a new low in the period, a second or so at a time: a blip back up (once
+  // in the online capture) is not counted twice, and the game setting the clock is not play (it shows 0:00 before a
+  // period's 5:00, and 10:00 then 0:00 after the final horn).
+  let low = m.clock[0];
+  for (let i = 1; i < n; i++) {
+    for (let c = 0; c < 3; c++) cum[c][i] = cum[c][i - 1];
+    if (m.period[i] !== m.period[i - 1] || m.clock[i] > low + 3) low = m.clock[i];
+    else if (m.clock[i] < low) {
+      if (low - m.clock[i] <= 3) { tick[i] = low - m.clock[i]; cum[control(i)][i] += tick[i]; }
+      low = m.clock[i];
+    }
+  }
+  // For live knowledge: stretch[f], the frame just before the loose-puck stretch under way at f began (-1 when
+  // someone has the puck, or play is stopped); settled[f], the frame that stretch ends (someone gets the puck, or a
+  // whistle), when its seconds can be given out.
+  const stretch = new Int32Array(n).fill(-1), settled = new Int32Array(n).fill(-1);
+  for (let i = 0, start = -1; i < n; i++) {
+    const loose = m.owner[i] < 0 && !hidden(i);
+    if (loose && start < 0) start = Math.max(0, i - 1);
+    if (!loose) start = -1;
+    stretch[i] = start;
+  }
+  for (let i = n - 1, end = n - 1; i >= 0; i--) {
+    if (stretch[i] < 0) end = i;
+    settled[i] = end;
+  }
+  return { cum, tick, stretch, settled };
+}
+function playerPossession(f, team, idx) {
+  // Game seconds with the puck on his stick.
+  let secs = 0;
+  for (let i = 1; i <= f; i++) {
+    const k = match.owner[i];
+    if (possession.tick[i] && k >= 0 && (k < 6 ? 0 : 1) === team && rosterIndex(i, k) === idx) secs += possession.tick[i];
+  }
+  return secs * 1000;
+}
+const secondsText = ms => { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+// Hot shots: a loose puck travelling fast at a net (on its line it would cross that goal line within HOT_MOUTH units
+// of the middle) leaves a glowing streak: orange from HOT_SPEED[0] in the game's speed units (hard wrist shots),
+// white-hot from HOT_SPEED[1] (slapshots). Speed alone does not tell shots from hard passes; the heading does.
+// heat[f]: 0, 1 or 2 per frame, worked out when a match loads (from the speed words the converter keeps as puckV).
+const HOT_SPEED = [13000, 18000], HOT_MOUTH = 45, HOT_MS = 320;
+let heat = null;
+function findHeat(m) {
+  if (!m.puckV || !m.puckV.length) return null;
+  const out = new Uint8Array(m.t.length);
+  for (let i = 0; i < m.t.length; i++) {
+    if (m.owner[i] >= 0 || m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;
+    const vx = m.puckV[2 * i] * 100, vy = m.puckV[2 * i + 1] * 100, speed = Math.hypot(vx, vy);
+    if (speed < HOT_SPEED[0] || !vy) continue;
+    const x = m.puck[3 * i], y = m.puck[3 * i + 1], goal = Math.sign(vy) * RINK.goalLine, t = (goal - y) / vy;
+    if (t <= 0 || Math.abs(x + vx * t) > HOT_MOUTH) continue;  // past that goal line already, or not heading at the net
+    out[i] = speed >= HOT_SPEED[1] ? 2 : 1;
+  }
+  return out;
+}
+function drawHotTrail(f) {
+  if (!heat) return;
+  const m = match, from = frameAt(Math.max(m.t[0], m.t[f] - HOT_MS));
+  // Glow underneath, bright core on top; each piece fades with age.
+  for (const pass of ['glow', 'core']) for (let i = Math.max(1, from); i <= f; i++) {
+    if (!heat[i] || m.puck[3 * i - 1] < PUCK_HIDDEN_Z) continue;
+    const fade = 1 - (m.t[f] - m.t[i]) / HOT_MS, white = heat[i] === 2;
+    ctx.save(); ctx.scale(1 / xStretch(), 1);
+    ctx.beginPath();
+    ctx.moveTo(m.puck[3 * i - 3] * xStretch(), m.puck[3 * i - 2]);
+    ctx.lineTo(m.puck[3 * i] * xStretch(), m.puck[3 * i + 1]);
+    ctx.lineCap = 'round';
+    if (pass === 'glow') {
+      ctx.strokeStyle = white ? `rgba(255, 70, 30, ${0.55 * fade})` : `rgba(255, 140, 0, ${0.45 * fade})`;
+      ctx.lineWidth = (white ? 9 : 6) * (0.4 + 0.6 * fade);
+    } else {
+      ctx.strokeStyle = white ? `rgba(255, 255, 230, ${fade})` : `rgba(255, 220, 90, ${fade})`;
+      ctx.lineWidth = (white ? 3.5 : 2.5) * (0.4 + 0.6 * fade);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// The goal light: after a goal the game turns the puck's shadow into a red lamp with a turning flash, then a turning
+// beam (frames 563-576), at the end boards behind the net or in the net. match.lights: frame, x, y, height, picture.
+let goalLights = new Map();
+function drawGoalLight(f) {
+  const e = goalLights.get(f), lib = spritesOn && spriteLibrary && match.palettes ? spriteLibrary.frames : null;
+  if (!e || !lib) return;
+  const key = e.frame.toString(16).padStart(3, '0');
+  if (!lib[key]) return;
+  const sprite = spriteImage(key, lib[key], 0, false);
+  upright(e.x, e.y); ctx.translate(0, -Math.max(0, e.z)); ctx.scale(view.ux / view.uy, 1);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(sprite.image, sprite.x, sprite.y, sprite.w, sprite.h);
+  ctx.imageSmoothingEnabled = true;
+  ctx.restore();
+}
+
+function drawPuck(f) {
+  const m = match, x = m.puck[3 * f], y = m.puck[3 * f + 1], z = m.puck[3 * f + 2];
+  drawGoalLight(f);
+  if (z < PUCK_HIDDEN_Z) return;
+  drawHotTrail(f);
+  const key = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : PUCK_ON_ICE;
+  const lib = spritesOn && spriteLibrary && m.palettes ? spriteLibrary.frames : null;
+  if (lib && lib[key] && lib[PUCK_SHADOW]) {
+    for (const [k, up] of [[PUCK_SHADOW, 0], [key, Math.max(0, z)]]) {
+      const sprite = spriteImage(k, lib[k], 0, false);
+      upright(x, y); ctx.translate(0, -up); ctx.scale(view.ux / view.uy, 1);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(sprite.image, sprite.x, sprite.y, sprite.w, sprite.h);
+      ctx.imageSmoothingEnabled = true;
+      ctx.restore();
+    }
+    return;
+  }
+  ctx.fillStyle = css('--ink'); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+  marker(x, y);
+  ctx.beginPath(); ctx.arc(0, 0, 3 + Math.min(4, Math.max(0, z) * 0.35), 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function drawLogo() {
+  // The home team's centre-ice logo from the ROM, in game pixels, centred on centre ice.
+  if (!match || !logoImage) return;
+  ctx.save(); ctx.translate(-logoImage.width / 2, logoImage.height / 2); ctx.scale(1, -1);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(logoImage, 0, 0, logoImage.width, logoImage.height);
+  ctx.imageSmoothingEnabled = true;
+  ctx.restore();
+}
+
+// Frames where a team's breakaway count went up: the game counts one, with a ding, when the puck carrier crosses
+// the offensive blue line ahead of every defender.
+// What the banner over the ice announces, and when: a penalty from the moment of the foul (play may carry on
+// as a delayed penalty), and a penalty shot from the foul that earned it.
+function findCallouts(m) {
+  const out = [];
+  for (const p of m.penalties || []) {
+    const at = p.called !== undefined ? p.called : p.f;
+    if (at >= 0) out.push({ f: at, kind: p.called !== undefined && p.called < p.f ? 'Delayed penalty' : 'Penalty', text: penaltyWho(p) + ' \u00b7 ' + penaltyName(p) });
+  }
+  const tried = TEAM_FIELDS.indexOf('psTried');
+  for (const d of m.delayed || []) {
+    if (d.matched || !m.stats || !m.stats.n || m.stats.n <= tried) continue;
+    // A flag with no penalty listed: a penalty shot, if the team takes one before the flag drops (or just after).
+    const side = m.stats[d.team ? 'away' : 'home'], before = side[Math.max(0, statSnapshot(d.f))][tried];
+    const after = side[Math.max(0, statSnapshot(Math.min(m.t.length - 1, frameAt(m.t[d.end] + 3000))))][tried];
+    out.push({ f: d.f, kind: after > before ? 'Penalty shot' : 'Delayed penalty', text: (after > before ? 'Awarded to ' : 'Against ') + (after > before ? (d.team ? m.team2 : m.team1) : (d.team ? m.team1 : m.team2)) });
+  }
+  for (const e of m.icings || []) {
+    out.push({ f: e.f, kind: 'Icing · ' + (e.team ? m.team2 : m.team1), text: playerName(e.team, e.idx) + ' iced the puck' });
+  }
+  for (const g of m.goals || []) {
+    const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + ' (' + n + ')');
+    out.push({ f: g.f, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.join(', ') : ''),
+      text: playerName(g.team, g.scorer) + ' (' + g.goals + ')' + (helpers.length ? ' \u2014 assists ' + helpers.join(', ') : ' \u2014 unassisted') });
+  }
+  return out.sort((a, b) => a.f - b.f);
+}
+
+function findBreakaways(m) {
+  const s = m.stats, out = [], at = TEAM_FIELDS.indexOf('breakTried');
+  if (!s || !s.n || s.n <= at) return out;
+  ['home', 'away'].forEach((side, team) => {
+    for (let i = 1; i < s.f.length; i++) if (s[side][i][at] > s[side][i - 1][at]) out.push({ f: s.f[i], team });
+  });
+  return out;
+}
+
+function buildLogo(m) {
+  if (!m.logo || !m.palettes) return null;
+  const image = document.createElement('canvas');
+  image.width = m.logo.w; image.height = m.logo.h;
+  const g = image.getContext('2d'), data = g.createImageData(m.logo.w, m.logo.h);
+  for (let i = 0; i < m.logo.p.length; i++) {
+    const c = parseInt(m.logo.p[i], 16);
+    if (!c) continue;  // colour 0 lets the ice show through
+    const rgb = parseInt(m.palettes[0][c].slice(1), 16);
+    data.data[4 * i] = rgb >> 16; data.data[4 * i + 1] = (rgb >> 8) & 255; data.data[4 * i + 2] = rgb & 255; data.data[4 * i + 3] = 255;
+  }
+  g.putImageData(data, 0, 0);
+  return image;
+}
+
+function drawPlayer(x, y, facing, colour, label, position, controlled, hasPuck) {
+  const r = DISC, a = facing * Math.PI / 4;  // facing 0 = +Y, each step 45 degrees clockwise
+  const dx = Math.sin(a), dy = Math.cos(a);
+  marker(x, y); x = 0; y = 0;
+  if (controlled) {
+    ctx.strokeStyle = css('--accent'); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(x, y, r + 6.5, 0, 2 * Math.PI); ctx.stroke();
+  }
+  ctx.fillStyle = colour; ctx.strokeStyle = css('--ink'); ctx.lineWidth = 1.2;
+  // Facing: a wedge poking out of the disc, drawn first so the disc covers its base.
+  ctx.beginPath();
+  ctx.moveTo(x + dx * (r + 6), y + dy * (r + 6));
+  ctx.lineTo(x + dx * r * 0.6 - dy * r * 0.7, y + dy * r * 0.6 + dx * r * 0.7);
+  ctx.lineTo(x + dx * r * 0.6 + dy * r * 0.7, y + dy * r * 0.6 - dx * r * 0.7);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+  if (hasPuck) {
+    ctx.strokeStyle = css('--ink'); ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x, y, r + 2.6, 0, 2 * Math.PI); ctx.stroke();
+  }
+  // Jersey number over position, or the position alone when the match file has no rosters.
+  ctx.save(); ctx.translate(x, y); ctx.rotate(radians()); ctx.scale(1, -1);
+  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (label) {
+    ctx.font = 'bold 9.5px system-ui, sans-serif'; ctx.fillText(label, 0, -2.6);
+    ctx.font = 'bold 6.5px system-ui, sans-serif'; ctx.fillText(position, 0, 5.2);
+  } else {
+    ctx.font = 'bold 8px system-ui, sans-serif'; ctx.fillText(position, 0, 0.6);
+  }
+  ctx.restore();
+  ctx.restore();
+}
+
+function padTeam(f) {
+  // Which team the recorded controller is driving: the only team with a controlled skater, or with two people
+  // playing, the team whose controlled skater answers its presses (the converter's padTeam).
+  if (!match.pad) return -1;
+  const home = match.ctrl[f] & 63, away = match.ctrl[f] >> 6;
+  if (home && away && match.padTeam !== undefined && match.padTeam >= 0) return match.padTeam;
+  return home && !away ? 0 : away && !home ? 1 : -1;
+}
+
+function recentPad(f) {
+  let bits = 0;
+  for (let i = f; i >= 0 && match.t[i] >= match.t[f] - PAD_FLASH_MS; i--) bits |= match.pad[i];
+  return bits;
+}
+
+function animAt(f, k) { return match.anim.substr((f * PLAYERS + k) * 4, 4); }
+
+function actionAt(f, k) {
+  // The most recent labelled animation, kept on screen a moment after it ends because some last only a few frames.
+  const m = match;
+  for (let i = f; i >= 0 && m.t[i] >= m.t[f] - TAG_LINGER_MS; i--) {
+    const a = animAt(i, k);
+    if (ACTIONS[a]) {
+      const decided = ACTIONS[a] === 'Pass' ? passShotFrames.get(i + ':' + k) : undefined;
+      return decided !== undefined && (!liveKnowledge || decided <= f) ? 'Pass shot' : ACTIONS[a];
+    }
+    if (SHOOTING.includes(a)) {
+      let s = i, e = i;
+      while (s > 0 && animAt(s - 1, k) === a) s--;
+      while (e < m.t.length - 1 && animAt(e + 1, k) === a) e++;
+      let hadPuck = false;
+      for (let j = s; j <= e && m.t[j] <= m.t[s] + ONE_TIMER_GRACE_MS; j++) if (m.owner[j] === k) hadPuck = true;
+      if (!hadPuck) {
+        const decided = failedOneTimerFrames.get(s + ':' + k);
+        return decided !== undefined && (!liveKnowledge || decided <= f) ? 'Failed one-timer' : 'One-timer';
+      }
+      return m.t[e] - m.t[s] >= SLAPSHOT_MS ? 'Slapshot' : 'Wrist shot';
+    }
+  }
+  return null;
+}
+
+// Tags that mark notable moments (breakaways, one-timers) rather than ordinary skater actions stand out in the
+// accent colour.
+const NOTABLE_TAGS = new Set(['Breakaway', 'One-timer', 'Pass shot']);
+// The starts of failed one-timer swings (frame:record), from match.failedOneTimers, so their tag says so.
+let failedOneTimerFrames = new Map();  // frame:record -> the frame it was known to have failed
+function drawTag(x, y, text, up = 0) {
+  // up: how far above the game position (on screen, whatever the angle), in game Y units.
+  const notable = NOTABLE_TAGS.has(text);
+  upright(x, y); ctx.translate(0, -up);
+  const shrink = 1 / Math.sqrt(Math.max(1, cam.zoom));  // zoomed in, tags grow less than the players
+  ctx.scale(shrink, shrink);
+  ctx.font = 'bold 7.5px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const w = ctx.measureText(text).width + 8;
+  ctx.fillStyle = notable ? css('--accent') : 'rgba(16, 20, 26, 0.88)';
+  ctx.beginPath(); ctx.roundRect(-w / 2, -5.5, w, 11, 3); ctx.fill();
+  ctx.fillStyle = notable ? css('--ink') : '#ffffff'; ctx.fillText(text, 0, 0.5);
+  ctx.restore();
+}
+
+// Ratings as the ROM stores them (0-6 in the original game), in the order of the game's own labels.
+const SKATER_STATS = ['Weight', 'Agility', 'Speed', 'Off. aware', 'Def. aware', 'Shot power', 'Checking', 'Shoots', 'Stick hand.', 'Shot acc.', 'Endurance', 'Roughness', 'Pass acc.', 'Aggression'];
+const GOALIE_STATS = ['Weight', 'Agility', 'Speed', 'Off. aware', 'Def. aware', 'Puck control', null, 'Glove hand', null, null, 'Stick right', 'Stick left', 'Glove right', 'Glove left'];
+// The player card pop-up, opened from the lineup panels (not from the ice, where it would cover the play): who it
+// shows ({team, idx} plus where on screen), and a player just clicked away, whose card stays down until the
+// pointer leaves his row.
+let shown = null, dismissed = null;
+const samePlayer = (a, b) => Boolean(a && b && a.team === b.team && a.idx === b.idx);
+function hover(target) {
+  if (!target) { dismissed = null; return; }
+  if (samePlayer(target, dismissed)) return;
+  if (!samePlayer(target, shown) || shown.fromIce !== target.fromIce) { shown = target; panelState = ''; if (match) updatePanels(frameAt(now)); }
+}
+function toggle(target) {
+  if (!target) return;
+  if (samePlayer(target, shown)) { shown = null; dismissed = target; }
+  else { shown = target; dismissed = null; }
+  panelState = '';
+  updatePanels(frameAt(now));
+}
+function refreshPopover(f, snap) {
+  const box = $('popover');
+  const p = shown && match.rosters ? match.rosters[shown.team][shown.idx] : null;
+  if (!p) { box.hidden = true; return; }
+  let k = -1;
+  for (let i = shown.team * 6; i < shown.team * 6 + 6; i++) if (rosterIndex(f, i) === shown.idx && role(f, i) >= 0) k = i;
+  const position = k >= 0 ? (match.positions || POSITIONS)[role(f, k)] : (p.g ? 'G' : 'Bench');
+  const live = playerStats(snap, shown.team, shown.idx);
+  if (live && !p.g) {
+    const list = (match.turnovers || []).filter(e => known(e, f));
+    live.puckMs = playerPossession(f, shown.team, shown.idx);
+    live.giveaways = list.filter(e => e.kind === 'giveaway' && e.from === shown.team && e.giver === shown.idx).length;
+    live.takeaways = list.filter(e => e.kind === 'takeaway' && e.from !== shown.team && e.by === shown.idx).length;
+    if (match.failedOneTimers) live.failedOneTimers = match.failedOneTimers.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx).length;
+    if (match.passes) {
+      const mine = match.passes.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx);
+      live.passes = { tried: mine.length, made: mine.filter(e => e.result === 'completed' || e.result === 'one-timer').length,
+        picked: mine.filter(e => e.result === 'intercepted').length };
+    }
+  }
+  fillCard(box, p, position, live);
+  box.hidden = false;
+  box.style.left = Math.max(8, Math.min(window.innerWidth - box.offsetWidth - 8, shown.x)) + 'px';
+  box.style.top = Math.max(8, Math.min(window.innerHeight - box.offsetHeight - 8, shown.y)) + 'px';
+}
+const rosterIndex = (f, k) => (match.roster ? parseInt(match.roster[f * PLAYERS + k], 36) : -1);
+
+// Live stats come in snapshots: the team values (stats.n of them), then 7 per roster place (see the converter).
+// Shooting percentage can pass 100%: now and then a puck goes in without a shot being counted.
+const shootingText = (goals, shots) => (shots ? (100 * goals / shots).toFixed(1) + '%' : '\u2013');
+const TEAM_FIELDS = ['shots', 'goals', 'faceoffs', 'checks', 'passTried', 'passMade', 'attackZone', 'breakTried', 'breakGoals', 'oneTimerTried', 'oneTimerGoals', 'psTried', 'psGoals',
+  'ppGoals', 'ppTries', 'penalties', 'pim', 'shGoals'];
+function statSnapshot(f) {
+  const s = match.stats;
+  if (!s || !s.f.length || s.f[0] > f) return -1;
+  let lo = 0, hi = s.f.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (s.f[mid] <= f) lo = mid; else hi = mid - 1; }
+  return lo;
+}
+function teamStats(snap, team) {
+  const v = match.stats[team ? 'away' : 'home'][snap], out = {};
+  TEAM_FIELDS.forEach((name, i) => { out[name] = v[i]; });
+  return out;
+}
+function playerStats(snap, team, idx) {
+  if (snap < 0) return null;
+  const per = match.stats.p || 7, v = match.stats[team ? 'away' : 'home'][snap], at = (match.stats.n || 7) + per * idx;
+  if (at + per > v.length) return null;
+  const out = { g: v[at], a: v[at + 1], s: v[at + 2], x: v[at + 3], hits: v[at + 4], toi: v[at + 5], energy: v[at + 6] >> 0 };
+  // Penalty word: $FFxx = none; otherwise high byte $20 = called but play goes on, $00 = serving; low byte = seconds left.
+  if (per > 7 && v[at + 7] >> 8 !== 0xff) out.pen = { delayed: Boolean(v[at + 7] & 0x2000), left: v[at + 7] & 0xff };
+  return out;
+}
+
+// Penalties: the summary entries already called by frame f, and who is in the box.
+function penaltyName(p) {
+  const rule = match.rules && match.rules[p.code];
+  return rule ? rule.name + (rule.min ? ' (' + rule.min + ')' : '') : 'Penalty';
+}
+function penaltyWho(p) {
+  const who = match.rosters ? match.rosters[p.team][p.idx] : null;
+  return (p.team ? match.team2 : match.team1) + (who ? ' #' + who.num + ' ' + who.name : '');
+}
+function fillPenalties(f, snap) {
+  const box = document.querySelector('.penbox');
+  if (!box || !match.penalties) return;
+  const when = p => (p.called !== undefined ? p.called : p.f);
+  const called = match.penalties.filter(p => when(p) <= f);
+  const serving = [];
+  if (snap >= 0) [0, 1].forEach(team => {
+    const roster = match.rosters ? match.rosters[team] : [];
+    for (let idx = 0; idx < roster.length; idx++) {
+      const live = playerStats(snap, team, idx);
+      if (!live || !live.pen) continue;
+      const last = [...called].reverse().find(p => p.team === team && p.idx === idx);
+      serving.push({ team, idx, live, last });
+    }
+  });
+  // Fouls not yet written to the penalty list: the game only does that at the whistle.
+  for (const p of called) {
+    if (p.f > f && !serving.some(s => s.team === p.team && s.idx === p.idx)) serving.push({ team: p.team, idx: p.idx, live: { pen: { delayed: true } }, last: p });
+  }
+  box.hidden = !called.length && !serving.length;
+  if (box.hidden) return;
+  box.textContent = '';
+  const head = document.createElement('h4');
+  head.textContent = 'Penalty box';
+  box.append(head);
+  if (!serving.length) {
+    const none = document.createElement('p'); none.textContent = 'Empty'; box.append(none);
+  }
+  for (const s of serving) {
+    const line = document.createElement('div'), clock = document.createElement('b'), what = document.createElement('span');
+    line.className = 'pen';
+    what.textContent = penaltyWho({ team: s.team, idx: s.idx }) + (s.last ? ' \u00b7 ' + penaltyName(s.last) : '');
+    clock.textContent = s.live.pen.delayed ? 'delayed' : clockText(s.live.pen.left);
+    line.append(what, clock);
+    box.append(line);
+  }
+  const title = document.createElement('h5');
+  title.textContent = 'Summary';
+  box.append(title);
+  for (const p of called) {
+    const line = document.createElement('div');
+    line.className = 'pensum';
+    line.textContent = periodName(p.period) + ' ' + clockText(p.secs) + ' \u00b7 ' + penaltyWho(p) + ' \u00b7 ' + penaltyName(p);
+    box.append(line);
+  }
+}
+const clockText = secs => Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+
+function addStat(grid, label, text, fraction) {
+  const stat = document.createElement('div'), value = document.createElement('b');
+  stat.className = 'stat';
+  value.textContent = text;
+  stat.append(label, value);
+  if (fraction !== undefined) {
+    const bar = document.createElement('div'), fill = document.createElement('i');
+    bar.className = 'bar'; fill.style.width = Math.max(0, Math.min(100, fraction * 100)) + '%';
+    bar.append(fill); stat.append(bar);
+  }
+  grid.append(stat);
+}
+
+function fillCard(card, p, position, live) {
+  card.hidden = !p || !p.a;
+  if (card.hidden) return;
+  card.textContent = '';
+  const head = document.createElement('h4'), name = document.createElement('span'), meta = document.createElement('small');
+  name.textContent = '#' + p.num + ' ' + p.name;
+  meta.textContent = position + ' \u00b7 overall ' + p.ovr;
+  head.append(name, meta);
+  card.append(head);
+  if (live) {
+    const title = document.createElement('h5'), grid = document.createElement('div');
+    title.textContent = 'This game';
+    grid.className = 'stats';
+    if (p.g) {
+      const saves = live.s - live.g;
+      addStat(grid, 'Saves', saves + ' / ' + live.s);
+      addStat(grid, 'Goals against', live.g);
+      addStat(grid, 'Save %', live.s ? (saves / live.s).toFixed(3).replace(/^0/, '') : '\u2013');
+      addStat(grid, 'Ice time', clockText(live.toi));
+    } else {
+      addStat(grid, 'Goals', live.g);
+      addStat(grid, 'Assists', live.a);
+      addStat(grid, 'Points', live.g + live.a);
+      addStat(grid, 'Shots', live.s);
+      addStat(grid, 'Shooting %', shootingText(live.g, live.s));
+      addStat(grid, match.stats.x === 'PIM' ? 'Pen. minutes' : 'Checks', live.x);
+      addStat(grid, 'Hits taken', live.hits);
+      if (live.puckMs !== undefined) {
+        addStat(grid, 'With the puck', secondsText(live.puckMs));
+        addStat(grid, 'Giveaways', live.giveaways);
+        addStat(grid, 'Takeaways', live.takeaways);
+        if (live.failedOneTimers !== undefined) addStat(grid, 'Failed one-timers', live.failedOneTimers);
+        if (live.passes) {
+          addStat(grid, 'Passes', live.passes.made + '/' + live.passes.tried);
+          addStat(grid, 'Intercepted', live.passes.picked);
+        }
+      }
+      addStat(grid, 'Ice time', clockText(live.toi));
+      addStat(grid, 'Energy', live.energy + ' / 16', live.energy / 16);
+    }
+    card.append(title, grid);
+  }
+  const title = document.createElement('h5');
+  title.textContent = 'Ratings';
+  card.append(title);
+  const stats = document.createElement('div');
+  stats.className = 'stats';
+  (p.g ? GOALIE_STATS : SKATER_STATS).forEach((label, i) => {
+    if (!label) return;  // values the game does not use for goalies
+    const v = p.a[i], stat = document.createElement('div'), value = document.createElement('b');
+    stat.className = 'stat';
+    stat.append(label, value);
+    if (i === 0) value.textContent = (140 + 8 * v) + ' lb';
+    else if (i === 7) value.textContent = v % 2 ? 'Right' : 'Left';  // skaters: this value also holds fighting ability
+    else {
+      value.textContent = v;
+      const bar = document.createElement('div'), fill = document.createElement('i');
+      bar.className = 'bar'; fill.style.width = Math.min(100, v / 6 * 100) + '%';
+      bar.append(fill); stat.append(bar);
+    }
+    stats.append(stat);
+  });
+  card.append(stats);
+}
+
+// Periods 0-2 are P1-P3; 3 is overtime (10 minutes, sudden death; the index goes on to 4 when it ends).
+const periodName = p => (p < 3 ? 'P' + (p + 1) : 'OT');
+function gameClockText(f) {
+  // "P2 3:16", or "Final" once the third period (or overtime) is over.
+  const m = match, period = m.period[f], clock = m.clock[f];
+  const over = period >= 2 && clock === 0 && m.score[2 * f] !== m.score[2 * f + 1] && f === m.t.length - 1;
+  if (over || period > 3) return 'Final';
+  return periodName(period) + ' ' + clockText(clock);
+}
+function fillTeamStats(snap) {
+  const box = $('teamStats');
+  if (!box) return;
+  box.hidden = snap < 0;
+  if (snap < 0) return;
+  const h = teamStats(snap, 0), a = teamStats(snap, 1);
+  // From the shot list (the converter's find_shots): every attempt, and pass shots (B-button shots), so far.
+  const f = frameAt(now), list = (match.shotList || []).filter(sh => known(sh, f)).map(sh => ({ ...sh, result: resultAt(sh, f) }));
+  const attempts = team => list.filter(sh => sh.team === team).length;
+  const faceoffs = (match.faceoffs || []).filter(e => e.f <= f && e.zone);
+  const flip = { att: 'def', def: 'att', neu: 'neu' };
+  const foZone = (team, zone) => {
+    const here = faceoffs.filter(e => (team ? flip[e.zone] : e.zone) === zone);
+    return here.filter(e => e.won === team).length + '/' + here.length;
+  };
+  const iced = team => (match.icings || []).filter(e => e.f <= f && e.team === team).length;
+  const failed = team => (match.failedOneTimers || []).filter(e => known(e, f) && e.team === team).length;
+  const turnovers = (match.turnovers || []).filter(e => known(e, f));
+  const gave = team => turnovers.filter(e => e.from === team && e.kind === 'giveaway').length;
+  const took = team => turnovers.filter(e => e.from !== team && e.kind === 'takeaway').length;
+  let held = possession ? [0, 1, 2].map(c => possession.cum[c][f]) : null;  // game seconds: Home, Away, Transition
+  // Live knowledge: the seconds of the loose-puck stretch under way are not decided yet (whose they are depends on
+  // who gets the puck next), so they show apart as undecided.
+  let undecided = 0;
+  if (held && liveKnowledge && possession.stretch[f] >= 0 && possession.settled[f] > f) {
+    const s = possession.stretch[f];
+    held = [0, 1, 2].map(c => possession.cum[c][s]);
+    undecided = possession.cum[0][f] + possession.cum[1][f] + possession.cum[2][f] - held[0] - held[1] - held[2];
+  }
+  const share = c => (held && held[0] + held[1] + held[2] ? ' (' + Math.round(100 * held[c] / (held[0] + held[1] + held[2])) + '%)' : '');
+  const ended = (team, results) => list.filter(sh => sh.team === team && results.includes(sh.result) && !sh.counted).length;
+  // Shots the goalie stopped that the game did not count as shots on goal (always so for pass shots; sometimes others).
+  const uncountedSaves = team => list.filter(sh => sh.team === team && sh.counted === false && sh.result === 'save').length;
+  const passShots = team => {
+    const mine = list.filter(sh => sh.team === team && sh.kind === 'pass shot');
+    return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length;
+  };
+  // A one-timer means the pass reached the shooter, but the game never counts it as completed (the shooter never
+  // 'has' the puck), so each one-timer attempt is added to completed passes, capped at passes tried.
+  const made = t => Math.min(t.passTried, t.passMade + (t.oneTimerTried || 0));
+  const pct = t => (t.passTried ? Math.round(100 * made(t) / t.passTried) + '%' :'\u2013');
+  // In three groups, each under a heading: shooting, puck control, then physical play and special teams.
+  const section = title => [title];  // a heading row
+  const rows = [
+    section('Shooting'),
+    ['Shots on goal', h.shots, a.shots],
+    ['Shooting %', shootingText(h.goals, h.shots), shootingText(a.goals, a.shots)],
+    ...(match.shotList ? [
+      ['Shot attempts', attempts(0), attempts(1)],
+      ['Wide', ended(0, ['wide', 'miss']), ended(1, ['wide', 'miss'])],
+      ['Blocked', ended(0, ['blocked']), ended(1, ['blocked'])],
+      ...(uncountedSaves(0) + uncountedSaves(1) ? [['Saved, not counted', uncountedSaves(0), uncountedSaves(1)]] : []),
+    ] : []),
+    ...(h.breakTried === undefined ? [] : [
+      ['One-timers', h.oneTimerGoals + '/' + h.oneTimerTried, a.oneTimerGoals + '/' + a.oneTimerTried],
+    ]),
+    // Swings at a pass that never reached the shooter; the game's own count above only has ones that connected.
+    ...(match.failedOneTimers ? [['Failed one-timers', failed(0), failed(1)]] : []),
+    ...(match.shotList ? [['Pass shots', passShots(0), passShots(1)]] : []),
+    ...(h.breakTried === undefined ? [] : [
+      ['Breakaways', h.breakGoals + '/' + h.breakTried, a.breakGoals + '/' + a.breakTried],
+    ]),
+    ...(h.psTried === undefined ? [] : [
+      ['Penalty shots', h.psGoals + '/' + h.psTried, a.psGoals + '/' + a.psTried],
+    ]),
+    section('Puck control'),
+    ...(held ? [['Possession', secondsText(1000 * held[0]) + share(0), secondsText(1000 * held[1]) + share(1)],
+      ['Transition ' + secondsText(1000 * held[2]) + share(2) + (liveKnowledge ? ' · undecided ' + secondsText(1000 * undecided) : ''), '', '']] : []),
+    ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
+    ['Faceoffs won', h.faceoffs, a.faceoffs],
+    // By zone, each team's own view (Home's attacking zone is Away's defensive one): won / taken there.
+    ...(match.faceoffs ? [['· attacking zone', foZone(0, 'att'), foZone(1, 'att')], ['· neutral zone', foZone(0, 'neu'), foZone(1, 'neu')],
+      ['· defensive zone', foZone(0, 'def'), foZone(1, 'def')]] : []),
+    ['Passes', made(h) + '/' + h.passTried, made(a) + '/' + a.passTried],
+    ['Pass %', pct(h), pct(a)],
+    ...(match.turnovers ? [['Giveaways', gave(0), gave(1)], ['Takeaways', took(0), took(1)]] : []),
+    ...(match.icings ? [['Icings', iced(0), iced(1)]] : []),
+    section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
+    ['Body checks', h.checks, a.checks],
+    ...(h.ppTries === undefined ? [] : [
+      ['Power play', h.ppGoals + '/' + h.ppTries, a.ppGoals + '/' + a.ppTries],
+      ['Shorthanded goals', h.shGoals, a.shGoals],
+      ['Penalties', h.penalties, a.penalties],
+      ['Penalty minutes', h.pim, a.pim],
+    ]),
+  ];
+  const table = box.querySelector('table');
+  table.textContent = '';
+  // Which column is whose (the ROM's abbreviations, BOS and STL, or the team names in older match files), with the
+  // score and the period and clock, so a picture of the box on its own says where the game stood.
+  const head = table.createTHead().insertRow();
+  [0, -1, 1].forEach(team => {
+    const th = document.createElement('th');
+    if (team >= 0) {
+      const name = document.createElement('span'), score = document.createElement('b');
+      name.textContent = (match.abbr && match.abbr[team]) || (team ? match.team2 : match.team1);
+      name.style.color = css(team ? '--team2' : '--team1');
+      score.className = 'score';
+      score.textContent = match.score[2 * f + team];
+      if (team) th.append(score, name); else th.append(name, score);
+    } else {
+      th.className = 'when';
+      th.textContent = gameClockText(f);
+    }
+    head.append(th);
+  });
+  for (const [label, home, away] of rows) {
+    const tr = table.insertRow();
+    if (home === undefined) {  // a heading
+      tr.className = 'section';
+      const td = tr.insertCell();
+      td.colSpan = 3; td.textContent = label;
+      continue;
+    }
+    if (/^· /.test(label)) tr.className = 'sub';  // a break-down of the row above
+    tr.insertCell().textContent = home;
+    tr.insertCell().textContent = label;
+    tr.insertCell().textContent = away;
+  }
+}
+
+function updatePanels(f) {
+  const m = match, owner = m.owner ? m.owner[f] : -1, team = padTeam(f), pad = team >= 0 ? recentPad(f) : 0;
+  const snap = statSnapshot(f);
+  const released = (liveKnowledge ? 'L' : '') + (m.failedOneTimers ? m.failedOneTimers.filter(e => known(e, f)).length : 0) + '/' +
+    (m.shotList ? m.shotList.filter(sh => known(sh, f)).map(sh => resultAt(sh, f)).join('') : '') + '/' + (m.turnovers ? m.turnovers.filter(e => known(e, f)).length : 0) +
+    '/' + (possession ? possession.cum[0][f] + possession.cum[1][f] + possession.cum[2][f] + (liveKnowledge ? ':' + possession.stretch[f] : '') : 0);
+  const state = released + '|' + m.score[2 * f] + '-' + m.score[2 * f + 1] + '|' + gameClockText(f) + '|' + (m.roster ? m.roster.substr(f * PLAYERS, PLAYERS) : '') + '|' + (m.role ? m.role.substr(f * PLAYERS, PLAYERS) : '') + '|' + m.ctrl[f] + '|' + owner + '|' + team + '|' + pad + '|' + snap;
+  if (state === panelState) return;
+  panelState = state;
+  fillTeamStats(snap);
+  fillPenalties(f, snap);
+  [$('lineup1'), $('lineup2')].forEach((el, i) => {
+    const box = el.querySelector('.pad');
+    box.hidden = i !== team;
+    if (i === team) for (const key of box.querySelectorAll('span')) key.classList.toggle('on', Boolean(pad & Number(key.dataset.b)));
+  });
+  [$('lineup1'), $('lineup2')].forEach((el, team) => {
+    // Everyone on the ice, in position order. The game sometimes gives two players the same position for a while
+    // (after a line change, until the next whistle), so rows follow players, not positions.
+    const onIce = [];
+    for (let k = team * 6; k < team * 6 + 6; k++) if (role(f, k) >= 0) onIce.push(k);
+    onIce.sort((a, b) => PANEL_ORDER.indexOf(role(f, a)) - PANEL_ORDER.indexOf(role(f, b)) || a - b);
+    el.querySelectorAll('.row').forEach((row, i) => {
+      const k = i < onIce.length ? onIce[i] : -1, p = k >= 0 ? player(f, k) : null;
+      row.dataset.k = k;
+      row.children[0].textContent = k >= 0 ? (m.positions || POSITIONS)[role(f, k)] : '';
+      row.children[1].textContent = p ? p.num : '';
+      row.children[2].textContent = p ? p.name : '';
+      // Live line: goals and assists for skaters, saves for goalies; a thin bar shows energy.
+      const live = k >= 0 && snap >= 0 ? playerStats(snap, team, rosterIndex(f, k)) : null;
+      row.children[3].textContent = !live ? '' : p && p.g ? (live.s - live.g) + '/' + live.s : (live.g || live.a ? live.g + 'G ' + live.a + 'A' : '');
+      row.querySelector('.energy').hidden = !live || (p && p.g);
+      if (live) row.querySelector('.energy i').style.width = (live.energy / 16 * 100) + '%';
+      row.classList.toggle('shown', k >= 0 && samePlayer(shown, { team, idx: rosterIndex(f, k) }));
+      row.classList.toggle('ctrl', k >= 0 && Boolean((m.ctrl[f] >> k) & 1));
+      row.classList.toggle('puck', k >= 0 && k === owner);
+    });
+  });
+  fillScoring(f);
+  refreshPopover(f, snap);
+}
+
+function playerName(team, idx) {
+  const p = match.rosters && idx !== null && idx !== undefined ? match.rosters[team][idx] : null;
+  return p ? '#' + p.num + ' ' + p.name : 'unknown';
+}
+const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot' };
+function fillScoring(f) {
+  const box = document.querySelector('.scoring');
+  if (!box) return;
+  const goals = (match.goals || []).filter(g => g.f <= f);
+  box.hidden = !match.goals;
+  if (box.hidden) return;
+  box.textContent = '';
+  const head = document.createElement('h4');
+  head.textContent = 'Scoring';
+  box.append(head);
+  if (!goals.length) { const none = document.createElement('p'); none.textContent = 'No goals yet'; box.append(none); }
+  for (const g of goals) {
+    const line = document.createElement('div'), sub = document.createElement('small');
+    line.className = 'goal';
+    line.textContent = periodName(g.period) + ' ' + clockText(g.clock) + ' \u00b7 ' + (g.team ? match.team2 : match.team1) + ' \u00b7 ' + playerName(g.team, g.scorer) + ' (' + g.goals + ')';
+    for (const kind of g.kinds) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = GOAL_TAGS[kind] || kind; line.append(tag); }
+    sub.textContent = g.assists.length ? 'Assists: ' + g.assists.map(([idx, n]) => playerName(g.team, idx) + ' (' + n + ')').join(', ') : 'Unassisted';
+    line.append(sub);
+    box.append(line);
+  }
+}
+
+function draw() {
+  const f = frameAt(now), m = match, owner = m.owner ? m.owner[f] : -1;
+  applyView(f);
+  drawRink();
+  drawOverlay(f);
+  // Puck trail: where it has been over the last moments, so fast passes and shots stay readable.
+  ctx.strokeStyle = 'rgba(20, 24, 29, 0.28)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  ctx.beginPath();
+  let started = false;
+  for (let i = frameAt(Math.max(m.t[0], m.t[f] - TRAIL_MS)); i <= f; i++) {
+    const px = m.puck[3 * i], py = m.puck[3 * i + 1];
+    if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z) { started = false; continue; }  // hidden at a stoppage
+    if (started) ctx.lineTo(px, py); else { ctx.moveTo(px, py); started = true; }
+  }
+  ctx.save(); ctx.scale(1 / xStretch(), 1); ctx.stroke(); ctx.restore();  // even line width on a stretched rink
+  const team1 = css('--team1'), team2 = css('--team2');
+  // Players higher up the screen are drawn first, so nearer ones overlap them as in the game.
+  const M = ctx.getTransform(), screenY = k => M.b * m.pos[(f * PLAYERS + k) * 2] + M.d * m.pos[(f * PLAYERS + k) * 2 + 1];
+  const order = [...Array(PLAYERS).keys()].sort((a, b) => screenY(a) - screenY(b));
+  for (const k of order) {
+    const p = (f * PLAYERS + k) * 2, who = player(f, k), code = role(f, k);
+    if (code < 0) continue;  // on the bench or mid line change
+    const position = (m.positions || POSITIONS)[code], sprite = spriteFor(f, k);
+    if (sprite) drawSprite(m.pos[p], m.pos[p + 1], sprite, (who ? who.num + ' ' : '') + position, (m.ctrl[f] >> k) & 1, k === owner);
+    else drawPlayer(m.pos[p], m.pos[p + 1], Number(m.facing[f * PLAYERS + k]), k < 6 ? team1 : team2, who ? String(who.num) : '',
+      position, (m.ctrl[f] >> k) & 1, k === owner);
+  }
+  drawPenaltyBoxes(f);
+  // What each player is doing, for any player, person or computer.
+  if (m.anim) for (let k = 0; k < PLAYERS; k++) {
+    const action = role(f, k) < 0 ? null : actionAt(f, k);
+    if (action) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], action, -(DISC + 9));
+  }
+  // Breakaways: a tag over the puck for a moment after the game counts one.
+  for (const b of breakaways) {
+    const since = m.t[f] - m.t[b.f];
+    if (since >= 0 && since <= POST_FLASH_MS) drawTag(m.puck[3 * f], m.puck[3 * f + 1], 'Breakaway', 30);
+  }
+  // Shots off the post: mark the post that was hit for a moment.
+  for (const pf of m.posts || []) {
+    const since = m.t[f] - m.t[pf];
+    if (since < 0 || since > POST_FLASH_MS) continue;
+    const px = Math.sign(m.puck[3 * pf]) * POST_X, py = Math.sign(m.puck[3 * pf + 1]) * POST_Y;
+    marker(px, py);
+    ctx.strokeStyle = css('--accent'); ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 7 + since / POST_FLASH_MS * 10, 0, 2 * Math.PI); ctx.stroke();
+    ctx.restore();
+    drawTag(px, py + (py > 0 ? -22 : 22), 'Post');
+  }
+  // Button presses pop up beside the skater that controller is driving.
+  const team = padTeam(f);
+  if (team >= 0) {
+    const pressed = recentPad(f), letters = ['A', 'B', 'C'].filter(b => pressed & PAD[b]);
+    let k = team * 6;
+    while (!((m.ctrl[f] >> k) & 1)) k++;
+    const x = m.pos[(f * PLAYERS + k) * 2], y = m.pos[(f * PLAYERS + k) * 2 + 1];
+    letters.forEach((letter, i) => {
+      upright(x, y);
+      const bx = DISC + 12 + i * 15, by = -(DISC + 6);
+      ctx.fillStyle = css('--accent'); ctx.strokeStyle = css('--ink'); ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(bx, by, 6.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.translate(bx, by);
+      ctx.fillStyle = css('--ink'); ctx.font = 'bold 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(letter, 0, 0.6); ctx.restore();
+    });
+  }
+  drawPuck(f);
+
+  updatePanels(f);
+  const call = callouts.find(c => m.t[f] >= m.t[c.f] && m.t[f] - m.t[c.f] < CALLOUT_MS);
+  const callout = $('callout');
+  callout.hidden = !call;
+  if (call) {
+    callout.textContent = '';
+    const kind = document.createElement('small');
+    kind.textContent = call.kind;
+    callout.append(kind, call.text);
+  }
+  const secs = m.clock[f];
+  $('clockTime').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+  $('clockPeriod').textContent = m.period[f] < 3 ? 'Period ' + (m.period[f] + 1) : m.period[f] === 3 ? 'Overtime' : 'Final';
+  $('score1').textContent = m.score[2 * f]; $('score2').textContent = m.score[2 * f + 1];
+  $('shots1').textContent = m.shots[2 * f] + ' shots'; $('shots2').textContent = m.shots[2 * f + 1] + ' shots';
+  const t0 = m.t[0], t1 = m.t[m.t.length - 1];
+  $('seek').value = Math.round(1000 * (now - t0) / Math.max(1, t1 - t0));
+  const mmss = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  $('time').textContent = mmss(now - t0) + ' / ' + mmss(t1 - t0);
+}
+
+function setPlaying(on) {
+  playing = on;
+  $('play').textContent = on ? 'Pause' : 'Play';
+  if (on) { lastTick = performance.now(); requestAnimationFrame(tick); }
+}
+
+function tick(stamp) {
+  if (!playing) return;
+  const end = match.t[match.t.length - 1];
+  now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value));
+  lastTick = stamp;
+  draw();
+  if (clipJob) clipJob.onFrame();
+  if (now >= end) setPlaying(false); else requestAnimationFrame(tick);
+}
+
+function seekTo(ms) {
+  now = Math.max(match.t[0], Math.min(match.t[match.t.length - 1], ms));
+  draw();
+}
+
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && shown) { shown = null; panelState = ''; if (match) updatePanels(frameAt(now)); } });
+
+$('play').addEventListener('click', () => {
+  if (!playing && now >= match.t[match.t.length - 1]) now = match.t[0];
+  setPlaying(!playing);
+});
+$('seek').addEventListener('input', e => {
+  const t0 = match.t[0], t1 = match.t[match.t.length - 1];
+  seekTo(t0 + (t1 - t0) * e.target.value / 1000);
+});
+$('pick').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', e => { if (e.target.files[0]) openFile(e.target.files[0]); });
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]) { setPlaying(false); openFile(e.dataTransfer.files[0]); } });
+window.addEventListener('resize', resize);
+window.addEventListener('keydown', e => {
+  if (!match || e.target.tagName === 'SELECT') return;
+  if (e.key === 'r' || e.key === 'R') setView({ angle: Math.round((cam.angle + (e.shiftKey ? -90 : 90)) / 90) * 90 });
+  else if (e.key === '+' || e.key === '=') zoomBy(1.25);
+  else if (e.key === '-' || e.key === '_') zoomBy(0.8);
+  else if (e.key === '0') setView({ angle: 0, zoom: 1, follow: false });
+  else if (e.key === 'f' || e.key === 'F') setView({ follow: !cam.follow });
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowLeft') seekTo(now - (e.shiftKey ? 5000 : 1000));
+  else if (e.key === 'ArrowRight') seekTo(now + (e.shiftKey ? 5000 : 1000));
+});
+
+// The view: toolbar, wheel to zoom about the pointer, drag to pan, double-click for the whole rink.
+$('rotL').addEventListener('click', () => setView({ angle: Math.round((cam.angle - 90) / 90) * 90 }));
+$('rotR').addEventListener('click', () => setView({ angle: Math.round((cam.angle + 90) / 90) * 90 }));
+$('angle').addEventListener('input', e => setView({ angle: Number(e.target.value) }));
+$('zoomIn').addEventListener('click', () => zoomBy(1.25));
+$('zoomOut').addEventListener('click', () => zoomBy(0.8));
+$('follow').addEventListener('change', e => setView({ follow: e.target.checked }));
+$('overhead').checked = overheadOn;
+$('overhead').addEventListener('change', e => {
+  overheadOn = e.target.checked;
+  try { localStorage.setItem('nhl94-overhead', overheadOn ? '1' : '0'); } catch (err) { /* not remembered */ }
+  if (match) draw();
+});
+$('overlay').addEventListener('change', e => {
+  const goaliesBefore = overlay === 'goalie';
+  overlay = e.target.value;
+  if (match && goaliesBefore !== (overlay === 'goalie')) { overlayWho = 'both'; fillWho(match); }
+  updateOverlayControls();
+});
+$('overlayWho').addEventListener('change', e => { overlayWho = e.target.value; updateOverlayControls(); });
+$('viewReset').addEventListener('click', () => setView({ angle: 0, zoom: 1, follow: false }));
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  if (e.shiftKey) setView({ angle: cam.angle + Math.sign(e.deltaY || e.deltaX) * 5 });
+  else zoomBy(Math.pow(1.0015, -e.deltaY), [e.clientX - r.left, e.clientY - r.top]);
+}, { passive: false });
+let dragFrom = null, dragStart = null;
+function hitUnder(e) {
+  // The map marker under the pointer, if any (within 9 screen pixels).
+  const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const x = (e.clientX - r.left) * dpr, y = (e.clientY - r.top) * dpr;
+  let best = null, bestD = 9 * dpr;
+  for (const h of overlayHits) { const d = Math.hypot(h.x - x, h.y - y); if (d <= bestD) { best = h; bestD = d; } }
+  return best;
+}
+canvas.addEventListener('pointerdown', e => {
+  dragFrom = dragStart = [e.clientX, e.clientY];
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (!dragFrom) {
+    const hit = hitUnder(e);
+    canvas.style.cursor = hit ? 'pointer' : '';
+    canvas.title = hit ? hit.text + ' \u2014 click to replay it' : '';
+    return;
+  }
+  if (Math.hypot(e.clientX - dragStart[0], e.clientY - dragStart[1]) < 4) return;  // still a click
+  canvas.classList.add('dragging');
+  stopFollowing();
+  const [dx, dy] = screenToPicture(e.clientX - dragFrom[0], e.clientY - dragFrom[1]);
+  dragFrom = [e.clientX, e.clientY];
+  cam.x -= dx; cam.y -= dy;
+  if (match) draw();
+});
+const endDrag = () => { dragFrom = null; canvas.classList.remove('dragging'); };
+canvas.addEventListener('pointerup', e => {
+  const click = dragStart && Math.hypot(e.clientX - dragStart[0], e.clientY - dragStart[1]) < 4;
+  endDrag();
+  const hit = click && match ? hitUnder(e) : null;
+  if (hit) {
+    // Replay it: from four seconds before, playing.
+    setPlaying(false);
+    seekTo(match.t[hit.f] - 4000);
+    setPlaying(true);
+  }
+});
+canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('dblclick', () => setView({ angle: 0, zoom: 1, follow: false }));
+// Remembered between visits; ?rot=<degrees>, ?zoom=<n> and ?follow in the address override.
+try { Object.assign(cam, JSON.parse(localStorage.getItem('nhl94-view')) || {}); } catch (e) { /* defaults */ }
+{
+  const q = new URLSearchParams(location.search);
+  if (q.has('rot')) cam.angle = Number(q.get('rot')) || 0;
+  if (q.has('zoom')) cam.zoom = Number(q.get('zoom')) || 1;
+  if (q.has('follow')) cam.follow = true;
+  setView({});
+}
+
+// ------------------------------------------------------------------------------------------------------------------
+// Clips: a stretch of the replay saved as a video (recorded as it plays, MP4 where the browser can, else WebM) or an
+// animated GIF (drawn frame by frame and encoded here). Each frame is the ice canvas as shown, with a scoreboard strip
+// on top and the banner (goal, penalty) drawn in, since those are page elements rather than part of the canvas.
+const GIF_DELAY_CS = 5;  // hundredths of a second per GIF frame (20 a second)
+const clipTime = ms => { const s = Math.max(0, ms) / 1000; return Math.floor(s / 60) + ':' + (s % 60).toFixed(1).padStart(4, '0'); };
+function parseClipTime(text) {
+  const m = /^\s*(?:(\d+):)?(\d+(?:\.\d+)?)\s*$/.exec(text);
+  return m ? ((Number(m[1] || 0) * 60 + Number(m[2])) * 1000) : NaN;
+}
+function clipStatus(text, share) {
+  $('clipStatus').textContent = text;
+  $('clipBar').firstChild.style.width = Math.round(100 * (share || 0)) + '%';
+}
+function setupClips(m) {
+  const pick = $('clipPick');
+  pick.textContent = '';
+  const add = (value, text) => { const o = document.createElement('option'); o.value = value; o.textContent = text; pick.append(o); };
+  add('', m.goals && m.goals.length ? 'Pick a goal, or set the times below' : 'Set the times below');
+  (m.goals || []).forEach((g, i) => add(String(i), periodName(g.period) + ' ' + clockText(g.clock) + ' \u00b7 ' + (g.team ? m.team2 : m.team1) + ' \u00b7 ' + playerName(g.team, g.scorer)));
+  const t0 = m.t[0];
+  $('clipFrom').value = clipTime(Math.max(0, now - t0 - 5000));
+  $('clipTo').value = clipTime(now - t0 + 3000);
+}
+function clipCrop() {
+  // The part of the ice canvas worth keeping: the rink with its boards and a little of the stands, as it sits on the
+  // screen now (after a draw), so the clip spends no pixels on the empty stage around it. When zoomed in, that is
+  // simply the whole canvas.
+  const M = ctx.getTransform(), xs = [], ys = [];
+  for (const [x, y] of [[-150, -325], [150, -325], [150, 325], [-150, 325]]) {
+    const p = M.transformPoint(new DOMPoint(x, y)); xs.push(p.x); ys.push(p.y);
+  }
+  const x0 = Math.max(0, Math.floor(Math.min(...xs))), x1 = Math.min(canvas.width, Math.ceil(Math.max(...xs)));
+  const y0 = Math.max(0, Math.floor(Math.min(...ys))), y1 = Math.min(canvas.height, Math.ceil(Math.max(...ys)));
+  return x1 - x0 > 20 && y1 - y0 > 20 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : { x: 0, y: 0, w: canvas.width, h: canvas.height };
+}
+function clipCanvas(size) {
+  // The cropped ice scaled so its longer side is about `size`, under a scoreboard strip; even sizes suit video.
+  const crop = clipCrop(), c = document.createElement('canvas');
+  const scale = size / Math.max(crop.w, crop.h * 0.8);
+  let w = Math.max(320, Math.round(crop.w * scale));
+  w -= w % 2;
+  const head = Math.round(Math.max(w, 360) * 0.075);
+  let h = head + Math.round(w * crop.h / crop.w);
+  h -= h % 2;
+  c.width = w; c.height = h; c.head = head; c.crop = crop;
+  return c;
+}
+function composeClip(c) {
+  const g = c.getContext('2d', { willReadFrequently: true }), W = c.width, H = c.height, head = c.head, m = match, f = frameAt(now);
+  g.fillStyle = css('--bg'); g.fillRect(0, 0, W, H);
+  // Shrinking: smooth, so the picture does not break up. Enlarging: keep the game's pixels sharp.
+  const k = c.crop, shrink = W < k.w;
+  g.imageSmoothingEnabled = shrink;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(canvas, k.x, k.y, k.w, k.h, 0, head, W, H - head);
+  g.imageSmoothingEnabled = true;
+  // Scoreboard: names and scores either side, clock and period in the middle.
+  g.fillStyle = css('--panel'); g.fillRect(0, 0, W, head);
+  const u = head / 40, mid = head / 2;  // one unit of the scoreboard's layout
+  g.textBaseline = 'middle';
+  const fit = (text, max, size, weight) => {
+    let px = size;
+    g.font = weight + ' ' + px + 'px system-ui, "Segoe UI", sans-serif';
+    while (g.measureText(text).width > max && px > 8) { px -= 1; g.font = weight + ' ' + px + 'px system-ui, "Segoe UI", sans-serif'; }
+  };
+  const side = (team, x, align) => {
+    const name = team ? m.team2 : m.team1, score = String(m.score[2 * f + team]), dir = align === 'left' ? 1 : -1;
+    g.fillStyle = css(team ? '--team2' : '--team1');
+    g.beginPath(); g.arc(x + dir * 7 * u, mid, 5 * u, 0, 2 * Math.PI); g.fill();
+    g.fillStyle = css('--text'); g.textAlign = align;
+    fit(name, W * 0.27, Math.round(15 * u), '600');
+    g.fillText(name, x + dir * 18 * u, mid);
+    g.font = '700 ' + Math.round(24 * u) + 'px system-ui, "Segoe UI", sans-serif';
+    g.textAlign = align === 'left' ? 'right' : 'left';
+    g.fillText(score, W / 2 - dir * 46 * u, mid);
+  };
+  side(0, 10 * u, 'left');
+  side(1, W - 10 * u, 'right');
+  g.textAlign = 'center'; g.fillStyle = css('--text');
+  g.font = '600 ' + Math.round(16 * u) + 'px system-ui, "Segoe UI", sans-serif';
+  g.fillText($('clockTime').textContent, W / 2, mid - 6 * u);
+  g.fillStyle = css('--muted');
+  g.font = Math.round(10 * u) + 'px system-ui, "Segoe UI", sans-serif';
+  g.fillText($('clockPeriod').textContent, W / 2, mid + 11 * u);
+  // The banner over the ice, as on the page.
+  const call = $('callout');
+  if (!call.hidden) {
+    const kind = call.querySelector('small') ? call.querySelector('small').textContent : '';
+    const text = [...call.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('');
+    const pad = 10 * u, top = head + 10 * u;
+    fit(text, W * 0.86, Math.round(14 * u), '600');
+    const tw = g.measureText(text).width, font = g.font;
+    g.font = '600 ' + Math.round(10 * u) + 'px system-ui, "Segoe UI", sans-serif';
+    const kw = g.measureText(kind.toUpperCase()).width, bw = Math.max(tw, kw) + 2 * pad, bh = 40 * u;
+    g.fillStyle = 'rgba(16, 20, 26, 0.92)';
+    g.beginPath(); g.roundRect(W / 2 - bw / 2, top, bw, bh, 8 * u); g.fill();
+    g.fillStyle = css('--accent'); g.fillText(kind.toUpperCase(), W / 2, top + 12 * u);
+    g.font = font; g.fillStyle = '#ffffff'; g.fillText(text, W / 2, top + 27 * u);
+  }
+}
+function saveBlob(blob, ext, from, to) {
+  const name = (match.name || 'clip').replace(/[^\w.-]+/g, '_') + '_' + clipTime(from).replace(/[:.]/g, '-') + '_to_' + clipTime(to).replace(/[:.]/g, '-') + '.' + ext;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  return name;
+}
+function clipBusy(on) {
+  for (const id of ['clipGo', 'clipPick', 'clipFrom', 'clipTo', 'clipFromNow', 'clipToNow', 'clipSpeed', 'clipSize', 'play', 'seek']) $(id).disabled = on;
+}
+function recordVideo(from, to, speed, width) {
+  const types = ['video/mp4;codecs=avc1.640028', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  const type = window.MediaRecorder ? types.find(t => MediaRecorder.isTypeSupported(t)) : null;
+  if (!type) { clipStatus('This browser cannot record video here; try GIF.'); return; }
+  setPlaying(false);
+  now = match.t[0] + from;
+  draw();
+  const c = clipCanvas(width);
+  let stream;
+  try { stream = c.captureStream(30); } catch (e) {
+    clipStatus('The ice cannot be recorded: rink_gens.js is missing (run tools/embed_rink.py), so the browser treats the picture as foreign.');
+    return;
+  }
+  const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: width >= 1280 ? 10e6 : 6e6 }), chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const t0 = match.t[0], oldSpeed = $('speed').value;
+  rec.onstop = () => {
+    const name = saveBlob(new Blob(chunks, { type: type.split(';')[0] }), type.startsWith('video/mp4') ? 'mp4' : 'webm', from, to);
+    clipStatus('Saved ' + name + ' to your downloads.', 1);
+  };
+  setPlaying(false);
+  $('speed').value = String(speed);
+  now = t0 + from;
+  draw(); composeClip(c);
+  clipBusy(true);
+  clipJob = {
+    onFrame() {
+      composeClip(c);
+      clipStatus('Recording\u2026 ' + clipTime(now - t0) + ' of ' + clipTime(to), (now - t0 - from) / (to - from));
+      if (now - t0 >= to) {
+        clipJob = null;
+        setPlaying(false);
+        $('speed').value = oldSpeed;
+        clipBusy(false);
+        setTimeout(() => rec.stop(), 150);
+      }
+    },
+  };
+  rec.start(200);
+  setPlaying(true);
+}
+async function makeGif(from, to, speed, width) {
+  setPlaying(false);
+  now = match.t[0] + from;
+  draw();
+  const c = clipCanvas(width), g = c.getContext('2d', { willReadFrequently: true }), t0 = match.t[0];
+  const step = GIF_DELAY_CS * 10 * speed, times = [];
+  for (let at = from; at <= to; at += step) times.push(at);
+  setPlaying(false);
+  clipBusy(true);
+  const frame = (i, k) => {
+    // Draw the replay at one moment as if playing (so a following camera eases as it would).
+    now = t0 + times[i];
+    clipClock = k * GIF_DELAY_CS * 10;
+    draw(); composeClip(c);
+    return g.getImageData(0, 0, c.width, c.height).data;
+  };
+  try {
+    playing = true;
+    // A palette for the whole clip from a few frames across it, then each frame mapped to it and compressed.
+    clipStatus('Choosing colours\u2026', 0);
+    const samples = [];
+    for (let n = 0; n < 8; n++) {
+      const data = frame(Math.floor(n * (times.length - 1) / 7), n * 20);
+      for (let i = 0; i < data.length; i += 4 * 7) samples.push((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
+      await new Promise(r => setTimeout(r));
+    }
+    // 255 colours; the 256th is see-through, for the parts of a frame that did not change.
+    const palette = medianCut(Uint32Array.from(samples), 255), map = paletteMap(palette.slice(0, 255));
+    // Start from where the camera would be on arriving at the first moment, then let it move as it plays.
+    playing = false; now = t0 + times[0]; draw(); playing = true;
+    followClock = 0; clipClock = 0;
+    const gif = gifStart(c.width, c.height, palette), W = c.width, H = c.height;
+    let shown = null;  // what the GIF shows after the frames so far, as palette indices
+    for (let i = 0; i < times.length; i++) {
+      const data = frame(i, i), indices = new Uint8Array(W * H);
+      for (let p = 0, q = 0; p < indices.length; p++, q += 4) indices[p] = map(data[q], data[q + 1], data[q + 2]);
+      if (!shown) {
+        gifFrame(gif, 0, 0, W, H, indices, GIF_DELAY_CS, false);
+      } else {
+        // Only the box around what changed, and inside it the unchanged pixels see-through: long runs of one index,
+        // which the compression packs into almost nothing.
+        let x0 = W, y0 = H, x1 = -1, y1 = -1;
+        for (let y = 0, p = 0; y < H; y++) for (let x = 0; x < W; x++, p++) {
+          if (indices[p] !== shown[p]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        }
+        if (x1 < 0) { x0 = y0 = x1 = y1 = 0; }
+        const bw = x1 - x0 + 1, bh = y1 - y0 + 1, part = new Uint8Array(bw * bh);
+        for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) {
+          const p = (y0 + y) * W + x0 + x;
+          part[y * bw + x] = indices[p] === shown[p] ? 255 : indices[p];
+        }
+        gifFrame(gif, x0, y0, bw, bh, part, GIF_DELAY_CS, true);
+      }
+      shown = indices;
+      if (i % 4 === 3) { clipStatus('Making the GIF\u2026 frame ' + (i + 1) + ' of ' + times.length, (i + 1) / times.length); await new Promise(r => setTimeout(r)); }
+    }
+    gif.push(Uint8Array.of(0x3b));
+    const name = saveBlob(new Blob(gif, { type: 'image/gif' }), 'gif', from, to);
+    clipStatus('Saved ' + name + ' to your downloads.', 1);
+  } catch (e) {
+    clipStatus(e.name === 'SecurityError'
+      ? 'The ice cannot be read back: rink_gens.js is missing (run tools/embed_rink.py), so the browser treats the picture as foreign.'
+      : 'Could not make the GIF: ' + e.message);
+  } finally {
+    playing = false; clipClock = null;
+    clipBusy(false);
+    draw();
+  }
+}
+function medianCut(pixels, count) {
+  // Split the sampled colours into boxes, always the one with the widest spread, at its median; a colour per box.
+  const ch = (v, c) => (v >> (16 - 8 * c)) & 255;
+  const describe = box => {
+    let lo = [255, 255, 255], hi = [0, 0, 0];
+    for (const v of box) for (let c = 0; c < 3; c++) { const x = ch(v, c); if (x < lo[c]) lo[c] = x; if (x > hi[c]) hi[c] = x; }
+    const spans = [0, 1, 2].map(c => hi[c] - lo[c]), widest = spans.indexOf(Math.max(...spans));
+    return { box, widest, score: spans[widest] * Math.sqrt(box.length) };
+  };
+  let boxes = [describe(pixels)];
+  while (boxes.length < count) {
+    let best = -1;
+    boxes.forEach((b, i) => { if (b.box.length > 1 && b.score > 0 && (best < 0 || b.score > boxes[best].score)) best = i; });
+    if (best < 0) break;
+    const { box, widest } = boxes[best];
+    const sorted = Uint32Array.from(box).sort((a, b) => ch(a, widest) - ch(b, widest)), half = sorted.length >> 1;
+    boxes.splice(best, 1, describe(sorted.subarray(0, half)), describe(sorted.subarray(half)));
+  }
+  const palette = boxes.map(({ box }) => {
+    const sum = [0, 0, 0];
+    for (const v of box) for (let c = 0; c < 3; c++) sum[c] += ch(v, c);
+    return sum.map(x => Math.round(x / box.length));
+  });
+  while (palette.length < 256) palette.push([0, 0, 0]);
+  return palette;
+}
+function paletteMap(palette) {
+  // Nearest palette colour, remembered per 6-bit-per-channel colour.
+  const table = new Int16Array(1 << 18).fill(-1);
+  return (r, g, b) => {
+    const key = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
+    let hit = table[key];
+    if (hit < 0) {
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < palette.length; i++) {
+        const [pr, pg, pb] = palette[i], d = (pr - r) * (pr - r) * 3 + (pg - g) * (pg - g) * 4 + (pb - b) * (pb - b) * 2;
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      hit = table[key] = best;
+    }
+    return hit;
+  };
+}
+function gifStart(w, h, palette) {
+  // GIF89a header, the 256-colour palette, and the looping extension. Parts are byte arrays for a Blob.
+  const head = [0x47, 0x49, 0x46, 0x38, 0x39, 0x61, w & 255, w >> 8, h & 255, h >> 8, 0xf7, 0, 0];
+  for (const [r, g, b] of palette) head.push(r, g, b);
+  head.push(0x21, 0xff, 0x0b, ...[...'NETSCAPE2.0'].map(ch => ch.charCodeAt(0)), 0x03, 0x01, 0, 0, 0);
+  return [Uint8Array.from(head)];
+}
+function gifFrame(parts, x, y, w, h, indices, delay, seeThrough) {
+  // Graphic control (the delay; leave the frame in place; index 255 see-through), image descriptor (where the frame's
+  // box sits), then the LZW-compressed indices in 255-byte sub-blocks.
+  parts.push(Uint8Array.of(0x21, 0xf9, 0x04, seeThrough ? 0x05 : 0x04, delay & 255, delay >> 8, 255, 0,
+    0x2c, x & 255, x >> 8, y & 255, y >> 8, w & 255, w >> 8, h & 255, h >> 8, 0, 8));
+  const data = lzw(indices, 8), out = new Uint8Array(data.length + Math.ceil(data.length / 255) + 1);
+  let o = 0;
+  for (let i = 0; i < data.length; i += 255) {
+    const n = Math.min(255, data.length - i);
+    out[o++] = n; out.set(data.subarray(i, i + n), o); o += n;
+  }
+  out[o++] = 0;
+  parts.push(out.subarray(0, o));
+}
+function lzw(indices, minSize) {
+  const clear = 1 << minSize, end = clear + 1;
+  let size = minSize + 1, next = end + 1, table = new Map();
+  const bytes = [];
+  let acc = 0, bits = 0;
+  const put = code => { acc |= code << bits; bits += size; while (bits >= 8) { bytes.push(acc & 255); acc >>>= 8; bits -= 8; } };
+  put(clear);
+  let prefix = indices[0];
+  for (let i = 1; i < indices.length; i++) {
+    const k = indices[i], key = (prefix << 8) | k, found = table.get(key);
+    if (found !== undefined) { prefix = found; continue; }
+    put(prefix);
+    if (next === 4096) {
+      put(clear);
+      table = new Map(); size = minSize + 1; next = end + 1;
+    } else {
+      if (next >= (1 << size)) size++;
+      table.set(key, next++);
+    }
+    prefix = k;
+  }
+  put(prefix);
+  put(end);
+  if (bits > 0) bytes.push(acc & 255);
+  return Uint8Array.from(bytes);
+}
+$('liveKnow').checked = liveKnowledge;
+$('liveKnow').addEventListener('change', e => { liveKnowledge = e.target.checked; panelState = ''; heatGrid = null; if (match) draw(); });
+// Save game file: this page with the game, the sprite library, the rink picture and the bench masks inside it,
+// compressed (gzip, base64), so it opens anywhere with a double-click. The copy unpacks them when it opens (below).
+async function packText(text) {
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'));
+  const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(out);
+}
+async function unpackText(b64) {
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Response(stream).text();
+}
+async function saveGameFile() {
+  if (!match) return;
+  const button = $('shareGame'), label = button.textContent;
+  button.disabled = true; button.textContent = 'Packing\u2026';
+  try {
+    const packed = { match: await packText(JSON.stringify(match)) };
+    if (spriteLibrary) packed.sprites = await packText(JSON.stringify(spriteLibrary));
+    const data = '<script>\n// The game, packed by "Save game file".\n' +
+      (window.NHL94_RINK ? 'window.NHL94_RINK = ' + JSON.stringify(window.NHL94_RINK) + ';\n' : '') +
+      (window.NHL94_BENCHES ? 'window.NHL94_BENCHES = ' + JSON.stringify(window.NHL94_BENCHES) + ';\n' : '') +
+      'window.NHL94_PACKED = ' + JSON.stringify(packed) + ';\n<' + '/script>';
+    const score = match.score.length >= 2 ? match.score[match.score.length - 2] + '-' + match.score[match.score.length - 1] : '';
+    const title = match.team1 + ' ' + score + ' ' + match.team2;
+    const html = PAGE_SOURCE
+      .replace('<script src="rink_gens.js"><' + '/script>', () => data)
+      .replace(/<title>[^<]*<\/title>/, () => '<title>' + title.replace(/[<&]/g, '') + ' \u00b7 NHL \'94<' + '/title>');
+    const name = (match.team1 + '_' + score + '_' + match.team2 + '_' + (match.name || '')).replace(/[^\w.-]+/g, '_') + '.html';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' })); a.download = name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    button.textContent = 'Saved ' + (html.length / 1048576).toFixed(1) + ' MB';
+    setTimeout(() => { button.textContent = label; }, 4000);
+  } catch (e) {
+    button.textContent = label;
+    alert('Could not save the game file: ' + e.message);
+  } finally {
+    button.disabled = false;
+  }
+}
+$('shareGame').addEventListener('click', saveGameFile);
+$('clipOpen').addEventListener('click', () => {
+  if (!match) return;
+  const panel = $('clipPanel');
+  panel.hidden = !panel.hidden;
+  if (!panel.hidden) setupClips(match);
+});
+$('clipClose').addEventListener('click', () => { $('clipPanel').hidden = true; });
+$('clipPick').addEventListener('change', e => {
+  const g = match.goals && match.goals[Number(e.target.value)];
+  if (!g || e.target.value === '') return;
+  // From seven seconds before the goal to three after: the rush, the goal and the banner.
+  const at = match.t[g.f] - match.t[0];
+  $('clipFrom').value = clipTime(Math.max(0, at - 7000));
+  $('clipTo').value = clipTime(Math.min(match.t[match.t.length - 1] - match.t[0], at + 3000));
+  seekTo(match.t[0] + Math.max(0, at - 7000));
+});
+$('clipFromNow').addEventListener('click', () => { $('clipFrom').value = clipTime(now - match.t[0]); });
+$('clipToNow').addEventListener('click', () => { $('clipTo').value = clipTime(now - match.t[0]); });
+$('clipGo').addEventListener('click', () => {
+  const total = match.t[match.t.length - 1] - match.t[0];
+  const from = parseClipTime($('clipFrom').value), to = Math.min(total, parseClipTime($('clipTo').value));
+  if (!(from >= 0) || !(to > from)) { clipStatus('Set a start before the end, as minutes:seconds (like 3:21.5).'); return; }
+  if (to - from > 60000) { clipStatus('Clips are limited to a minute.'); return; }
+  const speed = Number($('clipSpeed').value), width = Number($('clipSize').value);
+  if (document.querySelector('input[name=clipFormat]:checked').value === 'gif') makeGif(from, to, speed, width);
+  else recordVideo(from, to, speed, width);
+});
+
+// Each ROM has its own sprite library (hacks repaint the players), named by the ROM's checksum. It is optional:
+// the checkbox only appears once the library for this match's ROM has loaded. The choice is remembered.
+// On by default; turning them off is remembered.
+try { spritesOn = localStorage.getItem('nhl94-sprites') !== '0'; } catch (e) { spritesOn = true; }
+if (new URLSearchParams(location.search).has('sprites')) spritesOn = true;
+let libraryScript = null;
+function loadSprites(m) {
+  spriteLibrary = null;
+  $('spriteToggle').hidden = true;
+  if (libraryScript) libraryScript.remove();
+  if (window.NHL94_PACKED && window.NHL94_SPRITES) {  // a saved game file carries its sprites
+    spriteLibrary = window.NHL94_SPRITES;
+    $('spriteToggle').hidden = false;
+    $('sprites').checked = spritesOn;
+    return;
+  }
+  if (!m.rom || !/^[0-9a-f]{8}$/.test(m.rom)) return;
+  const script = libraryScript = document.createElement('script');
+  script.src = 'sprites/' + m.rom + '.js';
+  script.onload = () => {
+    if (script !== libraryScript) return;  // another match was opened meanwhile
+    spriteLibrary = window.NHL94_SPRITES;
+    $('spriteToggle').hidden = false;
+    $('sprites').checked = spritesOn;
+    if (match) draw();
+  };
+  document.head.appendChild(script);
+}
+$('sprites').addEventListener('change', e => {
+  spritesOn = e.target.checked;
+  try { localStorage.setItem('nhl94-sprites', spritesOn ? '1' : '0'); } catch (err) { /* private window: not remembered */ }
+  if (match) draw();
+});
+
+// The rink picture is optional: if it is missing, the drawn rink stays.
+const rinkPicture = new Image();
+rinkPicture.onload = () => { overheadRink = buildOverheadRink(rinkPicture); view = { ...RINK_IMAGE, image: rinkPicture }; resize(); };
+
+// The overhead rink: the picture rebuilt as if seen from straight above. The picture is drawn from a camera below
+// the screen, so its boards and glass lean (over the ice at the bottom end, away at the top) and its nets are seen
+// from the front and from behind. Kept from it: the ice, the side stands, the benches and the penalty boxes. The
+// ice at the bottom end, hidden under the glass and the tilted net, is the top end mirrored about the red line (the
+// markings are symmetric about it) after patching out the top net. Boards, glass and nets are drawn flat; the ends'
+// stands are filled with crowd from the picture. Built on a canvas at load: browsers may draw a local image onto a
+// canvas, they just will not hand its pixels back.
+const OVERHEAD = { halfW: 132, halfL: 303, corner: 46, boards: 4, walkway: 7, goal: 268, netHalfW: 20, netDepth: 15 };
+function buildOverheadRink(img) {
+  const R = RINK_IMAGE, O = OVERHEAD, c = document.createElement('canvas');
+  c.width = R.w; c.height = R.h;
+  const g = c.getContext('2d');
+  const px = X => R.cx + R.ux * X, py = Y => R.cy - R.uy * Y, mirrorY = 2 * R.cy - 0.5;  // goal lines 219.6 / 1333.9
+  const shape = grow => {
+    // The rink outline grown outward by `grow` game units, with elliptical corners in picture pixels.
+    g.beginPath();
+    g.roundRect(px(-O.halfW - grow), py(O.halfL + grow), (2 * O.halfW + 2 * grow) * R.ux, (2 * O.halfL + 2 * grow) * R.uy,
+      { x: (O.corner + grow) * R.ux, y: (O.corner + grow) * R.uy });
+  };
+  // Crowd everywhere, tiled from the picture's top stands (the strip between the two roof supports).
+  const tile = [205, 0, 490, 58];
+  for (let y = 0; y < R.h; y += tile[3]) for (let x = -((y / tile[3]) % 2) * 240; x < R.w; x += tile[2]) {
+    g.drawImage(img, tile[0], tile[1], tile[2], tile[3], x, y, tile[2], tile[3]);
+  }
+  // A dark walkway around the boards, then the picture's own side stands, benches and penalty boxes over it.
+  shape(O.boards + O.walkway); g.fillStyle = '#26282b'; g.fill();
+  const sides = [[0, 330, 97, 890], [803, 330, 97, 890], [0, 440, 118, 674], [782, 560, 118, 434]];
+  for (const [x, y, w, h] of sides) g.drawImage(img, x, y, w, h, x, y, w, h);
+  // Boards (their tops, white) and the glass on them.
+  shape(O.boards); g.fillStyle = '#e9ecef'; g.fill();
+  shape(O.boards * 0.55); g.strokeStyle = 'rgba(150, 205, 230, 0.9)'; g.lineWidth = 2.2; g.stroke();
+  // The ice: the picture's middle, its top end with the net patched out, and that end mirrored for the bottom.
+  const top = document.createElement('canvas'), y0 = 140, y1 = 305;
+  top.width = R.w; top.height = y1 - y0;
+  const t = top.getContext('2d');
+  t.drawImage(img, 0, y0, R.w, y1 - y0, 0, 0, R.w, y1 - y0);
+  const net = [388, 150, 124, 70];  // the top net, behind the goal line; patched with the ice beside it, same rows
+  t.drawImage(img, net[0] - net[2] - 6, net[1], net[2], net[3], net[0], net[1] - y0, net[2], net[3]);
+  // Near the boards the picture's ice carries its old kick line, glass posts, glare and curved corner boards, so it
+  // is used only inside a smaller outline. Between that and the new boards: along the sides, a clean column of ice
+  // stretched sideways (which carries the blue and red lines to the boards); at the ends and in the corners, plain ice of the picture's colour, with the goal lines drawn across to the boards.
+  const inner = () => { g.beginPath(); g.roundRect(px(-126.5), py(290), 253 * R.ux, 580 * R.uy, { x: 62 * R.ux, y: 62 * R.uy }); };
+  g.save();
+  shape(0); g.clip();
+  g.fillStyle = '#7ee2f5'; g.fillRect(0, 0, R.w, R.h);
+  for (const [from, to0, to1] of [[px(-121), px(-133), px(-125)], [px(121), px(125), px(133)]]) {
+    g.drawImage(img, Math.round(from), py(240), 1, py(-240) - py(240), to0, py(240), to1 - to0, py(-240) - py(240));
+  }
+  g.save(); inner(); g.clip();
+  g.drawImage(img, 0, y1 - 5, R.w, 960, 0, y1 - 5, R.w, 960);
+  g.drawImage(top, 0, y0);
+  g.save(); g.translate(0, mirrorY); g.scale(1, -1); g.drawImage(top, 0, y0); g.restore();
+  g.restore();
+  // The goal lines out to the boards.
+  g.save();
+  inner(); g.rect(R.w, 0, -R.w, R.h); g.clip();
+  g.fillStyle = 'rgb(198, 128, 112)';
+  for (const end of [1, -1]) g.fillRect(0, py(end * O.goal) - 1.8, R.w, 3.6);
+  g.restore();
+  g.restore();
+  // The kick plate along the bottom of the boards.
+  shape(0); g.strokeStyle = '#d9b44a'; g.lineWidth = 2.5; g.stroke();
+  // The nets from above: a mesh behind the goal line in a red frame, open to the ice.
+  for (const end of [1, -1]) {
+    const x0 = px(-O.netHalfW), x1 = px(O.netHalfW), yl = py(end * O.goal), yb = py(end * (O.goal + O.netDepth));
+    g.beginPath();
+    g.moveTo(x0, yl);
+    g.bezierCurveTo(x0, yb, x0, yb, (x0 + x1) / 2, yb);
+    g.bezierCurveTo(x1, yb, x1, yb, x1, yl);
+    g.fillStyle = 'rgba(255, 255, 255, 0.82)'; g.fill();
+    g.save(); g.clip();
+    g.strokeStyle = 'rgba(120, 130, 140, 0.55)'; g.lineWidth = 1;
+    for (let x = x0; x <= x1; x += 7) { g.beginPath(); g.moveTo(x, Math.min(yl, yb)); g.lineTo(x, Math.max(yl, yb)); g.stroke(); }
+    for (let y = Math.min(yl, yb); y <= Math.max(yl, yb); y += 7) { g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke(); }
+    g.restore();
+    g.beginPath();
+    g.moveTo(x0, yl);
+    g.bezierCurveTo(x0, yb, x0, yb, (x0 + x1) / 2, yb);
+    g.bezierCurveTo(x1, yb, x1, yb, x1, yl);
+    g.strokeStyle = '#c8202a'; g.lineWidth = 4; g.stroke();
+  }
+  return c;
+}
+// From rink_gens.js (made by tools/embed_rink.py) when it is there: a picture given as a data URL leaves the canvas
+// readable, which saving clips needs; one loaded straight from the file would not.
+rinkPicture.src = window.NHL94_RINK || RINK_IMAGE.src;
+
+// The players drawn on the benches in the rink picture, repainted in the match's team colours: rink_benches.js
+// (made by tools/bench_mask.py) says which picture pixels are uniform and how bright each was. Away sits on the
+// upper bench in coloured jerseys, Home on the lower bench in white with trim. Optional: without it the picture's
+// own benches stay.
+let benchOverlays = [];
+function buildBenches(m) {
+  benchOverlays = [];
+  if (!m || !m.palettes || !window.NHL94_BENCHES) return;
+  for (const bench of window.NHL94_BENCHES) {
+    const ramp = bench.roles.map(i => { const v = parseInt(m.palettes[bench.team][i].slice(1), 16); return [v >> 16, (v >> 8) & 255, v & 255]; });
+    const canvas = document.createElement('canvas');
+    canvas.width = bench.w; canvas.height = bench.h;
+    const g = canvas.getContext('2d'), data = g.createImageData(bench.w, bench.h), px = data.data;
+    for (let i = 0; i < bench.mask.length; i++) {
+      if (bench.mask[i] === '.') continue;
+      // Keep the picture's shading: dark to medium to light across the brightness of what was there.
+      const s = parseInt(bench.mask[i], 16) / 15, [a, b, f] = s < 0.5 ? [ramp[0], ramp[1], s * 2] : [ramp[1], ramp[2], (s - 0.5) * 2];
+      for (let c = 0; c < 3; c++) px[4 * i + c] = Math.round(a[c] + (b[c] - a[c]) * f);
+      px[4 * i + 3] = 255;
+    }
+    g.putImageData(data, 0, 0);
+    benchOverlays.push({ canvas, bench });
+  }
+}
+function drawBenches() {
+  // In world units, the same way the picture itself is placed.
+  for (const { canvas, bench } of benchOverlays) {
+    ctx.save(); ctx.scale(1, -1);
+    ctx.drawImage(canvas, (bench.x - view.cx) / view.ux, (bench.y - view.cy) / view.uy, bench.w / view.ux, bench.h / view.uy);
+    ctx.restore();
+  }
+}
+if (!window.NHL94_BENCHES) {  // a saved game file carries them already
+  const benchScript = document.createElement('script');
+  benchScript.src = 'rink_benches.js';
+  benchScript.onload = () => { if (match) { buildBenches(match); draw(); } };
+  document.head.appendChild(benchScript);
+}
+
+// viewer.html?match=NAME loads matches/NAME.js directly; &t=SECONDS starts at that point.
+const named = new URLSearchParams(location.search).get('match');
+if (window.NHL94_PACKED) {
+  // A saved game file: unpack the game (and sprites) it carries.
+  $('dropTitle').textContent = 'Opening the game\u2026';
+  (async () => {
+    const packed = window.NHL94_PACKED;
+    if (packed.sprites) window.NHL94_SPRITES = JSON.parse(await unpackText(packed.sprites));
+    load(JSON.parse(await unpackText(packed.match)));
+  })().catch(e => { $('dropTitle').textContent = 'Could not open this game file: ' + e.message; });
+} else if (named && /^[\w-]+$/.test(named)) {
+  const s = document.createElement('script');
+  s.src = 'matches/' + named + '.js';
+  s.onload = () => load(window.NHL94_MATCH);
+  s.onerror = () => { $('dropTitle').textContent = 'Could not find matches/' + named + '.js'; };
+  document.head.appendChild(s);
+}
+</script>
+</body>
+</html>
