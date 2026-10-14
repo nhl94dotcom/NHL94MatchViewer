@@ -1,7 +1,9 @@
-# NHL '94 Viewer
+# NHL '94 Match Viewer
 
-Records NHL '94 (Sega Genesis) games played in RetroArch with the Genesis Plus GX core, and replays them from above
-in the browser: game sprites, a rotatable and zoomable rink, a follow camera, team and player stats, shot, heat,
+Records NHL '94 games played in RetroArch and replays them from above in the browser. The Sega Genesis version
+(Genesis Plus GX core) is supported now; a SNES version is planned.
+
+The replay has the game's sprites, a rotatable and zoomable rink, a follow camera, team and player stats, shot, heat,
 turnover and pass maps, a goalie report, clips (video or GIF) and single-file game pages to share.
 
 Windows only: it reads the game's memory out of the running RetroArch process (read only).
