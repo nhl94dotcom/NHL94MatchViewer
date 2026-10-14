@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NHL '94 Games</title>
+<style>
+  :root { --bg: #14181d; --panel: #1e242c; --raised: #2b333d; --text: #e8edf2; --muted: #8b98a7; --team1: #e4572e; --team2: #2e86de; --accent: #f2c744; --ink: #10141a; --good: #4fb477; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--panel); border-radius: 10px; padding: 14px 16px; margin: 0 0 16px; }
+  .status { display: flex; align-items: center; gap: 12px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot.recording { background: #e5484d; box-shadow: 0 0 0 4px rgba(229, 72, 77, .25); animation: pulse 1.2s infinite; }
+  .dot.ready, .dot.idle { background: var(--good); }
+  .dot.converting { background: var(--accent); }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(229, 72, 77, .08); } }
+  .status b { font-weight: 600; }
+  .status small { display: block; color: var(--muted); }
+  .live { margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; }
+  .live .score { font-size: 22px; font-weight: 700; }
+  .settings label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .settings small { color: var(--muted); display: block; margin-left: 30px; }
+  input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; padding: 0 8px 8px; }
+  td { padding: 10px 8px; border-top: 1px solid var(--raised); vertical-align: middle; }
+  td.when { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.game b { font-variant-numeric: tabular-nums; margin: 0 6px; }
+  td.game small { color: var(--muted); display: block; }
+  td.actions { text-align: right; white-space: nowrap; }
+  a.button, button { display: inline-block; background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 5px 11px;
+    font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; margin-left: 4px; }
+  a.button:hover, button:hover { background: #343d49; }
+  a.button.primary { background: var(--accent); color: var(--ink); border-color: var(--accent); font-weight: 600; }
+  button.danger:hover { background: #5a2a2d; }
+  .empty { color: var(--muted); padding: 12px 8px; }
+  .log { color: var(--muted); font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; margin: 8px 0 0; max-height: 7.5em; overflow: auto; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  @media (max-width: 640px) { td.when { display: none; } td.actions a.button, td.actions button { margin: 2px 0 2px 4px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>NHL '94 games</h1>
+  <p class="sub">Leave the helper window open while you play. Games are recorded from the opening faceoff to the final horn and appear here.</p>
+
+  <section class="card">
+    <div class="status">
+      <span class="dot" id="dot"></span>
+      <div><b id="state">Connecting to the helper&hellip;</b><small id="detail"></small></div>
+      <div class="live" id="live" hidden><div class="score" id="liveScore"></div><small id="liveClock"></small></div>
+    </div>
+    <details><summary>Activity</summary><div class="log" id="log"></div></details>
+  </section>
+
+  <section class="card settings">
+    <label><input type="checkbox" id="autoGameFile"> Make a shareable game file after every game</label>
+    <small>One page (about 5 MB) with the viewer and the game inside, to send to your opponent. You can also make one for any game below.</small>
+  </section>
+
+  <section class="card">
+    <table>
+      <thead><tr><th>When</th><th>Game</th><th></th></tr></thead>
+      <tbody id="games"></tbody>
+    </table>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const STATES = { waiting: 'Waiting for RetroArch', ready: 'Ready', recording: 'Recording', converting: 'Saving the game', idle: 'Ready', starting: 'Starting' };
+let shownGames = '';
+
+function when(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+function length(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+function renderGames(games) {
+  const key = JSON.stringify(games);
+  if (key === shownGames) return;
+  shownGames = key;
+  const body = $('games');
+  body.textContent = '';
+  if (!games.length) {
+    const tr = body.insertRow(), td = tr.insertCell();
+    td.colSpan = 3; td.className = 'empty'; td.textContent = 'No games yet. Start a game in RetroArch and it will be recorded.';
+    return;
+  }
+  for (const g of games) {
+    const tr = body.insertRow();
+    const w = tr.insertCell(); w.className = 'when'; w.textContent = when(g.date);
+    const game = tr.insertCell(); game.className = 'game';
+    const home = document.createElement('span'), away = document.createElement('span'), score = document.createElement('b'), info = document.createElement('small');
+    home.textContent = g.home || 'Home'; away.textContent = g.away || 'Away';
+    score.textContent = g.score[0] + ' – ' + g.score[1];
+    info.textContent = (g.abbr ? g.abbr.join(' vs ') + ' · ' : '') + length(g.seconds) + ' recorded · ' + g.name;
+    game.append(home, score, away, info);
+    const actions = tr.insertCell(); actions.className = 'actions';
+    const watch = document.createElement('a');
+    watch.className = 'button primary'; watch.textContent = 'Watch'; watch.target = '_blank';
+    watch.href = 'viewer.html?match=' + encodeURIComponent(g.name);
+    actions.append(watch);
+    if (g.gameFile) {
+      const file = document.createElement('a');
+      file.className = 'button'; file.textContent = 'Game file'; file.download = g.gameFile;
+      file.href = 'shared/' + encodeURIComponent(g.gameFile);
+      file.title = 'Download the shareable game file';
+      actions.append(file);
+    } else {
+      const make = document.createElement('button');
+      make.textContent = 'Make game file';
+      make.onclick = async () => {
+        make.disabled = true; make.textContent = 'Making…';
+        const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST' }).then(r => r.json()).catch(() => null);
+        if (r && r.file) { const a = document.createElement('a'); a.href = r.file; a.download = r.file.split('/').pop(); a.click(); }
+        shownGames = ''; poll();
+      };
+      actions.append(make);
+    }
+    const del = document.createElement('button');
+    del.className = 'danger'; del.textContent = 'Delete';
+    del.onclick = async () => {
+      if (!confirm('Delete ' + (g.home || '') + ' ' + g.score.join('-') + ' ' + (g.away || '') + '? The recording, the replay and its game file go.')) return;
+      await fetch('/api/delete?name=' + encodeURIComponent(g.name), { method: 'POST' });
+      shownGames = ''; poll();
+    };
+    actions.append(del);
+  }
+}
+
+async function poll() {
+  let s;
+  try { s = await fetch('/api/state', { cache: 'no-store' }).then(r => r.json()); }
+  catch (e) {
+    $('dot').className = 'dot'; $('state').textContent = 'The helper is not running';
+    $('detail').textContent = 'Start it again (NHL 94 Helper), then reload this page.';
+    $('live').hidden = true;
+    return;
+  }
+  $('dot').className = 'dot ' + s.state;
+  $('state').textContent = STATES[s.state] || s.state;
+  $('detail').textContent = s.detail || '';
+  const g = s.game;
+  $('live').hidden = !(s.state === 'recording' && g && g.score);
+  if (g && g.score) {
+    $('liveScore').textContent = g.teams[0] + ' ' + g.score[0] + ' – ' + g.score[1] + ' ' + g.teams[1];
+    $('liveClock').textContent = (g.paused ? 'Paused · ' : '') + g.clock;
+  }
+  $('log').textContent = (s.log || []).join('\n');
+  $('autoGameFile').checked = !!s.settings.auto_game_file;
+  renderGames(s.games || []);
+}
+$('autoGameFile').addEventListener('change', e => {
+  fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ auto_game_file: e.target.checked }) });
+});
+poll();
+setInterval(poll, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Recordings and what is made from them (large, and personal to whoever played)
+captures/
+matches/
+shared/
+helper_settings.json
+helper_log.txt
+
+# Copyrighted game data: ROM copies and the sprites extracted from them (rebuilt from the player's own ROM)
+roms/
+sprites/
+*.bin
+
+# Generated
+rink_gens.js
+build/
+dist/
+__pycache__/
+*.pyc
