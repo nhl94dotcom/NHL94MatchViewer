@@ -469,6 +469,11 @@ def find_shots(m, goals=None):
         others = range(6, 12) if team == 0 else range(6)
         keeper = next((k for k in others if role(f, k) == '0'), None)
         sh['goalie'] = roster_idx(f, keeper) if keeper is not None else -1
+        # Who was working that goalie at the release: 'human' if he carried the controlled-player marker (+$62 bit $08),
+        # else 'cpu'. Taking the goalie is a B press (with the puck loose or the other team's); control also moves to a
+        # goalie by itself when he gets the puck, so a CPU save often ends with the human holding him, which is why
+        # the release is the moment that decides. In the seven recordings about five shots were grabbed in flight.
+        sh['gctl'] = 'human' if keeper is not None and (m['ctrl'][f] >> keeper) & 1 else 'cpu'
         if sh['result'] == 'save':
             after, q = 'loose', f + 1
             while q < N and t[q] - t[f] < 3000:
@@ -485,7 +490,7 @@ def find_shots(m, goals=None):
     # For a live view: `known`, the frame the attempt could first be known (the release; for a pass shot the moment
     # it reached the net or the goalie; for one found from a counted event, that event), and `resolved`, the frame
     # its result could first be known (the game's count, the post, the goalie's stop, the block, the goal line).
-    keys = ('f', 'team', 'idx', 'x', 'y', 'speed', 'kind', 'type', 'result', 'goalie', 'rebound')
+    keys = ('f', 'team', 'idx', 'x', 'y', 'speed', 'kind', 'type', 'result', 'goalie', 'gctl', 'rebound')
     return [{**{key: sh[key] for key in keys}, 'counted': bool(sh.get('counted')),
              'known': sh.get('known', sh['f']), 'resolved': max(sh.get('resolved', sh['f']), sh.get('known', sh['f'])),
              **({'after': sh['after']} if 'after' in sh else {})} for sh in shots]

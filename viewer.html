@@ -877,7 +877,19 @@ function shotText(sh) {
   const who = sh.idx >= 0 ? playerName(sh.team, sh.idx) : (sh.team ? match.team2 : match.team1);
   const result = { goal: 'goal', save: sh.counted === false ? 'saved (not counted by the game)' : 'saved', post: 'off the post', wide: 'wide',
     blocked: 'blocked', miss: 'missed', pending: 'still in play' }[sh.result] || sh.result;
-  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result;
+  const keeper = sh.gctl && hasHuman(1 - sh.team) && ['goal', 'save', 'post'].includes(sh.result)
+    ? ' \u00b7 ' + (sh.gctl === 'human' ? 'human' : 'CPU') + ' goalie' : '';
+  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper;
+}
+// Whether anyone played this team by hand at some point (the controlled-player marker, match.ctrl, on one of its
+// records). A computer team's goalie is always the computer's, so the human/CPU goalie split is only shown for these.
+function hasHuman(team) {
+  if (!match.humanTeams) {
+    const seen = [false, false];
+    for (const c of match.ctrl || []) { if (c & 0x3f) seen[0] = true; if (c & 0xfc0) seen[1] = true; }
+    match.humanTeams = seen;
+  }
+  return match.humanTeams[team];
 }
 const RESULT_WORDS = { goal: ['goal', 'goals'], save: ['saved', 'saved'], post: ['post', 'posts'], wide: ['wide', 'wide'],
   blocked: ['blocked', 'blocked'], miss: ['missed or blocked', 'missed or blocked'], pending: ['still in play', 'still in play'] };
@@ -1098,6 +1110,13 @@ function drawGoalieReport(f, colours) {
       [split('Wrist', sh => sh.type === 'wrist shot'), split('slap', sh => sh.type === 'slapshot'), split('one-timers', sh => sh.type === 'one-timer'),
         split('pass shots', sh => sh.type === 'pass shot'), split('deflections', sh => sh.type === 'deflection'), split('rebounds', sh => sh.rebound)],
     ];
+    // Who was working the goalie when each shot was released (the converter's gctl): a human who had taken control
+    // of him, or the computer.
+    if (hasHuman(team) && shots.some(sh => sh.gctl)) {
+      const by = c => { const n = shots.filter(sh => sh.gctl === c), s = n.filter(sh => sh.result === 'save').length;
+        return s + ' saves on ' + n.length + (n.length ? ', ' + pct(s, n.length) : ''); };
+      lines.unshift(['Human-controlled: ' + by('human'), 'CPU-controlled: ' + by('cpu')]);
+    }
     const after = { held: 0, rebound: 0, cleared: 0, loose: 0 };
     for (const sh of saves) after[sh.after || 'loose']++;
     lines.push(['After saves: held ' + after.held, 'rebounds to the shooters ' + after.rebound, 'cleared ' + after.cleared + (after.loose ? ', loose ' + after.loose : '')]);
@@ -1449,6 +1468,14 @@ function refreshPopover(f, snap) {
   for (let i = shown.team * 6; i < shown.team * 6 + 6; i++) if (rosterIndex(f, i) === shown.idx && role(f, i) >= 0) k = i;
   const position = k >= 0 ? (match.positions || POSITIONS)[role(f, k)] : (p.g ? 'G' : 'Bench');
   const live = playerStats(snap, shown.team, shown.idx);
+  if (live && p.g && match.shotList && hasHuman(shown.team)) {
+    // The game's shots on goal against him, split by who was working him at the release (posts count as saves, as
+    // the game counts them), so the two add up to his Saves line.
+    const faced = match.shotList.filter(sh => sh.counted && sh.gctl && sh.team !== shown.team && sh.goalie === shown.idx && known(sh, f));
+    const by = c => { const n = faced.filter(sh => sh.gctl === c && resultAt(sh, f) !== 'pending'), s = n.filter(sh => resultAt(sh, f) !== 'goal').length;
+      return s + ' / ' + n.length + (n.length ? ' (' + (s / n.length).toFixed(3).replace(/^0/, '') + ')' : ''); };
+    live.byControl = { human: by('human'), cpu: by('cpu') };
+  }
   if (live && !p.g) {
     const list = (match.turnovers || []).filter(e => known(e, f));
     live.puckMs = playerPossession(f, shown.team, shown.idx);
@@ -1583,6 +1610,10 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Saves', saves + ' / ' + live.s);
       addStat(grid, 'Goals against', live.g);
       addStat(grid, 'Save %', live.s ? (saves / live.s).toFixed(3).replace(/^0/, '') : '\u2013');
+      if (live.byControl) {
+        addStat(grid, 'Saves, human', live.byControl.human);
+        addStat(grid, 'Saves, CPU', live.byControl.cpu);
+      }
       addStat(grid, 'Ice time', clockText(live.toi));
     } else {
       addStat(grid, 'Goals', live.g);

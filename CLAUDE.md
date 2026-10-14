@@ -517,7 +517,14 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   game counted and saves it did not), with save rates overall and as the game counts them, by distance from the net
   (under 60, 60-120, farther) and by type (wrist or slap by how long the shot was wound up, 800 ms or more = slap;
   one-timers, pass shots, deflections, rebounds), and what happened after each save (held or whistle, rebound to the
-  shooters, cleared by his team, loose). Shots carry `type`, `goalie` (roster index of the goalie faced),
+  shooters, cleared by his team, loose). Human or CPU goalie (the user's community often takes the goalie by hand):
+  `gctl` on each shot is 'human' when the defending goalie's record carries the controlled-player marker (+$62 bit
+  $08) at the release, else 'cpu'. The release decides because control moves to a goalie by itself when he gets the
+  puck (so a CPU save often ends with the human holding him); taking him is a B press with the puck loose or the
+  other team's (nearly every such switch in the button captures). About five shots in the seven recordings were
+  grabbed in flight and count as CPU. Shown, for teams a human played, in the goalie report, the goalie's card
+  (game-counted shots, posts as saves, so they add up to his Saves) and shot tooltips. CGY-BOS: Boston's Moog
+  3 saves on 7 human-controlled, 4 on 6 CPU. Shots carry `type`, `goalie` (roster index of the goalie faced), `gctl`,
   `after` (saves) and `rebound` (the same team's previous shot was saved and they got the puck back within 3 s).
 - Passes (`passes`, find_passes): every pass animation ($0718/$078A; goalie $0366) whose player loses the puck, with
   where it ended: completed (receiver), one-timer, intercepted, failed, pass shot; `counted` = the game's passes-tried
