@@ -6,7 +6,13 @@ Records NHL '94 games played in RetroArch and replays them from above in the bro
 The replay has the game's sprites, a rotatable and zoomable rink, a follow camera, team and player stats, shot, heat,
 turnover and pass maps, a goalie report, clips (video or GIF) and single-file game pages to share.
 
-Windows only: it reads the game's memory out of the running RetroArch process (read only).
+Written in Python and JavaScript. The viewer runs in any browser, and shared game files are single HTML pages that
+open on any system, phones included. The converter is plain Python with no extra libraries. Only the live recorder
+is Windows-only for now, because it reads the game's memory out of RetroArch with a Windows call (read only);
+Mac and Linux recording is being worked on.
+
+To look around without installing anything, open a sample game file from the
+[Releases](https://github.com/nhl94dotcom/NHL94MatchViewer/releases) page in your browser.
 
 ## Use it
 
