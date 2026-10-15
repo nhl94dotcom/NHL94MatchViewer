@@ -913,8 +913,15 @@ function shotText(sh) {
     blocked: 'blocked', miss: 'missed', pending: 'still in play' }[sh.result] || sh.result;
   const keeper = sh.gctl && hasHuman(1 - sh.team) && ['goal', 'save', 'post'].includes(sh.result)
     ? ' \u00b7 ' + (sh.gctl === 'human' ? 'human' : 'CPU') + ' goalie' : '';
-  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper;
+  // The goalie's move (from the converter): on a save, how he made it; on a goal, what he tried.
+  const move = sh.save && ['goal', 'save', 'post'].includes(sh.result)
+    ? ' \u00b7 ' + (sh.save === 'none' ? (sh.result === 'goal' ? 'goalie did not move' : 'goalie stood his ground') : (sh.result === 'goal' ? 'goalie tried a ' : '') + SAVE_WORDS[sh.save]) : '';
+  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move;
 }
+// The goalie's save moves, as the converter names them (the game's own animations, grouped).
+// Hits that upend the player or send him into the boards or the bench (the converter's hit outcomes).
+const BIG_HITS = ['upended', 'into the boards', 'into the bench'];
+const SAVE_WORDS = { glove: 'glove save', stick: 'stick save', 'pad stack': 'pad stack', high: 'high save', dive: 'dive', slam: 'slam into the post' };
 // Whether anyone played this team by hand at some point (the controlled-player marker, match.ctrl, on one of its
 // records). A computer team's goalie is always the computer's, so the human/CPU goalie split is only shown for these.
 function hasHuman(team) {
@@ -1151,6 +1158,17 @@ function drawGoalieReport(f, colours) {
         return s + ' saves on ' + n.length + (n.length ? ', ' + pct(s, n.length) : ''); };
       lines.unshift(['Human-controlled: ' + by('human'), 'CPU-controlled: ' + by('cpu')]);
     }
+    // How he made his saves (the converter's save move), with the human / CPU split where a human played him.
+    if (saves.some(sh => sh.save)) {
+      const moveList = group => {
+        const moves = {};
+        for (const sh of group) if (sh.save) moves[sh.save] = (moves[sh.save] || 0) + 1;
+        return Object.entries(moves).sort((a, b) => b[1] - a[1]).map(([k, n]) => n + ' ' + (k === 'none' ? 'standing' : k)).join(', ') || 'none';
+      };
+      if (hasHuman(team) && saves.some(sh => sh.gctl === 'human')) {
+        lines.push(['Save moves, human: ' + moveList(saves.filter(sh => sh.gctl === 'human')), 'CPU: ' + moveList(saves.filter(sh => sh.gctl !== 'human'))]);
+      } else lines.push(['Save moves: ' + moveList(saves)]);
+    }
     const after = { held: 0, rebound: 0, cleared: 0, loose: 0 };
     for (const sh of saves) after[sh.after || 'loose']++;
     lines.push(['After saves: held ' + after.held, 'rebounds to the shooters ' + after.rebound, 'cleared ' + after.cleared + (after.loose ? ', loose ' + after.loose : '')]);
@@ -1363,8 +1381,16 @@ function findCallouts(m) {
   for (const e of m.icings || []) {
     out.push({ f: e.f, kind: 'Icing · ' + (e.team ? m.team2 : m.team1), text: playerName(e.team, e.idx) + ' iced the puck' });
   }
+  // Big hits: a check that upends the player, or sends him into the boards or the bench (the converter's hits).
+  for (const h of m.hits || []) {
+    const verb = { upended: 'upends', 'into the boards': 'puts', 'into the bench': 'sends' }[h.outcome];
+    if (!verb) continue;
+    const how = h.how && h.how !== 'check' ? ' (' + h.how + (h.how === 'cross-check' ? ')' : ' check)') : '';
+    out.push({ f: h.f, kind: 'Big hit · ' + (h.team ? m.team2 : m.team1),
+      text: playerName(h.team, h.by) + ' ' + verb + ' ' + playerName(1 - h.team, h.on) + (h.outcome === 'upended' ? '' : ' ' + h.outcome) + how });
+  }
   for (const g of m.goals || []) {
-    const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + ' (' + n + ')');
+    const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')'));
     out.push({ f: g.f, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.join(', ') : ''),
       text: playerName(g.team, g.scorer) + ' (' + g.goals + ')' + (helpers.length ? ' \u2014 assists ' + helpers.join(', ') : ' \u2014 unassisted') });
   }
@@ -1430,16 +1456,28 @@ function drawPlayer(x, y, facing, colour, label, position, controlled, hasPuck) 
 
 function padTeam(f) {
   // Which team the recorded controller is driving: the only team with a controlled skater, or with two people
-  // playing, the team whose controlled skater answers its presses (the converter's padTeam).
+  // playing, the team the game says controller 1 plays for (older files: whose controlled skater answers its presses;
+  // both are the converter's padTeam).
   if (!match.pad) return -1;
   const home = match.ctrl[f] & 63, away = match.ctrl[f] >> 6;
   if (home && away && match.padTeam !== undefined && match.padTeam >= 0) return match.padTeam;
   return home && !away ? 0 : away && !home ? 1 : -1;
 }
 
-function recentPad(f) {
+// Each team's controller at frame f: [Home's buttons array, Away's] (null where no recorded controller drives that
+// team). Controller 2 (pad2: the other player's in netplay) only when the game says it plays for the other team and
+// that team has a controlled skater.
+function teamPads(f) {
+  const out = [null, null], first = padTeam(f);
+  if (first >= 0) out[first] = match.pad;
+  const second = match.pad2Team;
+  if (match.pad2 && second >= 0 && second !== first && (match.ctrl[f] >> (6 * second)) & 63) out[second] = match.pad2;
+  return out;
+}
+
+function recentPad(f, pad = match.pad) {
   let bits = 0;
-  for (let i = f; i >= 0 && match.t[i] >= match.t[f] - PAD_FLASH_MS; i--) bits |= match.pad[i];
+  for (let i = f; i >= 0 && match.t[i] >= match.t[f] - PAD_FLASH_MS; i--) bits |= pad[i];
   return bits;
 }
 
@@ -1530,7 +1568,13 @@ function refreshPopover(f, snap) {
     // files only have the game's per-player byte, which counts checks thrown in the original game (+$11C, read as
     // "hits") and in ROMs with the bodycheck hack sits at +$102 ("x") with hits taken at +$11C.
     if (match.hits) {
-      live.checks = match.hits.filter(e => e.f <= f && e.team === shown.team && e.by === shown.idx).length;
+      const thrown = match.hits.filter(e => e.f <= f && e.team === shown.team && e.by === shown.idx);
+      live.checks = thrown.length;
+      // How he threw them (shoulder, hip, cross-check: the game's animations) and how many were big hits.
+      const kinds = {};
+      for (const e of thrown) if (e.how && e.how !== 'check') kinds[e.how] = (kinds[e.how] || 0) + 1;
+      live.checkKinds = Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, n]) => n + ' ' + k).join(', ');
+      live.bigHits = thrown.filter(e => BIG_HITS.includes(e.outcome)).length;
       live.hitsTaken = match.hits.filter(e => e.f <= f && e.team !== shown.team && e.on === shown.idx).length;
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
@@ -1686,7 +1730,12 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Shooting %', shootingText(live.g, live.s));
       addStat(grid, 'Checks', live.checks);
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
+      if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
       if (match.stats.x === 'PIM') addStat(grid, 'Pen. minutes', live.x);
+      if (live.checkKinds) {
+        addStat(grid, 'Check types', live.checkKinds);
+        grid.lastChild.style.gridColumn = '1 / -1';  // a list, across the card
+      }
       if (live.skate) {
         addStat(grid, 'Skated', milesText(live.skate.dist));
         addStat(grid, 'Top speed', live.skate.top ? mphText(live.skate.top) : '–');
@@ -1760,6 +1809,7 @@ function fillTeamStats(snap) {
     return here.filter(e => e.won === team).length + '/' + here.length;
   };
   const iced = team => (match.icings || []).filter(e => e.f <= f && e.team === team).length;
+  const bigHits = team => (match.hits || []).filter(e => e.f <= f && e.team === team && BIG_HITS.includes(e.outcome)).length;
   const entries = team => (match.zoneEntries || []).filter(e => known(e, f) && e.team === team);
   const entryKinds = team => ['carried', 'passed', 'dumped'].map(k => entries(team).filter(e => e.kind === k).length).join(' / ');
   const teamSkated = team => [...skating.keys()].filter(key => key[0] === String(team)).reduce((s, key) => s + skatingAt(team, Number(key.slice(2)), f).dist, 0);
@@ -1833,6 +1883,7 @@ function fillTeamStats(snap) {
     ...(match.icings ? [['Icings', iced(0), iced(1)]] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
+    ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
     ...(skating ? [['Distance skated', milesText(teamSkated(0)), milesText(teamSkated(1))]] : []),
     ...(h.ppTries === undefined ? [] : [
       ['Power play', h.ppGoals + '/' + h.ppTries, a.ppGoals + '/' + a.ppTries],
@@ -2152,20 +2203,20 @@ $('flowCanvas').addEventListener('mouseleave', () => { $('flowTip').hidden = tru
 $('flowCanvas').addEventListener('click', ev => { const fr = flowFrameAt(ev); if (fr >= 0) seekTo(match.t[fr]); });
 
 function updatePanels(f) {
-  const m = match, owner = m.owner ? m.owner[f] : -1, team = padTeam(f), pad = team >= 0 ? recentPad(f) : 0;
+  const m = match, owner = m.owner ? m.owner[f] : -1, pads = teamPads(f), held = pads.map(p => (p ? recentPad(f, p) : -1));
   const snap = statSnapshot(f);
   const released = (liveKnowledge ? 'L' : '') + (m.failedOneTimers ? m.failedOneTimers.filter(e => known(e, f)).length : 0) + '/' +
     (m.shotList ? m.shotList.filter(sh => known(sh, f)).map(sh => resultAt(sh, f)).join('') : '') + '/' + (m.turnovers ? m.turnovers.filter(e => known(e, f)).length : 0) +
     '/' + (possession ? possession.cum[0][f] + possession.cum[1][f] + possession.cum[2][f] + (liveKnowledge ? ':' + possession.stretch[f] : '') : 0);
-  const state = released + '|' + m.score[2 * f] + '-' + m.score[2 * f + 1] + '|' + gameClockText(f) + '|' + (m.roster ? m.roster.substr(f * PLAYERS, PLAYERS) : '') + '|' + (m.role ? m.role.substr(f * PLAYERS, PLAYERS) : '') + '|' + m.ctrl[f] + '|' + owner + '|' + team + '|' + pad + '|' + snap;
+  const state = released + '|' + m.score[2 * f] + '-' + m.score[2 * f + 1] + '|' + gameClockText(f) + '|' + (m.roster ? m.roster.substr(f * PLAYERS, PLAYERS) : '') + '|' + (m.role ? m.role.substr(f * PLAYERS, PLAYERS) : '') + '|' + m.ctrl[f] + '|' + owner + '|' + held.join(',') + '|' + snap;
   if (state === panelState) return;
   panelState = state;
   fillTeamStats(snap);
   fillPenalties(f, snap);
   [$('lineup1'), $('lineup2')].forEach((el, i) => {
     const box = el.querySelector('.pad');
-    box.hidden = i !== team;
-    if (i === team) for (const key of box.querySelectorAll('span')) key.classList.toggle('on', Boolean(pad & Number(key.dataset.b)));
+    box.hidden = !pads[i];
+    if (pads[i]) for (const key of box.querySelectorAll('span')) key.classList.toggle('on', Boolean(held[i] & Number(key.dataset.b)));
   });
   [$('lineup1'), $('lineup2')].forEach((el, team) => {
     // Everyone on the ice, in position order. The game sometimes gives two players the same position for a while
@@ -2269,10 +2320,10 @@ function draw() {
     ctx.restore();
     drawTag(px, py + (py > 0 ? -22 : 22), 'Post');
   }
-  // Button presses pop up beside the skater that controller is driving.
-  const team = padTeam(f);
-  if (team >= 0) {
-    const pressed = recentPad(f), letters = ['A', 'B', 'C'].filter(b => pressed & PAD[b]);
+  // Button presses pop up beside the skater each controller is driving.
+  teamPads(f).forEach((pad, team) => {
+    if (!pad) return;
+    const pressed = recentPad(f, pad), letters = ['A', 'B', 'C'].filter(b => pressed & PAD[b]);
     let k = team * 6;
     while (!((m.ctrl[f] >> k) & 1)) k++;
     const x = m.pos[(f * PLAYERS + k) * 2], y = m.pos[(f * PLAYERS + k) * 2 + 1];
@@ -2285,7 +2336,7 @@ function draw() {
       ctx.fillStyle = css('--ink'); ctx.font = 'bold 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(letter, 0, 0.6); ctx.restore();
     });
-  }
+  });
   drawPuck(f);
 
   updatePanels(f);

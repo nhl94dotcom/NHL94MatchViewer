@@ -324,6 +324,18 @@ def find_shots(m, goals=None):
         # goalie by itself when he gets the puck, so a CPU save often ends with the human holding him, which is why
         # the release is the moment that decides. In the seven recordings about five shots were grabbed in flight.
         sh['gctl'] = 'human' if keeper is not None and (m['ctrl'][f] >> keeper) & 1 else 'cpu'
+        # The goalie's save move: his first save animation from the release until a quarter second after the result
+        # was settled (glove, stick, pad stack, high, dive, slam), or 'none' when he made none (stood his ground).
+        # In the seven recordings, of 115 saves: stick 62, high 14, pad stack 12, dive 5, glove 2, none 20.
+        moves = getattr(systems.of_match(m), 'SAVE_MOVES', {})
+        if moves and keeper is not None and sh['result'] in ('save', 'goal', 'post'):
+            sh['save'], q, until = 'none', f, t[min(N - 1, sh.get('resolved', f))] + 250
+            while q < N and t[q] <= until:
+                a = m['anim'][(q * K + keeper) * 4:(q * K + keeper) * 4 + 4]
+                if a in moves:
+                    sh['save'] = moves[a]
+                    break
+                q += 1
         if sh['result'] == 'save':
             after, q = 'loose', f + 1
             while q < N and t[q] - t[f] < 3000:
@@ -343,7 +355,7 @@ def find_shots(m, goals=None):
     keys = ('f', 'team', 'idx', 'x', 'y', 'speed', 'kind', 'type', 'result', 'goalie', 'gctl', 'rebound')
     return [{**{key: sh[key] for key in keys}, 'counted': bool(sh.get('counted')),
              'known': sh.get('known', sh['f']), 'resolved': max(sh.get('resolved', sh['f']), sh.get('known', sh['f'])),
-             **({'after': sh['after']} if 'after' in sh else {})} for sh in shots]
+             **({'after': sh['after']} if 'after' in sh else {}), **({'save': sh['save']} if 'save' in sh else {})} for sh in shots]
 
 
 def find_failed_one_timers(m):
@@ -587,6 +599,8 @@ def find_hits(m):
     F, n, per = st['f'], st['n'], st['p']
     slot = 3 if st.get('x') == 'Checks' else 4
     act = actions(m)
+    system = systems.of_match(m)
+    check_moves, hit_outcomes = getattr(system, 'CHECK_MOVES', {}), getattr(system, 'HIT_OUTCOMES', {})
     anim = lambda i, k: A[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4]
     at = lambda i, k: (pos[(i * 12 + k) * 2], pos[(i * 12 + k) * 2 + 1])
     dist = lambda i, a, b: math.hypot(at(i, a)[0] - at(i, b)[0], at(i, a)[1] - at(i, b)[1])
@@ -618,8 +632,21 @@ def find_hits(m):
                     j += 1
                 victim = min(down)[1] if down else min((dist(f, k, v), v) for v in opp)[1]
                 x, y = at(f, victim)
+                # How it was thrown (the thrower's check animation: shoulder, hip, cross-check) and what it did to the
+                # player hit (knocked down, upended, into the boards, into the bench), within 0.7 s either side.
+                # In the recordings: shoulder 111, cross-check 14, hip 2, not seen 48.
+                how = outcome = None
+                for j in range(j0, N):
+                    if t[j] - t[f] > 700:
+                        break
+                    if t[f] - t[j] > 700:
+                        continue
+                    how = how or check_moves.get(anim(j, k))
+                    if outcome in (None, 'knocked down'):
+                        outcome = hit_outcomes.get(anim(j, victim), outcome)
                 for _ in range(rise):
-                    out.append({'f': f, 'team': team, 'by': idx, 'on': int(roster[f * 12 + victim], 36), 'x': round(x), 'y': round(y)})
+                    out.append({'f': f, 'team': team, 'by': idx, 'on': int(roster[f * 12 + victim], 36), 'x': round(x), 'y': round(y),
+                                'how': how or 'check', 'outcome': outcome or 'stayed up'})
     return sorted(out, key=lambda e: e['f'])
 
 
@@ -811,6 +838,22 @@ def main(argv=None):
     match["system"] = system.NAME
     if "stats" in match and "rosters" in match and "goals" not in match:
         match["goals"] = find_goals(match, match["rosters"])
+        # The game's own scoring summary, where the system has one: it names the scorer and assists outright and the
+        # strength (even, power play, two men up, shorthanded). Matched to the goals found from the stats in order.
+        summary = system.scoring_summary(cap) if hasattr(system, "scoring_summary") else []
+        goals = match["goals"]
+        if len(summary) > len(goals):
+            summary = summary[len(summary) - len(goals):]  # the recording began after the first goals
+        if summary and len(summary) == len(goals) and all(e["team"] == g["team"] for e, g in zip(summary, goals)):
+            for e, g in zip(summary, goals):
+                g["strength"] = e["strength"]
+                if e["strength"] in ("PP2", "SH2"):
+                    g["kinds"].append("5 on 3" if e["strength"] == "PP2" else "3 on 5")
+                if e["scorer"] != g["scorer"] or sorted(e["assists"]) != sorted(a[0] for a in g["assists"]):
+                    print(f"scoring summary differs at goal {goals.index(g) + 1}: summary {e}, stats {g}; the summary is used")
+                    g["scorer"], g["assists"] = e["scorer"], [[a, None] for a in e["assists"]]
+        elif summary:
+            print(f"scoring summary: {len(summary)} goals, the stats show {len(goals)}; not used")
 
     # The recorded controller ($BEEF) is the local player's. With two people playing, whose is it? The team whose
     # controlled skater starts an action (pass, shot, check, poke, hook, dive...) within 350 ms of a press, clearly
@@ -833,6 +876,13 @@ def main(argv=None):
                         break
                     j += 1
         match["padTeam"] = 0 if answers[0] > 1.5 * answers[1] else 1 if answers[1] > 1.5 * answers[0] else -1
+        # Better: the game says which team each controller plays for (cont1team / cont2team). Controller 2 is the
+        # other player's in netplay (pad2; in capture6_netplay_bos_stl St. Louis's presses answer it 308 to 91).
+        if hasattr(system, "controller_teams"):
+            first, second = system.controller_teams(cap)
+            if first >= 0:
+                match["padTeam"] = first
+            match["pad2Team"] = second if second >= 0 and second != match["padTeam"] else -1
     # Shots for the shot map, credited where the game counted them (and to the scorer it named, when known).
     match["shotList"] = find_shots(match, match.get("goals"))
     match["turnovers"] = find_turnovers(match)

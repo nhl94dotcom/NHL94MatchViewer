@@ -43,6 +43,9 @@ DELAYED = 0x26  # stat-block byte: $FF while this team has a delayed penalty com
 PENALTY_LIST, RULES = 0xC5DC, 0x18E0C  # work RAM penalty summary; ROM table of rule messages (penalty names)
 PIM_CODE = 0x12302  # the game adds penalty minutes here; smozROM's checks hack replaces it with two NOPs
 PAD1 = 0xBEEF  # controller 1, held buttons: $80 Start, $40 A, $20 C, $10 B, $08 Right, $04 Left, $02 Down, $01 Up
+PAD2 = 0xBEF1  # controller 2, the same (lj2 in the disassembly; in netplay the other player's)
+CONT_TEAMS = (0xC328, 0xC32A)  # cont1team, cont2team: the team each controller plays for, 0 none, 1 Home, 2 Away
+SCORE_SUM_BYTES, SCORE_SUM = 0xC472, 0xC474  # the game's scoring summary: a byte count, then 6 bytes per goal
 TEAM_TABLE = 0x30E
 RINK_LOGO_TABLE_POINTER = 0xFEA5A  # holds the address of a table of one logo address per team
 DEFAULT_ROM = Path(r"C:\Users\tdemorest\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin")
@@ -61,6 +64,42 @@ ACTIONS = {
     "dive": {"02f4"},                 # A as the goalie
     "goalie_save": {"148e"},          # a save attempt (also C while controlling the goalie)
 }
+
+
+# What the goalie did to stop a shot (his first save move after the release), and how a check was thrown and what it
+# did to the player hit: the game's own animation names (CLAUDE.md), grouped.
+SAVE_MOVES = {"0146": "glove", "0178": "glove", "01aa": "glove", "01ec": "stick", "021e": "stick", "14f2": "stick",
+              "1544": "stick", "0250": "pad stack", "02a2": "pad stack", "148e": "high", "14c0": "high", "02f4": "dive",
+              "1596": "slam", "1684": "slam"}
+CHECK_MOVES = {"0b96": "shoulder", "0bc8": "shoulder", "0bfa": "hip", "0c2c": "hip", "1ac2": "cross-check"}
+HIT_OUTCOMES = {"0dd8": "knocked down", "0d26": "knocked down", "136a": "upended", "1776": "into the boards",
+                "17e8": "into the boards", "185a": "into the boards", "18cc": "into the boards", "193e": "into the bench",
+                "1a00": "into the bench"}
+
+
+def controller_teams(cap):
+    """The team each controller plays for at the end of the recording: (controller 1, controller 2), 0 Home, 1 Away,
+    -1 none (the game's cont1team / cont2team). In capture6_netplay_bos_stl: Boston's and St. Louis's."""
+    last = cap.count - 1
+    return tuple(cap.word(last, a) - 1 if cap.word(last, a) in (1, 2) else -1 for a in CONT_TEAMS)
+
+
+def scoring_summary(cap):
+    """The game's own list of goals at the end of the recording: [{period, secs (into the period), team, strength,
+    scorer, assists}] with roster indices; strength as the SNES's: SH2, SHG, EV, PPG, PP2. Big-endian here. All 9
+    goals of capture6_netplay_bos_stl match find_goals."""
+    last, out = cap.count - 1, []
+    count = cap.word(last, SCORE_SUM_BYTES)
+    if not 0 < count <= 240 or count % 6:
+        return out
+    raw = bytes(cap.byte(last, SCORE_SUM + j) for j in range(count))
+    for g in range(0, count, 6):
+        e = raw[g:g + 6]
+        when = (e[0] << 8) | e[1]
+        out.append({"period": when >> 14, "secs": when & 0x3FFF, "team": e[2] >> 7,
+                    "strength": {0: "SH2", 1: "SHG", 2: "EV", 3: "PPG", 4: "PP2"}.get(e[2] & 0x7F, "?"),
+                    "scorer": e[3], "assists": [a for a in e[4:6] if a != 0xFF]})
+    return out
 
 
 def fixed(data, pos):
@@ -315,7 +354,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
     match = {"version": 21, "name": name, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
              "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [], "pos": [], "ctrl": [], "owner": []}
     if has_pad:
-        match["pad"] = []
+        match["pad"], match["pad2"] = [], []
     facing, roster, anim, role, frame, mirror, puck_frame = [], [], [], [], [], [], []
     match["posts"] = []  # frames where the puck came off a goal post
     # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
@@ -328,7 +367,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
     previous = None
     for i in range(cap.count):
         # Identical consecutive samples (a paused game, or two reads of one frame) are stored once.
-        key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), cap.byte(i, PAD1) if has_pad else 0)
+        key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), (cap.byte(i, PAD1), cap.byte(i, PAD2)) if has_pad else 0)
         if key == previous:
             continue
         previous = key
@@ -368,6 +407,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
                 last_post = cap.ms(i)
         if has_pad:
             match["pad"].append(cap.byte(i, PAD1))
+            match["pad2"].append(cap.byte(i, PAD2))
         mask = 0
         for k in range(PLAYERS):
             rec = BASE + SIZE * k
