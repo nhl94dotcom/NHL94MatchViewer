@@ -113,6 +113,26 @@ The user is part of an NHL '94 online community that standardizes on RetroArch 1
 with a trimmed-down menu configuration. The user's install: `C:\Users\tdemorest\RetroArch-1.17-Win64`.
 ROM in use: NHL '94, crc32 `9438f5dd`.
 
+## SNES version (planned)
+
+The user wants a SNES version too. The community plays it in RetroArch with the Snes9x core
+(`cores\snes9x_libretro.dll`); ROMs are in `C:\Users\tdemorest\RetroArch-1.17-Win64\ROMs\SNES`: `NHL94.smc` (the base
+game, crc32 42212a77 without header), `NHL94_Classic.smc` (a small hack that tracks checks per player), league ROMs
+such as `SDL-S14.smc`. SNES hacking is less advanced than Genesis hacking. A colleague is mapping the SNES RAM
+from the Genesis memory map doc. The user has an old Python save-state parser for the SNES (meant to be
+`snes_code.txt`, which arrived empty).
+- Some files have a 512-byte copier header (size % 1024 == 512); strip it. Base, Classic and SDL-S14 are LoROM with
+  the internal title "NHL '94" at $7FC0 and a valid checksum. SDL15/SDL16 (1.1 MB) are laid out differently
+  (no header at $7FC0 or $FFC0); not looked at yet.
+- Team data uses the Genesis format with little-endian lengths: players as (length word = name length + 2, name,
+  jersey byte in decimal digits, 7 rating bytes), the list closed by a length word of 2, then the name strings
+  (city, abbreviation, nickname, arena) in the same length-prefixed form. Boston's roster ends at $E2E0C in
+  NHL94.smc (file offset, no header) with "Boston" / "BOS" / "Bruins" / "Boston Garden" after it. The team
+  pointer table has not been found yet.
+- Plan: split the Genesis-specific code (memory reader, address map, animation-to-action table, ROM reader,
+  sprites, rink picture) into a per-system module and add a SNES one; everything after the converter (the match
+  file and the viewer) stays shared.
+
 ## Reading game memory live
 
 RetroArch's network commands do not work for this core: `READ_CORE_MEMORY` answers "no memory map defined", and
