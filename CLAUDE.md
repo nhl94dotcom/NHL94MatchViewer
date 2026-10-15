@@ -197,7 +197,20 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   NHL94.smc, NHL94_Classic and SDL-S14; all 603 SNES players are on the Genesis rosters, but five teams lack a backup
   goalie the Genesis has (EDM, NYI, NYR, STL, TOR: the SNES rosters differ). SDL16 (1.1 MB) does not read: laid out
   differently.
-  Not known yet: puck possession, screen state, per-player stats, animation words, sprites, finding RAM in Snes9x.
+- Sprites (`snes.build_sprites`, the same library format as the Genesis one, `sprites/<crc32 of the ROM without
+  header>.js`, 976 frames): SpriteFrames at $828000 (see the comment in snes.py for the frame and piece layout; SNES
+  planar 4-bit tiles; 16x16 pieces are tiles N, N+1, N+16, N+17). Palette 4 is the team's uniform (Away's is 5);
+  fixed palettes 2 (puck and nets; ROM $D50B6), 0 and 1 (vary in play; their most common colours from the save
+  states, whose colour memory copy is work RAM $7E34B4). A contact sheet looked right (skaters, falls, goalies,
+  arrows, stars, puck).
+- Sprite frame of an object: SPA ($11A3) is an address in bank $9D (the animation table, $9DE0FC): 8 direction
+  pointers to (frame, time) lists; frame = word at list + SPAnum ($11C3; 4 bytes per pair). Resolves 98% of skaters
+  and nearly all goalies in the save states. Mirrored (right-handed): attribute $0E03 bit $0800 (exact).
+- `snes.read_match` builds a match from samples of SNES RAM (positions, puck, control, roster, role, facing,
+  animation, frame, mirror, clock, period, score, shots, rosters, palettes, anims, sprites); `snes.SaveStates` reads
+  save states as samples and `tools/snes_preview.py <state>` makes a one-moment match (matches/snes_*.js) from one:
+  NHL94_Classic.state10 (Chicago 7-3 St. Louis) shows correctly on the SNES rink with SNES sprites.
+  Not known yet: puck possession, puck height, screen state, per-player stats, finding RAM in the running Snes9x.
 
 ## Reading game memory live
 
