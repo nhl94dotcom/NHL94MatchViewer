@@ -290,8 +290,8 @@ function load(m) {
   breakaways = findBreakaways(m);
   callouts = findCallouts(m);
   heat = findHeat(m);
-  possession = findPossession(m);
   setupOverlay(m);
+  possession = findPossession(m);  // after setupOverlay: it needs ends
   $('clipPanel').hidden = true;
   failedOneTimerFrames = new Map();
   for (const e of m.failedOneTimers || []) {
@@ -1142,6 +1142,7 @@ function drawGoalieReport(f, colours) {
 // possession.cum[c][f]: game seconds so far at frame f for c = 0 Home, 1 Away, 2 Transition; possession.tick[f]:
 // the seconds the clock ticked off arriving at frame f.
 let possession = null;
+const ZONE_LINE = 89;
 function findPossession(m) {
   const n = m.t.length, team = k => (k < 6 ? 0 : 1), hidden = i => m.puck[3 * i + 2] < PUCK_HIDDEN_Z;
   const before = new Int8Array(n), after = new Int8Array(n), tick = new Int16Array(n);
@@ -1161,15 +1162,29 @@ function findPossession(m) {
     return a < 0 && b < 0 ? 2 : a < 0 ? b : b < 0 ? a : a === b ? a : 2;
   };
   const cum = [new Int32Array(n), new Int32Array(n), new Int32Array(n)];
+  // A team's seconds split by where the puck was, in that team's own view: zones[3 * team + z][f], z = 0 attacking,
+  // 1 neutral, 2 defensive. The blue lines are at Y = +/-ZONE_LINE: with that line the puck's time in each end
+  // matches the game's own attack-zone time (team stat +$0A) within 1-3 s in every full recording, whoever had it.
+  const zones = Array.from({ length: 6 }, () => new Int32Array(n));
+  const zoneOf = (i, team) => {
+    const y = (ends[i] ? -1 : 1) * (team ? -1 : 1) * m.puck[3 * i + 1];  // > 0: towards the end this team attacks
+    return y >= ZONE_LINE ? 0 : y <= -ZONE_LINE ? 2 : 1;
+  };
   // A second counts when the clock reaches a new low in the period, a second or so at a time: a blip back up (once
   // in the online capture) is not counted twice, and the game setting the clock is not play (it shows 0:00 before a
   // period's 5:00, and 10:00 then 0:00 after the final horn).
   let low = m.clock[0];
   for (let i = 1; i < n; i++) {
     for (let c = 0; c < 3; c++) cum[c][i] = cum[c][i - 1];
+    for (let z = 0; z < 6; z++) zones[z][i] = zones[z][i - 1];
     if (m.period[i] !== m.period[i - 1] || m.clock[i] > low + 3) low = m.clock[i];
     else if (m.clock[i] < low) {
-      if (low - m.clock[i] <= 3) { tick[i] = low - m.clock[i]; cum[control(i)][i] += tick[i]; }
+      if (low - m.clock[i] <= 3) {
+        tick[i] = low - m.clock[i];
+        const c = control(i);
+        cum[c][i] += tick[i];
+        if (c < 2) zones[3 * c + zoneOf(i, c)][i] += tick[i];
+      }
       low = m.clock[i];
     }
   }
@@ -1187,7 +1202,7 @@ function findPossession(m) {
     if (stretch[i] < 0) end = i;
     settled[i] = end;
   }
-  return { cum, tick, stretch, settled };
+  return { cum, zones, tick, stretch, settled };
 }
 function playerPossession(f, team, idx) {
   // Game seconds with the puck on his stick.
@@ -1693,9 +1708,10 @@ function fillTeamStats(snap) {
   let held = possession ? [0, 1, 2].map(c => possession.cum[c][f]) : null;  // game seconds: Home, Away, Transition
   // Live knowledge: the seconds of the loose-puck stretch under way are not decided yet (whose they are depends on
   // who gets the puck next), so they show apart as undecided.
-  let undecided = 0;
+  let undecided = 0, zoneAt = f;
   if (held && liveKnowledge && possession.stretch[f] >= 0 && possession.settled[f] > f) {
     const s = possession.stretch[f];
+    zoneAt = s;
     held = [0, 1, 2].map(c => possession.cum[c][s]);
     undecided = possession.cum[0][f] + possession.cum[1][f] + possession.cum[2][f] - held[0] - held[1] - held[2];
   }
@@ -1737,6 +1753,9 @@ function fillTeamStats(snap) {
     ]),
     section('Puck control'),
     ...(held ? [['Possession', secondsText(1000 * held[0]) + share(0), secondsText(1000 * held[1]) + share(1)],
+      // Each team's possession by where the puck was, in its own view; the three add up to its possession.
+      ...['attacking', 'neutral', 'defensive'].map((name, z) => ['· ' + name + ' zone',
+        secondsText(1000 * possession.zones[z][zoneAt]), secondsText(1000 * possession.zones[3 + z][zoneAt])]),
       ['Transition ' + secondsText(1000 * held[2]) + share(2) + (liveKnowledge ? ' · undecided ' + secondsText(1000 * undecided) : ''), '', '']] : []),
     ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
     ['Faceoffs won', h.faceoffs, a.faceoffs],

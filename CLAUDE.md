@@ -499,7 +499,11 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   (off a faceoff), the team that wins it; nobody after (before a whistle), the team that had it. A second counts
   when the clock reaches a new low in the period, at most 3 at a time: the game sets the clock (0:00 before a
   period's 5:00; 10:00 then 0:00 after the final horn) and netplay blipped it back once. The player card's "With the
-  puck" is game seconds with the puck on that player's stick.
+  puck" is game seconds with the puck on that player's stick. Each team's possession is split by zone in its own
+  view (attacking / neutral / defensive; the three add up to its possession) with the blue lines at Y = +/-89
+  (`ZONE_LINE`): with that line, the puck's seconds in each end, whoever has it, match the game's attack-zone time
+  (+$0A) within 1-3 s in all five full recordings (best fit 88-90). So the game's "Attack zone" is puck-in-zone time,
+  not possession; capture6 Boston: 3:01 / 2:45 / 1:40 of 7:26.
 - Turnovers: Turnovers (`turnovers` in the match file, from `find_turnovers`): control passing to the other
   team with no whistle between (a hidden puck or a new period marks one) and not by a shot. Takeaway when the other
   team poke-checked ($0B24), hooked ($1122) or checked ($0C5E, or the carrier went down, $0DD8/$0D26; credited to
