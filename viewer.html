@@ -612,8 +612,9 @@ function spriteImage(key, entry, team, mirrored) {
     image = document.createElement('canvas');
     image.width = entry.w; image.height = entry.h;
     const g = image.getContext('2d'), data = g.createImageData(entry.w, entry.h);
-    // Each pixel names a colour and whose palette it comes from: the team's, or one of the game's two fixed ones.
-    const fixed = spriteLibrary.fixed || [m.palettes[team], m.palettes[team]], palettes = [m.palettes[team], fixed[0], fixed[1]];
+    // Each pixel names a colour and whose palette it comes from: the team's, or one of the game's fixed ones (two on
+    // the Genesis, three on the SNES).
+    const fixed = spriteLibrary.fixed || [m.palettes[team], m.palettes[team]], palettes = [m.palettes[team], ...fixed];
     for (let i = 0; i < entry.p.length; i++) {
       const code = entry.p.charCodeAt(i) - 48, c = code & 15;
       if (!c) continue;  // colour 0 is transparent

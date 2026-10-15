@@ -7,6 +7,7 @@ and the ROM's teams (read_teams). Not known yet: who has the puck, the screen st
 stats, the animation words, the sprites, and how to find work RAM inside the running Snes9x core.
 """
 import struct
+from pathlib import Path
 
 NAME = "snes"
 RAM_SIZE = 0x20000  # work RAM, bank $7E-$7F
@@ -127,5 +128,209 @@ def attach():
     return None
 
 
+ANIM_BANK = 0x9D0000    # the animation word (SPA) is an address in bank $9D: 8 direction pointers to (frame, time)
+OBJ_ATTRIBUTE = 0x0E03  # bit $0800 set for every right-handed skater (777 of 777 in the save states, no left-hander):
+                        # his picture is drawn mirrored, as on the Genesis
+
+
+def animation_frame(rom, spa, step, facing):
+    """The sprite frame an object shows: the frame word in its animation's list for its facing, `step` bytes in
+    (4 per frame and time pair). None if that is not an animation (off the ice, between animations). On the 445
+    save states this gives a frame for 98% of skaters and nearly every goalie."""
+    if spa < 0x8000:
+        return None
+    ptr = struct.unpack_from("<H", rom, file_offset(ANIM_BANK | spa) + 2 * (facing & 7))[0]
+    if ptr < 0x8000:
+        return None
+    frame = struct.unpack_from("<H", rom, file_offset(ANIM_BANK | ptr) + step)[0]
+    return frame if frame < 976 else None
+
+
+def animation_lists(rom, spa):
+    """An animation's frames for each of the 8 facings (the viewer turns players with them, as the Genesis 'anims')."""
+    dirs = []
+    for d in range(8):
+        ptr = struct.unpack_from("<H", rom, file_offset(ANIM_BANK | spa) + 2 * d)[0]
+        if ptr < 0x8000:
+            return None
+        frames, at = [], file_offset(ANIM_BANK | ptr)
+        while len(frames) < 64:
+            frame, time = struct.unpack_from("<Hh", rom, at)
+            if frame >= 976:
+                return None
+            frames.append(frame)
+            at += 4
+            if time < 0:
+                break
+        dirs.append(frames)
+    return dirs
+
+
 def read_match(cap, rom_path, name, home=None, away=None):
-    raise NotImplementedError("SNES recordings cannot be converted yet")
+    """The match file's contents from samples of SNES work RAM (cap: anything with count, ms(i), word(i, address),
+    byte(i, address): a recording, or save states for a still picture). Positions, the puck, who is controlled,
+    roster places, positions, facing, animations and their sprite frames, clock, period, score and shots. Not yet:
+    who has the puck (owner -1), the puck's height, per-player stats, penalties."""
+    import zlib
+    from .common import DIGITS, PLAYERS
+    rom = strip_header(rom_path.read_bytes())
+    teams = read_teams(rom_path)
+    signed = lambda i, a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(cap.word(i, a))
+    match = {"version": 21, "name": name, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
+             "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
+             "pos": [], "ctrl": [], "owner": [], "posts": [], "delayed": [], "penalties": []}
+    facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
+    for i in range(cap.count):
+        match["t"].append(cap.ms(i))
+        match["period"].append(cap.word(i, PERIOD))
+        match["clock"].append(cap.word(i, CLOCK))
+        match["score"] += [cap.word(i, STAT_ADDRESSES["goals"]), cap.word(i, STAT_ADDRESSES["goals"] + 2)]
+        match["shots"] += [sum(cap.word(i, a + side) for a in SHOTS_BY_PERIOD) for side in (0, 2)]
+        match["puck"] += [signed(i, OBJ_X + 28), signed(i, OBJ_Y + 28), 0]
+        match["puckV"] += [round(signed(i, PUCK_VX) / 100), round(signed(i, PUCK_VY) / 100)]
+        f = animation_frame(rom, cap.word(i, OBJ_ANIM + 28), cap.word(i, OBJ_ANIM_STEP + 28), cap.word(i, OBJ_FACING + 28))
+        puck_frame.append(f"{f or 0:03x}")
+        match["owner"].append(-1)
+        mask = 0
+        for k in range(PLAYERS):
+            match["pos"] += [signed(i, OBJ_X + 2 * k), signed(i, OBJ_Y + 2 * k)]
+            face = cap.word(i, OBJ_FACING + 2 * k) & 7
+            spa, step = cap.word(i, OBJ_ANIM + 2 * k), cap.word(i, OBJ_ANIM_STEP + 2 * k)
+            f = animation_frame(rom, spa, step, face)
+            if f is not None:
+                spas.add(spa)
+            facing.append(str(face))
+            roster.append(DIGITS[min(cap.byte(i, OBJ_ROSTER + 2 * k), 35)])
+            code = signed(i, OBJ_POSITION + 2 * k)
+            role.append(str(code) if 0 <= code < 6 else "x")
+            anim.append(f"{spa:04x}")
+            frame.append(f"{f or 0:03x}")
+            mirror.append("1" if cap.word(i, OBJ_ATTRIBUTE + 2 * k) & 0x0800 else "0")
+            if cap.word(i, OBJ_FLAGS + 2 * k) & 0x0008:
+                mask |= 1 << k
+        match["ctrl"].append(mask)
+    match.update(facing="".join(facing), roster="".join(roster), role="".join(role), anim="".join(anim),
+                 frame="".join(frame), mirror="".join(mirror), puckFrame="".join(puck_frame))
+    last = cap.count - 1
+    home_id, away_id = cap.word(last, TEAM_IDS[0]), cap.word(last, TEAM_IDS[1])
+    match["team1"], match["team2"] = home or "Home", away or "Away"
+    if home_id < len(teams) and away_id < len(teams):
+        match["team1"], match["team2"] = home or teams[home_id]["name"], away or teams[away_id]["name"]
+        match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
+        match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
+        match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
+    match["rom"] = f"{zlib.crc32(rom):08x}"
+    match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
+    try:
+        build_sprites(rom)
+    except (struct.error, IndexError) as problem:
+        print(f"no game sprites for {rom_path.name}: {problem}")
+    return match
+
+
+class SaveStates:
+    """RetroArch Snes9x save states as samples of work RAM, a second apart: a still picture of the game from each, to
+    check the SNES reading without a recording (tools/snes_preview.py)."""
+    RAM = 68505 + 16  # the RAM block's data in a RetroArch state (a 16-byte wrapper, then the Snes9x snapshot)
+
+    def __init__(self, paths):
+        self.rams = [Path(p).read_bytes()[self.RAM:self.RAM + RAM_SIZE] for p in paths]
+        self.count = len(self.rams)
+
+    def ms(self, i):
+        return 1000 * i
+
+    def word(self, i, address):
+        return struct.unpack_from("<H", self.rams[i], address)[0]
+
+    def byte(self, i, address):
+        return self.rams[i][address]
+
+
+# ------------------------------------------------------------------------------------------------------- sprites
+# The sprite set DrawSprite draws players, goalies, the puck and the nets from (SpriteFrames in the disassembly): a
+# table of 4-byte offsets from $828000 (high word = banks on, low word = address in that bank - $8000; the first
+# offset ends the table: 976 frames), then the frames through bank $8E. A frame: piece count, flags (bit 7 16x16
+# tiles), tile count (8x8 tiles), four words (its box: left, right, top, bottom), two transfer sizes (the tiles of the
+# upper and the lower tile row in video memory), the tiles' offset from the frame, four bytes, then 7-byte pieces
+# (x, y: signed words from the player's position, y down; a word of tile number (bits 0-8: column = tile % 16, row
+# = tile // 16, so a 16x16 piece is tiles N, N+1, N+16, N+17), palette (bits 9-11), h/v flip (bits 14, 15); a size
+# byte, $FF 16x16 else 8x8), then the tiles, 32 bytes each in the SNES's planar 4-bit format. Earlier pieces are in
+# front. Palette 4 is the team's uniform (Home's colours in palette 4, Away's in 5: DrawSprite flips the bit), used by
+# 3945 of 4253 pieces; 2 is fixed (the puck and nets, frames 373-394; in the ROM at $D50B6 and the same in all 445
+# save states); 0 and 1 change during play (goal light, logos ...), taken here as their most common colours there.
+SPRITE_FRAMES = 0x828000
+FIXED_PALETTES = (  # sprite palettes 2, 0, 1, as the library's fixed slots 1, 2, 3
+    ["#c5e6ff", "#eeeeff", "#d5eeff", "#dedede", "#000000", "#b4b4b4", "#6a6a6a", "#4a4a4a", "#deb4b4", "#ff9494", "#de4a6a", "#6a94de", "#deb420", "#94b4ff", "#202020", "#94deff"],
+    ["#411800", "#00ee00", "#299c00", "#ff9c00", "#520008", "#180831", "#6a0829", "#941808", "#b40808", "#000000", "#10b400", "#52cd00", "#000000", "#ee1008", "#ffe600", "#b4cd00"],
+    ["#000000", "#ffffff", "#000000", "#000000", "#310000", "#000000", "#000000", "#000000", "#000000", "#080000", "#180000", "#080000", "#bdff4a", "#ac2000", "#000000", "#080000"],
+)
+PALETTE_SLOT = {4: 0, 5: 0, 2: 1, 0: 2, 1: 3}  # the library's slot 0 is the team's colours
+
+
+def sprite_frame(rom, n):
+    """Frame n's picture: (left, top, rows of (slot, colour) pairs), offsets from the player's position."""
+    base = file_offset(SPRITE_FRAMES)
+    off = struct.unpack_from("<I", rom, base + 4 * n)[0]
+    at = base + (off >> 16) * 0x8000 + (off & 0xFFFF)
+    count = rom[at]
+    upper, _, tiles_at = struct.unpack_from("<3H", rom, at + 12)
+    upper //= 32  # tiles in the upper row
+    pieces = [struct.unpack_from("<hhHB", rom, at + 22 + 7 * k) for k in range(count)]
+
+    def tile(number):
+        index = number % 16 + (upper if number // 16 else 0)
+        data = rom[at + tiles_at + 32 * index:at + tiles_at + 32 * index + 32]
+        return [[((data[2 * y] >> (7 - x)) & 1) | (((data[2 * y + 1] >> (7 - x)) & 1) << 1) |
+                 (((data[16 + 2 * y] >> (7 - x)) & 1) << 2) | (((data[17 + 2 * y] >> (7 - x)) & 1) << 3) for x in range(8)]
+                for y in range(8)]
+
+    drawn = []
+    for x, y, word, size in pieces:
+        big = size == 0xFF
+        n0 = word & 0x1FF
+        side = 16 if big else 8
+        rows = [[0] * side for _ in range(side)]
+        for ty in range(2 if big else 1):
+            for tx in range(2 if big else 1):
+                t = tile(n0 + tx + 16 * ty)
+                for yy in range(8):
+                    rows[ty * 8 + yy][tx * 8:tx * 8 + 8] = t[yy]
+        if word & 0x4000:
+            rows = [r[::-1] for r in rows]
+        if word & 0x8000:
+            rows = rows[::-1]
+        drawn.append((x, y, side, PALETTE_SLOT.get((word >> 9) & 7, 1), rows))
+    if not drawn:
+        return 0, 0, [[(0, 0)]]
+    left, top = min(d[0] for d in drawn), min(d[1] for d in drawn)
+    right, bottom = max(d[0] + d[2] for d in drawn), max(d[1] + d[2] for d in drawn)
+    canvas = [[(0, 0)] * (right - left) for _ in range(bottom - top)]
+    for x, y, side, slot, rows in reversed(drawn):  # earlier pieces in front
+        for yy in range(side):
+            for xx in range(side):
+                if rows[yy][xx]:
+                    canvas[y - top + yy][x - left + xx] = (slot, rows[yy][xx])
+    return left, top, canvas
+
+
+def build_sprites(rom):
+    """This ROM's sprite library (sprites/<crc32 of the ROM without a copier header>.js), in the Genesis library's
+    format, so the viewer draws SNES players the same way."""
+    import json
+    import zlib
+    from .common import ROOT
+    rom = strip_header(rom)
+    out = ROOT / "sprites" / f"{zlib.crc32(rom):08x}.js"
+    if out.exists():
+        return out
+    count = struct.unpack_from("<I", rom, file_offset(SPRITE_FRAMES))[0] // 4
+    frames = {}
+    for n in range(count):
+        left, top, canvas = sprite_frame(rom, n)
+        frames[f"{n:03x}"] = {"x": left, "y": top, "w": len(canvas[0]), "h": len(canvas),
+                             "p": "".join(chr(48 + 16 * slot + v) for row in canvas for slot, v in row)}
+    library = {"version": 2, "system": NAME, "frames": frames, "fixed": [list(p) for p in FIXED_PALETTES]}
+    out.parent.mkdir(exist_ok=True)
+    out.write_text("window.NHL94_SPRITES = " + json.dumps(library, separators=(",", ":")) + ";\n", encoding="utf-8")
+    return out
