@@ -234,8 +234,17 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   $ECD8; stop $EC14; sweep (poke) check $F208; checks/burst $F27A-$F342 (Genesis order: shoulder L, shoulder R, hip L,
   hip R, burst); falls $F49C (forward) / $F54E (back); faceoff $F600 / $F62A; upended $F6C0; stumble $F7B2; goalie
   ready $E0FE, saves $E1E2-$E2FC, gswing $E34E, dive $E4B6 (some by order, not all checked). Most common, still
-  unnamed: $EAFE, $EBB0, $EBE2 (skating), $EA1A / $EA4C. ACTIONS stays empty, so the analysis (shots, passes,
-  turnovers ...) does not run for SNES games yet.
+  unnamed: $EAFE, $EBB0, $EBE2 (skating), $EA1A / $EA4C.
+- SNES analysis (on): ACTIONS confirmed from controller 1's presses ($0776; it drove Toronto, the user's team: 210
+  action answers against Pittsburgh's 100): A = shoot ($ED4A/$EE5C, plus $F196, a swing without the puck: one-timer)
+  or burst/check ($F342, $F2AC); B = pass ($EC66/$ECD8; goalie $E34E) or poke ($F208). Hook not identified. The
+  hidden puck (the analysis's whistle marker) is the clock-stopped flag gmclock $15D6 (puck height given as -256).
+  Posts by the Genesis rule; team stat snapshots in STAT_FIELDS order (no per-player values, so find_hits uses the
+  team checks: the checking skater nearest an opponent going down). The recording is cut where the game's numbers
+  last stood (it runs on into the menus). Against the game's own counts: shots on goal 10/10 and 12/12, checks 24/24
+  and 29/29, counted passes 53/53 and 49/48, faceoffs won 5/5 and 8/8. A goal with no shots-on-goal rise (the SNES
+  penalty-shot goal) now reads counted false (no change on the Genesis recordings). Pass shots found: Toronto 1
+  (wide), Pittsburgh 2 (the penalty-shot goal, and a save); the user saw one Pittsburgh pass shot.
   Not known yet: puck height / hidden puck (whistles), screen state (menus, pause, replay), per-player stats,
   controller words, the remaining animation names.
 

@@ -244,7 +244,7 @@ def find_shots(m, goals=None):
 
     # Credit what the game counted, in time order, each to the latest shot not used yet. A goal also raises the
     # shots-on-goal count (within a moment either side); that rise belongs to the goal.
-    events = []
+    events, uncounted = [], set()
     for team in (0, 1):
         sogs = [g for g in range(1, N) if sog(g, team) > sog(g - 1, team)]
         goal_frames = [g for g in range(1, N) if score(g, team) > score(g - 1, team)]
@@ -252,6 +252,8 @@ def find_shots(m, goals=None):
             close = [s for s in sogs if abs(t[s] - t[g]) <= 1500]
             if close:
                 sogs.remove(min(close, key=lambda s: abs(t[s] - t[g])))
+            else:
+                uncounted.add(g)  # a goal the game did not count as a shot on goal (the SNES penalty-shot goal)
             events.append((g, 'goal', team))
         events += [(s, 'save', team) for s in sogs]
     for g, result, team in sorted(events):
@@ -264,7 +266,7 @@ def find_shots(m, goals=None):
             sh = latest(team, g, window, True, idx) or scorer_touch(team, g, idx) or origin(team, g, idx)
         else:
             sh = latest(team, g, window, True) or origin(team, g)
-        sh['result'], sh['counted'], sh['resolved'] = result, True, g
+        sh['result'], sh['counted'], sh['resolved'] = result, g not in uncounted, g
     for p in posts:
         for team in (0, 1):
             sh = latest(team, min(N - 1, p + 3), 2000, False)  # point-blank: the post can register a sample before the release
@@ -606,47 +608,69 @@ def find_hits(m):
     dist = lambda i, a, b: math.hypot(at(i, a)[0] - at(i, b)[0], at(i, a)[1] - at(i, b)[1])
     on_ice = lambda i, k: role[i * 12 + k] != 'x' and roster[i * 12 + k] != 'z'
     out = []
+
+    def window(f, ms):
+        j0 = f
+        while j0 > 0 and t[f] - t[j0 - 1] <= ms:
+            j0 -= 1
+        j1 = f
+        while j1 + 1 < N and t[j1 + 1] - t[f] <= ms:
+            j1 += 1
+        return range(j0, j1 + 1)
+
+    def record(f, team, k, rise):
+        """The hit thrown by record k at frame f: whom it hit, how, and what it did to him."""
+        opp = [v for v in range((1 - team) * 6, (1 - team) * 6 + 6) if on_ice(f, v)]
+        if not opp:
+            return
+        # the nearest opponent going down within 0.8 s, else the nearest on the ice
+        down = [(dist(j, k, v), v, j) for j in window(f, 800) for v in opp
+                if on_ice(j, v) and anim(j, v) in act['down'] and dist(j, k, v) < 40]
+        victim = min(down)[1] if down else min((dist(f, k, v), v) for v in opp)[1]
+        x, y = at(f, victim)
+        # How it was thrown (the thrower's check animation: shoulder, hip, cross-check) and what it did to the
+        # player hit (knocked down, upended, into the boards, into the bench), within 0.7 s either side.
+        # In the Genesis recordings: shoulder 111, cross-check 14, hip 2, not seen 48.
+        how = outcome = None
+        for j in window(f, 700):
+            how = how or check_moves.get(anim(j, k))
+            if outcome in (None, 'knocked down'):
+                outcome = hit_outcomes.get(anim(j, victim), outcome)
+        for _ in range(rise):
+            out.append({'f': f, 'team': team, 'by': int(roster[f * 12 + k], 36), 'on': int(roster[f * 12 + victim], 36),
+                        'x': round(x), 'y': round(y), 'how': how or 'check', 'outcome': outcome or 'stayed up'})
+
+    team_checks = STAT_FIELDS.index('checks')
     for s in range(1, len(F)):
         f = F[s]
         for team, side in ((0, 'home'), (1, 'away')):
             a, b = st[side][s - 1], st[side][s]
+            mine = [k for k in range(team * 6, team * 6 + 6) if on_ice(f, k)]
+            if len(b) <= n:
+                # No per-player counts (the SNES so far): the team's checks rose; the thrower is the skater of
+                # that team checking (a check or burst animation) nearest an opponent going down, else the one
+                # nearest any opponent.
+                rise = b[team_checks] - a[team_checks]
+                if not 0 < rise <= 3 or not mine:
+                    continue
+                moves = set(check_moves) | act['lunge']
+                opp = [v for v in range((1 - team) * 6, (1 - team) * 6 + 6) if on_ice(f, v)]
+                if not opp:
+                    continue
+                checking = [k for k in mine if role[f * 12 + k] != '0' and any(anim(j, k) in moves for j in window(f, 800))]
+                pool = checking or [k for k in mine if role[f * 12 + k] != '0']
+                if not pool:
+                    continue
+                k = min(pool, key=lambda k: min(dist(f, k, v) for v in opp))
+                record(f, team, k, rise)
+                continue
             for idx in range((len(b) - n) // per):
                 rise = b[n + per * idx + slot] - a[n + per * idx + slot]
                 if not 0 < rise <= 3:
                     continue
-                k = next((k for k in range(team * 6, team * 6 + 6) if on_ice(f, k) and int(roster[f * 12 + k], 36) == idx), None)
-                if k is None:
-                    continue
-                opp = [v for v in range((1 - team) * 6, (1 - team) * 6 + 6) if on_ice(f, v)]
-                if not opp:
-                    continue
-                down = []  # (distance, victim record, frame) for opponents going down within 0.8 s
-                j0 = f
-                while j0 > 0 and t[f] - t[j0 - 1] <= 800:
-                    j0 -= 1
-                j = j0
-                while j < N and t[j] - t[f] <= 800:
-                    for v in opp:
-                        if on_ice(j, v) and anim(j, v) in act['down'] and dist(j, k, v) < 40:
-                            down.append((dist(j, k, v), v, j))
-                    j += 1
-                victim = min(down)[1] if down else min((dist(f, k, v), v) for v in opp)[1]
-                x, y = at(f, victim)
-                # How it was thrown (the thrower's check animation: shoulder, hip, cross-check) and what it did to the
-                # player hit (knocked down, upended, into the boards, into the bench), within 0.7 s either side.
-                # In the recordings: shoulder 111, cross-check 14, hip 2, not seen 48.
-                how = outcome = None
-                for j in range(j0, N):
-                    if t[j] - t[f] > 700:
-                        break
-                    if t[f] - t[j] > 700:
-                        continue
-                    how = how or check_moves.get(anim(j, k))
-                    if outcome in (None, 'knocked down'):
-                        outcome = hit_outcomes.get(anim(j, victim), outcome)
-                for _ in range(rise):
-                    out.append({'f': f, 'team': team, 'by': idx, 'on': int(roster[f * 12 + victim], 36), 'x': round(x), 'y': round(y),
-                                'how': how or 'check', 'outcome': outcome or 'stayed up'})
+                k = next((k for k in mine if int(roster[f * 12 + k], 36) == idx), None)
+                if k is not None:
+                    record(f, team, k, rise)
     return sorted(out, key=lambda e: e['f'])
 
 
