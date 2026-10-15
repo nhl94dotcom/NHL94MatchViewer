@@ -12,6 +12,7 @@ sprites/
 
 # Generated
 rink_gens.js
+rink_snes.js
 build/
 dist/
 __pycache__/

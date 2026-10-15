@@ -11,7 +11,8 @@ import shutil
 import sys
 from pathlib import Path
 
-BUNDLED = ("viewer.html", "helper.html", "rink_gens.js", "rink_benches.js", "rink_gens.png")
+BUNDLED = ("viewer.html", "helper.html", "rink_gens.js", "rink_benches.js", "rink_gens.png",
+           "rink_snes.js", "rink_benches_snes.js", "rink_snes.png")
 
 
 def documents():

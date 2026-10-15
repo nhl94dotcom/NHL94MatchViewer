@@ -1,7 +1,7 @@
 """Writes a match as one self-contained page to send to someone: shared/<teams, score, name>.html.
 
-The same file the viewer's "Save game file" button makes: viewer.html with the rink picture (rink_gens.js), the
-bench masks (rink_benches.js), and the match and its ROM's sprite library gzipped and base64'd inside
+The same file the viewer's "Save game file" button makes: viewer.html with the rink picture (rink_gens.js, or rink_snes.js
+for a SNES game), the bench masks (rink_benches.js / rink_benches_snes.js), and the match and its ROM's sprite library gzipped and base64'd inside
 (window.NHL94_PACKED), which the page unpacks when it opens. Used by the helper; also from the command line:
 
     python tools/share_game.py <match name>
@@ -17,6 +17,7 @@ from pathlib import Path
 # Where games, replays, sprites and settings live: the project folder, or NHL94_HOME (the packaged helper sets it to
 # a folder in Documents, since a single .exe cannot write beside its own files).
 ROOT = Path(os.environ["NHL94_HOME"]) if os.environ.get("NHL94_HOME") else Path(__file__).resolve().parent.parent
+RINK_FILES = {"genesis": ("rink_gens.js", "rink_benches.js"), "snes": ("rink_snes.js", "rink_benches_snes.js")}
 
 
 def load_js_object(path):
@@ -37,10 +38,12 @@ def make_game_file(name, out_dir=None):
     if rom and (ROOT / "sprites" / f"{rom}.js").exists():
         packed["sprites"] = pack(load_js_object(ROOT / "sprites" / f"{rom}.js"))
     data = ["<script>", '// The game, packed by tools/share_game.py.']
-    rink = ROOT / "rink_gens.js"
+    # The rink picture and benches of the system the game was played on.
+    rink_file, bench_file = RINK_FILES.get(match.get("system"), RINK_FILES["genesis"])
+    rink = ROOT / rink_file
     if rink.exists():
         data.append(rink.read_text(encoding="ascii").strip())
-    benches = ROOT / "rink_benches.js"
+    benches = ROOT / bench_file
     if benches.exists():
         data.append(benches.read_text(encoding="utf-8").strip())
     data.append("window.NHL94_PACKED = " + json.dumps(packed) + ";")

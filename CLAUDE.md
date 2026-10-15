@@ -128,9 +128,27 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   (city, abbreviation, nickname, arena) in the same length-prefixed form. Boston's roster ends at $E2E0C in
   NHL94.smc (file offset, no header) with "Boston" / "BOS" / "Bruins" / "Boston Garden" after it. The team
   pointer table has not been found yet.
-- Plan: split the Genesis-specific code (memory reader, address map, animation-to-action table, ROM reader,
-  sprites, rink picture) into a per-system module and add a SNES one; everything after the converter (the match
-  file and the viewer) stays shared.
+- Code layout (2026-10-15): `tools/systems/` holds one module per system. `genesis.py` has everything Genesis:
+  addresses and record layout, ACTIONS (animation words by name: shoot, pass, goalie_pass, poke, hook, lunge, down,
+  dive, goalie_save), `fixed` (position format), the memory reader (`Emulator`, on `process.Attached`), what the
+  helper records and reads (`BLOCKS`, `View`: screen, period, clock, score, teams, in_menus, in_game, live), the ROM
+  readers (teams, logos, animation table, `find_rom`) and `read_match` (recording -> match file without the
+  analysis). `common.py`: ROOT, STAT_FIELDS (the order of the team values in stat snapshots, which the viewer reads
+  by position), overall(). `process.py`: Windows process reading shared by all. `snes.py`: what is known so far
+  (stat addresses, scoring summary, ROM header handling); `attach` returns None and `read_match` is not written.
+  `systems.of_capture` picks the module from capture.json's "system" (absent = genesis); match files carry
+  "system". The analysis in export_match.py asks `actions(m)` for animation words. Checked: all seven Genesis
+  recordings convert to exactly the same match files as before the split (only "system" added), the helper ran
+  a fake-emulator game end to end, and the packaged exe converts in a fresh folder.
+- SNES rink: `rink_snes.png` (900 x 1440, from the user; the original with Montreal's logo is
+  `reference/rink_snes_original.png`, cleared with `tools/clear_centre_logo.py`). Laid out like the Genesis
+  picture (benches, penalty boxes, stands, nets in the same places), so the viewer's `RINKS.snes` reuses
+  RINK_SIDES, PENALTY_BOXES and the overhead rebuild with its own measurements (cx 449.2, cy 776.2, ux 2.451,
+  uy 2.076 from goal lines at rows 219.5 / 1332.5 and dots at columns 278.6 / 622.2) and colours (ice #bfdaf7).
+  These assume SNES game units equal the Genesis ones; not checked. `rink_snes.js` (embed_rink.py) and
+  `rink_benches_snes.js` (bench_mask.py: Home red trim as on the Genesis; Away in grey-green, picked inside the
+  bench only) load when a SNES match opens; `?rink=snes` shows it with any match. Game files carry only their
+  system's rink. Bench recolouring needs SNES palettes (not read yet).
 - Save states: `states\Snes9x\NHL94_Classic.state*` (446 of them). A RetroArch state is a 16-byte `RASTATE` wrapper
   around a Snes9x snapshot (`#!s9xsnp:0011`, then blocks `XXX:nnnnnn:` + data: NAM, CPU, REG, PPU, DMA, VRA 64 KB,
   RAM 128 KB, SRA, FIL, SND, CTL, TIM). The RAM block's data starts 68505 bytes into the snapshot (68521 into the
@@ -669,6 +687,7 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
 - `tools/nhl94_record_full.ps1` - records all 64 KB at about 50 Hz to `ram.bin` (about 3 MB per second), for
   finding where something lives. The converter accepts these captures too.
 - `tools/export_match.py` - converts a capture's `fast.bin` into `matches/<name>.js` (drops repeated samples).
+- `tools/systems/` - one module per game system (genesis.py, snes.py) plus common.py and process.py; see "SNES version".
 - `rink_gens.js` - the rink picture as a data URL (from `tools/embed_rink.py`), so clips can be saved.
 - `viewer.html` - the top-down viewer; one page, plus `rink_gens.png` beside it for the ice and
   `sprites/<ROM crc32>.js` for the game sprites (on unless turned off; `?sprites` in the address forces them on).
