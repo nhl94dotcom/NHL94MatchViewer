@@ -6,6 +6,7 @@ period and controller (from the NHL94SNES disassembly, github.com/Mhopkinsinc/NH
 and the ROM's teams (read_teams). Not known yet: who has the puck, the screen state (menus, pause), per-player
 stats, the animation words, the sprites, and how to find work RAM inside the running Snes9x core.
 """
+import math
 import struct
 from pathlib import Path
 
@@ -49,6 +50,7 @@ PERIOD, CLOCK = 0x1630, 0x1632    # period from 0; clock in seconds left
 PAD1 = 0x0776                     # controller 1, held
 GAME_FLAGS2 = 0x15D8              # high byte: $08 replay playing, $20 power play, $01 faceoff (NHLPA '93 meanings)
 LAST_TOUCH = 0x179A               # per team: the last player to touch the puck
+PUCK_HOLDER = 0x0AE7              # the object that has the puck, 15 = nobody (see read_match)
 
 
 def strip_header(data):
@@ -123,9 +125,93 @@ def scoring_summary(ram):
     return out
 
 
+class Emulator:
+    """NHL '94 loaded in Snes9x (snes9x_libretro.dll): its work RAM and cartridge, read-only.
+
+    Found through Snes9x's memory map (in the core's writable data; see Finder.find), which points at work RAM
+    then pointers to RAM, ROM, SRAM, VRAM ... (allocated elsewhere). Found by looking for a pointer whose cartridge
+    has "NHL" in the LoROM title ($7FC0) or HiROM title ($FFC0); the pointer before it is work RAM (128 KB, plain
+    bytes)."""
+    system = NAME
+    module_prefix = "snes9x"
+
+    def __init__(self, attached):
+        self.p = attached
+
+    @classmethod
+    def attach(cls):
+        from . import process
+
+        class Finder(process.Attached):
+            module_prefix = "snes9x"
+
+            def find(self, start, end):
+                # Snes9x's memory map: one pointer per 4 KB of the SNES's address space (entry = bank << 4 |
+                # address >> 12). Bank $7E is work RAM's first 64 KB (16 equal entries), $7F the next (16 entries
+                # 64 KB on). Bank $80 at $8000 is the cartridge (LoROM: the entry points $8000 before it).
+                for base, data in self.writable_regions(start, end):
+                    n = len(data) // 8
+                    q = struct.unpack_from("<%dQ" % n, data)
+                    for i in range(n - 32):
+                        ram = q[i]
+                        if ram <= 0x10000 or (i and q[i - 1] == ram) or q[i + 15] != ram or q[i + 16] != ram + 0x10000:
+                            continue
+                        if not (all(q[i + j] == ram for j in range(16)) and all(q[i + 16 + j] == ram + 0x10000 for j in range(16))):
+                            continue
+                        entry = base + 8 * i - 0x7E0 * 8  # the map's first entry
+                        rom_entry = self.raw(entry + 0x808 * 8, 8)
+                        rom = struct.unpack("<Q", rom_entry)[0] + 0x8000 if rom_entry else 0
+                        if b"NHL" in (self.raw(rom + 0x7FC0, 21) or b"") and self.raw(ram + RAM_SIZE - 16, 16) is not None:
+                            return ram, rom
+                return None
+
+        found = Finder.attach()
+        return cls(found) if found else None
+
+    @property
+    def ram(self):
+        return self.p.ram
+
+    @property
+    def rom(self):
+        return self.p.rom
+
+    def read(self, offset, size):
+        return self.p.read(offset, size)
+
+    def word(self, offset):
+        return self.p.word(offset)
+
+    def byte(self, offset):
+        data = self.read(offset, 1)
+        return data[0] if data else None
+
+    def close(self):
+        self.p.close()
+
+
+DEFAULT_ROM = Path(r"C:\Users\USER\RetroArch-1.17-Win64\ROMs\SNES\NHL94.smc")
+
+
+def find_rom(capture):
+    """The ROM a recording was played on: by the fingerprint in capture.json (crc32 of the ROM without header),
+    looked for in roms/ and RetroArch's SNES folder; else the original game."""
+    import json
+    import zlib
+    from .common import ROOT
+    layout = capture / "capture.json"
+    stored = json.loads(layout.read_text()).get("rom_crc32") if layout.exists() else None
+    if not stored:
+        return DEFAULT_ROM, "assumed; this recording does not say which ROM was played"
+    for path in sorted((ROOT / "roms").glob(ROM_GLOB)) + sorted(DEFAULT_ROM.parent.glob(ROM_GLOB)):
+        if f"{zlib.crc32(strip_header(path.read_bytes())):08x}" == stored:
+            return path, "matched to the recording"
+    return DEFAULT_ROM, "assumed; no ROM matches the one that was recorded"
+
+
 def attach():
-    """The running Snes9x with NHL '94 loaded: not written yet (how Snes9x keeps work RAM has to be found first)."""
-    return None
+    """The running Snes9x with an NHL '94 ROM loaded, or None."""
+    return Emulator.attach()
 
 
 ANIM_BANK = 0x9D0000    # the animation word (SPA) is an address in bank $9D: 8 direction pointers to (frame, time)
@@ -190,7 +276,13 @@ def read_match(cap, rom_path, name, home=None, away=None):
         match["puckV"] += [round(signed(i, PUCK_VX) / 100), round(signed(i, PUCK_VY) / 100)]
         f = animation_frame(rom, cap.word(i, OBJ_ANIM + 28), cap.word(i, OBJ_ANIM_STEP + 28), cap.word(i, OBJ_FACING + 28))
         puck_frame.append(f"{f or 0:03x}")
-        match["owner"].append(-1)
+        # Who has the puck: $0AE7, an object number (15 = nobody), checked on the first SNES recording: it names the
+        # player the puck moves with in all 608 clearly carried moments and reads 15 in 456 of 457 clearly loose
+        # ones. Counted only with the puck within 30 of him (at stoppages it stays on the goalie who held it).
+        holder = cap.byte(i, PUCK_HOLDER)
+        near = holder < 12 and math.hypot(signed(i, OBJ_X + 28) - signed(i, OBJ_X + 2 * holder),
+                                          signed(i, OBJ_Y + 28) - signed(i, OBJ_Y + 2 * holder)) <= 30
+        match["owner"].append(holder if near else -1)
         mask = 0
         for k in range(PLAYERS):
             match["pos"] += [signed(i, OBJ_X + 2 * k), signed(i, OBJ_Y + 2 * k)]
@@ -209,16 +301,59 @@ def read_match(cap, rom_path, name, home=None, away=None):
             if cap.word(i, OBJ_FLAGS + 2 * k) & 0x0008:
                 mask |= 1 << k
         match["ctrl"].append(mask)
+    # The SNES puck leaves the stick for a moment hundreds of times a game while a player skates with it (the
+    # byte drops to 15): gaps under 0.15 s with the same player before and after are taken as his.
+    own, t = match["owner"], match["t"]
+    i = 1
+    while i < len(own):
+        if own[i] < 0 <= own[i - 1]:
+            j = i
+            while j < len(own) and own[j] < 0 and t[j] - t[i - 1] < 150:
+                j += 1
+            if j < len(own) and own[j] == own[i - 1]:
+                for q in range(i, j):
+                    own[q] = own[j]
+            i = j
+        i += 1
     match.update(facing="".join(facing), roster="".join(roster), role="".join(role), anim="".join(anim),
                  frame="".join(frame), mirror="".join(mirror), puckFrame="".join(puck_frame))
-    last = cap.count - 1
-    home_id, away_id = cap.word(last, TEAM_IDS[0]), cap.word(last, TEAM_IDS[1])
+    # The teams shown for most of the recording (at its very end the game may already have gone back to the menus).
+    from collections import Counter
+    home_id, away_id = Counter((cap.word(i, TEAM_IDS[0]), cap.word(i, TEAM_IDS[1]))
+                               for i in range(0, cap.count, max(1, cap.count // 200))).most_common(1)[0][0]
     match["team1"], match["team2"] = home or "Home", away or "Away"
     if home_id < len(teams) and away_id < len(teams):
         match["team1"], match["team2"] = home or teams[home_id]["name"], away or teams[away_id]["name"]
         match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
         match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
         match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
+    # Goals from the game's own scoring summary. The game raises the byte count before it has written the entry, so
+    # each goal's moment is where the count first covers it, and its contents are read where the summary is
+    # longest (the last such sample: complete, and before the game goes back to the menus and clears it). A goal is
+    # a penalty-shot goal when that team's penalty-shot goals (STAT_ADDRESSES psGoals) went up within 3 s of it.
+    counts = [cap.byte(i, SCORING_COUNT) for i in range(cap.count)]
+    valid = [c if c % 6 == 0 and c <= 240 else -1 for c in counts]
+    longest = max(valid) if valid else 0
+    final = max((i for i, c in enumerate(valid) if c == longest), default=0)
+    goals, tally = [], {}
+    for at in range(0, longest, 6):
+        i = next(i for i, c in enumerate(valid) if c > at)
+        e = bytes(cap.byte(final, SCORING_LIST + at + j) for j in range(6))
+        team = e[2] >> 7
+        people = [e[3]] + [a for a in e[4:6] if a != 0xFF]
+        for n, idx in enumerate(people):
+            tally[(team, idx, n > 0)] = tally.get((team, idx, n > 0), 0) + 1
+        strength = STRENGTH.get(e[2] & 0x7F, "?")
+        kinds = [k for k in (strength,) if k in ("PPG", "SHG")] + (["5 on 3"] if strength == "PP2" else ["3 on 5"] if strength == "SH2" else [])
+        ps = STAT_ADDRESSES["psGoals"] + 2 * team
+        later = next((j for j in range(i, cap.count) if cap.ms(j) - cap.ms(i) > 3000), cap.count - 1)
+        earlier = next((j for j in range(i, -1, -1) if cap.ms(i) - cap.ms(j) > 3000), 0)
+        if cap.word(later, ps) > cap.word(earlier, ps):
+            kinds.append("penalty shot")
+        goals.append({"f": i, "team": team, "period": match["period"][i], "clock": match["clock"][i], "scorer": e[3],
+                      "goals": tally[(team, e[3], False)], "assists": [[a, tally[(team, a, True)]] for a in people[1:]],
+                      "kinds": kinds, "strength": strength})
+    match["goals"] = goals
     match["rom"] = f"{zlib.crc32(rom):08x}"
     match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
     try:

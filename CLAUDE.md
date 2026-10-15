@@ -210,7 +210,32 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   animation, frame, mirror, clock, period, score, shots, rosters, palettes, anims, sprites); `snes.SaveStates` reads
   save states as samples and `tools/snes_preview.py <state>` makes a one-moment match (matches/snes_*.js) from one:
   NHL94_Classic.state10 (Chicago 7-3 St. Louis) shows correctly on the SNES rink with SNES sprites.
-  Not known yet: puck possession, puck height, screen state, per-player stats, finding RAM in the running Snes9x.
+- Live reading (2026-10-15, the user's first online SNES match): `snes.Emulator` finds work RAM through Snes9x's
+  memory map in the core's writable data (one pointer per 4 KB of SNES address space: bank $7E = 16 equal entries,
+  $7F the next 16 at +64 KB; the cartridge at the bank $80 entry + $8000); attaches in 0.01 s. `tools/snes_record.py`
+  is a research recorder (work RAM $0000-$3FFF about 60 times a second, all 128 KB a second, everything incl. menus).
+  `captures/snes_2026-10-15_1755`: Toronto (home) 1-5 Pittsburgh, 5-minute periods, online, both teams human; two
+  penalty shots (Andreychuk missed in P1 at about 67 s of the recording; Samuelsson scored, P3 4:26), two instant
+  replays in P3, one Pittsburgh pass shot, a few posts, both teams penalised after one whistle, Game Stats viewed
+  after the final horn (per the user). Converts with `python tools/export_match.py captures/snes_2026-10-15_1755`
+  (ROM assumed NHL94.smc; the research recorder stores no fingerprint): positions, sprites, teams, controlled
+  players and goals all show right (penalty shots: only shooter and goalie on the ice, the rest at (-240, 0)).
+- Goals: the scoring summary's count rises before the entry is written, so goal moments come from the count and the
+  contents from the longest summary (the count goes to 0 back at the menus); penalty-shot goals from the psGoals
+  words rising within 3 s. All six goals right (Lemieux 3, one PPG; Stevens; Samuelsson PS; Borshevsky).
+- Who has the puck: $0AE7 (object number, 15 = nobody; "nobody" in 456 of 457 clearly loose moments, the puck mover
+  in all 608 clearly carried ones). It drops to 15 for a moment hundreds of times while a player skates with the
+  puck, so gaps under 0.15 s with the same player on both sides are bridged; puck held 48% of the time. Also:
+  a2touchpuck writes the last toucher to $7E30F6 (object), $30F8/$30FA (x, y) and each team's tmtouch list.
+- Animations, from the release behaviour and by matching Genesis timing patterns (`match_anims` approach): shots
+  $ED4A (puck leaves at a median 15500, up to 27000) and $EE5C (forehand / backhand presumably); passes $EC66 /
+  $ECD8; stop $EC14; sweep (poke) check $F208; checks/burst $F27A-$F342 (Genesis order: shoulder L, shoulder R, hip L,
+  hip R, burst); falls $F49C (forward) / $F54E (back); faceoff $F600 / $F62A; upended $F6C0; stumble $F7B2; goalie
+  ready $E0FE, saves $E1E2-$E2FC, gswing $E34E, dive $E4B6 (some by order, not all checked). Most common, still
+  unnamed: $EAFE, $EBB0, $EBE2 (skating), $EA1A / $EA4C. ACTIONS stays empty, so the analysis (shots, passes,
+  turnovers ...) does not run for SNES games yet.
+  Not known yet: puck height / hidden puck (whistles), screen state (menus, pause, replay), per-player stats,
+  controller words, the remaining animation names.
 
 ## Reading game memory live
 
