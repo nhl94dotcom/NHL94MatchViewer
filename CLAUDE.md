@@ -280,7 +280,7 @@ statistics over the three captures (what the puck did, who was near, what came b
 |---|---|---|
 | $1122 | Hook (A without the puck), about 0.5 s; often followed by $1154 | Tapped, 4 of 4 |
 | $0718, $078A | Pass (B with the puck), about 0.5 s | Pressed: 8 each of 18 B presses with the puck; the player loses the puck in about 90% of runs |
-| $07FC, $092E | Shooting (C). Two animations, the same rules for both; what selects one over the other is unknown (forehand and backhand?). Runs 0.5-0.7 s for a tapped wrist shot, 0.9-1.1 s for a held slapshot | Pressed: 19 of 19 C presses with the puck; long holds gave peak puck speeds of 15000-23600, taps 11400-13700 |
+| $07FC, $092E | Shooting (C): forehand and backhand (named in the disassembly). Runs 0.5-0.7 s for a tapped wrist shot, 0.9-1.1 s for a held slapshot | Pressed: 19 of 19 C presses with the puck; long holds gave peak puck speeds of 15000-23600, taps 11400-13700 |
 | $0C5E | Speed burst / body-check lunge (C without the puck), under 0.1 s; usually followed by $0B96 for about 0.4 s | Pressed: 20 of 43 C presses without the puck |
 | $0B24 | Poke check (B without the puck, near the carrier), about 0.3 s; goalies do it too | Pressed: 26 B presses; 85% human overall |
 | $0DD8, $0D26 | Knocked down, about 2.2 s. After a $0C5E lunge, a nearby opponent entering one of these means the check landed (29 of about 200 lunges) | Inferred |
@@ -295,6 +295,30 @@ statistics over the three captures (what the puck did, who was near, what came b
 | $03D8, $1684, $02A2, $0250, $14F2, $0146, $14C0 | Other goalie actions, not told apart | Unknown |
 | $0A92, $0E8A | Computer-only, without the puck | Unknown |
 | $0B96, $0BC8, $0CF4, $1154, $0EFC, $0A60 | Unknown (after-effects of checks and hooks, most likely) | Unknown |
+
+The Genesis disassembly (github.com/abdulahmad/NHL94Genesis, the user pointed to it; it rebuilds the user's nhl94.bin,
+crc32 9438f5dd, byte for byte) names every animation in `src/frames94.asm` (SPA<name> = offset, i.e. the record's
++$58 word) and every RAM variable in `src/stubinc/ram_addrs.inc` (its `src/ram94.asm` is an old 93 list: wrong
+offsets). The names, which settle the table above:
+$0002 gready, $0114 gready2, $0146 gglover, $0178 gglovel, $01AA gglovel2, $01EC gstickr, $021E gstickl, $0250 gstackr,
+$02A2 gstackl, $02F4 gdive, $0366 gswing (the goalie's pass), $03D8 gskate, $046A pflip, $050C glide, $053E skatewp
+(with the puck), $05D0 skate, $0662 turnl, $0694 turnr, $06C6 stop, $0718 passf, $078A passb, $07FC shotf (forehand),
+$092E shotb (backhand), $0A60 glideback, $0A92 skateback, $0B24 sweepchk (poke), $0B96 shoulderchkl, $0BC8
+shoulderchkr, $0BFA hipchkl, $0C2C hipchkr, $0C5E burst (speed burst), $0C90 Hold, $0CC2 Hold2, $0CF4 flail, $0D26
+fallfwd, $0DD8 fallback, $0E8A celebrate, $0EFC pump, $0F6E wallright, $0FAC wallleft, $0FEA faceoff, $1014 faceoffr,
+$102E siren, $1078 bglass, $109E stanley, $10D0 catch, $1122 hook, $1154 hook2, $11E6 stumble, $1298 fake, $136A flip,
+$145C injuryfall, $148E ghighr, $14C0 ghighl, $14F2 gstick2r, $1544 gstick2l, $1596 gslamtop, $1684 gslambot,
+$1776/$17E8/$185A/$18CC boardfront/right/back/left, $193E/$1A00 benchcheckl/r, $1AC2 crosscheck, $1AF4 injury1.
+So the goalie's save types (glove, stick, stack, high, dive, slam) and the check types (shoulder, hip, boards, bench,
+cross-check) are known by name; the analysis does not use them yet.
+From the same map, checked on `capture6_netplay_bos_stl`: controller 2's held buttons are the byte at $BEF1 (lj2;
+ours, $BEEF, is lj1's low byte): its presses were answered by St. Louis's controlled skater 308 times against 91
+(controller 1: Boston 222, St. Louis 103), so both players' buttons are in every recording. cont1team / cont2team
+($C328 / $C32A, 0 none, 1 Home, 2 Away) read 1 and 2 there (outside fast.bin; full.bin has them).
+ScoreSum: a byte count at $C472, then 6 bytes per goal from $C474 (big-endian word period << 14 | seconds into the
+period; a byte, bit 7 Away, low bits strength as on the SNES: 2 even, 3 power play; scorer, first and second
+assist, $FF none): all 9 goals of capture6 match find_goals. Also there: joypuckcarrier $C318, c1/c2playernum
+$C320/$C322, OptGoalie $D052, goaliemode1/2 $D05A/$D05C, replayactive $BE1E, sflags $C2EC (bit 0 pause).
 
 One-timers: the receiver starts a shooting animation while the pass is still on its way, and the puck's possession
 bytes never name him (the last-touch byte stays on the passer). The user confirmed the game has one-timers and
@@ -689,7 +713,6 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
   unknown rows in the table. A penalty shot was captured (`capture3_bos_la`, Boston, 2nd 3:54: Oates' slapshot with
   the clock stopped, saved, not counted as a shot on goal); the shot list does not tag it yet. No penalty-shot goal
   has been captured.
-- Where the other player's controller is (in netplay, $BEEF is the local player's).
 - The `full_buttons` capture's labelled taps: A at 5.6-12.1 s, B at 13.9-19.7 s, C at 21.1-26.8 s (the C taps came
   while the skater was down, then while controlling the goalie).
 - Whether capture works during netplay, and whether a netplay spectator can do the capturing.
