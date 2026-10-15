@@ -719,6 +719,126 @@ def find_passes(m):
 
 
 
+def find_hits(m):
+    """Every body check that landed: who threw it and who took it. The game counts checks per player, but where
+    depends on the ROM: in the original game the byte at +$11C counts the checks a player THREW (its team sums equal
+    the team's checks, +$10, and the player is mid-check, $0C5E/$0B96, when it rises) and +$102 his penalty minutes;
+    ROMs with smozROM's bodycheck hack count checks thrown at +$102 and hits taken at +$11C. The thrower comes from
+    whichever byte counts checks thrown; whom he hit is the nearest opponent going down ($0DD8/$0D26) within 0.8 s,
+    else the nearest opponent on the ice. On capture5_league30 (hack ROM, which records both) that gives every one of
+    the 23 hits to the player the game says took it.
+    Returns [{f (when the game counted it), team (the thrower's), by, on (roster indices), x, y (where)}]."""
+    st = m.get('stats') or {}
+    if not st.get('f'):
+        return []
+    t, pos, role, roster, A, N = m['t'], m['pos'], m['role'], m['roster'], m['anim'], len(m['t'])
+    F, n, per = st['f'], st['n'], st['p']
+    slot = 3 if st.get('x') == 'Checks' else 4
+    anim = lambda i, k: A[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4]
+    at = lambda i, k: (pos[(i * 12 + k) * 2], pos[(i * 12 + k) * 2 + 1])
+    dist = lambda i, a, b: math.hypot(at(i, a)[0] - at(i, b)[0], at(i, a)[1] - at(i, b)[1])
+    on_ice = lambda i, k: role[i * 12 + k] != 'x' and roster[i * 12 + k] != 'z'
+    out = []
+    for s in range(1, len(F)):
+        f = F[s]
+        for team, side in ((0, 'home'), (1, 'away')):
+            a, b = st[side][s - 1], st[side][s]
+            for idx in range((len(b) - n) // per):
+                rise = b[n + per * idx + slot] - a[n + per * idx + slot]
+                if not 0 < rise <= 3:
+                    continue
+                k = next((k for k in range(team * 6, team * 6 + 6) if on_ice(f, k) and int(roster[f * 12 + k], 36) == idx), None)
+                if k is None:
+                    continue
+                opp = [v for v in range((1 - team) * 6, (1 - team) * 6 + 6) if on_ice(f, v)]
+                if not opp:
+                    continue
+                down = []  # (distance, victim record, frame) for opponents going down within 0.8 s
+                j0 = f
+                while j0 > 0 and t[f] - t[j0 - 1] <= 800:
+                    j0 -= 1
+                j = j0
+                while j < N and t[j] - t[f] <= 800:
+                    for v in opp:
+                        if on_ice(j, v) and anim(j, v) in ('0dd8', '0d26') and dist(j, k, v) < 40:
+                            down.append((dist(j, k, v), v, j))
+                    j += 1
+                victim = min(down)[1] if down else min((dist(f, k, v), v) for v in opp)[1]
+                x, y = at(f, victim)
+                for _ in range(rise):
+                    out.append({'f': f, 'team': team, 'by': idx, 'on': int(roster[f * 12 + victim], 36), 'x': round(x), 'y': round(y)})
+    return sorted(out, key=lambda e: e['f'])
+
+
+ZONE_LINE = 89  # the blue lines, Y = +/-89: with it the puck's time in each end matches the game's attack-zone time
+
+
+def find_zone_entries(m):
+    """Zone entries: the puck crossing a blue line from the neutral zone into the zone a team attacks, with that team
+    the last to touch it (the other team clearing it back into its own zone is not an entry). Each is
+      - 'carried': a player of that team has the puck as it crosses;
+      - 'passed': it was a targeted pass (find_passes, counted by the game) across the line;
+      - 'dumped': anything else: dumped or shot in, chipped past a defender, an untargeted pass.
+    A puck that goes on to an icing is left out. The zone (for whether a shot attempt came of it) lasts until the puck
+    is back in the neutral zone, a whistle, or the period ends. Crossings need the puck back in the neutral zone
+    (|Y| under 83) before the next one, so a puck sitting on the line is not counted again and again.
+    Returns [{f (crossing), known, end, team, idx (carrier, passer or dumper), to (receiver, passes), kind, x,
+    recovered (dumped: the same team got the puck in the zone before the other did)}]."""
+    t, P, own, N = m['t'], m['puck'], m['owner'], len(m['t'])
+    roster = m['roster']
+    idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(roster[i * 12 + k], 36))
+    hidden = lambda i: P[3 * i + 2] < -100
+    passes = m.get('passes', [])
+    icings = m.get('icings', [])
+    out = []
+    state, last, last_f, end = None, -1, -1, None
+    for i in range(N):
+        e = own_end(m, i, 0)
+        end = e if e is not None else end
+        if hidden(i) or (i and m['period'][i] != m['period'][i - 1]) or end is None:
+            state = None
+            if hidden(i):
+                last = -1
+            continue
+        if own[i] >= 0:
+            last, last_f = own[i], i
+        y = P[3 * i + 1] * -end  # in Home's view: > 0 towards the end Home attacks
+        if abs(y) < ZONE_LINE - 6:
+            state = 'neu'
+            continue
+        if abs(y) < ZONE_LINE or state != 'neu':
+            if abs(y) >= ZONE_LINE:
+                state = 'zone'
+            continue
+        state = 'zone'
+        team = 0 if y > 0 else 1  # the team attacking that end
+        if last < 0 or (last < 6) != (team == 0):
+            continue
+        entry = {'f': i, 'team': team, 'idx': idx(last_f, last), 'to': -1, 'x': round(P[3 * i])}
+        # where the zone ends: back in the neutral zone, a whistle, or the period's end
+        q = i
+        while q + 1 < N and not hidden(q + 1) and m['period'][q + 1] == m['period'][i] and abs(P[3 * (q + 1) + 1]) >= ZONE_LINE - 6:
+            q += 1
+        entry['end'] = q
+        mates = range(team * 6, team * 6 + 6)
+        if own[i] >= 0 or (i + 1 < N and own[i + 1] == last and own[i - 1] == last):
+            entry.update(kind='carried', known=i)
+        else:
+            nxt = next((j for j in range(i, q + 1) if own[j] >= 0), None)
+            if any(ic['team'] == team and last_f < ic['f'] and (nxt is None or nxt >= ic['f']) for ic in icings):
+                continue  # an icing, not an entry
+            p = next((p for p in passes if p['team'] == team and p['f'] <= i and p['f'] >= last_f - 2 and p.get('counted')), None)
+            entry['known'] = nxt if nxt is not None else q
+            if p:
+                entry.update(kind='passed', to=p['to'] if p['result'] in ('completed', 'one-timer') else -1)
+                entry['known'] = max(i, p.get('known', i))
+            else:
+                entry['kind'] = 'dumped'
+                entry['recovered'] = nxt is not None and own[nxt] in mates
+        out.append(entry)
+    return out
+
+
 def find_turnovers(m):
     """Changes of possession from one team to the other with no whistle between, and why. Possession is the
     game's own (puck +$60/+$61: who has the puck). A shot losing the puck is not a turnover (blocked, saved or
@@ -1033,6 +1153,8 @@ def main(argv=None):
     match["passes"] = find_passes(match)
     match["faceoffs"] = find_faceoffs(match)
     match["icings"] = find_icings(match)
+    match["zoneEntries"] = find_zone_entries(match)
+    match["hits"] = find_hits(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match["shotList"]):
