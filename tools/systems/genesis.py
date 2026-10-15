@@ -519,6 +519,40 @@ def read_match(cap, rom_path, name, home=None, away=None):
             build_sprites(rom)
         except ValueError as problem:
             print(f"no game sprites for {rom_path.name}: {problem}")
+        build_sounds(rom)
     else:
         print(f"ROM not found at {rom_path}; exporting without player names")
     return match
+
+
+# -------------------------------------------------------------------------------------------------------- sounds
+# The game's sampled sounds (8-bit unsigned PCM, centred on $80, ended by zero bytes), where the Genesis disassembly
+# (src/sound94.asm, tools/extractAssets94.js) places them in the original ROM. The rest of the game's sound (the
+# horn, whistles, beeps, music) is FM synthesis, which would need a sound-chip emulator. The playback rate comes
+# from the note each sound is played at; it is not worked out here: the viewer plays them at an adjustable rate.
+SOUND_SAMPLES = {
+    "puckget": (0x2BFE8, 0x2C248), "pass": (0x1B288, 0x1BFB5), "shotfh": (0x2B430, 0x2BFE8), "shotbh": (0x1B094, 0x1B288),
+    "check": (0x21748, 0x2369A), "check2": (0x2A4AA, 0x2AED9), "hithigh": (0x2AEDA, 0x2B430), "playerwall": (0x29FFA, 0x2A4AA),
+    "crowdcheer": (0x2369A, 0x2657A), "crowdboo": (0x1F1FA, 0x21747), "oooh": (0x1BFB6, 0x1F1FA),
+}
+SOUND_RATE = 10000  # samples a second, a starting guess
+
+
+def build_sounds(rom):
+    """sounds/<crc32 of the ROM>.js: the sampled sounds, base64 PCM, for the viewer. Only for ROMs that keep them
+    where the original does (checked by each sample's ending); returns the path or None."""
+    import base64
+    import json
+    out = ROOT / "sounds" / f"{zlib.crc32(rom):08x}.js"
+    if out.exists():
+        return out
+    samples = {}
+    for name, (start, end) in SOUND_SAMPLES.items():
+        data = rom[start:end].rstrip(b"\x00")
+        if len(data) < 100 or not 100 <= sum(data) / len(data) <= 156:
+            return None  # not where the original keeps it
+        samples[name] = base64.b64encode(data).decode("ascii")
+    out.parent.mkdir(exist_ok=True)
+    out.write_text("window.NHL94_SOUNDS = " + json.dumps({"rate": SOUND_RATE, "format": "u8", "samples": samples},
+                                                         separators=(",", ":")) + ";\n", encoding="utf-8")
+    return out

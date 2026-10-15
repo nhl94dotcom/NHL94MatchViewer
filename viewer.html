@@ -40,6 +40,14 @@
   #clipPick { width: 100%; }
   #clipPanel label { color: var(--text); }
   #clipStatus { margin: 8px 0 0; color: var(--muted); min-height: 1.4em; }
+  #soundPanel { position: absolute; top: 10px; right: 10px; width: 330px; padding: 12px; border-radius: 10px; z-index: 15;
+    background: rgba(22, 27, 34, 0.97); border: 1px solid #3a4450; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); font-size: 13px; }
+  #soundPanel h4 { margin: 0 0 8px; font-size: 14px; }
+  #soundPanel p { margin: 0 0 8px; color: var(--muted); }
+  #soundPanel .clipRow { display: flex; align-items: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+  #soundPanel button { padding: 4px 9px; }
+  #soundRate, #soundVolume { flex: 1; accent-color: var(--accent); }
+  #soundToggle[aria-pressed="true"] { border-color: var(--accent); }
   #clipBar { height: 4px; border-radius: 2px; background: var(--raised); overflow: hidden; }
   #clipBar i { display: block; height: 100%; width: 0; background: var(--accent); }
   #overlayInfo .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 4px; color: var(--muted); }
@@ -162,6 +170,15 @@
       <div id="clipBar"><i></i></div>
       <p id="clipStatus">The clip shows the ice as you see it now: angle, zoom, following and sprites.</p>
     </div>
+    <div id="soundPanel" hidden>
+      <h4>Sounds</h4>
+      <p>The game's sampled sounds, from its ROM. Their playing speed is a guess: if they sound too low and slow, or
+        too high and quick, move the slider until they sound as in the game.</p>
+      <div class="clipRow"><label for="soundRate">Speed</label><input type="range" id="soundRate" min="5000" max="32000" step="250"><output id="soundRateOut"></output></div>
+      <div class="clipRow"><label for="soundVolume">Volume</label><input type="range" id="soundVolume" min="0" max="1" step="0.05"></div>
+      <div id="soundList" class="clipRow"></div>
+      <div class="clipRow"><button id="soundClose">Close</button></div>
+    </div>
     <div id="viewbar" hidden>
       <button id="rotL" title="Rotate 90 degrees anticlockwise (Shift+R)">&#8634;</button>
       <input id="angle" type="range" min="-180" max="180" step="1" value="0" aria-label="View angle">
@@ -204,6 +221,7 @@
     </select>
   </label>
   <button id="flowToggle" aria-pressed="false" title="Show how the shot attempts piled up over the game; click it to jump there">Game flow</button>
+  <span id="soundBox" hidden><button id="soundToggle" aria-pressed="false" title="The game's own sounds as the replay plays">Sound</button><button id="soundMore" title="Sound check: hear each sound and set how fast they play">&#9881;</button></span>
   <select id="overlayWho" aria-label="Whose shots or puck time" hidden></select>
   <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
   <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
@@ -325,6 +343,7 @@ function load(m) {
   possession = findPossession(m);  // after setupOverlay: it needs ends
   skating = findSkating(m);
   setupFlow(m);
+  loadSounds(m);
   $('clipPanel').hidden = true;
   failedOneTimerFrames = new Map();
   for (const e of m.failedOneTimers || []) {
@@ -2203,6 +2222,139 @@ $('flowCanvas').addEventListener('mousemove', ev => {
 $('flowCanvas').addEventListener('mouseleave', () => { $('flowTip').hidden = true; });
 $('flowCanvas').addEventListener('click', ev => { const fr = flowFrameAt(ev); if (fr >= 0) seekTo(match.t[fr]); });
 
+// Sound: the game's sampled sounds (sounds/<ROM crc32>.js, written by the converter from the ROM: 8-bit PCM), played
+// as the replay passes the moments they belong to: passes, shots (forehand or backhand, from the shooter's
+// animation), the puck picked up, checks (big hits louder, with the crash into the boards), the crowd's cheer at
+// goals, its "oooh" at posts and its boos when the home team is penalized. The horn, whistles and music are FM
+// synthesis in the game and are not here. The playing speed of the samples is not worked out (the game sets it from
+// the note each sound is played at), so it can be set by ear in the sound panel; it is remembered, as are on/off and
+// the volume. Off until switched on: browsers only start sound after a click.
+let soundLibrary = null, soundOn = false, soundRate = 0, soundVolume = 0.6, soundCtx = null, soundBuffers = null, soundBuffersRate = 0;
+let soundEvents = [], lastSoundFrame = -1;
+const soundLibraries = {};  // by ROM crc32: loaded from sounds/<rom>.js, or unpacked from a saved game file
+try {
+  soundOn = localStorage.getItem('nhl94-sound') === '1';
+  soundVolume = Number(localStorage.getItem('nhl94-sound-volume') || 0.6);
+} catch (e) { /* defaults */ }
+const soundRateKey = () => 'nhl94-sound-rate-' + ((match && match.system) || 'genesis');  // remembered per system
+function loadSounds(m) {
+  soundLibrary = null; soundBuffers = null; lastSoundFrame = -1;
+  try { soundRate = Number(localStorage.getItem(soundRateKey())) || 0; } catch (e) { soundRate = 0; }
+  soundEvents = findSoundEvents(m);
+  $('soundBox').hidden = true;
+  const ready = () => {
+    if (match !== m || !soundLibraries[m.rom]) return;
+    soundLibrary = soundLibraries[m.rom];
+    $('soundBox').hidden = false;
+    showSound(soundOn, false);
+    fillSoundPanel();
+  };
+  if (!m.rom) return;
+  if (soundLibraries[m.rom]) { ready(); return; }
+  window.NHL94_SOUNDS = null;
+  const script = document.createElement('script');
+  script.src = 'sounds/' + m.rom + '.js';
+  script.onload = () => { if (window.NHL94_SOUNDS) soundLibraries[m.rom] = window.NHL94_SOUNDS; ready(); };
+  document.head.appendChild(script);
+}
+function findSoundEvents(m) {
+  const out = [], add = (f, name, gain = 1) => { if (f >= 0) out.push({ f, name, gain }); };
+  for (const e of m.passes || []) add(e.f, 'pass', 0.8);
+  for (const sh of m.shotList || []) {
+    if (sh.kind === 'pass shot') { add(sh.f, 'pass', 1); continue; }
+    // Forehand or backhand: the shooter's animation just before the release.
+    let name = 'shotfh';
+    for (let k = sh.team * 6; k < sh.team * 6 + 6; k++) {
+      if (rosterIndex(Math.max(0, sh.f - 1), k) !== sh.idx) continue;
+      for (let i = Math.max(0, sh.f - 30); i <= sh.f; i++) if (animAt(i, k) === '092e') name = 'shotbh';
+    }
+    add(sh.f, name, 1);
+  }
+  for (let i = 1; i < m.t.length; i++) {
+    if (m.owner[i] >= 0 && m.owner[i - 1] < 0 && m.puck[3 * i + 2] >= PUCK_HIDDEN_Z) add(i, 'puckget', 0.45);
+  }
+  for (const h of m.hits || []) {
+    add(h.f, h.how === 'shoulder' ? 'check' : 'check2', 0.9);
+    if (BIG_HITS.includes(h.outcome)) { add(h.f, 'hithigh', 1); if (h.outcome !== 'upended') add(h.f, 'playerwall', 1); }
+  }
+  for (const g of m.goals || []) add(g.f, 'crowdcheer', 0.9);
+  for (const f of m.posts || []) add(f, 'oooh', 0.8);
+  for (const p of m.penalties || []) if (p.team === 0) add(p.called !== undefined ? p.called : p.f, 'crowdboo', 0.7);
+  return out.sort((a, b) => a.f - b.f);
+}
+function soundBuffer(name) {
+  // The 8-bit samples as Web Audio buffers, made again when the speed changes.
+  const rate = soundRate || soundLibrary.rate;
+  if (!soundBuffers || soundBuffersRate !== rate) { soundBuffers = {}; soundBuffersRate = rate; }
+  if (!soundBuffers[name] && soundLibrary.samples[name]) {
+    const bytes = atob(soundLibrary.samples[name]), buffer = soundCtx.createBuffer(1, bytes.length, rate), data = buffer.getChannelData(0);
+    for (let i = 0; i < bytes.length; i++) data[i] = (bytes.charCodeAt(i) - 128) / 128;
+    soundBuffers[name] = buffer;
+  }
+  return soundBuffers[name];
+}
+function playSound(name, gain = 1) {
+  if (!soundLibrary || !soundCtx) return;
+  // A library may name its samples itself (the SNES's are numbered) and say which plays for what (roles).
+  const buffer = soundBuffer((soundLibrary.roles && soundLibrary.roles[name]) || name);
+  if (!buffer) return;
+  const source = soundCtx.createBufferSource(), level = soundCtx.createGain();
+  level.gain.value = soundVolume * gain;
+  source.buffer = buffer;
+  source.connect(level).connect(soundCtx.destination);
+  source.start();
+}
+function playSoundsUpTo(f) {
+  // Everything whose moment the replay passed since the last frame played (none after a jump).
+  if (!soundOn || !soundLibrary || !playing) { lastSoundFrame = f; return; }
+  if (lastSoundFrame < 0 || f < lastSoundFrame || f - lastSoundFrame > 120) { lastSoundFrame = f; return; }
+  const heard = new Set();
+  for (const e of soundEvents) {
+    if (e.f <= lastSoundFrame) continue;
+    if (e.f > f) break;
+    if (!heard.has(e.name)) playSound(e.name, e.gain);
+    heard.add(e.name);
+  }
+  lastSoundFrame = f;
+}
+function showSound(on, remember = true) {
+  soundOn = on;
+  $('soundToggle').setAttribute('aria-pressed', String(on));
+  if (on && !soundCtx) { try { soundCtx = new AudioContext(); } catch (e) { soundOn = false; } }
+  if (on && soundCtx && soundCtx.state === 'suspended') soundCtx.resume();
+  if (remember) try { localStorage.setItem('nhl94-sound', on ? '1' : '0'); } catch (e) { /* not kept */ }
+}
+function fillSoundPanel() {
+  const list = $('soundList');
+  list.textContent = '';
+  for (const name of Object.keys(soundLibrary.samples)) {
+    const b = document.createElement('button');
+    const role = Object.keys(soundLibrary.roles || {}).find(r => soundLibrary.roles[r] === name);
+    b.textContent = SOUND_NAMES[role || name] || name.replace(/^s0?/, '#');
+    b.addEventListener('click', () => { showSound(true); playSound(name); });
+    list.append(b);
+  }
+  $('soundRate').min = Math.round(soundLibrary.rate * 0.5); $('soundRate').max = Math.round(soundLibrary.rate * 2);
+  $('soundRate').value = soundRate || soundLibrary.rate;
+  $('soundRateOut').textContent = Math.round((soundRate || soundLibrary.rate) / 100) / 10 + ' kHz';
+  $('soundVolume').value = soundVolume;
+}
+const SOUND_NAMES = { puckget: 'Puck', pass: 'Pass', shotfh: 'Shot', shotbh: 'Backhand', check: 'Check', check2: 'Check 2', hithigh: 'Big hit',
+  playerwall: 'Boards', crowdcheer: 'Cheer', crowdboo: 'Boo', oooh: 'Oooh' };
+$('soundToggle').addEventListener('click', () => showSound(!soundOn));
+$('soundMore').addEventListener('click', () => { $('soundPanel').hidden = !$('soundPanel').hidden; });
+$('soundClose').addEventListener('click', () => { $('soundPanel').hidden = true; });
+$('soundRate').addEventListener('input', e => {
+  soundRate = Number(e.target.value);
+  $('soundRateOut').textContent = Math.round(soundRate / 100) / 10 + ' kHz';
+  try { localStorage.setItem(soundRateKey(), String(soundRate)); } catch (err) { /* not kept */ }
+});
+$('soundRate').addEventListener('change', () => { showSound(true); playSound('pass'); });
+$('soundVolume').addEventListener('input', e => {
+  soundVolume = Number(e.target.value);
+  try { localStorage.setItem('nhl94-sound-volume', String(soundVolume)); } catch (err) { /* not kept */ }
+});
+
 function updatePanels(f) {
   const m = match, owner = m.owner ? m.owner[f] : -1, pads = teamPads(f), held = pads.map(p => (p ? recentPad(f, p) : -1));
   const snap = statSnapshot(f);
@@ -2374,6 +2526,7 @@ function tick(stamp) {
   now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value));
   lastTick = stamp;
   draw();
+  playSoundsUpTo(frameAt(now));
   if (clipJob) clipJob.onFrame();
   if (now >= end) setPlaying(false); else requestAnimationFrame(tick);
 }
@@ -2824,6 +2977,7 @@ async function saveGameFile() {
   try {
     const packed = { match: await packText(JSON.stringify(match)) };
     if (spriteLibrary) packed.sprites = await packText(JSON.stringify(spriteLibrary));
+    if (soundLibrary) packed.sounds = await packText(JSON.stringify(soundLibrary));
     // The rink picture and benches of this match's system only.
     const rink = RINKS[rinkSystem], carry = name => (window[name] ? 'window.' + name + ' = ' + JSON.stringify(window[name]) + ';\n' : '');
     const data = '<script>\n// The game, packed by "Save game file".\n' + carry(rink.data) + carry(rink.benchData) +
@@ -3065,7 +3219,9 @@ if (window.NHL94_PACKED) {
   (async () => {
     const packed = window.NHL94_PACKED;
     if (packed.sprites) window.NHL94_SPRITES = JSON.parse(await unpackText(packed.sprites));
-    load(JSON.parse(await unpackText(packed.match)));
+    const game = JSON.parse(await unpackText(packed.match));
+    if (packed.sounds) soundLibraries[game.rom] = JSON.parse(await unpackText(packed.sounds));
+    load(game);
   })().catch(e => { $('dropTitle').textContent = 'Could not open this game file: ' + e.message; });
 } else if (named && /^[\w-]+$/.test(named)) {
   const s = document.createElement('script');
