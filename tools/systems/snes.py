@@ -14,7 +14,30 @@ NAME = "snes"
 RAM_SIZE = 0x20000  # work RAM, bank $7E-$7F
 BYTE_SWAP = 0       # Snes9x keeps work RAM as plain bytes; words are little-endian, as on the SNES
 ROM_GLOB = "*.smc"
-ACTIONS = {}        # animation words by action name: not found yet
+# The animation words (SPA, addresses in bank $9D) the analysis needs, by name. Found on the first SNES recording
+# (snes_2026-10-15_1755) from what the controlled skater started within 0.35 s of a button press (controller 1 drove
+# Toronto: 210 answers against Pittsburgh's 100), how fast the puck left at a release, and the Genesis animations'
+# timing patterns and order: A with the puck shoots ($ED4A: the puck leaves at a median 15500, up to 27000; $EE5C the
+# other side), A without it bursts ($F342) or checks; $F196 is A's swing at a pass (always without the puck: a
+# one-timer); B passes ($EC66, $ECD8; the goalie's $E34E) or poke-checks ($F208).
+ACTIONS = {
+    "shoot": {"ed4a", "ee5c", "f196"},
+    "pass": {"ec66", "ecd8"},
+    "goalie_pass": {"e34e"},
+    "poke": {"f208"},
+    "hook": set(),                    # not identified
+    "lunge": {"f342"},
+    "down": {"f49c", "f54e"},         # falling forward, backward
+    "dive": {"e4b6"},
+    "goalie_save": set(),
+}
+# By the Genesis order of the same animations (glove saves, stick saves, pad stack; shoulder then hip checks, left and
+# right) and timing patterns; not each one checked.
+SAVE_MOVES = {"e1e2": "glove", "e214": "glove", "e246": "glove", "e278": "stick", "e2aa": "stick", "e2fc": "pad stack",
+              "e4b6": "dive"}
+CHECK_MOVES = {"f27a": "shoulder", "f2ac": "shoulder", "f2de": "hip", "f310": "hip"}
+HIT_OUTCOMES = {"f49c": "knocked down", "f54e": "knocked down", "f6c0": "upended"}
+CLOCK_STOPPED = 0x15D6  # gmclock: nonzero while the game clock is stopped (71% of stoppage samples, 1% of play)
 
 # Team stats: home/away pairs of little-endian words, Away 2 bytes after Home, in the order of
 # common.STAT_FIELDS (None where the address is not known yet). Shots come by period only (P1, P2, P3, OT).
@@ -273,14 +296,43 @@ def read_match(cap, rom_path, name, home=None, away=None):
              "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
              "pos": [], "ctrl": [], "owner": [], "posts": [], "delayed": [], "penalties": []}
     facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
-    for i in range(cap.count):
+    from .common import STAT_FIELDS
+    stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
+    last_vectors, last_stat_ms, last_post = None, -10_000, -10_000
+    # The game ends where its numbers last stood: a research recording runs on into the menus, where the score and
+    # the stats are cleared.
+    totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
+              + sum(cap.word(i, a) + cap.word(i, a + 2) for a in SHOTS_BY_PERIOD) for i in range(cap.count)]
+    peak = max(totals) if totals else 0
+    count = max(i for i, v in enumerate(totals) if v == peak) + 1 if peak else cap.count
+    for i in range(count):
         match["t"].append(cap.ms(i))
         match["period"].append(cap.word(i, PERIOD))
         match["clock"].append(cap.word(i, CLOCK))
         match["score"] += [cap.word(i, STAT_ADDRESSES["goals"]), cap.word(i, STAT_ADDRESSES["goals"] + 2)]
         match["shots"] += [sum(cap.word(i, a + side) for a in SHOTS_BY_PERIOD) for side in (0, 2)]
-        match["puck"] += [signed(i, OBJ_X + 28), signed(i, OBJ_Y + 28), 0]
-        match["puckV"] += [round(signed(i, PUCK_VX) / 100), round(signed(i, PUCK_VY) / 100)]
+        # The puck's height is not read; while the clock is stopped it is given as -256, as the Genesis game hides
+        # the puck from a whistle to the faceoff, which the analysis uses to tell stretches of play apart.
+        stopped = cap.word(i, CLOCK_STOPPED) != 0
+        px, py = signed(i, OBJ_X + 28), signed(i, OBJ_Y + 28)
+        vx, vy = signed(i, PUCK_VX), signed(i, PUCK_VY)
+        match["puck"] += [px, py, -256 if stopped else 0]
+        match["puckV"] += [round(vx / 100), round(vy / 100)]
+        # A post, by the Genesis rule: the loose puck turning back out of the end zone right beside a post.
+        if i and cap.byte(i, PUCK_HOLDER) >= 12 and cap.ms(i) - last_post > 1000:
+            fresh = (vx, vy) != (signed(i - 1, PUCK_VX), signed(i - 1, PUCK_VY))
+            if fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 272 and vy * py < 0 and abs(vx) + abs(vy) >= 1500:
+                match["posts"].append(len(match["t"]) - 1)
+                last_post = cap.ms(i)
+        # Team stat snapshots, in common.STAT_FIELDS order (no per-player values yet), when they change and each
+        # second, as the Genesis reader keeps them.
+        vector = [sum(cap.word(i, a) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f]) for f in STAT_FIELDS[1:]]
+        vector2 = [sum(cap.word(i, a + 2) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f] + 2) for f in STAT_FIELDS[1:]]
+        if (vector, vector2) != last_vectors or cap.ms(i) - last_stat_ms >= 1000:
+            stats["f"].append(len(match["t"]) - 1)
+            stats["home"].append(vector)
+            stats["away"].append(vector2)
+            last_vectors, last_stat_ms = (vector, vector2), cap.ms(i)
         f = animation_frame(rom, cap.word(i, OBJ_ANIM + 28), cap.word(i, OBJ_ANIM_STEP + 28), cap.word(i, OBJ_FACING + 28))
         puck_frame.append(f"{f or 0:03x}")
         # Who has the puck: $0AE7, an object number (15 = nobody), checked on the first SNES recording: it names the
@@ -361,6 +413,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
                       "goals": tally[(team, e[3], False)], "assists": [[a, tally[(team, a, True)]] for a in people[1:]],
                       "kinds": kinds, "strength": strength})
     match["goals"] = goals
+    match["stats"] = stats
     match["rom"] = f"{zlib.crc32(rom):08x}"
     match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
     try:
