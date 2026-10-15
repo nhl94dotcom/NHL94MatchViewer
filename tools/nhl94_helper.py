@@ -32,7 +32,7 @@ import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from nhl94_memory import Emulator  # noqa: E402
+import systems  # noqa: E402
 
 # Where games, replays, sprites and settings live: the project folder, or NHL94_HOME (the packaged helper sets it to
 # a folder in Documents, since a single .exe cannot write beside its own files).
@@ -41,13 +41,8 @@ PORT = int(os.environ.get("NHL94_PORT") or 9494)  # NHL94_PORT: another port, e.
 SETTINGS_FILE = ROOT / "helper_settings.json"
 INDEX_FILE = ROOT / "matches" / "games.json"
 
-BLOCKS = [(0xB000, 0x1000), (0xC400, 0xA00)]  # what each sample keeps, as tools/nhl94_record.ps1 does
-SCREEN = 0xFFF7          # 0 = the game itself; 15 menus; 80 pause menu; 100 instant replay
-PERIOD, CLOCK = 0xC466, 0xC468
-HOME_SCORE, AWAY_SCORE = 0xC6DA, 0xCA3E
-HOME_TEAM, AWAY_TEAM = 0xC6F7, 0xCA5B
-RECORDS, RECORD_SIZE, ROSTER = 0xB04A, 0x80, 0x66
-MENUS = (1, 15)
+# What to record, and how to read the screen, clock, score and teams, come from the system module of the emulator
+# found (tools/systems/: BLOCKS, View).
 # full.bin.gz holds all of RAM now and then, for research only: the converter does not need it (converting
 # 2026-10-14_1540_CGY-BOS without it gives an identical match), so every 10 s rather than every second.
 SAMPLE_S, FULL_EVERY_S = 0.015, 10.0
@@ -153,37 +148,11 @@ status = Status()
 team_cache = {}
 
 
-def dump_rom(emu):
-    """Copy the cartridge out of the emulator into roms/<fingerprint>.bin (once per ROM); its path, or None."""
-    fp = emu.rom_fingerprint()
-    if not fp:
-        return None, None
-    path = ROOT / "roms" / f"{fp[0]}_{fp[1]}.bin"
-    if not path.exists():
-        header = emu._raw(emu.handle, emu.rom + 0x1A0, 8)
-        if not header:
-            return None, fp
-        swapped = bytes(header[i ^ 1] for i in range(8))
-        start, end = struct.unpack(">II", swapped)
-        size = min(max(end + 1, 0x100000), 0x400000)
-        data = emu._raw(emu.handle, emu.rom, size)
-        if not data:
-            return None, fp
-        rom = bytearray(size)
-        rom[0::2], rom[1::2] = data[1::2], data[0::2]
-        if zlib.crc32(bytes(rom[:0x100000])) != int(fp[0], 16):
-            return None, fp
-        path.parent.mkdir(exist_ok=True)
-        path.write_bytes(bytes(rom))
-    return path, fp
-
-
-def team_abbreviations(rom_path, home, away):
+def team_abbreviations(system, rom_path, home, away):
     """('BOS', 'STL') for the team indices, from the ROM; falls back to the numbers."""
     try:
         if rom_path not in team_cache:
-            import export_match
-            team_cache[rom_path] = export_match.read_teams(rom_path)
+            team_cache[rom_path] = system.read_teams(rom_path)
         teams = team_cache[rom_path]
         return [teams[i].get("abbr") or teams[i]["name"] for i in (home, away)]
     except Exception:
@@ -191,45 +160,17 @@ def team_abbreviations(rom_path, home, away):
 
 
 # --------------------------------------------------------------------------------------------------------- recording
-def word(block, offset):
-    return struct.unpack_from("<H", block, offset)[0]
-
-
-class View:
-    """What the game is doing, from one read of the blocks we record plus the screen byte."""
-
-    def __init__(self, emu):
-        self.blocks = [emu.read(start, length) for start, length in BLOCKS]
-        screen = emu.read(SCREEN ^ 1, 1)
-        if any(b is None for b in self.blocks) or screen is None:
-            raise ConnectionError("the emulator went away")
-        self.screen = screen[0]
-        a, c = self.blocks
-        self.period, self.clock = word(c, PERIOD - 0xC400), word(c, CLOCK - 0xC400)
-        self.score = (word(c, HOME_SCORE - 0xC400), word(c, AWAY_SCORE - 0xC400))
-        self.teams = (c[(HOME_TEAM ^ 1) - 0xC400], c[(AWAY_TEAM ^ 1) - 0xC400])
-        rosters = [a[((RECORDS + RECORD_SIZE * k + ROSTER) ^ 1) - 0xB000] for k in range(12)]
-        self.on_ice = any(r != 0xFF for r in rosters[:6]) and any(r != 0xFF for r in rosters[6:])
-
-    @property
-    def live(self):
-        return self.screen == 0 and self.on_ice
-
-    def describe(self):
-        return f"P{min(self.period, 2) + 1} {self.clock // 60}:{self.clock % 60:02d}, {self.score[0]}-{self.score[1]}"
-
-
 class Recording:
     def __init__(self, emu, view, rom_path, fingerprint):
-        self.emu, self.rom_path = emu, rom_path
+        self.emu, self.rom_path, self.system = emu, rom_path, systems.get(emu.system)
         when = datetime.datetime.now()
-        abbr = team_abbreviations(rom_path, *view.teams) if rom_path else [f"T{t}" for t in view.teams]
+        abbr = team_abbreviations(self.system, rom_path, *view.teams) if rom_path else [f"T{t}" for t in view.teams]
         self.teams = abbr
         self.name = f"{when:%Y-%m-%d_%H%M}_{abbr[0]}-{abbr[1]}".replace(" ", "")
         self.date = when.isoformat(timespec="minutes")
         self.folder = ROOT / "captures" / self.name
         self.folder.mkdir(parents=True, exist_ok=True)
-        layout = {"blocks": [list(b) for b in BLOCKS], "recorded_by": "nhl94_helper"}
+        layout = {"blocks": [list(b) for b in self.system.BLOCKS], "recorded_by": "nhl94_helper", "system": self.system.NAME}
         if fingerprint:
             layout["rom_crc32"] = fingerprint
         (self.folder / "capture.json").write_text(json.dumps(layout))
@@ -244,7 +185,7 @@ class Recording:
         now = time.perf_counter()
         elapsed, self.last_wall = (now - self.last_wall) * 1000, now
         old = self.view
-        if view.screen in MENUS:
+        if view.in_menus:
             self.menu_since = self.menu_since or now
             if now - self.menu_since > 3:
                 return "menus"
@@ -256,7 +197,7 @@ class Recording:
             return "new game"
         # The final horn: past the third period with the clock at 0 (and not tied, or later still). Checked whatever
         # the screen shows, in case the game takes the players off at the horn.
-        if view.screen == 0:
+        if view.in_game:
             over = view.clock == 0 and (view.period >= 4 or (view.period >= 3 and view.score[0] != view.score[1]))
             if over:
                 self.view = view
@@ -274,7 +215,7 @@ class Recording:
             self.fast.write(struct.pack("<q", round(self.live_ms)) + data)
             self.previous, self.samples = data, self.samples + 1
         if now - self.last_full >= FULL_EVERY_S:
-            full = self.emu.read(0, 0x10000)
+            full = self.emu.read(0, self.system.RAM_SIZE)
             if full:
                 self.full.write(struct.pack("<q", round(self.live_ms)) + full)
             self.last_full = now
@@ -330,12 +271,13 @@ def watch():
     while True:
         try:
             if emu is None:
-                emu = Emulator.attach()
+                emu = systems.attach()
                 if emu is None:
                     status.set("waiting", "Waiting for RetroArch with NHL '94 loaded")
                     time.sleep(2)
                     continue
-                rom_path, fingerprint = dump_rom(emu)
+                rom_path, fingerprint = emu.dump_rom()
+                View = systems.get(emu.system).View
             view = View(emu)
             if not view.live:
                 status.set("ready", "NHL '94 is running; waiting for a game to start")
@@ -352,7 +294,7 @@ def watch():
                     why = rec.step(view)
                     status.set("recording", f"Recording {rec.teams[0]} vs {rec.teams[1]}", {
                         "name": rec.name, "teams": rec.teams, "score": list(rec.view.score), "clock": rec.view.describe(),
-                        "seconds": round(rec.live_ms / 1000), "paused": view.screen != 0}, say=False)
+                        "seconds": round(rec.live_ms / 1000), "paused": not view.in_game}, say=False)
                     next_sample += SAMPLE_S
                     time.sleep(max(0.0, next_sample - time.perf_counter()))
             except ConnectionError:
@@ -369,7 +311,7 @@ def watch():
                     except ConnectionError:
                         emu = None
                         break
-                    if v.screen in MENUS or (v.live and v.period == 0 and v.clock > 0 and v.score == (0, 0)):
+                    if v.in_menus or (v.live and v.period == 0 and v.clock > 0 and v.score == (0, 0)):
                         break
                     time.sleep(0.5)
         except ConnectionError:

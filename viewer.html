@@ -240,7 +240,20 @@ const css = name => getComputedStyle(document.documentElement).getPropertyValue(
 // Strips of the rink picture (x, y, width, height in its pixels) that are not symmetric about the red line: the
 // benches on the left and the penalty boxes on the right, each with some crowd around them.
 const RINK_SIDES = [[0, 440, 118, 674], [776, 560, 124, 434]];
-const RINK_IMAGE = { src: 'rink_gens.png', w: 900, h: 1440, cx: 450.4, cy: 777, ux: 2.459, uy: 2.079 };
+// The rink picture of each system the game runs on (match.system; files made before it existed are Genesis), and
+// where game positions land on it: px = cx + ux * X, py = cy - uy * Y. Both pictures are 900 x 1440 and laid out
+// alike (benches, penalty boxes, stands, nets), so RINK_SIDES, PENALTY_BOXES and the overhead rebuild serve both;
+// only the measurements and the colours differ. The SNES numbers come from its goal lines (rows 219.5, 1332.5) and
+// faceoff dots (columns 278.6, 622.2, measured the same way as the Genesis picture's): they assume the SNES game
+// uses the Genesis game's units (nets at Y = +/-268, dots at X = +/-70), not yet checked. data: the variable its
+// embedded copy (rink_*.js, tools/embed_rink.py) sets; benches: tools/bench_mask.py's file and variable.
+const RINKS = {
+  genesis: { image: { src: 'rink_gens.png', w: 900, h: 1440, cx: 450.4, cy: 777, ux: 2.459, uy: 2.079 }, script: 'rink_gens.js', data: 'NHL94_RINK',
+    benches: 'rink_benches.js', benchData: 'NHL94_BENCHES', ice: '#7ee2f5', goalLine: 'rgb(198, 128, 112)' },
+  snes: { image: { src: 'rink_snes.png', w: 900, h: 1440, cx: 449.2, cy: 776.2, ux: 2.451, uy: 2.076 }, script: 'rink_snes.js', data: 'NHL94_RINK_SNES',
+    benches: 'rink_benches_snes.js', benchData: 'NHL94_BENCHES_SNES', ice: '#bfdaf7', goalLine: 'rgb(232, 140, 134)' },
+};
+let rinkSystem = 'genesis', RINK_IMAGE = RINKS.genesis.image;
 // Until (or unless) the picture loads, a drawn rink with square units is used.
 let view = { w: 2 * RINK.halfW + 14, h: 2 * RINK.halfL + 14, cx: RINK.halfW + 7, cy: RINK.halfL + 7, ux: 1, uy: 1, image: null };
 let match = null, now = 0, playing = false, lastTick = 0, panelState = '';
@@ -304,6 +317,7 @@ function load(m) {
   spriteCache.clear();
   buildAnimIndex(m);
   logoImage = buildLogo(m);
+  useRink(new URLSearchParams(location.search).get('rink') || m.system || 'genesis');
   breakaways = findBreakaways(m);
   callouts = findCallouts(m);
   heat = findHeat(m);
@@ -2545,7 +2559,7 @@ function recordVideo(from, to, speed, width) {
   const c = clipCanvas(width);
   let stream;
   try { stream = c.captureStream(30); } catch (e) {
-    clipStatus('The ice cannot be recorded: rink_gens.js is missing (run tools/embed_rink.py), so the browser treats the picture as foreign.');
+    clipStatus('The ice cannot be recorded: ' + RINKS[rinkSystem].script + ' is missing (run tools/embed_rink.py), so the browser treats the picture as foreign.');
     return;
   }
   const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: width >= 1280 ? 10e6 : 6e6 }), chunks = [];
@@ -2637,7 +2651,7 @@ async function makeGif(from, to, speed, width) {
     clipStatus('Saved ' + name + ' to your downloads.', 1);
   } catch (e) {
     clipStatus(e.name === 'SecurityError'
-      ? 'The ice cannot be read back: rink_gens.js is missing (run tools/embed_rink.py), so the browser treats the picture as foreign.'
+      ? 'The ice cannot be read back: ' + RINKS[rinkSystem].script + ' is missing (run tools/embed_rink.py), so the browser treats the picture as foreign.'
       : 'Could not make the GIF: ' + e.message);
   } finally {
     playing = false; clipClock = null;
@@ -2758,9 +2772,9 @@ async function saveGameFile() {
   try {
     const packed = { match: await packText(JSON.stringify(match)) };
     if (spriteLibrary) packed.sprites = await packText(JSON.stringify(spriteLibrary));
-    const data = '<script>\n// The game, packed by "Save game file".\n' +
-      (window.NHL94_RINK ? 'window.NHL94_RINK = ' + JSON.stringify(window.NHL94_RINK) + ';\n' : '') +
-      (window.NHL94_BENCHES ? 'window.NHL94_BENCHES = ' + JSON.stringify(window.NHL94_BENCHES) + ';\n' : '') +
+    // The rink picture and benches of this match's system only.
+    const rink = RINKS[rinkSystem], carry = name => (window[name] ? 'window.' + name + ' = ' + JSON.stringify(window[name]) + ';\n' : '');
+    const data = '<script>\n// The game, packed by "Save game file".\n' + carry(rink.data) + carry(rink.benchData) +
       'window.NHL94_PACKED = ' + JSON.stringify(packed) + ';\n<' + '/script>';
     const score = match.score.length >= 2 ? match.score[match.score.length - 2] + '-' + match.score[match.score.length - 1] : '';
     const title = match.team1 + ' ' + score + ' ' + match.team2;
@@ -2892,7 +2906,7 @@ function buildOverheadRink(img) {
   const inner = () => { g.beginPath(); g.roundRect(px(-126.5), py(290), 253 * R.ux, 580 * R.uy, { x: 62 * R.ux, y: 62 * R.uy }); };
   g.save();
   shape(0); g.clip();
-  g.fillStyle = '#7ee2f5'; g.fillRect(0, 0, R.w, R.h);
+  g.fillStyle = RINKS[rinkSystem].ice; g.fillRect(0, 0, R.w, R.h);
   for (const [from, to0, to1] of [[px(-121), px(-133), px(-125)], [px(121), px(125), px(133)]]) {
     g.drawImage(img, Math.round(from), py(240), 1, py(-240) - py(240), to0, py(240), to1 - to0, py(-240) - py(240));
   }
@@ -2904,7 +2918,7 @@ function buildOverheadRink(img) {
   // The goal lines out to the boards.
   g.save();
   inner(); g.rect(R.w, 0, -R.w, R.h); g.clip();
-  g.fillStyle = 'rgb(198, 128, 112)';
+  g.fillStyle = RINKS[rinkSystem].goalLine;
   for (const end of [1, -1]) g.fillRect(0, py(end * O.goal) - 1.8, R.w, 3.6);
   g.restore();
   g.restore();
@@ -2934,6 +2948,26 @@ function buildOverheadRink(img) {
 // From rink_gens.js (made by tools/embed_rink.py) when it is there: a picture given as a data URL leaves the canvas
 // readable, which saving clips needs; one loaded straight from the file would not.
 rinkPicture.src = window.NHL94_RINK || RINK_IMAGE.src;
+// Another system's rink when a match from it opens (or ?rink=snes, to look at it with any match): its embedded copy
+// (loaded as a script the first time, unless a saved game file carries it) or else its picture file, and its benches.
+function useRink(system) {
+  const name = RINKS[system] ? system : 'genesis', cfg = RINKS[name];
+  if (name === rinkSystem) return;
+  rinkSystem = name;
+  RINK_IMAGE = cfg.image;
+  overheadRink = null;
+  view = { w: 2 * RINK.halfW + 14, h: 2 * RINK.halfL + 14, cx: RINK.halfW + 7, cy: RINK.halfL + 7, ux: 1, uy: 1, image: null };  // the drawn rink until it loads
+  const show = () => { if (rinkSystem === name) rinkPicture.src = window[cfg.data] || cfg.image.src; };
+  loadScriptOnce(cfg.script, cfg.data, show);
+  loadScriptOnce(cfg.benches, cfg.benchData, () => { if (match && rinkSystem === name) { buildBenches(match); draw(); } });
+}
+function loadScriptOnce(src, variable, then) {
+  if (window[variable]) { then(); return; }
+  const script = document.createElement('script');
+  script.src = src;
+  script.onload = then; script.onerror = then;  // without it, the picture file (or no benches)
+  document.head.appendChild(script);
+}
 
 // The players drawn on the benches in the rink picture, repainted in the match's team colours: rink_benches.js
 // (made by tools/bench_mask.py) says which picture pixels are uniform and how bright each was. Away sits on the
@@ -2942,8 +2976,9 @@ rinkPicture.src = window.NHL94_RINK || RINK_IMAGE.src;
 let benchOverlays = [];
 function buildBenches(m) {
   benchOverlays = [];
-  if (!m || !m.palettes || !window.NHL94_BENCHES) return;
-  for (const bench of window.NHL94_BENCHES) {
+  const benches = window[RINKS[rinkSystem].benchData];
+  if (!m || !m.palettes || !benches) return;
+  for (const bench of benches) {
     const ramp = bench.roles.map(i => { const v = parseInt(m.palettes[bench.team][i].slice(1), 16); return [v >> 16, (v >> 8) & 255, v & 255]; });
     const canvas = document.createElement('canvas');
     canvas.width = bench.w; canvas.height = bench.h;
@@ -2967,12 +3002,8 @@ function drawBenches() {
     ctx.restore();
   }
 }
-if (!window.NHL94_BENCHES) {  // a saved game file carries them already
-  const benchScript = document.createElement('script');
-  benchScript.src = 'rink_benches.js';
-  benchScript.onload = () => { if (match) { buildBenches(match); draw(); } };
-  document.head.appendChild(benchScript);
-}
+// The Genesis benches from the start (a saved game file carries them already); another system's come with useRink.
+loadScriptOnce(RINKS.genesis.benches, RINKS.genesis.benchData, () => { if (match && rinkSystem === 'genesis') { buildBenches(match); draw(); } });
 
 // viewer.html?match=NAME loads matches/NAME.js directly; &t=SECONDS starts at that point.
 const named = new URLSearchParams(location.search).get('match');

@@ -1,72 +1,48 @@
-"""Converts a RAM capture (from nhl94_record.ps1 or nhl94_record_full.ps1) into a match file that viewer.html can play."""
+"""Converts a RAM capture (from the helper, nhl94_record.ps1 or nhl94_record_full.ps1) into a match file that
+viewer.html can play. Which system the game ran on (capture.json's "system", Genesis if absent) decides how the
+recording is read (tools/systems/); the analysis here (shots, passes, turnovers, goals ...) is the same for all."""
 import argparse
 import bisect
 import gzip
 import json
-import os
 import math
-import re
 import struct
 import sys
-import zlib
-from collections import Counter
 from pathlib import Path
 
-FULL = 8 + 0x10000  # one full.bin snapshot
-OLD_BLOCKS = [[0xB000, 0x900], [0xC400, 0x800]]  # fast.bin layout before capture.json existed
-BASE, SIZE = 0xB04A, 0x80  # record 0 start, record size
-PLAYERS, PUCK = 12, 14
-FRAME, X, Y, Z, ROLE, FACING, ANIM, FLAGS, ROSTER, HAND = 0x06, 0x1C, 0x20, 0x24, 0x35, 0x55, 0x58, 0x62, 0x66, 0x76
-OWNED, OWNER = 0x60, 0x61  # puck record: $00 while a player has it, and that player's record number
-HOME_TEAM, AWAY_TEAM = 0xC6F6, 0xCA5A
-# Each team's stat block ($364 bytes, cleared before a game). Team words, then byte arrays by roster index.
-STAT_BLOCKS = (0xC6CE, 0xCA32)  # Home, Away
-# shots, goals, faceoffs won, checks, passes tried, passes made, attack-zone seconds,
-# breakaways tried, breakaway goals, one-timers tried, one-timer goals, penalty shots tried, penalty-shot goals,
-# power-play goals, power plays, penalties, penalty minutes, shorthanded goals. The power-play, penalty and
-# shorthanded offsets come from the user's old save-state parser (reference/genesis_savestate_stats.txt), which also confirms the rest.
-TEAM_STATS = (0x00, 0x0C, 0x0E, 0x10, 0x12, 0x14, 0x0A, 0x358, 0x35A, 0x35C, 0x35E, 0x360, 0x362, 0x02, 0x04, 0x06, 0x08, 0x356)
-GOALS, ASSISTS, SHOTS, CHECKS_OR_PIM, HITS_TAKEN = 0xB4, 0xCE, 0xE8, 0x102, 0x11C  # one byte per roster index
-ICE_TIME, ENERGY = 0x136, 0x32  # one word per roster index: game seconds played; energy 0-16 in the high byte
-PENALTY = 0x66  # one word per roster index: $FFxx = not penalized; else high byte $20 = called, play still on
-                # (delayed), $00 = serving; low byte = seconds left to serve
-DELAYED = 0x26  # stat-block byte: $FF while this team has a delayed penalty coming (the other side has fouled)
-PENALTY_LIST, RULES = 0xC5DC, 0x18E0C  # work RAM penalty summary; ROM table of rule messages (penalty names)
-PIM_CODE = 0x12302  # the game adds penalty minutes here; smozROM's checks hack replaces it with two NOPs
-PAD1 = 0xBEEF  # controller 1, held buttons: $80 Start, $40 A, $20 C, $10 B, $08 Right, $04 Left, $02 Down, $01 Up
-TEAM_TABLE = 0x30E
-RINK_LOGO_TABLE_POINTER = 0xFEA5A  # holds the address of a table of one logo address per team
-# Where games, replays, sprites and settings live: the project folder, or NHL94_HOME (the packaged helper sets it to
-# a folder in Documents, since a single .exe cannot write beside its own files).
-ROOT = Path(os.environ["NHL94_HOME"]) if os.environ.get("NHL94_HOME") else Path(__file__).resolve().parent.parent
-DEFAULT_ROM = Path(r"C:\Users\tdemorest\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin")
-DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import systems  # noqa: E402
+from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
 
 class Capture:
     """Samples of work RAM: an 8-byte millisecond stamp, then one or more blocks of RAM in host byte order."""
 
-    def __init__(self, folder):
+    def __init__(self, folder, system=None):
+        self.system = system or systems.of_capture(folder)
+        full_size = 8 + self.system.RAM_SIZE  # one full.bin snapshot
+        self.swap = self.system.BYTE_SWAP
         if (folder / "ram.bin").exists():
-            self.data, self.blocks = (folder / "ram.bin").read_bytes(), [[0, 0x10000]]
+            self.data, self.blocks = (folder / "ram.bin").read_bytes(), [[0, self.system.RAM_SIZE]]
         else:
             # The helper writes the same samples gzipped (fast.bin.gz, full.bin.gz).
             fast = folder / "fast.bin"
             self.data = fast.read_bytes() if fast.exists() else gzip.decompress((folder / "fast.bin.gz").read_bytes())
             layout = folder / "capture.json"
-            self.blocks = json.loads(layout.read_text())["blocks"] if layout.exists() else OLD_BLOCKS
+            self.blocks = json.loads(layout.read_text())["blocks"] if layout.exists() else self.system.OLD_BLOCKS
         self.sample = 8 + sum(length for _, length in self.blocks)
         self.count = len(self.data) // self.sample
-        # The recorder also keeps all of RAM once a second (full.bin), for addresses fast.bin does not hold.
+        # The recorder also keeps all of RAM now and then (full.bin), for addresses fast.bin does not hold.
         full, packed = folder / "full.bin", folder / "full.bin.gz"
         if (folder / "ram.bin").exists():
             self.full = b""
         else:
             self.full = full.read_bytes() if full.exists() else gzip.decompress(packed.read_bytes()) if packed.exists() else b""
-        self.full_ms = [struct.unpack_from("<q", self.full, j * FULL) [0] for j in range(len(self.full) // FULL)]
+        self.full_size = full_size
+        self.full_ms = [struct.unpack_from("<q", self.full, j * full_size)[0] for j in range(len(self.full) // full_size)]
 
     def offset(self, addr):
-        """Position of a Genesis address within a sample, or None when the capture does not cover it."""
+        """Position of an address within a sample, or None when the capture does not cover it."""
         pos = 8
         for start, length in self.blocks:
             if start <= addr < start + length:
@@ -78,13 +54,13 @@ class Capture:
         return struct.unpack_from("<q", self.data, i * self.sample)[0]
 
     def _full_at(self, i):
-        """Start of the latest once-a-second snapshot taken at or before sample i (the first one if none)."""
+        """Start of the latest full snapshot taken at or before sample i (the first one if none)."""
         j = max(0, bisect.bisect_right(self.full_ms, self.ms(i)) - 1)
-        return j * FULL + 8
+        return j * self.full_size + 8
 
-    def byte(self, i, addr):  # host memory swaps the two bytes of each word
-        off = self.offset(addr ^ 1)
-        return self.data[i * self.sample + off] if off is not None else self.full[self._full_at(i) + (addr ^ 1)]
+    def byte(self, i, addr):  # the Genesis core keeps the two bytes of each word swapped (system.BYTE_SWAP)
+        off = self.offset(addr ^ self.swap)
+        return self.data[i * self.sample + off] if off is not None else self.full[self._full_at(i) + (addr ^ self.swap)]
 
     def word(self, i, addr):
         off = self.offset(addr)
@@ -92,144 +68,17 @@ class Capture:
             return struct.unpack_from("<H", self.full, self._full_at(i) + addr)[0]
         return struct.unpack_from("<H", self.data, i * self.sample + off)[0]
 
-    def fixed(self, i, addr):  # 16.16 position, rounded to a tenth
-        whole, frac = struct.unpack_from("<hH", self.data, i * self.sample + self.offset(addr))
-        return round(whole + frac / 65536, 1)
+    def fixed(self, i, addr):  # a position, in the system's format
+        return self.system.fixed(self.data, i * self.sample + self.offset(addr))
 
     def raw(self, i, addr, length):
         start = i * self.sample + self.offset(addr)
         return self.data[start:start + length]
 
 
-def colour(word):
-    """Genesis colour word (0000BBB0GGG0RRR0) -> #rrggbb."""
-    r, g, b = (((word >> shift) & 0xE) * 255 // 14 for shift in (0, 4, 8))
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-
-def find_rom(capture):
-    """The ROM a capture was played on, by the fingerprint the recorder stored, looked for beside the default ROM."""
-    layout = capture / "capture.json"
-    stored = json.loads(layout.read_text()).get("rom_crc32") if layout.exists() else None
-    if not stored:
-        return DEFAULT_ROM, "assumed; this capture does not say which ROM was played"
-    first, second = (int(part, 16) for part in stored)
-    # The helper copies the ROM out of the emulator into roms/ (named by its fingerprint); then RetroArch's ROM folder.
-    candidates = sorted((ROOT / "roms").glob("*.bin")) + (sorted(DEFAULT_ROM.parent.glob("*.bin")) if DEFAULT_ROM.parent.exists() else [])
-    for path in candidates:
-        data = path.read_bytes()
-        # The recorder fingerprints the first megabyte and the second; a one-megabyte ROM has no second.
-        if zlib.crc32(data[:0x100000]) == first and (len(data) <= 0x100000 or zlib.crc32(data[0x100000:0x200000]) == second):
-            return path, "matched to the recording"
-    return DEFAULT_ROM, f"assumed; no ROM in {DEFAULT_ROM.parent} matches the one that was recorded"
-
-
-def team_count(rom):
-    """28 for the original game, 30 for the 30-team hack, 64 for NHL 94: EVO (as the NOSE editor tells them apart)."""
-    if rom[0x120:0x12B] == b"NHL 94: EVO":
-        return 64
-    code = re.match(r"GM T-50656( -|-F)([03])", rom[0x180:0x18E].decode("latin-1"))
-    return 30 if code and code.group(2) == "3" else 28
-
-
-def overall(attrs, goalie):
-    """The overall rating the game shows on its roster screens (formula from the NOSE editor)."""
-    weights = [2.25, 0, 0, 2.25, 2.25, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5] if goalie else [1, 1.5, 1.5, 1, 0.5, 1, 0, 1.5, 1, 0.5, 0, 0.5, 0]
-    rating = 0
-    for weight, value in zip(weights, attrs[1:]):
-        rating += value * weight
-        if goalie and weight == 2.25 and value % 2:  # the game rounds these down to the nearest half
-            rating -= 0.25
-    return int(rating + max(0, rating - 25) + 25)
-
-
-def rink_logo(rom, team):
-    """A team's centre-ice logo: 6 x 4 tiles of colour indices into its home palette, as one hex digit per pixel."""
-    block = struct.unpack_from(">I", rom, struct.unpack_from(">I", rom, RINK_LOGO_TABLE_POINTER)[0] + 4 * team)[0]
-    tiles = block + 10
-    if not 0 < block and tiles + 24 * 32 <= len(rom):
-        return None
-    rows = [[0] * 48 for _ in range(32)]
-    for t in range(24):
-        for y in range(8):
-            for x in range(4):
-                v = rom[tiles + 32 * t + y * 4 + x]
-                rows[(t // 6) * 8 + y][(t % 6) * 8 + 2 * x] = v >> 4
-                rows[(t // 6) * 8 + y][(t % 6) * 8 + 2 * x + 1] = v & 15
-    return {"w": 48, "h": 32, "p": "".join(f"{v:x}" for row in rows for v in row)}
-
-
-def read_teams(rom_path):
-    """Team names, rosters, palettes and logos from the ROM. Roster order matches the index in each player record."""
-    rom = rom_path.read_bytes()
-    teams = []
-    for k in range(team_count(rom)):
-        team = struct.unpack_from(">I", rom, TEAM_TABLE + 4 * k)[0]
-        players_off, _, names_off = struct.unpack_from(">3H", rom, team)
-        # The first players on a roster are its goalies, up to the last of four goalie values that is not zero.
-        nibbles = [n for byte in rom[team + 0x50:team + 0x52] for n in (byte >> 4, byte & 15)]
-        goalies = max((i + 1 for i, n in enumerate(nibbles) if n), default=0)
-        players, off = [], team + players_off
-        while True:
-            length = struct.unpack_from(">H", rom, off)[0]
-            if not 2 < length <= 40:
-                break
-            name = rom[off + 2:off + length].decode("latin-1").rstrip("\x00")
-            # After the name: the jersey number as decimal digits, then fourteen ratings of 0-15, two to a byte.
-            attrs = [n for byte in rom[off + length + 1:off + length + 8] for n in (byte >> 4, byte & 15)]
-            goalie = len(players) < goalies
-            players.append({"name": name, "num": int(f"{rom[off + length]:02x}"), "a": attrs, "g": goalie, "ovr": overall(attrs, goalie)})
-            off += length + 8
-        length = struct.unpack_from(">H", rom, team + names_off)[0]
-        # Two 16-colour palettes per team, as the game loads them: +$0C when playing at home, +$2C when away.
-        palettes = [[colour(struct.unpack_from(">H", rom, team + start + 2 * i)[0]) for i in range(16)] for start in (0x0C, 0x2C)]
-        try:
-            logo = rink_logo(rom, k)
-        except (struct.error, IndexError):
-            logo = None  # a ROM that keeps its logos somewhere this does not know
-        teams.append({"name": rom[team + names_off + 2:team + names_off + length].decode("latin-1").rstrip("\x00"), "players": players,
-                      "palettes": palettes, "logo": logo, "abbr": team_abbr(rom, team + names_off + length)})
-    return teams
-
-
-def team_abbr(rom, at):
-    """The team's abbreviation (BOS, STL): the second of its length-prefixed name strings (city, abbreviation,
-    nickname, arena), starting at `at`. Empty if it does not look like one."""
-    length = struct.unpack_from(">H", rom, at)[0]
-    return rom[at + 2:at + length].decode("latin-1").rstrip("\x00") if 2 < length < 12 else ""
-
-
-def animation_table(rom):
-    """The game's animation scripts, which the player record's animation word (+$58) is an offset into. Each starts
-    with 8 word offsets (from the script's start), one per direction faced, to a list of (frame, duration) word pairs
-    ended by a negative duration. The table is found by the standing animation ($050C): frames 1, 6, 11 ... 36, one
-    pair per direction, so its offsets read 18, 22 ... 46. Returns {word as 4 hex digits: 8 lists of frames}, used by
-    the viewer to redraw a player facing another way when the view is turned; {} if the table is not there."""
-    word = lambda a: struct.unpack_from(">H", rom, a)[0]
-    base = next((b for b in range(0, len(rom) - 0x2000, 2)
-                 if all(word(b + 0x50C + 2 * e) == 18 + 4 * e for e in range(8)) and word(b + 0x50C + 18) == 1), None)
-    if base is None:
-        return {}
-
-    def script(v):
-        offsets = [word(base + v + 2 * e) for e in range(8)]
-        if min(offsets) != 18 or max(offsets) > 0x600 or any(o % 2 for o in offsets):
-            return None
-        dirs = []
-        for o in offsets:
-            at, frames = base + v + o, []
-            while True:
-                frame, duration = word(at), struct.unpack_from(">h", rom, at + 2)[0]
-                if not 0 < frame < 900 or len(frames) >= 64:
-                    return None
-                frames.append(frame)
-                at += 4
-                if duration < 0:
-                    break
-            dirs.append(frames)
-        return dirs
-
-    return {f"{v:04x}": dirs for v in range(2, 0x2000, 2) if (dirs := script(v))}
+def actions(m):
+    """The animation words of each action (shoot, pass, ...) for the system this match was played on."""
+    return systems.of_match(m).ACTIONS
 
 
 def find_shots(m, goals=None):
@@ -254,7 +103,8 @@ def find_shots(m, goals=None):
     one-timer, pass shot, deflection or other."""
     t, P, V, own, A = m['t'], m['puck'], m['puckV'], m['owner'], m['anim']
     N, K = len(t), 12
-    SHOOT, PASS = {'07fc', '092e'}, {'0718', '078a'}  # the two shooting animations, the two passing ones
+    act = actions(m)
+    SHOOT, PASS = act['shoot'], act['pass']  # the shooting animations, the passing ones
     # Game units either side of the middle of the net (the posts are at about 20). Pass shots are aimed by direction
     # only, so near misses count: the user's wide attempts in capture6_netplay_bos_stl crossed at 30.2 and 35.
     PASS_MOUTH = 40
@@ -505,7 +355,8 @@ def find_failed_one_timers(m):
     Returns [{f (start of the swing), team, idx (roster index), passer (roster index), x, y (where he was)}]."""
     t, own, A = m['t'], m['owner'], m['anim']
     N, K = len(t), 12
-    SHOOT, PASS = {'07fc', '092e'}, {'0718', '078a', '0366'}
+    act = actions(m)
+    SHOOT, PASS = act['shoot'], act['pass'] | act['goalie_pass']
     anim = lambda i, k: A[(i * K + k) * 4:(i * K + k) * 4 + 4]
     idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(m['roster'][i * K + k], 36))
     shots = m.get('shotList', [])
@@ -571,7 +422,7 @@ def find_faceoffs(m):
     Returns [{f (the drop), x, y, won (0 Home, 1 Away, -1 unknown), zone (Home's view: att, neu, def)}]."""
     t, P, N = m['t'], m['puck'], len(m['t'])
     stats = m.get('stats') or {}
-    at = TEAM_STATS.index(0x0E)  # faceoffs won, in each stat snapshot
+    at = STAT_FIELDS.index('faceoffs')  # faceoffs won, in each stat snapshot
     out = []
     starts = [(a, b) for a, b in whistles(m) if b < N]
     if N and P[2] < -100:  # the recording starts with the puck hidden: the opening faceoff
@@ -655,7 +506,8 @@ def find_passes(m):
     Returns [{f, known, team, idx, to, x0, y0, x1, y1, result}] (idx / to: roster indices, -1 unknown)."""
     t, P, own, A = m['t'], m['puck'], m['owner'], m['anim']
     N, K = len(t), 12
-    PASS = {'0718', '078a', '0366'}
+    act = actions(m)
+    PASS = act['pass'] | act['goalie_pass']
     anim = lambda i, k: A[(i * K + k) * 4:(i * K + k) * 4 + 4]
     idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(m['roster'][i * K + k], 36))
     shots = m.get('shotList', [])
@@ -704,7 +556,7 @@ def find_passes(m):
     # aimed at a receiver: in 2026-10-14_1540_CGY-BOS 20 of the user's 62 passes were B presses with no target (the
     # puck went the way he pushed, as with a pass shot), and goalie passes ($0366) are never counted.
     stats = m.get('stats') or {}
-    tried = TEAM_STATS.index(0x12)
+    tried = STAT_FIELDS.index('passTried')
     for team, side in ((0, 'home'), (1, 'away')):
         if not stats.get('f'):
             break
@@ -734,6 +586,7 @@ def find_hits(m):
     t, pos, role, roster, A, N = m['t'], m['pos'], m['role'], m['roster'], m['anim'], len(m['t'])
     F, n, per = st['f'], st['n'], st['p']
     slot = 3 if st.get('x') == 'Checks' else 4
+    act = actions(m)
     anim = lambda i, k: A[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4]
     at = lambda i, k: (pos[(i * 12 + k) * 2], pos[(i * 12 + k) * 2 + 1])
     dist = lambda i, a, b: math.hypot(at(i, a)[0] - at(i, b)[0], at(i, a)[1] - at(i, b)[1])
@@ -760,7 +613,7 @@ def find_hits(m):
                 j = j0
                 while j < N and t[j] - t[f] <= 800:
                     for v in opp:
-                        if on_ice(j, v) and anim(j, v) in ('0dd8', '0d26') and dist(j, k, v) < 40:
+                        if on_ice(j, v) and anim(j, v) in act['down'] and dist(j, k, v) < 40:
                             down.append((dist(j, k, v), v, j))
                     j += 1
                 victim = min(down)[1] if down else min((dist(f, k, v), v) for v in opp)[1]
@@ -849,6 +702,8 @@ def find_turnovers(m):
     dump-in, counted as neither (as the NHL counts them).
     Returns [{f (frame the other team has it), lost (frame it was lost), from (team that lost it), giver, taker, by
     (roster indices; by = who forced it, takeaways only), kind (giveaway, takeaway, dump-in), how, x, y}]."""
+    act = actions(m)
+    causes = {**{w: 'poke check' for w in act['poke']}, **{w: 'hook' for w in act['hook']}, **{w: 'hit' for w in act['lunge']}}
     t, P, own, A = m['t'], m['puck'], m['owner'], m['anim']
     N, K = len(t), 12
     anim = lambda i, k: A[(i * K + k) * 4:(i * K + k) * 4 + 4]
@@ -883,17 +738,17 @@ def find_turnovers(m):
         for q in window:
             for k in rivals:
                 a = anim(q, k)
-                if a in ('0b24', '1122', '0c5e') and dist(q, k) < 35:
-                    cause = ({'0b24': 'poke check', '1122': 'hook', '0c5e': 'hit'}[a], k); break
+                if a in causes and dist(q, k) < 35:
+                    cause = (causes[a], k); break
             if cause:
                 break
-        if not cause and any(anim(q, k1) in ('0dd8', '0d26') for q in window):
+        if not cause and any(anim(q, k1) in act['down'] for q in window):
             # He went down: the nearest opposing skater (a goalie only if no skater is there) hit him.
             near = sorted((k for k in rivals if m['role'][lost * K + k] != 'x'),
                           key=lambda k: (goalie(lost, k), math.hypot(pos(lost, k)[0] - pos(lost, k1)[0], pos(lost, k)[1] - pos(lost, k1)[1])))
             if near:
                 cause = ('hit', near[0])
-        passed = any(anim(q, k1) in ('0718', '078a', '0366') for q in window if q <= lost + 2)
+        passed = any(anim(q, k1) in act['pass'] | act['goalie_pass'] for q in window if q <= lost + 2)
         if cause:
             ev.update(kind='takeaway', how=cause[0], by=idx(lost, cause[1]))
         elif passed and goalie(a2, k2):
@@ -912,7 +767,8 @@ def find_goals(match, rosters):
     """Goals from the stat snapshots: when a team's goal count goes up, whose goals and assists went up with it
     (looking two seconds on, as the game can credit them a moment apart), and what kind of goal it was."""
     stats, n, per = match["stats"], match["stats"]["n"], match["stats"]["p"]
-    kinds = {13: "PPG", 17: "SHG", 8: "breakaway", 10: "one-timer", 12: "penalty shot"}  # team-stat positions
+    kinds = {STAT_FIELDS.index(field): name for field, name in (("ppGoals", "PPG"), ("shGoals", "SHG"), ("breakGoals", "breakaway"),
+                                                                ("oneTimerGoals", "one-timer"), ("psGoals", "penalty shot"))}
     goals = []
     for team, side in enumerate(("home", "away")):
         snaps = stats[side]
@@ -947,191 +803,22 @@ def main(argv=None):
     ap.add_argument("--out", type=Path, default=ROOT / "matches")
     args = ap.parse_args(argv)
 
-    cap = Capture(args.capture)
-    rom_path, rom_note = (args.rom, "given") if args.rom else find_rom(args.capture)
+    system = systems.of_capture(args.capture)
+    cap = Capture(args.capture, system)
+    rom_path, rom_note = (args.rom, "given") if args.rom else system.find_rom(args.capture)
     name = args.name or args.capture.resolve().name
-    has_pad = cap.offset(PAD1) is not None
-
-    match = {"version": 21, "name": name, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
-             "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [], "pos": [], "ctrl": [], "owner": []}
-    if has_pad:
-        match["pad"] = []
-    facing, roster, anim, role, frame, mirror, puck_frame = [], [], [], [], [], [], []
-    match["posts"] = []  # frames where the puck came off a goal post
-    # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
-    stats = {"f": [], "home": [], "away": []}
-    last_counts, last_stat_ms = None, -10_000
-    penalties = []
-    delayed, open_delayed = [], [None, None]
-    last_post = -10_000
-    team_ids = Counter()
-    previous = None
-    for i in range(cap.count):
-        # Identical consecutive samples (a paused game, or two reads of one frame) are stored once.
-        key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), cap.byte(i, PAD1) if has_pad else 0)
-        if key == previous:
-            continue
-        previous = key
-        team_ids[(cap.word(i, HOME_TEAM) & 0xFF, cap.word(i, AWAY_TEAM) & 0xFF)] += 1
-        match["t"].append(cap.ms(i))
-        match["period"].append(cap.word(i, 0xC466))
-        match["clock"].append(cap.word(i, 0xC468))
-        match["score"] += [cap.word(i, 0xC6DA), cap.word(i, 0xCA3E)]
-        match["shots"] += [cap.word(i, 0xC6CE), cap.word(i, 0xCA32)]
-        puck = BASE + SIZE * PUCK
-        match["puck"] += [cap.fixed(i, puck + X), cap.fixed(i, puck + Y), cap.fixed(i, puck + Z)]
-        # The puck's picture (frames 395-404 of the sprite table; 395 and 399 on the ice, the rest tumbling in the air).
-        # Its height reads -256 while the game hides it, at stoppages before the faceoff.
-        puck_frame.append(f"{cap.word(i, puck + FRAME) & 0xFFF:03x}")
-        # Its speed words (+$28 X, +$2A Y, signed, same directions as the position), in hundreds: wrist shots peak at
-        # about 11400-13700, slapshots 15000-23600.
-        speed_x, speed_y = struct.unpack("<hh", cap.raw(i, puck + 0x28, 4))
-        match["puckV"] += [round(speed_x / 100), round(speed_y / 100)]
-        # Record 15, the puck's shadow, becomes the goal light after a goal: frames 563-576 (a red lamp, its flash and
-        # then its beam turning), for 7-9 seconds, at the end boards behind the net or in the net.
-        light = BASE + SIZE * 15
-        light_frame = cap.word(i, light + FRAME) & 0xFFF
-        if 563 <= light_frame <= 576:
-            match["lights"] += [len(match["t"]) - 1, cap.fixed(i, light + X), cap.fixed(i, light + Y),
-                                cap.fixed(i, light + Z), light_frame]
-        owner = cap.byte(i, puck + OWNER)
-        match["owner"].append(owner if cap.byte(i, puck + OWNED) == 0 and owner < PLAYERS else -1)
-        # A post: the loose puck turns back out of the end zone right beside a post (about 20 units either side of
-        # the middle, on the goal line). Found from a post shot the user saw in capture5_league30 at 2:57 of period 1;
-        # across all captures the rule fires only three times.
-        if i and cap.byte(i, puck + OWNED) != 0 and cap.ms(i) - last_post > 1000:
-            px, py, vx, vy = struct.unpack("<hxxhxxxxxxhh", cap.raw(i, puck + X, 16))
-            before = struct.unpack("<hh", cap.raw(i - 1, puck + 0x28, 4))
-            fresh = (vx, vy) != before or cap.byte(i - 1, puck + OWNED) == 0
-            if fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 272 and vy * py < 0 and abs(vx) + abs(vy) >= 1500:
-                match["posts"].append(len(match["t"]) - 1)
-                last_post = cap.ms(i)
-        if has_pad:
-            match["pad"].append(cap.byte(i, PAD1))
-        mask = 0
-        for k in range(PLAYERS):
-            rec = BASE + SIZE * k
-            match["pos"] += [cap.fixed(i, rec + X), cap.fixed(i, rec + Y)]
-            facing.append(str(cap.byte(i, rec + FACING) & 7))
-            roster.append(DIGITS[min(cap.byte(i, rec + ROSTER), 35)])
-            anim.append(f"{cap.word(i, rec + ANIM):04x}")
-            frame.append(f"{cap.word(i, rec + FRAME) & 0xFFF:03x}")
-            mirror.append("0" if cap.byte(i, rec + HAND) & 1 else "1")
-            code = cap.byte(i, rec + ROLE)
-            role.append(str(code) if code < 6 else "x")
-            if cap.byte(i, rec + FLAGS) & 0x08:
-                mask |= 1 << k
-        match["ctrl"].append(mask)
-        vectors, counts = [], []
-        for block in STAT_BLOCKS:
-            vector = [cap.word(i, block + o) for o in TEAM_STATS]
-            for idx in range(26):
-                vector += [cap.byte(i, block + GOALS + idx), cap.byte(i, block + ASSISTS + idx), cap.byte(i, block + SHOTS + idx),
-                           cap.byte(i, block + CHECKS_OR_PIM + idx), cap.byte(i, block + HITS_TAKEN + idx),
-                           cap.word(i, block + ICE_TIME + 2 * idx), cap.byte(i, block + ENERGY + 2 * idx),
-                           cap.word(i, block + PENALTY + 2 * idx)]
-            vectors.append(vector)
-            n = len(TEAM_STATS)
-            counts.append([v for j, v in enumerate(vector) if j < n or (j - n) % 8 not in (5, 6)])
-        # The penalty summary: a byte count, then 4 bytes per penalty in the order called:
-        # (period << 14 | seconds into the period), team ($80 = Away) | rule code, roster index.
-        # Delayed penalties: the benefiting team's flag goes up at the moment of the foul, and down when play
-        # resumes. The offender is only written to the summary after the whistle; it is matched up below.
-        for team, block in enumerate(STAT_BLOCKS):
-            up = cap.byte(i, block + DELAYED) == 0xFF
-            if up and open_delayed[team] is None:
-                open_delayed[team] = {"f": len(match["t"]) - 1, "team": team}
-            elif not up and open_delayed[team] is not None:
-                open_delayed[team]["end"] = len(match["t"]) - 1
-                delayed.append(open_delayed[team])
-                open_delayed[team] = None
-        listed = cap.word(i, PENALTY_LIST)
-        if listed < 4 * len(penalties) or listed > 240:
-            penalties.clear()  # a new game started, or the list is not set up yet
-        while listed >= 4 * (len(penalties) + 1):
-            at = PENALTY_LIST + 2 + 4 * len(penalties)
-            when = (cap.byte(i, at) << 8) | cap.byte(i, at + 1)
-            code = cap.byte(i, at + 2)
-            # f = -1 marks penalties already listed when the recording began
-            penalties.append({"f": len(match["t"]) - 1 if len(match["t"]) > 1 else -1, "period": when >> 14, "secs": when & 0x3FFF,
-                              "team": code >> 7, "code": code & 0x7F, "idx": cap.byte(i, at + 3)})
-        if counts != last_counts or cap.ms(i) - last_stat_ms >= 1000:
-            stats["f"].append(len(match["t"]) - 1)
-            stats["home"].append(vectors[0])
-            stats["away"].append(vectors[1])
-            last_counts, last_stat_ms = counts, cap.ms(i)
-    match["facing"] = "".join(facing)
-    match["roster"] = "".join(roster)  # one base-36 digit per player per frame: index into that team's roster
-    match["role"] = "".join(role)  # one character per player per frame: index into "positions", or x when off the ice
-    for team in (0, 1):
-        if open_delayed[team] is not None:
-            delayed.append({**open_delayed[team], "end": len(match["t"]) - 1})
-    # A penalty listed while the other team's delayed flag was up was called when that flag went up.
-    for p in penalties:
-        for d in delayed:
-            if d["team"] == 1 - p["team"] and d["f"] <= p["f"] <= d["end"] and not d.get("matched"):
-                p["called"], d["matched"] = d["f"], True
-                break
-    match["delayed"] = delayed
-    match["penalties"] = penalties
-    match["frame"] = "".join(frame)  # three hex digits per player per frame: the animation frame, for the sprite library
-    match["puckFrame"] = "".join(puck_frame)  # three hex digits per frame: the puck's picture
-    match["mirror"] = "".join(mirror)  # 1 where the game draws that frame mirrored left-to-right
-    match["anim"] = "".join(anim)  # four hex digits per player per frame: the animation word at record +$58
-
-    home_id, away_id = team_ids.most_common(1)[0][0]
-    match["team1"], match["team2"] = args.home or "Home", args.away or "Away"
-    if rom_path.exists():
-        teams = read_teams(rom_path)
-        if home_id < len(teams) and away_id < len(teams):
-            match["team1"], match["team2"] = args.home or teams[home_id]["name"], args.away or teams[away_id]["name"]
-            match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
-            match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
-            match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
-            # Stats per snapshot: the team values, then 8 per player (goals, assists, shots, checks or PIM, hits taken,
-            # ice time, energy, penalty word) for each roster place.
-            sizes = (len(TEAM_STATS) + 8 * len(teams[home_id]["players"]), len(TEAM_STATS) + 8 * len(teams[away_id]["players"]))
-            stats["n"], stats["p"] = len(TEAM_STATS), 8
-            rom_bytes = rom_path.read_bytes()
-            # Penalty names and lengths: the rule-message table (the NOSE editor's rulesOffset). A code is twice the
-            # rule number; each rule starts with two bytes, the second being the minutes, then its name.
-            rules = {}
-            for number in range(1, 31):
-                at = RULES + struct.unpack_from(">H", rom_bytes, RULES + 2 * number)[0]
-                length = struct.unpack_from(">H", rom_bytes, at + 2)[0]
-                if 2 < length < 30:
-                    minutes = rom_bytes[at + 1]
-                    rules[2 * number] = {"name": rom_bytes[at + 4:at + 2 + length].decode("latin-1").rstrip("\x00"),
-                                         "min": minutes if minutes <= 10 else 0}
-            match["rules"] = rules
-            stats["home"] = [v[:sizes[0]] for v in stats["home"]]
-            stats["away"] = [v[:sizes[1]] for v in stats["away"]]
-            rom_bytes = rom_path.read_bytes()
-            stats["x"] = "Checks" if rom_bytes[PIM_CODE:PIM_CODE + 4] == bytes.fromhex("4e714e71") else "PIM"
-            match["stats"] = stats
-            match["goals"] = find_goals(match, match["rosters"])
-            if teams[home_id]["logo"]:
-                match["logo"] = teams[home_id]["logo"]  # drawn at centre ice in the home palette
-        # Players are drawn from this ROM's own sprites; build its library the first time it is seen.
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        import extract_sprites
-        rom = rom_path.read_bytes()
-        match["rom"] = f"{zlib.crc32(rom):08x}"
-        match["anims"] = animation_table(rom)
-        if not extract_sprites.library_path(rom).exists():
-            try:
-                extract_sprites.build(rom)
-            except ValueError as problem:
-                print(f"no game sprites for {rom_path.name}: {problem}")
-    else:
-        print(f"ROM not found at {rom_path}; exporting without player names")
+    match = system.read_match(cap, rom_path, name, args.home, args.away)
+    match["system"] = system.NAME
+    if "stats" in match and "rosters" in match and "goals" not in match:
+        match["goals"] = find_goals(match, match["rosters"])
 
     # The recorded controller ($BEEF) is the local player's. With two people playing, whose is it? The team whose
     # controlled skater starts an action (pass, shot, check, poke, hook, dive...) within 350 ms of a press, clearly
     # more often than the other team's. In capture6_netplay_bos_stl (the user Boston, online): 222 against 102 of 617.
     if "pad" in match:
         answers = [0, 0]
-        actions = {"0718", "078a", "07fc", "092e", "0c5e", "0b24", "1122", "02f4", "0366", "148e"}
+        act = system.ACTIONS
+        pressed = set().union(*(act[a] for a in ("pass", "shoot", "lunge", "poke", "hook", "dive", "goalie_pass", "goalie_save")))
         t, A, pad, ctrl = match["t"], match["anim"], match["pad"], match["ctrl"]
         for i in range(1, len(t)):
             if not pad[i] & 0x70 & ~pad[i - 1]:
@@ -1140,7 +827,7 @@ def main(argv=None):
                 ks = [k for k in range(team * 6, team * 6 + 6) if (ctrl[i] >> k) & 1]
                 j = i
                 while j < len(t) and t[j] - t[i] <= 350:
-                    if any(A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] in actions
+                    if any(A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] in pressed
                            and A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] != A[((j - 1) * 12 + k) * 4:((j - 1) * 12 + k) * 4 + 4] for k in ks):
                         answers[team] += 1
                         break
@@ -1167,7 +854,7 @@ def main(argv=None):
     held = sum(1 for o in match["owner"] if o >= 0) / frames
     print(f"ROM: {rom_path.name} ({rom_note})")
     print(f"{target}: {match['team1']} (home) vs {match['team2']} (away), {frames} frames, {match['t'][-1] / 1000:.0f} s, "
-          f"puck held {held:.0%} of frames, buttons {'yes' if has_pad else 'no'}, {target.stat().st_size / 1e6:.1f} MB")
+          f"puck held {held:.0%} of frames, buttons {'yes' if 'pad' in match else 'no'}, {target.stat().st_size / 1e6:.1f} MB")
 
 
 if __name__ == "__main__":
