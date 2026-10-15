@@ -179,7 +179,25 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   period; period 0-3, 3 = OT), a byte (bit 7 = Away; low bits strength: 0 SH two men short, 1 SH, 2 even, 3 PP,
   4 PP two men up), then scorer, first and second assist as roster indices ($FF = none; all 3334 goals in the states
   fit). The Genesis may have a similar summary; it was never looked for (goals are worked out from stat changes).
-  Not known yet: player records (positions, puck), clock, period, per-player stats, controller, screen state.
+- The NHL94SNES disassembly (github.com/Mhopkinsinc/NHL94SNES; the user pointed to it) rebuilds `NHL94.smc` byte for
+  byte (same SHA-1), so its addresses hold for the base ROM. `src/ram94snes.asm` names RAM; `docs/name_map.csv`
+  every address; `src/data/teamdata94s.asm` the team database. Its sibling NHLPA93SNES has a fuller RAM list
+  (`src/ram93snes.asm`; different addresses, same names and flag meanings). Its agent instructions are for that
+  project, not this one.
+- Objects as on the Genesis, but stored as arrays of 16 words (index = object * 2): Xpos $0D55, Ypos $0DB7 (integer,
+  Genesis units), position $0F43 (Genesis codes, negative = off), facing $1163, animation SPA $11A3, pflags $1283
+  (bit $0008 joystick controlled, the Genesis +$62 bit), roster place pnum $12A3, team pfteam $1503. Objects 0-5
+  Home, 6-11 Away, 12/13 nets at (0, +/-268), 14 puck, 15 shadow. Period gsp $1630 (from 0), clock $1632, joypad
+  $0776. Checked on the 445 save states (all of them, league ROMs SDL13-16 included): goalies at about +/-243,
+  exactly one controlled skater per team. The disassembly's blueline is Y = $58 = 88 (ours from the attack-zone
+  fit: 89). Who has the puck: not found (NHLPA '93's carrier assignment did not show).
+- ROM teams (`snes.read_teams`): TeamList at $9CA5E7 (LoROM: file offset = (bank & $7F) * $8000 + (address &
+  $7FFF)), 28 long pointers; records as described above; uniform palettes $96CD4E (home) / $96C9CE (away), 16 SNES
+  colours per team. Goalies by their ratings (slots 6, 8, 9 empty: exact for all 65 Genesis goalies). Works on
+  NHL94.smc, NHL94_Classic and SDL-S14; all 603 SNES players are on the Genesis rosters, but five teams lack a backup
+  goalie the Genesis has (EDM, NYI, NYR, STL, TOR: the SNES rosters differ). SDL16 (1.1 MB) does not read: laid out
+  differently.
+  Not known yet: puck possession, screen state, per-player stats, animation words, sprites, finding RAM in Snes9x.
 
 ## Reading game memory live
 
