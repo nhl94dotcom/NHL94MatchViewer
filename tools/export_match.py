@@ -883,18 +883,21 @@ def main(argv=None):
             if first >= 0:
                 match["padTeam"] = first
             match["pad2Team"] = second if second >= 0 and second != match["padTeam"] else -1
-    # Shots for the shot map, credited where the game counted them (and to the scorer it named, when known).
-    match["shotList"] = find_shots(match, match.get("goals"))
-    match["turnovers"] = find_turnovers(match)
-    match["failedOneTimers"] = find_failed_one_timers(match)
-    match["passes"] = find_passes(match)
-    match["faceoffs"] = find_faceoffs(match)
-    match["icings"] = find_icings(match)
-    match["zoneEntries"] = find_zone_entries(match)
-    match["hits"] = find_hits(match)
+    # The analysis needs the system's animation words (shoot, pass ...) and who has the puck; a system that does not
+    # have them yet (the SNES) gets the replay without it.
+    if all(system.ACTIONS.get(a) for a in ("shoot", "pass")) and any(o >= 0 for o in match["owner"]):
+        # Shots for the shot map, credited where the game counted them (and to the scorer it named, when known).
+        match["shotList"] = find_shots(match, match.get("goals"))
+        match["turnovers"] = find_turnovers(match)
+        match["failedOneTimers"] = find_failed_one_timers(match)
+        match["passes"] = find_passes(match)
+        match["faceoffs"] = find_faceoffs(match)
+        match["icings"] = find_icings(match)
+        match["zoneEntries"] = find_zone_entries(match)
+        match["hits"] = find_hits(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
-               and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match["shotList"]):
+               and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):
             goal["kinds"].append("pass shot")
 
     args.out.mkdir(parents=True, exist_ok=True)
