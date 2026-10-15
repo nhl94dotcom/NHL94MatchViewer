@@ -309,12 +309,21 @@ fallfwd, $0DD8 fallback, $0E8A celebrate, $0EFC pump, $0F6E wallright, $0FAC wal
 $102E siren, $1078 bglass, $109E stanley, $10D0 catch, $1122 hook, $1154 hook2, $11E6 stumble, $1298 fake, $136A flip,
 $145C injuryfall, $148E ghighr, $14C0 ghighl, $14F2 gstick2r, $1544 gstick2l, $1596 gslamtop, $1684 gslambot,
 $1776/$17E8/$185A/$18CC boardfront/right/back/left, $193E/$1A00 benchcheckl/r, $1AC2 crosscheck, $1AF4 injury1.
-So the goalie's save types (glove, stick, stack, high, dive, slam) and the check types (shoulder, hip, boards, bench,
-cross-check) are known by name; the analysis does not use them yet.
+Used (2026-10-15): shots carry `save`, the goalie's first save move from the release to 0.25 s after the result
+(genesis.SAVE_MOVES: glove, stick, pad stack, high, dive, slam, or none = stood his ground; of 115 saves in the
+recordings: stick 62, high 14, pad stack 12, dive 5, glove 2, none 20), shown in tooltips and the goalie report
+(split human / CPU). Hits carry `how` (the thrower's check animation within 0.7 s: shoulder 111, cross-check 14, hip
+2, unseen 48 -> 'check') and `outcome` (the target's: knocked down, upended, into the boards, into the bench, else
+stayed up). Big hits (upended, boards, bench) get a banner ("Bourque upends Shanahan (shoulder check)"), a team stat
+and a card stat; the card lists check types.
 From the same map, checked on `capture6_netplay_bos_stl`: controller 2's held buttons are the byte at $BEF1 (lj2;
 ours, $BEEF, is lj1's low byte): its presses were answered by St. Louis's controlled skater 308 times against 91
 (controller 1: Boston 222, St. Louis 103), so both players' buttons are in every recording. cont1team / cont2team
-($C328 / $C32A, 0 none, 1 Home, 2 Away) read 1 and 2 there (outside fast.bin; full.bin has them).
+($C328 / $C32A, 0 none, 1 Home, 2 Away) read 1 and 2 there (outside fast.bin; full.bin has them). The converter
+keeps controller 2 as `pad2` and sets padTeam / pad2Team from cont1team / cont2team (the old press-matching guess
+stays as the fallback); the viewer shows each team's controller (`teamPads`).
+Goals take `strength` from ScoreSum (matched in order to find_goals' goals; for recordings that began mid-game, its
+last entries); all goals in all seven recordings agree; two-men-up / -down goals get a "5 on 3" / "3 on 5" kind.
 ScoreSum: a byte count at $C472, then 6 bytes per goal from $C474 (big-endian word period << 14 | seconds into the
 period; a byte, bit 7 Away, low bits strength as on the SNES: 2 even, 3 power play; scorer, first and second
 assist, $FF none): all 9 goals of capture6 match find_goals. Also there: joypuckcarrier $C318, c1/c2playernum
