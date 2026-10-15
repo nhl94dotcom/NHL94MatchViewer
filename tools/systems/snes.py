@@ -1,10 +1,10 @@
 """NHL '94 on the Super Nintendo, in RetroArch with the Snes9x core. Not working yet: this holds what is known so far
 (CLAUDE.md, "SNES version"), in the shape genesis.py has, to be filled in as the rest is found.
 
-Known: the team stats and the scoring summary in work RAM (from the user's save-state parser), and that the ROM
-stores teams the Genesis way with little-endian lengths. Not known: where the players and the puck are, the clock,
-the period, per-player stats, the controller, the screen state, the animation words, the ROM's team table and
-sprites, and how to find work RAM inside the running Snes9x core.
+Known: the team stats and the scoring summary (from the user's save-state parser), the object arrays, clock,
+period and controller (from the NHL94SNES disassembly, github.com/Mhopkinsinc/NHL94SNES, checked on save states),
+and the ROM's teams (read_teams). Not known yet: who has the puck, the screen state (menus, pause), per-player
+stats, the animation words, the sprites, and how to find work RAM inside the running Snes9x core.
 """
 import struct
 
@@ -31,10 +31,83 @@ TEAM_IDS = (0x1C98, 0x1C9A)  # Home, Away
 SCORING_COUNT, SCORING_LIST = 0x313A, 0x313C
 STRENGTH = {0: "SH2", 1: "SHG", 2: "EV", 3: "PPG", 4: "PP2"}
 
+# Objects, as on the Genesis: 0-5 Home, 6-11 Away, 12 and 13 the nets (0, +/-268), 14 the puck, 15 its shadow. Each
+# field is an array of 16 words (index = object * 2), not a record per object. Names from the NHL94SNES disassembly's
+# ram94snes.asm; checked on the 445 save states: positions in the Genesis units (goalies at about +/-243, the
+# nets at +/-268), exactly one joystick-controlled skater per team.
+OBJ_X, OBJ_Y = 0x0D55, 0x0DB7     # integer positions (signed)
+PUCK_VX, PUCK_VY = 0x0EDF, 0x0EFF
+OBJ_POSITION = 0x0F43             # 0 G, 1 LD, 2 RD, 3 LW, 4 C, 5 RW, negative = off the ice (the Genesis codes)
+OBJ_FACING = 0x1163               # 0-7
+OBJ_ANIM = 0x11A3                 # current animation (offset into the animation data), as the Genesis +$58
+OBJ_ANIM_STEP = 0x11C3
+OBJ_FLAGS = 0x1283                # bit $0008: joystick controlled (as the Genesis +$62 bit $08)
+OBJ_ROSTER = 0x12A3               # roster place (low byte)
+OBJ_TEAM = 0x1503                 # 0 Home, else Away
+PERIOD, CLOCK = 0x1630, 0x1632    # period from 0; clock in seconds left
+PAD1 = 0x0776                     # controller 1, held
+GAME_FLAGS2 = 0x15D8              # high byte: $08 replay playing, $20 power play, $01 faceoff (NHLPA '93 meanings)
+LAST_TOUCH = 0x179A               # per team: the last player to touch the puck
+
 
 def strip_header(data):
     """The ROM without a copier's 512-byte header (files whose size is 512 past a multiple of 1024 have one)."""
     return data[512:] if len(data) % 1024 == 512 else data
+
+
+# ------------------------------------------------------------------------------------------------------ the ROM
+# From the NHL94SNES disassembly (github.com/Mhopkinsinc/NHL94SNES), which rebuilds NHL94.smc byte for byte:
+TEAM_LIST = 0x9CA5E7              # a long pointer (address word, bank byte, 0) to each team record, 28 teams
+HOME_PALETTES, AWAY_PALETTES = 0x96CD4E, 0x96C9CE  # 16 colours per team (white jerseys at home, dark away)
+
+
+def file_offset(address):
+    """LoROM: bank $80-$FF (or $00-$7F) addresses $8000-$FFFF map to 32 KB pieces of the file."""
+    return ((address >> 16) & 0x7F) * 0x8000 + (address & 0x7FFF)
+
+
+def colour(word):
+    """SNES colour word (0BBBBBGGGGGRRRRR) -> #rrggbb."""
+    r, g, b = ((word >> shift) & 31 for shift in (0, 5, 10))
+    return "#%02x%02x%02x" % tuple(v * 255 // 31 for v in (r, g, b))
+
+
+def read_teams(rom_path):
+    """Team names, rosters and uniform colours from the ROM, as genesis.read_teams gives them. A team record (as the
+    Genesis one, lengths little-endian) starts with word offsets to its parts: players, scouting report, names, ...,
+    and the eight lines (G, LD, RD, LW, C, RW, extra attacker, 0: player numbers from 1). Players: a length word
+    (name length + 2), the name, the jersey number as decimal digits, seven bytes of ratings (two to a byte, in the
+    Genesis order); a length of 2 ends the list. Then city, abbreviation, nickname and arena, each length-prefixed.
+    Goalies are told by their ratings (below)."""
+    from .common import overall
+    rom = strip_header(rom_path.read_bytes())
+    teams = []
+    for k in range(28):
+        ptr = rom[file_offset(TEAM_LIST) + 4 * k:file_offset(TEAM_LIST) + 4 * k + 3]
+        team = file_offset(ptr[0] | ptr[1] << 8 | ptr[2] << 16)
+        players_off, _, names_off = struct.unpack_from("<3H", rom, team)
+        players, off = [], team + players_off
+        while True:
+            length = struct.unpack_from("<H", rom, off)[0]
+            if not 2 < length <= 40:
+                break
+            name = rom[off + 2:off + length].decode("latin-1").rstrip("\x00")
+            attrs = [n for byte in rom[off + length + 1:off + length + 8] for n in (byte >> 4, byte & 15)]
+            # Goalies have no rating in slots 6, 8 and 9 (skater-only ratings); on the Genesis ROM, which says how
+            # many goalies each team has, this picks all 65 and no skater.
+            goalie = attrs[6] == attrs[8] == attrs[9] == 0
+            players.append({"name": name, "num": int(f"{rom[off + length]:02x}"), "a": attrs, "g": goalie, "ovr": overall(attrs, goalie)})
+            off += length + 8
+        strings, at = [], team + names_off
+        for _ in range(4):
+            length = struct.unpack_from("<H", rom, at)[0]
+            strings.append(rom[at + 2:at + length].decode("latin-1").rstrip("\x00") if 2 <= length < 40 else "")
+            at += length
+        palettes = [[colour(struct.unpack_from("<H", rom, file_offset(base) + 32 * k + 2 * i)[0]) for i in range(16)]
+                    for base in (HOME_PALETTES, AWAY_PALETTES)]
+        teams.append({"name": strings[0], "abbr": strings[1], "nickname": strings[2], "players": players,
+                      "palettes": palettes, "logo": None})
+    return teams
 
 
 def scoring_summary(ram):
