@@ -37,6 +37,8 @@ def make_game_file(name, out_dir=None):
     rom = match.get("rom")
     if rom and (ROOT / "sprites" / f"{rom}.js").exists():
         packed["sprites"] = pack(load_js_object(ROOT / "sprites" / f"{rom}.js"))
+    if rom and (ROOT / "sounds" / f"{rom}.js").exists():
+        packed["sounds"] = pack(load_js_object(ROOT / "sounds" / f"{rom}.js"))
     data = ["<script>", '// The game, packed by tools/share_game.py.']
     # The rink picture and benches of the system the game was played on.
     rink_file, bench_file = RINK_FILES.get(match.get("system"), RINK_FILES["genesis"])

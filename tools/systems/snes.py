@@ -225,6 +225,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
         build_sprites(rom)
     except (struct.error, IndexError) as problem:
         print(f"no game sprites for {rom_path.name}: {problem}")
+    build_sounds(rom)
     return match
 
 
@@ -333,4 +334,67 @@ def build_sprites(rom):
     library = {"version": 2, "system": NAME, "frames": frames, "fixed": [list(p) for p in FIXED_PALETTES]}
     out.parent.mkdir(exist_ok=True)
     out.write_text("window.NHL94_SPRITES = " + json.dumps(library, separators=(",", ":")) + ";\n", encoding="utf-8")
+    return out
+
+
+# -------------------------------------------------------------------------------------------------------- sounds
+# The sound chip's upload blocks (the NHL94SNES disassembly's tools/extract.py lists them): each is a 4-byte header
+# and then one sample in the SNES's BRR format (9-byte blocks: a header byte of range, filter, loop and end bits, then
+# 16 4-bit samples); all 45 decode as complete samples (3 of them tiny). They have no names in the disassembly, so
+# they are numbered here; SOUND_ROLES says which plays for what once they are identified by ear.
+SOUND_BLOCKS = [
+    0x8ED897, 0x8F8000, 0x8FBB26, 0x90A120, 0x90E08C, 0x918000, 0x9199D2, 0x91C7A7, 0x91F2F9, 0x928000, 0x9293F3,
+    0x92BB61, 0x92CECD, 0x92F18A, 0x9390FA, 0x93A18D, 0x93C20B, 0x93D187, 0x93DFAD, 0x93FAB1, 0x948D6F, 0x94A662,
+    0x94B287, 0x94BEAC, 0x94CABF, 0x94E225, 0x94ED96, 0x958000, 0x958ABD, 0x959490, 0x959E48, 0x95B15C, 0x95C376,
+    0x95CBEA, 0x95D3F2, 0x95EA63, 0x968000, 0x969190, 0x9696E3, 0x96AA64, 0x96DE60, 0x9782F8,
+]
+SOUND_ROLES = {}   # e.g. {"pass": "s07"}: filled in once the user has listened to them
+SOUND_RATE = 16000  # a starting guess; the viewer's sound panel adjusts it
+
+
+def decode_brr(data):
+    """BRR blocks -> signed 16-bit samples (the SNES's own filters), up to the block with the end bit."""
+    out, p1, p2 = [], 0, 0
+    for at in range(0, len(data) - 8, 9):
+        header = data[at]
+        shift, filt = header >> 4, (header >> 2) & 3
+        for byte in data[at + 1:at + 9]:
+            for nibble in (byte >> 4, byte & 15):
+                s = nibble - 16 if nibble >= 8 else nibble
+                s = (s << shift) >> 1 if shift <= 12 else (-2048 if s < 0 else 0)
+                if filt == 1:
+                    s += p1 + (-p1 >> 4)
+                elif filt == 2:
+                    s += 2 * p1 + ((-3 * p1) >> 5) - p2 + (p2 >> 4)
+                elif filt == 3:
+                    s += 2 * p1 + ((-13 * p1) >> 6) - p2 + ((3 * p2) >> 4)
+                s = max(-32768, min(32767, s))
+                p2, p1 = p1, s
+                out.append(s)
+        if header & 1:
+            break
+    return out
+
+
+def build_sounds(rom):
+    """sounds/<crc32 of the ROM without header>.js, in the Genesis sound library's format (8-bit PCM, base64)."""
+    import base64
+    import json
+    import zlib
+    from .common import ROOT
+    rom = strip_header(rom)
+    out = ROOT / "sounds" / f"{zlib.crc32(rom):08x}.js"
+    if out.exists():
+        return out
+    samples = {}
+    for n, address in enumerate(SOUND_BLOCKS, 1):
+        at = file_offset(address)
+        length = struct.unpack_from(">H", rom, at + 2)[0]
+        pcm = decode_brr(rom[at + 4:at + 4 + length])
+        peak = max(1, max(abs(v) for v in pcm))
+        scale = min(1.0, 30000 / peak) / 256  # to 8 bits, louder samples kept from clipping
+        samples[f"s{n:02d}"] = base64.b64encode(bytes(max(0, min(255, 128 + round(v * scale))) for v in pcm)).decode("ascii")
+    out.parent.mkdir(exist_ok=True)
+    out.write_text("window.NHL94_SOUNDS = " + json.dumps({"rate": SOUND_RATE, "format": "u8", "samples": samples, "roles": SOUND_ROLES},
+                                                         separators=(",", ":")) + ";\n", encoding="utf-8")
     return out

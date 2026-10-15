@@ -696,6 +696,19 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   player serving, from the stat snapshots), played periods marked (the index going to 3 and 4 after a regulation
   final horn is not shown as OT). Builds up as the replay plays; hover gives the time, score and counts (only time
   past the replay's position, no spoilers); click seeks.
+- Sound (2026-10-15): `sounds/<ROM crc32>.js` (made with the sprites when a game is converted; not in git) holds a
+  ROM's sampled sounds as base64 8-bit PCM. Genesis (`genesis.build_sounds`): the 11 PCM samples the Genesis
+  disassembly locates (puckget, pass, shotfh, shotbh, check, check2, hithigh, playerwall, crowdcheer, crowdboo,
+  oooh: 8-bit unsigned, centred on $80, ended by zero bytes); all 63 NHL '94 ROMs in the ROM folder keep them in the
+  same places. The horn, whistles, beeps and music are FM synthesis (would need a YM2612 emulator) and are not
+  there. SNES (`snes.build_sounds`): the 42 BRR samples of the sound chip's upload blocks (decoded with the SNES
+  filters), unnamed in the SNES disassembly, so numbered s01-s42; `snes.SOUND_ROLES` maps event names to them once
+  the user has identified them by ear (empty so far). The playback rates are not worked out (set from the note the
+  driver plays): 10 kHz and 16 kHz are guesses, adjustable in the viewer's sound panel (remembered per system).
+  The viewer plays them as the replay passes their moments (`findSoundEvents`): passes, shots (forehand/backhand by
+  the shooter's animation), puck pickups, checks (big hits louder, boards crash), goal cheers, post "oooh", boos at
+  home penalties. Footer "Sound" toggle (remembered) and a panel with each sound, speed and volume. Game files carry
+  the sounds.
 - Heat map: time with the puck (puck owner) on a 5-unit grid, blurred, scaled to the 97th percentile; both teams in
   their own colours, one team or player on a yellow-to-red scale.
 
