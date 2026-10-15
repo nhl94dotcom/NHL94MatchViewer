@@ -119,8 +119,7 @@ The user wants a SNES version too. The community plays it in RetroArch with the 
 (`cores\snes9x_libretro.dll`); ROMs are in `C:\Users\USER\RetroArch-1.17-Win64\ROMs\SNES`: `NHL94.smc` (the base
 game, crc32 42212a77 without header), `NHL94_Classic.smc` (a small hack that tracks checks per player), league ROMs
 such as `SDL-S14.smc`. SNES hacking is less advanced than Genesis hacking. A colleague is mapping the SNES RAM
-from the Genesis memory map doc. The user has an old Python save-state parser for the SNES (meant to be
-`snes_code.txt`, which arrived empty).
+from the Genesis memory map doc. The user's old SNES save-state parser is `reference/snes_savestate_stats.txt` (see below).
 - Some files have a 512-byte copier header (size % 1024 == 512); strip it. Base, Classic and SDL-S14 are LoROM with
   the internal title "NHL '94" at $7FC0 and a valid checksum. SDL15/SDL16 (1.1 MB) are laid out differently
   (no header at $7FC0 or $FFC0); not looked at yet.
@@ -132,6 +131,37 @@ from the Genesis memory map doc. The user has an old Python save-state parser fo
 - Plan: split the Genesis-specific code (memory reader, address map, animation-to-action table, ROM reader,
   sprites, rink picture) into a per-system module and add a SNES one; everything after the converter (the match
   file and the viewer) stays shared.
+- Save states: `states\Snes9x\NHL94_Classic.state*` (446 of them). A RetroArch state is a 16-byte `RASTATE` wrapper
+  around a Snes9x snapshot (`#!s9xsnp:0011`, then blocks `XXX:nnnnnn:` + data: NAM, CPU, REG, PPU, DMA, VRA 64 KB,
+  RAM 128 KB, SRA, FIL, SND, CTL, TIM). The RAM block's data starts 68505 bytes into the snapshot (68521 into the
+  RetroArch file). The user's parser (`reference/snes_savestate_stats.txt`) indexes the bare snapshot, so
+  RAM address = its offset - 68505: with that, per-period goals add up to goals and the scoring summary has 6 bytes
+  per goal in all 444 states with goals.
+- SNES work RAM (bank $7E), from that parser. Stats are home/away pairs of little-endian words, away 2 bytes after
+  home (the Genesis keeps one block per team instead):
+
+  | Home / Away | Stat |
+  |---|---|
+  | $178E / $1790 | Goals |
+  | $176A, $176E, $1772, $1776 (+2 Away) | Shots in P1, P2, P3, OT (no total word in the parser) |
+  | $177E, $1782, $1786, $178A (+2 Away) | Goals in P1, P2, P3, OT |
+  | $1742 / $1744, $1746 / $1748 | Power-play goals, power plays |
+  | $1762 / $1764 | Shorthanded goals |
+  | $174A / $174C, $174E / $1750 | Penalties, penalty minutes |
+  | $1752 / $1754 | Attack-zone time, game seconds |
+  | $1792 / $1794 | Faceoffs won |
+  | $17B6 / $17B8 | Body checks |
+  | $17BA / $17BC, $17BE / $17C0 | Passes completed, passes tried |
+  | $17C2 / $17C4, $17C6 / $17C8 | Breakaways tried, breakaway goals |
+  | $17CA / $17CC, $17CE / $17D0 | Penalty shots tried, penalty-shot goals |
+  | $17D6 / $17D8, $17DA / $17DC | One-timers tried, one-timer goals |
+  | $1C98 / $1C9A | Team index (the parser's team-code table) |
+
+  Scoring summary: byte count at $313A, then 6 bytes per goal from $313C: a word (period << 14 | seconds into the
+  period; period 0-3, 3 = OT), a byte (bit 7 = Away; low bits strength: 0 SH two men short, 1 SH, 2 even, 3 PP,
+  4 PP two men up), then scorer, first and second assist as roster indices ($FF = none; all 3334 goals in the states
+  fit). The Genesis may have a similar summary; it was never looked for (goals are worked out from stat changes).
+  Not known yet: player records (positions, puck), clock, period, per-player stats, controller, screen state.
 
 ## Reading game memory live
 
@@ -423,7 +453,7 @@ shots against equal the other team's shots, per-player checks sum to the team's 
 | +$356 | word | Shorthanded goals |
 | +$360 / +$362 | word | Penalty shots tried / penalty-shot goals (confirmed by the user's save-state parser; Boston's went to 1 in `capture3_bos_la` at 2nd period 3:54, six seconds after a Boston breakaway) |
 
-Power-play, penalty and shorthanded offsets come from the user's old save-state parser (`stats_parse_code.txt`;
+Power-play, penalty and shorthanded offsets come from the user's old save-state parser (`reference/genesis_savestate_stats.txt`;
 save-state offset = work RAM address + $10, low byte of each word), which also matches everything decoded here.
 Not yet identified: +$18-$1D, +$2B-$30.
 

@@ -24,7 +24,7 @@ STAT_BLOCKS = (0xC6CE, 0xCA32)  # Home, Away
 # shots, goals, faceoffs won, checks, passes tried, passes made, attack-zone seconds,
 # breakaways tried, breakaway goals, one-timers tried, one-timer goals, penalty shots tried, penalty-shot goals,
 # power-play goals, power plays, penalties, penalty minutes, shorthanded goals. The power-play, penalty and
-# shorthanded offsets come from the user's old save-state parser (stats_parse_code.txt), which also confirms the rest.
+# shorthanded offsets come from the user's old save-state parser (reference/genesis_savestate_stats.txt), which also confirms the rest.
 TEAM_STATS = (0x00, 0x0C, 0x0E, 0x10, 0x12, 0x14, 0x0A, 0x358, 0x35A, 0x35C, 0x35E, 0x360, 0x362, 0x02, 0x04, 0x06, 0x08, 0x356)
 GOALS, ASSISTS, SHOTS, CHECKS_OR_PIM, HITS_TAKEN = 0xB4, 0xCE, 0xE8, 0x102, 0x11C  # one byte per roster index
 ICE_TIME, ENERGY = 0x136, 0x32  # one word per roster index: game seconds played; energy 0-16 in the high byte

@@ -1,0 +1,159 @@
+    awayGoals = bs[74537]
+    awayPPGoals = bs[74461]
+    awayPPTries = bs[74465]
+    awaySHGoals = bs[74493]
+    awaySHGoalsAgainst = bs[74491]
+    awayBreakGoals = bs[74593]
+    awayBreakTries = bs[74589]
+    awayOneTimerGoals = bs[74613]
+    awayOneTimerTries = bs[74609]
+    awayPSGoals = bs[74601]
+    awayPSTries = bs[74597]
+    awayFaceoffs = bs[74541]
+    awayBodyChecks = bs[74577]
+    awayPenalties = bs[74469]
+    awayPenMinutes = bs[74473]
+    awayAttackZone1 = bs[74478]
+    awayAttackZone2 = bs[74477]
+    awayAttackZoneTime = awayAttackZone1*256 + awayAttackZone2
+    awayPassComps = bs[74581]
+    awayPassAttempts = bs[74585]
+    awayGoalsP1 = bs[74521]
+    awayGoalsP2 = bs[74525]
+    awayGoalsP3 = bs[74529]
+    awayGoalsOT = bs[74533]
+    awayShotsP1 = bs[74501]
+    awayShotsP2 = bs[74505]
+    awayShotsP3 = bs[74509]
+    awayShotsOT = bs[74513]
+    awayTeam = teamCodesDict[bs[75827]]
+    
+    homeGoals = bs[74535]
+    homePPGoals = bs[74459]
+    homePPTries = bs[74463]
+    homeSHGoals = bs[74491]
+    homeSHGoalsAgainst = bs[74493]
+    homeBreakGoals = bs[74591]
+    homeBreakTries = bs[74587]
+    homeOneTimerGoals = bs[74611]
+    homeOneTimerTries = bs[74607]
+    homePSGoals = bs[74599]
+    homePSTries = bs[74595]
+    homeFaceoffs = bs[74539]
+    homeBodyChecks = bs[74575]
+    homePenalties = bs[74467]
+    homePenMinutes = bs[74471]
+    homeAttackZone1 = bs[74476]
+    homeAttackZone2 = bs[74475]
+    homeAttackZoneTime = homeAttackZone1*256 + homeAttackZone2
+    homePassComps = bs[74579]
+    homePassAttempts = bs[74583]
+    homeGoalsP1 = bs[74519]
+    homeGoalsP2 = bs[74523]
+    homeGoalsP3 = bs[74527]
+    homeGoalsOT = bs[74531]
+    homeShotsP1 = bs[74499]
+    homeShotsP2 = bs[74503]
+    homeShotsP3 = bs[74507]
+    homeShotsOT = bs[74511]
+    homeTeam = teamCodesDict[bs[75825]]
+    
+    scoringSummaryLength = bs[81107]
+    
+    ##### Calculate shooting percentages #####
+    try:
+        awayShootPct = round(awayGoals/(awayShotsP1+awayShotsP2+awayShotsP3+awayShotsOT), 3)
+    except ZeroDivisionError:
+        awayShootPct = 1
+        
+    try:
+        homeShootPct = round(homeGoals/(homeShotsP1+homeShotsP2+homeShotsP3+homeShotsOT), 3)
+    except ZeroDivisionError:
+        homeShootPct = 1
+        
+    ##### Prepare strings for attack zone time #####
+    awayAttackZoneTimeStr = f"{int(awayAttackZoneTime/60)}:"
+    if awayAttackZoneTime % 60 < 10:
+        awayAttackZoneTimeSecondsStr = f"0{awayAttackZoneTime % 60}"
+    else:
+        awayAttackZoneTimeSecondsStr = f"{awayAttackZoneTime % 60}"
+    awayAttackZoneTimeStr += awayAttackZoneTimeSecondsStr
+        
+    homeAttackZoneTimeStr = f"{int(homeAttackZoneTime/60)}:"
+    if homeAttackZoneTime % 60 < 10:
+        homeAttackZoneTimeSecondsStr = f"0{homeAttackZoneTime % 60}"
+    else:
+        homeAttackZoneTimeSecondsStr = f"{homeAttackZoneTime % 60}"
+    homeAttackZoneTimeStr += homeAttackZoneTimeSecondsStr
+    
+    ##### Calculate Last Goal #####
+    
+    #Which team scored the final goal?  If there were no goals, then it's nobody.
+    #Otherwise, -1 if away, 1 if home
+    if homeGoals + awayGoals == 0:
+        lastGoalTeam = 0
+        awayLGStr = ""
+        homeLGStr = ""
+    else:
+        finalGoalTeamInfo = bs[81109+scoringSummaryLength-4]
+        if finalGoalTeamInfo >= 128:
+            lastGoalTeam = -1
+            awayLGStr = "X"
+            homeLGStr = ""
+        else:
+            lastGoalTeam = 1
+            awayLGStr = ""
+            homeLGStr = "X"
+            
+    ##### Extract All Goals Info #####
+            
+    #Extract info on every goal
+    numGoals = scoringSummaryLength / 6
+    goalCount = 0
+    goalsList = []
+    while goalCount < numGoals:
+        
+        #Extract the current goal's info
+        curGoalInfo = bs[81109+goalCount*6:81115+goalCount*6]
+        
+        #Extract the goal period
+        if curGoalInfo[1] >= 192:
+            curGoalTime1 = curGoalInfo[1] - 192
+            curGoalPeriod = 4
+        elif curGoalInfo[1] >= 128:
+            curGoalTime1 = curGoalInfo[1] - 128
+            curGoalPeriod = 3
+        elif curGoalInfo[1] >= 64:
+            curGoalTime1 = curGoalInfo[1] - 64
+            curGoalPeriod = 2
+        else:
+            curGoalTime1 = curGoalInfo[1]
+            curGoalPeriod = 1
+            
+        #Extract the number of seconds into the period that the current
+        #goal was scored
+        curGoalPeriodSeconds = curGoalInfo[0] + curGoalTime1 * 256
+        
+        #Extract the team that scored
+        #Away goal
+        if curGoalInfo[2] >= 128:
+            curGoalTeam = -1
+        #Home goal
+        else:
+            curGoalTeam = 1
+    
+        #Extract the type of goal
+        if curGoalInfo[2] % 128 == 0:
+            curGoalType = 'SH2'
+        elif curGoalInfo[2] % 128 == 1:
+            curGoalType = 'SH1'
+        elif curGoalInfo[2] % 128 == 2:
+            curGoalType = 'EV'
+        elif curGoalInfo[2] % 128 == 3:
+            curGoalType = 'PP1'
+        elif curGoalInfo[2] % 128 == 4:
+            curGoalType = 'PP2'
+        
+        goalsList.append([curGoalPeriod, curGoalPeriodSeconds, curGoalTeam, curGoalType])
+        
+        goalCount += 1
