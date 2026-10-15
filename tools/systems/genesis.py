@@ -47,7 +47,9 @@ TEAM_TABLE = 0x30E
 RINK_LOGO_TABLE_POINTER = 0xFEA5A  # holds the address of a table of one logo address per team
 DEFAULT_ROM = Path(r"C:\Users\tdemorest\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin")
 
-# The animation words (record +$58) the analysis needs, by name (see the table in CLAUDE.md).
+# The animation words (record +$58) the analysis needs, by name. The game's own names for every animation are in
+# the Genesis disassembly (src/frames94.asm; listed in CLAUDE.md): shotf/shotb, passf/passb, sweepchk, hook, burst,
+# fallfwd/fallback, gdive, gswing.
 ACTIONS = {
     "shoot": {"07fc", "092e"},        # C with the puck (two animations, rules the same)
     "pass": {"0718", "078a"},         # B with the puck
