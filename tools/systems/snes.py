@@ -186,6 +186,12 @@ class Emulator:
         data = self.read(offset, 1)
         return data[0] if data else None
 
+    def rom_fingerprint(self):
+        """crc32 of the cartridge's first megabyte, as the ROM file has it without a copier header."""
+        import zlib
+        data = self.p.raw(self.rom, 0x100000)
+        return f"{zlib.crc32(data):08x}" if data else None
+
     def close(self):
         self.p.close()
 
@@ -194,7 +200,8 @@ DEFAULT_ROM = Path(r"C:\Users\tdemorest\RetroArch-1.17-Win64\ROMs\SNES\NHL94.smc
 
 
 def find_rom(capture):
-    """The ROM a recording was played on: by the fingerprint in capture.json (crc32 of the ROM without header),
+    """The ROM a recording was played on: by the fingerprint in capture.json (crc32 of the first megabyte of the
+    ROM without header, as Emulator.rom_fingerprint gives it),
     looked for in roms/ and RetroArch's SNES folder; else the original game."""
     import json
     import zlib
@@ -204,7 +211,7 @@ def find_rom(capture):
     if not stored:
         return DEFAULT_ROM, "assumed; this recording does not say which ROM was played"
     for path in sorted((ROOT / "roms").glob(ROM_GLOB)) + sorted(DEFAULT_ROM.parent.glob(ROM_GLOB)):
-        if f"{zlib.crc32(strip_header(path.read_bytes())):08x}" == stored:
+        if f"{zlib.crc32(strip_header(path.read_bytes())[:0x100000]):08x}" == stored:
             return path, "matched to the recording"
     return DEFAULT_ROM, "assumed; no ROM matches the one that was recorded"
 

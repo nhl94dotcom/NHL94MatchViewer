@@ -32,7 +32,8 @@ def main(minutes=30.0):
     print(f"Found: work RAM at {emu.ram:#x}, cartridge at {emu.rom:#x}", flush=True)
     folder = ROOT / "captures" / f"snes_{datetime.datetime.now():%Y-%m-%d_%H%M}"
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "capture.json").write_text(json.dumps({"system": "snes", "blocks": [list(FAST)], "recorded_by": "snes_record"}))
+    (folder / "capture.json").write_text(json.dumps({"system": "snes", "blocks": [list(FAST)], "recorded_by": "snes_record",
+                                                     "rom_crc32": emu.rom_fingerprint()}))
     fast = gzip.open(folder / "fast.bin.gz", "wb", compresslevel=3)
     full = gzip.open(folder / "full.bin.gz", "wb", compresslevel=3)
     t0 = time.perf_counter()

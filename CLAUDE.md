@@ -218,7 +218,9 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   penalty shots (Andreychuk missed in P1 at about 67 s of the recording; Samuelsson scored, P3 4:26), two instant
   replays in P3, one Pittsburgh pass shot, a few posts, both teams penalised after one whistle, Game Stats viewed
   after the final horn (per the user). Converts with `python tools/export_match.py captures/snes_2026-10-15_1755`
-  (ROM assumed NHL94.smc; the research recorder stores no fingerprint): positions, sprites, teams, controlled
+  (played on NHL94_Classic.smc, per the user; its capture.json was given the fingerprint afterwards. SNES
+  recordings store `rom_crc32` = crc32 of the cartridge's first megabyte without copier header, from the
+  emulator's memory: assumes Snes9x keeps the ROM without the header, not yet checked live): positions, sprites, teams, controlled
   players and goals all show right (penalty shots: only shooter and goalie on the ice, the rest at (-240, 0)).
 - Goals: the scoring summary's count rises before the entry is written, so goal moments come from the count and the
   contents from the longest summary (the count goes to 0 back at the menus); penalty-shot goals from the psGoals
