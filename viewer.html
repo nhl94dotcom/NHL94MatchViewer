@@ -66,7 +66,7 @@
   .card .bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--raised); }
   .card .bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
   .card p { margin: 0; color: var(--muted); }
-  #popover { position: fixed; z-index: 20; width: 250px; margin: 0; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); border: 1px solid #3a4450; }
+  #popover { position: fixed; z-index: 20; width: 300px; margin: 0; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); border: 1px solid #3a4450; }
   .scoring .goal { padding: 3px 0; border-top: 1px solid var(--raised); }
   .scoring .goal:first-of-type { border-top: 0; }
   .scoring .goal small { color: var(--muted); display: block; }
@@ -118,6 +118,17 @@
   #seek { flex: 1; min-width: 0; accent-color: var(--accent); }
   #time { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   label { color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  /* Game flow: a strip over the footer, the whole replay across, shot attempts piling up for each team. */
+  #flow { position: relative; background: var(--panel); border-top: 1px solid var(--raised); padding: 6px 16px 4px; }
+  #flow .flowHead { display: flex; align-items: baseline; gap: 14px; font-size: 12px; color: var(--muted); }
+  #flow .flowHead b { color: var(--text); font-weight: 600; }
+  #flow .flowHead span { display: inline-flex; align-items: center; gap: 6px; }
+  #flow .flowHead i { width: 14px; height: 2px; border-radius: 1px; }
+  #flowCanvas { width: 100%; height: 118px; cursor: pointer; }
+  #flowTip { position: absolute; top: 4px; padding: 6px 9px; border-radius: 6px; background: rgba(16, 20, 26, 0.94); border: 1px solid #3a4450;
+    font-size: 12px; line-height: 1.45; pointer-events: none; white-space: nowrap; font-variant-numeric: tabular-nums; z-index: 5; }
+  #flowTip .muted { color: var(--muted); }
+  #flowToggle[aria-pressed="true"] { border-color: var(--accent); }
   [hidden] { display: none !important; }
   @media (max-width: 900px) { .lineup { display: none; } }
   @media (max-width: 640px) { header { gap: 12px; } .team .shots, label span { display: none; } }
@@ -171,6 +182,11 @@
   </div>
   <aside class="lineup" id="lineup2" hidden></aside>
 </main>
+<section id="flow" hidden aria-label="Game flow">
+  <div class="flowHead"><b>Game flow</b><span>shot attempts so far</span><span id="flowKey"></span></div>
+  <canvas id="flowCanvas"></canvas>
+  <div id="flowTip" hidden></div>
+</section>
 <footer id="controls" hidden>
   <button id="play">Play</button>
   <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position in recording">
@@ -184,9 +200,10 @@
   <label><span>Map</span>
     <select id="overlay" aria-label="Map over the ice">
       <option value="">None</option><option value="shots">Shot map</option><option value="heat">Heat map</option>
-      <option value="turnovers">Turnovers</option><option value="passes">Passes</option><option value="goalie">Goalie report</option>
+      <option value="turnovers">Turnovers</option><option value="passes">Passes</option><option value="entries">Zone entries</option><option value="goalie">Goalie report</option>
     </select>
   </label>
+  <button id="flowToggle" aria-pressed="false" title="Show how the shot attempts piled up over the game; click it to jump there">Game flow</button>
   <select id="overlayWho" aria-label="Whose shots or puck time" hidden></select>
   <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
   <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
@@ -269,7 +286,7 @@ function buildPanel(el, team, name, colour) {
       const k = Number(row.dataset.k);
       if (!match || k < 0) return null;
       const r = row.getBoundingClientRect();
-      return { team, idx: rosterIndex(frameAt(now), k), x: team ? r.left - 258 : r.right + 8, y: r.top };
+      return { team, idx: rosterIndex(frameAt(now), k), x: team ? r.left - 308 : r.right + 8, y: r.top };
     };
     row.addEventListener('mouseenter', () => hover(target()));
     row.addEventListener('mouseleave', () => hover(null));
@@ -292,6 +309,8 @@ function load(m) {
   heat = findHeat(m);
   setupOverlay(m);
   possession = findPossession(m);  // after setupOverlay: it needs ends
+  skating = findSkating(m);
+  setupFlow(m);
   $('clipPanel').hidden = true;
   failedOneTimerFrames = new Map();
   for (const e of m.failedOneTimers || []) {
@@ -682,7 +701,7 @@ function setupOverlay(m) {
   fillWho(m);
   // ?map=shots or ?map=heat, and &who=t0 / t1 / p<team>:<roster index>, in the address pick them.
   const q = new URLSearchParams(location.search);
-  if (['shots', 'heat', 'turnovers', 'passes', 'goalie'].includes(q.get('map'))) { overlay = q.get('map'); fillWho(m); }
+  if (['shots', 'heat', 'turnovers', 'passes', 'entries', 'goalie'].includes(q.get('map'))) { overlay = q.get('map'); fillWho(m); }
   who.value = overlayWho = 'both';
   if (q.get('who') && [...who.options].some(o => o.value === q.get('who'))) who.value = overlayWho = q.get('who');
   $('overlay').value = overlay;
@@ -802,6 +821,7 @@ function drawOverlay(f) {
   if (overlay === 'turnovers') { drawTurnovers(f, colours); return; }
   if (overlay === 'goalie') { drawGoalieReport(f, colours); return; }
   if (overlay === 'passes') { drawPasses(f, colours); return; }
+  if (overlay === 'entries') { drawEntries(f, colours); return; }
   // Heat map: where each team (or player) had the puck, by time. Built up frame by frame; started again on a rewind.
   if (!heatGrid || f < heatGrid.upTo) {
     heatGrid = { upTo: -1, cells: [new Float32Array(HEAT_COLS * HEAT_ROWS), new Float32Array(HEAT_COLS * HEAT_ROWS)], image: null, seconds: [0, 0] };
@@ -1492,6 +1512,20 @@ function refreshPopover(f, snap) {
     live.byControl = { human: by('human'), cpu: by('cpu') };
   }
   if (live && !p.g) {
+    // Checks thrown and hits taken: from the converter's hit list (every hit, thrower and target); older match
+    // files only have the game's per-player byte, which counts checks thrown in the original game (+$11C, read as
+    // "hits") and in ROMs with the bodycheck hack sits at +$102 ("x") with hits taken at +$11C.
+    if (match.hits) {
+      live.checks = match.hits.filter(e => e.f <= f && e.team === shown.team && e.by === shown.idx).length;
+      live.hitsTaken = match.hits.filter(e => e.f <= f && e.team !== shown.team && e.on === shown.idx).length;
+    } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
+    else live.checks = live.hits;
+    if (skating) live.skate = skatingAt(shown.team, shown.idx, f);
+    if (match.shotList) live.ice = onIceStats(shown.team, shown.idx, f);
+    if (match.zoneEntries) {
+      const mine = match.zoneEntries.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx);
+      live.entries = { n: mine.length, carried: mine.filter(e => e.kind === 'carried').length };
+    }
     const list = (match.turnovers || []).filter(e => known(e, f));
     live.puckMs = playerPossession(f, shown.team, shown.idx);
     live.giveaways = list.filter(e => e.kind === 'giveaway' && e.from === shown.team && e.giver === shown.idx).length;
@@ -1636,8 +1670,19 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Points', live.g + live.a);
       addStat(grid, 'Shots', live.s);
       addStat(grid, 'Shooting %', shootingText(live.g, live.s));
-      addStat(grid, match.stats.x === 'PIM' ? 'Pen. minutes' : 'Checks', live.x);
-      addStat(grid, 'Hits taken', live.hits);
+      addStat(grid, 'Checks', live.checks);
+      addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
+      if (match.stats.x === 'PIM') addStat(grid, 'Pen. minutes', live.x);
+      if (live.skate) {
+        addStat(grid, 'Skated', milesText(live.skate.dist));
+        addStat(grid, 'Top speed', live.skate.top ? mphText(live.skate.top) : '–');
+      }
+      if (live.ice) {
+        addStat(grid, 'Attempts on ice', live.ice.cf + '–' + live.ice.ca);
+        addStat(grid, 'Goals on ice', live.ice.gf + '–' + live.ice.ga);
+        addStat(grid, 'Plus/minus', (live.ice.pm > 0 ? '+' : '') + live.ice.pm);
+      }
+      if (live.entries) addStat(grid, 'Zone entries', live.entries.n + (live.entries.n ? ' (' + live.entries.carried + ' carried)' : ''));
       if (live.puckMs !== undefined) {
         addStat(grid, 'With the puck', secondsText(live.puckMs));
         addStat(grid, 'Giveaways', live.giveaways);
@@ -1701,6 +1746,9 @@ function fillTeamStats(snap) {
     return here.filter(e => e.won === team).length + '/' + here.length;
   };
   const iced = team => (match.icings || []).filter(e => e.f <= f && e.team === team).length;
+  const entries = team => (match.zoneEntries || []).filter(e => known(e, f) && e.team === team);
+  const entryKinds = team => ['carried', 'passed', 'dumped'].map(k => entries(team).filter(e => e.kind === k).length).join(' / ');
+  const teamSkated = team => [...skating.keys()].filter(key => key[0] === String(team)).reduce((s, key) => s + skatingAt(team, Number(key.slice(2)), f).dist, 0);
   const failed = team => (match.failedOneTimers || []).filter(e => known(e, f) && e.team === team).length;
   const turnovers = (match.turnovers || []).filter(e => known(e, f));
   const gave = team => turnovers.filter(e => e.from === team && e.kind === 'giveaway').length;
@@ -1758,6 +1806,9 @@ function fillTeamStats(snap) {
         secondsText(1000 * possession.zones[z][zoneAt]), secondsText(1000 * possession.zones[3 + z][zoneAt])]),
       ['Transition ' + secondsText(1000 * held[2]) + share(2) + (liveKnowledge ? ' · undecided ' + secondsText(1000 * undecided) : ''), '', '']] : []),
     ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
+    ...(match.zoneEntries ? [['Zone entries', entries(0).length, entries(1).length],
+      ['· carried / passed / dumped', entryKinds(0), entryKinds(1)],
+      ['· led to a shot attempt', entries(0).filter(e => entryShot(e, f)).length, entries(1).filter(e => entryShot(e, f)).length]] : []),
     ['Faceoffs won', h.faceoffs, a.faceoffs],
     // By zone, each team's own view (Home's attacking zone is Away's defensive one): won / taken there.
     ...(match.faceoffs ? [['· attacking zone', foZone(0, 'att'), foZone(1, 'att')], ['· neutral zone', foZone(0, 'neu'), foZone(1, 'neu')],
@@ -1768,6 +1819,7 @@ function fillTeamStats(snap) {
     ...(match.icings ? [['Icings', iced(0), iced(1)]] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
+    ...(skating ? [['Distance skated', milesText(teamSkated(0)), milesText(teamSkated(1))]] : []),
     ...(h.ppTries === undefined ? [] : [
       ['Power play', h.ppGoals + '/' + h.ppTries, a.ppGoals + '/' + a.ppTries],
       ['Shorthanded goals', h.shGoals, a.shGoals],
@@ -1809,6 +1861,281 @@ function fillTeamStats(snap) {
     tr.insertCell().textContent = away;
   }
 }
+
+// Skating: how far each player went and how fast. Positions are whole game units sampled a little faster than the
+// game's frames, so distance adds up straight-line moves over 0.1 s (it barely changes between 0.05 and 0.25 s), and
+// a move faster than 600 units/s is the game putting players back in place (after a goal, a line change), not
+// skating. Top speed is over half a second of live play (the puck in play), so faceoff repositioning is left out.
+// Speeds are in real seconds, as the puck's are (slapshots come out at 80-95 mph that way); NHL '94 skaters are
+// quick: 99% of half-second speeds in capture6 are under 135 units/s, about 31 mph.
+// skating.get('team:idx') = { f: frames, d: distance so far (units) at f, top: top speed so far (units/s) at f }.
+const UNITS_PER_FOOT = 536 / 178;  // the goal lines are 536 units apart; 178 ft in the NHL
+let skating = null;
+function findSkating(m) {
+  const map = new Map(), near = new Array(PLAYERS).fill(null), quick = new Array(PLAYERS).fill(null);
+  const entry = key => { let e = map.get(key); if (!e) map.set(key, e = { f: [], d: [], top: [], dist: 0, best: 0 }); return e; };
+  for (let i = 0; i < m.t.length; i++) {
+    const live = m.puck[3 * i + 2] >= PUCK_HIDDEN_Z;
+    // A gap in the recording (the helper leaves out intermissions, pauses and replays) or a new period: players
+    // are put in their places across it, which is not skating, so measuring starts again.
+    const fresh = i > 0 && (m.t[i] - m.t[i - 1] > 150 || m.period[i] !== m.period[i - 1]);
+    for (let k = 0; k < PLAYERS; k++) {
+      if (fresh) near[k] = quick[k] = null;
+      const idx = role(i, k) >= 0 ? rosterIndex(i, k) : -1;
+      if (idx < 0 || idx >= 35) { near[k] = quick[k] = null; continue; }
+      const key = (k < 6 ? 0 : 1) + ':' + idx, x = m.pos[(i * PLAYERS + k) * 2], y = m.pos[(i * PLAYERS + k) * 2 + 1], here = { t: m.t[i], x, y, key };
+      // A jump of more than 12 units from one sample to the next is the game moving him (stepping on or off at
+      // the bench, to the box, into place for a penalty shot): skaters cover at most about 7 between samples.
+      if (i > 0 && Math.hypot(x - m.pos[((i - 1) * PLAYERS + k) * 2], y - m.pos[((i - 1) * PLAYERS + k) * 2 + 1]) > 12) near[k] = quick[k] = null;
+      const a = near[k];
+      if (!a || a.key !== key) near[k] = here;
+      else if (m.t[i] - a.t >= 100) {
+        const d = Math.hypot(x - a.x, y - a.y), e = entry(key);
+        if (d / (m.t[i] - a.t) * 1000 < 600) { e.dist += d; e.f.push(i); e.d.push(e.dist); e.top.push(e.best); }
+        near[k] = here;
+      }
+      const s = quick[k];
+      if (!live || !s || s.key !== key) quick[k] = live ? here : null;
+      else if (m.t[i] - s.t >= 500) {
+        const v = Math.hypot(x - s.x, y - s.y) / (m.t[i] - s.t) * 1000, e = entry(key);
+        if (v < 600 && v > e.best) e.best = v;
+        quick[k] = here;
+      }
+    }
+  }
+  return map;
+}
+function skatingAt(team, idx, f) {
+  const e = skating && skating.get(team + ':' + idx);
+  if (!e || !e.f.length || e.f[0] > f) return { dist: 0, top: 0 };
+  let lo = 0, hi = e.f.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (e.f[mid] <= f) lo = mid; else hi = mid - 1; }
+  return { dist: e.d[lo], top: e.top[lo] };
+}
+const milesText = units => (units / UNITS_PER_FOOT / 5280).toFixed(2) + ' mi';
+const mphText = unitsPerS => (unitsPerS / UNITS_PER_FOOT * 3600 / 5280).toFixed(1) + ' mph';
+
+// On the ice: the shot attempts (everything in the shot list) and goals for and against while a skater was on the
+// ice, at the release or the goal, and plus/minus as the NHL counts it (power-play and penalty-shot goals count
+// for neither side).
+function onIceStats(team, idx, f) {
+  const there = (g, side) => { for (let k = side * 6; k < side * 6 + 6; k++) if (role(g, k) >= 0 && rosterIndex(g, k) === idx) return true; return false; };
+  const out = { cf: 0, ca: 0, gf: 0, ga: 0, pm: 0 };
+  for (const sh of match.shotList || []) {
+    if (!known(sh, f) || !there(sh.f, team)) continue;
+    if (sh.team === team) out.cf++; else out.ca++;
+  }
+  for (const g of match.goals || []) {
+    if (g.f > f || !there(g.f, team)) continue;
+    if (g.team === team) out.gf++; else out.ga++;
+    if (!(g.kinds || []).some(k => k === 'PPG' || k === 'penalty shot')) out.pm += g.team === team ? 1 : -1;
+  }
+  return out;
+}
+
+// Zone entries (the converter's find_zone_entries): the puck crossing a blue line into the zone a team attacks,
+// carried in, passed in or dumped in, and whether a shot attempt came of it before the puck left the zone.
+const ENTRY_WORDS = { carried: 'carried in', passed: 'passed in', dumped: 'dumped in' };
+const entryShot = (e, f) => (match.shotList || []).some(sh => sh.team === e.team && sh.f >= e.f && sh.f <= e.end && known(sh, f));
+function drawEntries(f, colours) {
+  const list = (match.zoneEntries || []).filter(e => known(e, f) && counts(e.team, e.idx));
+  const tally = [{}, {}];
+  for (const e of list) {
+    const shot = entryShot(e, f), t = tally[e.team];
+    t[e.kind] = (t[e.kind] || 0) + 1;
+    if (shot) t[e.kind + 'Shot'] = (t[e.kind + 'Shot'] || 0) + 1;
+    const y0 = (match.puck[3 * e.f + 1] >= 0 ? 1 : -1) * ZONE_LINE;
+    const [x, y] = onEnds(e.f, f, e.x, y0);
+    marker(x, y);
+    // Carried: a filled disc; passed: a filled diamond; dumped: a hollow disc (a dot inside if they got it back).
+    // A ring in the accent colour: it led to a shot attempt.
+    ctx.fillStyle = colours[e.team]; ctx.strokeStyle = colours[e.team]; ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (e.kind === 'passed') { ctx.moveTo(0, -6); ctx.lineTo(6, 0); ctx.lineTo(0, 6); ctx.lineTo(-6, 0); ctx.closePath(); ctx.fill(); }
+    else if (e.kind === 'carried') { ctx.arc(0, 0, 5, 0, 2 * Math.PI); ctx.fill(); }
+    else {
+      ctx.arc(0, 0, 4.5, 0, 2 * Math.PI); ctx.stroke();
+      if (e.recovered) { ctx.beginPath(); ctx.arc(0, 0, 1.6, 0, 2 * Math.PI); ctx.fill(); }
+    }
+    if (shot) { ctx.strokeStyle = css('--accent'); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, 2 * Math.PI); ctx.stroke(); }
+    ctx.restore();
+    hitAt(x, y, e.f, periodName(match.period[e.f]) + ' ' + clockText(match.clock[e.f]) + ' · ' + playerName(e.team, e.idx) + ' · ' +
+      ENTRY_WORDS[e.kind] + (e.kind === 'passed' && e.to >= 0 ? ' to ' + playerName(e.team, e.to) : '') +
+      (e.kind === 'dumped' ? (e.recovered ? ', got it back' : ', lost it') : '') + (shot ? ' · led to a shot attempt' : ''));
+  }
+  const box = $('overlayInfo'), names = [match.team1, match.team2], only = filterTeam(), who = $('overlayWho').selectedOptions[0];
+  box.textContent = '';
+  const title = document.createElement('b');
+  title.textContent = 'Zone entries' + (overlayWho === 'both' ? '' : ' · ' + (who ? who.textContent : ''));
+  box.append(title);
+  for (const team of [0, 1]) {
+    if (only >= 0 && team !== only) continue;
+    const t = tally[team], parts = ['carried', 'passed', 'dumped'].filter(k => t[k]).map(k => t[k] + ' ' + ENTRY_WORDS[k].split(' ')[0] + ' (' + (t[k + 'Shot'] || 0) + ' to a shot)');
+    const line = document.createElement('div');
+    line.textContent = names[team] + ': ' + (parts.length ? parts.join(', ') : 'none yet');
+    box.append(line);
+  }
+  const key = document.createElement('div');
+  key.className = 'key';
+  for (const [shape, text] of [
+    ['<circle cx="6" cy="6" r="4.5" fill="#8b98a7"/>', 'Carried in'],
+    ['<path d="M6 1 L11 6 L6 11 L1 6 Z" fill="#8b98a7"/>', 'Passed in'],
+    ['<circle cx="6" cy="6" r="4" fill="none" stroke="#8b98a7" stroke-width="2"/>', 'Dumped in (dot: got it back)'],
+    ['<circle cx="6" cy="6" r="5" fill="none" stroke="' + css('--accent') + '" stroke-width="1.6"/>', 'Led to a shot attempt'],
+  ]) {
+    const item = document.createElement('span');
+    item.innerHTML = '<svg width="12" height="12" aria-hidden="true">' + shape + '</svg>';
+    item.append(text);
+    key.append(item);
+  }
+  const note = document.createElement('span');
+  note.textContent = 'Each team attacks the end it attacks now. Point at a mark to see it; click to replay';
+  key.append(note);
+  box.append(key);
+}
+
+// Game flow: each team's shot attempts piling up over the replay (the replay's own time across, like the seek bar,
+// so a click jumps there), with goals as dots on the scoring team's line, power plays shaded in the team's colour,
+// and the periods marked. It builds up as the replay plays, like the maps. Shown with the footer's "Game flow"
+// button (remembered).
+let flow = null, flowOn = false;
+try { flowOn = localStorage.getItem('nhl94-flow') === '1'; } catch (e) { /* default off */ }
+function setupFlow(m) {
+  // Power plays: stretches where a team has a player serving a penalty (not a delayed call), from the stat snapshots.
+  const pp = [];
+  if (m.stats && m.stats.f) {
+    const open = [null, null];
+    m.stats.f.forEach((fr, s) => {
+      for (const team of [0, 1]) {
+        let serving = false;
+        for (let idx = 0; idx < 26; idx++) { const p = playerStats(s, team, idx); if (!p) break; if (p.pen && !p.pen.delayed) serving = true; }
+        if (serving && open[team] === null) open[team] = fr;
+        if (!serving && open[team] !== null) { pp.push({ team: 1 - team, a: open[team], b: fr }); open[team] = null; }
+      }
+    });
+    for (const team of [0, 1]) if (open[team] !== null) pp.push({ team: 1 - team, a: open[team], b: m.t.length - 1 });
+  }
+  // Period starts, for periods that were played (the clock ran in them): after the final horn the index moves on
+  // to 3 and 4 with nothing played, which is not overtime.
+  const periods = [];
+  for (let i = 1; i < m.t.length; i++) {
+    if (m.period[i] === m.period[i - 1] || m.period[i] > 3) continue;
+    let played = false;
+    for (let j = i; j < m.t.length && m.period[j] === m.period[i] && !played; j++) played = possession.tick[j] > 0;
+    if (played) periods.push({ f: i, p: m.period[i] });
+  }
+  flow = { pp, periods, total: [0, 1].map(team => (m.shotList || []).filter(sh => sh.team === team).length) };
+  $('flowToggle').hidden = !m.shotList;
+  showFlow(flowOn && Boolean(m.shotList), false);
+  const key = $('flowKey');
+  key.textContent = '';
+  [m.abbr ? m.abbr[0] : m.team1, m.abbr ? m.abbr[1] : m.team2].forEach((name, team) => {
+    const item = document.createElement('span'), line = document.createElement('i');
+    line.style.background = css(team ? '--team2' : '--team1');
+    item.append(line, name);
+    key.append(item);
+  });
+}
+function showFlow(on, remember = true) {
+  // remember is false while a match loads; load() lays the page out itself once the panels exist.
+  flowOn = on;
+  $('flow').hidden = !on;
+  $('flowToggle').setAttribute('aria-pressed', String(on));
+  if (!remember) return;
+  try { localStorage.setItem('nhl94-flow', on ? '1' : '0'); } catch (e) { /* not kept */ }
+  if (match) resize();
+}
+$('flowToggle').addEventListener('click', () => showFlow(!flowOn));
+function drawFlow(f) {
+  if (!flowOn || !flow || !match) return;
+  const cv = $('flowCanvas'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext('2d'), m = match, t0 = m.t[0], t1 = m.t[m.t.length - 1];
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, w, h);
+  const L = 30, R = 46, T = 14, B = 6;  // room for the count labels on the left, the end labels on the right
+  const X = fr => L + (w - L - R) * (m.t[fr] - t0) / Math.max(1, t1 - t0);
+  const top = Math.max(5, ...flow.total), niceTop = Math.ceil(top / 5) * 5;
+  const Y = n => T + (h - T - B) * (1 - n / niceTop);
+  const muted = css('--muted'), raised = css('--raised'), colours = [css('--team1'), css('--team2')];
+  // power plays, faint, in the team on the power play's colour
+  for (const p of flow.pp) {
+    if (p.a > f) continue;
+    g.fillStyle = colours[p.team]; g.globalAlpha = 0.12;
+    g.fillRect(X(p.a), T, X(Math.min(p.b, f)) - X(p.a), h - T - B);
+  }
+  g.globalAlpha = 1;
+  // grid: a few counts, recessive
+  g.font = '11px system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'right';
+  const step = niceTop > 40 ? 20 : niceTop > 20 ? 10 : 5;
+  for (let n = 0; n <= niceTop; n += step) {
+    g.strokeStyle = raised; g.lineWidth = 1; g.beginPath(); g.moveTo(L, Math.round(Y(n)) + 0.5); g.lineTo(w - R, Math.round(Y(n)) + 0.5); g.stroke();
+    g.fillStyle = muted; g.fillText(String(n), L - 6, Y(n));
+  }
+  // periods
+  g.textAlign = 'left'; g.textBaseline = 'top';
+  g.fillStyle = muted; g.fillText('P1', L + 3, 0);
+  for (const p of flow.periods) {
+    const x = Math.round(X(p.f)) + 0.5;
+    g.strokeStyle = muted; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(x, T); g.lineTo(x, h - B); g.stroke(); g.setLineDash([]);
+    g.fillText(periodName(p.p), x + 3, 0);
+  }
+  // each team's attempts, as steps, up to now
+  const ends = [];
+  for (const team of [0, 1]) {
+    const shots = (m.shotList || []).filter(sh => sh.team === team && known(sh, f)).map(sh => (liveKnowledge && sh.known !== undefined ? sh.known : sh.f)).sort((a, b) => a - b);
+    g.strokeStyle = colours[team]; g.lineWidth = 2; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(X(0), Y(0));
+    let n = 0;
+    for (const s of shots) { g.lineTo(X(s), Y(n)); n++; g.lineTo(X(s), Y(n)); }
+    g.lineTo(X(f), Y(n)); g.stroke();
+    ends.push({ team, n });
+    // goals: a dot on the scorer's line, ringed in the panel colour so it stands off the line
+    for (const goal of m.goals || []) {
+      if (goal.team !== team || goal.f > f) continue;
+      const before = shots.filter(s => s <= goal.f).length;
+      g.fillStyle = colours[team]; g.strokeStyle = css('--panel'); g.lineWidth = 2;
+      g.beginPath(); g.arc(X(goal.f), Y(before), 4.5, 0, 2 * Math.PI); g.fill(); g.stroke();
+    }
+  }
+  // now
+  g.strokeStyle = css('--accent'); g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(Math.round(X(f)) + 0.5, T - 2); g.lineTo(Math.round(X(f)) + 0.5, h - B); g.stroke();
+  // labels at the lines' ends: the team and its count (nudged apart when they would touch)
+  g.font = '600 11px system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+  const ys = ends.map(e => Y(e.n));
+  if (Math.abs(ys[0] - ys[1]) < 12) { const mid = (ys[0] + ys[1]) / 2, up = ends[0].n >= ends[1].n ? 0 : 1; ys[up] = mid - 6; ys[1 - up] = mid + 6; }
+  ends.forEach((e, i) => {
+    g.fillStyle = css('--text');
+    g.fillText((m.abbr ? m.abbr[e.team] : (e.team ? 'Away' : 'Home')) + ' ' + e.n, Math.min(X(f) + 6, w - R + 4), ys[i]);
+  });
+  flow.geometry = { L, R, w, X, t0, t1 };
+}
+// Pointing at the strip: a line and the counts at that moment; clicking jumps there.
+function flowFrameAt(ev) {
+  const r = $('flowCanvas').getBoundingClientRect(), gm = flow && flow.geometry;
+  if (!gm) return -1;
+  const share = Math.max(0, Math.min(1, (ev.clientX - r.left - gm.L) / (gm.w - gm.L - gm.R)));
+  return frameAt(gm.t0 + share * (gm.t1 - gm.t0));
+}
+$('flowCanvas').addEventListener('mousemove', ev => {
+  const fr = flowFrameAt(ev), tip = $('flowTip');
+  if (fr < 0) { tip.hidden = true; return; }
+  const f = frameAt(now), shown = Math.min(fr, f);
+  const n = team => (match.shotList || []).filter(sh => sh.team === team && known(sh, shown) && (liveKnowledge && sh.known !== undefined ? sh.known : sh.f) <= shown).length;
+  const name = team => (match.abbr ? match.abbr[team] : team ? match.team2 : match.team1);
+  tip.innerHTML = '<div><b></b></div><div class="muted"></div>';
+  // Past the replay's position it gives only the time, so pointing ahead does not give the score away.
+  tip.querySelector('b').textContent = periodName(match.period[fr]) + ' ' + clockText(match.clock[fr]) +
+    (fr > f ? '' : ' · ' + name(0) + ' ' + match.score[2 * fr] + ', ' + name(1) + ' ' + match.score[2 * fr + 1]);
+  tip.querySelector('.muted').textContent = fr > f ? 'Later in the game: click to jump there' : 'Shot attempts: ' + name(0) + ' ' + n(0) + ', ' + name(1) + ' ' + n(1);
+  const r = $('flow').getBoundingClientRect();
+  tip.hidden = false;
+  tip.style.left = Math.max(8, Math.min(r.width - tip.offsetWidth - 8, ev.clientX - r.left + 12)) + 'px';
+});
+$('flowCanvas').addEventListener('mouseleave', () => { $('flowTip').hidden = true; });
+$('flowCanvas').addEventListener('click', ev => { const fr = flowFrameAt(ev); if (fr >= 0) seekTo(match.t[fr]); });
 
 function updatePanels(f) {
   const m = match, owner = m.owner ? m.owner[f] : -1, team = padTeam(f), pad = team >= 0 ? recentPad(f) : 0;
@@ -1948,6 +2275,7 @@ function draw() {
   drawPuck(f);
 
   updatePanels(f);
+  drawFlow(f);
   const call = callouts.find(c => m.t[f] >= m.t[c.f] && m.t[f] - m.t[c.f] < CALLOUT_MS);
   const callout = $('callout');
   callout.hidden = !call;

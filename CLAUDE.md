@@ -395,7 +395,7 @@ shots against equal the other team's shots, per-player checks sum to the team's 
 | +$CE + i | byte | Assists (goalies can have them) |
 | +$E8 + i | byte | Shots; for a goalie, shots against |
 | +$102 + i | byte | Penalty minutes in the original game; checks in ROMs with smozROM's bodycheck hack (ROM $12302 = 4E71 4E71 instead of D532 0000). The converter tells them apart |
-| +$11C + i | byte | Hits taken |
+| +$11C + i | byte | In the original game: checks THROWN (its team sums equal the team's checks, +$10, and the player is mid-check when it rises; it was shown as "hits taken" until 2026-10-15). In ROMs with the bodycheck hack: hits taken (checks thrown are then at +$102). `find_hits` rebuilds both sides of every hit |
 | +$136 + 2i | word | Ice time, game seconds |
 | +$343 + 2p / +$34B + 2p | byte | Goals / shots in period p (0-based) |
 | +$358 / +$35A | word | Breakaways tried / breakaway goals. The game counts a breakaway (and dings) when the puck carrier crosses the offensive blue line ahead of every defender (the user's description; Fedorov's two in `capture5_league30` fit it exactly). The viewer tags the moment the count goes up |
@@ -540,6 +540,30 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   line untouched, whistle when a defender touches it (or play stops), faceoff back in that team's zone. Confirmed on the
   user's two in 2026-10-14_1540_CGY-BOS (Juneau, Sweeney, 2nd period); also finds Shanahan in capture6 (P1 1:44, unconfirmed). Shown as a team stat and a banner. Overtime is period index 3 ("OT"; 10 min).
   The helper's first live game (2026-10-14_1540_CGY-BOS, CGY 6-5 BOS in OT) was recorded, ended and converted correctly.
+- Hits (`hits`, find_hits): every check that landed, thrower and target. The thrower from whichever byte counts checks
+  thrown (+$11C original, +$102 hack ROMs); the target is the nearest opponent going down ($0DD8/$0D26) within 0.8 s,
+  else the nearest opponent. On `capture5_league30` (hack ROM, which records both) every one of the 23 hits goes to
+  the player the game says took it; team totals match the game everywhere. Player card: Checks, Hits taken, and
+  Pen. minutes on original ROMs.
+- Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
+  into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
+  across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under
+  |Y| 83 before another. Icings are left out. `end` = when the puck left the zone (or a whistle); the viewer counts
+  an entry as leading to a shot attempt if the team had one in [f, end]. Team stats (count, carried/passed/dumped,
+  led to a shot), player card, and the "Zone entries" map (disc carried, diamond passed, hollow dumped, accent ring
+  = led to a shot). capture6: Boston 35 (27 carried), 21 led to a shot attempt.
+- Skating (viewer, `findSkating`): distance from straight-line moves over 0.1 s windows; top speed over 0.5 s of live
+  play. A window restarts at a recording gap (> 150 ms), a new period, or a one-sample jump over 12 units (the game
+  moving a player: bench steps, the box, penalty-shot set-up, period line-ups - these had produced 125 mph). Real
+  seconds, 536/178 units per foot. Busy skaters go about 2 miles in a 5-minute-period game; top speeds 29-44 mph
+  (the puck's slapshots come out at 80-95 mph on the same scale). Card: Skated, Top speed; team stats: Distance skated.
+- On the ice (viewer, `onIceStats`): shot attempts and goals for/against while a skater was on (at the release or
+  the goal), and plus/minus as the NHL counts it (power-play and penalty-shot goals count for neither side).
+- Game flow (footer button, remembered; `drawFlow`): a strip over the footer, replay time across like the seek bar:
+  each team's shot attempts as step lines in the team colours with goals as dots, power plays shaded (a team with a
+  player serving, from the stat snapshots), played periods marked (the index going to 3 and 4 after a regulation
+  final horn is not shown as OT). Builds up as the replay plays; hover gives the time, score and counts (only time
+  past the replay's position, no spoilers); click seeks.
 - Heat map: time with the puck (puck owner) on a 5-unit grid, blurred, scaled to the 97th percentile; both teams in
   their own colours, one team or player on a yellow-to-red scale.
 
