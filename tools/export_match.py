@@ -81,6 +81,49 @@ def actions(m):
     return systems.of_match(m).ACTIONS
 
 
+FLICKER_MS = 250  # a stat value that changes and changes back within this was not a real change
+
+
+def steady_stats(m):
+    """Smooth out flickers in the stat snapshots: a value that changes and is back where it was at the next snapshot,
+    less than FLICKER_MS later. The SNES shots-on-goal word did 2 -> 3 -> 2 -> 3 in 80 ms twice in 2026-10-16_1528_TOR-CHI (the
+    game updating it in steps, or a read in the middle), which counted one shot twice."""
+    st, t = m["stats"], m["t"]
+    f, n, per = st["f"], st["n"], st.get("p", 0)
+    # Only counts: the team's (not its attack-zone time) and each player's goals, assists, shots and the two check
+    # bytes. Ice time, energy and the penalty word (bench / ice / out, seconds left) really do change back and forth.
+    counts = [i for i in range(n) if STAT_FIELDS[i] != "attackZone"]
+    for side in ("home", "away"):
+        rows = st[side]
+        if not rows:
+            continue
+        fields = counts + [n + per * k + i for k in range((len(rows[0]) - n) // per if per else 0) for i in range(5)]
+        for j in range(1, len(rows) - 1):
+            if t[f[j + 1]] - t[f[j]] > FLICKER_MS:  # how long the new value lasted
+                continue
+            a, b, c = rows[j - 1], rows[j], rows[j + 1]
+            for i in fields:
+                if a[i] == c[i] != b[i]:
+                    b[i] = a[i]
+    # The same for the per-sample score and shots-on-goal words (the shot finder counts their rises).
+    for key in ("score", "shots"):
+        v = m.get(key)
+        if not v:
+            continue
+        for team in (0, 1):
+            i = 1
+            while i < len(t):
+                if v[2 * i + team] == v[2 * i - 2 + team]:
+                    i += 1; continue
+                j = i + 1
+                while j < len(t) and v[2 * j + team] == v[2 * i + team]:
+                    j += 1
+                if j < len(t) and v[2 * j + team] == v[2 * i - 2 + team] and t[j] - t[i] < FLICKER_MS:
+                    for q in range(i, j):
+                        v[2 * q + team] = v[2 * i - 2 + team]
+                i = j
+
+
 def find_shots(m, goals=None):
     """Every shot, with where it was taken from and how it ended, for the viewer's shot map. The game keeps only
     totals, so shots are found from the animations:
@@ -1294,6 +1337,8 @@ def main(argv=None):
     name = args.name or args.capture.resolve().name
     match = system.read_match(cap, rom_path, name, args.home, args.away)
     match["system"] = system.NAME
+    if "stats" in match:
+        steady_stats(match)
     if "stats" in match and "rosters" in match and "goals" not in match:
         match["goals"] = find_goals(match, match["rosters"])
         # The game's own scoring summary, where the system has one: it names the scorer and assists outright and the

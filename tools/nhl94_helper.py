@@ -174,7 +174,7 @@ class Recording:
         self.emu, self.rom_path, self.system = emu, rom_path, systems.get(emu.system)
         when = datetime.datetime.now()
         abbr = team_abbreviations(self.system, rom_path, *view.teams) if rom_path else [f"T{t}" for t in view.teams]
-        self.teams = abbr
+        self.teams = self.named = abbr
         self.name = f"{when:%Y-%m-%d_%H%M}_{abbr[0]}-{abbr[1]}".replace(" ", "")
         self.date = when.isoformat(timespec="minutes")
         self.folder = ROOT / "captures" / self.name
@@ -218,6 +218,8 @@ class Recording:
         if not view.live:
             return None  # paused, instant replay, or between screens: not recorded, and not counted as game time
         self.live_ms += elapsed
+        if view.teams != old.teams:  # the teams picked after the recording began (it began on a menu screen)
+            self.teams = team_abbreviations(self.system, self.rom_path, *view.teams) if self.rom_path else [f"T{t}" for t in view.teams]
         self.view = view
         data = b"".join(view.blocks)
         if data != self.previous:
@@ -233,6 +235,15 @@ class Recording:
     def close(self):
         self.fast.close()
         self.full.close()
+        # Named after the teams that played: the recording may have begun on a screen still showing others.
+        if self.teams != self.named:
+            name = f"{self.name[:15]}_{self.teams[0]}-{self.teams[1]}".replace(" ", "")
+            if not (ROOT / "captures" / name).exists():
+                try:
+                    self.folder = self.folder.rename(ROOT / "captures" / name)
+                    self.name = name
+                except OSError:
+                    pass  # keeps the first name
 
 
 def convert(rec, why):

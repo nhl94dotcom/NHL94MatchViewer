@@ -351,7 +351,11 @@ class View:
         self.score = (word(STAT_ADDRESSES["goals"]), word(STAT_ADDRESSES["goals"] + 2))
         self.teams = (word(TEAM_IDS[0]), word(TEAM_IDS[1]))
         rosters = [block[OBJ_ROSTER + 2 * k] for k in range(12)]
-        self.on_ice = any(r != 0xFF for r in rosters[:6]) and any(r != 0xFF for r in rosters[6:])
+        # A line-up on the ice: each team's places hold different players ($FF = nobody). At the menus they can all
+        # read 0 (2026-10-16_1528: the helper took the menus' MTL vs LA for a game under way, a second before the
+        # real teams were picked).
+        lineup = lambda places: (lambda on: bool(on) and len(set(on)) == len(on))([r for r in places if r != 0xFF])
+        self.on_ice = lineup(rosters[:6]) and lineup(rosters[6:])
         self.screen = word(GAME_FLAGS2)
         self.in_menus = self.teams[0] >= 28 or self.teams[1] >= 28 or (self.teams == (0, 0) and self.score == (0, 0)
                                                                           and self.period == 0 and self.clock == 0)
