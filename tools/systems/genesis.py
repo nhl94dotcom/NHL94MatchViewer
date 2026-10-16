@@ -348,6 +348,10 @@ def build_sprites(rom):
 
 
 # ------------------------------------------------------------------------------------ a recording -> a match file
+FRAME_COUNTER = 0xB03E  # work RAM word counting frames (up 1-3 between reads in 95% of capture6's samples)
+ROLLBACK_FRAMES = 30    # how far back a rollback can take it
+
+
 def read_match(cap, rom_path, name, home=None, away=None):
     """The match file's contents from a recording (cap: export_match.Capture) and the ROM it was played on. The
     shared analysis (shots, passes, goals ...) is added afterwards by export_match.main."""
@@ -367,7 +371,16 @@ def read_match(cap, rom_path, name, home=None, away=None):
     last_post = -10_000
     team_ids = Counter()
     previous = None
+    # Netplay's rollback runs the game a few frames ahead and rewinds: a read made while it was ahead shows everyone a
+    # few frames on and the next one back (21 times in capture6_netplay_bos_stl; the SNES games far more, see
+    # snes.read_match). The frame counter going back, or showing the same frame again, within half a second says
+    # that sample was ahead of time: it is left out.
+    frames = [cap.word(i, FRAME_COUNTER) for i in range(cap.count)]
+    ahead = {i for i in range(cap.count) if any((frames[i] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
+                                                for j in range(i + 1, min(cap.count, i + 32)) if cap.ms(j) - cap.ms(i) <= 500)}
     for i in range(cap.count):
+        if i in ahead:
+            continue
         # Identical consecutive samples (a paused game, or two reads of one frame) are stored once.
         key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), (cap.byte(i, PAD1), cap.byte(i, PAD2)) if has_pad else 0)
         if key == previous:

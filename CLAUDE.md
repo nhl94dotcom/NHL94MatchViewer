@@ -352,8 +352,19 @@ Netplay works: `captures/capture6_netplay_bos_stl` is a full online game (the us
 St. Louis; 6-3, 5-minute periods), recorded on the user's machine with
 `powershell -ExecutionPolicy Bypass -File tools
 hl94_record.ps1 -Seconds 1800`. Everything read normally: scores,
-shots, stats, penalties, both teams' controlled skaters (+$62 set on one record per team almost throughout), no
-sign of netplay's rollbacks in positions or the clock. Periods read 0-2 for the three periods, then 3 and 4 at the
+shots, stats, penalties, both teams' controlled skaters (+$62 set on one record per team almost throughout).
+Netplay's rollback does show (2026-10-16; the user saw skaters jump a few pixels and straight back in
+2026-10-16_1540_CHI-TOR): RetroArch runs the game a few frames ahead on guessed input, then rewinds and replays them,
+and a read made while it was ahead shows every object a few frames on. The SNES games recorded by the helper online
+had about 240 such samples each, the first SNES game 17, capture6 21. Each system's read_match leaves out a sample
+when the frame counter (Genesis $B03E, SNES $0764: up 1-3 between reads in 92-95% of samples) shows the same frame
+again or up to ROLLBACK_FRAMES 30 earlier within the next half second; the time those samples covered is kept (not
+closed up like pauses). That also drops the earlier of two reads of one frame (a read in the middle of the frame):
+about 6-10% of samples. After it: no there-and-back jumps left (one in CHI-TOR); shots on goal, checks, goals,
+penalties, injuries, EA Special attempts and the reviewed bumps and bobbles unchanged (on the SNES, bobbles now look
+at the puck one sample after the bounce too, since its position can trail its speed: CHI-TOR then finds the user's 10
+plus three unreviewed, P1 3:59, P2 1:36, P2 0:53); new: a bump in BOS-PIT (Bourque by Lemieux, P1 4:35) and a
+bobble in capture1; a counted pass lost in each new SNES game. Periods read 0-2 for the three periods, then 3 and 4 at the
 end. $BEEF holds the local player's controller; the converter works out which team it drives (`padTeam`: the team
 whose controlled skater answers the presses, 222 against 102 of 617 here) so the viewer shows the buttons in
 two-player games too.

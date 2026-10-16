@@ -448,7 +448,17 @@ def read_match(cap, rom_path, name, home=None, away=None):
     count = max(i for i, v in enumerate(totals) if v == peak) + 1 if peak else cap.count
     # Paused and replay samples are left out (the research recorder keeps them), and the timeline closes over them,
     # as the helper records the Genesis game: only live play.
-    cap = LivePlay(cap, [i for i in range(count) if not cap.word(i, GAME_FLAGS2) & PAUSED])
+    # Netplay's rollback (and RetroArch's run-ahead) runs the game a few frames ahead on guessed input, then rewinds
+    # and replays them: a read made while it was ahead shows everyone a few frames on, and the next one back again (the
+    # user saw skaters jump and jump back in 2026-10-16_1540_CHI-TOR, about 240 times a game). The frame counter
+    # (FRAME_COUNTER) going back a few frames within the next half second, or showing the same frame again (replayed
+    # with the real input), says that sample was ahead of time: it is left out. (Only a few frames: the counter also
+    # jumps or restarts between screens.)
+    frames = [cap.word(i, FRAME_COUNTER) for i in range(count)]
+    ahead = {i for i in range(count) if any((frames[i] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
+                                            for j in range(i + 1, min(count, i + 32)) if cap.ms(j) - cap.ms(i) <= 500)}
+    paused = {i for i in range(count) if cap.word(i, GAME_FLAGS2) & PAUSED}
+    cap = LivePlay(cap, [i for i in range(count) if i not in paused and i not in ahead], paused)
     count = cap.count
     for i in range(count):
         match["t"].append(cap.ms(i))
@@ -636,16 +646,23 @@ def read_penalties(cap, count, match, rules):
     return penalties, delayed
 
 
-class LivePlay:
-    """Some of a recording's samples (live play), with the time between them closed up where samples were left out."""
+FRAME_COUNTER = 0x0764  # work RAM word counting frames (up 1-3 between the helper's reads, 92% of samples)
+ROLLBACK_FRAMES = 30    # how far back a rollback can take the counter
 
-    def __init__(self, cap, keep):
+
+class LivePlay:
+    """Some of a recording's samples (live play), with the time between them closed up where paused samples were left
+    out (`closed`: those samples; None = any left out)."""
+
+    def __init__(self, cap, keep, closed=None):
         self.cap, self.keep, self.count = cap, keep, len(keep)
         self.times, t = [], 0
         for n, i in enumerate(keep):
             if n:
                 gap = cap.ms(i) - cap.ms(keep[n - 1])
-                t += gap if i == keep[n - 1] + 1 else min(gap, 17)
+                skipped = range(keep[n - 1] + 1, i)
+                close = any(q in closed for q in skipped) if closed is not None else bool(skipped)
+                t += min(gap, 17) if close else gap
             self.times.append(t)
 
     def ms(self, i):
