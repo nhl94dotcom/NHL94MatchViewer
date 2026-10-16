@@ -74,6 +74,7 @@
   #heatCanvas { width: 360px; max-width: 100%; height: auto; border-radius: 8px; background: var(--raised); }
   .heatside { flex: 1 1 220px; min-width: 0; }
   /* The bar shared by the games list, the season page and the viewer's help */
+  th.has-help { cursor: help; }
   .topnav { display: flex; align-items: center; gap: 4px 18px; flex-wrap: wrap; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--raised); }
   .topnav .brand { font-weight: 700; color: var(--text); text-decoration: none; margin-right: 8px; }
   .topnav a.navlink { color: var(--muted); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
@@ -372,6 +373,23 @@ function playerLines(list, goalies) {
 
 // ---------------------------------------------------------------------------------------------------- tables
 // A sortable table: columns {key, label, value(row) for sorting, show(row) for display, title, left, asc}.
+// Explanations for column headings that do not carry their own (by the heading's text), shown on hover.
+const HEAD_HELP = {
+  GP: 'Games played', W: 'Wins', L: 'Losses (in regulation)', OTL: 'Overtime losses', T: 'Ties', PTS: 'Points: 2 a win, 1 an overtime loss or a tie',
+  GF: 'Goals for', GA: 'Goals against', 'GA/GP': 'Goals against a game', DIFF: 'Goal difference (for minus against)',
+  G: 'Goals', A: 'Assists', PPG: 'Power-play goals', SHG: 'Shorthanded goals', PIM: 'Penalty minutes',
+  'S%': 'Shooting percentage: goals / shots on goal', 'SV%': 'Save percentage: saves / shots on goal against',
+  'iCF/GP': 'Individual shot attempts a game (on goal, wide, blocked and not-counted saves)',
+  'HDCF%': 'Share of the high-danger attempts (from the slot) in its games that were the team’s', HDGA: 'High-danger goals against (from the slot)',
+  Home: 'Record at home', Away: 'Record away', Score: 'Final score', When: 'When it was played',
+  'Checks: person': 'Checks landed by the skater a person was controlling', 'Penalties: person': 'Penalties taken by the skater a person was controlling',
+  CPU: 'The same, by the computer’s skaters', 'Person %': 'Share of the team’s checks a person landed',
+  'Pokes/GP': 'Poke checks by the person’s skater, a game', 'Hooks/GP': 'Hooks by the person’s skater, a game (Genesis only)',
+  'Dives/GP': 'Goalie dives while a person controlled him, a game', 'SV% CPU in net': 'Save % on shots faced with the computer controlling the goalie',
+  'Passes completed': 'Completed passes from the first player to the second (a picked-off pass has no known target)',
+  '/GP': 'A game', Count: 'How many', Goals: 'Goals', Wins: 'Wins',
+};
+
 function table(id, rows, columns, defaultKey) {
   const s = sorts[id] || { key: defaultKey, asc: false };
   const col = columns.find(c => c.key === s.key) || columns.find(c => c.key === defaultKey);
@@ -382,7 +400,7 @@ function table(id, rows, columns, defaultKey) {
     const cmp = typeof x === 'string' ? x.localeCompare(y) : (x == null || isNaN(x) ? -Infinity : x) - (y == null || isNaN(y) ? -Infinity : y);
     return (s.asc ? cmp : -cmp) || (b.gp || 0) - (a.gp || 0);
   });
-  const head = columns.map(c => `<th${c.sortable === false ? '' : ` data-key="${c.key}"`} class="${c.left ? 'left' : ''}${c === col ? ' sorted' : ''}"${c.title ? ` title="${esc(c.title)}"` : ''}>${esc(c.label)}${c === col ? (s.asc ? ' ▴' : ' ▾') : ''}</th>`).join('');
+  const head = columns.map(c => (c.title ? c : { ...c, title: HEAD_HELP[c.label] })).map(c => `<th${c.sortable === false ? '' : ` data-key="${c.key}"`} class="${c.left ? 'left' : ''}${c.key === col.key ? ' sorted' : ''}${c.title ? ' has-help' : ''}"${c.title ? ` title="${esc(c.title)}"` : ''}>${esc(c.label)}${c.key === col.key ? (s.asc ? ' ▴' : ' ▾') : ''}</th>`).join('');
   const body = rows.map(r => `<tr class="${r.off ? 'off' : ''}${r.abbr && r.abbr === myTeam() ? ' mine' : ''}">` + columns.map(c => {
     const v = c.show ? c.show(r) : esc(val(c)(r));
     return `<td class="${c.left ? 'left' : ''}${c === col ? ' sorted' : ''}">${v}</td>`;
@@ -478,7 +496,7 @@ function viewSkaters(list, team) {
     { key: 'name', label: 'Player', left: true, show: playerCell },
     { key: 'gp', label: 'GP' },
     { key: 'g', label: 'G' }, { key: 'a', label: 'A' },
-    { key: 'pts', label: 'PTS', value: r => r.g + r.a },
+    { key: 'pts', label: 'PTS', title: 'Points: goals plus assists', value: r => r.g + r.a },
     { key: 'pm', label: '+/-', title: 'Goals for minus against while on the ice (not power-play or penalty-shot goals)', show: r => signed(r.pm) },
     { key: 'sog', label: 'SOG', title: 'Shots on goal, as the game counts them' },
     { key: 'shp', label: 'S%', value: r => (r.sog ? r.g / r.sog : NaN), show: r => pct(r.g, r.sog) },
