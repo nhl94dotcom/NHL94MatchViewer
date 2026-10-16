@@ -820,7 +820,7 @@ function viewAdvanced(list, team) {
     { key: 'rebg', label: 'Reb G', title: 'Rebound goals / rebound attempts', value: r => rb(r, 1), show: r => `${rb(r, 1)}<small>/${rb(r, 0)}</small>` },
     { key: 'reba', label: 'Reb allowed', title: 'Saves by its goalies that gave the shooters a rebound', value: r => rb(r, 2) },
     { key: 'flip', label: 'Flip G', title: 'Goals off flip rebounds / flips; against', value: r => fl(r, 1),
-      show: r => `${fl(r, 1)}<small>/${fl(r, 0)} \u00b7 against ${fl(r, 3)}/${fl(r, 2)}</small>` },
+      show: r => (fl(r, 0) + fl(r, 2) ? `${fl(r, 1)}<small>/${fl(r, 0)} \u00b7 against ${fl(r, 3)}/${fl(r, 2)}</small>` : '\u2013') },
     { key: 'assisted', label: 'Off a pass', title: 'Shot attempts set up by a teammate\u2019s pass', value: r => r.assisted || 0 },
     { key: 'toShot', label: 'TO\u2192shot', title: 'Its turnovers the other team turned into a shot attempt within 5 s (goals)', value: r => ts(r, 0),
       show: r => `${ts(r, 0)}<small> \u00b7 ${ts(r, 1)} G</small>` },
