@@ -162,7 +162,7 @@ function fillRows(body, games) {
       make.textContent = 'Make game file';
       make.onclick = async () => {
         make.disabled = true; make.textContent = 'Making…';
-        const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST' }).then(r => r.json()).catch(() => null);
+        const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } }).then(r => r.json()).catch(() => null);
         if (r && r.file) { const a = document.createElement('a'); a.href = r.file; a.download = r.file.split('/').pop(); a.click(); }
         shownGames = ''; poll();
       };
@@ -172,7 +172,7 @@ function fillRows(body, games) {
     del.className = 'danger'; del.textContent = 'Delete';
     del.onclick = async () => {
       if (!confirm('Delete ' + (g.home || '') + ' ' + g.score.join('-') + ' ' + (g.away || '') + '? The recording, the replay and its game file go.')) return;
-      await fetch('/api/delete?name=' + encodeURIComponent(g.name), { method: 'POST' });
+      await fetch('/api/delete?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } });
       shownGames = ''; poll();
     };
     actions.append(del);
@@ -202,7 +202,7 @@ async function poll() {
   renderGames(s.games || []);
 }
 $('autoGameFile').addEventListener('change', e => {
-  fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ auto_game_file: e.target.checked }) });
+  fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-NHL94': '1' }, body: JSON.stringify({ auto_game_file: e.target.checked }) });
 });
 poll();
 setInterval(poll, 1000);

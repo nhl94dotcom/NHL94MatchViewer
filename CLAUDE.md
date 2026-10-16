@@ -30,7 +30,12 @@ fresh folder (ROM copy found, sprites built), and its page served the list, view
 sets another port. The helper claims its port exclusively (Windows otherwise let a second helper listen on 9494 too,
 and the page reached either), so a second copy says it is already running. It listens on ::1 as well as 127.0.0.1: Windows resolves
 "localhost" to ::1 first, and with only 127.0.0.1 open each request waited about 2 s for the fallback, and the user
-often could not connect at all. Not yet tried on another computer; an
+often could not connect at all. Security (review 2026-10-16): the helper answers only requests whose Host header names
+it (localhost / 127.0.0.1 / [::1] with its port; anything else 403, which stops "DNS rebinding" websites from reading the
+games or the ROM copies), and a POST must carry `X-NHL94: 1` (a header other websites cannot send without a CORS
+preflight the helper never grants) and, when the browser gives one, the helper's own Origin; bodies over 5 MB, bad JSON
+and a seasons request without a list are refused (so a malformed request never clears the seasons). The pages' POSTs
+send the header. Not yet tried on another computer; an
 unsigned .exe that reads another program's memory may draw a SmartScreen or antivirus warning.
 
 By hand:

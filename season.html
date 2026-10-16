@@ -220,7 +220,7 @@ function fillSeasons() {
 
 async function saveSeasons() {
   try {
-    const r = await fetch('/api/seasons', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seasons }) });
+    const r = await fetch('/api/seasons', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-NHL94': '1' }, body: JSON.stringify({ seasons }) });
     if (!r.ok) throw new Error(r.status);
     seasons = (await r.json()).seasons;
     return true;
