@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
-VERSION = 1
+VERSION = 2  # 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts)
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -116,6 +116,53 @@ def summarize(m, name, date=None):
     # On the ice at each goal, for plus/minus (as the NHL counts it: not power-play or penalty-shot goals)
     goal_ice = [(g, on_ice(g["f"])) for g in goals if 0 <= g["f"] < n]
 
+    # Advanced stats, as the NHL's analysts count them, for each team and for each skater while on the ice: eight
+    # numbers, ADV = CF, CA (Corsi: every shot attempt), FF, FA (Fenwick: attempts not blocked), SF, SA (shots on
+    # goal, as the game counts them), GF, GA; in all situations and at even strength (the same number of players
+    # serving penalties on both sides). Zone starts: the faceoffs a skater was on the ice for, in his team's
+    # attacking, neutral and defensive zones.
+    pen = penalty_counts(m)
+    even = lambda f: pen[0][f] == pen[1][f]
+    events = []  # (frame, team, slots it fills for that team: 0 CF, 2 FF, 4 SF, 6 GF; the other team gets +1)
+    for s in shots:
+        slots = [0] + ([2] if s["result"] != "blocked" else []) + ([4] if s.get("counted") or s["result"] == "goal" else [])
+        events.append((s["f"], s["team"], slots))
+    for g in goals:
+        events.append((g["f"], g["team"], [6]))
+    events = [(f, team, slots, on_ice(f), even(f)) for f, team, slots, in events if 0 <= f < n]
+    team_adv = [[[0] * 8, [0] * 8] for _ in (0, 1)]  # [team][all, even]
+    for f, team, slots, ice, ev in events:
+        for side in (0, 1):
+            for slot in slots:
+                at = slot if side == team else slot + 1
+                team_adv[side][0][at] += 1
+                if ev:
+                    team_adv[side][1][at] += 1
+    for team in (0, 1):
+        teams[team]["adv"], teams[team]["advEv"] = team_adv[team]
+
+    def skater_adv(team, idx):
+        out = [[0] * 8, [0] * 8]
+        for f, shooter, slots, ice, ev in events:
+            if idx not in ice[team]:
+                continue
+            for slot in slots:
+                at = slot if shooter == team else slot + 1
+                out[0][at] += 1
+                if ev:
+                    out[1][at] += 1
+        zs = [0, 0, 0]
+        for e in m.get("faceoffs", []):
+            if 0 <= e["f"] < n and idx in on_ice(e["f"])[team]:
+                zone = e.get("zone", "neu")
+                if team == 1:
+                    zone = {"att": "def", "def": "att"}.get(zone, zone)  # zones are in Home's view
+                zs[{"att": 0, "neu": 1, "def": 2}.get(zone, 1)] += 1
+        return {"oi": out[0], "oiEv": out[1], "zs": zs,
+                # The team's numbers while he was off the ice, for "relative" stats
+                "off": [a - b for a, b in zip(team_adv[team][0], out[0])],
+                "offEv": [a - b for a, b in zip(team_adv[team][1], out[1])]}
+
     players = [[], []]
     for team in (0, 1):
         other = 1 - team
@@ -148,6 +195,7 @@ def summarize(m, name, date=None):
                     "give": sum(1 for e in turnovers if e["kind"] == "giveaway" and e["from"] == team and e.get("giver") == idx),
                     "take": sum(1 for e in turnovers if e["kind"] == "takeaway" and e["from"] == other and e.get("by") == idx),
                 })
+                line.update(skater_adv(team, idx))
             if toi > 0 or any(line.get(k) for k in ("g", "a", "sog", "sa", "pim", "checks", "att")):
                 players[team].append(line)
         # The goalie with the most ice time gets the decision
