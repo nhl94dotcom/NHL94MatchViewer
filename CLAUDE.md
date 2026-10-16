@@ -868,6 +868,15 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   (zone picker; passes, /GP, time with the puck, passes a minute of it - Oates 32 in the attacking zone, Roenick 3.7 -
   direction shares, passes out of the zone). Viewer: team stats group "Passing by zone and direction" (closed at
   first), the card's "Passes att / neu / def" and "Pass direction" (ahead / across / back), Help.
+- Who carries the puck (2026-10-16; the user: some people carry with their wingers, some the centre, some the
+  defence): the team's game seconds with the puck on a skater's stick by the position he was playing then (role at that
+  sample, so line changes count right), as the viewer's possession counts seconds. Season summaries (VERSION 11), per
+  team: `puckPos` (zone x LD, RD, LW, C, RW: 15) and `entryPos` (carried zone entries by the carrier's position);
+  season.py `puck_seconds_by_zone`, `carried_entries_by_position`. Season page, Play style: "Who carries the puck"
+  (zone picker; time with the puck a game, D / C / W shares, LD / RD / LW / RW shares, carried entries D / C / W),
+  noting that equal use would be D 40%, C 20%, W 40%. Viewer: Puck control's "Carried by D / C / W". BOS-PIT: Boston
+  32 / 16 / 52 (the left wing alone 122 s, 10 of 24 carried entries), Pittsburgh 35 / 23 / 42; CHI-TOR: Chicago
+  21 / 33 / 46.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under

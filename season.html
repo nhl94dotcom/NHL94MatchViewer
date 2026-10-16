@@ -419,6 +419,7 @@ function render() {
   wireSorting();
   if (tab === 'heat' && $('hTeam')) wireHeat(list);
   if (tab === 'play' && $('passZone')) $('passZone').addEventListener('change', e => { passZone = e.target.value; render(); });
+  if (tab === 'play' && $('carryZone')) $('carryZone').addEventListener('change', e => { carryZone = e.target.value; render(); });
   if (tab === 'goalies' && $('gmWho')) { $('gmWho').addEventListener('change', e => { gmWho = e.target.value; drawGoalieMap(list); }); drawGoalieMap(list); }
   for (const radio of view.querySelectorAll('input[name=advWhen]')) radio.addEventListener('change', () => { advEven = radio.value === 'ev'; render(); });
   if ($('advOnIce')) $('advOnIce').addEventListener('change', e => { advOnIce = e.target.checked; try { localStorage.setItem('nhl94.season.onIce', advOnIce ? '1' : '0'); } catch (err) { /* not kept */ } render(); });
@@ -869,7 +870,7 @@ function playTotals(list) {
     const r = rows.get(abbr) || rows.set(abbr, { abbr, name: g.names[side], gp: 0, humanGames: 0, habits: null, habitGames: 0, pairs: {}, gHuman: [0, 0], gCpu: [0, 0] }).get(abbr);
     r.gp++;
     if (g.humans[side]) r.humanGames++;
-    for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses']) r[k] = sumArr(r[k], t[k]);
+    for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses', 'puckPos', 'entryPos']) r[k] = sumArr(r[k], t[k]);
     if (t.habits) {
       r.habitGames++;
       const h = r.habits || (r.habits = { minutes: 0, presses: { A: 0, B: 0, C: 0 }, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, dives: 0, goalieSeconds: 0 });
@@ -946,13 +947,41 @@ function viewPlay(list, team) {
     { key: 'rate', label: '\u2192 shot', title: 'Share of these passes that led straight to a shot attempt', value: r => (r.made ? r.shots / r.made : NaN),
       show: r => (r.made ? pct1(100 * r.shots / r.made) : '\u2013') },
   ], 'made');
-  const passing = viewPassing(list, team);
+  const passing = viewPassing(list, team), carrying = viewCarrying(rows, team);
   return '<h2>Play style</h2><h2 style="font-size:14px">How chances were made</h2>' + chances +
     '<h2 style="font-size:14px;margin-top:20px">Person vs computer</h2>' + versus +
     '<h2 style="font-size:14px;margin-top:20px">Controller habits</h2>' + habits +
     `<h2 style="font-size:14px;margin-top:20px">Passing network: ${esc(netTeam.name)} <small class="muted">(pick a team above to see another)</small></h2>` + network +
-    passing +
+    carrying + passing +
     '<p class="note">The person always has the puck carrier, so shots and passes are almost all the person\u2019s; checks and penalties are where the computer\u2019s skaters show.</p>';
+}
+
+// Who carries the puck: each team's game time with the puck on a skater's stick, by the position he was playing then
+// (LD, RD, LW, C, RW; line changes move players between positions), in the zone picked, and its carried zone entries by
+// position. Two defencemen, two wingers and one centre: equal use would be D 40%, C 20%, W 40%.
+let carryZone = 'all';
+const POSITIONS = ['LD', 'RD', 'LW', 'C', 'RW'];
+function viewCarrying(rows, team) {
+  rows = rows.filter(r => r.puckPos && (!team || r.abbr === team));
+  if (!rows.length) return '';
+  const zones = carryZone === 'all' ? [0, 1, 2] : [['def', 'neu', 'att'].indexOf(carryZone)];
+  const pos = (r, i) => zones.reduce((a, z) => a + r.puckPos[z * 5 + i], 0);
+  const total = r => [0, 1, 2, 3, 4].reduce((a, i) => a + pos(r, i), 0);
+  const sh = (r, ...is) => (total(r) ? 100 * is.reduce((a, i) => a + pos(r, i), 0) / total(r) : NaN);
+  const ent = (r, ...is) => is.reduce((a, i) => a + ((r.entryPos || [])[i] || 0), 0);
+  const picker = `<div class="filters" style="margin:8px 0 12px"><label>Zone <select id="carryZone">${[['all', 'All zones'], ...PASS_ZONES.filter(z => z[0] !== 'all')].map(([k, n]) =>
+    `<option value="${k}"${k === carryZone ? ' selected' : ''}>${n}</option>`).join('')}</select></label></div>`;
+  return '<h2 style="font-size:14px;margin-top:20px">Who carries the puck</h2>' + picker + table('playCarry', rows, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'puck', label: 'With puck/GP', title: 'Game time a game with the puck on one of its skaters’ sticks, in this zone', value: r => total(r) / r.gp, show: r => mmss(total(r) / r.gp) },
+    { key: 'd', label: 'D %', title: 'Share of that time the carrier was a defenceman (equal use: 40%)', value: r => sh(r, 0, 1), show: r => pct1(sh(r, 0, 1)) },
+    { key: 'c', label: 'C %', title: 'Share of that time the carrier was the centre (equal use: 20%)', value: r => sh(r, 3), show: r => pct1(sh(r, 3)) },
+    { key: 'w', label: 'W %', title: 'Share of that time the carrier was a winger (equal use: 40%)', value: r => sh(r, 2, 4), show: r => pct1(sh(r, 2, 4)) },
+    ...POSITIONS.map((n, i) => [n, i]).filter(([n]) => n !== 'C').map(([n, i]) => ({ key: 'p' + i, label: n + ' %', title: `Share of that time the carrier was playing ${n} (equal use: 20%)`, value: r => sh(r, i), show: r => `<small>${pct1(sh(r, i))}</small>` })),
+    { key: 'ent', label: 'Carried in D / C / W', title: 'Zone entries carried in by a defenceman, the centre, a winger (all zones)', value: r => ent(r, 0, 1, 2, 3, 4),
+      show: r => `${ent(r, 0, 1)} / ${ent(r, 3)} / ${ent(r, 2, 4)}` },
+  ], 'puck') + '<p class="note">Two defencemen, two wingers and one centre: if every position carried the puck equally it would be D 40%, C 20%, W 40%. The person always has the puck carrier, so these are the person’s choices.</p>';
 }
 
 // Passing by zone: who passes a lot where, and which way. Each skater's passes from the zone picked (his team's view:
