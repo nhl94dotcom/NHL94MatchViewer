@@ -243,8 +243,11 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   team checks: the checking skater nearest an opponent going down). The recording is cut where the game's numbers
   last stood (it runs on into the menus). Against the game's own counts: shots on goal 10/10 and 12/12, checks 24/24
   and 29/29, counted passes 53/53 and 49/48, faceoffs won 5/5 and 8/8. A goal with no shots-on-goal rise (the SNES
-  penalty-shot goal) now reads counted false (no change on the Genesis recordings). Pass shots found: Toronto 1
-  (wide), Pittsburgh 2 (the penalty-shot goal, and a save); the user saw one Pittsburgh pass shot.
+  penalty-shot goal) now reads counted false (no change on the Genesis recordings). Pass shots: Pittsburgh's 2 (the penalty-shot goal,
+  and a save) are right per the user; Toronto's 'wide' one was Andreychuk's pass round the net to Gill (36 wide of
+  the middle at the goal line, Gill had it behind the net 0.45 s later), so the pass-shot rule now also asks: a puck
+  wide of the posts (more than 22 from the middle) that a teammate takes within 1 s, before the goalie or the other
+  team, was a pass. No Genesis pass shot changed.
   Not known yet: puck height / hidden puck (whistles), screen state (menus, pause, replay), per-player stats,
   controller words, the remaining animation names.
 
