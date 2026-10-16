@@ -502,7 +502,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
 <dl>
   <dt>Checks, hits taken</dt><dd>Body checks that landed, thrown and taken.</dd>
   <dt>Big hit</dt><dd>A check that upended a player or sent him into the boards or the bench.</dd>
-  <dt>Injury</dt><dd>A player hurt (the game's injury animation), with the check that caused it. He is out for the rest of the period or of the game: the replay shows which by whether he comes back in a later period (Genesis; SNES injuries are not read yet).</dd>
+  <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
 </dl>
 <h3>Advanced</h3>
 <dl>
@@ -1857,10 +1857,10 @@ function findCallouts(m) {
       text: playerName(h.team, h.by) + ' ' + verb + ' ' + playerName(1 - h.team, h.on) + (h.outcome === 'upended' ? '' : ' ' + h.outcome) + how });
   }
   // Injuries (the converter's find_injuries): out for the period if he came back later, else for the game.
-  for (const e of m.injuries || []) {
+  for (const e of (m.injuries || []).filter(e => !e.atStart)) {
     out.push({ f: e.f, kind: 'Injury · ' + (e.team ? m.team2 : m.team1),
       text: playerName(e.team, e.idx) + ' is hurt' + (e.by !== null && e.by !== undefined ? ' (' + playerName(1 - e.team, e.by).replace(/^#\d+ /, '') + '’s check)' : '') +
-        (e.back !== null && e.back !== undefined ? ', out for the period' : ', out for the rest of the game') });
+        (e.out === 'period' ? ', out for the period' : ', out for the rest of the game') });
   }
   for (const g of m.goals || []) {
     const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')'));
@@ -2066,7 +2066,8 @@ function refreshPopover(f, snap) {
     // Giveaways the other team turned into a shot attempt within 5 s (known once that attempt was taken)
     live.costly = list.filter(e => e.kind === 'giveaway' && e.from === shown.team && e.giver === shown.idx && e.shotAfter !== undefined && e.shotAfter <= f).length;
     const hurt = (match.injuries || []).find(e => e.f <= f && e.team === shown.team && e.idx === shown.idx);
-    if (hurt) live.injury = periodName(match.period[hurt.f]) + ' ' + clockText(match.clock[hurt.f]) + (hurt.back !== null && hurt.back !== undefined ? ', out for the period' : ', out for the game');
+    if (hurt && !(hurt.until !== null && hurt.until !== undefined && hurt.until <= f))
+      live.injury = (hurt.atStart ? 'out when the recording began' : periodName(match.period[hurt.f]) + ' ' + clockText(match.clock[hurt.f])) + (hurt.out === 'period' ? ', out for the period' : ', out for the game');
     if (match.shotList && match.shotList.some(sh => sh.danger)) {
       const mine = match.shotList.filter(sh => known(sh, f) && sh.team === shown.team);
       live.hd = mine.filter(sh => sh.idx === shown.idx && sh.danger === 'high').length;
@@ -3803,7 +3804,7 @@ function findHighlights(m) {
     items.push({ f: h.f, ...span(h.f), kind: 'Big hit', team: h.team,
       text: h.outcome === 'upended' ? by + ' upends ' + on : by + ' hits ' + on + ' ' + h.outcome });
   }
-  for (const e of m.injuries || []) {
+  for (const e of (m.injuries || []).filter(e => !e.atStart)) {
     items.push({ f: e.f, ...span(e.f), kind: 'Injury', team: e.team, text: who(e.team, e.idx).replace(/^#\d+ /, '') + ' is hurt' +
       (e.by !== null && e.by !== undefined ? ' (' + who(1 - e.team, e.by).replace(/^#\d+ /, '') + '’s check)' : '') });
   }

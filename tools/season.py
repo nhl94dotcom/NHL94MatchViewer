@@ -259,7 +259,7 @@ def summarize(m, name, date=None):
                     "hitsTaken": sum(1 for h in hits if h["team"] == other and h["on"] == idx),
                     "give": sum(1 for e in turnovers if e["kind"] == "giveaway" and e["from"] == team and e.get("giver") == idx),
                     "take": sum(1 for e in turnovers if e["kind"] == "takeaway" and e["from"] == other and e.get("by") == idx),
-                    "injured": sum(1 for e in m.get("injuries", []) if e["team"] == team and e["idx"] == idx),
+                    "injured": sum(1 for e in m.get("injuries", []) if e["team"] == team and e["idx"] == idx and not e.get("atStart")),
                     "injuredOthers": sum(1 for e in m.get("injuries", []) if e["team"] == other and e.get("by") == idx),
                 })
                 line.update(skater_adv(team, idx))

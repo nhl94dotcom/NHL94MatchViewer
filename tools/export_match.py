@@ -1071,32 +1071,54 @@ def add_play_context(m):
 
 
 def find_injuries(m):
-    """Injuries: a player going into the game's injury animation (genesis ACTIONS "injury": $1AF4 injury1, $145C
-    injuryfall; not known on the SNES yet). The game keeps him out for the rest of the period or of the game; which one
-    is not read from memory (the disassembly's InjCntDown at $C3EC only counts game seconds from the last injury), so
-    it comes from the replay: `back` is the frame he was next on the ice in a later period (out for the period), else
-    he was out for the rest of the game. `by` is the opponent whose hit he took in the 1.5 s before, if any.
-    Returns [{f, team, idx, by, back}]."""
-    words = actions(m).get('injury', set())
-    if not words or not m.get('role'):
+    """Injuries, from each player's availability code: when he is not serving a penalty, the low byte of his penalty
+    word (Genesis team block +$66 + 2i; the SNES box state $1852 the same) is $FE on the bench, $FF on the ice and $FD
+    out. The game puts an injured player out for the rest of the period or of the game: out for the period clears
+    at the period's end (Jagr in 2026-10-16_1314_BOS-PIT: $FD from his injury at P3 4:01 until the horn, then $FE
+    with everyone; the computer simply had not sent him back), out for the game never does. Whether the player comes
+    back on the ice says nothing (the computer may keep him on the bench). The moment and the cause come from the
+    injury animation (genesis ACTIONS "injury": $1AF4 injury1, $145C injuryfall) in the 3 s before the code turned
+    $FD, and the opponent whose hit he took in the 1.5 s before that.
+    Returns [{f, team, idx, by, out: 'period' | 'game', until (frame the code cleared, or None), atStart (already
+    out when the recording began)}]."""
+    st = m.get('stats') or {}
+    if not st.get('f') or st.get('p', 0) < 8:
         return []
     t, K, N = m['t'], 12, len(m['t'])
+    n, per, frames = st['n'], st['p'], st['f']
+    words = actions(m).get('injury', set())
     anim = lambda q, k: m['anim'][(q * K + k) * 4:(q * K + k) * 4 + 4]
-    idx_of = lambda q, k: int(m['roster'][q * K + k], 36)
+    code = lambda side, s_, idx: (lambda v: v[n + per * idx + 7] if len(v) >= n + per * (idx + 1) else 0xFFFE)(st[side][s_])
     out = []
-    for k in range(K):
-        team = 0 if k < 6 else 1
-        for q in range(1, N):
-            if anim(q, k) not in words or anim(q - 1, k) in words:
-                continue
-            idx = idx_of(q, k)
-            if idx >= 35 or any(e['team'] == team and e['idx'] == idx and abs(e['f'] - q) < 200 for e in out):
-                continue
-            hit = next((h for h in reversed(m.get('hits', [])) if h['f'] <= q and t[q] - t[h['f']] <= 1500 and h['team'] != team and h['on'] == idx), None)
-            period = m['period'][q]
-            back = next((r for r in range(q, N) if m['period'][r] > period and m['period'][r] <= 3 and
-                         any(idx_of(r, j) == idx and m['role'][r * K + j] != 'x' for j in range(team * 6, team * 6 + 6))), None)
-            out.append({'f': q, 'team': team, 'idx': idx, 'by': hit['by'] if hit else None, 'back': back})
+    for team, side in enumerate(('home', 'away')):
+        places = (len(st[side][0]) - n) // per if st[side] else 0
+        for idx in range(places):
+            was = None
+            for s_, fr in enumerate(frames):
+                c = code(side, s_, idx)
+                down = c == 0xFFFD
+                if down and was is None:
+                    # Already out when the recording began (capture1: Desjardins, out through period 1): no moment or
+                    # cause to show, but his line says so.
+                    until = next((frames[j] for j in range(s_ + 1, len(frames)) if code(side, j, idx) != 0xFFFD), None)
+                    out.append({'f': fr, 'team': team, 'idx': idx, 'by': None, 'atStart': True,
+                                'out': 'period' if until is not None else 'game', 'until': until})
+                elif down and was is False:
+                    # When and why: the injury animation in the 3 s before, and the hit he took just before that
+                    f = fr
+                    for q in range(fr, -1, -1):
+                        if t[fr] - t[q] > 3000:
+                            break
+                        if any(anim(q, k) in words and int(m['roster'][q * K + k], 36) == idx for k in range(team * 6, team * 6 + 6)):
+                            f = q
+                            while f > 0 and any(anim(f - 1, k) in words and int(m['roster'][(f - 1) * K + k], 36) == idx for k in range(team * 6, team * 6 + 6)):
+                                f -= 1
+                            break
+                    hit = next((h for h in reversed(m.get('hits', [])) if h['f'] <= f and t[f] - t[h['f']] <= 1500 and h['team'] != team and h['on'] == idx), None)
+                    until = next((fr2 for c2, fr2 in ((code(side, j, idx), frames[j]) for j in range(s_ + 1, len(frames))) if c2 != 0xFFFD), None)
+                    out.append({'f': f, 'team': team, 'idx': idx, 'by': hit['by'] if hit else None,
+                                'out': 'period' if until is not None else 'game', 'until': until})
+                was = down
     return sorted(out, key=lambda e: e['f'])
 
 
