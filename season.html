@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NHL '94 Season Stats</title>
+<style>
+  :root { --bg: #14181d; --panel: #1e242c; --raised: #2b333d; --text: #e8edf2; --muted: #8b98a7; --team1: #e4572e; --team2: #2e86de; --accent: #f2c744; --ink: #10141a; --good: #4fb477; --bad: #e5484d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  .sub a { color: var(--accent); }
+  .card { background: var(--panel); border-radius: 10px; padding: 14px 16px; margin: 0 0 16px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .filters label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; min-width: 0; max-width: 100%; }
+  .filters label.wide { flex: 0 1 520px; }
+  .filters label.wide select { flex: 1; min-width: 0; width: 100%; }
+  select { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 14px; max-width: 100%; }
+  input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 12px; }
+  .tabs button { background: transparent; color: var(--muted); border: 1px solid transparent; border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  .tabs button:hover { color: var(--text); background: var(--raised); }
+  .tabs button[aria-selected=true] { color: var(--ink); background: var(--accent); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  /* the first column (team or player) stays put while a wide table scrolls sideways */
+  .scroll th.left:first-child, .scroll td.left:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; padding: 0 8px 8px; text-align: right; white-space: nowrap; }
+  th[data-key] { cursor: pointer; user-select: none; }
+  th[data-key]:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  th.left, td.left { text-align: left; }
+  td { padding: 7px 8px; border-top: 1px solid var(--raised); text-align: right; white-space: nowrap; }
+  td.left { white-space: normal; min-width: 130px; }
+  td.sorted { color: var(--accent); font-weight: 600; }
+  td small, .muted { color: var(--muted); }
+  tr.off td { opacity: .45; }
+  td a { color: var(--text); }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--raised); color: var(--muted); margin-left: 6px; vertical-align: 1px; }
+  .tag.you { background: var(--accent); color: var(--ink); font-weight: 600; }
+  .note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+  .empty { color: var(--muted); padding: 12px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .tile { background: var(--raised); border-radius: 8px; padding: 10px 12px; }
+  .tile b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .tile span { color: var(--muted); font-size: 13px; }
+  .matrix td, .matrix th { text-align: center; }
+  .matrix td.self { background: var(--bg); }
+  .matrix td.left, .matrix th.left { text-align: left; }
+  .win { color: var(--good); } .loss { color: var(--bad); }
+  @media (max-width: 640px) { main { padding: 16px 16px 40px; } td, th { padding-left: 6px; padding-right: 6px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Season stats</h1>
+  <p class="sub" id="sub">Loading games&hellip;</p>
+
+  <section class="card filters" id="filters" hidden>
+    <label class="wide">Games played on <select id="rom"></select></label>
+    <label>Team <select id="team"></select></label>
+    <label title="Recordings that began after the opening faceoff or stopped before the final horn"><input type="checkbox" id="whole" checked> Whole games only</label>
+  </section>
+
+  <nav class="tabs" id="tabs" role="tablist" hidden>
+    <button data-tab="standings" aria-selected="true">Standings</button>
+    <button data-tab="skaters">Skaters</button>
+    <button data-tab="goalies">Goalies</button>
+    <button data-tab="teams">Team stats</button>
+    <button data-tab="h2h">Head to head</button>
+    <button data-tab="games">Games</button>
+  </nav>
+
+  <section class="card" id="view" hidden></section>
+</main>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pct = (a, b, digits = 1) => (b ? (100 * a / b).toFixed(digits) + '%' : '–');
+const svp = (sa, ga) => (sa ? ((sa - ga) / sa).toFixed(3).replace(/^0/, '') : '–');
+const per = (a, gp, digits = 1) => (gp ? (a / gp).toFixed(digits) : '–');
+const mmss = s => Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0');
+const signed = v => (v > 0 ? '+' + v : String(v));
+
+let games = [], tab = 'standings', sorts = {};
+try { const saved = JSON.parse(localStorage.getItem('nhl94.season') || '{}'); tab = saved.tab || tab; sorts = saved.sorts || {}; } catch (e) { /* no storage */ }
+const query = new URLSearchParams(location.search);  // ?tab=skaters opens that tab
+if (query.get('tab')) tab = query.get('tab');
+const remember = () => { try { localStorage.setItem('nhl94.season', JSON.stringify({ tab, sorts })); } catch (e) { /* no storage */ } };
+const excluded = new Set();
+
+// The games: from the helper (/api/season) when it serves this page, else from matches/season.js beside it
+// (python tools/season.py writes it).
+async function load() {
+  try {
+    const r = await fetch('/api/season', { cache: 'no-store' });
+    if (r.ok) return (await r.json()).games;
+  } catch (e) { /* opened from the folder */ }
+  return new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = 'matches/season.js?' + Date.now();
+    s.onload = () => resolve((window.NHL94_SEASON || {}).games || []);
+    s.onerror = () => resolve(null);
+    document.head.append(s);
+  });
+}
+
+const romKey = g => g.system + ':' + (g.rom || '?');
+function romLabel(key) {
+  const list = games.filter(g => romKey(g) === key), whole = list.filter(g => g.finished && g.fromStart), [system, rom] = key.split(':');
+  const teams = [...new Set((whole.length ? whole : list).flatMap(g => g.abbr))].sort();
+  const parts = list.length - whole.length;
+  return (system === 'snes' ? 'SNES' : 'Genesis') + ' ROM ' + rom + ' · ' + whole.length + ' whole game' + (whole.length === 1 ? '' : 's') +
+    (parts ? ', ' + parts + ' part' + (parts === 1 ? '' : 's') : '') + (teams.length ? ' (' + teams.slice(0, 4).join(', ') + (teams.length > 4 ? '…' : '') + ')' : '');
+}
+
+function setup() {
+  const roms = [...new Set(games.map(romKey))];
+  // Default: the ROM of the most recent whole game (a league season is played on one ROM)
+  const recent = games.find(g => g.finished && g.fromStart) || games[0];
+  $('rom').innerHTML = '<option value="">All ROMs</option>' + roms.map(k => `<option value="${esc(k)}">${esc(romLabel(k))}</option>`).join('');
+  $('rom').value = query.has('rom') ? (roms.includes(query.get('rom')) ? query.get('rom') : '') : recent ? romKey(recent) : '';
+  for (const el of [$('rom'), $('team'), $('whole')]) el.addEventListener('change', () => { if (el !== $('team')) fillTeams(); render(); });
+  for (const b of document.querySelectorAll('#tabs button')) b.addEventListener('click', () => { tab = b.dataset.tab; remember(); render(); });
+  fillTeams();
+  $('filters').hidden = $('tabs').hidden = $('view').hidden = false;
+}
+
+function fillTeams() {
+  const keep = $('team').value, teams = new Map();
+  for (const g of pool(false)) g.abbr.forEach((a, i) => teams.set(a, g.names[i]));
+  $('team').innerHTML = '<option value="">All teams</option>' + [...teams].sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})</option>`).join('');
+  $('team').value = teams.has(keep) ? keep : '';
+}
+
+// The games in play: the ROM and whole-game filters (and, with byTeam, the team filter), less any unticked on the
+// Games tab.
+function pool(byTeam = true, withExcluded = false) {
+  const rom = $('rom').value, team = $('team').value, whole = $('whole').checked;
+  return games.filter(g => (!rom || romKey(g) === rom) && (!whole || (g.finished && g.fromStart)) &&
+    (!byTeam || !team || g.abbr.includes(team)) && (withExcluded || !excluded.has(g.name)));
+}
+
+// ---------------------------------------------------------------------------------------------------- totals
+function standings(list) {
+  const rows = new Map();
+  const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, passTried: 0, passMade: 0, attackZone: 0,
+    breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
+  for (const g of list) {
+    for (const side of [0, 1]) {
+      const r = row(g.abbr[side], g.names[side]), t = g.teams[side];
+      r.gp++; r.seconds += g.seconds;
+      if (g.humans[side]) r.humanGames++;
+      for (const k of Object.keys(t)) if (k in r) r[k] += t[k];
+      if (!g.finished) continue;
+      if (t.gf > t.ga) r.w++; else if (t.gf === t.ga) r.t++; else if (g.overtime) r.otl++; else r.l++;
+    }
+  }
+  for (const r of rows.values()) r.pts = 2 * r.w + r.otl + r.t;
+  return [...rows.values()];
+}
+
+function playerLines(list, goalies) {
+  const rows = new Map();
+  for (const g of list) for (const side of [0, 1]) for (const p of g.players[side]) {
+    if (p.goalie !== goalies) continue;
+    const key = g.abbr[side] + '|' + p.name;
+    let r = rows.get(key);
+    if (!r) rows.set(key, r = { name: p.name, num: p.num, abbr: g.abbr[side], ovr: p.ovr, gp: 0, toi: 0 });
+    r.gp++; r.toi += p.toi || 0;
+    for (const [k, v] of Object.entries(p)) {
+      if (['idx', 'name', 'num', 'goalie', 'ovr', 'toi', 'dec'].includes(k)) continue;
+      if (Array.isArray(v)) { r[k] = r[k] || [0, 0]; r[k][0] += v[0]; r[k][1] += v[1]; } else r[k] = (r[k] || 0) + v;
+    }
+    if (p.dec) { r[p.dec] = (r[p.dec] || 0) + 1; }
+  }
+  return [...rows.values()];
+}
+
+// ---------------------------------------------------------------------------------------------------- tables
+// A sortable table: columns {key, label, value(row) for sorting, show(row) for display, title, left, asc}.
+function table(id, rows, columns, defaultKey) {
+  const s = sorts[id] || { key: defaultKey, asc: false };
+  const col = columns.find(c => c.key === s.key) || columns.find(c => c.key === defaultKey);
+  const val = c => r => (c.value ? c.value(r) : r[c.key]);
+  const get = val(col);
+  rows = [...rows].sort((a, b) => {
+    const x = get(a), y = get(b);
+    const cmp = typeof x === 'string' ? x.localeCompare(y) : (x == null || isNaN(x) ? -Infinity : x) - (y == null || isNaN(y) ? -Infinity : y);
+    return (s.asc ? cmp : -cmp) || (b.gp || 0) - (a.gp || 0);
+  });
+  const head = columns.map(c => `<th${c.sortable === false ? '' : ` data-key="${c.key}"`} class="${c.left ? 'left' : ''}${c === col ? ' sorted' : ''}"${c.title ? ` title="${esc(c.title)}"` : ''}>${esc(c.label)}${c === col ? (s.asc ? ' ▴' : ' ▾') : ''}</th>`).join('');
+  const body = rows.map(r => `<tr class="${r.off ? 'off' : ''}">` + columns.map(c => {
+    const v = c.show ? c.show(r) : esc(val(c)(r));
+    return `<td class="${c.left ? 'left' : ''}${c === col ? ' sorted' : ''}">${v}</td>`;
+  }).join('') + '</tr>').join('');
+  const html = `<div class="scroll"><table data-table="${id}"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  return html;
+}
+function wireSorting() {
+  for (const th of document.querySelectorAll('th[data-key]')) th.addEventListener('click', () => {
+    const id = th.closest('table').dataset.table, key = th.dataset.key, s = sorts[id];
+    sorts[id] = { key, asc: s && s.key === key ? !s.asc : th.classList.contains('left') };
+    remember(); render();
+  });
+}
+
+const teamCell = r => `${esc(r.name)} <small>${esc(r.abbr)}</small>` + (r.humanGames ? '' : '<span class="tag" title="The computer played every game">CPU</span>');
+const playerCell = r => `${esc(r.name)} <small>#${r.num} ${esc(r.abbr)}</small>`;
+
+function render() {
+  for (const b of document.querySelectorAll('#tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
+  const list = pool(), all = pool(true, true), view = $('view');
+  const team = $('team').value;
+  $('sub').innerHTML = `${list.length} game${list.length === 1 ? '' : 's'} counted` + (all.length > list.length ? ` (${all.length - list.length} unticked on the Games tab)` : '') +
+    ` · <a href="helper.html">all games</a>`;
+  if (!list.length && tab !== 'games') { view.innerHTML = '<p class="empty">No games match. Try "All ROMs", or untick "Whole games only".</p>'; return; }
+  view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, games: viewGames }[tab])(list, team);
+  wireSorting();
+  for (const box of view.querySelectorAll('input[data-game]')) box.addEventListener('change', () => {
+    if (box.checked) excluded.delete(box.dataset.game); else excluded.add(box.dataset.game);
+    render();
+  });
+}
+
+function viewStandings(list, team) {
+  let rows = standings(list);
+  if (team) rows = rows.filter(r => r.abbr === team);
+  const html = [`<h2>Standings</h2>`, table('standings', rows, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'gp', label: 'GP', title: 'Games played' },
+    { key: 'w', label: 'W' }, { key: 'l', label: 'L' }, { key: 'otl', label: 'OTL', title: 'Overtime losses' }, { key: 't', label: 'T', title: 'Ties' },
+    { key: 'pts', label: 'PTS', title: '2 a win, 1 an overtime loss or tie' },
+    { key: 'gf', label: 'GF' }, { key: 'ga', label: 'GA' },
+    { key: 'diff', label: 'DIFF', value: r => r.gf - r.ga, show: r => signed(r.gf - r.ga) },
+    { key: 'ppp', label: 'PP%', title: 'Power-play goals / power plays', value: r => (r.ppTries ? r.ppg / r.ppTries : NaN), show: r => `${pct(r.ppg, r.ppTries, 0)} <small>${r.ppg}/${r.ppTries}</small>` },
+    { key: 'pkp', label: 'PK%', title: 'Penalties killed', value: r => (r.pkTimes ? 1 - r.ppgA / r.pkTimes : NaN), show: r => `${pct(r.pkTimes - r.ppgA, r.pkTimes, 0)} <small>${r.pkTimes - r.ppgA}/${r.pkTimes}</small>` },
+  ], 'pts')];
+  // The player at this computer: controller 1 (on the Genesis in netplay, the local player)
+  const mine = list.filter(g => g.you === 0 || g.you === 1);
+  if (mine.length) {
+    const rec = { w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0 }, byTeam = new Map();
+    for (const g of mine) {
+      const me = g.you, t = g.teams[me];
+      rec.gf += t.gf; rec.ga += t.ga;
+      const r = byTeam.get(g.abbr[me]) || byTeam.set(g.abbr[me], { name: g.names[me], abbr: g.abbr[me], gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, humanGames: 1 }).get(g.abbr[me]);
+      r.gp++; r.gf += t.gf; r.ga += t.ga;
+      if (!g.finished) continue;
+      const res = t.gf > t.ga ? 'w' : t.gf === t.ga ? 't' : g.overtime ? 'otl' : 'l';
+      rec[res]++; r[res]++;
+    }
+    html.push(`<h2 style="margin-top:22px">Your games <span class="tag you">controller 1</span></h2>`,
+      `<div class="grid"><div class="tile"><b>${rec.w}-${rec.l}-${rec.otl}${rec.t ? '-' + rec.t : ''}</b><span>Record (W-L-OTL${rec.t ? '-T' : ''}) in ${mine.length} game${mine.length === 1 ? '' : 's'}</span></div>` +
+      `<div class="tile"><b>${rec.gf}-${rec.ga}</b><span>Goals for and against (${signed(rec.gf - rec.ga)})</span></div></div>`,
+      byTeam.size > 1 ? '<div style="margin-top:12px">' + table('mine', [...byTeam.values()], [
+        { key: 'name', label: 'As', left: true, show: r => `${esc(r.name)} <small>${esc(r.abbr)}</small>` },
+        { key: 'gp', label: 'GP' }, { key: 'w', label: 'W' }, { key: 'l', label: 'L' }, { key: 'otl', label: 'OTL' },
+        { key: 'gf', label: 'GF' }, { key: 'ga', label: 'GA' }], 'gp') + '</div>' : '',
+      `<p class="note">The team controller 1 drove in each game. In Genesis netplay that is the player at this computer.</p>`);
+  }
+  return html.join('');
+}
+
+function viewSkaters(list, team) {
+  let rows = playerLines(list, false);
+  if (team) rows = rows.filter(r => r.abbr === team);
+  return '<h2>Skaters</h2>' + table('skaters', rows, [
+    { key: 'name', label: 'Player', left: true, show: playerCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'g', label: 'G' }, { key: 'a', label: 'A' },
+    { key: 'pts', label: 'PTS', value: r => r.g + r.a },
+    { key: 'pm', label: '+/-', title: 'Goals for minus against while on the ice (not power-play or penalty-shot goals)', show: r => signed(r.pm) },
+    { key: 'sog', label: 'SOG', title: 'Shots on goal, as the game counts them' },
+    { key: 'shp', label: 'S%', value: r => (r.sog ? r.g / r.sog : NaN), show: r => pct(r.g, r.sog) },
+    { key: 'att', label: 'ATT', title: 'Shot attempts: on goal, wide and blocked' },
+    { key: 'ppg', label: 'PPG' }, { key: 'shg', label: 'SHG' }, { key: 'gwg', label: 'GWG', title: 'Game-winning goals' },
+    { key: 'pim', label: 'PIM' },
+    { key: 'checks', label: 'CHK', title: 'Body checks thrown' }, { key: 'hitsTaken', label: 'HIT', title: 'Hits taken' },
+    { key: 'take', label: 'TK', title: 'Takeaways' }, { key: 'give', label: 'GV', title: 'Giveaways' },
+    { key: 'toig', label: 'TOI/GP', title: 'Ice time a game, in game minutes', value: r => r.toi / r.gp, show: r => mmss(r.toi / r.gp) },
+  ], 'pts') + '<p class="note">Goals, assists and shots on goal are the game’s own counts. Click a heading to sort.</p>';
+}
+
+function viewGoalies(list, team) {
+  let rows = playerLines(list, true).filter(r => r.toi > 0 || r.sa);
+  if (team) rows = rows.filter(r => r.abbr === team);
+  return '<h2>Goalies</h2>' + table('goalies', rows, [
+    { key: 'name', label: 'Goalie', left: true, show: playerCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'W', label: 'W', value: r => r.W || 0 }, { key: 'L', label: 'L', value: r => r.L || 0 }, { key: 'OTL', label: 'OTL', value: r => r.OTL || 0 },
+    { key: 'sa', label: 'SA', title: 'Shots against, as the game counts them' }, { key: 'ga', label: 'GA' },
+    { key: 'svp', label: 'SV%', value: r => (r.sa ? (r.sa - r.ga) / r.sa : NaN), show: r => svp(r.sa, r.ga) },
+    { key: 'gag', label: 'GA/GP', value: r => r.ga / r.gp, show: r => per(r.ga, r.gp, 2) },
+    { key: 'so', label: 'SO', title: 'Shutouts', value: r => r.so || 0 },
+    { key: 'hsv', label: 'SV% person', title: 'Save percentage on shots where a person had taken the goalie at the release', value: r => (r.human && r.human[0] ? 1 - r.human[1] / r.human[0] : NaN),
+      show: r => (r.human && r.human[0] ? `${svp(r.human[0], r.human[1])} <small>${r.human[0] - r.human[1]}/${r.human[0]}</small>` : '–') },
+    { key: 'csv', label: 'SV% CPU', title: 'Save percentage on shots the computer goalie faced', value: r => (r.cpu && r.cpu[0] ? 1 - r.cpu[1] / r.cpu[0] : NaN),
+      show: r => (r.cpu && r.cpu[0] ? `${svp(r.cpu[0], r.cpu[1])} <small>${r.cpu[0] - r.cpu[1]}/${r.cpu[0]}</small>` : '–') },
+    { key: 'toi', label: 'MIN', title: 'Game minutes in net', show: r => mmss(r.toi) },
+  ], 'svp') + '<p class="note">"Person" and "CPU" split the shots by who controlled the goalie as the shot was released; they count every shot that reached him, so they can differ slightly from SA.</p>';
+}
+
+function viewTeams(list, team) {
+  let rows = standings(list);
+  if (team) rows = rows.filter(r => r.abbr === team);
+  return '<h2>Team stats <small class="muted">(a game, except percentages)</small></h2>' + table('teams', rows, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'gfg', label: 'GF', value: r => r.gf / r.gp, show: r => per(r.gf, r.gp, 2) },
+    { key: 'gag', label: 'GA', value: r => r.ga / r.gp, show: r => per(r.ga, r.gp, 2) },
+    { key: 'sogg', label: 'SOG', title: 'Shots on goal', value: r => r.sog / r.gp, show: r => per(r.sog, r.gp) },
+    { key: 'sag', label: 'SA', title: 'Shots against', value: r => r.sa / r.gp, show: r => per(r.sa, r.gp) },
+    { key: 'shp', label: 'S%', title: 'Shooting percentage', value: r => (r.sog ? r.gf / r.sog : NaN), show: r => pct(r.gf, r.sog) },
+    { key: 'cf', label: 'ATT%', title: 'Share of all shot attempts', value: r => (r.att + r.attA ? r.att / (r.att + r.attA) : NaN), show: r => pct(r.att, r.att + r.attA) },
+    { key: 'fo', label: 'FO%', title: 'Faceoffs won', value: r => (r.fo ? r.fow / r.fo : NaN), show: r => pct(r.fow, r.fo) },
+    { key: 'pass', label: 'PASS%', title: 'Passes completed (as the game counts them)', value: r => (r.passTried ? r.passMade / r.passTried : NaN), show: r => pct(r.passMade, r.passTried, 0) },
+    { key: 'az', label: 'ZONE', title: 'Attack-zone time a game (game seconds)', value: r => r.attackZone / r.gp, show: r => mmss(r.attackZone / r.gp) },
+    { key: 'chk', label: 'CHK', title: 'Body checks', value: r => r.checks / r.gp, show: r => per(r.checks, r.gp) },
+    { key: 'big', label: 'BIG', title: 'Big hits (upended, into the boards or bench)', value: r => r.bigHits / r.gp, show: r => per(r.bigHits, r.gp) },
+    { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.take / r.gp, show: r => per(r.take, r.gp) },
+    { key: 'gv', label: 'GV', title: 'Giveaways', value: r => r.give / r.gp, show: r => per(r.give, r.gp) },
+    { key: 'brk', label: 'BRK', title: 'Breakaway goals / breakaways', value: r => r.breakTried, show: r => `${r.breakGoals}/${r.breakTried}` },
+    { key: 'ot', label: '1T', title: 'One-timer goals / one-timers', value: r => r.oneTimerTried, show: r => `${r.oneTimerGoals}/${r.oneTimerTried}` },
+    { key: 'pim', label: 'PIM', value: r => r.pim / r.gp, show: r => per(r.pim, r.gp) },
+  ], 'gfg');
+}
+
+function viewH2H(list, team) {
+  const teams = standings(list).sort((a, b) => a.name.localeCompare(b.name));
+  if (teams.length > 12 && !team) {
+    // Too many for a grid: list the pairings that were played
+    return '<h2>Head to head</h2>' + pairings(list, team);
+  }
+  const shown = team ? teams.filter(t => t.abbr === team) : teams;
+  const cell = (a, b) => {
+    const r = { w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, gp: 0 };
+    for (const g of list) {
+      const i = g.abbr.indexOf(a.abbr), j = g.abbr.indexOf(b.abbr);
+      if (i < 0 || j < 0 || i === j) continue;
+      r.gp++; r.gf += g.score[i]; r.ga += g.score[j];
+      if (!g.finished) continue;
+      if (g.score[i] > g.score[j]) r.w++; else if (g.score[i] === g.score[j]) r.t++; else if (g.overtime) r.otl++; else r.l++;
+    }
+    if (!r.gp) return '<td class="muted">·</td>';
+    const cls = r.w > r.l + r.otl ? 'win' : r.w < r.l + r.otl ? 'loss' : '';
+    return `<td class="${cls}" title="${esc(a.name)} against ${esc(b.name)}: ${r.gp} game${r.gp === 1 ? '' : 's'}, goals ${r.gf}-${r.ga}">${r.w}-${r.l}-${r.otl}${r.t ? '-' + r.t : ''}</td>`;
+  };
+  const head = '<th class="left">Record against →</th>' + teams.map(t => `<th title="${esc(t.name)}">${esc(t.abbr)}</th>`).join('');
+  const body = shown.map(a => `<tr><td class="left">${esc(a.name)} <small>${esc(a.abbr)}</small></td>` +
+    teams.map(b => (a.abbr === b.abbr ? '<td class="self"></td>' : cell(a, b))).join('') + '</tr>').join('');
+  return `<h2>Head to head</h2><div class="scroll"><table class="matrix"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>` +
+    '<p class="note">Each row’s record (W-L-OTL) against each column. Point at a record for the goals.</p>' + pairings(list, team);
+}
+function pairings(list, team) {
+  const pairs = new Map();
+  for (const g of list) {
+    if (team && !g.abbr.includes(team)) continue;
+    const order = [0, 1].sort((x, y) => g.abbr[x].localeCompare(g.abbr[y])), key = order.map(i => g.abbr[i]).join('-');
+    const p = pairs.get(key) || pairs.set(key, { a: order.map(i => g.names[i]), abbr: order.map(i => g.abbr[i]), gp: 0, wins: [0, 0], goals: [0, 0] }).get(key);
+    p.gp++;
+    order.forEach((i, n) => { p.goals[n] += g.score[i]; });
+    if (g.finished && g.score[0] !== g.score[1]) p.wins[g.score[order[0]] > g.score[order[1]] ? 0 : 1]++;
+  }
+  const rows = [...pairs.values()].map(p => ({ ...p, name: p.a.join(' – ') }));
+  return '<h2 style="margin-top:22px">Matchups</h2>' + table('pairs', rows, [
+    { key: 'name', label: 'Teams', left: true, show: r => `${esc(r.a[0])} <small>${esc(r.abbr[0])}</small> – ${esc(r.a[1])} <small>${esc(r.abbr[1])}</small>` },
+    { key: 'gp', label: 'GP' },
+    { key: 'wins', label: 'Wins', value: r => r.wins[0] - r.wins[1], show: r => `${r.wins[0]}–${r.wins[1]}` },
+    { key: 'goals', label: 'Goals', value: r => r.goals[0] + r.goals[1], show: r => `${r.goals[0]}–${r.goals[1]}` },
+  ], 'gp');
+}
+
+function viewGames(list, team) {
+  const rows = pool(true, true).map(g => ({ ...g, off: excluded.has(g.name) }));
+  return '<h2>Games</h2>' + table('games', rows, [
+    { key: 'in', label: 'Count', sortable: false, show: r => `<input type="checkbox" data-game="${esc(r.name)}"${r.off ? '' : ' checked'} aria-label="Count this game">` },
+    { key: 'date', label: 'When', left: true, show: r => esc((r.date || '').replace('T', ' ')) },
+    { key: 'home', label: 'Home', left: true, value: r => r.names[0], show: r => esc(r.names[0]) + (r.humans[0] ? '' : '<span class="tag">CPU</span>') + (r.you === 0 ? '<span class="tag you">you</span>' : '') },
+    { key: 'score', label: 'Score', value: r => r.score[0] - r.score[1], show: r => `<b>${r.score[0]}–${r.score[1]}</b>${r.overtime ? ' <small>OT</small>' : ''}` },
+    { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.you === 1 ? '<span class="tag you">you</span>' : '') },
+    { key: 'whole', label: '', sortable: false, show: r => (r.finished && r.fromStart ? '' : '<small>part of a game</small>') },
+    { key: 'watch', label: '', sortable: false, show: r => `<a href="viewer.html?match=${encodeURIComponent(r.name)}">Watch</a>` },
+  ], 'date') + '<p class="note">Untick a game to leave it out of every table (until the page is reloaded).</p>';
+}
+
+load().then(list => {
+  if (!list) { $('sub').textContent = 'No season data found. Open this page from the helper (http://localhost:9494/season.html), or run python tools/season.py.'; return; }
+  games = list;
+  if (!games.length) { $('sub').textContent = 'No games yet. Play one with the helper running and it will appear here.'; return; }
+  setup();
+  render();
+});
+</script>
+</body>
+</html>

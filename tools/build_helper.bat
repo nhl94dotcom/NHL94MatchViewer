@@ -8,10 +8,10 @@ if not exist rink_snes.js python tools\embed_rink.py
 python -m PyInstaller --noconfirm --clean --onefile --console --name "NHL94 Helper" ^
   --paths "%ROOTDIR%\tools" ^
   --hidden-import nhl94_helper --hidden-import nhl94_memory --hidden-import export_match ^
-  --hidden-import extract_sprites --hidden-import share_game --hidden-import png_read ^
+  --hidden-import extract_sprites --hidden-import share_game --hidden-import png_read --hidden-import season ^
   --hidden-import systems --hidden-import systems.common --hidden-import systems.process ^
   --hidden-import systems.genesis --hidden-import systems.snes ^
-  --add-data "%ROOTDIR%\viewer.html;." --add-data "%ROOTDIR%\helper.html;." --add-data "%ROOTDIR%\rink_gens.js;." ^
+  --add-data "%ROOTDIR%\viewer.html;." --add-data "%ROOTDIR%\helper.html;." --add-data "%ROOTDIR%\season.html;." --add-data "%ROOTDIR%\rink_gens.js;." ^
   --add-data "%ROOTDIR%\rink_benches.js;." --add-data "%ROOTDIR%\rink_gens.png;." ^
   --add-data "%ROOTDIR%\rink_snes.js;." --add-data "%ROOTDIR%\rink_benches_snes.js;." --add-data "%ROOTDIR%\rink_snes.png;." ^
   --distpath "%ROOTDIR%\dist" --workpath "%ROOTDIR%\build\pyinstaller" --specpath "%ROOTDIR%\build" ^
