@@ -872,7 +872,12 @@ within 70 units and at least 20 off the middle, shot at a goalie in position - w
 puck's line to the net at the release (on the saves in the recordings he stood 2-15 off it; on wrist shots that went
 straight in, 15-51) - and saved, so not a try to score directly. `afterFlip`: the same team's next attempt, later
 and within 2 s, from within 65 units. An attempt followed by a goal is an EA Special; the goal gets the kind "EA
-Special" (a goal tag, like one-timer). Genesis games only: the SNES goalie saves differently and is not pushed back
+Special" (a goal tag, like one-timer). From 2026-10-16_1314_BOS-PIT (the user's deliberate ones: P3 4:26 Oates, flip
+saved, Oates scored 0.8 s later; P2 4:26 Oates, flip saved, Pittsburgh's Taglianeti collected it and put it into his
+own net, an attempt only): "from the side" is an angle, at least 20 off the middle and 0.4 x the distance, up to
+EA_MAX_DISTANCE 130 (those two came from 94 and 120 units, the faceoff dot and the half-boards); and a rebound a
+defending skater had is not a success. With that the game has 12 attempts (the user named one in P2), so the rule
+still takes ordinary soft wrist shots from the side; the user is reviewing them. Genesis games only: the SNES goalie saves differently and is not pushed back
 by a wrist shot (the user). `eaDive`: the goalie went into his dive ($02F4) within 2 s after the save, as Genesis
 goalies often do on an EA Special (diving for a puck he is nowhere near, out of the play for a couple of seconds); a
 detail, not a condition (none of the recordings' attempts has one). Only a person's skater makes an attempt (the
@@ -1064,9 +1069,14 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
 - The `full_buttons` capture's labelled taps: A at 5.6-12.1 s, B at 13.9-19.7 s, C at 21.1-26.8 s (the C taps came
   while the skater was down, then while controlling the goalie).
 - Whether capture works during netplay, and whether a netplay spectator can do the capturing.
-- Injuries (2026-10-16): they happen now and then, for the rest of the period or the game; no recording has one
-  yet. The user will record Genesis and SNES games with injuries (the disassemblies name injury animations: Genesis
-  $145C injuryfall, $1AF4 injury1).
+- Injuries (2026-10-16): `find_injuries` (Genesis ACTIONS "injury": $1AF4 injury1, $145C injuryfall). First seen in
+  `2026-10-16_1314_BOS-PIT` (the user's first .exe game, single player, recorded into Documents/NHL94 Viewer and
+  copied here): Jagr, P3 4:01, $1AF4 at Neely's shoulder check (also a penalty), off 9 s later, never back; Tocchet
+  took his place. Out for the period or the game is not read from memory (the disassembly's InjCntDown $C3EC counts
+  game seconds from the last injury; sflags7 $C2FC bit 5 never set; a before/after diff of the full snapshots found
+  nothing per player outside the replay buffer $8000-$AF43): `back` = his next frame on the ice in a later period.
+  Shown as a banner, a highlight, the card's "Injured", and the season's INJ column (injured and injuries caused).
+  SNES injuries: not looked at (no SNES recording with one).
 - Most team stat words (passing, checks, faceoffs, attack-zone time) are unverified.
 
 ## Files
