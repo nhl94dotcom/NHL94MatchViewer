@@ -351,7 +351,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def trusted(self, post=False):
+        """Only this computer's pages may use the helper. The Host header must name the helper itself (a website that
+        points its own name at 127.0.0.1, "DNS rebinding", would otherwise read the games and the ROM copies), and a
+        change (POST) must carry the X-NHL94 header, which another website's page cannot send without the helper's
+        leave (a cross-site request with a custom header needs a CORS preflight the helper never grants), and come
+        from the helper's own origin if the browser says where it came from."""
+        hosts = {f"localhost:{PORT}", f"127.0.0.1:{PORT}", f"[::1]:{PORT}"}
+        if (self.headers.get("Host") or "").lower() not in hosts:
+            return False
+        if post:
+            origin = self.headers.get("Origin")
+            if self.headers.get("X-NHL94") != "1" or (origin and origin.lower() not in {"http://" + h for h in hosts}):
+                return False
+        return True
+
+    def refuse(self):
+        self.send_json({"error": "not allowed"}, 403)
+
     def do_GET(self):
+        if not self.trusted():
+            return self.refuse()
         url = urllib.parse.urlparse(self.path)
         if url.path in ("/", ""):
             self.send_response(302)
@@ -365,14 +385,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
+    def do_HEAD(self):
+        if not self.trusted():
+            return self.refuse()
+        super().do_HEAD()
+
     def do_POST(self):
+        if not self.trusted(post=True):
+            return self.refuse()
         url = urllib.parse.urlparse(self.path)
         query = urllib.parse.parse_qs(url.query)
         name = (query.get("name") or [""])[0]
         if name and not all(ch.isalnum() or ch in "_-" for ch in name):
             return self.send_json({"error": "bad name"}, 400)
         length = int(self.headers.get("Content-Length") or 0)
-        body = json.loads(self.rfile.read(length) or b"{}") if length else {}
+        if length > 5_000_000:
+            return self.send_json({"error": "too large"}, 413)
+        try:
+            body = json.loads(self.rfile.read(length) or b"{}") if length else {}
+        except ValueError:
+            return self.send_json({"error": "bad request"}, 400)
+        if not isinstance(body, dict):
+            return self.send_json({"error": "bad request"}, 400)
         if url.path == "/api/settings":
             settings = load_settings()
             settings.update({k: bool(v) for k, v in body.items() if k in ("auto_game_file", "open_browser")})
@@ -380,6 +414,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self.send_json(settings)
         if url.path == "/api/seasons":
             import season
+            if not isinstance(body.get("seasons"), list):  # never clear the seasons on a malformed request
+                return self.send_json({"error": "bad request"}, 400)
             saved = season.save_seasons(body.get("seasons"))
             update_season()
             return self.send_json({"seasons": saved})

@@ -3255,7 +3255,8 @@ window.addEventListener('dragover', e => e.preventDefault());
 window.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]) { setPlaying(false); openFile(e.dataTransfer.files[0]); } });
 window.addEventListener('resize', resize);
 window.addEventListener('keydown', e => {
-  if (!match || e.target.tagName === 'SELECT') return;
+  // Not while typing (the help's search, the clip's times) or with the help open
+  if (!match || ['SELECT', 'INPUT', 'TEXTAREA'].includes(e.target.tagName) && !['checkbox', 'radio', 'range', 'button'].includes(e.target.type) || !$('help').hidden) return;
   if (e.key === 'r' || e.key === 'R') setView({ angle: Math.round((cam.angle + (e.shiftKey ? -90 : 90)) / 90) * 90 });
   else if (e.key === '+' || e.key === '=') zoomBy(1.25);
   else if (e.key === '-' || e.key === '_') zoomBy(0.8);

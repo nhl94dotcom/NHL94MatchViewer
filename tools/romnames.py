@@ -21,6 +21,7 @@ from systems.common import ROOT  # noqa: E402
 NAMES = ROOT / "roms" / "names.json"
 SCAN = ROOT / "roms" / "names_scan.json"
 PLACES = ROOT / "roms" / "retroarch.json"  # where RetroArch was last seen
+MAX_ROM = 8 * 1024 * 1024  # Genesis and SNES ROMs are 4 MB at most; a .bin this big is another system's disc image
 EXTENSIONS = {".bin": "genesis", ".gen": "genesis", ".md": "genesis", ".smc": "snes", ".sfc": "snes"}
 CORES = {"genesis": "genesis_plus_gx", "snes": "snes9x"}
 
@@ -89,7 +90,7 @@ def note_loaded(pid, system, dump_path):
         want = keys_of(Path(dump_path).read_bytes(), system)
         for ra in retroarch_dirs():
             for path, core in history(ra):
-                if CORES[system] not in core.lower().replace("-", "_") or not path.exists():
+                if CORES[system] not in core.lower().replace("-", "_") or not path.is_file() or path.stat().st_size > MAX_ROM:
                     continue
                 if want & keys_of(path.read_bytes(), system):
                     names = _load(NAMES, {})
@@ -120,7 +121,7 @@ def names(wanted=()):
         seen.add(folder)
         for path in sorted(folder.iterdir()):
             system = EXTENSIONS.get(path.suffix.lower())
-            if not system or not path.is_file():
+            if not system or not path.is_file() or path.stat().st_size > MAX_ROM:
                 continue
             stat = path.stat()
             entry = scan.get(str(path))
