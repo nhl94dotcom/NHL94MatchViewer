@@ -227,6 +227,13 @@
   <select id="heatMode" aria-label="What the heat map shows" title="Skating: where the skaters went, puck or not (goalies left out). With the puck: where the puck was while they had it" hidden>
     <option value="skate">Skating</option><option value="puck">With the puck</option>
   </select>
+  <select id="heatPeriod" aria-label="Which period the heat map counts" hidden></select>
+  <select id="heatStrength" aria-label="Which situations the heat map counts" title="Strength as seen by the team (or player) shown: power play = the other team has a player in the box" hidden>
+    <option value="">All strengths</option><option value="even">Even strength</option><option value="pp">Power play</option><option value="sh">Shorthanded</option>
+  </select>
+  <select id="heatPuck" aria-label="Who has the puck" title="Count only the moments when that team has the puck (attacking), the other team has it (defending), or nobody does" hidden>
+    <option value="">Puck: anyone</option><option value="ours">Attacking: has the puck</option><option value="theirs">Defending: other team has it</option><option value="loose">Loose puck</option>
+  </select>
   <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
   <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
   <button id="clipOpen" title="Save a stretch of the replay as a video or an animated GIF">Clip</button>
@@ -345,6 +352,8 @@ function load(m) {
   heat = findHeat(m);
   setupOverlay(m);
   possession = findPossession(m);  // after setupOverlay: it needs ends
+  penCount = countPenalties(m);
+  fillHeatPeriods(m);
   skating = findSkating(m);
   setupFlow(m);
   loadSounds(m);
@@ -726,6 +735,46 @@ let overlay = '', overlayWho = 'both', ends = null, heatGrid = null, passShotFra
 // What the heat map counts: 'skate' (where the skaters went) or 'puck' (where the puck was while they had it). Remembered.
 let heatMode = 'skate';
 try { if (localStorage.getItem('nhl94-heat') === 'puck') heatMode = 'puck'; } catch (e) { /* default */ }
+// Heat map filters (not remembered: they are questions about one game): period (-1 all, else the period index),
+// strength ('', even, pp, sh: as seen by each team) and who has the puck ('', ours, theirs, loose; skating maps only).
+let heatPeriod = -1, heatStrength = '', heatPuck = '', penCount = null;
+// penCount[team][f]: that team's players serving a penalty at frame f (not delayed calls), from the stat snapshots.
+function countPenalties(m) {
+  const n = m.t.length, out = [new Uint8Array(n), new Uint8Array(n)];
+  if (!m.stats || !m.stats.f) return out;
+  m.stats.f.forEach((fr, s) => {
+    const to = s + 1 < m.stats.f.length ? m.stats.f[s + 1] : n;
+    for (const team of [0, 1]) {
+      let c = 0;
+      for (let idx = 0; idx < 26; idx++) { const p = playerStats(s, team, idx); if (!p) break; if (p.pen && !p.pen.delayed) c++; }
+      if (c) out[team].fill(c, fr, to);
+    }
+  });
+  return out;
+}
+const PERIOD_NAMES = ['1st period', '2nd period', '3rd period', 'Overtime'];
+const HEAT_STRENGTHS = { even: 'even strength', pp: 'power play', sh: 'shorthanded' };
+const HEAT_PUCKS = { ours: 'attacking', theirs: 'defending', loose: 'loose puck' };
+// Does frame i count for this team under the filters? (The period is checked once per frame by the caller.)
+function heatCounts(i, team) {
+  if (heatStrength) {
+    const mine = penCount[team][i], theirs = penCount[1 - team][i];
+    if ((mine === theirs ? 'even' : theirs > mine ? 'pp' : 'sh') !== heatStrength) return false;
+  }
+  if (heatPuck && heatMode === 'skate') {
+    const k = match.owner[i], has = k < 0 ? 'loose' : (k < 6 ? 0 : 1) === team ? 'ours' : 'theirs';
+    if (has !== heatPuck) return false;
+  }
+  return true;
+}
+function fillHeatPeriods(m) {
+  // The periods that were played (the clock ran in them)
+  const played = new Set();
+  for (let i = 0; i < m.t.length; i++) if (m.period[i] <= 3 && possession && possession.tick[i] > 0) played.add(m.period[i]);
+  $('heatPeriod').innerHTML = '<option value="-1">All periods</option>' + [...played].sort().map(p => `<option value="${p}">${PERIOD_NAMES[p]}</option>`).join('');
+  if (!played.has(heatPeriod)) heatPeriod = -1;
+  $('heatPeriod').value = heatPeriod;
+}
 const HEAT_CELL = 5, HEAT_COLS = 52, HEAT_ROWS = 120;  // game units; X -130..130, Y -300..300
 function setupOverlay(m) {
   ends = new Uint8Array(m.t.length);
@@ -751,6 +800,11 @@ function setupOverlay(m) {
   if (q.get('who') && [...who.options].some(o => o.value === q.get('who'))) who.value = overlayWho = q.get('who');
   if (['skate', 'puck'].includes(q.get('heat'))) heatMode = q.get('heat');  // &heat=puck
   $('heatMode').value = heatMode;
+  // &period=1..4 (4 = overtime), &strength=even|pp|sh, &puck=ours|theirs|loose
+  heatPeriod = q.get('period') ? Number(q.get('period')) - 1 : -1;
+  heatStrength = HEAT_STRENGTHS[q.get('strength')] ? q.get('strength') : '';
+  heatPuck = HEAT_PUCKS[q.get('puck')] ? q.get('puck') : '';
+  $('heatStrength').value = heatStrength; $('heatPuck').value = heatPuck;
   $('overlay').value = overlay;
   updateOverlayControls(false);  // the match is still loading: it draws itself once laid out
 }
@@ -788,7 +842,8 @@ const filterTeam = () => (overlayWho === 'both' ? -1 : Number(overlayWho[1]));
 const onEnds = (g, f, x, y) => (ends[g] === ends[f] ? [x, y] : [-x, -y]);
 function updateOverlayControls(redraw = true) {
   $('overlayWho').hidden = !overlay;
-  $('heatMode').hidden = overlay !== 'heat';
+  $('heatMode').hidden = $('heatPeriod').hidden = $('heatStrength').hidden = overlay !== 'heat';
+  $('heatPuck').hidden = overlay !== 'heat' || heatMode !== 'skate';
   $('overlayInfo').hidden = !overlay;
   heatGrid = null;
   if (redraw && match) draw();
@@ -885,10 +940,11 @@ function drawOverlay(f) {
   };
   for (let i = h.upTo + 1; i <= f && i + 1 < m.t.length; i++) {
     if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;  // a whistle: the puck is hidden until the faceoff
+    if (heatPeriod >= 0 && m.period[i] !== heatPeriod) continue;
     const dt = Math.min(100, m.t[i + 1] - m.t[i]);
     if (heatMode === 'puck') {
       const k = m.owner[i];
-      if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k))) continue;
+      if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k)) || !heatCounts(i, k < 6 ? 0 : 1)) continue;
       add(k < 6 ? 0 : 1, m.puck[3 * i], m.puck[3 * i + 1], dt, i);
       h.seconds[k < 6 ? 0 : 1] += dt / 1000;
       continue;
@@ -896,7 +952,7 @@ function drawOverlay(f) {
     const seen = [false, false];
     for (let k = 0; k < 12; k++) {
       const team = k < 6 ? 0 : 1;
-      if (role(i, k) < 1 || !counts(team, rosterIndex(i, k))) continue;  // off the ice, or a goalie
+      if (role(i, k) < 1 || !counts(team, rosterIndex(i, k)) || !heatCounts(i, team)) continue;  // off the ice, or a goalie
       add(team, m.pos[(i * PLAYERS + k) * 2], m.pos[(i * PLAYERS + k) * 2 + 1], dt, i);
       seen[team] = true;
     }
@@ -996,7 +1052,9 @@ function fillOverlayInfo(f, tally, seconds) {
   box.textContent = '';
   const title = document.createElement('b');
   title.textContent = (overlay === 'shots' ? 'Shot map' : heatMode === 'puck' ? 'Heat map: time with the puck' : heatPlayer() ? 'Heat map: where he skated'
-    : 'Heat map: where the skaters went') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+    : 'Heat map: where the skaters went') +
+    (overlay === 'heat' ? [heatPeriod >= 0 ? PERIOD_NAMES[heatPeriod] : '', HEAT_STRENGTHS[heatStrength] || '', heatMode === 'skate' ? HEAT_PUCKS[heatPuck] || '' : '']
+      .filter(Boolean).map(w => ' \u00b7 ' + w).join('') : '') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
   box.append(title);
   for (const team of [0, 1]) {
     if (only >= 0 && team !== only) continue;
@@ -2649,6 +2707,9 @@ $('overlay').addEventListener('change', e => {
   updateOverlayControls();
 });
 $('overlayWho').addEventListener('change', e => { overlayWho = e.target.value; updateOverlayControls(); });
+$('heatPeriod').addEventListener('change', e => { heatPeriod = Number(e.target.value); updateOverlayControls(); });
+$('heatStrength').addEventListener('change', e => { heatStrength = e.target.value; updateOverlayControls(); });
+$('heatPuck').addEventListener('change', e => { heatPuck = e.target.value; updateOverlayControls(); });
 $('heatMode').addEventListener('change', e => {
   heatMode = e.target.value;
   try { localStorage.setItem('nhl94-heat', heatMode); } catch (err) { /* not remembered */ }
