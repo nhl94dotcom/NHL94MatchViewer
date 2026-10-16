@@ -2183,7 +2183,9 @@ const mphText = unitsPerS => (unitsPerS / UNITS_PER_FOOT * 3600 / 5280).toFixed(
 // (power-play and penalty-shot goals count for neither side); zone starts (zs): faceoffs in his team's attacking,
 // neutral and defensive zones. With idx null: the whole team's numbers. ev: the same at even strength only (as many
 // players serving penalties on each side), the season page's other view.
-// Did each team change lines (more than five skaters with real ice time)? Most online leagues play without.
+// Did each team change lines? Most online leagues play without, but even then the game sends out power-play and
+// penalty-kill units, so a sixth or seventh skater plays a little: more than 12% of the ice time beyond the five
+// busiest skaters is line changes (games without: 0-7.4%; with: 15-55% in the recordings).
 let lineChanges = [false, false];
 function findLineChanges(m) {
   const ms = [new Map(), new Map()];
@@ -2191,7 +2193,10 @@ function findLineChanges(m) {
     const dt = Math.min(100, m.t[i + 1] - m.t[i]);
     for (let k = 0; k < PLAYERS; k++) if (role(i, k) >= 1) { const t = ms[k < 6 ? 0 : 1], idx = rosterIndex(i, k); t.set(idx, (t.get(idx) || 0) + dt); }
   }
-  return ms.map(t => [...t.values()].filter(v => v > 20000).length > 5);
+  return ms.map(t => {
+    const v = [...t.values()].sort((x, y) => y - x), total = v.reduce((x, y) => x + y, 0);
+    return total > 0 && v.slice(5).reduce((x, y) => x + y, 0) / total > 0.12;
+  });
 }
 function onIceStats(team, idx, f) {
   const there = (g, side) => {
