@@ -257,6 +257,10 @@ class Emulator:
         return cls(found) if found else None
 
     @property
+    def pid(self):
+        return self.p.pid  # RetroArch's process (the helper names the loaded ROM from its folder)
+
+    @property
     def ram(self):
         return self.p.ram
 
