@@ -807,6 +807,37 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
 - Heat map: time with the puck (puck owner) on a 5-unit grid, blurred, scaled to the 97th percentile; both teams in
   their own colours, one team or player on a yellow-to-red scale.
 
+## Season stats (stats across games)
+
+`season.html` totals any set of games (2026-10-15). `tools/season.py` makes a small summary of each converted game,
+`matches/<name>.summary.json` (a few KB; remade when the match file is newer or `VERSION` changes), and
+`season.season()` gathers them all. The helper serves them at `/api/season` and rewrites `matches/season.js`
+(`window.NHL94_SEASON`) after every conversion and delete, so the page also works opened from the folder
+(`python tools/season.py` writes it by hand). The games page has a "Season stats" button.
+- A summary: result, `overtime` (the clock ran in period index 3), `finished` (the index reached 4, or 3 with the
+  score not tied), `fromStart` (period 0 at 0-0 at the first sample), game seconds, which teams people played
+  (padTeam / pad2Team, else the joystick marker over half the game), `you` (padTeam: controller 1's team), team
+  numbers (game counts from the last stat snapshot plus the event lists: attempts, faceoffs, penalties and minutes
+  from the rule table, big hits, turnovers) and a line per player who played. Skaters: goals, assists and shots on
+  goal from the game's per-player counts; plus/minus from who was on the ice at each goal (role and roster at the
+  goal's frame; not PPG or penalty-shot goals, as the viewer's card); attempts, PPG / SHG from the goal kinds, the
+  game-winning goal (the winner's goal that passed the loser's final total), PIM from the penalties, checks and hits
+  taken from `hits`, takeaways / giveaways, ice time. Goalies: shots and goals against (the game's), and every shot
+  that reached him split by `gctl` (a person or the computer in net at the release); the goalie with the most ice
+  time gets the decision (W, L, OTL, T) and a shutout.
+- Checked on the three whole games: Moog in 2026-10-14_1540_CGY-BOS faced 7 shots with a person in net (4 goals)
+  and 6 with the computer (2), as the goalie report says; MacInnis's OT winner is the GWG; Boston 1-0-1 over the two
+  Genesis games.
+- The page: filters by ROM (the system and the sprite library's crc; defaults to the ROM of the most recent whole
+  game, since a league season is played on one ROM), team, and whole games only (on by default: recordings that
+  began late or stopped early, and save-state previews, are left out); tabs Standings (with "Your games": controller
+  1's record, by team), Skaters, Goalies (save % overall, with a person in net and with the computer), Team stats (a
+  game), Head to head (a grid of records, or just the matchups past 12 teams) and Games (untick one to leave it out;
+  Watch links). Every column sorts; `?tab=` and `?rom=` (a key or `all`) in the address. Players are matched across
+  games by team abbreviation and name.
+- Not there yet: names for ROMs (only the crc is known; the helper copies the cartridge, not its file name), people
+  as such (a game knows teams and controllers, not who held them), a shareable season file.
+
 ## Live knowledge (preparing for a live view)
 
 Some derived stats depend on what happens next, so a live view cannot settle them at once. The match file records

@@ -4,7 +4,8 @@ Records NHL '94 games played in RetroArch and replays them from above in the bro
 (Genesis Plus GX core) and the Super Nintendo version (Snes9x core).
 
 The replay has the game's sprites, a rotatable and zoomable rink, a follow camera, team and player stats, shot, heat,
-turnover and pass maps, a goalie report, clips (video or GIF) and single-file game pages to share.
+turnover and pass maps, a goalie report, clips (video or GIF) and single-file game pages to share. A season page
+totals any set of games: standings, skater and goalie stats, team stats and head-to-head records.
 
 Written in Python and JavaScript. The viewer runs in any browser, and shared game files are single HTML pages that
 open on any system, phones included. The converter is plain Python with no extra libraries. Only the live recorder

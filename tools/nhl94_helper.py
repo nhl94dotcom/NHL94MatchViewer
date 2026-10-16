@@ -109,7 +109,7 @@ def refresh_index():
     with index_lock:
         games = {g["name"]: g for g in load_index()}
         for path in sorted((ROOT / "matches").glob("*.js")):
-            if path.stem not in games:
+            if path.stem not in games and path.name != "season.js":
                 try:
                     games[path.stem] = game_entry(path.stem)
                 except Exception:
@@ -118,6 +118,15 @@ def refresh_index():
             if not (ROOT / "matches" / f"{name}.js").exists():
                 del games[name]
         save_index(list(games.values()))
+
+
+def update_season():
+    """Rewrite matches/season.js (every game's summary, for season.html opened from the folder) after a change."""
+    try:
+        import season
+        season.write_season_file()
+    except Exception:
+        traceback.print_exc()
 
 
 # --------------------------------------------------------------------------------------------------------- the state
@@ -258,6 +267,7 @@ def convert(rec, why):
             games = [g for g in load_index() if g["name"] != rec.name]
             games.append(game_entry(rec.name, rec.date))
             save_index(games)
+        update_season()
         s = rec.view.score
         status.set("idle", f"Saved {rec.name}: {rec.teams[0]} {s[0]}-{s[1]} {rec.teams[1]}")
     except Exception as e:
@@ -347,6 +357,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
         elif url.path == "/api/state":
             self.send_json({**status.snapshot(), "settings": load_settings(), "games": load_index()})
+        elif url.path == "/api/season":
+            import season
+            self.send_json(season.season())
         else:
             super().do_GET()
 
@@ -377,11 +390,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             with index_lock:
                 save_index([g for g in load_index() if g["name"] != name])
             shutil.rmtree(ROOT / "captures" / name, ignore_errors=True)
-            for path in [ROOT / "matches" / f"{name}.js", *((ROOT / "shared").glob(f"*{name}.html") if (ROOT / "shared").exists() else [])]:
+            for path in [ROOT / "matches" / f"{name}.js", ROOT / "matches" / f"{name}.summary.json",
+                         *((ROOT / "shared").glob(f"*{name}.html") if (ROOT / "shared").exists() else [])]:
                 try:
                     path.unlink()
                 except OSError:
                     pass
+            update_season()
             return self.send_json({"deleted": name})
         self.send_json({"error": "unknown"}, 404)
 
@@ -396,6 +411,7 @@ def convert_folder(folder):
         games = [g for g in load_index() if g["name"] != folder.name]
         games.append(game_entry(folder.name))
         save_index(games)
+    update_season()
     print(f"Converted {folder.name}")
 
 

@@ -8,7 +8,7 @@ WHAT YOU NEED
 - Windows 10 or 11 (64-bit).
 - RetroArch 1.17 (64-bit) with the Genesis Plus GX core (Genesis) or the Snes9x core (SNES).
 - Nothing else. No Python or other installs needed. Any NHL '94 ROM works, league ROMs included
-  (NHL '95-based ROMs do not).
+  (SDL15 and SDL16 on the SNES too; NHL '95-based ROMs do not).
 
 SETTING UP
 1. Unzip this folder anywhere, for example onto your Desktop.
@@ -28,6 +28,8 @@ PLAYING
    on the games page.
 6. Click "Watch" to replay it. Try the Map menu (shot map, heat map, passes...), the team stats, and pointing at
    players in the lineups. "Make game file" creates a single file you can send to anyone; it opens in any browser.
+7. "Season stats" (above the list of games) adds up all your games: standings, player and goalie stats, team stats
+   and head-to-head records. Pick the ROM your league plays at the top.
 
 WHERE THINGS ARE
 - Everything is kept in your Documents folder, in "NHL94 Viewer". Nothing is uploaded anywhere, and the games
