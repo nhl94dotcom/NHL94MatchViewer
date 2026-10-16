@@ -1047,6 +1047,13 @@ From a review of the pages at 1920x1080, 1366x768 and phone width (the user chos
   community terms (EA Special, pass shot) and troubleshooting, with a contents list and a search that keeps matching
   entries. Keep it in step with the features.
 
+Stat explanations on hover (2026-10-16, the user asked): `STAT_HELP` in viewer.html explains every team-stat row and
+player-card stat (what it is and how it is worked out); break-down rows are looked up under their parent
+("Possession|· attacking zone"), card stats that share a team stat's name as "card|<label>". The label shows a
+help cursor and a dotted underline on hover (`.has-help`). Checked: every row of both team-stat panels, all groups
+open, has one. The season page's tables fall back to `HEAD_HELP` (by heading text) for columns without their own
+title. Keep both in step when adding a stat.
+
 ## Three stars and highlights
 
 The footer's "Highlights" button (`&highlights` opens it) shows the game's three stars and its highlights.

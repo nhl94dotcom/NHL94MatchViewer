@@ -122,6 +122,9 @@
   .teamstats tr.section td::before { content: '\25BE'; display: inline-block; width: 12px; color: var(--muted); }
   .teamstats tr.section.closed td::before { content: '\25B8'; }
   .teamstats tr.section:hover td { color: var(--text); }
+  /* Stats with an explanation on hover */
+  .has-help { cursor: help; }
+  .teamstats td.has-help:hover, .stat.has-help:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
   .teamstats thead + tbody tr.section:first-child td { border-top: 0; padding-top: 2px; }
   .teamstats th:first-child { text-align: left; }
   .teamstats th:last-child { text-align: right; }
@@ -455,6 +458,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
 </section>
 
 <section id="h-glossary"><h2>Glossary of stats</h2>
+<p>Tip: point at any stat in the team stats or on a player's card, or at a column heading on the season page, for a short explanation of it.</p>
 <h3>Basics</h3>
 <dl>
   <dt>G, A, PTS</dt><dd>Goals, assists, points (goals + assists), as the game credits them.</dd>
@@ -2226,6 +2230,8 @@ function addStat(grid, label, text, fraction) {
   stat.className = 'stat';
   value.textContent = text;
   stat.append(label, value);
+  const tip = statHelp(label, 'card');  // a player's own number where the team stat has the same name
+  if (tip) { stat.title = tip; stat.classList.add('has-help'); }
   if (fraction !== undefined) {
     const bar = document.createElement('div'), fill = document.createElement('i');
     bar.className = 'bar'; fill.style.width = Math.max(0, Math.min(100, fraction * 100)) + '%';
@@ -2406,6 +2412,141 @@ function playRows(f, list) {
       ['Goalie dives', ...both(team => val(team, x => x.dives))]);
   }
   return rows;
+}
+// What each statistic means and how it is worked out: shown when pointing at a stat in the team stats or on a player's
+// card. Sub-rows ("· attacking zone") are looked up under their parent row first ("Possession|· attacking zone").
+const STAT_HELP = {
+  // ---- team stats: shooting
+  'Shots on goal': 'Shots on goal as the game itself counts them (a shot the goalie stopped, a goal, or a shot off the post). The game does not count every stopped shot, and never a pass shot unless it scores.',
+  'Shooting %': 'Goals divided by shots on goal.',
+  'Shot attempts': 'Every shot the team took, whatever happened to it: on goal, wide, blocked, or stopped but not counted by the game.',
+  'Wide': 'Shot attempts that missed the net with nobody touching them.',
+  'Blocked': 'Shot attempts an opposing skater (not the goalie) got to before the goal line.',
+  'Saved, not counted': 'Shots the goalie stopped that the game did not count as shots on goal (it skips some; pass shots it never counts unless they score).',
+  'One-timers': 'Goals / attempts straight off a pass, the shooter never having the puck on his stick. Attempts here are the ones that connected; misses are under Failed one-timers.',
+  'Failed one-timers': 'A player swung at a teammate\u2019s pass for a one-timer and missed the puck (C pressed while the pass was travelling, no shot came of it).',
+  'Pass shots': 'Goals / attempts with the pass button used as a shot (B toward the net with no teammate in the way). The game only counts one as a shot on goal if it scores.',
+  'Breakaways': 'Goals / breakaways, as the game counts them: the puck carrier crossing the attacking blue line ahead of every defender.',
+  'Penalty shots': 'Goals / penalty shots, as the game counts them.',
+  // ---- advanced
+  'Corsi % (CF%)': 'The team\u2019s share of all shot attempts in the game (its attempts / both teams\u2019 attempts). Above 50% means it had the puck at the other net more.',
+  'Fenwick % (FF%)': 'Like Corsi %, but leaving out blocked attempts (only on goal, wide and not-counted saves).',
+  'Corsi % (CF%)|· even strength': 'Corsi %, only while both teams had the same number of players serving penalties.',
+  'Fenwick % (FF%)|· even strength': 'Fenwick %, only while both teams had the same number of players serving penalties.',
+  'PDO': 'Shooting % plus save %, times 100 (both on shots on goal). Around 100 is normal; well above means things went in for the team (often luck over a few games).',
+  'High-danger goals / attempts': 'Attempts from the slot: within 60 units of the net (about 20 ft) and no wider than 50 from the middle. In the recordings a third of them score, against 14% of the rest.',
+  'Rebound goals / attempts': 'Attempts by the team within 3 s of a save of its own shot, after getting the puck back.',
+  'EA Specials (goals / attempts)': 'EA Specials (Genesis): a person\u2019s forehand wrist shot from the side, carried in, at a goalie in position, to make him bobble it; the goal counts when the team scores off the rebound within 2 s. See Help for the full rule.',
+  'Attempts off a pass': 'Shot attempts that came straight off a teammate\u2019s pass (within 4 s, the other team never having the puck between): the passer gets a shot assist.',
+  'Turnovers \u2192 shot against': 'Giveaways the other team turned into a shot attempt within 5 s (in brackets, how many became goals).',
+  // ---- puck control
+  'Possession': 'Game time the team controlled the puck. Each second of the game clock goes to the team with the puck on a stick; a loose puck goes to the team that had it if it gets it back, to Transition if the other team gets it.',
+  'Possession|· attacking zone': 'Of the team\u2019s possession: time with the puck in the zone it attacks (past the far blue line).',
+  'Possession|· neutral zone': 'Of the team\u2019s possession: time with the puck between the blue lines.',
+  'Possession|· defensive zone': 'Of the team\u2019s possession: time with the puck in its own zone.',
+  'Transition': 'Game time with the puck loose and changing hands between the teams (it belongs to neither).',
+  'Carried by D / C / W': 'Who carries the puck: the share of the team\u2019s time with the puck on a stick that the carrier was a defenceman, the centre or a winger (the position he was playing then). Equal use would be 40 / 20 / 40.',
+  'Attack zone': 'The game\u2019s own attack-zone time: game time the puck spent in the zone the team attacks, whoever had it.',
+  'Zone entries': 'Times the team took the puck over the attacking blue line from the neutral zone.',
+  'Zone entries|· carried / passed / dumped': 'Carried: on a stick. Passed: a pass across the line. Dumped: shot or chipped in.',
+  'Zone entries|· led to a shot attempt': 'Entries followed by a shot attempt before the puck left the zone or the whistle went.',
+  'Faceoffs won': 'Faceoffs the team won (the game\u2019s count).',
+  'Faceoffs won|· attacking zone': 'Won / taken in the zone the team attacks.',
+  'Faceoffs won|· neutral zone': 'Won / taken at centre ice and the neutral-zone dots.',
+  'Faceoffs won|· defensive zone': 'Won / taken in the team\u2019s own zone.',
+  'Passes': 'Passes completed / passes tried, as the game counts them (only passes aimed at a teammate; a pass that becomes a one-timer is counted as completed here).',
+  'Pass %': 'Passes completed divided by passes tried, as the game counts them.',
+  'Bobbled passes': 'Passes that reached a teammate close enough to take them but bounced off him instead (not when he swung at it or passed it on).',
+  'Giveaways': 'The team lost the puck to the other team with nobody forcing it: a pass picked off, or the puck simply lost.',
+  'Takeaways': 'The team took the puck from the other team: a poke check, hook or check within half a second, or a defender stripping the carrier.',
+  'Icings': 'Touch-up icings: the puck shot from the team\u2019s own half over the far goal line untouched, then touched by a defender.',
+  // ---- passing by zone and direction
+  'From attacking / neutral / defensive': 'Passes made from each zone (the team\u2019s view).',
+  'Forward / diagonal / sideways': 'Passes by the way the puck left the stick: forward (within 30\u00b0 of straight up the ice), diagonal forward (30-60\u00b0), sideways (within 30\u00b0 of straight across).',
+  'Diagonal back / backward': 'Passes going back diagonally (30-60\u00b0 from straight back) and straight back (within 30\u00b0).',
+  'Out of own zone': 'Passes made in the team\u2019s own zone that ended in another zone.',
+  'Into attacking zone': 'Passes made outside the attacking zone that ended in it.',
+  // ---- physical and special teams
+  'Body checks': 'Checks the team landed, as the game counts them.',
+  'Body checks|· big hits': 'Checks that upended a player or sent him into the boards or the bench.',
+  'Pucks lost on contact': 'Times a puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down.',
+  'Pucks lost on contact|· to the other team': 'Of those, the ones where the other team got the puck next.',
+  'Pucks lost on a goalie': 'Times a carrier skated into a goalie (either team\u2019s) and the puck came loose.',
+  'Distance skated': 'How far the team\u2019s skaters went in all, from their positions (real-rink scale).',
+  'Power play': 'Power-play goals / power plays, as the game counts them.',
+  'Shorthanded goals': 'Goals scored while the team had more players serving penalties than the other.',
+  'Penalties': 'Penalties called on the team.',
+  'Penalty minutes': 'Penalty minutes, from the ROM\u2019s rule table.',
+  // ---- how chances were made
+  'Off the rush (G / attempts)': 'Attempts within 5 s of the team carrying, passing or dumping the puck into the attacking zone (the puck still there).',
+  'Sustained pressure': 'Attempts later in a stay in the attacking zone (more than 5 s after getting in).',
+  'Off a faceoff': 'Attempts off a faceoff in the attacking zone, with no whistle between.',
+  'Odd-man rushes': 'Carried or passed entries with more attackers than defenders back (at least two attackers): 2-on-1, 3-on-2 and so on.',
+  'Wraparounds (G / attempts)': 'Shots from beside the post just after carrying the puck behind the goal line.',
+  // ---- person vs computer
+  'Checks (person / CPU)': 'Checks landed by the skater the person was controlling / by the computer\u2019s skaters.',
+  'Penalties (person / CPU)': 'Penalties taken by the skater the person was controlling / by the computer\u2019s skaters.',
+  'Saves, person in net': 'Saves / shots faced while the person was controlling the goalie at the moment of the shot.',
+  'Saves, CPU in net': 'Saves / shots faced while the computer had the goalie.',
+  // ---- controller
+  'Presses a minute (A / B / C)': 'How often the person pressed each button, a minute of live play.',
+  'Speed bursts / check tries': 'C without the puck: a speed burst or a check lunge (the game uses one move for both).',
+  'Checks landed (person)': 'Checks the person\u2019s skater landed.',
+  'Poke checks (takeaways)': 'Poke checks by the person\u2019s skater (and how many took the puck).',
+  'Hooks (takeaways)': 'Hooks by the person\u2019s skater (and how many took the puck).',
+  'Goalie: time controlled': 'Real time the person controlled the goalie.',
+  'Goalie dives': 'Dives by the goalie while the person controlled him.',
+  // ---- player card
+  'Goals': 'Goals, as the game credits them.',
+  'Assists': 'Assists, as the game credits them.',
+  'Points': 'Goals plus assists.',
+  'Shots': 'Shots on goal, as the game counts them.',
+  'Checks': 'Checks he landed.',
+  'Hits taken': 'Checks landed on him.',
+  'Big hits': 'His checks that upended a player or sent him into the boards or the bench.',
+  'Pen. minutes': 'Penalty minutes.',
+  'Check types': 'How he threw his checks (shoulder, hip, cross-check), from the game\u2019s animations.',
+  'Skated': 'How far he skated (real-rink scale).',
+  'Top speed': 'His fastest half second of skating in live play.',
+  'Ice time': 'Game time on the ice.',
+  'Plus/minus': 'Goals for minus goals against while he was on the ice (not power-play or penalty-shot goals, as the NHL counts it).',
+  'Goals on ice': 'Goals for / against while he was on the ice.',
+  'Corsi': 'Shot attempts for / against while he was on the ice.',
+  'CF%': 'His team\u2019s share of the shot attempts while he was on the ice.',
+  'Fenwick': 'Unblocked shot attempts for / against while he was on the ice.',
+  'FF%': 'His team\u2019s share of the unblocked attempts while he was on the ice.',
+  'CF% rel': 'His CF% minus his team\u2019s CF% while he was off the ice: positive means the team did better with him on.',
+  'Zone starts': 'Faceoffs he was on the ice for: attacking / neutral / defensive zone.',
+  'OZS%': 'Attacking-zone starts as a share of attacking plus defensive starts.',
+  'With the puck': 'Game time with the puck on his stick.',
+  'card|Zone entries': 'Times he took the puck into the attacking zone (carried, or passed in by him).',
+  'High-danger att.': 'His shot attempts from the slot (within 60 units of the net, no wider than 50 from the middle).',
+  'Shot assists': 'His passes that a teammate shot straight off (within 4 s).',
+  'Rebounds': 'His attempts within 3 s of a save of his team\u2019s shot.',
+  'Costly giveaways': 'His giveaways the other team turned into a shot attempt within 5 s.',
+  'card|Failed one-timers': 'Times he swung at a pass for a one-timer and missed the puck.',
+  'Intercepted': 'His passes the other team picked off.',
+  'card|Passes': 'His passes: completed (to a teammate or into a one-timer) / all his passes, including ones with no target.',
+  'card|Giveaways': 'Times he lost the puck to the other team with nobody forcing it: a pass picked off, or the puck simply lost.',
+  'card|Takeaways': 'Times he took the puck from the other team: a poke check, hook or check, or stripping the carrier.',
+  'card|Bobbled passes': 'Passes to him that bounced off him instead of onto his stick.',
+  'Passes att / neu / def': 'His passes made from the attacking, neutral and defensive zone.',
+  'Pass direction': 'His passes going ahead (forward and diagonally forward), across (sideways) and back.',
+  'Bumped off puck': 'Times he lost the puck with an opposing skater up against him, no check landed, no poke or hook, and without going down.',
+  'Bumped puck loose': 'Times he was the opposing skater against a carrier who lost the puck that way.',
+  'Lost puck on goalie': 'Times he skated into a goalie (either team\u2019s) and the puck came loose.',
+  'Injured': 'He is injured: when, and whether he is out for the period or the game (from the game\u2019s own availability code).',
+  'Energy': 'His energy, as the game keeps it (it drops while he is on the ice and recovers on the bench).',
+  'Goals against': 'Goals scored on him.',
+  'Saves': 'Shots he stopped that the game counted (posts count as saves here, so they add up to the shots against).',
+  'Save %': 'Saves divided by shots on goal against him.',
+  'Saves, human': 'Saves / shots while a person controlled him at the moment of the shot.',
+  'Saves, CPU': 'Saves / shots while the computer controlled him.',
+};
+// The explanation for a stat label, by its parent row first for break-down rows ("· attacking zone").
+function statHelp(label, parent) {
+  const key = String(label).replace(/\s*\(\d.*$/, '').trim();
+  return (parent && STAT_HELP[parent + '|' + key]) || STAT_HELP[key] || (/^Transition/.test(key) ? STAT_HELP.Transition : '');
 }
 // Team-stat groups closed by the viewer (by heading); the long lists start closed.
 let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction']);
@@ -2594,6 +2735,7 @@ function fillTeamStats(snap) {
   });
   // The groups open and close by clicking their heading (remembered); a closed group shows only its heading.
   let closed = false;
+  let parent = '';
   for (const [label, home, away] of rows) {
     if (home === undefined) {  // a heading
       const tr = table.insertRow();
@@ -2613,8 +2755,12 @@ function fillTeamStats(snap) {
     if (closed) continue;
     const tr = table.insertRow();
     if (/^· /.test(label)) tr.className = 'sub';  // a break-down of the row above
+    else parent = label;
     tr.insertCell().textContent = home;
-    tr.insertCell().textContent = label;
+    const name = tr.insertCell();
+    name.textContent = label;
+    const tip = statHelp(label, /^· /.test(label) ? parent : '');
+    if (tip) { name.title = tip; name.classList.add('has-help'); }
     tr.insertCell().textContent = away;
   }
 }
