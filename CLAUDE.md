@@ -828,7 +828,7 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
 - Stars by a game score after the analysts' Game Score (Luszczyszyn), with what the recordings know: 0.75 a goal, 0.7
   a first assist, 0.55 a second, 0.075 a shot on goal, 0.05 a hit, 0.1 a takeaway (credited to `by`, as the card),
   -0.1 a giveaway, -0.15 a penalty, 0.05 per on-ice shot attempt for / against and 0.15 per on-ice goal for /
-  against; goalies 0.1 a save, -0.75 a goal against (`gameScores`). capture6: Bourque (1 G 3 A, 17 hits, 11
+  against; goalies 0.1 a save, -0.5 a goal against (the user's choice; Game Score has -0.75) (`gameScores`). capture6: Bourque (1 G 3 A, 17 hits, 11
   takeaways), Neely (3 G 1 A), Juneau.
 - Highlights (`findHighlights`): each from 5 s before its key moment to 2 s after (the user's choice): every goal, up to 4 saves of danger 3 or more (distance
   under 45 / 75 / 110 from the net for 3 / 2 / 1, plus one each for a one-timer, a rebound, 18000 speed), posts,
