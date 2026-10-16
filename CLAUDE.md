@@ -1047,6 +1047,22 @@ From a review of the pages at 1920x1080, 1366x768 and phone width (the user chos
   community terms (EA Special, pass shot) and troubleshooting, with a contents list and a search that keeps matching
   entries. Keep it in step with the features.
 
+Time units (2026-10-16, the user's rule): every time in the stats is game-clock time except skating (distance, top
+speed: real time, so mph are real-world) and the controller's rates (presses / bursts a minute of live play: real
+time). export_match.py `clock_ticks(m)` is the one rule for game seconds (a new low of the clock in the period, at
+most 3 at a time; a set clock or a blip back up is not play; the viewer's findPossession is the same) and
+`game_weights(m)` gives each sample's game milliseconds (each tick shared over the samples it took, by real length;
+a long wait before a tick only shares its last 1.25 typical game seconds; nothing while the clock is stopped; they add
+up to exactly 900 s for a 15-minute game). Moved to game time: goalie control time (habits.goalieSeconds), heat maps
+(viewer: `gameWeights`; season heat files HEAT_VERSION 2). Already game time: possession and its zones, with the
+puck, carried by D / C / W, ice time, attack zone, penalties.
+Attack-zone possession per goal (the user): a team's attacking-zone possession (game seconds) / its goals, and its
+opponents' attacking-zone possession / its goals against; one game's numbers are the same seen from either side, a
+season's tell offence from defence. season.py `possession_by_zone` (the viewer's possession rule, by zone in each
+team's view; BOS-PIT matches the viewer to the second) gives the summaries' `possZones`, `possAtt`, `possAttAgainst`
+(VERSION 12); season Team stats columns ATT POSS/GF and OPP POSS/GA; viewer Puck control "Attack-zone possession per
+goal". BOS-PIT Boston 0:38 a goal; CHI-TOR Chicago 0:46, Toronto 0:43.
+
 Stat explanations on hover (2026-10-16, the user asked): `STAT_HELP` in viewer.html explains every team-stat row and
 player-card stat (what it is and how it is worked out); break-down rows are looked up under their parent
 ("Possession|· attacking zone"), card stats that share a team stat's name as "card|<label>". The label shows a

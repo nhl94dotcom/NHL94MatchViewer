@@ -16,9 +16,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
-from export_match import PASS_DIRS, ZONES, own_end, zone_of  # noqa: E402
+from export_match import PASS_DIRS, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 11  # 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 12  # 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -45,16 +45,10 @@ def puck_seconds_by_zone(m):
     then, by where it is and the position he is playing (line changes move players between positions)."""
     out, t, P, own, K = {}, m["t"], m["puck"], m.get("owner") or [], 12
     by_pos = [[0] * 15, [0] * 15]
-    low, period = None, None
+    tick = clock_ticks(m)
     for i in range(len(t)):
-        if m["period"][i] != period:
-            period, low = m["period"][i], None
-        c = m["clock"][i]
-        if low is None or c > low + 3:  # the game sets the clock (0:00, then the period's length)
-            low = c
-            continue
-        if c < low:
-            ticks, low = min(3, low - c), c
+        if tick[i]:
+            ticks = tick[i]
             k = own[i] if i < len(own) else -1
             if k < 0 or m["role"][i * K + k] in "0x" or P[3 * i + 2] < -100:
                 continue
@@ -67,6 +61,49 @@ def puck_seconds_by_zone(m):
             out.setdefault((team, idx), [0, 0, 0])[zone] += ticks
             by_pos[team][zone * 5 + int(m["role"][i * K + k]) - 1] += ticks
     return out, by_pos
+
+
+def possession_by_zone(m):
+    """Each team's possession in game seconds by where the puck was, in its own view: [[attacking, neutral, defensive]
+    for Home, for Away], as the viewer counts it: each second the clock ticks off goes to the team with the puck on a
+    stick; a loose puck to the team that had it before and gets it next, to neither (transition) if they differ, to the
+    one that had it or gets it when only one is known (a whistle or a period's end closes a stretch)."""
+    n, own, P = len(m["t"]), m.get("owner") or [], m["puck"]
+    team = lambda k: 0 if k < 6 else 1
+    hidden = lambda i: P[3 * i + 2] < PUCK_HIDDEN_Z
+    before, after = [-1] * n, [-1] * n
+    last = -1
+    for i in range(n):
+        if hidden(i) or (i and m["period"][i] != m["period"][i - 1]):
+            last = -1
+        if not hidden(i) and own[i] >= 0:
+            last = team(own[i])
+        before[i] = last
+    nxt = -1
+    for i in range(n - 1, -1, -1):
+        if hidden(i) or (i < n - 1 and m["period"][i] != m["period"][i + 1]):
+            nxt = -1
+        if not hidden(i) and own[i] >= 0:
+            nxt = team(own[i])
+        after[i] = nxt
+    out, tick = [[0, 0, 0], [0, 0, 0]], clock_ticks(m)
+    for i in range(n):
+        if not tick[i]:
+            continue
+        if own[i] >= 0:
+            c = team(own[i])
+        else:
+            a, b = before[i], after[i]
+            c = 2 if a < 0 and b < 0 else b if a < 0 else a if b < 0 else a if a == b else 2
+        if c == 2:
+            continue
+        end = own_end(m, i, c)
+        if end is None:
+            end = next((-e for e in [own_end(m, i, 1 - c)] if e is not None), None)
+        if end is None:
+            continue
+        out[c][["att", "neu", "def"].index(zone_of(P[3 * i + 1], -end))] += tick[i]
+    return out
 
 
 def carried_entries_by_position(m):
@@ -87,6 +124,7 @@ def summarize(m, name, date=None):
     n = len(t)
     puck_zone, puck_pos = puck_seconds_by_zone(m)  # game seconds with the puck, by skater and zone, and by position
     entry_pos = carried_entries_by_position(m)
+    poss = possession_by_zone(m)  # game seconds, [attacking, neutral, defensive] per team in its own view
     score = m["score"][-2:]
     periods = played_periods(m)
     last = max(period) if period else 0
@@ -178,6 +216,8 @@ def summarize(m, name, date=None):
             "bigHits": sum(1 for h in hits if h["team"] == team and h.get("outcome") in ("upended", "into the boards", "into the bench")),
             "puckPos": puck_pos[team],  # game seconds with the puck: zone (def, neu, att) x carrier's position (LD, RD, LW, C, RW)
             "entryPos": entry_pos[team],  # carried zone entries by the carrier's position
+            "possZones": poss[team],  # its possession in game seconds: attacking, neutral, defensive zone
+            "possAtt": poss[team][0], "possAttAgainst": poss[1 - team][0],  # attacking-zone possession, its own and its opponent's
             "bumped": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") != "goalie"),  # its carriers bumped off the puck
             "onGoalie": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") == "goalie"),  # ... or losing it on a goalie
             "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team),  # passes that bounced off the receiver
@@ -447,7 +487,7 @@ def rom_teams():
 # shorthanded: more of the other team / of its own players serving a penalty), puck (where the puck was while that
 # team or player had it). Teams have all six, players skate, att, def and puck. A grid is stored sparse: pairs of
 # (cells skipped since the last one, tenths of a second).
-HEAT_VERSION = 1
+HEAT_VERSION = 2  # 2: game time (1 was real time)
 HEAT_CELL, HEAT_COLS, HEAT_ROWS = 10, 26, 60
 HEAT_DIR = MATCHES / "heat"
 PUCK_HIDDEN_Z = -100
@@ -517,10 +557,11 @@ def game_heat(m):
         for sl in slices:
             entity["s"][sl] = entity["s"].get(sl, 0) + dt
 
+    weight = game_weights(m)  # game milliseconds each sample stands for (nothing while the clock is stopped)
     for i in range(n - 1):
-        if puck[3 * i + 2] < PUCK_HIDDEN_Z:
+        if puck[3 * i + 2] < PUCK_HIDDEN_Z or not weight[i]:
             continue
-        dt = min(100, t[i + 1] - t[i])
+        dt = weight[i]
         k_own = owner[i]
         has = -1 if k_own < 0 else 0 if k_own < 6 else 1
         for team in (0, 1):
