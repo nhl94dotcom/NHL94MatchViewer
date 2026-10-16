@@ -836,7 +836,9 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   last (game 2: 7 plus 6 failed against the game's 11 tried; counted shots still equal the game's in all three SNES
   games). find_passes now keeps one pass per player and release (a passing move in two pieces had listed 6 twice in
   2026-10-16_1528_TOR-CHI; no Genesis pass changed). Known gap: in 2026-10-16_1528_TOR-CHI the game counts 56 / 52
-  passes tried, the converter matches 55 / 49 (before these changes too). Shown: a "Bobbled" tag over the receiver,
+  passes tried, the converter matches 55 / 49 (before these changes too). Each bobbled pass carries `bobble` {f, idx, x, y}: the passes map draws
+  it to that spot with an orange bobble ring, then a thinner line on to its outcome (the user asked for that; the
+  tooltip says "bobbled, then ..."). Also shown: a "Bobbled" tag over the receiver,
   team stats (Bobbled passes, under Pass %), the card, Help, and the season page (team BOB a game, skater BOB;
   summary VERSION 9). 1-11 a game in the recordings.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone

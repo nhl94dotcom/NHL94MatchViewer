@@ -897,6 +897,7 @@ def find_bobbles(m):
     boards (a pass that missed and came off them). He may get it back afterwards: still a bobble (the user).
     Checked against the user's review of 2026-10-16_1540_CHI-TOR (SNES): the 10 he called bobbles and none of the 11
     others. After find_passes and find_shots.
+    The pass itself gets `bobble`: {f, idx, x, y} (the passes map draws it to that spot, then on to its outcome).
     Returns [{f (the bounce), pass (the pass's frame), team, by (passer), idx (receiver; roster indices), x, y,
     next: 'himself' | 'teammate' | 'opponent' | 'none', got (frame someone had it, or None)}]."""
     act = actions(m)
@@ -945,6 +946,7 @@ def find_bobbles(m):
         nxt = 'none' if got is None else 'himself' if own[got] == k else 'opponent' if own[got] // 6 != team else 'teammate'
         out.append({'f': q, 'pass': rel, 'team': team, 'by': p['idx'], 'idx': idx(q, k), 'x': P[3 * q], 'y': P[3 * q + 1],
                     'next': nxt, 'got': got})
+        p['bobble'] = {'f': q, 'idx': idx(q, k), 'x': round(P[3 * q]), 'y': round(P[3 * q + 1])}
     return out
 
 
