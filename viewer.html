@@ -3187,7 +3187,7 @@ async function saveGameFile() {
 // Stars: a game score per player, after the hockey analysts' Game Score (Luszczyszyn), with what the recordings
 // know: 0.75 a goal, 0.7 a first assist, 0.55 a second, 0.075 a shot on goal, 0.05 a hit, 0.1 a takeaway, -0.1 a
 // giveaway, -0.15 a penalty, 0.05 per shot attempt for (-0.05 against) and 0.15 per goal for (-0.15 against) while
-// on the ice; goalies 0.1 a save and -0.75 a goal against.
+// on the ice; goalies 0.1 a save and -0.5 a goal against (the user's choice; Game Score has -0.75).
 function gameScores(m) {
   const last = m.stats && m.stats.f ? m.stats.f.length - 1 : -1, end = m.t.length - 1, out = [];
   const played = [new Set(), new Set()];
@@ -3198,7 +3198,7 @@ function gameScores(m) {
     if (p.g) {
       const sa = st.s || 0, ga = st.g || 0;
       if (!sa) return;
-      out.push({ team, idx, score: 0.1 * (sa - ga) - 0.75 * ga, line: (sa - ga) + ' saves on ' + sa });
+      out.push({ team, idx, score: 0.1 * (sa - ga) - 0.5 * ga, line: (sa - ga) + ' saves on ' + sa });
       return;
     }
     const goals = (m.goals || []).filter(g => g.team === team && g.scorer === idx).length;
