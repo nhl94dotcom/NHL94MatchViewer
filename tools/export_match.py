@@ -655,7 +655,7 @@ def find_hits(m):
         for team, side in ((0, 'home'), (1, 'away')):
             a, b = st[side][s - 1], st[side][s]
             mine = [k for k in range(team * 6, team * 6 + 6) if on_ice(f, k)]
-            if len(b) <= n:
+            if len(b) <= n or not any(b[n + per * j + slot] for j in range((len(b) - n) // per)) and b[team_checks]:
                 # No per-player counts (the SNES so far): the team's checks rose; the thrower is the skater of
                 # that team checking (a check or burst animation) nearest an opponent going down, else the one
                 # nearest any opponent.

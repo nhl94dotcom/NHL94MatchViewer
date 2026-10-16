@@ -248,8 +248,25 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   the middle at the goal line, Gill had it behind the net 0.45 s later), so the pass-shot rule now also asks: a puck
   wide of the posts (more than 22 from the middle) that a teammate takes within 1 s, before the goalie or the other
   team, was a pass. No Genesis pass shot changed.
-  Not known yet: puck height / hidden puck (whistles), screen state (menus, pause, replay), per-player stats,
-  controller words, the remaining animation names.
+- Penalties (`snes.read_penalties`): the buffer at $15DE holds (penalty number, object) byte pairs; an entry
+  appears at the foul (play may go on: a delayed penalty), gets bit 7 of the object byte at the whistle, and is
+  cleared once listed. The box state ($1852: a word per roster place, Home's 26 then Away's; $FFFE bench, $FFFF
+  ice, $FFFD out, $FFFC none, else seconds left, 120 for a minor) turning into seconds is the listing. Penalty
+  numbers index the ROM's rule table (Genesis layout; $53EB in NHL94_Classic, found by its rule 1 "Period Over";
+  number = 2 x rule): $14/$1C Roughing, $18 Charging, $1A Slashing, $1E Cross Check, $20 Hooking, $22 Tripping,
+  $24 Penalty Shot (its object is the fouler), $26 Interference, $28 Holding, $2A/$2C Fighting, $2E Instigator.
+  Also: $1636 = the penalized player listed last (roster place, bit 15 Away), $18BA the box queue (2 x roster
+  place), $1624 players in the boxes (Home x 16 + Away), $1C82 period length. In the first recording: Gill
+  Interference (P1, foul 42.1 s, listed 48.5 s), Andreychuk Interference and Samuelsson Cross Check (P3 2:45, one
+  whistle; Samuelsson's foul first, delayed), penalty shots awarded to Toronto (62.7 s) and Pittsburgh (366 s).
+- Per-player stats: bytes per roster place, Home's 26 then Away's 26, the Genesis order: goals $18EE (goalies:
+  against), assists $1922, shots $1956 (goalies: against), penalty minutes $198A; checks thrown $168E in
+  NHL94_Classic (aligned by timing: at 49 of 54 rises of a team's checks the slot of a player of that team who was
+  checking rose; used only where its totals equal the team checks); energy $17EA (word, high byte, 16 fresh).
+  Ice time not found. Checked: Lemieux 3 goals, Murphy 2 assists, Potvin 12 shots against / 5 goals, Barrasso
+  10 / 1; Murphy 10 checks, Samuelsson 9. Stat snapshots now carry 8 values per roster place like the Genesis
+  ones, so cards, penalty boxes and find_hits (per-player path: 53 = 24 + 29) work.
+  Not known yet: puck height, screen state (menus, pause, replay), controller display, ice time, the hook.
 
 ## Reading game memory live
 
