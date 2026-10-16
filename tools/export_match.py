@@ -191,6 +191,10 @@ def find_shots(m, goals=None):
                     shots[-1]['known'] = reached[rel]  # until then it was just a pass
             else:
                 shots.append(shot(rel, k, team, 'one-timer' if own[j - 1] != k else 'shot', t[min(N - 1, e)] - t[s0]))
+    # A shooting animation can run in two pieces that find the same release (Oates in capture6_netplay_bos_stl, P1
+    # 1:17): one shot per player and release.
+    seen = set()
+    shots = [sh for sh in shots if (sh['f'], sh['k']) not in seen and not seen.add((sh['f'], sh['k']))]
     shots.sort(key=lambda d: d['f'])
     score = lambda i, team: m['score'][2 * i + team]
     sog = lambda i, team: m['shots'][2 * i + team]
@@ -218,10 +222,19 @@ def find_shots(m, goals=None):
         rose = [idx for idx in range((len(side[0]) - n) // per) if side[after][n + per * idx + 2] > side[before][n + per * idx + 2]]
         return rose[0] if len(rose) == 1 else None
 
+    def credited_before(team, g, idx=None):
+        # The frame of the team's (or the player's) last shot already credited with a result before g: a goal the
+        # game counts later is never the same shot again (a rebound scored 2 s after a saved one-timer, in
+        # capture3_bos_la P2, was credited to the saved one-timer a second time).
+        return max((sh['f'] for sh in shots if sh['team'] == team and sh['result'] != 'miss' and sh['f'] < g
+                    and (idx is None or sh['idx'] == idx)), default=-1)
+
     def scorer_touch(team, g, idx):
-        # A shot by a player with no shot of his found: the last moment the puck changed course beside him.
+        # A shot by a player with no shot of his found: the last moment the puck changed course beside him, after
+        # his last shot that was already credited.
+        floor = credited_before(team, g, idx)
         for i in range(g, 0, -1):
-            if t[g] - t[i] > 2000:
+            if t[g] - t[i] > 2000 or i <= floor + 2:
                 break
             for k in (range(6) if team == 0 else range(6, 12)):
                 if roster_idx(i, k) == idx and near(i, k, 30) and (kick(i) > 3000 or own[i - 1] == k):
@@ -231,9 +244,10 @@ def find_shots(m, goals=None):
         return None
 
     def origin(team, g, idx=-1):
-        # a counted shot with no shot found (a scramble): where the puck last changed course
-        i = g
-        while i > 1 and t[g] - t[i] < 1500:
+        # a counted shot with no shot found (a scramble): where the puck last changed course (after the team's last
+        # credited shot)
+        i, floor = g, credited_before(team, g)
+        while i > max(1, floor + 3) and t[g] - t[i] < 1500:
             if kick(i) > 5000 or own[i - 1] >= 0:
                 break
             i -= 1
@@ -866,7 +880,15 @@ def add_shot_context(m):
                 sh['assist'] = p['idx']
             break  # only the last pass before the shot
     K = 12
+    # EA Specials are a Genesis play: the SNES goalie saves differently and is not pushed back by a wrist shot (the
+    # user). On the Genesis the goalie often dives after the save, as if to cover the loose puck he is nowhere near,
+    # and is out of the play for a couple of seconds: `eaDive` (a detail of the attempt, not a condition).
+    genesis = m.get('system', 'genesis') == 'genesis'
+    dive = actions(m).get('dive', set())
+    anim = lambda q, k: m['anim'][(q * K + k) * 4:(q * K + k) * 4 + 4]
     for i, sh in enumerate(shots):
+        if not genesis:
+            break
         # An EA Special attempt: a wrist shot (never a slapshot: goalies hold those far more often) from the side and
         # close in, flipped at a goalie in position (within EA_GOALIE_LINE of the puck's line to the net at the
         # release; on the saves in the recordings he stood 2-15 off it, on wrist shots that went straight in 15-51),
@@ -883,6 +905,10 @@ def add_shot_context(m):
         if off_line > EA_GOALIE_LINE:
             continue
         sh['flip'] = True
+        settled = sh.get('resolved', sh['f'])
+        if any(anim(q, k) in dive for q in range(settled, len(t)) if t[q] - t[settled] <= 2000
+               for k in range((1 - sh['team']) * 6, (1 - sh['team']) * 6 + 6) if m['role'][q * K + k] == '0'):
+            sh['eaDive'] = True
         # The rebound: the same team's next attempt within 2 s from close in, by the shooter or an onrushing
         # teammate; when it goes in, that is an EA Special.
         follow = next((s for s in shots[i + 1:] if s['team'] == sh['team'] and s['f'] > sh['f'] and t[s['f']] - t[sh['f']] <= 2000 and shot_distance(s) < 65), None)

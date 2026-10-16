@@ -709,6 +709,10 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   (the goalie got the puck or it changed course beside him). Only two such saves have been seen so far.
   The viewer shows pass shots as squares on the shot map, a "Pass shot" tag, a "Pass shots" team stat and a PASS
   SHOT goal tag.
+- Duplicates (fixed 2026-10-16): one shot per player and release (a shooting animation in two pieces had found
+  Oates's release in capture6 P1 1:17 twice), and a goal the game credits to a player with no fresh shot of his is
+  looked for only after his last credited shot (capture3's rebound goal 2 s after a saved one-timer had been
+  credited to the saved one-timer again); now at the rebound. Counted shots and goals still equal the game's.
 - Who shot: every shot the game counted is credited to the player the game credits (the scorer it names, or whose per-player
   shots, +$E8, went up). With that, every skater's shots on goal in all six captures equal the game's, and goals
   are always credited to the game's scorer (before, a one-timer missed by the finder could hand a goal to the
@@ -855,8 +859,11 @@ within 70 units and at least 20 off the middle, shot at a goalie in position - w
 puck's line to the net at the release (on the saves in the recordings he stood 2-15 off it; on wrist shots that went
 straight in, 15-51) - and saved, so not a try to score directly. `afterFlip`: the same team's next attempt, later
 and within 2 s, from within 65 units. An attempt followed by a goal is an EA Special; the goal gets the kind "EA
-Special" (a goal tag, like one-timer). 18 attempts in the recordings, one EA Special, confirmed by the user
-(capture2_away P1 14:28, Ciccarelli then Ciccarelli's goal); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
+Special" (a goal tag, like one-timer). Genesis games only: the SNES goalie saves differently and is not pushed back
+by a wrist shot (the user). `eaDive`: the goalie went into his dive ($02F4) within 2 s after the save, as Genesis
+goalies often do on an EA Special (diving for a puck he is nowhere near, out of the play for a couple of seconds); a
+detail, not a condition (none of the recordings' attempts has one). 15 attempts in the Genesis recordings, one EA
+Special, confirmed by the user (capture2_away P1 14:28, Ciccarelli then Ciccarelli's goal); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
 no whistle between). Expected goals was put off until there are thousands of shots (about 250 now).
 Shown: shot tooltips (high danger, rebound, flip, set up by), the card (High-danger att., Shot assists, Rebounds,
 Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, EA Specials when any,

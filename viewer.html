@@ -1078,7 +1078,7 @@ function shotText(sh) {
     ? ' \u00b7 ' + (sh.save === 'none' ? (sh.result === 'goal' ? 'goalie did not move' : 'goalie stood his ground') : (sh.result === 'goal' ? 'goalie tried a ' : '') + SAVE_WORDS[sh.save]) : '';
   // From the converter's shot context: where it was taken, a rebound or an EA Special (the community's name for a
   // flipped wrist shot from the side that the goalie bobbles, then put in), and who set it up.
-  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special attempt' : '') +
+  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special attempt' + (sh.eaDive ? ' (the goalie dived after it)' : '') : '') +
     (sh.afterFlip ? ' \u00b7 EA Special (the rebound)' : sh.rebound ? ' \u00b7 rebound' : '') +
     (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '');
   return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move + context;
