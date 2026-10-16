@@ -483,6 +483,8 @@ function viewSkaters(list, team) {
     { key: 'att', label: 'ATT', title: 'Shot attempts: on goal, wide and blocked' },
     { key: 'ppg', label: 'PPG' }, { key: 'shg', label: 'SHG' }, { key: 'gwg', label: 'GWG', title: 'Game-winning goals' },
     { key: 'pim', label: 'PIM' },
+    { key: 'injured', label: 'INJ', title: 'Times he was injured (and, after the dot, injuries his checks caused)', value: r => r.injured || 0,
+      show: r => (r.injured || r.injuredOthers ? `${r.injured || 0}<small> · ${r.injuredOthers || 0}</small>` : '0') },
     { key: 'checks', label: 'CHK', title: 'Body checks thrown' }, { key: 'hitsTaken', label: 'HIT', title: 'Hits taken' },
     { key: 'take', label: 'TK', title: 'Takeaways' }, { key: 'give', label: 'GV', title: 'Giveaways' },
     { key: 'toig', label: 'TOI/GP', title: 'Ice time a game, in game minutes', value: r => r.toi / r.gp, show: r => mmss(r.toi / r.gp) },

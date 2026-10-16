@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
-VERSION = 5  # 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 6  # 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -259,6 +259,8 @@ def summarize(m, name, date=None):
                     "hitsTaken": sum(1 for h in hits if h["team"] == other and h["on"] == idx),
                     "give": sum(1 for e in turnovers if e["kind"] == "giveaway" and e["from"] == team and e.get("giver") == idx),
                     "take": sum(1 for e in turnovers if e["kind"] == "takeaway" and e["from"] == other and e.get("by") == idx),
+                    "injured": sum(1 for e in m.get("injuries", []) if e["team"] == team and e["idx"] == idx),
+                    "injuredOthers": sum(1 for e in m.get("injuries", []) if e["team"] == other and e.get("by") == idx),
                 })
                 line.update(skater_adv(team, idx))
                 mine = [s for s in shots if s["team"] == team and s["idx"] == idx]
