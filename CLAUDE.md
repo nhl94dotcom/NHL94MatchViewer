@@ -976,6 +976,9 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
 - The `full_buttons` capture's labelled taps: A at 5.6-12.1 s, B at 13.9-19.7 s, C at 21.1-26.8 s (the C taps came
   while the skater was down, then while controlling the goalie).
 - Whether capture works during netplay, and whether a netplay spectator can do the capturing.
+- Injuries (2026-10-16): they happen now and then, for the rest of the period or the game; no recording has one
+  yet. The user will record Genesis and SNES games with injuries (the disassemblies name injury animations: Genesis
+  $145C injuryfall, $1AF4 injury1).
 - Most team stat words (passing, checks, faceoffs, attack-zone time) are unverified.
 
 ## Files
