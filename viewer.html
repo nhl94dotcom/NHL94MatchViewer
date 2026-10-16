@@ -860,18 +860,28 @@ function drawOverlay(f) {
   if (overlay === 'goalie') { drawGoalieReport(f, colours); return; }
   if (overlay === 'passes') { drawPasses(f, colours); return; }
   if (overlay === 'entries') { drawEntries(f, colours); return; }
-  // Heat map: where each team (or player) had the puck, by time. Built up frame by frame; started again on a rewind.
+  // Heat map: where each team had the puck, by time; for one player, where he skated (his own position all the time he
+  // was on the ice in live play, puck or not). Built up frame by frame; started again on a rewind.
   if (!heatGrid || f < heatGrid.upTo) {
     heatGrid = { upTo: -1, cells: [new Float32Array(HEAT_COLS * HEAT_ROWS), new Float32Array(HEAT_COLS * HEAT_ROWS)], image: null, seconds: [0, 0] };
   }
-  const h = heatGrid;
+  const h = heatGrid, skater = heatPlayer();
   for (let i = h.upTo + 1; i <= f && i + 1 < m.t.length; i++) {
-    const k = m.owner[i];
-    if (k < 0 || m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;
+    if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;  // a whistle: the puck is hidden until the faceoff
+    let k, px, py;
+    if (skater) {
+      k = -1;
+      for (let j = skater.team * 6; j < skater.team * 6 + 6; j++) if (rosterIndex(i, j) === skater.idx && role(i, j) >= 0) { k = j; break; }
+      if (k < 0) continue;
+      px = m.pos[(i * PLAYERS + k) * 2]; py = m.pos[(i * PLAYERS + k) * 2 + 1];
+    } else {
+      k = m.owner[i];
+      if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k))) continue;
+      px = m.puck[3 * i]; py = m.puck[3 * i + 1];
+    }
     const team = k < 6 ? 0 : 1;
-    if (!counts(team, rosterIndex(i, k))) continue;
     // Kept with Home attacking up: turned while Home's goalie is at the top.
-    const x = ends[i] ? -m.puck[3 * i] : m.puck[3 * i], y = ends[i] ? -m.puck[3 * i + 1] : m.puck[3 * i + 1];
+    const x = ends[i] ? -px : px, y = ends[i] ? -py : py;
     const c = Math.floor((x + 130) / HEAT_CELL), r = Math.floor((300 - y) / HEAT_CELL);
     if (c < 0 || c >= HEAT_COLS || r < 0 || r >= HEAT_ROWS) continue;
     const dt = Math.min(100, m.t[i + 1] - m.t[i]);
@@ -886,6 +896,12 @@ function drawOverlay(f) {
   ctx.restore();
   fillOverlayInfo(f, null, h.seconds);
 }
+// The one player the heat map is for, or null for a team or both (their maps stay time with the puck).
+const heatPlayer = () => {
+  if (overlayWho[0] !== 'p') return null;
+  const [team, idx] = overlayWho.slice(1).split(':').map(Number);
+  return { team, idx };
+};
 const HEAT_SCALE = v => {
   const stops = [[255, 236, 110], [255, 150, 20], [205, 25, 25]], x = Math.min(1.999, v * 2), i = Math.floor(x), u = x - i;
   return [0, 1, 2].map(j => Math.round(stops[i][j] + (stops[i + 1][j] - stops[i][j]) * u));
@@ -963,7 +979,7 @@ function fillOverlayInfo(f, tally, seconds) {
   const who = $('overlayWho').selectedOptions[0];
   box.textContent = '';
   const title = document.createElement('b');
-  title.textContent = (overlay === 'shots' ? 'Shot map' : 'Heat map: time with the puck') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  title.textContent = (overlay === 'shots' ? 'Shot map' : heatPlayer() ? 'Heat map: where he skated' : 'Heat map: time with the puck') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
   box.append(title);
   for (const team of [0, 1]) {
     if (only >= 0 && team !== only) continue;
@@ -976,7 +992,7 @@ function fillOverlayInfo(f, tally, seconds) {
       line.textContent = names[team] + ': ' + n + ' shot' + (n === 1 ? '' : 's') + passes + (parts.length ? ' \u2014 ' + parts.join(', ') : '');
     } else {
       const sec = Math.round(seconds[team]);
-      line.textContent = names[team] + ': ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+      line.textContent = (heatPlayer() ? 'On the ice in play' : names[team]) + ': ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
     }
     box.append(line);
   }
