@@ -337,7 +337,7 @@ function pool(byTeam = true, withExcluded = false) {
 function standings(list) {
   const rows = new Map();
   const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
-    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, passTried: 0, passMade: 0, attackZone: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
     for (const side of [0, 1]) {
@@ -556,6 +556,8 @@ function viewTeams(list, team) {
     { key: 'az', label: 'ZONE', title: 'Attack-zone time a game (game seconds)', value: r => r.attackZone / r.gp, show: r => mmss(r.attackZone / r.gp) },
     { key: 'chk', label: 'CHK', title: 'Body checks', value: r => r.checks / r.gp, show: r => per(r.checks, r.gp) },
     { key: 'big', label: 'BIG', title: 'Big hits (upended, into the boards or bench)', value: r => r.bigHits / r.gp, show: r => per(r.bigHits, r.gp) },
+    { key: 'apg', label: 'ATT POSS/GF', title: 'Attacking-zone possession (game time) for each goal scored: how long the team needed the puck in the other end per goal. Lower is more dangerous', value: r => (r.gf ? r.possAtt / r.gf : NaN), show: r => (r.gf && r.possAtt ? mmss(r.possAtt / r.gf) : '\u2013') },
+    { key: 'apa', label: 'OPP POSS/GA', title: 'The other teams\u2019 attacking-zone possession (game time) for each goal allowed: how long opponents had the puck in this team\u2019s end per goal against. Higher is better defence', value: r => (r.ga ? r.possAttAgainst / r.ga : NaN), show: r => (r.ga && r.possAttAgainst ? mmss(r.possAttAgainst / r.ga) : '\u2013') },
     { key: 'bob', label: 'BOB', title: 'Bobbled passes: passes that bounced off the teammate they reached', value: r => r.bobbled / r.gp, show: r => per(r.bobbled, r.gp) },
     { key: 'bmp', label: 'BMP', title: 'Pucks its carriers lost on body contact (no check, poke or hook, not knocked over)', value: r => r.bumped / r.gp, show: r => per(r.bumped, r.gp) },
     { key: 'ong', label: 'ONG', title: 'Pucks its carriers lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie / r.gp, show: r => per(r.onGoalie, r.gp) },
@@ -951,7 +953,7 @@ function viewPlay(list, team) {
     { key: 'hooks', label: 'Hooks/GP', value: r => r.habits.hooks / r.habitGames, show: r => per(r.habits.hooks, r.habitGames) },
     { key: 'passPct', label: 'Pass %', title: 'Passes by the person\u2019s skater that got to a teammate (or a one-timer)', value: r => (r.humanPasses && r.humanPasses[0] ? r.humanPasses[1] / r.humanPasses[0] : NaN),
       show: r => (r.humanPasses && r.humanPasses[0] ? pct1(100 * r.humanPasses[1] / r.humanPasses[0]) : '–') },
-    { key: 'goalie', label: 'Goalie time/GP', title: 'Time a person controlled the goalie, a game (real time)', value: r => r.habits.goalieSeconds / r.habitGames, show: r => mmss(r.habits.goalieSeconds / r.habitGames) },
+    { key: 'goalie', label: 'Goalie time/GP', title: 'Game time a person controlled the goalie, a game', value: r => r.habits.goalieSeconds / r.habitGames, show: r => mmss(r.habits.goalieSeconds / r.habitGames) },
     { key: 'dives', label: 'Dives/GP', value: r => r.habits.dives / r.habitGames, show: r => per(r.habits.dives, r.habitGames) },
   ], 'habitGames') : '<p class="empty">No controller recordings in these games.</p>';
   // Passing network of one team: the team picked above, else My team, else the one with the most games. A pass only

@@ -486,6 +486,46 @@ def whistles(m):
     return out
 
 
+def clock_ticks(m):
+    """tick[i]: game seconds the clock ticked off at sample i (as the viewer's possession counts them): a second
+    counts when the clock reaches a new low in the period, at most 3 at a time; the game setting the clock (0:00
+    before a period's 5:00, 10:00 then 0:00 after the final horn) and a blip back up are not play."""
+    n, clock, period = len(m['t']), m['clock'], m['period']
+    tick, low = [0] * n, clock[0] if n else 0
+    for i in range(1, n):
+        if period[i] != period[i - 1] or clock[i] > low + 3:
+            low = clock[i]
+        elif clock[i] < low:
+            if low - clock[i] <= 3:
+                tick[i] = low - clock[i]
+            low = clock[i]
+    return tick
+
+
+def game_weights(m, tick=None):
+    """w[i]: game milliseconds the stretch from sample i to i + 1 stands for. Each second the clock ticks off is shared
+    over the samples it took to tick, by their real length; with the clock stopped (a whistle, a faceoff being set
+    up) samples get nothing, so a long wait before a tick only shares in its last stretch (the usual real length of a
+    game second: about 0.4 s on the Genesis). For heat maps and other time spent somewhere, in game time."""
+    t, n = m['t'], len(m['t'])
+    tick = tick or clock_ticks(m)
+    w = [0.0] * n
+    at = [i for i in range(n) if tick[i]]
+    gaps = sorted(t[b] - t[a] for a, b in zip(at, at[1:]) if tick[b] == 1 and m['period'][a] == m['period'][b])
+    second = gaps[len(gaps) // 2] if gaps else 400  # real ms per game second
+    prev = 0
+    for b in at:
+        span, q, real = tick[b] * second * 1.25, b - 1, []
+        while q >= prev and t[b] - t[q] <= span:
+            real.append((q, min(100, t[q + 1] - t[q])))
+            q -= 1
+        total = sum(d for _, d in real)
+        for q, d in real:
+            w[q] += 1000.0 * tick[b] * d / total if total else 0
+        prev = b
+    return w
+
+
 def own_end(m, i, team):
     """+1 if the team's goalie is at the +Y end at frame i, -1 if at -Y, None if no goalie is on."""
     for k in range(team * 6, team * 6 + 6):
@@ -1251,8 +1291,8 @@ def add_play_context(m):
       shooter carried the puck behind that goal line: a wraparound;
     - m['habits']: for each team a person played, what that person did with the controller: button presses
       (A, B, C) and minutes of live play, and the controlled skater's actions (speed bursts / check lunges and the
-      checks landed, poke checks and hooks and the takeaways they made, the goalie's dives and the time a person had
-      the goalie; one-timers and passes come from the shot and pass lists' `human`). Hooks are not known on the SNES."""
+      checks landed, poke checks and hooks and the takeaways they made, the goalie's dives and the game time a person
+      had the goalie (presses and bursts are per real minute of live play: how busy the thumbs were); one-timers and passes come from the shot and pass lists' `human`). Hooks are not known on the SNES."""
     t, P, own = m['t'], m['puck'], m['owner']
     N, K = len(t), 12
     ctrl = m.get('ctrl') or []
@@ -1318,6 +1358,7 @@ def add_play_context(m):
             sh['wrap'] = True
 
     # Controller habits, for each team a person played
+    ticks = clock_ticks(m)
     pads = [(m.get('pad'), m.get('padTeam', -1)), (m.get('pad2'), m.get('pad2Team', -1))]
     live = [q for q in range(N - 1) if P[3 * q + 2] >= -100]
     minutes = sum(min(100, t[q + 1] - t[q]) for q in live) / 60000
@@ -1335,7 +1376,8 @@ def add_play_context(m):
         pokes = starts(act.get('poke', set()))
         hooks = starts(act.get('hook', set()))
         dives = starts(act.get('dive', set()), goalie=True)
-        goalie_ms = sum(min(100, t[q + 1] - t[q]) for q in live if any(ctrl[q] >> k & 1 and m['role'][q * K + k] == '0' for k in mine))
+        # game seconds a person had the goalie (the clock's ticks while he carried the controlled marker)
+        goalie_s = sum(ticks[q] for q in range(N) if ticks[q] and ctrl and any(ctrl[q] >> k & 1 and m['role'][q * K + k] == '0' for k in mine))
         takes = [e for e in m.get('turnovers', []) if e['kind'] == 'takeaway' and e['from'] != team]
         habits[team] = {
             'minutes': round(minutes, 2), 'presses': presses,
@@ -1344,7 +1386,7 @@ def add_play_context(m):
             'bursts': len(lunges), 'checks': sum(1 for h in m.get('hits', []) if h['team'] == team and h.get('human')),
             'pokes': len(pokes), 'pokeTakeaways': sum(1 for e in takes if e.get('how') == 'poke check' and controlled(e['lost'], team, e.get('by'))),
             'hooks': len(hooks), 'hookTakeaways': sum(1 for e in takes if e.get('how') == 'hook' and controlled(e['lost'], team, e.get('by'))),
-            'dives': len(dives), 'goalieSeconds': round(goalie_ms / 1000, 1),
+            'dives': len(dives), 'goalieSeconds': goalie_s,  # game seconds
         }
     if any(habits):
         m['habits'] = habits

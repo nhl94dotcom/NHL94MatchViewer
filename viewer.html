@@ -427,7 +427,7 @@ beside it. Teams change ends between periods, so each team is kept attacking the
 marker for what it was; click it to jump there.</p>
 <dl>
   <dt>Shot map</dt><dd>Every shot attempt: goals (accent ring), saves (white ring), posts (diamond), wide (hollow), blocked (crossed). Squares are pass shots.</dd>
-  <dt>Heat map</dt><dd><b>Skating</b>: where the skaters (or one player) went, puck or not. <b>With the puck</b>: where the puck was while they had it. Filters: period, strength (even, power play, shorthanded) and, for skating, attacking / defending / loose puck. With both teams it shows the difference: each spot in the colour of the team that spent more time there.</dd>
+  <dt>Heat map</dt><dd><b>Skating</b>: where the skaters (or one player) went, puck or not. <b>With the puck</b>: where the puck was while they had it. Filters: period, strength (even, power play, shorthanded) and, for skating, attacking / defending / loose puck. With both teams it shows the difference: each spot in the colour of the team that spent more time there. Time is game time: nothing counts while the clock is stopped.</dd>
   <dt>Turnovers</dt><dd>Giveaways (hollow triangles, in the colour of the team that lost it) and takeaways (filled).</dd>
   <dt>Passes</dt><dd>Every pass and how it ended.</dd>
   <dt>Zone entries</dt><dd>Where the puck crossed the blue line: carried (disc), passed (diamond), dumped (hollow); an accent ring means a shot attempt came of it.</dd>
@@ -459,6 +459,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
 
 <section id="h-glossary"><h2>Glossary of stats</h2>
 <p>Tip: point at any stat in the team stats or on a player's card, or at a column heading on the season page, for a short explanation of it.</p>
+<p>Times are game-clock time (the clock you see in the game, which runs about 2.5 times as fast as real time and stops at whistles) everywhere except skating speed and distance and the controller's presses a minute, which use real time.</p>
 <h3>Basics</h3>
 <dl>
   <dt>G, A, PTS</dt><dd>Goals, assists, points (goals + assists), as the game credits them.</dd>
@@ -507,6 +508,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Checks, hits taken</dt><dd>Body checks that landed, thrown and taken.</dd>
   <dt>Big hit</dt><dd>A check that upended a player or sent him into the boards or the bench.</dd>
   <dt>Bumped off the puck, pucks lost on contact</dt><dd>The puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down: the two only rubbed into each other. The card shows each player's "Bumped off puck" (he lost it) and "Bumped puck loose" (he was the one in contact). Team stats count them, and how many went straight to the other team.</dd>
+  <dt>Attack-zone possession per goal</dt><dd>A team's possession in its attacking zone (game time) divided by its goals: how long it needed the puck in the other end for each goal (lower is more dangerous). On the season page also the other way round: the opponents' attacking-zone possession for each goal the team allowed (higher is better defence). One game's number is the same seen from either side; over a season the two tell offence and defence apart.</dd>
   <dt>Carried by D / C / W</dt><dd>Who carries the puck: the share of a team's time with the puck on a stick that the carrier was a defenceman, the centre or a winger, by the position he was playing then. Two defencemen, two wingers and one centre, so equal use would be 40 / 20 / 40. In the team stats (Puck control) and, across games, on the season page's Play style tab ("Who carries the puck", by zone, with carried zone entries by position).</dd>
   <dt>Pass direction and zones</dt><dd>Each pass is classed by the way the puck left the stick, against the way the passer's team attacks: forward (within 30&deg; of straight up the ice), diagonal forward (30&ndash;60&deg;), sideways (within 30&deg; of straight across, so a little forward or back still counts), diagonal back, backward; and by the zone it was made in and the zone it reached (attacking, neutral, defensive, in the passer's team's terms). Shown in the team stats ("Passing by zone and direction"), on the card, and on the season page's Play style tab ("Passing by zone"), with each player's game time with the puck in that zone and passes per minute of it: high means he moves the puck on, low means he skates with it.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
@@ -683,6 +685,7 @@ function load(m) {
   heat = findHeat(m);
   setupOverlay(m);
   possession = findPossession(m);  // after setupOverlay: it needs ends
+  gameMs = gameWeights(m, possession.tick);
   penCount = countPenalties(m);
   lineChanges = findLineChanges(m);
   fillHeatPeriods(m);
@@ -1275,7 +1278,8 @@ function drawOverlay(f) {
   for (let i = h.upTo + 1; i <= f && i + 1 < m.t.length; i++) {
     if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;  // a whistle: the puck is hidden until the faceoff
     if (heatPeriod >= 0 && m.period[i] !== heatPeriod) continue;
-    const dt = Math.min(100, m.t[i + 1] - m.t[i]);
+    const dt = gameMs ? gameMs[i] : Math.min(100, m.t[i + 1] - m.t[i]);  // game time
+    if (!dt) continue;  // the clock stopped
     if (heatMode === 'puck') {
       const k = m.owner[i];
       if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k)) || !heatCounts(i, k < 6 ? 0 : 1)) continue;
@@ -1690,6 +1694,27 @@ function drawGoalieReport(f, colours) {
 // possession.cum[c][f]: game seconds so far at frame f for c = 0 Home, 1 Away, 2 Transition; possession.tick[f]:
 // the seconds the clock ticked off arriving at frame f.
 let possession = null;
+// gameMs[i]: game milliseconds the stretch from sample i to i + 1 stands for (as the converter's game_weights): each
+// second the clock ticks off is shared over the samples it took, by their real length; nothing while the clock is
+// stopped. Heat maps add up time in game time with it.
+let gameMs = null;
+function gameWeights(m, tick) {
+  const n = m.t.length, w = new Float32Array(n), at = [];
+  for (let i = 0; i < n; i++) if (tick[i]) at.push(i);
+  const gaps = [];
+  for (let j = 1; j < at.length; j++) if (tick[at[j]] === 1 && m.period[at[j]] === m.period[at[j - 1]]) gaps.push(m.t[at[j]] - m.t[at[j - 1]]);
+  gaps.sort((a, b) => a - b);
+  const second = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 400;  // real ms per game second
+  let prev = 0;
+  for (const b of at) {
+    const span = tick[b] * second * 1.25, real = [];
+    for (let q = b - 1; q >= prev && m.t[b] - m.t[q] <= span; q--) real.push([q, Math.min(100, m.t[q + 1] - m.t[q])]);
+    const total = real.reduce((a, r) => a + r[1], 0);
+    for (const [q, d] of real) if (total) w[q] += 1000 * tick[b] * d / total;
+    prev = b;
+  }
+  return w;
+}
 const ZONE_LINE = 89;
 function findPossession(m) {
   const n = m.t.length, team = k => (k < 6 ? 0 : 1), hidden = i => m.puck[3 * i + 2] < PUCK_HIDDEN_Z;
@@ -2467,7 +2492,7 @@ const STAT_HELP = {
   'Pucks lost on contact': 'Times a puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down.',
   'Pucks lost on contact|· to the other team': 'Of those, the ones where the other team got the puck next.',
   'Pucks lost on a goalie': 'Times a carrier skated into a goalie (either team\u2019s) and the puck came loose.',
-  'Distance skated': 'How far the team\u2019s skaters went in all, from their positions (real-rink scale).',
+  'Distance skated': 'How far the team\u2019s skaters went in all, from their positions (real-rink scale; speeds use real time).',
   'Power play': 'Power-play goals / power plays, as the game counts them.',
   'Shorthanded goals': 'Goals scored while the team had more players serving penalties than the other.',
   'Penalties': 'Penalties called on the team.',
@@ -2484,12 +2509,13 @@ const STAT_HELP = {
   'Saves, person in net': 'Saves / shots faced while the person was controlling the goalie at the moment of the shot.',
   'Saves, CPU in net': 'Saves / shots faced while the computer had the goalie.',
   // ---- controller
-  'Presses a minute (A / B / C)': 'How often the person pressed each button, a minute of live play.',
+  'Presses a minute (A / B / C)': 'How often the person pressed each button, a minute of live play (real time: how busy the thumbs were).',
   'Speed bursts / check tries': 'C without the puck: a speed burst or a check lunge (the game uses one move for both).',
   'Checks landed (person)': 'Checks the person\u2019s skater landed.',
   'Poke checks (takeaways)': 'Poke checks by the person\u2019s skater (and how many took the puck).',
   'Hooks (takeaways)': 'Hooks by the person\u2019s skater (and how many took the puck).',
-  'Goalie: time controlled': 'Real time the person controlled the goalie.',
+  'Goalie: time controlled': 'Game time the person controlled the goalie (game-clock seconds, like ice time).',
+  'Attack-zone possession per goal': 'The team\u2019s possession in its attacking zone (game time), divided by its goals: how long it needed the puck in the other team\u2019s end for each goal. Lower is more dangerous. Seen from the other side, it is how long this team let the other one have the puck in its own end for each goal it allowed.',
   'Goalie dives': 'Dives by the goalie while the person controlled him.',
   // ---- player card
   'Goals': 'Goals, as the game credits them.',
@@ -2502,7 +2528,7 @@ const STAT_HELP = {
   'Pen. minutes': 'Penalty minutes.',
   'Check types': 'How he threw his checks (shoulder, hip, cross-check), from the game\u2019s animations.',
   'Skated': 'How far he skated (real-rink scale).',
-  'Top speed': 'His fastest half second of skating in live play.',
+  'Top speed': 'His fastest half second of skating in live play (real time, so the mph are real-world speeds).',
   'Ice time': 'Game time on the ice.',
   'Plus/minus': 'Goals for minus goals against while he was on the ice (not power-play or penalty-shot goals, as the NHL counts it).',
   'Goals on ice': 'Goals for / against while he was on the ice.',
@@ -2573,6 +2599,9 @@ function fillTeamStats(snap) {
   const passInto = team => shaped(team).filter(e => e.zone !== 'att' && e.toZone === 'att').length;
   // Who carries the puck: the team's game seconds with the puck on a stick, by the carrier's position then (defence,
   // centre, wings), as shares. Equal use would be 40 / 20 / 40.
+  // Attacking-zone possession (game seconds) for each goal the team scored; the other column is how long this team
+  // let the other one have the puck in its zone for each goal it allowed.
+  const perGoal = team => { const g = match.score[2 * f + team]; return g ? secondsText(1000 * possession.zones[3 * team][zoneAt] / g) : '\u2013'; };
   const carriers = team => {
     const by = [0, 0, 0];
     for (let i = 1; i <= f; i++) {
@@ -2674,6 +2703,7 @@ function fillTeamStats(snap) {
         secondsText(1000 * possession.zones[z][zoneAt]), secondsText(1000 * possession.zones[3 + z][zoneAt])]),
       ['Transition ' + secondsText(1000 * held[2]) + share(2) + (liveKnowledge ? ' · undecided ' + secondsText(1000 * undecided) : ''), '', '']] : []),
     ...(held ? [['Carried by D / C / W', carriers(0), carriers(1)]] : []),
+    ...(held ? [['Attack-zone possession per goal', perGoal(0), perGoal(1)]] : []),
     ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
     ...(match.zoneEntries ? [['Zone entries', entries(0).length, entries(1).length],
       ['· carried / passed / dumped', entryKinds(0), entryKinds(1)],
