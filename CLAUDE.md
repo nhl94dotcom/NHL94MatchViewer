@@ -113,7 +113,7 @@ The user is part of an NHL '94 online community that standardizes on RetroArch 1
 with a trimmed-down menu configuration. The user's install: `C:\Users\USER\RetroArch-1.17-Win64`.
 ROM in use: NHL '94, crc32 `9438f5dd`.
 
-## SNES version (planned)
+## SNES version
 
 The user wants a SNES version too. The community plays it in RetroArch with the Snes9x core
 (`cores\snes9x_libretro.dll`); ROMs are in `C:\Users\USER\RetroArch-1.17-Win64\ROMs\SNES`: `NHL94.smc` (the base
@@ -266,7 +266,17 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   Ice time not found. Checked: Lemieux 3 goals, Murphy 2 assists, Potvin 12 shots against / 5 goals, Barrasso
   10 / 1; Murphy 10 checks, Samuelsson 9. Stat snapshots now carry 8 values per roster place like the Genesis
   ones, so cards, penalty boxes and find_hits (per-player path: 53 = 24 + 29) work.
-  Not known yet: puck height, screen state (menus, pause, replay), controller display, ice time, the hook.
+- Pause and replay: sflags $15D8 bit $0001 = paused (pause menu; replays are watched from it), bit $0800 = replay
+  playing (the user's two replays in P3: 383.8-395.1 s and 424.4-435.0 s, each inside a pause). The converter leaves
+  paused samples out and closes the timeline over them (`LivePlay`): 48 s fewer, no count changed.
+- The helper records SNES games itself (2026-10-15): `snes.View` (period, clock, score, teams, on_ice from the roster
+  bytes = $FF before the faceoff and at intermissions, in_game = not paused / not menus, in_menus = teams and score
+  cleared), BLOCKS [$0000-$3FFF], `Emulator.dump_rom` (roms/<fingerprint>.smc). At the final horn the SNES game sets
+  the period to 4 and the clock back to the period length; View reports the clock as 0 then, so the helper's
+  end-of-game test serves both systems. Tested by replaying snes_2026-10-15_1755 through the helper as a fake
+  Snes9x at 6x speed: it waited, recorded TOR vs PIT, left out the replays, converted (6 goals, 3 penalties, shots
+  10/12, 53 hits, Classic found by fingerprint). Not yet tried live.
+  Not known yet: puck height, controller display, ice time, the hook.
 
 ## Reading game memory live
 
