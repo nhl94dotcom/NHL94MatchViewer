@@ -3199,7 +3199,9 @@ function useRink(system) {
   loadScriptOnce(cfg.benches, cfg.benchData, () => { if (match && rinkSystem === name) { buildBenches(match); draw(); } });
 }
 function loadScriptOnce(src, variable, then) {
-  if (window[variable]) { then(); return; }
+  // Already there (a saved game file carries it): still run `then` only once the match has finished loading, as it
+  // would after a script arrives; called during load() it would draw before the panels exist.
+  if (window[variable]) { setTimeout(then); return; }
   const script = document.createElement('script');
   script.src = src;
   script.onload = then; script.onerror = then;  // without it, the picture file (or no benches)
