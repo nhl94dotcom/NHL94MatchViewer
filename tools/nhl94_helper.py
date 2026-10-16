@@ -432,6 +432,13 @@ class Server(http.server.ThreadingHTTPServer):
         super().server_bind()
 
 
+class Server6(Server):
+    """The same on IPv6's loopback (::1): Windows resolves "localhost" to ::1 first, and with nothing there each request
+    waited about 2 s before the browser tried 127.0.0.1, or gave up and said it could not connect."""
+    import socket
+    address_family = socket.AF_INET6
+
+
 class Tee:
     """Writes what the window shows to helper_log.txt too, so a tester can send it back."""
     def __init__(self, stream, log):
@@ -476,6 +483,10 @@ def main():
         return
     keep_log()
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        threading.Thread(target=Server6(("::1", PORT), Handler).serve_forever, daemon=True).start()
+    except OSError as e:  # IPv6 turned off, or ::1 taken: 127.0.0.1 still serves
+        print(f"(Not listening on ::1: {e})", flush=True)
     page = f"http://localhost:{PORT}/helper.html"
     print(f"Your games: {page}", flush=True)
     if load_settings().get("open_browser", True) and "--no-browser" not in sys.argv:
