@@ -1750,7 +1750,7 @@ function refreshPopover(f, snap) {
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
     if (skating) live.skate = skatingAt(shown.team, shown.idx, f);
-    if (match.shotList) live.ice = onIceStats(shown.team, shown.idx, f);
+    if (match.shotList) { live.ice = onIceStats(shown.team, shown.idx, f); live.teamIce = onIceStats(shown.team, null, f); }
     if (match.zoneEntries) {
       const mine = match.zoneEntries.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx);
       live.entries = { n: mine.length, carried: mine.filter(e => e.kind === 'carried').length };
@@ -1912,9 +1912,19 @@ function fillCard(card, p, position, live) {
         addStat(grid, 'Top speed', live.skate.top ? mphText(live.skate.top) : '–');
       }
       if (live.ice) {
-        addStat(grid, 'Attempts on ice', live.ice.cf + '–' + live.ice.ca);
-        addStat(grid, 'Goals on ice', live.ice.gf + '–' + live.ice.ga);
-        addStat(grid, 'Plus/minus', (live.ice.pm > 0 ? '+' : '') + live.ice.pm);
+        const ice = live.ice, team = live.teamIce;
+        addStat(grid, 'Goals on ice', ice.gf + '–' + ice.ga);
+        addStat(grid, 'Plus/minus', (ice.pm > 0 ? '+' : '') + ice.pm);
+        addStat(grid, 'Corsi', ice.cf + '–' + ice.ca);
+        addStat(grid, 'CF%', sharePct(ice.cf, ice.ca));
+        addStat(grid, 'Fenwick', ice.ff + '–' + ice.fa);
+        addStat(grid, 'FF%', sharePct(ice.ff, ice.fa));
+        // Relative: his Corsi share against his team's while he was on the bench.
+        const offF = team.cf - ice.cf, offA = team.ca - ice.ca;
+        addStat(grid, 'CF% rel', offF + offA && ice.cf + ice.ca ? ((100 * ice.cf / (ice.cf + ice.ca)) - (100 * offF / (offF + offA))).toFixed(1).replace(/^(?!-)/, '+') : '\u2013');
+        addStat(grid, 'PDO', pdoText(ice));
+        addStat(grid, 'Zone starts', ice.zs.join('/'));  // attacking / neutral / defensive
+        addStat(grid, 'OZS%', sharePct(ice.zs[0], ice.zs[2]));
       }
       if (live.entries) addStat(grid, 'Zone entries', live.entries.n + (live.entries.n ? ' (' + live.entries.carried + ' carried)' : ''));
       if (live.puckMs !== undefined) {
@@ -2034,6 +2044,17 @@ function fillTeamStats(snap) {
     ...(h.psTried === undefined ? [] : [
       ['Penalty shots', h.psGoals + '/' + h.psTried, a.psGoals + '/' + a.psTried],
     ]),
+    ...(match.shotList ? (() => {
+      // Advanced: shot-attempt shares (Corsi: all attempts; Fenwick: not blocked), all situations and even strength,
+      // and PDO (shooting % + save %, times 100: about 100 is normal, well above it suggests luck running hot).
+      const s0 = onIceStats(0, null, f), s1 = onIceStats(1, null, f);
+      return [section('Advanced'),
+        ['Corsi % (CF%)', sharePct(s0.cf, s0.ca), sharePct(s1.cf, s1.ca)],
+        ['· even strength', sharePct(s0.ev.cf, s0.ev.ca), sharePct(s1.ev.cf, s1.ev.ca)],
+        ['Fenwick % (FF%)', sharePct(s0.ff, s0.fa), sharePct(s1.ff, s1.fa)],
+        ['· even strength', sharePct(s0.ev.ff, s0.ev.fa), sharePct(s1.ev.ff, s1.ev.fa)],
+        ['PDO', pdoText(s0), pdoText(s1)]];
+    })() : []),
     section('Puck control'),
     ...(held ? [['Possession', secondsText(1000 * held[0]) + share(0), secondsText(1000 * held[1]) + share(1)],
       // Each team's possession by where the puck was, in its own view; the three add up to its possession.
@@ -2151,23 +2172,48 @@ function skatingAt(team, idx, f) {
 const milesText = units => (units / UNITS_PER_FOOT / 5280).toFixed(2) + ' mi';
 const mphText = unitsPerS => (unitsPerS / UNITS_PER_FOOT * 3600 / 5280).toFixed(1) + ' mph';
 
-// On the ice: the shot attempts (everything in the shot list) and goals for and against while a skater was on the
-// ice, at the release or the goal, and plus/minus as the NHL counts it (power-play and penalty-shot goals count
-// for neither side).
+// On the ice: what happened while a skater was on the ice (at the release, the goal or the faceoff's drop), as the
+// NHL's analysts count it. Corsi (cf / ca): every shot attempt in the shot list; Fenwick (ff / fa): those not
+// blocked; shots on goal (sf / sa) as the game counts them; goals (gf / ga); plus/minus as the NHL counts it
+// (power-play and penalty-shot goals count for neither side); zone starts (zs): faceoffs in his team's attacking,
+// neutral and defensive zones. With idx null: the whole team's numbers. ev: the same at even strength only (as many
+// players serving penalties on each side), the season page's other view.
 function onIceStats(team, idx, f) {
-  const there = (g, side) => { for (let k = side * 6; k < side * 6 + 6; k++) if (role(g, k) >= 0 && rosterIndex(g, k) === idx) return true; return false; };
-  const out = { cf: 0, ca: 0, gf: 0, ga: 0, pm: 0 };
+  const there = (g, side) => {
+    if (idx === null) return true;
+    for (let k = side * 6; k < side * 6 + 6; k++) if (role(g, k) >= 0 && rosterIndex(g, k) === idx) return true;
+    return false;
+  };
+  const blank = () => ({ cf: 0, ca: 0, ff: 0, fa: 0, sf: 0, sa: 0, gf: 0, ga: 0 });
+  const out = { ...blank(), pm: 0, zs: [0, 0, 0], ev: blank() };
+  const even = g => !penCount || penCount[0][g] === penCount[1][g];
+  const add = (g, mine, keys) => {
+    for (const key of keys) {
+      const k = key + (mine ? 'f' : 'a');
+      out[k]++;
+      if (even(g)) out.ev[k]++;
+    }
+  };
   for (const sh of match.shotList || []) {
     if (!known(sh, f) || !there(sh.f, team)) continue;
-    if (sh.team === team) out.cf++; else out.ca++;
+    const result = resultAt(sh, f);
+    add(sh.f, sh.team === team, ['c', ...(result !== 'blocked' ? ['f'] : []), ...(sh.counted || result === 'goal' ? ['s'] : [])]);
   }
   for (const g of match.goals || []) {
     if (g.f > f || !there(g.f, team)) continue;
-    if (g.team === team) out.gf++; else out.ga++;
+    add(g.f, g.team === team, ['g']);
     if (!(g.kinds || []).some(k => k === 'PPG' || k === 'penalty shot')) out.pm += g.team === team ? 1 : -1;
+  }
+  const flip = { att: 'def', def: 'att', neu: 'neu' };
+  for (const e of match.faceoffs || []) {
+    if (e.f > f || !e.zone || !there(e.f, team)) continue;
+    out.zs[{ att: 0, neu: 1, def: 2 }[team ? flip[e.zone] : e.zone]]++;
   }
   return out;
 }
+// For the card and team stats: a share as a percentage, and PDO (on-ice shooting % + save %, times 100).
+const sharePct = (a, b) => (a + b ? Math.round(100 * a / (a + b)) + '%' : '\u2013');
+const pdoText = s => (s.sf && s.sa ? (100 * (s.gf / s.sf + 1 - s.ga / s.sa)).toFixed(1) : '\u2013');
 
 // Zone entries (the converter's find_zone_entries): the puck crossing a blue line into the zone a team attacks,
 // carried in, passed in or dumped in, and whether a shot attempt came of it before the puck left the zone.

@@ -822,6 +822,22 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   The footer wraps onto a second row when it runs out of
   room, and the seek bar keeps at least 140 px (with a map on it used to be squeezed away).
 
+## Advanced stats (2026-10-16)
+
+As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
+release, the goal or the drop): Corsi (CF / CA: every shot attempt in the shot list), Fenwick (FF / FA: those not
+blocked), shots on goal as the game counts them (SF / SA: `counted`, or a goal), goals (GF / GA), PDO (on-ice
+shooting % + save %, x 100), zone starts (faceoffs on the ice for, in the team's attacking / neutral / defensive zone;
+faceoff `zone` is in Home's view) and OZS% (attacking over attacking + defensive), and CF% rel (his CF% minus his
+team's while he was off the ice). Even strength = as many players serving penalties on each side (`penCount` /
+`penalty_counts`, from the stat snapshots). Viewer (`onIceStats`, idx null = the team): the card's Corsi, CF%,
+Fenwick, FF%, CF% rel, PDO, zone starts, OZS%; team stats' "Advanced" group (CF% and FF% all and even strength, PDO).
+Season summaries (VERSION 2): per skater `oi` / `oiEv` ([CF, CA, FF, FA, SF, SA, GF, GA]), `zs`, `off` / `offEv`
+(the team's numbers while he was off); per team `adv` / `advEv`; the season page's "Advanced" tab (teams and skaters,
+all situations or even strength). capture6: Boston CF 28-17 (62%), PDO 98.2 (31.6% shooting + 66.7% saving). With
+line changes off (the online leagues' usual setting) a skater's on-ice numbers are mostly his team's, and CF% rel is
+blank for players who never left the ice.
+
 ## Three stars and highlights
 
 The footer's "Highlights" button (`&highlights` opens it) shows the game's three stars and its highlights.
