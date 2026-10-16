@@ -909,6 +909,7 @@ def find_bobbles(m):
     to_puck = lambda i, k: math.hypot(P[3 * i] - pos(i, k)[0], P[3 * i + 1] - pos(i, k)[1])
     idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(m['roster'][i * K + k], 36))
     hidden = lambda q: P[3 * q + 2] < -100
+    lag = m.get('system') == 'snes'
 
     def at_boards(q):
         x, y = abs(P[3 * q]), abs(P[3 * q + 1])
@@ -921,11 +922,15 @@ def find_bobbles(m):
         # skaters only: a goalie takes a pass his own way (Cullen's back to Potvin in 2026-10-16_1540_CHI-TOR)
         mates = [k for k in range(team * 6, team * 6 + 6) if m['role'][rel * K + k] not in '0x' and idx(rel, k) != p['idx']]
         rivals = [k for k in range(6 * (1 - team), 6 * (1 - team) + 6) if m['role'][rel * K + k] != 'x']
-        q, hit = rel + 1, None
+        # From the release (the bounce can come by the next sample), the speed change between samples q and q + 1;
+        # on the SNES distances at either (its puck's position can trail its speed by a sample: Ellett to Cullen in
+        # 2026-10-16_1540_CHI-TOR P1 1:00, 32 at the change and 19 a sample later).
+        q, hit = rel, None
         while q < N - 1 and t[q] - t[rel] < 2000 and own[q] < 0 and not hidden(q):
             if math.hypot(V[2 * q + 2] - V[2 * q], V[2 * q + 3] - V[2 * q + 1]) >= BOBBLE_KICK:
-                mate = min(((to_puck(q, k), k) for k in mates), default=(999, -1))
-                rival = min((to_puck(q, k) for k in rivals), default=999)
+                at = (q, q + 1) if lag else (q,)
+                mate = min(((min(to_puck(z, k) for z in at), k) for k in mates), default=(999, -1))
+                rival = min((min(to_puck(z, k) for z in at) for k in rivals), default=999)
                 if mate[0] <= BOBBLE_NEAR and rival > mate[0] + 8:
                     hit = (q, mate[1])
                 break  # the first thing the pass hit decides it
