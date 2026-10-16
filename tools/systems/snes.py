@@ -66,6 +66,10 @@ OBJ_POSITION = 0x0F43             # 0 G, 1 LD, 2 RD, 3 LW, 4 C, 5 RW, negative =
 OBJ_FACING = 0x1163               # 0-7
 OBJ_ANIM = 0x11A3                 # current animation (offset into the animation data), as the Genesis +$58
 OBJ_ANIM_STEP = 0x11C3
+OBJ_FRAME = 0x0D97                # the sprite frame shown, as the Genesis record's +$06: all values real frames in the
+                                  # first recording. Looking it up from the animation, step and facing instead
+                                  # turned right-handed skaters the wrong way: the game looks up direction (8 - d)
+                                  # for them and then mirrors the picture, as the Genesis does
 OBJ_FLAGS = 0x1283                # bit $0008: joystick controlled (as the Genesis +$62 bit $08)
 OBJ_ROSTER = 0x12A3               # roster place (low byte)
 OBJ_TEAM = 0x1503                 # 0 Home, else Away
@@ -475,8 +479,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
             stats["home"].append(vector)
             stats["away"].append(vector2)
             last_vectors, last_stat_ms = (vector, vector2), cap.ms(i)
-        f = animation_frame(rom, cap.word(i, OBJ_ANIM + 28), cap.word(i, OBJ_ANIM_STEP + 28), cap.word(i, OBJ_FACING + 28))
-        puck_frame.append(f"{f or 0:03x}")
+        f = cap.word(i, OBJ_FRAME + 28)
+        puck_frame.append(f"{f if f < 976 else 0:03x}")
         # Who has the puck: $0AE7, an object number (15 = nobody), checked on the first SNES recording: it names the
         # player the puck moves with in all 608 clearly carried moments and reads 15 in 456 of 457 clearly loose
         # ones. Counted only with the puck within 30 of him (at stoppages it stays on the goalie who held it).
@@ -489,15 +493,15 @@ def read_match(cap, rom_path, name, home=None, away=None):
             match["pos"] += [signed(i, OBJ_X + 2 * k), signed(i, OBJ_Y + 2 * k)]
             face = cap.word(i, OBJ_FACING + 2 * k) & 7
             spa, step = cap.word(i, OBJ_ANIM + 2 * k), cap.word(i, OBJ_ANIM_STEP + 2 * k)
-            f = animation_frame(rom, spa, step, face)
-            if f is not None:
+            f = cap.word(i, OBJ_FRAME + 2 * k)  # the game's own picture (the Genesis +$06)
+            if spa >= 0x8000:
                 spas.add(spa)
             facing.append(str(face))
             roster.append(DIGITS[min(cap.byte(i, OBJ_ROSTER + 2 * k), 35)])
             code = signed(i, OBJ_POSITION + 2 * k)
             role.append(str(code) if 0 <= code < 6 else "x")
             anim.append(f"{spa:04x}")
-            frame.append(f"{f or 0:03x}")
+            frame.append(f"{f if f < 976 else 0:03x}")
             mirror.append("1" if cap.word(i, OBJ_ATTRIBUTE + 2 * k) & 0x0800 else "0")
             if cap.word(i, OBJ_FLAGS + 2 * k) & 0x0008:
                 mask |= 1 << k
