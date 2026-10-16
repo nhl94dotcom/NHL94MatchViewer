@@ -66,6 +66,9 @@
   .form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 13px; min-width: 0; }
   .form label.wide { grid-column: 1 / -1; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .heatwrap { display: flex; flex-wrap: wrap; gap: 16px 22px; align-items: flex-start; }
+  #heatCanvas { width: 360px; max-width: 100%; height: auto; border-radius: 8px; background: var(--raised); }
+  .heatside { flex: 1 1 220px; min-width: 0; }
   @media (max-width: 640px) { main { padding: 16px 16px 40px; } td, th { padding-left: 6px; padding-right: 6px; } }
 </style>
 </head>
@@ -110,6 +113,7 @@
     <button data-tab="goalies">Goalies</button>
     <button data-tab="teams">Team stats</button>
     <button data-tab="h2h">Head to head</button>
+    <button data-tab="heat">Heat maps</button>
     <button data-tab="games">Games</button>
   </nav>
 
@@ -390,8 +394,9 @@ function render() {
       : '<p class="empty">No games match. Try "All ROMs", or untick "Whole games only".</p>';
     return;
   }
-  view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, games: viewGames }[tab])(list, team);
+  view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, heat: viewHeat, games: viewGames }[tab] || viewStandings)(list, team);
   wireSorting();
+  if (tab === 'heat' && $('hTeam')) wireHeat(list);
   for (const box of view.querySelectorAll('input[data-game]')) box.addEventListener('change', () => {
     const s = currentSeason(), set = excludedSet();
     if (box.checked) set.delete(box.dataset.game); else set.add(box.dataset.game);
@@ -547,6 +552,158 @@ function pairings(list, team) {
     { key: 'wins', label: 'Wins', value: r => r.wins[0] - r.wins[1], show: r => `${r.wins[0]}–${r.wins[1]}` },
     { key: 'goals', label: 'Goals', value: r => r.goals[0] + r.goals[1], show: r => `${r.goals[0]}–${r.goals[1]}` },
   ], 'gp');
+}
+
+// ---------------------------------------------------------------------------------------------------- heat maps
+// Each game's maps are in matches/heat/<name>.js (season.py makes them), loaded when this tab is first shown and
+// added up here: a team (its skaters, or the puck while it had it) or one skater, each team attacking up the screen.
+window.NHL94_HEAT = window.NHL94_HEAT || {};
+// &team=BOS&player=Ray Bourque&heat=puck&situation=att|def|pp|sh in the address pick them
+let heatWho = { team: query.get('team') || '', player: query.get('player') || '' };
+let heatMode = query.get('heat') === 'puck' ? 'puck' : 'skate', heatSlice = query.get('situation') || '';
+const heatLoading = new Map();
+function loadHeat(names) {
+  return Promise.all(names.map(name => {
+    if (window.NHL94_HEAT[name]) return Promise.resolve();
+    if (!heatLoading.has(name)) heatLoading.set(name, new Promise(resolve => {
+      const s = document.createElement('script');
+      s.src = 'matches/heat/' + encodeURIComponent(name) + '.js';
+      s.onload = s.onerror = () => resolve();
+      document.head.append(s);
+    }));
+    return heatLoading.get(name);
+  }));
+}
+// The rink pictures and where game positions land on them (as in the viewer)
+const RINK_PICS = {
+  genesis: { src: 'rink_gens.png', cx: 450.4, cy: 777, ux: 2.459, uy: 2.079 },
+  snes: { src: 'rink_snes.png', cx: 449.2, cy: 776.2, ux: 2.451, uy: 2.076 },
+};
+const rinkImages = {};
+function rinkImage(system) {
+  if (!rinkImages[system]) {
+    rinkImages[system] = new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img); img.onerror = () => resolve(null);
+      img.src = RINK_PICS[system].src;
+    });
+  }
+  return rinkImages[system];
+}
+const HEAT_SLICES = { '': 'All play', att: 'Attacking (has the puck)', def: 'Defending (other team has it)', pp: 'Power play', sh: 'Shorthanded' };
+
+function viewHeat(list) {
+  const teams = new Map();
+  for (const g of list) g.abbr.forEach((a, i) => teams.set(a, g.names[i]));
+  if (!teams.has(heatWho.team)) heatWho = { team: teams.has(myTeam()) ? myTeam() : [...teams.keys()][0] || '', player: '' };
+  const skaters = playerLines(list, false).filter(r => r.abbr === heatWho.team).sort((a, b) => b.toi - a.toi);
+  if (!skaters.some(r => r.name === heatWho.player)) heatWho.player = '';
+  if (heatMode === 'puck' || (heatWho.player && ['pp', 'sh'].includes(heatSlice))) heatSlice = heatMode === 'puck' ? '' : heatSlice;
+  const slices = Object.entries(HEAT_SLICES).filter(([k]) => !(heatWho.player && ['pp', 'sh'].includes(k)));
+  if (!slices.some(([k]) => k === heatSlice)) heatSlice = '';
+  return `<h2>Heat maps</h2>
+    <div class="filters" style="margin-bottom:12px">
+      <label>Team <select id="hTeam">${[...teams].sort((a, b) => a[1].localeCompare(b[1])).map(([a, n]) => `<option value="${esc(a)}">${esc(n)}</option>`).join('')}</select></label>
+      <label>Player <select id="hPlayer"><option value="">Whole team</option>${skaters.map(r => `<option value="${esc(r.name)}">#${r.num} ${esc(r.name)}</option>`).join('')}</select></label>
+      <label>Map <select id="hMode"><option value="skate">Skating</option><option value="puck">With the puck</option></select></label>
+      <label${heatMode === 'puck' ? ' hidden' : ''}>Situation <select id="hSlice">${slices.map(([k, t]) => `<option value="${k}">${t}</option>`).join('')}</select></label>
+    </div>
+    <div class="heatwrap"><canvas id="heatCanvas" width="360" height="576" aria-label="Heat map"></canvas>
+      <div class="heatside"><p id="heatCaption" class="note" style="margin:0">Loading the games&hellip;</p>
+      <p class="note">${heatMode === 'puck' ? 'Where the puck was while they had it.' : heatWho.player ? 'Everywhere he went while on the ice in live play, puck or not.' : 'Where the team\u2019s skaters went in live play, puck or not (goalies left out).'}
+      Each game is turned so the team attacks up the screen. Brighter red: more time there. Stoppages are left out.</p></div></div>`;
+}
+
+function wireHeat(list) {
+  $('hTeam').value = heatWho.team; $('hPlayer').value = heatWho.player; $('hMode').value = heatMode; $('hSlice').value = heatSlice;
+  $('hTeam').addEventListener('change', e => { heatWho = { team: e.target.value, player: '' }; render(); });
+  $('hPlayer').addEventListener('change', e => { heatWho.player = e.target.value; render(); });
+  $('hMode').addEventListener('change', e => { heatMode = e.target.value; render(); });
+  $('hSlice').addEventListener('change', e => { heatSlice = e.target.value; render(); });
+  drawSeasonHeat(list);
+}
+
+async function drawSeasonHeat(list) {
+  const want = list.filter(g => g.abbr.includes(heatWho.team));
+  await loadHeat(want.map(g => g.name));
+  const canvas = $('heatCanvas');
+  if (!canvas) return;  // the page moved on while loading
+  const system = want.length && want.every(g => g.system === 'snes') ? 'snes' : 'genesis', pic = RINK_PICS[system];
+  const img = await rinkImage(system);
+  if ($('heatCanvas') !== canvas) return;
+  // Add the games up
+  let cols = 26, rows = 60, cell = 10, sum = null, secs = 0, used = 0, missing = 0;
+  const slice = heatMode === 'puck' ? 'puck' : heatSlice || 'skate';
+  for (const g of want) {
+    const h = window.NHL94_HEAT[g.name];
+    if (!h) { missing++; continue; }
+    cols = h.cols; rows = h.rows; cell = h.cell;
+    if (!sum) sum = new Float32Array(cols * rows);
+    let any = false;
+    g.abbr.forEach((a, side) => {
+      if (a !== heatWho.team) return;
+      let e = h.teams[side];
+      if (heatWho.player) {
+        const p = g.players[side].find(q => !q.goalie && q.name === heatWho.player);
+        e = p ? h.players[side][String(p.idx)] : null;
+      }
+      if (!e) return;
+      any = true;
+      secs += e.s[slice] || 0;
+      const packed = e.g[slice] || [];
+      for (let j = 0, at = -1; j < packed.length; j += 2) { at += packed[j] + 1; sum[at] += packed[j + 1] / 10; }
+    });
+    if (any) used++;
+  }
+  // Draw: the rink picture, the map over it
+  const ctx = canvas.getContext('2d'), scale = canvas.width / 900;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (img) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  else { ctx.fillStyle = '#7ee2f5'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  if (sum) {
+    const heat = heatPicture(sum, cols, rows, heatMode === 'skate');
+    ctx.imageSmoothingEnabled = true;
+    const x0 = (pic.cx - 130 * pic.ux) * scale, y0 = (pic.cy - 300 * pic.uy) * scale;
+    ctx.drawImage(heat, x0, y0, 260 * pic.ux * scale, 600 * pic.uy * scale);
+  }
+  // An arrow: the way the team attacks
+  ctx.fillStyle = 'rgba(16,20,26,.8)'; ctx.fillRect(8, 8, 92, 24);
+  ctx.fillStyle = '#e8edf2'; ctx.font = '600 13px system-ui, sans-serif'; ctx.fillText('\u2191 Attacking', 16, 25);
+  const who = heatWho.player ? heatWho.player : (list.find(g => g.abbr.includes(heatWho.team)) || { names: [heatWho.team], abbr: [heatWho.team] });
+  const label = heatWho.player || who.names[who.abbr.indexOf(heatWho.team)];
+  const time = mmss(secs) + (heatMode === 'puck' ? ' with the puck' : heatWho.player ? ' on the ice' : ' of play');
+  $('heatCaption').innerHTML = `<b style="color:var(--text)">${esc(label)}</b> · ${heatMode === 'puck' ? 'with the puck' : esc(HEAT_SLICES[heatSlice].toLowerCase())}` +
+    `<br>${used} game${used === 1 ? '' : 's'} · ${time}` + (missing ? `<br>${missing} game${missing === 1 ? ' has' : 's have'} no heat map yet (the helper makes them).` : '');
+}
+
+// The summed grid as a picture: smoothed (two passes of a 3-cell box blur each way), scaled to the busiest cells
+// (97th percentile), yellow through red; skating maps with more contrast, as in the viewer.
+function heatPicture(grid, cols, rows, skating) {
+  let a = Float32Array.from(grid);
+  const b = new Float32Array(a.length);
+  for (let pass = 0; pass < 2; pass++) {
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      let s = 0; for (let d = -1; d <= 1; d++) { const cc = c + d; if (cc >= 0 && cc < cols) s += a[r * cols + cc]; } b[r * cols + c] = s / 3;
+    }
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      let s = 0; for (let d = -1; d <= 1; d++) { const rr = r + d; if (rr >= 0 && rr < rows) s += b[rr * cols + c]; } a[r * cols + c] = s / 3;
+    }
+  }
+  const used = [...a].filter(v => v > 0).sort((x, y) => x - y);
+  const top = Math.max(1e-6, used.length ? used[Math.floor(used.length * 0.97)] : 1);
+  const out = document.createElement('canvas');
+  out.width = cols; out.height = rows;
+  const g = out.getContext('2d'), data = g.createImageData(cols, rows);
+  const stops = [[255, 236, 110], [255, 150, 20], [205, 25, 25]];
+  for (let i = 0; i < a.length; i++) {
+    const v = Math.min(1, Math.pow(a[i] / top, skating ? 1.6 : 0.7));
+    if (v < (skating ? 0.12 : 0.06)) continue;
+    const x = Math.min(1.999, v * 2), k = Math.floor(x), u = x - k;
+    for (let j = 0; j < 3; j++) data.data[4 * i + j] = Math.round(stops[k][j] + (stops[k + 1][j] - stops[k][j]) * u);
+    data.data[4 * i + 3] = Math.round(255 * (0.2 + 0.65 * v));
+  }
+  g.putImageData(data, 0, 0);
+  return out;
 }
 
 function viewGames(list, team) {
