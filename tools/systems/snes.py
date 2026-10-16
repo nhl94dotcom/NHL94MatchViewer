@@ -756,8 +756,13 @@ SOUND_BLOCKS = [
     0x94B287, 0x94BEAC, 0x94CABF, 0x94E225, 0x94ED96, 0x958000, 0x958ABD, 0x959490, 0x959E48, 0x95B15C, 0x95C376,
     0x95CBEA, 0x95D3F2, 0x95EA63, 0x968000, 0x969190, 0x9696E3, 0x96AA64, 0x96DE60, 0x9782F8,
 ]
-SOUND_ROLES = {}   # e.g. {"pass": "s07"}: filled in once the user has listened to them
-SOUND_RATE = 16000  # a starting guess; the viewer's sound panel adjusts it
+# Which plays for what, as the user identified them by ear (2026-10-15): 3 booing, 4 oooh, 8 cheer, 9 a pass or shot,
+# 17 the puck off a post, 23 a check into the boards, 26 a big hit, 32 a slapshot, 35 the whistle, 11 probably the
+# puck off the boards (34 is skating, not used).
+SOUND_ROLES = {"crowdboo": "s03", "oooh": "s04", "crowdcheer": "s08", "pass": "s09", "shotfh": "s09", "shotbh": "s09",
+               "slapshot": "s32", "post": "s17", "playerwall": "s23", "hithigh": "s26", "check": "s26", "check2": "s26",
+               "whistle": "s35", "puckwall": "s11"}
+SOUND_RATE = 11000  # samples a second: the user's setting by ear
 
 
 def decode_brr(data):

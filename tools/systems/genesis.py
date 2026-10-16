@@ -535,7 +535,7 @@ SOUND_SAMPLES = {
     "check": (0x21748, 0x2369A), "check2": (0x2A4AA, 0x2AED9), "hithigh": (0x2AEDA, 0x2B430), "playerwall": (0x29FFA, 0x2A4AA),
     "crowdcheer": (0x2369A, 0x2657A), "crowdboo": (0x1F1FA, 0x21747), "oooh": (0x1BFB6, 0x1F1FA),
 }
-SOUND_RATE = 10000  # samples a second, a starting guess
+SOUND_RATE = 7000   # samples a second: the user's setting by ear
 
 
 def build_sounds(rom):
