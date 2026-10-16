@@ -74,6 +74,21 @@ PAD1 = 0x0776                     # controller 1, held
 GAME_FLAGS2 = 0x15D8              # high byte: $08 replay playing, $20 power play, $01 faceoff (NHLPA '93 meanings)
 LAST_TOUCH = 0x179A               # per team: the last player to touch the puck
 PUCK_HOLDER = 0x0AE7              # the object that has the puck, 15 = nobody (see read_match)
+# Penalties (from the first SNES recording: Toronto's Interference in P1, both teams in P3, two penalty shots):
+PEN_BUFFER = 0x15DE   # (penalty number, object) byte pairs, 0 = free: an entry appears at the foul (play may go on,
+                      # a delayed penalty), gets bit 7 of the object byte at the whistle, and is cleared once listed
+BOX_STATE = 0x1852    # a word per roster place, Home's 26 then Away's: $FFFE bench, $FFFF ice, $FFFD out, $FFFC no
+                      # player; else seconds left in the penalty box (120 for a minor)
+PERIOD_LENGTH = 0x1C82  # seconds
+PENALTY_SHOT = 0x24   # the penalty number of a penalty shot (rule 18); its object is the player who fouled
+# Per-player stats: a byte per roster place, Home's 26 then Away's 26, in the Genesis order (checked on the first
+# recording against what happened: Lemieux 3 goals, Murphy 2 assists, Potvin faced 12 shots and let in 5, ...).
+PLAYER_GOALS, PLAYER_ASSISTS, PLAYER_SHOTS, PLAYER_PIM = 0x18EE, 0x1922, 0x1956, 0x198A  # goalies: against
+# Checks thrown per player in NHL94_Classic (a hack that tracks them): at each rise of a team's checks the slot of a
+# player of that team who was checking rose (49 of 54 times). Other ROMs may keep something else there, so it is
+# used only where its totals equal the team's checks.
+PLAYER_CHECKS = 0x168E
+PLAYER_ENERGY = 0x17EA  # a word per roster place (Home's 26, then Away's): energy in the high byte, 16 = fresh
 
 
 def strip_header(data):
@@ -134,6 +149,26 @@ def read_teams(rom_path):
         teams.append({"name": strings[0], "abbr": strings[1], "nickname": strings[2], "players": players,
                       "palettes": palettes, "logo": None})
     return teams
+
+
+def read_rules(rom):
+    """Penalty names and minutes by penalty number, from the ROM's rule table (the Genesis layout: a table of word
+    offsets, rule N at table + offset N; each rule: minutes, a byte, then a length-prefixed name). Penalty number =
+    2 x rule number. In NHL94_Classic.smc the table is at $53EB; it is found by its rule 1, "Period Over"."""
+    at = rom.find(b"Period Over")
+    if at < 4:
+        return {}
+    entry = at - 4
+    base = next((b for b in range(entry - 2, max(0, entry - 0x400), -1) if struct.unpack_from("<H", rom, b + 2)[0] == entry - b), None)
+    if base is None:
+        return {}
+    rules = {}
+    for number in range(1, 32):
+        rule = base + struct.unpack_from("<H", rom, base + 2 * number)[0]
+        length = struct.unpack_from("<H", rom, rule + 2)[0]
+        if 2 < length < 30 and rule + 2 + length <= len(rom):
+            rules[2 * number] = {"name": rom[rule + 4:rule + 2 + length].decode("latin-1"), "min": rom[rule] if rom[rule] <= 10 else 0}
+    return rules
 
 
 def scoring_summary(ram):
@@ -299,6 +334,13 @@ def read_match(cap, rom_path, name, home=None, away=None):
     from .common import STAT_FIELDS
     stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
     last_vectors, last_stat_ms, last_post = None, -10_000, -10_000
+    # Is the per-player checks array real (NHL94_Classic)? Its totals must equal the teams' checks where the game
+    # ends (the sample with the most goals and shots, before the menus clear them).
+    totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
+              + sum(cap.word(i, a) + cap.word(i, a + 2) for a in SHOTS_BY_PERIOD) for i in range(cap.count)]
+    end = max(range(cap.count), key=lambda i: (totals[i], i)) if cap.count else 0
+    checks_known = all(sum(cap.byte(end, PLAYER_CHECKS + 26 * side + j) for j in range(26))
+                       == cap.word(end, STAT_ADDRESSES["checks"] + 2 * side) for side in (0, 1))
     # The game ends where its numbers last stood: a research recording runs on into the menus, where the score and
     # the stats are cleared.
     totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
@@ -328,6 +370,16 @@ def read_match(cap, rom_path, name, home=None, away=None):
         # second, as the Genesis reader keeps them.
         vector = [sum(cap.word(i, a) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f]) for f in STAT_FIELDS[1:]]
         vector2 = [sum(cap.word(i, a + 2) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f] + 2) for f in STAT_FIELDS[1:]]
+        # then 8 values per roster place, as the Genesis reader: goals, assists, shots, penalty minutes ('x' = PIM),
+        # checks thrown (where known), ice time (not found: 0), energy, penalty word ($00ss serving ss seconds,
+        # $FFFF none; the delayed flag is not known)
+        for side, vec in ((0, vector), (1, vector2)):
+            for idx in range(26):
+                at = 26 * side + idx
+                box = cap.word(i, BOX_STATE + 2 * at)
+                vec += [cap.byte(i, PLAYER_GOALS + at), cap.byte(i, PLAYER_ASSISTS + at), cap.byte(i, PLAYER_SHOTS + at),
+                        cap.byte(i, PLAYER_PIM + at), cap.byte(i, PLAYER_CHECKS + at) if checks_known else 0, 0,
+                        cap.word(i, PLAYER_ENERGY + 2 * at) >> 8, min(box, 255) if 0 < box < 0x1000 else 0xFFFF]
         if (vector, vector2) != last_vectors or cap.ms(i) - last_stat_ms >= 1000:
             stats["f"].append(len(match["t"]) - 1)
             stats["home"].append(vector)
@@ -414,6 +466,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
                       "kinds": kinds, "strength": strength})
     match["goals"] = goals
     match["stats"] = stats
+    match["rules"] = read_rules(rom)
+    match["penalties"], match["delayed"] = read_penalties(cap, count, match, match["rules"])
     match["rom"] = f"{zlib.crc32(rom):08x}"
     match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
     try:
@@ -422,6 +476,51 @@ def read_match(cap, rom_path, name, home=None, away=None):
         print(f"no game sprites for {rom_path.name}: {problem}")
     build_sounds(rom)
     return match
+
+
+def read_penalties(cap, count, match, rules):
+    """Penalties as the Genesis reader lists them: [{f (listed: the player went to the box), called (the foul),
+    period, secs (into the period), team, code, idx}], and penalty shots awarded as 'delayed' flags with no penalty
+    ({f, end, team: the team awarded it}) for the viewer's banner.
+    A buffer entry (penalty number, object) appears at the foul; the player's box state turns into seconds when he
+    is listed. In snes_2026-10-15_1755: Toronto Interference (P1 3:55), Toronto Interference and Pittsburgh Cross
+    Check (P3 2:45, after one whistle), and the two penalty shots, all as the user saw them."""
+    calls, open_calls, penalties, delayed = [], {}, [], []
+    roster = lambda i, k: cap.byte(i, OBJ_ROSTER + 2 * k)
+    in_box = [False] * 52
+    for i in range(count):
+        seen = set()
+        for slot in range(0, 64, 2):
+            code, obj = cap.byte(i, PEN_BUFFER + slot), cap.byte(i, PEN_BUFFER + slot + 1)
+            if not code:
+                continue
+            key = (slot, code, obj & 0x7F)
+            seen.add(key)
+            if key not in open_calls and (obj & 0x7F) < 12 and code in rules and (rules[code]["min"] or code == PENALTY_SHOT):
+                k = obj & 0x7F
+                open_calls[key] = {"f": i, "code": code, "team": 0 if k < 6 else 1, "idx": roster(i, k)}
+        for key in [k for k in open_calls if k not in seen]:
+            call = open_calls.pop(key)
+            call["end"] = i
+            calls.append(call)
+        for j in range(52):
+            state = cap.word(i, BOX_STATE + 2 * j)
+            boxed = 0 < state < 0x1000
+            if boxed and not in_box[j]:
+                team, idx = (0, j) if j < 26 else (1, j - 26)
+                call = next((c for c in reversed(calls + list(open_calls.values())) if c["team"] == team and c["idx"] == idx
+                             and c["code"] != PENALTY_SHOT and c["f"] <= i and not c.get("used")), None)
+                if call:
+                    call["used"] = True
+                secs = cap.word(i, PERIOD_LENGTH) - match["clock"][i]
+                penalties.append({"f": i, "period": match["period"][i], "secs": max(0, secs), "team": team,
+                                  "code": call["code"] if call else 0x30, "idx": idx,
+                                  **({"called": call["f"]} if call and call["f"] < i else {})})
+            in_box[j] = boxed
+    for call in calls + list(open_calls.values()):
+        if call["code"] == PENALTY_SHOT:
+            delayed.append({"f": call["f"], "end": call.get("end", count - 1), "team": 1 - call["team"]})
+    return penalties, delayed
 
 
 class SaveStates:
