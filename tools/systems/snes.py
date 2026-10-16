@@ -411,6 +411,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
     from .common import STAT_FIELDS
     stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
     last_vectors, last_stat_ms, last_post = None, -10_000, -10_000
+    ice = [0] * 52  # game seconds on the ice, by roster place (Home's 26, then Away's)
     # Is the per-player checks array real (NHL94_Classic)? Its totals must equal the teams' checks where the game
     # ends (the sample with the most goals and shots, before the menus clear them).
     totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
@@ -452,14 +453,22 @@ def read_match(cap, rom_path, name, home=None, away=None):
         vector = [sum(cap.word(i, a) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f]) for f in STAT_FIELDS[1:]]
         vector2 = [sum(cap.word(i, a + 2) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f] + 2) for f in STAT_FIELDS[1:]]
         # then 8 values per roster place, as the Genesis reader: goals, assists, shots, penalty minutes ('x' = PIM),
-        # checks thrown (where known), ice time (not found: 0), energy, penalty word ($00ss serving ss seconds,
-        # $FFFF none; the delayed flag is not known)
+        # checks thrown (where known), ice time (the game keeps none that was found: counted here, each second the
+        # clock ticks off going to everyone on the ice), energy, penalty word ($00ss serving ss seconds, $FFFF none;
+        # the delayed flag is not known)
+        clock = cap.word(i, CLOCK)
+        if i and cap.word(i, PERIOD) == cap.word(i - 1, PERIOD) and 0 < cap.word(i - 1, CLOCK) - clock <= 3:
+            for k in range(12):
+                code = signed(i, OBJ_POSITION + 2 * k)
+                place = cap.byte(i, OBJ_ROSTER + 2 * k)
+                if 0 <= code < 6 and place < 26:
+                    ice[26 * (k // 6) + place] += cap.word(i - 1, CLOCK) - clock
         for side, vec in ((0, vector), (1, vector2)):
             for idx in range(26):
                 at = 26 * side + idx
                 box = cap.word(i, BOX_STATE + 2 * at)
                 vec += [cap.byte(i, PLAYER_GOALS + at), cap.byte(i, PLAYER_ASSISTS + at), cap.byte(i, PLAYER_SHOTS + at),
-                        cap.byte(i, PLAYER_PIM + at), cap.byte(i, PLAYER_CHECKS + at) if checks_known else 0, 0,
+                        cap.byte(i, PLAYER_PIM + at), cap.byte(i, PLAYER_CHECKS + at) if checks_known else 0, ice[at],
                         cap.word(i, PLAYER_ENERGY + 2 * at) >> 8, min(box, 255) if 0 < box < 0x1000 else 0xFFFF]
         if (vector, vector2) != last_vectors or cap.ms(i) - last_stat_ms >= 1000:
             stats["f"].append(len(match["t"]) - 1)
