@@ -16,8 +16,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
+from export_match import PASS_DIRS, ZONES, own_end, zone_of  # noqa: E402
 
-VERSION = 9  # 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 10  # 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -34,6 +35,34 @@ def played_periods(m):
     for i in range(1, len(m["t"])):
         if m["period"][i] == m["period"][i - 1] and m["clock"][i] < m["clock"][i - 1]:
             out.add(m["period"][i])
+    return out
+
+
+def puck_seconds_by_zone(m):
+    """{(team, roster index): [game seconds with the puck in his defensive, neutral, attacking zone]}: each second the
+    game clock ticks off (a new low in the period, at most 3 at a time, as the viewer's possession) goes to the
+    skater who has the puck then, by where it is."""
+    out, t, P, own, K = {}, m["t"], m["puck"], m.get("owner") or [], 12
+    low, period = None, None
+    for i in range(len(t)):
+        if m["period"][i] != period:
+            period, low = m["period"][i], None
+        c = m["clock"][i]
+        if low is None or c > low + 3:  # the game sets the clock (0:00, then the period's length)
+            low = c
+            continue
+        if c < low:
+            ticks, low = min(3, low - c), c
+            k = own[i] if i < len(own) else -1
+            if k < 0 or m["role"][i * K + k] in "0x" or P[3 * i + 2] < -100:
+                continue
+            team = 0 if k < 6 else 1
+            end = own_end(m, i, team)
+            if end is None:
+                continue
+            idx = int(m["roster"][i * K + k], 36)
+            zone = ZONES.index(zone_of(P[3 * i + 1], -end))
+            out.setdefault((team, idx), [0, 0, 0])[zone] += ticks
     return out
 
 
@@ -226,6 +255,7 @@ def summarize(m, name, date=None):
                 "bench": [a - b for a, b in zip(team_adv[team][0], out[0])],
                 "benchEv": [a - b for a, b in zip(team_adv[team][1], out[1])]}
 
+    puck_zone = puck_seconds_by_zone(m)
     players = [[], []]
     for team in (0, 1):
         other = 1 - team
@@ -269,6 +299,13 @@ def summarize(m, name, date=None):
                     "onGoalie": sum(1 for e in m.get("bumps", []) if e.get("kind") == "goalie" and e["team"] == team and e["idx"] == idx),
                     "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team and e["idx"] == idx),
                 })
+                if any("dir" in q for q in m.get("passes", [])):
+                    # Passing by zone (def, neu, att) and direction (forward, diagonal forward, sideways, diagonal back,
+                    # backward); from each zone to each; and his game seconds with the puck in each zone
+                    mine_p = [q for q in m["passes"] if q["team"] == team and q["idx"] == idx and "dir" in q]
+                    line["passDir"] = [sum(1 for q in mine_p if q["zone"] == z and q["dir"] == d) for z in ZONES for d in PASS_DIRS]
+                    line["passZones"] = [sum(1 for q in mine_p if q["zone"] == z and q["toZone"] == z2) for z in ZONES for z2 in ZONES]
+                    line["puckZone"] = puck_zone.get((team, idx), [0, 0, 0])
                 line.update(skater_adv(team, idx))
                 mine = [s for s in shots if s["team"] == team and s["idx"] == idx]
                 my_entries = [e for e in entries if e["team"] == team and e.get("idx") == idx]
