@@ -283,7 +283,13 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
 - Ice time: no per-player array was found (no 26-word arrays summing to about 6 x the game time), so the converter
   counts it: each second the clock ticks off goes to everyone on the ice (goalies 901 s of a 900 s game; team sums
   5171 / 5287, short of 5400 by the penalties).
-  Not known yet: puck height, the hook, the SNES sounds' names (the user is to identify them by ear).
+- SNES sounds identified by the user by ear: 3 boo, 4 oooh, 8 cheer, 9 pass or shot, 11 probably the puck off the
+  boards, 17 the puck off a post, 23 a check into the boards, 26 a big hit, 32 a slapshot, 34 skating (unused),
+  35 the whistle (`snes.SOUND_ROLES`). Playing speeds by ear: SNES 11 kHz, Genesis 7 kHz (now the defaults). The
+  viewer gained sound moments for slapshots (shot type), posts, the whistle (play stopping, not a period's end) and
+  the puck off the boards (a loose puck near the boards turning back); a library without a sample for one plays its
+  nearest (slapshot -> shotfh) or nothing.
+  Not known yet: puck height, the hook.
 
 ## Reading game memory live
 

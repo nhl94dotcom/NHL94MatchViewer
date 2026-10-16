@@ -2269,6 +2269,7 @@ function findSoundEvents(m) {
   for (const e of m.passes || []) add(e.f, 'pass', 0.8);
   for (const sh of m.shotList || []) {
     if (sh.kind === 'pass shot') { add(sh.f, 'pass', 1); continue; }
+    if (sh.type === 'slapshot') { add(sh.f, 'slapshot', 1); continue; }
     // Forehand or backhand: the shooter's animation just before the release.
     let name = 'shotfh';
     for (let k = sh.team * 6; k < sh.team * 6 + 6; k++) {
@@ -2285,7 +2286,20 @@ function findSoundEvents(m) {
     if (BIG_HITS.includes(h.outcome)) { add(h.f, 'hithigh', 1); if (h.outcome !== 'upended') add(h.f, 'playerwall', 1); }
   }
   for (const g of m.goals || []) add(g.f, 'crowdcheer', 0.9);
-  for (const f of m.posts || []) add(f, 'oooh', 0.8);
+  for (const f of m.posts || []) { add(f, 'post', 1); add(f, 'oooh', 0.8); }
+  // The whistle: where play stops (the puck hidden, or the SNES clock-stopped flag), except a period's end.
+  for (let i = 1; i < m.t.length; i++) {
+    if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z && m.puck[3 * i - 1] >= PUCK_HIDDEN_Z && m.clock[i] > 0) add(i, 'whistle', 0.8);
+  }
+  // The puck off the boards: a loose puck near the boards turning back, quickly, at most every 0.3 s.
+  let lastWall = -1e9;
+  for (let i = 1; i < m.t.length; i++) {
+    if (m.owner[i] >= 0 || m.t[i] - lastWall < 300) continue;
+    const x = m.puck[3 * i], y = m.puck[3 * i + 1], vx = m.puckV[2 * i], vy = m.puckV[2 * i + 1], px = m.puckV[2 * i - 2], py = m.puckV[2 * i - 1];
+    const side = Math.abs(x) > 118 && Math.sign(vx) === -Math.sign(x) && Math.sign(px) === Math.sign(x);
+    const end = Math.abs(y) > 285 && Math.abs(x) > 30 && Math.sign(vy) === -Math.sign(y) && Math.sign(py) === Math.sign(y);
+    if ((side || end) && Math.hypot(px, py) > 20) { add(i, 'puckwall', 0.6); lastWall = m.t[i]; }
+  }
   for (const p of m.penalties || []) if (p.team === 0) add(p.called !== undefined ? p.called : p.f, 'crowdboo', 0.7);
   return out.sort((a, b) => a.f - b.f);
 }
@@ -2300,10 +2314,15 @@ function soundBuffer(name) {
   }
   return soundBuffers[name];
 }
+// A sound a library has no sample for plays its nearest one (the Genesis has no slapshot, whistle or post sample).
+const SOUND_FALLBACK = { slapshot: 'shotfh' };
 function playSound(name, gain = 1) {
   if (!soundLibrary || !soundCtx) return;
   // A library may name its samples itself (the SNES's are numbered) and say which plays for what (roles).
-  const buffer = soundBuffer((soundLibrary.roles && soundLibrary.roles[name]) || name);
+  const roles = soundLibrary.roles || {};
+  const sample = roles[name] || (soundLibrary.samples[name] ? name : roles[SOUND_FALLBACK[name]] || SOUND_FALLBACK[name]);
+  if (!sample || !soundLibrary.samples[sample]) return;
+  const buffer = soundBuffer(sample);
   if (!buffer) return;
   const source = soundCtx.createBufferSource(), level = soundCtx.createGain();
   level.gain.value = soundVolume * gain;
@@ -2337,7 +2356,8 @@ function fillSoundPanel() {
   for (const name of Object.keys(soundLibrary.samples)) {
     const b = document.createElement('button');
     const role = Object.keys(soundLibrary.roles || {}).find(r => soundLibrary.roles[r] === name);
-    b.textContent = SOUND_NAMES[role || name] || name.replace(/^s0?/, '#');
+    const number = /^s\d+$/.test(name) ? name.replace(/^s0?/, '#') : '';  // the SNES's numbered samples keep their number
+    b.textContent = number ? number + (role ? ' ' + (SOUND_NAMES[role] || role) : '') : SOUND_NAMES[name] || name;
     b.addEventListener('click', () => { showSound(true); playSound(name); });
     list.append(b);
   }
@@ -2347,7 +2367,8 @@ function fillSoundPanel() {
   $('soundVolume').value = soundVolume;
 }
 const SOUND_NAMES = { puckget: 'Puck', pass: 'Pass', shotfh: 'Shot', shotbh: 'Backhand', check: 'Check', check2: 'Check 2', hithigh: 'Big hit',
-  playerwall: 'Boards', crowdcheer: 'Cheer', crowdboo: 'Boo', oooh: 'Oooh' };
+  playerwall: 'Boards', crowdcheer: 'Cheer', crowdboo: 'Boo', oooh: 'Oooh', slapshot: 'Slapshot', post: 'Post', whistle: 'Whistle',
+  puckwall: 'Puck off boards' };
 $('soundToggle').addEventListener('click', () => showSound(!soundOn));
 $('soundMore').addEventListener('click', () => { $('soundPanel').hidden = !$('soundPanel').hidden; });
 $('soundClose').addEventListener('click', () => { $('soundPanel').hidden = true; });
