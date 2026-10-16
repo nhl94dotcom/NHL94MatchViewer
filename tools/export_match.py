@@ -840,10 +840,13 @@ def add_shot_context(m):
     - every shot's `danger`: 'high' (the slot, HIGH_DANGER), 'medium' (MEDIUM_DANGER) or 'low', by where it was taken;
     - `assist`: the teammate whose completed pass reached the shooter in the 4 s before it (a shot assist, as the
       NHL's trackers count them), with the other team never having the puck in between;
-    - `flip` on a flip rebound's first shot, and `afterFlip` on the shot that followed: a wrist shot from close in
+    - `flip` on an EA Special's first shot, and `afterFlip` on the shot that followed: a wrist shot from close in
       and off to the side (within 70 units, at least 20 from the middle) that the goalie saved but let go as a
-      rebound to the shooters, followed within 2 s by their shot from within 65 units (a technique of the user's
-      Genesis community: the goalie bobbles it and is pushed back, and the near side of the net opens);
+      rebound to the shooters, followed within 2 s by their shot from within 65 units. The user's Genesis community
+      calls the deliberate play an "EA Special", after the player known as EA who invented it (not Electronic
+      Arts): skate down the side, usually a winger, flip a wrist shot on goal, the goalie bobbles it and is pushed
+      back, and the shooter or an onrushing teammate scores into the open part of the net. Confirmed by the user:
+      Ciccarelli's goal in capture2_away (P1 14:28);
     - each turnover's `shotAfter` (frame of the gaining team's first shot attempt within 5 s, no whistle between)
       and `goalAfter` (that attempt, or another by them in the 5 s, went in)."""
     t, own, P = m['t'], m['owner'], m['puck']
@@ -996,6 +999,10 @@ def main(argv=None):
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):
             goal["kinds"].append("pass shot")
+        # A goal off an EA Special (see add_shot_context): the shot that went in followed the bobbled wrist shot.
+        if any(sh.get("afterFlip") and sh["result"] == "goal" and sh["team"] == goal["team"]
+               and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 2000 for sh in match.get("shotList", [])):
+            goal["kinds"].append("EA Special")
 
     args.out.mkdir(parents=True, exist_ok=True)
     target = args.out / f"{name}.js"
