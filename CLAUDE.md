@@ -812,7 +812,12 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   minute a game). With the puck: where the puck was while that team or player had it (puck owner). A 5-unit grid of
   real time (the puck hidden at whistles is left out), blurred, scaled to the 97th percentile (skating maps with more
   contrast, power 1.6 instead of 0.7, since skaters cover the whole ice); both teams in their own colours (the busier
-  team per cell), one team or player on a yellow-to-red scale. The footer wraps onto a second row when it runs out of
+  team per cell), one team or player on a yellow-to-red scale. Filters beside it (not remembered; in the address as
+  `&period=1..4` (4 = OT), `&strength=even|pp|sh`, `&puck=ours|theirs|loose`): the period; strength as seen by each
+  team (players serving a penalty, not delayed calls, from the stat snapshots, as the game flow's power plays: more
+  of theirs in the box = power play); and, for skating maps, who has the puck (that team: attacking; the other:
+  defending; nobody: loose, by the puck owner). The time shown under the title is the time the filters let through.
+  The footer wraps onto a second row when it runs out of
   room, and the seek bar keeps at least 140 px (with a map on it used to be squeezed away).
 
 ## Season stats (stats across games)
