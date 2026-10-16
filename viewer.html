@@ -47,7 +47,6 @@
   #soundPanel .clipRow { display: flex; align-items: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
   #soundPanel button { padding: 4px 9px; }
   #soundRate, #soundVolume { flex: 1; accent-color: var(--accent); }
-  #soundToggle[aria-pressed="true"] { border-color: var(--accent); }
   #hlPanel { position: absolute; top: 10px; right: 10px; width: 360px; max-height: calc(100% - 20px); overflow-y: auto; padding: 12px; border-radius: 10px; z-index: 15;
     background: rgba(22, 27, 34, 0.97); border: 1px solid #3a4450; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); font-size: 13px; }
   #hlPanel h4 { margin: 0 0 8px; font-size: 14px; }
@@ -73,7 +72,7 @@
   #viewbar button { padding: 3px 8px; min-width: 28px; }
   #viewbar input[type=range] { width: 90px; accent-color: var(--accent); }
   #viewbar output { color: var(--muted); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
-  .lineup { width: 256px; flex: none; align-self: stretch; padding: 14vh 12px 12px; overflow-y: auto; }
+  .lineup { width: clamp(256px, 19vw, 340px); flex: none; align-self: stretch; padding: 14px 12px 12px; overflow-y: auto; }
   .lineup h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
   .lineup h3 small { color: var(--muted); font-weight: 400; }
   .row { display: grid; grid-template-columns: 26px 24px 1fr auto 10px; cursor: default; align-items: center; gap: 8px; padding: 5px 8px; border-left: 3px solid transparent; border-radius: 6px; font-size: 13.5px; }
@@ -119,7 +118,10 @@
   .teamstats th.when { color: var(--muted); font-weight: 600; text-align: center; }
   .teamstats tr.sub td:nth-child(2) { font-size: 11px; }
   .teamstats tr.section td { text-align: left; color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .06em;
-    text-transform: uppercase; padding: 8px 0 2px; border-top: 1px solid var(--raised); }
+    text-transform: uppercase; padding: 8px 0 2px; border-top: 1px solid var(--raised); cursor: pointer; user-select: none; }
+  .teamstats tr.section td::before { content: '\25BE'; display: inline-block; width: 12px; color: var(--muted); }
+  .teamstats tr.section.closed td::before { content: '\25B8'; }
+  .teamstats tr.section:hover td { color: var(--text); }
   .teamstats thead + tbody tr.section:first-child td { border-top: 0; padding-top: 2px; }
   .teamstats th:first-child { text-align: left; }
   .teamstats th:last-child { text-align: right; }
@@ -137,7 +139,18 @@
   .legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
   #drop { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 16px; }
   #drop p { margin: 0; color: var(--muted); max-width: 40ch; }
-  footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; background: var(--panel); }
+  footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding: 10px 16px; background: var(--panel); position: relative; }
+  /* Three groups: playback (it takes the room), the map and its filters, then what to open or save */
+  .fgroup { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+  #playGroup { flex: 1 1 360px; }
+  #actGroup { margin-left: auto; }
+  #viewPanel { position: absolute; right: 16px; bottom: calc(100% + 6px); z-index: 25; display: grid; gap: 10px; padding: 12px 14px; border-radius: 10px;
+    background: rgba(22, 27, 34, 0.98); border: 1px solid #3a4450; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); }
+  #viewPanel label { color: var(--text); }
+  #viewPanel #soundBox { display: flex; align-items: center; gap: 10px; }
+  #viewPanel #soundBox[hidden] { display: none; }
+  #viewPanel button { padding: 3px 9px; font-size: 13px; }
+  #viewOpen[aria-expanded="true"] { border-color: var(--accent); }
   #overlayWho { max-width: 210px; }
   button, select { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
   button:hover, select:hover { background: #343d49; }
@@ -156,13 +169,65 @@
     font-size: 12px; line-height: 1.45; pointer-events: none; white-space: nowrap; font-variant-numeric: tabular-nums; z-index: 5; }
   #flowTip .muted { color: var(--muted); }
   #flowToggle[aria-pressed="true"] { border-color: var(--accent); }
+  /* Help: a panel over the page, with its own contents list and search */
+  #help { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; }
+  #help .helpbar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--raised); }
+  #help .helpbar b { font-size: 16px; }
+  #helpSearch { flex: 1; max-width: 420px; background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 6px 10px; font: inherit; }
+  #helpClose { margin-left: auto; }
+  #help .helpbody { flex: 1; min-height: 0; display: flex; }
+  #help .helptoc { width: 220px; flex: none; padding: 16px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--raised); overflow-y: auto; }
+  #help .helptoc a { color: var(--muted); text-decoration: none; }
+  #help .helptoc a:hover { color: var(--text); }
+  #help .helptext { flex: 1; overflow-y: auto; padding: 8px 28px 48px; max-width: 900px; line-height: 1.55; }
+  #help h2 { font-size: 19px; margin: 22px 0 8px; color: var(--accent); }
+  #help h3 { font-size: 15px; margin: 18px 0 6px; }
+  #help p, #help li { color: #c9d2dc; }
+  #help dl { display: grid; grid-template-columns: minmax(150px, 240px) 1fr; gap: 6px 18px; margin: 6px 0; }
+  #help dt { font-weight: 600; }
+  #help dd { margin: 0; color: #c9d2dc; }
+  #help .nomatch { color: var(--muted); margin-top: 24px; }
+  @media (max-width: 700px) { #help .helptoc { display: none; } #help dl { grid-template-columns: 1fr; gap: 2px 0; } #help dd { margin-bottom: 8px; } #help .helptext { padding: 4px 16px 40px; } }
+  /* The scoreboard's links: back to the games list, and Help */
+  header { position: relative; }
+  .hudlinks { position: absolute; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
+  .hudlinks.left { left: 12px; } .hudlinks.right { right: 12px; }
+  .hudlinks a, .hudlinks button { color: var(--muted); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 1px solid transparent; background: transparent; }
+  .hudlinks a:hover, .hudlinks button:hover { color: var(--text); border-color: #3a4450; }
+  @media (max-width: 640px) { .hudlinks.left { display: none; } .hudlinks.right { right: 4px; } }
   [hidden] { display: none !important; }
-  @media (max-width: 900px) { .lineup { display: none; } }
-  @media (max-width: 640px) { header { gap: 12px; } .team .shots, label span { display: none; } }
+  #mtabs { display: none; }
+  /* Phones and narrow windows: the rink on top, then tabs for the lineups (both teams side by side), the team stats
+     and the scoring summary; the page scrolls. */
+  @media (max-width: 900px) {
+    html, body { height: auto; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "stage stage" "tabs tabs" "l1 l2"; }
+    #stage { grid-area: stage; height: 64vh; min-height: 320px; }
+    #mtabs { grid-area: tabs; display: flex; gap: 6px; padding: 10px 12px 0; }
+    #mtabs button { flex: 1; min-width: 0; padding: 6px 4px; }
+    #viewbar input[type=range], #viewbar output { display: none; }
+    #seek { min-width: 100px; }
+    #mtabs button[aria-pressed="true"] { background: var(--accent); color: var(--ink); border-color: transparent; font-weight: 600; }
+    .lineup { width: auto; padding: 10px 8px; overflow: visible; min-width: 0; }
+    #lineup1 { grid-area: l1; } #lineup2 { grid-area: l2; }
+    main.m-lineups .lineup .scoring, main.m-lineups .lineup .teamstats { display: none; }
+    main.m-stats #lineup1, main.m-scoring #lineup2 { display: none; }
+    main.m-stats #lineup2, main.m-scoring #lineup1 { grid-column: 1 / -1; }
+    main.m-stats #lineup2 > :not(.teamstats), main.m-scoring #lineup1 > :not(.scoring) { display: none; }
+    .row { gap: 4px; padding: 5px 4px; font-size: 12.5px; grid-template-columns: 22px 22px 1fr auto 8px; }
+    .pad, .legend { margin-left: 4px; }
+    footer { position: sticky; bottom: 0; z-index: 10; gap: 6px 8px; padding: 8px 10px; }
+    footer button, footer select { padding: 5px 8px; font-size: 13px; }
+    #play { min-width: 56px; }
+    #actGroup { margin-left: 0; gap: 6px; }
+  }
+  @media (max-width: 640px) { header { gap: 12px; } .team .shots, footer > .fgroup label span { display: none; } }
 </style>
 </head>
 <body>
 <header id="hud" hidden>
+  <div class="hudlinks left"><a id="backGames" href="helper.html" title="Your games list">&larr; Games</a></div>
+  <div class="hudlinks right"><button id="helpOpen" title="How to use the viewer, and what every stat means">? Help</button></div>
   <div class="team"><span class="swatch" style="background: var(--team1)"></span><span class="name" id="name1"></span><span class="shots" id="shots1"></span><span class="score" id="score1"></span></div>
   <div id="clock"><div class="time" id="clockTime"></div><div class="period" id="clockPeriod"></div></div>
   <div class="team"><span class="score" id="score2"></span><span class="shots" id="shots2"></span><span class="name" id="name2"></span><span class="swatch" style="background: var(--team2)"></span></div>
@@ -216,19 +281,20 @@
       <button id="rotR" title="Rotate 90 degrees clockwise (R)">&#8635;</button>
       <button id="zoomOut" title="Zoom out (-)">&minus;</button>
       <button id="zoomIn" title="Zoom in (+)">+</button>
-      <label title="Keep the puck in the middle (F)"><input type="checkbox" id="follow"> <span>Follow puck</span></label>
-      <label title="Boards, glass and nets as seen from straight above"><input type="checkbox" id="overhead"> <span>Overhead</span></label>
-      <label title="Pop-ups for what players do (pass, shot, poke check, failed one-timer ...), breakaways and posts. The player labels stay"><input type="checkbox" id="eventTags"> <span>Event tags</span></label>
       <button id="viewReset" title="Whole rink, upright (0, or double-click the ice)">Reset</button>
     </div>
     <div id="drop">
       <h2 id="dropTitle">Open a match file</h2>
       <p>Choose a file from the <code>matches</code> folder, or drop one anywhere on this page.</p>
       <button id="pick">Choose file</button>
+      <button id="helpOpen2" title="How to use the viewer, and what every stat means">Help</button>
       <input id="file" type="file" accept=".js,.json" hidden>
     </div>
   </div>
   <aside class="lineup" id="lineup2" hidden></aside>
+  <nav id="mtabs" hidden aria-label="Panels">
+    <button data-pane="lineups" aria-pressed="true">Lineups</button><button data-pane="stats" aria-pressed="false">Team stats</button><button data-pane="scoring" aria-pressed="false">Scoring</button>
+  </nav>
 </main>
 <section id="flow" hidden aria-label="Game flow">
   <div class="flowHead"><b>Game flow</b><span>shot attempts so far</span><span id="flowKey"></span></div>
@@ -236,23 +302,21 @@
   <div id="flowTip" hidden></div>
 </section>
 <footer id="controls" hidden>
+  <div class="fgroup" id="playGroup">
   <button id="play">Play</button>
   <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position in recording">
   <span id="time"></span>
-  <label id="spriteToggle" hidden><input type="checkbox" id="sprites"> <span>Game sprites</span></label>
-  <label><span>Speed</span>
-    <select id="speed" aria-label="Playback speed">
-      <option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
-    </select>
-  </label>
+  <select id="speed" aria-label="Playback speed" title="Playback speed">
+    <option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
+  </select>
+  </div>
+  <div class="fgroup" id="mapGroup">
   <label><span>Map</span>
     <select id="overlay" aria-label="Map over the ice">
       <option value="">None</option><option value="shots">Shot map</option><option value="heat">Heat map</option>
       <option value="turnovers">Turnovers</option><option value="passes">Passes</option><option value="entries">Zone entries</option><option value="goalie">Goalie report</option>
     </select>
   </label>
-  <button id="flowToggle" aria-pressed="false" title="Show how the shot attempts piled up over the game; click it to jump there">Game flow</button>
-  <span id="soundBox" hidden><button id="soundToggle" aria-pressed="false" title="The game's own sounds as the replay plays">Sound</button><button id="soundMore" title="Sound check: hear each sound and set how fast they play">&#9881;</button></span>
   <select id="overlayWho" aria-label="Whose shots or puck time" hidden></select>
   <select id="heatMode" aria-label="What the heat map shows" title="Skating: where the skaters went, puck or not (goalies left out). With the puck: where the puck was while they had it" hidden>
     <option value="skate">Skating</option><option value="puck">With the puck</option>
@@ -264,11 +328,232 @@
   <select id="heatPuck" aria-label="Who has the puck" title="Count only the moments when that team has the puck (attacking), the other team has it (defending), or nobody does" hidden>
     <option value="">Puck: anyone</option><option value="ours">Attacking: has the puck</option><option value="theirs">Defending: other team has it</option><option value="loose">Loose puck</option>
   </select>
-  <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
-  <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
+  </div>
+  <div class="fgroup" id="actGroup">
+  <button id="flowToggle" aria-pressed="false" title="Show how the shot attempts piled up over the game; click it to jump there">Game flow</button>
   <button id="hlOpen" title="Three stars and the game's highlights: watch them one after another, or save them as a video">Highlights</button>
   <button id="clipOpen" title="Save a stretch of the replay as a video or an animated GIF">Clip</button>
+  <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
+  <button id="viewOpen" title="What the replay shows: sprites, event tags, overhead rink, following the puck, sound, live knowledge" aria-expanded="false">&#9881; View</button>
+  </div>
+  <div id="viewPanel" hidden>
+    <label id="spriteToggle" hidden title="The game's own player pictures (off: numbered discs)"><input type="checkbox" id="sprites"> <span>Game sprites</span></label>
+    <label title="Pop-ups for what players do (pass, shot, poke check, failed one-timer ...), breakaways and posts. The player labels stay"><input type="checkbox" id="eventTags"> <span>Event tags</span></label>
+    <label title="Boards, glass and nets as seen from straight above"><input type="checkbox" id="overhead"> <span>Overhead rink</span></label>
+    <label title="Keep the puck in view (F)"><input type="checkbox" id="follow"> <span>Follow the puck</span></label>
+    <span id="soundBox" hidden><label title="The game's own sounds as the replay plays"><input type="checkbox" id="soundToggle"> <span>Sound</span></label><button id="soundMore" title="Sound check: hear each sound and set how fast they play">Sound settings</button></span>
+    <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
+  </div>
 </footer>
+<div id="help" hidden role="dialog" aria-label="Help">
+  <div class="helpbar">
+    <b>Help</b>
+    <input type="search" id="helpSearch" placeholder="Search the help (e.g. Corsi, heat map, EA Special)" aria-label="Search the help">
+    <button id="helpClose" title="Close (Esc)">Close</button>
+  </div>
+  <div class="helpbody">
+    <nav class="helptoc" aria-label="Help contents">
+      <a href="#h-start">Getting started</a>
+      <a href="#h-watch">Watching a game</a>
+      <a href="#h-maps">Maps and game flow</a>
+      <a href="#h-high">Highlights, clips, game files</a>
+      <a href="#h-season">Season stats</a>
+      <a href="#h-glossary">Glossary of stats</a>
+      <a href="#h-terms">Community terms</a>
+      <a href="#h-trouble">Troubleshooting</a>
+    </nav>
+    <div class="helptext">
+
+<section id="h-start"><h2>Getting started</h2>
+<p>The NHL '94 Viewer records games of NHL '94 played in RetroArch (Sega Genesis with the Genesis Plus GX core, Super
+Nintendo with the Snes9x core), then replays them from above with the game's own players, plus stats the game never
+shows.</p>
+<h3>Recording games</h3>
+<ol>
+  <li>Start the helper: <b>NHL94 Helper.exe</b> (or <b>NHL94 Helper.bat</b> if you have Python). Leave its window open while you play.</li>
+  <li>Start RetroArch and load NHL '94. The helper notices on its own and waits for a game.</li>
+  <li>Play. Each game is recorded from the opening faceoff to the final horn, offline or on netplay. Pauses and instant replays are left out.</li>
+  <li>About 3 seconds after the horn the game is saved and appears in your games list at <b>http://localhost:9494</b>. Click <b>Watch</b>.</li>
+</ol>
+<p>In netplay the helper records both teams, so one recording per game is enough. A game where the helper started
+late, or that stopped before the horn (a dropped connection), is still saved, but counts as "part of a game".</p>
+<h3>Where things are</h3>
+<p>The games list (<b>Games</b>) has every recording: Watch, Make game file (a single page to send to someone), Delete.
+<b>Season stats</b> adds games up. The .exe keeps everything in <b>Documents\NHL94 Viewer</b>.</p>
+</section>
+
+<section id="h-watch"><h2>Watching a game</h2>
+<h3>Playback</h3>
+<dl>
+  <dt>Play / pause</dt><dd>The Play button or the space bar.</dd>
+  <dt>Jump</dt><dd>Drag the bar, or the arrow keys: 1 second (5 with Shift).</dd>
+  <dt>Speed</dt><dd>0.25x to 4x, beside the bar.</dd>
+</dl>
+<h3>The rink</h3>
+<dl>
+  <dt>Move and zoom</dt><dd>Drag to move, the mouse wheel to zoom (or + and -). On a touchscreen, drag to move and use + and - on the toolbar.</dd>
+  <dt>Turn</dt><dd>R turns 90 degrees (Shift+R the other way), Shift + wheel turns a little; the toolbar on the ice does the same.</dd>
+  <dt>Reset</dt><dd>0, double-click the ice, or Reset.</dd>
+  <dt>Follow the puck</dt><dd>F, or in the View menu: a TV-style camera that keeps the puck in view.</dd>
+</dl>
+<h3>The lineups</h3>
+<p>Each side lists the players on the ice: position, number, name, goals and assists so far (goalies: saves and
+shots), and a thin energy bar. A <b>yellow edge</b> marks the skater a person is controlling; the <b>highlighted row</b>
+has the puck. Below, the controller lights up the buttons that player is pressing. Point at a player (tap on a phone)
+for his card: this game's numbers, skating, and his ratings.</p>
+<h3>Team stats and scoring</h3>
+<p>The scoring summary is on the left, the team stats on the right, both as of the moment the replay is at. Click a
+group's heading (Shooting, Advanced, Puck control ...) to open or close it; your choice is remembered.</p>
+<h3>The View menu (&#9881; View)</h3>
+<dl>
+  <dt>Game sprites</dt><dd>The game's own player pictures; off draws numbered discs.</dd>
+  <dt>Event tags</dt><dd>The pop-ups for what players do (Pass, Poke check, Failed one-timer ...), breakaways and posts. The player labels stay either way.</dd>
+  <dt>Overhead rink</dt><dd>The rink redrawn as if seen from straight above (off: the game's own leaning picture).</dd>
+  <dt>Follow the puck</dt><dd>As F.</dd>
+  <dt>Sound</dt><dd>The game's own sampled sounds (passes, shots, checks, the crowd). Sound settings sets their speed and volume.</dd>
+  <dt>Live knowledge</dt><dd>Shows only what could be known at each moment, as a live broadcast would: a shot's result waits until it is settled, for example.</dd>
+</dl>
+<h3>On a phone</h3>
+<p>The rink is on top; below it, tabs switch between the lineups, the team stats and the scoring summary. The controls
+stay at the bottom.</p>
+</section>
+
+<section id="h-maps"><h2>Maps and game flow</h2>
+<p>The <b>Map</b> menu draws on the ice, building up as the replay plays; pick both teams, one team or one player
+beside it. Teams change ends between periods, so each team is kept attacking the end it attacks right now. Point at a
+marker for what it was; click it to jump there.</p>
+<dl>
+  <dt>Shot map</dt><dd>Every shot attempt: goals (accent ring), saves (white ring), posts (diamond), wide (hollow), blocked (crossed). Squares are pass shots.</dd>
+  <dt>Heat map</dt><dd><b>Skating</b>: where the skaters (or one player) went, puck or not. <b>With the puck</b>: where the puck was while they had it. Filters: period, strength (even, power play, shorthanded) and, for skating, attacking / defending / loose puck. With both teams it shows the difference: each spot in the colour of the team that spent more time there.</dd>
+  <dt>Turnovers</dt><dd>Giveaways (hollow triangles, in the colour of the team that lost it) and takeaways (filled).</dd>
+  <dt>Passes</dt><dd>Every pass and how it ended.</dd>
+  <dt>Zone entries</dt><dd>Where the puck crossed the blue line: carried (disc), passed (diamond), dumped (hollow); an accent ring means a shot attempt came of it.</dd>
+  <dt>Goalie report</dt><dd>Every shot a goalie faced, with save rates by distance and type, human or computer in net, and what happened after each save.</dd>
+  <dt>Game flow</dt><dd>A strip over the controls: each team's shot attempts piling up over the game, goals as dots, power plays shaded. Click it to jump there.</dd>
+</dl>
+</section>
+
+<section id="h-high"><h2>Highlights, clips and game files</h2>
+<dl>
+  <dt>Highlights</dt><dd>The game's three stars, and its highlights (goals, big saves, posts, big hits, breakaways that came to a shot), each from 5 seconds before to 2 after. Click one to watch it, Play all to see them in turn, or Save as video.</dd>
+  <dt>Clip</dt><dd>Saves any stretch (up to a minute; or pick a goal) as a video or an animated GIF, at normal or half speed, as the ice looks now (angle, zoom, follow, map).</dd>
+  <dt>Save game file</dt><dd>One page with this game, the viewer, the rink, sprites and sounds inside (about 5 MB). It opens in any browser, phones included, by itself: send it to your opponent.</dd>
+</dl>
+</section>
+
+<section id="h-season"><h2>Season stats</h2>
+<p>The season page adds up any set of games. Make a <b>season</b> (New season: a name, the ROM, your team, when it
+starts and, if you like, ends): its games are the whole games played on that ROM from its start until it ends or the
+next season on that ROM starts. Several seasons can share a ROM. Untick a game on the Games tab to leave it out.</p>
+<dl>
+  <dt>Standings</dt><dd>Wins, losses, OT losses, ties, points (2 a win, 1 an OT loss or tie), goals, power play and penalty kill; your team's record, home and away, last five.</dd>
+  <dt>Skaters, Goalies, Team stats, Head to head</dt><dd>The usual totals. Goalies also split save % by a person or the computer in net, high-danger save %, rebound rate, and show where they get beaten.</dd>
+  <dt>Advanced</dt><dd>Corsi, Fenwick, PDO, high-danger chances, rebounds, EA Specials, shot assists, costly turnovers, zone entries. On-ice stats are for leagues with line changes.</dd>
+  <dt>Play style</dt><dd>How chances were made, the person against the computer, each person's controller habits, and the passing network.</dd>
+  <dt>Heat maps</dt><dd>A team's or skater's heat map over the whole season.</dd>
+</dl>
+</section>
+
+<section id="h-glossary"><h2>Glossary of stats</h2>
+<h3>Basics</h3>
+<dl>
+  <dt>G, A, PTS</dt><dd>Goals, assists, points (goals + assists), as the game credits them.</dd>
+  <dt>+/-</dt><dd>Goals for minus goals against while the player was on the ice, as the NHL counts it: power-play and penalty-shot goals count for neither side.</dd>
+  <dt>SOG</dt><dd>Shots on goal, as the game counts them. The game does not count every stopped shot (never a pass shot unless it scores).</dd>
+  <dt>S% (shooting %)</dt><dd>Goals divided by shots on goal.</dd>
+  <dt>PPG, SHG, GWG</dt><dd>Power-play, shorthanded and game-winning goals (the goal that put the winner ahead of the loser's final total).</dd>
+  <dt>PIM</dt><dd>Penalty minutes.</dd>
+  <dt>TOI</dt><dd>Ice time, in game minutes.</dd>
+  <dt>SA, GA, SV%</dt><dd>Shots and goals against a goalie; save % = saves / shots against.</dd>
+  <dt>GA/GP, SO</dt><dd>Goals against a game; shutouts.</dd>
+  <dt>PP%, PK%</dt><dd>Power-play goals / power plays; penalties killed / times shorthanded.</dd>
+</dl>
+<h3>Shots</h3>
+<dl>
+  <dt>Shot attempt (iCF)</dt><dd>Every shot, whether on goal, wide or blocked.</dd>
+  <dt>Wide, blocked</dt><dd>A miss; blocked when an opposing skater (not the goalie) got it or it changed course off one.</dd>
+  <dt>Saved, not counted</dt><dd>The goalie stopped it but the game did not count a shot on goal.</dd>
+  <dt>Wrist shot, slapshot</dt><dd>Told apart by how long the shot was wound up (0.8 seconds or more is a slapshot).</dd>
+  <dt>One-timer</dt><dd>A shot straight off a pass, without stopping the puck. A <b>failed one-timer</b> is a swing at a pass that never arrived.</dd>
+  <dt>Pass shot</dt><dd>A pass (the B button) used as a shot.</dd>
+  <dt>Deflection, scramble</dt><dd>A counted shot with no shooting motion: a redirect beside the net, or a scramble.</dd>
+  <dt>High danger (HD)</dt><dd>An attempt from the slot: within about 20 ft of the net and not wide of it. A third of these go in, against about one in seven elsewhere.</dd>
+  <dt>Rebound</dt><dd>An attempt by the same team within 3 seconds of a save that gave them the puck back.</dd>
+  <dt>Wraparound</dt><dd>A shot from beside the post just after carrying the puck behind the net.</dd>
+  <dt>Post</dt><dd>Off the post (the game counts it as a shot on goal).</dd>
+</dl>
+<h3>The puck and the play</h3>
+<dl>
+  <dt>Possession</dt><dd>Game seconds each team controlled the puck. A loose puck counts for the team that had it if they get it back, otherwise as <b>transition</b>. Split by zone: attacking, neutral, defensive.</dd>
+  <dt>Attack zone</dt><dd>The game's own count: time the puck spent in that team's attacking zone, whoever had it.</dd>
+  <dt>Zone entry</dt><dd>The puck crossing the blue line into the attacking zone: carried, passed, or dumped in; and whether a shot attempt came of it before it left the zone.</dd>
+  <dt>Off the rush, sustained, off a faceoff</dt><dd>Where an attempt came from: within 5 seconds of the zone entry (rush), later in that stay in the zone (sustained pressure), or from a faceoff in that zone.</dd>
+  <dt>Odd-man rush</dt><dd>A carried or passed zone entry with more attackers than defenders back (at least two attackers): 2-on-1, 3-on-2 ...</dd>
+  <dt>Breakaway</dt><dd>As the game counts it: the carrier crossing the blue line ahead of every defender.</dd>
+  <dt>Giveaway, takeaway</dt><dd>The puck changing teams without a whistle: a takeaway when the other team forced it (poke check, hook, check, or stolen), otherwise a giveaway (a pass picked off, the puck lost).</dd>
+  <dt>Costly giveaway, turnovers &rarr; shot against</dt><dd>Giveaways (turnovers) the other team turned into a shot attempt within 5 seconds.</dd>
+  <dt>Shot assist, attempts off a pass</dt><dd>A pass that led straight to a teammate's shot attempt.</dd>
+  <dt>Passing network</dt><dd>Completed passes between each pair of teammates, and the shot attempts off them.</dd>
+  <dt>Passes, pass %</dt><dd>Passes the game counted and completed (one-timer passes count as completed).</dd>
+  <dt>Faceoffs</dt><dd>Won, and by zone.</dd>
+  <dt>Icing</dt><dd>Touch-up icing: shot from a team's own half across the far goal line untouched.</dd>
+</dl>
+<h3>Physical</h3>
+<dl>
+  <dt>Checks, hits taken</dt><dd>Body checks that landed, thrown and taken.</dd>
+  <dt>Big hit</dt><dd>A check that upended a player or sent him into the boards or the bench.</dd>
+</dl>
+<h3>Advanced</h3>
+<dl>
+  <dt>Corsi (CF, CA, CF%)</dt><dd>Shot attempts for and against (on goal, wide or blocked), and a team's share of them: the most used measure of who controlled play.</dd>
+  <dt>Fenwick (FF, FA, FF%)</dt><dd>The same without blocked attempts.</dd>
+  <dt>PDO</dt><dd>Shooting % + save %, times 100. About 100 is normal; well above or below over a few games usually means luck.</dd>
+  <dt>Even strength</dt><dd>When both teams have the same number of players in the penalty box.</dd>
+  <dt>HDCF, HDCA, HDCF%</dt><dd>High-danger attempts for, against, and the share.</dd>
+  <dt>Att. share, Pt. share</dt><dd>A skater's share of his team's shot attempts, and of its goals (scored or assisted), in the games he played.</dd>
+  <dt>On goal %</dt><dd>A skater's attempts that were shots on goal.</dd>
+  <dt>Reb%</dt><dd>A goalie's saves that gave the shooters a rebound.</dd>
+  <dt>On-ice stats, CF% rel, zone starts, OZS%</dt><dd>For leagues with line changes: Corsi while a skater was on the ice, against his team's while he was on the bench (rel), and the faceoffs he started in each zone. Without line changes they are just the team's numbers.</dd>
+</dl>
+<h3>The person and the computer</h3>
+<dl>
+  <dt>Person / CPU</dt><dd>Whether the skater was the one a person was controlling at that moment. The person always has the puck carrier, so checks and penalties are where the computer's skaters show.</dd>
+  <dt>Person in net, CPU in net</dt><dd>Whether a person had taken control of the goalie when the shot was released.</dd>
+  <dt>Presses a minute</dt><dd>A, B and C presses per minute of live play.</dd>
+  <dt>Speed bursts / check tries</dt><dd>C without the puck: the game uses it for both.</dd>
+  <dt>Poke check, hook &rarr; takeaway</dt><dd>Poke checks and hooks by the person's skater, and how many took the puck.</dd>
+  <dt>Goalie time, dives</dt><dd>Time a person controlled the goalie, and the dives.</dd>
+</dl>
+<h3>Game score and three stars</h3>
+<p>Skaters: 0.75 a goal, 0.7 a first assist, 0.55 a second, 0.075 a shot on goal, 0.05 a hit, 0.1 a takeaway, -0.1 a
+giveaway, -0.15 a penalty, 0.05 per shot attempt for (-0.05 against) and 0.15 per goal for (-0.15 against) while on
+the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three best are the stars.</p>
+<h3>Skating</h3>
+<dl>
+  <dt>Skated, top speed</dt><dd>Distance covered (miles) and the fastest half-second, on the game's own scale.</dd>
+</dl>
+</section>
+
+<section id="h-terms"><h2>Community terms</h2>
+<dl>
+  <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip that the goalie saved, whether or not a goal came of it. The goalie often dives after it, as if to cover a puck he is nowhere near.</dd>
+  <dt>Pass shot</dt><dd>Using the pass button to shoot: the puck goes off quickly with no target. The game does not count it as a shot on goal unless it scores.</dd>
+</dl>
+</section>
+
+<section id="h-trouble"><h2>Troubleshooting</h2>
+<dl>
+  <dt>The games page will not open (localhost)</dt><dd>The helper is not running: start it and leave its window open, then reload.</dd>
+  <dt>Windows warns about the helper</dt><dd>It is an unsigned program that reads RetroArch's memory (read only). Choose "More info", then "Run anyway".</dd>
+  <dt>A game is missing</dt><dd>The helper has to be running at the opening faceoff and until the horn. A recording under 45 seconds of play at 0-0 is thrown away.</dd>
+  <dt>A game is not in the season</dt><dd>Seasons count whole games only (from the opening faceoff to the horn) on the season's ROM between its dates; check the Games tab and "Whole games only".</dd>
+  <dt>Numbers differ from the game's stats screen</dt><dd>Goals, assists, shots on goal and checks are the game's own; attempts, possession and the rest are worked out from the replay.</dd>
+</dl>
+</section>
+
+    </div>
+  </div>
+</div>
 <script src="rink_gens.js"></script>
 <script>
 // This page as it arrived (everything above this script is still untouched), for "Save game file".
@@ -420,7 +705,7 @@ function load(m) {
   $('name1').textContent = m.team1;
   $('name2').textContent = m.team2;
   $('drop').hidden = true;
-  for (const id of ['hud', 'rink', 'controls', 'viewbar']) $(id).hidden = false;
+  for (const id of ['hud', 'rink', 'controls', 'viewbar', 'mtabs']) $(id).hidden = false;
   buildPanel($('lineup1'), 0, m.team1, 'var(--team1)');
   buildPanel($('lineup2'), 1, m.team2, 'var(--team2)');
   for (const key of document.querySelectorAll('.pad span')) {  // the buttons' names on this system's controller
@@ -2059,6 +2344,9 @@ function playRows(f, list) {
   }
   return rows;
 }
+// Team-stat groups closed by the viewer (by heading); the long lists start closed.
+let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)']);
+try { const saved = localStorage.getItem('nhl94-closed-groups'); if (saved) closedGroups = new Set(JSON.parse(saved)); } catch (e) { /* defaults */ }
 function fillTeamStats(snap) {
   const box = $('teamStats');
   if (!box) return;
@@ -2206,14 +2494,26 @@ function fillTeamStats(snap) {
     }
     head.append(th);
   });
+  // The groups open and close by clicking their heading (remembered); a closed group shows only its heading.
+  let closed = false;
   for (const [label, home, away] of rows) {
-    const tr = table.insertRow();
     if (home === undefined) {  // a heading
-      tr.className = 'section';
+      const tr = table.insertRow();
+      closed = closedGroups.has(label);
+      tr.className = 'section' + (closed ? ' closed' : '');
       const td = tr.insertCell();
       td.colSpan = 3; td.textContent = label;
+      td.title = closed ? 'Show this group' : 'Hide this group';
+      td.addEventListener('click', () => {
+        if (closedGroups.has(label)) closedGroups.delete(label); else closedGroups.add(label);
+        try { localStorage.setItem('nhl94-closed-groups', JSON.stringify([...closedGroups])); } catch (err) { /* not remembered */ }
+        panelState = '';
+        updatePanels(frameAt(now));
+      });
       continue;
     }
+    if (closed) continue;
+    const tr = table.insertRow();
     if (/^· /.test(label)) tr.className = 'sub';  // a break-down of the row above
     tr.insertCell().textContent = home;
     tr.insertCell().textContent = label;
@@ -2652,7 +2952,7 @@ function playSoundsUpTo(f) {
 }
 function showSound(on, remember = true) {
   soundOn = on;
-  $('soundToggle').setAttribute('aria-pressed', String(on));
+  $('soundToggle').checked = on;
   if (on && !soundCtx) { try { soundCtx = new AudioContext(); } catch (e) { soundOn = false; } }
   if (on && soundCtx && soundCtx.state === 'suspended') soundCtx.resume();
   if (remember) try { localStorage.setItem('nhl94-sound', on ? '1' : '0'); } catch (e) { /* not kept */ }
@@ -2676,7 +2976,69 @@ function fillSoundPanel() {
 const SOUND_NAMES = { puckget: 'Puck', pass: 'Pass', shotfh: 'Shot', shotbh: 'Backhand', check: 'Check', check2: 'Check 2', hithigh: 'Big hit',
   playerwall: 'Boards', crowdcheer: 'Cheer', crowdboo: 'Boo', oooh: 'Oooh', slapshot: 'Slapshot', post: 'Post', whistle: 'Whistle',
   puckwall: 'Puck off boards' };
-$('soundToggle').addEventListener('click', () => showSound(!soundOn));
+$('soundToggle').addEventListener('change', e => showSound(e.target.checked));
+// Narrow screens: which panel shows under the rink (Lineups, Team stats, Scoring); remembered.
+let mobilePane = 'lineups';
+try { mobilePane = localStorage.getItem('nhl94-mobile-pane') || mobilePane; } catch (e) { /* default */ }
+if (['lineups', 'stats', 'scoring'].includes(new URLSearchParams(location.search).get('pane'))) mobilePane = new URLSearchParams(location.search).get('pane');
+function showPane(pane) {
+  mobilePane = pane;
+  document.querySelector('main').classList.remove('m-lineups', 'm-stats', 'm-scoring');
+  document.querySelector('main').classList.add('m-' + pane);
+  for (const b of document.querySelectorAll('#mtabs button')) b.setAttribute('aria-pressed', String(b.dataset.pane === pane));
+  try { localStorage.setItem('nhl94-mobile-pane', pane); } catch (e) { /* not remembered */ }
+}
+for (const b of document.querySelectorAll('#mtabs button')) b.addEventListener('click', () => showPane(b.dataset.pane));
+showPane(mobilePane);
+// Help: a panel over the page (also opened by #help in the address, as the games and season pages link to it).
+// The search keeps the sections and entries whose words match.
+function showHelp(on) {
+  $('help').hidden = !on;
+  if (on) { $('helpSearch').focus(); if (location.hash !== '#help') history.replaceState(null, '', '#help'); }
+  else if (location.hash === '#help') history.replaceState(null, '', location.pathname + location.search);
+}
+for (const id of ['helpOpen', 'helpOpen2']) $(id).addEventListener('click', () => showHelp(true));
+$('helpClose').addEventListener('click', () => showHelp(false));
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('help').hidden) showHelp(false); });
+window.addEventListener('hashchange', () => showHelp(location.hash === '#help'));
+for (const a of document.querySelectorAll('.helptoc a')) a.addEventListener('click', e => {
+  e.preventDefault();
+  document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+});
+$('helpSearch').addEventListener('input', e => {
+  const words = e.target.value.toLowerCase().trim();
+  let any = false;
+  for (const section of document.querySelectorAll('#help section')) {
+    let shown = 0;
+    for (const dt of section.querySelectorAll('dt')) {
+      const dd = dt.nextElementSibling, hit = !words || (dt.textContent + ' ' + dd.textContent).toLowerCase().includes(words);
+      dt.hidden = dd.hidden = !hit; if (hit) shown++;
+    }
+    for (const p of section.querySelectorAll(':scope > p, :scope > ol, :scope > h3')) {
+      const hit = !words || p.textContent.toLowerCase().includes(words);
+      if (p.tagName !== 'H3') p.hidden = !hit;
+      if (hit && p.tagName !== 'H3') shown++;
+    }
+    section.hidden = !shown && !section.querySelector('h2').textContent.toLowerCase().includes(words);
+    any = any || !section.hidden;
+  }
+  let none = document.querySelector('#help .nomatch');
+  if (!none) { none = document.createElement('p'); none.className = 'nomatch'; document.querySelector('#help .helptext').append(none); }
+  none.textContent = any ? '' : 'Nothing in the help matches "' + e.target.value + '".';
+});
+if (location.hash === '#help') showHelp(true);
+// A shared game file has no games list beside it.
+if (window.NHL94_PACKED) $('backGames').hidden = true;
+// The View menu: the replay's on/off switches in one place, opened from the footer
+$('viewOpen').addEventListener('click', () => {
+  const open = $('viewPanel').hidden;
+  $('viewPanel').hidden = !open;
+  $('viewOpen').setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', e => {
+  if ($('viewPanel').hidden || $('viewPanel').contains(e.target) || e.target === $('viewOpen')) return;
+  $('viewPanel').hidden = true; $('viewOpen').setAttribute('aria-expanded', 'false');
+});
 $('soundMore').addEventListener('click', () => { $('soundPanel').hidden = !$('soundPanel').hidden; });
 $('soundClose').addEventListener('click', () => { $('soundPanel').hidden = true; });
 $('soundRate').addEventListener('input', e => {

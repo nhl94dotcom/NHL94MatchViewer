@@ -19,6 +19,8 @@
   .filters label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; min-width: 0; max-width: 100%; }
   .filters label.wide { flex: 0 1 520px; }
   .filters label.wide select { flex: 1; min-width: 0; width: 100%; }
+  .filters select { min-width: 0; }
+  @media (max-width: 640px) { .filters label, .filters label.wide { flex: 1 1 100%; } .filters label select { flex: 1; } }
   select { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 14px; max-width: 100%; }
   input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); }
   .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 12px; }
@@ -71,10 +73,17 @@
   .heatwrap { display: flex; flex-wrap: wrap; gap: 16px 22px; align-items: flex-start; }
   #heatCanvas { width: 360px; max-width: 100%; height: auto; border-radius: 8px; background: var(--raised); }
   .heatside { flex: 1 1 220px; min-width: 0; }
+  /* The bar shared by the games list, the season page and the viewer's help */
+  .topnav { display: flex; align-items: center; gap: 4px 18px; flex-wrap: wrap; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--raised); }
+  .topnav .brand { font-weight: 700; color: var(--text); text-decoration: none; margin-right: 8px; }
+  .topnav a.navlink { color: var(--muted); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
+  .topnav a.navlink:hover { color: var(--text); }
+  .topnav a.navlink[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); }
   @media (max-width: 640px) { main { padding: 16px 16px 40px; } td, th { padding-left: 6px; padding-right: 6px; } }
 </style>
 </head>
 <body>
+<nav class="topnav"><a class="brand" href="helper.html">NHL '94 Viewer</a><a class="navlink" href="helper.html">Games</a><a class="navlink" href="season.html" aria-current="page">Season stats</a><a class="navlink" href="viewer.html#help">Help</a></nav>
 <main>
   <h1>Season stats</h1>
   <p class="sub" id="sub">Loading games&hellip;</p>
