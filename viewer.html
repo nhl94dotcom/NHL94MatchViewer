@@ -1076,9 +1076,10 @@ function shotText(sh) {
   // The goalie's move (from the converter): on a save, how he made it; on a goal, what he tried.
   const move = sh.save && ['goal', 'save', 'post'].includes(sh.result)
     ? ' \u00b7 ' + (sh.save === 'none' ? (sh.result === 'goal' ? 'goalie did not move' : 'goalie stood his ground') : (sh.result === 'goal' ? 'goalie tried a ' : '') + SAVE_WORDS[sh.save]) : '';
-  // From the converter's shot context: where it was taken, a rebound or a flip rebound, and who set it up.
-  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 flip (rebound to the shooters)' : '') +
-    (sh.afterFlip ? ' \u00b7 off a flip rebound' : sh.rebound ? ' \u00b7 rebound' : '') +
+  // From the converter's shot context: where it was taken, a rebound or an EA Special (the community's name for a
+  // flipped wrist shot from the side that the goalie bobbles, then put in), and who set it up.
+  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special (the flip)' : '') +
+    (sh.afterFlip ? ' \u00b7 EA Special (the rebound)' : sh.rebound ? ' \u00b7 rebound' : '') +
     (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '');
   return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move + context;
 }
@@ -2078,7 +2079,7 @@ function fillTeamStats(snap) {
         ['· even strength', sharePct(s0.ev.ff, s0.ev.fa), sharePct(s1.ev.ff, s1.ev.fa)],
         ['PDO', pdoText(s0), pdoText(s1)],
         ...(list.some(sh => sh.danger) ? (() => {
-          // From the converter's shot context: the slot (high danger), rebounds, flip rebounds, set-up attempts,
+          // From the converter's shot context: the slot (high danger), rebounds, EA Specials, set-up attempts,
           // and turnovers the other team turned into an attempt within 5 s.
           const goals = (team, test) => list.filter(sh => sh.team === team && test(sh) && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === team && test(sh)).length;
           const flips = list.some(sh => sh.flip);
@@ -2086,7 +2087,7 @@ function fillTeamStats(snap) {
           return [
             ['High-danger goals / attempts', goals(0, sh => sh.danger === 'high'), goals(1, sh => sh.danger === 'high')],
             ['Rebound goals / attempts', goals(0, sh => sh.rebound), goals(1, sh => sh.rebound)],
-            ...(flips ? [['Flip rebounds (goals / flips)', list.filter(sh => sh.team === 0 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 0 && sh.flip).length,
+            ...(flips ? [['EA Specials (goals / tries)', list.filter(sh => sh.team === 0 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 0 && sh.flip).length,
               list.filter(sh => sh.team === 1 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 1 && sh.flip).length]] : []),
             ['Attempts off a pass', list.filter(sh => sh.team === 0 && sh.assist !== undefined).length, list.filter(sh => sh.team === 1 && sh.assist !== undefined).length],
             ['Turnovers \u2192 shot against', costly(0).length + (costly(0).some(e => e.goalAfter) ? ' (' + costly(0).filter(e => e.goalAfter).length + ' G)' : ''),
@@ -2673,7 +2674,7 @@ function playerName(team, idx) {
   const p = match.rosters && idx !== null && idx !== undefined ? match.rosters[team][idx] : null;
   return p ? '#' + p.num + ' ' + p.name : 'unknown';
 }
-const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot' };
+const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot', 'EA Special': 'EA Special' };
 function fillScoring(f) {
   const box = document.querySelector('.scoring');
   if (!box) return;

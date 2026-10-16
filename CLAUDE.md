@@ -842,22 +842,24 @@ line changes the game still sends out power-play and penalty-kill units: 0-7.4% 
 The season tab leads with individual numbers (iCF, iCF/GP, on goal %, S%, share of the team's attempts and of its
 goals) and keeps on-ice columns behind "On-ice stats (for leagues with line changes)" (remembered).
 
-Shot context (2026-10-16, `add_shot_context` in export_match.py, after the other event lists; every other field of
+Shot context (2026-10-16; EA Special naming 2026-10-16, `add_shot_context` in export_match.py, after the other event lists; every other field of
 all eight re-converted recordings unchanged): each shot's `danger` - 'high' within 60 units of the net and no wider
 than 50 (about 20 ft; 20 of 60 such attempts scored in the recordings against 14% of the rest; 50 x 40 scored 38% but
 held one attempt in seven), 'medium' within 100 and 70, else 'low'; `assist` (a shot assist: the last pass before the
 shot, completed or one-timed to the shooter within 4 s, the other team never having the puck between); `flip` /
-`afterFlip`: the user's Genesis community's flip rebound - a wrist shot from within 70 units and at least 20 off the
-middle, saved and given up as a rebound to the shooters (the goalie bobbles it and is pushed back), then their attempt
-within 2 s from within 65 units; one in the recordings (capture2_away P1 14:28, Ciccarelli then Ciccarelli's goal,
-not yet confirmed by the user); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
+`afterFlip`: an "EA Special", the user's Genesis community's name (after the player "EA" who invented it, not
+Electronic Arts) for skating down the side, usually a winger, flipping a wrist shot on goal so the goalie bobbles it
+and is pushed back, then the shooter or an onrushing teammate scores into the open part of the net. Found as a wrist
+shot from within 70 units and at least 20 off the middle, saved and given up as a rebound to the shooters, then their
+attempt within 2 s from within 65 units; one in the recordings, confirmed by the user (capture2_away P1 14:28,
+Ciccarelli then Ciccarelli's goal). Goals off one get the kind "EA Special" (a goal tag, like one-timer); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
 no whistle between). Expected goals was put off until there are thousands of shots (about 250 now).
 Shown: shot tooltips (high danger, rebound, flip, set up by), the card (High-danger att., Shot assists, Rebounds,
-Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, flip rebounds when any,
+Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, EA Specials when any,
 attempts off a pass, turnovers -> shot against), the season Goalies tab (HD SV%, Reb%: saves that gave a rebound),
 and the Advanced tab (a "Chances, rebounds and turnovers" team table: HDCF, HDCA, HDCF%, HDGF, HDGA, HD SV%, rebound
-goals, rebounds allowed, flips, attempts off a pass, turnovers -> shot, zone entries carried / all and how many led to
-an attempt; skater columns HD att, HD G, Shot ast, Reb G, Flip, Costly GV, Entries, Entry->shot). Summary VERSION 4.
+goals, rebounds allowed, EA Specials, attempts off a pass, turnovers -> shot, zone entries carried / all and how many led to
+an attempt; skater columns HD att, HD G, Shot ast, Reb G, EA Sp., Costly GV, Entries, Entry->shot). Summary VERSION 4.
 
 ## Three stars and highlights
 
