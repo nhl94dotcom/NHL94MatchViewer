@@ -836,7 +836,11 @@ Season summaries (VERSION 3): per skater `oi` / `oiEv` ([CF, CA, FF, FA, SF, SA,
 (the team's numbers while he was off); per team `adv` / `advEv`; the season page's "Advanced" tab (teams and skaters,
 all situations or even strength). capture6: Boston CF 28-17 (62%), PDO 98.2 (31.6% shooting + 66.7% saving). With
 line changes off (the online leagues' usual setting) a skater's on-ice numbers are mostly his team's, and CF% rel is
-blank for players who never left the ice.
+blank for players who never left the ice. So the card shows the on-ice block (Corsi, Fenwick, CF% rel, PDO, zone
+starts) only for a team that changed lines: more than 12% of its skaters' ice time beyond its five busiest (without
+line changes the game still sends out power-play and penalty-kill units: 0-7.4% in the recordings; with: 15-55%).
+The season tab leads with individual numbers (iCF, iCF/GP, on goal %, S%, share of the team's attempts and of its
+goals) and keeps on-ice columns behind "On-ice stats (for leagues with line changes)" (remembered).
 
 ## Three stars and highlights
 
