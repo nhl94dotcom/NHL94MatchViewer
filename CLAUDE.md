@@ -1069,14 +1069,19 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
 - The `full_buttons` capture's labelled taps: A at 5.6-12.1 s, B at 13.9-19.7 s, C at 21.1-26.8 s (the C taps came
   while the skater was down, then while controlling the goalie).
 - Whether capture works during netplay, and whether a netplay spectator can do the capturing.
-- Injuries (2026-10-16): `find_injuries` (Genesis ACTIONS "injury": $1AF4 injury1, $145C injuryfall). First seen in
-  `2026-10-16_1314_BOS-PIT` (the user's first .exe game, single player, recorded into Documents/NHL94 Viewer and
-  copied here): Jagr, P3 4:01, $1AF4 at Neely's shoulder check (also a penalty), off 9 s later, never back; Tocchet
-  took his place. Out for the period or the game is not read from memory (the disassembly's InjCntDown $C3EC counts
-  game seconds from the last injury; sflags7 $C2FC bit 5 never set; a before/after diff of the full snapshots found
-  nothing per player outside the replay buffer $8000-$AF43): `back` = his next frame on the ice in a later period.
-  Shown as a banner, a highlight, the card's "Injured", and the season's INJ column (injured and injuries caused).
-  SNES injuries: not looked at (no SNES recording with one).
+- Injuries (2026-10-16): `find_injuries`, from each player's availability code: when not serving a penalty, the low
+  byte of his penalty word (team block +$66 + 2i; in the stat snapshots' 8th value per player) is $FE on the bench,
+  $FF on the ice and $FD out (the SNES box state $1852 uses the same codes). Out for the period clears at the period's
+  end; out for the game never does. Found in `2026-10-16_1314_BOS-PIT` (the user's first .exe game, single player,
+  copied here from Documents/NHL94 Viewer): Jagr hurt by Neely's shoulder check (also a penalty) at P3 4:01, $FD
+  until the horn (527.9 s), then $FE with everyone - out for the period, as the user confirmed; the computer simply
+  did not send him back, so coming back on the ice says nothing (a first version that judged by that got it wrong).
+  The moment and cause come from the injury animation (Genesis ACTIONS "injury": $1AF4 injury1, $145C injuryfall)
+  in the 3 s before the code turned $FD, and the opponent's hit in the 1.5 s before. Also found: capture1's
+  Desjardins, out through period 1 from before the recording began (`atStart`: shown on his card, not as a banner or
+  highlight, not counted). The disassembly's InjCntDown ($C3EC) only counts game seconds from the last injury.
+  Shown as a banner, a highlight, the card's "Injured" (until it clears), and the season's INJ column (injured and
+  injuries caused). No SNES recording has an injury yet.
 - Most team stat words (passing, checks, faceoffs, attack-zone time) are unverified.
 
 ## Files
