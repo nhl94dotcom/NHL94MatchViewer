@@ -28,7 +28,9 @@ games in Documents\NHL94 Viewer (`NHL94_HOME` overrides; the pages bundled in it
 and converts in-process. Tested: `"NHL94 Helper.exe" --convert <folder>` converted the CGY-BOS recording in 8 s in a
 fresh folder (ROM copy found, sprites built), and its page served the list, viewer, match and sprites. `NHL94_PORT`
 sets another port. The helper claims its port exclusively (Windows otherwise let a second helper listen on 9494 too,
-and the page reached either), so a second copy says it is already running. Not yet tried on another computer; an
+and the page reached either), so a second copy says it is already running. It listens on ::1 as well as 127.0.0.1: Windows resolves
+"localhost" to ::1 first, and with only 127.0.0.1 open each request waited about 2 s for the fallback, and the user
+often could not connect at all. Not yet tried on another computer; an
 unsigned .exe that reads another program's memory may draw a SmartScreen or antivirus warning.
 
 By hand:
