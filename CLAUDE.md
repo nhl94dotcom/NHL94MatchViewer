@@ -121,8 +121,14 @@ game, crc32 42212a77 without header), `NHL94_Classic.smc` (a small hack that tra
 such as `SDL-S14.smc`. SNES hacking is less advanced than Genesis hacking. A colleague is mapping the SNES RAM
 from the Genesis memory map doc. The user's old SNES save-state parser is `reference/snes_savestate_stats.txt` (see below).
 - Some files have a 512-byte copier header (size % 1024 == 512); strip it. Base, Classic and SDL-S14 are LoROM with
-  the internal title "NHL '94" at $7FC0 and a valid checksum. SDL15/SDL16 (1.1 MB) are laid out differently
-  (no header at $7FC0 or $FFC0); not looked at yet.
+  the internal title "NHL '94" at $7FC0 and a valid checksum. SDL15/SDL16 (1.1 MB) have a copier header too, plus
+  extra code past the first megabyte (their reset jumps to $208000), so their size is not 512 past a multiple of 1024:
+  `strip_header` now tells a header by where the internal header's checksum pair (adding to $FFFF) sits, as Snes9x
+  does. SDL16 is NHL94_Classic's code (its check-tracking patches byte for byte) plus league rosters, 1-minute minors
+  and the stats screen's "Penalties" column renamed "Checks"; everything else in the first megabyte is the base
+  game's. All 47 NHL '94 SNES ROMs in the ROM folder read (28 teams each). On the 42 SDL15 and 47 SDL16 save states
+  the per-player goals add up to the score (all but one state, mid-goal), per-player checks ($168E) to the team's,
+  and the scoring summary names real players; `snes_preview.py` shows SDL15/16 states correctly.
 - Team data uses the Genesis format with little-endian lengths: players as (length word = name length + 2, name,
   jersey byte in decimal digits, 7 rating bytes), the list closed by a length word of 2, then the name strings
   (city, abbreviation, nickname, arena) in the same length-prefixed form. Boston's roster ends at $E2E0C in
@@ -195,8 +201,8 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   $7FFF)), 28 long pointers; records as described above; uniform palettes $96CD4E (home) / $96C9CE (away), 16 SNES
   colours per team. Goalies by their ratings (slots 6, 8, 9 empty: exact for all 65 Genesis goalies). Works on
   NHL94.smc, NHL94_Classic and SDL-S14; all 603 SNES players are on the Genesis rosters, but five teams lack a backup
-  goalie the Genesis has (EDM, NYI, NYR, STL, TOR: the SNES rosters differ). SDL16 (1.1 MB) does not read: laid out
-  differently.
+  goalie the Genesis has (EDM, NYI, NYR, STL, TOR: the SNES rosters differ). SDL15 and SDL16 read too (see the
+  header note above).
 - Sprites (`snes.build_sprites`, the same library format as the Genesis one, `sprites/<crc32 of the ROM without
   header>.js`, 976 frames): SpriteFrames at $828000 (see the comment in snes.py for the frame and piece layout; SNES
   planar 4-bit tiles; 16x16 pieces are tiles N, N+1, N+16, N+17). Palette 4 is the team's uniform (Away's is 5);

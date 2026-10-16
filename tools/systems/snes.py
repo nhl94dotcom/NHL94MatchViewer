@@ -115,8 +115,15 @@ PLAYER_ENERGY = 0x17EA  # a word per roster place (Home's 26, then Away's): ener
 
 
 def strip_header(data):
-    """The ROM without a copier's 512-byte header (files whose size is 512 past a multiple of 1024 have one)."""
-    return data[512:] if len(data) % 1024 == 512 else data
+    """The ROM without a copier's 512-byte header. Told by where the internal header is (its checksum and complement
+    at $7FDC / $7FDE add up to $FFFF), as Snes9x does: the league ROMs SDL15 and SDL16 have a header and extra code
+    past the first megabyte, so their size is not 512 past a multiple of 1024. Else by the size."""
+    def internal_header(at):
+        h = data[at + 0x7FC0:at + 0x7FE0]
+        return len(h) == 32 and (h[0x1C] | h[0x1D] << 8) ^ (h[0x1E] | h[0x1F] << 8) == 0xFFFF
+    if internal_header(0):
+        return data
+    return data[512:] if internal_header(512) or len(data) % 1024 == 512 else data
 
 
 # ------------------------------------------------------------------------------------------------------ the ROM
