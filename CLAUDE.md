@@ -840,7 +840,10 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   it to that spot with an orange bobble ring, then a thinner line on to its outcome (the user asked for that; the
   tooltip says "bobbled, then ..."). Also shown: a "Bobbled" tag over the receiver,
   team stats (Bobbled passes, under Pass %), the card, Help, and the season page (team BOB a game, skater BOB;
-  summary VERSION 9). 1-11 a game in the recordings.
+  summary VERSION 9). 1-11 a game in the recordings. On the Genesis, bobbles mostly come from short passes (50 units
+  or less) or a long pass catching up with a teammate skating away from it, often bouncing straight back off him (the
+  user; 28 of the 35 Genesis bobbles fit one or the other). Labelling bobbles by those kinds was tried and removed: the
+  user wants them shown simply as bobbles.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under
