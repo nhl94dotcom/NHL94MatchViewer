@@ -826,6 +826,7 @@ def find_turnovers(m):
 NET_Y = 268
 HIGH_DANGER = (60, 50)     # within 60 units of the net (about 20 ft) and no wider than 50 from the middle: the slot
 MEDIUM_DANGER = (100, 70)  # within 100 units and inside the faceoff dots
+EA_GOALIE_LINE = 12        # an EA Special attempt is shot at a goalie standing within this of the puck's line to the net
 # In the recordings (226 attempts) a third of the attempts from that slot scored (20 of 60) and 14% of the rest; a
 # tighter slot (50 x 40) scores 38% but holds only one attempt in seven. Goals by distance from the net: under 50
 # units 35%, 50-75 24%, 75-100 18%, farther about 8%.
@@ -840,9 +841,10 @@ def add_shot_context(m):
     - every shot's `danger`: 'high' (the slot, HIGH_DANGER), 'medium' (MEDIUM_DANGER) or 'low', by where it was taken;
     - `assist`: the teammate whose completed pass reached the shooter in the 4 s before it (a shot assist, as the
       NHL's trackers count them), with the other team never having the puck in between;
-    - `flip` on an EA Special's first shot, and `afterFlip` on the shot that followed: a wrist shot from close in
-      and off to the side (within 70 units, at least 20 from the middle) that the goalie saved but let go as a
-      rebound to the shooters, followed within 2 s by their shot from within 65 units. The user's Genesis community
+    - `flip` on an EA Special attempt, and `afterFlip` on the same team's shot that followed it within 2 s from
+      within 65 units (the rebound): the attempt is a wrist shot from close in and off to the side (within 70 units,
+      at least 20 from the middle) at a goalie in position, which he saved; an attempt that leads to a goal is an
+      EA Special (the goal gets that kind). The user's Genesis community
       calls the deliberate play an "EA Special", after the player known as EA who invented it (not Electronic
       Arts): skate down the side, usually a winger, flip a wrist shot on goal, the goalie bobbles it and is pushed
       back, and the shooter or an onrushing teammate scores into the open part of the net. Confirmed by the user:
@@ -863,14 +865,28 @@ def add_shot_context(m):
                     and all(team_of(q) in (-1, sh['team']) for q in range(p['f'], sh['f'] + 1)):
                 sh['assist'] = p['idx']
             break  # only the last pass before the shot
+    K = 12
     for i, sh in enumerate(shots):
-        if sh['type'] != 'wrist shot' or sh['result'] != 'save' or sh.get('after') != 'rebound':
+        # An EA Special attempt: a wrist shot (never a slapshot: goalies hold those far more often) from the side and
+        # close in, flipped at a goalie in position (within EA_GOALIE_LINE of the puck's line to the net at the
+        # release; on the saves in the recordings he stood 2-15 off it, on wrist shots that went straight in 15-51),
+        # which he stopped: not a try to score directly.
+        if sh['type'] != 'wrist shot' or sh['result'] != 'save' or shot_distance(sh) >= 70 or abs(sh['x']) < 20:
             continue
-        if shot_distance(sh) >= 70 or abs(sh['x']) < 20:
+        net_y = NET_Y if sh['y'] >= 0 else -NET_Y
+        keeper = next(((m['pos'][(sh['f'] * K + k) * 2], m['pos'][(sh['f'] * K + k) * 2 + 1])
+                       for k in range((1 - sh['team']) * 6, (1 - sh['team']) * 6 + 6) if m['role'][sh['f'] * K + k] == '0'), None)
+        if not keeper:
             continue
-        follow = next((s for s in shots[i + 1:] if s['team'] == sh['team'] and t[s['f']] - t[sh['f']] <= 2000 and shot_distance(s) < 65), None)
+        vx, vy = -sh['x'], net_y - sh['y']
+        off_line = abs((keeper[0] - sh['x']) * vy - (keeper[1] - sh['y']) * vx) / math.hypot(vx, vy)
+        if off_line > EA_GOALIE_LINE:
+            continue
+        sh['flip'] = True
+        # The rebound: the same team's next attempt within 2 s from close in, by the shooter or an onrushing
+        # teammate; when it goes in, that is an EA Special.
+        follow = next((s for s in shots[i + 1:] if s['team'] == sh['team'] and s['f'] > sh['f'] and t[s['f']] - t[sh['f']] <= 2000 and shot_distance(s) < 65), None)
         if follow:
-            sh['flip'] = True
             follow['afterFlip'] = True
     for e in m.get('turnovers', []):
         gainer = 1 - e['from']
