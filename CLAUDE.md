@@ -830,11 +830,16 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   Genesis games.
 - The page: filters by ROM (the system and the sprite library's crc; defaults to the ROM of the most recent whole
   game, since a league season is played on one ROM), team, and whole games only (on by default: recordings that
-  began late or stopped early, and save-state previews, are left out); tabs Standings (with "Your games": controller
-  1's record, by team), Skaters, Goalies (save % overall, with a person in net and with the computer), Team stats (a
+  began late or stopped early, and save-state previews, are left out), "My team" and team; tabs Standings (with "Your
+  team" on top: record, goals, home / away, last five), Skaters, Goalies (save % overall, with a person in net and with the computer), Team stats (a
   game), Head to head (a grid of records, or just the matchups past 12 teams) and Games (untick one to leave it out;
   Watch links). Every column sorts; `?tab=` and `?rom=` (a key or `all`) in the address. Players are matched across
   games by team abbreviation and name.
+- My team: in the user's online leagues a player's season is one team on one ROM, so the page asks for it ("My team",
+  kept per ROM in the browser's storage; until chosen, the one team that played every game is guessed and said so)
+  and marks it in every table. It no longer goes by controller 1 (the summary's `you`): on the Genesis player 1 is
+  always Home and player 2 Away (the user), so an Away game is played on controller 2; on the SNES a screen before the
+  game lets each player pick the side to control, and both may take the same team.
 - Not there yet: names for ROMs (only the crc is known; the helper copies the cartridge, not its file name), people
   as such (a game knows teams and controllers, not who held them), a shareable season file.
 
