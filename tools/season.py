@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
-VERSION = 2  # 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts)
+VERSION = 3  # 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -160,8 +160,8 @@ def summarize(m, name, date=None):
                 zs[{"att": 0, "neu": 1, "def": 2}.get(zone, 1)] += 1
         return {"oi": out[0], "oiEv": out[1], "zs": zs,
                 # The team's numbers while he was off the ice, for "relative" stats
-                "off": [a - b for a, b in zip(team_adv[team][0], out[0])],
-                "offEv": [a - b for a, b in zip(team_adv[team][1], out[1])]}
+                "bench": [a - b for a, b in zip(team_adv[team][0], out[0])],
+                "benchEv": [a - b for a, b in zip(team_adv[team][1], out[1])]}
 
     players = [[], []]
     for team in (0, 1):
