@@ -287,6 +287,8 @@ def watch():
                     time.sleep(2)
                     continue
                 rom_path, fingerprint = emu.dump_rom()
+                import romnames
+                romnames.note_loaded(emu.pid, emu.system, rom_path)  # the ROM's file name, for the season page
                 View = systems.get(emu.system).View
             view = View(emu)
             if not view.live:
