@@ -418,6 +418,7 @@ function render() {
   view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, adv: viewAdvanced, play: viewPlay, heat: viewHeat, games: viewGames }[tab] || viewStandings)(list, team);
   wireSorting();
   if (tab === 'heat' && $('hTeam')) wireHeat(list);
+  if (tab === 'play' && $('passZone')) $('passZone').addEventListener('change', e => { passZone = e.target.value; render(); });
   if (tab === 'goalies' && $('gmWho')) { $('gmWho').addEventListener('change', e => { gmWho = e.target.value; drawGoalieMap(list); }); drawGoalieMap(list); }
   for (const radio of view.querySelectorAll('input[name=advWhen]')) radio.addEventListener('change', () => { advEven = radio.value === 'ev'; render(); });
   if ($('advOnIce')) $('advOnIce').addEventListener('change', e => { advOnIce = e.target.checked; try { localStorage.setItem('nhl94.season.onIce', advOnIce ? '1' : '0'); } catch (err) { /* not kept */ } render(); });
@@ -945,11 +946,47 @@ function viewPlay(list, team) {
     { key: 'rate', label: '\u2192 shot', title: 'Share of these passes that led straight to a shot attempt', value: r => (r.made ? r.shots / r.made : NaN),
       show: r => (r.made ? pct1(100 * r.shots / r.made) : '\u2013') },
   ], 'made');
+  const passing = viewPassing(list, team);
   return '<h2>Play style</h2><h2 style="font-size:14px">How chances were made</h2>' + chances +
     '<h2 style="font-size:14px;margin-top:20px">Person vs computer</h2>' + versus +
     '<h2 style="font-size:14px;margin-top:20px">Controller habits</h2>' + habits +
     `<h2 style="font-size:14px;margin-top:20px">Passing network: ${esc(netTeam.name)} <small class="muted">(pick a team above to see another)</small></h2>` + network +
+    passing +
     '<p class="note">The person always has the puck carrier, so shots and passes are almost all the person\u2019s; checks and penalties are where the computer\u2019s skaters show.</p>';
+}
+
+// Passing by zone: who passes a lot where, and which way. Each skater's passes from the zone picked (his team's view:
+// defensive, neutral, attacking), against his game time with the puck there, split by direction (forward within 30
+// degrees of straight up the ice, diagonal 30-60, sideways within 30 of straight across, diagonal back, backward),
+// and how many left that zone. From the summaries' passDir (zone x direction), passZones (from x to) and puckZone.
+let passZone = 'att';
+const PASS_ZONES = [['att', 'Attacking zone'], ['neu', 'Neutral zone'], ['def', 'Defensive zone'], ['all', 'All zones']];
+const DIR_NAMES = ['Fwd', 'Diag fwd', 'Side', 'Diag back', 'Back'];
+const DIR_TITLES = ['Forward: within 30\u00b0 of straight up the ice', 'Diagonal forward: 30-60\u00b0', 'Sideways: within 30\u00b0 of straight across',
+  'Diagonal back: 30-60\u00b0 from straight back', 'Backward: within 30\u00b0 of straight back'];
+function viewPassing(list, team) {
+  let rows = playerLines(list, false).filter(r => r.passDir);
+  if (team) rows = rows.filter(r => r.abbr === team);
+  if (!rows.length) return '';
+  const zones = passZone === 'all' ? [0, 1, 2] : [['def', 'neu', 'att'].indexOf(passZone)];
+  const dirs = r => [0, 1, 2, 3, 4].map(d => zones.reduce((a, z) => a + r.passDir[z * 5 + d], 0));
+  const passes = r => dirs(r).reduce((a, b) => a + b, 0);
+  const puck = r => zones.reduce((a, z) => a + ((r.puckZone || [])[z] || 0), 0);
+  const leave = r => zones.reduce((a, z) => a + [0, 1, 2].reduce((b, z2) => b + (z2 === z ? 0 : r.passZones[z * 3 + z2]), 0), 0);
+  const share = (r, d) => { const n = passes(r); return n ? 100 * dirs(r)[d] / n : NaN; };
+  const picker = `<div class="filters" style="margin:8px 0 12px"><label>Zone <select id="passZone">${PASS_ZONES.map(([k, n]) =>
+    `<option value="${k}"${k === passZone ? ' selected' : ''}>${n}</option>`).join('')}</select></label></div>`;
+  return '<h2 style="font-size:14px;margin-top:20px">Passing by zone</h2>' + picker + table('playPassing', rows.filter(r => passes(r) || puck(r)), [
+    { key: 'name', label: 'Player', left: true, show: playerCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'passes', label: 'Passes', title: 'Passes made from this zone', value: passes },
+    { key: 'pgp', label: '/GP', value: r => passes(r) / r.gp, show: r => per(passes(r), r.gp) },
+    { key: 'puck', label: 'With puck', title: 'Game time with the puck on his stick in this zone', value: puck, show: r => mmss(puck(r)) },
+    { key: 'rate', label: 'Passes/min with puck', title: 'Passes for every minute of game time he had the puck here: high = moves it on, low = skates with it',
+      value: r => (puck(r) ? 60 * passes(r) / puck(r) : NaN), show: r => (puck(r) ? (60 * passes(r) / puck(r)).toFixed(1) : '–') },
+    ...DIR_NAMES.map((n, d) => ({ key: 'd' + d, label: n + ' %', title: DIR_TITLES[d], value: r => share(r, d), show: r => pct1(share(r, d)) })),
+    { key: 'leave', label: passZone === 'all' ? 'Across a line' : 'Out of zone', title: 'Passes that ended in another zone (e.g. out of his own zone, or into the attacking zone)', value: leave },
+  ], 'passes') + '<p class="note">Directions are the way the puck left the stick, against the way his team attacks. With puck is game time; a pass that bounced off its receiver ends at the bounce.</p>';
 }
 
 // ---------------------------------------------------------------------------------------------------- goalie maps

@@ -889,6 +889,42 @@ BOBBLE_KICK = 50    # puck speed change (hundreds) of a pass bouncing off its re
 BOBBLE_NEAR = 22    # ... within this of the receiver
 
 
+PASS_DIRS = ('forward', 'diagonal forward', 'sideways', 'diagonal back', 'backward')
+ZONES = ('def', 'neu', 'att')
+
+
+def zone_of(y, forward):
+    """The zone at Y for a team attacking toward `forward` (+1 = +Y): 'def', 'neu' or 'att' (blue lines at ZONE_LINE)."""
+    return 'att' if y * forward >= ZONE_LINE else 'def' if y * forward <= -ZONE_LINE else 'neu'
+
+
+def add_pass_shape(m):
+    """Each pass's direction and zones, for the passing team (the user: who passes a lot in which zone, and how):
+    - `dir`: the way the puck left the stick against the way the team attacks: 'forward' (within 30 degrees of
+      straight up the ice), 'diagonal forward' (30-60), 'sideways' (within 30 of straight across, so a little forward or
+      back is still sideways), 'diagonal back', 'backward';
+    - `zone` where it was passed from and `toZone` where it got to (the bobble, the catch, the interception or where it
+      stopped): 'def', 'neu', 'att'.
+    The attacking direction is away from the team's own goalie. After find_passes and find_bobbles."""
+    V, N = m['puckV'], len(m['t'])
+    for p in m.get('passes', []):
+        rel, team = p['f'], p['team']
+        end = next((e for q in range(rel, min(N, rel + 300)) for e in [own_end(m, q, team)] if e is not None), None)
+        if end is None:
+            end = next((-e for q in range(rel, min(N, rel + 300)) for e in [own_end(m, q, 1 - team)] if e is not None), None)
+        if end is None:
+            continue
+        forward = -end
+        v = next(((V[2 * q], V[2 * q + 1]) for q in range(rel, min(N, rel + 4)) if math.hypot(V[2 * q], V[2 * q + 1]) > 20), None)
+        v = v or (p['x1'] - p['x0'], p['y1'] - p['y0'])
+        if not math.hypot(*v):
+            continue
+        a = math.degrees(math.acos(max(-1.0, min(1.0, v[1] * forward / math.hypot(*v)))))
+        p['dir'] = PASS_DIRS[0 if a <= 30 else 1 if a <= 60 else 2 if a < 120 else 3 if a < 150 else 4]
+        p['zone'] = zone_of(p['y0'], forward)
+        p['toZone'] = zone_of(p['bobble']['y'] if 'bobble' in p else p['y1'], forward)
+
+
 def find_bobbles(m):
     """Bobbled passes: a pass reaches a teammate, close enough to take (the puck within BOBBLE_NEAR of him), and bounces
     off him (its speed changes by BOBBLE_KICK or more) without his having it; the user's community calls it a
@@ -1485,6 +1521,7 @@ def main(argv=None):
         match["injuries"] = find_injuries(match)
         match["bumps"] = find_bumps(match)
         match["bobbles"] = find_bobbles(match)
+        add_pass_shape(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):

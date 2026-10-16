@@ -855,6 +855,19 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   or less) or a long pass catching up with a teammate skating away from it, often bouncing straight back off him (the
   user; 28 of the 35 Genesis bobbles fit one or the other). Labelling bobbles by those kinds was tried and removed: the
   user wants them shown simply as bobbles.
+- Pass direction and zones (`add_pass_shape`, 2026-10-16; the user: who passes a lot in the attacking zone rather than
+  skating, who passes a lot in his own zone): each pass's `dir`, the puck's direction leaving the stick against the
+  way the team attacks (away from its own goalie, `own_end`): 'forward' (within 30 degrees), 'diagonal forward'
+  (30-60), 'sideways' (within 30 of straight across: a little forward or back still counts), 'diagonal back',
+  'backward' (PASS_DIRS); `zone` (where it was passed from) and `toZone` (the bobble, catch, interception or where it
+  stopped), 'def' / 'neu' / 'att' in the passing team's view (ZONE_LINE). BOS-PIT: 26 forward, 20 diagonal forward,
+  26 sideways, 6 diagonal back, 4 backward; most passes stay in a zone (D>D 25, D>N 17, O>O 16, N>N 16, N>O 6).
+  Season summaries (VERSION 10) per skater: `passDir` (zone x direction, 15), `passZones` (from x to, 9) and
+  `puckZone` (game seconds with the puck on his stick in each zone, as the viewer's possession counts them: each new
+  low of the clock, the clock being reset when it jumps up more than 3). Season page, Play style: "Passing by zone"
+  (zone picker; passes, /GP, time with the puck, passes a minute of it - Oates 32 in the attacking zone, Roenick 3.7 -
+  direction shares, passes out of the zone). Viewer: team stats group "Passing by zone and direction" (closed at
+  first), the card's "Passes att / neu / def" and "Pass direction" (ahead / across / back), Help.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under

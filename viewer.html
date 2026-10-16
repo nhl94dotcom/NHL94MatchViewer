@@ -503,6 +503,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Checks, hits taken</dt><dd>Body checks that landed, thrown and taken.</dd>
   <dt>Big hit</dt><dd>A check that upended a player or sent him into the boards or the bench.</dd>
   <dt>Bumped off the puck, pucks lost on contact</dt><dd>The puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down: the two only rubbed into each other. The card shows each player's "Bumped off puck" (he lost it) and "Bumped puck loose" (he was the one in contact). Team stats count them, and how many went straight to the other team.</dd>
+  <dt>Pass direction and zones</dt><dd>Each pass is classed by the way the puck left the stick, against the way the passer's team attacks: forward (within 30&deg; of straight up the ice), diagonal forward (30&ndash;60&deg;), sideways (within 30&deg; of straight across, so a little forward or back still counts), diagonal back, backward; and by the zone it was made in and the zone it reached (attacking, neutral, defensive, in the passer's team's terms). Shown in the team stats ("Passing by zone and direction"), on the card, and on the season page's Play style tab ("Passing by zone"), with each player's game time with the puck in that zone and passes per minute of it: high means he moves the puck on, low means he skates with it.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
   <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
@@ -2081,6 +2082,13 @@ function refreshPopover(f, snap) {
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
     if (match.bobbles) live.bobbled = match.bobbles.filter(e => e.f <= f && e.team === shown.team && e.idx === shown.idx).length;
+    if ((match.passes || []).some(e => e.dir)) {
+      // His passes by zone (attacking / neutral / defensive) and which way they went
+      const mine = match.passes.filter(e => e.team === shown.team && e.idx === shown.idx && e.dir && known(e, f));
+      live.passZones = ['att', 'neu', 'def'].map(z => mine.filter(e => e.zone === z).length).join(' / ');
+      const fwd = mine.filter(e => e.dir === 'forward' || e.dir === 'diagonal forward').length, back = mine.filter(e => e.dir === 'backward' || e.dir === 'diagonal back').length;
+      live.passWays = mine.length ? fwd + ' ahead, ' + (mine.length - fwd - back) + ' across, ' + back + ' back' : '';
+    }
     if (match.bumps) {
       // Pucks lost on body contact with no check landed (the converter's bumps), and the ones he knocked loose that way
       const skaters = match.bumps.filter(e => e.f <= f && e.kind !== 'goalie');
@@ -2253,6 +2261,8 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
       if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
       if (live.bobbled !== undefined) addStat(grid, 'Bobbled passes', live.bobbled);
+      if (live.passZones !== undefined) addStat(grid, 'Passes att / neu / def', live.passZones);
+      if (live.passWays) { addStat(grid, 'Pass direction', live.passWays); grid.lastChild.style.gridColumn = '1 / -1'; }
       if (live.bumpedOff !== undefined) { addStat(grid, 'Bumped off puck', live.bumpedOff); addStat(grid, 'Bumped puck loose', live.bumpedLoose); addStat(grid, 'Lost puck on goalie', live.onGoalie); }
       if (match.stats.x === 'PIM') addStat(grid, 'Pen. minutes', live.x);
       if (live.checkKinds) {
@@ -2392,7 +2402,7 @@ function playRows(f, list) {
   return rows;
 }
 // Team-stat groups closed by the viewer (by heading); the long lists start closed.
-let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)']);
+let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction']);
 try { const saved = localStorage.getItem('nhl94-closed-groups'); if (saved) closedGroups = new Set(JSON.parse(saved)); } catch (e) { /* defaults */ }
 function fillTeamStats(snap) {
   const box = $('teamStats');
@@ -2411,6 +2421,14 @@ function fillTeamStats(snap) {
   };
   const iced = team => (match.icings || []).filter(e => e.f <= f && e.team === team).length;
   const bigHits = team => (match.hits || []).filter(e => e.f <= f && e.team === team && BIG_HITS.includes(e.outcome)).length;
+  // Passes by where they were made and which way they went (the converter's add_pass_shape), in each team's view
+  const passShape = (match.passes || []).some(e => e.dir);
+  const shaped = team => (match.passes || []).filter(e => e.team === team && e.dir && known(e, f));
+  const passBy = team => ['att', 'neu', 'def'].map(z => shaped(team).filter(e => e.zone === z).length).join(' / ');
+  const passDir = (team, back) => (back ? ['diagonal back', 'backward'] : ['forward', 'diagonal forward', 'sideways'])
+    .map(d => shaped(team).filter(e => e.dir === d).length).join(' / ');
+  const passCross = (team, z) => shaped(team).filter(e => e.zone === z && e.toZone !== z).length;
+  const passInto = team => shaped(team).filter(e => e.zone !== 'att' && e.toZone === 'att').length;
   const bobbled = team => (match.bobbles || []).filter(e => e.f <= f && e.team === team).length;  // passes that bounced off the receiver
   const bumped = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind !== 'goalie');  // carriers bumped off the puck
   const onGoalie = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind === 'goalie').length;  // ... or lost it skating into a goalie
@@ -2513,6 +2531,12 @@ function fillTeamStats(snap) {
     ...(match.bobbles ? [['Bobbled passes', bobbled(0), bobbled(1)]] : []),
     ...(match.turnovers ? [['Giveaways', gave(0), gave(1)], ['Takeaways', took(0), took(1)]] : []),
     ...(match.icings ? [['Icings', iced(0), iced(1)]] : []),
+    ...(passShape ? [section('Passing by zone and direction'),
+      ['From attacking / neutral / defensive', passBy(0, 'zone'), passBy(1, 'zone')],
+      ['Forward / diagonal / sideways', passDir(0, 0), passDir(1, 0)],
+      ['Diagonal back / backward', passDir(0, 1), passDir(1, 1)],
+      ['Out of own zone', passCross(0, 'def'), passCross(1, 'def')],
+      ['Into attacking zone', passInto(0), passInto(1)]] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
