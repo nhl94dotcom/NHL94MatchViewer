@@ -841,6 +841,7 @@ NET_Y = 268
 HIGH_DANGER = (60, 50)     # within 60 units of the net (about 20 ft) and no wider than 50 from the middle: the slot
 MEDIUM_DANGER = (100, 70)  # within 100 units and inside the faceoff dots
 EA_GOALIE_LINE = 12        # an EA Special attempt is shot at a goalie standing within this of the puck's line to the net
+EA_MAX_DISTANCE = 130      # ... from no farther out than this
 # In the recordings (226 attempts) a third of the attempts from that slot scored (20 of 60) and 14% of the rest; a
 # tighter slot (50 x 40) scores 38% but holds only one attempt in seven. Goals by distance from the net: under 50
 # units 35%, 50-75 24%, 75-100 18%, farther about 8%.
@@ -889,11 +890,14 @@ def add_shot_context(m):
     for i, sh in enumerate(shots):
         if not genesis:
             break
-        # An EA Special attempt: a wrist shot (never a slapshot: goalies hold those far more often) from the side and
-        # close in, flipped at a goalie in position (within EA_GOALIE_LINE of the puck's line to the net at the
-        # release; on the saves in the recordings he stood 2-15 off it, on wrist shots that went straight in 15-51),
-        # which he stopped: not a try to score directly.
-        if sh['type'] != 'wrist shot' or sh['result'] != 'save' or shot_distance(sh) >= 70 or abs(sh['x']) < 20:
+        # An EA Special attempt: a wrist shot (never a slapshot: goalies hold those far more often) from the side,
+        # flipped at a goalie in position (within EA_GOALIE_LINE of the puck's line to the net at the release; on the
+        # saves in the recordings he stood 2-15 off it, on wrist shots that went straight in 15-51), which he stopped:
+        # not a try to score directly. "From the side" is an angle: at least 20 units off the middle and 0.4 of the
+        # distance, up to 130 out. The user's deliberate ones (2026-10-16_1314_BOS-PIT) came from 94 and 120 units,
+        # by the faceoff dot and the half-boards (66 and 71 off the middle); a first limit of 70 units missed both.
+        d = shot_distance(sh)
+        if sh['type'] != 'wrist shot' or sh['result'] != 'save' or d >= EA_MAX_DISTANCE or abs(sh['x']) < max(20, 0.4 * d):
             continue
         net_y = NET_Y if sh['y'] >= 0 else -NET_Y
         keeper = next(((m['pos'][(sh['f'] * K + k) * 2], m['pos'][(sh['f'] * K + k) * 2 + 1])
@@ -930,9 +934,12 @@ def add_shot_context(m):
                for k in range((1 - sh['team']) * 6, (1 - sh['team']) * 6 + 6) if m['role'][q * K + k] == '0'):
             sh['eaDive'] = True
         # The rebound: the same team's next attempt within 2 s from close in, by the shooter or an onrushing
-        # teammate; when it goes in, that is an EA Special.
+        # teammate; when it goes in, that is an EA Special. Not when a defending skater had the puck in between: in
+        # 2026-10-16_1314_BOS-PIT (P2 4:23) Pittsburgh's Taglianeti collected Oates's flip and put it into his own net,
+        # which the game credits to Oates; the user counts that as an attempt only.
         follow = next((s for s in shots[i + 1:] if s['team'] == sh['team'] and s['f'] > sh['f'] and t[s['f']] - t[sh['f']] <= 2000 and shot_distance(s) < 65), None)
-        if follow:
+        defenders = range((1 - sh['team']) * 6, (1 - sh['team']) * 6 + 6)
+        if follow and not any(own[q] in defenders and m['role'][q * K + own[q]] != '0' for q in range(sh['f'] + 1, follow['f'] + 1)):
             follow['afterFlip'] = True
     for e in m.get('turnovers', []):
         gainer = 1 - e['from']
@@ -1063,6 +1070,36 @@ def add_play_context(m):
         m['habits'] = habits
 
 
+def find_injuries(m):
+    """Injuries: a player going into the game's injury animation (genesis ACTIONS "injury": $1AF4 injury1, $145C
+    injuryfall; not known on the SNES yet). The game keeps him out for the rest of the period or of the game; which one
+    is not read from memory (the disassembly's InjCntDown at $C3EC only counts game seconds from the last injury), so
+    it comes from the replay: `back` is the frame he was next on the ice in a later period (out for the period), else
+    he was out for the rest of the game. `by` is the opponent whose hit he took in the 1.5 s before, if any.
+    Returns [{f, team, idx, by, back}]."""
+    words = actions(m).get('injury', set())
+    if not words or not m.get('role'):
+        return []
+    t, K, N = m['t'], 12, len(m['t'])
+    anim = lambda q, k: m['anim'][(q * K + k) * 4:(q * K + k) * 4 + 4]
+    idx_of = lambda q, k: int(m['roster'][q * K + k], 36)
+    out = []
+    for k in range(K):
+        team = 0 if k < 6 else 1
+        for q in range(1, N):
+            if anim(q, k) not in words or anim(q - 1, k) in words:
+                continue
+            idx = idx_of(q, k)
+            if idx >= 35 or any(e['team'] == team and e['idx'] == idx and abs(e['f'] - q) < 200 for e in out):
+                continue
+            hit = next((h for h in reversed(m.get('hits', [])) if h['f'] <= q and t[q] - t[h['f']] <= 1500 and h['team'] != team and h['on'] == idx), None)
+            period = m['period'][q]
+            back = next((r for r in range(q, N) if m['period'][r] > period and m['period'][r] <= 3 and
+                         any(idx_of(r, j) == idx and m['role'][r * K + j] != 'x' for j in range(team * 6, team * 6 + 6))), None)
+            out.append({'f': q, 'team': team, 'idx': idx, 'by': hit['by'] if hit else None, 'back': back})
+    return sorted(out, key=lambda e: e['f'])
+
+
 def find_goals(match, rosters):
     """Goals from the stat snapshots: when a team's goal count goes up, whose goals and assists went up with it
     (looking two seconds on, as the game can credit them a moment apart), and what kind of goal it was."""
@@ -1177,6 +1214,7 @@ def main(argv=None):
         match["hits"] = find_hits(match)
         add_shot_context(match)
         add_play_context(match)
+        match["injuries"] = find_injuries(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):

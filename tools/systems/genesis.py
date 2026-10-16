@@ -64,6 +64,7 @@ ACTIONS = {
     "down": {"0dd8", "0d26"},         # knocked down
     "dive": {"02f4"},                 # A as the goalie
     "goalie_save": {"148e"},          # a save attempt (also C while controlling the goalie)
+    "injury": {"1af4", "145c"},       # injury1 and injuryfall: a player hurt (Jagr in 2026-10-16_1314_BOS-PIT, $1AF4)
 }
 
 
