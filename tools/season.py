@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 from export_match import PASS_DIRS, ZONES, own_end, zone_of  # noqa: E402
 
-VERSION = 10  # 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 11  # 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -39,10 +39,12 @@ def played_periods(m):
 
 
 def puck_seconds_by_zone(m):
-    """{(team, roster index): [game seconds with the puck in his defensive, neutral, attacking zone]}: each second the
-    game clock ticks off (a new low in the period, at most 3 at a time, as the viewer's possession) goes to the
-    skater who has the puck then, by where it is."""
+    """Game seconds with the puck on a skater's stick: ({(team, roster index): [in his defensive, neutral, attacking
+    zone]}, [per team: 15 = zone x the carrier's position then, LD, RD, LW, C, RW]). Each second the game clock ticks
+    off (a new low in the period, at most 3 at a time, as the viewer's possession) goes to the skater who has the puck
+    then, by where it is and the position he is playing (line changes move players between positions)."""
     out, t, P, own, K = {}, m["t"], m["puck"], m.get("owner") or [], 12
+    by_pos = [[0] * 15, [0] * 15]
     low, period = None, None
     for i in range(len(t)):
         if m["period"][i] != period:
@@ -63,12 +65,28 @@ def puck_seconds_by_zone(m):
             idx = int(m["roster"][i * K + k], 36)
             zone = ZONES.index(zone_of(P[3 * i + 1], -end))
             out.setdefault((team, idx), [0, 0, 0])[zone] += ticks
+            by_pos[team][zone * 5 + int(m["role"][i * K + k]) - 1] += ticks
+    return out, by_pos
+
+
+def carried_entries_by_position(m):
+    """Per team: carried zone entries by the carrier's position then [LD, RD, LW, C, RW]."""
+    out, K = [[0] * 5, [0] * 5], 12
+    for e in m.get("zoneEntries", []):
+        if e.get("kind") != "carried" or e.get("idx", -1) < 0:
+            continue
+        f, team = e["f"], e["team"]
+        k = next((k for k in range(team * 6, team * 6 + 6) if int(m["roster"][f * K + k], 36) == e["idx"]), None)
+        if k is not None and m["role"][f * K + k] not in "0x":
+            out[team][int(m["role"][f * K + k]) - 1] += 1
     return out
 
 
 def summarize(m, name, date=None):
     t, period, clock = m["t"], m["period"], m["clock"]
     n = len(t)
+    puck_zone, puck_pos = puck_seconds_by_zone(m)  # game seconds with the puck, by skater and zone, and by position
+    entry_pos = carried_entries_by_position(m)
     score = m["score"][-2:]
     periods = played_periods(m)
     last = max(period) if period else 0
@@ -158,6 +176,8 @@ def summarize(m, name, date=None):
             "fow": sum(1 for e in faceoffs if e["won"] == team), "fo": len(faceoffs),
             "checks": team_value(team, "checks"),
             "bigHits": sum(1 for h in hits if h["team"] == team and h.get("outcome") in ("upended", "into the boards", "into the bench")),
+            "puckPos": puck_pos[team],  # game seconds with the puck: zone (def, neu, att) x carrier's position (LD, RD, LW, C, RW)
+            "entryPos": entry_pos[team],  # carried zone entries by the carrier's position
             "bumped": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") != "goalie"),  # its carriers bumped off the puck
             "onGoalie": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") == "goalie"),  # ... or losing it on a goalie
             "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team),  # passes that bounced off the receiver
@@ -255,7 +275,6 @@ def summarize(m, name, date=None):
                 "bench": [a - b for a, b in zip(team_adv[team][0], out[0])],
                 "benchEv": [a - b for a, b in zip(team_adv[team][1], out[1])]}
 
-    puck_zone = puck_seconds_by_zone(m)
     players = [[], []]
     for team in (0, 1):
         other = 1 - team
