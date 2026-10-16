@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
-VERSION = 3  # 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 4  # 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -81,6 +81,12 @@ def summarize(m, name, date=None):
     shots, goals, hits = m.get("shotList", []), m.get("goals", []), m.get("hits", [])
     turnovers, penalties, rules = m.get("turnovers", []), m.get("penalties", []), m.get("rules", {})
     faceoffs = [e for e in m.get("faceoffs", []) if e.get("won") in (0, 1)]
+    entries = m.get("zoneEntries", [])
+    entry_shot = lambda e: any(s["team"] == e["team"] and e["f"] <= s["f"] <= e.get("end", e["f"]) for s in shots)
+    # High-danger attempts by a team: all of them, the goals, or the shots on goal (as the game counts them)
+    hd_of = lambda side, want: sum(1 for s in shots if s["team"] == side and s.get("danger") == "high" and
+                                   (want is None or (want == "goal" and s["result"] == "goal") or
+                                    (want == "sog" and (s.get("counted") or s["result"] == "goal"))))
 
     # The game-winning goal: the winner's goal that took them past the loser's final total.
     gwg = None
@@ -111,6 +117,21 @@ def summarize(m, name, date=None):
             "oneTimerTried": team_value(team, "oneTimerTried"), "oneTimerGoals": team_value(team, "oneTimerGoals"),
             "give": sum(1 for e in turnovers if e["kind"] == "giveaway" and e["from"] == team),
             "take": sum(1 for e in turnovers if e["kind"] == "takeaway" and e["from"] == other),
+            # From the converter's shot context (add_shot_context): high-danger attempts, goals and shots on goal for
+            # and against; rebound attempts, rebound goals and rebounds this team's goalies gave up; flip rebounds
+            # (for, goals, against, goals against); attempts that came from a shot assist; its turnovers that led to
+            # an attempt / a goal against; zone entries (all, carried, passed, dumped, led to an attempt).
+            "hd": [hd_of(side, want) for want in (None, "goal", "sog") for side in (team, other)],
+            "reb": [sum(1 for s in shots if s["team"] == team and s.get("rebound")),
+                    sum(1 for s in shots if s["team"] == team and s.get("rebound") and s["result"] == "goal"),
+                    sum(1 for s in shots if s["team"] == other and s["result"] == "save" and s.get("after") == "rebound")],
+            "flip": [sum(1 for s in shots if s["team"] == side and s.get(key) and (not goal or s["result"] == "goal"))
+                     for side in (team, other) for key, goal in (("flip", False), ("afterFlip", True))],
+            "assisted": sum(1 for s in shots if s["team"] == team and "assist" in s),
+            "toShot": [sum(1 for e in turnovers if e["from"] == team and e.get("shotAfter") is not None),
+                       sum(1 for e in turnovers if e["from"] == team and e.get("goalAfter"))],
+            "entries": [sum(1 for e in entries if e["team"] == team and (kind is None or e["kind"] == kind)) for kind in (None, "carried", "passed", "dumped")]
+                       + [sum(1 for e in entries if e["team"] == team and entry_shot(e))],
         })
 
     # On the ice at each goal, for plus/minus (as the NHL counts it: not power-play or penalty-shot goals)
@@ -173,6 +194,11 @@ def summarize(m, name, date=None):
             line = {"idx": idx, "name": p["name"], "num": p["num"], "goalie": bool(p.get("g")), "ovr": p.get("ovr"), "toi": toi}
             if p.get("g"):
                 faced = [s for s in shots if s["team"] == other and s.get("goalie") == idx and (s.get("counted") or s["result"] == "goal")]
+                faced_all = [s for s in shots if s["team"] == other and s.get("goalie") == idx]
+                line.update({"hdSa": sum(1 for s in faced if s.get("danger") == "high"),
+                             "hdGa": sum(1 for s in faced if s.get("danger") == "high" and s["result"] == "goal"),
+                             "rebAllowed": sum(1 for s in faced_all if s["result"] == "save" and s.get("after") == "rebound"),
+                             "saves": sum(1 for s in faced_all if s["result"] == "save")})
                 line.update({"sa": v[2], "ga": v[0], "a": v[1],
                              "human": [sum(1 for s in faced if s.get("gctl") == "human"),
                                        sum(1 for s in faced if s.get("gctl") == "human" and s["result"] == "goal")],
@@ -196,6 +222,20 @@ def summarize(m, name, date=None):
                     "take": sum(1 for e in turnovers if e["kind"] == "takeaway" and e["from"] == other and e.get("by") == idx),
                 })
                 line.update(skater_adv(team, idx))
+                mine = [s for s in shots if s["team"] == team and s["idx"] == idx]
+                my_entries = [e for e in entries if e["team"] == team and e.get("idx") == idx]
+                line.update({
+                    "hdAtt": sum(1 for s in mine if s.get("danger") == "high"),
+                    "hdG": sum(1 for s in mine if s.get("danger") == "high" and s["result"] == "goal"),
+                    "shotAssists": sum(1 for s in shots if s["team"] == team and s.get("assist") == idx),
+                    "rebAtt": sum(1 for s in mine if s.get("rebound")),
+                    "rebG": sum(1 for s in mine if s.get("rebound") and s["result"] == "goal"),
+                    "flips": sum(1 for s in mine if s.get("flip")),
+                    "flipG": sum(1 for s in mine if s.get("afterFlip") and s["result"] == "goal"),
+                    "costlyGv": sum(1 for e in turnovers if e["kind"] == "giveaway" and e["from"] == team and e.get("giver") == idx and e.get("shotAfter") is not None),
+                    "ent": len(my_entries), "entC": sum(1 for e in my_entries if e["kind"] == "carried"),
+                    "entShot": sum(1 for e in my_entries if entry_shot(e)),
+                })
             if toi > 0 or any(line.get(k) for k in ("g", "a", "sog", "sa", "pim", "checks", "att")):
                 players[team].append(line)
         # The goalie with the most ice time gets the decision
