@@ -295,6 +295,19 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
 - Pause and replay: sflags $15D8 bit $0001 = paused (pause menu; replays are watched from it), bit $0800 = replay
   playing (the user's two replays in P3: 383.8-395.1 s and 424.4-435.0 s, each inside a pause). The converter leaves
   paused samples out and closes the timeline over them (`LivePlay`): 48 s fewer, no count changed.
+- First live SNES games with the helper (2026-10-16, the user's TOR vs CHI twice on NHL94_Classic, cd85e387, online
+  against a league opponent; Home then Away): `2026-10-16_1528_TOR-CHI` (7-2) and `2026-10-16_1540_CHI-TOR` (5-3),
+  in Documents\NHL94 Viewer. Three problems, fixed: (1) the SNES Emulator lacked `pid` (the ROM-name step), so the
+  helper failed at attach; (2) at the menus the SNES roster bytes can all read 0, not $FF, so the helper took the
+  menus' default MTL vs LA for a game under way (`on_ice` now needs each team's places to hold different players,
+  and a recording is renamed after the teams that played when it closes); (3) the SNES shots-on-goal word flickered
+  2 -> 3 -> 2 -> 3 within 80 ms (twice in game 1), counting one shot twice: `steady_stats` in export_match.py smooths a
+  count that changes back within FLICKER_MS 250 (team counts other than attack-zone time, each player's first five
+  values, and the per-sample score and shots words; never ice time, energy or the penalty word, which really do flip
+  at line changes). Genesis recordings unchanged; the first SNES recording's counted passes went from 49 to the game's
+  48. Both new games then match the game exactly: shots on goal 15/10 and 16/5, checks 35/27 and 32/31, goals; the
+  power-play and shorthanded tags agree with the penalties. Roenick's goal in game 2 (P1 1:22) raised no shots-on-goal
+  count, so it reads counted false, as the SNES penalty-shot goal did. No injury yet.
 - The helper records SNES games itself (2026-10-15): `snes.View` (period, clock, score, teams, on_ice from the roster
   bytes = $FF before the faceoff and at intermissions, in_game = not paused / not menus, in_menus = teams and score
   cleared), BLOCKS [$0000-$3FFF], `Emulator.dump_rom` (roms/<fingerprint>.smc). At the final horn the SNES game sets
