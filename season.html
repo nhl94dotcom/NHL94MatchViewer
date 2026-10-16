@@ -38,6 +38,9 @@
   td.sorted { color: var(--accent); font-weight: 600; }
   td small, .muted { color: var(--muted); }
   tr.off td { opacity: .45; }
+  /* the team you play this season (its sticky first cell needs a solid colour: the panel with a tenth of the accent) */
+  tr.mine td, .scroll tr.mine td.left:first-child { background: #33342e; }
+  tr.mine td.left:first-child { box-shadow: inset 3px 0 var(--accent); }
   td a { color: var(--text); }
   .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--raised); color: var(--muted); margin-left: 6px; vertical-align: 1px; }
   .tag.you { background: var(--accent); color: var(--ink); font-weight: 600; }
@@ -47,6 +50,7 @@
   .tile { background: var(--raised); border-radius: 8px; padding: 10px 12px; }
   .tile b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
   .tile span { color: var(--muted); font-size: 13px; }
+  .tile b em { font-style: normal; }
   .matrix td, .matrix th { text-align: center; }
   .matrix td.self { background: var(--bg); }
   .matrix td.left, .matrix th.left { text-align: left; }
@@ -61,6 +65,7 @@
 
   <section class="card filters" id="filters" hidden>
     <label class="wide">Games played on <select id="rom"></select></label>
+    <label title="The team you control in this season's games">My team <select id="mine"></select></label>
     <label>Team <select id="team"></select></label>
     <label title="Recordings that began after the opening faceoff or stopped before the final horn"><input type="checkbox" id="whole" checked> Whole games only</label>
   </section>
@@ -87,11 +92,14 @@ const per = (a, gp, digits = 1) => (gp ? (a / gp).toFixed(digits) : '–');
 const mmss = s => Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0');
 const signed = v => (v > 0 ? '+' + v : String(v));
 
-let games = [], tab = 'standings', sorts = {};
-try { const saved = JSON.parse(localStorage.getItem('nhl94.season') || '{}'); tab = saved.tab || tab; sorts = saved.sorts || {}; } catch (e) { /* no storage */ }
+let games = [], tab = 'standings', sorts = {}, myTeams = {}, mineGuessed = false;
+try {
+  const saved = JSON.parse(localStorage.getItem('nhl94.season') || '{}');
+  tab = saved.tab || tab; sorts = saved.sorts || {}; myTeams = saved.myTeams || {};
+} catch (e) { /* no storage */ }
 const query = new URLSearchParams(location.search);  // ?tab=skaters opens that tab
 if (query.get('tab')) tab = query.get('tab');
-const remember = () => { try { localStorage.setItem('nhl94.season', JSON.stringify({ tab, sorts })); } catch (e) { /* no storage */ } };
+const remember = () => { try { localStorage.setItem('nhl94.season', JSON.stringify({ tab, sorts, myTeams })); } catch (e) { /* no storage */ } };
 const excluded = new Set();
 
 // The games: from the helper (/api/season) when it serves this page, else from matches/season.js beside it
@@ -126,6 +134,10 @@ function setup() {
   $('rom').innerHTML = '<option value="">All ROMs</option>' + roms.map(k => `<option value="${esc(k)}">${esc(romLabel(k))}</option>`).join('');
   $('rom').value = query.has('rom') ? (roms.includes(query.get('rom')) ? query.get('rom') : '') : recent ? romKey(recent) : '';
   for (const el of [$('rom'), $('team'), $('whole')]) el.addEventListener('change', () => { if (el !== $('team')) fillTeams(); render(); });
+  $('mine').addEventListener('change', () => {
+    if ($('mine').value) myTeams[$('rom').value || 'all'] = $('mine').value; else delete myTeams[$('rom').value || 'all'];
+    remember(); fillTeams(); render();
+  });
   for (const b of document.querySelectorAll('#tabs button')) b.addEventListener('click', () => { tab = b.dataset.tab; remember(); render(); });
   fillTeams();
   $('filters').hidden = $('tabs').hidden = $('view').hidden = false;
@@ -137,7 +149,16 @@ function fillTeams() {
   $('team').innerHTML = '<option value="">All teams</option>' + [...teams].sort((a, b) => a[1].localeCompare(b[1]))
     .map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})</option>`).join('');
   $('team').value = teams.has(keep) ? keep : '';
+  // My team, chosen once per ROM (a league season is one ROM, one team). Not chosen yet: the one team that played
+  // every game, if there is one, as a guess.
+  const chosen = myTeams[$('rom').value || 'all'], list = pool(false);
+  const everyGame = [...teams.keys()].filter(a => list.length >= 2 && list.every(g => g.abbr.includes(a)));
+  mineGuessed = !teams.has(chosen) && everyGame.length === 1;
+  $('mine').innerHTML = '<option value="">Not chosen</option>' + [...teams].sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})${mineGuessed && a === everyGame[0] ? ' - guessed' : ''}</option>`).join('');
+  $('mine').value = teams.has(chosen) ? chosen : mineGuessed ? everyGame[0] : '';
 }
+const myTeam = () => $('mine').value;
 
 // The games in play: the ROM and whole-game filters (and, with byTeam, the team filter), less any unticked on the
 // Games tab.
@@ -197,7 +218,7 @@ function table(id, rows, columns, defaultKey) {
     return (s.asc ? cmp : -cmp) || (b.gp || 0) - (a.gp || 0);
   });
   const head = columns.map(c => `<th${c.sortable === false ? '' : ` data-key="${c.key}"`} class="${c.left ? 'left' : ''}${c === col ? ' sorted' : ''}"${c.title ? ` title="${esc(c.title)}"` : ''}>${esc(c.label)}${c === col ? (s.asc ? ' ▴' : ' ▾') : ''}</th>`).join('');
-  const body = rows.map(r => `<tr class="${r.off ? 'off' : ''}">` + columns.map(c => {
+  const body = rows.map(r => `<tr class="${r.off ? 'off' : ''}${r.abbr && r.abbr === myTeam() ? ' mine' : ''}">` + columns.map(c => {
     const v = c.show ? c.show(r) : esc(val(c)(r));
     return `<td class="${c.left ? 'left' : ''}${c === col ? ' sorted' : ''}">${v}</td>`;
   }).join('') + '</tr>').join('');
@@ -243,27 +264,29 @@ function viewStandings(list, team) {
     { key: 'ppp', label: 'PP%', title: 'Power-play goals / power plays', value: r => (r.ppTries ? r.ppg / r.ppTries : NaN), show: r => `${pct(r.ppg, r.ppTries, 0)} <small>${r.ppg}/${r.ppTries}</small>` },
     { key: 'pkp', label: 'PK%', title: 'Penalties killed', value: r => (r.pkTimes ? 1 - r.ppgA / r.pkTimes : NaN), show: r => `${pct(r.pkTimes - r.ppgA, r.pkTimes, 0)} <small>${r.pkTimes - r.ppgA}/${r.pkTimes}</small>` },
   ], 'pts')];
-  // The player at this computer: controller 1 (on the Genesis in netplay, the local player)
-  const mine = list.filter(g => g.you === 0 || g.you === 1);
+  const me = myTeam(), mine = me ? list.filter(g => g.abbr.includes(me)) : [];
   if (mine.length) {
-    const rec = { w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0 }, byTeam = new Map();
+    // Record overall, at home and away, and over the last five whole games (newest first in the list)
+    const blank = () => ({ gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0 }), all = blank(), at = [blank(), blank()], last = [];
     for (const g of mine) {
-      const me = g.you, t = g.teams[me];
-      rec.gf += t.gf; rec.ga += t.ga;
-      const r = byTeam.get(g.abbr[me]) || byTeam.set(g.abbr[me], { name: g.names[me], abbr: g.abbr[me], gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, humanGames: 1 }).get(g.abbr[me]);
-      r.gp++; r.gf += t.gf; r.ga += t.ga;
+      const side = g.abbr.indexOf(me), t = g.teams[side];
+      for (const r of [all, at[side]]) { r.gp++; r.gf += t.gf; r.ga += t.ga; }
       if (!g.finished) continue;
       const res = t.gf > t.ga ? 'w' : t.gf === t.ga ? 't' : g.overtime ? 'otl' : 'l';
-      rec[res]++; r[res]++;
+      all[res]++; at[side][res]++;
+      if (last.length < 5) last.push(res);
     }
-    html.push(`<h2 style="margin-top:22px">Your games <span class="tag you">controller 1</span></h2>`,
-      `<div class="grid"><div class="tile"><b>${rec.w}-${rec.l}-${rec.otl}${rec.t ? '-' + rec.t : ''}</b><span>Record (W-L-OTL${rec.t ? '-T' : ''}) in ${mine.length} game${mine.length === 1 ? '' : 's'}</span></div>` +
-      `<div class="tile"><b>${rec.gf}-${rec.ga}</b><span>Goals for and against (${signed(rec.gf - rec.ga)})</span></div></div>`,
-      byTeam.size > 1 ? '<div style="margin-top:12px">' + table('mine', [...byTeam.values()], [
-        { key: 'name', label: 'As', left: true, show: r => `${esc(r.name)} <small>${esc(r.abbr)}</small>` },
-        { key: 'gp', label: 'GP' }, { key: 'w', label: 'W' }, { key: 'l', label: 'L' }, { key: 'otl', label: 'OTL' },
-        { key: 'gf', label: 'GF' }, { key: 'ga', label: 'GA' }], 'gp') + '</div>' : '',
-      `<p class="note">The team controller 1 drove in each game. In Genesis netplay that is the player at this computer.</p>`);
+    const rec = r => `${r.w}-${r.l}-${r.otl}${r.t ? '-' + r.t : ''}`, games = n => `${n} game${n === 1 ? '' : 's'}`;
+    const word = { w: 'W', l: 'L', otl: 'OTL', t: 'T' };
+    html.unshift(`<h2>Your team: ${esc(mine[0].names[mine[0].abbr.indexOf(me)])} <span class="tag you">${esc(me)}</span></h2>`,
+      `<div class="grid" style="margin-bottom:22px">` +
+      `<div class="tile"><b>${rec(all)}</b><span>Record (W-L-OTL${all.t ? '-T' : ''}) in ${games(all.gp)}</span></div>` +
+      `<div class="tile"><b>${all.gf}-${all.ga}</b><span>Goals for and against (${signed(all.gf - all.ga)})</span></div>` +
+      `<div class="tile"><b>${rec(at[0])} <small class="muted">/</small> ${rec(at[1])}</b><span>At home (${games(at[0].gp)}) / away (${games(at[1].gp)})</span></div>` +
+      (last.length ? `<div class="tile"><b>${last.map(r => `<em class="${r === 'w' ? 'win' : r === 't' ? '' : 'loss'}">${word[r]}</em>`).join(' ')}</b><span>Last ${last.length}, newest first</span></div>` : '') +
+      `</div>` + (mineGuessed ? `<p class="note" style="margin:-12px 0 18px">Guessed because ${esc(me)} played every game. Choose your team under "My team" to be sure.</p>` : ''));
+  } else if (!me) {
+    html.push(`<p class="note">Choose the team you play this season under "My team" to see its record here and to mark it in every table.</p>`);
   }
   return html.join('');
 }
@@ -382,9 +405,9 @@ function viewGames(list, team) {
   return '<h2>Games</h2>' + table('games', rows, [
     { key: 'in', label: 'Count', sortable: false, show: r => `<input type="checkbox" data-game="${esc(r.name)}"${r.off ? '' : ' checked'} aria-label="Count this game">` },
     { key: 'date', label: 'When', left: true, show: r => esc((r.date || '').replace('T', ' ')) },
-    { key: 'home', label: 'Home', left: true, value: r => r.names[0], show: r => esc(r.names[0]) + (r.humans[0] ? '' : '<span class="tag">CPU</span>') + (r.you === 0 ? '<span class="tag you">you</span>' : '') },
+    { key: 'home', label: 'Home', left: true, value: r => r.names[0], show: r => esc(r.names[0]) + (r.humans[0] ? '' : '<span class="tag">CPU</span>') + (r.abbr[0] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'score', label: 'Score', value: r => r.score[0] - r.score[1], show: r => `<b>${r.score[0]}–${r.score[1]}</b>${r.overtime ? ' <small>OT</small>' : ''}` },
-    { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.you === 1 ? '<span class="tag you">you</span>' : '') },
+    { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.abbr[1] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'whole', label: '', sortable: false, show: r => (r.finished && r.fromStart ? '' : '<small>part of a game</small>') },
     { key: 'watch', label: '', sortable: false, show: r => `<a href="viewer.html?match=${encodeURIComponent(r.name)}">Watch</a>` },
   ], 'date') + '<p class="note">Untick a game to leave it out of every table (until the page is reloaded).</p>';

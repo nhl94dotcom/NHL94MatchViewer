@@ -29,7 +29,7 @@ PLAYING
 6. Click "Watch" to replay it. Try the Map menu (shot map, heat map, passes...), the team stats, and pointing at
    players in the lineups. "Make game file" creates a single file you can send to anyone; it opens in any browser.
 7. "Season stats" (above the list of games) adds up all your games: standings, player and goalie stats, team stats
-   and head-to-head records. Pick the ROM your league plays at the top.
+   and head-to-head records. At the top, pick the ROM your league plays and, under "My team", the team you play.
 
 WHERE THINGS ARE
 - Everything is kept in your Documents folder, in "NHL94 Viewer". Nothing is uploaded anywhere, and the games
