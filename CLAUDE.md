@@ -825,6 +825,20 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   ("Bumped off the puck" / "Lost it on the goalie"), team stats (Physical: pucks lost on contact, to the other team,
   pucks lost on a goalie), the card (Bumped off puck / Bumped puck loose / Lost puck on goalie) and the season page
   (team BMP and ONG a game; skater BMP lost · forced and ONG; summary VERSION 8). Turnovers are unchanged.
+- Bobbled passes (`bobbles`, find_bobbles, 2026-10-16; the user: a pass the receiver's stick was in place for that
+  bounced away instead): the first thing a pass hits (its speed changing by BOBBLE_KICK 50, hundreds) is a teammate
+  skater within BOBBLE_NEAR 22 with no opponent as close (within his distance + 8); not when he played it (a shooting
+  or passing move within 0.4 s: one-timers bounce the puck the same way), caught it (his within 0.1 s), an opponent
+  had it within 60 ms (picked off), the puck was at the boards (a pass that missed), or the receiver is a goalie.
+  Recovering it afterwards still counts (the user). The user reviewed 21 candidates in 2026-10-16_1540_CHI-TOR: the
+  rule finds exactly the 10 real ones. That review also found the SNES one-timer swings $EF6E and $F020 (never with
+  the puck; every "led to a one-timer" candidate met one), now in snes ACTIONS "shoot": SNES one-timers are found at
+  last (game 2: 7 plus 6 failed against the game's 11 tried; counted shots still equal the game's in all three SNES
+  games). find_passes now keeps one pass per player and release (a passing move in two pieces had listed 6 twice in
+  2026-10-16_1528_TOR-CHI; no Genesis pass changed). Known gap: in 2026-10-16_1528_TOR-CHI the game counts 56 / 52
+  passes tried, the converter matches 55 / 49 (before these changes too). Shown: a "Bobbled" tag over the receiver,
+  team stats (Bobbled passes, under Pass %), the card, Help, and the season page (team BOB a game, skater BOB;
+  summary VERSION 9). 1-11 a game in the recordings.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under

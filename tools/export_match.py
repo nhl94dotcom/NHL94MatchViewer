@@ -632,6 +632,10 @@ def find_passes(m):
                 result, q = 'pass shot', shot.get('resolved', shot['f'])
             p.update({'x1': round(P[3 * q]), 'y1': round(P[3 * q + 1]), 'result': result, 'known': q})
             out.append(p)
+    # A passing animation in two pieces finds the same release twice (2026-10-16_1540_CHI-TOR P1 0:42): one pass per
+    # player and release.
+    seen = set()
+    out = [p for p in out if (p['f'], p['team'], p['idx']) not in seen and not seen.add((p['f'], p['team'], p['idx']))]
     # Did the game count it (its passes-tried count, team stat +$12, going up within 1.5 s)? It counts only passes
     # aimed at a receiver: in 2026-10-14_1540_CGY-BOS 20 of the user's 62 passes were B presses with no target (the
     # puck went the way he pushed, as with a pass shot), and goalie passes ($0366) are never counted.
@@ -877,6 +881,70 @@ def find_turnovers(m):
         else:
             ev.update(kind='giveaway', how='lost the puck')
         out.append(ev)
+    return out
+
+
+BOBBLE_KICK = 50    # puck speed change (hundreds) of a pass bouncing off its receiver; a catch slows it the same way,
+                    # but he has it a sample later
+BOBBLE_NEAR = 22    # ... within this of the receiver
+
+
+def find_bobbles(m):
+    """Bobbled passes: a pass reaches a teammate, close enough to take (the puck within BOBBLE_NEAR of him), and bounces
+    off him (its speed changes by BOBBLE_KICK or more) without his having it; the user's community calls it a
+    bobble. Not when the receiver played it (a shooting or passing move within 0.4 s: one-timers, which bounce the
+    puck the same way), an opponent was as close or got the puck at once (an interception), or the puck was at the
+    boards (a pass that missed and came off them). He may get it back afterwards: still a bobble (the user).
+    Checked against the user's review of 2026-10-16_1540_CHI-TOR (SNES): the 10 he called bobbles and none of the 11
+    others. After find_passes and find_shots.
+    Returns [{f (the bounce), pass (the pass's frame), team, by (passer), idx (receiver; roster indices), x, y,
+    next: 'himself' | 'teammate' | 'opponent' | 'none', got (frame someone had it, or None)}]."""
+    act = actions(m)
+    played = act['shoot'] | act['pass'] | act['goalie_pass']
+    t, P, V, own, A = m['t'], m['puck'], m['puckV'], m['owner'], m['anim']
+    N, K = len(t), 12
+    anim = lambda i, k: A[(i * K + k) * 4:(i * K + k) * 4 + 4]
+    pos = lambda i, k: (m['pos'][(i * K + k) * 2], m['pos'][(i * K + k) * 2 + 1])
+    to_puck = lambda i, k: math.hypot(P[3 * i] - pos(i, k)[0], P[3 * i + 1] - pos(i, k)[1])
+    idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(m['roster'][i * K + k], 36))
+    hidden = lambda q: P[3 * q + 2] < -100
+
+    def at_boards(q):
+        x, y = abs(P[3 * q]), abs(P[3 * q + 1])
+        cx, cy = 132 - 46, 303 - 46  # the corners' centres (ice edge X 132, Y 303, corner radius 46)
+        return x >= 126 or y >= 297 or (x > cx and y > cy and math.hypot(x - cx, y - cy) >= 40)
+
+    out = []
+    for p in m.get('passes', []):
+        rel, team = p['f'], p['team']
+        # skaters only: a goalie takes a pass his own way (Cullen's back to Potvin in 2026-10-16_1540_CHI-TOR)
+        mates = [k for k in range(team * 6, team * 6 + 6) if m['role'][rel * K + k] not in '0x' and idx(rel, k) != p['idx']]
+        rivals = [k for k in range(6 * (1 - team), 6 * (1 - team) + 6) if m['role'][rel * K + k] != 'x']
+        q, hit = rel + 1, None
+        while q < N - 1 and t[q] - t[rel] < 2000 and own[q] < 0 and not hidden(q):
+            if math.hypot(V[2 * q + 2] - V[2 * q], V[2 * q + 3] - V[2 * q + 1]) >= BOBBLE_KICK:
+                mate = min(((to_puck(q, k), k) for k in mates), default=(999, -1))
+                rival = min((to_puck(q, k) for k in rivals), default=999)
+                if mate[0] <= BOBBLE_NEAR and rival > mate[0] + 8:
+                    hit = (q, mate[1])
+                break  # the first thing the pass hit decides it
+            q += 1
+        if not hit or at_boards(hit[0]):
+            continue
+        q, k = hit
+        if any(anim(z, k) in played for z in range(max(0, q - 40), min(N, q + 40)) if abs(t[z] - t[q]) <= 400):
+            continue  # he played it: a one-timer, or passed it on
+        r = q + 1
+        while r < N and own[r] < 0 and not hidden(r) and t[r] - t[q] < 3000:
+            r += 1
+        got = r if r < N and own[r] >= 0 else None
+        if got is not None and own[got] == k and t[got] - t[q] < 100:
+            continue  # caught
+        if got is not None and own[got] not in mates and own[got] // 6 != team and t[got] - t[q] < 60:
+            continue  # picked off
+        nxt = 'none' if got is None else 'himself' if own[got] == k else 'opponent' if own[got] // 6 != team else 'teammate'
+        out.append({'f': q, 'pass': rel, 'team': team, 'by': p['idx'], 'idx': idx(q, k), 'x': P[3 * q], 'y': P[3 * q + 1],
+                    'next': nxt, 'got': got})
     return out
 
 
@@ -1409,6 +1477,7 @@ def main(argv=None):
         add_play_context(match)
         match["injuries"] = find_injuries(match)
         match["bumps"] = find_bumps(match)
+        match["bobbles"] = find_bobbles(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):
