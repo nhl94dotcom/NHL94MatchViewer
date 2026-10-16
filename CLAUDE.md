@@ -881,8 +881,12 @@ had found 12 of them and nothing else; it missed two flips judged blocked (Junea
 so any result counts but a goal straight from the shot; and the user added that the shooter must not be skating away
 from the goal (toward his own end; standing is fine): EA_BACKWARD 50 units/s over the half second before the release
 (Sweeney's real one drifted back at 30; Juneau's P3 4:09, not one, skated back at 80). With those the rule finds
-exactly the user's 14, one of them an EA Special. Older games: capture3 P2 3:59 Oates (confirmed), CGY-BOS OT 9:02
-Sweeney and capture6 P2 0:08 Neely (not yet reviewed). Genesis games only: the SNES goalie saves differently and is not pushed back
+exactly the user's 14, one of them an EA Special. The user ruled out the last two in the older games, giving two
+more rules: not moving out toward the side (EA_OUTWARD 15 units/s; CGY-BOS OT 9:02 went from in front of the net
+toward the side at 59, every real one moved in toward the middle at 9-81) and a set play, not a scramble (carried
+at least EA_CARRIED 0.6 s; capture6 P2 0:08 shot 0.3 s after winning a loose puck, the real ones carried 0.9 s or
+more). Now every reviewed shot reads as the user judged it: 15 attempts (14 in BOS-PIT, capture3 P2 3:59 Oates),
+one EA Special. Genesis games only: the SNES goalie saves differently and is not pushed back
 by a wrist shot (the user). `eaDive`: the goalie went into his dive ($02F4) within 2 s after the save, as Genesis
 goalies often do on an EA Special (diving for a puck he is nowhere near, out of the play for a couple of seconds); a
 detail, not a condition (none of the recordings' attempts has one). Only a person's skater makes an attempt (the
