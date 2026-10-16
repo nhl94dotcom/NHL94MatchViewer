@@ -675,6 +675,12 @@ FIXED_PALETTES = (  # sprite palettes 2, 0, 1, as the library's fixed slots 1, 2
     ["#000000", "#ffffff", "#000000", "#000000", "#310000", "#000000", "#000000", "#000000", "#000000", "#080000", "#180000", "#080000", "#bdff4a", "#ac2000", "#000000", "#080000"],
 )
 PALETTE_SLOT = {4: 0, 5: 0, 2: 1, 0: 2, 1: 3}  # the library's slot 0 is the team's colours
+# The puck's frames are stored with palette 0 but drawn with palette 2 (black puck, white shine, blue edge and shadow
+# on the ice; with palette 0's colours they came out green and red). Frame 396 is its shadow, 397 the puck lying on
+# the ice (the Genesis's 394 and 395: SNES frame 394 is the instant replay's crosshair corners, which the viewer drew
+# under the puck until the library said which frames these are).
+PUCK_FRAMES = range(395, 406)
+PUCK_SHADOW_FRAME, PUCK_ON_ICE_FRAME = 396, 397
 
 
 def sprite_frame(rom, n):
@@ -709,7 +715,8 @@ def sprite_frame(rom, n):
             rows = [r[::-1] for r in rows]
         if word & 0x8000:
             rows = rows[::-1]
-        drawn.append((x, y, side, PALETTE_SLOT.get((word >> 9) & 7, 1), rows))
+        palette = 2 if n in PUCK_FRAMES else (word >> 9) & 7
+        drawn.append((x, y, side, PALETTE_SLOT.get(palette, 1), rows))
     if not drawn:
         return 0, 0, [[(0, 0)]]
     left, top = min(d[0] for d in drawn), min(d[1] for d in drawn)
@@ -739,7 +746,8 @@ def build_sprites(rom):
         left, top, canvas = sprite_frame(rom, n)
         frames[f"{n:03x}"] = {"x": left, "y": top, "w": len(canvas[0]), "h": len(canvas),
                              "p": "".join(chr(48 + 16 * slot + v) for row in canvas for slot, v in row)}
-    library = {"version": 2, "system": NAME, "frames": frames, "fixed": [list(p) for p in FIXED_PALETTES]}
+    library = {"version": 2, "system": NAME, "frames": frames, "fixed": [list(p) for p in FIXED_PALETTES],
+               "puck": {"shadow": f"{PUCK_SHADOW_FRAME:03x}", "onIce": f"{PUCK_ON_ICE_FRAME:03x}"}}
     out.parent.mkdir(exist_ok=True)
     out.write_text("window.NHL94_SPRITES = " + json.dumps(library, separators=(",", ":")) + ";\n", encoding="utf-8")
     return out

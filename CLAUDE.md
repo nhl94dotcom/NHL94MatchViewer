@@ -289,6 +289,11 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   viewer gained sound moments for slapshots (shot type), posts, the whistle (play stopping, not a period's end) and
   the puck off the boards (a loose puck near the boards turning back); a library without a sample for one plays its
   nearest (slapshot -> shotfh) or nothing.
+- The SNES puck: its frames (395-405) are stored with palette 0 but drawn with palette 2 (black puck, white shine,
+  blue edge and shadow); 396 is its shadow and 397 the puck at rest (the Genesis's 394 / 395). SNES frame 394 is the
+  instant replay's crosshair corners, which the viewer drew under the puck (the user saw it) until the sprite library
+  gained `puck: {shadow, onIce}` for the viewer to use; a puck frame of 0 shows the puck at rest (SNES frame 0 is a
+  skater).
   Not known yet: puck height, the hook.
 
 ## Reading game memory live
