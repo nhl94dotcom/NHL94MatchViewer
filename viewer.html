@@ -1080,7 +1080,8 @@ function shotText(sh) {
   // flipped wrist shot from the side that the goalie bobbles, then put in), and who set it up.
   const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special attempt' + (sh.eaDive ? ' (the goalie dived after it)' : '') : '') +
     (sh.afterFlip ? ' \u00b7 EA Special (the rebound)' : sh.rebound ? ' \u00b7 rebound' : '') +
-    (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '');
+    (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '') +
+    (sh.wrap ? ' \u00b7 wraparound' : '') + ({ rush: ' \u00b7 off the rush', zone: ' \u00b7 sustained pressure', faceoff: ' \u00b7 off a faceoff' }[sh.origin] || '');
   return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move + context;
 }
 // The goalie's save moves, as the converter names them (the game's own animations, grouped).
@@ -1998,6 +1999,60 @@ function gameClockText(f) {
   if (over || period > 3) return 'Final';
   return periodName(period) + ' ' + clockText(clock);
 }
+// The converter's play context (add_play_context): how the attempts came about, and the person against the computer.
+function playRows(f, list) {
+  if (!list.some(sh => sh.origin)) return [];
+  const m = match, section = title => [title];
+  const both = fn => [fn(0), fn(1)];
+  const origin = (team, o) => {
+    const mine = list.filter(sh => sh.team === team && sh.origin === o);
+    return mine.length ? mine.filter(sh => sh.result === 'goal').length + ' G / ' + mine.length : '0';
+  };
+  // Odd-man rushes: carried or passed entries with more attackers than defenders back (at least two attackers).
+  const odd = team => {
+    const rushes = (m.zoneEntries || []).filter(e => e.f <= f && e.team === team && ['carried', 'passed'].includes(e.kind) && e.odd && e.odd[0] >= 2 && e.odd[0] > e.odd[1]);
+    const shots = e => list.filter(sh => sh.team === team && sh.origin === 'rush' && sh.f >= e.f && sh.f <= e.end);
+    return rushes.length ? rushes.length + ' (' + rushes.filter(e => shots(e).length).length + ' shot, ' + rushes.filter(e => shots(e).some(sh => sh.result === 'goal')).length + ' G)' : '0';
+  };
+  const wraps = team => list.filter(sh => sh.team === team && sh.wrap);
+  const human = team => hasHuman(team);
+  const split = (items, team) => (human(team) ? items.filter(e => e.human).length + ' / ' + items.filter(e => !e.human).length : '\u2013');
+  const hits = team => (m.hits || []).filter(e => e.f <= f && e.team === team);
+  const pens = team => (m.penalties || []).filter(e => (e.called !== undefined ? e.called : e.f) <= f && e.team === team);
+  const inNet = (team, who) => {
+    const faced = list.filter(sh => sh.team !== team && sh.gctl === who && ['goal', 'save', 'post'].includes(sh.result));
+    return faced.length ? faced.filter(sh => sh.result !== 'goal').length + '/' + faced.length : '\u2013';
+  };
+  const rows = [section('How chances were made'),
+    ['Off the rush (G / attempts)', origin(0, 'rush'), origin(1, 'rush')],
+    ['Sustained pressure', origin(0, 'zone'), origin(1, 'zone')],
+    ['Off a faceoff', origin(0, 'faceoff'), origin(1, 'faceoff')],
+    ['Odd-man rushes', odd(0), odd(1)],
+    ...(wraps(0).length + wraps(1).length ? [['Wraparounds (G / attempts)', ...both(team => wraps(team).filter(sh => sh.result === 'goal').length + '/' + wraps(team).length)]] : []),
+  ];
+  if (human(0) || human(1)) {
+    rows.push(section('Person vs computer'),
+      ['Checks (person / CPU)', split(hits(0), 0), split(hits(1), 1)],
+      ['Penalties (person / CPU)', split(pens(0), 0), split(pens(1), 1)],
+      ['Saves, person in net', human(0) ? inNet(0, 'human') : '\u2013', human(1) ? inNet(1, 'human') : '\u2013'],
+      ['Saves, CPU in net', inNet(0, 'cpu'), inNet(1, 'cpu')]);
+  }
+  // What each person did with the controller, over the whole game (not up to the replay's moment).
+  const hb = m.habits || [];
+  if (hb[0] || hb[1]) {
+    const per = (team, n) => (hb[team] && hb[team].minutes ? (n / hb[team].minutes).toFixed(1) : '\u2013');
+    const val = (team, fn) => (hb[team] ? fn(hb[team]) : '\u2013');
+    rows.push(section('Controller (whole game)'),
+      ['Presses a minute (A / B / C)', ...both(team => val(team, x => ['A', 'B', 'C'].map(b => per(team, x.presses[b])).join(' / ')))],
+      ['Speed bursts / check tries', ...both(team => val(team, x => x.bursts))],
+      ['Checks landed (person)', ...both(team => val(team, x => x.checks))],
+      ['Poke checks (takeaways)', ...both(team => val(team, x => x.pokes + ' (' + x.pokeTakeaways + ')'))],
+      ...(m.system === 'snes' ? [] : [['Hooks (takeaways)', ...both(team => val(team, x => x.hooks + ' (' + x.hookTakeaways + ')'))]]),
+      ['Goalie: time controlled', ...both(team => val(team, x => secondsText(1000 * x.goalieSeconds)))],
+      ['Goalie dives', ...both(team => val(team, x => x.dives))]);
+  }
+  return rows;
+}
 function fillTeamStats(snap) {
   const box = $('teamStats');
   if (!box) return;
@@ -2123,6 +2178,7 @@ function fillTeamStats(snap) {
       ['Penalties', h.penalties, a.penalties],
       ['Penalty minutes', h.pim, a.pim],
     ]),
+    ...playRows(f, list),
   ];
   const table = box.querySelector('table');
   table.textContent = '';

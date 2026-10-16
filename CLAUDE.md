@@ -883,6 +883,35 @@ and the Advanced tab (a "Chances, rebounds and turnovers" team table: HDCF, HDCA
 goals, rebounds allowed, EA Specials, attempts off a pass, turnovers -> shot, zone entries carried / all and how many led to
 an attempt; skater columns HD att, HD G, Shot ast, Reb G, EA Sp., Costly GV, Entries, Entry->shot). Summary VERSION 4.
 
+Play context (2026-10-16, `add_play_context` in export_match.py, after add_shot_context; all other fields unchanged):
+- `human` on hits, penalties (at the foul, `called`; else in the 3 s before the listing), shots and passes: the player
+  carried the controlled-skater marker (`ctrl`) within 0.3 s. The person always has the puck carrier (the user; a
+  very rare Genesis glitch aside), so shots and passes are the person's; checks and penalties are where the computer's
+  skaters show (capture6 Boston: checks 23 person / 15 CPU). The user found tracking defender switches useless and
+  penalties drawn not worth it.
+- Shot `origin`: 'rush' (within RUSH_MS = 5 s of the team's zone entry, puck still in the zone), 'zone' (later in that
+  stay: sustained pressure), 'faceoff' (no entry: off a faceoff in that zone, no whistle between), 'other'. About
+  three quarters of attempts are off the rush in NHL '94.
+- Zone entry `odd`: [attackers level with or ahead of the puck or up to 60 behind it, defenders back between the puck
+  and their net] as the puck crosses the blue line; an odd-man rush is a carried or passed entry with more attackers
+  than defenders and at least two (1-on-0 is a breakaway; a dump-in leaves the attackers behind). Not yet reviewed by
+  the user; may count generously (Boston 25 in two games).
+- Shot `wrap`: from within 45 of the middle near the goal line, the shooter having had the puck behind that goal line
+  in the 1.5 s before (one goal in capture5).
+- `m.habits[team]` for each team a person played (pad / pad2 with padTeam / pad2Team): minutes of live play, A / B / C
+  presses (rising edges), bursts (C without the puck, $0C5E: speed burst and check lunge in one), checks landed by the
+  controlled skater, poke checks and hooks with the takeaways they made, the goalie's dives and the time a person had
+  the goalie (hooks not known on the SNES).
+Shown: shot tooltips (rush / sustained / faceoff, wraparound); viewer team stats groups "How chances were made", "Person
+vs computer" (checks, penalties, saves with a person / the CPU in net) and "Controller (whole game)"; season summaries
+(VERSION 5: persHits, persPen, origin, oddMan, wrap, habits, humanPasses, pass `pairs` "passer>receiver": [passes with
+a receiver, completed, shot attempts off them] - a picked-off pass has no known target - and `shotMap` per team:
+[x, y turned to attack up, result letter, goalie faced, type, flags r rebound / e EA Special rebound / h high danger /
+x wraparound]); the season page's "Play style" tab (how chances were made, person vs computer, controller habits, the
+passing network of the picked team or My team) and, on the Goalies tab, "Where goalies get beaten" (every shot that
+reached a goalie or a team's goalies on the half rink, goals in red, and goals and SV% by type, high danger, rebounds,
+EA Specials, wraparounds).
+
 ## Three stars and highlights
 
 The footer's "Highlights" button (`&highlights` opens it) shows the game's three stars and its highlights.

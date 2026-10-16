@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
-VERSION = 4  # 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 5  # 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -82,6 +82,24 @@ def summarize(m, name, date=None):
     turnovers, penalties, rules = m.get("turnovers", []), m.get("penalties", []), m.get("rules", {})
     faceoffs = [e for e in m.get("faceoffs", []) if e.get("won") in (0, 1)]
     entries = m.get("zoneEntries", [])
+    # Odd-man rushes: carried or passed entries with more attackers than defenders back, at least two attackers.
+    odd_rushes = lambda team: [e for e in entries if e["team"] == team and e["kind"] in ("carried", "passed")
+                               and len(e.get("odd") or []) == 2 and e["odd"][0] >= 2 and e["odd"][0] > e["odd"][1]]
+    rush_shots = lambda e: [s for s in shots if s["team"] == e["team"] and s.get("origin") == "rush" and e["f"] <= s["f"] <= e.get("end", e["f"])]
+
+    def pass_pairs(team):
+        # Passes between each pair of teammates: "passer>receiver": [passes, completed, shot attempts off them]
+        out = {}
+        for p in m.get("passes", []):
+            if p["team"] != team or p.get("to", -1) < 0:
+                continue
+            row = out.setdefault(f'{p["idx"]}>{p["to"]}', [0, 0, 0])
+            row[0] += 1
+            row[1] += p["result"] in ("completed", "one-timer")
+        for s in shots:
+            if s["team"] == team and "assist" in s:
+                out.setdefault(f'{s["assist"]}>{s["idx"]}', [0, 0, 0])[2] += 1
+        return out
     entry_shot = lambda e: any(s["team"] == e["team"] and e["f"] <= s["f"] <= e.get("end", e["f"]) for s in shots)
     # High-danger attempts by a team: all of them, the goals, or the shots on goal (as the game counts them)
     hd_of = lambda side, want: sum(1 for s in shots if s["team"] == side and s.get("danger") == "high" and
@@ -132,6 +150,27 @@ def summarize(m, name, date=None):
                        sum(1 for e in turnovers if e["from"] == team and e.get("goalAfter"))],
             "entries": [sum(1 for e in entries if e["team"] == team and (kind is None or e["kind"] == kind)) for kind in (None, "carried", "passed", "dumped")]
                        + [sum(1 for e in entries if e["team"] == team and entry_shot(e))],
+            # From the converter's play context (add_play_context): checks and penalties by the skater a person
+            # controlled and by the computer's; shot attempts and goals by where they came from (rush, sustained
+            # pressure, faceoff, other); odd-man rushes, with the attempts and goals off them; wraparounds; what the
+            # person did with the controller (None for the computer's team); passes between each pair of players.
+            "persHits": [sum(1 for h in hits if h["team"] == team and h.get("human") is v) for v in (True, False)],
+            "persPen": [sum(1 for p in penalties if p["team"] == team and p.get("human") is v) for v in (True, False)],
+            "origin": [sum(1 for s in shots if s["team"] == team and s.get("origin") == o and (not goal or s["result"] == "goal"))
+                       for goal in (False, True) for o in ("rush", "zone", "faceoff", "other")],
+            "oddMan": [len(odd_rushes(team)), sum(1 for e in odd_rushes(team) if rush_shots(e)),
+                       sum(1 for e in odd_rushes(team) if any(s["result"] == "goal" for s in rush_shots(e)))],
+            "wrap": [sum(1 for s in shots if s["team"] == team and s.get("wrap")), sum(1 for s in shots if s["team"] == team and s.get("wrap") and s["result"] == "goal")],
+            "habits": (m.get("habits") or [None, None])[team],
+            "humanPasses": [sum(1 for p in m.get("passes", []) if p["team"] == team and p.get("human")),
+                            sum(1 for p in m.get("passes", []) if p["team"] == team and p.get("human") and p["result"] in ("completed", "one-timer"))],
+            "pairs": pass_pairs(team),
+            # Every attempt, turned so the team attacks up: [x, y, result (g goal, s save, p post, w wide, b blocked),
+            # goalie faced (roster index), type, flags (r rebound, o one-timer pass, e EA Special rebound, h high danger)]
+            "shotMap": [[round(s["x"] * (1 if s["y"] >= 0 else -1)), round(abs(s["y"])), (s["result"] or "w")[0], s.get("goalie", -1),
+                         s.get("type") or s["kind"], ("r" if s.get("rebound") else "") + ("e" if s.get("afterFlip") else "") +
+                         ("h" if s.get("danger") == "high" else "") + ("x" if s.get("wrap") else "")]
+                        for s in shots if s["team"] == team],
         })
 
     # On the ice at each goal, for plus/minus (as the NHL counts it: not power-play or penalty-shot goals)
