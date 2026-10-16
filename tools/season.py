@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
-VERSION = 8  # 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 9  # 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -131,6 +131,7 @@ def summarize(m, name, date=None):
             "bigHits": sum(1 for h in hits if h["team"] == team and h.get("outcome") in ("upended", "into the boards", "into the bench")),
             "bumped": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") != "goalie"),  # its carriers bumped off the puck
             "onGoalie": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") == "goalie"),  # ... or losing it on a goalie
+            "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team),  # passes that bounced off the receiver
             "passTried": team_value(team, "passTried"), "passMade": team_value(team, "passMade"),
             "attackZone": team_value(team, "attackZone"),
             "breakTried": team_value(team, "breakTried"), "breakGoals": team_value(team, "breakGoals"),
@@ -266,6 +267,7 @@ def summarize(m, name, date=None):
                     "bumpedOff": sum(1 for e in m.get("bumps", []) if e.get("kind") != "goalie" and e["team"] == team and e["idx"] == idx),
                     "bumpedLoose": sum(1 for e in m.get("bumps", []) if e.get("kind") != "goalie" and e["team"] == other and e.get("by") == idx),
                     "onGoalie": sum(1 for e in m.get("bumps", []) if e.get("kind") == "goalie" and e["team"] == team and e["idx"] == idx),
+                    "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team and e["idx"] == idx),
                 })
                 line.update(skater_adv(team, idx))
                 mine = [s for s in shots if s["team"] == team and s["idx"] == idx]

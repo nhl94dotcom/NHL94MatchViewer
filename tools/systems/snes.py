@@ -21,7 +21,9 @@ ROM_GLOB = "*.smc"
 # other side), A without it bursts ($F342) or checks; $F196 is A's swing at a pass (always without the puck: a
 # one-timer); B passes ($EC66, $ECD8; the goalie's $E34E) or poke-checks ($F208).
 ACTIONS = {
-    "shoot": {"ed4a", "ee5c", "f196"},
+    # $EF6E and $F020: one-timer swings (never with the puck; found from the user's review of bobbled passes in
+    # 2026-10-16_1540_CHI-TOR, where every "led to a one-timer" pass met one; Larmer's $F020 there hit the post)
+    "shoot": {"ed4a", "ee5c", "f196", "ef6e", "f020"},
     "pass": {"ec66", "ecd8"},
     "goalie_pass": {"e34e"},
     "poke": {"f208"},

@@ -336,7 +336,7 @@ function pool(byTeam = true, withExcluded = false) {
 function standings(list) {
   const rows = new Map();
   const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
-    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, passTried: 0, passMade: 0, attackZone: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
     for (const side of [0, 1]) {
@@ -488,6 +488,7 @@ function viewSkaters(list, team) {
     { key: 'checks', label: 'CHK', title: 'Body checks thrown' }, { key: 'hitsTaken', label: 'HIT', title: 'Hits taken' },
     { key: 'bumpedOff', label: 'BMP', title: 'Bumped off the puck: pucks he lost on body contact, no check landed (and, after the dot, pucks he knocked loose that way)', value: r => r.bumpedOff || 0,
       show: r => (r.bumpedOff || r.bumpedLoose ? `${r.bumpedOff || 0}<small> · ${r.bumpedLoose || 0}</small>` : '0') },
+    { key: 'bobbled', label: 'BOB', title: 'Passes that bounced off him (bobbled)', value: r => r.bobbled || 0, show: r => r.bobbled || 0 },
     { key: 'onGoalie', label: 'ONG', title: 'Pucks he lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie || 0, show: r => r.onGoalie || 0 },
     { key: 'take', label: 'TK', title: 'Takeaways' }, { key: 'give', label: 'GV', title: 'Giveaways' },
     { key: 'toig', label: 'TOI/GP', title: 'Ice time a game, in game minutes', value: r => r.toi / r.gp, show: r => mmss(r.toi / r.gp) },
@@ -535,6 +536,7 @@ function viewTeams(list, team) {
     { key: 'az', label: 'ZONE', title: 'Attack-zone time a game (game seconds)', value: r => r.attackZone / r.gp, show: r => mmss(r.attackZone / r.gp) },
     { key: 'chk', label: 'CHK', title: 'Body checks', value: r => r.checks / r.gp, show: r => per(r.checks, r.gp) },
     { key: 'big', label: 'BIG', title: 'Big hits (upended, into the boards or bench)', value: r => r.bigHits / r.gp, show: r => per(r.bigHits, r.gp) },
+    { key: 'bob', label: 'BOB', title: 'Bobbled passes: passes that bounced off the teammate they reached', value: r => r.bobbled / r.gp, show: r => per(r.bobbled, r.gp) },
     { key: 'bmp', label: 'BMP', title: 'Pucks its carriers lost on body contact (no check, poke or hook, not knocked over)', value: r => r.bumped / r.gp, show: r => per(r.bumped, r.gp) },
     { key: 'ong', label: 'ONG', title: 'Pucks its carriers lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie / r.gp, show: r => per(r.onGoalie, r.gp) },
     { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.take / r.gp, show: r => per(r.take, r.gp) },

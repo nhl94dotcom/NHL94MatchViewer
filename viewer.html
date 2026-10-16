@@ -503,6 +503,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Checks, hits taken</dt><dd>Body checks that landed, thrown and taken.</dd>
   <dt>Big hit</dt><dd>A check that upended a player or sent him into the boards or the bench.</dd>
   <dt>Bumped off the puck, pucks lost on contact</dt><dd>The puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down: the two only rubbed into each other. The card shows each player's "Bumped off puck" (he lost it) and "Bumped puck loose" (he was the one in contact). Team stats count them, and how many went straight to the other team.</dd>
+  <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
   <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
 </dl>
@@ -2056,6 +2057,7 @@ function refreshPopover(f, snap) {
       live.hitsTaken = match.hits.filter(e => e.f <= f && e.team !== shown.team && e.on === shown.idx).length;
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
+    if (match.bobbles) live.bobbled = match.bobbles.filter(e => e.f <= f && e.team === shown.team && e.idx === shown.idx).length;
     if (match.bumps) {
       // Pucks lost on body contact with no check landed (the converter's bumps), and the ones he knocked loose that way
       const skaters = match.bumps.filter(e => e.f <= f && e.kind !== 'goalie');
@@ -2227,6 +2229,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Checks', live.checks);
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
       if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
+      if (live.bobbled !== undefined) addStat(grid, 'Bobbled passes', live.bobbled);
       if (live.bumpedOff !== undefined) { addStat(grid, 'Bumped off puck', live.bumpedOff); addStat(grid, 'Bumped puck loose', live.bumpedLoose); addStat(grid, 'Lost puck on goalie', live.onGoalie); }
       if (match.stats.x === 'PIM') addStat(grid, 'Pen. minutes', live.x);
       if (live.checkKinds) {
@@ -2385,6 +2388,7 @@ function fillTeamStats(snap) {
   };
   const iced = team => (match.icings || []).filter(e => e.f <= f && e.team === team).length;
   const bigHits = team => (match.hits || []).filter(e => e.f <= f && e.team === team && BIG_HITS.includes(e.outcome)).length;
+  const bobbled = team => (match.bobbles || []).filter(e => e.f <= f && e.team === team).length;  // passes that bounced off the receiver
   const bumped = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind !== 'goalie');  // carriers bumped off the puck
   const onGoalie = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind === 'goalie').length;  // ... or lost it skating into a goalie
   const entries = team => (match.zoneEntries || []).filter(e => known(e, f) && e.team === team);
@@ -2483,6 +2487,7 @@ function fillTeamStats(snap) {
       ['· defensive zone', foZone(0, 'def'), foZone(1, 'def')]] : []),
     ['Passes', made(h) + '/' + h.passTried, made(a) + '/' + a.passTried],
     ['Pass %', pct(h), pct(a)],
+    ...(match.bobbles ? [['Bobbled passes', bobbled(0), bobbled(1)]] : []),
     ...(match.turnovers ? [['Giveaways', gave(0), gave(1)], ['Takeaways', took(0), took(1)]] : []),
     ...(match.icings ? [['Icings', iced(0), iced(1)]] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
@@ -3185,13 +3190,20 @@ function draw() {
     const since = m.t[f] - m.t[b.f];
     if (since >= 0 && since <= POST_FLASH_MS) drawTag(m.puck[3 * f], m.puck[3 * f + 1], 'Breakaway', 30);
   }
+  // Bobbled passes (the converter's bobbles): the pass bounced off the teammate it reached. A tag over him.
+  for (const b of eventTagsOn ? m.bobbles || [] : []) {
+    const since = m.t[f] - m.t[b.f];
+    if (since < 0 || since > POST_FLASH_MS) continue;
+    const k = [...Array(6).keys()].map(i => b.team * 6 + i).find(k => m.roster && parseInt(m.roster[f * PLAYERS + k], 36) === b.idx);
+    if (k !== undefined) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], 'Bobbled', DISC + 32);
+  }
   // Pucks knocked loose by body contact (no check, poke or hook; the converter's bumps): by an opposing skater, or
   // by skating into a goalie (either team's). A tag over the carrier.
   for (const b of eventTagsOn ? m.bumps || [] : []) {
     const since = m.t[f] - m.t[b.f];
     if (since < 0 || since > POST_FLASH_MS) continue;
     const k = [...Array(6).keys()].map(i => b.team * 6 + i).find(k => m.roster && parseInt(m.roster[f * PLAYERS + k], 36) === b.idx);
-    if (k !== undefined) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], b.kind === 'goalie' ? 'Lost it on the goalie' : 'Bumped off the puck', DISC + 22);
+    if (k !== undefined) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], b.kind === 'goalie' ? 'Lost it on the goalie' : 'Bumped off the puck', DISC + 32);
   }
   // Shots off the post: mark the post that was hit for a moment.
   for (const pf of eventTagsOn ? m.posts || [] : []) {
