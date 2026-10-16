@@ -886,7 +886,18 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   the ice 7:43). The tab loads the files for the games in view as scripts (so it works from the folder too), adds
   them up for a team or one skater (matched by name), and draws them over the system's rink picture, blurred and
   scaled as the viewer does. `&team=BOS&player=<name>&heat=puck&situation=att|def|pp|sh` in the address.
-- Not there yet: names for ROMs (only the crc is known; the helper copies the cartridge, not its file name), people
+- ROM names (2026-10-16, `tools/romnames.py`): the page shows a ROM by its file name in RetroArch (NHL94_Classic,
+  SDL16, nhl94) instead of its checksum. RetroArch's content history (`content_history.lpl` in its folder, or where
+  retroarch.cfg's content_history_path says; newest first) lists the files loaded. When the helper attaches it
+  names the ROM loaded now: the newest history entry for that system's core whose file has the same checksum as the
+  copy it made (`note_loaded`, into roms/names.json; it also keeps RetroArch's folder, from the process, in
+  roms/retroarch.json). Other ROMs are named by scanning the folders of the history's files and RetroArch's
+  ROMs/Genesis and ROMs/SNES for a file with the same key (cached in roms/names_scan.json; about 1 s the first
+  time for the 110 ROMs here). Keys as the page's: genesis:crc32 of the file; snes:crc32 without the copier header,
+  and of its first megabyte (the helper's copy of SDL15/16 is only that). `/api/season` gives `romNames`. A
+  season's ROM is fixed once made (the edit form shows it locked; to play another ROM, a new season); its name,
+  team and dates can change.
+- Not there yet: people
   as such (a game knows teams and controllers, not who held them), a shareable season file.
 
 ## Live knowledge (preparing for a live view)

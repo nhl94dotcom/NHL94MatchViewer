@@ -59,6 +59,18 @@ def find_process(name="retroarch.exe"):
     return None
 
 
+def process_path(pid):
+    """The full path of a process's program (retroarch.exe), or None."""
+    handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not handle:
+        return None
+    try:
+        buf, size = ctypes.create_unicode_buffer(1024), wt.DWORD(1024)
+        return buf.value if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) else None
+    finally:
+        kernel32.CloseHandle(handle)
+
+
 def find_module(pid, prefix):
     snap = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid)
     if snap == INVALID_HANDLE:

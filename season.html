@@ -65,6 +65,8 @@
   .form { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px 18px; }
   .form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 13px; min-width: 0; }
   .form label.wide { grid-column: 1 / -1; }
+  .form label small { color: var(--muted); }
+  select:disabled { opacity: .7; cursor: default; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .heatwrap { display: flex; flex-wrap: wrap; gap: 16px 22px; align-items: flex-start; }
   #heatCanvas { width: 360px; max-width: 100%; height: auto; border-radius: 8px; background: var(--raised); }
@@ -93,7 +95,8 @@
     <div class="form">
       <label>Name <input type="text" id="eName" maxlength="80" placeholder="e.g. GENS Classic season 12"></label>
       <label>My team <select id="eTeam"></select></label>
-      <label class="wide">ROM <select id="eRom"></select></label>
+      <label class="wide">ROM <select id="eRom"></select>
+        <small id="eRomNote" hidden>A season stays on its ROM. To play another ROM, start a new season.</small></label>
       <label>Starts <input type="datetime-local" id="eStart"></label>
       <label>Ends (optional) <input type="datetime-local" id="eEnd"></label>
     </div>
@@ -131,7 +134,7 @@ const mmss = s => Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart
 const signed = v => (v > 0 ? '+' + v : String(v));
 
 let games = [], tab = 'standings', sorts = {}, myTeams = {}, mineGuessed = false;
-let seasons = [], romTeams = {}, seasonId = null, canSave = false, editing = null;
+let seasons = [], romTeams = {}, romNames = {}, seasonId = null, canSave = false, editing = null;
 try {
   const saved = JSON.parse(localStorage.getItem('nhl94.season') || '{}');
   tab = saved.tab || tab; sorts = saved.sorts || {}; myTeams = saved.myTeams || {};
@@ -161,11 +164,14 @@ async function load() {
 }
 
 const romKey = g => g.system + ':' + (g.rom || '?');
+// A ROM's name: its file name in RetroArch when the helper could find it (NHL94_Classic, SDL16), else its checksum.
+const systemName = key => (key.startsWith('snes') ? 'SNES' : 'Genesis');
+const romName = key => romNames[key] || systemName(key) + ' ROM ' + key.split(':')[1];
 function romLabel(key) {
   const list = games.filter(g => romKey(g) === key), whole = list.filter(g => g.finished && g.fromStart), [system, rom] = key.split(':');
   const teams = [...new Set((whole.length ? whole : list).flatMap(g => g.abbr))].sort();
   const parts = list.length - whole.length;
-  return (system === 'snes' ? 'SNES' : 'Genesis') + ' ROM ' + rom + ' · ' + whole.length + ' whole game' + (whole.length === 1 ? '' : 's') +
+  return romName(key) + (romNames[key] ? ' (' + systemName(key) + ')' : '') + ' · ' + whole.length + ' whole game' + (whole.length === 1 ? '' : 's') +
     (parts ? ', ' + parts + ' part' + (parts === 1 ? '' : 's') : '') + (teams.length ? ' (' + teams.slice(0, 4).join(', ') + (teams.length > 4 ? '…' : '') + ')' : '');
 }
 
@@ -191,7 +197,7 @@ function teamsOf(rom) {
 }
 
 function fillSeasons() {
-  $('season').innerHTML = [...seasons].sort(byStart).map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('') +
+  $('season').innerHTML = [...seasons].sort(byStart).map(s => `<option value="${esc(s.id)}">${esc(s.name)} · ${esc(romName(s.rom))}</option>`).join('') +
     '<option value="">No season: browse all games</option>';
   if (seasonId === null || (seasonId && !currentSeason())) seasonId = seasons.length ? [...seasons].sort(byStart)[0].id : '';
   $('season').value = seasonId;
@@ -229,6 +235,9 @@ function openEditor(s) {
   $('editorTitle').textContent = s ? 'Edit season' : 'New season';
   $('eRom').innerHTML = roms.map(k => `<option value="${esc(k)}">${esc(romLabel(k))}</option>`).join('');
   $('eRom').value = rom;
+  // A season keeps its ROM once made (its games are that ROM's); its name, team and dates can change.
+  $('eRom').disabled = !!s;
+  $('eRomNote').hidden = !s;
   $('eName').value = s ? s.name : 'Season ' + (seasons.filter(o => o.rom === rom).length + 1);
   fillEditorTeams(s ? s.team : myTeams[rom] || (rom === $('rom').value ? myTeam() : ''));
   $('eStart').value = s ? s.start : nowLocal();
@@ -385,7 +394,7 @@ function render() {
   const list = pool(), all = pool(true, true), view = $('view');
   const team = $('team').value;
   const s = currentSeason();
-  $('sub').innerHTML = (s ? `${esc(s.name)}: ${esc(teamName(s.rom, s.team))} on ${esc((s.rom.startsWith('snes') ? 'SNES ROM ' : 'Genesis ROM ') + s.rom.split(':')[1])}, ` +
+  $('sub').innerHTML = (s ? `${esc(s.name)}: ${esc(teamName(s.rom, s.team))} on ${esc(romName(s.rom))}, ` +
       `${esc(when(s.start))} to ${seasonEnd(s) ? esc(when(seasonEnd(s))) : 'now'} · ` : '') +
     `${list.length} game${list.length === 1 ? '' : 's'} counted` + (all.length > list.length ? ` (${all.length - list.length} unticked on the Games tab)` : '') +
     ` · <a href="helper.html">all games</a>`;
@@ -721,7 +730,7 @@ function viewGames(list, team) {
 
 load().then(data => {
   if (!data) { $('sub').textContent = 'No season data found. Open this page from the helper (http://localhost:9494/season.html), or run python tools/season.py.'; return; }
-  games = data.games || []; seasons = data.seasons || []; romTeams = data.romTeams || {};
+  games = data.games || []; seasons = data.seasons || []; romTeams = data.romTeams || {}; romNames = data.romNames || {};
   if (!games.length && !canSave) { $('sub').textContent = 'No games yet. Play one with the helper running and it will appear here.'; return; }
   setup();
   render();

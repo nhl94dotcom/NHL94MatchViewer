@@ -415,8 +415,16 @@ def season():
             heat_file(path.stem)
         except Exception as e:
             print(f"season: no heat map for {path.stem}: {e}", file=sys.stderr)
-    return {"games": sorted(games, key=lambda g: g.get("date") or "", reverse=True), "seasons": load_seasons(),
-            "romTeams": rom_teams()}
+    seasons, teams = load_seasons(), rom_teams()
+    keys = {f"{g.get('system', 'genesis')}:{g.get('rom') or '?'}" for g in games} | set(teams) | {s["rom"] for s in seasons}
+    try:
+        import romnames
+        names = {k: v for k, v in romnames.names(sorted(keys)).items() if k in keys}
+    except Exception as e:
+        print(f"season: no ROM names: {e}", file=sys.stderr)
+        names = {}
+    return {"games": sorted(games, key=lambda g: g.get("date") or "", reverse=True), "seasons": seasons,
+            "romTeams": teams, "romNames": names}
 
 
 def write_season_file():
