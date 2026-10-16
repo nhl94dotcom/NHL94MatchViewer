@@ -839,28 +839,44 @@ def find_turnovers(m):
 
 CONTACT = 17.5   # skaters' bodies stop about 16 units apart (opponents spend thousands of samples at 16-17, a handful closer)
 BUMP_BEFORE = 500  # ms before the loss in which the bump may come
+GOALIE_PUCK = 15   # a puck lost on a goalie comes this close to him (the user's two in 2026-10-16_1314_BOS-PIT: 10 and 12) ...
+GOALIE_BODY = 25   # ... with the carrier up against him (17 and 23 then)
+BUMP_HELD = 150    # ms the carrier must have had it (shorter touches are scrambles)
+BUMP_FAST = 70     # puck speed (hundreds) after the loss above which he shot or flipped it (carried pucks go up to about 55;
+                   # Taglianeti's flip down the ice in 2026-10-16_1314_BOS-PIT P1 3:54 left at 121)
 
 
 def find_bumps(m):
-    """Pucks knocked loose by body contact: a skater carrying the puck loses it while an opposing skater is up against him
-    (within CONTACT, in the BUMP_BEFORE ms up to the loss), with no check landed on him (the hit list), no poke
-    check or hook by an opponent near the puck, without going down, and not by shooting or passing. A defender who
-    lunged without the check landing still counts: the game counted no check, the bodies only rubbed.
-    After find_shots, find_passes and find_hits.
-    Returns [{f (the loss), team (carrier's), idx (carrier, roster index), by (the opponent he ran into), x, y,
-    next: 'opponent' | 'teammate' | 'himself' | 'none' (whistle or period end first), got (frame the next player had
-    it, or None), human (the opponent was a person's skater)}]."""
+    """Pucks knocked loose by body contact, two kinds:
+    - 'goalie': a carrier who skates into a goalie, his own or the other team's, loses the puck (the game knocks it
+      loose; the user: a known way to lose it): the puck within GOALIE_PUCK of a goalie from 0.15 s before the loss
+      to 0.2 s after, the carrier within GOALIE_BODY of him;
+    - 'skater': otherwise, an opposing skater up against him (within CONTACT, in the BUMP_BEFORE ms up to the loss)
+      with no check landed on him (the hit list); a defender who lunged without the check landing still counts.
+    Either way: no poke check or hook by an opponent near the puck, he did not go down, did not shoot or pass (a pass
+    animation counts even when the pass list has no pass), the puck did not leave faster than BUMP_FAST (shot or
+    flipped), he had it at least BUMP_HELD ms and did not have it back within 0.3 s. After find_shots, find_passes
+    and find_hits. The user reviewed 2026-10-16_1314_BOS-PIT's first list: the flip and an intercepted pass were not
+    bumps, two were the carrier skating into a goalie (Samuelsson into his own, P3 3:31; Lemieux into Moog, P2 1:45).
+    Returns [{f (the loss), kind, team (carrier's), idx (carrier, roster index), by (the opponent he ran into, or the
+    goalie), own (goalie kind: his own goalie), x, y, next: 'opponent' | 'teammate' | 'himself' | 'none' (whistle or
+    period end first), got (frame the next player had it, or None), human (skater kind: the opponent was a person's
+    skater)}]."""
     act = actions(m)
     sticks = act['poke'] | act['hook']
+    passing = act['pass'] | act['goalie_pass']
     t, P, own, A = m['t'], m['puck'], m['owner'], m['anim']
+    V = m.get('puckV')
     N, K = len(t), 12
     ctrl = m.get('ctrl') or []
     anim = lambda i, k: A[(i * K + k) * 4:(i * K + k) * 4 + 4]
     pos = lambda i, k: (m['pos'][(i * K + k) * 2], m['pos'][(i * K + k) * 2 + 1])
     gap = lambda i, a, b: math.hypot(pos(i, a)[0] - pos(i, b)[0], pos(i, a)[1] - pos(i, b)[1])
+    to_puck = lambda i, k: math.hypot(P[3 * i] - pos(i, k)[0], P[3 * i + 1] - pos(i, k)[1])
     team = lambda k: 0 if k < 6 else 1
     idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(m['roster'][i * K + k], 36))
-    skater = lambda i, k: m['role'][i * K + k] not in '0x'  # on the ice, not the goalie (his stops are saves)
+    skater = lambda i, k: m['role'][i * K + k] not in '0x'
+    goalie = lambda i, k: m['role'][i * K + k] == '0'
     hidden = lambda q: P[3 * q + 2] < -100
     shots, passes, hits = m.get('shotList', []), m.get('passes', []), m.get('hits', [])
     runs, i = [], 0
@@ -876,36 +892,47 @@ def find_bumps(m):
         lost = e1 + 1
         if lost >= N or m['role'][e1 * K + k1] in '0x' or hidden(lost) or m['period'][lost] != m['period'][e1]:
             continue
+        if t[lost] - t[a1] < BUMP_HELD:
+            continue  # a touch in a scramble
         me, them = team(k1), 1 - team(k1)
         if any(sh['team'] == me and abs(sh['f'] - lost) <= 3 for sh in shots) or \
                 any(p['team'] == me and abs(p['f'] - lost) <= 3 for p in passes):
             continue  # he shot or passed it
+        if V and max(math.hypot(V[2 * q], V[2 * q + 1]) for q in range(lost, min(N, lost + 4))) > BUMP_FAST:
+            continue  # sent away hard: shot or flipped
         window = [q for q in range(max(0, lost - 40), min(N, lost + 20)) if abs(t[q] - t[lost]) <= 500]
+        if any(anim(q, k1) in passing for q in window if q <= lost + 2):
+            continue  # a pass (picked off at once, say)
         if any(anim(q, k1) in act['down'] for q in window):
             continue  # knocked over: a check (or a fall)
-        if any(anim(q, k) in sticks and math.hypot(P[3 * q] - pos(q, k)[0], P[3 * q + 1] - pos(q, k)[1]) < 35
-               for q in window for k in range(them * 6, them * 6 + 6)):
+        if any(anim(q, k) in sticks and to_puck(q, k) < 35 for q in window for k in range(them * 6, them * 6 + 6)):
             continue  # a poke check or hook took it
         mine = idx(lost, k1)
         if mine < 0:
             continue
-        if any(h['team'] == them and h['on'] == mine and abs(t[h['f']] - t[lost]) <= 700 for h in hits):
-            continue  # a check landed on him (he stayed up)
-        before = [q for q in range(max(0, lost - 40), min(N, lost + 3)) if t[lost] - t[q] <= BUMP_BEFORE]
-        touching = [(gap(q, k1, k), k) for q in before for k in range(them * 6, them * 6 + 6) if skater(q, k)]
-        if not touching or min(touching)[0] > CONTACT:
-            continue
-        k2 = min(touching)[1]
+        near = [q for q in window if -150 <= t[q] - t[lost] <= 200]
+        on_goalie = [(to_puck(q, g), g) for q in near for g in range(K) if goalie(q, g) and gap(q, k1, g) <= GOALIE_BODY]
+        if on_goalie and min(on_goalie)[0] <= GOALIE_PUCK:
+            entry = {'kind': 'goalie', 'by': idx(lost, min(on_goalie)[1]), 'own': team(min(on_goalie)[1]) == me}
+        else:
+            if any(h['team'] == them and h['on'] == mine and abs(t[h['f']] - t[lost]) <= 700 for h in hits):
+                continue  # a check landed on him (he stayed up)
+            before = [q for q in range(max(0, lost - 40), min(N, lost + 3)) if t[lost] - t[q] <= BUMP_BEFORE]
+            touching = [(gap(q, k1, k), k) for q in before for k in range(them * 6, them * 6 + 6) if skater(q, k)]
+            if not touching or min(touching)[0] > CONTACT:
+                continue
+            k2 = min(touching)[1]
+            q2 = max(q for q in before if q <= lost)
+            entry = {'kind': 'skater', 'by': idx(lost, k2),
+                     'human': bool(ctrl) and any(ctrl[q] >> k2 & 1 for q in range(max(0, q2 - 20), min(N, lost + 3)) if abs(t[q] - t[lost]) <= 300)}
         nxt = runs[j + 1] if j + 1 < len(runs) else None
         if nxt and (m['period'][nxt[1]] != m['period'][lost] or any(hidden(q) for q in range(lost, nxt[1] + 1))):
             nxt = None  # a whistle first
         if nxt and nxt[0] == k1 and t[nxt[1]] - t[lost] < 300:
             continue  # only a moment off his stick: he kept it
-        q2 = max(q for q in before if q <= lost)
-        out.append({'f': lost, 'team': me, 'idx': mine, 'by': idx(lost, k2), 'x': P[3 * lost], 'y': P[3 * lost + 1],
+        out.append({'f': lost, 'team': me, 'idx': mine, **entry, 'x': P[3 * lost], 'y': P[3 * lost + 1],
                     'next': 'none' if not nxt else 'himself' if nxt[0] == k1 else 'teammate' if team(nxt[0]) == me else 'opponent',
-                    'got': nxt[1] if nxt else None,
-                    'human': bool(ctrl) and any(ctrl[q] >> k2 & 1 for q in range(max(0, q2 - 20), min(N, lost + 3)) if abs(t[q] - t[lost]) <= 300)})
+                    'got': nxt[1] if nxt else None})
     return out
 
 
