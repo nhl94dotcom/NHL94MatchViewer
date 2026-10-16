@@ -884,7 +884,7 @@ def add_shot_context(m):
     # user). On the Genesis the goalie often dives after the save, as if to cover the loose puck he is nowhere near,
     # and is out of the play for a couple of seconds: `eaDive` (a detail of the attempt, not a condition).
     genesis = m.get('system', 'genesis') == 'genesis'
-    dive = actions(m).get('dive', set())
+    dive, shoot, forehand = (actions(m).get(a, set()) for a in ('dive', 'shoot', 'forehand'))
     anim = lambda q, k: m['anim'][(q * K + k) * 4:(q * K + k) * 4 + 4]
     for i, sh in enumerate(shots):
         if not genesis:
@@ -909,6 +909,20 @@ def add_shot_context(m):
         ctrl = m.get('ctrl') or []
         shooter = [k for k in range(sh['team'] * 6, sh['team'] * 6 + 6) if int(m['roster'][sh['f'] * K + k], 36) == sh['idx']]
         if not shooter or not any(q < len(ctrl) and ctrl[q] >> shooter[0] & 1 for q in range(max(0, sh['f'] - 6), sh['f'] + 1)):
+            continue
+        # Always a forehand (the user): his last shooting animation before the release is the forehand one ...
+        k = shooter[0]
+        last = next((anim(q, k) for q in range(sh['f'], max(0, sh['f'] - 90), -1) if anim(q, k) in shoot), None)
+        if last not in forehand:
+            continue
+        # ... so from his forehand side, as the attacker sees it: right-handed (drawn mirrored) from the left,
+        # left-handed from the right.
+        from_left = sh['x'] * (1 if net_y > 0 else -1) < 0
+        if (m['mirror'][sh['f'] * K + k] == '1') != from_left:
+            continue
+        # And not a follow-up: no attempt by his team in the 3 s before (the user's review of the first nine found
+        # rebound put-backs among them).
+        if any(s['team'] == sh['team'] and s['f'] < sh['f'] and t[sh['f']] - t[s['f']] < 3000 for s in shots):
             continue
         sh['flip'] = True
         settled = sh.get('resolved', sh['f'])
