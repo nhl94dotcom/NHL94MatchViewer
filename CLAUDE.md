@@ -799,14 +799,16 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   121; carried pucks go up to about 55), no poke check or hook by an opponent within 35 of the puck, he did not go
   down, and he does not have it back within 0.3 s. Then `kind`:
   'goalie' if the puck came within GOALIE_PUCK 15 of a goalie (his own or the other team's, `own`) from 0.15 s before
-  the loss to 0.2 s after, with the carrier within GOALIE_BODY 25 of him (the user's two: Samuelsson into his own
-  Barrasso, P3 3:31, puck 12 / body 23; Lemieux into Moog, P2 1:45, 10 / 17); else 'skater' if an opposing skater
+  the loss to 0.2 s after, with the carrier within GOALIE_BODY 33 of him (the user's: Samuelsson into his own
+  Barrasso, P3 3:31, puck 12 / body 23; Lemieux into Moog, P2 1:45, 10 / 17; Lemieux P3 0:12, 14 / 32, the puck out
+  on his stick, Juneau close too: the user judged it the goalie, a mix-up there 'not a disaster'); else 'skater' if an opposing skater
   was within CONTACT 17.5 in the 0.5 s before (bodies stop about 16 apart: opposing skaters spend thousands of
   samples at 16-17 and a handful closer) and no check landed on him within 0.7 s (the hit list; a lunge that did
   not land still counts). `next`: who had the puck next (opponent / teammate / himself / none = whistle first), `by`
   the opponent or goalie, `human` (skater kind) that opponent was a person's. Review of 2026-10-16_1314_BOS-PIT's
   first list: every verdict now matches (rows 1 flip and 3 pass gone; Jagr P1 2:05 "probably"); the goalie rule
-  added Lemieux into Moog P1 4:37 and Samuelsson into Barrasso P2 4:45 (unreviewed). Shown as a tag over the carrier
+  added Lemieux into Moog P1 4:37 and Samuelsson into Barrasso P2 4:45 (both confirmed); 33 instead of 25 added
+  Stevens into Moog P3 2:56 (unreviewed) and turned three CGY-BOS skater bumps into goalie ones. Shown as a tag over the carrier
   ("Bumped off the puck" / "Lost it on the goalie"), team stats (Physical: pucks lost on contact, to the other team,
   pucks lost on a goalie), the card (Bumped off puck / Bumped puck loose / Lost puck on goalie) and the season page
   (team BMP and ONG a game; skater BMP lost · forced and ONG; summary VERSION 8). Turnovers are unchanged.

@@ -840,7 +840,8 @@ def find_turnovers(m):
 CONTACT = 17.5   # skaters' bodies stop about 16 units apart (opponents spend thousands of samples at 16-17, a handful closer)
 BUMP_BEFORE = 500  # ms before the loss in which the bump may come
 GOALIE_PUCK = 15   # a puck lost on a goalie comes this close to him (the user's two in 2026-10-16_1314_BOS-PIT: 10 and 12) ...
-GOALIE_BODY = 25   # ... with the carrier up against him (17 and 23 then)
+GOALIE_BODY = 33   # ... with the carrier near him: 17 and 23 then, and 32 for Lemieux in P3 0:12 (the puck out on his stick touched
+                   # the goalie; the user judged it the goalie, with Juneau close too)
 BUMP_HELD = 150    # ms the carrier must have had it (shorter touches are scrambles)
 BUMP_FAST = 70     # puck speed (hundreds) after the loss above which he shot or flipped it (carried pucks go up to about 55;
                    # Taglianeti's flip down the ice in 2026-10-16_1314_BOS-PIT P1 3:54 left at 121)
