@@ -203,9 +203,14 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   fixed palettes 2 (puck and nets; ROM $D50B6), 0 and 1 (vary in play; their most common colours from the save
   states, whose colour memory copy is work RAM $7E34B4). A contact sheet looked right (skaters, falls, goalies,
   arrows, stars, puck).
-- Sprite frame of an object: SPA ($11A3) is an address in bank $9D (the animation table, $9DE0FC): 8 direction
-  pointers to (frame, time) lists; frame = word at list + SPAnum ($11C3; 4 bytes per pair). Resolves 98% of skaters
-  and nearly all goalies in the save states. Mirrored (right-handed): attribute $0E03 bit $0800 (exact).
+- Sprite frame of an object: $0D97 (a word per object, as the Genesis record's +$06; every value a real frame in the
+  first recording; the puck's entry 397 / 401 ...). Mirrored (right-handed): attribute $0E03 bit $0800 (exact).
+  At first the frame was looked up from SPA ($11A3, an address in bank $9D, the animation table $9DE0FC: 8 direction
+  pointers to (frame, time) lists) + SPAnum ($11C3, 4 bytes per pair) + facing; that turned right-handed skaters the
+  wrong way (the user saw it): the game looks up direction (8 - d) for them before mirroring, as the Genesis does.
+  Picture facing vs direction of travel for moving skaters: right-handed 54% within 45 degrees with the lookup, 78%
+  with $0D97 (left-handed 79%; the rest is skating backwards, turning, gliding). The lookup (`animation_frame`) is
+  kept for save-state stills.
 - `snes.read_match` builds a match from samples of SNES RAM (positions, puck, control, roster, role, facing,
   animation, frame, mirror, clock, period, score, shots, rosters, palettes, anims, sprites); `snes.SaveStates` reads
   save states as samples and `tools/snes_preview.py <state>` makes a one-moment match (matches/snes_*.js) from one:
