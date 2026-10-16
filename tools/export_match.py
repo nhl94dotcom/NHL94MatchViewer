@@ -842,6 +842,8 @@ HIGH_DANGER = (60, 50)     # within 60 units of the net (about 20 ft) and no wid
 MEDIUM_DANGER = (100, 70)  # within 100 units and inside the faceoff dots
 EA_GOALIE_LINE = 12        # an EA Special attempt is shot at a goalie standing within this of the puck's line to the net
 EA_MAX_DISTANCE = 130      # ... from no farther out than this
+EA_BACKWARD = 50           # ... by a shooter not skating toward his own end faster than this (units/s; standing or drifting is
+                           # fine: Sweeney's real one in 2026-10-16_1314_BOS-PIT drifted back at 30, Juneau's non-one at P3 4:09 skated back at 80)
 # In the recordings (226 attempts) a third of the attempts from that slot scored (20 of 60) and 14% of the rest; a
 # tighter slot (50 x 40) scores 38% but holds only one attempt in seven. Goals by distance from the net: under 50
 # units 35%, 50-75 24%, 75-100 18%, farther about 8%.
@@ -897,7 +899,9 @@ def add_shot_context(m):
         # distance, up to 130 out. The user's deliberate ones (2026-10-16_1314_BOS-PIT) came from 94 and 120 units,
         # by the faceoff dot and the half-boards (66 and 71 off the middle); a first limit of 70 units missed both.
         d = shot_distance(sh)
-        if sh['type'] != 'wrist shot' or sh['result'] != 'save' or d >= EA_MAX_DISTANCE or abs(sh['x']) < max(20, 0.4 * d):
+        # Whatever came of it (saved, blocked, wide: the user's review of 2026-10-16_1314_BOS-PIT counted a flip judged
+        # blocked and one judged wide), except a goal straight from the shot, which is a goal, not an attempt.
+        if sh['type'] != 'wrist shot' or sh['result'] == 'goal' or d >= EA_MAX_DISTANCE or abs(sh['x']) < max(20, 0.4 * d):
             continue
         net_y = NET_Y if sh['y'] >= 0 else -NET_Y
         keeper = next(((m['pos'][(sh['f'] * K + k) * 2], m['pos'][(sh['f'] * K + k) * 2 + 1])
@@ -923,6 +927,13 @@ def add_shot_context(m):
         # left-handed from the right.
         from_left = sh['x'] * (1 if net_y > 0 else -1) < 0
         if (m['mirror'][sh['f'] * K + k] == '1') != from_left:
+            continue
+        # Never skating away from the goal (the user: standing still is fine; away = moving toward his own end), over
+        # the half second before the release.
+        q0 = next((q for q in range(sh['f'], -1, -1) if t[sh['f']] - t[q] >= 500), 0)
+        dt = (t[sh['f']] - t[q0]) / 1000 or 1
+        toward = (m['pos'][(sh['f'] * K + k) * 2 + 1] - m['pos'][(q0 * K + k) * 2 + 1]) * (1 if net_y > 0 else -1) / dt
+        if toward < -EA_BACKWARD:
             continue
         # And not a follow-up: no attempt by his team in the 3 s before (the user's review of the first nine found
         # rebound put-backs among them).

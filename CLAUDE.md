@@ -876,8 +876,13 @@ Special" (a goal tag, like one-timer). From 2026-10-16_1314_BOS-PIT (the user's 
 saved, Oates scored 0.8 s later; P2 4:26 Oates, flip saved, Pittsburgh's Taglianeti collected it and put it into his
 own net, an attempt only): "from the side" is an angle, at least 20 off the middle and 0.4 x the distance, up to
 EA_MAX_DISTANCE 130 (those two came from 94 and 120 units, the faceoff dot and the half-boards); and a rebound a
-defending skater had is not a success. With that the game has 12 attempts (the user named one in P2), so the rule
-still takes ordinary soft wrist shots from the side; the user is reviewing them. Genesis games only: the SNES goalie saves differently and is not pushed back
+defending skater had is not a success. The user then reviewed the whole game and listed its 14 attempts: the rule
+had found 12 of them and nothing else; it missed two flips judged blocked (Juneau P1 4:51) and wide (Oates P1 4:26),
+so any result counts but a goal straight from the shot; and the user added that the shooter must not be skating away
+from the goal (toward his own end; standing is fine): EA_BACKWARD 50 units/s over the half second before the release
+(Sweeney's real one drifted back at 30; Juneau's P3 4:09, not one, skated back at 80). With those the rule finds
+exactly the user's 14, one of them an EA Special. Older games: capture3 P2 3:59 Oates (confirmed), CGY-BOS OT 9:02
+Sweeney and capture6 P2 0:08 Neely (not yet reviewed). Genesis games only: the SNES goalie saves differently and is not pushed back
 by a wrist shot (the user). `eaDive`: the goalie went into his dive ($02F4) within 2 s after the save, as Genesis
 goalies often do on an EA Special (diving for a puck he is nowhere near, out of the play for a couple of seconds); a
 detail, not a condition (none of the recordings' attempts has one). Only a person's skater makes an attempt (the
