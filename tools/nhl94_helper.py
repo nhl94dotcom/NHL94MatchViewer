@@ -463,8 +463,9 @@ def convert_folder(folder):
     folder = Path(folder).resolve()
     export_match.main([str(folder)])
     with index_lock:
+        old = next((g for g in load_index() if g["name"] == folder.name), None)  # keep when it was played
         games = [g for g in load_index() if g["name"] != folder.name]
-        games.append(game_entry(folder.name))
+        games.append(game_entry(folder.name, old and old.get("date")))
         save_index(games)
     update_season()
     print(f"Converted {folder.name}")
