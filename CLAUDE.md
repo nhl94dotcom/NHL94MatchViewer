@@ -280,7 +280,10 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   controller 1 Toronto 210 to 100). Kept in the match file in the Genesis bit layout by what the buttons do (SNES B
   = Genesis B, A = C, Y/X = A, Start, D-pad), with `padLabels` {A: Y, B: B, C: A} so the viewer shows the SNES
   letters; padTeam and pad2Team from whose controlled skater answers the presses (the SNES has no cont1team).
-  Not known yet: puck height, ice time, the hook.
+- Ice time: no per-player array was found (no 26-word arrays summing to about 6 x the game time), so the converter
+  counts it: each second the clock ticks off goes to everyone on the ice (goalies 901 s of a 900 s game; team sums
+  5171 / 5287, short of 5400 by the penalties).
+  Not known yet: puck height, the hook, the SNES sounds' names (the user is to identify them by ear).
 
 ## Reading game memory live
 
