@@ -860,6 +860,15 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   The season's team is marked in every table. It no longer goes by controller 1 (the summary's `you`): on the Genesis player 1 is
   always Home and player 2 Away (the user), so an Away game is played on controller 2; on the SNES a screen before the
   game lets each player pick the side to control, and both may take the same team.
+- Season heat maps (the page's "Heat maps" tab): `season.heat_file` writes `matches/heat/<name>.js` per game (a folder
+  of its own so nothing listing match files takes them for games; remade when the match file is newer or
+  HEAT_VERSION changes; deleted with the game; about 140 KB a game), made by `season()` for any game lacking one.
+  Time in live play in tenths of a second on a 10-unit grid (26 x 60), each team turned to attack up; slices skate,
+  att, def, pp, sh, puck for teams and skate, att, def, puck for players (keyed by roster index), stored sparse as
+  (cells skipped, value) pairs. Its totals agree with the viewer's (capture6: Boston's power play 41.8 s, Bourque on
+  the ice 7:43). The tab loads the files for the games in view as scripts (so it works from the folder too), adds
+  them up for a team or one skater (matched by name), and draws them over the system's rink picture, blurred and
+  scaled as the viewer does. `&team=BOS&player=<name>&heat=puck&situation=att|def|pp|sh` in the address.
 - Not there yet: names for ROMs (only the crc is known; the helper copies the cartridge, not its file name), people
   as such (a game knows teams and controllers, not who held them), a shareable season file.
 

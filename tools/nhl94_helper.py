@@ -396,6 +396,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 save_index([g for g in load_index() if g["name"] != name])
             shutil.rmtree(ROOT / "captures" / name, ignore_errors=True)
             for path in [ROOT / "matches" / f"{name}.js", ROOT / "matches" / f"{name}.summary.json",
+                         ROOT / "matches" / "heat" / f"{name}.js",
                          *((ROOT / "shared").glob(f"*{name}.html") if (ROOT / "shared").exists() else [])]:
                 try:
                     path.unlink()

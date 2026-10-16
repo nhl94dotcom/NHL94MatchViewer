@@ -246,8 +246,162 @@ def rom_teams():
     return out
 
 
+# ------------------------------------------------------------------------------------------------------- heat maps
+# Each game's heat maps, for the season page to add up: matches/heat/<name>.js (a folder of their own, so nothing
+# that lists the match files takes them for games). Time in live play (the puck hidden at whistles is left out), in
+# tenths of a second, on a 10-unit grid (26 x 60 over X -130..130, Y -300..300), each team turned to attack up the
+# screen. Slices, as in the viewer's filters: skate (a team's skaters, goalies left out, or one player, on the ice),
+# att / def (skating while that team / the other team has the puck), pp / sh (a team's skating on the power play /
+# shorthanded: more of the other team / of its own players serving a penalty), puck (where the puck was while that
+# team or player had it). Teams have all six, players skate, att, def and puck. A grid is stored sparse: pairs of
+# (cells skipped since the last one, tenths of a second).
+HEAT_VERSION = 1
+HEAT_CELL, HEAT_COLS, HEAT_ROWS = 10, 26, 60
+HEAT_DIR = MATCHES / "heat"
+PUCK_HIDDEN_Z = -100
+
+
+def penalty_counts(m):
+    """pen[team][f]: that team's players serving a penalty (not delayed calls) at frame f, from the stat snapshots."""
+    n, stats = len(m["t"]), m.get("stats") or {}
+    out = [[0] * n, [0] * n]
+    frames, per, first = stats.get("f") or [], stats.get("p") or 7, stats.get("n") or 7
+    if per <= 7:
+        return out
+    for s, fr in enumerate(frames):
+        to = frames[s + 1] if s + 1 < len(frames) else n
+        for team, side in enumerate(("home", "away")):
+            v, c = stats[side][s], 0
+            for idx in range(26):
+                at = first + per * idx
+                if at + per > len(v):
+                    break
+                word = v[at + 7]
+                if word >> 8 != 0xFF and not word & 0x2000:
+                    c += 1
+            if c:
+                out[team][fr:to] = [c] * (to - fr)
+    return out
+
+
+def game_heat(m):
+    t, pos, puck, owner = m["t"], m["pos"], m["puck"], m["owner"]
+    role, roster, n = m.get("role"), m.get("roster"), len(m["t"])
+    if not role or not roster:
+        return None
+    # ends[f]: 1 while Home's goalie is at the top (Home attacking down), as the viewer works it out
+    ends, last, first = [0] * n, -1, -1
+    for f in range(n):
+        for k in range(6):
+            if role[f * PLAYERS + k] == "0":
+                last = 1 if pos[(f * PLAYERS + k) * 2 + 1] > 0 else 0
+                break
+        if last >= 0 and first < 0:
+            first = last
+        ends[f] = max(0, last)
+    for f in range(n):
+        if first < 0 or any(role[f * PLAYERS + k] == "0" for k in range(6)):
+            break
+        ends[f] = first
+    pen = penalty_counts(m)
+    size = HEAT_COLS * HEAT_ROWS
+    teams = [{"g": {}, "s": {}} for _ in range(2)]
+    players = [{}, {}]
+
+    def cell(x, y, turn):
+        if turn:
+            x, y = -x, -y
+        c, r = int((x + 130) // HEAT_CELL), int((300 - y) // HEAT_CELL)
+        return r * HEAT_COLS + c if 0 <= c < HEAT_COLS and 0 <= r < HEAT_ROWS else None
+
+    def add(entity, slices, c, dt):
+        for sl in slices:
+            grid = entity["g"].get(sl)
+            if grid is None:
+                grid = entity["g"][sl] = [0.0] * size
+            grid[c] += dt
+
+    def tick(entity, slices, dt):
+        for sl in slices:
+            entity["s"][sl] = entity["s"].get(sl, 0) + dt
+
+    for i in range(n - 1):
+        if puck[3 * i + 2] < PUCK_HIDDEN_Z:
+            continue
+        dt = min(100, t[i + 1] - t[i])
+        k_own = owner[i]
+        has = -1 if k_own < 0 else 0 if k_own < 6 else 1
+        for team in (0, 1):
+            turn = ends[i] if team == 0 else 1 - ends[i]  # keep this team attacking up
+            mine, theirs = pen[team][i], pen[1 - team][i]
+            side = ["att"] if has == team else ["def"] if has == 1 - team else []
+            strength = [] if mine == theirs else ["pp"] if theirs > mine else ["sh"]
+            on = False
+            for k in range(team * 6, team * 6 + 6):
+                r = role[i * PLAYERS + k]
+                if r in ("x", "0"):
+                    continue  # off the ice, or the goalie
+                c = cell(pos[(i * PLAYERS + k) * 2], pos[(i * PLAYERS + k) * 2 + 1], turn)
+                if c is None:
+                    continue
+                on = True
+                add(teams[team], ["skate"] + side + strength, c, dt)
+                idx = int(roster[i * PLAYERS + k], 36)
+                p = players[team].get(idx)
+                if p is None:
+                    p = players[team][idx] = {"g": {}, "s": {}}
+                add(p, ["skate"] + side, c, dt)
+                tick(p, ["skate"] + side, dt)
+            if on:
+                tick(teams[team], ["skate"] + side + strength, dt)
+            if has == team:
+                c = cell(puck[3 * i], puck[3 * i + 1], turn)
+                if c is not None:
+                    add(teams[team], ["puck"], c, dt)
+                    tick(teams[team], ["puck"], dt)
+                    p = players[team].get(int(roster[i * PLAYERS + k_own], 36))
+                    if p is not None:
+                        add(p, ["puck"], c, dt)
+                        tick(p, ["puck"], dt)
+
+    def pack(entity):
+        grids = {}
+        for sl, grid in entity["g"].items():
+            out, skipped = [], 0
+            for v in grid:
+                tenths = round(v / 100)
+                if tenths:
+                    out += [skipped, tenths]
+                    skipped = 0
+                else:
+                    skipped += 1
+            grids[sl] = out
+        return {"g": grids, "s": {sl: round(v / 1000, 1) for sl, v in entity["s"].items()}}
+
+    return {"v": HEAT_VERSION, "cell": HEAT_CELL, "cols": HEAT_COLS, "rows": HEAT_ROWS,
+            "teams": [pack(e) for e in teams],
+            "players": [{str(idx): pack(e) for idx, e in side.items()} for side in players]}
+
+
+def heat_file(name):
+    """Make matches/heat/<name>.js if it is missing, older than the match file, or from an older HEAT_VERSION."""
+    src, out = MATCHES / f"{name}.js", HEAT_DIR / f"{name}.js"
+    head = f"// heat v{HEAT_VERSION}\n"
+    if out.exists() and out.stat().st_mtime >= src.stat().st_mtime:
+        with open(out, encoding="utf-8") as fh:
+            if fh.readline() == head:
+                return
+    data = game_heat(load_match(src))
+    if data is None:
+        return
+    HEAT_DIR.mkdir(exist_ok=True)
+    out.write_text(head + "(window.NHL94_HEAT = window.NHL94_HEAT || {})[" + json.dumps(name) + "] = "
+                   + json.dumps(data, separators=(",", ":")) + ";\n", encoding="utf-8")
+
+
 def season():
-    """Every converted game's summary, newest first, with the seasons and the teams of the ROMs played."""
+    """Every converted game's summary, newest first, with the seasons and the teams of the ROMs played. Makes any
+    heat-map file that is missing on the way."""
     when, games = dates(), []
     for path in sorted(MATCHES.glob("*.js")):
         if path.name == "season.js":
@@ -256,6 +410,11 @@ def season():
             games.append(summary(path.stem, when.get(path.stem)))
         except Exception as e:  # a broken or very old match file: leave it out
             print(f"season: skipped {path.stem}: {e}", file=sys.stderr)
+            continue
+        try:
+            heat_file(path.stem)
+        except Exception as e:
+            print(f"season: no heat map for {path.stem}: {e}", file=sys.stderr)
     return {"games": sorted(games, key=lambda g: g.get("date") or "", reverse=True), "seasons": load_seasons(),
             "romTeams": rom_teams()}
 
