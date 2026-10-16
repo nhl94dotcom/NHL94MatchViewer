@@ -869,8 +869,9 @@ before the release is the forehand $07FC (genesis ACTIONS "forehand"; $092E is t
 as the attacker sees it (right-handed, drawn mirrored, from the left; left-handed from the right); and not a
 follow-up (no attempt by his team in the 3 s before). The user reviewed the nine attempts the rules found before the
 last three: one real (capture3_bos_la P2 3:59, Oates, "not the best example but it meets the criteria"), the rest
-rebound put-backs (CGY-BOS P2 4:42 and 2:22, capture6 P1 2:36), breakaway or skate-in dekes and shots (capture1 P1
-2:57, capture6 P1 1:17, P1 4:33, P2 0:26) and a backhand from in front (capture6 P2 2:27); with the three rules only
+rebound put-backs (CGY-BOS P2 4:42 and 2:22), breakaway or skate-in dekes and shots (capture1 P1 2:57, capture6 P1
+2:36, P1 1:17, P2 0:26), a plain shot on goal (capture6 P1 4:33) and a backhand from in front (capture6 P2 2:27);
+with the three rules only
 the real one is left. The breakaway dekes were also skated in faster (about 125 units/s against 69), not used yet with
 one real example. Ciccarelli's goal in capture2_away (P1 14:28), which the user called a good example of the play,
 was the computer's (Detroit; the person played Philadelphia), so no EA Special is in the recordings yet; each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
