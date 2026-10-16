@@ -376,6 +376,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             settings.update({k: bool(v) for k, v in body.items() if k in ("auto_game_file", "open_browser")})
             save_settings(settings)
             return self.send_json(settings)
+        if url.path == "/api/seasons":
+            import season
+            saved = season.save_seasons(body.get("seasons"))
+            update_season()
+            return self.send_json({"seasons": saved})
         if url.path == "/api/game-file" and name:
             import share_game
             path = share_game.make_game_file(name)

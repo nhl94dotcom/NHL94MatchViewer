@@ -835,9 +835,16 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   game), Head to head (a grid of records, or just the matchups past 12 teams) and Games (untick one to leave it out;
   Watch links). Every column sorts; `?tab=` and `?rom=` (a key or `all`) in the address. Players are matched across
   games by team abbreviation and name.
-- My team: in the user's online leagues a player's season is one team on one ROM, so the page asks for it ("My team",
-  kept per ROM in the browser's storage; until chosen, the one team that played every game is guessed and said so)
-  and marks it in every table. It no longer goes by controller 1 (the summary's `you`): on the Genesis player 1 is
+- Seasons (named): in the user's online leagues a player's season is one team on one ROM, and one ROM carries many
+  seasons (every GENS Classic season is played on nhl94.bin, every SNES Classic one on NHL94_Classic). So a season is
+  saved by name in `matches/seasons.json` (id, name, rom = the page's ROM key, team, start, optional end, the games
+  unticked in it): its games are the ROM's from its start until its end or the same ROM's next season's start. The
+  page's New season / Edit season form posts the whole list to `/api/seasons` (the helper only; opened from the folder
+  the seasons are read-only, from season.js). `/api/season` also gives `romTeams`: every team of each ROM in roms/
+  (read with the system's read_teams, keyed system:crc32 as the converter computes it), so a season can pick a team
+  that has not played yet. Without a season ("No season: browse all games") the page filters by ROM and a "My team"
+  kept per ROM in the browser's storage (until chosen, the one team that played every game is guessed and said so).
+  The season's team is marked in every table. It no longer goes by controller 1 (the summary's `you`): on the Genesis player 1 is
   always Home and player 2 Away (the user), so an Away game is played on controller 2; on the SNES a screen before the
   game lets each player pick the side to control, and both may take the same team.
 - Not there yet: names for ROMs (only the crc is known; the helper copies the cartridge, not its file name), people
