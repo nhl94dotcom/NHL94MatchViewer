@@ -849,10 +849,14 @@ held one attempt in seven), 'medium' within 100 and 70, else 'low'; `assist` (a 
 shot, completed or one-timed to the shooter within 4 s, the other team never having the puck between); `flip` /
 `afterFlip`: an "EA Special", the user's Genesis community's name (after the player "EA" who invented it, not
 Electronic Arts) for skating down the side, usually a winger, flipping a wrist shot on goal so the goalie bobbles it
-and is pushed back, then the shooter or an onrushing teammate scores into the open part of the net. Found as a wrist
-shot from within 70 units and at least 20 off the middle, saved and given up as a rebound to the shooters, then their
-attempt within 2 s from within 65 units; one in the recordings, confirmed by the user (capture2_away P1 14:28,
-Ciccarelli then Ciccarelli's goal). Goals off one get the kind "EA Special" (a goal tag, like one-timer); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
+and is pushed back, then the shooter or an onrushing teammate scores into the open part of the net. `flip` marks an
+EA Special attempt (the user's definition): a wrist shot (never a slapshot: goalies hold those far more often) from
+within 70 units and at least 20 off the middle, shot at a goalie in position - within 12 units (EA_GOALIE_LINE) of the
+puck's line to the net at the release (on the saves in the recordings he stood 2-15 off it; on wrist shots that went
+straight in, 15-51) - and saved, so not a try to score directly. `afterFlip`: the same team's next attempt, later
+and within 2 s, from within 65 units. An attempt followed by a goal is an EA Special; the goal gets the kind "EA
+Special" (a goal tag, like one-timer). 18 attempts in the recordings, one EA Special, confirmed by the user
+(capture2_away P1 14:28, Ciccarelli then Ciccarelli's goal); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
 no whistle between). Expected goals was put off until there are thousands of shots (about 250 now).
 Shown: shot tooltips (high danger, rebound, flip, set up by), the card (High-danger att., Shot assists, Rebounds,
 Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, EA Specials when any,
