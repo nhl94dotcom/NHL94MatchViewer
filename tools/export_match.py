@@ -145,6 +145,15 @@ def find_shots(m, goals=None):
         q = i + 1
         while q < N and t[q] - t[i] < 2000:
             if abs(P[3 * q + 1]) >= 250 and abs(P[3 * q]) <= PASS_MOUTH:
+                # At the goal mouth. Wide of the posts (about 20 from the middle) and then taken by a teammate within
+                # 1 s, before the goalie or the other team: a pass round the net, not a shot (Andreychuk to Gill in
+                # snes_2026-10-15_1755, P2, which the user knew as a pass: 36 wide, Gill had it behind the net).
+                if abs(P[3 * q]) > 22:
+                    r = q
+                    while r < N and t[r] - t[q] < 1000 and own[r] < 0 and P[3 * r + 2] > -100:
+                        r += 1
+                    if r < N and t[r] - t[q] < 1000 and own[r] in mates:
+                        return None
                 reached[i] = q
                 return goal
             if own[q] >= 0:
