@@ -7,6 +7,7 @@
 <style>
   :root { --bg: #14181d; --panel: #1e242c; --raised: #2b333d; --text: #e8edf2; --muted: #8b98a7; --team1: #e4572e; --team2: #2e86de; --accent: #f2c744; --ink: #10141a; --good: #4fb477; --bad: #e5484d; }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; }
   main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
@@ -55,6 +56,16 @@
   .matrix td.self { background: var(--bg); }
   .matrix td.left, .matrix th.left { text-align: left; }
   .win { color: var(--good); } .loss { color: var(--bad); }
+  .btn { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 5px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); color: var(--ink); border-color: transparent; font-weight: 600; }
+  .btn.danger { color: var(--bad); margin-left: auto; }
+  .filters hr { flex-basis: 100%; height: 0; margin: 0; border: 0; }
+  input[type=text], input[type=datetime-local] { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 14px; max-width: 100%; color-scheme: dark; }
+  .form { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px 18px; }
+  .form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 13px; min-width: 0; }
+  .form label.wide { grid-column: 1 / -1; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   @media (max-width: 640px) { main { padding: 16px 16px 40px; } td, th { padding-left: 6px; padding-right: 6px; } }
 </style>
 </head>
@@ -64,10 +75,33 @@
   <p class="sub" id="sub">Loading games&hellip;</p>
 
   <section class="card filters" id="filters" hidden>
-    <label class="wide">Games played on <select id="rom"></select></label>
-    <label title="The team you control in this season's games">My team <select id="mine"></select></label>
+    <label class="wide">Season <select id="season"></select></label>
+    <button class="btn" id="editSeason" hidden>Edit season</button>
+    <button class="btn" id="newSeason" hidden>New season</button>
+    <hr>
+    <label class="wide" id="romLabel">Games played on <select id="rom"></select></label>
+    <label id="mineLabel" title="The team you control in these games">My team <select id="mine"></select></label>
     <label>Team <select id="team"></select></label>
     <label title="Recordings that began after the opening faceoff or stopped before the final horn"><input type="checkbox" id="whole" checked> Whole games only</label>
+  </section>
+
+  <section class="card" id="editor" hidden>
+    <h2 id="editorTitle">New season</h2>
+    <div class="form">
+      <label>Name <input type="text" id="eName" maxlength="80" placeholder="e.g. GENS Classic season 12"></label>
+      <label>My team <select id="eTeam"></select></label>
+      <label class="wide">ROM <select id="eRom"></select></label>
+      <label>Starts <input type="datetime-local" id="eStart"></label>
+      <label>Ends (optional) <input type="datetime-local" id="eEnd"></label>
+    </div>
+    <p class="note">The season counts the whole games played on its ROM from its start until it ends, or until the
+      next season on the same ROM starts. Set the start earlier to take in games already played. Deleting a season
+      keeps its games.</p>
+    <div class="actions">
+      <button class="btn primary" id="eSave">Save season</button>
+      <button class="btn" id="eCancel">Cancel</button>
+      <button class="btn danger" id="eDelete">Delete season</button>
+    </div>
   </section>
 
   <nav class="tabs" id="tabs" role="tablist" hidden>
@@ -93,26 +127,30 @@ const mmss = s => Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart
 const signed = v => (v > 0 ? '+' + v : String(v));
 
 let games = [], tab = 'standings', sorts = {}, myTeams = {}, mineGuessed = false;
+let seasons = [], romTeams = {}, seasonId = null, canSave = false, editing = null;
 try {
   const saved = JSON.parse(localStorage.getItem('nhl94.season') || '{}');
   tab = saved.tab || tab; sorts = saved.sorts || {}; myTeams = saved.myTeams || {};
+  if ('seasonId' in saved) seasonId = saved.seasonId;
 } catch (e) { /* no storage */ }
 const query = new URLSearchParams(location.search);  // ?tab=skaters opens that tab
 if (query.get('tab')) tab = query.get('tab');
-const remember = () => { try { localStorage.setItem('nhl94.season', JSON.stringify({ tab, sorts, myTeams })); } catch (e) { /* no storage */ } };
-const excluded = new Set();
+const remember = () => { try { localStorage.setItem('nhl94.season', JSON.stringify({ tab, sorts, myTeams, seasonId })); } catch (e) { /* no storage */ } };
+// Games unticked on the Games tab: a season keeps its own (saved with it); browsing without a season, until reload.
+const looseExcluded = new Set();
+const excludedSet = () => { const s = currentSeason(); return s ? new Set(s.excluded || []) : looseExcluded; };
 
 // The games: from the helper (/api/season) when it serves this page, else from matches/season.js beside it
 // (python tools/season.py writes it).
 async function load() {
   try {
     const r = await fetch('/api/season', { cache: 'no-store' });
-    if (r.ok) return (await r.json()).games;
+    if (r.ok) { canSave = true; return await r.json(); }
   } catch (e) { /* opened from the folder */ }
   return new Promise(resolve => {
     const s = document.createElement('script');
     s.src = 'matches/season.js?' + Date.now();
-    s.onload = () => resolve((window.NHL94_SEASON || {}).games || []);
+    s.onload = () => resolve(window.NHL94_SEASON || {});
     s.onerror = () => resolve(null);
     document.head.append(s);
   });
@@ -127,6 +165,104 @@ function romLabel(key) {
     (parts ? ', ' + parts + ' part' + (parts === 1 ? '' : 's') : '') + (teams.length ? ' (' + teams.slice(0, 4).join(', ') + (teams.length > 4 ? '…' : '') + ')' : '');
 }
 
+// ---------------------------------------------------------------------------------------------------- seasons
+const currentSeason = () => seasons.find(s => s.id === seasonId) || null;
+const byStart = (a, b) => (b.start || '').localeCompare(a.start || '');
+// A season runs to its end, or to the start of the same ROM's next season, whichever is first.
+function seasonEnd(s) {
+  const next = seasons.filter(o => o !== s && o.rom === s.rom && (o.start || '') > (s.start || '')).map(o => o.start).sort()[0];
+  return [s.end, next].filter(Boolean).sort()[0] || '';
+}
+function inSeason(g, s) {
+  const d = g.date || '', end = seasonEnd(s);
+  return romKey(g) === s.rom && d >= (s.start || '') && (!end || d < end);
+}
+const when = d => (d ? d.replace('T', ' ') : '');
+const teamName = (rom, abbr) => (teamsOf(rom).find(t => t[0] === abbr) || [abbr, abbr])[1];
+// Every team a ROM has: from the copied ROM when the helper has it, plus any seen in its games.
+function teamsOf(rom) {
+  const teams = new Map(romTeams[rom] || []);
+  for (const g of games) if (romKey(g) === rom) g.abbr.forEach((a, i) => teams.has(a) || teams.set(a, g.names[i]));
+  return [...teams].sort((a, b) => a[1].localeCompare(b[1]));
+}
+
+function fillSeasons() {
+  $('season').innerHTML = [...seasons].sort(byStart).map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('') +
+    '<option value="">No season: browse all games</option>';
+  if (seasonId === null || (seasonId && !currentSeason())) seasonId = seasons.length ? [...seasons].sort(byStart)[0].id : '';
+  $('season').value = seasonId;
+  const s = currentSeason();
+  $('romLabel').hidden = $('mineLabel').hidden = !!s;
+  $('editSeason').hidden = !s || !canSave;
+  $('newSeason').hidden = !canSave;
+}
+
+async function saveSeasons() {
+  try {
+    const r = await fetch('/api/seasons', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seasons }) });
+    if (!r.ok) throw new Error(r.status);
+    seasons = (await r.json()).seasons;
+    return true;
+  } catch (e) {
+    alert('The season could not be saved. Is the helper still running?');
+    return false;
+  }
+}
+
+function nowLocal() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
+
+function fillEditorTeams(keep) {
+  const teams = teamsOf($('eRom').value);
+  $('eTeam').innerHTML = '<option value="">Choose&hellip;</option>' + teams.map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})</option>`).join('');
+  $('eTeam').value = teams.some(t => t[0] === keep) ? keep : '';
+}
+
+function openEditor(s) {
+  editing = s;
+  const roms = [...new Set([...games.map(romKey), ...Object.keys(romTeams), ...seasons.map(o => o.rom)])];
+  const recent = games.find(g => g.finished && g.fromStart) || games[0];
+  const rom = s ? s.rom : $('rom').value || (recent ? romKey(recent) : roms[0] || '');
+  $('editorTitle').textContent = s ? 'Edit season' : 'New season';
+  $('eRom').innerHTML = roms.map(k => `<option value="${esc(k)}">${esc(romLabel(k))}</option>`).join('');
+  $('eRom').value = rom;
+  $('eName').value = s ? s.name : 'Season ' + (seasons.filter(o => o.rom === rom).length + 1);
+  fillEditorTeams(s ? s.team : myTeams[rom] || (rom === $('rom').value ? myTeam() : ''));
+  $('eStart').value = s ? s.start : nowLocal();
+  $('eEnd').value = s ? s.end || '' : '';
+  $('eDelete').hidden = !s;
+  $('editor').hidden = false;
+  $('eName').focus();
+}
+
+function wireEditor() {
+  $('newSeason').addEventListener('click', () => openEditor(null));
+  $('editSeason').addEventListener('click', () => openEditor(currentSeason()));
+  $('eCancel').addEventListener('click', () => { $('editor').hidden = true; });
+  $('eRom').addEventListener('change', () => fillEditorTeams($('eTeam').value));
+  $('eSave').addEventListener('click', async () => {
+    const name = $('eName').value.trim(), team = $('eTeam').value, start = $('eStart').value, end = $('eEnd').value;
+    if (!name) return alert('Give the season a name.');
+    if (!team) return alert('Choose the team you play this season.');
+    if (!start) return alert('Choose when the season starts.');
+    if (end && end <= start) return alert('The season has to end after it starts.');
+    const s = editing || { id: Date.now().toString(36), excluded: [] };
+    Object.assign(s, { name, rom: $('eRom').value, team, start, end });
+    if (!editing) seasons.push(s);
+    if (await saveSeasons()) {
+      seasonId = s.id; remember();
+      $('editor').hidden = true; fillSeasons(); fillTeams(); render();
+    }
+  });
+  $('eDelete').addEventListener('click', async () => {
+    if (!editing || !confirm(`Delete the season "${editing.name}"? Its games are kept.`)) return;
+    seasons = seasons.filter(o => o !== editing);
+    if (await saveSeasons()) {
+      seasonId = null; remember();
+      $('editor').hidden = true; fillSeasons(); fillTeams(); render();
+    }
+  });
+}
+
 function setup() {
   const roms = [...new Set(games.map(romKey))];
   // Default: the ROM of the most recent whole game (a league season is played on one ROM)
@@ -139,6 +275,10 @@ function setup() {
     remember(); fillTeams(); render();
   });
   for (const b of document.querySelectorAll('#tabs button')) b.addEventListener('click', () => { tab = b.dataset.tab; remember(); render(); });
+  $('season').addEventListener('change', () => { seasonId = $('season').value; remember(); fillSeasons(); fillTeams(); render(); });
+  if (query.has('rom')) seasonId = '';  // a ROM in the address: browse it, not a season
+  wireEditor();
+  fillSeasons();
   fillTeams();
   $('filters').hidden = $('tabs').hidden = $('view').hidden = false;
 }
@@ -153,18 +293,18 @@ function fillTeams() {
   // every game, if there is one, as a guess.
   const chosen = myTeams[$('rom').value || 'all'], list = pool(false);
   const everyGame = [...teams.keys()].filter(a => list.length >= 2 && list.every(g => g.abbr.includes(a)));
-  mineGuessed = !teams.has(chosen) && everyGame.length === 1;
+  mineGuessed = !currentSeason() && !teams.has(chosen) && everyGame.length === 1;
   $('mine').innerHTML = '<option value="">Not chosen</option>' + [...teams].sort((a, b) => a[1].localeCompare(b[1]))
     .map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})${mineGuessed && a === everyGame[0] ? ' - guessed' : ''}</option>`).join('');
   $('mine').value = teams.has(chosen) ? chosen : mineGuessed ? everyGame[0] : '';
 }
-const myTeam = () => $('mine').value;
+const myTeam = () => { const s = currentSeason(); return s ? s.team : $('mine').value; };
 
 // The games in play: the ROM and whole-game filters (and, with byTeam, the team filter), less any unticked on the
 // Games tab.
 function pool(byTeam = true, withExcluded = false) {
-  const rom = $('rom').value, team = $('team').value, whole = $('whole').checked;
-  return games.filter(g => (!rom || romKey(g) === rom) && (!whole || (g.finished && g.fromStart)) &&
+  const s = currentSeason(), rom = s ? s.rom : $('rom').value, team = $('team').value, whole = $('whole').checked, excluded = excludedSet();
+  return games.filter(g => (!rom || romKey(g) === rom) && (!s || inSeason(g, s)) && (!whole || (g.finished && g.fromStart)) &&
     (!byTeam || !team || g.abbr.includes(team)) && (withExcluded || !excluded.has(g.name)));
 }
 
@@ -240,13 +380,22 @@ function render() {
   for (const b of document.querySelectorAll('#tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
   const list = pool(), all = pool(true, true), view = $('view');
   const team = $('team').value;
-  $('sub').innerHTML = `${list.length} game${list.length === 1 ? '' : 's'} counted` + (all.length > list.length ? ` (${all.length - list.length} unticked on the Games tab)` : '') +
+  const s = currentSeason();
+  $('sub').innerHTML = (s ? `${esc(s.name)}: ${esc(teamName(s.rom, s.team))} on ${esc((s.rom.startsWith('snes') ? 'SNES ROM ' : 'Genesis ROM ') + s.rom.split(':')[1])}, ` +
+      `${esc(when(s.start))} to ${seasonEnd(s) ? esc(when(seasonEnd(s))) : 'now'} · ` : '') +
+    `${list.length} game${list.length === 1 ? '' : 's'} counted` + (all.length > list.length ? ` (${all.length - list.length} unticked on the Games tab)` : '') +
     ` · <a href="helper.html">all games</a>`;
-  if (!list.length && tab !== 'games') { view.innerHTML = '<p class="empty">No games match. Try "All ROMs", or untick "Whole games only".</p>'; return; }
+  if (!list.length && tab !== 'games') {
+    view.innerHTML = s ? '<p class="empty">No games in this season yet. Games played on its ROM from its start on will appear here.</p>'
+      : '<p class="empty">No games match. Try "All ROMs", or untick "Whole games only".</p>';
+    return;
+  }
   view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, games: viewGames }[tab])(list, team);
   wireSorting();
   for (const box of view.querySelectorAll('input[data-game]')) box.addEventListener('change', () => {
-    if (box.checked) excluded.delete(box.dataset.game); else excluded.add(box.dataset.game);
+    const s = currentSeason(), set = excludedSet();
+    if (box.checked) set.delete(box.dataset.game); else set.add(box.dataset.game);
+    if (s) { s.excluded = [...set]; if (canSave) saveSeasons(); }
     render();
   });
 }
@@ -401,7 +550,7 @@ function pairings(list, team) {
 }
 
 function viewGames(list, team) {
-  const rows = pool(true, true).map(g => ({ ...g, off: excluded.has(g.name) }));
+  const excluded = excludedSet(), rows = pool(true, true).map(g => ({ ...g, off: excluded.has(g.name) }));
   return '<h2>Games</h2>' + table('games', rows, [
     { key: 'in', label: 'Count', sortable: false, show: r => `<input type="checkbox" data-game="${esc(r.name)}"${r.off ? '' : ' checked'} aria-label="Count this game">` },
     { key: 'date', label: 'When', left: true, show: r => esc((r.date || '').replace('T', ' ')) },
@@ -410,13 +559,13 @@ function viewGames(list, team) {
     { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.abbr[1] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'whole', label: '', sortable: false, show: r => (r.finished && r.fromStart ? '' : '<small>part of a game</small>') },
     { key: 'watch', label: '', sortable: false, show: r => `<a href="viewer.html?match=${encodeURIComponent(r.name)}">Watch</a>` },
-  ], 'date') + '<p class="note">Untick a game to leave it out of every table (until the page is reloaded).</p>';
+  ], 'date') + `<p class="note">Untick a game to leave it out of every table${currentSeason() ? (canSave ? ' (saved with the season)' : ' (open this page from the helper to save it)') : ' (until the page is reloaded)'}.</p>`;
 }
 
-load().then(list => {
-  if (!list) { $('sub').textContent = 'No season data found. Open this page from the helper (http://localhost:9494/season.html), or run python tools/season.py.'; return; }
-  games = list;
-  if (!games.length) { $('sub').textContent = 'No games yet. Play one with the helper running and it will appear here.'; return; }
+load().then(data => {
+  if (!data) { $('sub').textContent = 'No season data found. Open this page from the helper (http://localhost:9494/season.html), or run python tools/season.py.'; return; }
+  games = data.games || []; seasons = data.seasons || []; romTeams = data.romTeams || {};
+  if (!games.length && !canSave) { $('sub').textContent = 'No games yet. Play one with the helper running and it will appear here.'; return; }
   setup();
   render();
 });

@@ -190,8 +190,64 @@ def summary(name, date=None):
     return s
 
 
+# Seasons are named by the user: a ROM, the team they play, and when it starts (and ends, if set). Several seasons can
+# share a ROM (every GENS Classic season is played on nhl94.bin), so a season runs until it ends or the same ROM's next
+# season starts. Kept beside the games, so a backup of matches/ keeps them.
+SEASONS = MATCHES / "seasons.json"
+
+
+def load_seasons():
+    try:
+        seasons = json.loads(SEASONS.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return seasons if isinstance(seasons, list) else []
+
+
+def save_seasons(seasons):
+    """Store the seasons the page sends, keeping only the known fields."""
+    clean = []
+    for s in seasons if isinstance(seasons, list) else []:
+        if not isinstance(s, dict) or not s.get("name") or not s.get("rom"):
+            continue
+        clean.append({"id": str(s.get("id") or "")[:40], "name": str(s["name"])[:80], "rom": str(s["rom"])[:40],
+                      "team": str(s.get("team") or "")[:8], "start": str(s.get("start") or "")[:16],
+                      "end": str(s.get("end") or "")[:16],
+                      "excluded": [n[:120] for n in s.get("excluded") or [] if isinstance(n, str)]})
+    SEASONS.write_text(json.dumps(clean, indent=1), encoding="utf-8")
+    return clean
+
+
+_rom_teams = {}
+
+
+def rom_teams():
+    """Every team of each ROM the helper has copied into roms/, keyed as the page keys ROMs (system:crc32 as the
+    converter takes it), so a new season can pick a team that has not played yet."""
+    import zlib
+    from systems import genesis, snes
+    out, folder = {}, ROOT / "roms"
+    for path in sorted(folder.glob("*")) if folder.exists() else []:
+        system = {".bin": "genesis", ".smc": "snes"}.get(path.suffix.lower())
+        if not system:
+            continue
+        stamp = (path.name, path.stat().st_mtime)
+        if stamp not in _rom_teams:
+            try:
+                data = path.read_bytes()
+                crc = zlib.crc32(snes.strip_header(data) if system == "snes" else data)
+                teams = (snes if system == "snes" else genesis).read_teams(path)
+                _rom_teams[stamp] = (f"{system}:{crc:08x}", [[t["abbr"], t["name"]] for t in teams])
+            except Exception as e:
+                print(f"season: could not read the teams of {path.name}: {e}", file=sys.stderr)
+                _rom_teams[stamp] = None
+        if _rom_teams[stamp]:
+            out[_rom_teams[stamp][0]] = _rom_teams[stamp][1]
+    return out
+
+
 def season():
-    """Every converted game's summary, newest first."""
+    """Every converted game's summary, newest first, with the seasons and the teams of the ROMs played."""
     when, games = dates(), []
     for path in sorted(MATCHES.glob("*.js")):
         if path.name == "season.js":
@@ -200,7 +256,8 @@ def season():
             games.append(summary(path.stem, when.get(path.stem)))
         except Exception as e:  # a broken or very old match file: leave it out
             print(f"season: skipped {path.stem}: {e}", file=sys.stderr)
-    return {"games": sorted(games, key=lambda g: g.get("date") or "", reverse=True)}
+    return {"games": sorted(games, key=lambda g: g.get("date") or "", reverse=True), "seasons": load_seasons(),
+            "romTeams": rom_teams()}
 
 
 def write_season_file():
