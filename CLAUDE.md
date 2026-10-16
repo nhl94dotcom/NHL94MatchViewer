@@ -791,6 +791,17 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   else the nearest opponent. On `capture5_league30` (hack ROM, which records both) every one of the 23 hits goes to
   the player the game says took it; team totals match the game everywhere. Player card: Checks, Hits taken, and
   Pen. minutes on original ROMs.
+- Bumped off the puck (`bumps`, find_bumps, 2026-10-16; the user asked for pucks lost when a carrier and a defender
+  rub into each other with no check delivered): a skater's possession ends, not by a shot or pass, not across a
+  whistle, while an opposing skater (not the goalie) is within CONTACT 17.5 of him in the 0.5 s before; no check landed
+  on him within 0.7 s (the hit list; a lunge that did not land still counts), no poke check or hook by an opponent
+  within 35 of the puck, and he did not go down; if he has it back within 0.3 s it is not one. 17.5 because bodies stop
+  about 16 apart (opposing skaters spend thousands of samples at 16-17 and a handful closer). `next`: who had the puck
+  next (opponent / teammate / himself / none = whistle first), `by` the opponent touching him, `human` that opponent
+  was a person's. 1-11 a game (BOS-PIT 11, five to the other team); not yet reviewed by the user. Shown as a "Bumped
+  off the puck" tag over the carrier, team stats (Physical: pucks lost on contact, to the other team), the card (Bumped
+  off puck / Bumped puck loose) and the season page (team BMP a game; skater BMP lost · forced; summary VERSION 7).
+  Turnovers are unchanged (such a loss is still a takeaway 'stolen' or a giveaway 'lost the puck').
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under
