@@ -942,8 +942,8 @@ Play context (2026-10-16, `add_play_context` in export_match.py, after add_shot_
   three quarters of attempts are off the rush in NHL '94.
 - Zone entry `odd`: [attackers level with or ahead of the puck or up to 60 behind it, defenders back between the puck
   and their net] as the puck crosses the blue line; an odd-man rush is a carried or passed entry with more attackers
-  than defenders and at least two (1-on-0 is a breakaway; a dump-in leaves the attackers behind). Not yet reviewed by
-  the user; may count generously (Boston 25 in two games).
+  than defenders and at least two (1-on-0 is a breakaway; a dump-in leaves the attackers behind). Boston had 25 in two
+  games; the user finds about 12 a game plausible, the CPU defending so poorly (not reviewed rush by rush).
 - Shot `wrap`: from within 45 of the middle near the goal line, the shooter having had the puck behind that goal line
   in the 1.5 s before (one goal in capture5).
 - `m.habits[team]` for each team a person played (pad / pad2 with padTeam / pad2Team): minutes of live play, A / B / C
