@@ -60,7 +60,9 @@ By hand:
    either way it is drawn mirrored top to bottom about the red line (row 777; goal lines and boards are symmetric
    about it), with the bench strip and the penalty-box strip (`RINK_SIDES`) pasted back unmirrored, so the near end
    always leans in. At exactly 90 / 270 the end walls still show the picture's top-down perspective sideways.
-   That flip only applies to the original picture. By default (toolbar "Overhead", remembered) the viewer instead
+   That flip only applies to the original picture. The toolbar's "Event tags" (remembered; `&tags=0` turns it
+   off) shows or hides the pop-ups for what happens on the ice - players' actions (pass, shot, poke check, failed
+   one-timer ...), breakaways, posts - while the player labels (34 LD) stay. By default (toolbar "Overhead", remembered) the viewer instead
    draws `buildOverheadRink`: the picture rebuilt at load on a canvas as if seen from straight above. It keeps the
    picture's ice inside an outline 6 units in from the side boards and 13 from the end boards (outside that, the
    picture has its old kick line, glass posts and curved boards), the side stands, benches and penalty boxes. The

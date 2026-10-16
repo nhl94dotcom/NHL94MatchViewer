@@ -218,6 +218,7 @@
       <button id="zoomIn" title="Zoom in (+)">+</button>
       <label title="Keep the puck in the middle (F)"><input type="checkbox" id="follow"> <span>Follow puck</span></label>
       <label title="Boards, glass and nets as seen from straight above"><input type="checkbox" id="overhead"> <span>Overhead</span></label>
+      <label title="Pop-ups for what players do (pass, shot, poke check, failed one-timer ...), breakaways and posts. The player labels stay"><input type="checkbox" id="eventTags"> <span>Event tags</span></label>
       <button id="viewReset" title="Whole rink, upright (0, or double-click the ice)">Reset</button>
     </div>
     <div id="drop">
@@ -336,6 +337,11 @@ const resultAt = (sh, f) => (liveKnowledge && sh.resolved !== undefined && sh.re
 // The rink picture rebuilt as seen from straight above (buildOverheadRink), and whether it is shown.
 let overheadRink = null, overheadOn = true;
 try { overheadOn = localStorage.getItem('nhl94-overhead') !== '0'; } catch (e) { /* default on */ }
+// The pop-ups for events on the ice (players' actions, breakaways, posts); the player labels are not affected.
+// Remembered; &tags=0 in the address turns them off.
+let eventTagsOn = true;
+try { eventTagsOn = localStorage.getItem('nhl94-event-tags') !== '0'; } catch (e) { /* default on */ }
+if (new URLSearchParams(location.search).get('tags') === '0') eventTagsOn = false;
 
 function player(f, k) {
   // Roster entry for record k at frame f, or null when the match file has no rosters.
@@ -2787,17 +2793,17 @@ function draw() {
   }
   drawPenaltyBoxes(f);
   // What each player is doing, for any player, person or computer.
-  if (m.anim) for (let k = 0; k < PLAYERS; k++) {
+  if (m.anim && eventTagsOn) for (let k = 0; k < PLAYERS; k++) {
     const action = role(f, k) < 0 ? null : actionAt(f, k);
     if (action) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], action, -(DISC + 9));
   }
   // Breakaways: a tag over the puck for a moment after the game counts one.
-  for (const b of breakaways) {
+  for (const b of eventTagsOn ? breakaways : []) {
     const since = m.t[f] - m.t[b.f];
     if (since >= 0 && since <= POST_FLASH_MS) drawTag(m.puck[3 * f], m.puck[3 * f + 1], 'Breakaway', 30);
   }
   // Shots off the post: mark the post that was hit for a moment.
-  for (const pf of m.posts || []) {
+  for (const pf of eventTagsOn ? m.posts || [] : []) {
     const since = m.t[f] - m.t[pf];
     if (since < 0 || since > POST_FLASH_MS) continue;
     const px = Math.sign(m.puck[3 * pf]) * POST_X, py = Math.sign(m.puck[3 * pf + 1]) * POST_Y;
@@ -2905,6 +2911,12 @@ $('angle').addEventListener('input', e => setView({ angle: Number(e.target.value
 $('zoomIn').addEventListener('click', () => zoomBy(1.25));
 $('zoomOut').addEventListener('click', () => zoomBy(0.8));
 $('follow').addEventListener('change', e => setView({ follow: e.target.checked }));
+$('eventTags').checked = eventTagsOn;
+$('eventTags').addEventListener('change', e => {
+  eventTagsOn = e.target.checked;
+  try { localStorage.setItem('nhl94-event-tags', eventTagsOn ? '1' : '0'); } catch (err) { /* not remembered */ }
+  if (match) draw();
+});
 $('overhead').checked = overheadOn;
 $('overhead').addEventListener('change', e => {
   overheadOn = e.target.checked;
