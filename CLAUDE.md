@@ -82,6 +82,12 @@ By hand:
    every pixel, so such GIFs stay big (4.5 MB Small); video suits those. Saving needs `rink_gens.js` (`python tools/embed_rink.py`): the rink picture as a data URL, because a
    canvas that has drawn a picture loaded from a local file cannot be read back or recorded. The GIFs decode correctly (checked by decoding and stacking the frames); the video
    path starts cleanly in headless Edge (MP4 supported) but could not be run to the end there (no animation frames).
+Samples (2026-10-16): `samples/` in the repository holds three game files made with `share_game.make_game_file` (the
+user chose to include the ROMs' sprites and sounds): Genesis_Calgary_6-5_Boston_OT (2026-10-14_1540_CGY-BOS),
+Genesis_Boston_6-3_St_Louis_netplay (capture6_netplay_bos_stl), SNES_Toronto_1-5_Pittsburgh (snes_2026-10-15_1755);
+about 5 MB each. They embed the viewer as it was when made, so remake them (same names) after viewer changes worth
+showing. The README's "Try it" section points to them.
+
 5. Save game file (footer): writes one self-contained page to send to someone - this page's own source (kept as
    `PAGE_SOURCE` when it loads) with the rink picture, the bench masks, and the match and sprite library gzipped and
    base64'd inside (`window.NHL94_PACKED`, unpacked with DecompressionStream on opening). `capture6_netplay_bos_stl`

@@ -12,8 +12,17 @@ open on any system, phones included. The converter is plain Python with no extra
 is Windows-only for now, because it reads the game's memory out of RetroArch with a Windows call (read only);
 Mac and Linux recording is being worked on.
 
-To look around without installing anything, open a sample game file from the
-[Releases](https://github.com/nhl94dotcom/NHL94MatchViewer/releases) page in your browser.
+## Try it
+
+The [`samples`](samples) folder has three recorded games as single-file game pages. Download one (on GitHub, open it
+and use "Download raw file") and double-click it: it opens in your browser with nothing to install.
+
+- `Genesis_Calgary_6-5_Boston_OT.html`: a Genesis game that went to overtime, recorded by the helper.
+- `Genesis_Boston_6-3_St_Louis_netplay.html`: an online Genesis game with a person on each team.
+- `SNES_Toronto_1-5_Pittsburgh.html`: an online SNES game, with two penalty shots.
+
+Things to try: Play, the Map menu (shot map, heat maps, goalie report), Highlights (three stars and a highlight
+reel), Game flow, and pointing at a player in the lineups for his card.
 
 ## Use it
 
@@ -27,7 +36,8 @@ To look around without installing anything, open a sample game file from the
 
 - Recordings (`captures/`), converted games (`matches/`) and game files (`shared/`): large, and personal to whoever played.
 - ROMs, and the sprites extracted from them (`roms/`, `sprites/`): the helper copies the ROM out of the emulator and
-  builds the sprites from it on each player's own computer.
+  builds the sprites from it on each player's own computer. (The sample games carry their ROM's sprites and sounds
+  inside, so they look and sound as the game does.)
 
 ## More
 
