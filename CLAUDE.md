@@ -862,8 +862,11 @@ and within 2 s, from within 65 units. An attempt followed by a goal is an EA Spe
 Special" (a goal tag, like one-timer). Genesis games only: the SNES goalie saves differently and is not pushed back
 by a wrist shot (the user). `eaDive`: the goalie went into his dive ($02F4) within 2 s after the save, as Genesis
 goalies often do on an EA Special (diving for a puck he is nowhere near, out of the play for a couple of seconds); a
-detail, not a condition (none of the recordings' attempts has one). 15 attempts in the Genesis recordings, one EA
-Special, confirmed by the user (capture2_away P1 14:28, Ciccarelli then Ciccarelli's goal); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
+detail, not a condition (none of the recordings' attempts has one). Only a person's skater makes an attempt (the
+user: the computer never tries one): the shooter carried the controlled-skater marker (`ctrl`) at the release or up
+to 6 samples before; the rebound may be anyone's. That leaves 9 attempts in the recordings and no EA Special:
+Ciccarelli's goal in capture2_away (P1 14:28), which the user called a good example of the play, was the computer's
+(Detroit; the person played Philadelphia); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
 no whistle between). Expected goals was put off until there are thousands of shots (about 250 now).
 Shown: shot tooltips (high danger, rebound, flip, set up by), the card (High-danger att., Shot assists, Rebounds,
 Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, EA Specials when any,

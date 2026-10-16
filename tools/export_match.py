@@ -904,6 +904,12 @@ def add_shot_context(m):
         off_line = abs((keeper[0] - sh['x']) * vy - (keeper[1] - sh['y']) * vx) / math.hypot(vx, vy)
         if off_line > EA_GOALIE_LINE:
             continue
+        # Only a person tries one (the computer never does): the shooter carried the controlled-skater marker as he
+        # released it (within a few samples; the rebound may be anyone's).
+        ctrl = m.get('ctrl') or []
+        shooter = [k for k in range(sh['team'] * 6, sh['team'] * 6 + 6) if int(m['roster'][sh['f'] * K + k], 36) == sh['idx']]
+        if not shooter or not any(q < len(ctrl) and ctrl[q] >> shooter[0] & 1 for q in range(max(0, sh['f'] - 6), sh['f'] + 1)):
+            continue
         sh['flip'] = True
         settled = sh.get('resolved', sh['f'])
         if any(anim(q, k) in dive for q in range(settled, len(t)) if t[q] - t[settled] <= 2000
