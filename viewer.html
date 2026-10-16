@@ -1355,10 +1355,13 @@ function drawPuck(f) {
   drawGoalLight(f);
   if (z < PUCK_HIDDEN_Z) return;
   drawHotTrail(f);
-  const key = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : PUCK_ON_ICE;
+  // The puck's shadow and resting picture: the Genesis frames, unless the library names its own (the SNES's: its
+  // frame 394 is the instant replay's crosshair). A frame of 0 (none read) shows the puck at rest.
+  const own = spriteLibrary && spriteLibrary.puck, shadow = own ? own.shadow : PUCK_SHADOW, onIce = own ? own.onIce : PUCK_ON_ICE;
+  const read = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : onIce, key = read === '000' ? onIce : read;
   const lib = spritesOn && spriteLibrary && m.palettes ? spriteLibrary.frames : null;
-  if (lib && lib[key] && lib[PUCK_SHADOW]) {
-    for (const [k, up] of [[PUCK_SHADOW, 0], [key, Math.max(0, z)]]) {
+  if (lib && lib[key] && lib[shadow]) {
+    for (const [k, up] of [[shadow, 0], [key, Math.max(0, z)]]) {
       const sprite = spriteImage(k, lib[k], 0, false);
       upright(x, y); ctx.translate(0, -up); ctx.scale(view.ux / view.uy, 1);
       ctx.imageSmoothingEnabled = false;
