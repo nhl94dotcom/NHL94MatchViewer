@@ -119,11 +119,12 @@
   .legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
   #drop { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 16px; }
   #drop p { margin: 0; color: var(--muted); max-width: 40ch; }
-  footer { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel); }
+  footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; background: var(--panel); }
+  #overlayWho { max-width: 210px; }
   button, select { background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
   button:hover, select:hover { background: #343d49; }
   #play { min-width: 70px; }
-  #seek { flex: 1; min-width: 0; accent-color: var(--accent); }
+  #seek { flex: 1 1 180px; min-width: 140px; accent-color: var(--accent); }
   #time { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   label { color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
   /* Game flow: a strip over the footer, the whole replay across, shot attempts piling up for each team. */
@@ -223,6 +224,9 @@
   <button id="flowToggle" aria-pressed="false" title="Show how the shot attempts piled up over the game; click it to jump there">Game flow</button>
   <span id="soundBox" hidden><button id="soundToggle" aria-pressed="false" title="The game's own sounds as the replay plays">Sound</button><button id="soundMore" title="Sound check: hear each sound and set how fast they play">&#9881;</button></span>
   <select id="overlayWho" aria-label="Whose shots or puck time" hidden></select>
+  <select id="heatMode" aria-label="What the heat map shows" title="Skating: where the skaters went, puck or not (goalies left out). With the puck: where the puck was while they had it" hidden>
+    <option value="skate">Skating</option><option value="puck">With the puck</option>
+  </select>
   <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
   <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
   <button id="clipOpen" title="Save a stretch of the replay as a video or an animated GIF">Clip</button>
@@ -719,6 +723,9 @@ const PUCK_SHADOW = '18a', PUCK_ON_ICE = '18b', PUCK_HIDDEN_Z = -100;
 // live play. ends[f] is 1 when Home's goalie is at the top end at frame f (Home attacking down). Both maps build up
 // as the match plays: at any moment they show the game so far.
 let overlay = '', overlayWho = 'both', ends = null, heatGrid = null, passShotFrames = new Map();
+// What the heat map counts: 'skate' (where the skaters went) or 'puck' (where the puck was while they had it). Remembered.
+let heatMode = 'skate';
+try { if (localStorage.getItem('nhl94-heat') === 'puck') heatMode = 'puck'; } catch (e) { /* default */ }
 const HEAT_CELL = 5, HEAT_COLS = 52, HEAT_ROWS = 120;  // game units; X -130..130, Y -300..300
 function setupOverlay(m) {
   ends = new Uint8Array(m.t.length);
@@ -742,6 +749,8 @@ function setupOverlay(m) {
   if (['shots', 'heat', 'turnovers', 'passes', 'entries', 'goalie'].includes(q.get('map'))) { overlay = q.get('map'); fillWho(m); }
   who.value = overlayWho = 'both';
   if (q.get('who') && [...who.options].some(o => o.value === q.get('who'))) who.value = overlayWho = q.get('who');
+  if (['skate', 'puck'].includes(q.get('heat'))) heatMode = q.get('heat');  // &heat=puck
+  $('heatMode').value = heatMode;
   $('overlay').value = overlay;
   updateOverlayControls(false);  // the match is still loading: it draws itself once laid out
 }
@@ -779,6 +788,7 @@ const filterTeam = () => (overlayWho === 'both' ? -1 : Number(overlayWho[1]));
 const onEnds = (g, f, x, y) => (ends[g] === ends[f] ? [x, y] : [-x, -y]);
 function updateOverlayControls(redraw = true) {
   $('overlayWho').hidden = !overlay;
+  $('heatMode').hidden = overlay !== 'heat';
   $('overlayInfo').hidden = !overlay;
   heatGrid = null;
   if (redraw && match) draw();
@@ -860,33 +870,37 @@ function drawOverlay(f) {
   if (overlay === 'goalie') { drawGoalieReport(f, colours); return; }
   if (overlay === 'passes') { drawPasses(f, colours); return; }
   if (overlay === 'entries') { drawEntries(f, colours); return; }
-  // Heat map: where each team had the puck, by time; for one player, where he skated (his own position all the time he
-  // was on the ice in live play, puck or not). Built up frame by frame; started again on a rewind.
+  // Heat map, by time in live play: where the skaters went (each team's skaters, goalies left out, or one player,
+  // puck or not), or where the puck was while a team or player had it. Built up frame by frame; started again on a
+  // rewind. seconds = time with the puck, or of play (a team) / on the ice (a player) when skating.
   if (!heatGrid || f < heatGrid.upTo) {
     heatGrid = { upTo: -1, cells: [new Float32Array(HEAT_COLS * HEAT_ROWS), new Float32Array(HEAT_COLS * HEAT_ROWS)], image: null, seconds: [0, 0] };
   }
-  const h = heatGrid, skater = heatPlayer();
-  for (let i = h.upTo + 1; i <= f && i + 1 < m.t.length; i++) {
-    if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;  // a whistle: the puck is hidden until the faceoff
-    let k, px, py;
-    if (skater) {
-      k = -1;
-      for (let j = skater.team * 6; j < skater.team * 6 + 6; j++) if (rosterIndex(i, j) === skater.idx && role(i, j) >= 0) { k = j; break; }
-      if (k < 0) continue;
-      px = m.pos[(i * PLAYERS + k) * 2]; py = m.pos[(i * PLAYERS + k) * 2 + 1];
-    } else {
-      k = m.owner[i];
-      if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k))) continue;
-      px = m.puck[3 * i]; py = m.puck[3 * i + 1];
-    }
-    const team = k < 6 ? 0 : 1;
+  const h = heatGrid;
+  const add = (team, px, py, dt, i) => {
     // Kept with Home attacking up: turned while Home's goalie is at the top.
     const x = ends[i] ? -px : px, y = ends[i] ? -py : py;
     const c = Math.floor((x + 130) / HEAT_CELL), r = Math.floor((300 - y) / HEAT_CELL);
-    if (c < 0 || c >= HEAT_COLS || r < 0 || r >= HEAT_ROWS) continue;
+    if (c >= 0 && c < HEAT_COLS && r >= 0 && r < HEAT_ROWS) h.cells[team][r * HEAT_COLS + c] += dt;
+  };
+  for (let i = h.upTo + 1; i <= f && i + 1 < m.t.length; i++) {
+    if (m.puck[3 * i + 2] < PUCK_HIDDEN_Z) continue;  // a whistle: the puck is hidden until the faceoff
     const dt = Math.min(100, m.t[i + 1] - m.t[i]);
-    h.cells[team][r * HEAT_COLS + c] += dt;
-    h.seconds[team] += dt / 1000;
+    if (heatMode === 'puck') {
+      const k = m.owner[i];
+      if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k))) continue;
+      add(k < 6 ? 0 : 1, m.puck[3 * i], m.puck[3 * i + 1], dt, i);
+      h.seconds[k < 6 ? 0 : 1] += dt / 1000;
+      continue;
+    }
+    const seen = [false, false];
+    for (let k = 0; k < 12; k++) {
+      const team = k < 6 ? 0 : 1;
+      if (role(i, k) < 1 || !counts(team, rosterIndex(i, k))) continue;  // off the ice, or a goalie
+      add(team, m.pos[(i * PLAYERS + k) * 2], m.pos[(i * PLAYERS + k) * 2 + 1], dt, i);
+      seen[team] = true;
+    }
+    for (const team of [0, 1]) if (seen[team]) h.seconds[team] += dt / 1000;
   }
   if (h.upTo !== f || !h.image) { h.upTo = f; h.image = heatImage(h.cells, colours); }
   ctx.save();
@@ -896,7 +910,7 @@ function drawOverlay(f) {
   ctx.restore();
   fillOverlayInfo(f, null, h.seconds);
 }
-// The one player the heat map is for, or null for a team or both (their maps stay time with the puck).
+// The one player the heat map is for, or null for a team or both.
 const heatPlayer = () => {
   if (overlayWho[0] !== 'p') return null;
   const [team, idx] = overlayWho.slice(1).split(':').map(Number);
@@ -935,8 +949,10 @@ function heatImage(cells, colours) {
   const g = image.getContext('2d'), data = g.createImageData(HEAT_COLS, HEAT_ROWS);
   const rgb = colours.map(c => { const n = parseInt(c.replace('#', ''), 16); return [n >> 16, (n >> 8) & 255, n & 255]; });
   for (let i = 0; i < HEAT_COLS * HEAT_ROWS; i++) {
-    const team = blurred[0][i] >= blurred[1][i] ? 0 : 1, v = Math.min(1, Math.pow(blurred[team][i] / top, 0.7));
-    if (v < 0.06) continue;
+    // Skaters cover the whole ice, so a skating map is drawn with more contrast: the busy areas stand out, the
+    // ice they only crossed fades.
+    const team = blurred[0][i] >= blurred[1][i] ? 0 : 1, v = Math.min(1, Math.pow(blurred[team][i] / top, heatMode === 'skate' ? 1.6 : 0.7));
+    if (v < (heatMode === 'skate' ? 0.12 : 0.06)) continue;
     // Both teams: each in its colour. One team or player: a heat scale, yellow through orange to red.
     const c = overlayWho === 'both' ? rgb[team] : HEAT_SCALE(v);
     data.data[4 * i] = c[0]; data.data[4 * i + 1] = c[1]; data.data[4 * i + 2] = c[2];
@@ -979,7 +995,8 @@ function fillOverlayInfo(f, tally, seconds) {
   const who = $('overlayWho').selectedOptions[0];
   box.textContent = '';
   const title = document.createElement('b');
-  title.textContent = (overlay === 'shots' ? 'Shot map' : heatPlayer() ? 'Heat map: where he skated' : 'Heat map: time with the puck') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  title.textContent = (overlay === 'shots' ? 'Shot map' : heatMode === 'puck' ? 'Heat map: time with the puck' : heatPlayer() ? 'Heat map: where he skated'
+    : 'Heat map: where the skaters went') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
   box.append(title);
   for (const team of [0, 1]) {
     if (only >= 0 && team !== only) continue;
@@ -992,7 +1009,9 @@ function fillOverlayInfo(f, tally, seconds) {
       line.textContent = names[team] + ': ' + n + ' shot' + (n === 1 ? '' : 's') + passes + (parts.length ? ' \u2014 ' + parts.join(', ') : '');
     } else {
       const sec = Math.round(seconds[team]);
-      line.textContent = (heatPlayer() ? 'On the ice in play' : names[team]) + ': ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+      const time = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+      line.textContent = heatMode === 'puck' ? names[team] + ': ' + time + ' with the puck'
+        : heatPlayer() ? 'On the ice in play: ' + time : names[team] + ': ' + time + ' of play';
     }
     box.append(line);
   }
@@ -2630,6 +2649,11 @@ $('overlay').addEventListener('change', e => {
   updateOverlayControls();
 });
 $('overlayWho').addEventListener('change', e => { overlayWho = e.target.value; updateOverlayControls(); });
+$('heatMode').addEventListener('change', e => {
+  heatMode = e.target.value;
+  try { localStorage.setItem('nhl94-heat', heatMode); } catch (err) { /* not remembered */ }
+  updateOverlayControls();
+});
 $('viewReset').addEventListener('click', () => setView({ angle: 0, zoom: 1, follow: false }));
 canvas.addEventListener('wheel', e => {
   e.preventDefault();

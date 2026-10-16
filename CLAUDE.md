@@ -806,11 +806,14 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   the shooter's animation), puck pickups, checks (big hits louder, boards crash), goal cheers, post "oooh", boos at
   home penalties. Footer "Sound" toggle (remembered) and a panel with each sound, speed and volume. Game files carry
   the sounds.
-- Heat map: for both teams or one team, time with the puck (puck owner); for one player, where he skated (his own
-  position whenever he is on the ice in live play, puck or not; the user found the puck-only map of a skater too
-  thin: a defenceman carries it for under a minute a game). A 5-unit grid of real time (the puck hidden at whistles
-  is left out), blurred, scaled to the 97th percentile; both teams in their own colours, one team or player on a
-  yellow-to-red scale.
+- Heat map: a "Skating / With the puck" menu beside whose map (remembered; `&heat=puck` in the address). Skating
+  (the default): where the skaters went, puck or not - a team's five skaters (goalies left out) or one player, while
+  on the ice in live play (the user found a skater's puck-only map too thin: a defenceman carries it for under a
+  minute a game). With the puck: where the puck was while that team or player had it (puck owner). A 5-unit grid of
+  real time (the puck hidden at whistles is left out), blurred, scaled to the 97th percentile (skating maps with more
+  contrast, power 1.6 instead of 0.7, since skaters cover the whole ice); both teams in their own colours (the busier
+  team per cell), one team or player on a yellow-to-red scale. The footer wraps onto a second row when it runs out of
+  room, and the seek bar keeps at least 140 px (with a map on it used to be squeezed away).
 
 ## Season stats (stats across games)
 
