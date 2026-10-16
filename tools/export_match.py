@@ -889,6 +889,33 @@ BOBBLE_KICK = 50    # puck speed change (hundreds) of a pass bouncing off its re
 BOBBLE_NEAR = 22    # ... within this of the receiver
 
 
+BOBBLE_SHORT = 50       # a pass this short (units, about 17 ft) bounces off the receiver's stick more often (the user)
+BOBBLE_BEHIND = 45      # a puck travelling within this many degrees of the receiver's skating direction came from behind ...
+BOBBLE_SKATING = 60     # ... while he skated at least this fast (units/s): it bounces off his back, often straight back (the user)
+
+
+def bobble_kind(m, p, q, k):
+    """How a pass came to be bobbled (the user's two Genesis patterns): 'from behind', the puck catching up with a
+    receiver skating away from it (a long pass to a streaking teammate; it often bounces straight back off him:
+    Tocchet to Lemieux in 2026-10-16_1314_BOS-PIT P3 1:53, 223 units, turned 157 degrees), 'short' (a pass of
+    BOBBLE_SHORT or less), else None."""
+    t, P, V = m['t'], m['puck'], m['puckV']
+    K = 12
+    pos = lambda i: (m['pos'][(i * K + k) * 2], m['pos'][(i * K + k) * 2 + 1])
+    q0 = next((z for z in range(q, max(-1, q - 60), -1) if t[q] - t[z] >= 250), None)
+    if q0 is not None:
+        sx, sy = pos(q)[0] - pos(q0)[0], pos(q)[1] - pos(q0)[1]
+        speed = math.hypot(sx, sy) / ((t[q] - t[q0]) / 1000)
+        vx, vy = V[2 * q], V[2 * q + 1]
+        if speed >= BOBBLE_SKATING and math.hypot(vx, vy):
+            cos = (vx * sx + vy * sy) / (math.hypot(vx, vy) * math.hypot(sx, sy))
+            if cos >= math.cos(math.radians(BOBBLE_BEHIND)):
+                return 'from behind'
+    if math.hypot(P[3 * q] - p['x0'], P[3 * q + 1] - p['y0']) <= BOBBLE_SHORT:
+        return 'short'
+    return None
+
+
 def find_bobbles(m):
     """Bobbled passes: a pass reaches a teammate, close enough to take (the puck within BOBBLE_NEAR of him), and bounces
     off him (its speed changes by BOBBLE_KICK or more) without his having it; the user's community calls it a
@@ -897,9 +924,10 @@ def find_bobbles(m):
     boards (a pass that missed and came off them). He may get it back afterwards: still a bobble (the user).
     Checked against the user's review of 2026-10-16_1540_CHI-TOR (SNES): the 10 he called bobbles and none of the 11
     others. After find_passes and find_shots.
-    The pass itself gets `bobble`: {f, idx, x, y} (the passes map draws it to that spot, then on to its outcome).
+    The pass itself gets `bobble`: {f, idx, x, y, how} (the passes map draws it to that spot, then on to its outcome).
+    `how`: bobble_kind ('from behind', 'short' or None).
     Returns [{f (the bounce), pass (the pass's frame), team, by (passer), idx (receiver; roster indices), x, y,
-    next: 'himself' | 'teammate' | 'opponent' | 'none', got (frame someone had it, or None)}]."""
+    next: 'himself' | 'teammate' | 'opponent' | 'none', got (frame someone had it, or None), how}]."""
     act = actions(m)
     played = act['shoot'] | act['pass'] | act['goalie_pass']
     t, P, V, own, A = m['t'], m['puck'], m['puckV'], m['owner'], m['anim']
@@ -944,9 +972,10 @@ def find_bobbles(m):
         if got is not None and own[got] not in mates and own[got] // 6 != team and t[got] - t[q] < 60:
             continue  # picked off
         nxt = 'none' if got is None else 'himself' if own[got] == k else 'opponent' if own[got] // 6 != team else 'teammate'
+        how = bobble_kind(m, p, q, k)
         out.append({'f': q, 'pass': rel, 'team': team, 'by': p['idx'], 'idx': idx(q, k), 'x': P[3 * q], 'y': P[3 * q + 1],
-                    'next': nxt, 'got': got})
-        p['bobble'] = {'f': q, 'idx': idx(q, k), 'x': round(P[3 * q]), 'y': round(P[3 * q + 1])}
+                    'next': nxt, 'got': got, 'how': how})
+        p['bobble'] = {'f': q, 'idx': idx(q, k), 'x': round(P[3 * q]), 'y': round(P[3 * q + 1]), 'how': how}
     return out
 
 

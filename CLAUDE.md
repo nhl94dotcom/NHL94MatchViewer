@@ -841,6 +841,12 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   tooltip says "bobbled, then ..."). Also shown: a "Bobbled" tag over the receiver,
   team stats (Bobbled passes, under Pass %), the card, Help, and the season page (team BOB a game, skater BOB;
   summary VERSION 9). 1-11 a game in the recordings.
+  `how` (bobble_kind, 2026-10-16, from the user's two Genesis patterns): 'from behind' (the puck travelling within
+  BOBBLE_BEHIND 45 degrees of the receiver's skating direction over the last 0.25 s, at BOBBLE_SKATING 60 units/s or
+  more: a long pass to a streaking teammate, which often bounces straight back off him; Tocchet to Lemieux, BOS-PIT P3
+  1:53, 223 units, turned 157 degrees), 'short' (a pass of BOBBLE_SHORT 50 or less, which bounces off the stick more
+  often), else none. Genesis recordings: 15 from behind, 13 short, 7 neither; SNES 6, 1, 8. Shown in the tag ("Bobbled
+  from behind"), the passes map's tooltip and team summary. The Genesis bobbles are not reviewed by the user yet.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under
