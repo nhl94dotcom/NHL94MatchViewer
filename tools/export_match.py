@@ -823,6 +823,62 @@ def find_turnovers(m):
     return out
 
 
+NET_Y = 268
+HIGH_DANGER = (60, 50)     # within 60 units of the net (about 20 ft) and no wider than 50 from the middle: the slot
+MEDIUM_DANGER = (100, 70)  # within 100 units and inside the faceoff dots
+# In the recordings (226 attempts) a third of the attempts from that slot scored (20 of 60) and 14% of the rest; a
+# tighter slot (50 x 40) scores 38% but holds only one attempt in seven. Goals by distance from the net: under 50
+# units 35%, 50-75 24%, 75-100 18%, farther about 8%.
+
+
+def shot_distance(sh):
+    return math.hypot(sh['x'], (NET_Y if sh['y'] >= 0 else -NET_Y) - sh['y'])
+
+
+def add_shot_context(m):
+    """Tags that need the shots, passes and turnovers together (run after them):
+    - every shot's `danger`: 'high' (the slot, HIGH_DANGER), 'medium' (MEDIUM_DANGER) or 'low', by where it was taken;
+    - `assist`: the teammate whose completed pass reached the shooter in the 4 s before it (a shot assist, as the
+      NHL's trackers count them), with the other team never having the puck in between;
+    - `flip` on a flip rebound's first shot, and `afterFlip` on the shot that followed: a wrist shot from close in
+      and off to the side (within 70 units, at least 20 from the middle) that the goalie saved but let go as a
+      rebound to the shooters, followed within 2 s by their shot from within 65 units (a technique of the user's
+      Genesis community: the goalie bobbles it and is pushed back, and the near side of the net opens);
+    - each turnover's `shotAfter` (frame of the gaining team's first shot attempt within 5 s, no whistle between)
+      and `goalAfter` (that attempt, or another by them in the 5 s, went in)."""
+    t, own, P = m['t'], m['owner'], m['puck']
+    shots, passes = m.get('shotList', []), m.get('passes', [])
+    team_of = lambda f: -1 if own[f] < 0 else (0 if own[f] < 6 else 1)
+    for sh in shots:
+        d = shot_distance(sh)
+        sh['danger'] = 'high' if d < HIGH_DANGER[0] and abs(sh['x']) <= HIGH_DANGER[1] else \
+            'medium' if d < MEDIUM_DANGER[0] and abs(sh['x']) <= MEDIUM_DANGER[1] else 'low'
+        for p in reversed(passes):
+            if p['f'] >= sh['f'] or t[sh['f']] - t[p['f']] > 4000:
+                continue
+            if p['team'] == sh['team'] and p.get('to') == sh['idx'] and p['result'] in ('completed', 'one-timer') and p['idx'] != sh['idx'] \
+                    and all(team_of(q) in (-1, sh['team']) for q in range(p['f'], sh['f'] + 1)):
+                sh['assist'] = p['idx']
+            break  # only the last pass before the shot
+    for i, sh in enumerate(shots):
+        if sh['type'] != 'wrist shot' or sh['result'] != 'save' or sh.get('after') != 'rebound':
+            continue
+        if shot_distance(sh) >= 70 or abs(sh['x']) < 20:
+            continue
+        follow = next((s for s in shots[i + 1:] if s['team'] == sh['team'] and t[s['f']] - t[sh['f']] <= 2000 and shot_distance(s) < 65), None)
+        if follow:
+            sh['flip'] = True
+            follow['afterFlip'] = True
+    for e in m.get('turnovers', []):
+        gainer = 1 - e['from']
+        horizon = t[e['f']] + 5000
+        stop = next((q for q in range(e['f'], len(t)) if t[q] > horizon or P[3 * q + 2] < -100), len(t))
+        after = [s for s in shots if s['team'] == gainer and e['f'] <= s['f'] < stop]
+        if after:
+            e['shotAfter'] = after[0]['f']
+            e['goalAfter'] = any(s['result'] == 'goal' for s in after)
+
+
 def find_goals(match, rosters):
     """Goals from the stat snapshots: when a team's goal count goes up, whose goals and assists went up with it
     (looking two seconds on, as the game can credit them a moment apart), and what kind of goal it was."""
@@ -935,6 +991,7 @@ def main(argv=None):
         match["icings"] = find_icings(match)
         match["zoneEntries"] = find_zone_entries(match)
         match["hits"] = find_hits(match)
+        add_shot_context(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):

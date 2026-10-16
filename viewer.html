@@ -1076,7 +1076,11 @@ function shotText(sh) {
   // The goalie's move (from the converter): on a save, how he made it; on a goal, what he tried.
   const move = sh.save && ['goal', 'save', 'post'].includes(sh.result)
     ? ' \u00b7 ' + (sh.save === 'none' ? (sh.result === 'goal' ? 'goalie did not move' : 'goalie stood his ground') : (sh.result === 'goal' ? 'goalie tried a ' : '') + SAVE_WORDS[sh.save]) : '';
-  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move;
+  // From the converter's shot context: where it was taken, a rebound or a flip rebound, and who set it up.
+  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 flip (rebound to the shooters)' : '') +
+    (sh.afterFlip ? ' \u00b7 off a flip rebound' : sh.rebound ? ' \u00b7 rebound' : '') +
+    (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '');
+  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move + context;
 }
 // The goalie's save moves, as the converter names them (the game's own animations, grouped).
 // Hits that upend the player or send him into the boards or the bench (the converter's hit outcomes).
@@ -1759,6 +1763,14 @@ function refreshPopover(f, snap) {
     const list = (match.turnovers || []).filter(e => known(e, f));
     live.puckMs = playerPossession(f, shown.team, shown.idx);
     live.giveaways = list.filter(e => e.kind === 'giveaway' && e.from === shown.team && e.giver === shown.idx).length;
+    // Giveaways the other team turned into a shot attempt within 5 s (known once that attempt was taken)
+    live.costly = list.filter(e => e.kind === 'giveaway' && e.from === shown.team && e.giver === shown.idx && e.shotAfter !== undefined && e.shotAfter <= f).length;
+    if (match.shotList && match.shotList.some(sh => sh.danger)) {
+      const mine = match.shotList.filter(sh => known(sh, f) && sh.team === shown.team);
+      live.hd = mine.filter(sh => sh.idx === shown.idx && sh.danger === 'high').length;
+      live.shotAssists = mine.filter(sh => sh.assist === shown.idx).length;
+      live.rebounds = mine.filter(sh => sh.idx === shown.idx && sh.rebound);
+    }
     live.takeaways = list.filter(e => e.kind === 'takeaway' && e.from !== shown.team && e.by === shown.idx).length;
     if (match.failedOneTimers) live.failedOneTimers = match.failedOneTimers.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx).length;
     if (match.passes) {
@@ -1931,10 +1943,16 @@ function fillCard(card, p, position, live) {
         addStat(grid, 'Zone starts', ice.zs.join('/'));  // attacking / neutral / defensive
         addStat(grid, 'OZS%', sharePct(ice.zs[0], ice.zs[2]));
       }
+      if (live.hd !== undefined) {
+        addStat(grid, 'High-danger att.', live.hd);
+        addStat(grid, 'Shot assists', live.shotAssists);
+        addStat(grid, 'Rebounds', live.rebounds.filter(sh => resultAt(sh, frameAt(now)) === 'goal').length + ' G / ' + live.rebounds.length);
+      }
       if (live.entries) addStat(grid, 'Zone entries', live.entries.n + (live.entries.n ? ' (' + live.entries.carried + ' carried)' : ''));
       if (live.puckMs !== undefined) {
         addStat(grid, 'With the puck', secondsText(live.puckMs));
         addStat(grid, 'Giveaways', live.giveaways);
+        if (live.costly !== undefined && live.hd !== undefined) addStat(grid, 'Costly giveaways', live.costly);  // the other team shot within 5 s
         addStat(grid, 'Takeaways', live.takeaways);
         if (live.failedOneTimers !== undefined) addStat(grid, 'Failed one-timers', live.failedOneTimers);
         if (live.passes) {
@@ -2058,7 +2076,23 @@ function fillTeamStats(snap) {
         ['· even strength', sharePct(s0.ev.cf, s0.ev.ca), sharePct(s1.ev.cf, s1.ev.ca)],
         ['Fenwick % (FF%)', sharePct(s0.ff, s0.fa), sharePct(s1.ff, s1.fa)],
         ['· even strength', sharePct(s0.ev.ff, s0.ev.fa), sharePct(s1.ev.ff, s1.ev.fa)],
-        ['PDO', pdoText(s0), pdoText(s1)]];
+        ['PDO', pdoText(s0), pdoText(s1)],
+        ...(list.some(sh => sh.danger) ? (() => {
+          // From the converter's shot context: the slot (high danger), rebounds, flip rebounds, set-up attempts,
+          // and turnovers the other team turned into an attempt within 5 s.
+          const goals = (team, test) => list.filter(sh => sh.team === team && test(sh) && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === team && test(sh)).length;
+          const flips = list.some(sh => sh.flip);
+          const costly = team => turnovers.filter(e => e.from === team && e.shotAfter !== undefined && e.shotAfter <= f);
+          return [
+            ['High-danger goals / attempts', goals(0, sh => sh.danger === 'high'), goals(1, sh => sh.danger === 'high')],
+            ['Rebound goals / attempts', goals(0, sh => sh.rebound), goals(1, sh => sh.rebound)],
+            ...(flips ? [['Flip rebounds (goals / flips)', list.filter(sh => sh.team === 0 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 0 && sh.flip).length,
+              list.filter(sh => sh.team === 1 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 1 && sh.flip).length]] : []),
+            ['Attempts off a pass', list.filter(sh => sh.team === 0 && sh.assist !== undefined).length, list.filter(sh => sh.team === 1 && sh.assist !== undefined).length],
+            ['Turnovers \u2192 shot against', costly(0).length + (costly(0).some(e => e.goalAfter) ? ' (' + costly(0).filter(e => e.goalAfter).length + ' G)' : ''),
+              costly(1).length + (costly(1).some(e => e.goalAfter) ? ' (' + costly(1).filter(e => e.goalAfter).length + ' G)' : '')],
+          ];
+        })() : [])];
     })() : []),
     section('Puck control'),
     ...(held ? [['Possession', secondsText(1000 * held[0]) + share(0), secondsText(1000 * held[1]) + share(1)],

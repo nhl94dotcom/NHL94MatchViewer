@@ -326,7 +326,7 @@ function pool(byTeam = true, withExcluded = false) {
 function standings(list) {
   const rows = new Map();
   const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
-    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, passTried: 0, passMade: 0, attackZone: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
     for (const side of [0, 1]) {
@@ -334,7 +334,7 @@ function standings(list) {
       r.gp++; r.seconds += g.seconds;
       if (g.humans[side]) r.humanGames++;
       for (const k of Object.keys(t)) if (k in r && !Array.isArray(t[k])) r[k] += t[k];
-      for (const k of ['adv', 'advEv']) if (t[k]) { r[k] = r[k] || t[k].map(() => 0); t[k].forEach((x, i) => { r[k][i] += x; }); }
+      for (const k of ['adv', 'advEv', 'hd', 'reb', 'flip', 'toShot', 'entries']) if (t[k]) { r[k] = r[k] || t[k].map(() => 0); t[k].forEach((x, i) => { r[k][i] += x; }); }
       if (!g.finished) continue;
       if (t.gf > t.ga) r.w++; else if (t.gf === t.ga) r.t++; else if (g.overtime) r.otl++; else r.l++;
     }
@@ -493,6 +493,10 @@ function viewGoalies(list, team) {
       show: r => (r.human && r.human[0] ? `${svp(r.human[0], r.human[1])} <small>${r.human[0] - r.human[1]}/${r.human[0]}</small>` : '–') },
     { key: 'csv', label: 'SV% CPU', title: 'Save percentage on shots the computer goalie faced', value: r => (r.cpu && r.cpu[0] ? 1 - r.cpu[1] / r.cpu[0] : NaN),
       show: r => (r.cpu && r.cpu[0] ? `${svp(r.cpu[0], r.cpu[1])} <small>${r.cpu[0] - r.cpu[1]}/${r.cpu[0]}</small>` : '–') },
+    { key: 'hdsv', label: 'HD SV%', title: 'Save percentage on high-danger shots (from the slot, within about 20 ft)',
+      value: r => (r.hdSa ? 1 - r.hdGa / r.hdSa : NaN), show: r => (r.hdSa ? `${svp(r.hdSa, r.hdGa)} <small>${r.hdSa - r.hdGa}/${r.hdSa}</small>` : '–') },
+    { key: 'reb', label: 'Reb%', title: 'Saves that gave the shooters a rebound', value: r => (r.saves ? r.rebAllowed / r.saves : NaN),
+      show: r => (r.saves ? pct1(100 * r.rebAllowed / r.saves) : '–') },
     { key: 'toi', label: 'MIN', title: 'Game minutes in net', show: r => mmss(r.toi) },
   ], 'svp') + '<p class="note">"Person" and "CPU" split the shots by who controlled the goalie as the shot was released; they count every shot that reached him, so they can differ slightly from SA.</p>';
 }
@@ -766,6 +770,16 @@ function viewAdvanced(list, team) {
     { key: 'shp', label: 'S%', title: 'Goals on shots on goal', value: r => (r.sog ? 100 * r.g / r.sog : NaN), show: r => pct1(r.sog ? 100 * r.g / r.sog : NaN) },
     { key: 'attShare', label: 'Att. share', title: 'His share of his team\u2019s shot attempts in the games he played',
       value: r => (teamOf(r, 'cf') ? 100 * (r.att || 0) / teamOf(r, 'cf') : NaN), show: r => pct1(teamOf(r, 'cf') ? 100 * (r.att || 0) / teamOf(r, 'cf') : NaN) },
+    { key: 'hdAtt', label: 'HD att', title: 'High-danger attempts: from the slot, within about 20 ft of the net', value: r => r.hdAtt || 0 },
+    { key: 'hdG', label: 'HD G', title: 'High-danger goals', value: r => r.hdG || 0 },
+    { key: 'shotAssists', label: 'Shot ast', title: 'Shot assists: his passes that led straight to a teammate\u2019s shot attempt', value: r => r.shotAssists || 0 },
+    { key: 'rebG', label: 'Reb G', title: 'Rebound goals / rebound attempts', value: r => r.rebG || 0, show: r => `${r.rebG || 0}<small>/${r.rebAtt || 0}</small>` },
+    { key: 'flipG', label: 'Flip', title: 'Flip rebounds he started (a short wrist shot from the side, saved and bobbled) and goals scored off them', value: r => r.flips || 0,
+      show: r => (r.flips || r.flipG ? `${r.flips || 0}<small> \u00b7 ${r.flipG || 0} G</small>` : '0') },
+    { key: 'costlyGv', label: 'Costly GV', title: 'Giveaways the other team turned into a shot attempt within 5 s', value: r => r.costlyGv || 0 },
+    { key: 'ent', label: 'Entries', title: 'Zone entries: carried / all', value: r => r.ent || 0, show: r => `${r.entC || 0}<small>/${r.ent || 0}</small>` },
+    { key: 'entShot', label: 'Entry\u2192shot', title: 'Share of his zone entries that led to a shot attempt', value: r => (r.ent ? r.entShot / r.ent : NaN),
+      show: r => (r.ent ? pct1(100 * r.entShot / r.ent) : '–') },
     { key: 'ptShare', label: 'Pt. share', title: 'Goals his team scored that he scored or assisted, in the games he played',
       value: r => (teamOf(r, 'gf') ? 100 * (r.g + r.a) / teamOf(r, 'gf') : NaN), show: r => pct1(teamOf(r, 'gf') ? 100 * (r.g + r.a) / teamOf(r, 'gf') : NaN) },
   ];
@@ -792,7 +806,30 @@ function viewAdvanced(list, team) {
     { key: 'gp', label: 'GP' },
     ...advCols(r => r[side]),
   ], 'cfp');
+  const hd = (r, i) => (r.hd || [])[i] || 0, rb = (r, i) => (r.reb || [])[i] || 0, fl = (r, i) => (r.flip || [])[i] || 0;
+  const en = (r, i) => (r.entries || [])[i] || 0, ts = (r, i) => (r.toShot || [])[i] || 0;
+  const chances = table('advChances', teams, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'hdcf', label: 'HDCF', title: 'High-danger attempts for (from the slot, within about 20 ft)', value: r => hd(r, 0) },
+    { key: 'hdca', label: 'HDCA', title: 'High-danger attempts against', value: r => hd(r, 1) },
+    { key: 'hdcfp', label: 'HDCF%', value: r => share(hd(r, 0), hd(r, 1)), show: r => pct1(share(hd(r, 0), hd(r, 1))) },
+    { key: 'hdgf', label: 'HDGF', title: 'High-danger goals for', value: r => hd(r, 2) },
+    { key: 'hdga', label: 'HDGA', value: r => hd(r, 3) },
+    { key: 'hdsv', label: 'HD SV%', title: 'Save % on high-danger shots on goal against', value: r => (hd(r, 5) ? 100 - 100 * hd(r, 3) / hd(r, 5) : NaN),
+      show: r => pct1(hd(r, 5) ? 100 - 100 * hd(r, 3) / hd(r, 5) : NaN) },
+    { key: 'rebg', label: 'Reb G', title: 'Rebound goals / rebound attempts', value: r => rb(r, 1), show: r => `${rb(r, 1)}<small>/${rb(r, 0)}</small>` },
+    { key: 'reba', label: 'Reb allowed', title: 'Saves by its goalies that gave the shooters a rebound', value: r => rb(r, 2) },
+    { key: 'flip', label: 'Flip G', title: 'Goals off flip rebounds / flips; against', value: r => fl(r, 1),
+      show: r => `${fl(r, 1)}<small>/${fl(r, 0)} \u00b7 against ${fl(r, 3)}/${fl(r, 2)}</small>` },
+    { key: 'assisted', label: 'Off a pass', title: 'Shot attempts set up by a teammate\u2019s pass', value: r => r.assisted || 0 },
+    { key: 'toShot', label: 'TO\u2192shot', title: 'Its turnovers the other team turned into a shot attempt within 5 s (goals)', value: r => ts(r, 0),
+      show: r => `${ts(r, 0)}<small> \u00b7 ${ts(r, 1)} G</small>` },
+    { key: 'entries', label: 'Entries', title: 'Zone entries: carried / all', value: r => en(r, 0), show: r => `${en(r, 1)}<small>/${en(r, 0)}</small>` },
+    { key: 'entShot', label: 'Entry\u2192shot', title: 'Share of its zone entries that led to a shot attempt', value: r => (en(r, 0) ? en(r, 4) / en(r, 0) : NaN),
+      show: r => pct1(en(r, 0) ? 100 * en(r, 4) / en(r, 0) : NaN) },
+  ], 'hdcfp');
   return '<h2>Advanced</h2>' + toggle + '<h2 style="font-size:14px">Teams</h2>' + teamTable +
+    '<h2 style="font-size:14px;margin-top:20px">Chances, rebounds and turnovers</h2>' + chances +
     '<h2 style="font-size:14px;margin-top:20px">Skaters</h2>' + skaters +
     '<p class="note">Corsi counts every shot attempt, Fenwick leaves out blocked ones; PDO is shooting % + save % (about 100 is normal). ' +
     'Even strength: as many players in the penalty box on each side (it applies to the team and on-ice numbers).</p>';
