@@ -30,6 +30,8 @@ PLAYING
    players in the lineups. "Make game file" creates a single file you can send to anyone; it opens in any browser.
 7. "Season stats" (above the list of games) adds up all your games: standings, player and goalie stats, team stats
    and head-to-head records. Click "New season" to name a season: its ROM, the team you play and when it starts.
+8. "Help" (top of every page, or "? Help" while watching a game) explains how to use everything and what every
+   stat means.
 
 WHERE THINGS ARE
 - Everything is kept in your Documents folder, in "NHL94 Viewer". Nothing is uploaded anywhere, and the games

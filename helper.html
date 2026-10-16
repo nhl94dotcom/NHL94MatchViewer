@@ -42,10 +42,20 @@
   .listhead h2 { font-size: 16px; margin: 0; }
   .log { color: var(--muted); font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; margin: 8px 0 0; max-height: 7.5em; overflow: auto; }
   details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  /* The bar shared by the games list, the season page and the viewer's help */
+  .topnav { display: flex; align-items: center; gap: 4px 18px; flex-wrap: wrap; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--raised); }
+  .topnav .brand { font-weight: 700; color: var(--text); text-decoration: none; margin-right: 8px; }
+  .topnav a.navlink { color: var(--muted); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
+  .topnav a.navlink:hover { color: var(--text); }
+  .topnav a.navlink[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); }
+  .badge { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--raised); color: var(--muted); margin-right: 6px; }
+  details.previews { margin-top: 10px; }
+  details.previews summary { padding: 6px 8px; }
   @media (max-width: 640px) { td.when { display: none; } td.actions a.button, td.actions button { margin: 2px 0 2px 4px; } }
 </style>
 </head>
 <body>
+<nav class="topnav"><a class="brand" href="helper.html">NHL '94 Viewer</a><a class="navlink" href="helper.html" aria-current="page">Games</a><a class="navlink" href="season.html">Season stats</a><a class="navlink" href="viewer.html#help">Help</a></nav>
 <main>
   <h1>NHL '94 games</h1>
   <p class="sub">Leave the helper window open while you play. Games are recorded from the opening faceoff to the final horn and appear here.</p>
@@ -65,11 +75,14 @@
   </section>
 
   <section class="card">
-    <div class="listhead"><h2>Games</h2><a class="button" href="season.html" target="_blank">Season stats</a></div>
+    <div class="listhead"><h2>Games</h2><a class="button" href="season.html">Season stats</a></div>
     <table>
       <thead><tr><th>When</th><th>Game</th><th></th></tr></thead>
       <tbody id="games"></tbody>
     </table>
+    <details class="previews" id="previewBox" hidden><summary id="previewSum"></summary>
+      <table><tbody id="previews"></tbody></table>
+    </details>
   </section>
 </main>
 <script>
@@ -83,17 +96,45 @@ function when(iso) {
 }
 function length(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 
+// Each game's system and ROM name, from the season data (the helper reads the ROMs' file names in RetroArch)
+let romInfo = {}, romInfoFor = '';
+async function loadRomInfo(games) {
+  const key = games.map(g => g.name).join('|');
+  if (key === romInfoFor) return;
+  romInfoFor = key;
+  try {
+    const d = await fetch('/api/season', { cache: 'no-store' }).then(r => r.json());
+    romInfo = {};
+    for (const g of d.games || []) {
+      const k = g.system + ':' + (g.rom || '?');
+      romInfo[g.name] = { system: g.system === 'snes' ? 'SNES' : 'Genesis', rom: (d.romNames || {})[k] || '' };
+    }
+    shownGames = '';
+    renderGames(games);
+  } catch (e) { /* no names: the list shows without them */ }
+}
+const SHORT_S = 60;  // recordings this short (save-state previews, tests) go in their own list below
 function renderGames(games) {
-  const key = JSON.stringify(games);
+  loadRomInfo(games);
+  const key = JSON.stringify(games) + JSON.stringify(romInfo);
   if (key === shownGames) return;
   shownGames = key;
+  const short = games.filter(g => g.seconds < SHORT_S);
+  games = games.filter(g => g.seconds >= SHORT_S);
+  $('previewBox').hidden = !short.length;
+  $('previewSum').textContent = short.length + ' short recording' + (short.length === 1 ? '' : 's') + ' and previews (under a minute)';
+  fillRows($('previews'), short);
   const body = $('games');
   body.textContent = '';
-  if (!games.length) {
+  if (!games.length && !short.length) {
     const tr = body.insertRow(), td = tr.insertCell();
     td.colSpan = 3; td.className = 'empty'; td.textContent = 'No games yet. Start a game in RetroArch and it will be recorded.';
     return;
   }
+  fillRows(body, games);
+}
+function fillRows(body, games) {
+  body.textContent = '';
   for (const g of games) {
     const tr = body.insertRow();
     const w = tr.insertCell(); w.className = 'when'; w.textContent = when(g.date);
@@ -101,7 +142,9 @@ function renderGames(games) {
     const home = document.createElement('span'), away = document.createElement('span'), score = document.createElement('b'), info = document.createElement('small');
     home.textContent = g.home || 'Home'; away.textContent = g.away || 'Away';
     score.textContent = g.score[0] + ' – ' + g.score[1];
-    info.textContent = (g.abbr ? g.abbr.join(' vs ') + ' · ' : '') + length(g.seconds) + ' recorded · ' + g.name;
+    info.textContent = (g.abbr ? g.abbr.join(' vs ') + ' · ' : '') + length(g.seconds) + ' recorded' + (romInfo[g.name] && romInfo[g.name].rom ? ' · ' + romInfo[g.name].rom : '');
+    info.title = g.name;
+    if (romInfo[g.name]) { const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = romInfo[g.name].system; info.prepend(badge); }
     game.append(home, score, away, info);
     const actions = tr.insertCell(); actions.className = 'actions';
     const watch = document.createElement('a');

@@ -920,6 +920,28 @@ passing network of the picked team or My team) and, on the Goalies tab, "Where g
 reached a goalie or a team's goalies on the half rink, goals in red, and goals and SV% by type, high danger, rebounds,
 EA Specials, wraparounds).
 
+## Layout and help (2026-10-16)
+
+From a review of the pages at 1920x1080, 1366x768 and phone width (the user chose all four changes):
+- Viewer side panels: `clamp(256px, 19vw, 340px)` wide, from the top; the team stats in collapsible groups (click a
+  heading; `closedGroups`, remembered; Physical, How chances were made, Person vs computer and Controller start closed).
+- Footer in three groups: playback (Play, seek, time, speed), the Map menu and its filters, then Game flow,
+  Highlights, Clip, Save game file and "&#9881; View": a menu with the on/off switches (Game sprites, Event tags,
+  Overhead rink, Follow the puck, Sound with its settings, Live knowledge), moved out of the footer and the on-ice
+  toolbar (which keeps rotate, zoom and reset). Sound is a checkbox now (`showSound`).
+- Phones and windows under 900 px: the rink on top (64vh), tabs Lineups / Team stats / Scoring under it (`showPane`,
+  remembered, `&pane=` in the address) showing parts of the two lineup panels (CSS on main.m-*), the footer compact
+  and stuck to the bottom. Headless Edge will not lay out narrower than about 490-500 px: screenshots at 412 are
+  cropped, so check at 504.
+- One bar on the games list and the season page (NHL '94 Viewer, Games, Season stats, Help); the viewer's scoreboard
+  has "&larr; Games" (hidden in a shared game file) and "? Help". The games list shows each game's system and ROM name
+  (from /api/season) and keeps recordings under a minute (save-state previews, tests) in a closed list below. The
+  season page's filters stack on phones.
+- Help (`#help` in viewer.html, so it is in game files too; `viewer.html#help` from the other pages, `showHelp`):
+  getting started, watching a game, maps, highlights / clips / game files, season stats, a glossary of every stat,
+  community terms (EA Special, pass shot) and troubleshooting, with a contents list and a search that keeps matching
+  entries. Keep it in step with the features.
+
 ## Three stars and highlights
 
 The footer's "Highlights" button (`&highlights` opens it) shows the game's three stars and its highlights.
