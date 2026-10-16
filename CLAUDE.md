@@ -864,9 +864,16 @@ by a wrist shot (the user). `eaDive`: the goalie went into his dive ($02F4) with
 goalies often do on an EA Special (diving for a puck he is nowhere near, out of the play for a couple of seconds); a
 detail, not a condition (none of the recordings' attempts has one). Only a person's skater makes an attempt (the
 user: the computer never tries one): the shooter carried the controlled-skater marker (`ctrl`) at the release or up
-to 6 samples before; the rebound may be anyone's. That leaves 9 attempts in the recordings and no EA Special:
-Ciccarelli's goal in capture2_away (P1 14:28), which the user called a good example of the play, was the computer's
-(Detroit; the person played Philadelphia); each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
+to 6 samples before; the rebound may be anyone's. Always a forehand (the user): the shooter's last shooting animation
+before the release is the forehand $07FC (genesis ACTIONS "forehand"; $092E is the backhand), from his forehand side
+as the attacker sees it (right-handed, drawn mirrored, from the left; left-handed from the right); and not a
+follow-up (no attempt by his team in the 3 s before). The user reviewed the nine attempts the rules found before the
+last three: one real (capture3_bos_la P2 3:59, Oates, "not the best example but it meets the criteria"), the rest
+rebound put-backs (CGY-BOS P2 4:42 and 2:22, capture6 P1 2:36), breakaway or skate-in dekes and shots (capture1 P1
+2:57, capture6 P1 1:17, P1 4:33, P2 0:26) and a backhand from in front (capture6 P2 2:27); with the three rules only
+the real one is left. The breakaway dekes were also skated in faster (about 125 units/s against 69), not used yet with
+one real example. Ciccarelli's goal in capture2_away (P1 14:28), which the user called a good example of the play,
+was the computer's (Detroit; the person played Philadelphia), so no EA Special is in the recordings yet; each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
 no whistle between). Expected goals was put off until there are thousands of shots (about 250 now).
 Shown: shot tooltips (high danger, rebound, flip, set up by), the card (High-danger att., Shot assists, Rebounds,
 Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, EA Specials when any,

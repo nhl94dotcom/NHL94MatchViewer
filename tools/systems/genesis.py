@@ -55,6 +55,7 @@ DEFAULT_ROM = Path(r"C:\Users\USER\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin")
 # fallfwd/fallback, gdive, gswing.
 ACTIONS = {
     "shoot": {"07fc", "092e"},        # C with the puck (two animations, rules the same)
+    "forehand": {"07fc"},             # of those, the forehand (shotf; $092E is shotb, the backhand)
     "pass": {"0718", "078a"},         # B with the puck
     "goalie_pass": {"0366"},          # B as the goalie with the puck
     "poke": {"0b24"},                 # B without the puck, near the carrier
