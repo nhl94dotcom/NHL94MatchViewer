@@ -383,6 +383,7 @@ function load(m) {
   setupOverlay(m);
   possession = findPossession(m);  // after setupOverlay: it needs ends
   penCount = countPenalties(m);
+  lineChanges = findLineChanges(m);
   fillHeatPeriods(m);
   skating = findSkating(m);
   setupFlow(m);
@@ -1750,7 +1751,7 @@ function refreshPopover(f, snap) {
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
     if (skating) live.skate = skatingAt(shown.team, shown.idx, f);
-    if (match.shotList) { live.ice = onIceStats(shown.team, shown.idx, f); live.teamIce = onIceStats(shown.team, null, f); }
+    if (match.shotList) { live.ice = onIceStats(shown.team, shown.idx, f); live.teamIce = onIceStats(shown.team, null, f); live.lineChanges = lineChanges[shown.team]; }
     if (match.zoneEntries) {
       const mine = match.zoneEntries.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx);
       live.entries = { n: mine.length, carried: mine.filter(e => e.kind === 'carried').length };
@@ -1915,6 +1916,10 @@ function fillCard(card, p, position, live) {
         const ice = live.ice, team = live.teamIce;
         addStat(grid, 'Goals on ice', ice.gf + '–' + ice.ga);
         addStat(grid, 'Plus/minus', (ice.pm > 0 ? '+' : '') + ice.pm);
+      }
+      // On-ice shares only mean something when the team changed lines; without, a skater's are his team's.
+      if (live.ice && live.lineChanges) {
+        const ice = live.ice, team = live.teamIce;
         addStat(grid, 'Corsi', ice.cf + '–' + ice.ca);
         addStat(grid, 'CF%', sharePct(ice.cf, ice.ca));
         addStat(grid, 'Fenwick', ice.ff + '–' + ice.fa);
@@ -2178,6 +2183,16 @@ const mphText = unitsPerS => (unitsPerS / UNITS_PER_FOOT * 3600 / 5280).toFixed(
 // (power-play and penalty-shot goals count for neither side); zone starts (zs): faceoffs in his team's attacking,
 // neutral and defensive zones. With idx null: the whole team's numbers. ev: the same at even strength only (as many
 // players serving penalties on each side), the season page's other view.
+// Did each team change lines (more than five skaters with real ice time)? Most online leagues play without.
+let lineChanges = [false, false];
+function findLineChanges(m) {
+  const ms = [new Map(), new Map()];
+  for (let i = 0; i + 1 < m.t.length; i++) {
+    const dt = Math.min(100, m.t[i + 1] - m.t[i]);
+    for (let k = 0; k < PLAYERS; k++) if (role(i, k) >= 1) { const t = ms[k < 6 ? 0 : 1], idx = rosterIndex(i, k); t.set(idx, (t.get(idx) || 0) + dt); }
+  }
+  return ms.map(t => [...t.values()].filter(v => v > 20000).length > 5);
+}
 function onIceStats(team, idx, f) {
   const there = (g, side) => {
     if (idx === null) return true;

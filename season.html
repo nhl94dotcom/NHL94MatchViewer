@@ -409,6 +409,7 @@ function render() {
   wireSorting();
   if (tab === 'heat' && $('hTeam')) wireHeat(list);
   for (const radio of view.querySelectorAll('input[name=advWhen]')) radio.addEventListener('change', () => { advEven = radio.value === 'ev'; render(); });
+  if ($('advOnIce')) $('advOnIce').addEventListener('change', e => { advOnIce = e.target.checked; try { localStorage.setItem('nhl94.season.onIce', advOnIce ? '1' : '0'); } catch (err) { /* not kept */ } render(); });
   for (const box of view.querySelectorAll('input[data-game]')) box.addEventListener('change', () => {
     const s = currentSeason(), set = excludedSet();
     if (box.checked) set.delete(box.dataset.game); else set.add(box.dataset.game);
@@ -721,8 +722,9 @@ function heatPicture(grid, cols, rows, skating) {
 // ---------------------------------------------------------------------------------------------------- advanced
 // The NHL analysts' stats, from the summaries' on-ice numbers: eight per skater and team, [CF, CA, FF, FA, SF, SA,
 // GF, GA] (Corsi: every shot attempt; Fenwick: those not blocked; shots on goal; goals), in all situations or at
-// even strength; zone starts [attacking, neutral, defensive]; and each skater's team while he was off the ice.
-let advEven = false;
+// even strength; zone starts [attacking, neutral, defensive]; and each skater's team while he was off the ice (bench).
+let advEven = false, advOnIce = false;
+try { advOnIce = localStorage.getItem('nhl94.season.onIce') === '1'; } catch (e) { /* default off */ }
 const ADV = { cf: 0, ca: 1, ff: 2, fa: 3, sf: 4, sa: 5, gf: 6, ga: 7 };
 const share = (a, b) => (a + b ? 100 * a / (a + b) : NaN);
 const pct1 = v => (isNaN(v) ? '–' : v.toFixed(1) + '%');
@@ -745,15 +747,29 @@ function advCols(get) {
   ];
 }
 function viewAdvanced(list, team) {
-  const on = advEven ? 'oiEv' : 'oi', off = advEven ? 'offEv' : 'off', side = advEven ? 'advEv' : 'adv';
+  const on = advEven ? 'oiEv' : 'oi', off = advEven ? 'benchEv' : 'bench', side = advEven ? 'advEv' : 'adv';
   let rows = playerLines(list, false).filter(r => r[on]);
   if (team) rows = rows.filter(r => r.abbr === team);
   const zs = (r, i) => (r.zs || [])[i] || 0;
+  // The team's numbers in the games he played (on the ice + off it), for his shares of them.
+  const teamOf = (r, k) => (r.oi ? r.oi[ADV[k]] + r.bench[ADV[k]] : 0);
   const toggle = `<div class="filters" style="margin-bottom:12px"><label><input type="radio" name="advWhen" value="all"${advEven ? '' : ' checked'}> All situations</label>
-    <label><input type="radio" name="advWhen" value="ev"${advEven ? ' checked' : ''}> Even strength</label></div>`;
-  const skaters = table('advSkaters', rows, [
-    { key: 'name', label: 'Player', left: true, show: playerCell },
-    { key: 'gp', label: 'GP' },
+    <label><input type="radio" name="advWhen" value="ev"${advEven ? ' checked' : ''}> Even strength</label>
+    <label title="Corsi, Fenwick, PDO and zone starts while each skater was on the ice. Without line changes they are his team's numbers."><input type="checkbox" id="advOnIce"${advOnIce ? ' checked' : ''}> On-ice stats (for leagues with line changes)</label></div>`;
+  // Every skater, whatever the league: his own attempts and his share of his team's attempts and goals.
+  const individual = [
+    { key: 'att', label: 'iCF', title: 'His own shot attempts (on goal, wide, blocked)', value: r => r.att || 0 },
+    { key: 'attg', label: 'iCF/GP', value: r => (r.att || 0) / r.gp, show: r => per(r.att || 0, r.gp) },
+    { key: 'sog', label: 'SOG', title: 'Shots on goal, as the game counts them' },
+    { key: 'acc', label: 'On goal %', title: 'His attempts that were shots on goal', value: r => (r.att ? 100 * r.sog / r.att : NaN), show: r => pct1(r.att ? 100 * r.sog / r.att : NaN) },
+    { key: 'g', label: 'G' },
+    { key: 'shp', label: 'S%', title: 'Goals on shots on goal', value: r => (r.sog ? 100 * r.g / r.sog : NaN), show: r => pct1(r.sog ? 100 * r.g / r.sog : NaN) },
+    { key: 'attShare', label: 'Att. share', title: 'His share of his team\u2019s shot attempts in the games he played',
+      value: r => (teamOf(r, 'cf') ? 100 * (r.att || 0) / teamOf(r, 'cf') : NaN), show: r => pct1(teamOf(r, 'cf') ? 100 * (r.att || 0) / teamOf(r, 'cf') : NaN) },
+    { key: 'ptShare', label: 'Pt. share', title: 'Goals his team scored that he scored or assisted, in the games he played',
+      value: r => (teamOf(r, 'gf') ? 100 * (r.g + r.a) / teamOf(r, 'gf') : NaN), show: r => pct1(teamOf(r, 'gf') ? 100 * (r.g + r.a) / teamOf(r, 'gf') : NaN) },
+  ];
+  const onIce = advOnIce ? [
     ...advCols(r => r[on]).slice(0, 3),
     { key: 'rel', label: 'CF% rel', title: 'His CF% minus his team\u2019s while he was off the ice (blank when he never left it)',
       value: r => share(r[on][0], r[on][1]) - share(r[off][0], r[off][1]), show: r => signed1(share(r[on][0], r[on][1]) - share(r[off][0], r[off][1])) },
@@ -762,8 +778,13 @@ function viewAdvanced(list, team) {
     { key: 'nzs', label: 'NZS', title: '... in the neutral zone', value: r => zs(r, 1) },
     { key: 'dzs', label: 'DZS', title: '... in the defensive zone', value: r => zs(r, 2) },
     { key: 'ozsp', label: 'OZS%', title: 'Attacking-zone share of his attacking and defensive zone starts', value: r => share(zs(r, 0), zs(r, 2)), show: r => pct1(share(zs(r, 0), zs(r, 2))) },
-    { key: 'att', label: 'iCF', title: 'His own shot attempts', value: r => r.att || 0 },
-  ], 'cfp');
+  ] : [];
+  const skaters = table('advSkaters', rows, [
+    { key: 'name', label: 'Player', left: true, show: playerCell },
+    { key: 'gp', label: 'GP' },
+    ...individual,
+    ...onIce,
+  ], 'attShare');
   let teams = standings(list).filter(r => r[side]);
   if (team) teams = teams.filter(r => r.abbr === team);
   const teamTable = table('advTeams', teams, [
@@ -772,10 +793,9 @@ function viewAdvanced(list, team) {
     ...advCols(r => r[side]),
   ], 'cfp');
   return '<h2>Advanced</h2>' + toggle + '<h2 style="font-size:14px">Teams</h2>' + teamTable +
-    '<h2 style="font-size:14px;margin-top:20px">Skaters (on the ice)</h2>' + skaters +
-    '<p class="note">Corsi counts every shot attempt, Fenwick leaves out blocked ones. Even strength: as many players in the ' +
-    'penalty box on each side. With line changes off, a skater\u2019s on-ice numbers are mostly his team\u2019s, and CF% rel ' +
-    'needs time on the bench to mean anything.</p>';
+    '<h2 style="font-size:14px;margin-top:20px">Skaters</h2>' + skaters +
+    '<p class="note">Corsi counts every shot attempt, Fenwick leaves out blocked ones; PDO is shooting % + save % (about 100 is normal). ' +
+    'Even strength: as many players in the penalty box on each side (it applies to the team and on-ice numbers).</p>';
 }
 
 function viewGames(list, team) {
