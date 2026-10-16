@@ -842,6 +842,8 @@ HIGH_DANGER = (60, 50)     # within 60 units of the net (about 20 ft) and no wid
 MEDIUM_DANGER = (100, 70)  # within 100 units and inside the faceoff dots
 EA_GOALIE_LINE = 12        # an EA Special attempt is shot at a goalie standing within this of the puck's line to the net
 EA_MAX_DISTANCE = 130      # ... from no farther out than this
+EA_OUTWARD = 15            # ... not moving out toward the side faster than this (units/s)
+EA_CARRIED = 600           # ... having carried the puck at least this long (ms)
 EA_BACKWARD = 50           # ... by a shooter not skating toward his own end faster than this (units/s; standing or drifting is
                            # fine: Sweeney's real one in 2026-10-16_1314_BOS-PIT drifted back at 30, Juneau's non-one at P3 4:09 skated back at 80)
 # In the recordings (226 attempts) a third of the attempts from that slot scored (20 of 60) and 14% of the rest; a
@@ -934,6 +936,19 @@ def add_shot_context(m):
         dt = (t[sh['f']] - t[q0]) / 1000 or 1
         toward = (m['pos'][(sh['f'] * K + k) * 2 + 1] - m['pos'][(q0 * K + k) * 2 + 1]) * (1 if net_y > 0 else -1) / dt
         if toward < -EA_BACKWARD:
+            continue
+        # Coming in from the side, not drifting out to it: the user ruled out a shooter moving from in front of the
+        # net toward the side (CGY-BOS OT 9:02, 59 units/s outward); in all of the user's real ones he was moving in
+        # toward the middle (9-81 units/s).
+        outward = (abs(m['pos'][(sh['f'] * K + k) * 2]) - abs(m['pos'][(q0 * K + k) * 2])) / dt
+        if outward > EA_OUTWARD:
+            continue
+        # A set play, not a scramble: he carried the puck at least EA_CARRIED before the shot (the user ruled out a
+        # wrist shot 0.3 s after winning a loose puck in a scrum, capture6 P2 0:08; the real ones carried 0.9 s or more).
+        q = sh['f'] - 1
+        while q > 0 and own[q] == k:
+            q -= 1
+        if t[sh['f'] - 1] - t[q] < EA_CARRIED:
             continue
         # And not a follow-up: no attempt by his team in the 3 s before (the user's review of the first nine found
         # rebound put-backs among them).
