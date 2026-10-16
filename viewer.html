@@ -503,7 +503,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Checks, hits taken</dt><dd>Body checks that landed, thrown and taken.</dd>
   <dt>Big hit</dt><dd>A check that upended a player or sent him into the boards or the bench.</dd>
   <dt>Bumped off the puck, pucks lost on contact</dt><dd>The puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down: the two only rubbed into each other. The card shows each player's "Bumped off puck" (he lost it) and "Bumped puck loose" (he was the one in contact). Team stats count them, and how many went straight to the other team.</dd>
-  <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Two common ways: a short pass (bounces off the stick more often), and a long pass reaching a teammate from behind as he skates away from it, which often bounces straight back off him; the tag and the passes map say which. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
+  <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
   <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
 </dl>
@@ -1503,9 +1503,6 @@ function drawTurnovers(f, colours) {
 // dashed, ending in a cross. Failed: dotted grey. Pass shot: dashed accent. Fainter when the game did not count it
 // (no target, or a goalie's pass).
 const BOBBLE_COLOUR = '#f5a524';  // the bobble mark on the passes map
-// How it was bobbled (the converter's bobble_kind): the puck caught up with him from behind, or a short pass
-const BOBBLE_TAGS = { 'from behind': 'Bobbled from behind', short: 'Bobbled short pass' };
-const BOBBLE_WORDS = { 'from behind': ' (from behind)', short: ' (short pass)' };
 const PASS_WORDS = { completed: 'completed', 'one-timer': 'into a one-timer', intercepted: 'intercepted', failed: 'failed', 'pass shot': 'pass shot' };
 function drawPasses(f, colours) {
   const list = (match.passes || []).filter(e => known(e, f) && counts(e.team, e.idx));
@@ -1536,7 +1533,6 @@ function drawPasses(f, colours) {
       ctx.beginPath(); ctx.moveTo(bx * sx - 2.5, by + 1.5); ctx.lineTo(bx * sx - 0.8, by - 1.5); ctx.lineTo(bx * sx + 0.8, by + 1.5); ctx.lineTo(bx * sx + 2.5, by - 1.5); ctx.stroke();
       from = [bx, by];
       tally[e.team].bobbled = (tally[e.team].bobbled || 0) + 1;
-      if (bob.how) tally[e.team]['bobbled ' + bob.how] = (tally[e.team]['bobbled ' + bob.how] || 0) + 1;
     }
     ctx.strokeStyle = style[0]; ctx.lineWidth = bob ? Math.min(style[2], 1.3) : style[2];
     ctx.setLineDash(bob && !style[1].length ? [3, 3] : style[1]);
@@ -1562,7 +1558,7 @@ function drawPasses(f, colours) {
   for (const e of list) {
     const [x0, y0] = onEnds(e.f, f, e.x0, e.y0);
     hitAt(x0, y0, e.f, periodName(match.period[e.f]) + ' ' + clockText(match.clock[e.f]) + ' \u00b7 ' + playerName(e.team, e.idx) +
-      (e.bobble && e.bobble.f <= f ? ' to ' + playerName(e.team, e.bobble.idx) + ' \u00b7 bobbled' + (BOBBLE_WORDS[e.bobble.how] || '') + ', then ' +
+      (e.bobble && e.bobble.f <= f ? ' to ' + playerName(e.team, e.bobble.idx) + ' \u00b7 bobbled, then ' +
         (e.result === 'completed' && e.to === e.bobble.idx ? 'he got it back'
           : (e.result === 'completed' && e.to >= 0 ? 'to ' + playerName(e.team, e.to) : PASS_WORDS[e.result] || e.result))
         : (e.to >= 0 ? ' to ' + playerName(e.team, e.to) : '') + ' \u00b7 ' + (PASS_WORDS[e.result] || e.result)) +
@@ -1580,9 +1576,7 @@ function drawPasses(f, colours) {
     line.textContent = names[team] + ': ' + made + ' of ' + n + ' completed' + (c['one-timer'] ? ' (' + c['one-timer'] + ' into one-timers)' : '') +
       (c.intercepted ? ', ' + c.intercepted + ' intercepted' : '') + (c.failed ? ', ' + c.failed + ' failed' : '') +
       (c['pass shot'] ? ', ' + c['pass shot'] + ' pass shot' + (c['pass shot'] === 1 ? '' : 's') : '') +
-      (c.bobbled ? '; ' + c.bobbled + ' bobbled' + (c['bobbled from behind'] || c['bobbled short'] ? ' (' +
-        [c['bobbled from behind'] ? c['bobbled from behind'] + ' from behind' : '', c['bobbled short'] ? c['bobbled short'] + ' short pass' + (c['bobbled short'] === 1 ? '' : 'es') : '']
-          .filter(Boolean).join(', ') + ')' : '') : '');
+      (c.bobbled ? '; ' + c.bobbled + ' bobbled' : '');
     box.append(line);
   }
   const key = document.createElement('div');
@@ -3224,7 +3218,7 @@ function draw() {
     const since = m.t[f] - m.t[b.f];
     if (since < 0 || since > POST_FLASH_MS) continue;
     const k = [...Array(6).keys()].map(i => b.team * 6 + i).find(k => m.roster && parseInt(m.roster[f * PLAYERS + k], 36) === b.idx);
-    if (k !== undefined) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], BOBBLE_TAGS[b.how] || 'Bobbled', DISC + 32);
+    if (k !== undefined) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], 'Bobbled', DISC + 32);
   }
   // Pucks knocked loose by body contact (no check, poke or hook; the converter's bumps): by an opposing skater, or
   // by skating into a goalie (either team's). A tag over the carrier.
