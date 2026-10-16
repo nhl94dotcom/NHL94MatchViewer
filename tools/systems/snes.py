@@ -71,7 +71,9 @@ OBJ_ROSTER = 0x12A3               # roster place (low byte)
 OBJ_TEAM = 0x1503                 # 0 Home, else Away
 PERIOD, CLOCK = 0x1630, 0x1632    # period from 0; clock in seconds left
 PAD1 = 0x0776                     # controller 1, held
-GAME_FLAGS2 = 0x15D8              # high byte: $08 replay playing, $20 power play, $01 faceoff (NHLPA '93 meanings)
+GAME_FLAGS2 = 0x15D8              # sflags: bit $0001 paused (the pause menu; replays are watched from it), $0800
+                                  # an instant replay playing (the user's two replays in snes_2026-10-15_1755)
+PAUSED = 0x0801
 LAST_TOUCH = 0x179A               # per team: the last player to touch the puck
 PUCK_HOLDER = 0x0AE7              # the object that has the puck, 15 = nobody (see read_match)
 # Penalties (from the first SNES recording: Toronto's Interference in P1, both teams in P3, two penalty shots):
@@ -244,6 +246,25 @@ class Emulator:
         data = self.read(offset, 1)
         return data[0] if data else None
 
+    def dump_rom(self):
+        """Copy the cartridge out of the emulator into roms/<fingerprint>.smc (once per ROM), so the converter finds
+        the ROM that was played: (path, fingerprint), path None if it could not be copied. Its size from the LoROM
+        header's size byte ($7FD7: 1 KB << n), at least 1 MB."""
+        from .common import ROOT
+        fp = self.rom_fingerprint()
+        if not fp:
+            return None, None
+        path = ROOT / "roms" / f"{fp}.smc"
+        if not path.exists():
+            code = (self.p.raw(self.rom + 0x7FD7, 1) or b"\x0a")[0]
+            size = max(0x100000, min(0x400000, 1024 << code if code < 13 else 0))
+            data = self.p.raw(self.rom, size)
+            if not data:
+                return None, fp
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes(data)
+        return path, fp
+
     def rom_fingerprint(self):
         """crc32 of the cartridge's first megabyte, as the ROM file has it without a copier header."""
         import zlib
@@ -272,6 +293,44 @@ def find_rom(capture):
         if f"{zlib.crc32(strip_header(path.read_bytes())[:0x100000]):08x}" == stored:
             return path, "matched to the recording"
     return DEFAULT_ROM, "assumed; no ROM matches the one that was recorded"
+
+
+# ------------------------------------------------------------------------------------------- what the helper reads
+BLOCKS = [(0x0000, 0x4000)]  # what each sample keeps: the objects, the stats, the scoring summary (work RAM $0000-$3FFF)
+
+
+class View:
+    """What the game is doing, from one read of the recorded block (as genesis.View): the period, clock, score and
+    teams, whether players are on the ice (their roster bytes read $FF before the opening faceoff and at
+    intermissions, as on the Genesis), whether the game is paused or showing a replay (GAME_FLAGS2), and whether it
+    is back at the menus (the teams and score cleared). At the final horn the SNES game moves the period on to 4 and
+    resets the clock to the period length; the clock is given as 0 then, as the Genesis game shows it, so the
+    helper's end-of-game test serves both."""
+
+    def __init__(self, emu):
+        block = emu.read(*BLOCKS[0])
+        if block is None:
+            raise ConnectionError("the emulator went away")
+        self.blocks = [block]
+        word = lambda a: struct.unpack_from("<H", block, a)[0]
+        self.period, self.clock = word(PERIOD), word(CLOCK)
+        if self.period >= 4:
+            self.clock = 0
+        self.score = (word(STAT_ADDRESSES["goals"]), word(STAT_ADDRESSES["goals"] + 2))
+        self.teams = (word(TEAM_IDS[0]), word(TEAM_IDS[1]))
+        rosters = [block[OBJ_ROSTER + 2 * k] for k in range(12)]
+        self.on_ice = any(r != 0xFF for r in rosters[:6]) and any(r != 0xFF for r in rosters[6:])
+        self.screen = word(GAME_FLAGS2)
+        self.in_menus = self.teams[0] >= 28 or self.teams[1] >= 28 or (self.teams == (0, 0) and self.score == (0, 0)
+                                                                          and self.period == 0 and self.clock == 0)
+        self.in_game = not self.in_menus and not self.screen & PAUSED
+
+    @property
+    def live(self):
+        return self.in_game and self.on_ice
+
+    def describe(self):
+        return f"P{min(self.period, 2) + 1} {self.clock // 60}:{self.clock % 60:02d}, {self.score[0]}-{self.score[1]}"
 
 
 def attach():
@@ -347,6 +406,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
               + sum(cap.word(i, a) + cap.word(i, a + 2) for a in SHOTS_BY_PERIOD) for i in range(cap.count)]
     peak = max(totals) if totals else 0
     count = max(i for i, v in enumerate(totals) if v == peak) + 1 if peak else cap.count
+    # Paused and replay samples are left out (the research recorder keeps them), and the timeline closes over them,
+    # as the helper records the Genesis game: only live play.
+    cap = LivePlay(cap, [i for i in range(count) if not cap.word(i, GAME_FLAGS2) & PAUSED])
+    count = cap.count
     for i in range(count):
         match["t"].append(cap.ms(i))
         match["period"].append(cap.word(i, PERIOD))
@@ -521,6 +584,28 @@ def read_penalties(cap, count, match, rules):
         if call["code"] == PENALTY_SHOT:
             delayed.append({"f": call["f"], "end": call.get("end", count - 1), "team": 1 - call["team"]})
     return penalties, delayed
+
+
+class LivePlay:
+    """Some of a recording's samples (live play), with the time between them closed up where samples were left out."""
+
+    def __init__(self, cap, keep):
+        self.cap, self.keep, self.count = cap, keep, len(keep)
+        self.times, t = [], 0
+        for n, i in enumerate(keep):
+            if n:
+                gap = cap.ms(i) - cap.ms(keep[n - 1])
+                t += gap if i == keep[n - 1] + 1 else min(gap, 17)
+            self.times.append(t)
+
+    def ms(self, i):
+        return self.times[i]
+
+    def word(self, i, address):
+        return self.cap.word(self.keep[i], address)
+
+    def byte(self, i, address):
+        return self.cap.byte(self.keep[i], address)
 
 
 class SaveStates:

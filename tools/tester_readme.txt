@@ -6,7 +6,7 @@ and more. Thank you for trying it out.
 
 WHAT YOU NEED
 - Windows 10 or 11 (64-bit).
-- RetroArch 1.17 (64-bit) with the Genesis Plus GX core: the league's usual setup.
+- RetroArch 1.17 (64-bit) with the Genesis Plus GX core (Genesis) or the Snes9x core (SNES).
 - Nothing else. No Python or other installs needed. Any NHL '94 ROM works, league ROMs included
   (NHL '95-based ROMs do not).
 
