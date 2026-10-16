@@ -70,7 +70,24 @@ OBJ_FLAGS = 0x1283                # bit $0008: joystick controlled (as the Genes
 OBJ_ROSTER = 0x12A3               # roster place (low byte)
 OBJ_TEAM = 0x1503                 # 0 Home, else Away
 PERIOD, CLOCK = 0x1630, 0x1632    # period from 0; clock in seconds left
-PAD1 = 0x0776                     # controller 1, held
+PAD1 = 0x0776                     # controller 1, held (SNES bits: B $8000, Y $4000, Start $1000, Up $0800, Down
+                                  # $0400, Left $0200, Right $0100, A $0080, X $0040)
+PAD2 = 0x0778                     # controller 2: its presses answered by Pittsburgh's skater 149 times to 75 in the
+                                  # online match (controller 1: Toronto 210 to 100)
+# The match file keeps buttons in the Genesis layout the viewer and the analysis use ($80 Start, $40 A, $20 C, $10 B,
+# $08 Right, $04 Left, $02 Down, $01 Up), by what they do: SNES B passes or poke-checks like the Genesis B, SNES A
+# shoots or checks like the Genesis C, Y and X go on the Genesis A. PAD_LABELS names them for the viewer.
+PAD_MAP = ((0x8000, 0x10), (0x0080, 0x20), (0x4000, 0x40), (0x0040, 0x40), (0x1000, 0x80),
+           (0x0800, 0x01), (0x0400, 0x02), (0x0200, 0x04), (0x0100, 0x08))
+PAD_LABELS = {"A": "Y", "B": "B", "C": "A"}
+
+
+def genesis_pad(word):
+    out = 0
+    for s_bit, g in PAD_MAP:
+        if word & s_bit:
+            out |= g
+    return out
 GAME_FLAGS2 = 0x15D8              # sflags: bit $0001 paused (the pause menu; replays are watched from it), $0800
                                   # an instant replay playing (the user's two replays in snes_2026-10-15_1755)
 PAUSED = 0x0801
@@ -388,7 +405,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
     signed = lambda i, a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(cap.word(i, a))
     match = {"version": 21, "name": name, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
              "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
-             "pos": [], "ctrl": [], "owner": [], "posts": [], "delayed": [], "penalties": []}
+             "pos": [], "ctrl": [], "owner": [], "posts": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
+             "padLabels": PAD_LABELS}
     facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
     from .common import STAT_FIELDS
     stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
@@ -475,6 +493,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
             if cap.word(i, OBJ_FLAGS + 2 * k) & 0x0008:
                 mask |= 1 << k
         match["ctrl"].append(mask)
+        match["pad"].append(genesis_pad(cap.word(i, PAD1)))
+        match["pad2"].append(genesis_pad(cap.word(i, PAD2)))
     # The SNES puck leaves the stick for a moment hundreds of times a game while a player skates with it (the
     # byte drops to 15): gaps under 0.15 s with the same player before and after are taken as his.
     own, t = match["owner"], match["t"]

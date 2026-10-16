@@ -892,23 +892,30 @@ def main(argv=None):
     # controlled skater starts an action (pass, shot, check, poke, hook, dive...) within 350 ms of a press, clearly
     # more often than the other team's. In capture6_netplay_bos_stl (the user Boston, online): 222 against 102 of 617.
     if "pad" in match:
-        answers = [0, 0]
         act = system.ACTIONS
-        pressed = set().union(*(act[a] for a in ("pass", "shoot", "lunge", "poke", "hook", "dive", "goalie_pass", "goalie_save")))
-        t, A, pad, ctrl = match["t"], match["anim"], match["pad"], match["ctrl"]
-        for i in range(1, len(t)):
-            if not pad[i] & 0x70 & ~pad[i - 1]:
-                continue
-            for team in (0, 1):
-                ks = [k for k in range(team * 6, team * 6 + 6) if (ctrl[i] >> k) & 1]
-                j = i
-                while j < len(t) and t[j] - t[i] <= 350:
-                    if any(A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] in pressed
-                           and A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] != A[((j - 1) * 12 + k) * 4:((j - 1) * 12 + k) * 4 + 4] for k in ks):
-                        answers[team] += 1
-                        break
-                    j += 1
-        match["padTeam"] = 0 if answers[0] > 1.5 * answers[1] else 1 if answers[1] > 1.5 * answers[0] else -1
+        pressed = set().union(*(act.get(a, set()) for a in ("pass", "shoot", "lunge", "poke", "hook", "dive", "goalie_pass", "goalie_save")))
+        t, A, ctrl = match["t"], match["anim"], match["ctrl"]
+
+        def answers(pad):
+            out = [0, 0]
+            for i in range(1, len(t)):
+                if not pad[i] & 0x70 & ~pad[i - 1]:
+                    continue
+                for team in (0, 1):
+                    ks = [k for k in range(team * 6, team * 6 + 6) if (ctrl[i] >> k) & 1]
+                    j = i
+                    while j < len(t) and t[j] - t[i] <= 350:
+                        if any(A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] in pressed
+                               and A[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] != A[((j - 1) * 12 + k) * 4:((j - 1) * 12 + k) * 4 + 4] for k in ks):
+                            out[team] += 1
+                            break
+                        j += 1
+            return 0 if out[0] > 1.5 * out[1] else 1 if out[1] > 1.5 * out[0] else -1
+
+        match["padTeam"] = answers(match["pad"])
+        if "pad2" in match and not hasattr(system, "controller_teams"):
+            second = answers(match["pad2"])  # the SNES does not say: whose skater answers controller 2
+            match["pad2Team"] = second if second >= 0 and second != match["padTeam"] else -1
         # Better: the game says which team each controller plays for (cont1team / cont2team). Controller 2 is the
         # other player's in netplay (pad2; in capture6_netplay_bos_stl St. Louis's presses answer it 308 to 91).
         if hasattr(system, "controller_teams"):

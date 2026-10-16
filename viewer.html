@@ -371,6 +371,10 @@ function load(m) {
   for (const id of ['hud', 'rink', 'controls', 'viewbar']) $(id).hidden = false;
   buildPanel($('lineup1'), 0, m.team1, 'var(--team1)');
   buildPanel($('lineup2'), 1, m.team2, 'var(--team2)');
+  for (const key of document.querySelectorAll('.pad span')) {  // the buttons' names on this system's controller
+    const name = Object.keys(PAD).find(b => PAD[b] === Number(key.dataset.b));
+    if (['A', 'B', 'C'].includes(name)) key.textContent = padLabel(name);
+  }
   const startAt = Number(new URLSearchParams(location.search).get('t'));
   if (startAt > 0) now = Math.min(m.t[m.t.length - 1], startAt * 1000);
   resize();
@@ -1495,6 +1499,9 @@ function teamPads(f) {
   return out;
 }
 
+// A button's name on the controller of the match's system (the match file keeps them in the Genesis layout; a SNES
+// match names its own: padLabels).
+const padLabel = b => (match.padLabels && match.padLabels[b]) || b;
 function recentPad(f, pad = match.pad) {
   let bits = 0;
   for (let i = f; i >= 0 && match.t[i] >= match.t[f] - PAD_FLASH_MS; i--) bits |= pad[i];
@@ -2476,7 +2483,7 @@ function draw() {
   // Button presses pop up beside the skater each controller is driving.
   teamPads(f).forEach((pad, team) => {
     if (!pad) return;
-    const pressed = recentPad(f, pad), letters = ['A', 'B', 'C'].filter(b => pressed & PAD[b]);
+    const pressed = recentPad(f, pad), letters = ['A', 'B', 'C'].filter(b => pressed & PAD[b]).map(b => padLabel(b));
     let k = team * 6;
     while (!((m.ctrl[f] >> k) & 1)) k++;
     const x = m.pos[(f * PLAYERS + k) * 2], y = m.pos[(f * PLAYERS + k) * 2 + 1];

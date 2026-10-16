@@ -276,7 +276,11 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   end-of-game test serves both systems. Tested by replaying snes_2026-10-15_1755 through the helper as a fake
   Snes9x at 6x speed: it waited, recorded TOR vs PIT, left out the replays, converted (6 goals, 3 penalties, shots
   10/12, 53 hits, Classic found by fingerprint). Not yet tried live.
-  Not known yet: puck height, controller display, ice time, the hook.
+- Controllers: $0776 controller 1, $0778 controller 2 (its presses answered by Pittsburgh's skater 149 times to 75;
+  controller 1 Toronto 210 to 100). Kept in the match file in the Genesis bit layout by what the buttons do (SNES B
+  = Genesis B, A = C, Y/X = A, Start, D-pad), with `padLabels` {A: Y, B: B, C: A} so the viewer shows the SNES
+  letters; padTeam and pad2Team from whose controlled skater answers the presses (the SNES has no cont1team).
+  Not known yet: puck height, ice time, the hook.
 
 ## Reading game memory live
 
