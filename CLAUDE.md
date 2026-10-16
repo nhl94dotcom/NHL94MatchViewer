@@ -817,8 +817,25 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   team (players serving a penalty, not delayed calls, from the stat snapshots, as the game flow's power plays: more
   of theirs in the box = power play); and, for skating maps, who has the puck (that team: attacking; the other:
   defending; nobody: loose, by the puck owner). The time shown under the title is the time the filters let through.
+  Both teams (2026-10-16) is drawn as the difference: each spot in the colour of the team that spent more time
+  there, by how much (97th percentile of the gaps, power 1.4, small gaps faded out), so neither team hides the other.
   The footer wraps onto a second row when it runs out of
   room, and the seek bar keeps at least 140 px (with a map on it used to be squeezed away).
+
+## Three stars and highlights
+
+The footer's "Highlights" button (`&highlights` opens it) shows the game's three stars and its highlights.
+- Stars by a game score after the analysts' Game Score (Luszczyszyn), with what the recordings know: 0.75 a goal, 0.7
+  a first assist, 0.55 a second, 0.075 a shot on goal, 0.05 a hit, 0.1 a takeaway (credited to `by`, as the card),
+  -0.1 a giveaway, -0.15 a penalty, 0.05 per on-ice shot attempt for / against and 0.15 per on-ice goal for /
+  against; goalies 0.1 a save, -0.75 a goal against (`gameScores`). capture6: Bourque (1 G 3 A, 17 hits, 11
+  takeaways), Neely (3 G 1 A), Juneau.
+- Highlights (`findHighlights`): every goal (7 s before to 3 s after), up to 4 saves of danger 3 or more (distance
+  under 45 / 75 / 110 from the net for 3 / 2 / 1, plus one each for a one-timer, a rebound, 18000 speed), posts,
+  up to 4 big hits (upended first), breakaways that came to a shot but not a goal; overlapping stretches joined.
+  Click one to watch it; "Play all" plays them in turn (checked by stepping the clock by hand in headless Edge: it
+  jumps from each stretch's end to the next one's start); "Save as video" records them as one video in real time
+  with the clip tool's frame (scoreboard strip, banner), like Clip's video, not run to the end in headless Edge.
 
 ## Season stats (stats across games)
 

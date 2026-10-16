@@ -48,6 +48,24 @@
   #soundPanel button { padding: 4px 9px; }
   #soundRate, #soundVolume { flex: 1; accent-color: var(--accent); }
   #soundToggle[aria-pressed="true"] { border-color: var(--accent); }
+  #hlPanel { position: absolute; top: 10px; right: 10px; width: 360px; max-height: calc(100% - 20px); overflow-y: auto; padding: 12px; border-radius: 10px; z-index: 15;
+    background: rgba(22, 27, 34, 0.97); border: 1px solid #3a4450; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); font-size: 13px; }
+  #hlPanel h4 { margin: 0 0 8px; font-size: 14px; }
+  #hlPanel h4 + * { margin-top: 0; }
+  #hlStars { list-style: none; margin: 0 0 14px; padding: 0; }
+  #hlStars li { margin: 0 0 6px; color: var(--accent); }
+  #hlStars li b { color: var(--text); font-weight: 600; }
+  #hlStars li .muted { color: var(--muted); padding-left: 2.2em; font-size: 12px; }
+  #hlList { display: flex; flex-direction: column; gap: 2px; margin: 0 0 8px; }
+  .hlRow { display: grid; grid-template-columns: 8px 52px 74px 1fr; gap: 6px; align-items: baseline; text-align: left; padding: 5px 6px;
+    background: transparent; border: 0; border-radius: 6px; font-size: 12px; }
+  .hlRow:hover { background: var(--raised); }
+  .hlRow i { width: 8px; height: 8px; border-radius: 50%; align-self: center; }
+  .hlRow small { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hlRow b { font-weight: 600; }
+  #hlPanel .clipRow { display: flex; align-items: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+  #hlPanel button:not(.hlRow), #hlPanel select { padding: 4px 9px; }
+  #hlStatus { margin: 6px 0 0; color: var(--muted); }
   #clipBar { height: 4px; border-radius: 2px; background: var(--raised); overflow: hidden; }
   #clipBar i { display: block; height: 100%; width: 0; background: var(--accent); }
   #overlayInfo .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 4px; color: var(--muted); }
@@ -171,6 +189,17 @@
       <div id="clipBar"><i></i></div>
       <p id="clipStatus">The clip shows the ice as you see it now: angle, zoom, following and sprites.</p>
     </div>
+    <div id="hlPanel" hidden>
+      <h4>Three stars</h4>
+      <ol id="hlStars"></ol>
+      <h4>Highlights</h4>
+      <div id="hlList"></div>
+      <div class="clipRow"><button id="hlPlay" title="Play every highlight, one after another">Play all</button>
+        <button id="hlSave" title="Record the highlights as one video (it plays in real time while recording)">Save as video</button>
+        <select id="hlSize" aria-label="Video size"><option value="480">Small</option><option value="720" selected>Medium</option><option value="1080">Large</option></select>
+        <button id="hlClose">Close</button></div>
+      <p id="hlStatus"></p>
+    </div>
     <div id="soundPanel" hidden>
       <h4>Sounds</h4>
       <p>The game's sampled sounds, from its ROM. Their playing speed is a guess: if they sound too low and slow, or
@@ -236,6 +265,7 @@
   </select>
   <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
   <button id="shareGame" title="Save this game as one file to send: viewer, game, sprites and rink, opened by double-clicking">Save game file</button>
+  <button id="hlOpen" title="Three stars and the game's highlights: watch them one after another, or save them as a video">Highlights</button>
   <button id="clipOpen" title="Save a stretch of the replay as a video or an animated GIF">Clip</button>
 </footer>
 <script src="rink_gens.js"></script>
@@ -358,6 +388,8 @@ function load(m) {
   setupFlow(m);
   loadSounds(m);
   $('clipPanel').hidden = true;
+  $('hlPanel').hidden = true; reelJob = null; highlights = null;
+  if (new URLSearchParams(location.search).has('highlights')) setTimeout(() => $('hlOpen').click());  // &highlights opens the panel
   failedOneTimerFrames = new Map();
   for (const e of m.failedOneTimers || []) {
     for (let k = e.team * 6; k < e.team * 6 + 6; k++) if (rosterIndex(e.f, k) === e.idx) failedOneTimerFrames.set(e.f + ':' + k, e.known !== undefined ? e.known : e.f);
@@ -977,8 +1009,8 @@ const HEAT_SCALE = v => {
   return [0, 1, 2].map(j => Math.round(stops[i][j] + (stops[i + 1][j] - stops[i][j]) * u));
 };
 function heatImage(cells, colours) {
-  // Smooth each team's time grid (two passes of a 5-cell box blur each way), scale both by the busiest cell, and
-  // paint in team colours, more opaque where the puck spent longer. Where both teams spent time, the busier shows.
+  // Smooth each team's time grid (two passes of a 5-cell box blur each way), then paint it: one team or player on
+  // a heat scale against its busiest cells; both teams as the difference between them, in the team colours.
   const blurred = cells.map(grid => {
     const a = Float32Array.from(grid), b = new Float32Array(a.length);
     for (let pass = 0; pass < 2; pass++) {
@@ -995,24 +1027,39 @@ function heatImage(cells, colours) {
     }
     return a;
   });
+  const image = document.createElement('canvas');
+  image.width = HEAT_COLS; image.height = HEAT_ROWS;
+  const g = image.getContext('2d'), data = g.createImageData(HEAT_COLS, HEAT_ROWS);
+  const rgb = colours.map(c => { const n = parseInt(c.replace('#', ''), 16); return [n >> 16, (n >> 8) & 255, n & 255]; });
+  if (overlayWho === 'both') {
+    // Both teams: the difference. Each spot in the colour of the team that spent more time there, stronger the
+    // bigger the gap; where they spent about the same, nothing (so neither team hides the other).
+    const diff = blurred[0].map((v, i) => v - blurred[1][i]), gaps = [...diff].map(Math.abs).filter(v => v > 0).sort((x, y) => x - y);
+    const top = Math.max(1e-6, gaps.length ? gaps[Math.floor(gaps.length * 0.97)] : 1);
+    for (let i = 0; i < diff.length; i++) {
+      const v = Math.min(1, Math.pow(Math.abs(diff[i]) / top, 1.4));  // small gaps are noise: faded out
+      if (v < 0.15) continue;
+      const c = rgb[diff[i] > 0 ? 0 : 1];
+      data.data[4 * i] = c[0]; data.data[4 * i + 1] = c[1]; data.data[4 * i + 2] = c[2];
+      data.data[4 * i + 3] = Math.round(255 * (0.12 + 0.73 * v));
+    }
+    g.putImageData(data, 0, 0);
+    return image;
+  }
   // Scaled to the busy spots (the 97th percentile of the cells used), so one spot does not wash out the rest.
   const used = [];
   for (const a of blurred) for (const v of a) if (v > 0) used.push(v);
   used.sort((x, y) => x - y);
   const top = Math.max(1e-6, used.length ? used[Math.floor(used.length * 0.97)] : 1);
-  const image = document.createElement('canvas');
-  image.width = HEAT_COLS; image.height = HEAT_ROWS;
-  const g = image.getContext('2d'), data = g.createImageData(HEAT_COLS, HEAT_ROWS);
-  const rgb = colours.map(c => { const n = parseInt(c.replace('#', ''), 16); return [n >> 16, (n >> 8) & 255, n & 255]; });
   for (let i = 0; i < HEAT_COLS * HEAT_ROWS; i++) {
     // Skaters cover the whole ice, so a skating map is drawn with more contrast: the busy areas stand out, the
     // ice they only crossed fades.
-    const team = blurred[0][i] >= blurred[1][i] ? 0 : 1, v = Math.min(1, Math.pow(blurred[team][i] / top, heatMode === 'skate' ? 1.6 : 0.7));
+    const v = Math.min(1, Math.pow(Math.max(blurred[0][i], blurred[1][i]) / top, heatMode === 'skate' ? 1.6 : 0.7));  // one team's is all zero
     if (v < (heatMode === 'skate' ? 0.12 : 0.06)) continue;
-    // Both teams: each in its colour. One team or player: a heat scale, yellow through orange to red.
-    const c = overlayWho === 'both' ? rgb[team] : HEAT_SCALE(v);
+    // One team or player: a heat scale, yellow through orange to red.
+    const c = HEAT_SCALE(v);
     data.data[4 * i] = c[0]; data.data[4 * i + 1] = c[1]; data.data[4 * i + 2] = c[2];
-    data.data[4 * i + 3] = Math.round(255 * (overlayWho === 'both' ? 0.15 + 0.7 * v : 0.2 + 0.65 * v));
+    data.data[4 * i + 3] = Math.round(255 * (0.2 + 0.65 * v));
   }
   g.putImageData(data, 0, 0);
   return image;
@@ -1053,6 +1100,7 @@ function fillOverlayInfo(f, tally, seconds) {
   const title = document.createElement('b');
   title.textContent = (overlay === 'shots' ? 'Shot map' : heatMode === 'puck' ? 'Heat map: time with the puck' : heatPlayer() ? 'Heat map: where he skated'
     : 'Heat map: where the skaters went') +
+    (overlay === 'heat' && overlayWho === 'both' ? ' · which team spent more time where' : '') +
     (overlay === 'heat' ? [heatPeriod >= 0 ? PERIOD_NAMES[heatPeriod] : '', HEAT_STRENGTHS[heatStrength] || '', heatMode === 'skate' ? HEAT_PUCKS[heatPuck] || '' : '']
       .filter(Boolean).map(w => ' \u00b7 ' + w).join('') : '') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
   box.append(title);
@@ -2651,8 +2699,9 @@ function tick(stamp) {
   lastTick = stamp;
   draw();
   playSoundsUpTo(frameAt(now));
+  if (reelJob) reelJob.onFrame();
   if (clipJob) clipJob.onFrame();
-  if (now >= end) setPlaying(false); else requestAnimationFrame(tick);
+  if (now >= end) { setPlaying(false); if (reelJob) reelJob.onFrame(); } else if (playing) requestAnimationFrame(tick);
 }
 
 function seekTo(ms) {
@@ -3133,6 +3182,218 @@ async function saveGameFile() {
     button.disabled = false;
   }
 }
+// ---------------------------------------------------------------------------------------------------- highlights
+// Three stars and a highlight reel for the game ("Highlights" in the footer).
+// Stars: a game score per player, after the hockey analysts' Game Score (Luszczyszyn), with what the recordings
+// know: 0.75 a goal, 0.7 a first assist, 0.55 a second, 0.075 a shot on goal, 0.05 a hit, 0.1 a takeaway, -0.1 a
+// giveaway, -0.15 a penalty, 0.05 per shot attempt for (-0.05 against) and 0.15 per goal for (-0.15 against) while
+// on the ice; goalies 0.1 a save and -0.75 a goal against.
+function gameScores(m) {
+  const last = m.stats && m.stats.f ? m.stats.f.length - 1 : -1, end = m.t.length - 1, out = [];
+  const played = [new Set(), new Set()];
+  for (let i = 0; i < m.t.length; i += 5) for (let k = 0; k < PLAYERS; k++) if (role(i, k) >= 0) played[k < 6 ? 0 : 1].add(rosterIndex(i, k));
+  (m.rosters || []).forEach((roster, team) => roster.forEach((p, idx) => {
+    if (!played[team].has(idx)) return;
+    const st = playerStats(last, team, idx) || { g: 0, s: 0 };
+    if (p.g) {
+      const sa = st.s || 0, ga = st.g || 0;
+      if (!sa) return;
+      out.push({ team, idx, score: 0.1 * (sa - ga) - 0.75 * ga, line: (sa - ga) + ' saves on ' + sa });
+      return;
+    }
+    const goals = (m.goals || []).filter(g => g.team === team && g.scorer === idx).length;
+    const a1 = (m.goals || []).filter(g => g.team === team && g.assists && g.assists[0] && g.assists[0][0] === idx).length;
+    const a2 = (m.goals || []).filter(g => g.team === team && g.assists && g.assists[1] && g.assists[1][0] === idx).length;
+    const hits = (m.hits || []).filter(h => h.team === team && h.by === idx).length;
+    const take = (m.turnovers || []).filter(e => e.kind === 'takeaway' && e.from !== team && e.by === idx).length;  // credited as the card does
+    const give = (m.turnovers || []).filter(e => e.kind === 'giveaway' && e.from === team && e.giver === idx).length;
+    const pens = (m.penalties || []).filter(e => e.team === team && e.idx === idx).length;
+    const on = onIceStats(team, idx, end), sog = st.s || 0;
+    const score = 0.75 * goals + 0.7 * a1 + 0.55 * a2 + 0.075 * sog + 0.05 * hits + 0.1 * take - 0.1 * give - 0.15 * pens +
+      0.05 * (on.cf - on.ca) + 0.15 * (on.gf - on.ga);
+    const bits = [];
+    if (goals) bits.push(goals + ' G');
+    if (a1 + a2) bits.push((a1 + a2) + ' A');
+    bits.push(sog + ' SOG');
+    if (hits) bits.push(hits + ' hit' + (hits === 1 ? '' : 's'));
+    if (take) bits.push(take + ' takeaway' + (take === 1 ? '' : 's'));
+    bits.push((on.pm > 0 ? '+' : '') + on.pm);
+    out.push({ team, idx, score, line: bits.join(', ') });
+  }));
+  return out.sort((a, b) => b.score - a.score);
+}
+
+// The highlights: every goal (7 s before to 3 s after, as the clip picker), the most dangerous saves, posts, big hits
+// and breakaways that did not end in a goal, in time order; overlapping ones are joined into one stretch.
+const NET_Y = 268;
+function findHighlights(m) {
+  const at = f => m.t[f], items = [], who = (team, idx) => playerName(team, idx);
+  const when = f => periodName(m.period[f]) + ' ' + clockText(m.clock[f]);
+  for (const g of m.goals || []) {
+    const helpers = (g.assists || []).map(a => playerName(g.team, a[0]).replace(/^#\d+ /, '')).join(', ');
+    const kinds = (g.kinds || []).filter(k => k !== 'EV');
+    items.push({ f: g.f, from: at(g.f) - 7000, to: at(g.f) + 3000, kind: 'Goal', team: g.team,
+      text: who(g.team, g.scorer) + (helpers ? ' (' + helpers + ')' : ' (unassisted)') + (kinds.length ? ' \u00b7 ' + kinds.join(', ') : '') });
+  }
+  // Saves by danger: close in, a one-timer, a rebound, a hard shot. Only the best few.
+  const saves = (m.shotList || []).filter(sh => sh.result === 'save').map(sh => {
+    const d = Math.hypot(sh.x, (sh.y >= 0 ? NET_Y : -NET_Y) - sh.y);
+    const danger = (d < 45 ? 3 : d < 75 ? 2 : d < 110 ? 1 : 0) + (sh.type === 'one-timer' ? 1 : 0) + (sh.rebound ? 1 : 0) + ((sh.speed || 0) >= 18000 ? 1 : 0);
+    return { sh, d, danger };
+  }).filter(s => s.danger >= 3).sort((a, b) => b.danger - a.danger || a.d - b.d).slice(0, 4);
+  for (const { sh } of saves) {
+    const goalie = sh.goalie >= 0 ? playerName(1 - sh.team, sh.goalie) : (sh.team ? match.team1 : match.team2);
+    items.push({ f: sh.f, from: at(sh.f) - 4000, to: at(sh.f) + 2500, kind: 'Big save', team: 1 - sh.team,
+      text: goalie + ' stops ' + who(sh.team, sh.idx).replace(/^#\d+ /, '') + (sh.type === 'one-timer' ? ' (one-timer)' : sh.rebound ? ' (rebound)' : '') });
+  }
+  for (const sh of (m.shotList || []).filter(s => s.result === 'post')) {
+    items.push({ f: sh.f, from: at(sh.f) - 4000, to: at(sh.f) + 2000, kind: 'Post', team: sh.team, text: who(sh.team, sh.idx) + ' rings it off the post' });
+  }
+  const order = { upended: 0, 'into the boards': 1, 'into the bench': 1 };
+  const hits = (m.hits || []).filter(h => BIG_HITS.includes(h.outcome)).sort((a, b) => order[a.outcome] - order[b.outcome]).slice(0, 4);
+  for (const h of hits) {
+    const by = who(h.team, h.by).replace(/^#\d+ /, ''), on = who(1 - h.team, h.on).replace(/^#\d+ /, '');
+    items.push({ f: h.f, from: at(h.f) - 3000, to: at(h.f) + 2500, kind: 'Big hit', team: h.team,
+      text: h.outcome === 'upended' ? by + ' upends ' + on : by + ' hits ' + on + ' ' + h.outcome });
+  }
+  for (const b of findBreakaways(m)) {
+    // Only breakaways that came to a shot and not a goal (a goal is shown as the goal); the rest are just skating.
+    const soon = e => e.team === b.team && e.f >= b.f && at(e.f) - at(b.f) < 5000;
+    if ((m.goals || []).some(soon)) continue;
+    const shot = (m.shotList || []).find(soon);
+    if (!shot) continue;
+    const ending = { save: 'saved', post: 'off the post', wide: 'wide', blocked: 'blocked' }[shot.result] || shot.result;
+    items.push({ f: b.f, from: at(b.f) - 2000, to: Math.max(at(b.f) + 3000, at(shot.f) + 2000), kind: 'Breakaway', team: b.team,
+      text: who(b.team, shot.idx) + ' in alone: ' + ending });
+  }
+  for (const e of items) { e.from = Math.max(m.t[0], e.from); e.to = Math.min(m.t[m.t.length - 1], e.to); e.when = when(e.f); }
+  items.sort((a, b) => a.from - b.from);
+  // Join overlapping stretches: one stretch, every moment in it listed.
+  const reel = [];
+  for (const e of items) {
+    const last = reel[reel.length - 1];
+    if (last && e.from <= last.to) { last.to = Math.max(last.to, e.to); last.parts.push(e); }
+    else reel.push({ from: e.from, to: e.to, parts: [e] });
+  }
+  return reel;
+}
+
+let highlights = null, reelJob = null;
+function setupHighlights(m) {
+  highlights = findHighlights(m);
+  const stars = gameScores(m).slice(0, 3), list = $('hlStars');
+  list.textContent = '';
+  stars.forEach((s, i) => {
+    const li = document.createElement('li');
+    const name = document.createElement('b');
+    name.textContent = playerName(s.team, s.idx) + ' ';
+    const team = document.createElement('small');
+    team.textContent = (s.team ? m.team2 : m.team1);
+    team.style.color = css(s.team ? '--team2' : '--team1');
+    const line = document.createElement('div');
+    line.className = 'muted'; line.textContent = s.line;
+    li.append(['\u2605', '\u2605\u2605', '\u2605\u2605\u2605'][i] + ' ', name, team, line);
+    list.append(li);
+  });
+  const box = $('hlList');
+  box.textContent = '';
+  highlights.forEach((h, i) => {
+    for (const p of [...h.parts].sort((a, b) => a.f - b.f)) {
+      const row = document.createElement('button');
+      row.className = 'hlRow';
+      row.title = 'Watch it';
+      const dot = document.createElement('i');
+      dot.style.background = css(p.team ? '--team2' : '--team1');
+      const kind = document.createElement('b'); kind.textContent = p.kind;
+      const text = document.createElement('span'); text.textContent = p.text;
+      const when = document.createElement('small'); when.textContent = p.when;
+      row.append(dot, when, kind, text);
+      row.addEventListener('click', () => playReel(i, i + 1));
+      box.append(row);
+    }
+  });
+  const total = highlights.reduce((s, h) => s + h.to - h.from, 0);
+  $('hlStatus').textContent = highlights.length ? highlights.length + ' moments, ' + Math.round(total / 1000) + ' s in all.' : 'Nothing stood out in this game.';
+  $('hlPlay').disabled = $('hlSave').disabled = !highlights.length;
+}
+
+// Plays highlights a to b-1 one after another (or records them as one video when a recorder is given).
+function playReel(a, b, onEnd) {
+  if (!highlights || !highlights.length) return;
+  stopReel();
+  let i = a;
+  now = highlights[i].from;
+  draw();
+  reelJob = {
+    onEnd,
+    onFrame() {
+      if (now < highlights[i].to) return;
+      i++;
+      if (i >= b) { stopReel(); return; }
+      now = highlights[i].from;
+      lastTick = performance.now();
+      if (onEnd) onEnd.progress(i);
+    },
+  };
+  $('hlPlay').textContent = 'Stop';
+  setPlaying(true);
+}
+function stopReel() {
+  // Stopped by hand or at the end; a recording under way is finished either way.
+  const job = reelJob;
+  if (!job) return;
+  reelJob = null;
+  setPlaying(false);
+  $('hlPlay').textContent = 'Play all';
+  if (job.onEnd) job.onEnd();
+}
+
+function recordReel() {
+  const types = ['video/mp4;codecs=avc1.640028', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  const type = window.MediaRecorder ? types.find(t => MediaRecorder.isTypeSupported(t)) : null;
+  const status = text => { $('hlStatus').textContent = text; };
+  if (!type) { status('This browser cannot record video here.'); return; }
+  setPlaying(false);
+  now = highlights[0].from;
+  draw();
+  const width = Number($('hlSize').value), c = clipCanvas(width);
+  let stream;
+  try { stream = c.captureStream(30); } catch (e) {
+    status('The ice cannot be recorded: ' + RINKS[rinkSystem].script + ' is missing (run tools/embed_rink.py).');
+    return;
+  }
+  const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: width >= 1280 ? 10e6 : 6e6 }), chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    const ext = type.startsWith('video/mp4') ? 'mp4' : 'webm';
+    const name = (match.name || 'game').replace(/[^\w.-]+/g, '_') + '_highlights.' + ext;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob(chunks, { type: type.split(';')[0] })); link.download = name;
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    status('Saved ' + name + ' to your downloads.');
+    $('hlSave').disabled = false;
+  };
+  const oldSpeed = $('speed').value;
+  $('speed').value = '1';
+  composeClip(c);
+  clipJob = { onFrame() { composeClip(c); } };
+  const done = () => { clipJob = null; $('speed').value = oldSpeed; setTimeout(() => rec.stop(), 150); };
+  done.progress = i => status('Recording\u2026 moment ' + (i + 1) + ' of ' + highlights.length);
+  $('hlSave').disabled = true;
+  status('Recording\u2026 moment 1 of ' + highlights.length + ' (it plays in real time)');
+  rec.start(200);
+  playReel(0, highlights.length, done);
+}
+$('hlOpen').addEventListener('click', () => {
+  if (!match) return;
+  const panel = $('hlPanel');
+  panel.hidden = !panel.hidden;
+  if (!panel.hidden) { $('clipPanel').hidden = true; if (!highlights) setupHighlights(match); }
+});
+$('hlClose').addEventListener('click', () => { stopReel(); $('hlPanel').hidden = true; });
+$('hlPlay').addEventListener('click', () => { if (reelJob) stopReel(); else playReel(0, highlights.length); });
+$('hlSave').addEventListener('click', recordReel);
 $('shareGame').addEventListener('click', saveGameFile);
 $('clipOpen').addEventListener('click', () => {
   if (!match) return;
