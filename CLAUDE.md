@@ -792,16 +792,24 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   the player the game says took it; team totals match the game everywhere. Player card: Checks, Hits taken, and
   Pen. minutes on original ROMs.
 - Bumped off the puck (`bumps`, find_bumps, 2026-10-16; the user asked for pucks lost when a carrier and a defender
-  rub into each other with no check delivered): a skater's possession ends, not by a shot or pass, not across a
-  whistle, while an opposing skater (not the goalie) is within CONTACT 17.5 of him in the 0.5 s before; no check landed
-  on him within 0.7 s (the hit list; a lunge that did not land still counts), no poke check or hook by an opponent
-  within 35 of the puck, and he did not go down; if he has it back within 0.3 s it is not one. 17.5 because bodies stop
-  about 16 apart (opposing skaters spend thousands of samples at 16-17 and a handful closer). `next`: who had the puck
-  next (opponent / teammate / himself / none = whistle first), `by` the opponent touching him, `human` that opponent
-  was a person's. 1-11 a game (BOS-PIT 11, five to the other team); not yet reviewed by the user. Shown as a "Bumped
-  off the puck" tag over the carrier, team stats (Physical: pucks lost on contact, to the other team), the card (Bumped
-  off puck / Bumped puck loose) and the season page (team BMP a game; skater BMP lost · forced; summary VERSION 7).
-  Turnovers are unchanged (such a loss is still a takeaway 'stolen' or a giveaway 'lost the puck').
+  rub into each other with no check delivered, and then for losses skating into a goalie, tracked apart). A skater's
+  possession (held at least BUMP_HELD 0.15 s; shorter touches are crease scrambles) ends, not across a whistle, not
+  by a shot or pass (a pass animation counts even when the pass list missed the pass: an intercepted pass the user
+  caught), the puck not leaving faster than BUMP_FAST 70 (shot or flipped: Taglianeti's flip down the ice left at
+  121; carried pucks go up to about 55), no poke check or hook by an opponent within 35 of the puck, he did not go
+  down, and he does not have it back within 0.3 s. Then `kind`:
+  'goalie' if the puck came within GOALIE_PUCK 15 of a goalie (his own or the other team's, `own`) from 0.15 s before
+  the loss to 0.2 s after, with the carrier within GOALIE_BODY 25 of him (the user's two: Samuelsson into his own
+  Barrasso, P3 3:31, puck 12 / body 23; Lemieux into Moog, P2 1:45, 10 / 17); else 'skater' if an opposing skater
+  was within CONTACT 17.5 in the 0.5 s before (bodies stop about 16 apart: opposing skaters spend thousands of
+  samples at 16-17 and a handful closer) and no check landed on him within 0.7 s (the hit list; a lunge that did
+  not land still counts). `next`: who had the puck next (opponent / teammate / himself / none = whistle first), `by`
+  the opponent or goalie, `human` (skater kind) that opponent was a person's. Review of 2026-10-16_1314_BOS-PIT's
+  first list: every verdict now matches (rows 1 flip and 3 pass gone; Jagr P1 2:05 "probably"); the goalie rule
+  added Lemieux into Moog P1 4:37 and Samuelsson into Barrasso P2 4:45 (unreviewed). Shown as a tag over the carrier
+  ("Bumped off the puck" / "Lost it on the goalie"), team stats (Physical: pucks lost on contact, to the other team,
+  pucks lost on a goalie), the card (Bumped off puck / Bumped puck loose / Lost puck on goalie) and the season page
+  (team BMP and ONG a game; skater BMP lost · forced and ONG; summary VERSION 8). Turnovers are unchanged.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under
