@@ -830,7 +830,7 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   -0.1 a giveaway, -0.15 a penalty, 0.05 per on-ice shot attempt for / against and 0.15 per on-ice goal for /
   against; goalies 0.1 a save, -0.75 a goal against (`gameScores`). capture6: Bourque (1 G 3 A, 17 hits, 11
   takeaways), Neely (3 G 1 A), Juneau.
-- Highlights (`findHighlights`): every goal (7 s before to 3 s after), up to 4 saves of danger 3 or more (distance
+- Highlights (`findHighlights`): each from 5 s before its key moment to 2 s after (the user's choice): every goal, up to 4 saves of danger 3 or more (distance
   under 45 / 75 / 110 from the net for 3 / 2 / 1, plus one each for a one-timer, a rebound, 18000 speed), posts,
   up to 4 big hits (upended first), breakaways that came to a shot but not a goal; overlapping stretches joined.
   Click one to watch it; "Play all" plays them in turn (checked by stepping the clock by hand in headless Edge: it

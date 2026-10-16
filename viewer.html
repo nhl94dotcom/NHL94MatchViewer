@@ -3223,16 +3223,18 @@ function gameScores(m) {
   return out.sort((a, b) => b.score - a.score);
 }
 
-// The highlights: every goal (7 s before to 3 s after, as the clip picker), the most dangerous saves, posts, big hits
-// and breakaways that did not end in a goal, in time order; overlapping ones are joined into one stretch.
-const NET_Y = 268;
+// The highlights: every goal, the most dangerous saves, posts, big hits and breakaways that came to a shot but not a
+// goal, each from 5 s before its key moment (the goal, save, shot, hit) to 2 s after (the user's choice), in time
+// order; overlapping ones are joined into one stretch.
+const NET_Y = 268, HIGHLIGHT_BEFORE = 5000, HIGHLIGHT_AFTER = 2000;
 function findHighlights(m) {
   const at = f => m.t[f], items = [], who = (team, idx) => playerName(team, idx);
+  const span = f => ({ from: at(f) - HIGHLIGHT_BEFORE, to: at(f) + HIGHLIGHT_AFTER });  // around the key moment
   const when = f => periodName(m.period[f]) + ' ' + clockText(m.clock[f]);
   for (const g of m.goals || []) {
     const helpers = (g.assists || []).map(a => playerName(g.team, a[0]).replace(/^#\d+ /, '')).join(', ');
     const kinds = (g.kinds || []).filter(k => k !== 'EV');
-    items.push({ f: g.f, from: at(g.f) - 7000, to: at(g.f) + 3000, kind: 'Goal', team: g.team,
+    items.push({ f: g.f, ...span(g.f), kind: 'Goal', team: g.team,
       text: who(g.team, g.scorer) + (helpers ? ' (' + helpers + ')' : ' (unassisted)') + (kinds.length ? ' \u00b7 ' + kinds.join(', ') : '') });
   }
   // Saves by danger: close in, a one-timer, a rebound, a hard shot. Only the best few.
@@ -3243,17 +3245,17 @@ function findHighlights(m) {
   }).filter(s => s.danger >= 3).sort((a, b) => b.danger - a.danger || a.d - b.d).slice(0, 4);
   for (const { sh } of saves) {
     const goalie = sh.goalie >= 0 ? playerName(1 - sh.team, sh.goalie) : (sh.team ? match.team1 : match.team2);
-    items.push({ f: sh.f, from: at(sh.f) - 4000, to: at(sh.f) + 2500, kind: 'Big save', team: 1 - sh.team,
+    items.push({ f: sh.f, ...span(sh.f), kind: 'Big save', team: 1 - sh.team,
       text: goalie + ' stops ' + who(sh.team, sh.idx).replace(/^#\d+ /, '') + (sh.type === 'one-timer' ? ' (one-timer)' : sh.rebound ? ' (rebound)' : '') });
   }
   for (const sh of (m.shotList || []).filter(s => s.result === 'post')) {
-    items.push({ f: sh.f, from: at(sh.f) - 4000, to: at(sh.f) + 2000, kind: 'Post', team: sh.team, text: who(sh.team, sh.idx) + ' rings it off the post' });
+    items.push({ f: sh.f, ...span(sh.f), kind: 'Post', team: sh.team, text: who(sh.team, sh.idx) + ' rings it off the post' });
   }
   const order = { upended: 0, 'into the boards': 1, 'into the bench': 1 };
   const hits = (m.hits || []).filter(h => BIG_HITS.includes(h.outcome)).sort((a, b) => order[a.outcome] - order[b.outcome]).slice(0, 4);
   for (const h of hits) {
     const by = who(h.team, h.by).replace(/^#\d+ /, ''), on = who(1 - h.team, h.on).replace(/^#\d+ /, '');
-    items.push({ f: h.f, from: at(h.f) - 3000, to: at(h.f) + 2500, kind: 'Big hit', team: h.team,
+    items.push({ f: h.f, ...span(h.f), kind: 'Big hit', team: h.team,
       text: h.outcome === 'upended' ? by + ' upends ' + on : by + ' hits ' + on + ' ' + h.outcome });
   }
   for (const b of findBreakaways(m)) {
@@ -3263,7 +3265,7 @@ function findHighlights(m) {
     const shot = (m.shotList || []).find(soon);
     if (!shot) continue;
     const ending = { save: 'saved', post: 'off the post', wide: 'wide', blocked: 'blocked' }[shot.result] || shot.result;
-    items.push({ f: b.f, from: at(b.f) - 2000, to: Math.max(at(b.f) + 3000, at(shot.f) + 2000), kind: 'Breakaway', team: b.team,
+    items.push({ f: shot.f, ...span(shot.f), kind: 'Breakaway', team: b.team,
       text: who(b.team, shot.idx) + ' in alone: ' + ending });
   }
   for (const e of items) { e.from = Math.max(m.t[0], e.from); e.to = Math.min(m.t[m.t.length - 1], e.to); e.when = when(e.f); }
