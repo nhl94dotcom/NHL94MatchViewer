@@ -944,6 +944,125 @@ def add_shot_context(m):
             e['goalAfter'] = any(s['result'] == 'goal' for s in after)
 
 
+RUSH_MS = 5000  # a shot attempt within this of the team's zone entry is off the rush
+PAD_A, PAD_B, PAD_C = 64, 16, 32  # controller bits as kept in the match file (Genesis layout; SNES mapped to it)
+
+
+def add_play_context(m):
+    """Tags about how play was made, after add_shot_context:
+    - `human` on hits, penalties, shots and passes: the player (thrower, fouler, shooter, passer) was the skater a
+      person controlled (the controlled-skater marker on his record within 0.3 s; for a penalty, at the foul, or in
+      the 3 s before it was listed when the moment of the foul is not known). The person always has the puck
+      carrier, so shots and passes are a person's almost always.
+    - each shot's `origin`: 'rush' (within RUSH_MS of the team's zone entry, the puck still in the zone), 'zone'
+      (later in that stay: sustained pressure), 'faceoff' (no entry: from a faceoff in that zone), else 'other';
+    - each zone entry's `odd`: [attackers, defenders] as the puck crossed the blue line: the entering team's skaters
+      level with the puck or ahead of it (or up to 60 behind it) against the defending team's skaters back
+      between the puck and their net; on a carried or passed entry, more attackers than defenders (at least two) is
+      an odd-man rush (2-on-1, 3-on-2 ...), and 1-on-0 a breakaway (a dump-in leaves the attackers behind it);
+    - `wrap` on a shot taken from beside the post (within 45 of the middle, close to the goal line) just after the
+      shooter carried the puck behind that goal line: a wraparound;
+    - m['habits']: for each team a person played, what that person did with the controller: button presses
+      (A, B, C) and minutes of live play, and the controlled skater's actions (speed bursts / check lunges and the
+      checks landed, poke checks and hooks and the takeaways they made, the goalie's dives and the time a person had
+      the goalie; one-timers and passes come from the shot and pass lists' `human`). Hooks are not known on the SNES."""
+    t, P, own = m['t'], m['puck'], m['owner']
+    N, K = len(t), 12
+    ctrl = m.get('ctrl') or []
+    act = actions(m)
+    anim = lambda q, k: m['anim'][(q * K + k) * 4:(q * K + k) * 4 + 4]
+    record = lambda f, team, idx: next((k for k in range(team * 6, team * 6 + 6) if int(m['roster'][f * K + k], 36) == idx), None)
+
+    def controlled(f, team, idx, before=300, after=300):
+        if not ctrl or idx is None or idx < 0:
+            return False
+        lo = next((q for q in range(f, -1, -1) if t[f] - t[q] > before), -1) + 1
+        hi = next((q for q in range(f, N) if t[q] - t[f] > after), N)
+        for q in range(lo, hi):
+            k = record(q, team, idx)
+            if k is not None and ctrl[q] >> k & 1:
+                return True
+        return False
+
+    for h in m.get('hits', []):
+        h['human'] = controlled(h['f'], h['team'], h['by'])
+    for p in m.get('penalties', []):
+        p['human'] = controlled(p['called'], p['team'], p['idx']) if 'called' in p else controlled(p['f'], p['team'], p['idx'], 3000, 0)
+    for sh in m.get('shotList', []):
+        sh['human'] = controlled(sh['f'], sh['team'], sh['idx'], 300, 0)
+    for p in m.get('passes', []):
+        p['human'] = controlled(p['f'], p['team'], p['idx'], 300, 0)
+
+    # Odd-man rushes, at the moment the puck crossed the blue line
+    for e in m.get('zoneEntries', []):
+        f, team = e['f'], e['team']
+        sign = 1 if P[3 * f + 1] >= 0 else -1  # the end they entered
+        py = sign * P[3 * f + 1]
+        skaters = lambda side: [k for k in range(side * 6, side * 6 + 6) if m['role'][f * K + k] not in ('x', '0')]
+        ya = lambda k: sign * m['pos'][(f * K + k) * 2 + 1]
+        attackers = sum(1 for k in skaters(team) if ya(k) >= py - 60)
+        defenders = sum(1 for k in skaters(1 - team) if ya(k) >= py - 10)
+        e['odd'] = [attackers, defenders]
+
+    # Where each shot attempt came from: the rush, sustained pressure, or a faceoff in that zone
+    entries = m.get('zoneEntries', [])
+    faceoffs = m.get('faceoffs', [])
+    for sh in m.get('shotList', []):
+        stay = next((e for e in reversed(entries) if e['team'] == sh['team'] and e['f'] <= sh['f'] <= e.get('end', e['f'])), None)
+        if stay:
+            sh['origin'] = 'rush' if t[sh['f']] - t[stay['f']] <= RUSH_MS else 'zone'
+            continue
+        fo = next((e for e in reversed(faceoffs) if e['f'] <= sh['f']), None)
+        attacking_end = 1 if sh['y'] >= 0 else -1
+        if fo and fo.get('zone') != 'neu' and (fo['y'] >= 0) == (attacking_end > 0) and \
+                not any(P[3 * q + 2] < -100 for q in range(fo['f'], sh['f'])):
+            sh['origin'] = 'faceoff'
+        else:
+            sh['origin'] = 'other'
+
+    # Wraparounds: the shooter had the puck behind that goal line in the 1.5 s before releasing it beside the post
+    for sh in m.get('shotList', []):
+        if abs(sh['x']) > 45 or abs(sh['y']) < 235 or sh['kind'] not in ('shot', 'one-timer'):
+            continue
+        k = record(sh['f'], sh['team'], sh['idx'])
+        end = 1 if sh['y'] > 0 else -1
+        lo = next((q for q in range(sh['f'], -1, -1) if t[sh['f']] - t[q] > 1500), -1) + 1
+        if k is not None and any(own[q] == k and end * P[3 * q + 1] > 270 for q in range(lo, sh['f'])):
+            sh['wrap'] = True
+
+    # Controller habits, for each team a person played
+    pads = [(m.get('pad'), m.get('padTeam', -1)), (m.get('pad2'), m.get('pad2Team', -1))]
+    live = [q for q in range(N - 1) if P[3 * q + 2] >= -100]
+    minutes = sum(min(100, t[q + 1] - t[q]) for q in live) / 60000
+    habits = [None, None]
+    for pad, team in pads:
+        if not pad or team not in (0, 1):
+            continue
+        presses = {name: sum(1 for q in range(1, len(pad)) if pad[q] & bit and not pad[q - 1] & bit)
+                   for name, bit in (('A', PAD_A), ('B', PAD_B), ('C', PAD_C))}
+        mine = range(team * 6, team * 6 + 6)
+        starts = lambda words, goalie=False: [(q, k) for q in range(1, N) for k in mine
+                                              if ctrl and ctrl[q] >> k & 1 and anim(q, k) in words and anim(q - 1, k) not in words
+                                              and (m['role'][q * K + k] == '0') == goalie]
+        lunges = starts(act.get('lunge', set()))
+        pokes = starts(act.get('poke', set()))
+        hooks = starts(act.get('hook', set()))
+        dives = starts(act.get('dive', set()), goalie=True)
+        goalie_ms = sum(min(100, t[q + 1] - t[q]) for q in live if any(ctrl[q] >> k & 1 and m['role'][q * K + k] == '0' for k in mine))
+        takes = [e for e in m.get('turnovers', []) if e['kind'] == 'takeaway' and e['from'] != team]
+        habits[team] = {
+            'minutes': round(minutes, 2), 'presses': presses,
+            # C without the puck is the speed burst and the check lunge in one ($0C5E): 'bursts' counts both, 'checks'
+            # the checks the controlled skater landed.
+            'bursts': len(lunges), 'checks': sum(1 for h in m.get('hits', []) if h['team'] == team and h.get('human')),
+            'pokes': len(pokes), 'pokeTakeaways': sum(1 for e in takes if e.get('how') == 'poke check' and controlled(e['lost'], team, e.get('by'))),
+            'hooks': len(hooks), 'hookTakeaways': sum(1 for e in takes if e.get('how') == 'hook' and controlled(e['lost'], team, e.get('by'))),
+            'dives': len(dives), 'goalieSeconds': round(goalie_ms / 1000, 1),
+        }
+    if any(habits):
+        m['habits'] = habits
+
+
 def find_goals(match, rosters):
     """Goals from the stat snapshots: when a team's goal count goes up, whose goals and assists went up with it
     (looking two seconds on, as the game can credit them a moment apart), and what kind of goal it was."""
@@ -1057,6 +1176,7 @@ def main(argv=None):
         match["zoneEntries"] = find_zone_entries(match)
         match["hits"] = find_hits(match)
         add_shot_context(match)
+        add_play_context(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):

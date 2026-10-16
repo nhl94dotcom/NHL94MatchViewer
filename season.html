@@ -117,6 +117,7 @@
     <button data-tab="teams">Team stats</button>
     <button data-tab="h2h">Head to head</button>
     <button data-tab="adv">Advanced</button>
+    <button data-tab="play">Play style</button>
     <button data-tab="heat">Heat maps</button>
     <button data-tab="games">Games</button>
   </nav>
@@ -405,9 +406,10 @@ function render() {
       : '<p class="empty">No games match. Try "All ROMs", or untick "Whole games only".</p>';
     return;
   }
-  view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, adv: viewAdvanced, heat: viewHeat, games: viewGames }[tab] || viewStandings)(list, team);
+  view.innerHTML = ({ standings: viewStandings, skaters: viewSkaters, goalies: viewGoalies, teams: viewTeams, h2h: viewH2H, adv: viewAdvanced, play: viewPlay, heat: viewHeat, games: viewGames }[tab] || viewStandings)(list, team);
   wireSorting();
   if (tab === 'heat' && $('hTeam')) wireHeat(list);
+  if (tab === 'goalies' && $('gmWho')) { $('gmWho').addEventListener('change', e => { gmWho = e.target.value; drawGoalieMap(list); }); drawGoalieMap(list); }
   for (const radio of view.querySelectorAll('input[name=advWhen]')) radio.addEventListener('change', () => { advEven = radio.value === 'ev'; render(); });
   if ($('advOnIce')) $('advOnIce').addEventListener('change', e => { advOnIce = e.target.checked; try { localStorage.setItem('nhl94.season.onIce', advOnIce ? '1' : '0'); } catch (err) { /* not kept */ } render(); });
   for (const box of view.querySelectorAll('input[data-game]')) box.addEventListener('change', () => {
@@ -498,7 +500,8 @@ function viewGoalies(list, team) {
     { key: 'reb', label: 'Reb%', title: 'Saves that gave the shooters a rebound', value: r => (r.saves ? r.rebAllowed / r.saves : NaN),
       show: r => (r.saves ? pct1(100 * r.rebAllowed / r.saves) : '–') },
     { key: 'toi', label: 'MIN', title: 'Game minutes in net', show: r => mmss(r.toi) },
-  ], 'svp') + '<p class="note">"Person" and "CPU" split the shots by who controlled the goalie as the shot was released; they count every shot that reached him, so they can differ slightly from SA.</p>';
+  ], 'svp') + '<p class="note">"Person" and "CPU" split the shots by who controlled the goalie as the shot was released; they count every shot that reached him, so they can differ slightly from SA.</p>' +
+    (list.some(g => g.teams[0].shotMap) ? viewGoalieMap(list) : '');
 }
 
 function viewTeams(list, team) {
@@ -833,6 +836,163 @@ function viewAdvanced(list, team) {
     '<h2 style="font-size:14px;margin-top:20px">Skaters</h2>' + skaters +
     '<p class="note">Corsi counts every shot attempt, Fenwick leaves out blocked ones; PDO is shooting % + save % (about 100 is normal). ' +
     'Even strength: as many players in the penalty box on each side (it applies to the team and on-ice numbers).</p>';
+}
+
+// ---------------------------------------------------------------------------------------------------- play style
+// From the summaries' play context: how each team's chances came about, the person against the computer, what each
+// person did with the controller, and who passes to whom.
+const sumArr = (a, b) => (b ? (a ? a.map((x, i) => x + (b[i] || 0)) : [...b]) : a);
+function playTotals(list) {
+  // Per team: the play-context lists summed, the habits of its person's games, its goalies' person / CPU shots.
+  const rows = new Map();
+  for (const g of list) g.abbr.forEach((abbr, side) => {
+    const t = g.teams[side];
+    const r = rows.get(abbr) || rows.set(abbr, { abbr, name: g.names[side], gp: 0, humanGames: 0, habits: null, habitGames: 0, pairs: {}, gHuman: [0, 0], gCpu: [0, 0] }).get(abbr);
+    r.gp++;
+    if (g.humans[side]) r.humanGames++;
+    for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses']) r[k] = sumArr(r[k], t[k]);
+    if (t.habits) {
+      r.habitGames++;
+      const h = r.habits || (r.habits = { minutes: 0, presses: { A: 0, B: 0, C: 0 }, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, dives: 0, goalieSeconds: 0 });
+      for (const k of Object.keys(h)) if (k === 'presses') for (const b of 'ABC') h.presses[b] += t.habits.presses[b] || 0; else h[k] += t.habits[k] || 0;
+    }
+    // Passing pairs by name (players are matched across games by name)
+    const name = idx => ((g.players[side].find(p => p.idx === idx) || {}).name || '#' + idx);
+    for (const [key, v] of Object.entries(t.pairs || {})) {
+      const [a, b] = key.split('>').map(Number), k = name(a) + '\u2192' + name(b);
+      r.pairs[k] = sumArr(r.pairs[k], v);
+    }
+    for (const p of g.players[side]) if (p.goalie) { r.gHuman = sumArr(r.gHuman, p.human); r.gCpu = sumArr(r.gCpu, p.cpu); }
+  });
+  return [...rows.values()];
+}
+
+function viewPlay(list, team) {
+  let rows = playTotals(list).filter(r => r.origin);
+  if (!rows.length) return '<h2>Play style</h2><p class="empty">These games were converted before play style was recorded.</p>';
+  const focus = team || myTeam();
+  const o = (r, i) => (r.origin || [])[i] || 0, odd = (r, i) => (r.oddMan || [])[i] || 0;
+  const gw = (g, a) => `${g}<small> G / ${a}</small>`;
+  const chances = table('playChances', team ? rows.filter(r => r.abbr === team) : rows, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'rush', label: 'Rush', title: 'Attempts within 5 s of the team\u2019s zone entry: goals / attempts', value: r => o(r, 0), show: r => gw(o(r, 4), o(r, 0)) },
+    { key: 'zone', label: 'Sustained', title: 'Attempts later in a stay in the zone (sustained pressure): goals / attempts', value: r => o(r, 1), show: r => gw(o(r, 5), o(r, 1)) },
+    { key: 'fo', label: 'Faceoff', title: 'Attempts off a faceoff in the attacking zone: goals / attempts', value: r => o(r, 2), show: r => gw(o(r, 6), o(r, 2)) },
+    { key: 'rushShare', label: 'Rush %', title: 'Share of the attempts that came off the rush', value: r => o(r, 0) / Math.max(1, o(r, 0) + o(r, 1) + o(r, 2) + o(r, 3)),
+      show: r => pct1(100 * o(r, 0) / Math.max(1, o(r, 0) + o(r, 1) + o(r, 2) + o(r, 3))) },
+    { key: 'odd', label: 'Odd-man', title: 'Odd-man rushes: carried or passed entries with more attackers than defenders back (at least two attackers)', value: r => odd(r, 0) },
+    { key: 'oddShot', label: '\u2192 shot', title: 'Odd-man rushes that produced a shot attempt', value: r => (odd(r, 0) ? odd(r, 1) / odd(r, 0) : NaN), show: r => (odd(r, 0) ? `${odd(r, 1)} <small>${pct1(100 * odd(r, 1) / odd(r, 0))}</small>` : '–') },
+    { key: 'oddGoal', label: '\u2192 goal', title: 'Odd-man rushes that produced a goal', value: r => odd(r, 2) },
+    { key: 'wrap', label: 'Wraps', title: 'Wraparounds: goals / attempts', value: r => (r.wrap || [0])[0], show: r => gw((r.wrap || [0, 0])[1], (r.wrap || [0, 0])[0]) },
+  ], 'rush');
+  const human = rows.filter(r => r.humanGames && (!team || r.abbr === team));
+  const ph = (r, i) => (r.persHits || [])[i] || 0, pp = (r, i) => (r.persPen || [])[i] || 0;
+  const sv = a => (a && a[0] ? `${svp(a[0], a[1])} <small>${a[0] - a[1]}/${a[0]}</small>` : '–');
+  const versus = human.length ? table('playVersus', human, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'humanGames', label: 'GP', title: 'Games a person played this team' },
+    { key: 'hitsP', label: 'Checks: person', value: r => ph(r, 0) },
+    { key: 'hitsC', label: 'CPU', value: r => ph(r, 1) },
+    { key: 'hitsShare', label: 'Person %', value: r => share(ph(r, 0), ph(r, 1)), show: r => pct1(share(ph(r, 0), ph(r, 1))) },
+    { key: 'penP', label: 'Penalties: person', value: r => pp(r, 0) },
+    { key: 'penC', label: 'CPU', value: r => pp(r, 1) },
+    { key: 'svH', label: 'SV% person in net', title: 'Shots faced with a person controlling the goalie at the release', value: r => (r.gHuman[0] ? 1 - r.gHuman[1] / r.gHuman[0] : NaN), show: r => sv(r.gHuman) },
+    { key: 'svC', label: 'SV% CPU in net', value: r => (r.gCpu[0] ? 1 - r.gCpu[1] / r.gCpu[0] : NaN), show: r => sv(r.gCpu) },
+  ], 'humanGames') : '<p class="empty">No games with a person in them.</p>';
+  const withHabits = rows.filter(r => r.habits && (!team || r.abbr === team));
+  const hm = (r, n) => (r.habits.minutes ? n / r.habits.minutes : NaN);
+  const habits = withHabits.length ? table('playHabits', withHabits, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'habitGames', label: 'GP', title: 'Games with this team\u2019s controller recorded' },
+    ...['A', 'B', 'C'].map(b => ({ key: 'p' + b, label: b + '/min', title: `${b} presses a minute of live play`, value: r => hm(r, r.habits.presses[b]), show: r => hm(r, r.habits.presses[b]).toFixed(1) })),
+    { key: 'bursts', label: 'Bursts/min', title: 'C without the puck: speed bursts and check lunges, a minute', value: r => hm(r, r.habits.bursts), show: r => hm(r, r.habits.bursts).toFixed(1) },
+    { key: 'checks', label: 'Checks/GP', title: 'Checks the person\u2019s skater landed, a game', value: r => r.habits.checks / r.habitGames, show: r => per(r.habits.checks, r.habitGames) },
+    { key: 'pokes', label: 'Pokes/GP', value: r => r.habits.pokes / r.habitGames, show: r => per(r.habits.pokes, r.habitGames) },
+    { key: 'pokeTk', label: 'Poke \u2192 takeaway', title: 'Poke checks that took the puck', value: r => (r.habits.pokes ? r.habits.pokeTakeaways / r.habits.pokes : NaN), show: r => (r.habits.pokes ? pct1(100 * r.habits.pokeTakeaways / r.habits.pokes) : '–') },
+    { key: 'hooks', label: 'Hooks/GP', value: r => r.habits.hooks / r.habitGames, show: r => per(r.habits.hooks, r.habitGames) },
+    { key: 'passPct', label: 'Pass %', title: 'Passes by the person\u2019s skater that got to a teammate (or a one-timer)', value: r => (r.humanPasses && r.humanPasses[0] ? r.humanPasses[1] / r.humanPasses[0] : NaN),
+      show: r => (r.humanPasses && r.humanPasses[0] ? pct1(100 * r.humanPasses[1] / r.humanPasses[0]) : '–') },
+    { key: 'goalie', label: 'Goalie time/GP', title: 'Time a person controlled the goalie, a game (real time)', value: r => r.habits.goalieSeconds / r.habitGames, show: r => mmss(r.habits.goalieSeconds / r.habitGames) },
+    { key: 'dives', label: 'Dives/GP', value: r => r.habits.dives / r.habitGames, show: r => per(r.habits.dives, r.habitGames) },
+  ], 'habitGames') : '<p class="empty">No controller recordings in these games.</p>';
+  // Passing network of one team: the team picked above, else My team, else the one with the most games. A pass only
+  // has a receiver when it reached one (a picked-off pass has no known target), so these are completed passes.
+  const netTeam = rows.find(r => r.abbr === focus) || [...rows].sort((a, b) => b.gp - a.gp)[0];
+  const pairs = Object.entries(netTeam.pairs).map(([k, v]) => ({ k, made: v[1], shots: v[2] })).filter(p => p.made || p.shots);
+  const network = table('playPairs', pairs, [
+    { key: 'k', label: 'Passer \u2192 receiver', left: true, show: r => esc(r.k) },
+    { key: 'made', label: 'Passes completed' },
+    { key: 'shots', label: 'Shot attempts off them', title: 'Shot assists: the receiver\u2019s attempts straight off the pass' },
+    { key: 'rate', label: '\u2192 shot', title: 'Share of these passes that led straight to a shot attempt', value: r => (r.made ? r.shots / r.made : NaN),
+      show: r => (r.made ? pct1(100 * r.shots / r.made) : '\u2013') },
+  ], 'made');
+  return '<h2>Play style</h2><h2 style="font-size:14px">How chances were made</h2>' + chances +
+    '<h2 style="font-size:14px;margin-top:20px">Person vs computer</h2>' + versus +
+    '<h2 style="font-size:14px;margin-top:20px">Controller habits</h2>' + habits +
+    `<h2 style="font-size:14px;margin-top:20px">Passing network: ${esc(netTeam.name)} <small class="muted">(pick a team above to see another)</small></h2>` + network +
+    '<p class="note">The person always has the puck carrier, so shots and passes are almost all the person\u2019s; checks and penalties are where the computer\u2019s skaters show.</p>';
+}
+
+// ---------------------------------------------------------------------------------------------------- goalie maps
+// Where goalies get beaten: every attempt that reached a goalie (or his team), drawn on the half rink he defends,
+// with goals and save percentage by type.
+let gmWho = '';
+function goalieShots(list, who) {
+  // who: 'g:<abbr>|<name>' a goalie, 't:<abbr>' all of a team's goalies. Shots are [x, y, result, goalie, type, flags].
+  const out = [];
+  for (const g of list) g.abbr.forEach((abbr, side) => {
+    const kind = who.slice(0, 2), key = who.slice(2), [team, name] = key.split('|');
+    if (abbr !== team) return;
+    const shooters = g.teams[1 - side].shotMap || [];
+    const keeper = kind === 'g:' ? (g.players[side].find(p => p.goalie && p.name === name) || {}).idx : null;
+    for (const s of shooters) if (kind === 't:' || s[3] === keeper) out.push(s);
+  });
+  return out;
+}
+function viewGoalieMap(list) {
+  const goalies = [];
+  for (const g of list) g.abbr.forEach((abbr, side) => {
+    for (const p of g.players[side]) if (p.goalie && (p.sa || p.toi)) { const k = 'g:' + abbr + '|' + p.name; if (!goalies.some(x => x[0] === k)) goalies.push([k, p.name + ' (' + abbr + ')']); }
+  });
+  const teams = [...new Set(list.flatMap(g => g.abbr))].sort().map(a => ['t:' + a, 'All ' + a + ' goalies']);
+  const options = [...goalies.sort((a, b) => a[1].localeCompare(b[1])), ...teams];
+  if (!options.some(o => o[0] === gmWho)) gmWho = (options.find(o => o[0].startsWith('t:' + myTeam())) || options[0] || [''])[0];
+  return `<h2 style="margin-top:24px">Where goalies get beaten</h2>
+    <div class="filters" style="margin-bottom:12px"><label>Goalie <select id="gmWho">${options.map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('')}</select></label></div>
+    <div class="heatwrap"><canvas id="gmCanvas" width="360" height="330" aria-label="Shots against"></canvas><div class="heatside" id="gmSide"></div></div>`;
+}
+const SHOT_TYPES = { 'wrist shot': 'Wrist shots', slapshot: 'Slapshots', 'one-timer': 'One-timers', deflection: 'Deflections', 'pass shot': 'Pass shots', other: 'Scrambles' };
+async function drawGoalieMap(list) {
+  const canvas = $('gmCanvas');
+  if (!canvas) return;
+  $('gmWho').value = gmWho;
+  const shots = goalieShots(list, gmWho).filter(s => 'gsp'.includes(s[2]));  // ones that reached the goalie
+  const system = list.every(g => g.system === 'snes') ? 'snes' : 'genesis', pic = RINK_PICS[system];
+  const img = await rinkImage(system);
+  if ($('gmCanvas') !== canvas) return;
+  // The half rink he defends, shown with the net at the top (shots are kept attacking up).
+  const ctx = canvas.getContext('2d'), scale = canvas.width / 900, top = pic.cy - 300 * pic.uy;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (img) ctx.drawImage(img, 0, top - 10, 900, 300 * pic.uy + 20, 0, 0, canvas.width, (300 * pic.uy + 20) * scale);
+  const at = (x, y) => [(pic.cx + x * pic.ux) * scale, (pic.cy - y * pic.uy - (top - 10)) * scale];
+  for (const s of shots.filter(s => s[2] !== 'g')) {  // saves and posts first, goals on top
+    const [px, py] = at(s[0], s[1]);
+    ctx.beginPath(); ctx.arc(px, py, 4, 0, 2 * Math.PI); ctx.lineWidth = 1.6; ctx.strokeStyle = s[2] === 'p' ? '#f2c744' : '#1e242c'; ctx.stroke();
+  }
+  for (const s of shots.filter(s => s[2] === 'g')) {
+    const [px, py] = at(s[0], s[1]);
+    ctx.beginPath(); ctx.arc(px, py, 5, 0, 2 * Math.PI); ctx.fillStyle = '#e5484d'; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+  }
+  // Goals and save % by type, and in the slot (high danger), off rebounds, EA Specials, wraparounds
+  const rowsFor = test => { const all = shots.filter(test), goals = all.filter(s => s[2] === 'g').length; return [all.length, goals]; };
+  const lines = [['All shots', rowsFor(() => true)],
+    ...Object.entries(SHOT_TYPES).map(([k, n]) => [n, rowsFor(s => s[4] === k)]),
+    ['High danger (the slot)', rowsFor(s => s[5].includes('h'))], ['Rebounds', rowsFor(s => s[5].includes('r'))],
+    ['EA Specials', rowsFor(s => s[5].includes('e'))], ['Wraparounds', rowsFor(s => s[5].includes('x'))]].filter(([, v]) => v[0]);
+  $('gmSide').innerHTML = `<table><thead><tr><th class="left">Shots</th><th>Faced</th><th>Goals</th><th>SV%</th></tr></thead><tbody>` +
+    lines.map(([n, v]) => `<tr><td class="left">${n}</td><td>${v[0]}</td><td>${v[1]}</td><td>${svp(v[0], v[1])}</td></tr>`).join('') + '</tbody></table>' +
+    '<p class="note">Red: goals. Hollow: saves (yellow: off the post). Every shot that reached him, his net at the top.</p>';
 }
 
 function viewGames(list, team) {
