@@ -427,7 +427,7 @@ HOT_COLD_RATINGS = (1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13)  # roster index of r
 
 
 def add_hot_cold(cap, match):
-    """Each player's hot / cold bonuses as play uses them (docs/GAME_MECHANICS.md 2.2), into his roster entry as "hcs":
+    """Each player's hot / cold bonuses as play uses them (docs/SNES_MECHANICS.md 2.2), into his roster entry as "hcs":
     a value per rating in roster order: a number added to the working rating (0-15 scale: the byte / 4), or "max" where
     the byte is negative, which the game's sign bug turns into the highest rating."""
     if not match.get("rosters"):

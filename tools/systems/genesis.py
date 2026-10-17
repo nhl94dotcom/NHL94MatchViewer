@@ -374,7 +374,7 @@ HOT_COLD = 0x1A2  # in each team block: 16 bytes per roster place, rolled at the
 
 
 def add_hot_cold(cap, match, settings):
-    """Each player's hot / cold bonus as play uses it (docs/GAME_MECHANICS.md 2.2), into his roster entry: "hc", one
+    """Each player's hot / cold bonus as play uses it (docs/GENESIS_MECHANICS.md 2.2), into his roster entry: "hc", one
     value added to all his ratings (the original code reads only the first of his 16 bytes), or "hcr", a value per
     rating in roster order (ROMs whose bonuses were fixed to match Edit Lines), on the 0-30 working scale (the byte / 3,
     rounded toward 0). Nothing for ROMs with the bonuses turned off."""

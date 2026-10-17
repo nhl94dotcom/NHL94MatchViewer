@@ -41,10 +41,11 @@ reel), Game flow, and pointing at a player in the lineups for his card.
 
 ## More
 
-[docs/GAME_MECHANICS.md](docs/GAME_MECHANICS.md) explains how NHL '94 really plays on the Genesis and the SNES:
-ratings, saves, checks, penalties, faceoffs, the computer players and the bugs, read from the games' code and checked
-against recorded games. [docs/PRACTICAL_GUIDE.md](docs/PRACTICAL_GUIDE.md) is the player's version: how to read the
-0-99 ratings screen, how to pick a lineup, and what works on the ice.
+How NHL '94 really plays, read from the games' code and checked against recorded games (ratings, saves, checks,
+penalties, faceoffs, the computer players and the bugs), one document per system:
+[Genesis](docs/GENESIS_MECHANICS.md) and [SNES](docs/SNES_MECHANICS.md). The player's versions (how to read the ratings
+screen, how to pick a lineup, what works on the ice): [Genesis guide](docs/GENESIS_GUIDE.md) and
+[SNES guide](docs/SNES_GUIDE.md).
 
 `CLAUDE.md` is the detailed record: how the game's memory is laid out, the ROM formats, how each stat is worked out
 and how it was checked.

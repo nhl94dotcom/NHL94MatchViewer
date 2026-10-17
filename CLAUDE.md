@@ -1321,7 +1321,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   over"; in fact the original sum is physical and only the person's byte overflow is wrong). 'simple' swaps sub.b /
   add.b (base - target + checker: computer checkers better the lighter they are; a person's overflows when 2+ heavier);
   'on' hooks base - target + 3/4 checker + 2 x Chk - 14, still in a byte (the same reversal for the computer; a person's
-  overflows once weight and Checking are high: equal 60s, Chk 23+). Worked through in GAME_MECHANICS.md 7.2. The user's
+  overflows once weight and Checking are high: equal 60s, Chk 23+). Worked through in GENESIS_MECHANICS.md 7.2. The user's
   rule (2026-10-17): where the editor and the disassembly disagree, trust the disassembly. The editor's other play
   settings, checked against the code: goalieWidth / goalieOut ($B632 / $B66A, doinput_chkanim) and goalieLine ($D3EA,
   assgoaliectrl) bind only a goalie a person controls; energyDrain 33 is taken about 1 frame in 128 (HV counter test)
@@ -1722,7 +1722,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   (checked: Agl 0 ... Agr 11), so a number below its band's middle = that rating maxed in play. The Genesis pre-game
   Matchups screen (ScoutingReport) re-rolls hot / cold. Overall weights (OvrPlayerWgtList, w / 2): Spd, OfA, StH 3;
   Agl, DfA, Chk, ShA 2; ShP, End, Pas 1; goalies Agl, DfA, PkC 4.5, the four save ratings 1. All in
-  docs/GAME_MECHANICS.md 2.5 and docs/PRACTICAL_GUIDE.md (the player's guide, 2026-10-17, which the user asked for).
+  docs/GENESIS_MECHANICS.md / SNES_MECHANICS.md 2.5 and the player's guides (2026-10-17, which the user asked for).
 
 ## Expected goals and penalty-shot flags (2026-10-17)
 
@@ -1751,8 +1751,8 @@ the log loss) and left out. Viewer: shot tooltip "xG 0.34", card xG (skaters) / 
 deflections or pass shots, have no xG), STAT_HELP and Help. Season summaries VERSION 17: team `xg` [xGF, goals from
 those shots, xGA, goals against from those], skater `xg` [xG, G], goalie `xga` [xGA, GA] (keys absent without xG);
 season page Skaters xG and G-xG, Goalies xGA and GSAx, Advanced chances table xGF, xGA, xGF%, G-xG. season.html's team
-summing now adds numbers only (a null had turned an array into a string). Documented in GAME_MECHANICS.md 4.9 and 5.4
-(the goalie's movement) and the Practical Guide 12.3. Not yet: the SNES (its goalie is a different box).
+summing now adds numbers only (a null had turned an array into a string). Documented in GENESIS_MECHANICS.md 4.9 and 5.3
+(the goalie's movement) and GENESIS_GUIDE.md 12.3. Not yet: the SNES (its goalie is a different box).
 
 ## League ROM settings and hot / cold on the card (2026-10-17)
 

@@ -1,4 +1,4 @@
-"""Expected goals from the Genesis game's own rules (2026-10-17; see docs/GAME_MECHANICS.md 4.9).
+"""Expected goals from the Genesis game's own rules (2026-10-17; see docs/GENESIS_MECHANICS.md 4.9).
 
 Every shot is played out N_SAMPLES times the way the game would: the shot code (doshot) sends it at the aim point
 exactly, with chance (Shot Accuracy + 1) / (Shot Accuracy + 16) from within 200 of that point (always while the

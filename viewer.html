@@ -2166,7 +2166,7 @@ function drawTag(x, y, text, up = 0) {
 
 // Ratings as the ROM stores them (0-6 in the original game), in the order of the game's own labels.
 const SKATER_STATS = ['Weight', 'Agility', 'Speed', 'Off. aware', 'Def. aware', 'Shot power', 'Checking', 'Shoots', 'Stick hand.', 'Shot acc.', 'Endurance', 'Shoot bias', 'Pass acc.', 'Aggression'];
-// What each rating does in play (docs/GAME_MECHANICS.md section 2.4), shown when pointing at it on the card.
+// What each rating does in play (docs/GENESIS_MECHANICS.md and SNES_MECHANICS.md, section 2.4), shown when pointing at it on the card.
 const RATING_HELP = {
   'Weight': 'His weight. Heavier players accelerate slower (on the Genesis a Weight point costs as much as 2 Agility points), are harder to knock down and push harder in collisions. On the Genesis a person-controlled checker does best against heavier players (the weight bug).',
   'Agility': 'Acceleration, and so how quickly he changes direction. For a goalie also his reach: how far from his centre he can stop a puck.',
@@ -2189,7 +2189,7 @@ const RATING_HELP = {
   'Glove left': 'On the Genesis, 11 or more lets him make the reaching glove save; otherwise not used.',
 };
 // A player's hot / cold bonus as the game applies it (the converter's hc / hcr / hcs, from the game's memory; see
-// docs/GAME_MECHANICS.md 2.2), in words. Genesis: one value for all ratings, or one per rating on ROMs that fixed it,
+// docs/GENESIS_MECHANICS.md / SNES_MECHANICS.md 2.2), in words. Genesis: one value for all ratings, or one per rating on ROMs that fixed it,
 // on the 0-30 working scale (a rating point is worth 5); SNES: one per rating (0-15 scale), "max" where the game's sign
 // bug turns a cold value into the highest rating.
 function hotColdWords(p) {
@@ -3499,7 +3499,7 @@ function fillRomSettings() {
   const r = match && match.romSettings;
   if (!r) {
     $('romSettingsNote').textContent = match && match.system === 'snes'
-      ? 'SNES ROMs have no known gameplay settings to read; the mechanics notes (docs/GAME_MECHANICS.md) say how the SNES game plays.'
+      ? 'SNES ROMs have no known gameplay settings to read; the SNES mechanics notes (docs/SNES_MECHANICS.md) say how the SNES game plays.'
       : 'This game\u2019s ROM settings could not be read (not a ROM of the original game or the 30-team ROM built on it, or a game converted before they were read).';
     return;
   }
