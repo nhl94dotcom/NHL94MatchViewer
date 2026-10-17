@@ -1314,9 +1314,20 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   contact) makes the contact a computer one: the 120 formula, where his weight helps; but checkagr's penalty range is not
   doubled for the computer, so twice the charging / roughing chance. Recordings (8 Genesis games, lunges that met an
   opponent; target 2+ heavier / within 1 / 2+ lighter): person 48% / 15% / 7%; computer 15% / 27% / 34%; CB checks
-  (controlled at the burst, not at contact) 10 of 18. The NOSE editor's hacks: weightFix at $13D72 (its comment
-  describes the mechanism differently: "takes the checker's weight from the other player's") and checkFix at $13D6C
-  (6700 0004 -> 4E71 4E71: everyone uses 240, so CB gains nothing). Of the 65 Genesis ROMs in the ROM folder, all the
+  (controlled at the burst, not at contact) 10 of 18. The NOSE editor's hacks: weightFix at $13D72 and checkFix at
+  $13D6C (6700 0004 -> 4E71 4E71: everyone uses 240, so CB gains nothing in knockdowns, still doubles the penalty
+  risk, and computer checkers get the weight bug). The weight "fix" rests on a misreading (the editor's comment: the
+  original "takes the checker's weight from the other player's, so that light players check well and heavy ones fall
+  over"; in fact the original sum is physical and only the person's byte overflow is wrong). 'simple' swaps sub.b /
+  add.b (base - target + checker: computer checkers better the lighter they are; a person's overflows when 2+ heavier);
+  'on' hooks base - target + 3/4 checker + 2 x Chk - 14, still in a byte (the same reversal for the computer; a person's
+  overflows once weight and Checking are high: equal 60s, Chk 23+). Worked through in GAME_MECHANICS.md 7.2. The user's
+  rule (2026-10-17): where the editor and the disassembly disagree, trust the disassembly. The editor's other play
+  settings, checked against the code: goalieWidth / goalieOut ($B632 / $B66A, doinput_chkanim) and goalieLine ($D3EA,
+  assgoaliectrl) bind only a goalie a person controls; energyDrain 33 is taken about 1 frame in 128 (HV counter test)
+  and Endurance / 2 is given back only above $C00 (capture5: steps -33 and -20..-26, -204 bursts, +9 a second on the
+  bench); speedBurst replaces energy >> 7 (32 fresh); turnRate is stopna's 150 a frame (stopping, and reversing in
+  noturn0). Of the 65 Genesis ROMs in the ROM folder, all the
   NHL '94-based ones (CDL league ROMs, nhl94.bin) have the original code; only WJ2025_v01.bin has the CB fix; none the
   weight fix. SNES: 16-bit sums and no person doubling, so no weight bug and nothing gained by CB.
   Penalties (checkagr): randomd0(((40 - Agr) / 2) x 13), doubled for a person,

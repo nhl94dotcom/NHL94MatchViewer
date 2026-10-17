@@ -497,9 +497,33 @@ weight helps. The price: computer checkers draw **twice the penalties** of perso
 | The computer | 15% | 27% | 34% |
 | CB checks | 10 of 18 overall | | |
 
-**ROMs:** the NOSE editor has fixes for both (`weightFix`, and `checkFix`, which makes everyone use 240 so CB gains
-nothing). In a survey of 65 Genesis ROMs, all the NHL '94-based league ROMs and `nhl94.bin` have the original code;
-only one ROM (WJ2025_v01) has the CB fix, and none the weight fix.
+**ROMs:** the editors' hacks (smozROM, carried on by NOSE4Web) offer changes to both, but **their weight "fix" rests
+on a misreading** of this code. The editor's note says the original game takes the checker's weight from the target's,
+"so that light players check well and heavy ones fall over". In fact the original formula is the physical one
+(checker's weight subtracted, so a heavier checker does better, as the computer's numbers above show); the only bug is
+the byte overflow for a person's checker. The two versions found in ROMs:
+
+- **"Simple"** (`sub.b` and `add.b` swapped: base - target + checker): computer checkers now do *better the lighter
+  they are*, and a person's checker overflows when he is 2 or more points *heavier* than the target, an automatic
+  knockdown.
+- **The full fix** (base - target + 3/4 x checker + 2 x Checking - 14, still in one byte): computer checkers again do
+  better the lighter they are, and for a person's checker the sum overflows once his weight and Checking are high
+  enough (at equal weights of 60, working Checking 23 or more), turning a hard check into an automatic one.
+
+Worked through for a check at impact 30 by a skater with working Checking 16 (light 40, heavy 80):
+
+| Version | Person: light into heavy | Person: equal | Person: heavy into light | Computer: light into heavy | Computer: heavy into light |
+|---|---|---|---|---|---|
+| Original | 100% | 10% | 13% | 18% | 90% |
+| Simple | 13% | 10% | 100% | 90% | 18% |
+| Full fix | 12% | 10% | 100% | 64% | 18% |
+
+A real fix would do the original sum in a word (`sub.w` / `add.w` with the weights zero-extended), which leaves the
+computer's checking as it is and stops the overflow. `checkFix` (the two-instruction branch at $13D6C replaced by
+NOPs) makes **every** checker use 240: CB then gains nothing in knockdowns but still doubles the penalty risk, and
+**computer checkers inherit the weight bug** (automatic against anyone 2+ points heavier, poor against lighter men).
+In a survey of 65 Genesis ROMs, all the NHL '94-based league ROMs and `nhl94.bin` have the original code; only one ROM
+(WJ2025_v01) has `checkFix`, and none either weight change.
 
 **SNES:** no weight bug (the sum uses 16 bits and people get the same base), so nothing to gain from a CB check.
 **Confirmed:** heavier checkers knocked their man down 50% of the time, lighter 39%.
@@ -958,6 +982,11 @@ penalty shot, 10.3).
   line-changes-off game recorded (three Genesis, four SNES); with line changes on, energy fell to about a third.
 - With line changes On, energy drains while skating and with each burst, recovers on the bench, and lowers shot power,
   stickhandling and (SNES) top speed.
+- Genesis amounts (energy runs 0-4096): on the ice a skater loses 33 at a time, every 2-3 seconds (the code tests the
+  video chip's beam position, about 1 frame in 128); **while he is above 3/4 his Endurance gives back half its working
+  value** (up to 15), so Endurance only slows the first quarter of the drain. Each speed burst costs 204. On the bench
+  he gains 9 a second. **Confirmed** in capture5 (line changes on): steps of -33 and -20 to -26 on the ice, -204 at
+  bursts, +9 on the bench.
 - Genesis "Auto" line changes: energy drains, but every use of it reads full energy.
 
 ### 14.2 How the computer changes lines (Genesis, line changes On)
@@ -992,14 +1021,14 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 | Rating scale | 0-6 (x5 on the ice) | 0-15 (x2), with their own overall formulas |
 | Hot / cold in play | one value per player (the bug, 2.2) | **one value per rating** (the bug fixed), or **off** |
 | Hot / cold in Edit Lines | each rating's own value (not what plays) | **as played**, or not shown |
-| Weight bug (7.2) | present | fixed (a fuller fix that also uses Checking, or an earlier simple one) |
-| C-then-B check (7.2) | works | fixed (everyone checks with the person formula) |
+| Weight bug (7.2) | present | "fixed" (two versions, both of which reverse the computer's checking; see 7.2) |
+| C-then-B check (7.2) | works | removed (everyone checks with the person formula, weight bug included) |
 | Goalie hold whistle | 140 frames (2.33 s) | longer, shorter, or never |
-| Goalie range without the puck | 36 to each side, 231 from centre | wider |
-| Goalie whistle line with the puck | 170 from centre | moved |
-| Energy (line changes on) | lose 33, regain 9 | other amounts, or unlimited stamina |
-| Speed burst | from energy, at most 32 | one fixed push for everyone |
-| Stopping and turning | 150 | faster or slower |
+| A person's goalie, without the puck | kept within 36 to each side and 231 from centre | wider |
+| A person's goalie whistle line | 170 from centre (reachable only with the puck) | moved |
+| Energy (line changes on) | on the ice -33 every 2-3 s (Endurance gives back up to 15 while above 3/4), -204 a burst; +9 a second on the bench | other amounts, or unlimited stamina |
+| Speed burst | 32 when fresh, less when tired | one fixed push for everyone |
+| Stopping and reversing | sheds 150 speed a frame | faster or slower |
 | Clock | 2.5x real time | real time |
 | Base weight | 140 lb + 8 per Weight point | 102-152 lb |
 | Checks per player | not kept (penalty minutes there) | kept |
