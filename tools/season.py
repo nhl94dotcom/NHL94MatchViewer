@@ -16,9 +16,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
-from export_match import PASS_DIRS, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
+from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 13  # 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 14  # 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -36,6 +36,11 @@ def played_periods(m):
         if m["period"][i] == m["period"][i - 1] and m["clock"][i] < m["clock"][i - 1]:
             out.add(m["period"][i])
     return out
+
+
+def shot_mph(speed):
+    """A shot's speed (the shot list's, in the game's speed units) in mph at the skating scale."""
+    return speed * PUCK_SPEED_SCALE / (536 / 178) * 3600 / 5280
 
 
 def puck_seconds_by_zone(m):
@@ -222,6 +227,10 @@ def summarize(m, name, date=None):
             "onGoalie": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") == "goalie"),  # ... or losing it on a goalie
             "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team),  # passes that bounced off the receiver
             "netsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("side") != "defender"),  # the other team's net knocked off
+            "chkGain": sum(1 for h in hits if h["team"] == team and "gain" in h),  # checks that paid off: the puck, a shot, a goal
+            "chkShot": sum(1 for h in hits if h["team"] == team and "shotAfter" in h),
+            "chkGoal": sum(1 for h in hits if h["team"] == team and "goalAfter" in h),
+            "gkGiveGoals": sum(1 for e in turnovers if e["from"] == team and "goalAfterFast" in e),  # goals off its goalies' giveaways
             "ownNetsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("side") == "defender"),  # its own
             "passTried": team_value(team, "passTried"), "passMade": team_value(team, "passMade"),
             "attackZone": team_value(team, "attackZone"),
@@ -331,7 +340,9 @@ def summarize(m, name, date=None):
                 line.update({"hdSa": sum(1 for s in faced if s.get("danger") == "high"),
                              "hdGa": sum(1 for s in faced if s.get("danger") == "high" and s["result"] == "goal"),
                              "rebAllowed": sum(1 for s in faced_all if s["result"] == "save" and s.get("after") == "rebound"),
-                             "saves": sum(1 for s in faced_all if s["result"] == "save")})
+                             "saves": sum(1 for s in faced_all if s["result"] == "save"),
+                             # his passes picked off and scored from within 6 s
+                             "giveGoals": sum(1 for e in turnovers if e["from"] == team and e.get("giver") == idx and "goalAfterFast" in e)})
                 line.update({"sa": v[2], "ga": v[0], "a": v[1],
                              "human": [sum(1 for s in faced if s.get("gctl") == "human"),
                                        sum(1 for s in faced if s.get("gctl") == "human" and s["result"] == "goal")],
@@ -360,6 +371,14 @@ def summarize(m, name, date=None):
                     "onGoalie": sum(1 for e in m.get("bumps", []) if e.get("kind") == "goalie" and e["team"] == team and e["idx"] == idx),
                     "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team and e["idx"] == idx),
                     "netsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("by") == idx),
+                    # shot speeds in mph (shots and one-timers): their sum and count for an average, and the hardest
+                    "shotMphSum": round(sum(shot_mph(s["speed"]) for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")), 1),
+                    "shotMphN": sum(1 for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")),
+                    "shotTop": round(max([shot_mph(s["speed"]) for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")] or [0]), 1),
+                    # his checks that paid off: the puck within 2 s, a shot within 5 s of that, a goal within 8 s
+                    "chkGain": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "gain" in h),
+                    "chkShot": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "shotAfter" in h),
+                    "chkGoal": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "goalAfter" in h),
                 })
                 if any("dir" in q for q in m.get("passes", [])):
                     # Passing by zone (def, neu, att) and direction (forward, diagonal forward, sideways, diagonal back,

@@ -902,6 +902,28 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   without game sprites. Checked in headless Edge: Smith's (top, picture and overhead), Courtnall's P2 3:18 (bottom
   net pushed back to the end boards, picture; and turned 180). `&overhead=0` in the address shows the rink picture.
   Summary VERSION 13.
+- Goal spots, shot speeds, checks that pay off, goalie giveaways (2026-10-16, the user asked for all four):
+  - `add_goal_spots`: each goal's `net` {x, z, end}: where it crossed the goal line, x across the mouth as the shooter
+    sees it (negative = his left, posts +/-20), z the puck's height (Genesis; None on the SNES: no puck height). The game
+    counts the goal a moment before the puck reaches the line and then puts the puck at a resting spot in the net, so
+    the crossing is projected from the last two different positions before the line (consecutive samples repeat).
+    Found for 60 of 72 goals; Genesis heights 5.7-13.2. Viewer: a little net (shooter's view, crossbar at 16 units)
+    beside the goal banner's text and on each scoring-summary line, with a tooltip ("In the shooter's left, low");
+    SNES goals get a dashed line over the net's height.
+  - Shot speed: PUCK_SPEED_SCALE 0.015 game units a (real) second per unit of the shot list's `speed` (measured from
+    loose pucks' movement: 0.0145-0.0155 on both systems; a 23000 shot = 78 mph). Viewer `shotMph`: shot tooltips, the
+    card (average and hardest); season summaries `shotMphSum` / `shotMphN` / `shotTop` (the season keeps the max), the
+    Skaters tab's SHOT MPH and TOP. BOS-PIT: Bourque 71 average, 99 top; Neely 34 (quick wrist shots).
+  - `add_check_payoff`: each hit's `onCarrier` (the player hit had the puck in the 0.5 s before), `gain` (his team had
+    the puck within CHECK_GAIN_MS 2 s, before the other team), `shotAfter` (an attempt within 5 s of the gain), and for a
+    check on the carrier `goalAfter` (a goal within CHECK_GOAL_MS 8 s, the other team never having the puck): that goal
+    gets the kind 'off a check' (8 in the recordings, 3-7 s after the check; without the carrier rule it was 13).
+    Team stats (Physical: · on the puck carrier, · -> puck / shot / goal), card, season (team CHK->G, skater CHK->).
+  - `add_goalie_giveaways`: a goalie's pass picked off (turnover 'pass picked off' whose giver is a goalie; not a
+    poke check or a hit on him) and the other team scoring within GIVEAWAY_GOAL_MS 6 s with at most GIVEAWAY_PASSES 2
+    passes, his team never getting it back: the turnover's `goalAfterFast`, the goal's kind 'goalie giveaway' (4 in
+    the recordings, each 1-2 s after the pick-off: Moog twice, Joseph, Belfour). Goalie card, season GV->G (goalie),
+    GK GV->G (team). Summary VERSION 14. None of the four reviewed by the user yet.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under

@@ -108,6 +108,8 @@
   .penbox p { margin: 0; color: var(--muted); }
   #callout { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); max-width: 90%; padding: 8px 14px; border-radius: 8px;
     background: rgba(16, 20, 26, 0.92); color: #fff; font-weight: 600; font-size: 14px; text-align: center; pointer-events: none; }
+  #callout.with-net { display: flex; align-items: center; gap: 14px; }
+  .scoring .goal .netpic { float: right; margin: 2px 0 0 8px; }
   #callout small { display: block; color: var(--accent); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
   .teamstats h4 { margin: 0 0 6px; font-size: 13px; }
   .teamstats table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -511,6 +513,10 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Attack-zone possession per goal</dt><dd>A team's possession in its attacking zone (game time) divided by its goals: how long it needed the puck in the other end for each goal (lower is more dangerous). On the season page also the other way round: the opponents' attacking-zone possession for each goal the team allowed (higher is better defence). One game's number is the same seen from either side; over a season the two tell offence and defence apart.</dd>
   <dt>Carried by D / C / W</dt><dd>Who carries the puck: the share of a team's time with the puck on a stick that the carrier was a defenceman, the centre or a winger, by the position he was playing then. Two defencemen, two wingers and one centre, so equal use would be 40 / 20 / 40. In the team stats (Puck control) and, across games, on the season page's Play style tab ("Who carries the puck", by zone, with carried zone entries by position).</dd>
   <dt>Pass direction and zones</dt><dd>Each pass is classed by the way the puck left the stick, against the way the passer's team attacks: forward (within 30&deg; of straight up the ice), diagonal forward (30&ndash;60&deg;), sideways (within 30&deg; of straight across, so a little forward or back still counts), diagonal back, backward; and by the zone it was made in and the zone it reached (attacking, neutral, defensive, in the passer's team's terms). Shown in the team stats ("Passing by zone and direction"), on the card, and on the season page's Play style tab ("Passing by zone"), with each player's game time with the puck in that zone and passes per minute of it: high means he moves the puck on, low means he skates with it.</dd>
+  <dt>Where a goal went in</dt><dd>Each goal in the scoring summary and its banner has a small picture of the net, seen from the shooter's side, with the spot where the puck crossed the goal line (posts at the sides, the crossbar at the top). On the SNES the game does not give the puck's height, so the spot is a dashed line across the net's height.</dd>
+  <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
+  <dt>Checks that pay off, goal off a check</dt><dd>A check after which the checking team had the puck within 2 seconds (before the other team got it back); then a shot attempt within 5 seconds of that; or a goal within 8 seconds of the check, when the check was on the puck carrier and the other team never had the puck between: that goal is tagged "off a check".</dd>
+  <dt>Goalie giveaway</dt><dd>A goal straight off a goalie's bad pass: his pass was picked off and the other team scored within 6 seconds, directly or with up to two passes, without his team getting the puck back. The goal is tagged "goalie giveaway"; it shows on the goalie's card and the season page.</dd>
   <dt>Net knocked off</dt><dd>A skater (or goalie) bumped a net off its spot and play stopped. An attacker knocking the other team's net off gets the faceoff moved out to a dot just outside that zone; a defender knocking his own off keeps it in the zone. The faceoff that follows tells which it was; whoever was nearest the net on that side gets the credit. Shown as a banner, in the team stats (theirs / own), on the card and on the season page. Much more common on the SNES.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
@@ -1447,6 +1453,9 @@ function heatImage(cells, colours) {
   g.putImageData(data, 0, 0);
   return image;
 }
+// A shot's speed in mph: the shot list's puck speed (the game's speed words) at the skating scale (PUCK_SPEED_SCALE in
+// the converter: 0.015 game units a second per speed unit, measured from loose pucks).
+const shotMph = speed => speed * 0.015 / UNITS_PER_FOOT * 3600 / 5280;
 function shotText(sh) {
   // "P2 3:15 · #8 Cam Neely · pass shot · goal"
   const at = periodName(match.period[sh.f]) + ' ' + clockText(match.clock[sh.f]);
@@ -1464,7 +1473,8 @@ function shotText(sh) {
     (sh.afterFlip ? ' \u00b7 EA Special (the rebound)' : sh.rebound ? ' \u00b7 rebound' : '') +
     (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '') +
     (sh.wrap ? ' \u00b7 wraparound' : '') + ({ rush: ' \u00b7 off the rush', zone: ' \u00b7 sustained pressure', faceoff: ' \u00b7 off a faceoff' }[sh.origin] || '');
-  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + ' \u00b7 ' + result + keeper + move + context;
+  const speed = sh.speed && ['shot', 'one-timer', 'pass shot'].includes(sh.kind) ? ' \u00b7 ' + shotMph(sh.speed).toFixed(0) + ' mph' : '';
+  return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + speed + ' \u00b7 ' + result + keeper + move + context;
 }
 // The goalie's save moves, as the converter names them (the game's own animations, grouped).
 // Hits that upend the player or send him into the boards or the bench (the converter's hit outcomes).
@@ -2005,7 +2015,7 @@ function findCallouts(m) {
   }
   for (const g of m.goals || []) {
     const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')'));
-    out.push({ f: g.f, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.join(', ') : ''),
+    out.push({ f: g.f, net: g.net, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.join(', ') : ''),
       text: playerName(g.team, g.scorer) + ' (' + g.goals + ')' + (helpers.length ? ' \u2014 assists ' + helpers.join(', ') : ' \u2014 unassisted') });
   }
   return out.sort((a, b) => a.f - b.f);
@@ -2195,6 +2205,15 @@ function refreshPopover(f, snap) {
       live.hitsTaken = match.hits.filter(e => e.f <= f && e.team !== shown.team && e.on === shown.idx).length;
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
+    if (match.shotList) {
+      const mine = match.shotList.filter(sh => known(sh, f) && sh.team === shown.team && sh.idx === shown.idx && sh.speed && ['shot', 'one-timer'].includes(sh.kind));
+      if (mine.length) live.shotSpeed = Math.round(mine.reduce((a, sh) => a + shotMph(sh.speed), 0) / mine.length) + ' avg, ' + Math.round(Math.max(...mine.map(sh => shotMph(sh.speed)))) + ' top (mph)';
+    }
+    if (match.hits && match.hits.some(h => h.onCarrier !== undefined)) {
+      const mine = match.hits.filter(h => h.f <= f && h.team === shown.team && h.by === shown.idx);
+      live.checkPayoff = mine.filter(h => h.gain !== undefined).length + ' / ' + mine.filter(h => h.shotAfter !== undefined && h.shotAfter <= f).length + ' / ' + mine.filter(h => h.goalAfter !== undefined && h.goalAfter <= f).length;
+    }
+    if (match.turnovers) live.giveGoals = match.turnovers.filter(e => e.goalAfterFast !== undefined && e.goalAfterFast <= f && e.from === shown.team && e.giver === shown.idx).length;
     if (match.netsOff) live.netsOff = match.netsOff.filter(e => e.f <= f && e.byTeam === shown.team && e.by === shown.idx).length;
     if (match.bobbles) live.bobbled = match.bobbles.filter(e => e.f <= f && e.team === shown.team && e.idx === shown.idx).length;
     if ((match.passes || []).some(e => e.dir)) {
@@ -2363,6 +2382,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Saves', saves + ' / ' + live.s);
       addStat(grid, 'Goals against', live.g);
       addStat(grid, 'Save %', live.s ? (saves / live.s).toFixed(3).replace(/^0/, '') : '\u2013');
+      if (live.giveGoals) addStat(grid, 'Giveaways \u2192 goals', live.giveGoals);
       if (live.byControl) {
         addStat(grid, 'Saves, human', live.byControl.human);
         addStat(grid, 'Saves, CPU', live.byControl.cpu);
@@ -2378,6 +2398,8 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
       if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
       if (live.bobbled !== undefined) addStat(grid, 'Bobbled passes', live.bobbled);
+      if (live.shotSpeed) addStat(grid, 'Shot speed', live.shotSpeed);
+      if (live.checkPayoff) addStat(grid, 'Checks \u2192 puck / shot / goal', live.checkPayoff);
       if (live.netsOff) addStat(grid, 'Nets knocked off', live.netsOff);
       if (live.passZones !== undefined) addStat(grid, 'Passes att / neu / def', live.passZones);
       if (live.passWays) { addStat(grid, 'Pass direction', live.passWays); grid.lastChild.style.gridColumn = '1 / -1'; }
@@ -2579,6 +2601,11 @@ const STAT_HELP = {
   'Pucks lost on contact|· to the other team': 'Of those, the ones where the other team got the puck next.',
   'Nets knocked off (theirs / own)': 'Times the team\u2019s skaters knocked a net off its spot: the other team\u2019s (an attacker: the faceoff comes out to a dot just outside that zone) / their own (a defender, the goalie included: the faceoff stays in the zone).',
   'Nets knocked off': 'Times he knocked a net off its spot (either net).',
+  'Body checks|· on the puck carrier': 'Checks landed on the player who had the puck (in the half second before).',
+  'Body checks|· \u2192 puck / shot / goal': 'Checks after which the team had the puck within 2 s (before the other team got it back) / took a shot attempt within 5 s of getting it / scored within 8 s (that last one only for checks on the puck carrier, the other team never touching the puck).',
+  'Shot speed': 'His shots\u2019 speed in mph (average and hardest), from the puck\u2019s speed at the skating scale. Slapshots usually come out at 70-95.',
+  'Checks \u2192 puck / shot / goal': 'His checks after which his team had the puck within 2 s / took a shot within 5 s of that / scored within 8 s (a check on the carrier).',
+  'Giveaways \u2192 goals': 'His passes the other team picked off and scored from within 6 s, with at most two passes of their own.',
   'Pucks lost on a goalie': 'Times a carrier skated into a goalie (either team\u2019s) and the puck came loose.',
   'Distance skated': 'How far the team\u2019s skaters went in all, from their positions (real-rink scale; speeds use real time).',
   'Power play': 'Power-play goals / power plays, as the game counts them.',
@@ -2676,6 +2703,7 @@ function fillTeamStats(snap) {
     return here.filter(e => e.won === team).length + '/' + here.length;
   };
   const iced = team => (match.icings || []).filter(e => e.f <= f && e.team === team).length;
+  const payoff = (team, test) => (match.hits || []).filter(h => h.f <= f && h.team === team && test(h)).length;  // checks that paid off
   const bigHits = team => (match.hits || []).filter(e => e.f <= f && e.team === team && BIG_HITS.includes(e.outcome)).length;
   // Passes by where they were made and which way they went (the converter's add_pass_shape), in each team's view
   const passShape = (match.passes || []).some(e => e.dir);
@@ -2815,6 +2843,8 @@ function fillTeamStats(snap) {
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
+    ...(match.hits && match.hits.some(h => h.onCarrier !== undefined) ? [['· on the puck carrier', payoff(0, h => h.onCarrier), payoff(1, h => h.onCarrier)],
+      ['· \u2192 puck / shot / goal', ...[0, 1].map(team => payoff(team, h => h.gain !== undefined) + ' / ' + payoff(team, h => h.shotAfter !== undefined && h.shotAfter <= f) + ' / ' + payoff(team, h => h.goalAfter !== undefined && h.goalAfter <= f))]] : []),
     ...(match.bumps ? [['Pucks lost on contact', bumped(0).length, bumped(1).length],
       ['· to the other team', bumped(0).filter(e => e.next === 'opponent').length, bumped(1).filter(e => e.next === 'opponent').length],
       ['Pucks lost on a goalie', onGoalie(0), onGoalie(1)]] : []),
@@ -3457,7 +3487,40 @@ function playerName(team, idx) {
   const p = match.rosters && idx !== null && idx !== undefined ? match.rosters[team][idx] : null;
   return p ? '#' + p.num + ' ' + p.name : 'unknown';
 }
-const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot', 'EA Special': 'EA Special' };
+const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot', 'EA Special': 'EA Special',
+  'off a check': 'off a check', 'goalie giveaway': 'goalie giveaway' };
+// Where a goal crossed the goal line (the converter's goal.net: x across the mouth as the shooter sees it, posts at
+// +/-20; z the puck's height, Genesis only): a little net seen from the shooter's side with the puck in it.
+const NET_PIC = { halfW: 20, height: 16 };
+function netSpotWords(net) {
+  const side = Math.abs(net.x) < 6 ? 'middle' : (net.x < 0 ? 'shooter\u2019s left' : 'shooter\u2019s right');
+  const known = net.z !== null && net.z !== undefined;
+  const height = !known ? '' : net.z < 3 ? ', along the ice' : net.z < 8 ? ', low' : ', high';
+  return 'In the ' + side + height + (known ? '' : ' (the SNES game does not give the puck\u2019s height)');
+}
+function netPicture(net, width) {
+  const ns = 'http://www.w3.org/2000/svg', W = 2 * NET_PIC.halfW + 8, H = NET_PIC.height + 6;
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', width); svg.setAttribute('height', Math.round(width * H / W));
+  svg.classList.add('netpic');
+  const el = (name, attrs) => { const e = document.createElementNS(ns, name); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.append(e); return e; };
+  const x0 = 4, y0 = 2, ice = 2 + NET_PIC.height;
+  el('rect', { x: x0, y: y0, width: 2 * NET_PIC.halfW, height: NET_PIC.height, fill: '#ffffff', 'fill-opacity': 0.12 });
+  for (let x = x0 + 4; x < x0 + 2 * NET_PIC.halfW; x += 4) el('line', { x1: x, y1: y0, x2: x, y2: ice, stroke: '#9aa5b1', 'stroke-width': 0.35 });
+  for (let y = y0 + 4; y < ice; y += 4) el('line', { x1: x0, y1: y, x2: x0 + 2 * NET_PIC.halfW, y2: y, stroke: '#9aa5b1', 'stroke-width': 0.35 });
+  el('path', { d: `M${x0} ${ice} V${y0} H${x0 + 2 * NET_PIC.halfW} V${ice}`, fill: 'none', stroke: '#e5484d', 'stroke-width': 1.6 });
+  el('line', { x1: 0, y1: ice, x2: W, y2: ice, stroke: '#9aa5b1', 'stroke-width': 0.8 });
+  const px = x0 + NET_PIC.halfW + Math.max(-NET_PIC.halfW + 1.5, Math.min(NET_PIC.halfW - 1.5, net.x));
+  if (net.z === null || net.z === undefined) {
+    el('line', { x1: px, y1: y0 + 1, x2: px, y2: ice - 1, stroke: '#f2c744', 'stroke-width': 2, 'stroke-dasharray': '2 1.5' });
+  } else {
+    el('circle', { cx: px, cy: Math.max(y0 + 2.6, ice - 2.6 - Math.min(NET_PIC.height, net.z)), r: 2.6, fill: '#f2c744', stroke: '#14181d', 'stroke-width': 0.7 });
+  }
+  const tip = document.createElementNS(ns, 'title');
+  tip.textContent = 'Where it crossed the goal line, seen from the shooter\u2019s side. ' + netSpotWords(net) + '.';
+  svg.prepend(tip);
+  return svg;
+}
 function fillScoring(f) {
   const box = document.querySelector('.scoring');
   if (!box) return;
@@ -3474,6 +3537,7 @@ function fillScoring(f) {
     line.className = 'goal';
     line.textContent = periodName(g.period) + ' ' + clockText(g.clock) + ' \u00b7 ' + (g.team ? match.team2 : match.team1) + ' \u00b7 ' + playerName(g.team, g.scorer) + ' (' + g.goals + ')';
     for (const kind of g.kinds) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = GOAL_TAGS[kind] || kind; line.append(tag); }
+    if (g.net) line.prepend(netPicture(g.net, 46));
     sub.textContent = g.assists.length ? 'Assists: ' + g.assists.map(([idx, n]) => playerName(g.team, idx) + ' (' + n + ')').join(', ') : 'Unassisted';
     line.append(sub);
     box.append(line);
@@ -3572,7 +3636,13 @@ function draw() {
     callout.textContent = '';
     const kind = document.createElement('small');
     kind.textContent = call.kind;
-    callout.append(kind, call.text);
+    callout.classList.toggle('with-net', Boolean(call.net));
+    if (call.net) {
+      // A goal: the words, and beside them where the puck went in
+      const words = document.createElement('div');
+      words.append(kind, call.text);
+      callout.append(words, netPicture(call.net, 110));
+    } else callout.append(kind, call.text);
   }
   const secs = m.clock[f];
   $('clockTime').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');

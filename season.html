@@ -337,7 +337,7 @@ function pool(byTeam = true, withExcluded = false) {
 function standings(list) {
   const rows = new Map();
   const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
-    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, netsOff: 0, ownNetsOff: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, netsOff: 0, ownNetsOff: 0, chkGain: 0, chkShot: 0, chkGoal: 0, gkGiveGoals: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
     for (const side of [0, 1]) {
@@ -364,6 +364,7 @@ function playerLines(list, goalies) {
     r.gp++; r.toi += p.toi || 0;
     for (const [k, v] of Object.entries(p)) {
       if (['idx', 'name', 'num', 'goalie', 'ovr', 'toi', 'dec'].includes(k)) continue;
+      if (k === 'shotTop') { r[k] = Math.max(r[k] || 0, v); continue; }  // the hardest shot of the season, not a sum
       if (Array.isArray(v)) { r[k] = r[k] || v.map(() => 0); v.forEach((x, i) => { r[k][i] += x; }); } else r[k] = (r[k] || 0) + v;
     }
     if (p.dec) { r[p.dec] = (r[p.dec] || 0) + 1; }
@@ -508,6 +509,10 @@ function viewSkaters(list, team) {
     { key: 'checks', label: 'CHK', title: 'Body checks thrown' }, { key: 'hitsTaken', label: 'HIT', title: 'Hits taken' },
     { key: 'bumpedOff', label: 'BMP', title: 'Bumped off the puck: pucks he lost on body contact, no check landed (and, after the dot, pucks he knocked loose that way)', value: r => r.bumpedOff || 0,
       show: r => (r.bumpedOff || r.bumpedLoose ? `${r.bumpedOff || 0}<small> · ${r.bumpedLoose || 0}</small>` : '0') },
+    { key: 'spd', label: 'SHOT MPH', title: 'Average shot speed in mph (shots and one-timers; at the skating scale)', value: r => (r.shotMphN ? r.shotMphSum / r.shotMphN : NaN), show: r => (r.shotMphN ? (r.shotMphSum / r.shotMphN).toFixed(0) : '–') },
+    { key: 'top', label: 'TOP', title: 'His hardest shot, mph', value: r => r.shotTop || NaN, show: r => (r.shotTop ? r.shotTop.toFixed(0) : '–') },
+    { key: 'chkPay', label: 'CHK→', title: 'His checks that paid off: his team had the puck within 2 s · a shot within 5 s of that · a goal within 8 s (check on the carrier)', value: r => (r.chkGain || 0) + 10 * (r.chkGoal || 0),
+      show: r => (r.chkGain || r.chkShot || r.chkGoal ? `${r.chkGain || 0}<small> · ${r.chkShot || 0} · ${r.chkGoal || 0}</small>` : '0') },
     { key: 'netsOff', label: 'NET', title: 'Nets he knocked off its spot (either net)', value: r => r.netsOff || 0, show: r => r.netsOff || 0 },
     { key: 'bobbled', label: 'BOB', title: 'Passes that bounced off him (bobbled)', value: r => r.bobbled || 0, show: r => r.bobbled || 0 },
     { key: 'onGoalie', label: 'ONG', title: 'Pucks he lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie || 0, show: r => r.onGoalie || 0 },
@@ -531,6 +536,7 @@ function viewGoalies(list, team) {
       show: r => (r.human && r.human[0] ? `${svp(r.human[0], r.human[1])} <small>${r.human[0] - r.human[1]}/${r.human[0]}</small>` : '–') },
     { key: 'csv', label: 'SV% CPU', title: 'Save percentage on shots the computer goalie faced', value: r => (r.cpu && r.cpu[0] ? 1 - r.cpu[1] / r.cpu[0] : NaN),
       show: r => (r.cpu && r.cpu[0] ? `${svp(r.cpu[0], r.cpu[1])} <small>${r.cpu[0] - r.cpu[1]}/${r.cpu[0]}</small>` : '–') },
+    { key: 'giveGoals', label: 'GV→G', title: 'Goals scored straight off his own picked-off passes (within 6 s, up to two passes)', value: r => r.giveGoals || 0, show: r => r.giveGoals || 0 },
     { key: 'hdsv', label: 'HD SV%', title: 'Save percentage on high-danger shots (from the slot, within about 20 ft)',
       value: r => (r.hdSa ? 1 - r.hdGa / r.hdSa : NaN), show: r => (r.hdSa ? `${svp(r.hdSa, r.hdGa)} <small>${r.hdSa - r.hdGa}/${r.hdSa}</small>` : '–') },
     { key: 'reb', label: 'Reb%', title: 'Saves that gave the shooters a rebound', value: r => (r.saves ? r.rebAllowed / r.saves : NaN),
@@ -560,6 +566,9 @@ function viewTeams(list, team) {
     { key: 'apg', label: 'ATT POSS/GF', title: 'Attacking-zone possession (game time) for each goal scored: how long the team needed the puck in the other end per goal. Lower is more dangerous', value: r => (r.gf ? r.possAtt / r.gf : NaN), show: r => (r.gf && r.possAtt ? mmss(r.possAtt / r.gf) : '\u2013') },
     { key: 'apa', label: 'OPP POSS/GA', title: 'The other teams\u2019 attacking-zone possession (game time) for each goal allowed: how long opponents had the puck in this team\u2019s end per goal against. Higher is better defence', value: r => (r.ga ? r.possAttAgainst / r.ga : NaN), show: r => (r.ga && r.possAttAgainst ? mmss(r.possAttAgainst / r.ga) : '\u2013') },
     { key: 'bob', label: 'BOB', title: 'Bobbled passes: passes that bounced off the teammate they reached', value: r => r.bobbled / r.gp, show: r => per(r.bobbled, r.gp) },
+    { key: 'chkg', label: 'CHK→G', title: 'Goals off a check: scored within 8 s of checking the puck carrier, the other team never getting the puck back (after the dot: checks a game after which it had the puck)', value: r => r.chkGoal,
+      show: r => `${r.chkGoal}<small> · ${per(r.chkGain, r.gp)}</small>` },
+    { key: 'gvg', label: 'GK GV→G', title: 'Goals the other team scored straight off its goalies’ picked-off passes (within 6 s, up to two passes)', value: r => r.gkGiveGoals },
     { key: 'net', label: 'NET', title: 'Nets knocked off a game: the other team\u2019s (after the dot, its own)', value: r => r.netsOff / r.gp, show: r => `${per(r.netsOff, r.gp)}<small> · ${per(r.ownNetsOff, r.gp)}</small>` },
     { key: 'bmp', label: 'BMP', title: 'Pucks its carriers lost on body contact (no check, poke or hook, not knocked over)', value: r => r.bumped / r.gp, show: r => per(r.bumped, r.gp) },
     { key: 'ong', label: 'ONG', title: 'Pucks its carriers lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie / r.gp, show: r => per(r.onGoalie, r.gp) },
