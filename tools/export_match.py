@@ -1342,6 +1342,119 @@ RUSH_MS = 5000  # a shot attempt within this of the team's zone entry is off the
 PAD_A, PAD_B, PAD_C = 64, 16, 32  # controller bits as kept in the match file (Genesis layout; SNES mapped to it)
 
 
+PUCK_SPEED_SCALE = 0.015  # game units a (real) second for each unit of the puck's speed words, as the shot list keeps them
+                          # (x 100): measured from loose pucks' movement, 0.0145-0.0155 in Genesis and SNES games; a
+                          # 23000 slapshot is about 345 units/s, 78 mph at the skating scale (UNITS_PER_FOOT 536 / 178)
+GOAL_LINE = 268
+
+
+def add_goal_spots(m):
+    """Where each goal crossed the goal line: `net` {x, z, end} on the goal, x across the mouth as the shooter sees it
+    (negative = his left; posts at +/-20), z the puck's height (Genesis; None on the SNES, whose puck height is not
+    read), end 'top' / 'bottom'. The game counts the goal a moment before the puck reaches the line and then puts it at
+    a resting spot in the net, so the crossing is projected from the last two different positions before the line."""
+    P, t, N = m['puck'], m['t'], len(m['t'])
+    snes = m.get('system') == 'snes'
+    for g in m.get('goals', []):
+        f = g['f']
+        for q in [q for q in range(max(2, f - 150), min(N, f + 150)) if abs(t[q] - t[f]) <= 1500]:
+            y0, y1 = P[3 * (q - 1) + 1], P[3 * q + 1]
+            if not (abs(y0) < GOAL_LINE <= abs(y1)) or P[3 * (q - 1) + 2] < -100:
+                continue
+            b = q - 1
+            a = next((z for z in range(b - 1, max(0, b - 12), -1) if (P[3 * z], P[3 * z + 1]) != (P[3 * b], P[3 * b + 1])), None)
+            if a is None or abs(P[3 * b + 1] - P[3 * a + 1]) < 0.5:
+                continue
+            k = ((GOAL_LINE if y1 > 0 else -GOAL_LINE) - P[3 * b + 1]) / (P[3 * b + 1] - P[3 * a + 1])
+            if k > 4:
+                continue  # too far to project
+            x = P[3 * b] + k * (P[3 * b] - P[3 * a])
+            z = P[3 * b + 2] + k * (P[3 * b + 2] - P[3 * a + 2])
+            if abs(x) > 24:
+                continue
+            up = y1 > 0  # the shooter faces +Y: his left is -X; at the -Y net his left is +X
+            g['net'] = {'x': round(x if up else -x, 1), 'z': None if snes else round(max(0.0, z), 1), 'end': 'top' if up else 'bottom'}
+            break
+
+
+CHECK_GAIN_MS = 2000      # a check pays off when the checking team has the puck within this ...
+CHECK_SHOT_MS = 5000      # ... and a shot attempt within this of that, or a goal within CHECK_GOAL_MS of the check
+CHECK_GOAL_MS = 8000
+GIVEAWAY_GOAL_MS = 6000   # a goalie's giveaway the other team scored from within this of picking it off ...
+GIVEAWAY_PASSES = 2       # ... with at most this many passes of its own between
+
+
+def add_check_payoff(m):
+    """Checks that pay off (the user: knocking the puck carrier over deep in the attacking zone and scoring straight
+    away happens now and then). Each hit gets `onCarrier` (the player hit had the puck in the 0.5 s before), and when
+    the checking team got the puck within CHECK_GAIN_MS (before the other team had it back, no whistle): `gain` (the
+    frame), `shotAfter` (its first attempt within CHECK_SHOT_MS of the gain), `goalAfter` (it scored within
+    CHECK_GOAL_MS of the hit, the other team never having the puck between; only for a check on the puck carrier). A
+    goal that came that way gets the kind 'off a check'. After find_hits, find_shots and the goals."""
+    t, own, P, N, K = m['t'], m['owner'], m['puck'], len(m['t']), 12
+    team = lambda k: 0 if k < 6 else 1
+    record = lambda f, tm, idx: next((k for k in range(tm * 6, tm * 6 + 6) if int(m['roster'][f * K + k], 36) == idx), None)
+    hidden = lambda q: P[3 * q + 2] < -100
+    shots, goals = m.get('shotList', []), m.get('goals', [])
+    for h in m.get('hits', []):
+        f, mine = h['f'], h['team']
+        k = record(f, 1 - mine, h['on'])
+        h['onCarrier'] = k is not None and any(own[q] == k for q in range(max(0, f - 40), min(N, f + 2)) if t[f] - t[q] <= 500)
+        gain = None
+        for q in range(f, N):
+            if t[q] - t[f] > CHECK_GAIN_MS or hidden(q):
+                break
+            if own[q] >= 0:
+                if team(own[q]) == mine:
+                    gain = q
+                break  # whoever got it first decides
+        if gain is None:
+            continue
+        h['gain'] = gain
+        shot = next((sh for sh in shots if sh['team'] == mine and gain <= sh['f'] and t[sh['f']] - t[gain] <= CHECK_SHOT_MS
+                     and not any(hidden(q) for q in range(gain, sh['f']))), None)
+        if shot:
+            h['shotAfter'] = shot['f']
+        for g in goals if h['onCarrier'] else []:  # a goal off a check: the puck carrier was the one checked
+            if g['team'] == mine and f < g['f'] and t[g['f']] - t[f] <= CHECK_GOAL_MS and \
+                    not any(hidden(q) or (own[q] >= 0 and team(own[q]) != mine) for q in range(gain, g['f'])):
+                h['goalAfter'] = g['f']
+                if 'off a check' not in g['kinds']:
+                    g['kinds'].append('off a check')
+                break
+
+
+def add_goalie_giveaways(m):
+    """Goals off a goalie's giveaway (the user: a goalie out of position passes, the other team picks it off at once
+    and scores, directly or with up to two passes): a turnover whose giver was his team's goalie, then a goal by the
+    team that took it within GIVEAWAY_GOAL_MS, with no whistle, the goalie's team never getting the puck back and at most
+    GIVEAWAY_PASSES passes by the scorers between. The turnover gets `goalAfterFast` (the goal's frame) and the goal the
+    kind 'goalie giveaway'. After find_turnovers, find_passes and the goals."""
+    t, own, P = m['t'], m['owner'], m['puck']
+    rosters = m.get('rosters') or [[], []]
+    team = lambda k: 0 if k < 6 else 1
+    for e in m.get('turnovers', []):
+        giver = e.get('giver', -1)
+        if giver is None or giver < 0 or giver >= len(rosters[e['from']]) or not rosters[e['from']][giver].get('g'):
+            continue
+        if e.get('how') != 'pass picked off':
+            continue  # his pass: not the goalie being poke-checked or hit with the puck
+        took = 1 - e['from']
+        for g in m.get('goals', []):
+            if g['team'] != took or g['f'] < e['f'] or t[g['f']] - t[e['f']] > GIVEAWAY_GOAL_MS:
+                continue
+            between = range(e['f'], g['f'])
+            if any(P[3 * q + 2] < -100 or (own[q] >= 0 and team(own[q]) != took) for q in between):
+                continue
+            passes = sum(1 for p in m.get('passes', []) if p['team'] == took and e['f'] <= p['f'] < g['f'])
+            if passes > GIVEAWAY_PASSES:
+                continue
+            e['goalAfterFast'] = g['f']
+            if 'goalie giveaway' not in g['kinds']:
+                g['kinds'].append('goalie giveaway')
+            break
+
+
 def add_play_context(m):
     """Tags about how play was made, after add_shot_context:
     - `human` on hits, penalties, shots and passes: the player (thrower, fouler, shooter, passer) was the skater a
@@ -1632,6 +1745,9 @@ def main(argv=None):
         match["bobbles"] = find_bobbles(match)
         match["netsOff"] = find_dislodged_nets(match)
         add_pass_shape(match)
+        add_check_payoff(match)
+        add_goalie_giveaways(match)
+    add_goal_spots(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):
