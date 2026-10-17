@@ -27,9 +27,10 @@ NHL94_Classic and the league ROMs built on it). Where the two differ, both are d
 12. [The computer players](#12-the-computer-players)
 13. [Puck physics](#13-puck-physics)
 14. [Line changes, energy and the crowd](#14-line-changes-energy-and-the-crowd)
-15. [Quick reference: bugs and exploits](#15-quick-reference-bugs-and-exploits)
-16. [Open questions](#16-open-questions)
-17. [Appendix: units, addresses and sources](#17-appendix-units-addresses-and-sources)
+15. [League ROMs: settings that change the game (Genesis)](#15-league-roms-settings-that-change-the-game-genesis)
+16. [Quick reference: bugs and exploits](#16-quick-reference-bugs-and-exploits)
+17. [Open questions](#17-open-questions)
+18. [Appendix: units, addresses and sources](#18-appendix-units-addresses-and-sources)
 
 ---
 
@@ -79,9 +80,10 @@ used.
 - **Bug:** the routine that applies them (`AttributeCalc`) loads the number of the rating it is working on, then
   immediately clears it. So **every rating a player has gets the same single value** (his first one), divided by 3:
   from -3 to +2 on the 0-30 scale (about -0.6 to +0.4 of an editor rating point).
-- **The hot and cold players the game shows you are fake.** The scouting report's hot / cold players and the
-  matchup screen's flame and snowflake icons are worked out from values 4 to 16, and the player cards add each
-  rating's own value. None of those are what plays.
+- **On the original ROM, the hot and cold players the game shows you are fake.** The scouting report's hot / cold
+  players and the matchup screen's flame and snowflake icons are worked out from values 4 to 16, and the player cards
+  add each rating's own value. None of those are what plays. Many league ROMs change this (section 15): most show the
+  bonus as it plays in Edit Lines, some fix the bug so each rating has its own value, and some turn hot / cold off.
 - Checked over 4,000+ moments in four games (including a 30-team league ROM) where the two readings differ: the
   working ratings matched the single value every time.
 
@@ -99,6 +101,10 @@ used.
 
 **Bottom line:** on the Genesis hot / cold is small and invisible; on the SNES it flattens the ratings, which is a big
 part of why ratings matter less on the SNES.
+
+The NHL '94 Viewer shows each player's hot / cold **as played** on his player card ("Hot / cold (as played)"), read
+from the game's memory during the recorded game: the single Genesis value, the per-rating values on ROMs that fixed the
+bug, or on the SNES which ratings the bug maxed.
 
 ### 2.3 Hidden bonuses
 
@@ -972,11 +978,57 @@ change. **Code**
 
 ---
 
-## 15. Quick reference: bugs and exploits
+## 15. League ROMs: settings that change the game (Genesis)
+
+League ROMs are edited with tools such as the NOSE4Web editor
+([nhl94dotcom/NOSE4Web](https://github.com/nhl94dotcom/NOSE4Web)), which carries smozoma's smozROM hacks and other
+changes found by the NHL94 community (wboy, Tony H, clockwise, smozoma, Brodeur30, kingraph, AverageRangersFan).
+Several of them change how the game plays, so **some findings in this document depend on the ROM**. The editor
+recognises each change by the code it leaves in the ROM; the NHL '94 Viewer reads the same places
+(`tools/systems/genesis_settings.py`) and lists a game's ROM settings in its Help ("This game's ROM").
+
+| Setting | Original game | What league ROMs can do |
+|---|---|---|
+| Rating scale | 0-6 (x5 on the ice) | 0-15 (x2), with their own overall formulas |
+| Hot / cold in play | one value per player (the bug, 2.2) | **one value per rating** (the bug fixed), or **off** |
+| Hot / cold in Edit Lines | each rating's own value (not what plays) | **as played**, or not shown |
+| Weight bug (7.2) | present | fixed (a fuller fix that also uses Checking, or an earlier simple one) |
+| C-then-B check (7.2) | works | fixed (everyone checks with the person formula) |
+| Goalie hold whistle | 140 frames (2.33 s) | longer, shorter, or never |
+| Goalie range without the puck | 36 to each side, 231 from centre | wider |
+| Goalie whistle line with the puck | 170 from centre | moved |
+| Energy (line changes on) | lose 33, regain 9 | other amounts, or unlimited stamina |
+| Speed burst | from energy, at most 32 | one fixed push for everyone |
+| Stopping and turning | 150 | faster or slower |
+| Clock | 2.5x real time | real time |
+| Base weight | 140 lb + 8 per Weight point | 102-152 lb |
+| Checks per player | not kept (penalty minutes there) | kept |
+| Second assist | missed when two players pass back and forth | fixed |
+| Plus-minus | not kept | kept |
+| Three stars | the original choice | fuller formulas |
+
+**What the ROMs in one large collection of league ROMs use** (65 Genesis ROMs, 51 of them NHL '94-based):
+
+| ROMs | Hot / cold | Other changes |
+|---|---|---|
+| `nhl94.bin` and its playoff / 1-on-1 versions | original (bug) | none |
+| CDL, IDL, DPWM, RGDL league ROMs (40+) | original in play, **shown as played** in Edit Lines | goalie range 40 / 224 (wider), checks per player, second assist, plus-minus, fuller three stars |
+| WJ2025 | **fixed: one value per rating** | **C-then-B check fixed**, goalie range 40 / 224 |
+| Plablegs04, 2on2 | **off** | 2on2: goalie hold 3 s, fixed speed burst 24 |
+| QDL Season 1 | original | second assist, plus-minus |
+
+**None of them fixes the weight bug, all use the 0-6 rating scale, and all use the original clock.** So the weight
+bug and the C-then-B check work on all of these ROMs except that WJ2025 has no C-then-B check.
+
+The SNES game has no such settings known.
+
+---
+
+## 16. Quick reference: bugs and exploits
 
 | | Genesis | SNES |
 |---|---|---|
-| Hot / cold | One value for all ratings; the shown hot / cold players are fake | Every "cold" rating maxed (about 46% of all ratings) |
+| Hot / cold | One value for all ratings; the shown hot / cold players are fake (league ROMs: often shown as played, fixed or off) | Every "cold" rating maxed (about 46% of all ratings) |
 | Comeback bonus | On in the first half of the 3rd, off in the second | Same |
 | Weight bug | Person checkers do best when lighter than the target | None |
 | CB check | Works (computer formula at contact); twice the penalty risk | Nothing to gain |
@@ -997,7 +1049,7 @@ change. **Code**
 
 ---
 
-## 16. Open questions
+## 17. Open questions
 
 - **Saved shots the game didn't count** (Genesis): the stick-deflection rule doesn't fully explain them.
 - **15 bobbles** with no explanation yet (Genesis): maybe the puck reaching the body before the stick.
@@ -1010,7 +1062,7 @@ change. **Code**
 
 ---
 
-## 17. Appendix: units, addresses and sources
+## 18. Appendix: units, addresses and sources
 
 ### Units
 
@@ -1048,5 +1100,7 @@ change. **Code**
   `onetimer94.asm`, `replay94.asm`)
 - SNES disassembly: [github.com/Mhopkinsinc/NHL94SNES](https://github.com/Mhopkinsinc/NHL94SNES)
   (`src/routines/hockey`, `src/routines/logic`, `src/ram94snes.asm`)
+- League ROM settings: the NOSE4Web editor, [github.com/nhl94dotcom/NOSE4Web](https://github.com/nhl94dotcom/NOSE4Web)
+  (`src/core/hacks.ts`), after smozoma's smozROM and the NHL94 forums.
 - Recordings made with this project's helper; the project's `CLAUDE.md` holds the detailed notes, addresses and test
   methods behind each finding.

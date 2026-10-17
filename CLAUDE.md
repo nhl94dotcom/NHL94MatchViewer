@@ -1698,6 +1698,29 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   off games of both systems (BOS-PIT, CGY-BOS, capture6, the four SNES games); capture3 and capture5 (line changes on)
   went down to 1134-1516. So in the leagues' setting fatigue and the Endurance rating do nothing.
 
+## League ROM settings and hot / cold on the card (2026-10-17)
+
+From the NOSE4Web editor (github.com/nhl94dotcom/NOSE4Web, src/core/hacks.ts; the user asked to use what it knows):
+`tools/systems/genesis_settings.py` reads a Genesis ROM's gameplay settings the way the editor recognises them
+(rating scale, hot / cold in play and in Edit Lines, weight fix, C-then-B fix, bodycheck stats, second assist,
+plus-minus, three stars, base weight, goalie hold / range / whistle line, stamina, energy drain / recovery, speed burst,
+turn rate, real-time clock), only for product code GM T-50656 ROMs (the original game and the 30-team ROMs);
+`python tools/systems/genesis_settings.py <roms>` lists what differs from the original. Over the 65 Genesis ROMs in the
+user's ROM folder: all NHL '94-based ones are 0-6, original clock, no weight fix; the CDL / IDL / DPWM / RGDL league ROMs
+show hot / cold as played in Edit Lines, widen the goalie range (40 / 224), keep checks per player (the earlier hack),
+fix the second assist, keep plus-minus and use the fuller three stars; WJ2025 fixes hot / cold per rating and the
+C-then-B check; Plablegs04 and 2on2 turn hot / cold off. The converter (genesis.read_match) stores them as
+`romSettings`; read_teams uses the editor's average-based overall for 0-15 ROMs (none seen). Hot / cold as played, per
+roster entry: Genesis `hc` (one value, int(byte 0 / 3), the original code) or `hcr` (per rating in roster order, ROMs
+with the per-rating fix), none when the ROM turns them off (genesis.add_hot_cold, team block +$1A2, read mid-game);
+SNES `hcs` (per rating: byte >> 2, or "max" for a negative byte, snes.add_hot_cold, $1A12, read while HotColdRaised
+$19CE is 0). Viewer: the card's "Hot / cold (as played)", the ROM's base weight and rating scale for the weight and
+bars, a tooltip on every rating saying what it does in play (RATING_HELP), the skater rating once labelled Roughness
+now "Shoot bias" (the pass / shoot bias), and the help's "This game's ROM" (fillRomSettings). Checked in headless Edge:
+BOS-PIT Oates "cold: -3 on every rating", TOR-CHI Gilmour "maxed: Speed, Off. aware, Stick hand., Aggression ...",
+the CDL game's settings list. All recordings re-converted (nothing else changed; full_buttons had not been re-converted
+since the rollback filter), the exe rebuilt, the Documents games re-converted, the samples remade.
+
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the

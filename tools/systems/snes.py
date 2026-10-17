@@ -421,6 +421,28 @@ def animation_lists(rom, spa):
     return dirs
 
 
+HOT_COLD = 0x1A12        # 12 bytes per player: (roster place + 26 for Away) x 12 + rating number
+HOT_COLD_RAISED = 0x19CE  # non-zero while a loud crowd has raised four bytes of each entry by 2
+HOT_COLD_RATINGS = (1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13)  # roster index of rating number 0-11 (Agl ... Agr / glove)
+
+
+def add_hot_cold(cap, match):
+    """Each player's hot / cold bonuses as play uses them (docs/GAME_MECHANICS.md 2.2), into his roster entry as "hcs":
+    a value per rating in roster order: a number added to the working rating (0-15 scale: the byte / 4), or "max" where
+    the byte is negative, which the game's sign bug turns into the highest rating."""
+    if not match.get("rosters"):
+        return
+    calm = [i for i in range(cap.count // 4, cap.count, max(1, cap.count // 50)) if cap.word(i, HOT_COLD_RAISED) == 0]
+    i = calm[0] if calm else cap.count // 2
+    for team in (0, 1):
+        for place, player in enumerate(match["rosters"][team]):
+            values = [0] * 14
+            for n, a in enumerate(HOT_COLD_RATINGS):
+                byte = cap.byte(i, HOT_COLD + (place + 26 * team) * 12 + n)
+                values[a] = "max" if byte > 127 else byte >> 2
+            player["hcs"] = values
+
+
 def read_match(cap, rom_path, name, home=None, away=None):
     """The match file's contents from samples of SNES work RAM (cap: anything with count, ms(i), word(i, address),
     byte(i, address): a recording, or save states for a still picture). Positions, the puck, who is controlled,
@@ -580,6 +602,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
         match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
         match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
         match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
+        add_hot_cold(cap, match)
     # Goals from the game's own scoring summary. The game raises the byte count before it has written the entry, so
     # each goal's moment is where the count first covers it, and its contents are read where the summary is
     # longest (the last such sample: complete, and before the game goes back to the menus and clears it). A goal is

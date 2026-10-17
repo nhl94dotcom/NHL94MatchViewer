@@ -366,6 +366,7 @@
       <a href="#h-glossary">Glossary of stats</a>
       <a href="#h-terms">Community terms</a>
       <a href="#h-trouble">Troubleshooting</a>
+      <a href="#h-rom">This game's ROM</a>
     </nav>
     <div class="helptext">
 
@@ -561,6 +562,11 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 </dl>
 </section>
 
+<section id="h-rom"><h2>This game's ROM</h2>
+<p id="romSettingsNote">League ROMs can change how the game plays. The settings of the ROM this game was played on are listed here (Genesis ROMs of the original game and the 30-team ROMs built on it; they are read from the ROM's own code, as the NOSE4Web editor does).</p>
+<dl id="romSettingsList"></dl>
+</section>
+
 <section id="h-trouble"><h2>Troubleshooting</h2>
 <dl>
   <dt>The games page will not open (localhost)</dt><dd>The helper is not running: start it and leave its window open, then reload.</dd>
@@ -687,6 +693,7 @@ function load(m) {
   panelState = '';
   spriteCache.clear();
   buildAnimIndex(m);
+  fillRomSettings();
   logoImage = buildLogo(m);
   useRink(new URLSearchParams(location.search).get('rink') || m.system || 'genesis');
   breakaways = findBreakaways(m);
@@ -2157,7 +2164,51 @@ function drawTag(x, y, text, up = 0) {
 }
 
 // Ratings as the ROM stores them (0-6 in the original game), in the order of the game's own labels.
-const SKATER_STATS = ['Weight', 'Agility', 'Speed', 'Off. aware', 'Def. aware', 'Shot power', 'Checking', 'Shoots', 'Stick hand.', 'Shot acc.', 'Endurance', 'Roughness', 'Pass acc.', 'Aggression'];
+const SKATER_STATS = ['Weight', 'Agility', 'Speed', 'Off. aware', 'Def. aware', 'Shot power', 'Checking', 'Shoots', 'Stick hand.', 'Shot acc.', 'Endurance', 'Shoot bias', 'Pass acc.', 'Aggression'];
+// What each rating does in play (docs/GAME_MECHANICS.md section 2.4), shown when pointing at it on the card.
+const RATING_HELP = {
+  'Weight': 'His weight. Heavier players accelerate slower (on the Genesis a Weight point costs as much as 2 Agility points), are harder to knock down and push harder in collisions. On the Genesis a person-controlled checker does best against heavier players (the weight bug).',
+  'Agility': 'Acceleration, and so how quickly he changes direction. For a goalie also his reach: how far from his centre he can stop a puck.',
+  'Speed': 'Top skating speed.',
+  'Off. aware': 'How quickly he reacts when the computer controls him: chasing loose pucks, pressuring the puck carrier, a defenceman getting back when the puck leaves the zone. No effect while a person controls him.',
+  'Def. aware': 'How quickly he reacts on defence when the computer controls him: a defenceman re-reading a rush, everyone switching to defence after a turnover, a goalie re-aiming. No effect while a person controls him.',
+  'Shot power': 'Shot speed. On the Genesis a player with low shot power cannot wind up a full slapshot.',
+  'Puck control': 'How often he holds a shot instead of letting a rebound go.',
+  'Checking': 'His chance of knocking a player down, and, when the computer controls him, how often he tries to check and how hard he goes after the puck carrier.',
+  'Stick hand.': 'Stealing and protecting the puck, catching hard passes, and wobbling instead of falling when hit.',
+  'Shot acc.': 'How often a shot from close in goes exactly where it is aimed, and how far it strays when it does not.',
+  'Endurance': 'How slowly he tires. Only matters with line changes on: with them off nobody tires.',
+  'Shoot bias': 'Whether he shoots or passes when the computer controls him with the puck: higher means more shooting. Editors call it Roughness.',
+  'Pass acc.': 'Pass speed: passes are always aimed perfectly. On the SNES also how accurate his flips are.',
+  'Aggression': 'How often he is called for penalties. On the Genesis the value wraps: 4 plays like 1, and 3 is the most penalised.',
+  'Glove hand': 'Which hand his glove is on.',
+  'Stick right': 'Not used in play: saves come from the goalie being in the puck\u2019s way.',
+  'Stick left': 'Not used in play: saves come from the goalie being in the puck\u2019s way.',
+  'Glove right': 'Not used in play: saves come from the goalie being in the puck\u2019s way.',
+  'Glove left': 'On the Genesis, 11 or more lets him make the reaching glove save; otherwise not used.',
+};
+// A player's hot / cold bonus as the game applies it (the converter's hc / hcr / hcs, from the game's memory; see
+// docs/GAME_MECHANICS.md 2.2), in words. Genesis: one value for all ratings, or one per rating on ROMs that fixed it,
+// on the 0-30 working scale (a rating point is worth 5); SNES: one per rating (0-15 scale), "max" where the game's sign
+// bug turns a cold value into the highest rating.
+function hotColdWords(p) {
+  const labels = p.g ? GOALIE_STATS : SKATER_STATS;
+  const signed = v => (v > 0 ? '+' : '\u2212') + Math.abs(v);
+  const list = values => values.map((v, i) => (v && labels[i] ? labels[i] + ' ' + (v === 'max' ? 'max' : signed(v)) : null)).filter(Boolean);
+  if (match.romSettings && match.romSettings.bonusesOnIce === 'none') return { text: 'off in this ROM', tip: 'This ROM turns the hot / cold bonuses off.' };
+  if (p.hcs) {
+    const maxed = list(p.hcs.map(v => (v === 'max' ? v : 0))), hot = list(p.hcs.map(v => (v === 'max' ? 0 : v)));
+    return { text: [maxed.length ? 'maxed: ' + maxed.map(t => t.replace(/ max$/, '')).join(', ') : '', hot.length ? 'up: ' + hot.join(', ') : ''].filter(Boolean).join(' \u00b7 ') || 'neutral',
+      tip: 'The hot / cold bonuses the game rolled for him this game. On the SNES a cold value is turned into the highest rating by a bug in the game, so the ratings listed as maxed play at the top of the scale whatever his rating says.' };
+  }
+  if (p.hcr) {
+    const changed = list(p.hcr);
+    return { text: changed.length ? changed.join(', ') : 'neutral', tip: 'The hot / cold bonuses the game rolled for him this game, one per rating (this ROM fixed the original game\u2019s bug), on the game\u2019s 0\u201330 working scale where a rating point is worth 5.' };
+  }
+  if (p.hc === undefined) return null;
+  return { text: p.hc > 0 ? 'hot: ' + signed(p.hc) + ' on every rating' : p.hc < 0 ? 'cold: ' + signed(p.hc) + ' on every rating' : 'neutral',
+    tip: 'The hot / cold bonus the game rolled for him this game, as it plays: the original game adds one value to all his ratings (a bug: the hot and cold players shown before the game come from other values). On the game\u2019s 0\u201330 working scale, where a rating point is worth 5.' };
+}
 const GOALIE_STATS = ['Weight', 'Agility', 'Speed', 'Off. aware', 'Def. aware', 'Puck control', null, 'Glove hand', null, null, 'Stick right', 'Stick left', 'Glove right', 'Glove left'];
 // The player card pop-up, opened from the lineup panels (not from the ice, where it would cover the play): who it
 // shows ({team, idx} plus where on screen), and a player just clicked away, whose card stays down until the
@@ -2472,21 +2523,34 @@ function fillCard(card, p, position, live) {
   card.append(title);
   const stats = document.createElement('div');
   stats.className = 'stats';
+  // The ROM's own base weight and rating scale (league ROMs can change both: romSettings, read by the converter)
+  const rom = match.romSettings || {}, baseWeight = rom.baseWeight || 140, top = rom.ratingScale === '0-15' ? 15 : 6;
   (p.g ? GOALIE_STATS : SKATER_STATS).forEach((label, i) => {
     if (!label) return;  // values the game does not use for goalies
     const v = p.a[i], stat = document.createElement('div'), value = document.createElement('b');
     stat.className = 'stat';
     stat.append(label, value);
-    if (i === 0) value.textContent = (140 + 8 * v) + ' lb';
+    if (RATING_HELP[label]) { stat.title = RATING_HELP[label]; stat.classList.add('has-help'); }
+    if (i === 0) value.textContent = (baseWeight + 8 * v) + ' lb';
     else if (i === 7) value.textContent = v % 2 ? 'Right' : 'Left';  // skaters: this value also holds fighting ability
     else {
       value.textContent = v;
       const bar = document.createElement('div'), fill = document.createElement('i');
-      bar.className = 'bar'; fill.style.width = Math.min(100, v / 6 * 100) + '%';
+      bar.className = 'bar'; fill.style.width = Math.min(100, v / top * 100) + '%';
       bar.append(fill); stat.append(bar);
     }
     stats.append(stat);
   });
+  const hotCold = hotColdWords(p);
+  if (hotCold) {
+    const stat = document.createElement('div'), value = document.createElement('b');
+    stat.className = 'stat has-help'; stat.title = hotCold.tip; stat.style.gridColumn = '1 / -1';
+    stat.style.display = 'block';  // a list can be long: the words wrap on their own line under the label
+    value.style.cssText = 'display: block; white-space: normal; text-align: left; font-weight: 600; margin-top: 2px';
+    value.textContent = hotCold.text;
+    stat.append('Hot / cold (as played)', value);
+    stats.append(stat);
+  }
   card.append(stats);
 }
 
@@ -3394,6 +3458,43 @@ for (const b of document.querySelectorAll('#mtabs button')) b.addEventListener('
 showPane(mobilePane);
 // Help: a panel over the page (also opened by #help in the address, as the games and season pages link to it).
 // The search keeps the sections and entries whose words match.
+// The ROM's settings in words, for the help's "This game's ROM" (match.romSettings, read by the converter with
+// tools/systems/genesis_settings.py, after the NOSE4Web editor). Each line says what the setting means in play.
+function fillRomSettings() {
+  const list = $('romSettingsList'); if (!list) return;
+  list.textContent = '';
+  const r = match && match.romSettings;
+  if (!r) {
+    $('romSettingsNote').textContent = match && match.system === 'snes'
+      ? 'SNES ROMs have no known gameplay settings to read; the mechanics notes (docs/GAME_MECHANICS.md) say how the SNES game plays.'
+      : 'This game\u2019s ROM settings could not be read (not a ROM of the original game or the 30-team ROM built on it, or a game converted before they were read).';
+    return;
+  }
+  const secs = f => (f / 60).toFixed(2).replace(/\.?0+$/, '') + ' s';
+  const add = (term, words) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = term; dd.textContent = words; list.append(dt, dd); };
+  const orig = (value, original, text) => text + (value === original ? ' (as the original game)' : ' (changed from the original game)');
+  if (r.ratingScale) add('Rating scale', orig(r.ratingScale, '0-6', 'Ratings run ' + r.ratingScale.replace('-', ' to ')) + '.');
+  if (r.bonusesOnIce) add('Hot and cold', {
+    'one value per player': 'Each player gets one random bonus for all his ratings each game (the original game\u2019s bug).',
+    'per rating': 'Each rating gets its own random bonus, as Edit Lines shows them (the original game\u2019s bug is fixed).',
+    'none': 'Turned off: ratings play as they are.' }[r.bonusesOnIce] + (r.bonusesShown === 'as played' ? ' Edit Lines shows the bonuses as they play.' : r.bonusesShown === 'not shown' ? ' Edit Lines does not show them.' : r.bonusesOnIce === 'one value per player' ? ' Edit Lines and the scouting report show other values, not the ones that play.' : ''));
+  if (r.weightFix) add('Weight bug', r.weightFix === 'off' ? 'Present: a checker a person controls does best against heavier players (as the original game).' : 'Fixed in this ROM' + (r.weightFix === 'simple' ? ' (the earlier, simpler fix).' : '.'));
+  if (r.checkFix !== undefined) add('C-then-B check', r.checkFix ? 'Fixed: switching away from a bursting checker (the "CB check") gains nothing.' : 'Works: a checker you switch away from before contact checks as a computer player, where his weight helps (as the original game).');
+  if (r.goalieHold !== undefined) add('Goalie holding the puck', r.goalieHold === 0 ? 'Never whistled.' : orig(r.goalieHold, 140, 'Whistled after ' + secs(r.goalieHold)) + '.');
+  if (r.goalieWidth !== undefined) add('Goalie range', orig(r.goalieWidth + '/' + r.goalieOut, '36/231', 'Without the puck a goalie keeps within ' + r.goalieWidth + ' of the middle and ' + r.goalieOut + ' of centre ice') + '.');
+  if (r.goalieLine !== undefined) add('Goalie whistle line', orig(r.goalieLine, 170, 'Play is whistled if a goalie with the puck comes nearer centre ice than ' + r.goalieLine) + '.');
+  if (r.stamina !== undefined) add('Stamina', r.stamina ? 'Unlimited: players on the ice do not tire.' : orig(r.energyDrain + '/' + r.energyRecovery, '33/9', 'With line changes on, players lose ' + r.energyDrain + ' energy at a time on the ice and gain ' + r.energyRecovery + ' on the bench') + '.');
+  if (r.speedBurst !== undefined) add('Speed burst', r.speedBurst ? 'A fixed push of ' + r.speedBurst + ' for everybody (changed from the original game).' : 'The original game\u2019s: up to 32, less for a tired player.');
+  if (r.turnRate !== undefined) add('Stopping and turning', orig(r.turnRate, 150, 'Rate ' + r.turnRate) + '.');
+  if (r.realTimeClock !== undefined) add('Clock', r.realTimeClock ? 'Real time (changed from the original game).' : 'Runs 2.5 times as fast as real time (as the original game).');
+  if (r.baseWeight) add('Base weight', orig(r.baseWeight, 140, 'Weights count up from ' + r.baseWeight + ' lb in steps of 8') + '.');
+  if (r.bodychecks) add('Checks statistic', r.bodychecks === 'off' ? 'Not kept per player (the game counts penalty minutes there).' : 'Each player\u2019s checks are counted' + (r.bodychecks === 'earlier' ? ' (an earlier version of the hack).' : '.'));
+  if (r.secondAssist !== undefined) add('Second assist', r.secondAssist ? 'Fixed: a player who passed to the passer gets the second assist.' : 'The original game\u2019s bug: no second assist when two players pass back and forth.');
+  if (r.plusMinus !== undefined) add('Plus-minus', r.plusMinus ? 'Kept by the game (not shown by it).' : 'Not kept by the game.');
+  if (r.threeStars) add('Three stars', { original: 'The original game\u2019s choice.', linesOff: 'A fuller formula (made for line changes off).', linesOn: 'A fuller formula (made for line changes on).' }[r.threeStars]);
+  if (r.unknown && r.unknown.length) add('Not recognised', 'The code for ' + r.unknown.join(', ') + ' is not a known version.');
+}
+
 function showHelp(on) {
   $('help').hidden = !on;
   if (on) { $('helpSearch').focus(); if (location.hash !== '#help') history.replaceState(null, '', '#help'); }

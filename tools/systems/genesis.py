@@ -15,6 +15,7 @@ from pathlib import Path
 
 from .common import DIGITS, PLAYERS, ROOT, overall
 from . import process
+from . import genesis_settings
 
 NAME = "genesis"
 RAM_SIZE = 0x10000  # work RAM, $FF0000-$FFFFFF
@@ -269,6 +270,10 @@ def rink_logo(rom, team):
 def read_teams(rom_path):
     """Team names, rosters, palettes and logos from the ROM. Roster order matches the index in each player record."""
     rom = rom_path.read_bytes()
+    # League ROMs can rate players 0-15 instead of 0-6; the game's overall formula for those is not known, so their
+    # overall is the NOSE editor's estimate (a plain average on the same 25-99 scale).
+    wide = genesis_settings.rom_settings(rom).get("ratingScale") == "0-15"
+    rate = (lambda attrs, goalie: round(25 + sum(attrs[1:]) / (len(attrs) - 1) / 15 * 74)) if wide else overall
     teams = []
     for k in range(team_count(rom)):
         team = struct.unpack_from(">I", rom, TEAM_TABLE + 4 * k)[0]
@@ -285,7 +290,7 @@ def read_teams(rom_path):
             # After the name: the jersey number as decimal digits, then fourteen ratings of 0-15, two to a byte.
             attrs = [n for byte in rom[off + length + 1:off + length + 8] for n in (byte >> 4, byte & 15)]
             goalie = len(players) < goalies
-            players.append({"name": name, "num": int(f"{rom[off + length]:02x}"), "a": attrs, "g": goalie, "ovr": overall(attrs, goalie)})
+            players.append({"name": name, "num": int(f"{rom[off + length]:02x}"), "a": attrs, "g": goalie, "ovr": rate(attrs, goalie)})
             off += length + 8
         length = struct.unpack_from(">H", rom, team + names_off)[0]
         # Two 16-colour palettes per team, as the game loads them: +$0C when playing at home, +$2C when away.
@@ -356,6 +361,30 @@ AIM_DIR = 0xBEDC
 AIM_TABLE = [(0, 12), (16, 12), (16, 6), (16, 0), (0, 0), (-16, 0), (-16, 6), (-16, 12), (0, 6)]
 FRAME_COUNTER = 0xB03E  # work RAM word counting frames (up 1-3 between reads in 95% of capture6's samples)
 ROLLBACK_FRAMES = 30    # how far back a rollback can take it
+
+
+HOT_COLD = 0x1A2  # in each team block: 16 bytes per roster place, rolled at the start of each game
+
+
+def add_hot_cold(cap, match, settings):
+    """Each player's hot / cold bonus as play uses it (docs/GAME_MECHANICS.md 2.2), into his roster entry: "hc", one
+    value added to all his ratings (the original code reads only the first of his 16 bytes), or "hcr", a value per
+    rating in roster order (ROMs whose bonuses were fixed to match Edit Lines), on the 0-30 working scale (the byte / 3,
+    rounded toward 0). Nothing for ROMs with the bonuses turned off."""
+    mode = settings.get("bonusesOnIce", "one value per player")
+    if mode == "none" or not match.get("rosters"):
+        return
+    i = cap.count // 2  # the table is constant all game
+    signed = lambda v: v - 256 if v > 127 else v
+    for team, block in enumerate(STAT_BLOCKS):
+        for place, player in enumerate(match["rosters"][team]):
+            raw = [signed(cap.byte(i, block + HOT_COLD + 16 * place + n)) for n in range(16)]
+            if mode == "per rating":
+                # byte n holds the bonus of the rating the game numbers n (3 Agility ... 15 Aggression; 9, the
+                # handedness / fighting value, is not a rating): roster index n - 2
+                player["hcr"] = [int(raw[a + 2] / 3) if 1 <= a <= 13 and a != 7 else 0 for a in range(14)]
+            else:
+                player["hc"] = int(raw[0] / 3)
 
 
 def read_match(cap, rom_path, name, home=None, away=None):
@@ -545,6 +574,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
             match["stats"] = stats
             if teams[home_id]["logo"]:
                 match["logo"] = teams[home_id]["logo"]  # drawn at centre ice in the home palette
+            settings = genesis_settings.rom_settings(rom_bytes)
+            if settings:
+                match["romSettings"] = settings
+            add_hot_cold(cap, match, settings)
         # Players are drawn from this ROM's own sprites; build its library the first time it is seen.
         rom = rom_path.read_bytes()
         match["rom"] = f"{zlib.crc32(rom):08x}"
