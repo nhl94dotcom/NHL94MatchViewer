@@ -333,7 +333,10 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   instant replay's crosshair corners, which the viewer drew under the puck (the user saw it) until the sprite library
   gained `puck: {shadow, onIce}` for the viewer to use; a puck frame of 0 shows the puck at rest (SNES frame 0 is a
   skater).
-  Not known yet: puck height, the hook.
+  Puck height (2026-10-16, after the user asked for SNES goal heights): `puckz` $0DF9 with its fraction $0DFD (named
+  in the NHL94SNES disassembly's ram94snes.asm; also puckvz $0E01, shadowz $0DFB), now the match file's puck height
+  as on the Genesis: goals cross the line at 0-13 (Genesis 0-13), the puck is in the air about a fifth of the time,
+  dump-ins reach 45. Nothing else changed (shots, checks, passes, bobbles, bumps). Not known yet: the hook.
 
 ## Reading game memory live
 
@@ -904,12 +907,12 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   Summary VERSION 13.
 - Goal spots, shot speeds, checks that pay off, goalie giveaways (2026-10-16, the user asked for all four):
   - `add_goal_spots`: each goal's `net` {x, z, end}: where it crossed the goal line, x across the mouth as the shooter
-    sees it (negative = his left, posts +/-20), z the puck's height (Genesis; None on the SNES: no puck height). The game
+    sees it (negative = his left, posts +/-20), z the puck's height (both systems). The game
     counts the goal a moment before the puck reaches the line and then puts the puck at a resting spot in the net, so
     the crossing is projected from the last two different positions before the line (consecutive samples repeat).
     Found for 60 of 72 goals; Genesis heights 5.7-13.2. Viewer: a little net (shooter's view, crossbar at 16 units)
     beside the goal banner's text and on each scoring-summary line, with a tooltip ("In the shooter's left, low");
-    SNES goals get a dashed line over the net's height.
+    a goal without a height (none now) gets a dashed line over the net's height.
   - Shot speed: PUCK_SPEED_SCALE 0.015 game units a (real) second per unit of the shot list's `speed` (measured from
     loose pucks' movement: 0.0145-0.0155 on both systems; a 23000 shot = 78 mph). Viewer `shotMph`: shot tooltips, the
     card (average and hardest); season summaries `shotMphSum` / `shotMphN` / `shotTop` (the season keeps the max), the

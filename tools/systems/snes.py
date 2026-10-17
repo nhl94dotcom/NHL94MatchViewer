@@ -63,6 +63,7 @@ STRENGTH = {0: "SH2", 1: "SHG", 2: "EV", 3: "PPG", 4: "PP2"}
 # ram94snes.asm; checked on the 445 save states: positions in the Genesis units (goalies at about +/-243, the
 # nets at +/-268), exactly one joystick-controlled skater per team.
 OBJ_X, OBJ_Y = 0x0D55, 0x0DB7     # integer positions (signed)
+PUCK_Z, PUCK_Z_FRAC = 0x0DF9, 0x0DFD  # the puck's height (puckz) and its fraction, from the disassembly
 PUCK_VX, PUCK_VY = 0x0EDF, 0x0EFF
 OBJ_POSITION = 0x0F43             # 0 G, 1 LD, 2 RD, 3 LW, 4 C, 5 RW, negative = off the ice (the Genesis codes)
 OBJ_FACING = 0x1163               # 0-7
@@ -471,7 +472,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
         stopped = cap.word(i, CLOCK_STOPPED) != 0
         px, py = signed(i, OBJ_X + 28), signed(i, OBJ_Y + 28)
         vx, vy = signed(i, PUCK_VX), signed(i, PUCK_VY)
-        match["puck"] += [px, py, -256 if stopped else 0]
+        # The puck's height: puckz (integer) and its fraction (the NHL94SNES disassembly's ram94snes.asm), as the
+        # Genesis record's +$24. Shots on goal reach 1-18.
+        pz = signed(i, PUCK_Z) + cap.word(i, PUCK_Z_FRAC) / 65536
+        match["puck"] += [px, py, -256 if stopped else round(max(0.0, pz), 1)]
         match["puckV"] += [round(vx / 100), round(vy / 100)]
         # A post, by the Genesis rule: the loose puck turning back out of the end zone right beside a post.
         if i and cap.byte(i, PUCK_HOLDER) >= 12 and cap.ms(i) - last_post > 1000:
