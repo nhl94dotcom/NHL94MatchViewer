@@ -138,9 +138,11 @@ more shows as 99; **under 50 it is squashed to n / 2 + 25**. So each stored rati
 
 What the position inside a band means depends on the ROM (**Code**; the bands agree with the NOSE editor's table):
 
-- **The original code** (`nhl94.bin`, and ROMs whose Edit Lines shows each rating's own value): **nothing**. Each number
-  uses that rating's own hot / cold value, but play uses one value for all of a player's ratings (2.2), and that one is
-  never shown. Only the band counts.
+- **The original code** (`nhl94.bin`, and ROMs whose Edit Lines shows each rating's own value): **nothing about how he
+  plays.** Each number uses that rating's own hot / cold value, but play uses one value for all of a player's ratings
+  (2.2), and that one is never shown. The played variation is real and about as wide as the band (-3 to +2 working
+  points, -0.6 to +0.4 of a step: a 4 plays as 3.4 to 4.4), but it can't be read from the screen: an 81 may play
+  better or worse than a 98.
 - **League ROMs that show hot / cold as played** (CDL, IDL, DPWM, RGDL ...; section 15): the routine is changed to add
   the player's played value to every rating (`adda.l #$10,a4` and the per-rating read replaced), so **all of a player's
   numbers sit the same distance from their band's middle**, and that distance is his real hot / cold: 3 or more above is
@@ -1006,7 +1008,7 @@ C-then-B check, and the weight bug for computer checkers too.
 | | |
 |---|---|
 | Hot / cold | One value for all ratings; the shown hot / cold players are fake (league ROMs: often shown as played, fixed or off) |
-| Ratings screen | Seven bands; on the original ROM, where a number sits in its band means nothing |
+| Ratings screen | Seven bands; on the original ROM, where a number sits in its band doesn't show the player's real hot / cold (which does vary him by up to about half a step) |
 | Comeback bonus | On in the first half of the 3rd, off in the second |
 | Weight bug | Person checkers do best when lighter than the target |
 | CB check | Works (computer formula at contact); twice the penalty risk |

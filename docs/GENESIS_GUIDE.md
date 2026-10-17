@@ -60,10 +60,12 @@ jump from one band to the next is the real difference between players.** Weight 
 
 It depends on your ROM:
 
-- **The original ROM** (`nhl94.bin`, the GENS Classic leagues): **nothing at all.** An 81 and a 98 play exactly
-  the same. The game shows each rating with its own random value, but because of a bug it plays every rating with one
-  other value that it never shows (2.2). That hidden value is small: at most -3 to +2 on the 30-point scale, less than
-  a step. **The scouting report's hot and cold players, and the flame and snowflake icons, are fake too.**
+- **The original ROM** (`nhl94.bin`, the GENS Classic leagues): **the number tells you nothing, but the variation is
+  real.** Every player does play a little above or below his step: because of a bug, all his ratings get one hidden
+  hot / cold value, from -0.6 to +0.4 of a step (a step-4 rating plays somewhere from about 3.4 to 4.4), about as wide
+  as a band on the screen (2.2). But the screen doesn't show that value: it shows each rating with a *different*
+  random value. So an 81 may play better or worse than a 98, and the screen can't tell you which. Judge by the band.
+  **The scouting report's hot and cold players, and the flame and snowflake icons, don't show it either.**
 - **League ROMs that show hot / cold as played** (the CDL, IDL, DPWM, RGDL families and others; the viewer's
   Help, "This game's ROM", says which yours is): the position is real. All of a player's numbers sit the same distance
   from the **middle of their band (54, 72 or 90)**, and that distance is his hot / cold for this game: 3 or more above
@@ -382,7 +384,8 @@ which goalie is stealing games.
 - **Endurance**, and fatigue in general, with line changes off.
 - **Offensive Awareness for the player you control.**
 - **The scouting report's hot and cold players** (original ROM): fake.
-- **Small differences within a rating band** on the original ROM: 81 and 98 are the same player.
+- **The number within a rating band** on the original ROM: players do vary within a step, but the 81-or-98 on the
+  screen isn't that variation (1.2).
 - **Ratings on faceoffs.**
 - **Pass Accuracy as accuracy**: it's speed.
 - **"A loud crowd makes players faster"**: the crowd's speed bonus is on for everyone, always.
