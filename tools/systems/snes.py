@@ -722,7 +722,8 @@ PALETTE_SLOT = {4: 0, 5: 0, 2: 1, 0: 2, 1: 3}  # the library's slot 0 is the tea
 # on the ice; with palette 0's colours they came out green and red). Frame 396 is its shadow, 397 the puck lying on
 # the ice (the Genesis's 394 and 395: SNES frame 394 is the instant replay's crosshair corners, which the viewer drew
 # under the puck until the library said which frames these are).
-PUCK_FRAMES = range(395, 406)
+PUCK_FRAMES = range(395, 409)  # and the nets, 406-408 (406 a net seen from the front, 407 from behind): white and red
+                               # in palette 2, green and orange in palette 0
 PUCK_SHADOW_FRAME, PUCK_ON_ICE_FRAME = 396, 397
 
 

@@ -630,6 +630,7 @@ const resultAt = (sh, f) => (liveKnowledge && sh.resolved !== undefined && sh.re
 // The rink picture rebuilt as seen from straight above (buildOverheadRink), and whether it is shown.
 let overheadRink = null, overheadOn = true;
 try { overheadOn = localStorage.getItem('nhl94-overhead') !== '0'; } catch (e) { /* default on */ }
+if (new URLSearchParams(location.search).get('overhead') === '0') overheadOn = false;  // &overhead=0: the rink picture as drawn
 // The pop-ups for events on the ice (players' actions, breakaways, posts); the player labels are not affected.
 // Remembered; &tags=0 in the address turns them off.
 let eventTagsOn = true;
@@ -903,7 +904,62 @@ function line(y, colour, width) {
   ctx.beginPath(); ctx.moveTo(-RINK.halfW, y); ctx.lineTo(RINK.halfW, y); ctx.stroke();
 }
 
-function drawRink() {
+// The nets where the game has them (match.nets: the readers keep both nets' positions whenever one moves; a skater
+// can knock one off its spot). Top = the net at +Y. Rows of (0, 0) are the game parking the nets as a period starts.
+function netsAt(f) {
+  const home = [{ x: 0, y: NET_Y }, { x: 0, y: -NET_Y }];
+  const rows = match && match.nets;
+  if (!rows || !rows.length || f === undefined || f === null) return home;
+  let lo = 0, hi = rows.length - 1, at = -1;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (rows[mid][0] <= f) { at = mid; lo = mid + 1; } else hi = mid - 1; }
+  if (at < 0) return home;
+  const r = rows[at];
+  return [r[1] || r[2] ? { x: r[1], y: r[2] } : home[0], r[3] || r[4] ? { x: r[3], y: r[4] } : home[1]];
+}
+const netOff = n => Math.hypot(n.x, Math.abs(n.y) - NET_Y) >= 1.5;
+// The game's own net pictures: a net seen from the front (as the top net is drawn) and from behind (the bottom one).
+const NET_FRAMES = { genesis: { front: '195', back: '196' }, snes: { front: '196', back: '197' } };
+// Where the rink picture paints its nets (picture pixels): covered with ice while a net is off its spot.
+const PAINTED_NETS = { top: [388, 150, 124, 70], bottom: [385, 1285, 130, 75] };
+let netlessPicture = null;
+function buildNetlessPicture(img) {
+  // The picture with both nets covered: the top one with the ice beside it (same rows), the bottom one with the top
+  // end's ice mirrored about the red line (crease and goal line line up; the overhead rink does the same).
+  const R = RINK_IMAGE, c = document.createElement('canvas');
+  c.width = R.w; c.height = R.h;
+  const g = c.getContext('2d');
+  g.drawImage(img, 0, 0);
+  const [tx, ty, tw, th] = PAINTED_NETS.top;
+  g.drawImage(img, tx - tw - 6, ty, tw, th, tx, ty, tw, th);
+  const [bx, by, bw, bh] = PAINTED_NETS.bottom, mirrorY = 2 * R.cy - 0.5;
+  g.save();
+  g.beginPath(); g.rect(bx, by, bw, bh); g.clip();
+  g.translate(0, mirrorY); g.scale(1, -1);
+  g.drawImage(c, 0, 0);  // the (already netless) top end, mirrored down
+  g.restore();
+  return c;
+}
+// A net seen from straight above (the overhead rink): a mesh behind the goal line in a red frame, open to the ice.
+// In game units, Y up; end = +1 for a net whose back is toward +Y.
+function drawFlatNet(nx, ny, end) {
+  const O = OVERHEAD, x0 = nx - O.netHalfW, x1 = nx + O.netHalfW, yl = ny, yb = ny + end * O.netDepth;
+  const outline = () => {
+    ctx.beginPath(); ctx.moveTo(x0, yl);
+    ctx.bezierCurveTo(x0, yb, x0, yb, (x0 + x1) / 2, yb);
+    ctx.bezierCurveTo(x1, yb, x1, yb, x1, yl);
+  };
+  ctx.save();
+  outline(); ctx.fillStyle = 'rgba(255, 255, 255, 0.82)'; ctx.fill();
+  ctx.save(); ctx.clip();
+  ctx.strokeStyle = 'rgba(120, 130, 140, 0.55)'; ctx.lineWidth = 0.45;
+  for (let x = x0; x <= x1; x += 3) { ctx.beginPath(); ctx.moveTo(x, Math.min(yl, yb)); ctx.lineTo(x, Math.max(yl, yb)); ctx.stroke(); }
+  for (let y = Math.min(yl, yb); y <= Math.max(yl, yb); y += 3) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
+  ctx.restore();
+  outline(); ctx.strokeStyle = '#c8202a'; ctx.lineWidth = 1.7; ctx.stroke();
+  ctx.restore();
+}
+function drawRink(f) {
+  const nets = netsAt(f);
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -918,6 +974,13 @@ function drawRink() {
     ctx.save();
     if (!flip) ctx.scale(1, -1);  // pictures draw top-down, the world is Y-up
     ctx.drawImage(picture, -view.cx / view.ux, -view.cy / view.uy, view.w / view.ux, view.h / view.uy);
+    // A net knocked off its spot on the picture: its painted net covered with ice (the one shown at that end: turned
+    // past 90 degrees the picture is mirrored, so the top's painted net shows at -Y), the game's net drawn below.
+    const loose = picture === rinkPicture && netlessPicture ? [0, 1].filter(i => netOff(nets[i])) : [];
+    for (const i of loose) {
+      const [x, y, w, h] = PAINTED_NETS[(i === 0) !== flip ? 'top' : 'bottom'];
+      ctx.drawImage(netlessPicture, x, y, w, h, (x - view.cx) / view.ux, (y - view.cy) / view.uy, w / view.ux, h / view.uy);
+    }
     if (flip) {
       ctx.scale(1, -1);
       for (const [x, y, w, h] of RINK_SIDES) {
@@ -927,6 +990,8 @@ function drawRink() {
     ctx.restore();
     if (view.image === rinkPicture) drawBenches();  // the overhead rink keeps the benches where they were
     drawLogo();
+    if (picture === overheadRink) nets.forEach((n, i) => drawFlatNet(n.x, n.y, i ? -1 : 1));  // drawn each frame: they can move
+    else for (const i of loose) drawLooseNet(nets[i], i);
     return;
   }
   roundedRink(); ctx.fillStyle = '#f3f7fa'; ctx.fill();
@@ -940,11 +1005,22 @@ function drawRink() {
     const y = end * RINK.goalLine;
     ctx.fillStyle = '#cfe3f5'; ctx.strokeStyle = '#c8323c'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(0, y, RINK.creaseR, end > 0 ? Math.PI : 0, end > 0 ? 2 * Math.PI : Math.PI); ctx.closePath(); ctx.fill(); ctx.stroke();
+    const n = nets[end > 0 ? 0 : 1];
     ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#7a1d24'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.rect(-RINK.netHalfW, y, 2 * RINK.netHalfW, end * RINK.netDepth); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.rect(n.x - RINK.netHalfW, n.y, 2 * RINK.netHalfW, end * RINK.netDepth); ctx.fill(); ctx.stroke();
   }
   ctx.restore();
   roundedRink(); ctx.strokeStyle = '#3d4854'; ctx.lineWidth = 3; ctx.stroke();
+}
+
+// A net off its spot on the rink picture: the game's own net picture where the net is (front view at the top of the
+// screen, from behind at the bottom, as the picture paints them), or a flat net without game sprites.
+function drawLooseNet(n, i) {
+  const frames = NET_FRAMES[rinkSystem] || NET_FRAMES.genesis;
+  const atTop = (i === 0 ? 1 : -1) * Math.cos(radians()) > 0, key = atTop ? frames.front : frames.back;
+  const entry = spritesOn && spriteLibrary && spriteLibrary.frames[key];
+  if (entry) drawSprite(n.x, n.y, spriteImage(key, entry, 0, false), '', false, false);
+  else drawFlatNet(n.x, n.y, i ? -1 : 1);
 }
 
 // The two penalty boxes on the rink picture's far side, in game units: Home's lower, Away's upper.
@@ -3407,7 +3483,7 @@ function fillScoring(f) {
 function draw() {
   const f = frameAt(now), m = match, owner = m.owner ? m.owner[f] : -1;
   applyView(f);
-  drawRink();
+  drawRink(f);
   drawOverlay(f);
   // Puck trail: where it has been over the last moments, so fast passes and shots stay readable.
   ctx.strokeStyle = 'rgba(20, 24, 29, 0.28)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
@@ -4298,7 +4374,7 @@ $('sprites').addEventListener('change', e => {
 
 // The rink picture is optional: if it is missing, the drawn rink stays.
 const rinkPicture = new Image();
-rinkPicture.onload = () => { overheadRink = buildOverheadRink(rinkPicture); view = { ...RINK_IMAGE, image: rinkPicture }; resize(); };
+rinkPicture.onload = () => { overheadRink = buildOverheadRink(rinkPicture); netlessPicture = buildNetlessPicture(rinkPicture); view = { ...RINK_IMAGE, image: rinkPicture }; resize(); };
 
 // The overhead rink: the picture rebuilt as if seen from straight above. The picture is drawn from a camera below
 // the screen, so its boards and glass lean (over the ice at the bottom end, away at the top) and its nets are seen
@@ -4362,25 +4438,7 @@ function buildOverheadRink(img) {
   g.restore();
   // The kick plate along the bottom of the boards.
   shape(0); g.strokeStyle = '#d9b44a'; g.lineWidth = 2.5; g.stroke();
-  // The nets from above: a mesh behind the goal line in a red frame, open to the ice.
-  for (const end of [1, -1]) {
-    const x0 = px(-O.netHalfW), x1 = px(O.netHalfW), yl = py(end * O.goal), yb = py(end * (O.goal + O.netDepth));
-    g.beginPath();
-    g.moveTo(x0, yl);
-    g.bezierCurveTo(x0, yb, x0, yb, (x0 + x1) / 2, yb);
-    g.bezierCurveTo(x1, yb, x1, yb, x1, yl);
-    g.fillStyle = 'rgba(255, 255, 255, 0.82)'; g.fill();
-    g.save(); g.clip();
-    g.strokeStyle = 'rgba(120, 130, 140, 0.55)'; g.lineWidth = 1;
-    for (let x = x0; x <= x1; x += 7) { g.beginPath(); g.moveTo(x, Math.min(yl, yb)); g.lineTo(x, Math.max(yl, yb)); g.stroke(); }
-    for (let y = Math.min(yl, yb); y <= Math.max(yl, yb); y += 7) { g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke(); }
-    g.restore();
-    g.beginPath();
-    g.moveTo(x0, yl);
-    g.bezierCurveTo(x0, yb, x0, yb, (x0 + x1) / 2, yb);
-    g.bezierCurveTo(x1, yb, x1, yb, x1, yl);
-    g.strokeStyle = '#c8202a'; g.lineWidth = 4; g.stroke();
-  }
+  // The nets are drawn each frame where the game has them (drawFlatNet): a skater can knock one off its spot.
   return c;
 }
 // From rink_gens.js (made by tools/embed_rink.py) when it is there: a picture given as a data URL leaves the canvas
@@ -4393,7 +4451,7 @@ function useRink(system) {
   if (name === rinkSystem) return;
   rinkSystem = name;
   RINK_IMAGE = cfg.image;
-  overheadRink = null;
+  overheadRink = null; netlessPicture = null;
   view = { w: 2 * RINK.halfW + 14, h: 2 * RINK.halfL + 14, cx: RINK.halfW + 7, cy: RINK.halfL + 7, ux: 1, uy: 1, image: null };  // the drawn rink until it loads
   const show = () => { if (rinkSystem === name) rinkPicture.src = window[cfg.data] || cfg.image.src; };
   loadScriptOnce(cfg.script, cfg.data, show);
