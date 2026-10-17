@@ -569,6 +569,73 @@ def find_faceoffs(m):
     return out
 
 
+NET_HOME = 268   # the nets sit at (0, +/-268)
+NET_REACH = 45   # who knocked a net off: a player this close to it as it starts to move
+
+
+def find_dislodged_nets(m):
+    """Nets knocked off their spot (the user: any skater can dislodge either net; much more often on the SNES). From
+    m['nets'] (the readers keep both nets' positions whenever one moves): a net leaving (0, +/-268) until it is back.
+    The game stops play; the faceoff that follows says who did it (the user): at a neutral-zone dot just outside that
+    end (|Y| about 65) an attacker, at a dot in that end (|Y| about 206) a defender (his own goalie included). Whoever
+    did it is the nearest player of that side to the net as it starts to move; with no telling faceoff (a period's end,
+    a goal, centre ice), the nearest skater (not a goalie) within NET_REACH. In the user's SDL16 game
+    (2026-10-16_2018_PHI-VAN) six, all of Vancouver's net: four by Philadelphia attackers (three then faced off at
+    the neutral dots), one with Vancouver's goalie nearest and the faceoff in his zone.
+    Returns [{f (it starts to move), end (back on its spot; None if never), net ('top' at +Y, 'bottom'), team (the team
+    defending it), byTeam, by (roster index, -1 unknown), side ('attacker', 'defender'), sure (the faceoff said so),
+    moved (furthest from its spot), faceoff {x, y} or None, goal (the attackers scored as it came off)}]."""
+    nets, N, K = m.get('nets') or [], len(m['t']), 12
+    if not nets:
+        return []
+    pos = lambda i, k: (m['pos'][(i * K + k) * 2], m['pos'][(i * K + k) * 2 + 1])
+    faceoffs = m.get('faceoffs', [])
+    out = []
+    for which, (cx, cy) in (('top', (1, 2)), ('bottom', (3, 4))):
+        home = (0, NET_HOME if which == 'top' else -NET_HOME)
+        start, far = None, 0
+        for row in nets + [[N, home[0], home[1], 0, -NET_HOME] if which == 'top' else [N, 0, NET_HOME, home[0], home[1]]]:
+            f, x, y = row[0], row[cx], row[cy]
+            if x == 0 and y == 0:
+                continue  # the game parks both nets at (0, 0) for a moment as a period starts: not a dislodgement
+            off = math.hypot(x - home[0], y - home[1])
+            if off >= 1.5 and start is None:
+                start, far = min(f, N - 1), off
+            elif off >= 1.5:
+                far = max(far, off)
+            elif start is not None:
+                out.append(dict(f=start, end=f if f < N else None, net=which, moved=round(far), x=row[cx], y=row[cy]))
+                start = None
+    for e in out:
+        f, sign = e['f'], 1 if e['net'] == 'top' else -1
+        defending = next((t for t in (0, 1) if own_end(m, f, t) == sign), None)
+        net_xy = next(((r[1], r[2]) if e['net'] == 'top' else (r[3], r[4]) for r in reversed(nets) if r[0] <= f), (0, sign * NET_HOME))
+        fo = next((x for x in faceoffs if x['f'] > f), None)
+        side = None
+        if fo and fo['y'] * sign > 0 and 40 <= abs(fo['y']) < 100:
+            side = 'attacker'
+        elif fo and fo['y'] * sign > 0 and abs(fo['y']) >= 100:
+            side = 'defender'
+        q = max(0, f - 1)
+        near = sorted((math.hypot(pos(q, k)[0] - net_xy[0], pos(q, k)[1] - net_xy[1]), k) for k in range(K) if m['role'][q * K + k] != 'x')
+        if side and defending is not None:
+            team = defending if side == 'defender' else 1 - defending
+            pick = next(((d, k) for d, k in near if k // 6 == team), None)
+        else:
+            pick = next(((d, k) for d, k in near if m['role'][q * K + k] != '0' and d <= NET_REACH), None)
+            if pick and defending is not None:
+                side = 'defender' if pick[1] // 6 == defending else 'attacker'
+        # A goal with it (the puck in as the net came off: Courtnall's in 2026-10-16_2018_PHI-VAN P3 2:17, faced off at
+        # centre ice)
+        e['goal'] = any(g['team'] != defending and abs(m['t'][g['f']] - m['t'][f]) <= 2000 for g in m.get('goals', [])) if defending is not None else False
+        e.update(team=defending, side=side, sure=bool(fo and side and (40 <= abs(fo['y']))),
+                 faceoff={'x': fo['x'], 'y': fo['y']} if fo else None,
+                 byTeam=pick[1] // 6 if pick else None,
+                 by=(lambda v: v if v < 35 else -1)(int(m['roster'][q * K + pick[1]], 36)) if pick else -1)
+        e.pop('x'); e.pop('y')
+    return sorted(out, key=lambda e: e['f'])
+
+
 def find_icings(m):
     """Icings. NHL '94 calls touch-up icing: a team releases the puck on its own side of the red line, it crosses the
     other team's goal line untouched, and the whistle goes when a defending player touches it (or, if nobody does,
@@ -1563,6 +1630,7 @@ def main(argv=None):
         match["injuries"] = find_injuries(match)
         match["bumps"] = find_bumps(match)
         match["bobbles"] = find_bobbles(match)
+        match["netsOff"] = find_dislodged_nets(match)
         add_pass_shape(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]

@@ -363,6 +363,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
         match["pad"], match["pad2"] = [], []
     facing, roster, anim, role, frame, mirror, puck_frame = [], [], [], [], [], [], []
     match["posts"] = []  # frames where the puck came off a goal post
+    match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
     # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
     stats = {"f": [], "home": [], "away": []}
     last_counts, last_stat_ms = None, -10_000
@@ -423,6 +424,11 @@ def read_match(cap, rom_path, name, home=None, away=None):
         if has_pad:
             match["pad"].append(cap.byte(i, PAD1))
             match["pad2"].append(cap.byte(i, PAD2))
+        # The nets (records 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then comes
+        # out of the zone). [frame, top net x, y, bottom net x, y]
+        nets = [cap.fixed(i, BASE + SIZE * 12 + X), cap.fixed(i, BASE + SIZE * 12 + Y), cap.fixed(i, BASE + SIZE * 13 + X), cap.fixed(i, BASE + SIZE * 13 + Y)]
+        if not match["nets"] or match["nets"][-1][1:] != nets:
+            match["nets"].append([len(match["t"]) - 1] + nets)
         mask = 0
         for k in range(PLAYERS):
             rec = BASE + SIZE * k
