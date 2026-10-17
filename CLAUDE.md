@@ -1247,6 +1247,457 @@ away from the goal line, at least 1500 speed units, at most one per second. Cali
 sample. Across all captures it fires three times: that one, `capture5_league30` 4:47 of period 3, and
 `capture3_bos_la` 2:32 of period 2; the last two are unconfirmed. Posts sit at about (+/-20, +/-265).
 
+## Game mechanics from the disassemblies (2026-10-17)
+
+Read from the commented Genesis disassembly (github.com/abdulahmad/NHL94Genesis: src/crowd94.asm, collide94.asm,
+input94.asm, checks94.asm) and the SNES one (Mhopkinsinc/NHL94SNES: src/routines/hockey/setplayer.asm,
+Create_HotCold_Table.asm), and checked against the recordings where marked. Nothing is built from them yet.
+- Working ratings (Genesis): `setplayer` turns each rating nibble r into r x 5 + hot/cold, clamped 0-30, whenever a
+  player comes on the ice, and keeps them in his record: +$67 Wgt (nibble x 8), $68 Agl, $69 Spd, $6A OfA and $6B DfA
+  (transformed: (30 - (v + bonuses) / 2) / 2), $6C ShP, $6D ShA, $6E Pas, $70 PS bias, $71 Stk, $72 End, $73 Agr,
+  $75 Chk. So every recording holds every player's working ratings (fast.bin covers $B000-$BFFF).
+- Hot / cold (Genesis): team block +$1A2, 16 bytes per roster place, random -9..8, rolled at StartGame (and again
+  by the scouting report), constant all game (checked). BUG, checked: AttributeCalc loads the rating number and then
+  clears the register, so play uses only byte 0 of a player's 16 for all his ratings (int(byte0 / 3): -3..+2 on the
+  0-30 scale). In 4,000+ samples across four games (one a 30-team ROM) where byte 0 and the rating's own byte give
+  different results, Agl / Spd / ShP / End always match byte 0. The scouting report's hot / cold players and the
+  matchup screen's flame / snowflake icons sum bytes 3-15, and the player cards add each rating's own byte, so
+  what the game shows has nothing to do with what is played.
+- Hot / cold (SNES): HotColdTable $1A12, 12 bytes per player ((roster place + 26 if Away) x 12 + rating number:
+  0 Agl, 1 Spd, 2 OfA, 3 DfA, 4 ShP, 5 Chk, 6 Stk, 7 ShA, 8 End, 9 PS bias, 10 Pas, 11 goalie glove), random -12..12;
+  working rating = (nibble & 7) x 5 / 2 + bonuses + byte >> 2, clamped 0-15 (arrays legstr $12E3, legspd $1303,
+  shotspd $1363, shotacc $1383, endurance $1423 ..., a word per object). BUG, checked in all three SNES games
+  (NHL94_Classic and SDL16): the shift is unsigned and the sign extension tests `bit #$00`, so a negative ("cold")
+  byte becomes 60-63 and the rating goes to the maximum, 15. About 46% of every player's ratings are maxed each game.
+  HotColdRaised $19CE: the crowd meter reaching 110 dB raises four bytes of each entry by 2 until it drops under 105.
+- Hidden bonuses (both systems; Genesis checked): power play / penalty kill (the team's ROM byte: PP to OfA, Stk, ShA,
+  Pas; PK negative to OfA, Stk, ShA), home / away (a per-team ROM byte: home nibble added, away nibble subtracted, to
+  OfA, DfA, Stk, ShA, Pas: Boston +2 at home, -1 away; Calgary 0 at home), and ThirdPBonus +2 to OfA and Chk (+4 PS
+  bias) for a team tied or trailing. BUG, checked: the third-period test is the wrong way round, so the bonus is on
+  while more than half the third period is left (5-minute periods: before 2:30) and off after; overtime always.
+- Shots (Genesis doshot): aimed at (table x, Y +/-264). Within 200 units the shot is perfect (straight at the aim
+  point) when randomd0(16 + ShA) > 14, i.e. (ShA + 1) / (ShA + 16); always with the shooter's goalie pulled or in a
+  shootout; never beyond 200. Otherwise scatter: s = (speed / 16 - ShA / 2 + 16) x distance / 64, halved within 250,
+  at most 136; X += random +/-s, the aiming Y += random +/-min(s, 60) (halved when shooting down the screen), height
+  += random 0..s/2 (shots only scatter upward). Backhands lose a quarter of their power; one-timers start at power $1F;
+  power is scaled by the shooter's energy. Checked: within 200, 82 of 123 shots left the stick within 2 units of the
+  aim point, rising with ShA much as predicted; beyond 200 none.
+- Auto-aim (shotdiradj): one-timers and computer shooters ignore the stick: middle height on the side away from where
+  the goalie is heading (passdir 2 / 6), high in the middle (0) when he is far off centre, 8 with no goalie.
+  High shots from in close (|Y| >= 216, stick up / up-left / up-right) at a goalie not in a pad stack get a steeper
+  lift (puckvzadj: "in-close top shelf").
+- Saves are geometry, not a roll (checkpuckcoll / puckgoalie / puckstick): a puck at height <= 15 within the goalie's
+  reach of his centre hits him: reach 12-15 by agility (+2 agility from the "crowd meter broken" flag, which is always
+  set), 15 whenever a person controls him, 18 in a pad stack, 12 against a one-timer, 2 less in a shootout. Before
+  that, a puck at height <= 5 within 14 of his stick blade (HotList at ROM $A44C8: x, y bytes per frame, x negated when
+  mirrored, y negated) is the stick's: within 8 he plays it (slower than 13000 he catches it, faster it deflects in a
+  random direction), between 8 and 14 nothing happens that frame (the body test is skipped). After a body touch the
+  puck is held if slow enough (random by his PkC), else bounces off. The glove / stick "save odds" the routine looks up
+  are never used. Checked on 111 goals and saves: as the puck reached his line, saves passed a median 13 units from his
+  centre (49 of 71 within 15), goals 24 (31 of 40 at 15 or more); 5 of the 9 goals that passed within 15 were
+  one-timers. So expected goals can come from the game's own rules: the chance the scatter takes the shot past his reach.
+- Shots on goal (ChkShotStat): counted when the puck touches the goalie's body (puckgoalie) or his stick catches it, while
+  the "shot taken" flag set at the release still stands; any touch (a2touchpuck), the boards (wallcoll) or a stick
+  deflection clears it without counting, and nothing counts while the clock is stopped (penalty shots: capture3's
+  Oates). Pass shots never set the flag. Not confirmed as the reason for the "saved, not counted" shots: the uncounted
+  ones are not more often low and fast at the stick (12% against 8-21%), so 60 Hz samples cannot tell, or something else
+  clears the flag.
+- Checks (CCStart): only a burst ($0C5E) checks; impact = closing speed along the line between them (at least 5; a
+  check needs 20), and hits taken add up (impact(a2)). Knockdown when (base - checker weight + target weight) / 2 -
+  impact <= 0, or he is against the boards, else when randomd0(that) <= Chk / 2 (weight = Wgt rating x 8, record +$67);
+  base 120, 240 for a checker a person controls at the moment of contact (pflags bit 3). Goalies cannot be knocked down
+  this way. THE WEIGHT BUG (the community's name; confirmed): the sum is done in one byte (sub.b / add.b at ROM $13D72),
+  so for a person's checker 240 - Wc + Wt wraps past 255 whenever the target is 2+ weight points heavier: threshold
+  (8 x diff - 16) / 2, 0 (automatic) at exactly 2 heavier; against a target the same or lighter it stays 76-124, far
+  worse than the computer's 60 + 4 x diff (16-92, no wrap: heavier checkers do better, as physics would have it). So a
+  person checks best when light and badly when heavy. The "CB check" (C to burst, then B to switch control away before
+  contact) makes the contact a computer one: the 120 formula, where his weight helps; but checkagr's penalty range is not
+  doubled for the computer, so twice the charging / roughing chance. Recordings (8 Genesis games, lunges that met an
+  opponent; target 2+ heavier / within 1 / 2+ lighter): person 48% / 15% / 7%; computer 15% / 27% / 34%; CB checks
+  (controlled at the burst, not at contact) 10 of 18. The NOSE editor's hacks: weightFix at $13D72 (its comment
+  describes the mechanism differently: "takes the checker's weight from the other player's") and checkFix at $13D6C
+  (6700 0004 -> 4E71 4E71: everyone uses 240, so CB gains nothing). Of the 65 Genesis ROMs in the ROM folder, all the
+  NHL '94-based ones (CDL league ROMs, nhl94.bin) have the original code; only WJ2025_v01.bin has the CB fix; none the
+  weight fix. SNES: 16-bit sums and no person doubling, so no weight bug and nothing gained by CB.
+  Penalties (checkagr): randomd0(((40 - Agr) / 2) x 13), doubled for a person,
+  halved within 40 of the puck; small = penalty; none while the other team has a delayed penalty.
+  A knocked-down target with working Stk >= 24 only stumbles when the impact is under a random 16-31 (FallDown).
+  Injuries (FallDown -> setInjuryType): on a knockdown, 1 in 4, then randomd0(160) <= impact (harder hits hurt more),
+  clock running; roughing is called if penalties are on. Out for the game or the period by the CHECKER's H/F
+  (fighting) value (getFgtbyte: H/F / 4 = 3, or chkFgtBit1), else for the period.
+- Faceoffs, checked on 102 Genesis faceoffs: the roll above picks whose direction the puck goes, and the puck leaves at
+  dirtab x 32 (6400 straight, 4512 per axis diagonal) plus 2048 toward the roll winner's own end; every drop decodes to
+  exactly one team that way. A person who won the roll got his held direction 37 times in 49 (the code: 3 in 4, else
+  random); with no direction held (the computer never holds one), random among the 5 directions from sideways to
+  straight at the other end (30 forward, 18 sideways, 1 back). Home won 42 rolls where the timing model predicted 44.4.
+  The swing animation cycles (wind-up 1 / 21, middle 258 / 266, sweep 257 / 265, back to the wind-up), so timing is
+  being on the sweep frame at the drop. The faceoff-won stat (+$0E, puckglue) goes to whoever first takes possession
+  after it: it agreed with the roll winner only 52 times in 102.
+  The swing (updateanim; durations in frames): a NEW B press (doinput d1 = new buttons) starts SPAfaceoff unless one is in
+  progress: 2 frames wind-up (0), 10 middle (8), 6 sweep (16), then it ends (not a looping animation) and the centre goes
+  back to his stance (0) until the next press; holding B does nothing more. The drop comes randomd0(120) + 180 frames
+  (3-5 s) after the faceoff box appears (at least 270 with some arena animations); the box's drop picture changes 17 and
+  9 frames before it (updatefaceoff), too late to react to for the sweep. The person's faceoffs (110, six Genesis games):
+  7-11 B presses in the last 1.5 s; state at the drop 16 / 8 / 0 = 23% / 47% / 26%, as mashing predicts (an 18-frame
+  swing plus a few frames' gap). P(roll) = (17 + yours - theirs) / 33 is linear, so only the average state counts: the
+  shorter the gaps between swings (faster mashing), the better: 9.8 with none, 7.9 with the recordings' 4 frames.
+- Penalties (Genesis), all from the code; every penalty goes through AddPenalty (ignored while the clock is stopped,
+  with penalties off, or when the player already has one pending: pflags2 bit 4). Penaltylist codes: $16 charging, $18
+  slashing, $1A / $12 roughing, $1C cross-checking, $1E hooking, $20 tripping, $22 interference, $24 holding, $26 / $28
+  fighting, $2A instigator, $2C delay (fighting, instigator and delay are never called: checkfight is an rts).
+  The roll (checkagr): R = ((40 - Agr) / 2) x 13, x 2 for a checker a person controls, / 2 within 40 (x and y) of the
+  puck; d0 = randomd0(R); a penalty when d0 <= the action's threshold. Agr is the working value AND 15 (setplayer masks
+  it): rating 1 -> 2-7, 2 -> 8-12, 3 -> 12-15 (or 0), 4 -> 1-6, 5 -> 10 (checked, 1,111 samples), so rating 4 plays like
+  rating 1. While one team has a penalty pending (DelayedPen bit 1 home, bit 2 away; cleared at the faceoff), checkagr
+  returns $7F for the OTHER team's players, so they cannot be called for checks, holds, hooks or trips until the
+  whistle; the team already penalised can take more (any player but one already called: pflags2 bit 4); goalie
+  interference and an injury's roughing do not go through checkagr, so they can still put the other team in the box at
+  that whistle. SNES: no DelayedPen test anywhere, so both teams can be called at one whistle (both multi-penalty
+  whistles in the recordings are SNES: TOR-CHI, and snes_2026-10-15_1755's cross-check then interference). If the player fouled is on a
+  breakaway, d0 = randomd0(8 / 7 / 4 / 3 by his distance from the goal line: > 117 / 59-117 / 45-58 / closer) whatever
+  the ratings, and PenShotChk turns it into a penalty shot through PenShotPenalties, a table off by one: charging is
+  awarded as "slashing", slashing "roughing", roughing "cross-checking", cross-checking "hooking", hooking "tripping",
+  tripping "interference"; holding and interference give no penalty shot.
+  By action: a burst check (C) that leaves him up: d0 <= 4, charging or slashing 50 / 50 (HV counter bit); one that
+  knocks him down: d0 <= 3, roughing or cross-checking 50 / 50; one that injures him: roughing, no roll (AddPenalty2);
+  a poke (B, sweepchk) whose body touches a skater within 45 degrees of where he faces: he always falls when penalties
+  are on (with them off, a person's poke trips only when randomd0(32 + Chk - target Agl) >= 24), tripping on d0 <= 4;
+  A: hook ($1122), or hold when he has just collided with the opponent ahead (Acheck): holding the man within 45
+  degrees of where he faces, d0 <= 6: holding after a hold, hooking after a hook; goalie interference (checkint): a
+  skater hitting a goalie who stands in his crease area (|x| <= 20, 239-266 from centre toward his net) with the
+  goalie's impact over 30 falls and, if a CPU-team skater or the controlled skater of a person's team (never a
+  computer teammate on a person's team), is called when randomd0(40 - Agr) <= 4 (12-20%, no doubling for people).
+  Recordings: of the 4 Genesis penalties with a known foul moment, both slashing calls came from shoulder checks that
+  left the man up, roughing from one that knocked him down; Neely's roughing came with Jagr's injury.
+  Other whistles (AddPenalty2): goalie holding the puck (temp5: $8C frames after he takes it, 5 when he takes it in a
+  dive), a person's goalie past |Y| 170, puck out of play, goals, period end.
+- Penalties (SNES): checkagr R = (20 - Agr) x 16 (Agr = the working value in GGSleft $1443 for skaters: rating byte 7 low
+  nibble, hot / cold index 11), doubled for a person with asl.b and halved near the puck with lsr.b, both on the low byte
+  only, so they wrap: person ranges by Agr 0-15: 384 352 320 288 256 224 192 160 128 96 64 32 0 224 192 160, i.e. Agr 12
+  gives R = 0 and (callers penalise d0 < 1) a penalty at every roll; Agr 9-11 several times the computer's rate (not
+  confirmed: people were at 12 for a few dozen samples). SNES codes as in the SNES section. Recordings: 11 of 14 SNES
+  penalties by players at working Agr 15, the value the hot / cold bug gives every "cold" rating.
+  SNES goalie interference (checkint): no person / computer test (the user: both are called; recordings: Ruuttu and
+  Gill as computer skaters of person-played teams): the skater falls on impact as on the Genesis, then with the goalie's
+  impact >= 31 and the goalie in his crease (goalieflags $0B05 bit 2 clear: |x| < 40, 228-259 from centre, set by
+  assgoalie) it is called when randoma8(20 - Agr) < 2: 2 / (20 - Agr), 15% at Agr 7, 40% at Agr 15; 4 of the 14 SNES
+  penalties were interference. The Genesis rule (only the controlled skater of a person's team) is from the code; no
+  Genesis interference call has been recorded.
+- Skater-goalie collisions (checkint .ci, both systems; the user asked): every frame two opponents overlap while closing,
+  both gain impact (closing speed, at least 5); impact fades 2 a frame. A goalie is never knocked down (CCStart and
+  Bcheck skip goalies; checkint only fells the skater). The skater goes to FallDown when he is the puck carrier and his
+  impact is over 2 (any touch), or without the puck over 25 (Genesis; SNES >= 26): a fast collision or ~8 frames of
+  pushing. FallDown: a stumble (the "wobble", SPAstumble) instead of a fall when his working Stk >= 24 of 30 (Genesis;
+  SNES >= 12 of 15, which the hot / cold bug gives every "cold" player), no stumble in the last 60 frames (nopuck+1 /
+  nopuckb) and impact <= a random 16-31 (SNES 10-25); else a fall (nopuck 120 frames: the puck is gone). Genesis: the
+  stumble also lets go of the puck (puckc cleared, no no-touch timer), so he usually takes it straight back; FallDown
+  ignores a repeat of the same pair (PlayerChked / PlayerChking), so bumping the same goalie again does nothing until any
+  other knockdown or stumble happens. SNES: the stumble keeps the puck outright; no same-pair rule, so a second touch
+  within 60 frames of a stumble (the wobble is shorter) is a fall: the user's observation.
+  Boards: Genesis FallDown checks the wall at the fallen player (wallcollduringcheck: within his size + 23) and, with the
+  hitter on the inside (toward centre ice, or in front when behind the net) and the player outside |x| 104 between the goal
+  lines, plays a boards / bench fall and gives the HITTER SPAcrosscheck with his speed cleared; nothing stops a goalie
+  hitter getting it, which is the goalie-turns-into-a-cross-checking-skater picture (capture5 P2 2:20, Hawerchuk: the
+  goalie's animation $1AC2 at the fall). SNES FallDown has no wall test: any fall in the outer lanes (|x| >= 104, |y| <
+  240) with the hitter inside, behind the net (|y| >= 274, |x| < 80) or near a corner arc puts the player on the boards
+  (x = +/-130 or y = +/-296) in a boards fall; it never gives the hitter the cross-check animation.
+  Recordings (falls and stumbles with the goalie the nearest opponent within 20 and no check): Genesis carriers 22 falls
+  (all below Stk 24 fell; two into the boards), 2 stumbles (Oates 25 kept it, Lemieux 29 lost it); SNES carriers 19
+  falls / flips, 7 stumbles (all at Stk 13-15; every carrier under 12 fell), Roenick CHI-TOR P3 4:18 stumbled and fell
+  0.9 s later. Without the puck: 28 Genesis and 16 SNES skaters went down skating into a goalie, mostly closing at
+  85-206 units / s (BOS-PIT P1 0:36 Sweeney lunged into him; CGY-BOS P1 1:52 Roberts; capture6 P2 4:50 Shanahan).
+- Repeated checks (FallDown's same-pair rule, Genesis; the user noticed it): FallDown returns at once when the player
+  and the hitter are the pair it last handled (PlayerChked / PlayerChking, recorded on every fall and stumble), so after
+  checker A knocks B down (or B wobbles from A's check), A cannot knock B down again until FallDown runs for any other
+  pair anywhere (a different checker, any knockdown, a stumble, a goalie collision). A check that fails its roll without
+  a stumble never reaches FallDown and blocks nothing. Checked (7 Genesis games): 11 lunges into contact when the last
+  FallDown anywhere was the same pair, none knocked him down, against 74 of 333 otherwise. SNES FallDown has no such
+  rule.
+- Delayed-penalty sniping (Genesis doshot): a shot within 200 is always perfect when ReadGoaliePulled finds the
+  shooter's team +$26 negative, the $FF flag the team carries while the other side has a delayed penalty pending (the
+  game pulls the fouled team's goalie then). The two aimed shots in the recordings during a delayed penalty left the
+  stick 0.7 and 0.3 off the aim point. SNES doshot has no such test (only highlight mode is always perfect).
+- Rebounds (Genesis puckgoalie): a puck touching the goalie's body is held when both speed components are under a
+  random threshold, (randomd0((2 + PkC) x 512) + $C00) x 2, quartered when the puck is in close (|x| <= 44, 210-270 from
+  centre) and the goalie is not in a save animation; a diving goalie never holds it. Otherwise it bounces straight out
+  from his centre through the point it touched (velocity = offset x 256). Checked on 135 saves: in close with the
+  goalie standing 28 rebounds of 47 (60%), in close mid-save 19 of 72 (26%), farther out 2 of 8; rebounds left a
+  median 6 degrees (3 in 4 within 19) off the line from his centre through the contact point.
+- The flip (A with the puck; the disassembly calls it OneTimerPass, a name from the earlier game): a new A press arms it
+  and its release (or 15 frames held, which also opens line changes) fires it (doinput_ispc: sflags5 bit 3 ->
+  setpassmode -> dopass). No receiver is chosen (passplayer stays -1), so nobody one-times it, and the d-pad does not aim
+  it: OneTimerTarget takes a fixed spot from the PASSER's place and facing (in his attacking direction): outside his
+  attacking zone (< 88 from centre toward it) the faceoff circle at (+/-116, 194) on the side he faces (facing straight
+  ahead: his right), lofted high (onetimerheight $3A: the puck reaches about 57); inside the zone the high slot (-5, 171),
+  or the goal mouth (y 259) when he is at least 138 deep and within 55 of the middle, lofted low ($12: about 13-19); a
+  goalie: about (+/-50, -9). Then 0-9 added at random to each, and the spot is moved to 60 units sideways from him when
+  it is closer than that. The puck is thrown (OneTimerPass: puckvz = sqrt(12 x height x 65536), speed to reach the spot)
+  and lands there. Checked: of 13 lofted flips in 7 Genesis games, 9 came down within 12 of the predicted spot (most
+  1-6); CGY-BOS P1 2:41 Oates from behind the net came down at the goal mouth. The computer clears the zone with it
+  (checks94 near CompShoot). Over the glass (the user: a neutral-zone flip sometimes goes over the near boards): the
+  60-unit rule moves the spot to the passer's x + / - 60 when the circle on the side he faces is less than 60 to his
+  side, so a passer outside the attacking zone on that side, about 75 to 116-125 from the middle (the random 0-9 decides
+  the edge), facing that way, sends the high lob at a spot past the boards (+/-129), and it crosses them above height
+  18 (wallcollb lets it out: whistle). Recordings: BOS-PIT P2 0:51 Oates from x -85 facing left, spot -145, crossed the
+  boards at height 44; capture6 P1 1:44 Bourque from x 122 (the random put the circle just past him: spot ~182),
+  height 42. Closer to the middle the spot lands at the boards; against the boards it is pulled 60 inside.
+  SNES dopass has no such branch (and passes at 144 + 4 x Pas): how the SNES flip works is
+  not read yet.
+- Breakaways (Genesis BreakawayOffsidesFlagSet / breakaway): the flag (pflags3 pf3break) is set only at the moment the
+  carrier crosses the attacking blue line (his offside bit clearing), when every other player on the ice, teammates
+  included and goalies excepted, is behind him; it then holds (the ding, +$358) while he keeps the puck and keeps
+  skating toward the net (his Y speed toward that end; stopping or turning back ends it), so a defender catching up
+  does not end it, and fouls on him meanwhile use checkagr's breakaway roll and PenShotChk. doshot sets gmode2 bit 4 on
+  a breakaway shot and clears it at every other shot; a goal while it is set counts as a breakaway goal (+$35A), so only
+  a goal with no shot between (pass shot, deflection) after a missed breakaway shot would be miscounted. Recordings:
+  every counted breakaway goal came 1.3-2.1 s after its breakaway.
+- Computer line changes and clears (Genesis): chk4lc, from the computer carrier at his OfA ticks (asspuckc), with line
+  changes On (not Auto: sflags7 bit 4): puck in the attacking half short of the blue line (0-88), a 1 in 4 roll, the
+  line's average energy (AvgCline) at most $C00 (75%) -> CompLine, setpersonel, then CompShoot (dump it in to change).
+  chk4shot: killing a penalty, or no threat on the carrier, at a 1 in 4 roll: in his own half CompShoot (shoot it down
+  the ice), in the neutral zone the flip (sflags5 bit 3 -> dopass).
+- Offsides (only with the option on: gmode bit 5; never in a penalty shot). Genesis ChkOffsides, each frame: the
+  moment the puck crosses a blue line (y +/-84) into a zone, the team attacking that zone (by gmdir, whoever moved the
+  puck: even a defender carrying it back into his own end) is flagged (tmflags bit 4) if any of its players is more
+  than 10 past the line (y > 94); ClearOffsidesIfAllPlayers clears the flag once none is past it (tag-up). While
+  flagged, the computer's attacking jobs go back to defence (assdefo, asswingo, asscentero test the flag) and a2offsides,
+  run inside a2touchpuck, calls offside ($10, a faceoff) when one of that team touches the puck with it more than 104 in
+  (so the first 20 units inside the line are free). a2touchpuck runs every frame for the carrier (pucknorm), for stick
+  deflections and steals (puckstick), body bounces (puckbody) and the goalie (puckgoalie); the one-timer strike
+  (puckstick -> onetimershot) never calls it, so an offside player can one-time a pass with no whistle and the goal
+  counts (the user's Genesis quirk). The individual pf3oside bit only serves the breakaway test. A carrier whose body
+  leads the puck in by more than 10 (skating backwards) would put himself offside (code reading). SNES (ChkOffsides,
+  a2offsides): checks only when the puck's carrier, or its last toucher, is of the attacking team; same 10-unit margin
+  ($5E); a2offsides calls it with the puck past blueline ($58 = 88, no free band); asspassrec's one-timer path calls
+  a2touchpuck before doshot, so SNES one-timers can be offside. None of the recordings had offsides on.
+- Penalty shots (Genesis): awarded (PenShotChk -> getBAplayerInfo) by setting BA_PS_flags ($C2F2) bit 3, "pending", and
+  saving the shooter, team and goalie (BA_Sktr_SCnum $D406, BA_Goalie_SCnum $D408). The penalty-shot code has minutes
+  $FF, so checkfornewpen treats it as a delayed call: play goes on until the guilty team has the puck, then Stop4Pen.
+  When the stoppage is over, InProgress gives the puck puckshootout ($1E) instead of puckfaceoff whenever bit 3 is set;
+  puckshootout clears bits 2, 4, 5, 6, counts the attempt (+$360), sets shootoutclock ($D454) to $19 (unless a
+  delayed penalty is flagged: gmpendel jumps to Stop4Pen first and skips that), sets bit 2 (penalty shot on), checks the
+  saved goalie, then puckpenshot puts the puck at centre, the nets home, the shooter (object 0 or 6) at the puck and
+  everyone else off. It ends (UpdatePenaltyShotEnd, every frame in pucknorm; bit 4 -> whistle $A and
+  EndPenaltyShotPlay, which clears bits 2-6) when: the goalie has the puck; after the shooter has shot or passed (bit 5,
+  passmodetimer $64), anyone takes the puck once it has gone loose (gmode2 bit 5), or 100 frames pass; shootoutclock
+  reaches 0; the goalie's hold timer runs out (bit 4); a goal (which also clears bit 3). Losing the puck without shooting
+  ends nothing unless the goalie gets it. Bit 3 is cleared only by EndPenaltyShotPlay and a goal, so a penalty shot
+  stopped by any other whistle (net knocked off, puck over the glass) leaves it set and the next stoppage gives another
+  penalty shot from centre ice (code reading, not seen). The user's bug (shot ends at once after the transition) is not
+  explained yet: the only path to a zero clock found is the gmpendel branch, which cannot be taken there (the clock is
+  stopped, so no new delayed call). The flags are outside fast.bin ($C2EA-$C3E8, $D406-$D454); recording them would let
+  a recorded occurrence be traced.
+- Goals while play is stopped (Genesis checkgoal .goal): outside a penalty shot a puck reaching the goal with the clock
+  stopped (gmode bit 0) is ignored; with BA_PS_flags bit 2 on, that test is skipped and the goal counts if the puck is in
+  the net the shooter attacks (pucky sign), then EndPenaltyShotPlay. puckshootout turns bit 2 on as it starts setting
+  up the shot, a frame or so before puckpenshot blanks the screen and moves the puck to centre, so a puck still moving
+  in that net after the award whistle scores then, after the stoppage countdown (the user's "goal after a hesitation",
+  penalty shot cancelled). Collisions are checked only for objects that moved, so a puck lying still does not.
+- Ghost puck in a penalty shot (Genesis wallcollb): a puck over the boards gets pfnc (no collision: checkcoll returns at
+  once, so boards, posts and nets are skipped), sfslock and attribute bit 15; the out-of-play whistle (AddPenalty2 6)
+  comes only while the clock runs. pfnc is cleared on the puck only by Endfaceoff (the faceoff drop), which a penalty
+  shot never goes through, so a puck flipped out of play after the award whistle stays in no-collision mode through
+  the shot: it is carried and shot normally (checkpuckcoll, the player and goalie touches, does not test the puck's
+  pfnc) but then passes through the net and the boards; with the penalty shot's clock stopped no out-of-play whistle
+  comes, and the shot ends 100 frames after the release (passmodetimer) or on the shot clock. The user saw it pass
+  through the goalie too: the code would let the goalie block it, so it presumably missed his reach (unconfirmed).
+- Penalty shots (SNES): penshot $1E9B (pending / under way: StartPenaltyShot sets it, EndPenaltyShot clears it),
+  penshotlive $1E9D, PenShotActive $163A. SetupPenaltyShot puts the puck at centre and gives it straight to the shooter
+  where he stands (the puck then sits on his stick); pstimer 1000 frames. EndPenaltyShot is called when: anyone takes
+  the puck who did not have it (puckglue: also the shooter gathering a puck he lost), the loose puck moves back away
+  from the goal for 48 frames (pucknorm pspuckback), pstimer runs out (Gameloop), the loose puck hits the boards
+  (wallcoll, with a whistle) or leaves the rink (wallcollb), a goal, the period's end. A net knocked off is not among them,
+  so penshot stays set and the next faceoff (puckfaceoff2: penshot -> Endfaceoff then SetupPenaltyShot) starts another
+  penalty shot with the shooter wherever he lined up: for a net knocked off by the attacker, the dot outside the zone.
+  That is the user's SNES bug (a penalty shot, the net knocked off, a new penalty shot from a side dot).
+- Offensive / Defensive Awareness (both systems): used only as AI reaction timers. setplayer turns the working value v
+  (0-30, bonuses included: OfA gets the power-play, home / away and third-period bonuses, DfA home / away) into frames,
+  aioff / aidef = ((v / 2) XOR 15 + 15) / 2 = 15 (worst) to 7 (best) (SNES skaters' aidef = 22 - v on 0-15: 7-22). Each
+  computer-controlled player's assignment reloads temp1 (record +$40) with it and re-decides where to go when it runs
+  out (1 frame less with the sflags7 bit 6 crowd boost): Offensive for the puck carrier (asspuckc), the player nearest a
+  loose puck (assnearest) and a defenceman when his team has the puck (assdefo); Defensive for every defending
+  assignment (assdefd, asswingd, asscenterd) and, apparently by mistake, for wingers and centres when their team has the
+  puck (asswingo, asscentero; SNES the same). The controlled skater skips all of it. Goalies: the CPU goalie
+  re-aims every DfA / 4 frames (checkanim / assgoaliectrl), skates to a loose puck on a DfA timer (assgoalietopuck);
+  SNES dopass also adds DfA / 2 + 1 frames to the goalie's timer at every pass. Checked: the +$40 reloads in BOS-PIT
+  and capture6 equal the player's working +$6A / +$6B within the frames already counted (98%; mostly 6-12).
+  What each tick decides (Genesis; the current job is record +$38 + the word at +$36: 1 assdefo, 2 assdefd, 3 asswingd,
+  4 asswingo, 5 asscenterd, 6 asscentero, $10 asspuckc, $11 assnearest): every job checks at its tick whether
+  possession changed and switches to the other side's job then, so awareness is the reaction to turnovers. asswingo
+  also re-picks its spot by the puck's zone (predicted by puckvy / 64: a box per zone, randomised, re-picked only on a
+  zone change or 1 tick in 128). assdefd re-reads, at its tick, the deepest opposing attacker (Y + Yvel / 16) and sets
+  its depth 50 behind him (no deeper than 190-220), and its side (65 toward its side, or the middle with the puck on the
+  other side), skating to that stored spot between ticks: so DfA is the defencemen's gap control. asswingd / asscenterd /
+  assdefo compute their spot every frame from the puck and use the tick only for the possession check (assdefo also
+  for the puck leaving the zone: a low-OfA defenceman retreats late). asspuckc (computer carrier) considers shooting
+  (chk4shot) and passing (chk4pass) at each OfA tick. assnearest (the chaser of a loose puck AND of the opposing carrier,
+  forecheck and backcheck) re-predicts the target and hands the chase to whichever teammate is now nearest the puck at
+  each OfA tick, the timer halved while the opposing carrier is in the slot. Timers are 1 frame shorter while the shooter's
+  goalie is pulled (OfA jobs) and while the crowd meter is at or above the arena record (sflags7 bit 6, both teams; the
+  +2 Agility / +2 Speed that the same tests give come from sflags8 bit 1, which SetSflags8Bit1 always sets, so they are
+  always on for everyone). Frames by rating (Genesis, hot / cold -3..+2): 0: 15-14, 1: 14-13, 2: 13-12, 3: 12-11, 4: 11-9,
+  5: 9-8, 6: 8-7 (OfA also takes the PP / PK, home / away and third-period bonuses, DfA home / away). SNES: Offensive
+  15-7, skater Defensive 22-7 frames; the hot / cold bug gives every cold rating the best value, 7. Recordings (four
+  Genesis games): after a turnover a defenceman on offence switched to defence a mean 96 / 132 / 147 / 223 ms later at
+  OfA values 9 / 10 / 11 / 12. Split by what happened (606 turnovers): not locked and switching directly, defencemen
+  131 ms, wingers 128, centres 125 (countdown left about 80 ms, plus a frame or two of reading); locked in an animation
+  (pfalock: every job returns at once while it is set, so nothing switches) 620-1,022 ms; given the chase first (job
+  $11) 814-1,372 ms. Forwards are locked or chasing far more often (they just lost the puck), which is why their average
+  looked unrelated to awareness.
+- The SNES flip (doinput: the Y button, our pad's A, with the puck -> assinsert $14 assdumpin): the game takes the
+  carrier's flip over: DumpInTarget picks by his SIDE OF CENTRE (x sign), not his facing: outside the attacking zone
+  (+/-80, 180 toward the goal he attacks) on his own side, inside it (0, 215), a goalie (0, 105) moved by his facing; a
+  computer carrier inside the zone shoots instead (CompShoot). He turns first until he faces within 45 degrees of
+  straight up the ice; the spot then gets random +/-(20-25 + 2 x (15 - Pas)) across and +/-(20-70) along (the deeper
+  targets 70), so Passing sets flip accuracy on the SNES. No SNES flip in the recordings yet (the lofted pucks there are
+  lifted shots).
+- Puck physics (Genesis): updateplayers each frame on the ice takes velocity >> 9 off the puck (and off a player with
+  pfdoff; others >> 6): the puck keeps 0.889 of its speed a second, skaters 0.39; in the air (Zpos > 0) no friction at
+  all; gravity 6 x 17 off Zvel a frame; on landing Zvel = -Zvel / 2 (half-height bounces, the puck-on-ice sound). Checked:
+  loose pucks sliding flat kept a median 0.893 a second (314 stretches), in the air 1.000 (306). Boards (wallcoll): the
+  speed into the boards is quartered and reversed, the speed along them loses 1/64 + 1/128; a hard hit adds a small
+  random hop and a boards sound; any board touch clears the shot flag (a shot off the boards is never a shot on goal).
+  Net (checkgoal): crossbar at height 13 (higher passes over), a puck crossing the line inside the mouth less one unit
+  is a goal, exactly at the post or at crossbar height a deflection (counted as a shot on goal: ChkShotStat; the post
+  sound; random velocity up to $1000 each way, away from the net); back and sides bounce like the boards; a puck
+  carried into the carrier's own net bounces off (pfgoal on the puck), so only a loose puck can be an own goal.
+- What each rating does (Genesis; every read of the working ratings, by routine):
+  Weight (record $67, rating x 8): acceleration (playeracc: (64 - weight / 4 + Agl + 2) / 2, i.e. each Weight point
+  costs as much as 2 Agility points), the check knockdown sum (CCStart, with the person overflow), momentum in
+  collisions (checkcx: mass = weight + $8C). Agility ($68): acceleration and so turning (playeracc; goalies add Agl
+  + 16 again), goalie reach (.cbg), resisting a poke trip with penalties off (Bcheck). Speed ($69): top speed (MaxSpeed
+  table), the chaser's +6 when the opposing carrier is in the slot (assnearest). Offensive / Defensive Awareness: AI
+  timers (above). Shot Power ($6C): shot speed ((ShP / 2 x energy + 20) x wind-up, + 1/16 for odd values), and the
+  wind-up: below 20 it is cut off at animation step 8 instead of running to 16 while C is held (ShotMode), so weak
+  shooters cannot take a full slapshot (recordings: under 20, top speed 20,746 in 67 shots; 20 or more, up to 29,216 in
+  83); goalies: PkC in this slot, the hold-the-puck threshold. Shot Accuracy ($6D): the perfect-shot roll and scatter.
+  Passing ($6E): pass speed (160 + 2 x Pas). Stickhandling ($71): steals both ways and catching passes (puckstick),
+  the stumble instead of a fall at 24+ (FallDown). Checking ($75): the knockdown roll (CCStart), the poke trip with
+  penalties off (Bcheck), the upend / flip fall at 20+ (FallDown), and computer checking: check4check rolls randomd0(40
+  - Chk), doubled with penalties ON (so computer skaters check half as often then), <= 6 with an opponent within 30
+  exactly where he faces -> burst 3 in 4, else hook / hold (always hook / hold with the carrier in the slot); the chaser
+  (assnearest) rolls randomd0((40 - Chk) << d1) <= 2 to go straight at the carrier for 240 frames instead of containing
+  (halfway between him and the net), d1 2 normally, 0 on his team's power play, 4 on the penalty kill, no switch for a
+  defenceman within 20 of the puck; in the slot his Chk counts double for check4check. Endurance ($72): energy loss
+  (only with line changes on). Pass / shoot bias (spodds $70, the roster's "Rgh", byte 6 low nibble; gets the
+  third-period bonus twice): the computer carrier's choice: chk4shot shoots when randomd0((32 - spodds / 2) x 16, / 16
+  within 100 of the net, x 2 per defender in the shooting lane) <= 7 (odd values) or 8; chk4pass considers a pass when
+  randomd0(16 + spodds) <= 12. Aggression ($73, 0-15 after the wrap): penalties (checkagr, checkint); goalies: the reach-out
+  glove save at 11+ (this slot is GL for goalies). Fighting / H/F: injury length for the hitter's victims.
+- What each rating does (SNES; working ratings 0-15, arrays a word per object; NB the array named aggress holds
+  Checking and GGSleft holds a skater's Aggression): Weight: acceleration (playeracc: 32 - Wgt + 1.5 x Agl, so a Weight
+  point costs 2/3 of an Agility point), checks, collisions. Agility: acceleration, stopping (dostop), the goalie's skating
+  to loose pucks; goalies: a person's goalie without the puck gets 2 x Agl + 8 more, a computer goalie (or one with the
+  puck) only + 8 and loses his Agl again while a pass is in flight (passReceiverPlayerNum set): sluggish across the
+  crease on passes. Speed: top speed, scaled by energy (0.5 + energy / 2; full with OptLine 2); a person's goalie in his
+  crease (goalieflags bit 2 clear) at 3/4. No half acceleration for a person's puck carrier was found, and no chaser
+  slot speed boost. Shot Power: shot speed ((ShP x energy + 20) x wind-up); no weak-shooter wind-up cut-off (ShotMode
+  does not read it): anyone winds up to step 16. Shot Accuracy: as the Genesis (perfect roll, scatter). Passing: pass
+  speed (144 + 4 x Pas) and the flip's scatter (assdumpin). Stickhandling: steals, catches, the stumble at 12+.
+  Checking (aggress): knockdowns, the flip fall, and computer checking: check4check rolls randoma(20 - Chk), doubled with
+  penalties on, TWICE, either < 4 -> look for a target (Chk 15: about 96% a frame with penalties off, 64% on; the hot /
+  cold bug puts many players at 15); the chaser's attack roll uses 20 - Chk the same way. Endurance: energy. Pass /
+  shoot bias (spodds): chk4shot / chk4pass. Aggression (GGSleft): penalties (checkagr, checkint, with the person
+  overflow). Goalie save ratings (glove / stick, in the passacc / endurance / spodds / GGSleft slots): looked up in
+  puckgoalie, then overwritten before use, so unused as on the Genesis. Fighting (fightagg): never read.
+- One-timers (Genesis): triggered by a C press (doinput) while the person still controls the passer of a targeted pass
+  in flight (lastplayer = him, passplayer set; the receiver not a goalie, not a person's, not already one-timing), or by
+  the pass's receiver himself with the puck loose; only with the puck on the attacking half (PuckOnAttackHalf); for
+  computer teams asspassrec starts them itself (in the attacking zone, or 1 in 8 outside). assonetimer gives control to
+  the receiver and starts the shot animation (forehand or backhand by the angle to the net); while the puck comes it
+  works out the frames until it arrives (distance / speed / 17) and starts the downswing itself when that is no more
+  than the frames left in the swing, so the swing is timed by the game; at full wind-up it holds 48 more frames
+  (SPAcnt += $30) waiting. It is cancelled when anyone gains the puck or the puck is 60+ away and moving away; it fails
+  when the downswing ends without the puck within 10 of the blade (puckstick: within 18 the swing jumps to the strike,
+  within 10 it strikes: onetimershot -> doshot with power from $1F, auto-aim, goalie reach 12, the last two passers
+  credited). Recordings: successful one-timers struck 0-870 ms after the C press (median ~210; pressing as the puck
+  arrives strikes at once), failed ones ended 300-960 ms after it: press C no more than ~0.9 s before the pass arrives.
+- Hooks, holds and pokes (Genesis): A starts SPAhook (or SPAHold right after contact with the opponent ahead), a 30-frame
+  reach; an opponent caught within 45 degrees of where he faces (holdcheck) gets both players' velocities averaged (the
+  carrier slows to the hooker's pace) and is locked flailing (SPAflail) 40 frames, the hooker in SPAhook2 / SPAHold2 36-40
+  frames, then the hooking / holding roll (checkagr <= 6). The poke (B without the puck, SPAsweepchk) lasts 16 frames;
+  stealing is not special to it: any opposing stick within reach of a carried puck rolls the puckstick steal (randomd0(36
+  + carrier Stk / 2 - stick Stk / 2) <= 2, <= 4 in the slot, both scaled by energy; a steal knocks the puck loose in a
+  random direction); body contact facing him trips him (Bcheck). Recordings (7 Genesis games): 107 hooks / holds caught an
+  opponent, 86 of them without the puck; on the carrier (22) he kept it 4 times, the hooker's team got it 6, his own team
+  4, loose or whistle 8. Pokes by people: 136 of 210 from more than 30 away (no effect); within 30 (74): tripped him 21,
+  knocked it loose 22, took it 9, loose then his team kept it 8, nothing 14. The computer hardly pokes (1).
+- SNES goalies (assgoalie): besides the save list (GoalieSaveList, chosen like the Genesis: high / low, near / far, pad
+  stack while the puck is carried), the code has a poke (SPAgpoke, puck within 35 in front of the goal line, randomWord
+  < $A00, then goaliedivewait 240) and a dive at the carrier (puck within 45, an attacker within 60, randomWord < $800,
+  wait 360); which goalies use them is not clear: in four SNES games no computer goalie dived (all 6 dives by people).
+  Genesis computer goalies dived 7 times, all at a loose puck within 45, as the code says.
+- Computer positioning (Genesis; y toward the goal the team attacks, x: right wing +, left wing -, flipped with the
+  direction). Offence, by the puck's zone (a spot picked at random in the box, kept until the zone changes or a 1 in 128
+  frame re-pick; boxes as centre +/- half-range): wingers (asswingo; zone from the puck's y + Yvel / 64): puck in own zone
+  (80 +/- 20, -70 +/- 10), neutral (100 +/- 20, 58 +/- 5), attacking zone (60 +/- 50, 230 +/- 20), behind the goal line
+  (80 +/- 30, 250 +/- 20); centre (asscentero): own zone (0 +/- 60, -70 +/- 10), neutral (0 +/- 60, 60 +/- 10), attacking
+  zone (0 +/- 40, 170 +/- 30), behind the goal line (0 +/- 80, 170 +/- 20); defencemen (assdefo, every frame): y 98 (just
+  inside the blue line), x +/- 80 on their side, or following the puck's x when it is on their side (half way toward it
+  when not). Defence: defencemen (assdefd, at DfA ticks): depth 50 behind the deepest attacker (y + Yvel / 16), no deeper
+  than 190-220, x +/- 65 on their side or 0 with the puck on the other side; wingers (asswingd, every frame): x +/- 100
+  on their side or the puck's x when it is on their side, y the puck's y between their own blue line and goal line;
+  centre (asscenterd, every frame): x half the puck's, y the own high slot (-128) with the puck in the zone, else half
+  way between the puck and it; the chaser (assnearest): straight at the carrier (attack, 240 frames) or half way between
+  the predicted puck and a point 20 out from his own goal line (contain). All but the defending centre and wingers steer
+  around the carrier (EvadePC).
+- Skating checked against the recorded velocities (record +$28 / +$2A): top speed: each skater's 90th-percentile speed
+  outside bursts and checks sits just under (20 + Spd' / 2) x 275 (Spd' = working Spd + 2, at most 30; + 137 for odd
+  values): 6,628 at Spd 7 (cap 6,737) up to 9,162 at 26 (9,350), 61 skaters in three games; about 23 to 32 mph. Acceleration:
+  speed gained per frame (one-frame steps by the frame counter, skating animations, 300-3000, friction v / 64 added back)
+  against (64 - 2 x Wgt + Agl + 2) / 2 x 200 / 32: medians within 1-5% of it from 167 (term 27) to 236 (39), ~19,500
+  samples in two games. So Agility is acceleration and a Weight point costs 2 Agility points, as the code says.
+  SNES top speed: MaxSpeed ((20 + n) x 261)^2 with n = working Spd x (0.5 + energy / 2) (Xvel $0EC3, Yvel $0EE3, Spd
+  legspd $1303): 90th-percentile speeds 6,919 at Spd 7 (cap 7,047) to 8,901 at 15 (9,135) in three SNES games; 32 of the
+  61 skaters were at working Spd 15 (the hot / cold bug), so most of the ice skates at full speed.
+- Skating (Genesis playeracc): top speed from MaxSpeed ((20 + n) x 275)^2 with n = working Spd / 2 (+1 always: the
+  "crowd meter broken" +2); a person's puck carrier accelerates at half rate (not the computer's); a goalie with the puck
+  at half speed. Top speeds in the recordings follow Spd only loosely (bursts add to them).
+- Goalie AI: the CPU goalie stands on the line from the puck to his net, 18 out; he rethinks every DfA / 4 frames.
+  Save moves (goaliesave, from checkanim when findpc's puckcross predicts the puck crossing his goal line within 24 of
+  the middle in under 12 frames, or 34 for the outer test): side from the crossing point against his facing (flipped
+  for mirrored goalies). High puck (puckz > 8 or puckvz > $800): ghighr / ghighl (shoulder) when the crossing is within
+  16 of him, else gglover / gglovel (blocker / glove; gglovel2, the reach-out glove, with the angle off straight and his
+  glove rating, the aggress slot, 11+). Low puck: within 8 frames, gstickr / gstickl (kick / butterfly) when within 16 of
+  him, else gstick2r / gstick2l (stick save); further off, a pad stack (gstackr / gstackl, sliding at $1000 and 6 units
+  toward the side, by his x and handedness) when someone still carries the puck and he is not facing sideways, else the
+  kick / butterfly. Dives (gdive) only at a slow loose puck (|vx| + |vy| <= $1000) within 20 across and 30 out, never at
+  a shot; a puck taken in a dive is whistled after 5 frames (temp5). Recordings earlier (115 saves): stick 62, high 14,
+  pad stack 12, dive 5, glove 2, none 20.
+- Stick steals (puckstick): a stick touching the carrier's puck steals it when randomd0(36 + carrier Stk / 2 - stealer
+  Stk / 2, both scaled by energy) <= 2 (<= 4, and from farther, with the carrier in the slot).
+- Crowd: CwdExciteLvl $B8A2 (fast.bin): +10 a shot, +20 big hits, +30 goals (less for the visitors), -1 a tick; the meter
+  is sqrt(level x 4) + 65 dB. SNES CwdExciteLvl $19BE.
+- SNES checks of the above (2026-10-17, same tests on the SNES recordings): home / away and PP bonuses confirmed (ShA:
+  home +1 / +2, away -1; arrays as listed under Hot / cold (SNES), Chk = aggress $1483); the third-period bonus confirmed
+  with the same backwards test. Both systems set ratings only when players are put on the ice (faceoffs, changes), so
+  the bonus follows the clock at the last faceoff: CHI-TOR's third period had no stoppage and kept it all period. Shot
+  roll (doshot: cmp #$C9, randoma8(16 + shotacc) >= 15; scatter (speed / 8 - ShA + 16) x distance / 64) confirmed: 60%
+  of 112 shots within 200 left on the aim point, none of 15 beyond; 63 of the 112 were by shooters at ShA 15 (the
+  hot / cold bug). SNES shotdiradj auto-aims computer shooters only (playerpad), not one-timers. SNES goalie
+  (checkpuckcoll_ccx): a frame-dependent area from GetFrameHot with a height window, then a fixed body box |dx|, |dy| <= 10
+  at any height; no agility, person, one-timer or pad-stack change; a diving goalie lets pucks at height >= 5 through;
+  the save ratings looked up in puckgoalie seem unused. Recordings: no goal passed within 12.6 of the goalie's centre
+  (26 goals); saves median 12.9. SNES checks (checkcheck): impact >= 32 ($20), base 120 for everyone, roll against
+  Chk (aggress); recordings: 327 lunges into contact, heavier checker 50% knocked down, lighter 39%, people 50%, CPU 39%.
+- Genesis person goalie, checked: the four non-one-timer goals that passed 12-15 from the goalie all had the computer in
+  net (agility 3-4: reach 13-14); with a person in net no such goal passed within 20.
+- Faceoffs (Endfaceoff, both systems): no ratings. Each centre's state is how far his faceoff swing has got at the drop
+  (assfaceoffpl: SPAnum / 4 + 1, +3 right-handed; fofdata2 $BDA8 home, +4 away) worth 0 / 8 / 16; Home wins when a roll
+  of 0-32 (SNES 1-32) is at least 16 - home + away: equal timing 17 / 33 (SNES 17 / 32) for Home. Genesis checked (see
+  Faceoffs, checked, below); SNES not.
+- Passing (dopass / passtoa0, Genesis): Pas sets the pass's speed (160 + 2 x Pas), not its accuracy; the target is the
+  nearest teammate within 45 degrees of the direction held (45 off counts as 256 farther), none = the puck goes that
+  way (pass shots); the puck is sent exactly where the receiver will be if he keeps skating, lifted by the time to get
+  there (puckvz up to 12 x 256). Catching (puckstick): a skater's stick takes a puck at height <= 5 slower than 13000 +
+  350 x Stk (13000 flat while the shot flag stands), faster deflects at random. Recordings: 300 of 302 catches were
+  within the receiver's limit; 13 of 32 bobbles were over it, 4 more in the air; the other 15 are unexplained (skaters'
+  stick positions from HotList did not come out right: catches a median 14 from it).
+- Energy: with line changes Off nothing drains it (skating drain and burst cost both skip on OptLine; Genesis OptLine 0
+  On, 1 Off, 2 Auto = On with every use reading full energy). Checked: every skater at 4096 all game in the line-changes-
+  off games of both systems (BOS-PIT, CGY-BOS, capture6, the four SNES games); capture3 and capture5 (line changes on)
+  went down to 1134-1516. So in the leagues' setting fatigue and the Endurance rating do nothing.
+
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the
