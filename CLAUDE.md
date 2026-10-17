@@ -927,6 +927,25 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
     passes, his team never getting it back: the turnover's `goalAfterFast`, the goal's kind 'goalie giveaway' (4 in
     the recordings, each 1-2 s after the pick-off: Moog twice, Joseph, Belfour). Goalie card, season GV->G (goalie),
     GK GV->G (team). Summary VERSION 14. None of the four reviewed by the user yet.
+- Shot aim (2026-10-16; the user: "I really like adding where each shot was aimed"). Both games send every shot at
+  one of nine points: SNES `doshot` (NHL94SNES disassembly) indexes `shotsets` ($9E:E43F, found from the code's
+  `LDY #$0108` / `LDY #$FEF8` goal-side loads, then `LDA passdir; ASL; ASL; LDA #$9E; LDA #$E43F`) by `passdir` ($0D03);
+  the Genesis code at ROM $C3B6 indexes the table at $C542 by RAM $BEDC. Same keypad grid on both: (0,12) (s,12)
+  (s,6) (s,0) (0,0) (-s,0) (-s,6) (-s,12) (0,6) for directions 0 up, 1 up-right ... 7 up-left, 8 none; s = 15 SNES, 16
+  Genesis; the second word is the height row (0 = no lift, else puckvz from distance and power, capped $1800). Then
+  random scatter (doshot: none when gmode bit $0010 is set; under 201 units from the target only if a roll in
+  16 + shotacc comes under 15; size grows with power, distance, poor accuracy, capped). The direction is the stick's
+  SCREEN direction (checked at every person's shot in four Genesis and two SNES games: $BEDC / passdir = the stick, the
+  same whichever end is attacked), so attacking down the screen the stick's left is the shooter's right, and up is
+  always high: likely why SNES goals into the top net went in higher (people push toward the net), while Genesis
+  shooters mostly held plain left / right (middle height) either way. Readers keep `aim` [frame, direction] whenever it
+  changes (`AIM_DIR` / `PASS_DIR`, `AIM_TABLE` per system; Genesis only where fast.bin covers $BEDC, not capture1 /
+  capture2); `add_shot_aim` gives shots and one-timers `aim` {d, x (shooter's view, as goal.net), z (row)} and goals
+  their scoring shot's. Goals' aims and their projected crossing points agree closely (e.g. aimed (-16, 6), in at
+  (-17.1, 6.0)), which confirms both. Viewer: shot tooltips ("aimed high, the shooter's right"), a dashed blue ring
+  for the aim on each goal's net picture beside the yellow crossing dot, the card's "Aimed high / middle / ice";
+  season summaries `aimShots` / `aimGoals` (3 x 3, rows high / middle / ice, columns his left / middle / right;
+  VERSION 15) and the Play style tab's "Where shots are aimed". Early numbers: aimed high 7 goals in 20, middle 17 in 99.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under

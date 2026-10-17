@@ -1376,6 +1376,40 @@ def add_goal_spots(m):
             break
 
 
+AIM_NAMES = ['high middle', 'high right', 'middle right', 'low right', 'low middle', 'low left', 'middle left', 'high left', 'middle']
+
+
+def add_shot_aim(m, table):
+    """Where each shot was aimed (the user liked this): both games send a shot at one of nine points chosen by the stick's
+    screen direction at the shot (m['aim']: the reader's record of that value; table: the system's AIM_TABLE, the point
+    across the net and the height row). Each shot and one-timer gets `aim` {d (the direction 0-8), x (across the mouth
+    as the shooter sees it, as goal.net), z (the height row: 12 high, 6 middle, 0 along the ice)}; the goal it scored
+    gets the same. Up on the stick is always high, down along the ice, left and right the screen's sides, whichever
+    end the shooter attacks: so shooting down the screen, the stick's left is the shooter's right."""
+    rows = m.get('aim') or []
+    if not rows or not table:
+        return
+    frames = [r[0] for r in rows]
+    for sh in m.get('shotList', []):
+        if sh['kind'] not in ('shot', 'one-timer') or sh['team'] not in (0, 1):
+            continue
+        q = min(len(m['t']) - 1, sh['f'] + 1)  # the game sets it as the shot goes
+        at = bisect.bisect_right(frames, q) - 1
+        d = rows[at][1] if at >= 0 else None
+        if d is None or not 0 <= d < len(table):
+            continue
+        end = own_end(m, sh['f'], sh['team'])
+        if end is None:
+            continue
+        x, z = table[d]
+        sh['aim'] = {'d': d, 'x': x if end < 0 else -x, 'z': z}  # attacking up (own goalie at -Y): screen right is his right
+    for g in m.get('goals', []):
+        sh = next((sh for sh in m.get('shotList', []) if sh['result'] == 'goal' and sh['team'] == g['team'] and 'aim' in sh
+                   and abs(m['t'][sh['f']] - m['t'][g['f']]) <= 3000), None)
+        if sh:
+            g['aim'] = sh['aim']
+
+
 CHECK_GAIN_MS = 2000      # a check pays off when the checking team has the puck within this ...
 CHECK_SHOT_MS = 5000      # ... and a shot attempt within this of that, or a goal within CHECK_GOAL_MS of the check
 CHECK_GOAL_MS = 8000
@@ -1747,6 +1781,7 @@ def main(argv=None):
         add_check_payoff(match)
         add_goalie_giveaways(match)
     add_goal_spots(match)
+    add_shot_aim(match, getattr(system, 'AIM_TABLE', None))
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):

@@ -63,6 +63,12 @@ STRENGTH = {0: "SH2", 1: "SHG", 2: "EV", 3: "PPG", 4: "PP2"}
 # ram94snes.asm; checked on the 445 save states: positions in the Genesis units (goalies at about +/-243, the
 # nets at +/-268), exactly one joystick-controlled skater per team.
 OBJ_X, OBJ_Y = 0x0D55, 0x0DB7     # integer positions (signed)
+# Shot aiming (doshot in the NHL94SNES disassembly): passdir, the stick's screen direction (0 up, 1 up-right ... 7
+# up-left, 8 none; it matched the controller at every person's shot in the helper's recordings), indexes `shotsets`
+# ($9E:E43F; the same in NHL94, NHL94_Classic and SDL16): a point across the net (posts at +/-15) and a height row (12
+# high, 6 middle, 0 along the ice), before the game's random scatter.
+PASS_DIR = 0x0D03
+AIM_TABLE = [(0, 12), (15, 12), (15, 6), (15, 0), (0, 0), (-15, 0), (-15, 6), (-15, 12), (0, 6)]
 PUCK_Z, PUCK_Z_FRAC = 0x0DF9, 0x0DFD  # the puck's height (puckz) and its fraction, from the disassembly
 PUCK_VX, PUCK_VY = 0x0EDF, 0x0EFF
 OBJ_POSITION = 0x0F43             # 0 G, 1 LD, 2 RD, 3 LW, 4 C, 5 RW, negative = off the ice (the Genesis codes)
@@ -427,7 +433,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
     signed = lambda i, a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(cap.word(i, a))
     match = {"version": 21, "name": name, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
              "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
-             "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
+             "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "aim": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
              "padLabels": PAD_LABELS}
     facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
     from .common import STAT_FIELDS
@@ -519,6 +525,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
         near = holder < 12 and math.hypot(signed(i, OBJ_X + 28) - signed(i, OBJ_X + 2 * holder),
                                           signed(i, OBJ_Y + 28) - signed(i, OBJ_Y + 2 * holder)) <= 30
         match["owner"].append(holder if near else -1)
+        # Where a shot is aimed (passdir, the stick's screen direction the shot code reads), whenever it changes
+        v = cap.byte(i, PASS_DIR)
+        if not match["aim"] or match["aim"][-1][1] != v:
+            match["aim"].append([len(match["t"]) - 1, v])
         # The nets (objects 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then
         # comes out of the zone). [frame, top net x, y, bottom net x, y]
         nets = [signed(i, OBJ_X + 24), signed(i, OBJ_Y + 24), signed(i, OBJ_X + 26), signed(i, OBJ_Y + 26)]

@@ -348,6 +348,12 @@ def build_sprites(rom):
 
 
 # ------------------------------------------------------------------------------------ a recording -> a match file
+# Shot aiming (the shot code at ROM $C3B6): the direction the stick was held, 0 up, 1 up-right, 2 right ... 7 up-left,
+# 8 none, in screen terms (the same whichever end is attacked: checked against the controller at every person's shot
+# in four games), indexes AIM_TABLE (ROM $C542): the point across the net (posts at +/-16) and a height row (12 high, 6
+# middle, 0 along the ice) the shot is sent at, before the game's random scatter.
+AIM_DIR = 0xBEDC
+AIM_TABLE = [(0, 12), (16, 12), (16, 6), (16, 0), (0, 0), (-16, 0), (-16, 6), (-16, 12), (0, 6)]
 FRAME_COUNTER = 0xB03E  # work RAM word counting frames (up 1-3 between reads in 95% of capture6's samples)
 ROLLBACK_FRAMES = 30    # how far back a rollback can take it
 
@@ -364,6 +370,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
     facing, roster, anim, role, frame, mirror, puck_frame = [], [], [], [], [], [], []
     match["posts"] = []  # frames where the puck came off a goal post
     match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
+    match["aim"] = []  # [frame, aim direction 0-8] whenever it changes (AIM_DIR)
+    aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
     # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
     stats = {"f": [], "home": [], "away": []}
     last_counts, last_stat_ms = None, -10_000
@@ -426,6 +434,11 @@ def read_match(cap, rom_path, name, home=None, away=None):
             match["pad2"].append(cap.byte(i, PAD2))
         # The nets (records 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then comes
         # out of the zone). [frame, top net x, y, bottom net x, y]
+        # Where a shot is aimed (AIM_DIR, the stick's screen direction the shot code reads), whenever it changes
+        if aim_ok:
+            v = cap.word(i, AIM_DIR)
+            if not match["aim"] or match["aim"][-1][1] != v:
+                match["aim"].append([len(match["t"]) - 1, v])
         nets = [cap.fixed(i, BASE + SIZE * 12 + X), cap.fixed(i, BASE + SIZE * 12 + Y), cap.fixed(i, BASE + SIZE * 13 + X), cap.fixed(i, BASE + SIZE * 13 + Y)]
         if not match["nets"] or match["nets"][-1][1:] != nets:
             match["nets"].append([len(match["t"]) - 1] + nets)
