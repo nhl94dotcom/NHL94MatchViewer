@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 15  # 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 17  # 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -181,6 +181,7 @@ def summarize(m, name, date=None):
             humans[team] = sum(1 for c in m["ctrl"] if c & mask) > 0.5 * n
 
     shots, goals, hits = m.get("shotList", []), m.get("goals", []), m.get("hits", [])
+    xg_shots = [s for s in shots if "xg" in s and s["result"] != "blocked"]  # expected goals: unblocked shots the model played out
     turnovers, penalties, rules = m.get("turnovers", []), m.get("penalties", []), m.get("rules", {})
     faceoffs = [e for e in m.get("faceoffs", []) if e.get("won") in (0, 1)]
     entries = m.get("zoneEntries", [])
@@ -261,6 +262,11 @@ def summarize(m, name, date=None):
             "flip": [sum(1 for s in shots if s["team"] == side and s.get(key) and (not goal or s["result"] == "goal"))
                      for side in (team, other) for key, goal in (("flip", False), ("afterFlip", True))],
             "assisted": sum(1 for s in shots if s["team"] == team and "assist" in s),
+            # Expected goals (tools/xg.py; Genesis), over unblocked attempts: xG for, goals from those shots, xG against,
+            # goals against from those shots. Left out when the game has no xG (the SNES).
+            **({"xg": [round(sum(s["xg"] for s in xg_shots if s["team"] == side), 3) if not goal
+                       else sum(1 for s in xg_shots if s["team"] == side and s["result"] == "goal")
+                       for side in (team, other) for goal in (False, True)]} if xg_shots else {}),
             "toShot": [sum(1 for e in turnovers if e["from"] == team and e.get("shotAfter") is not None),
                        sum(1 for e in turnovers if e["from"] == team and e.get("goalAfter"))],
             "entries": [sum(1 for e in entries if e["team"] == team and (kind is None or e["kind"] == kind)) for kind in (None, "carried", "passed", "dumped")]
@@ -355,6 +361,9 @@ def summarize(m, name, date=None):
                              "saves": sum(1 for s in faced_all if s["result"] == "save"),
                              # his passes picked off and scored from within 6 s
                              "giveGoals": sum(1 for e in turnovers if e["from"] == team and e.get("giver") == idx and "goalAfterFast" in e)})
+                if xg_shots:  # expected goals against him (unblocked attempts) and the goals those shots scored
+                    mine = [s for s in xg_shots if s["team"] == other and s.get("goalie") == idx]
+                    line["xga"] = [round(sum(s["xg"] for s in mine), 3), sum(1 for s in mine if s["result"] == "goal")]
                 line.update({"sa": v[2], "ga": v[0], "a": v[1],
                              "human": [sum(1 for s in faced if s.get("gctl") == "human"),
                                        sum(1 for s in faced if s.get("gctl") == "human" and s["result"] == "goal")],
@@ -396,6 +405,9 @@ def summarize(m, name, date=None):
                     "chkShot": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "shotAfter" in h),
                     "chkGoal": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "goalAfter" in h),
                 })
+                if xg_shots:  # his expected goals (unblocked attempts) and the goals those shots scored
+                    mine = [s for s in xg_shots if s["team"] == team and s["idx"] == idx]
+                    line["xg"] = [round(sum(s["xg"] for s in mine), 3), sum(1 for s in mine if s["result"] == "goal")]
                 if any("dir" in q for q in m.get("passes", [])):
                     # Passing by zone (def, neu, att) and direction (forward, diagonal forward, sideways, diagonal back,
                     # backward); from each zone to each; and his game seconds with the puck in each zone

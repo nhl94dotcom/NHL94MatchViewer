@@ -333,6 +333,35 @@ reaches him: the swing snaps forward when the puck is already at the blade.
 The computer one-times on its own in the attacking zone (and now and then outside it), but only for teams no person
 controls.
 
+### 4.9 Expected goals from the game's own rules (Genesis)
+
+Because shots and saves are decided by fixed rules plus a few random rolls, the chance a shot goes in can be worked
+out by **playing it out the way the game would**, many times. The NHL '94 Viewer does this for every shot and one-timer
+in a recorded Genesis game (`tools/xg.py`, 400 times each):
+
+1. **The aim** is the recorded stick direction (4.1), or for one-timers and computer shooters the game's own auto-aim
+   (4.4), worked out from where the goalie is heading.
+2. **The shot** goes exactly at the aim point with the perfect-shot chance (4.2; always during a delayed penalty, 4.6),
+   otherwise with the game's random scatter, at the recorded speed and the shooter's working Shot Accuracy.
+3. **The flight**: the puck travels in a straight line, its lift cancelling gravity (13.1).
+4. **The goalie** moves the way the computer goalie does (5.4), from where he stood at the release, with his own
+   ratings; a person in net is moved the same way. His reach comes from his Agility, a person controlling him, a
+   one-timer or a pad stack (5.1).
+5. **The result**: a goal when the puck's centre crosses within 20 of the middle under the crossbar (13), a save when
+   it passes within his reach at height 15 or less, else a post, over or wide.
+
+The only number fitted to the recordings is how far the emulated goalie may be off (4 units of random spread, the
+size of its measured error). **Checked** on 191 unblocked shots in seven Genesis recordings: 39.4 expected goals against
+34 scored; computer goalies 28.6 / 23, people in net 10.8 / 11; the predicted mix of saves, wides and posts matches what
+happened. Shot by shot it ranks chances well: its log loss is 0.30, against 0.46 for giving every shot the same chance.
+
+What it leaves out: the goalie's stick (low pucks near the blade, 5.1), skaters in the way (blocked shots are left out of
+team totals), the in-close top-shelf lift (4.5), and anything a person does with the goalie beyond what the computer
+would. Pass shots and deflections have no xG. The SNES goalie works differently (5.2) and isn't modelled yet.
+
+The viewer shows each shot's xG, a skater's xG, a goalie's xG against and goals saved above expected, and the teams'
+xG; the season page adds them up.
+
 ---
 
 ## 5. Goaltending
@@ -392,8 +421,23 @@ Also geometry, but different (**Code**, partly confirmed):
 
 ### 5.4 The computer goalie (Genesis)
 
-**Positioning:** he plays the angle: on the line from the puck to the middle of his net, 18 units out. He re-aims every
-1-3 frames depending on his Defensive Awareness (12.1). **Code**
+**Positioning** (`checkanim`, `findpc`). He re-aims every 1-3 frames depending on his Defensive Awareness (12.1),
+and each time picks a spot to skate toward:
+
+- **Normally: where the puck is about to be.** He takes the puck's position plus a slice of its velocity (a look-ahead
+  that varies with the game clock), and stands on an ellipse around the middle of his net, **26 units across and 18
+  out**, on the line toward that point.
+- **When a shot is coming:** once the puck will cross his goal line within 24 of the middle **in under 34 frames**
+  (about 0.6 s), he **skates sideways to the point where it will cross**.
+- **12 frames (0.2 s) before it arrives he commits to a save move** (below), and **his speed is cut to a quarter**: he
+  stops sliding and can't adjust any more.
+- He skates like a player: acceleration from his Weight and Agility (**goalies count Agility twice**), top speed from
+  his Speed.
+
+**Confirmed:** emulating this frame by frame and driving it with the recorded puck, the goalie lands a median 1.1
+units from where the recorded goalie actually was when the puck arrived (120 shots at computer goalies; 95 within 3
+units), against 3.7 for a goalie assumed to stand still.
+
 
 **Save moves** (`goaliesave`). He starts one only when he predicts the puck will cross his goal line **within 24 units
 of the middle in under 0.2 seconds**. Which move:
@@ -1152,8 +1196,9 @@ The SNES game has no such settings known.
 
 - **Saved shots the game didn't count** (Genesis): the stick-deflection rule doesn't fully explain them.
 - **15 bobbles** with no explanation yet (Genesis): maybe the puck reaching the body before the stick.
-- **The penalty shot that ends immediately after the transition** (Genesis): unexplained. Recording the penalty-shot
-  flags ($C2EA-$C3E8, $D406-$D454) during a game where it happens would settle it.
+- **The penalty shot that ends immediately after the transition** (Genesis): unexplained. The helper now records the
+  penalty-shot flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence
+  will show which ending fires.
 - **SNES goalie poke and dive-at-carrier**: which goalies use them.
 - **Code-only items worth confirming** when the situations come up: the SNES flip; offsides; penalty odds by situation;
   computer checking frequency with penalties off; Aggression-12 penalties on the SNES; own goals off a carried puck;

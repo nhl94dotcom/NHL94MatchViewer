@@ -1724,6 +1724,36 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Agl, DfA, Chk, ShA 2; ShP, End, Pas 1; goalies Agl, DfA, PkC 4.5, the four save ratings 1. All in
   docs/GAME_MECHANICS.md 2.5 and docs/PRACTICAL_GUIDE.md (the player's guide, 2026-10-17, which the user asked for).
 
+## Expected goals and penalty-shot flags (2026-10-17)
+
+The user asked for both. Penalty-shot flags: genesis.BLOCKS gained (0xC2E0, 0x110) and (0xD400, 0x60), so new
+recordings keep gmode, BA_PS_flags ($C2F2) and the penalty shot's shooter / goalie / clock ($D406-$D454); View unpacks
+blocks[:2]. Checked on capture3's penalty shot (full.bin): bit 3 at the award (206 s), bit 2 with shootoutclock 25
+counting down (211 s), bit 5 at Oates' shot, all cleared after. The next "penalty shot ends at once" can be traced.
+SNES penalty-shot words were already inside its block.
+Expected goals (`tools/xg.py`, called by export_match after add_shot_aim; Genesis only): genesis.read_match now keeps
+`work` [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever a record's working values
+(+$67, $68, $69, $6B, $6C, $6D) change. Each shot / one-timer is played out 400 times (seeded by name, frame, team,
+shooter, so re-conversions agree): aim from the recorded stick (human shooters) or shotdiradj's auto-aim (one-timers,
+computer shooters; it agrees with the recorded passdir 69 of 88 times); doshot's perfect roll and scatter with the
+recorded speed (passspeed = speed / 68) and working ShA; flight at v / 4096 units a frame (findpc confirms the scale),
+lift cancelling gravity; checkgoal: goal when the centre crosses |x| <= 20 (16 + puck radius 5, less 1) below 13 at the
+net's front (y 261); the goalie's body at reach (.cbg by Agility + 2, 15 person, 12 one-timer, 18 pad stack). The goalie
+is emulated as the computer one (xg.Goalie: checkanim .nofo / .de5, findpc, playeracc, stopna; target the predicted
+puck on a 26 x 18 ellipse, or the crossing x within 34 frames; save move and speed / 4 at 12 frames; re-aim every
+aidef >> 2 frames): with the recorded puck it lands a median 1.1 units from the recorded goalie (120 shots), so it is
+used for a person in net too (that fit better: log loss 0.311 against 0.321 standing still). GOALIE_SPREAD 4 (the only
+fitted number; 2-7 tried). Without the goalie moving the model said 61 expected against 31 goals; with the recorded
+goalie path 35.2. Final, all seven recordings: 191 unblocked shots, 39.4 xG / 34 goals (CPU 28.6 / 23, person 10.8 /
+11), log loss 0.30 (0.46 for one rate). Extra stick reach for low pucks was tried (+2 matched the totals but worsened
+the log loss) and left out. Viewer: shot tooltip "xG 0.34", card xG (skaters) / xG against and "Saved above exp."
+(goalies), team stats Advanced "Expected goals (xG)", "· xG share", "· goals above xG" (with "(4/6)" when some goals,
+deflections or pass shots, have no xG), STAT_HELP and Help. Season summaries VERSION 17: team `xg` [xGF, goals from
+those shots, xGA, goals against from those], skater `xg` [xG, G], goalie `xga` [xGA, GA] (keys absent without xG);
+season page Skaters xG and G-xG, Goalies xGA and GSAx, Advanced chances table xGF, xGA, xGF%, G-xG. season.html's team
+summing now adds numbers only (a null had turned an array into a string). Documented in GAME_MECHANICS.md 4.9 and 5.4
+(the goalie's movement) and the Practical Guide 12.3. Not yet: the SNES (its goalie is a different box).
+
 ## League ROM settings and hot / cold on the card (2026-10-17)
 
 From the NOSE4Web editor (github.com/nhl94dotcom/NOSE4Web, src/core/hacks.ts; the user asked to use what it knows):

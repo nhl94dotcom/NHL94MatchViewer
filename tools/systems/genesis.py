@@ -28,6 +28,10 @@ BASE, SIZE = 0xB04A, 0x80  # record 0 start, record size
 PLAYERS, PUCK = 12, 14
 FRAME, X, Y, Z, ROLE, FACING, ANIM, FLAGS, ROSTER, HAND = 0x06, 0x1C, 0x20, 0x24, 0x35, 0x55, 0x58, 0x62, 0x66, 0x76
 OWNED, OWNER = 0x60, 0x61  # puck record: $00 while a player has it, and that player's record number
+# What the game sets in a player's record when he comes on the ice (setplayer): weight (rating x 8), working Agility,
+# Speed (0-30), aidef (his Defensive Awareness as a reaction time, 7-15 frames), Shot Power, Shot Accuracy. The
+# expected-goals model needs the shooter's accuracy and the goalie's reach and movement.
+WORK = (0x67, 0x68, 0x69, 0x6B, 0x6C, 0x6D)
 HOME_TEAM, AWAY_TEAM = 0xC6F6, 0xCA5A
 # Each team's stat block ($364 bytes, cleared before a game). Team words, then byte arrays by roster index.
 STAT_BLOCKS = (0xC6CE, 0xCA32)  # Home, Away
@@ -183,7 +187,10 @@ def attach():
 
 
 # ------------------------------------------------------------------------------------------- what the helper reads
-BLOCKS = [(0xB000, 0x1000), (0xC400, 0xA00)]  # what each sample keeps, as tools/nhl94_record.ps1 does
+# What each sample keeps: the objects, the stats (as tools/nhl94_record.ps1 does), and since 2026-10-17 the game-mode
+# and penalty-shot flags ($C2EA-$C3E8: gmode, BA_PS_flags $C2F2 ...; $D406-$D454: the penalty shot's shooter, goalie
+# and clock), so a penalty shot that ends at once can be traced when it happens again.
+BLOCKS = [(0xB000, 0x1000), (0xC400, 0xA00), (0xC2E0, 0x110), (0xD400, 0x60)]
 SCREEN = 0xFFF7          # 0 = the game itself; 15 menus; 80 pause menu; 100 instant replay
 MENUS = (1, 15)
 PERIOD, CLOCK = 0xC466, 0xC468
@@ -200,7 +207,7 @@ class View:
         if any(b is None for b in self.blocks) or screen is None:
             raise ConnectionError("the emulator went away")
         self.screen = screen[0]
-        a, c = self.blocks
+        a, c = self.blocks[:2]
         word = lambda block, offset: struct.unpack_from("<H", block, offset)[0]
         self.period, self.clock = word(c, PERIOD - 0xC400), word(c, CLOCK - 0xC400)
         self.score = (word(c, HOME_SCORE - 0xC400), word(c, AWAY_SCORE - 0xC400))
@@ -400,6 +407,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
     match["posts"] = []  # frames where the puck came off a goal post
     match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
     match["aim"] = []  # [frame, aim direction 0-8] whenever it changes (AIM_DIR)
+    match["work"] = []  # [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever they change (WORK)
+    last_work = [None] * PLAYERS
     aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
     # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
     stats = {"f": [], "home": [], "away": []}
@@ -484,6 +493,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
             role.append(str(code) if code < 6 else "x")
             if cap.byte(i, rec + FLAGS) & 0x08:
                 mask |= 1 << k
+            work = [cap.byte(i, rec + o) for o in WORK]
+            if work != last_work[k]:
+                match["work"].append([len(match["t"]) - 1, k] + work)
+                last_work[k] = work
         match["ctrl"].append(mask)
         vectors, counts = [], []
         for block in STAT_BLOCKS:

@@ -528,6 +528,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
 <dl>
   <dt>Corsi (CF, CA, CF%)</dt><dd>Shot attempts for and against (on goal, wide or blocked), and a team's share of them: the most used measure of who controlled play.</dd>
   <dt>Fenwick (FF, FA, FF%)</dt><dd>The same without blocked attempts.</dd>
+  <dt>xG (expected goals)</dt><dd>The chance a shot goes in, worked out from the game’s own code: the shot is played out hundreds of times with the game’s aim, shooter’s accuracy and random scatter, against a goalie with his real reach who moves the way the game moves him. Shown on each shot, the card (a goalie’s xG against and goals saved above expected) and the team stats. Genesis games only.</dd>
   <dt>PDO</dt><dd>Shooting % + save %, times 100. About 100 is normal; well above or below over a few games usually means luck.</dd>
   <dt>Even strength</dt><dd>When both teams have the same number of players in the penalty box.</dd>
   <dt>HDCF, HDCA, HDCF%</dt><dd>High-danger attempts for, against, and the share.</dd>
@@ -1482,7 +1483,7 @@ function shotText(sh) {
     (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '') +
     (sh.wrap ? ' \u00b7 wraparound' : '') + ({ rush: ' \u00b7 off the rush', zone: ' \u00b7 sustained pressure', faceoff: ' \u00b7 off a faceoff' }[sh.origin] || '');
   const speed = (sh.speed && ['shot', 'one-timer', 'pass shot'].includes(sh.kind) ? ' \u00b7 ' + shotMph(sh.speed).toFixed(0) + ' mph' : '') +
-    (sh.aim ? ' \u00b7 aimed ' + aimWords(sh.aim) : '');
+    (sh.aim ? ' \u00b7 aimed ' + aimWords(sh.aim) : '') + (sh.xg !== undefined ? ' \u00b7 xG ' + sh.xg.toFixed(2) : '');
   return at + ' \u00b7 ' + who + ' \u00b7 ' + (sh.type || sh.kind) + speed + ' \u00b7 ' + result + keeper + move + context;
 }
 // The goalie's save moves, as the converter names them (the game's own animations, grouped).
@@ -2243,6 +2244,14 @@ function refreshPopover(f, snap) {
       return s + ' / ' + n.length + (n.length ? ' (' + (s / n.length).toFixed(3).replace(/^0/, '') + ')' : ''); };
     live.byControl = { human: by('human'), cpu: by('cpu') };
   }
+  if (live && match.shotList && match.shotList.some(sh => sh.xg !== undefined)) {
+    // Expected goals (the converter's tools/xg.py: each shot played out by the game's own shot and save rules),
+    // over the attempts that were not blocked. A goalie: xG against and goals saved above expected (xG against
+    // less the goals those same shots scored; pass shots and deflections have no xG and are left out of both).
+    const modelled = match.shotList.filter(sh => sh.xg !== undefined && known(sh, f) && !['blocked', 'pending'].includes(resultAt(sh, f)));
+    const mine = p.g ? modelled.filter(sh => sh.team !== shown.team && sh.goalie === shown.idx) : modelled.filter(sh => sh.team === shown.team && sh.idx === shown.idx);
+    live.xg = { x: mine.reduce((a, sh) => a + sh.xg, 0), g: mine.filter(sh => resultAt(sh, f) === 'goal').length };
+  }
   if (live && !p.g) {
     // Checks thrown and hits taken: from the converter's hit list (every hit, thrower and target); older match
     // files only have the game's per-player byte, which counts checks thrown in the original game (+$11C, read as
@@ -2444,6 +2453,10 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Saves', saves + ' / ' + live.s);
       addStat(grid, 'Goals against', live.g);
       addStat(grid, 'Save %', live.s ? (saves / live.s).toFixed(3).replace(/^0/, '') : '\u2013');
+      if (live.xg) {
+        addStat(grid, 'xG against', live.xg.x.toFixed(2));
+        addStat(grid, 'Saved above exp.', (live.xg.x - live.xg.g >= 0 ? '+' : '') + (live.xg.x - live.xg.g).toFixed(2));
+      }
       if (live.giveGoals) addStat(grid, 'Giveaways \u2192 goals', live.giveGoals);
       if (live.byControl) {
         addStat(grid, 'Saves, human', live.byControl.human);
@@ -2456,6 +2469,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Points', live.g + live.a);
       addStat(grid, 'Shots', live.s);
       addStat(grid, 'Shooting %', shootingText(live.g, live.s));
+      if (live.xg) addStat(grid, 'xG', live.xg.x.toFixed(2) + ' (' + live.xg.g + ' G)');
       addStat(grid, 'Checks', live.checks);
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
       if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
@@ -2638,6 +2652,12 @@ const STAT_HELP = {
   'Corsi % (CF%)|· even strength': 'Corsi %, only while both teams had the same number of players serving penalties.',
   'Fenwick % (FF%)|· even strength': 'Fenwick %, only while both teams had the same number of players serving penalties.',
   'PDO': 'Shooting % plus save %, times 100 (both on shots on goal). Around 100 is normal; well above means things went in for the team (often luck over a few games).',
+  'Expected goals (xG)': 'Expected goals: each shot played out hundreds of times by the game’s own rules (where it was aimed, the shooter’s accuracy and the random scatter, the goalie’s reach and how he moves) and the share that went in, added up over the attempts that were not blocked (Genesis; pass shots and deflections have none).',
+  'Expected goals (xG)|· xG share': 'The team’s share of the two teams’ expected goals: who made the better chances.',
+  'Expected goals (xG)|· goals above xG': 'Goals scored from those same shots less their expected goals: above 0, the team finished better than the game’s odds (or the other goalie did badly). Goals off a deflection, scramble or pass shot have no xG; "(4/6)" says how many of the team’s goals are counted.',
+  'xG': 'His expected goals (the chance each of his shots that were not blocked had of going in, by the game’s own rules, added up), and his goals from those shots.',
+  'xG against': 'Expected goals of the shots he faced that were not blocked: how many an average goalie in his place would have let in, by the game’s rules.',
+  'Saved above exp.': 'Goals saved above expected: his xG against less the goals those shots scored. Above 0 is better than the game’s odds.',
   'High-danger goals / attempts': 'Attempts from the slot: within 60 units of the net (about 20 ft) and no wider than 50 from the middle. In the recordings a third of them score, against 14% of the rest.',
   'Rebound goals / attempts': 'Attempts by the team within 3 s of a save of its own shot, after getting the puck back.',
   'EA Specials (goals / attempts)': 'EA Specials (Genesis): a person\u2019s forehand wrist shot from the side, carried in, at a goalie in position, to make him bobble it; the goal counts when the team scores off the rebound within 2 s. See Help for the full rule.',
@@ -2873,6 +2893,19 @@ function fillTeamStats(snap) {
         ['Fenwick % (FF%)', sharePct(s0.ff, s0.fa), sharePct(s1.ff, s1.fa)],
         ['· even strength', sharePct(s0.ev.ff, s0.ev.fa), sharePct(s1.ev.ff, s1.ev.fa)],
         ['PDO', pdoText(s0), pdoText(s1)],
+        ...(list.some(sh => sh.xg !== undefined) ? (() => {
+          // Expected goals over the attempts not blocked (tools/xg.py), and goals scored from those same shots.
+          const xs = team => list.filter(sh => sh.team === team && sh.xg !== undefined && !['blocked', 'pending'].includes(sh.result));
+          const sum = team => xs(team).reduce((a, sh) => a + sh.xg, 0);
+          const diff = team => {
+            const scored = xs(team).filter(sh => sh.result === 'goal').length, all = list.filter(sh => sh.team === team && sh.result === 'goal').length;
+            const d = scored - sum(team);
+            return (d >= 0 ? '+' : '') + d.toFixed(1) + (scored < all ? ' (' + scored + '/' + all + ')' : '');
+          };
+          return [['Expected goals (xG)', sum(0).toFixed(1), sum(1).toFixed(1)],
+            ['· xG share', sharePct(sum(0), sum(1)), sharePct(sum(1), sum(0))],
+            ['· goals above xG', diff(0), diff(1)]];
+        })() : []),
         ...(list.some(sh => sh.danger) ? (() => {
           // From the converter's shot context: the slot (high danger), rebounds, EA Specials, set-up attempts,
           // and turnovers the other team turned into an attempt within 5 s.

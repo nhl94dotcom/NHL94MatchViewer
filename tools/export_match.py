@@ -12,6 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import systems  # noqa: E402
+import xg  # noqa: E402
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 
 
@@ -1782,6 +1783,7 @@ def main(argv=None):
         add_goalie_giveaways(match)
     add_goal_spots(match)
     add_shot_aim(match, getattr(system, 'AIM_TABLE', None))
+    xg.add_expected_goals(match)
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds
         if any(sh["kind"] == "pass shot" and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 5000 for sh in match.get("shotList", [])):

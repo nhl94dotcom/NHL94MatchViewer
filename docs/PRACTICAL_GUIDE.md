@@ -333,9 +333,18 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 
 ### 12.3 The computer goalie
 
-He stands on the line from the puck to the middle of his net, about 6 feet out, and re-squares several times a
-second. He starts a save move only when the puck will cross his line close to the middle within a fraction of a
-second. Point-blank shots at him while he's standing still mostly rebound.
+- He stands in front of his net, about 6 feet out, facing where the puck is *about to be*, and re-squares several
+  times a second.
+- **When a shot is coming at the net**, he slides sideways to the spot where it will cross the goal line, starting
+  about 0.6 s before it gets there.
+- **0.2 s before it arrives he commits to a save move and stops sliding.**
+- So what beats him is **time**: a quick, hard shot from close in, or a pass across that makes him slide again (a
+  one-timer), leaves him short of the crossing point. A slow shot from far out gives him time to get there.
+- Point-blank shots at him while he's standing still mostly rebound.
+
+The viewer's **xG** (expected goals) plays every shot out this way, hundreds of times, and shows the chance it had of
+going in: on each shot, the player cards and the team stats. It's a fair way to see who is getting good chances and
+which goalie is stealing games (Genesis games).
 
 ---
 
