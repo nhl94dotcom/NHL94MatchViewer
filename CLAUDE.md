@@ -890,7 +890,18 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   Damphousse (attackers, faceoffs at the neutral dots), Vancouver's goalie John Blue (faceoff in his zone), Fedorov at
   the P1 buzzer. None in any other recording. Shown: a banner (not for one that came with a goal), team stats
   "Nets knocked off (theirs / own)", the card, Help, season NET (team: theirs · own a game; skater). The viewer
-  still draws the net in its place (the nets are part of the rink picture). Summary VERSION 13.
+  draws each net where the game has it (2026-10-16, the user agreed): `netsAt(f)` from match.nets. Overhead
+  rink: the nets are no longer baked into the rebuilt picture; `drawFlatNet` draws both every frame (in game units,
+  between the ice and the players), so a loose net slides and its goal line shows empty. Rink picture: while a net is
+  off, its painted net is covered from `netlessPicture` (built at load: the top net covered with the ice beside it,
+  PAINTED_NETS.top [388, 150, 124, 70]; the bottom one, [385, 1285, 130, 75], with the netless top end mirrored about
+  the red line, so crease and goal line line up), choosing the painted net shown at that end (mirrored past 90
+  degrees), and the game's own net picture is drawn where the net is: NET_FRAMES front view at the top of the screen,
+  from behind at the bottom (Genesis 405 / 406, SNES 406 / 407; SNES frames 406-408 now take palette 2 like the puck,
+  `PUCK_FRAMES` 395-408, white and red instead of green and orange: SNES sprite libraries rebuilt), or a flat net
+  without game sprites. Checked in headless Edge: Smith's (top, picture and overhead), Courtnall's P2 3:18 (bottom
+  net pushed back to the end boards, picture; and turned 180). `&overhead=0` in the address shows the rink picture.
+  Summary VERSION 13.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under
