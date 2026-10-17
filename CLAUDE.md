@@ -1713,6 +1713,17 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   off games of both systems (BOS-PIT, CGY-BOS, capture6, the four SNES games); capture3 and capture5 (line changes on)
   went down to 1134-1516. So in the leagues' setting fatigue and the Endurance rating do nothing.
 
+- The 0-99 numbers on the game's screens (CalcAttrib / AttribAdjust; Genesis high ROM $FAA30..., SNES
+  routines/stats/CalcAttrib.asm): Genesis n = 18 x nibble + that rating's own hot / cold byte (byte 15 - bit; never byte
+  0, which plays), floor 0, 100+ -> 99, under 50 -> n / 2 + 25; bands 25-29 / 29-38 / 38-47 / 47-62 / 63-80 / 81-98 /
+  99 (the NOSE editor's table agrees). Show-as-played ROMs (CDL ...) NOP the adda.l #$10,a4 at $FAA38 and read 0(a4,d0)
+  with d0 = 0, so every rating shows byte 0: position in the band (middle 54 / 72 / 90) = the played hot / cold. SNES:
+  18 x nibble + sign x floor(3|b| / 4), capped 100, same squash, with the hot / cold index mapped exactly as in play
+  (checked: Agl 0 ... Agr 11), so a number below its band's middle = that rating maxed in play. The Genesis pre-game
+  Matchups screen (ScoutingReport) re-rolls hot / cold. Overall weights (OvrPlayerWgtList, w / 2): Spd, OfA, StH 3;
+  Agl, DfA, Chk, ShA 2; ShP, End, Pas 1; goalies Agl, DfA, PkC 4.5, the four save ratings 1. All in
+  docs/GAME_MECHANICS.md 2.5 and docs/PRACTICAL_GUIDE.md (the player's guide, 2026-10-17, which the user asked for).
+
 ## League ROM settings and hot / cold on the card (2026-10-17)
 
 From the NOSE4Web editor (github.com/nhl94dotcom/NOSE4Web, src/core/hacks.ts; the user asked to use what it knows):

@@ -11,6 +11,8 @@ Each finding says which system it applies to. **Genesis** means NHL '94 on the S
 `nhl94.bin` and the league ROMs built on it). **SNES** means NHL '94 on the Super Nintendo (`NHL94.smc`,
 NHL94_Classic and the league ROMs built on it). Where the two differ, both are described.
 
+For what this means in play, without the code, see the [Practical Guide](PRACTICAL_GUIDE.md).
+
 ## Contents
 
 1. [How this was found](#1-how-this-was-found)
@@ -56,8 +58,9 @@ Routine names in `code style` are the disassemblies' names, for anyone who wants
 
 ### 2.1 Working ratings
 
-The ratings you see in the editor (0 to 6 on most ROMs) are not what the game plays with. Each time a player comes on
-the ice (faceoffs, line changes), `setplayer` turns each rating into a **working rating**:
+The ratings you see in the editor (0 to 6 on most ROMs; the game's own screens show them as numbers from 25 to 99,
+see 2.5) are not what the game plays with. Each time a player comes on the ice (faceoffs, line changes), `setplayer`
+turns each rating into a **working rating**:
 
 | | Genesis | SNES |
 |---|---|---|
@@ -157,6 +160,48 @@ of the third period is the wrong way round, so it is **on while more than half o
 | Aggression | Penalty odds, with a different overflow bug (section 8.3) |
 | Goalie save ratings | Also unused |
 | Fighting | Never read |
+
+### 2.5 The 0-99 numbers on the ratings screens
+
+The game's own screens (Edit Lines, Team Roster, player cards) show each rating as a number from 25 to 99. It is made
+from the stored rating r (0-6) and a hot / cold value (`CalcAttrib`, `AttribAdjust`):
+
+- **Genesis:** n = 18 x r + that rating's own hot / cold value (-9 to +8), at least 0; 100 or more shows as 99;
+  **under 50 it is squashed to n / 2 + 25**.
+- **SNES:** n = 18 x r + 3/4 of that rating's hot / cold value (-12 to +12, so -9 to +9), the same squash; the top shows
+  as 100.
+
+So each stored rating is a **band** of numbers, and where a number sits inside its band is hot / cold:
+
+| Stored rating | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| Numbers shown | 25-29 | 29-38 | 38-47 | 47-62 | 63-80 | 81-98 | 99 (SNES 99-100) |
+| Band's middle (no hot / cold) | 25 | 34 | 43 | 54 | 72 | 90 | |
+| Working value, Genesis (x 5) | 0 | 5 | 10 | 15 | 20 | 25 | 30 |
+| Working value, SNES | 0 | 2 | 5 | 7 | 10 | 12 | 15 |
+
+What the position inside a band means differs (**Code**; the bands agree with the NOSE editor's table):
+
+- **Genesis, original code** (`nhl94.bin`, and ROMs whose Edit Lines shows each rating's own value): **nothing**. Each
+  number uses that rating's own hot / cold value, but play uses one value for all of a player's ratings (2.2), and that
+  one is never shown. Only the band counts.
+- **Genesis league ROMs that show hot / cold as played** (CDL, IDL, DPWM, RGDL ...; section 15): the routine is changed
+  to add the player's played value to every rating (`adda.l #$10,a4` and the per-rating read replaced), so **all of a
+  player's numbers sit the same distance from their band's middle**, and that distance is his real hot / cold: 3 or more
+  above is +1 working point, 6 or more +2; 3 or more below is -1, 6 or more -2, 9 below -3.
+- **Genesis ROMs with the per-rating fix** (WJ2025): each number is that rating's real value, as shown.
+- **SNES:** a number **below its band's middle means that rating is maxed in play** (15, the hot / cold bug, 2.2), even
+  for a rating-1 player; at the middle, maxed one time in three; above it, the rating plus 0-3. The pairs of
+  neighbouring bands that share a number (29, 38, 47, 63, 81) can't be told apart from the screen.
+
+The Genesis scouting report (the pre-game Matchups screen) rolls new hot / cold values, so only screens seen after it
+(Edit Lines from the pause menu) show the game's values.
+
+**Overall** (Genesis `CalcAttrib` with `OvrPlayerWgtList`): skaters count Speed, Offensive Awareness and Stickhandling
+three times, Agility, Defensive Awareness, Checking and Shot Accuracy twice, Shot Power, Endurance and Passing once,
+and leave out Weight, Aggression, Fighting and the pass / shoot bias. Goalies: Agility, Defensive Awareness and Puck
+Control 4.5 each, the four glove / stick ratings 1 each. So Overall leans on ratings that don't touch the skater you
+control (Offensive Awareness) or do nothing with line changes off (Endurance), and goalies' on four unused ratings.
 
 ---
 
@@ -648,15 +693,20 @@ really means a body check that didn't knock him over.**
 The working Aggression is cut to 0-15 after the 0-30 calculation, so high values wrap around. **Confirmed** (1,111
 samples):
 
-| Editor Aggression | Working value |
-|---|---|
-| 1 | 2-7 |
-| 2 | 8-12 |
-| **3** | **12-15** (or 0) |
-| **4** | **1-6** |
-| 5 | 10 |
+| Editor Aggression (shown as) | Working value | Penalty chance vs Aggression 0 |
+|---|---|---|
+| 0 (25-29) | 0-2 | x 1.0 |
+| 1 (29-38) | 2-7 | x 1.2 |
+| 2 (38-47) | 7-12 | x 1.35 |
+| **3 (47-62)** | **12-15** (or 0-1) | **x 1.4** |
+| **4 (63-80)** | **1-6** | **x 1.1** |
+| 5 (81-98) | 6-11 | x 1.3 |
+| **6 (99)** | **11-14** | **x 1.5** |
 
-**A rating-4 player plays like a rating-1. Rating-3 players are the most penalty-prone.**
+The ranges come from the hot / cold value (-3 to +2); 1-5 were checked against the recordings (rating 5 read 10
+there), 0 and 6 follow from the same formula. The last column is the average penalty chance against a working 0, for
+any fouling move. **A rating-4 player plays like a rating-1. Ratings 6 and 3 are the most penalty-prone**, though the
+whole spread is only about 1.5 to 1.
 
 ### 8.3 SNES penalty roll
 
@@ -1082,7 +1132,7 @@ The SNES game has no such settings known.
 | Weight bug | Person checkers do best when lighter than the target | None |
 | CB check | Works (computer formula at contact); twice the penalty risk | Nothing to gain |
 | Repeated checks | Same checker on same target ignored until another knockdown | None |
-| Aggression | Wraps: rating 4 plays like 1, rating 3 most penalised | Person overflow: Aggression 12 = penalty on every contact |
+| Aggression | Wraps: rating 4 plays like 1, ratings 6 and 3 most penalised | Person overflow: Aggression 12 = penalty on every contact |
 | Penalty-shot table | Off by one; holding and interference give no penalty shot | |
 | Delayed penalties | Other team immune (except interference, injury roughing) | No immunity |
 | Delayed-penalty sniping | Every shot within 200 perfect | No |
