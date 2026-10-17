@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 14  # 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 15  # 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -35,6 +35,18 @@ def played_periods(m):
     for i in range(1, len(m["t"])):
         if m["period"][i] == m["period"][i - 1] and m["clock"][i] < m["clock"][i - 1]:
             out.add(m["period"][i])
+    return out
+
+
+def aim_grid(shots):
+    """Shots counted on a 3 x 3 grid of where they were aimed, as the shooter sees the net: row 0 high, 1 middle, 2 along
+    the ice; column 0 his left, 1 middle, 2 his right (index row * 3 + column)."""
+    out = [0] * 9
+    for s in shots:
+        a = s["aim"]
+        row = 0 if a["z"] >= 10 else 1 if a["z"] >= 3 else 2
+        col = 0 if a["x"] < 0 else 1 if a["x"] == 0 else 2
+        out[row * 3 + col] += 1
     return out
 
 
@@ -376,6 +388,10 @@ def summarize(m, name, date=None):
                     "shotMphN": sum(1 for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")),
                     "shotTop": round(max([shot_mph(s["speed"]) for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")] or [0]), 1),
                     # his checks that paid off: the puck within 2 s, a shot within 5 s of that, a goal within 8 s
+                    # where his shots were aimed, a 3 x 3 grid as he sees the net (rows high, middle, along the ice;
+                    # columns his left, middle, right): attempts and goals in each
+                    "aimShots": aim_grid([s for s in shots if s["team"] == team and s["idx"] == idx and "aim" in s]),
+                    "aimGoals": aim_grid([s for s in shots if s["team"] == team and s["idx"] == idx and "aim" in s and s["result"] == "goal"]),
                     "chkGain": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "gain" in h),
                     "chkShot": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "shotAfter" in h),
                     "chkGoal": sum(1 for h in hits if h["team"] == team and h["by"] == idx and "goalAfter" in h),

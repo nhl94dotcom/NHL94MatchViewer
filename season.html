@@ -978,13 +978,43 @@ function viewPlay(list, team) {
     { key: 'rate', label: '\u2192 shot', title: 'Share of these passes that led straight to a shot attempt', value: r => (r.made ? r.shots / r.made : NaN),
       show: r => (r.made ? pct1(100 * r.shots / r.made) : '\u2013') },
   ], 'made');
-  const passing = viewPassing(list, team), carrying = viewCarrying(rows, team);
+  const passing = viewPassing(list, team), carrying = viewCarrying(rows, team), aiming = viewAiming(list, team);
   return '<h2>Play style</h2><h2 style="font-size:14px">How chances were made</h2>' + chances +
     '<h2 style="font-size:14px;margin-top:20px">Person vs computer</h2>' + versus +
     '<h2 style="font-size:14px;margin-top:20px">Controller habits</h2>' + habits +
     `<h2 style="font-size:14px;margin-top:20px">Passing network: ${esc(netTeam.name)} <small class="muted">(pick a team above to see another)</small></h2>` + network +
-    carrying + passing +
+    carrying + aiming + passing +
     '<p class="note">The person always has the puck carrier, so shots and passes are almost all the person\u2019s; checks and penalties are where the computer\u2019s skaters show.</p>';
+}
+
+// Where shots are aimed: the game sends every shot at one of nine points in the net, picked by the stick (up = high,
+// down = along the ice, left / right the screen's sides), then scatters it. From the summaries' aimShots / aimGoals,
+// 3 x 3 grids as the shooter sees the net (rows high, middle, ice; columns his left, middle, right).
+function viewAiming(list, team) {
+  let rows = playerLines(list, false).filter(r => r.aimShots && r.aimShots.some(Boolean));
+  if (team) rows = rows.filter(r => r.abbr === team);
+  if (!rows.length) return '';
+  const sum = (a, idx) => idx.reduce((t, i) => t + ((a || [])[i] || 0), 0);
+  const ROWS = [[0, 1, 2], [3, 4, 5], [6, 7, 8]], COLS = [[0, 3, 6], [1, 4, 7], [2, 5, 8]];
+  const share = (r, idx) => { const n = sum(r.aimShots, [0, 1, 2, 3, 4, 5, 6, 7, 8]); return n ? 100 * sum(r.aimShots, idx) / n : NaN; };
+  const gs = (r, idx) => { const a = sum(r.aimShots, idx), g = sum(r.aimGoals, idx); return a ? `${g}/${a}` : '\u2013'; };
+  // His favourite of the nine and how it scores
+  const NINE = ['high left', 'high middle', 'high right', 'left', 'middle', 'right', 'ice left', 'ice middle', 'ice right'];
+  const fav = r => { let best = 0; r.aimShots.forEach((v, i) => { if (v > r.aimShots[best]) best = i; }); return best; };
+  return '<h2 style="font-size:14px;margin-top:20px">Where shots are aimed</h2>' + table('playAim', rows, [
+    { key: 'name', label: 'Player', left: true, show: playerCell },
+    { key: 'gp', label: 'GP' },
+    { key: 'n', label: 'Shots', title: 'Shots and one-timers with a known aim', value: r => sum(r.aimShots, [0, 1, 2, 3, 4, 5, 6, 7, 8]) },
+    { key: 'hi', label: 'High %', title: 'Aimed high (stick up, up-left or up-right)', value: r => share(r, ROWS[0]), show: r => pct1(share(r, ROWS[0])) },
+    { key: 'mid', label: 'Middle %', title: 'Aimed at middle height (stick left, right or no direction)', value: r => share(r, ROWS[1]), show: r => pct1(share(r, ROWS[1])) },
+    { key: 'ice', label: 'Ice %', title: 'Aimed along the ice (stick down, down-left or down-right)', value: r => share(r, ROWS[2]), show: r => pct1(share(r, ROWS[2])) },
+    { key: 'left', label: 'His left %', title: 'Aimed at his left side of the net, as he faces it', value: r => share(r, COLS[0]), show: r => pct1(share(r, COLS[0])) },
+    { key: 'right', label: 'His right %', title: 'Aimed at his right side of the net', value: r => share(r, COLS[2]), show: r => pct1(share(r, COLS[2])) },
+    { key: 'ghi', label: 'G high', title: 'Goals / shots aimed high', value: r => sum(r.aimGoals, ROWS[0]), show: r => gs(r, ROWS[0]) },
+    { key: 'gmid', label: 'G middle', title: 'Goals / shots aimed at middle height', value: r => sum(r.aimGoals, ROWS[1]), show: r => gs(r, ROWS[1]) },
+    { key: 'gice', label: 'G ice', title: 'Goals / shots aimed along the ice', value: r => sum(r.aimGoals, ROWS[2]), show: r => gs(r, ROWS[2]) },
+    { key: 'fav', label: 'Favourite', title: 'The aim point he uses most, with goals / shots there', sortable: false, show: r => `${NINE[fav(r)]} <small>${r.aimGoals[fav(r)]}/${r.aimShots[fav(r)]}</small>` },
+  ], 'n') + '<p class="note">The stick picks the aim: up is high, down is along the ice, left and right are the screen\u2019s sides (so attacking down the screen they swap for the shooter). The game then scatters the shot at random.</p>';
 }
 
 // Who carries the puck: each team's game time with the puck on a skater's stick, by the position he was playing then
