@@ -517,13 +517,32 @@ Worked through for a check at impact 30 by a skater with working Checking 16 (li
 | Original | 100% | 10% | 13% | 18% | 90% |
 | Simple | 13% | 10% | 100% | 90% | 18% |
 | Full fix | 12% | 10% | 100% | 64% | 18% |
+| Everyone 120 (below) | 18% | 30% | 90% | 18% | 90% |
 
-A real fix would do the original sum in a word (`sub.w` / `add.w` with the weights zero-extended), which leaves the
-computer's checking as it is and stops the overflow. `checkFix` (the two-instruction branch at $13D6C replaced by
-NOPs) makes **every** checker use 240: CB then gains nothing in knockdowns but still doubles the penalty risk, and
-**computer checkers inherit the weight bug** (automatic against anyone 2+ points heavier, poor against lighter men).
+**The C-then-B fix makes it worse.** The code at $13D6C is:
+
+```
+moveq  #$78,d0           ; base 120
+btst   #3,pflags(a3)     ; checker controlled by a person?
+beq.w  +4                ; no: skip the next line
+asl.w  #1,d0             ; yes: double it to 240
+sub.b  weight(a3),d0     ; - checker's weight   (one byte)
+add.b  weight(a2),d0     ; + target's weight
+```
+
+The editor's `checkFix` replaces the `beq.w` with two NOPs, so **every checker uses 240**. CB then gains nothing, but
+every checker now has the weight bug, computer ones included: an automatic knockdown against anyone 2+ points heavier,
+a poor chance against lighter players. In a CB check a computer checker still doubles the penalty risk (8.1).
+
+**The right fix is the other way round: 120 for everyone** (a ROM hacker's correction; replace the `asl.w #1,d0`,
+`E340` at $13D70, with a NOP, `4E71`). Weights run 0-120, so 120 - checker + target stays within 0-240 and never
+overflows. That one change fixes **both** the weight bug and the CB check: everyone checks with the computer's
+formula, where the heavier checker does better, so switching away before contact gains nothing. One balance change
+comes with it: the designers' doubling made a person's checks harder (about 10% at equal weight in the example), and
+with 120 a person checks as well as the computer (about 30%). The viewer's settings reader recognises this version.
+
 In a survey of 65 Genesis ROMs, all the NHL '94-based league ROMs and `nhl94.bin` have the original code; only one ROM
-(WJ2025_v01) has `checkFix`, and none either weight change.
+(WJ2025_v01) has `checkFix` (everyone 240), and none has either weight change or the 120 fix.
 
 **SNES:** no weight bug (the sum uses 16 bits and people get the same base), so nothing to gain from a CB check.
 **Confirmed:** heavier checkers knocked their man down 50% of the time, lighter 39%.
@@ -1022,7 +1041,7 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 | Hot / cold in play | one value per player (the bug, 2.2) | **one value per rating** (the bug fixed), or **off** |
 | Hot / cold in Edit Lines | each rating's own value (not what plays) | **as played**, or not shown |
 | Weight bug (7.2) | present | "fixed" (two versions, both of which reverse the computer's checking; see 7.2) |
-| C-then-B check (7.2) | works | removed (everyone checks with the person formula, weight bug included) |
+| C-then-B check (7.2) | works | removed: the editor's version gives everyone 240 (weight bug for all); 120 for everyone fixes it and the weight bug |
 | Goalie hold whistle | 140 frames (2.33 s) | longer, shorter, or never |
 | A person's goalie, without the puck | kept within 36 to each side and 231 from centre | wider |
 | A person's goalie whistle line | 170 from centre (reachable only with the puck) | moved |
@@ -1042,12 +1061,13 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 |---|---|---|
 | `nhl94.bin` and its playoff / 1-on-1 versions | original (bug) | none |
 | CDL, IDL, DPWM, RGDL league ROMs (40+) | original in play, **shown as played** in Edit Lines | goalie range 40 / 224 (wider), checks per player, second assist, plus-minus, fuller three stars |
-| WJ2025 | **fixed: one value per rating** | **C-then-B check fixed**, goalie range 40 / 224 |
+| WJ2025 | **fixed: one value per rating** | **everyone checks with base 240** (no C-then-B check; weight bug for all), goalie range 40 / 224 |
 | Plablegs04, 2on2 | **off** | 2on2: goalie hold 3 s, fixed speed burst 24 |
 | QDL Season 1 | original | second assist, plus-minus |
 
 **None of them fixes the weight bug, all use the 0-6 rating scale, and all use the original clock.** So the weight
-bug and the C-then-B check work on all of these ROMs except that WJ2025 has no C-then-B check.
+bug and the C-then-B check work on all of these ROMs, except that on WJ2025 everyone checks with base 240: no
+C-then-B check, and the weight bug for computer checkers too.
 
 The SNES game has no such settings known.
 

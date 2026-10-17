@@ -1327,7 +1327,11 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   assgoaliectrl) bind only a goalie a person controls; energyDrain 33 is taken about 1 frame in 128 (HV counter test)
   and Endurance / 2 is given back only above $C00 (capture5: steps -33 and -20..-26, -204 bursts, +9 a second on the
   bench); speedBurst replaces energy >> 7 (32 fresh); turnRate is stopna's 150 a frame (stopping, and reversing in
-  noturn0). Of the 65 Genesis ROMs in the ROM folder, all the
+  noturn0).
+  A ROM hacker's correction (via the user, 2026-10-17): checkFix should make everyone 120, not 240. NOPing the
+  asl.w #1,d0 (E340 at $13D70) instead of the beq gives base 120 for all: 120 - Wc + Wt stays 0-240, so no overflow,
+  fixing the weight bug and CB at once (a person's checks then as easy as the computer's: about 30% instead of 10% at
+  equal weight). genesis_settings reads checkFix as False / True (everyone 240) / "120"; WJ2025 is True. Of the 65 Genesis ROMs in the ROM folder, all the
   NHL '94-based ones (CDL league ROMs, nhl94.bin) have the original code; only WJ2025_v01.bin has the CB fix; none the
   weight fix. SNES: 16-bit sums and no person doubling, so no weight bug and nothing gained by CB.
   Penalties (checkagr): randomd0(((40 - Agr) / 2) x 13), doubled for a person,

@@ -148,7 +148,11 @@ def rom_settings(rom):
     weight_original = _is(rom, 0x13D72, _b("902B 0067 D02A 0067"))
     put("weightFix", "off" if weight_original else "simple" if _is(rom, 0x13D72, _b("902A 0067 D02B 0067"))
         else "on" if _hooked(rom, 0x13D72, 8, WEIGHT_CODE) else None)
-    put("checkFix", _switch(rom, 0x13D6C, "6700 0004", "4E71 4E71"))
+    # The check's base: moveq #120, then beq over asl #1 (doubled to 240 for a checker a person controls).
+    # NOPing the beq (the editor's checkFix) gives everyone 240, and so the weight bug; NOPing the asl gives everyone
+    # 120, which fixes both the weight bug and the C-then-B check (a ROM hacker's suggestion): "120".
+    put("checkFix", {"6700 0004 E340": False, "4E71 4E71 E340": True, "6700 0004 4E71": "120",
+                     "4E71 4E71 4E71": "120"}.get(rom[0x13D6C:0x13D72].hex(" ", 2).upper()))
 
     if _is(rom, 0x14130, _b("5268 0010 4240 102B 0066 D0C0 5228 011C")) and _is(rom, 0x12302, _b("D532 0000")):
         body = "off"
