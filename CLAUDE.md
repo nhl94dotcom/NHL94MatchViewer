@@ -1738,6 +1738,18 @@ puck held a while, on a RandomWord >= $C000, an opposing skater with puckdist < 
 
 ## Expected goals and penalty-shot flags (2026-10-17)
 
+xG map (2026-10-17, the user asked; Genesis now, SNES once modelled): viewer Map menu "xG map" with xgShot (wrist
+13000 / slap 20000 / one-timer 20000, auto-aim, reach 12), xgAcc (Shot Accuracy step 0-6, working 5 x step) and
+xgGoalie (cpu / set / person); &map=xg&xgshot=&xgacc=&xggoalie= in the address. The model is a JavaScript port of
+tools/xg.py (XG in viewer.html, between "xG model" comments; keep the two in step: checked against Python on 12 spots x
+9 aims, largest difference 0.009). Spots every 8 units, y 92-252 at both ends (the bottom end differs a little: doshot
+halves the Y scatter shooting down), 120 tries per aim, best of the nine aims, a light 3 x 3 smoothing, drawn as one
+small picture per end; worked out in 30 ms slices (about 1.2 s) and kept per setting. Map cells are hover-only hits
+(f = -1: no click-to-replay). A set goalie made every spot nearly hopeless (wrist best 0.04), unlike real shots
+(about 0.2): the recorded goalies at the release were a median 6.7 units off their set spot (0-3 units: 1 goal in 31,
+10+: 22 in 59), so "as in games" draws each try's goalie offset and velocity from the recorded shots
+(XG_GOALIE_STATES, 173 computer / 35 person; regenerate with `python tools/xg.py matches/<games>.js`).
+
 The user asked for both. Penalty-shot flags: genesis.BLOCKS gained (0xC2E0, 0x110) and (0xD400, 0x60), so new
 recordings keep gmode, BA_PS_flags ($C2F2) and the penalty shot's shooter / goalie / clock ($D406-$D454); View unpacks
 blocks[:2]. Checked on capture3's penalty shot (full.bin): bit 3 at the award (206 s), bit 2 with shootoutclock 25

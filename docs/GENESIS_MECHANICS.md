@@ -302,6 +302,26 @@ would. Pass shots and deflections have no xG.
 The viewer shows each shot's xG, a skater's xG, a goalie's xG against and goals saved above expected, and the teams'
 xG; the season page adds them up.
 
+**The goalie's position matters more than the shooter's.** **Confirmed** over the 178 recorded shots with a goalie in
+net, by how far he was from his set spot (5.3) at the release:
+
+| Goalie off his set spot | Shots | Mean xG | Goals |
+|---|---|---|---|
+| 0-3 units | 31 | 0.04 | 1 |
+| 3-6 units | 52 | 0.07 | 1 |
+| 6-10 units | 36 | 0.23 | 7 |
+| 10 or more | 59 | 0.39 | 22 |
+
+A set goalie is very hard to beat from anywhere: against one, the best wrist shots come out at about 0.04, the best
+slapshots (from about the tops of the circles) 0.12, a one-timer from the slot 0.22. Shots go in when he is still
+moving or out of position, which is what passes across, rebounds and quick shots off the rush produce.
+
+**The xG map** (the viewer's Map menu) shows the chance from every spot in the attacking zones, for a wrist shot,
+slapshot or one-timer, a shooter's Shot Accuracy, and a goalie either set in his spot or "as in games": each simulated
+shot faces a goalie placed and moving as goalies really were at one of the recorded shots (their offsets and speeds,
+`xg.goalie_states`). With goalies as in games, wrist shots from the slot come out at about 0.2, slapshots up to about
+0.28, one-timers 0.37-0.5, and shots from the points under 0.07.
+
 ---
 
 ## 5. Goaltending

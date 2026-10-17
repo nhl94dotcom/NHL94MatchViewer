@@ -227,3 +227,44 @@ def add_expected_goals(m):
         goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng) == 'goal'
                     for _ in range(N_SAMPLES))
         sh['xg'] = round(goals / N_SAMPLES, 3)
+
+
+def goalie_states(matches):
+    """The goalies' states at the release of the shots in these match files (not blocked): [dx, dy, vx, vy] from his set
+    spot for that puck position (units; units a frame), as if the shot were at the top net, split into computer goalies
+    and people in net. The viewer's xG map draws its "as in games" goalies from them (XG_GOALIE_STATES in viewer.html):
+    in the seven recordings, a goalie within 3 units of his spot let in 1 shot of 31; 10 or more out of it, 22 of 59."""
+    out = {"cpu": [], "person": []}
+    for m in matches:
+        P = m["pos"]
+        for sh in m.get("shotList", []):
+            if sh["kind"] not in ("shot", "one-timer") or sh["result"] == "blocked" or sh["team"] not in (0, 1):
+                continue
+            f, team = sh["f"], sh["team"]
+            gk = next((k for k in range((1 - team) * 6, (1 - team) * 6 + 6) if m["role"][f * 12 + k] == "0"), None)
+            if gk is None:
+                continue
+            gx, gy = P[(f * 12 + gk) * 2], P[(f * 12 + gk) * 2 + 1]
+            px, py = m["puck"][3 * f], m["puck"][3 * f + 1]
+            d3 = 260 if gy > 0 else -260
+            rx, ry = px, max(-259, min(259, py)) - d3
+            if rx * rx + ry * ry > 900:
+                ln = math.isqrt(int(rx * rx + ry * ry)) + 1
+                rx, ry = rx * 26 / ln, ry * 18 / ln
+            vx, vy = _velocity(m, f, gk)
+            o = [gx - rx, gy - (ry + d3), vx, vy]
+            if gy < 0:
+                o = [-v for v in o]
+            out["person" if (m["ctrl"][f] >> gk) & 1 else "cpu"].append([round(v, 1) if i < 2 else round(v, 2) for i, v in enumerate(o)])
+    return out
+
+
+if __name__ == "__main__":
+    # python tools/xg.py matches/a.js matches/b.js ...: the goalie states for the viewer's XG_GOALIE_STATES
+    import json
+    import sys
+    games = []
+    for path in sys.argv[1:]:
+        text = open(path, encoding="utf-8").read()
+        games.append(json.loads(text[text.index("{"):text.rindex("}") + 1]))
+    print(json.dumps(goalie_states(games), separators=(",", ":")))

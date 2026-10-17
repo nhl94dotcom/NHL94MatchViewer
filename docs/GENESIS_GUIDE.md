@@ -196,6 +196,10 @@ The computer never holds a direction, so its wins go a random way.
   you're shooting at.
 - **The EA Special** (community name): a wrist shot from the side that the goalie bobbles and is pushed back on, then
   a quick follow-up into the open side. It fits the rebound rule above.
+- **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
+  of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
+  make him move first: pass across, shoot off the rush, follow up rebounds.
+- **The viewer's xG map** (Map menu) shows the chance from every spot, for the shot type, shooter and goalie you pick.
 
 ---
 
