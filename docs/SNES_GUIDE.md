@@ -77,8 +77,9 @@ the screen reads backwards:
 **About half of all ratings are maxed every game**, and which ones changes from game to game. A player's real ratings
 matter much less than on the Genesis; what matters is which of them the bug maxed today.
 
-The viewer's player card lists the ratings the bug maxed in a recorded game ("Hot / cold (as played)"). (This reading
-of the screen comes from the code; a photo of Edit Lines from a recorded game would confirm it.)
+The viewer's player card lists the ratings the bug maxed in a recorded game ("Hot / cold (as played)"). This reading
+of the screen is confirmed: in a recorded game, every rating shown below its band's middle played maxed, and none
+above it did.
 
 ---
 
@@ -261,6 +262,8 @@ went in within 12.6 units of a goalie's centre.
 - **Passes slow him down** (7): attack with passes across and one-timers.
 - He has two attacking moves: a **poke check** at a carrier close in front, and a **dive at the carrier**. In recorded
   games no computer goalie dived, so these may be rare.
+- **When he has the puck and an opponent comes within about 7 feet, he drops onto it and covers it** for a second and a
+  half; with nobody near he looks to pass it out. A goalie you control never does this.
 
 ---
 

@@ -153,7 +153,11 @@ The hot / cold value shown is exactly the one that plays (the screen reads the s
 - **Above the middle**, the step's value plus 0 to 3.
 - Numbers on the edge between two bands (29, 38, 47, 63, 81) can't be told apart from the screen.
 
-**Code** (not yet checked against a photo of the screen).
+**Confirmed** with screenshots of Edit Lines taken during a recorded game (Calgary's forwards, every column): all 99
+rating numbers matched the formula exactly, and so did the weights. In play, every rating whose number was below its
+band's middle was maxed (46 of 46), none above the middle was (31), and 5 of the 22 at the middle were (the code says
+one in three). The seven ratings the recording holds in working form (Agility, Speed, Shot Power, Shot Accuracy,
+Endurance, Aggression, Checking) played exactly at the predicted values in all 3,450 samples each.
 
 ---
 
@@ -265,6 +269,11 @@ puck is still carried. **Code**
   1 in 26 per frame), then 4 seconds before he can poke again; and a **dive at the puck carrier** when the puck is within
   45 and an attacker within 60 (about 1 in 32 per frame), then 6 seconds before he can dive again. **Code**. In four
   games no computer goalie dived at all (all 6 dives were by people), so which goalies use these is unclear.
+- **Covering the puck** (`assgoalie`): once a computer goalie has held the puck a moment, now and then (a 1-in-4 roll)
+  he checks the opposing skaters. **If one is within 20 units of the puck he drops onto it and covers it** (`SPAgcover`)
+  for 90 frames; within 35, he waits; with nobody within 35 he looks to pass it out (`chk4pass`). A goalie a person
+  controls never does this: it's part of the computer goalie's routine. **Confirmed** once (CHI-CGY, the last seconds:
+  Chicago's computer goalie took the puck at 0:11 and covered it from 0:09 to 0:05).
 - How he positions himself and when he starts a save move: **not read yet**.
 
 ### 5.4 Rebounds and whistles
@@ -519,8 +528,6 @@ everything in this document applies to all of these ROMs.
 
 ## 16. Open questions and parts not read yet
 
-- **The ratings screen:** the reading in 2.5 is from the code; a photo of an Edit Lines screen from a recorded game
-  would confirm it.
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
 - **Not read yet for the SNES:** what counts as a shot on goal; rebounds and the goalie's hold; how the computer goalie
