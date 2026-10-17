@@ -1350,11 +1350,10 @@ GOAL_LINE = 268
 
 def add_goal_spots(m):
     """Where each goal crossed the goal line: `net` {x, z, end} on the goal, x across the mouth as the shooter sees it
-    (negative = his left; posts at +/-20), z the puck's height (Genesis; None on the SNES, whose puck height is not
-    read), end 'top' / 'bottom'. The game counts the goal a moment before the puck reaches the line and then puts it at
+    (negative = his left; posts at +/-20), z the puck's height (both systems: Genesis record +$24, SNES puckz $0DF9),
+    end 'top' / 'bottom'. The game counts the goal a moment before the puck reaches the line and then puts it at
     a resting spot in the net, so the crossing is projected from the last two different positions before the line."""
     P, t, N = m['puck'], m['t'], len(m['t'])
-    snes = m.get('system') == 'snes'
     for g in m.get('goals', []):
         f = g['f']
         for q in [q for q in range(max(2, f - 150), min(N, f + 150)) if abs(t[q] - t[f]) <= 1500]:
@@ -1373,7 +1372,7 @@ def add_goal_spots(m):
             if abs(x) > 24:
                 continue
             up = y1 > 0  # the shooter faces +Y: his left is -X; at the -Y net his left is +X
-            g['net'] = {'x': round(x if up else -x, 1), 'z': None if snes else round(max(0.0, z), 1), 'end': 'top' if up else 'bottom'}
+            g['net'] = {'x': round(x if up else -x, 1), 'z': round(max(0.0, z), 1), 'end': 'top' if up else 'bottom'}
             break
 
 
