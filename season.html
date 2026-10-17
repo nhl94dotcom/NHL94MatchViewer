@@ -337,7 +337,7 @@ function pool(byTeam = true, withExcluded = false) {
 function standings(list) {
   const rows = new Map();
   const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
-    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, netsOff: 0, ownNetsOff: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
     for (const side of [0, 1]) {
@@ -508,6 +508,7 @@ function viewSkaters(list, team) {
     { key: 'checks', label: 'CHK', title: 'Body checks thrown' }, { key: 'hitsTaken', label: 'HIT', title: 'Hits taken' },
     { key: 'bumpedOff', label: 'BMP', title: 'Bumped off the puck: pucks he lost on body contact, no check landed (and, after the dot, pucks he knocked loose that way)', value: r => r.bumpedOff || 0,
       show: r => (r.bumpedOff || r.bumpedLoose ? `${r.bumpedOff || 0}<small> · ${r.bumpedLoose || 0}</small>` : '0') },
+    { key: 'netsOff', label: 'NET', title: 'Nets he knocked off its spot (either net)', value: r => r.netsOff || 0, show: r => r.netsOff || 0 },
     { key: 'bobbled', label: 'BOB', title: 'Passes that bounced off him (bobbled)', value: r => r.bobbled || 0, show: r => r.bobbled || 0 },
     { key: 'onGoalie', label: 'ONG', title: 'Pucks he lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie || 0, show: r => r.onGoalie || 0 },
     { key: 'take', label: 'TK', title: 'Takeaways' }, { key: 'give', label: 'GV', title: 'Giveaways' },
@@ -559,6 +560,7 @@ function viewTeams(list, team) {
     { key: 'apg', label: 'ATT POSS/GF', title: 'Attacking-zone possession (game time) for each goal scored: how long the team needed the puck in the other end per goal. Lower is more dangerous', value: r => (r.gf ? r.possAtt / r.gf : NaN), show: r => (r.gf && r.possAtt ? mmss(r.possAtt / r.gf) : '\u2013') },
     { key: 'apa', label: 'OPP POSS/GA', title: 'The other teams\u2019 attacking-zone possession (game time) for each goal allowed: how long opponents had the puck in this team\u2019s end per goal against. Higher is better defence', value: r => (r.ga ? r.possAttAgainst / r.ga : NaN), show: r => (r.ga && r.possAttAgainst ? mmss(r.possAttAgainst / r.ga) : '\u2013') },
     { key: 'bob', label: 'BOB', title: 'Bobbled passes: passes that bounced off the teammate they reached', value: r => r.bobbled / r.gp, show: r => per(r.bobbled, r.gp) },
+    { key: 'net', label: 'NET', title: 'Nets knocked off a game: the other team\u2019s (after the dot, its own)', value: r => r.netsOff / r.gp, show: r => `${per(r.netsOff, r.gp)}<small> · ${per(r.ownNetsOff, r.gp)}</small>` },
     { key: 'bmp', label: 'BMP', title: 'Pucks its carriers lost on body contact (no check, poke or hook, not knocked over)', value: r => r.bumped / r.gp, show: r => per(r.bumped, r.gp) },
     { key: 'ong', label: 'ONG', title: 'Pucks its carriers lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie / r.gp, show: r => per(r.onGoalie, r.gp) },
     { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.take / r.gp, show: r => per(r.take, r.gp) },

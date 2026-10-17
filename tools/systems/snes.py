@@ -426,7 +426,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
     signed = lambda i, a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(cap.word(i, a))
     match = {"version": 21, "name": name, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
              "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
-             "pos": [], "ctrl": [], "owner": [], "posts": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
+             "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
              "padLabels": PAD_LABELS}
     facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
     from .common import STAT_FIELDS
@@ -515,6 +515,11 @@ def read_match(cap, rom_path, name, home=None, away=None):
         near = holder < 12 and math.hypot(signed(i, OBJ_X + 28) - signed(i, OBJ_X + 2 * holder),
                                           signed(i, OBJ_Y + 28) - signed(i, OBJ_Y + 2 * holder)) <= 30
         match["owner"].append(holder if near else -1)
+        # The nets (objects 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then
+        # comes out of the zone). [frame, top net x, y, bottom net x, y]
+        nets = [signed(i, OBJ_X + 24), signed(i, OBJ_Y + 24), signed(i, OBJ_X + 26), signed(i, OBJ_Y + 26)]
+        if not match["nets"] or match["nets"][-1][1:] != nets:
+            match["nets"].append([len(match["t"]) - 1] + nets)
         mask = 0
         for k in range(PLAYERS):
             match["pos"] += [signed(i, OBJ_X + 2 * k), signed(i, OBJ_Y + 2 * k)]

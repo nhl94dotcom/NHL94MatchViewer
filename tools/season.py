@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 from export_match import PASS_DIRS, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 12  # 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 13  # 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -221,6 +221,8 @@ def summarize(m, name, date=None):
             "bumped": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") != "goalie"),  # its carriers bumped off the puck
             "onGoalie": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") == "goalie"),  # ... or losing it on a goalie
             "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team),  # passes that bounced off the receiver
+            "netsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("side") != "defender"),  # the other team's net knocked off
+            "ownNetsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("side") == "defender"),  # its own
             "passTried": team_value(team, "passTried"), "passMade": team_value(team, "passMade"),
             "attackZone": team_value(team, "attackZone"),
             "breakTried": team_value(team, "breakTried"), "breakGoals": team_value(team, "breakGoals"),
@@ -357,6 +359,7 @@ def summarize(m, name, date=None):
                     "bumpedLoose": sum(1 for e in m.get("bumps", []) if e.get("kind") != "goalie" and e["team"] == other and e.get("by") == idx),
                     "onGoalie": sum(1 for e in m.get("bumps", []) if e.get("kind") == "goalie" and e["team"] == team and e["idx"] == idx),
                     "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team and e["idx"] == idx),
+                    "netsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("by") == idx),
                 })
                 if any("dir" in q for q in m.get("passes", [])):
                     # Passing by zone (def, neu, att) and direction (forward, diagonal forward, sideways, diagonal back,

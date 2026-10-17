@@ -877,6 +877,20 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   noting that equal use would be D 40%, C 20%, W 40%. Viewer: Puck control's "Carried by D / C / W". BOS-PIT: Boston
   32 / 16 / 52 (the left wing alone 122 s, 10 of 24 carried entries), Pittsburgh 35 / 23 / 42; CHI-TOR: Chicago
   21 / 33 / 46.
+- Nets knocked off (`netsOff`, find_dislodged_nets, 2026-10-16; the user: any skater can dislodge either net, much
+  more often on the SNES; an attacker knocking the other team's net off gets the faceoff moved to a dot just outside
+  that zone, a defender knocking his own keeps it in the zone). Both readers keep `nets`: [frame, top x, y, bottom x,
+  y] whenever a net moves (Genesis records 12 / 13, SNES objects 12 / 13; the game parks both at (0, 0) for a moment
+  as a period starts, which is ignored). A net off (0, +/-268) until it is back; the game stops play. Side from the
+  next faceoff (|Y| 40-100 on that side: attacker; 100+: defender), whoever: the nearest player of that side
+  (goalie included) to the net as it starts to move; with no telling faceoff (period end, goal, centre) the nearest
+  skater within NET_REACH 45. `goal`: the attackers scored within 2 s (Courtnall, P3 2:17: net off with the goal).
+  The user's SDL16 game 2026-10-16_2018_PHI-VAN (single player, PHI Home; the first SDL16 game recorded live: ROM
+  named SDL16 correctly): six, all of Vancouver's net, slid 29-41 units over 2.6-8.4 s; Smith, Courtnall twice,
+  Damphousse (attackers, faceoffs at the neutral dots), Vancouver's goalie John Blue (faceoff in his zone), Fedorov at
+  the P1 buzzer. None in any other recording. Shown: a banner (not for one that came with a goal), team stats
+  "Nets knocked off (theirs / own)", the card, Help, season NET (team: theirs · own a game; skater). The viewer
+  still draws the net in its place (the nets are part of the rink picture). Summary VERSION 13.
 - Zone entries (`zoneEntries`, find_zone_entries): the puck crossing a blue line (Y = +/-89) from the neutral zone
   into the zone a team attacks with that team last to touch it; 'carried' (on a stick), 'passed' (a counted pass
   across), 'dumped' (anything else; `recovered` if they got it back first). Hysteresis: the puck must be back under

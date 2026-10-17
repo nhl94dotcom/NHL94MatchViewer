@@ -511,6 +511,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Attack-zone possession per goal</dt><dd>A team's possession in its attacking zone (game time) divided by its goals: how long it needed the puck in the other end for each goal (lower is more dangerous). On the season page also the other way round: the opponents' attacking-zone possession for each goal the team allowed (higher is better defence). One game's number is the same seen from either side; over a season the two tell offence and defence apart.</dd>
   <dt>Carried by D / C / W</dt><dd>Who carries the puck: the share of a team's time with the puck on a stick that the carrier was a defenceman, the centre or a winger, by the position he was playing then. Two defencemen, two wingers and one centre, so equal use would be 40 / 20 / 40. In the team stats (Puck control) and, across games, on the season page's Play style tab ("Who carries the puck", by zone, with carried zone entries by position).</dd>
   <dt>Pass direction and zones</dt><dd>Each pass is classed by the way the puck left the stick, against the way the passer's team attacks: forward (within 30&deg; of straight up the ice), diagonal forward (30&ndash;60&deg;), sideways (within 30&deg; of straight across, so a little forward or back still counts), diagonal back, backward; and by the zone it was made in and the zone it reached (attacking, neutral, defensive, in the passer's team's terms). Shown in the team stats ("Passing by zone and direction"), on the card, and on the season page's Play style tab ("Passing by zone"), with each player's game time with the puck in that zone and passes per minute of it: high means he moves the puck on, low means he skates with it.</dd>
+  <dt>Net knocked off</dt><dd>A skater (or goalie) bumped a net off its spot and play stopped. An attacker knocking the other team's net off gets the faceoff moved out to a dot just outside that zone; a defender knocking his own off keeps it in the zone. The faceoff that follows tells which it was; whoever was nearest the net on that side gets the credit. Shown as a banner, in the team stats (theirs / own), on the card and on the season page. Much more common on the SNES.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
   <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
@@ -1914,6 +1915,13 @@ function findCallouts(m) {
       text: playerName(h.team, h.by) + ' ' + verb + ' ' + playerName(1 - h.team, h.on) + (h.outcome === 'upended' ? '' : ' ' + h.outcome) + how });
   }
   // Injuries (the converter's find_injuries): out for the period if he came back later, else for the game.
+  // Nets knocked off their spot (the converter's netsOff); one that came off with a goal has the goal's banner.
+  for (const e of (m.netsOff || []).filter(e => !e.goal && e.team !== null && e.team !== undefined)) {
+    const who = e.by >= 0 && e.byTeam !== null ? playerName(e.byTeam, e.by) : '';
+    out.push({ f: e.f, kind: 'Net off \u00b7 ' + (e.team ? m.team2 : m.team1) + ' net',
+      text: (who ? who + (e.side === 'defender' ? ' knocked his own net off' : ' knocked the net off') : 'The net came off')
+        + (e.side === 'attacker' ? ': faceoff outside the zone' : e.side === 'defender' ? ': faceoff in the zone' : '') });
+  }
   for (const e of (m.injuries || []).filter(e => !e.atStart)) {
     out.push({ f: e.f, kind: 'Injury · ' + (e.team ? m.team2 : m.team1),
       text: playerName(e.team, e.idx) + ' is hurt' + (e.by !== null && e.by !== undefined ? ' (' + playerName(1 - e.team, e.by).replace(/^#\d+ /, '') + '’s check)' : '') +
@@ -2111,6 +2119,7 @@ function refreshPopover(f, snap) {
       live.hitsTaken = match.hits.filter(e => e.f <= f && e.team !== shown.team && e.on === shown.idx).length;
     } else if (match.stats.x === 'Checks') { live.checks = live.x; live.hitsTaken = live.hits; }
     else live.checks = live.hits;
+    if (match.netsOff) live.netsOff = match.netsOff.filter(e => e.f <= f && e.byTeam === shown.team && e.by === shown.idx).length;
     if (match.bobbles) live.bobbled = match.bobbles.filter(e => e.f <= f && e.team === shown.team && e.idx === shown.idx).length;
     if ((match.passes || []).some(e => e.dir)) {
       // His passes by zone (attacking / neutral / defensive) and which way they went
@@ -2293,6 +2302,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
       if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
       if (live.bobbled !== undefined) addStat(grid, 'Bobbled passes', live.bobbled);
+      if (live.netsOff) addStat(grid, 'Nets knocked off', live.netsOff);
       if (live.passZones !== undefined) addStat(grid, 'Passes att / neu / def', live.passZones);
       if (live.passWays) { addStat(grid, 'Pass direction', live.passWays); grid.lastChild.style.gridColumn = '1 / -1'; }
       if (live.bumpedOff !== undefined) { addStat(grid, 'Bumped off puck', live.bumpedOff); addStat(grid, 'Bumped puck loose', live.bumpedLoose); addStat(grid, 'Lost puck on goalie', live.onGoalie); }
@@ -2491,6 +2501,8 @@ const STAT_HELP = {
   'Body checks|· big hits': 'Checks that upended a player or sent him into the boards or the bench.',
   'Pucks lost on contact': 'Times a puck carrier lost the puck while an opposing skater was up against him, with no check landed, no poke check or hook, and without going down.',
   'Pucks lost on contact|· to the other team': 'Of those, the ones where the other team got the puck next.',
+  'Nets knocked off (theirs / own)': 'Times the team\u2019s skaters knocked a net off its spot: the other team\u2019s (an attacker: the faceoff comes out to a dot just outside that zone) / their own (a defender, the goalie included: the faceoff stays in the zone).',
+  'Nets knocked off': 'Times he knocked a net off its spot (either net).',
   'Pucks lost on a goalie': 'Times a carrier skated into a goalie (either team\u2019s) and the puck came loose.',
   'Distance skated': 'How far the team\u2019s skaters went in all, from their positions (real-rink scale; speeds use real time).',
   'Power play': 'Power-play goals / power plays, as the game counts them.',
@@ -2613,6 +2625,7 @@ function fillTeamStats(snap) {
     const n = by[0] + by[1] + by[2];
     return n ? by.map(x => Math.round(100 * x / n)).join(' / ') + '%' : '–';
   };
+  const netsOff = (team, own) => (match.netsOff || []).filter(e => e.f <= f && e.byTeam === team && (e.side === 'defender') === own).length;
   const bobbled = team => (match.bobbles || []).filter(e => e.f <= f && e.team === team).length;  // passes that bounced off the receiver
   const bumped = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind !== 'goalie');  // carriers bumped off the puck
   const onGoalie = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind === 'goalie').length;  // ... or lost it skating into a goalie
@@ -2729,6 +2742,7 @@ function fillTeamStats(snap) {
     ...(match.bumps ? [['Pucks lost on contact', bumped(0).length, bumped(1).length],
       ['· to the other team', bumped(0).filter(e => e.next === 'opponent').length, bumped(1).filter(e => e.next === 'opponent').length],
       ['Pucks lost on a goalie', onGoalie(0), onGoalie(1)]] : []),
+    ...(match.netsOff ? [['Nets knocked off (theirs / own)', netsOff(0, false) + ' / ' + netsOff(0, true), netsOff(1, false) + ' / ' + netsOff(1, true)]] : []),
     ...(skating ? [['Distance skated', milesText(teamSkated(0)), milesText(teamSkated(1))]] : []),
     ...(h.ppTries === undefined ? [] : [
       ['Power play', h.ppGoals + '/' + h.ppTries, a.ppGoals + '/' + a.ppTries],
