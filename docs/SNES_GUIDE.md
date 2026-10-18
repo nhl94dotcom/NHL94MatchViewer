@@ -181,6 +181,9 @@ you take him, are played by the computer.
 - **How:** pass with B to a teammate, then **press A while the pass is on its way**: control moves to him and he
   swings.
 - **They go where your d-pad points**: you aim them, unlike the Genesis.
+- **Time the A press late.** The swing starts the moment you press, and the puck must reach his stick blade before it
+  ends: in recorded games every one-timer that connected came within 0.6 s of the press. Press A as the pass is about
+  to arrive, not as soon as you pass (the Genesis gives you almost a second, the SNES doesn't).
 - **They beat computer goalies:** while a pass is in the air the computer goalie **loses his Agility** and is slow to
   slide across, and every pass delays his next adjustment. A quick pass across and a one-timer catches him moving.
 - **Offsides on:** a one-timer by an offside player is whistled.

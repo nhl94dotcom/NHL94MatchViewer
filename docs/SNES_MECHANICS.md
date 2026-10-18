@@ -252,8 +252,19 @@ your d-pad points.** **Code**
   Agility while the pass is in the air and his next rethink is delayed by each pass** (5.3), so a quick pass across and
   a one-timer still catches him moving slowly.
 - One-timers **can be offside** (11).
-- How the game times the swing, and what makes one fail, hasn't been read for the SNES. In one recorded game: 7
-  one-timers plus 6 swings that missed, against the game's own count of 11 tried.
+- **The swing and the strike** (`asspassrec`): the swing (forehand or backhand by the angle to the net) starts the
+  moment the request is made, and **the game doesn't time it to the puck** (the Genesis starts the downswing itself
+  and holds the wind-up up to 0.8 s). While the swing runs, the receiver's stick won't catch the puck (his `nopuck`
+  is held at 10); the puck has to come **within 8 units of his blade** before the swing ends (the Genesis: within 10,
+  pulled in from 18). Then it's struck at a fixed power, **aimed by the d-pad held at the strike** (computer
+  one-timers: no direction, then the computer's auto-aim), and counted as a one-timer; a B press while waiting cancels.
+  The game counts every swing too (`tmOneTimerSwings`). **Code.**
+- **Computer teams** one-time on their own only in the attacking zone (past their blue line), and quickly: a coin flip
+  each frame while the pass comes.
+- **Confirmed timing** (5 SNES games, a person's A press): one-timers that connected struck 0-0.59 s after the press
+  (median 0.20 s); swings that missed ended a median 0.47 s after it. **Press A no more than about 0.6 s before the pass
+  arrives**; the Genesis allows about 0.9 s. In one recorded game: 7 one-timers plus 6 swings that missed, against the
+  game's own count of 11 tried.
 
 ### 4.6 What counts as a shot on goal
 

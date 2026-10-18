@@ -1145,6 +1145,13 @@ breakaway ends: no breakaway goal); PenShotChk re-tests at a foul. Injury (FallD
 facedir & 3 == 0, hitter a skater, randoma8(150) x 2 < impact, clock running; setInjuryType $FFFD (period) or 1 in 7
 $FFFC (game); roughing $14 with penalties on. SNES_MECHANICS 10.0, 10.9.
 
+SNES one-timers (2026-10-18, asspassrec): request = a person's new A ($0080 in padnew) while waiting (B $8000 cancels),
+or a computer team in the attacking zone (|Y| past $58) on RandomWord & $80; the swing (SPAonetimerf / b by Findhittype)
+starts at once, tmOneTimerSwings counted; while SPAnum < $10, nopuck 10 and a strike when ApproxLength(blade - puck)
+< 8: puckc = him, passdir = paddir (person) or 8, passspeed $24, tmOneTimers (clock running), a2touchpuck, doshot.
+Recordings (pad C bit = SNES A): connected 0-590 ms after the press (median 199), failed swings ended median 465;
+Genesis 0-870 / 585. SNES_MECHANICS 4.5, SNES_GUIDE 7.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
