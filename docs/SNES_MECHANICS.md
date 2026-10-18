@@ -386,6 +386,54 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   speeds and the "held at once" test are rough).
 - **Not read yet:** the hold and out-of-range whistles.
 
+### 5.5 The save button for a person in net (A, held)
+
+**Code** (`assgoalie`): while a person's goalie **holds A** without the puck, every rethink starts a save move. No shot
+is needed. The move is chosen as for the computer goalie (5.2): by the puck's direction against the way he faces, and a
+pad stack while the puck is still carried. His speed is halved, and **he can't steer until the move ends**: the
+animation lock stops `doinput`. (Holding A while carrying the puck does nothing for a goalie; on the Genesis the save
+button is C, a single press.)
+
+**Unlike the Genesis, the move makes him bigger, on one side.** Standing, he stops only what reaches the box around his
+body (about 10 units each way, 5.1). A save frame adds an area off to one side (the frame's hot point and radius, within
+a height band):
+
+| Move | Extra area | Reaches about |
+|---|---|---|
+| Glove / blocker | 6-12 to the side, radius 5-6, heights 7-15 | 18 |
+| Stick save | 12 to the side, radius 5, low | 17 |
+| Pad stack | 15 to the side, radius 6-8, low | 22 |
+| Sprawl | 19-28 to the side, radius 2-3, low | 30 |
+| Butterfly | 13-18 to the side, radius 1-3, low | 20 |
+
+No effect on rebounds: the SNES hold rule (5.4) doesn't look at his animation.
+
+**Recordings:** people pressed A on 25 of the 39 shots at a goalie they controlled, 22 times before the release, which
+gave mostly pad stacks (16). With A, 8 goals in 25 (xG 0.41 a shot); without, 4 in 14 (0.32). Too few to say more.
+
+### 5.6 Early save moves and cross-crease goals
+
+- **No wind-up save rule.** The Genesis computer goalie drops into a pad stack the moment a shot is wound up close in
+  (GENESIS_MECHANICS 5.6); the SNES one doesn't. Instead, **when an opposing carrier starts a shot or one-timer swing
+  while skating mostly up or down the ice** (sideways speed under twice his up-and-down speed), the goalie's speed is
+  set to zero once (`goaliestopped`). He picks up again at his next rethink. A carrier moving across doesn't trigger it.
+- **During a wind-up his positioning spot widens:** 34 across and 28 out, instead of 26 by 20. **Code**
+- **Save moves don't freeze him:** his speed is halved and he keeps sliding and rethinking through the move (5.2).
+- **Recordings:** a save move started before the release on 9 of 121 SNES shots at computer goalies, a median 0 ms
+  before (Genesis: 35 of 213, a median 92 ms before).
+- **Cross-crease goals still happen,** for other reasons:
+  - he rethinks only every 3-11 frames (Genesis: 1-3);
+  - his standing body is only about 10 units each way (Genesis reach 12-15);
+  - he aims for the puck itself with a look-ahead (the Genesis goalie aims halfway between puck and carrier).
+
+  Recordings: 8 carries that crossed the middle within 90 of the goal line, 5 shots, 3 goals (Genesis 12, 9, 3).
+
+### 5.7 A goalie holding the puck can't be pushed in
+
+`checkgoal` returns at once when the puck's carrier is a goalie, so the net never touches a puck the goalie holds. Pushing
+him back into the net with it does nothing. On the Genesis the net strips the puck from him at the goal line, and a
+nudge then scores (GENESIS_MECHANICS 5.9). **Code**
+
 ---
 
 ## 6. Passing, the flip and stickhandling
@@ -719,7 +767,9 @@ everything in this document applies to all of these ROMs.
 | Interference | Anyone can be called; 40% for a maxed-Aggression player |
 | Delayed penalties | No immunity: both teams can be called at one whistle |
 | One-timers | Go where the d-pad points; goalie reach unchanged, but the computer goalie is slowed by passes; can be offside |
-| Person in net | Moves much faster; doesn't make him bigger |
+| Person in net | Moves much faster; taking him doesn't make him bigger, but holding A (a save move) adds a stick / glove / pad area on one side |
+| Wind-up | No Genesis-style early pad stack; he stops once when a carrier winds up skating up or down the ice |
+| Goalie pushed in | Impossible: the net ignores a puck the goalie holds |
 | Flip | A computer dump-in by side of centre; scatters by Passing |
 | Weak shooters | No limit: anyone can take a full slapshot |
 | Computer skaters | Hit-happy (two check rolls a frame) |

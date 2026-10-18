@@ -203,6 +203,16 @@ The computer never holds a direction, so its wins go a random way.
   - From 70 feet or more, no shot is ever exact and the error is big, so almost nothing goes in. Skate in first.
   - Watch out attacking up the screen: pushing toward the net means pressing Up, which aims high. Let go of the d-pad
     instead.
+- **Wind up close in and the computer goalie drops early.** Within about 20 feet of the goal line, the moment you
+  start a slapshot the computer goalie often drops into a pad stack and slides toward the middle, away from your side
+  of the net. He's stuck there for 0.7 s. (It depends on the clock, so only about half the time.) Keep gliding and
+  shoot to your side of the net. Recorded: 37% of such shots scored when he dropped early, 12% when he waited.
+- **Cross-crease:** skate straight across the front of the net, close in, at full speed. Within 10 feet of the goal
+  line the goalie trails the play by about 6 feet, more than his reach. A slapshot wind-up there often freezes him too
+  (above).
+- **Long slapshots need Shot Power.** From the blue line to about 40 feet out, a slapshot under about 20,000 almost
+  never goes in. Only the hardest shooters' forehands (24,000+) beat the goalie's slide: about 15-23% from 40 feet near
+  the middle. A backhand loses a quarter of its power. With that power, the far post works as well as the near one.
 - **Delayed penalty = free snipe.** While the referee's arm is up for a penalty against the other team, the game
   pulls your goalie, and **every shot your team takes from inside the zone goes exactly where you aim it**. Shoot for
   a corner.
@@ -359,6 +369,8 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - To score: shoot **wide of his reach** (a corner, from inside the zone, where your shot can be exact), use one-timers,
   and follow up rebounds.
 
+- **A goalie holding the puck can be pushed into his own net, and it counts.** The net knocks the puck off him at the
+  goal line, and any nudge then puts it in. (Not on the SNES.)
 - **The top net's shoulder-save bobble:** at the top of the screen, a high shot the goalie takes on the shoulder can pop
   loose for a moment, and sometimes trickles in. The game holds the puck at his shoulder, which for the top net's goalie
   sits behind him, at the net. Shoot high at the top net and follow it in. It can't happen at the bottom net.
@@ -368,6 +380,10 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - Stay in your area: **a goalie you control who skates more than about 33 feet out from his goal line** (past the
   tops of the faceoff circles) is whistled.
 - He's whistled for holding the puck about 2.3 s after taking it; a puck taken in a dive is whistled at once.
+- **C makes a save move, not a bigger goalie.** He's the same size whatever he does: being in the way is what
+  stops shots. C freezes him for over half a second at a quarter speed. Its uses: as a shot arrives in close, a save
+  move holds the puck instead of giving up a rebound; and pressed before the shot, it's a pad stack (reach 18), which
+  slides him away from the side he's on. Never press it early or while sliding across.
 - Dives (A while moving) stop him dead for over a second; the computer only dives at a slow loose puck right in front
   of him.
 
@@ -444,7 +460,7 @@ Puck Control. Ignore Overall, Endurance, and the goalie's glove and stick column
 1. Faceoffs: mash B, hold the d-pad toward your target, back to the defence is safest.
 2. Shoot from inside the zone, aim for a corner away from the goalie; follow up rebounds to the side they come off.
 3. One-timers: B to pass, C while it travels. The best way to score.
-4. Take your goalie when a shot is coming: he gets the full reach.
+4. Take your goalie when a shot is coming: he gets the full reach. C only as it arrives, never early.
 5. Check heavier players with lighter ones, and along the boards; don't hit the same man twice running.
 6. Pokes only from within 10 feet; hooks rarely.
 7. Ref's arm up for the other team: you can't be called, and your shots go exactly where you aim.

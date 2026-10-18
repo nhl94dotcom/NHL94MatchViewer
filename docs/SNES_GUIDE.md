@@ -289,6 +289,10 @@ went in within 12.6 units of a goalie's centre.
 
 - Taking the goalie doesn't make him bigger, but **a goalie you control accelerates much faster** than the computer's.
 - Inside his crease he skates at three-quarters speed.
+- **Holding A makes a save move, and on the SNES that does make him bigger, on one side.** Standing, he stops only
+  what reaches his body (about 3 feet each way). A save move adds a stick, glove or pad that reaches about 6-7 feet
+  out, and a sprawl about 10. The game picks the side from where the puck is heading. You can't steer while it plays,
+  so hold A as the shot comes, not before. Before the shot (puck still on the stick) it's a pad stack.
 
 ### 11.3 The computer goalie
 
@@ -298,6 +302,10 @@ went in within 12.6 units of a goalie's centre.
   arrives, and **keeps sliding through the save**. Shots that make him slide a long way, quickly, are the ones that beat
   him: across the crease, or a pass across and a one-timer.
 - **He freezes when you wind up a shot** while skating straight up or down the ice: wind up, then shoot where he isn't.
+  He stops only for a moment, and he doesn't drop into a pad stack the way the Genesis goalie does.
+- **Cross-crease** still works: he rethinks slowly and his body is small. Skate across the front of the net close in
+  and shoot before he catches up.
+- **A goalie holding the puck can't be pushed into the net** (on the Genesis he can).
 - **Passes slow him down** (7): attack with passes across and one-timers.
 - He has two attacking moves: a **poke check** at a carrier close in front, and a **dive at the carrier**. In recorded
   games no computer goalie dived, so these may be rare.

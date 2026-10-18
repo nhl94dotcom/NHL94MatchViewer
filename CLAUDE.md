@@ -1157,6 +1157,26 @@ centre's current animation (assfaceoffpl SPAnum / 4 + 1, +3 for handed 0, table 
 Yvel after the drop (32 x dirtab + / - $800); 70 draws: home 36 vs 38.7 expected; stage diff -8 / 0 / +8: 20% / 48% / 74%
 (model 28 / 53 / 78). doinput passes padnew, so a swing needs a new B press. People's stages 27 / 45 / 28%.
 
+Goalie study (2026-10-18, the user's list; analysis/goalie_study.py; GENESIS_MECHANICS 5.5-5.9, SNES_MECHANICS 5.5-5.7,
+both guides). Genesis C for a person's goalie (doinput_cbut): faces the puck, goaliesave's move, speed / 4, locked ~0.57 s
+(pad stack 0.72); reach unchanged (15) except a pad stack (18, jumps 6 and slides toward the middle, away from his side:
+shift by goalie x sign); in a save move the in-close hold quartering is skipped (computer goalies held 62/100 in a move,
+32/89 standing). A person's goalie out of view ($74 / $64 from the camera) runs checkanim (assgoaliectrl). Person C
+shots 7 goals / 19 (xG 0.21) vs 18 / 45 (0.37): too few. SNES: a person's goalie makes a save move while A ($0080) is
+HELD (assgoalie .5x), every rethink, no shot needed; the save frames add a hot area 12-28 to one side (standing: body
+box only), so on the SNES it does make him bigger. Genesis wind-up rule (checkanim): shot mode (sflags bit 3) with
+|pucky| > 208 and the goalie |x| <= 20 -> goaliesave at once, only when bit 1 of the seconds left (gameclock $C468) is
+clear; the ellipse widens to 34 x 26 during wind-ups. Recordings: 35 of 100 shots within 60 at computer goalies had an
+early save (13 goals, 37%) vs 65 (8, 12%); 33 / 35 with the clock bit clear; 27 pad stacks, 22 / 23 slid toward the
+middle; 11 / 11 such goals went in on the shooter's side. Positioning target x = halfway between carrier and puck
+(TmpPuckX). Goalie lag behind the puck-net line within 30 of the goal line: 18 units at 110+ units/s across. SNES: no
+wind-up save; a carrier in SPAshotf..$F020 skating mostly up / down zeroes the goalie's speed once (goaliestopped);
+ellipse 26 x 20 -> 34 x 28 in a wind-up. Long slapshots (xg.py rules, recorded CPU-goalie states): power dominates (16-23%
+from 120 out at 24000-28000, a few % below 20000), far ~ near only at 24000+; ShA doubles 10 -> 20% at 120; the user's
+far-post claim not shown (asked for examples). Goalie pushed in with the puck: Genesis checkgoal takes a carried puck off
+its carrier (nopuck 8) at the goal box, goalie included, so the loose puck can then be nudged in; SNES checkgoal returns
+when puckc is a goalie. None recorded.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

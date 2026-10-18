@@ -470,6 +470,144 @@ saves facing down (-10, +15) and (+10, +14), facing up (+9, +14) and (-9, +14));
   whistled; without the puck he can't skate out that far anyway (a person's goalie is kept within 36 of the middle and
   231 from centre). League ROMs can change all three numbers (section 15).
 
+### 5.5 Pressing C as the goalie (a person in net)
+
+**What C does** (`doinput_cbut`, for a goalie): he turns to face the puck and starts **the same save move the computer
+would pick** (`goaliesave`, the table in 5.3), chosen from where the puck is predicted to cross his goal line. His speed
+is cut to a quarter and **he is locked in the move until it ends**: no skating, no other button. The moves last about
+0.57 s (glove, stick, shoulder) and 0.72 s (pad stack). **Code**; the lengths measured over 300+ recorded moves.
+
+**What it doesn't do: make him bigger.** His reach is 15 whatever he does (5.1). Glove, shoulder and stick saves don't
+change it, and the glove and stick save ratings are never used. **Being in the way is what saves shots.**
+
+What a save move does change:
+
+- **The pad stack.** If you press C while the puck is still on the shooter's stick (and it's low, and the goalie isn't
+  facing straight sideways), the move is a pad stack. His reach becomes 18, the biggest it gets. He also jumps 6 units
+  and slides **toward the middle and past it, away from the side he was standing on**, which opens that side.
+- **Fewer rebounds in close.** The rule that makes a standing goalie hold far fewer pucks in close (5.2) doesn't apply
+  in a save move. Recordings: computer goalies in a save move held 62 of their 100 saves; standing, 32 of 89.
+- **His stick moves.** The save frames put the blade 5-10 units out to one side. A low puck within 8 of the blade is
+  the stick's: caught if slower than 13,000, deflected if faster. That's a little extra cover along the ice.
+
+**The cost:** over half a second frozen at a quarter speed. Press too early, or while you're sliding across, and a
+pass across, a deke or a shooter who keeps moving beats you.
+
+Also from the code: **a goalie you control who goes out of view** (more than $74 across or $64 up or down from the
+camera's centre) is moved by the computer's routine, save moves included, until he's back on screen
+(`assgoaliectrl`).
+
+**Recordings** (64 Genesis shots at a goalie a person controlled): C pressed between 0.6 s before the release and the
+result, 19 shots, 7 goals; not pressed, 45 shots, 18 goals. The C shots were easier ones (xG 0.21 a shot against 0.37),
+so if anything pressing did worse than expected, but there are too few shots to tell.
+
+### 5.6 Save moves that start before the shot: the wind-up rule
+
+**The rule** (`checkanim`): **while a shot is being wound up** (shot mode: a person holding C with the puck), with the
+puck **within about 60 units (20 feet) of the goal line** and the computer goalie **within 20 units of the middle**,
+he starts his save move straight away, at his next rethink. He doesn't wait for the shot.
+
+- **The move:** the puck is still carried and low, so it's almost always a **pad stack**. That slides him toward the
+  middle and past it, **away from the side he stood on**, and **locks him for 0.72 s at a quarter speed**.
+- **A clock quirk:** the rule only works while bit 1 of the seconds left on the period clock is clear. That means 2 game
+  seconds on, 2 off (about 0.8 s of real time each), so **it happens about half the time.**
+- **His positioning spot also widens during a wind-up** (34 across and 26 out, instead of 26 by 18). **Code**; at the
+  release, recorded goalies stood close to their normal spot.
+
+**Confirmed** (shots from within 60 of the goal line at computer goalies, Genesis recordings):
+
+| Computer goalie | Shots | Goals |
+|---|---|---|
+| Save move started before the release (a median 92 ms before) | 35 | 13 (37%) |
+| Waited for the shot | 65 | 8 (12%) |
+
+- 33 of the 35 early moves came while the clock rule was on; by chance it would be about half.
+- 27 were pad stacks, and 22 of 23 pad stacks slid him toward the middle, away from his side.
+- **All 11 early-save goals whose crossing point is known went in on the shooter's side of the net**: the side the pad
+  stack slid away from.
+- Farther out than 60, no computer goalie moved before a shot.
+
+The other early trigger is **a carried puck heading straight for the goal mouth**. `findpc` treats the carried puck like a
+shot, so a carrier driving at the net makes him commit 12 frames out. This was seen once in the recordings.
+
+### 5.7 Cross-crease goals
+
+A cross-crease goal: **the carrier skates straight across the front of the goal, just outside the crease, and shoots
+while the goalie is still catching up.** Why it works on the Genesis:
+
+- **He chases a point, not the puck.** He re-aims every 1-3 frames (Defensive Awareness) for a spot on an ellipse 26
+  across and 18 out from the middle of his net. The spot is on the line toward a point halfway between the carrier and
+  the puck, plus a look-ahead of its motion (5.3). Close in front, that spot swings from one side of the ellipse to the
+  other in a moment, and he has to accelerate to follow it, Weight and Agility permitting.
+- **Measured:** how far he trails the line from the puck to the middle of the net (at his depth), while an attacker
+  carries the puck in front:
+
+  | Carrier's distance from the goal line | Moving across under 30 units/s | 30-70 | 70-110 | 110+ |
+  |---|---|---|---|---|
+  | Within 30 | 3.0 | 0.9 | 10.1 | **18.0** |
+  | 30-60 | 0.1 | 5.1 | 5.8 | 6.5 |
+  | 60-100 | 2.0 | 2.6 | 3.9 | 3.2 |
+
+  Within 30 units at full speed he trails by 18, more than his whole reach (12-15). That's the open side. Farther out,
+  the same speed across leaves him only 3-7 behind.
+- **A slapshot makes it worse:** winding up within 60 of the goal line usually freezes him in a pad stack (5.6). The
+  carrier glides on during the wind-up, and the shot goes in on his own side.
+- **Why it doesn't always work:** the clock rule (half the time there's no early save move), his rethink rate (high
+  Defensive Awareness re-aims every frame), how close in the carrier comes, and a person in net (who isn't moved by any
+  of this).
+- **Recordings:** 12 carries that crossed the middle within 90 of the goal line in under 2 s; 9 shots, 3 goals.
+
+### 5.8 Long slapshots
+
+What decides a slapshot from 100-200 units out (about 33-67 feet):
+
+- **Exact or scattered.** From within 200 of the aim point a shot goes exactly where aimed with chance
+  (ShA + 1) / (ShA + 16): 65% at working Shot Accuracy 27, 50% at 15. From farther, it's never exact (4.2).
+- **Time.** The goalie starts sliding to the crossing point once the puck will cross within 34 frames. He only learns
+  that every 5 frames (`findpc`) and acts at his next rethink, and he freezes 12 frames out (5.3). **A harder shot
+  leaves him less of that window**, so Shot Power matters most, and the forehand: a backhand loses a quarter of its
+  power (4.3).
+- **Worked out with the xG model's rules** (computer goalie, started where recorded computer goalies stood at long
+  shots; working Shot Accuracy 27; aimed just inside a post at mid-height, or the middle). Percent that go in:
+
+  | Spot | 16,500 (backhand) | 20,000 | 24,000 | 28,000 |
+  |---|---|---|---|---|
+  | 120 out, 25 to the side: far / near / middle | 0.6 / 3.5 / 1.9 | 5.2 / 8.6 / 3.9 | **16.1** / 14.8 / 4.8 | **23.5** / 21.5 / 6.0 |
+  | 120 out, 60 to the side | 0.4 / 3.3 / 1.6 | 1.5 / 4.3 / 3.2 | 7.8 / 10.5 / 3.5 | 14.4 / 16.8 / 4.2 |
+  | 160 out, 25 to the side | 0 / 0.9 / 0.2 | 0.1 / 2.4 / 0.8 | 1.4 / 4.4 / 2.0 | 9.1 / 9.2 / 2.9 |
+  | 200 out, 25 to the side | 0 / 0 / 0 | 0 / 0.6 / 0 | 0.2 / 1.9 / 0.5 | 0.5 / 3.4 / 0.8 |
+
+  - **Shot Power is what scores from distance.** Below 20,000 a long slapshot hardly ever goes in. The hardest shots
+    (24,000-29,000, from Shot Power 20+) go in 15-23% of the time from about 40 feet near the middle.
+  - **The far post** catches the near post only with that power, and from near the middle. With less power, the near
+    post is better.
+  - **Shot Accuracy** about doubles the chance at 40 feet (a 26,000 shot: 10% at working 5, 20% at 27), and matters
+    less farther out.
+  - Beyond 200, almost nothing.
+- **Recordings:** 15 Genesis goals came from 90+ units. Most went in at mid-height (about 6) just inside a post. The goalie
+  had usually picked a stick save: he chooses a low move for a puck under height 8, and it doesn't change his reach.
+  The four slapshot goals from 100+ were all by a Shot Accuracy 27 shooter; far post and near post were mixed. The
+  model doesn't show the far-post advantage players report; recorded examples would settle it
+  (NEEDS_FROM_YOU).
+
+### 5.9 Pushing the goalie into the net with the puck
+
+**Code** (`checkgoal`, `puckgoalie`, `checkgoalp`); not seen in the recordings.
+
+1. A carried puck that enters the goal area is **taken off its carrier**. He can't touch it for 8 frames, and the puck is
+   loose. If he was defending that net, the puck bounces off the net like the boards: its speed into the net is
+   quartered and reversed. **This includes a goalie holding the puck.**
+2. Goalies hold the puck at a hold point that in many frames is **behind his centre**, toward his goal line, up to
+   13-15 units in the recordings. A goalie can be shoved back until his centre is about 11 units in front of the goal
+   line (the net's shape for players).
+3. So a goalie pushed back against his net while holding the puck can have it stripped right at the goal line.
+4. Loose there, and out of his reach for 8 frames, **any nudge puts it in, and it counts**: the pushing attacker's stick
+   or body, or the goalie's own body once he can touch it again. A puck touching the goalie bounces away from his
+   centre, so with the puck behind him it goes back toward the net.
+
+**The SNES can't do this:** its `checkgoal` ignores the net entirely while a goalie holds the puck (SNES_MECHANICS
+5.7). In the recordings, a goalie-held puck reached the goal line inside the posts in only 3 samples.
+
 ---
 
 ## 6. Passing, the flip and stickhandling
@@ -1184,6 +1322,9 @@ C-then-B check, and the weight bug for computer checkers too.
 | One-timers | Auto-aimed; goalie reach 12; dodge offside |
 | Person in net | Full reach (15) always |
 | The computer goalie | Slides to the crossing point from 0.6 s out, freezes 0.2 s before |
+| Wind-up freeze | Within 60 of the goal line he pad-stacks the moment a shot is wound up (when the clock's seconds left mod 4 is 0 or 1), sliding away from the shooter's side, frozen 0.7 s |
+| C in goal | A save move, not a bigger goalie: fewer rebounds in close, a pad stack before the shot (reach 18), frozen 0.6-0.7 s |
+| Goalie pushed in | The net strips a held puck at the goal line; a nudge then counts |
 | Flip | Fixed spot by facing; can be flipped over the glass |
 | Weak shooters | No full slapshot (Shot Power < 20) |
 | Awareness slip | Offensive wingers / centre use Defensive Awareness |

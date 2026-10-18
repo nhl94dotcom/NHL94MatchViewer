@@ -45,3 +45,9 @@ record or check and what it will settle. Newest at the bottom of each section.
 2. **Own goals** found in the older games: Juneau and Suter (CGY-BOS), Ciccarelli (capture2), Robitaille (capture3),
    Steve Smith (CHI-CGY, SNES). Did each defender really put it in his own net?
 3. **Unconfirmed posts:** capture5 P3 4:47 and capture3 P2 2:32.
+4. **Long far-post slapshot goals (Genesis).** The game, the time and the shooter of a few. The xG model doesn't show
+   the far post beating the near post except with the hardest shots (GENESIS_MECHANICS 5.8). The examples would show
+   what's different.
+5. **A Genesis goalie pushed into his net with the puck.** Note the game and time when it happens; none recorded yet
+   (GENESIS_MECHANICS 5.9 explains it from the code).
+6. **Cross-crease goals you remember**, either system, to check against the wind-up rule (5.6 / 5.7).
