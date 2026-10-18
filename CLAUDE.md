@@ -1060,6 +1060,11 @@ per team listed in GENESIS_MECHANICS 13.6 (average home +1, away -1.1). Faceoff 
 ($BD18) lead over the carried puck toward the attacked net: up median 43 / mean 33.5, down 36 / 24.1 (9,330 / 9,872
 samples, all Genesis captures). Home goes up in P1 and P3.
 
+Checks by a person or the computer per skater (2026-10-18, the user: Bourque surely checks more than computer skaters):
+the hit's `human` (the controlled-skater marker within 0.3 s, add_play_context). Card "Checks: person / CPU"; season
+summary skater `checksHuman` (VERSION 19); Skaters tab CHK PERSON (person · computer). Documents games: Bourque 62
+checks in 6 games, 27 a person's, 35 the computer's; Neal Broten 20, all a person's.
+
 ## Screen sides by direction (2026-10-18)
 
 Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way

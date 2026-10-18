@@ -2728,6 +2728,8 @@ function refreshPopover(f, snap) {
     if (match.hits) {
       const thrown = match.hits.filter(e => e.f <= f && e.team === shown.team && e.by === shown.idx);
       live.checks = thrown.length;
+      // Who was steering him when he threw them: a person (the hit's `human`, the controlled-skater marker) or the computer
+      if (thrown.some(e => e.human !== undefined)) live.checksBy = thrown.filter(e => e.human).length + ' / ' + thrown.filter(e => !e.human).length;
       // How he threw them (shoulder, hip, cross-check: the game's animations) and how many were big hits.
       const kinds = {};
       for (const e of thrown) if (e.how && e.how !== 'check') kinds[e.how] = (kinds[e.how] || 0) + 1;
@@ -2942,6 +2944,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Shooting %', shootingText(live.g, live.s));
       if (live.xg) addStat(grid, 'xG', live.xg.x.toFixed(2) + ' (' + live.xg.g + ' G)');
       addStat(grid, 'Checks', live.checks);
+      if (live.checksBy) addStat(grid, 'Checks: person / CPU', live.checksBy);
       addStat(grid, 'Hits taken', live.hitsTaken === undefined ? '–' : live.hitsTaken);
       if (live.bigHits !== undefined) addStat(grid, 'Big hits', live.bigHits);
       if (live.bobbled !== undefined) addStat(grid, 'Bobbled passes', live.bobbled);
@@ -3227,6 +3230,7 @@ const STAT_HELP = {
   'Points': 'Goals plus assists.',
   'Shots': 'Shots on goal, as the game counts them.',
   'Checks': 'Checks he landed.',
+  'Checks: person / CPU': 'His checks split by who was steering him when he threw them: a person (he was the controlled skater) or the computer.',
   'Hits taken': 'Checks landed on him.',
   'Big hits': 'His checks that upended a player or sent him into the boards or the bench.',
   'Pen. minutes': 'Penalty minutes.',
