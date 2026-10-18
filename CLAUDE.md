@@ -1025,6 +1025,22 @@ Body checks · shoulder / hip / cross-check (hits' `how`; unseen ones left out),
 were already there (Advanced, Genesis games with an attempt). Five BOS-DAL games: aimed high 10 goals in 35, middle 25
 in 90, at the ice 2 in 33. Checked in headless Edge on 2026-10-17_2246_DAL-BOS: every split adds up to its parent.
 
+## Shots on goal by direction; the puck meeting a skater (2026-10-18)
+
+The user's box-score database has about 10% more shots on goal going up the screen than down. checkpuckcoll: the stick
+(puckstick) only plays a puck at height <= 5 with Zvel <= $200, within 14 (cstick) of the frame's hot spot (7 while
+the puck's nopuck timer runs; a goalie 8); a shot (sf2shot) slower than 13000 ($32C8) is caught (puckglue; a goalie's
+catch calls ChkShotStat), faster deflects (a2touchpuck clears the flag: never counted); passes / loose 13000 + 350 x
+Stk. Recordings (13 Genesis games, shots and one-timers that reached the goalie): uncounted aimed at the ice 9/22, middle
+21/189, high 2/61; people's aim going up high 35% / middle 53% / ice 12%, going down 16% / 59% / 25% (they push toward
+the net). Predicted counted share 0.88 up against 0.83 down (about 6%), part of the 10%; but in the recordings middle
+aims were uncounted 16% up against 7% down (unexplained), so they show no overall gap. Skater bodies (puckbody, circle 8,
+not goalies, not a one-timer swing): puck above 16 ($10) skips all collisions; height <= 8 hits the body only when
+distance^2 & $F == 0 (about 1 frame in 16); 9-16 always: bounce out from his centre at offset x 256, SPAcatch if slower
+than $3000, FallDown if faster and above 12. Recordings (fast loose puck within 8 of a skater): 0-5 passed through 82%,
+taken 10%, course changed 8% (470); 6-8 through 94% (35); 17+ over 100% (21). In GENESIS_MECHANICS.md 4.7 and 13.5,
+GENESIS_GUIDE.md 6.
+
 ## Screen sides by direction (2026-10-18)
 
 Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way

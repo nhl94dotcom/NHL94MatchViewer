@@ -188,6 +188,13 @@ The computer never holds a direction, so its wins go a random way.
 - **Slapshots:** hold C longer for more power. Weak shooters (section 2.1) can't wind up fully.
 - **A shot that touches the boards, or any stick or body on the way, isn't a shot on goal**, even if the goalie stops
   it.
+- **Shots along the ice often aren't counted as shots on goal**: a hard low shot that the goalie's stick deflects
+  doesn't count (about 4 in 10 of those that reached him, against 1 in 30 high shots). Holding Down toward the net
+  when attacking down the screen aims along the ice, so teams going down get fewer shots on goal counted.
+- **Defenders block low shots only with their sticks.** A low shot almost always passes straight through a
+  defender's body; only his stick blade stops it (a soft shot he takes, a hard one deflects at random). A shot at
+  mid-height (lifted, below the crossbar's height) always hits the body and bounces off; a hard one can knock him
+  over. Anything above that sails over everyone. To get shots through, keep them low and away from sticks.
 - **Delayed penalty = free snipe.** While the referee's arm is up for a penalty against the other team, the game
   pulls your goalie, and **every shot your team takes from inside the zone goes exactly where you aim it**. Shoot for
   a corner.

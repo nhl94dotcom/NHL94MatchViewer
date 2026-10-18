@@ -245,8 +245,18 @@ delayed penalty (0.7 and 0.3 units off the aim point).
 - **Any touch on the way** (a stick, a body), **the boards**, or a hard puck deflecting off the goalie's stick clears the
   flag without counting. Pass shots (a B pass used as a shot) never set it, so they only count if they score.
 - **Nothing counts while the clock is stopped**, which is why penalty shots are never shots on goal.
-- **Code**, partly confirmed (the penalty shot). Some saved shots in the recordings weren't counted and the
-  stick-deflection rule doesn't fully explain them.
+- **Code**, partly confirmed (the penalty shot).
+- **Shots along the ice are the ones that go uncounted.** The goalie's stick only plays a puck that is low (height 5
+  or under) and not rising, and within 8 units of his blade it catches a puck slower than 13,000 (counted) and
+  deflects a faster one (not counted). A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
+  in; middle and high shots are lifted past the stick and hit his body (counted). **Confirmed** in 13 Genesis games:
+  of the shots that reached the goalie, aimed along the ice 9 of 22 went uncounted, middle 21 of 189, high 2 of 61.
+- **So the direction you attack changes your shots on goal.** People hold the d-pad toward the net: attacking down
+  the screen they aimed along the ice twice as often (25% of their shots against 12% going up) and high half as often
+  (16% against 35%). With the rates above that costs a team going down about 6% of its shots on goal on shots
+  reaching the goalie, which may explain much of the community's finding that the up direction has about 10% more
+  recorded shots on goal. (In these 13 games the middle-height shots went the other way, 16% uncounted going up
+  against 7% going down, unexplained, so the recordings alone don't show the 10%.)
 
 ### 4.8 One-timers
 
@@ -956,6 +966,31 @@ Collisions are only checked for objects that moved, and goals are ignored while 
 penalty shot, 10.3).
 
 ---
+
+### 13.5 The puck meeting a skater
+
+What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, from `checkpuckcoll`, `puckstick` and
+`puckbody`. **Code**; the height rules **Confirmed** (below).
+
+- **Higher than 16: it goes over everyone.** No skater or goalie touches it.
+- **Low (height 5 or under, not rising) and within 14 units of his stick blade** (the blade's spot comes from his
+  current sprite frame, so it moves as he skates and swings): **the stick plays it.** A shot (the "shot taken" flag
+  still on) slower than 13,000 **he takes**; a faster one **deflects off in a random direction** and he can't touch
+  it again for 8 frames. Passes and loose pucks: he takes anything slower than 13,000 + 350 x his Stick Handling. Just
+  after a deflection the stick's reach is halved (7 units), so pucks don't ping-pong.
+- **Otherwise his body, a circle 8 units around his centre:**
+  - **Low pucks (8 or under) almost always go straight through him.** The game only lets a low puck hit his body when
+    the squared distance happens to be a multiple of 16, about one frame in 16. That's why low shots so often pass
+    "through" a defender standing in the lane: only his stick can stop them.
+  - **Mid-height pucks (9-16) always hit him.** They bounce straight out from his centre, slowly (the bounce speed is
+    set from how far off-centre it hit, not from the shot). A fast one (over about 12,300) above height 12 **knocks
+    him over**; a slower one makes him play the **glove-catch animation** (the "knocked it down" look), but the puck
+    still bounces off: he doesn't get it.
+  - A skater swinging at a one-timer is never hit by the body rule.
+- Any touch clears the "shot taken" flag, so a blocked or deflected shot is never a shot on goal.
+- **Confirmed** (13 Genesis games, a loose puck at speed passing within 8 of a skater's centre): height 0-5, 470 times:
+  passed through 82%, changed course 8%, taken 10% (all of it the stick); 6-8, 35 times: passed through 94%; above 16,
+  21 times: passed over every time. Too few mid-height ones (7) to check.
 
 ## 14. Line changes, energy and the crowd
 
