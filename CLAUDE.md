@@ -1112,6 +1112,11 @@ one-timers: goalie 10+ off the puck-to-net line at the strike 68% scored, 0-4 of
 47%, crossing the middle 18%, under 0.5 s in the air 33%; inside 100 units 44%, beyond 10%; xG agrees throughout. SNES 55,
 no clear pass effect.
 
+SNES goalie hold (2026-10-18, NHL94SNES puckgoalie): hold when |vx| and |vy| < randoma((2 + shotspd) << 9) + $2000
+(shotspd = PkC for goalies), not pflags $1000; else bounce (velocity = offset bytes, y sign set against his Yvel); a
+diving goalie lets puckz >= 5 through; save-rating lookups unused. Recordings (102 saves): faster component 17000+ held
+at once 4/41, 8192-17000 28/45, under 8192 10/16. SNES_MECHANICS 5.4, SNES_GUIDE 11.1.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

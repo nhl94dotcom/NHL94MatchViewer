@@ -334,9 +334,24 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
 - **Confirmed:** emulating all this and driving it with the recorded puck, the goalie lands a median 0.8 units from the
   recorded goalie when the puck arrives (100 shots at computer goalies; 78 within 3 units).
 
-### 5.4 Rebounds and whistles
+### 5.4 Holding the puck and rebounds
 
-**Not read yet:** how often he holds the puck, where rebounds go, and the hold and out-of-range whistles.
+`puckgoalie`, when the puck touches his body box (5.1). **Code**; the hold rule **Confirmed** (below).
+
+- **The shot is counted** (`ChkShotStat`) and the touch clears the "shot taken" flag, unless he's in a dive and the
+  puck is 5 or more off the ice: then it goes through him untouched.
+- **He holds it** when both the puck's sideways and its up-and-down speed are under a random threshold between 8,192
+  and 8,192 + (2 + his Puck Control) x 512: at most about 17,000 for the best puck handler. Otherwise **it bounces off**,
+  straight out from his centre through where it touched him, slowly (the speed comes from how far off-centre it hit,
+  not from the shot), its up-the-ice direction set against the way he's moving.
+- **Differences from the Genesis:** no rule making him hold less in close, and a diving goalie can still hold a low
+  puck; on the Genesis the threshold is about twice as high, so a Genesis goalie holds harder shots.
+- **His glove and stick save ratings are looked up and never used** (as on the Genesis).
+- A puck carried into him is knocked loose (the carrier can't touch it for 20 frames).
+- **Confirmed** (102 SNES saves, the faster speed component just before the save): 17,000 or more, held at once 4 of 41
+  (10%); 8,192-17,000, 28 of 45 (62%), the random range at work; under 8,192, 10 of 16 (the rule says all; the sampled
+  speeds and the "held at once" test are rough).
+- **Not read yet:** the hold and out-of-range whistles.
 
 ---
 
@@ -626,7 +641,7 @@ everything in this document applies to all of these ROMs.
 
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
-- **Not read yet for the SNES:** rebounds and the goalie's hold; pass targeting and
+- **Not read yet for the SNES:** pass targeting and
   catching; steals; hooks and pokes; which move draws which penalty; injuries; breakaways; computer skaters'
   positioning and line changes; one-timer timing.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth

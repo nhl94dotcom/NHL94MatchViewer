@@ -267,6 +267,8 @@ went in within 12.6 units of a goalie's centre.
   one-timers.
 - **A diving goalie lets lifted pucks through** (height 5 or more): shoot high at a diving goalie.
 - To score, put the puck **outside that box**: a corner, from inside the zone where shots can be exact.
+- **Hard shots come back out.** A shot at 17,000 or more almost never sticks to him (1 in 10 held in recorded games): it
+  bounces straight out from where it hit him. Follow your hard shots in for the rebound. Soft shots he usually holds.
 
 ### 11.2 Playing goal yourself (X)
 
