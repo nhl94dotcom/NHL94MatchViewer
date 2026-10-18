@@ -574,7 +574,7 @@ Every call is the roll of 8.1 (0 up to the range) against the move's threshold. 
 
 ## 9. Faceoffs
 
-**Ratings play no part. It's timing** (`faceoffinput`, `Endfaceoff`; **Code**, not yet checked against recordings):
+**Ratings play no part. It's timing** (`faceoffinput`, `Endfaceoff`; **Code**, **Confirmed** below):
 
 - Each **new B press** starts one swing of the centre's stick; holding B doesn't start another. How far into the swing
   he is at the drop sets his value.
@@ -584,6 +584,14 @@ Every call is the roll of 8.1 (0 up to the range) against the move's threshold. 
   the winner's own end.**
 
 So: **mash B, and hold the d-pad toward the teammate you want it to reach** (back to your defence is safest).
+
+- **The swing's stage** at the drop is worth 0, 8 or 16 (wind-up, middle, sweep: which step of the swing animation the
+  centre is on). Home's chance is (17 + home's stage - away's stage) / 32. The computer's centre swings at random
+  moments once the drop is near.
+- **Confirmed** (`analysis/snes_faceoffs.py`, 70 draws in 5 SNES games, the winner read from the push in the puck's
+  speed after the drop): home won 36 where the model expects 38.7. Home ahead by a stage (8) won 74% (model 78%), level
+  48% (53%), behind by a stage 20% (28%). People mashing caught the drop at stage 0 / 8 / 16 27% / 45% / 28% of the time
+  (average 8.1; the computer 7.4): about the same as people on the Genesis.
 
 ---
 

@@ -1152,6 +1152,11 @@ starts at once, tmOneTimerSwings counted; while SPAnum < $10, nopuck 10 and a st
 Recordings (pad C bit = SNES A): connected 0-590 ms after the press (median 199), failed swings ended median 465;
 Genesis 0-870 / 585. SNES_MECHANICS 4.5, SNES_GUIDE 7.
 
+SNES faceoffs confirmed (2026-10-18, analysis/snes_faceoffs.py): stage = 8 x the (frame, time) pair index of the
+centre's current animation (assfaceoffpl SPAnum / 4 + 1, +3 for handed 0, table 0,8,16,0,8,16); winner from the puck's
+Yvel after the drop (32 x dirtab + / - $800); 70 draws: home 36 vs 38.7 expected; stage diff -8 / 0 / +8: 20% / 48% / 74%
+(model 28 / 53 / 78). doinput passes padnew, so a swing needs a new B press. People's stages 27 / 45 / 28%.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
