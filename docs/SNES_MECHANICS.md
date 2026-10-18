@@ -745,12 +745,14 @@ are in bold.
 | Centre, his team has the puck | Own (0 +/- 60, -70 +/- 10), neutral (0 +/- 60, 60 +/- 10), attacking (0 +/- 40, 170 +/- 30), behind (0 +/- 80, 170 +/- 20) | The same |
 | Defenceman, his team has the puck | x 80 on his side (the puck's x when it's on his side, half way toward it when not); **y by the puck's zone: 98 (just inside the blue line) with the puck in the attacking zone, -78 (just outside his own blue line) with it in the neutral zone, -216 (deep in his own end) with it in his own zone; -98 while his team is offside** | Holds y 98 only while the puck is in the attacking zone; otherwise he plays his defensive job |
 | Defenceman, the other team has it | x 65 on his side (0 with the puck on the other side); y **40** behind the deepest attacker (his y plus a little of his speed toward the net), jumping to -220 once that is past -190; checks for a hit every frame | 50 behind; similar depth limit |
-| Winger, the other team has it | x 100 on his side, or the puck's x when it's on his side; y the puck's y while the puck is outside his zone; **with the puck in his zone he stays at -158 (between the blue line and the circles, covering the point), on the goal line once the puck is behind it; -78 if their carrier is the goalie or they're offside** | Follows the puck's y anywhere between his blue line and goal line |
+| Winger, the other team has it | x 100 on his side, or the puck's x when it's on his side; y the puck's y while the puck is outside his zone; with the puck in his zone he stays at -158 (between the blue line and the circles), on the goal line once the puck is behind it; **-78 if their carrier is the goalie** or they're offside | The same (without the goalie case) |
 | Centre, the other team has it | x half the puck's; y his high slot (-128) with the puck in his zone, else half way between the puck and it | The same |
 | The chaser (nearest to the puck) | At each Offensive Awareness tick hands the chase to whoever is now nearest; charges the carrier for 240 frames on a roll by 20 - Checking, else contains half way between the puck and a point 20 out from his goal line; a loose puck: skates to it; **their goalie holding it: waits at the blue line** | The same, without the goalie case |
 
-So SNES defencemen join the rush and drop back by zone rather than all-or-nothing. SNES wingers hold up at the top
-of their zone instead of following the puck to the goal line, which leaves the low slot to the defencemen and centre.
+So SNES defencemen join the rush and drop back by zone rather than all-or-nothing. (Until 2026-10-18 this said SNES
+wingers hold up where Genesis ones follow the puck down; both hold at -158.) What happens as the puck crosses a blue
+line, and the "step out and come back in" move, are in GENESIS_MECHANICS 12.5; the SNES differs only in the numbers
+above. Recordings: 3 such carries in the SNES games, too few to say more.
 
 **Line changes** (only with line changes On: `OptLine` 1; not Off or Automatic), as on the Genesis:
 

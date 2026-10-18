@@ -1188,6 +1188,15 @@ assnearest waits at the blue line when the other goalie holds it. chk4lc as the 
 CompLine: PP / PK fresher unit, even strength rotation tables (3rd-period lead / trail variants), fallback first line
 >= $F34 energy.
 
+Blue lines and the step-out move (2026-10-18, analysis/blue_line_study.py, GENESIS_MECHANICS 12.5): positioning reads
+the puck's zone (88; 78 for defending wingers) and possession; Genesis assdefo only while the puck is in the attacking
+zone, else assdefd. Defending D sit 50 (SNES 40) behind the deepest attacker at DfA ticks, so a step-out draws them only
+once the attacking forwards leave (asswingo / asscentero neutral boxes at their ticks); defending W / C come out with
+the puck every frame. Recordings: 17 Genesis carries out and back in within 4 s, untouched; 16 under 1.2 s with the
+deepest teammate still in the zone and the D unmoved (median 63 from their goal line vs 149 at plain carried entries);
+the 1.8 s one (2219 P1 3:59) drew the D from 42 / 103 to 100 / 162; 8 / 17 shot attempts in 4 s (plain 53%). Offsides
+off: the flag never sets; on: re-entry with a teammate 10+ inside flags the team, any touch past 104 is whistled.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
@@ -1896,7 +1905,8 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   inside the blue line), x +/- 80 on their side, or following the puck's x when it is on their side (half way toward it
   when not). Defence: defencemen (assdefd, at DfA ticks): depth 50 behind the deepest attacker (y + Yvel / 16), no deeper
   than 190-220, x +/- 65 on their side or 0 with the puck on the other side; wingers (asswingd, every frame): x +/- 100
-  on their side or the puck's x when it is on their side, y the puck's y between their own blue line and goal line;
+  on their side or the puck's x when it is on their side, y the puck's y while it is beyond 78 toward the other end
+  (out of the zone if need be), 158 with it in their zone, the goal line with it behind (corrected 2026-10-18);
   centre (asscenterd, every frame): x half the puck's, y the own high slot (-128) with the puck in the zone, else half
   way between the puck and it; the chaser (assnearest): straight at the carrier (attack, 240 frames) or half way between
   the predicted puck and a point 20 out from his own goal line (contain). All but the defending centre and wingers steer

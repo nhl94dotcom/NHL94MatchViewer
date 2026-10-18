@@ -456,6 +456,14 @@ which goalie is stealing games.
 - **With penalties on, computer skaters try to check only half as often.**
 - Computer forwards go to set spots by zone: on offence the centre heads for the slot, wingers wide. The middle
   between the blue line and the high slot is often open when the centre is the one chasing the puck.
+- **Stepping out of the zone and back in (offsides off).**
+  - The other team's wingers and centre come out with the puck straight away.
+  - **Their defencemen don't.** They stay 50 units behind your deepest player, and your computer forwards only leave
+    the zone a moment after the puck does.
+  - So a quick step-out pulls up only the forwards. Hold it outside for about a second, until your forwards have
+    come out too, and the defencemen follow them up. Then turn back in at speed: it's a rush against a high defence,
+    with your teammates behind you.
+  - With offsides on, coming back in before your forwards are out is offside once you're about 5 feet inside the line.
 
 ---
 

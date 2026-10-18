@@ -348,8 +348,9 @@ time instead of 96%). That's why SNES games are so physical, and why the compute
 
 - **Defencemen join the attack by zone:** with your team's puck in the attacking zone they hold the blue line; in the
   neutral zone they wait just outside your own blue line; in your own zone they stay deep.
-- **Wingers on defence cover the points:** with the puck in your zone they stop at about the top of the circles and
-  leave the low slot to the defencemen and centre. That's unlike the Genesis, where they follow the puck down.
+- **Wingers on defence cover the points:** with the puck in your zone they stop between the circles and the blue
+  line, and leave the low slot to the defencemen and centre (as on the Genesis).
+- **Stepping out of the zone and back in** works as on the Genesis (its guide, section 14).
 - Line changes (only with line changes on) work as on the Genesis: the computer changes when its line is tired and
   dumps the puck in to do it.
 

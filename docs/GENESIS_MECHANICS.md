@@ -1140,14 +1140,19 @@ Coordinates: x across (right wing +, left wing -), y toward the net the team att
 
 Forwards pick a random spot in the box for the puck's zone and keep it until the puck changes zone (or a small random
 re-pick). Defencemen hold just inside the blue line (98 from centre), 80 to their side, sliding toward the puck when
-it's on their side.
+it's on their side, **but only while the puck is in the attacking zone**: anywhere else they play their defensive job
+(below), even with their own team carrying it. Their zone test reads the puck's position plus a little of its speed.
 
 **The other team has the puck:**
 
 - **Defencemen:** 50 units behind the deepest attacker (allowing for his speed), no deeper than about 190-220 from
   centre; 65 to their side, or the middle when the puck is on the other side. Updated only at their awareness ticks.
-- **Wingers:** wide on their side (100), at the puck's depth between their own blue line and goal line; they follow
-  the puck across when it's on their side.
+- **Wingers:** wide on their side (100), or the puck's x when it's on their side. Their depth:
+  - while the puck is more than 78 from centre toward the other end, the puck's depth, out of their zone if need be;
+  - with it in their zone, 158 from centre (about 106 from the goal line, between the circles and the blue line);
+  - with it behind their goal line, the goal line.
+
+  Every frame. (Corrected 2026-10-18: this said they followed the puck down to the goal line.)
 - **Centre:** the high slot when the puck is in his zone, otherwise halfway between it and the puck.
 - **The chaser:** "attack" (straight at the carrier, for 4 seconds) or "contain" (halfway between the carrier and a spot
   just in front of his own net), see 12.3.
@@ -1178,6 +1183,64 @@ Using the "Rgh" pass/shoot bias rating (2.4):
 - **Clears:** on the penalty kill, or when nobody pressures its carrier, the computer shoots the puck down the ice from
   its own half and **flips** it from the neutral zone.
 - The computer's own one-timers are described in 4.8.
+
+### 12.5 When the puck crosses a blue line, and "step out, come back in"
+
+Nothing in the positioning code looks at the blue lines as such. Each computer job reads the puck's zone, and who has
+it, and the zone changes when the puck crosses a line. The zone lines it uses are 88 from centre (the blue line) and,
+for the defending wingers, 78. **Code** (`asswingo`, `asscentero`, `assdefo`, `assdefd`, `asswingd`, `asscenterd`).
+
+**The puck carried out of the attacking zone.** The attacking team's computer players:
+
+- **Forwards:** at their next awareness tick (0.12-0.25 s) they pick a new spot from the neutral-zone box, about 30
+  units *outside* the blue line (12.2), and skate out to it.
+- **Defencemen:** at their next Offensive Awareness tick they switch to their defensive job: 50 behind the deepest
+  opponent, which usually means dropping back toward centre.
+
+The defending team's computer players:
+
+- **Wingers:** follow the puck's depth as soon as it's more than 78 from centre toward the other end, so they come out
+  with it, wide or on the puck's side. Every frame.
+- **Centre:** halfway between the puck and his high slot. Every frame.
+- **Defencemen:** **50 units behind the deepest attacker** (the carrier or a teammate, whoever is nearest their net),
+  re-read only at their Defensive Awareness ticks. **They come up only when your forwards leave the zone.**
+
+**The puck carried back in** reverses all of it:
+
+- The defending wingers drop back to 158 from centre and the centre to his high slot, at once.
+- The defencemen re-read the deepest attacker at their next tick.
+- Your forwards and defencemen turn back at their next ticks.
+
+**What this means for the step-out move** (offsides off; the user's league uses it to draw the defence out):
+
+- **A quick step-out doesn't move the defencemen.** Your computer forwards are still deep, and the defencemen keep
+  marking them. It does pull the defending wingers and centre up with the puck.
+- **Held long enough for your forwards to leave** (about a second or more), the defencemen follow your forwards up. Turn
+  back in at speed and you meet two defencemen who are high, re-reading only every few frames, with your teammates still
+  behind you: **a set defence turned into a rush.**
+- **Recordings:** 17 Genesis carries went out of the attacking zone and back in within 4 s, the other team never
+  touching the puck. In 16 the puck was out under 1.2 s; your deepest teammate stayed in the zone; and the nearest
+  defender stayed where he was (a median 63 units from his goal line, against 149 at ordinary carried entries). In
+  the longest (BOS-DAL 2219, P1 3:59, 1.8 s, 58 units outside the line), your forwards went out to 212 and the
+  defencemen came up from 42 and 103 to 100 and 162. After coming back in, 8 of the 17 led to a shot attempt within 4 s
+  (ordinary carried entries: 53%), and 3 to a goal. Too few long ones to measure the payoff.
+
+**Offsides on or off.**
+
+- **Off** (the leagues' setting): the offside check never runs, so no team is ever flagged. Positioning is only zone
+  and possession, exactly as above.
+- **On:**
+  - The moment the puck enters a zone, the attacking team is flagged offside if any of its players is more than 10
+    past the line (11.1).
+  - While flagged, the attacking computer players switch to their defensive jobs until everyone has tagged up. The
+    defencemen do it in `assdefo` / `assdefd`, and a flagged team's defending wingers hold 78 out.
+  - **Any touch of the puck more than 104 in is whistled**, the carrier's own included (the check runs every frame for
+    him).
+  - So **coming back in before your forwards have got out** is offside 16 units inside the line. The move only works
+    if they've already left, which, as above, is also when it draws the defencemen.
+
+The SNES works the same way, with its own numbers (SNES_MECHANICS 12.4): defencemen 40 behind the deepest attacker,
+and its own defencemen drop to just outside their own blue line whenever the puck is in the neutral zone.
 
 ---
 
