@@ -1319,6 +1319,10 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   and of its first megabyte (the helper's copy of SDL15/16 is only that). `/api/season` gives `romNames`. A
   season's ROM is fixed once made (the edit form shows it locked; to play another ROM, a new season); its name,
   team and dates can change.
+- Choosing games (2026-10-18, the user: a practice game among league games; stats for one set against one opponent):
+  an Against filter (my team's opponents; only games between my team and that one; `?against=DAL`), unticked games
+  remembered in this browser without a season too (localStorage nhl94.season.excluded; a season keeps its own), and
+  Count all these / Count none on the Games tab. Checked on the Documents games: 6 games, 5 against Dallas.
 - Not there yet: people
   as such (a game knows teams and controllers, not who held them), a shareable season file.
 

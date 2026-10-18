@@ -97,6 +97,7 @@
     <label class="wide" id="romLabel">Games played on <select id="rom"></select></label>
     <label id="mineLabel" title="The team you control in these games">My team <select id="mine"></select></label>
     <label>Team <select id="team"></select></label>
+    <label title="Only the games between my team and this one (a set against one opponent)">Against <select id="against"></select></label>
     <label title="Recordings that began after the opening faceoff or stopped before the final horn"><input type="checkbox" id="whole" checked> Whole games only</label>
   </section>
 
@@ -155,8 +156,9 @@ try {
 const query = new URLSearchParams(location.search);  // ?tab=skaters opens that tab
 if (query.get('tab')) tab = query.get('tab');
 const remember = () => { try { localStorage.setItem('nhl94.season', JSON.stringify({ tab, sorts, myTeams, seasonId })); } catch (e) { /* no storage */ } };
-// Games unticked on the Games tab: a season keeps its own (saved with it); browsing without a season, until reload.
-const looseExcluded = new Set();
+// Games unticked on the Games tab: a season keeps its own (saved with it); browsing without a season, in this browser.
+const looseExcluded = new Set((() => { try { return JSON.parse(localStorage.getItem('nhl94.season.excluded') || '[]'); } catch (e) { return []; } })());
+const keepLoose = () => { try { localStorage.setItem('nhl94.season.excluded', JSON.stringify([...looseExcluded])); } catch (e) { /* not kept */ } };
 const excludedSet = () => { const s = currentSeason(); return s ? new Set(s.excluded || []) : looseExcluded; };
 
 // The games: from the helper (/api/season) when it serves this page, else from matches/season.js beside it
@@ -295,6 +297,7 @@ function setup() {
   $('rom').innerHTML = '<option value="">All ROMs</option>' + roms.map(k => `<option value="${esc(k)}">${esc(romLabel(k))}</option>`).join('');
   $('rom').value = query.has('rom') ? (roms.includes(query.get('rom')) ? query.get('rom') : '') : recent ? romKey(recent) : '';
   for (const el of [$('rom'), $('team'), $('whole')]) el.addEventListener('change', () => { if (el !== $('team')) fillTeams(); render(); });
+  $('against').addEventListener('change', () => render());
   $('mine').addEventListener('change', () => {
     if ($('mine').value) myTeams[$('rom').value || 'all'] = $('mine').value; else delete myTeams[$('rom').value || 'all'];
     remember(); fillTeams(); render();
@@ -322,6 +325,12 @@ function fillTeams() {
   $('mine').innerHTML = '<option value="">Not chosen</option>' + [...teams].sort((a, b) => a[1].localeCompare(b[1]))
     .map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})${mineGuessed && a === everyGame[0] ? ' - guessed' : ''}</option>`).join('');
   $('mine').value = teams.has(chosen) ? chosen : mineGuessed ? everyGame[0] : '';
+  // Against: my team's opponents (every team when my team isn't chosen); ?against=DAL in the address
+  const me = myTeam(), opponents = new Map(), keepAgainst = $('against').value || query.get('against') || '';
+  for (const g of pool(false)) if (!me || g.abbr.includes(me)) g.abbr.forEach((a, i) => { if (a !== me) opponents.set(a, g.names[i]); });
+  $('against').innerHTML = '<option value="">Anyone</option>' + [...opponents].sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([a, n]) => `<option value="${esc(a)}">${esc(n)} (${esc(a)})</option>`).join('');
+  $('against').value = opponents.has(keepAgainst) ? keepAgainst : '';
 }
 const myTeam = () => { const s = currentSeason(); return s ? s.team : $('mine').value; };
 
@@ -329,8 +338,11 @@ const myTeam = () => { const s = currentSeason(); return s ? s.team : $('mine').
 // Games tab.
 function pool(byTeam = true, withExcluded = false) {
   const s = currentSeason(), rom = s ? s.rom : $('rom').value, team = $('team').value, whole = $('whole').checked, excluded = excludedSet();
+  // Against: only games between my team (when chosen) and that opponent
+  const against = $('against').value, me = myTeam();
   return games.filter(g => (!rom || romKey(g) === rom) && (!s || inSeason(g, s)) && (!whole || (g.finished && g.fromStart)) &&
-    (!byTeam || !team || g.abbr.includes(team)) && (withExcluded || !excluded.has(g.name)));
+    (!byTeam || !team || g.abbr.includes(team)) && (!byTeam || !against || (g.abbr.includes(against) && (!me || me === against || g.abbr.includes(me)))) &&
+    (withExcluded || !excluded.has(g.name)));
 }
 
 // ---------------------------------------------------------------------------------------------------- totals
@@ -427,7 +439,8 @@ function render() {
   const s = currentSeason();
   $('sub').innerHTML = (s ? `${esc(s.name)}: ${esc(teamName(s.rom, s.team))} on ${esc(romName(s.rom))}, ` +
       `${esc(when(s.start))} to ${seasonEnd(s) ? esc(when(seasonEnd(s))) : 'now'} · ` : '') +
-    `${list.length} game${list.length === 1 ? '' : 's'} counted` + (all.length > list.length ? ` (${all.length - list.length} unticked on the Games tab)` : '') +
+    `${list.length} game${list.length === 1 ? '' : 's'} counted` + ($('against').value ? ` against ${esc(teamNameOf($('against').value))}` : '') +
+    (all.length > list.length ? ` (${all.length - list.length} unticked on the Games tab)` : '') +
     ` · <a href="helper.html">all games</a>`;
   if (!list.length && tab !== 'games') {
     view.innerHTML = s ? '<p class="empty">No games in this season yet. Games played on its ROM from its start on will appear here.</p>'
@@ -445,7 +458,14 @@ function render() {
   for (const box of view.querySelectorAll('input[data-game]')) box.addEventListener('change', () => {
     const s = currentSeason(), set = excludedSet();
     if (box.checked) set.delete(box.dataset.game); else set.add(box.dataset.game);
-    if (s) { s.excluded = [...set]; if (canSave) saveSeasons(); }
+    if (s) { s.excluded = [...set]; if (canSave) saveSeasons(); } else keepLoose();
+    render();
+  });
+  for (const b of view.querySelectorAll('button[data-count]')) b.addEventListener('click', () => {
+    // Count all / none of the games listed (the filters above still apply)
+    const s = currentSeason(), set = excludedSet();
+    for (const g of pool(true, true)) if (b.dataset.count === 'all') set.delete(g.name); else set.add(g.name);
+    if (s) { s.excluded = [...set]; if (canSave) saveSeasons(); } else keepLoose();
     render();
   });
 }
@@ -1181,6 +1201,7 @@ async function drawGoalieMap(list) {
     '<p class="note">Red: goals. Hollow: saves (yellow: off the post). Every shot that reached him, his net at the top.</p>';
 }
 
+const teamNameOf = abbr => { for (const g of games) { const i = g.abbr.indexOf(abbr); if (i >= 0) return g.names[i]; } return abbr; };
 function viewGames(list, team) {
   const excluded = excludedSet(), rows = pool(true, true).map(g => ({ ...g, off: excluded.has(g.name) }));
   return '<h2>Games</h2>' + table('games', rows, [
@@ -1191,7 +1212,9 @@ function viewGames(list, team) {
     { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.abbr[1] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'whole', label: '', sortable: false, show: r => (r.finished && r.fromStart ? '' : '<small>part of a game</small>') },
     { key: 'watch', label: '', sortable: false, show: r => `<a href="viewer.html?match=${encodeURIComponent(r.name)}">Watch</a>` },
-  ], 'date') + `<p class="note">Untick a game to leave it out of every table${currentSeason() ? (canSave ? ' (saved with the season)' : ' (open this page from the helper to save it)') : ' (until the page is reloaded)'}.</p>`;
+  ], 'date') + `<p class="note">Untick a game to leave it out of every table${currentSeason() ? (canSave ? ' (saved with the season)' : ' (open this page from the helper to save it)') : ' (remembered in this browser)'}.
+    <button class="btn" data-count="all">Count all these</button> <button class="btn" data-count="none">Count none</button>
+    To see the stats of one set of games, choose My team and Against above, or untick the rest here.</p>`;
 }
 
 load().then(data => {
