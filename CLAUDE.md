@@ -1177,6 +1177,17 @@ far-post claim not shown (asked for examples). Goalie pushed in with the puck: G
 its carrier (nopuck 8) at the goal box, goalie included, so the loose puck can then be nudged in; SNES checkgoal returns
 when puckc is a goalie. None recorded.
 
+SNES computer positioning and line changes (2026-10-18, SNES_MECHANICS 12.1 / 12.4): every SNES assignment checks
+possession at its top every frame (assreplace to the other side's job when the other team has the puck), so awareness
+only paces spot re-picks; the Genesis waits for the tick. After turnovers, computer skaters skating up the ice turned
+back a median 900 / 885 / 780 ms (D / W / C) vs Genesis 1159 / 1050 / 952 (466 SNES, 831 Genesis cases). Spots as the
+Genesis except: assdefo y by puck zone (98 att, -78 neutral, -216 own, -98 offside); assdefd 40 behind the deepest
+attacker (Yvel >> 5, only toward his net), -220 once past -190, check4check; asswingd y = puck y outside -78, -158 with
+the puck in his zone, goal line behind it, -78 vs a goalie carrier or offside; asswingo neutral (100, 60 +/- 10);
+assnearest waits at the blue line when the other goalie holds it. chk4lc as the Genesis (OptLine 1 = on on the SNES);
+CompLine: PP / PK fresher unit, even strength rotation tables (3rd-period lead / trail variants), fallback first line
+>= $F34 energy.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

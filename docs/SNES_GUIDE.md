@@ -340,7 +340,18 @@ time instead of 96%). That's why SNES games are so physical, and why the compute
 
 - **Awareness is reaction time** for computer players: from about 0.25 s (Offensive) or 0.37 s (Defensive) at the
   bottom down to 0.12 s at the top. **It never affects the player you control.** A maxed awareness gives the best value.
-- Defensive Awareness drives your defencemen's gap control and how fast everyone gets back after a turnover.
+- Defensive Awareness drives how often your defencemen re-read the attackers (gap control). **It doesn't slow the switch
+  after a turnover:** on the SNES computer players turn to defence the moment the other team has the puck (on the
+  Genesis they wait for their awareness countdown).
+
+### 13.3 Where they go
+
+- **Defencemen join the attack by zone:** with your team's puck in the attacking zone they hold the blue line; in the
+  neutral zone they wait just outside your own blue line; in your own zone they stay deep.
+- **Wingers on defence cover the points:** with the puck in your zone they stop at about the top of the circles and
+  leave the low slot to the defencemen and centre. That's unlike the Genesis, where they follow the puck down.
+- Line changes (only with line changes on) work as on the Genesis: the computer changes when its line is tired and
+  dumps the puck in to do it.
 
 ---
 
