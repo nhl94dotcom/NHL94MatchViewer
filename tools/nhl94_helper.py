@@ -131,29 +131,6 @@ def update_season():
 
 # --------------------------------------------------------------------------------------------------------- the state
 
-def refresh_game_file(file_name):
-    """Remake a shared game file that is older than the viewer or its game's match file before it is handed out: the
-    games list's "Game file" button hands out the file already made, so after a new viewer (a rebuilt helper copies
-    its pages here on start) or a re-converted game it would carry the old page (the user saw game files without the
-    new stats). Remade under the same name; on any trouble the old file is served."""
-    path = ROOT / "shared" / file_name
-    if not path.exists():
-        return
-    game = next((g["name"] for g in load_index() if file_name.endswith("_" + g["name"] + ".html")), None)
-    if not game:
-        return
-    sources = [ROOT / "viewer.html", ROOT / "matches" / f"{game}.js"]
-    if all(src.exists() and src.stat().st_mtime <= path.stat().st_mtime for src in sources):
-        return
-    try:
-        import share_game
-        made = share_game.make_game_file(game)
-        print(f"{datetime.datetime.now():%H:%M:%S}  Remade the game file for {game} (the viewer or the game had changed)", flush=True)
-        if made.name != file_name:  # the name follows the score and teams, which should not change
-            path.unlink(missing_ok=True)
-    except Exception as e:  # serve the old file rather than nothing
-        print(f"{datetime.datetime.now():%H:%M:%S}  Could not remake the game file for {game}: {e}", flush=True)
-
 class Status:
     def __init__(self):
         self.lock = threading.Lock()
@@ -418,8 +395,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             import season
             self.send_json(season.season())
         else:
-            if url.path.startswith("/shared/") and url.path.endswith(".html"):
-                refresh_game_file(Path(urllib.parse.unquote(url.path)).name)
             super().do_GET()
 
     def do_HEAD(self):

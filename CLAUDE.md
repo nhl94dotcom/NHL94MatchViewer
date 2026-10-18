@@ -107,10 +107,9 @@ showing. The README's "Try it" section points to them.
    link); the scripts hide it again when they run. A small script before the main one reports any error that stops
    the viewer starting ("This browser could not run the viewer: ..."). Checked in headless Edge: the game file opens
    as before, a copy with its scripts stripped shows the note, the plain viewer is unchanged.
-   Stale game files (2026-10-18, the user's game files lacked the new stats): once a game has a file the games list's
-   button is "Game file", which handed out that old file. The helper now remakes a file in shared/ when it is asked
-   for and is older than viewer.html or the game's match file (`refresh_game_file`, in do_GET; same name; on trouble
-   the old one is served). Checked by calling it on the five BOS-DAL files: remade once, then left alone.
+   Game files are made fresh on every click (2026-10-18, the user's choice): the games list has one "Game file" button
+   that asks the helper to make the file (POST /api/game-file) and then downloads it. Before, once a game had a file,
+   the button handed out that file, so files made before a viewer change lacked the newest stats.
 6. Click-to-replay: markers on the shot map, turnover map and goalie report can be pointed at (a tooltip says what
    it was) and clicked to jump to four seconds before and play. A press that moves under 4 pixels is a click; more
    is a drag (pans).

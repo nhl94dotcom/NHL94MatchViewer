@@ -151,23 +151,18 @@ function fillRows(body, games) {
     watch.className = 'button primary'; watch.textContent = 'Watch'; watch.target = '_blank';
     watch.href = 'viewer.html?match=' + encodeURIComponent(g.name);
     actions.append(watch);
-    if (g.gameFile) {
-      const file = document.createElement('a');
-      file.className = 'button'; file.textContent = 'Game file'; file.download = g.gameFile;
-      file.href = 'shared/' + encodeURIComponent(g.gameFile);
-      file.title = 'Download the shareable game file';
-      actions.append(file);
-    } else {
-      const make = document.createElement('button');
-      make.textContent = 'Make game file';
-      make.onclick = async () => {
-        make.disabled = true; make.textContent = 'Making…';
-        const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } }).then(r => r.json()).catch(() => null);
-        if (r && r.file) { const a = document.createElement('a'); a.href = r.file; a.download = r.file.split('/').pop(); a.click(); }
-        shownGames = ''; poll();
-      };
-      actions.append(make);
-    }
+    // Made fresh on every click (a few seconds), so the file always carries the current viewer and the game as last
+    // converted: handing out a file made earlier gave the user old pages without the newest stats.
+    const make = document.createElement('button');
+    make.textContent = 'Game file';
+    make.title = 'Make the shareable game file and download it';
+    make.onclick = async () => {
+      make.disabled = true; make.textContent = 'Making…';
+      const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } }).then(r => r.json()).catch(() => null);
+      if (r && r.file) { const a = document.createElement('a'); a.href = r.file + '?' + Date.now(); a.download = r.file.split('/').pop(); a.click(); }
+      make.disabled = false; make.textContent = 'Game file';
+    };
+    actions.append(make);
     const del = document.createElement('button');
     del.className = 'danger'; del.textContent = 'Delete';
     del.onclick = async () => {
