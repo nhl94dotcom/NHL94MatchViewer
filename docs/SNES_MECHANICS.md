@@ -577,6 +577,19 @@ So: **mash B, and hold the d-pad toward the teammate you want it to reach** (bac
 
 ## 10. Penalty shots
 
+### 10.0 Breakaways
+
+`CheckBreakaway`, `StartBreakaway`, `PenShotChk`, `doshot`. **Code.**
+
+- **When it starts:** as the carrier crosses the attacking blue line, if no opposing skater (the goalie aside) is more
+  than 4 units nearer the goal than he is. Teammates don't matter (on the Genesis every other player must be behind
+  him). It's counted for the team (+1 breakaways), with the ding and a crowd boost.
+- **It's tested again at the shot:** if a defender has caught up by then the breakaway ends, and a goal from that shot
+  isn't a breakaway goal (the Genesis keeps it). A goal while it stands is a breakaway goal.
+- **A foul on the carrier** (a check, a trip, a hook or hold) gives a penalty shot if the test still passes at that
+  moment; otherwise the normal penalty.
+
+
 ### 10.1 How one ends
 
 - **anyone takes the puck who didn't already have it**, including the shooter picking up a puck he lost;
@@ -595,6 +608,16 @@ where he stands, and he'd lined up for the faceoff: after a net knocked off by t
 the zone. So the new shot starts from the side dot.
 
 ---
+
+### 10.9 Injuries
+
+`FallDown`, `setInjuryType`. **Code.** Much rarer than on the Genesis, which is why none has been recorded yet:
+
+- **Only the puck carrier can be hurt**, and only when a check knocks him flat on his back while he faces straight up or
+  down the ice, with the clock running and the hitter a skater.
+- Then the chance grows with the hit's force: randoma8(150) x 2 under the impact, about impact / 300.
+- **Out for the period**, or **for the game 1 time in 7** (on the Genesis the checker's fighting rating decides).
+- With penalties on, **roughing** is called on the hitter and play stops; the hitter is knocked back.
 
 ## 11. Offsides
 
@@ -692,7 +715,7 @@ everything in this document applies to all of these ROMs.
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
 - **Not read yet for the SNES:** pass targeting and
-  catching; injuries; breakaways; computer skaters'
+  catching; computer skaters'
   positioning and line changes; one-timer timing.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.

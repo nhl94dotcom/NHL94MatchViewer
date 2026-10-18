@@ -1134,6 +1134,12 @@ in front (always trips with OptPen on; off: a person's needs randoma8(16 + aggre
 5, hook / hold -> $20 / $28 on 0; breakaway -> $24 (PenShotChk). Recordings: 15 penalties (one code $30 unread).
 SNES_MECHANICS 8.5, SNES_GUIDE 10.1.
 
+SNES breakaways and injuries (2026-10-18): CheckBreakaway = carrier in his attacking half and no opposing skater
+more than 4 nearer the goal (teammates ignored); StartBreakaway at the blue line counts it; doshot re-tests (a caught-up
+breakaway ends: no breakaway goal); PenShotChk re-tests at a foul. Injury (FallDown): the carrier only, SPAfallback,
+facedir & 3 == 0, hitter a skater, randoma8(150) x 2 < impact, clock running; setInjuryType $FFFD (period) or 1 in 7
+$FFFC (game); roughing $14 with penalties on. SNES_MECHANICS 10.0, 10.9.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
