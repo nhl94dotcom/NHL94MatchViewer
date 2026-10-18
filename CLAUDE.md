@@ -1323,6 +1323,13 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   an Against filter (my team's opponents; only games between my team and that one; `?against=DAL`), unticked games
   remembered in this browser without a season too (localStorage nhl94.season.excluded; a season keeps its own), and
   Count all these / Count none on the Games tab. Checked on the Documents games: 6 games, 5 against Dallas.
+- Sharing a season (2026-10-18, the user's league opponent, no helper): `tools/share_season.py "<out folder>" <name
+  patterns>` copies the pages, rink files, the chosen match files, their sprites and sounds and roms/names*.json (no
+  recordings, no ROMs) into a new folder, runs season.py there (NHL94_HOME = that folder: summaries, heat maps,
+  season.js) and zips it. The source is NHL94_HOME or the project. Made "Documents/NHL94 League share" (.zip 18 MB) from
+  the five BOS-DAL games; season.html and viewer.html?match= work opened from the folder in Edge without
+  --allow-file-access-from-files (both fall back to script tags). The pages' Games links point at helper.html, which
+  says the helper isn't running there.
 - Not there yet: people
   as such (a game knows teams and controllers, not who held them), a shareable season file.
 
