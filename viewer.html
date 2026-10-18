@@ -2815,6 +2815,7 @@ function refreshPopover(f, snap) {
       live.shotAssists = mine.filter(sh => sh.assist === shown.idx).length;
       live.rebounds = mine.filter(sh => sh.idx === shown.idx && sh.rebound);
     }
+    if (match.shotList) live.posts = match.shotList.filter(sh => known(sh, f) && sh.team === shown.team && sh.idx === shown.idx && resultAt(sh, f) === 'post').length;
     live.takeaways = list.filter(e => e.kind === 'takeaway' && e.from !== shown.team && e.by === shown.idx).length;
     if (match.failedOneTimers) live.failedOneTimers = match.failedOneTimers.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx).length;
     if (match.passes) {
@@ -2965,6 +2966,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Points', live.g + live.a);
       addStat(grid, 'Shots', live.s);
       addStat(grid, 'Shooting %', shootingText(live.g, live.s));
+      if (live.posts !== undefined) addStat(grid, 'Posts', live.posts);
       if (live.xg) addStat(grid, 'xG', live.xg.x.toFixed(2) + ' (' + live.xg.g + ' G)');
       addStat(grid, 'Checks', live.checks);
       if (live.checksBy) addStat(grid, 'Checks: person / CPU', live.checksBy);
@@ -3273,6 +3275,7 @@ const STAT_HELP = {
   'Zone starts': 'Faceoffs he was on the ice for: attacking / neutral / defensive zone.',
   'OZS%': 'Attacking-zone starts as a share of attacking plus defensive starts.',
   'With the puck': 'Game time with the puck on his stick.',
+  'card|Posts': 'His shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'card|Zone entries': 'Times he took the puck into the attacking zone (carried, or passed in by him).',
   'High-danger att.': 'His shot attempts from the slot (within 60 units of the net, no wider than 50 from the middle).',
   'Shot assists': 'His passes that a teammate shot straight off (within 4 s).',

@@ -348,7 +348,7 @@ function pool(byTeam = true, withExcluded = false) {
 // ---------------------------------------------------------------------------------------------------- totals
 function standings(list) {
   const rows = new Map();
-  const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0,
+  const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0, posts: 0, postsA: 0,
     ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, netsOff: 0, ownNetsOff: 0, chkGain: 0, chkShot: 0, chkGoal: 0, gkGiveGoals: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
@@ -529,6 +529,7 @@ function viewSkaters(list, team) {
     { key: 'sog', label: 'SOG', title: 'Shots on goal, as the game counts them' },
     { key: 'shp', label: 'S%', value: r => (r.sog ? r.g / r.sog : NaN), show: r => pct(r.g, r.sog) },
     { key: 'att', label: 'ATT', title: 'Shot attempts: on goal, wide and blocked' },
+    { key: 'posts', label: 'POST', title: 'Shots off the post or the crossbar (the game counts them as shots on goal)', value: r => r.posts || 0 },
     { key: 'ppg', label: 'PPG' }, { key: 'shg', label: 'SHG' }, { key: 'gwg', label: 'GWG', title: 'Game-winning goals' },
     { key: 'pim', label: 'PIM' },
     { key: 'injured', label: 'INJ', title: 'Times he was injured (and, after the dot, injuries his checks caused)', value: r => r.injured || 0,
@@ -591,6 +592,8 @@ function viewTeams(list, team) {
     { key: 'sogg', label: 'SOG', title: 'Shots on goal', value: r => r.sog / r.gp, show: r => per(r.sog, r.gp) },
     { key: 'sag', label: 'SA', title: 'Shots against', value: r => r.sa / r.gp, show: r => per(r.sa, r.gp) },
     { key: 'shp', label: 'S%', title: 'Shooting percentage', value: r => (r.sog ? r.gf / r.sog : NaN), show: r => pct(r.gf, r.sog) },
+    { key: 'postg', label: 'POST', title: 'Shots off the post or the crossbar, a game (and, after the dot, against)', value: r => r.posts / r.gp,
+      show: r => `${per(r.posts, r.gp)}<small> · ${per(r.postsA, r.gp)}</small>` },
     { key: 'cf', label: 'ATT%', title: 'Share of all shot attempts', value: r => (r.att + r.attA ? r.att / (r.att + r.attA) : NaN), show: r => pct(r.att, r.att + r.attA) },
     { key: 'fo', label: 'FO%', title: 'Faceoffs won', value: r => (r.fo ? r.fow / r.fo : NaN), show: r => pct(r.fow, r.fo) },
     { key: 'pass', label: 'PASS%', title: 'Passes completed (as the game counts them)', value: r => (r.passTried ? r.passMade / r.passTried : NaN), show: r => pct(r.passMade, r.passTried, 0) },
