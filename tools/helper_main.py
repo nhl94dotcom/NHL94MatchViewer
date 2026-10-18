@@ -29,7 +29,7 @@ if getattr(sys, "frozen", False):
     os.environ["NHL94_HOME"] = str(home)
     bundle = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
     for name in BUNDLED:
-        if (bundle / name).exists():
+        if (bundle / name).exists() and "--export" not in sys.argv:  # not for the live broadcast's conversions
             shutil.copy2(bundle / name, home / name)
     for folder in ("matches", "captures", "sprites", "roms", "shared"):
         (home / folder).mkdir(exist_ok=True)

@@ -218,14 +218,16 @@ class Broadcaster:
         (work / "fast.bin").write_bytes(data)
         out = work / "out"
         args = [str(work), "--name", self.game, "--out", str(out)] + (["--rom", str(self.rom_path)] if self.rom_path else [])
+        # Its own process at low priority: the game and the netplay connection come first, and (in the packaged
+        # helper) the recording keeps its Python thread to itself.
         if getattr(sys, "frozen", False):
-            import export_match
-            export_match.main(args)
+            cmd = [sys.executable, "--export"] + args
         else:
             cmd = [sys.executable, str(Path(__file__).resolve().parent / "export_match.py")] + args
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
-            if result.returncode:
-                raise RuntimeError((result.stderr or result.stdout).strip()[-300:])
+        flags = getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0) | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, creationflags=flags)
+        if result.returncode:
+            raise RuntimeError((result.stderr or result.stdout).strip()[-300:])
         return load_match(out / f"{self.game}.js")
 
     def send(self, match, status="live"):

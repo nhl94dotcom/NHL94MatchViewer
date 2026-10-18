@@ -582,6 +582,9 @@ def start_broadcast():
 def main():
     if "--convert" in sys.argv:
         return convert_folder(sys.argv[sys.argv.index("--convert") + 1])
+    if "--export" in sys.argv:  # the packaged helper running the converter as its own process (the live broadcast)
+        import export_match
+        return export_match.main(sys.argv[sys.argv.index("--export") + 1:])
     print("NHL '94 Helper. Leave this window open while you play; close it to stop.", flush=True)
     refresh_index()
     try:
