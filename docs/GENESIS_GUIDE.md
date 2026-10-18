@@ -328,6 +328,10 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - To score: shoot **wide of his reach** (a corner, from inside the zone, where your shot can be exact), use one-timers,
   and follow up rebounds.
 
+- **The top net's shoulder-save bobble:** at the top of the screen, a high shot the goalie takes on the shoulder can pop
+  loose for a moment, and sometimes trickles in. The game holds the puck at his shoulder, which for the top net's goalie
+  sits behind him, at the net. Shoot high at the top net and follow it in. It can't happen at the bottom net.
+
 ### 12.2 Playing goal yourself
 
 - Stay in your area: **a goalie you control who skates more than about 33 feet out from his goal line** (past the

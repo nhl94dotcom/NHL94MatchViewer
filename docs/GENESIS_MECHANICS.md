@@ -399,6 +399,18 @@ against 3.7 for a goalie assumed to stand still.
 
 The save-move mix in the recordings (115 saves) fits: stick 62, high 14, pad stack 12, dive 5, glove 2, none 20.
 
+**The shoulder-save bobble at the top net** (the user's observation: a high shot at the top net's goalie, a shoulder
+save, the puck in his possession, then loose for a frame and either back to him or in). A held puck is pulled a quarter
+of the way each frame toward the holder's hold point (`pucknorm`: "bungie the puck towards the hot spot"), and the hold
+point comes from the sprite frame (`HotList`), measured on the screen, where up on the screen is up the rink. The
+shoulder saves hold the puck high, near the shoulder: **14-15 units up the rink**. For the bottom net's goalie, facing up,
+that's out in front of him; for the **top net's goalie, facing down, it's 14-15 units behind him, back toward his own goal
+line** (his ready stance holds it 4-6 units in front). Standing about 242-250 from centre, he drags the puck to the net's
+front (261), and a carried puck entering the net is taken off its carrier, who can't touch it for 8 frames, and
+bounced away (`checkgoal`). Loose on the next frame, it is a goal if it then crosses the line inside the mouth;
+otherwise he takes it back. It can't happen at the bottom net. **Code** (the hold points read from the ROM: shoulder
+saves facing down (-10, +15) and (+10, +14), facing up (+9, +14) and (-9, +14)); no case in the recordings yet.
+
 ### 5.4 Goalie whistles
 
 - Holding the puck: about 2.3 s (140 frames) after he takes it; 5 frames if he took it in a dive.

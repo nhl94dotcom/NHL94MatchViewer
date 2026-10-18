@@ -101,7 +101,7 @@ you take him, are played by the computer.
 | **Shot Accuracy** | The chance a shot goes **exactly** where you aimed (from inside the zone): 17% at 2, 29% at 5, 35% at 7, 42% at 10, 46% at 12, **52% maxed** | **A lot** for your shooters |
 | **Stick Handling** | Keeping and stealing the puck, catching passes, and **wobbling instead of falling when hit** (12 or more) | Wobble: **step 5 and 6 always; step 4 only at 78 and up or when maxed; lower steps only when maxed** |
 | **Checking** | Your knockdown chance on a check; **how often your computer teammates go for a hit** | Moderate for you, big for the computer's players (13.1) |
-| **Pass Accuracy** | Pass speed, **and how far your flips stray** | Moderate: it's the flip's accuracy (8.2) |
+| **Pass Accuracy** | How steady your passes' speed is (the game sets the speed by distance), **and how far your flips stray** | Moderate: steadier passes bobble less; it's the flip's accuracy (8.2) |
 | **Off. Awareness** | How quickly **computer-controlled** teammates react on offence and to loose pucks (0.25 s down to 0.12 s) | **Nothing for the player you control** |
 | **Def. Awareness** | How quickly computer teammates react on defence (0.37 s down to 0.12 s: a bigger range than Offensive) | Matters for the four skaters you're not controlling |
 | **Aggressiveness** | Penalty chance. **Maxed (below its band's middle) is the worst** | **Big** if you play with penalties on (section 10) |
@@ -181,7 +181,11 @@ you take him, are played by the computer.
 
 ### 8.1 Passing
 
-- **B passes** to a teammate; Pass Accuracy sets how fast the pass travels.
+- **B passes** to a teammate. **The game sets the pass's speed by its distance**: short passes go slower, long ones
+  faster. Pass Accuracy only makes the speed steadier; a poor passer's passes come in a bit fast or slow at random.
+- **Bobbles:** a pass bounces off the receiver's stick when it's faster than he can handle, which depends on his Stick
+  Handling. Long passes to poor stickhandlers bobble; short passes almost never do. That's why the same player hardly
+  ever bobbles twice in a row: the pass back to him usually comes from close by. A long pass back would bobble again.
 - **Pass shots:** with nobody to take it, the puck flies off the way you pressed, and can score.
 
 ### 8.2 The flip (Y with the puck)
@@ -224,13 +228,19 @@ Because of an overflow in the penalty roll, **a skater you control at working Ag
 every qualifying contact**, and 9-11 more often than the computer. On the screen that's **78-80 (step 4) or 90-92 (step
 5)**. (From the code; people were at 12 only briefly in the recordings, so it hasn't been seen yet.)
 
-### 10.3 Goalie interference
+### 10.3 Getting up fast (a glitch)
+
+**When your player is knocked down, press Y (hook) and he gets up at once**, straight into a hook. The game checks the
+hook button before the lock that keeps a fallen player down. In recorded games, players who did it were up in 0.5-1.2 s
+instead of 2.3. It is a hook, though: near an opponent it can draw a hooking call.
+
+### 10.4 Goalie interference
 
 - **Anyone can be called**, including your computer-controlled teammates.
 - Crashing a goalie in his crease hard: called **40% of the time for a maxed-Aggressiveness player**, 15% at 7.
 - 4 of the 14 recorded penalties were interference. Stay out of the crease.
 
-### 10.4 Delayed penalties
+### 10.5 Delayed penalties
 
 **Both teams can be called at one whistle.** A raised arm against the other team doesn't protect you (it does on the
 Genesis).

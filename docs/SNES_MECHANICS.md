@@ -124,7 +124,7 @@ Working values 0-15. Every place found where the code reads each rating:
 | **Defensive Awareness** | Reaction time of computer players in other jobs (a bigger effect than Offensive); delays a goalie's rethink after each pass |
 | **Shot Power** | Shot speed: (Shot Power x energy + 20) x wind-up. **No wind-up cut-off**: anyone can take a full slapshot. Goalies: Puck Control |
 | **Shot Accuracy** | The chance a shot goes exactly where aimed, and how far it scatters if not |
-| **Passing** | Pass speed (144 + 4 x Passing), **and the flip's accuracy** (6.3) |
+| **Passing** | How steady a pass's speed is (6.1), the speed of a pass with no target (144 + 4 x Passing), **and the flip's accuracy** (6.3) |
 | **Stickhandling** | Steals, catching passes, and wobbling instead of falling when hit (12+) |
 | **Checking** (array `aggress`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.3) |
 | **Endurance** | Energy, which only matters with line changes on |
@@ -328,14 +328,24 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
 
 ### 6.1 Passing
 
-- **Pass speed** is 144 + 4 x working Passing. **Code**
-- How the receiver is chosen and how passes are aimed: **not read yet**.
+- **A pass to a teammate gets its speed from the distance** to where he will be (`dopass`): 64 (x 256 = 16,384) up to
+  about 96 units (32 feet), two-thirds of the distance in between, 80 (20,480) from 120 units (40 feet) on. **Passing
+  only makes it steadier**: a random +/-(16 - Passing) x 256 is added, about +/-4,000 for a poor passer, almost nothing
+  for a good one. A pass with no target leaves at 144 + 4 x Passing. **Code**
+- How the receiver is chosen: **not read yet**.
 - **Pass shots** happen: a B pass with nobody to take it flies off the way you pressed (one scored in the recordings).
 
-### 6.2 Bobbles
+### 6.2 Catching and bobbles
 
-How a receiver catches the puck hasn't been read for the SNES. Bobbles happen: in one game the user reviewed, ten passes
-bounced off the receiver's stick.
+A skater's stick takes a loose puck when it is slower than **10,000 + 700 x his Stick Handling, + 3,000 if he is the
+pass's intended receiver** (or a goalie); a faster one bounces off his stick (`puckstick`): a bobble. So the intended
+receiver catches anything under 13,000 at Stick Handling 0 and 23,500 at 15. **Code**
+
+What that means: a **long pass** (up to 20,480, more with a poor passer's random extra) to a **low-Stick Handling**
+receiver can bob off his stick; a **short pass** (16,384) almost never does. The game keeps no memory of a bobble: the
+user noticed that the same player never seems to bobble twice running, and that's because the pass back to him usually
+comes from a teammate who just picked up the loose puck close by, a short, slow pass. A long pass back would bobble
+again. In one recorded game the user reviewed, ten passes bounced off the receiver's stick.
 
 ### 6.3 The flip (Y with the puck): a computer-run dump-in
 
@@ -382,7 +392,13 @@ Stickhandling decides steals (both the carrier's and the stealer's). The exact r
 
 ### 7.3 Hooks, holds and pokes
 
-- **Y without the puck** starts a hook or hold (`holdplayer`); what it does to the victim hasn't been read for the SNES.
+- **Y without the puck** starts a hook or hold (`holdplayer`; the hook is animation `SPAhook`, then `SPAhook2`); what it
+  does to the victim hasn't been read for the SNES.
+- **The get-up glitch** (known in the community: a knocked-down player gets up at once if his person presses the hook
+  button). The SNES input code checks the hook button **before** the animation lock that holds a falling player down,
+  and `holdplayer` refuses only during a speed burst, so the hook animation replaces the fall and he is back up. The
+  Genesis checks the lock first, so it can't happen there. **Confirmed**: three times in the recordings a person pressed
+  Y while down and was up and hooking 0.5-1.2 s later, where falls otherwise last 2.3 s.
 - **B without the puck** near the carrier is a poke check (its animation confirmed from the recordings); its effects
   haven't been read.
 

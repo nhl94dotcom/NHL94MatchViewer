@@ -1915,7 +1915,8 @@ function shotText(sh) {
 // The goalie's save moves, as the converter names them (the game's own animations, grouped).
 // Hits that upend the player or send him into the boards or the bench (the converter's hit outcomes).
 const BIG_HITS = ['upended', 'into the boards', 'into the bench'];
-const SAVE_WORDS = { glove: 'glove save', stick: 'stick save', 'pad stack': 'pad stack', high: 'high save', dive: 'dive', slam: 'slam into the post' };
+const SAVE_WORDS = { glove: 'glove save', stick: 'stick save', 'pad stack': 'pad stack', high: 'high save', dive: 'dive', slam: 'slam into the post',
+  sprawl: 'sprawl', butterfly: 'butterfly' };  // the last two: SNES save moves
 // Whether anyone played this team by hand at some point (the controlled-player marker, match.ctrl, on one of its
 // records). A computer team's goalie is always the computer's, so the human/CPU goalie split is only shown for these.
 function hasHuman(team) {

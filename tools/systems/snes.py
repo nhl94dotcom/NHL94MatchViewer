@@ -27,16 +27,17 @@ ACTIONS = {
     "pass": {"ec66", "ecd8"},
     "goalie_pass": {"e34e"},
     "poke": {"f208"},
-    "hook": set(),                    # not identified
+    "hook": {"f864"},                 # SPAhook (Y without the puck; $F3D8 SPAhook2 follows), named in the disassembly
     "lunge": {"f342"},
     "down": {"f49c", "f54e"},         # falling forward, backward
     "dive": {"e4b6"},
     "goalie_save": set(),
 }
-# By the Genesis order of the same animations (glove saves, stick saves, pad stack; shoulder then hip checks, left and
-# right) and timing patterns; not each one checked.
-SAVE_MOVES = {"e1e2": "glove", "e214": "glove", "e246": "glove", "e278": "stick", "e2aa": "stick", "e2fc": "pad stack",
-              "e4b6": "dive"}
+# The goalie's save moves by the disassembly's names (GoalieSaveList: SPAgglover / l, SPAgstickr / l, SPAgstackr / l,
+# SPAgsprawlr / l, SPAgbutterfly; SPAgdive). Until 2026-10-17 these were guessed from the Genesis order and three were
+# wrong (a stick save read as a glove save, a pad stack as a stick save, the sprawls and butterfly missing).
+SAVE_MOVES = {"e1e2": "glove", "e214": "glove", "e246": "stick", "e278": "stick", "e2aa": "pad stack", "e2fc": "pad stack",
+              "e862": "sprawl", "e7d0": "sprawl", "e73e": "butterfly", "e4b6": "dive"}
 CHECK_MOVES = {"f27a": "shoulder", "f2ac": "shoulder", "f2de": "hip", "f310": "hip"}
 HIT_OUTCOMES = {"f49c": "knocked down", "f54e": "knocked down", "f6c0": "upended"}
 CLOCK_STOPPED = 0x15D6  # gmclock: nonzero while the game clock is stopped (71% of stoppage samples, 1% of play)

@@ -1724,6 +1724,23 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Agl, DfA, Chk, ShA 2; ShP, End, Pas 1; goalies Agl, DfA, PkC 4.5, the four save ratings 1. All in
   docs/GENESIS_MECHANICS.md / SNES_MECHANICS.md 2.5 and the player's guides (2026-10-17, which the user asked for).
 
+## Three of the user's observations explained (2026-10-17)
+
+- SNES: the same player never bobbles twice running. dopass sets a targeted pass's speed by distance (64 x 256 up to
+  ~96 units, 2/3 x distance between, 80 x 256 from 120) plus randomd0s(16 - passacc) x 256; puckstick catches a loose
+  puck slower than 10000 + 700 x Stk (+3000 for passReceiverPlayerNum or a goalie). The pass back after a bobble is
+  usually short, so slow. (The SNES docs' "pass speed 144 + 4 x Passing" is only an untargeted pass.)
+- Genesis: the top net's shoulder-save bobble. pucknorm pulls a held puck 1/4 a frame toward the holder + GetHot
+  (HotList at ROM $A44C8, y negated); ghighr / ghighl hold points facing down (top goalie) (-10, +15) / (+10, +14), i.e.
+  behind him toward his goal line (ready stance -4 to -6); facing up (+9, +14) / (-9, +14), in front. Goalie at
+  242-250 -> puck at the net's front (261) -> checkgoal takes a carried puck off its carrier (nopuck 8) and bounces it;
+  loose next frame, it can go in. Not found in the recordings (7 losses after shoulder saves, none at the net).
+- SNES get-up glitch (press hook while down): doinput tests Y ($4000 -> holdplayer) before pfalock, and holdplayer
+  refuses only during SPAburst, so SPAhook replaces the fall; the Genesis tests pflags bit 5 first. Confirmed: falls cut
+  to 0.5-1.2 s by a Y press (TOR-CHI P2 3:05, CHI-TOR P2 2:36, CHI-CGY P3 0:11), next animation SPAhook $F864 /
+  SPAhook2 $F3D8. snes ACTIONS "hook" = {"f864"} now; SAVE_MOVES corrected from the disassembly's names (e246 stick,
+  e2aa pad stack, sprawls e862 / e7d0, butterfly e73e; three had been wrong), with "sprawl" / "butterfly" in the viewer.
+
 ## SNES expected goals and xG map (2026-10-17)
 
 `tools/xg_snes.py` (export_match calls it for SNES games with the ROM's bytes; snes.read_match now keeps `work`
