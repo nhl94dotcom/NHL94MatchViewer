@@ -232,6 +232,10 @@ you take him, are played by the computer.
 **11 of 14 penalties in the recorded games were by players with maxed Aggressiveness**: on the SNES, maxed
 Aggressiveness (below its band's middle on the screen) is the dirty one.
 
+**Pokes are the risky move.** A poke check (B) that catches an opponent in front of you trips him every time (with
+penalties on), and a trip is called about five times as often as a check, a hook or a hold. And anything that stops a
+skater on a breakaway is a penalty shot.
+
 ### 10.2 Aggressiveness 12: a possible penalty on every hit
 
 Because of an overflow in the penalty roll, **a skater you control at working Aggressiveness 12 would be called on

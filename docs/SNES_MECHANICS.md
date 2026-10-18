@@ -539,6 +539,25 @@ charging, slashing, cross-checking, hooking, tripping, penalty shot, interferenc
 
 From the ROM's rule table: the SDL league ROMs use **1-minute minors**.
 
+### 8.5 Which moves draw which penalty
+
+Every call is the roll of 8.1 (0 up to the range) against the move's threshold. **Code** (`checkcheck`, `Bcheck`,
+`holdcheck`).
+
+| Move | What happens | Penalty | Called on a roll of |
+|---|---|---|---|
+| A check (A, burst) that leaves him on his feet | | Charging or slashing, 50 / 50 | 0 |
+| A check that knocks him down | he falls | Roughing or cross-checking, 50 / 50 | 0 |
+| A poke (B) or a body touch, opponent within 45 degrees of where you face | with penalties on he always falls (tripped); with them off a person's poke trips only on randoma8(16 + his Checking - the target's Agility) of 12 or more | Tripping | under 5 |
+| A hook or hold (Y), opponent within 45 degrees ahead | both slow to the average of their speeds; he flails, you're locked in the hook | Hooking, or holding when it began as a hold | 0 |
+| Any of these on a skater on a breakaway | | Penalty shot | always |
+
+- **A poke or trip is about five times as likely to be called as a check or a hook** (5 roll values against 1).
+- At the same range a check is called 1 time in R: with the computer's range at working Aggression 7 (208, halved to 104
+  near the puck) that's about 1 check in 100 near the puck; a person's wrapped range can be far smaller (8.1).
+- **Recordings** (5 SNES games, 15 penalties): interference 4, roughing 3, cross-checking 2, holding 2, tripping 2,
+  slashing 1, one with code $30 (not read); 9 by a person's skater, 6 by the computer's. Too few to check the rates.
+
 ---
 
 ## 9. Faceoffs
@@ -673,7 +692,7 @@ everything in this document applies to all of these ROMs.
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
 - **Not read yet for the SNES:** pass targeting and
-  catching; hooks and pokes; which move draws which penalty; injuries; breakaways; computer skaters'
+  catching; injuries; breakaways; computer skaters'
   positioning and line changes; one-timer timing.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.

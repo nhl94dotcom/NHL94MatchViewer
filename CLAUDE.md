@@ -1128,6 +1128,12 @@ and the screen-direction aim. Empty-net chances by aim and distance from each sy
 GENESIS_MECHANICS / SNES_MECHANICS 4.2 and the guides' shooting tips; recordings: 5 shots with the goalie far out or
 pulled (an empty-net test is in NEEDS_FROM_YOU).
 
+SNES penalties by move (2026-10-18; checkcheck, Bcheck, holdcheck, checkagr): R = (20 - GGSleft) x 16, asl.b for a
+person, lsr.b within 40 of the puck, randomd0(R); check up -> $18 / $1A on 0, check down -> $1C / $1E on 0, poke / body
+in front (always trips with OptPen on; off: a person's needs randoma8(16 + aggress - target legstr) >= 12) -> $22 under
+5, hook / hold -> $20 / $28 on 0; breakaway -> $24 (PenShotChk). Recordings: 15 penalties (one code $30 unread).
+SNES_MECHANICS 8.5, SNES_GUIDE 10.1.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
