@@ -212,7 +212,8 @@ goals crossed the line where they were aimed.
 
 
 **Shooting at an open net** (the goalie pulled, or far out of his crease). Nothing in the game makes shots at an open
-net less accurate (the "goalie pulled" test in the shot code only ever looks at the *shooting* team's own goalie), but
+net less accurate (the "goalie pulled" test in the shot code only ever looks at the *shooting* team's own goalie; and
+unlike the Genesis, SNES one-timers follow the stick, so they don't get the Genesis's high open-net aim), but
 three things from the rules above make them miss: such shots are often taken from far out, where a shot is never
 exact and the scatter is wide; the scatter only ever pushes the puck *up*, so a high aim has no room under the
 crossbar; and the d-pad direction is the aim, so attacking *up* the screen, pushing toward the net aims high. Worked out

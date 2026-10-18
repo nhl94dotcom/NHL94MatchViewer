@@ -214,9 +214,10 @@ goals' aim points and where they crossed the line agree closely.
   shooters, roughly as the formula predicts; none of those from beyond 200.
 
 
-**Shooting at an open net** (the goalie pulled, or far out of his crease). Nothing in the game makes shots at an open
-net less accurate (the "goalie pulled" test in the shot code only ever looks at the *shooting* team's own goalie), but
-three things from the rules above make them miss: such shots are often taken from far out, where a shot is never
+**Shooting at an open net** (the goalie pulled, or far out of his crease). For a shot you aim yourself, nothing in the
+game makes shots at an open net less accurate (the "goalie pulled" test in the shot code only ever looks at the
+*shooting* team's own goalie). **One-timers are different: see 4.4, the open-net one-timer.** Three things from the
+rules above make aimed shots miss: such shots are often taken from far out, where a shot is never
 exact and the scatter is wide; the scatter only ever pushes the puck *up*, so a high aim has no room under the
 crossbar; and the d-pad direction is the aim, so attacking *up* the screen, pushing toward the net aims high. Worked out
 from the game's own scatter rule for an average shooter (working Shot Accuracy 15, a 15,000 shot) at an empty net, the chance it goes in by aim and distance:
@@ -246,6 +247,26 @@ fatigue scales it (only with line changes on). **Shooters with working Shot Powe
 **One-timers ignore the d-pad.** The game aims them itself: middle height, on the side away from where the goalie is
 heading, or high in the middle when he is well off to one side. Computer shooters are aimed the same way. **Code**
 (the recorded aim agreed with this rule on 69 of 88 such shots).
+
+**The open-net one-timer** (the user's league noticed "suspicious misses on great opportunities" when the goalie had
+wandered, a person having dived or skated him out, and that they were one-timers, on the Genesis only). The test
+(`shotdiradj`, `CalcAngleOffset`) takes the line from the puck to where the goalie is heading and measures how far the
+middle of the net is from it; **more than 22 units off, and the one-timer is aimed high in the middle** (direction 0).
+That's the worst aim at an open net: the target is 12 units up, the crossbar is at 13 and the scatter only goes up, so
+an exact one-timer goes in just under the bar but almost any scattered one goes over it or off the bar; from within
+about 50 units of the goal line the "top shelf" lift (4.5) steepens it further. Worked out from the scatter rule (an
+average shooter, Shot Accuracy 15, a 20,000 one-timer) at an empty net:
+
+| One-timer aim | 40 units | 60 | 90 | 120 | 160 |
+|---|---|---|---|---|---|
+| High middle (goalie well off his line) | 61% | 58% | 57% | 55% | 53% |
+| Side, mid-height (the usual auto-aim) | 89% | 84% | 73% | 67% | 63% |
+| Middle, mid-height (if it were aimed there) | 100% | 100% | 86% | 73% | 64% |
+
+So close in on an open net a one-timer misses about 4 times in 10, where a shot aimed at the middle would hardly ever
+miss. **In the recordings** 10 one-timers got the high-middle aim: 7 went in at heights of 10 to 13 (just under the bar),
+one went over at 16 (BOS-DAL 2257, P1 0:57), 2 were saved. Computer shooters are aimed the same way. **The SNES doesn't
+do this**: it auto-aims only computer shooters, so SNES one-timers follow the stick.
 
 ### 4.5 "In-close top shelf"
 

@@ -1124,7 +1124,12 @@ Open nets (2026-10-18; the user: accuracy drops when the other goalie is pulled 
 down 1-2 in the last minute of P3 after a faceoff outside its own zone: CPgoalie) is only used for the shooter's team;
 shotdiradj aims high middle (passdir 0) when the goalie heads 44+ off the crease, 8 with none. So no penalty for an open
 net; misses come from distance (never exact beyond 200, wide scatter), upward-only scatter (high aims clear the bar),
-and the screen-direction aim. Empty-net chances by aim and distance from each system's scatter rule in
+and the screen-direction aim. CORRECTION (the user: the misses were one-timers, Genesis only): shotdiradj gives
+one-timers (and computer shooters) passdir 0, high middle, when |sum of CalcAngleOffset over both posts| > $2C, i.e. the
+net's middle more than 22 units off the line from the puck to the goalie's predicted spot; target z 12, crossbar 13,
+upward-only scatter: an exact one goes in under the bar, a scattered one over it (empty net, 40-60 units: about 60% vs
+100% aimed mid-middle). Recordings: 10 such one-timers, 7 goals at heights 10-13, 1 over at 16 (2257 P1 0:57), 2 saved.
+SNES one-timers follow the stick (not affected). GENESIS_MECHANICS 4.4, GENESIS_GUIDE 7. Empty-net chances by aim and distance from each system's scatter rule in
 GENESIS_MECHANICS / SNES_MECHANICS 4.2 and the guides' shooting tips; recordings: 5 shots with the goalie far out or
 pulled (an empty-net test is in NEEDS_FROM_YOU).
 
