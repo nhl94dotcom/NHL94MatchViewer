@@ -395,7 +395,17 @@ the recordings yet.
 
 ### 6.4 Steals
 
-Stickhandling decides steals (both the carrier's and the stealer's). The exact roll hasn't been read for the SNES.
+`puckstick`, when a defender's stick blade is within about 6 units of a carried puck (squared distance under 37).
+**Code.**
+
+- **The roll, every frame in reach:** he knocks the puck loose when randoma(36 + the carrier's Stick Handling - his Stick
+  Handling) comes under 3, both adjusted for energy. So about 1 frame in 12 at equal ratings, 1 in 17 for a Stick
+  Handling 15 carrier against a 0, 1 in 7 the other way round.
+- **A defending goalie always steals**; nobody steals from a goalie carrying the puck.
+- **A steal knocks the puck loose in a random direction** (it doesn't hand it over), and neither player can touch it
+  for 20 frames plus his Stick Handling.
+- **Unlike the Genesis there's no slot rule** (there, a carrier in the slot is easier to rob: a wider reach and a better
+  roll).
 
 ---
 
@@ -642,7 +652,7 @@ everything in this document applies to all of these ROMs.
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
 - **Not read yet for the SNES:** pass targeting and
-  catching; steals; hooks and pokes; which move draws which penalty; injuries; breakaways; computer skaters'
+  catching; hooks and pokes; which move draws which penalty; injuries; breakaways; computer skaters'
   positioning and line changes; one-timer timing.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.

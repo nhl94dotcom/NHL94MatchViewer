@@ -1115,7 +1115,9 @@ no clear pass effect.
 SNES goalie hold (2026-10-18, NHL94SNES puckgoalie): hold when |vx| and |vy| < randoma((2 + shotspd) << 9) + $2000
 (shotspd = PkC for goalies), not pflags $1000; else bounce (velocity = offset bytes, y sign set against his Yvel); a
 diving goalie lets puckz >= 5 through; save-rating lookups unused. Recordings (102 saves): faster component 17000+ held
-at once 4/41, 8192-17000 28/45, under 8192 10/16. SNES_MECHANICS 5.4, SNES_GUIDE 11.1.
+at once 4/41, 8192-17000 28/45, under 8192 10/16. SNES_MECHANICS 5.4, SNES_GUIDE 11.1. SNES steals (puckstick .t1):
+stick within d^2 < $25 of a carried puck; randoma(36 + Stk carrier - Stk stealer, makepde) < 3 -> deflect, both nopuck
+Stk + 20; a goalie always steals, never robbed; no slot rule (SNES_MECHANICS 6.4).
 
 ## Things needed from the user
 
