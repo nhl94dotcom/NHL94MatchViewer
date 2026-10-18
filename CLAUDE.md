@@ -1745,6 +1745,27 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   SPAhook2 $F3D8. snes ACTIONS "hook" = {"f864"} now; SAVE_MOVES corrected from the disassembly's names (e246 stick,
   e2aa pad stack, sprawls e862 / e7d0, butterfly e73e; three had been wrong), with "sprawl" / "butterfly" in the viewer.
 
+## The user's five BOS-DAL games (2026-10-17)
+
+Five Genesis games (Documents/NHL94 Viewer, 2026-10-17_2219 ... 2257, nhl94.bin, all with xG). What stood out:
+- The double assist (2257 P1 4:25, Courtnall from Broten and Broten; the game's own scoring summary says [4, 4]): the
+  game's bug. Each team keeps its last three touchers at stat block +$18 / $1A / $1C (in fast.bin). a2touchpuck shifts
+  them only for a new player and clears the oldest when it equals the new one; onetimershot shifts unconditionally,
+  and the goal code checks each assist only against the scorer. Broten struck two one-timers 0.25 s apart (the save's
+  rebound back onto his blade: one-timers tried 1 -> 2), giving (Broten, Broten, Courtnall); Courtnall's one-timer
+  goal then made it (Courtnall, Broten, Broten).
+- Converter fixes from that game (every other recording unchanged): shooter_at looks first at the stat snapshots
+  either side of the shots-on-goal rise (the wide window held Broten's two shots and the goal, so the second strike
+  had no shooter); `latest` skips a shot when an opposing skater took the puck and the shooting team won it back
+  before the goal (Courtnall's P1 3:52 shorthanded goal had gone to his pass shot 3 s earlier, which a Boston skater
+  picked up; now his one-timer from Gagner's pass); scorer_touch prefers his shooting swing over the latest touch.
+- An own goal by a skater (2246 P2 1:58): Neely took Courtnall's shot and carried it into his own net; the net's
+  front took it off his stick (checkgoal, as in the shoulder-save bobble) and it crossed the line loose. The game
+  credited Courtnall, unassisted (Dallas's last toucher), which the shot list keeps (an opposing skater who keeps the
+  puck does not stop the credit).
+- Two injuries in 2246 (Neely by Modano P1, Sweeney by Tinordi P3), each with the injury's roughing call (code $12,
+  no roll), out for the period; a penalty-shot goal (2219, Oates, not a shot on goal, as the code says).
+
 ## SNES expected goals and xG map (2026-10-17)
 
 `tools/xg_snes.py` (export_match calls it for SNES games with the ROM's bytes; snes.read_match now keeps `work`

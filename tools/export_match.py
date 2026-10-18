@@ -250,6 +250,17 @@ def find_shots(m, goals=None):
             if (sh['team'] == team and sh['f'] <= g and t[g] - t[sh['f']] <= window and (not free or sh['result'] == 'miss')
                     and (idx is None or sh['idx'] == idx)):
                 best = sh
+        # Not a shot the other team's skaters took the puck from and the team then won back (a new play): in
+        # 2026-10-17_2257_BOS-DAL (P1 3:52) a Boston skater picked up Courtnall's pass shot, Gagner stole it back and
+        # Courtnall scored on a one-timer 3 s after the pass shot, which had been credited with the goal. Their goalie
+        # touching it does not count (a puck can come off him and in), nor a skater who keeps it: in
+        # 2026-10-17_2246_DAL-BOS (P2 1:58) Boston's centre took Courtnall's shot and carried it into his own net, and
+        # the game gave Courtnall the goal.
+        if best:
+            others, ours = (range(6, 12), range(6)) if team == 0 else (range(6), range(6, 12))
+            lost = next((q for q in range(best['f'] + 1, g) if own[q] in others and role(q, own[q]) != '0'), None)
+            if lost is not None and any(own[q] in ours for q in range(lost + 1, g)):
+                return None
         return best
 
     def add(sh):
@@ -262,9 +273,19 @@ def find_shots(m, goals=None):
         if not st or not st.get('f') or st.get('p', 0) < 3:
             return None
         side, n, per = st['home' if team == 0 else 'away'], st['n'], st['p']
+        players = range((len(side[0]) - n) // per)
+        risers = lambda a, b: [idx for idx in players if side[b][n + per * idx + 2] > side[a][n + per * idx + 2]]
+        # First the snapshots either side of the rise itself (the game writes the player's byte with the team's
+        # word): a one-timer struck twice in 0.25 s (2026-10-17_2257_BOS-DAL P1 4:29) and the goal 1.3 s later all
+        # fell in the wider window below, which then named nobody.
+        at = next((i for i, f in enumerate(st['f']) if f >= g and t[f] <= t[g] + 2000), None)
+        if at:
+            rose = risers(at - 1, at)
+            if len(rose) == 1:
+                return rose[0]
         before = max([i for i, f in enumerate(st['f']) if t[f] < t[g] - 300] or [0])
         after = max([i for i, f in enumerate(st['f']) if t[f] <= t[g] + 2000] or [0])
-        rose = [idx for idx in range((len(side[0]) - n) // per) if side[after][n + per * idx + 2] > side[before][n + per * idx + 2]]
+        rose = risers(before, after)
         return rose[0] if len(rose) == 1 else None
 
     def credited_before(team, g, idx=None):
@@ -277,16 +298,21 @@ def find_shots(m, goals=None):
     def scorer_touch(team, g, idx):
         # A shot by a player with no shot of his found: the last moment the puck changed course beside him, after
         # his last shot that was already credited.
-        floor = credited_before(team, g, idx)
+        # A one-timer (his shooting swing) first: in 2026-10-17_2257_BOS-DAL (P1 3:52) the latest touch was the puck
+        # coming to rest in the net beside him, 0.2 s after his one-timer.
+        floor, touches = credited_before(team, g, idx), []
         for i in range(g, 0, -1):
             if t[g] - t[i] > 2000 or i <= floor + 2:
                 break
             for k in (range(6) if team == 0 else range(6, 12)):
                 if roster_idx(i, k) == idx and near(i, k, 30) and (kick(i) > 3000 or own[i - 1] == k):
-                    found = shot(i, k, team, 'one-timer' if anim(i, k) in SHOOT else 'deflection')
-                    found['known'] = g  # found only when the game counted it
-                    return add(found)
-        return None
+                    touches.append((i, k))
+        if not touches:
+            return None
+        i, k = next(((i, k) for i, k in touches if anim(i, k) in SHOOT), touches[0])
+        found = shot(i, k, team, 'one-timer' if anim(i, k) in SHOOT else 'deflection')
+        found['known'] = g  # found only when the game counted it
+        return add(found)
 
     def origin(team, g, idx=-1):
         # a counted shot with no shot found (a scramble): where the puck last changed course (after the team's last
