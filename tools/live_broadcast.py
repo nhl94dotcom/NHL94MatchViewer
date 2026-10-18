@@ -165,7 +165,10 @@ class Broadcaster:
 
     # The page and the files it loads beside itself.
     def publish_page(self):
-        html = (PROJECT / "viewer.html").read_text(encoding="utf-8")
+        page = PROJECT / "viewer.html"
+        if not page.exists():  # the packaged helper: its pages are copied into NHL94_HOME when it starts
+            page = ROOT / "viewer.html"
+        html = page.read_text(encoding="utf-8")
         boot = "<script>window.NHL94_LIVE = 'live.json';</script>\n"
         if isinstance(self.target, FolderTarget):
             boot = "<script>window.NHL94_LIVE = 'live.json'; window.NHL94_LIVE_UNZIP = true;</script>\n"
