@@ -448,6 +448,29 @@ saves facing down (-10, +15) and (+10, +14), facing up (+9, +14) and (-9, +14));
 - **Confirmed** in part: 300 of 302 catches were within the receiver's limit; of 32 reviewed bobbles, 13 were over it
   and 4 arrived in the air. The other 15 are not explained yet.
 
+**Where the stick is, and passes going past sticks** (2026-10-18; `analysis/stick_spot.py`, `analysis/passing_study.py`):
+
+- **The blade:** each sprite frame has a blade spot in a ROM table (HotList at $A44C8: a sideways and an up-down offset
+  from the skater's centre), flipped sideways for a mirrored (right-handed) skater. Any stick plays a puck within 14
+  units of it. **Confirmed:** a carried puck (which the game pulls toward the blade every frame) sat a median 3.6 units
+  from the computed blade; at the moment of a catch the puck was right at the edge of that 14-unit circle, in every
+  direction (it's taken the moment it comes within reach).
+- **Who it applies to:** every skater, either team, every frame the puck moves (`checkpuckcoll`, called each frame).
+  There's no special treatment of the pass's intended receiver in the code.
+- **Lifted passes are safe while rising:** a puck rising (more than about 2 units of height a frame) or above 5 can't
+  be played by any stick. Long passes are lifted, so they clear sticks for the first part of the flight. **Confirmed:**
+  rising pucks that passed within reach of a blade were left alone 98% of the time (82 cases), pucks above 5 about 85%.
+- **Too fast to keep:** a puck faster than a skater's catch limit is never kept (1 take in 65 such pucks reaching a
+  blade): it bounces off or slips by. So **fast passes are harder to pick off**: of low passes that came within reach
+  of an opponent's blade, he took 66% of the slow ones (under 9,000), a third of those at 9,000-14,000, 29% of those
+  over 14,000.
+- **Pass speed follows Passing:** median pass speed 13,500 for passers rated 0-2, 15,000 at 3-4, 16,600 at 5-6.
+  Interceptions didn't fall for the better passers in these games (22%, 24%, 27%), nor bobbles follow the receiver's
+  Stick Handling: who passes, where and to whom varies too much in a dozen games.
+- **Not explained yet:** about half the slow, low pucks that passed within reach of a blade (as computed) weren't
+  taken. The game's rule says they all should be, so either the computed blade is off by more than its few units for
+  skaters in motion, or a condition hasn't been found.
+
 ### 6.3 The flip (A with the puck)
 
 **A lob to a fixed spot, not aimed by the d-pad.** **Confirmed.** The spot comes from where your skater is and which

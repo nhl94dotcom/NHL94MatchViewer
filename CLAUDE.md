@@ -1107,6 +1107,17 @@ point for an overtime loss, so PTS is 2 x W + T too (it had counted 1 an OTL), a
 Dallas 5-2 Boston 65% / 34% (Dallas finished above its chances), Calgary 6-5 Boston OT 45 / 48, tie 7%; Boston 8 points
 against 8.6 deserved.
 
+## Passing study (2026-10-18)
+
+analysis/stick_spot.py, analysis/passing_study.py. GetHot (checks94.asm): HotList[frame] x, y bytes; x negated when the
+attribute's X flip (bit 11, = our `mirror`), y negated unless Y-flipped; added to the position (ccx: hot + player -
+puck). Confirmed: carried puck to blade median 3.6 (variants 7-21); at catch samples the puck sits on the 14 circle.
+Passes against the rule (Genesis, nhl94.bin games): rising or above 5 untouched 85-98%; over the catch limit kept 1 of
+65; opponents near a low pass took 66% under 9000, 29% over 14000; median pass speed by Passing 0-2 / 3-4 / 5-6: 13485 /
+14997 / 16561. Open: about half of slow low pucks within (computed) reach not taken (no nopuck or skip found; the
+pass's `to` is the actual catcher for completed passes, so receiver-vs-other comparisons are circular). In
+GENESIS_MECHANICS 6.2.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
