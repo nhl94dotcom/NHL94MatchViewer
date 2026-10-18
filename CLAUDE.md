@@ -1054,6 +1054,12 @@ against 2-5 r2 facing up. Recordings (5 SNES games): uncounted high 6/29, middle
 49% / middle 46% / ice 5%, going down 2% / 88% / 10%; uncounted up 12/70, down 11/77; pass-bys < 5 high: through 81%,
 taken 13%, course 7% (291); 5-7 through 6/6; 8-15 hit 5/5. SNES_MECHANICS 4.6, 6.2, 7.5; SNES_GUIDE 6.
 
+Home / away and up / down (2026-10-18, the user: Home wins about 51% in their data): setplayer's HmAwBonus = team data
+(+8 offset) byte 2, home high nibble added, away low nibble subtracted (byte 1: PP low nibble, PK high nibble); nhl94.bin
+per team listed in GENESIS_MECHANICS 13.6 (average home +1, away -1.1). Faceoff roll 17/33 Home at equal timing. Camera
+($BD18) lead over the carried puck toward the attacked net: up median 43 / mean 33.5, down 36 / 24.1 (9,330 / 9,872
+samples, all Genesis captures). Home goes up in P1 and P3.
+
 ## Screen sides by direction (2026-10-18)
 
 Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way

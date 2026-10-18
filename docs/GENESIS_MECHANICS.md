@@ -992,6 +992,38 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
   passed through 82%, changed course 8%, taken 10% (all of it the stick); 6-8, 35 times: passed through 94%; above 16,
   21 times: passed over every time. Too few mid-height ones (7) to check.
 
+### 13.6 Home and away, up and down the screen: what differs
+
+**Home and away** (the community's data: Home wins about 51%):
+
+- **The hidden home / away bonus** (2.x table): each team's ROM byte gives its home value to five working ratings at
+  home (Offensive and Defensive Awareness, Stick Handling, Shot Accuracy, Passing) and takes its away value off them on
+  the road. In nhl94.bin: home +2 for BOS, BUF, CHI, MTL, PHI, PIT, STL; +1 for most others; 0 for CGY, DAL, DET, HFD,
+  NYI, QUE, TB; away -3 for ANH, FLA, OTW, -2 for EDM, NJ, PHI, SJ, -1 for most, 0 for the seven with no home bonus.
+  Average: home +1, away -1.1, on the 0-30 working scale (a rating point is 5), so about a 2-point swing: small.
+  **Code, confirmed** (Boston's +2 / -1 in the recordings).
+- **Faceoffs**: at equal timing the home centre wins the roll 17 times in 33 (51.5%) on the Genesis (32 on the SNES:
+  53%). **Code**
+- **Home attacks up the screen in two of the three regulation periods** (1 and 3), so anything that favours going
+  up (below) favours Home in regulation; Away goes up in period 2 and overtime.
+- **Online:** RetroArch's netplay host is player 1, and player 1 is Home on the Genesis; if the host plays with less
+  input delay or fewer rollback corrections, that favours Home. Not measured.
+
+**Up and down the screen:**
+
+- **Aim follows the screen**: Up is high, Down along the ice. People push toward the net, so going up they shoot high
+  far more (4.7): high shots score far better (aimed high 10 goals in 35 against 2 in 33 along the ice in five games),
+  get the extra-steep "top shelf" lift from in close (Up held), and are counted as shots on goal more often.
+- **The camera leads more going up**: with the puck carried, the screen's centre sat a median 43 units ahead of the
+  puck going up, 36 going down (means 34 and 24; 19,000 samples), so a carrier going up sees 2-3 feet more ice ahead.
+  **Confirmed** (measured from the game's camera, $BD18).
+- **The top net's shoulder-save bobble** (5.x) can only happen at the top net, so only to shots going up. **Code**
+- **Shot scatter**: doshot halves the depth part of the scatter when shooting down the screen. **Code** (its effect on
+  where shots end up across the net is small and not measured).
+- **The goalie's stick spot** comes from his sprite frame and is mirrored top to bottom between the two goalies; the
+  frames themselves differ facing up and down, so the stick covers different ground at each end (on the SNES one stick
+  save covers much more at the top net). **Code**, effect not measured on the Genesis.
+
 ## 14. Line changes, energy and the crowd
 
 ### 14.1 Energy and fatigue
