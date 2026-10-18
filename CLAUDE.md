@@ -884,7 +884,8 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   team: `puckPos` (zone x LD, RD, LW, C, RW: 15) and `entryPos` (carried zone entries by the carrier's position);
   season.py `puck_seconds_by_zone`, `carried_entries_by_position`. Season page, Play style: "Who carries the puck"
   (zone picker; time with the puck a game, D / C / W shares, LD / RD / LW / RW shares, carried entries D / C / W),
-  noting that equal use would be D 40%, C 20%, W 40%. Viewer: Puck control's "Carried by D / C / W". BOS-PIT: Boston
+  noting that equal use would be D 40%, C 20%, W 40%. Viewer: Puck control's "Carried by D / C / W", with "· LD / RD" and
+  "· LW / RW" under it (2026-10-17, the user: each side's share of all carrying time, so the pairs add up to D and W). BOS-PIT: Boston
   32 / 16 / 52 (the left wing alone 122 s, 10 of 24 carried entries), Pittsburgh 35 / 23 / 42; CHI-TOR: Chicago
   21 / 33 / 46.
 - Nets knocked off (`netsOff`, find_dislodged_nets, 2026-10-16; the user: any skater can dislodge either net, much

@@ -3127,6 +3127,8 @@ const STAT_HELP = {
   'Turnovers \u2192 shot against': 'Giveaways the other team turned into a shot attempt within 5 s (in brackets, how many became goals).',
   // ---- puck control
   'Possession': 'Game time the team controlled the puck. Each second of the game clock goes to the team with the puck on a stick; a loose puck goes to the team that had it if it gets it back, to Transition if the other team gets it.',
+  'Carried by D / C / W|· LD / RD': 'The defencemen\u2019s share split by side: the left and the right defenceman\u2019s shares of the team\u2019s time with the puck on a stick (they add up to the D share above).',
+  'Carried by D / C / W|· LW / RW': 'The wingers\u2019 share split by side: the left and the right winger\u2019s shares of the team\u2019s time with the puck on a stick (they add up to the W share above).',
   'Possession|· attacking zone': 'Of the team\u2019s possession: time with the puck in the zone it attacks (past the far blue line).',
   'Possession|· neutral zone': 'Of the team\u2019s possession: time with the puck between the blue lines.',
   'Possession|· defensive zone': 'Of the team\u2019s possession: time with the puck in its own zone.',
@@ -3277,17 +3279,23 @@ function fillTeamStats(snap) {
   // Attacking-zone possession (game seconds) for each goal the team scored; the other column is how long this team
   // let the other one have the puck in its zone for each goal it allowed.
   const perGoal = team => { const g = match.score[2 * f + team]; return g ? secondsText(1000 * possession.zones[3 * team][zoneAt] / g) : '\u2013'; };
-  const carriers = team => {
-    const by = [0, 0, 0];
+  // Seconds with the puck by position (role 1-5: LD, RD, LW, C, RW), then shares of the team's whole carrying time:
+  // D / C / W, and the sides apart (LD / RD, LW / RW, so LD + RD is the D share).
+  const carriedBy = team => {
+    const by = [0, 0, 0, 0, 0, 0];
     for (let i = 1; i <= f; i++) {
       const k = match.owner[i];
       if (!possession.tick[i] || k < 0 || (k < 6 ? 0 : 1) !== team) continue;
       const r = role(i, k);
-      if (r > 0) by[r === 4 ? 1 : r <= 2 ? 0 : 2] += possession.tick[i];
+      if (r > 0) by[r] += possession.tick[i];
     }
-    const n = by[0] + by[1] + by[2];
-    return n ? by.map(x => Math.round(100 * x / n)).join(' / ') + '%' : '–';
+    return by;
   };
+  const carriers = (team, groups) => {
+    const by = carriedBy(team), n = by[1] + by[2] + by[3] + by[4] + by[5];
+    return n ? groups.map(g => Math.round(100 * g.reduce((s, r) => s + by[r], 0) / n)).join(' / ') + '%' : '\u2013';
+  };
+  const DCW = [[1, 2], [4], [3, 5]];
   const netsOff = (team, own) => (match.netsOff || []).filter(e => e.f <= f && e.byTeam === team && (e.side === 'defender') === own).length;
   const bobbled = team => (match.bobbles || []).filter(e => e.f <= f && e.team === team).length;  // passes that bounced off the receiver
   const bumped = team => (match.bumps || []).filter(e => e.f <= f && e.team === team && e.kind !== 'goalie');  // carriers bumped off the puck
@@ -3391,7 +3399,9 @@ function fillTeamStats(snap) {
       ...['attacking', 'neutral', 'defensive'].map((name, z) => ['· ' + name + ' zone',
         secondsText(1000 * possession.zones[z][zoneAt]), secondsText(1000 * possession.zones[3 + z][zoneAt])]),
       ['Transition ' + secondsText(1000 * held[2]) + share(2) + (liveKnowledge ? ' · undecided ' + secondsText(1000 * undecided) : ''), '', '']] : []),
-    ...(held ? [['Carried by D / C / W', carriers(0), carriers(1)]] : []),
+    ...(held ? [['Carried by D / C / W', carriers(0, DCW), carriers(1, DCW)],
+      ['· LD / RD', carriers(0, [[1], [2]]), carriers(1, [[1], [2]])],
+      ['· LW / RW', carriers(0, [[3], [5]]), carriers(1, [[3], [5]])]] : []),
     ...(held ? [['Attack-zone possession per goal', perGoal(0), perGoal(1)]] : []),
     ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
     ...(match.zoneEntries ? [['Zone entries', entries(0).length, entries(1).length],
