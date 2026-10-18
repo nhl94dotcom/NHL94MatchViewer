@@ -1122,7 +1122,8 @@ From a review of the pages at 1920x1080, 1366x768 and phone width (the user chos
   swipe, so the page could not be scrolled down to the tabs; it is now pan-y unless zoomed in (`applyView`). Tapping
   a tab scrolls it into view. Lineup rows open cards on `pointerenter` from a mouse only: a tap's emulated mouseenter
   opened the card and its click closed it again. A tap or click outside the card and rows closes it; #popover keeps
-  to the screen (max-height, scrolls). Checked in headless Edge at 504 px with simulated taps; not yet on a phone.
+  to the screen (max-height, scrolls). Checked in headless Edge at 504 px with simulated taps, then by the user on
+  an Android phone (game files from an S3 bucket): works. iPhone not reported yet.
 - One bar on the games list and the season page (NHL '94 Viewer, Games, Season stats, Help); the viewer's scoreboard
   has "&larr; Games" (hidden in a shared game file) and "? Help". The games list shows each game's system and ROM name
   (from /api/season) and keeps recordings under a minute (save-state previews, tests) in a closed list below. The
