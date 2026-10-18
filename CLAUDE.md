@@ -993,6 +993,10 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   there, by how much (97th percentile of the gaps, power 1.4, small gaps faded out), so neither team hides the other.
   The footer wraps onto a second row when it runs out of
   room, and the seek bar keeps at least 140 px (with a map on it used to be squeezed away).
+- Player card (2026-10-17, the user saw values run past the card's right edge): its two stat columns are
+  minmax(0, 1fr), so a long value can no longer widen the left column and push the right one out; a stat whose label
+  and value pass 21 characters takes the whole width (`.stat.wide`, its value wrapping), and short stats fill the gaps
+  around it (grid-auto-flow dense). Checked in headless Edge on skater and goalie cards of 2026-10-17_2246_DAL-BOS.
 
 ## Advanced stats (2026-10-16)
 

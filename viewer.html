@@ -85,8 +85,10 @@
   .card { margin: 12px 0 0; padding: 10px 10px 8px; border-radius: 8px; background: var(--panel); font-size: 12px; }
   .card h4 { margin: 0 0 8px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
   .card h4 small { color: var(--muted); font-weight: 400; white-space: nowrap; }
-  .card .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
-  .card .stat { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 6px; color: var(--muted); white-space: nowrap; }
+  .card .stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-flow: row dense; gap: 3px 12px; }
+  .card .stat.wide { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); }
+  .card .stat.wide b { white-space: normal; }
+  .card .stat { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 6px; color: var(--muted); white-space: nowrap; }
   .card .stat b { color: var(--text); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
   .card .bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--raised); }
   .card .bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
@@ -2851,6 +2853,8 @@ function addStat(grid, label, text, fraction) {
   const stat = document.createElement('div'), value = document.createElement('b');
   stat.className = 'stat';
   value.textContent = text;
+  // Half the card holds about 21 characters; a longer stat takes the whole width (short ones fill in around it)
+  if (String(typeof label === 'string' ? label : label.textContent).length + String(text).length > 21) stat.classList.add('wide');
   stat.append(label, value);
   const tip = statHelp(label, 'card');  // a player's own number where the team stat has the same name
   if (tip) { stat.title = tip; stat.classList.add('has-help'); }
