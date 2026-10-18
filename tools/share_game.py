@@ -50,6 +50,9 @@ def make_game_file(name, out_dir=None):
         data.append(benches.read_text(encoding="utf-8").strip())
     data.append("window.NHL94_PACKED = " + json.dumps(packed) + ";")
     data.append("</script>")
+    # Turns on the page's message for a viewer that shows it without running it (an iPhone's preview); the same line
+    # as PACKED_NOTE_STYLE in viewer.html.
+    data.append('<style>#drop .pick-note { display: none; } #drop .packed-note { display: block; }</style>')
     page = (ROOT / "viewer.html").read_text(encoding="utf-8")
     tag = '<script src="rink_gens.js"></script>'
     assert page.count(tag) == 1, "viewer.html no longer loads rink_gens.js the expected way"

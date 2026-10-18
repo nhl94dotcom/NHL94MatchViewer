@@ -100,6 +100,13 @@ showing. The README's "Try it" section points to them.
    base64'd inside (`window.NHL94_PACKED`, unpacked with DecompressionStream on opening). `capture6_netplay_bos_stl`
    makes a 5.2 MB file that opens on its own from any folder with everything working (sprites, overhead rink, maps,
    stats, clips).
+   On an iPhone (2026-10-17, the user's opponent): a game file opened from Messages, Mail or Files is shown as a
+   Quick Look preview, which draws the page without running scripts, so it showed the empty "Open a match file".
+   Game files now carry a style line (PACKED_NOTE_STYLE in viewer.html, the same line in share_game.py) that swaps
+   the drop panel's text for a `.packed-note` saying what happened and what to do (open on a computer, or a web
+   link); the scripts hide it again when they run. A small script before the main one reports any error that stops
+   the viewer starting ("This browser could not run the viewer: ..."). Checked in headless Edge: the game file opens
+   as before, a copy with its scripts stripped shows the note, the plain viewer is unchanged.
 6. Click-to-replay: markers on the shot map, turnover map and goalie report can be pointed at (a tooltip says what
    it was) and clicked to jump to four seconds before and play. A press that moves under 4 pixels is a click; more
    is a drag (pans).

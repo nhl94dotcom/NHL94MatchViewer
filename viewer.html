@@ -86,6 +86,7 @@
   .card h4 { margin: 0 0 8px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
   .card h4 small { color: var(--muted); font-weight: 400; white-space: nowrap; }
   .card .stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-flow: row dense; gap: 3px 12px; }
+  #drop .packed-note { display: none; }
   .card .stat.wide { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); }
   .card .stat.wide b { white-space: normal; }
   .card .stat { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 6px; color: var(--muted); white-space: nowrap; }
@@ -291,10 +292,20 @@
       <button id="viewReset" title="Whole rink, upright (0, or double-click the ice)">Reset</button>
     </div>
     <div id="drop">
-      <h2 id="dropTitle">Open a match file</h2>
-      <p>Choose a file from the <code>matches</code> folder, or drop one anywhere on this page.</p>
-      <button id="pick">Choose file</button>
-      <button id="helpOpen2" title="How to use the viewer, and what every stat means">Help</button>
+      <h2 id="dropTitle" class="pick-note">Open a match file</h2>
+      <p class="pick-note">Choose a file from the <code>matches</code> folder, or drop one anywhere on this page.</p>
+      <!-- A saved game file shows this instead (its builders add a style turning it on), so a viewer that shows the
+           page without running it, such as an iPhone's preview of an attachment, says what to do. -->
+      <div class="packed-note">
+        <h2>NHL '94 game file</h2>
+        <p>This is a replay that has to be opened in a web browser, which runs it. If you are reading this, the page was
+          shown without running it: an iPhone or iPad shows a file from Messages, Mail or Files as a preview, which
+          does that.</p>
+        <p>Open it on a computer instead (save it, then double-click it: Chrome, Edge, Firefox and Safari all work), or
+          ask whoever sent it for a web link to it.</p>
+      </div>
+      <button id="pick" class="pick-note">Choose file</button>
+      <button id="helpOpen2" class="pick-note" title="How to use the viewer, and what every stat means">Help</button>
       <input id="file" type="file" accept=".js,.json" hidden>
     </div>
   </div>
@@ -597,6 +608,15 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
   </div>
 </div>
 <script src="rink_gens.js"></script>
+<script>
+// Before the page's main script, so even a script this browser cannot run says so instead of showing the empty viewer.
+window.addEventListener('error', e => {
+  const title = document.getElementById('dropTitle'), drop = document.getElementById('drop');
+  if (!title || !drop || drop.hidden) return;
+  title.style.display = 'block';
+  title.textContent = 'This browser could not run the viewer: ' + (e.message || 'an error') + '. A recent Chrome, Edge, Firefox or Safari can.';
+});
+</script>
 <script>
 // This page as it arrived (everything above this script is still untouched), for "Save game file".
 const PAGE_SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
@@ -4734,6 +4754,9 @@ async function packText(text) {
   for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
   return btoa(out);
 }
+// Turns on the game file's own message (#drop .packed-note), for a viewer that shows the page without running it.
+// tools/share_game.py adds the same line.
+const PACKED_NOTE_STYLE = '<style>#drop .pick-note { display: none; } #drop .packed-note { display: block; }</style>';
 async function unpackText(b64) {
   const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
@@ -4750,7 +4773,7 @@ async function saveGameFile() {
     // The rink picture and benches of this match's system only.
     const rink = RINKS[rinkSystem], carry = name => (window[name] ? 'window.' + name + ' = ' + JSON.stringify(window[name]) + ';\n' : '');
     const data = '<script>\n// The game, packed by "Save game file".\n' + carry(rink.data) + carry(rink.benchData) +
-      'window.NHL94_PACKED = ' + JSON.stringify(packed) + ';\n<' + '/script>';
+      'window.NHL94_PACKED = ' + JSON.stringify(packed) + ';\n<' + '/script>\n' + PACKED_NOTE_STYLE;
     const score = match.score.length >= 2 ? match.score[match.score.length - 2] + '-' + match.score[match.score.length - 1] : '';
     const title = match.team1 + ' ' + score + ' ' + match.team2;
     const html = PAGE_SOURCE
@@ -5189,6 +5212,8 @@ loadScriptOnce(RINKS.genesis.benches, RINKS.genesis.benchData, () => { if (match
 const named = new URLSearchParams(location.search).get('match');
 if (window.NHL94_PACKED) {
   // A saved game file: unpack the game (and sprites) it carries.
+  for (const el of document.querySelectorAll('#drop .packed-note')) el.style.display = 'none';
+  $('dropTitle').style.display = 'block';
   $('dropTitle').textContent = 'Opening the game\u2026';
   (async () => {
     const packed = window.NHL94_PACKED;
