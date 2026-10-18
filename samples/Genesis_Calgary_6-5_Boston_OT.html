@@ -491,7 +491,10 @@ marker for what it was; click it to jump there.</p>
 <section id="h-season"><h2>Season stats</h2>
 <p>The season page adds up any set of games. Make a <b>season</b> (New season: a name, the ROM, your team, when it
 starts and, if you like, ends): its games are the whole games played on that ROM from its start until it ends or the
-next season on that ROM starts. Several seasons can share a ROM. Untick a game on the Games tab to leave it out.</p>
+next season on that ROM starts. Several seasons can share a ROM. Untick a game on the Games tab to leave it out (a
+practice game, say); the season remembers it, and without a season this browser does. <b>Against</b> keeps only the
+games between your team and one opponent, for the stats of one set; the Games tab's <b>Count all these</b> and
+<b>Count none</b> tick or untick every game listed.</p>
 <dl>
   <dt>Standings</dt><dd>Wins, losses, OT losses, ties, points (2 a win, 1 an OT loss or tie), goals, power play and penalty kill; your team's record, home and away, last five.</dd>
   <dt>Skaters, Goalies, Team stats, Head to head</dt><dd>The usual totals. Goalies also split save % by a person or the computer in net, high-danger save %, rebound rate, and show where they get beaten.</dd>
@@ -558,6 +561,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Where a goal went in</dt><dd>Each goal in the scoring summary and its banner has a small picture of the net, seen from the shooter's side, with the spot where the puck crossed the goal line (posts at the sides, the crossbar at the top). (Older SNES recordings converted before the puck's height was found show a dashed line across the net instead.)</dd>
   <dt>Where a shot was aimed</dt><dd>Both games aim every shot at one of nine points in the net, picked by the direction the stick is held as you shoot, by screen direction: up, up-left or up-right aims high; left, right or no direction middle height; down-left, down or down-right along the ice; left and right are the screen's sides (so shooting down the screen, the stick's left is the shooter's right). The game then scatters the shot at random (more for hard shots, weak shooters and long range). Shot tooltips say where each was aimed; on a goal's net picture the blue ring is the aim and the yellow dot where it went in; the card and the season page count where each player aims.</dd>
   <dt>Screen sides</dt><dd>Left and right on the screen, split by which way a team was going (Home attacks up the screen in periods 1 and 3, Away in period 2 and overtime), for anyone who favours one side of the screen whichever way he goes: where the puck was while the team carried it, how much each winger and defenceman carried it (going up the left winger is on the screen's left, going down on its right), where shots came from and where they were aimed. In the team stats' "Screen sides" group, and across games on the season page's Play style tab.</dd>
+  <dt>Deserve to win</dt><dd>MoneyPuck's Deserve to Win meter for NHL '94: how often each team would win if the game's shots were replayed, each going in with the chance it had (its xG; pass shots and deflections a typical chance), a team's shots within 3 seconds counted as one chance, and a tie settled in sudden-death overtime (10 minutes on the Genesis, 5 on the SNES). In the team stats, as a dotted line on the Game flow strip (the home team's deserved share up), and on the season page as deserved points beside the real ones. Before the end of a game it says who deserved to be ahead so far. Not a prediction: a team can deserve to win and lose.</dd>
   <dt>Shot aim</dt><dd>Where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net, high, middle or along the ice, and left, middle or right (one-timers and computer shooters are aimed by the game). The team stats split goals and attempts by height; in the recorded games shots aimed along the ice almost never went in.</dd>
   <dt>Saves: held / rebound / cleared</dt><dd>What became of each save a team's goalies made: held by the goalie (or play stopped), a rebound the shooting team got to first, or cleared by the goalie's own team.</dd>
   <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
@@ -3158,6 +3162,8 @@ const STAT_HELP = {
   'Carried by LD / RD': 'The left and right defenceman\u2019s shares of the team\u2019s carrying time. Going up the screen the left defenceman is on the screen\u2019s left; going down, on its right.',
   'Shots from L / M / R (G / att)': 'Goals / attempts from the screen\u2019s left, the middle (within the posts\u2019 width) and the screen\u2019s right.',
   'Aimed at L / M / R (G / att)': 'Goals / shots aimed at the screen\u2019s left, middle and right (the stick at the release). Going up, the screen\u2019s left is the shooter\u2019s left; going down, his right.',
+  'Deserve to win': 'The Deserve to Win meter (after MoneyPuck\u2019s): how often each team would win if the game\u2019s shots were replayed, each going in with its chance (its xG; pass shots and deflections a typical chance). A team\u2019s shots within 3 seconds count as one chance; a tie goes to sudden-death overtime (10 minutes on the Genesis, 5 on the SNES) at each team\u2019s regulation rate. Before the end, who deserved to be ahead on the shots so far.',
+  'Deserve to win|· a tie': 'How often the replays end level (a tie after overtime; before the end, level so far).',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
   'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s.',
@@ -3480,9 +3486,12 @@ function fillTeamStats(snap) {
             const d = scored - sum(team);
             return (d >= 0 ? '+' : '') + d.toFixed(1) + (scored < all ? ' (' + scored + '/' + all + ')' : '');
           };
+          const dtw = deserveToWin(match, f), pc = v => Math.round(100 * v) + '%';
           return [['Expected goals (xG)', sum(0).toFixed(1), sum(1).toFixed(1)],
             ['· xG share', sharePct(sum(0), sum(1)), sharePct(sum(1), sum(0))],
-            ['· goals above xG', diff(0), diff(1)]];
+            ['· goals above xG', diff(0), diff(1)],
+            ['Deserve to win', pc(dtw.win[0]), pc(dtw.win[1])],
+            ['· a tie', pc(dtw.tie), pc(dtw.tie)]];
         })() : []),
         ...(list.some(sh => sh.danger) ? (() => {
           // From the converter's shot context: the slot (high danger), rebounds, EA Specials, set-up attempts,
@@ -3813,6 +3822,13 @@ function setupFlow(m) {
     if (played) periods.push({ f: i, p: m.period[i] });
   }
   flow = { pp, periods, total: [0, 1].map(team => (m.shotList || []).filter(sh => sh.team === team).length) };
+  // the meter after each shot (the home team's deserved share: its chance to be ahead, or to win at the end, plus half
+  // a tie), for the dotted line
+  if (m.shotList) {
+    const share = d => d.win[0] + d.tie / 2;
+    flow.dtw = [...new Set(m.shotList.map(sh => sh.f))].sort((a, b) => a - b).map(fr => [fr, share(deserveToWin(m, fr))]);
+    flow.dtw.push([m.t.length - 1, share(deserveToWin(m, m.t.length - 1))]);
+  }
   $('flowToggle').hidden = !m.shotList;
   showFlow(flowOn && Boolean(m.shotList), false);
   const key = $('flowKey');
@@ -3823,6 +3839,12 @@ function setupFlow(m) {
     item.append(line, name);
     key.append(item);
   });
+  if (flow.dtw) {
+    const item = document.createElement('span');
+    item.title = 'The Deserve to Win meter: the home team\u2019s deserved share up, the away team\u2019s down, 50% across the middle';
+    item.textContent = '\u00b7\u00b7\u00b7 deserve to win (' + (m.abbr ? m.abbr[0] : m.team1) + ' up)';
+    key.append(item);
+  }
 }
 function showFlow(on, remember = true) {
   // remember is false while a match loads; load() lays the page out itself once the panels exist.
@@ -3834,6 +3856,53 @@ function showFlow(on, remember = true) {
   if (match) resize();
 }
 $('flowToggle').addEventListener('click', () => showFlow(!flowOn));
+// The Deserve to Win meter (after MoneyPuck's): how often each team would win if the game's shots were replayed, each
+// going in with its chance. tools/deserve.py has the same rule for the season page; keep the two in step. Worked out
+// exactly: a team's shots within 3 s form a flurry (one chance that scores if any shot does); regulation goals add up
+// the flurries' chances; a tie goes to sudden-death overtime, first the real overtime flurries in order, then (when the
+// game is over) the overtime it didn't play (10 minutes Genesis, 5 SNES) at each team's regulation rate; still level, a
+// tie. Mid-game, only the shots so far count: who deserved to be ahead. Attempts without an xG get a typical chance.
+const DTW_FLURRY_MS = 3000, DTW_OT = { genesis: 600, snes: 300 };
+const DTW_FALLBACK = {
+  genesis: { shot: 0.17, 'one-timer': 0.32, 'pass shot': 0.19, deflection: 0.25, other: 0.25 },
+  snes: { shot: 0.19, 'one-timer': 0.17, 'pass shot': 0.19, deflection: 0.25, other: 0.25 },
+};
+function deserveToWin(m, upto) {
+  const system = m.system || 'genesis', t = m.t, last = t.length - 1, final = upto >= last;
+  const shots = (m.shotList || []).filter(sh => sh.f <= upto && known(sh, upto) && resultAt(sh, upto) !== 'blocked').sort((a, b) => a.f - b.f);
+  const fl = [], lastOf = {};
+  for (const sh of shots) {
+    const p = sh.xg !== undefined && sh.xg !== null ? sh.xg : ((DTW_FALLBACK[system] || DTW_FALLBACK.genesis)[sh.kind] || 0.2);
+    const prev = lastOf[sh.team];
+    if (prev !== undefined && t[sh.f] - t[fl[prev].lastF] <= DTW_FLURRY_MS) { fl[prev].miss *= 1 - p; fl[prev].lastF = sh.f; }
+    else { lastOf[sh.team] = fl.length; fl.push({ f: sh.f, team: sh.team, miss: 1 - p, lastF: sh.f }); }
+  }
+  const dist = ps => ps.reduce((d, p) => d.concat(0).map((x, k) => x * (1 - p) + (k ? d[k - 1] * p : 0)), [1]);
+  const reg = [0, 1].map(team => fl.filter(x => x.team === team && m.period[x.f] < 3).map(x => 1 - x.miss));
+  const dh = dist(reg[0]), da = dist(reg[1]);
+  let pHome = 0, pTie = 0, below = 0;
+  for (let k = 0; k < dh.length; k++) { pHome += dh[k] * below; pTie += dh[k] * (da[k] || 0); below += da[k] || 0; }
+  const pAway = Math.max(0, 1 - pHome - pTie);
+  const otWin = [0, 0];
+  let alive = 1;
+  for (const x of fl) if (m.period[x.f] === 3) { otWin[x.team] += alive * (1 - x.miss); alive *= x.miss; }
+  if (final) {
+    if (!m._dtwClock) {
+      const len = [0, 0, 0], ot = [];
+      for (let i = 0; i <= last; i++) { if (m.period[i] < 3) len[m.period[i]] = Math.max(len[m.period[i]], m.clock[i]); else if (m.period[i] === 3) ot.push(m.clock[i]); }
+      m._dtwClock = { reg: len[0] + len[1] + len[2] || 1, otPlayed: ot.length ? Math.max(...ot) - Math.min(...ot) : 0 };
+    }
+    const rest = Math.max(0, (DTW_OT[system] || 600) - m._dtwClock.otPlayed);
+    const rate = reg.map(r => r.reduce((a, p) => a + p, 0) / m._dtwClock.reg), both = rate[0] + rate[1];
+    if (both > 0 && rest > 0) {
+      const scored = 1 - Math.exp(-both * rest);
+      for (const team of [0, 1]) otWin[team] += alive * scored * rate[team] / both;
+      alive *= 1 - scored;
+    }
+  }
+  return { win: [pHome + pTie * otWin[0], pAway + pTie * otWin[1]], tie: pTie * alive, final };
+}
+
 function drawFlow(f) {
   if (!flowOn || !flow || !match) return;
   const cv = $('flowCanvas'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
@@ -3887,6 +3956,16 @@ function drawFlow(f) {
       g.beginPath(); g.arc(X(goal.f), Y(before), 4.5, 0, 2 * Math.PI); g.fill(); g.stroke();
     }
   }
+  // the Deserve to Win meter, dotted, on its own scale: the home team's deserved share up (top 100%), the away team's
+  // down, 50% across the middle; it changes only at shots
+  if (flow.dtw) {
+    const YM = v => T + (h - T - B) * (1 - v);
+    g.strokeStyle = css('--text'); g.globalAlpha = 0.55; g.lineWidth = 1.5; g.setLineDash([2, 3]);
+    g.beginPath(); g.moveTo(X(0), YM(0.5));
+    let v = 0.5;
+    for (const [fr, val] of flow.dtw) { if (fr > f) break; g.lineTo(X(fr), YM(v)); v = val; g.lineTo(X(fr), YM(v)); }
+    g.lineTo(X(f), YM(v)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+  }
   // now
   g.strokeStyle = css('--accent'); g.lineWidth = 1.5;
   g.beginPath(); g.moveTo(Math.round(X(f)) + 0.5, T - 2); g.lineTo(Math.round(X(f)) + 0.5, h - B); g.stroke();
@@ -3917,7 +3996,9 @@ $('flowCanvas').addEventListener('mousemove', ev => {
   // Past the replay's position it gives only the time, so pointing ahead does not give the score away.
   tip.querySelector('b').textContent = periodName(match.period[fr]) + ' ' + clockText(match.clock[fr]) +
     (fr > f ? '' : ' · ' + name(0) + ' ' + match.score[2 * fr] + ', ' + name(1) + ' ' + match.score[2 * fr + 1]);
-  tip.querySelector('.muted').textContent = fr > f ? 'Later in the game: click to jump there' : 'Shot attempts: ' + name(0) + ' ' + n(0) + ', ' + name(1) + ' ' + n(1);
+  const dtw = fr > f ? null : deserveToWin(match, shown), pc = v => Math.round(100 * v) + '%';
+  tip.querySelector('.muted').textContent = fr > f ? 'Later in the game: click to jump there' : 'Shot attempts: ' + name(0) + ' ' + n(0) + ', ' + name(1) + ' ' + n(1) +
+    (dtw ? ' \u00b7 deserve to ' + (dtw.final ? 'win' : 'be ahead') + ': ' + name(0) + ' ' + pc(dtw.win[0]) + ', ' + name(1) + ' ' + pc(dtw.win[1]) + (dtw.tie >= 0.005 ? ', ' + (dtw.final ? 'tie ' : 'level ') + pc(dtw.tie) : '') : '');
   const r = $('flow').getBoundingClientRect();
   tip.hidden = false;
   tip.style.left = Math.max(8, Math.min(r.width - tip.offsetWidth - 8, ev.clientX - r.left + 12)) + 'px';

@@ -359,6 +359,8 @@ function standings(list) {
       for (const k of Object.keys(t)) if (k in r && typeof t[k] === 'number') r[k] += t[k];
       for (const k of ['adv', 'advEv', 'hd', 'reb', 'flip', 'toShot', 'entries', 'xg']) if (t[k]) { r[k] = r[k] || t[k].map(() => 0); t[k].forEach((x, i) => { r[k][i] += x; }); }
       if (!g.finished) continue;
+      // Deserved points (the Deserve to Win meter, tools/deserve.py): 2 a deserved win, 1 a deserved tie or overtime loss
+      if (t.dtw) { r.dtwGames = (r.dtwGames || 0) + 1; r.dtwPts = (r.dtwPts || 0) + 2 * t.dtw[0] + t.dtw[2] + t.dtw[3]; r.dtwPtsReal = (r.dtwPtsReal || 0) + (t.gf > t.ga ? 2 : t.gf === t.ga || g.overtime ? 1 : 0); }
       if (t.gf > t.ga) r.w++; else if (t.gf === t.ga) r.t++; else if (g.overtime) r.otl++; else r.l++;
     }
   }
@@ -478,6 +480,10 @@ function viewStandings(list, team) {
     { key: 'gp', label: 'GP', title: 'Games played' },
     { key: 'w', label: 'W' }, { key: 'l', label: 'L' }, { key: 'otl', label: 'OTL', title: 'Overtime losses' }, { key: 't', label: 'T', title: 'Ties' },
     { key: 'pts', label: 'PTS', title: '2 a win, 1 an overtime loss or tie' },
+    { key: 'dtw', label: 'DESERVED', title: 'Deserved points: the Deserve to Win meter (each game replayed from its shots, each going in with its chance), 2 a deserved win, 1 a deserved tie or overtime loss, added up',
+      value: r => (r.dtwGames ? r.dtwPts : NaN), show: r => (r.dtwGames ? r.dtwPts.toFixed(1) : '–') },
+    { key: 'luck', label: '+/- DESERVED', title: 'Points above (or below) the deserved points, over the same games: finishing, goaltending and luck',
+      value: r => (r.dtwGames ? r.dtwPtsReal - r.dtwPts : NaN), show: r => (!r.dtwGames ? '–' : Math.abs(r.dtwPtsReal - r.dtwPts) < 0.05 ? '0.0' : signed1(r.dtwPtsReal - r.dtwPts)) },
     { key: 'gf', label: 'GF' }, { key: 'ga', label: 'GA' },
     { key: 'diff', label: 'DIFF', value: r => r.gf - r.ga, show: r => signed(r.gf - r.ga) },
     { key: 'ppp', label: 'PP%', title: 'Power-play goals / power plays', value: r => (r.ppTries ? r.ppg / r.ppTries : NaN), show: r => `${pct(r.ppg, r.ppTries, 0)} <small>${r.ppg}/${r.ppTries}</small>` },

@@ -16,9 +16,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
+import deserve  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 19  # 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 20  # 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -190,6 +191,7 @@ def summarize(m, name, date=None):
     t, period, clock = m["t"], m["period"], m["clock"]
     n = len(t)
     sides = screen_sides(m)  # left / right on the screen, going up and going down
+    dtw = deserve.deserve(m) if m.get("shotList") else None  # the Deserve to Win meter (tools/deserve.py)
     puck_zone, puck_pos = puck_seconds_by_zone(m)  # game seconds with the puck, by skater and zone, and by position
     entry_pos = carried_entries_by_position(m)
     poss = possession_by_zone(m)  # game seconds, [attacking, neutral, defensive] per team in its own view
@@ -286,6 +288,8 @@ def summarize(m, name, date=None):
             "puckPos": puck_pos[team],  # game seconds with the puck: zone (def, neu, att) x carrier's position (LD, RD, LW, C, RW)
             "entryPos": entry_pos[team],  # carried zone entries by the carrier's position
             "sides": sides[team],  # screen sides going up, then going down (screen_sides)
+            # Deserve to Win: [win (incl. overtime), overtime win, tie, overtime loss], each a chance
+            **({"dtw": [round(dtw["win"][team], 4), round(dtw["otWin"][team], 4), round(dtw["tie"], 4), round(dtw["otWin"][1 - team], 4)]} if dtw else {}),
             "possZones": poss[team],  # its possession in game seconds: attacking, neutral, defensive zone
             "possAtt": poss[team][0], "possAttAgainst": poss[1 - team][0],  # attacking-zone possession, its own and its opponent's
             "bumped": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") != "goalie"),  # its carriers bumped off the puck

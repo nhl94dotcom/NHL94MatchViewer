@@ -1091,6 +1091,21 @@ group "Screen sides" (closed at first) with the same numbers live (`ends[f] === 
 · going up / · going down. The five BOS-DAL games together: aimed goals going up 7/36 screen-left, 11/34 right; going
 down 11/32 left, 4/35 right: the shooter's right both ways, not a screen side (small samples).
 
+## Deserve to Win meter (2026-10-18)
+
+After MoneyPuck's (moneypuck.com/about.htm#meter; the user asked for it). tools/deserve.py (the season page) and
+viewer.html deserveToWin (keep in step; checked equal on three games): exact, not simulated. Unblocked attempts with
+their xG; without one FALLBACK (pass shot 0.19; shot / one-timer the system's average; deflection / other 0.25 flat,
+because the converter finds those only at counted events, so their recorded rate is mostly goals); a team's shots
+within FLURRY_MS 3 s = one chance (1 - product of misses); regulation goals as exact distributions; a tie goes to
+sudden death: real OT flurries in order, then (game over) the unplayed OT (OT_SECONDS: Genesis 600, SNES 300, the
+user) as a race at each team's regulation xG per game second; still level = tie. Mid-game (viewer before the last
+frame): shots so far, no OT: deserved to be ahead. Viewer: Advanced "Deserve to win" and "· a tie", a dotted line on
+the Game flow strip (home share = win + tie / 2, home up) and in its tooltip, Help. Season: summary team `dtw` [win,
+OT win, tie, OT loss] (VERSION 20), standings DESERVED (2 x win + tie + OT loss) and +/- DESERVED. Recorded games:
+Dallas 5-2 Boston 65% / 34% (Dallas finished above its chances), Calgary 6-5 Boston OT 45 / 48, tie 7%; Boston 8 points
+against 8.6 deserved.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
