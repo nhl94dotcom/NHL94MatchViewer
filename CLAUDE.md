@@ -1102,7 +1102,8 @@ sudden death: real OT flurries in order, then (game over) the unplayed OT (OT_SE
 user) as a race at each team's regulation xG per game second; still level = tie. Mid-game (viewer before the last
 frame): shots so far, no OT: deserved to be ahead. Viewer: Advanced "Deserve to win" and "· a tie", a dotted line on
 the Game flow strip (home share = win + tie / 2, home up) and in its tooltip, Help. Season: summary team `dtw` [win,
-OT win, tie, OT loss] (VERSION 20), standings DESERVED (2 x win + tie + OT loss) and +/- DESERVED. Recorded games:
+OT win, tie, OT loss] (VERSION 20), standings DESERVED (2 x win + tie) and +/- DESERVED. The user's leagues give no
+point for an overtime loss, so PTS is 2 x W + T too (it had counted 1 an OTL), and a game's two teams share 2 points. Recorded games:
 Dallas 5-2 Boston 65% / 34% (Dallas finished above its chances), Calgary 6-5 Boston OT 45 / 48, tie 7%; Boston 8 points
 against 8.6 deserved.
 
