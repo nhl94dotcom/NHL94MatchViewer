@@ -45,7 +45,8 @@ How NHL '94 really plays, read from the games' code and checked against recorded
 penalties, faceoffs, the computer players and the bugs), one document per system:
 [Genesis](docs/GENESIS_MECHANICS.md) and [SNES](docs/SNES_MECHANICS.md). The player's versions (how to read the ratings
 screen, how to pick a lineup, what works on the ice): [Genesis guide](docs/GENESIS_GUIDE.md) and
-[SNES guide](docs/SNES_GUIDE.md).
+[SNES guide](docs/SNES_GUIDE.md). A study of the recorded games' shooting and goaltending, up and down the screen and
+home and away: [shooting study](docs/SHOOTING_STUDY.md).
 
 `CLAUDE.md` is the detailed record: how the game's memory is laid out, the ROM formats, how each stat is worked out
 and how it was checked.

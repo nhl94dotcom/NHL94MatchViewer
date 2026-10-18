@@ -1065,6 +1065,13 @@ the hit's `human` (the controlled-skater marker within 0.3 s, add_play_context).
 summary skater `checksHuman` (VERSION 19); Skaters tab CHK PERSON (person · computer). Documents games: Bourque 62
 checks in 6 games, 27 a person's, 35 the computer's; Neal Broten 20, all a person's.
 
+Shooting study (2026-10-18, docs/SHOOTING_STUDY.md; analysis/shot_table.py writes matches/shot_study.json, then
+analysis/shot_study.py prints the tables): 13 Genesis games / 387 shots and one-timers, 5 SNES / 189. Exact-shot test
+(the flight projected to the aim line within 2 of the aim point): a person's shots within 200 went exact 60/124 Genesis
+(rule predicts 68), 25/49 SNES (22); beyond 200 none. Findings: goals don't depend on up / down; home and away shoot the
+same for person-played teams (20% / 20%); backhands score more (21% against 14%, xG agrees: slower, less scatter);
+rebound shots 8/17 Genesis; a person in net faces harder shots (xG 32% against 23%); off-wing shooters a little better.
+
 ## Screen sides by direction (2026-10-18)
 
 Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way
