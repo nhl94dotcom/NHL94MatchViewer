@@ -858,7 +858,7 @@ function viewAdvanced(list, team) {
     { key: 'flipG', label: 'EA Sp.', title: 'EA Special attempts he made (a wrist shot from the side flipped at a goalie in position, to be bobbled) and goals he scored off one', value: r => r.flips || 0,
       show: r => (r.flips || r.flipG ? `${r.flips || 0}<small> \u00b7 ${r.flipG || 0} G</small>` : '0') },
     { key: 'costlyGv', label: 'Costly GV', title: 'Giveaways the other team turned into a shot attempt within 5 s', value: r => r.costlyGv || 0 },
-    { key: 'ent', label: 'Entries', title: 'Zone entries: carried / all', value: r => r.ent || 0, show: r => `${r.entC || 0}<small>/${r.ent || 0}</small>` },
+    { key: 'ent', label: 'Entries', title: 'Zone entries he made (he was the last of his team to touch the puck as it crossed the blue line): carried in himself / all, the rest passed or dumped in', value: r => r.ent || 0, show: r => `${r.entC || 0}<small>/${r.ent || 0}</small>` },
     { key: 'entShot', label: 'Entry\u2192shot', title: 'Share of his zone entries that led to a shot attempt', value: r => (r.ent ? r.entShot / r.ent : NaN),
       show: r => (r.ent ? pct1(100 * r.entShot / r.ent) : '–') },
     { key: 'ptShare', label: 'Pt. share', title: 'Goals his team scored that he scored or assisted, in the games he played',
