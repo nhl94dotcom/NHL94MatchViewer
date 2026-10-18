@@ -1072,6 +1072,13 @@ analysis/shot_study.py prints the tables): 13 Genesis games / 387 shots and one-
 same for person-played teams (20% / 20%); backhands score more (21% against 14%, xG agrees: slower, less scatter);
 rebound shots 8/17 Genesis; a person in net faces harder shots (xG 32% against 23%); off-wing shooters a little better.
 
+Study part 2 (2026-10-18, analysis/direction_study.py, SHOOTING_STUDY.md part 2): count per team-period (Home goes up 2
+periods, and a person mostly played Home, so raw up / down totals mix in the person's team). Genesis per period up /
+down: shots on goal 3.8 / 4.3, goals 1.2 / 1.3, checks 6.9 / 6.4 (34 team-periods each): no clear direction effect
+(about 100 whole games needed to see 10%). Home bonus visible: working ShA - 5 x rating +0.87 home, -0.78 away.
+Faceoff count: away 88-77 (Genesis), 39-35 (SNES): the built-in home edge doesn't show (the count is first possession,
+and mashing dominates).
+
 ## Screen sides by direction (2026-10-18)
 
 Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way

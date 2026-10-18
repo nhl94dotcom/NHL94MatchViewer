@@ -151,3 +151,57 @@ hot / cold changes his Agility, which only changes his reach by about a unit.
 | Leading | 149 | 27 (18%) | 81 | 15 (19%) |
 
 No clear effect: leading teams shot more (they're the better team on the day), at about the same rate.
+
+---
+
+# Part 2: the rest of the game, and the reasons tested
+
+`python analysis/direction_study.py` (after `analysis/shot_table.py`). Same games as part 1.
+
+## Count per period, not in total
+
+Home attacks up in periods 1 and 3 and Away only in period 2, and in most of these games a person played Home. So totals
+"going up" hold more of the person's team, and raw up / down counts mix the direction with who was playing. The fair
+comparison is each team's rate per period going up against its own rate going down:
+
+| Per period | Shots on goal | Goals | Checks | Passes made | Giveaways | Zone entries |
+|---|---|---|---|---|---|---|
+| Genesis, both teams up (34 team-periods) | 3.8 | 1.2 | 6.9 | 10.9 | 4.0 | 8.2 |
+| Genesis, both teams down (34) | 4.3 | 1.3 | 6.4 | 11.3 | 4.1 | 8.3 |
+| Genesis home up / down | 3.9 / 5.5 | 1.3 / 1.9 | 7.7 / 7.8 | 11.9 / 12.2 | 4.2 / 4.4 | 8.4 / 9.7 |
+| Genesis away up / down | 3.5 / 3.8 | 1.1 / 1.0 | 5.2 / 5.7 | 8.7 / 10.9 | 3.5 / 4.0 | 7.9 / 7.6 |
+| SNES, both teams up (15) | 3.9 | 1.0 | 9.8 | 13.5 | 3.3 | 9.0 |
+| SNES, both teams down (15) | 4.5 | 1.2 | 8.7 | 14.0 | 3.1 | 8.9 |
+
+**No direction stands out.** Going down was a little ahead on shots on goal on both systems, going up a little ahead on
+checks, but these games are far too few to separate a 10% difference from chance: shots on goal come about 4 a period,
+so telling 10% apart takes a couple of hundred team-periods each way, about 100 whole games. A large box-score database
+can see it; these recordings can't yet. (Home teams going down are period 2, which may say more about period 2 than
+about the direction.)
+
+## Passing, turnovers, entries (totals)
+
+| | Passes | Completed | Intercepted | Bobbled | Zone entries carried / all |
+|---|---|---|---|---|---|
+| Genesis up | 557 | 328 (59%) | 135 (24%) | 28 | 200 / 280 |
+| Genesis down | 551 | 340 (62%) | 125 (23%) | 34 | 207 / 281 |
+| SNES up | 273 | 177 (65%) | 55 (20%) | 14 | 103 / 135 |
+| SNES down | 269 | 180 (67%) | 49 (18%) | 10 | 99 / 133 |
+
+The camera shows 2-3 feet more ice ahead going up (GENESIS_MECHANICS.md 13.6), but passing went no better going up;
+if anything slightly worse.
+
+## The reasons tested
+
+- **The home / away rating bonus is real and shows in play.** On the Genesis, a skater's working Shot Accuracy sat a
+  mean 0.87 above his rating (5 per rating point) at home and 0.78 below it away (533 and 461 rating loads), as the
+  ROM's per-team bonus says. Small: under a fifth of a rating point each way.
+- **Faceoffs:** the home centre's 17-in-33 edge didn't show: Genesis away teams won 88 draws to 77, SNES 39 to 35. The
+  faceoff count goes to whoever first gets the puck after the drop, and a person mashing the button decides far more
+  than the built-in edge.
+- **Home record in these games:** Genesis 6 home wins in 8 whole games, SNES 3 in 5, but most of these are the same
+  person playing Home against the computer or a friend, so they say nothing about home ice.
+- **Shot scatter** (halved shooting down on the Genesis): a person's scattered shots went wide 32% of the time going up
+  and 36% going down (41 and 42 shots): no difference to see.
+- **The goalies' sticks**: stick saves were 41% of the shots that reached the top net's goalie and 44% at the bottom
+  net (Genesis); SNES 23% and 30%. No clear difference.
