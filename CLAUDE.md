@@ -1107,6 +1107,12 @@ point for an overtime loss, so PTS is 2 x W + T too (it had counted 1 an OTL), a
 Dallas 5-2 Boston 65% / 34% (Dallas finished above its chances), Calgary 6-5 Boston OT 45 / 48, tie 7%; Boston 8 points
 against 8.6 deserved.
 
+## Things needed from the user
+
+`docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
+happen, questions for the user or league, checks on the user's box-score database, replays to review. Add to it
+whenever a question can only be settled by the user; strike items off as they're answered.
+
 ## Passing study (2026-10-18)
 
 analysis/stick_spot.py, analysis/passing_study.py. GetHot (checks94.asm): HotList[frame] x, y bytes; x negated when the
