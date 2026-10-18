@@ -44,7 +44,18 @@ class Capture:
         self.full_ms = [struct.unpack_from("<q", self.full, j * full_size)[0] for j in range(len(self.full) // full_size)]
 
     def offset(self, addr):
-        """Position of an address within a sample, or None when the capture does not cover it."""
+        """Position of an address within a sample, or None when the capture does not cover it (remembered: this is
+        asked tens of millions of times a game)."""
+        try:
+            return self._offsets[addr]
+        except AttributeError:
+            self._offsets = {}
+        except KeyError:
+            pass
+        self._offsets[addr] = found = self._find_offset(addr)
+        return found
+
+    def _find_offset(self, addr):
         pos = 8
         for start, length in self.blocks:
             if start <= addr < start + length:

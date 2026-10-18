@@ -4524,7 +4524,7 @@ function setPlaying(on) {
 function tick(stamp) {
   if (!playing) return;
   const end = match.t[match.t.length - 1];
-  now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value));
+  now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value) * liveRate(end));
   lastTick = stamp;
   draw();
   playSoundsUpTo(frameAt(now));
@@ -4536,6 +4536,8 @@ function tick(stamp) {
 
 function seekTo(ms) {
   now = Math.max(match.t[0], Math.min(match.t[match.t.length - 1], ms));
+  // Live: going back (the seek bar, the arrow keys, a map marker) stops following live until "Go live"
+  if (liveState && liveState.following && now < match.t[match.t.length - 1] - liveDelay() - 4000) { liveState.following = false; liveShowButton(); }
   draw();
 }
 
@@ -4606,7 +4608,8 @@ document.addEventListener('click', e => {
 });
 
 $('play').addEventListener('click', () => {
-  if (!playing && now >= match.t[match.t.length - 1]) now = match.t[0];
+  if (!playing && now >= match.t[match.t.length - 1] && !liveWaitingFor()) now = match.t[0];
+  if (liveState && playing) { liveState.following = false; liveShowButton(); }  // pausing a live game: no longer following
   setPlaying(!playing);
 });
 $('seek').addEventListener('input', e => {
@@ -5517,7 +5520,27 @@ loadScriptOnce(RINKS.genesis.benches, RINKS.genesis.benchData, () => { if (match
 // a delay behind; at the newest moment it waits for more instead of stopping.
 let liveState = null, liveReloading = false;  // { game, seq, status, interval, following }; reloading: in liveReload's load()
 const liveWaiting = () => !!liveState && liveState.status !== 'final' && playing;
-function liveDelay() { return Math.max(9000, 2.2 * 1000 * ((liveState && liveState.interval) || 5)); }
+const liveWaitingFor = () => !!liveState && liveState.status !== 'final';
+// How far behind the newest data to play: the updates come further apart as a game goes on (each converts the whole
+// game so far: 5 s apart early, up to about 10 at the end of a 15-minute game), so it follows the longest of the last
+// few gaps. Following live, playback runs at 90% or 110% for a while to settle there, rather than freezing at the end
+// of the data or staying too far behind.
+function liveDelay() {
+  const gaps = (liveState && liveState.gaps) || [];
+  const longest = gaps.length ? Math.max(...gaps) : 1000 * ((liveState && liveState.interval) || 5);
+  return Math.min(30000, Math.max(9000, 1.4 * longest + 2000));
+}
+function liveRate(end) {
+  if (!liveState || !liveState.following || liveState.status === 'final' || LAYOUT === 'stats') return 1;
+  const behind = end - now, want = liveDelay();
+  return behind < want - 1000 ? 0.9 : behind > want + 4000 ? 1.1 : 1;
+}
+function liveArrived() {
+  const at = performance.now();
+  if (liveState.arrivedAt) (liveState.gaps = liveState.gaps || []).push(at - liveState.arrivedAt);
+  if (liveState.gaps && liveState.gaps.length > 6) liveState.gaps.shift();
+  liveState.arrivedAt = at;
+}
 async function liveGet(path, zipped) {
   const r = await fetch(path, { cache: 'no-store' });
   if (!r.ok) throw new Error(path + ' ' + r.status);
@@ -5538,7 +5561,8 @@ function liveShowButton() {
   if (!liveState || !match) return;
   const edge = match.t[match.t.length - 1];
   if (liveState.status === 'final') { b.className = 'final'; b.textContent = 'Final'; b.title = 'The game is over: this is the whole game, as in a finished game file'; return; }
-  liveState.following = liveState.following && now >= edge - liveDelay() - 4000;
+  // Only the viewer's own pause or seek stops following (seekTo, the Play button); just falling behind doesn't (a tab in
+  // the background stops playing): the next update catches a following page up.
   b.className = liveState.following ? '' : 'behind';
   b.innerHTML = liveState.following ? '&#9679; LIVE' : 'Go live';
 }
@@ -5550,16 +5574,16 @@ function liveReload(m) {
   liveReloading = true;
   try { load(m); } finally { liveReloading = false; }
   liveState.reloadMs = Math.round(performance.now() - started);
-  console.log('live: update ' + liveState.seq + ' reloaded in ' + liveState.reloadMs + ' ms');
   now = Math.min(m.t[m.t.length - 1], Math.max(m.t[0], keep.now));
   const who = $('overlayWho');
   if ([...who.options].some(o => o.value === keep.who)) who.value = overlayWho = keep.who;
   if (keep.hl) $('hlOpen').click();
   const edge = m.t[m.t.length - 1];
-  if (keep.follow && LAYOUT !== 'stats' && edge - now > 2 * liveDelay()) now = edge - liveDelay();  // fell far behind: catch up
+  if (keep.follow && LAYOUT !== 'stats' && edge - now > liveDelay() + 8000) now = edge - liveDelay();  // fell well behind (a tab in the background): catch up
   liveState.following = keep.follow;
   lastSoundFrame = frameAt(now);
   draw();
+  console.log('live: update ' + liveState.seq + ' applied in ' + liveState.reloadMs + ' ms; ' + ((edge - now) / 1000).toFixed(1) + ' s behind the newest data, aiming for ' + (liveDelay() / 1000).toFixed(1));
   if (keep.playing || (LAYOUT !== 'stats' && keep.follow && liveState.status !== 'final')) setPlaying(true);
   liveShowButton();
 }
@@ -5591,6 +5615,7 @@ async function livePoll() {
       const m = fresh || match;
       for (const p of patches) livePatch(m, p);
       liveState.seq = man.seq; liveState.status = man.status; liveState.interval = man.interval;
+      liveArrived();
       liveReload(m);
     } else if (man.status !== liveState.status) {
       liveState.status = man.status;
@@ -5612,6 +5637,11 @@ $('liveBtn').addEventListener('click', () => {
   liveShowButton();
 });
 $('seek').addEventListener('input', () => { if (liveState) liveShowButton(); });
+document.addEventListener('visibilitychange', () => {  // back to a tab that was in the background: straight back to live
+  if (document.hidden || !liveState || !liveState.following || !match || LAYOUT === 'stats' || liveState.status === 'final') return;
+  const edge = match.t[match.t.length - 1];
+  if (edge - now > liveDelay() + 3000) { now = edge - liveDelay(); lastSoundFrame = frameAt(now); draw(); }
+});
 
 // viewer.html?match=NAME loads matches/NAME.js directly; &t=SECONDS starts at that point.
 const named = new URLSearchParams(location.search).get('match');
