@@ -222,6 +222,10 @@ The computer never holds a direction, so its wins go a random way.
 - **You can't aim it**: the game aims one-timers itself, usually at the side away from where the goalie is moving.
 - They fail when the pass is slow, the receiver drifts off its line, or someone else touches the puck.
 - **Offsides on:** a one-timer by a player who is offside isn't whistled, and the goal counts.
+- **Quick and moderate beats long and cross-ice.** In the recorded games, one-timers set up by a pass that moved the
+  puck about 13-30 feet across scored nearly half the time; long passes across the whole ice scored a fifth of the
+  time. The computer goalie re-aims every few frames, so a long pass gives him time to slide over and set; a quick pass
+  catches him moving. Strike from inside about 33 feet (100 units): beyond it one-timers scored 1 in 10.
 
 ---
 

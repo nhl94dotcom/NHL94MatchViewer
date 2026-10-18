@@ -1107,6 +1107,11 @@ point for an overtime loss, so PTS is 2 x W + T too (it had counted 1 an OTL), a
 Dallas 5-2 Boston 65% / 34% (Dallas finished above its chances), Calgary 6-5 Boston OT 45 / 48, tie 7%; Boston 8 points
 against 8.6 deserved.
 
+One-timer study (2026-10-18, analysis/one_timer_study.py, SHOOTING_STUDY.md part 3, GENESIS_GUIDE 7): Genesis 91
+one-timers: goalie 10+ off the puck-to-net line at the strike 68% scored, 0-4 off 11%; pass moving the puck 40-90 across
+47%, crossing the middle 18%, under 0.5 s in the air 33%; inside 100 units 44%, beyond 10%; xG agrees throughout. SNES 55,
+no clear pass effect.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

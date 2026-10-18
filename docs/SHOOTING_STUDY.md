@@ -211,3 +211,45 @@ if anything slightly worse.
   small to see in a dozen games (people's scattered shots went wide 32% going up, 36% going down, 41 and 42 shots).
 - **The goalies' sticks**: stick saves were 41% of the shots that reached the top net's goalie and 44% at the bottom
   net (Genesis); SNES 23% and 30%. No clear difference.
+
+---
+
+# Part 3: one-timers
+
+`python analysis/one_timer_study.py`. Each one-timer with the pass that set it up (the team's last pass in the 2.5 s
+before), the goalie's position when the pass left and at the strike, and the result. 91 Genesis and 55 SNES one-timers.
+
+| Genesis | One-timers | Scored | xG a shot |
+|---|---|---|---|
+| Pass stayed on one side | 63 | 22 (35%) | 35% |
+| Pass crossed the middle | 28 | 5 (18%) | 19% |
+| Pass moved the puck 0-40 units across | 32 | 6 (19%) | 24% |
+| 40-90 across | 34 | 16 (47%) | 45% |
+| 90+ across | 25 | 5 (20%) | 16% |
+| Pass in the air under 0.5 s | 66 | 22 (33%) | 37% |
+| 0.5-0.9 s | 20 | 5 (25%) | 12% |
+| Goalie slid under 15 across during the pass | 63 | 22 (35%) | 35% |
+| Goalie slid 15-40 | 25 | 5 (20%) | 21% |
+| Goalie 0-4 off the puck's line at the strike | 28 | 3 (11%) | 11% |
+| 4-10 off | 38 | 7 (18%) | 24% |
+| 10+ off | 25 | 17 (68%) | 60% |
+| Struck within 60 of the net | 18 | 8 (44%) | 52% |
+| 60-100 | 34 | 15 (44%) | 41% |
+| Beyond 100 | 39 | 4 (10%) | 10% |
+| A person in net | 12 | 7 (58%) | 48% |
+| The computer in net | 79 | 20 (25%) | 27% |
+
+- **What decides a one-timer is whether the goalie is caught off his line** (the line from the puck to his net) when
+  it's struck: 68% scored with him 10 or more off it, 11% with him on it.
+- **Long cross-ice passes did worse, not better**, unlike real hockey: the computer goalie re-aims every few frames
+  (Defensive Awareness sets how often), so a pass that takes long to get across gives him time to slide over and set.
+  The best one-timers came off quick passes (under half a second) that moved the puck a moderate 40-90 units across.
+- **Distance:** inside 100 units almost half went in; beyond, 1 in 10.
+- A person in net let in 7 of 12 (the xG model says 48%): too few to say more than that people controlling the goalie
+  have trouble sliding across in time.
+- The xG model (which plays each one-timer out against the goalie as he was) agrees with all of these, so they're the
+  game's rules at work, not luck.
+
+**SNES** (55 one-timers, 8 goals, 15%): no clear pattern by pass. Within 60-100 units 8 of 25 scored, none of 30 from
+elsewhere; goalie 10+ off his line 3 of 16 (xG 42%). The SNES goalie gets sluggish while a pass is in the air
+(SNES_MECHANICS.md 5), which may blunt the pass effects seen on the Genesis; more games needed.
