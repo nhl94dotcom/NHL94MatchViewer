@@ -195,6 +195,10 @@ The computer never holds a direction, so its wins go a random way.
   defender's body; only his stick blade stops it (a soft shot he takes, a hard one deflects at random). A shot at
   mid-height (lifted, below the crossbar's height) always hits the body and bounces off; a hard one can knock him
   over. Anything above that sails over everyone. To get shots through, keep them low and away from sticks.
+- **At an empty net (or a goalie caught far out): hold Down or nothing, never Up, and get within about 60 feet.**
+  The game's random scatter only pushes shots up, so a high aim sails over the crossbar about half the time even from
+  close; from 70 feet or more almost nothing goes in, because no shot from that far is exact. Attacking up the screen,
+  the habit of pushing toward the net aims high: let go of the d-pad instead.
 - **Delayed penalty = free snipe.** While the referee's arm is up for a penalty against the other team, the game
   pulls your goalie, and **every shot your team takes from inside the zone goes exactly where you aim it**. Shoot for
   a corner.

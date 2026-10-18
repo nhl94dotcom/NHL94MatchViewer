@@ -1119,6 +1119,15 @@ at once 4/41, 8192-17000 28/45, under 8192 10/16. SNES_MECHANICS 5.4, SNES_GUIDE
 stick within d^2 < $25 of a carried puck; randoma(36 + Stk carrier - Stk stealer, makepde) < 3 -> deflect, both nopuck
 Stk + 20; a goalie always steals, never robbed; no slot rule (SNES_MECHANICS 6.4).
 
+Open nets (2026-10-18; the user: accuracy drops when the other goalie is pulled or far out). Code: ReadGoaliePulled
+(tst.w tmgoalie of the SHOOTER's team; tmgoalie = -1 in a delayed penalty for the fouled team, and for a computer team
+down 1-2 in the last minute of P3 after a faceoff outside its own zone: CPgoalie) is only used for the shooter's team;
+shotdiradj aims high middle (passdir 0) when the goalie heads 44+ off the crease, 8 with none. So no penalty for an open
+net; misses come from distance (never exact beyond 200, wide scatter), upward-only scatter (high aims clear the bar),
+and the screen-direction aim. Empty-net chances by aim and distance from each system's scatter rule in
+GENESIS_MECHANICS / SNES_MECHANICS 4.2 and the guides' shooting tips; recordings: 5 shots with the goalie far out or
+pulled (an empty-net test is in NEEDS_FROM_YOU).
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

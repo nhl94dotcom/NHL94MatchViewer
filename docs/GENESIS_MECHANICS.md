@@ -213,6 +213,27 @@ goals' aim points and where they crossed the line agree closely.
 - **Confirmed**: within 200, 82 of 123 shots left the stick within 2 units of the aim point, more often for better
   shooters, roughly as the formula predicts; none of those from beyond 200.
 
+
+**Shooting at an open net** (the goalie pulled, or far out of his crease). Nothing in the game makes shots at an open
+net less accurate (the "goalie pulled" test in the shot code only ever looks at the *shooting* team's own goalie), but
+three things from the rules above make them miss: such shots are often taken from far out, where a shot is never
+exact and the scatter is wide; the scatter only ever pushes the puck *up*, so a high aim has no room under the
+crossbar; and the d-pad direction is the aim, so attacking *up* the screen, pushing toward the net aims high. Worked out
+from the game's own scatter rule for an average shooter (working Shot Accuracy 15, a 15,000 shot) at an empty net, the chance it goes in by aim and distance:
+
+| Aim (d-pad at the release) | 60 units | 120 | 180 | 220 | 300 |
+|---|---|---|---|---|---|
+| Nothing held (middle) | 100% | 82% | 65% | 20% | 2% |
+| Left or right | 86% | 70% | 64% | 20% | 3% |
+| Up (high) | 59% | 56% | 53% | 3% | 0% |
+| Up-left / up-right | 57% | 54% | 53% | 3% | 0% |
+| Down (along the ice) | 100% | 100% | 78% | 37% | 5% |
+| Down-left / down-right | 86% | 81% | 74% | 37% | 5% |
+
+**At an open net: get within about 180 units (60 feet) if you can, and hold Down or nothing as you shoot, never Up.**
+Not yet checked on recorded shots (only five recorded shots had the goalie far out or pulled; they hint at more going
+wide: 24% wide with him 35-70 units out, 16% in his crease).
+
 ### 4.3 Shot power and the wind-up
 
 Shot speed grows with working Shot Power and with how long the wind-up runs; backhands lose a quarter of their power;

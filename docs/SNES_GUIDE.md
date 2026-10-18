@@ -162,6 +162,10 @@ you take him, are played by the computer.
 - **From inside the attacking zone** (within about 67 feet of the net) a shot can go **exactly** where aimed; at most
   52% of the time, with maxed Shot Accuracy (2.1). **From outside the zone, never**: it always strays.
 - **Anyone can take a full slapshot**: hold A longer for more power.
+- **At an empty net (or a goalie caught far out): hold Down or nothing, never Up, and get within about 60 feet.**
+  The game's random scatter only pushes shots up, so a high aim sails over the crossbar about half the time even from
+  close; from 70 feet or more almost nothing goes in, because no shot from that far is exact. Attacking up the screen,
+  the habit of pushing toward the net aims high: let go of the d-pad instead.
 - **No delayed-penalty bonus**: a referee's raised arm doesn't make your shots more accurate (the Genesis does).
 - **A hard shot that deflects off the goalie's stick or glove isn't a shot on goal**, high or low (in his glove saves
   the glove reaches 7-15 off the ice). About 1 in 7 shots that reach the goalie go uncounted, whichever way you aim.

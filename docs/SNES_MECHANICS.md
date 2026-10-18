@@ -210,6 +210,27 @@ goals crossed the line where they were aimed.
 - There is **no delayed-penalty "snipe"** (the Genesis makes every shot perfect while the other team has a penalty
   coming; the SNES doesn't).
 
+
+**Shooting at an open net** (the goalie pulled, or far out of his crease). Nothing in the game makes shots at an open
+net less accurate (the "goalie pulled" test in the shot code only ever looks at the *shooting* team's own goalie), but
+three things from the rules above make them miss: such shots are often taken from far out, where a shot is never
+exact and the scatter is wide; the scatter only ever pushes the puck *up*, so a high aim has no room under the
+crossbar; and the d-pad direction is the aim, so attacking *up* the screen, pushing toward the net aims high. Worked out
+from the game's own scatter rule for an average shooter (working Shot Accuracy 10, a 15,000 shot) at an empty net, the chance it goes in by aim and distance:
+
+| Aim (d-pad at the release) | 60 units | 120 | 180 | 220 | 300 |
+|---|---|---|---|---|---|
+| Nothing held (middle) | 100% | 87% | 62% | 22% | 3% |
+| Left or right | 79% | 68% | 58% | 22% | 3% |
+| Up (high) | 54% | 49% | 45% | 3% | 0% |
+| Up-left / up-right | 50% | 47% | 45% | 3% | 0% |
+| Down (along the ice) | 100% | 100% | 78% | 41% | 5% |
+| Down-left / down-right | 79% | 75% | 72% | 41% | 5% |
+
+**At an open net: get within about 180 units (60 feet) if you can, and hold Down or nothing as you shoot, never Up.**
+Not yet checked on recorded shots (only five recorded shots had the goalie far out or pulled; they hint at more going
+wide: 24% wide with him 35-70 units out, 16% in his crease).
+
 ### 4.3 Shot power
 
 Shot speed is (Shot Power x energy + 20) x the wind-up. **Anyone can wind up fully**: the wind-up code doesn't read

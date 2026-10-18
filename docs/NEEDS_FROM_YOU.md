@@ -11,6 +11,10 @@ record or check and what it will settle. Newest at the bottom of each section.
    though the game's rule says they should be (GENESIS_MECHANICS.md 6.2).
 2. **A SNES flip** (Y with the puck, a few of them, in the neutral zone and in the attacking zone). *Settles:* where
    the SNES flip lands; none has been recorded yet.
+3. **Shots at an empty net** (either system). In a two-controller practice game, pull one team's goalie and take
+   shots at the empty net from near (inside 60 feet) and far (beyond 70 feet), some holding Up, some Down, some
+   nothing. *Settles:* the empty-net table in the mechanics docs (section 4.2), worked out from the code but not yet
+   seen on real shots.
 
 ## Things to note when they happen
 
