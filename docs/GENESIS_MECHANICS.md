@@ -284,8 +284,11 @@ of the net (`o` below) is from that line, straight across:
 The posts are 20 from the middle, so the test is roughly "does the sightline through the goalie hit the net?". It
 looks only at where he is (and a little at where he's skating), not at whether he could get back in time: a goalie far
 out but still between the puck and the net gets the post aim, and one only a little way out but off to the side of the
-puck's line gets high middle. **Code** (`CalcAngleOffset` for each post, summed, against $2C = 44; the recorded aim
-agreed with this rule on 69 of 88 such shots).
+puck's line gets high middle. **Code**: `CalcAngleOffset` measures it by triangles. For each post (at +/-18, on the
+goal line at 264) it takes twice the area of the triangle puck-goalie-post and divides it by the puck-to-goalie
+distance (found with Pythagoras). That is the post's distance from the sightline. The two posts' signed distances are
+added and compared with $2C = 44, so the net's middle must be within 22. The recorded aim agreed with this rule on 69
+of 88 such shots. (chaos's forum post describes the same calculation as triangulating from the puck to the goalie.)
 
 **The open-net one-timer** (the user's league noticed "suspicious misses on great opportunities" when the goalie had
 wandered, a person having dived or skated him out, and that they were one-timers, on the Genesis only). When the
