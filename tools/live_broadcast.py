@@ -41,16 +41,17 @@ STATIC_FILES = ["rink_gens.png", "rink_snes.png", "rink_gens.js", "rink_snes.js"
 
 # ------------------------------------------------------------------------------------------------------ uploading
 class S3Target:
-    """Uploads with boto3, or with the AWS command line when boto3 has no credentials it can use."""
+    """Uploads with boto3, or with the AWS command line when boto3 has no credentials it can use. Both take the
+    credentials of the AWS_PROFILE named in the environment (the live launcher sets it), so a user that may only
+    write under live/ in the bucket is enough."""
 
     def __init__(self, bucket, prefix):
         self.bucket, self.prefix = bucket, prefix.strip("/")
         self.client = None
         try:
             import boto3
-            client = boto3.client("s3")
-            client.head_bucket(Bucket=bucket)
-            self.client = client
+            boto3.client("sts").get_caller_identity()  # credentials that work (needs no permission)
+            self.client = boto3.client("s3")
         except Exception:
             self.client = None
         self.url = f"https://{bucket}.s3.amazonaws.com/{self.prefix}/index.html"
