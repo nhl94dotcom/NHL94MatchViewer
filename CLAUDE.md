@@ -1041,6 +1041,19 @@ than $3000, FallDown if faster and above 12. Recordings (fast loose puck within 
 taken 10%, course changed 8% (470); 6-8 through 94% (35); 17+ over 100% (21). In GENESIS_MECHANICS.md 4.7 and 13.5,
 GENESIS_GUIDE.md 6.
 
+The same on the SNES (2026-10-18, NHL94SNES checkpuckcoll / _ccx, puckstick, puckbody, ChkShotStat): collisions only
+with puckz < 16; skater stick: puckz < 5, puckvz < $100, within 14 of GetHot, d^2 <= $C4 (/4 while the puck's nopuck
+runs); body: circle 8 (d^2 <= $40), puckz >= 8 always, lower only when d^2 & $F == 0; FallDown at speed^2 >= $9000000
+and z >= 12, else SPAcatch. puckstick's limit is 10000 + (no shot flag: 700 x Stk) + 3000 when `position,x` is 0 or x
+is passReceiverPlayerNum, but x is the puck there (curobj), whose position word reads 0 (707 of 707 samples): every
+stick gets the 3000 (corrects "the intended receiver or a goalie" in the earlier bobble note), and a faster puck always
+deflects. Shots on goal as on the Genesis (puckgoalie / goalie puckglue call ChkShotStat; a2touchpuck clears $1000;
+after a goalie's stick deflection the body box test runs but the flag is gone). The goalie's hot-area height window
+(xg_snes RomData.hot): ready none, stick saves about 0-6, glove saves 7-15 (r6), one stick save facing down -2-8 r8
+against 2-5 r2 facing up. Recordings (5 SNES games): uncounted high 6/29, middle 15/104, ice 2/14; aim going up high
+49% / middle 46% / ice 5%, going down 2% / 88% / 10%; uncounted up 12/70, down 11/77; pass-bys < 5 high: through 81%,
+taken 13%, course 7% (291); 5-7 through 6/6; 8-15 hit 5/5. SNES_MECHANICS 4.6, 6.2, 7.5; SNES_GUIDE 6.
+
 ## Screen sides by direction (2026-10-18)
 
 Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way
@@ -1793,7 +1806,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
 
 - SNES: the same player never bobbles twice running. dopass sets a targeted pass's speed by distance (64 x 256 up to
   ~96 units, 2/3 x distance between, 80 x 256 from 120) plus randomd0s(16 - passacc) x 256; puckstick catches a loose
-  puck slower than 10000 + 700 x Stk (+3000 for passReceiverPlayerNum or a goalie). The pass back after a bobble is
+  puck slower than 10000 + 700 x Stk + 3000 (the +3000 applies to every stick; see the SNES puck-meets-skater note). The pass back after a bobble is
   usually short, so slow. (The SNES docs' "pass speed 144 + 4 x Passing" is only an untargeted pass.)
 - Genesis: the top net's shoulder-save bobble. pucknorm pulls a held puck 1/4 a frame toward the holder + GetHot
   (HotList at ROM $A44C8, y negated); ghighr / ghighl hold points facing down (top goalie) (-10, +15) / (+10, +14), i.e.

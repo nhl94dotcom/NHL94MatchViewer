@@ -163,6 +163,12 @@ you take him, are played by the computer.
   52% of the time, with maxed Shot Accuracy (2.1). **From outside the zone, never**: it always strays.
 - **Anyone can take a full slapshot**: hold A longer for more power.
 - **No delayed-penalty bonus**: a referee's raised arm doesn't make your shots more accurate (the Genesis does).
+- **A hard shot that deflects off the goalie's stick or glove isn't a shot on goal**, high or low (in his glove saves
+  the glove reaches 7-15 off the ice). About 1 in 7 shots that reach the goalie go uncounted, whichever way you aim.
+- **Defenders block low shots only with their sticks.** A low shot almost always passes straight through a defender's
+  body; only his stick blade stops it (a soft shot he takes, a hard one deflects at random). A lifted shot below the
+  crossbar's height always hits the body and bounces off, and a hard one can knock him over. Anything higher sails
+  over everyone.
 
 ---
 

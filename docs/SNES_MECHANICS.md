@@ -235,8 +235,24 @@ your d-pad points.** **Code**
 
 ### 4.6 What counts as a shot on goal
 
-**Not read yet.** Seen in the recordings: a goal can come with no shot on goal counted (a penalty-shot goal, and a
-Roenick goal in CHI-TOR).
+As on the Genesis (`ChkShotStat`): the shot counts when the puck touches the goalie's body box (`puckgoalie`) or he
+catches it with his stick or glove (`puckglue`), while the "shot taken" flag set at the release still stands; any
+other touch on the way (`a2touchpuck`) clears the flag, and nothing counts while the clock is stopped (penalty shots).
+A hard shot that **deflects off his stick or glove area** (faster than 13,000; 7.5) clears it too, so it is never
+counted, even though his body box gets the puck a moment later. **Code**
+
+**Which shots that is differs from the Genesis.** The SNES goalie's stick / glove area (5.1) comes with a height
+window from his sprite frame: none in his ready stance, low (0-6) in the stick saves, but **7-15 off the ice in the
+glove saves**. So hard high shots that meet his glove deflect uncounted as well as hard low ones off his stick.
+**Confirmed** (5 SNES games, shots that reached the goalie): not counted aimed high 6 of 29, middle 15 of 104, along the
+ice 2 of 14: no height stands out, unlike the Genesis (ice 41%, high 3%).
+
+**Direction:** people aim even more by direction than on the Genesis (attacking up the screen 49% of their shots high,
+attacking down 2%), but with no height uncounted more than another, that makes little difference: 17% of the shots
+that reached the goalie went uncounted going up, 14% going down. One of the stick saves is lopsided (facing down,
+the top net's goalie, its area reaches 8 off the ice with a radius of 8; facing up, 2-5 with a radius of 2), which
+would make shots at the top net a little more likely to go uncounted. A goal can also come with no shot counted (a
+penalty-shot goal, and a Roenick goal in CHI-TOR).
 
 ### 4.7 Expected goals from the game's own rules
 
@@ -337,9 +353,10 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
 
 ### 6.2 Catching and bobbles
 
-A skater's stick takes a loose puck when it is slower than **10,000 + 700 x his Stick Handling, + 3,000 if he is the
-pass's intended receiver** (or a goalie); a faster one bounces off his stick (`puckstick`): a bobble. So the intended
-receiver catches anything under 13,000 at Stick Handling 0 and 23,500 at 15. **Code**
+A skater's stick takes a loose puck when it is slower than **13,000 + 700 x his Stick Handling**; a faster one bounces
+off his stick (`puckstick`): a bobble. So he catches anything under 13,000 at Stick Handling 0 and 23,500 at 15.
+**Code** (the routine adds 3,000 when "the object's position" is the goalie's or it is the pass's receiver, but the
+object it looks at is the puck, whose position reads 0, so every stick gets the 3,000.)
 
 What that means: a **long pass** (up to 20,480, more with a poor passer's random extra) to a **low-Stick Handling**
 receiver can bob off his stick; a **short pass** (16,384) almost never does. The game keeps no memory of a bobble: the
@@ -413,6 +430,27 @@ Stickhandling decides steals (both the carrier's and the stealer's). The exact r
 - **Boards:** there's no "near the boards" test. Any fall in the outer lanes (more than 104 from the middle), behind the
   net or near a corner, with the hitter on the inside, **puts the player on the boards** for a boards fall. So goalies
   and skaters ram players into the boards from much farther out than on the Genesis.
+
+### 7.5 The puck meeting a skater
+
+`checkpuckcoll`, `checkpuckcoll_ccx`, `puckstick`, `puckbody`; the same rules as the Genesis, a unit lower at the top.
+**Code**; the height rules **Confirmed** (below).
+
+- **16 or more off the ice: it goes over everyone.**
+- **Low (under 5, rising slowly or not at all) and within 14 units of his stick blade** (its spot comes from his
+  current sprite frame): **the stick plays it.** A shot slower than 13,000 **he takes**; a faster one **deflects off in a
+  random direction** and he can't touch it again for 8 frames. Passes and loose pucks: he takes anything slower than
+  13,000 + 700 x his Stick Handling (6.2). Right after a deflection the stick's reach is halved.
+- **Otherwise his body, a circle 8 units around his centre:**
+  - **Low pucks (under 8) almost always go straight through him**: only when the squared distance happens to be a
+    multiple of 16, about one frame in 16, does a low puck hit his body. Only his stick stops a low shot.
+  - **Pucks 8-15 off the ice always hit him** and bounce slowly straight out from his centre. A fast one (over about
+    12,300) at 12 or higher **knocks him over**; a slower one makes him play the **glove-catch animation**, but the puck
+    still bounces off him.
+- Any touch clears the "shot taken" flag, so a blocked shot is never a shot on goal.
+- **Confirmed** (5 SNES games, a loose puck at speed passing within 8 of a skater's centre): under 5 high, 291 times:
+  passed through 81%, taken 13%, changed course 7%; 5-7, 6 times: passed through every time; 8-15, 5 times: hit him
+  every time.
 
 ---
 
@@ -588,7 +626,7 @@ everything in this document applies to all of these ROMs.
 
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
-- **Not read yet for the SNES:** what counts as a shot on goal; rebounds and the goalie's hold; pass targeting and
+- **Not read yet for the SNES:** rebounds and the goalie's hold; pass targeting and
   catching; steals; hooks and pokes; which move draws which penalty; injuries; breakaways; computer skaters'
   positioning and line changes; one-timer timing.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
