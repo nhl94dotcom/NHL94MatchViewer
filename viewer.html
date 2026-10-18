@@ -764,7 +764,7 @@ function load(m) {
   match = m;
   now = m.t[0];
   panelState = '';
-  spriteCache.clear();
+  if (!liveReloading) spriteCache.clear();  // a live update keeps the drawn pictures: same game, same colours
   buildAnimIndex(m);
   fillRomSettings();
   logoImage = buildLogo(m);
@@ -5345,9 +5345,12 @@ $('clipGo').addEventListener('click', () => {
 // On by default; turning them off is remembered.
 try { spritesOn = localStorage.getItem('nhl94-sprites') !== '0'; } catch (e) { spritesOn = true; }
 if (new URLSearchParams(location.search).has('sprites')) spritesOn = true;
-let libraryScript = null;
+let libraryScript = null, libraryRom = null;
 function loadSprites(m) {
-  spriteLibrary = null;
+  // The same ROM's library already loaded (a live update reloads the match every few seconds): keep it, or the players
+  // would show as plain markers, and the puck as another picture, until it had been fetched again.
+  if (spriteLibrary && m.rom && libraryRom === m.rom) return;
+  spriteLibrary = null; libraryRom = null;
   $('spriteToggle').hidden = true;
   if (libraryScript) libraryScript.remove();
   if (window.NHL94_PACKED && window.NHL94_SPRITES) {  // a saved game file carries its sprites
@@ -5361,7 +5364,7 @@ function loadSprites(m) {
   script.src = 'sprites/' + m.rom + '.js';
   script.onload = () => {
     if (script !== libraryScript) return;  // another match was opened meanwhile
-    spriteLibrary = window.NHL94_SPRITES;
+    spriteLibrary = window.NHL94_SPRITES; libraryRom = m.rom;
     $('spriteToggle').hidden = false;
     $('sprites').checked = spritesOn;
     if (match) draw();
@@ -5512,7 +5515,7 @@ loadScriptOnce(RINKS.genesis.benches, RINKS.genesis.benchData, () => { if (match
 // applies the changes after it (data/<game>/c<n>.json: per key {s: value} | {p: keep, v: append} | {d: {...}} |
 // {x: 1}), then reloads the match keeping the moment shown, the map and the panels. Playback follows the newest data
 // a delay behind; at the newest moment it waits for more instead of stopping.
-let liveState = null;  // { game, seq, status, interval, following }
+let liveState = null, liveReloading = false;  // { game, seq, status, interval, following }; reloading: in liveReload's load()
 const liveWaiting = () => !!liveState && liveState.status !== 'final' && playing;
 function liveDelay() { return Math.max(9000, 2.2 * 1000 * ((liveState && liveState.interval) || 5)); }
 async function liveGet(path, zipped) {
@@ -5544,7 +5547,8 @@ function liveReload(m) {
   const keep = { now, playing, who: $('overlayWho').value, hl: !$('hlPanel').hidden, follow: liveState.following };
   setPlaying(false);
   const started = performance.now();
-  load(m);
+  liveReloading = true;
+  try { load(m); } finally { liveReloading = false; }
   liveState.reloadMs = Math.round(performance.now() - started);
   console.log('live: update ' + liveState.seq + ' reloaded in ' + liveState.reloadMs + ' ms');
   now = Math.min(m.t[m.t.length - 1], Math.max(m.t[0], keep.now));
