@@ -196,9 +196,13 @@ The computer never holds a direction, so its wins go a random way.
   mid-height (lifted, below the crossbar's height) always hits the body and bounces off; a hard one can knock him
   over. Anything above that sails over everyone. To get shots through, keep them low and away from sticks.
 - **At an empty net (or a goalie caught far out): hold Down or nothing, never Up, and get within about 60 feet.**
-  The game's random scatter only pushes shots up, so a high aim sails over the crossbar about half the time even from
-  close; from 70 feet or more almost nothing goes in, because no shot from that far is exact. Attacking up the screen,
-  the habit of pushing toward the net aims high: let go of the d-pad instead.
+  - Most shots don't go exactly where you aim: the game adds a small random error, and **that error only ever pushes
+    the puck up**, never down.
+  - So aim low or in the middle and the error has room to work with. Aim high and the puck is already near the
+    crossbar: the error sends it over about half the time, even from close.
+  - From 70 feet or more, no shot is ever exact and the error is big, so almost nothing goes in. Skate in first.
+  - Watch out attacking up the screen: pushing toward the net means pressing Up, which aims high. Let go of the d-pad
+    instead.
 - **Delayed penalty = free snipe.** While the referee's arm is up for a penalty against the other team, the game
   pulls your goalie, and **every shot your team takes from inside the zone goes exactly where you aim it**. Shoot for
   a corner.
@@ -226,10 +230,18 @@ The computer never holds a direction, so its wins go a random way.
 - **You can't aim it**: the game aims one-timers itself, usually at the side away from where the goalie is moving.
 - They fail when the pass is slow, the receiver drifts off its line, or someone else touches the puck.
 - **Offsides on:** a one-timer by a player who is offside isn't whistled, and the goal counts.
-- **Don't one-time at an open net.** When the goalie is caught far out of position (after a dive, or a person skating
-  him out), the game aims a one-timer high in the middle, and the random scatter (which only goes up) sends about 4 in
-  10 over the crossbar even from point blank. Take the pass and shoot normally instead, holding Down or nothing: from
-  close in that almost never misses an empty net.
+- **Don't one-time at an open net.** This is why one-timers miss so many great chances when the goalie has wandered:
+  1. You don't aim a one-timer; the game does. Normally it aims for the side of the net away from the goalie, at about
+     half height: a good shot.
+  2. But when the goalie is way out of position (after a dive, or skated far off to one side), the game aims at the
+     **top-middle of the net, just under the crossbar**.
+  3. Most shots don't go exactly where they're aimed: the game adds a small random error, and that error can only push
+     the puck **up**.
+  4. Aimed just under the crossbar, any error at all sends it over or off the bar. Only a perfect one goes in.
+
+  So on a wide-open net a one-timer misses about 4 times in 10, even from point blank, where a normal shot aimed low or
+  at the middle would almost never miss. **When the goalie is out of position, take the pass and shoot normally,
+  holding Down or nothing.** (The SNES doesn't have this problem: there your d-pad aims one-timers.)
 - **Quick and moderate beats long and cross-ice.** In the recorded games, one-timers set up by a pass that moved the
   puck about 13-30 feet across scored nearly half the time; long passes across the whole ice scored a fifth of the
   time. The computer goalie re-aims every few frames, so a long pass gives him time to slide over and set; a quick pass
