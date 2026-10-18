@@ -256,14 +256,41 @@ fatigue scales it (only with line changes on). **Shooters with working Shot Powe
 
 ### 4.4 Auto-aim: one-timers and computer shooters
 
-**One-timers ignore the d-pad.** The game aims them itself: middle height, on the side away from where the goalie is
-heading, or high in the middle when he is well off to one side. Computer shooters are aimed the same way. **Code**
-(the recorded aim agreed with this rule on 69 of 88 such shots).
+**One-timers ignore the d-pad.** The game aims them itself (`shotdiradj`), and computer shooters the same way. It
+draws **a sightline from the puck through the goalie** and carries it on past him toward the goal line. More exactly,
+it uses where he's about to be: his position plus half the high byte of his speed. Then it measures how far the middle
+of the net (`o` below) is from that line, straight across:
+
+```
+ Goalie in position: the sightline           Goalie wandered: the sightline
+ runs into the net                           misses the net
+                                                                 /
+                                                                /  <- carries on past him...
+      |   NET   |                              |   NET   |     /
+      |____o____|                              |____o____|    /    <- ...and misses the net
+          /                                                  /
+         G   <- goalie                                      G   <- goalie, out to the side
+        /                                                  /
+       /                                                  /
+      P   <- puck                                        P   <- puck
+```
+
+| Opposing goalie | Where the one-timer is aimed |
+|---|---|
+| None on the ice (pulled) | Middle, mid-height (direction 8) |
+| Sightline within 22 units of the net's middle: he's between the puck and the net | Just inside a post at mid-height, on the side away from him (2 or 6) |
+| Sightline more than 22 units off: he isn't between the puck and the net | **High middle** (0): the open-net trap below |
+
+The posts are 20 from the middle, so the test is roughly "does the sightline through the goalie hit the net?". It
+looks only at where he is (and a little at where he's skating), not at whether he could get back in time: a goalie far
+out but still between the puck and the net gets the post aim, and one only a little way out but off to the side of the
+puck's line gets high middle. **Code** (`CalcAngleOffset` for each post, summed, against $2C = 44; the recorded aim
+agreed with this rule on 69 of 88 such shots).
 
 **The open-net one-timer** (the user's league noticed "suspicious misses on great opportunities" when the goalie had
-wandered, a person having dived or skated him out, and that they were one-timers, on the Genesis only). The test
-(`shotdiradj`, `CalcAngleOffset`) takes the line from the puck to where the goalie is heading and measures how far the
-middle of the net is from it; **more than 22 units off, and the one-timer is aimed high in the middle** (direction 0).
+wandered, a person having dived or skated him out, and that they were one-timers, on the Genesis only). When the
+sightline above misses the net (**more than 22 units off its middle**), the one-timer is **aimed high in the middle**
+(direction 0).
 That's the worst aim at an open net: the target is 12 units up, the crossbar is at 13 and the scatter only goes up, so
 an exact one-timer goes in just under the bar but almost any scattered one goes over it or off the bar (the top-shelf
 lift of 4.5 is never given to one-timers). Worked out from the scatter rule (an
@@ -271,9 +298,12 @@ average shooter, Shot Accuracy 15, a 20,000 one-timer) at an empty net:
 
 | One-timer aim | 40 units | 60 | 90 | 120 | 160 |
 |---|---|---|---|---|---|
-| High middle (goalie well off his line) | 61% | 58% | 57% | 55% | 53% |
+| High middle (goalie on the ice, sightline misses the net) | 61% | 58% | 57% | 55% | 53% |
 | Side, mid-height (the usual auto-aim) | 89% | 84% | 73% | 67% | 63% |
-| Middle, mid-height (if it were aimed there) | 100% | 100% | 86% | 73% | 64% |
+| Middle, mid-height (goalie pulled) | 100% | 100% | 86% | 73% | 64% |
+
+**A pulled goalie doesn't cause this**: with no goalie on the ice there's no sightline, and the one-timer is aimed at
+the middle, mid-height, which leaves room under the bar for the upward scatter.
 
 So close in on an open net a one-timer misses about 4 times in 10, where a shot aimed at the middle would hardly ever
 miss. **In the recordings** 10 one-timers got the high-middle aim: 7 went in at heights of 10 to 13 (just under the bar),

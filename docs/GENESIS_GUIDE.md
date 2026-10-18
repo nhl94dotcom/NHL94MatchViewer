@@ -239,20 +239,44 @@ The computer never holds a direction, so its wins go a random way.
 - **Only in your attacking half**; in your own half C is a speed burst.
 - **The game times the swing for you.** Press C up to about 0.9 s before the puck arrives; earlier and the swing ends
   before the puck gets there. Pressing late is fine, even as the puck arrives.
-- **You can't aim it**: the game aims one-timers itself, usually at the side away from where the goalie is moving.
+- **You can't aim it**: the game aims one-timers itself. It looks along a sightline from the puck through the
+  goalie, carried on past him toward the net:
+
+  ```
+   Goalie in position: the sightline           Goalie wandered: the sightline
+   runs into the net                           misses the net
+                                                                   /
+                                                                  /  <- carries on past him...
+        |   NET   |                              |   NET   |     /
+        |____o____|                              |____o____|    /    <- ...and misses the net
+            /                                                  /
+           G   <- goalie                                      G   <- goalie, out to the side
+          /                                                  /
+         /                                                  /
+        P   <- puck                                        P   <- puck
+  ```
+
+  | The goalie | Where your one-timer goes |
+  |---|---|
+  | Pulled (not on the ice) | The middle of the net, half height: fine |
+  | The sightline through him hits the net (he's between the puck and the net) | Just inside the post away from him, half height: a good shot |
+  | The sightline misses the net (he's off to the side) | **Top-middle, just under the crossbar**: see the next point |
+
+  It goes by where he is (and a little by where he's skating), not by whether he could get back in time.
 - They fail when the pass is slow, the receiver drifts off its line, or someone else touches the puck.
 - **Offsides on:** a one-timer by a player who is offside isn't whistled, and the goal counts.
 - **Don't one-time at an open net.** This is why one-timers miss so many great chances when the goalie has wandered:
   1. You don't aim a one-timer; the game does. Normally it aims for the side of the net away from the goalie, at about
      half height: a good shot.
-  2. But when the goalie is way out of position (after a dive, or skated far off to one side), the game aims at the
-     **top-middle of the net, just under the crossbar**.
+  2. But when the goalie is out of position so that the sightline through him misses the net (after a dive, or
+     skated off to one side), the game aims at the **top-middle of the net, just under the crossbar**.
   3. Most shots don't go exactly where they're aimed: the game adds a small random error, and that error can only push
      the puck **up**.
   4. Aimed just under the crossbar, any error at all sends it over or off the bar. Only a perfect one goes in.
 
   So on a wide-open net a one-timer misses about 4 times in 10, even from point blank, where a normal shot aimed low or
-  at the middle would almost never miss. **When the goalie is out of position, take the pass and shoot normally,
+  at the middle would almost never miss. **A pulled goalie is different:** with nobody in net the game aims one-timers
+  at the middle, half height, and they rarely miss from close in. **When the goalie is out of position, take the pass and shoot normally,
   holding Down or nothing.** (The SNES doesn't have this problem: there your d-pad aims one-timers.)
 - **Quick and moderate beats long and cross-ice.** In the recorded games, one-timers set up by a pass that moved the
   puck about 13-30 feet across scored nearly half the time; long passes across the whole ice scored a fifth of the
