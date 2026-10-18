@@ -1221,6 +1221,11 @@ The user asked for a URL others can watch live, "on par with clicking Play on a 
   snapshot + diffs rebuild the match exactly; final 5-8 equals the real conversion. The helper end to end with the
   fake emulator (scratchpad helper_test_live.py): 6 live updates and the final.
 
+Posts (2026-10-18, the user): the card's "Posts" (his shots with result 'post', live-knowledge aware), season summaries
+VERSION 21 (team posts / postsA, skater posts), season page Skaters POST and Team stats POST a game (· against). The
+team stats already had Posts. The live launcher sets NHL94_HOME to Documents/NHL94 Viewer and copies the current pages
+there first (the Python helper doesn't copy pages; the exe does).
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they
