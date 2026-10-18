@@ -27,7 +27,12 @@ which needs PyInstaller; it also makes `dist\NHL94 Helper.zip`, the exe plus `to
 games in Documents\NHL94 Viewer (`NHL94_HOME` overrides; the pages bundled in it are copied there on each start)
 and converts in-process. Tested: `"NHL94 Helper.exe" --convert <folder>` converted the CGY-BOS recording in 8 s in a
 fresh folder (ROM copy found, sprites built), and its page served the list, viewer, match and sprites. `NHL94_PORT`
-sets another port. The helper claims its port exclusively (Windows otherwise let a second helper listen on 9494 too,
+sets another port. Closing the helper's window (2026-10-18): Windows 11 opens console programs in Windows Terminal,
+and closing that tab took the console away without stopping the program, so both processes of the onefile exe
+(PyInstaller's launcher and the helper) stayed running and blocked rebuilding the exe (the user ended them in Task
+Manager). `exit_with_console` checks every 2 s; GetConsoleProcessList returns 0 once the console is gone (probed by
+killing a test's conhost), and the helper calls os._exit, the launcher following. Checked: both gone within 5 s of the
+console host ending, where before they stayed. The helper claims its port exclusively (Windows otherwise let a second helper listen on 9494 too,
 and the page reached either), so a second copy says it is already running. It listens on ::1 as well as 127.0.0.1: Windows resolves
 "localhost" to ::1 first, and with only 127.0.0.1 open each request waited about 2 s for the fallback, and the user
 often could not connect at all. Security (review 2026-10-16): the helper answers only requests whose Host header names

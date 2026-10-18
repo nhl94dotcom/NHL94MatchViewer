@@ -519,6 +519,27 @@ def keep_log():
     sys.stdout, sys.stderr = Tee(sys.stdout, log), Tee(sys.stderr, log)
 
 
+def exit_with_console():
+    """Exit when the helper's window is closed. Closing a Windows Terminal tab (Windows 11 opens console programs
+    there) takes the console away without stopping the program: the packaged helper's two processes (PyInstaller's
+    launcher and the helper it starts) were left running, holding the port and the exe, so the exe could not be
+    rebuilt (the user found them in Task Manager every time). Windows reports no console processes once the console is
+    gone, so a thread checks every 2 s and ends the helper; the launcher, waiting for it, ends too."""
+    if os.name != "nt":
+        return
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    attached = lambda: kernel32.GetConsoleProcessList((ctypes.c_uint * 4)(), 4) > 0
+    if not attached():  # started without a console: nothing to watch
+        return
+
+    def watch_console():
+        while attached():
+            time.sleep(2)
+        os._exit(0)
+    threading.Thread(target=watch_console, daemon=True).start()
+
+
 def main():
     if "--convert" in sys.argv:
         return convert_folder(sys.argv[sys.argv.index("--convert") + 1])
@@ -534,6 +555,7 @@ def main():
             pass
         return
     keep_log()
+    exit_with_console()
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         threading.Thread(target=Server6(("::1", PORT), Handler).serve_forever, daemon=True).start()
