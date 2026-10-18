@@ -297,7 +297,7 @@ class _FakeRecording:
         self.name, self.folder = name, folder
 
 
-def test(capture, out, speed, rom):
+def test(capture, out, speed, rom, target=None):
     """Feed a recorded game into a growing fast.bin.gz at `speed` times real time and broadcast it to a folder."""
     capture = Path(capture)
     layout = json.loads((capture / "capture.json").read_text())
@@ -307,7 +307,7 @@ def test(capture, out, speed, rom):
     shutil.rmtree(folder, ignore_errors=True)
     folder.mkdir(parents=True)
     shutil.copy(capture / "capture.json", folder / "capture.json")
-    b = Broadcaster(FolderTarget(out), rom)
+    b = Broadcaster(target or FolderTarget(out), rom)
     b.publish_page()
     rec = _FakeRecording(capture.name + "_live", folder)
     gz = gzip.open(folder / "fast.bin.gz", "wb", compresslevel=3)
