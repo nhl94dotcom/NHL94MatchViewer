@@ -454,8 +454,22 @@ which goalie is stealing games.
 - Players busy in an animation (falling, shooting, checking) don't react at all until it ends: a forward who just lost
   the puck is out of the play for up to a second.
 - **With penalties on, computer skaters try to check only half as often.**
-- Computer forwards go to set spots by zone: on offence the centre heads for the slot, wingers wide. The middle
-  between the blue line and the high slot is often open when the centre is the one chasing the puck.
+- **Where computer players go, by the puck's zone** (feet from the goal line they attack or defend; the blue line is
+  about 60):
+
+  | | With the puck in their own zone | Neutral zone | Attacking zone |
+  |---|---|---|---|
+  | **Their team has it:** wingers | Wide, at their own blue line | Wide, 10 feet outside the attacking blue line | Low, about 11 feet off the goal line |
+  | centre | Middle, at their own blue line | Middle, just outside the attacking blue line | The slot, about 30 feet out |
+  | defencemen | Hang back (as on defence) | Hang back (as on defence) | Up at the blue line |
+  | **The other team has it:** wingers | 35 feet out, wide | Follow the puck up the ice | Follow the puck |
+  | centre | The high slot, about 45 feet out | Halfway between the puck and the high slot | Halfway |
+  | defencemen | About 17 feet behind the deepest attacker, whatever the zone | | |
+
+  - Forwards with the puck, and all defencemen, notice a zone change only at their awareness ticks (0.12-0.25 s).
+    Defending forwards notice at once.
+  - The goalie parks in the middle of his crease while the puck is in the other half.
+  - The middle between the blue line and the high slot is often open when the centre is the one chasing the puck.
 - **Stepping out of the zone and back in (offsides off).**
   - The other team's wingers and centre come out with the puck straight away.
   - **Their defencemen don't.** They stay 50 units behind your deepest player, and your computer forwards only leave

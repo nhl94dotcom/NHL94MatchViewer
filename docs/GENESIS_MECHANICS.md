@@ -1184,34 +1184,63 @@ Using the "Rgh" pass/shoot bias rating (2.4):
   its own half and **flips** it from the neutral zone.
 - The computer's own one-timers are described in 4.8.
 
-### 12.5 When the puck crosses a blue line, and "step out, come back in"
+### 12.5 How computer players change with the puck's zone
 
-Nothing in the positioning code looks at the blue lines as such. Each computer job reads the puck's zone, and who has
-it, and the zone changes when the puck crosses a line. The zone lines it uses are 88 from centre (the blue line) and,
-for the defending wingers, 78. **Code** (`asswingo`, `asscentero`, `assdefo`, `assdefd`, `asswingd`, `asscenterd`).
+Nothing in the code reacts to a blue line as such. Each computer player has a job (12.2) that reads **who has the
+puck** and **which zone it's in**, and picks a spot from those. The behaviour changes the moment one of those readings
+changes. **Code** (`asswingo`, `asscentero`, `assdefo`, `assdefd`, `asswingd`, `asscenterd`, `assnearest`, `asspuckc`,
+`checkanim`).
 
-**The puck carried out of the attacking zone.** The attacking team's computer players:
+Zones are measured along the ice from centre, in each team's own direction: blue lines at 88, goal lines at 264.
 
-- **Forwards:** at their next awareness tick (0.12-0.25 s) they pick a new spot from the neutral-zone box, about 30
-  units *outside* the blue line (12.2), and skate out to it.
-- **Defencemen:** at their next Offensive Awareness tick they switch to their defensive job: 50 behind the deepest
-  opponent, which usually means dropping back toward centre.
+**When it notices:**
 
-The defending team's computer players:
+- **Forwards with the puck and defencemen:** only at their awareness ticks, every 7-15 frames (0.12-0.25 s).
+- **Forwards defending:** every frame.
+- Some tests use the puck's position **plus a little of its speed**, so a puck flying toward a line counts as across
+  slightly early.
 
-- **Wingers:** follow the puck's depth as soon as it's more than 78 from centre toward the other end, so they come out
-  with it, wide or on the puck's side. Every frame.
-- **Centre:** halfway between the puck and his high slot. Every frame.
-- **Defencemen:** **50 units behind the deepest attacker** (the carrier or a teammate, whoever is nearest their net),
-  re-read only at their Defensive Awareness ticks. **They come up only when your forwards leave the zone.**
+**His team has the puck:**
 
-**The puck carried back in** reverses all of it:
+| Player | Puck in own zone | Neutral zone | Attacking zone | Behind the attacked goal line |
+|---|---|---|---|---|
+| Wingers (zone from the puck plus its speed) | Wide (80) just inside own blue line (-70) | Wide (100), 30 outside the attacking blue line (58) | **Low: 60 out from the middle, 230 (34 off the goal line)** | 80 out, 250 |
+| Centre (zone from the puck's position) | Middle, -70 | Middle, 60 | **The slot: 170 (94 off the goal line)** | 170, more spread |
+| Defencemen | **Their defensive job** (as when defending, below) | **Their defensive job** | **The blue line: 80 to their side, 98, sliding toward the puck** | The blue line |
+| The carrier | May shoot it down the ice (on the penalty kill, or when nobody pressures him) | May flip it out; between centre and the blue line, a tired line changes (line changes on) | Shoots or passes by his pass / shoot bias; shooting gets far likelier within 100 of the net | |
 
-- The defending wingers drop back to 158 from centre and the centre to his high slot, at once.
-- The defencemen re-read the deepest attacker at their next tick.
-- Your forwards and defencemen turn back at their next ticks.
+- **Forwards** pick a random spot in the box when the zone changes, and stay on it, with a rare random re-pick.
+- **Defencemen join the attack only once the puck is in the attacking zone.** Anywhere else, even with their own team
+  carrying it, they keep 50 units behind the deepest opponent.
 
-**What this means for the step-out move** (offsides off; the user's league uses it to draw the defence out):
+**The other team has the puck:**
+
+| Player | Rule | Changes with the zone? |
+|---|---|---|
+| Wingers | Wide (100), or on the puck's line when it's on their side. Depth: **the puck's**, while it's more than 78 from centre toward the other end; **158 from centre (106 off the goal line)** once it's closer than that; **the goal line** once it's behind the net | **Yes**: they come out of their zone with the puck and drop to 158 as it comes in |
+| Centre | Half the puck's distance across; **his high slot (128 from centre)** with the puck in his zone, else **halfway between the puck and the high slot** | **Yes** |
+| Defencemen | **50 behind the deepest attacker** (allowing for his speed toward the net), never deeper than 190 from centre (they jump to 220 past it); 65 to their side, or the middle with the puck on the other side | **No**: only the attackers' positions move them |
+| The chaser | Attack the carrier or contain (12.3); with the carrier in the slot he reacts twice as fast, checks harder and skates faster | Only the slot |
+
+**The goalie:**
+
+- With the puck **in the other half**, he parks in the middle of his crease (244 from centre).
+- In his half, he tracks it (5.3).
+
+**So, at each crossing:**
+
+- **The puck carried into the attacking zone.** The attacking forwards drop from outside the line to low spots in the
+  zone, and the centre to the slot, at their next ticks. The defencemen come up to the blue line. The defending wingers
+  fall back to 106 off the goal line and the centre to the high slot at once. The defending defencemen move only as
+  the attackers come in.
+- **The puck carried out of it.** All of that reverses. The attacking forwards go back out to about 30 past the line,
+  and the attacking defencemen drop to their defensive spots. The defending wingers and centre come out with the puck.
+  The defending defencemen stay with the deepest attacker, usually a forward still in the zone until he leaves.
+- **Possession changing hands** swaps every player between the two tables at his next tick on the Genesis, at once on
+  the SNES (SNES_MECHANICS 12.1).
+- **The puck crossing centre** moves only the goalies.
+
+**The "step out and come back in" move** (offsides off; the user's league uses it to draw the defence out):
 
 - **A quick step-out doesn't move the defencemen.** Your computer forwards are still deep, and the defencemen keep
   marking them. It does pull the defending wingers and centre up with the puck.
@@ -1232,8 +1261,9 @@ The defending team's computer players:
 - **On:**
   - The moment the puck enters a zone, the attacking team is flagged offside if any of its players is more than 10
     past the line (11.1).
-  - While flagged, the attacking computer players switch to their defensive jobs until everyone has tagged up. The
-    defencemen do it in `assdefo` / `assdefd`, and a flagged team's defending wingers hold 78 out.
+  - While flagged, until everyone has tagged up, the team's computer forwards treat the puck as in the neutral zone
+    and head for their spots 30 outside the line (they go and tag up). Its defencemen play their defensive job. If the
+    flagged team loses the puck, its defending wingers hold 78 out.
   - **Any touch of the puck more than 104 in is whistled**, the carrier's own included (the check runs every frame for
     him).
   - So **coming back in before your forwards have got out** is offside 16 units inside the line. The move only works
