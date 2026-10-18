@@ -1197,6 +1197,30 @@ deepest teammate still in the zone and the D unmoved (median 63 from their goal 
 the 1.8 s one (2219 P1 3:59) drew the D from 42 / 103 to 100 / 162; 8 / 17 shot attempts in 4 s (plain 53%). Offsides
 off: the flag never sets; on: re-entry with a teammate 10+ inside flags the team, any touch past 104 is whistled.
 
+## Live broadcast (2026-10-18)
+
+The user asked for a URL others can watch live, "on par with clicking Play on a full match file". `tools/live_broadcast.py`
++ the helper's `--broadcast <channel> --bucket <bucket>` ("NHL94 Helper - Live.bat", user-specific, not in git):
+- While recording, the helper sync-flushes fast.bin.gz every 2 s (LIVE_FLUSH_S); the broadcaster thread every
+  INTERVAL_S 5 s decompresses what's there (zlib, whole records only), runs the full converter on it
+  (captures/_live_work, `--out captures/_live_work/out`, so nothing appears in matches/ or the games list; about 8 s
+  at the end of a 15-minute game) and uploads to s3://<bucket>/live/<channel>/: data/<game>/s<n>.json (whole match,
+  every SNAPSHOT_EVERY 6 updates) or c<n>.json (a diff: per key {s} / {p, v} common-prefix tail / {d} / {x}),
+  gzip with Content-Encoding, then live.json (no-cache manifest: status waiting / live / final, game, seq, snapshot).
+  At start it uploads index.html (viewer.html with window.NHL94_LIVE = 'live.json'), the rink pictures / js and bench
+  masks; sprites/<rom>.js and sounds/<rom>.js with a game's first update. After the helper's normal conversion the
+  finished match goes up as the final snapshot. Uploads: boto3, else the AWS CLI (`aws s3 cp`).
+- viewer.html live mode (window.NHL94_LIVE): polls live.json every 2 s, joins from the newest snapshot plus later
+  diffs, applies new diffs and re-runs load() keeping the moment, the map's who and the highlights panel (30-40 ms a
+  reload for a 15-minute game in Edge); plays liveDelay() (max 9 s, 2.2 x the interval) behind the newest data and holds
+  at the end instead of stopping; footer LIVE / Go live / Final button; the stats tab polls too; a game file saved
+  from the live page has the live line removed. Help: "Watching live".
+- Tested: `python tools/live_broadcast.py --test <capture> <folder> --speed N` (a recorded game fed in at N x into a
+  growing gzip, uploads written to a folder; served with http.server, NHL94_LIVE_UNZIP since it sends no
+  Content-Encoding): 2246 DAL-BOS at 10x, 12 updates, the page joined mid-game and played 11 s behind with all stats;
+  snapshot + diffs rebuild the match exactly; final 5-8 equals the real conversion. The helper end to end with the
+  fake emulator (scratchpad helper_test_live.py): 6 live updates and the final.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

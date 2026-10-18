@@ -48,6 +48,8 @@ INDEX_FILE = ROOT / "matches" / "games.json"
 SAMPLE_S, FULL_EVERY_S = 0.015, 10.0
 MIN_GAME_S = 45          # shorter recordings (a few seconds of play, then back to the menus) are not kept
 FINAL_WAIT_S = 3.0       # keep recording this long after the final horn
+LIVE_FLUSH_S = 2.0       # broadcasting live: make the recording readable this often (tools/live_broadcast.py)
+broadcaster = None       # a live_broadcast.Broadcaster with --broadcast
 
 try:  # Windows sleeps in 15.6 ms steps unless asked for 1 ms
     import ctypes
@@ -187,6 +189,8 @@ class Recording:
         self.fast = gzip.open(self.folder / "fast.bin.gz", "wb", compresslevel=3)
         self.full = gzip.open(self.folder / "full.bin.gz", "wb", compresslevel=3)
         self.live_ms, self.last_wall, self.last_full = 0.0, time.perf_counter(), -1e9
+        self.last_flush = time.perf_counter()
+        self.record_size = 8 + sum(b[1] for b in self.system.BLOCKS)
         self.previous, self.samples = None, 0
         self.view, self.final_since, self.menu_since, self.joined_mid_game = view, None, None, not (view.period == 0 and view.clock >= 290)
 
@@ -226,6 +230,9 @@ class Recording:
         if data != self.previous:
             self.fast.write(struct.pack("<q", round(self.live_ms)) + data)
             self.previous, self.samples = data, self.samples + 1
+        if broadcaster and now - self.last_flush >= LIVE_FLUSH_S:
+            self.fast.flush(zlib.Z_SYNC_FLUSH)  # so the live broadcast can read what is recorded so far
+            self.last_flush = now
         if now - self.last_full >= FULL_EVERY_S:
             full = self.emu.read(0, self.system.RAM_SIZE)
             if full:
@@ -285,6 +292,9 @@ def convert(rec, why):
     except Exception as e:
         status.set("idle", f"Could not convert {rec.name}: {e}")
         traceback.print_exc()
+    finally:
+        if broadcaster:
+            broadcaster.end(ROOT / "matches" / f"{rec.name}.js", rec.live_name)  # the whole game, as converted
 
 
 def watch():
@@ -308,6 +318,10 @@ def watch():
                 time.sleep(0.25)
                 continue
             rec = Recording(emu, view, rom_path, fingerprint)
+            if broadcaster:
+                broadcaster.rom_path = rom_path
+                broadcaster.begin(rec, rec.record_size)
+            rec.live_name = rec.name
             status.set("recording", f"Recording {rec.teams[0]} vs {rec.teams[1]}" + (" (joined during the game)" if rec.joined_mid_game else ""),
                        {"name": rec.name, "teams": rec.teams})
             why = None
@@ -325,6 +339,8 @@ def watch():
                 why = "RetroArch closed"
                 emu = None
             finally:
+                if broadcaster and broadcaster.game == rec.live_name:
+                    broadcaster.stop.set()  # before close(), which may rename the recording's folder
                 rec.close()
             threading.Thread(target=convert, args=(rec, why), daemon=True).start()
             if why == "final":
@@ -540,6 +556,29 @@ def exit_with_console():
     threading.Thread(target=watch_console, daemon=True).start()
 
 
+def start_broadcast():
+    """--broadcast [CHANNEL] --bucket NAME: send each game live to s3://<bucket>/live/<channel>/ (live_broadcast.py)."""
+    global broadcaster
+    import live_broadcast
+    i = sys.argv.index("--broadcast")
+    channel = sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--") else "game"
+    if "--bucket" not in sys.argv:
+        print("Live broadcast is OFF: say which S3 bucket to use (--bucket NAME).", flush=True)
+        return
+    bucket = sys.argv[sys.argv.index("--bucket") + 1]
+    target = live_broadcast.S3Target(bucket, f"live/{channel}")
+    b = live_broadcast.Broadcaster(target)
+    try:
+        print("Live broadcast: putting the page up\u2026", flush=True)
+        b.publish_page()
+    except Exception as e:
+        print(f"Live broadcast is OFF: could not upload to s3://{bucket} ({e}).", flush=True)
+        print("  Sign in to AWS (run 'aws login' in a command window), then start the helper again.", flush=True)
+        return
+    broadcaster = b
+    print(f"Live broadcast ON. Send your viewers this link: {target.url}", flush=True)
+
+
 def main():
     if "--convert" in sys.argv:
         return convert_folder(sys.argv[sys.argv.index("--convert") + 1])
@@ -561,6 +600,8 @@ def main():
         threading.Thread(target=Server6(("::1", PORT), Handler).serve_forever, daemon=True).start()
     except OSError as e:  # IPv6 turned off, or ::1 taken: 127.0.0.1 still serves
         print(f"(Not listening on ::1: {e})", flush=True)
+    if "--broadcast" in sys.argv:
+        start_broadcast()
     page = f"http://localhost:{PORT}/helper.html"
     print(f"Your games: {page}", flush=True)
     if load_settings().get("open_browser", True) and "--no-browser" not in sys.argv:

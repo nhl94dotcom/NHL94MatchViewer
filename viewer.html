@@ -209,6 +209,9 @@
   .hudlinks { position: absolute; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
   .hudlinks.left { left: 12px; } .hudlinks.right { right: 12px; }
   .hudlinks a, .hudlinks button { color: var(--muted); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 1px solid transparent; background: transparent; }
+  #liveBtn { color: #fff; background: #b3261e; border: 0; border-radius: 6px; font-weight: 700; padding: 3px 9px; }
+  #liveBtn.behind { background: transparent; color: var(--text); border: 1px solid #b3261e; font-weight: 600; }
+  #liveBtn.final { background: transparent; color: var(--muted); border: 1px solid #3a4450; }
   .hudlinks a:hover, .hudlinks button:hover { color: var(--text); border-color: #3a4450; }
   @media (max-width: 640px) { .hudlinks.left { display: none; } .hudlinks.right { right: 4px; } }
   [hidden] { display: none !important; }
@@ -332,6 +335,7 @@
   <button id="play">Play</button>
   <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position in recording">
   <span id="time"></span>
+  <button id="liveBtn" hidden title="Watching live: the game a few seconds behind. When you've gone back, this takes you to the live action again">&#9679; LIVE</button>
   <select id="speed" aria-label="Playback speed" title="Playback speed">
     <option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
   </select>
@@ -462,6 +466,13 @@ moves the view instead). Tap a player for his card and tap anywhere else to put 
 <h3>On a phone</h3>
 <p>The rink is on top; below it, tabs switch between the lineups, the team stats and the scoring summary. The controls
 stay at the bottom.</p>
+<h3>Watching live</h3>
+<p>A live link shows a game while it's being played, about 10 seconds behind. Everything works as in a finished game:
+stats, maps, highlights, clips. The red <b>&#9679; LIVE</b> button beside the clock means you're following the play.
+Go back to watch something again and it turns into <b>Go live</b>: click it to catch up. When the game ends the button
+says <b>Final</b> and the page holds the whole game. The page starts by itself when the next game begins.</p>
+<p>To broadcast your own games, start the helper with <code>--broadcast</code> (see the live helper shortcut). It sends
+each game to a web storage bucket as you play.</p>
 </section>
 
 <section id="h-maps"><h2>Maps and game flow</h2>
@@ -4516,6 +4527,7 @@ function tick(stamp) {
   playSoundsUpTo(frameAt(now));
   if (reelJob) reelJob.onFrame();
   if (clipJob) clipJob.onFrame();
+  if (now >= end && liveWaiting()) { requestAnimationFrame(tick); return; }  // live: hold at the newest moment until more arrives
   if (now >= end) { setPlaying(false); if (reelJob) reelJob.onFrame(); } else if (playing) requestAnimationFrame(tick);
 }
 
@@ -5058,6 +5070,7 @@ async function saveGameFile() {
     const score = match.score.length >= 2 ? match.score[match.score.length - 2] + '-' + match.score[match.score.length - 1] : '';
     const title = match.team1 + ' ' + score + ' ' + match.team2;
     const html = PAGE_SOURCE
+      .replace(/<script>window\.NHL94_LIVE[^<]*<\/script>\n?/, '')  // a file saved from the live page plays as a file
       .replace('<script src="rink_gens.js"><' + '/script>', () => data)
       .replace(/<title>[^<]*<\/title>/, () => '<title>' + title.replace(/[<&]/g, '') + ' \u00b7 NHL \'94<' + '/title>');
     const name = (match.team1 + '_' + score + '_' + match.team2 + '_' + (match.name || '')).replace(/[^\w.-]+/g, '_') + '.html';
@@ -5489,9 +5502,119 @@ function drawBenches() {
 // The Genesis benches from the start (a saved game file carries them already); another system's come with useRink.
 loadScriptOnce(RINKS.genesis.benches, RINKS.genesis.benchData, () => { if (match && rinkSystem === 'genesis') { buildBenches(match); draw(); } });
 
+
+// Live broadcast (tools/live_broadcast.py, 2026-10-18). The helper converts the game being played every few seconds
+// and uploads what changed; window.NHL94_LIVE names the manifest (live.json) beside this page. Its `game` and `seq` say
+// which update is newest and `snapshot` the newest whole-match one: a page joining starts from that snapshot and
+// applies the changes after it (data/<game>/c<n>.json: per key {s: value} | {p: keep, v: append} | {d: {...}} |
+// {x: 1}), then reloads the match keeping the moment shown, the map and the panels. Playback follows the newest data
+// a delay behind; at the newest moment it waits for more instead of stopping.
+let liveState = null;  // { game, seq, status, interval, following }
+const liveWaiting = () => !!liveState && liveState.status !== 'final' && playing;
+function liveDelay() { return Math.max(9000, 2.2 * 1000 * ((liveState && liveState.interval) || 5)); }
+async function liveGet(path, zipped) {
+  const r = await fetch(path, { cache: 'no-store' });
+  if (!r.ok) throw new Error(path + ' ' + r.status);
+  if (zipped && window.NHL94_LIVE_UNZIP) return JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text());
+  return r.json();
+}
+function livePatch(obj, patch) {
+  for (const [k, p] of Object.entries(patch)) {
+    if ('s' in p) obj[k] = p.s;
+    else if ('x' in p) delete obj[k];
+    else if ('p' in p) obj[k] = obj[k].slice(0, p.p).concat(p.v);
+    else if ('d' in p) livePatch(obj[k] || (obj[k] = {}), p.d);
+  }
+}
+function liveShowButton() {
+  const b = $('liveBtn');
+  b.hidden = !liveState;
+  if (!liveState || !match) return;
+  const edge = match.t[match.t.length - 1];
+  if (liveState.status === 'final') { b.className = 'final'; b.textContent = 'Final'; b.title = 'The game is over: this is the whole game, as in a finished game file'; return; }
+  liveState.following = liveState.following && now >= edge - liveDelay() - 4000;
+  b.className = liveState.following ? '' : 'behind';
+  b.innerHTML = liveState.following ? '&#9679; LIVE' : 'Go live';
+}
+function liveReload(m) {
+  // load() again with the bigger match, keeping where the viewer is and what it shows
+  const keep = { now, playing, who: $('overlayWho').value, hl: !$('hlPanel').hidden, follow: liveState.following };
+  setPlaying(false);
+  const started = performance.now();
+  load(m);
+  liveState.reloadMs = Math.round(performance.now() - started);
+  console.log('live: update ' + liveState.seq + ' reloaded in ' + liveState.reloadMs + ' ms');
+  now = Math.min(m.t[m.t.length - 1], Math.max(m.t[0], keep.now));
+  const who = $('overlayWho');
+  if ([...who.options].some(o => o.value === keep.who)) who.value = overlayWho = keep.who;
+  if (keep.hl) $('hlOpen').click();
+  const edge = m.t[m.t.length - 1];
+  if (keep.follow && LAYOUT !== 'stats' && edge - now > 2 * liveDelay()) now = edge - liveDelay();  // fell far behind: catch up
+  liveState.following = keep.follow;
+  lastSoundFrame = frameAt(now);
+  draw();
+  if (keep.playing || (LAYOUT !== 'stats' && keep.follow && liveState.status !== 'final')) setPlaying(true);
+  liveShowButton();
+}
+async function livePoll() {
+  try {
+    const man = await liveGet(window.NHL94_LIVE + '?' + Date.now());
+    if (!man.game || !(man.seq >= 1)) {
+      if (!match) { $('dropTitle').style.display = 'block'; $('dropTitle').textContent = 'Waiting for the game to start\u2026 (this page starts by itself)'; }
+    } else if (!liveState || man.game !== liveState.game || man.seq < liveState.seq) {
+      // Joining (or a new game): the newest snapshot, then the changes since.
+      if (!match) $('dropTitle').textContent = 'Joining the game\u2026';
+      const base = 'data/' + man.game + '/';
+      const m = await liveGet(base + 's' + man.snapshot + '.json', true);
+      for (let n = man.snapshot + 1; n <= man.seq; n++) livePatch(m, await liveGet(base + 'c' + n + '.json', true));
+      liveState = { game: man.game, seq: man.seq, status: man.status, interval: man.interval, following: true };
+      const started = performance.now();
+      load(m);
+      console.log('live: joined at update ' + man.seq + ', loaded in ' + Math.round(performance.now() - started) + ' ms');
+      now = LAYOUT === 'stats' ? now : (man.status === 'final' ? m.t[0] : Math.max(m.t[0], m.t[m.t.length - 1] - liveDelay()));
+      lastSoundFrame = frameAt(now);
+      draw();
+      if (LAYOUT !== 'stats' && man.status !== 'final') setPlaying(true);
+      liveShowButton();
+    } else if (man.seq > liveState.seq) {
+      const base = 'data/' + man.game + '/', patches = [];
+      let fresh = null;
+      if (man.snapshot > liveState.seq) fresh = await liveGet(base + 's' + man.snapshot + '.json', true);
+      for (let n = (fresh ? man.snapshot : liveState.seq) + 1; n <= man.seq; n++) patches.push(await liveGet(base + 'c' + n + '.json', true));
+      const m = fresh || match;
+      for (const p of patches) livePatch(m, p);
+      liveState.seq = man.seq; liveState.status = man.status; liveState.interval = man.interval;
+      liveReload(m);
+    } else if (man.status !== liveState.status) {
+      liveState.status = man.status;
+      liveShowButton();
+    }
+  } catch (e) {
+    console.warn('live:', e);
+    if (!match) $('dropTitle').textContent = 'Waiting for the broadcast\u2026';
+  }
+  setTimeout(livePoll, liveState && liveState.status === 'final' ? 30000 : 2000);
+}
+$('liveBtn').addEventListener('click', () => {
+  if (!liveState || !match || liveState.status === 'final') return;
+  liveState.following = true;
+  now = Math.max(match.t[0], match.t[match.t.length - 1] - liveDelay());
+  lastSoundFrame = frameAt(now);
+  draw();
+  setPlaying(true);
+  liveShowButton();
+});
+$('seek').addEventListener('input', () => { if (liveState) liveShowButton(); });
+
 // viewer.html?match=NAME loads matches/NAME.js directly; &t=SECONDS starts at that point.
 const named = new URLSearchParams(location.search).get('match');
-if (window.NHL94_PACKED) {
+if (window.NHL94_LIVE) {
+  $('backGames').hidden = true;
+  for (const el of document.querySelectorAll('#drop .pick-note, #drop .packed-note')) el.style.display = 'none';
+  $('dropTitle').style.display = 'block';
+  $('dropTitle').textContent = 'Connecting to the broadcast…';
+  livePoll();
+} else if (window.NHL94_PACKED) {
   // A saved game file: unpack the game (and sprites) it carries.
   for (const el of document.querySelectorAll('#drop .packed-note')) el.style.display = 'none';
   $('dropTitle').style.display = 'block';
