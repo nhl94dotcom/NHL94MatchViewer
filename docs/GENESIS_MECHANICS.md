@@ -996,7 +996,7 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
 
 **Home and away** (the community's data: Home wins about 51%):
 
-- **The hidden home / away bonus** (2.x table): each team's ROM byte gives its home value to five working ratings at
+- **The hidden home / away bonus** (2.3): each team's ROM byte gives its home value to five working ratings at
   home (Offensive and Defensive Awareness, Stick Handling, Shot Accuracy, Passing) and takes its away value off them on
   the road. In nhl94.bin: home +2 for BOS, BUF, CHI, MTL, PHI, PIT, STL; +1 for most others; 0 for CGY, DAL, DET, HFD,
   NYI, QUE, TB; away -3 for ANH, FLA, OTW, -2 for EDM, NJ, PHI, SJ, -1 for most, 0 for the seven with no home bonus.
@@ -1017,7 +1017,7 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
 - **The camera leads more going up**: with the puck carried, the screen's centre sat a median 43 units ahead of the
   puck going up, 36 going down (means 34 and 24; 19,000 samples), so a carrier going up sees 2-3 feet more ice ahead.
   **Confirmed** (measured from the game's camera, $BD18).
-- **The top net's shoulder-save bobble** (5.x) can only happen at the top net, so only to shots going up. **Code**
+- **The top net's shoulder-save bobble** (5.3) can only happen at the top net, so only to shots going up. **Code**
 - **Shot scatter**: doshot halves the depth part of the scatter when shooting down the screen. **Code** (its effect on
   where shots end up across the net is small and not measured).
 - **The goalie's stick spot** comes from his sprite frame and is mirrored top to bottom between the two goalies; the
