@@ -259,11 +259,20 @@ went in within 12.6 units of a goalie's centre.
 
 ### 11.3 The computer goalie
 
+- **He's slow to react**: he rethinks only every few frames (more often with high Defensive Awareness), heading for
+  where the puck is going on a spot about 7 feet out.
+- **When a shot is coming he slides to where it will cross**, starts a save move about a third of a second before it
+  arrives, and **keeps sliding through the save**. Shots that make him slide a long way, quickly, are the ones that beat
+  him: across the crease, or a pass across and a one-timer.
+- **He freezes when you wind up a shot** while skating straight up or down the ice: wind up, then shoot where he isn't.
 - **Passes slow him down** (7): attack with passes across and one-timers.
 - He has two attacking moves: a **poke check** at a carrier close in front, and a **dive at the carrier**. In recorded
   games no computer goalie dived, so these may be rare.
 - **When he has the puck and an opponent comes within about 7 feet, he drops onto it and covers it** for a second and a
   half; with nobody near he looks to pass it out. A goalie you control never does this.
+
+The viewer's **xG** plays every SNES shot out this way and shows the chance it had of going in, on each shot, the
+cards and the team stats; the **xG map** (Map menu) shows it for every spot.
 
 ---
 

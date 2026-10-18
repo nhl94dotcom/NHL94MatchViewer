@@ -1724,6 +1724,32 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Agl, DfA, Chk, ShA 2; ShP, End, Pas 1; goalies Agl, DfA, PkC 4.5, the four save ratings 1. All in
   docs/GENESIS_MECHANICS.md / SNES_MECHANICS.md 2.5 and the player's guides (2026-10-17, which the user asked for).
 
+## SNES expected goals and xG map (2026-10-17)
+
+`tools/xg_snes.py` (export_match calls it for SNES games with the ROM's bytes; snes.read_match now keeps `work`
+[frame, object, weight $12C3, legstr $12E3, legspd $1303, aidef $1343, shotspd $1363, shotacc $1383]). Read from the
+NHL94SNES disassembly: doshot (aim at y +/-$108 = 264, ApproxLength distances, perfect when d3 < 201 and randoma8(16 +
+ShA) >= 15, scatter ((passspeed >> 3) - ShA + 16) x d3 >> 6, halved under 251, cap $88, Y halved shooting down, height
+up only; velocity 2 x passspeed x 68 x d / d3, so passspeed = speed / 136; lift + (0xB33 x d3 / passspeed) / 2),
+updateplayers (velstep d7 x 16, gravstep d7 x 96: pos += vel / 4096 a frame, gravity 96; friction table .21 0xFD /
+0xFA / 0xF7 by timestep, mostly 2 frames a step: timestep 2 in 3458 of 4922 samples), checkgoal (front at y 259, goal
+|x| <= 17 under 13, post to 22, no puck radius added), checkpuckcoll_ccx (body: goalie - puck within -11 .. 10 both
+ways, any height; goalie stick / glove: GetHot / GetFrameHot from the sprite frame record (index frame - 1, bytes
++$12-$15: hot point and second point), circle of radius |x2 - x1| around the hot point, height band from TWO_THIRDS),
+pucknorm (puckcross every 5 frames, like findpc), assgoalie (rethink every aidef >> 1 frames; target puck + vy/341 ...;
+ellipse 26 x 20; crossing within 35 frames -> its x, under 19 -> save move from GoalieSaveList, speed halved; StopNA
+halves a computer goalie's speed; save moves set pfalock, not pf2aip, so he keeps rethinking and skating through
+them: the fix that took the model from 46 to 37.7 expected goals), playeracc (32 - weight / 8 + 1.5 x legstr + 8; dir
+steps 6 / 4; vmax (20 + legspd) x 261), vtoa (diagonal when neither part is more than twice the other: VTOA_TABLE; the
+exact-angle version picked wrong save moves). The goalies' sprite flip bit $1000 was never set (so hot y is negated);
+mirror never set for goalies. Checks: emulated goalie vs recorded at arrival median 0.8 units (100 computer-goalie
+shots); geometry with the recorded goalie path: posts 17.6 / 18; final 175 shots: 40.1 xG / 32 goals (264 aim; 35.6
+with 268, but log loss 0.27 vs 0.31), GOALIE_SPREAD 2 (0-6 tried). The map tables (ready and save frames, hot areas)
+are the same in every NHL '94 SNES ROM in the ROM folder. Viewer: XG_SNES (JS port between "SNES xG model" comments,
+checked against Python: largest difference 0.028 at 3,000 tries), XG_SNES_ROM, XG_SNES_GOALIE_STATES (cpu 93, person
+30, onetimer 55; regenerate with `python tools/xg_snes.py <rom> matches/<snes games>.js`); the SNES map's one-timer is
+a slapshot against the goalies of recorded one-timers. Docs: SNES_MECHANICS 4.7, 5.1-5.3; SNES_GUIDE 11.3.
+
 ## SNES ratings screen confirmed; the computer goalie's cover (2026-10-17)
 
 The user recorded 2026-10-17_1719_CHI-CGY (in Documents/NHL94 Viewer; NHL94_Classic, the user Calgary, Away, against

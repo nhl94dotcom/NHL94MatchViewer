@@ -238,6 +238,29 @@ your d-pad points.** **Code**
 **Not read yet.** Seen in the recordings: a goal can come with no shot on goal counted (a penalty-shot goal, and a
 Roenick goal in CHI-TOR).
 
+### 4.7 Expected goals from the game's own rules
+
+As on the Genesis, the chance a shot goes in can be worked out by playing it out the SNES game's way, many times; the
+NHL '94 Viewer does it for every SNES shot and one-timer (`tools/xg_snes.py`, 400 times each):
+
+1. **The aim**: the recorded d-pad direction (one-timers too; computer shooters' aim as the game set it).
+2. **The shot** (`doshot`): exact with the perfect-shot chance (4.2), else the game's scatter (distances by its
+   approximate length), at the recorded speed and the shooter's working Shot Accuracy.
+3. **The flight** (`updateplayers`): two frames a game step, gravity 96 a frame, the lift worked out to cancel it.
+4. **The goalie** moves as the computer goalie does (5.3), with his save move and its frames (5.2); a person in net is
+   moved the same way. He stops the puck with his body box or his frame's stick / glove area (5.1).
+5. **The net**: a goal within 17 of the middle under 13 at y 259, a post to 22 (5.1).
+
+The one number fitted to the recordings is a 2-unit random spread for the emulated goalie's position. **Checked** on
+175 unblocked shots in five recorded SNES games: 40.1 expected goals against 32 scored (computer in net 25.7 / 21,
+people 14.4 / 11), the predicted posts and misses matching, and a log loss of 0.27 against 0.48 for giving every shot
+the same chance. Getting there showed what matters on the SNES: with the goalie frozen where he was at the release the
+model said 62 goals, carrying on at his speed 50; it's his reaction during the shot, and above all that **he keeps
+sliding through his save move**, that makes the saves.
+
+The viewer shows SNES xG on shots, cards, team stats, the season page and the xG map (one-timers there face goalies as
+they were at recorded one-timers, usually still moving across after the pass).
+
 ---
 
 ## 5. Goaltending
@@ -247,9 +270,14 @@ Roenick goal in CHI-TOR).
 The goalie stops a puck only if it physically reaches him (`checkpuckcoll_ccx`), but the shape differs from the
 Genesis:
 
-- **His body is a fixed box**: within 10 units across and along of his centre, apparently at any height.
-- **A second area that depends on his animation frame** (`GetFrameHot`), with its own height range, covers the stick and
-  pads.
+- **His body is a fixed box**: the puck within 11 units on one side and 10 on the other, across and along, at any
+  height.
+- **His stick / glove area**, which depends on the sprite frame he shows (`GetHot`, `GetFrameHot`): a circle around the
+  frame's hot point, within a band of heights, both read from the frame's record (frame number - 1, as the drawing code
+  reads it). A save move's frames change it.
+- **The net:** a goal when the puck's centre crosses the net's front (9 units out from the net, y 259) within 17 of the
+  middle below the crossbar (13); 18-22 out is a post (`checkgoal`). **Confirmed** with the model in 4.7: it predicts
+  16.6-17.6 posts where the recordings had 18.
 - **No changes for Agility, for a person controlling him, for pad stacks or for one-timers.** (On the Genesis all four
   change his reach.)
 - **A diving goalie lets pucks at height 5 or more through.**
@@ -258,8 +286,13 @@ Genesis:
 
 ### 5.2 Save moves
 
-The save-move choice (`GoalieSaveList`) follows the Genesis pattern: high or low, near or far, a pad stack while the
-puck is still carried. **Code**
+At a rethink with the puck going to cross within 24 of the middle in under 19 frames, he picks a move
+(`GoalieSaveList`) by the puck's direction against the way he faces (the game's 8-way directions are coarse: anything
+between 1:2 and 2:1 counts as diagonal) and its height: well to one side, a **sprawl**; to one side and low, a **stick
+save**; high, a **glove / blocker save**; a pad stack while the puck is still carried; a **butterfly** for a slow puck
+straight at him. Most moves hold a single frame; his speed is halved as he starts, **and he keeps skating through the
+move** (it sets the animation lock `pfalock`, not `pf2aip`, which is what stops his routine), so he slides on toward
+the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the recorded goalies did).
 
 ### 5.3 The computer goalie
 
@@ -274,7 +307,16 @@ puck is still carried. **Code**
   for 90 frames; within 35, he waits; with nobody within 35 he looks to pass it out (`chk4pass`). A goalie a person
   controls never does this: it's part of the computer goalie's routine. **Confirmed** once (CHI-CGY, the last seconds:
   Chicago's computer goalie took the puck at 0:11 and covered it from 0:09 to 0:05).
-- How he positions himself and when he starts a save move: **not read yet**.
+- **Positioning** (`assgoalie`). He rethinks every half his Defensive Awareness reaction value (`aidef / 2`: about 3
+  to 11 frames, slower than the Genesis goalie's 1-3), each time picking a spot: where the puck is heading (12-24
+  frames of its motion ahead, a little at random) on an **ellipse 26 across and 20 out** in front of his net, or the
+  puck itself once it is near his goal line. **Once the puck will cross his goal line within 24 of the middle in under
+  35 frames** (worked out every 5 frames), he heads for that crossing point, and under 19 frames starts a save move
+  (5.2). He skates like a player (acceleration from Weight and Agility, + 8 for a goalie, his Agility taken away while a
+  pass is in the air; top speed from Speed), and a computer goalie with nowhere to go halves his speed each step.
+  **He stops dead when an opposing carrier winds up a shot** while skating mostly up or down the ice.
+- **Confirmed:** emulating all this and driving it with the recorded puck, the goalie lands a median 0.8 units from the
+  recorded goalie when the puck arrives (100 shots at computer goalies; 78 within 3 units).
 
 ### 5.4 Rebounds and whistles
 
@@ -530,11 +572,11 @@ everything in this document applies to all of these ROMs.
 
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
-- **Not read yet for the SNES:** what counts as a shot on goal; rebounds and the goalie's hold; how the computer goalie
-  positions himself and when he starts a save move; pass targeting and catching; steals; hooks and pokes; which move
-  draws which penalty; injuries; breakaways; computer skaters' positioning and line changes; puck physics; one-timer
-  timing.
-- **No SNES expected-goals model yet**: the goalie works too differently (5.1) to reuse the Genesis one.
+- **Not read yet for the SNES:** what counts as a shot on goal; rebounds and the goalie's hold; pass targeting and
+  catching; steals; hooks and pokes; which move draws which penalty; injuries; breakaways; computer skaters'
+  positioning and line changes; one-timer timing.
+- **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
+  checking as more games are recorded.
 
 ---
 

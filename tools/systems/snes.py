@@ -384,6 +384,10 @@ def attach():
 
 
 ANIM_BANK = 0x9D0000    # the animation word (SPA) is an address in bank $9D: 8 direction pointers to (frame, time)
+# Working ratings per object (a word each), set when a player comes on the ice: weight, Agility (legstr), Speed
+# (legspd), Defensive Awareness as a reaction time (aidef), Shot Power (shotspd), Shot Accuracy (shotacc). Kept as
+# match["work"] for the expected-goals model, as the Genesis reader keeps its record's +$67-$6D.
+OBJ_WORK = (0x12C3, 0x12E3, 0x1303, 0x1343, 0x1363, 0x1383)
 OBJ_ATTRIBUTE = 0x0E03  # bit $0800 set for every right-handed skater (777 of 777 in the save states, no left-hander):
                         # his picture is drawn mirrored, as on the Genesis
 
@@ -456,7 +460,8 @@ def read_match(cap, rom_path, name, home=None, away=None):
     match = {"version": 21, "name": name, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
              "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
              "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "aim": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
-             "padLabels": PAD_LABELS}
+             "padLabels": PAD_LABELS, "work": []}  # work: [frame, object, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy]
+    last_work = [None] * PLAYERS
     facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
     from .common import STAT_FIELDS
     stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
@@ -558,6 +563,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
             match["nets"].append([len(match["t"]) - 1] + nets)
         mask = 0
         for k in range(PLAYERS):
+            work = [cap.word(i, a + 2 * k) for a in OBJ_WORK]
+            if work != last_work[k]:
+                match["work"].append([len(match["t"]) - 1, k] + work)
+                last_work[k] = work
             match["pos"] += [signed(i, OBJ_X + 2 * k), signed(i, OBJ_Y + 2 * k)]
             face = cap.word(i, OBJ_FACING + 2 * k) & 7
             spa, step = cap.word(i, OBJ_ANIM + 2 * k), cap.word(i, OBJ_ANIM_STEP + 2 * k)
