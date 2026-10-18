@@ -1196,6 +1196,15 @@ From a review of the pages at 1920x1080, 1366x768 and phone width (the user chos
   opened the card and its click closed it again. A tap or click outside the card and rows closes it; #popover keeps
   to the screen (max-height, scrolls). Checked in headless Edge at 504 px with simulated taps, then by the user on
   an Android phone (game files from an S3 bucket): works. iPhone not reported yet.
+- Two tabs (2026-10-18, the user: the view can feel cluttered): View menu "Stats in a second tab" opens this page again
+  with `layout=stats` (body.layout-stats: no stage, game flow or footer; the lineup panels side by side; header note
+  "Following the rink tab") and puts this tab in layout-rink (no side panels). The stats tab follows the rink tab's
+  clock: draw() calls sendTime (postMessage to the stats window, 10 a second while playing, on any change otherwise),
+  which works between game-file tabs from a folder too. The stats tab says hello to window.opener until it hears the
+  time (so reloading either tab reconnects); a stats tab without its own match is sent the match object. "Stats back in
+  this tab" sends 'bye' (the stats tab closes itself). `&layout=rink` / `&layout=stats` in the address. Checked in
+  headless Edge: the rink layout, and the stats layout in a test page standing in for the rink tab (match handed over,
+  time followed); not yet two real tabs.
 - One bar on the games list and the season page (NHL '94 Viewer, Games, Season stats, Help); the viewer's scoreboard
   has "&larr; Games" (hidden in a shared game file) and "? Help". The games list shows each game's system and ROM name
   (from /api/season) and keeps recordings under a minute (save-state previews, tests) in a closed list below. The

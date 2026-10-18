@@ -87,6 +87,14 @@
   .card h4 small { color: var(--muted); font-weight: 400; white-space: nowrap; }
   .card .stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-flow: row dense; gap: 3px 12px; }
   #drop .packed-note { display: none; }
+  /* Two tabs (the View menu's "Stats in a second tab"): the rink tab without the side panels, the stats tab without
+     the rink, the game flow or the controls (it follows the rink tab's clock). */
+  body.layout-rink .lineup, body.layout-rink #mtabs { display: none !important; }
+  body.layout-stats #stage, body.layout-stats #flow, body.layout-stats #controls { display: none !important; }
+  body.layout-stats main { justify-content: center; gap: 24px; overflow-y: auto; }
+  body.layout-stats .lineup { width: min(560px, 48vw); flex: 0 1 auto; }
+  #statsLink { display: none; color: var(--muted); font-size: 13px; padding: 4px 8px; }
+  body.layout-stats #statsLink { display: inline-block; }
   .card .stat.wide { grid-column: 1 / -1; grid-template-columns: auto minmax(0, 1fr); }
   .card .stat.wide b { white-space: normal; }
   .card .stat { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 6px; color: var(--muted); white-space: nowrap; }
@@ -235,7 +243,7 @@
 <body>
 <header id="hud" hidden>
   <div class="hudlinks left"><a id="backGames" href="helper.html" title="Your games list">&larr; Games</a></div>
-  <div class="hudlinks right"><button id="helpOpen" title="How to use the viewer, and what every stat means">? Help</button></div>
+  <div class="hudlinks right"><span id="statsLink" title="This tab follows the rink in the other tab">Following the rink tab</span><button id="helpOpen" title="How to use the viewer, and what every stat means">? Help</button></div>
   <div class="team"><span class="swatch" style="background: var(--team1)"></span><span class="name" id="name1"></span><span class="shots" id="shots1"></span><span class="score" id="score1"></span></div>
   <div id="clock"><div class="time" id="clockTime"></div><div class="period" id="clockPeriod"></div></div>
   <div class="team"><span class="score" id="score2"></span><span class="shots" id="shots2"></span><span class="name" id="name2"></span><span class="swatch" style="background: var(--team2)"></span></div>
@@ -371,6 +379,7 @@
     <label title="Keep the puck in view (F)"><input type="checkbox" id="follow"> <span>Follow the puck</span></label>
     <span id="soundBox" hidden><label title="The game's own sounds as the replay plays"><input type="checkbox" id="soundToggle"> <span>Sound</span></label><button id="soundMore" title="Sound check: hear each sound and set how fast they play">Sound settings</button></span>
     <label title="Show only what could be known at each moment, as a live view would: shot results, pass shots, failed one-timers and loose-puck possession wait until they are settled"><input type="checkbox" id="liveKnow"> <span>Live knowledge</span></label>
+    <button id="statsTabBtn" title="Show the lineups, team stats and scoring in a second browser tab that follows this one, leaving just the rink, clock and score here">Stats in a second tab</button>
   </div>
 </footer>
 <div id="help" hidden role="dialog" aria-label="Help">
@@ -430,6 +439,11 @@ late, or that stopped before the horn (a dropped connection), is still saved, bu
 shots), and a thin energy bar. A <b>yellow edge</b> marks the skater a person is controlling; the <b>highlighted row</b>
 has the puck. Below, the controller lights up the buttons that player is pressing. Point at a player (tap on a phone)
 for his card: this game's numbers, skating, and his ratings.</p>
+<h3>Two tabs: the rink in one, the stats in another</h3>
+<p>If the full view feels crowded, choose <b>&#9881; View &rarr; Stats in a second tab</b>. The lineups, team stats and
+scoring open in a new browser tab, and this tab keeps just the rink, the clock and the score. The stats tab follows
+this one as it plays and as you seek, so you can put it on a second screen. <b>Stats back in this tab</b> (same menu)
+closes it and brings them back. Works in a game file too.</p>
 <h3>Team stats and scoring</h3>
 <p>The scoring summary is on the left, the team stats on the right, both as of the moment the replay is at. Click a
 group's heading (Shooting, Advanced, Puck control ...) to open or close it; your choice is remembered.</p>
@@ -4403,6 +4417,7 @@ function draw() {
   $('seek').value = Math.round(1000 * (now - t0) / Math.max(1, t1 - t0));
   const mmss = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   $('time').textContent = mmss(now - t0) + ' / ' + mmss(t1 - t0);
+  sendTime();
 }
 
 function setPlaying(on) {
@@ -4427,6 +4442,64 @@ function seekTo(ms) {
   now = Math.max(match.t[0], Math.min(match.t[match.t.length - 1], ms));
   draw();
 }
+
+// Two tabs (the user: the full view can feel cluttered). "Stats in a second tab" opens this page again with
+// layout=stats: lineups, team stats and scoring, no rink; this tab keeps the rink, clock and score (layout-rink). The
+// stats tab follows this tab's clock by postMessage, which works between tabs of a game file opened from a folder too
+// (they share no storage or channel there). A stats tab without its own match (one chosen by hand here) asks for it.
+// Reloading either tab reconnects: the stats tab says hello until it hears the time again.
+const LAYOUT = new URLSearchParams(location.search).get('layout');
+let statsTab = null, sentAt = 0, sentNow = null, heardAt = 0;
+function setLayout(kind) {
+  document.body.classList.toggle('layout-rink', kind === 'rink');
+  document.body.classList.toggle('layout-stats', kind === 'stats');
+  $('statsTabBtn').textContent = kind === 'rink' ? 'Stats back in this tab' : 'Stats in a second tab';
+  panelState = '';
+  resize();
+}
+function sendTime() {
+  if (!statsTab) return;
+  if (statsTab.closed) { statsTab = null; setLayout(null); return; }
+  const stamp = performance.now();
+  if (now === sentNow || (playing && stamp - sentAt < 100)) return;  // ten times a second while playing
+  sentAt = stamp; sentNow = now;
+  statsTab.postMessage({ nhl94: 'time', now, name: match && match.name }, '*');
+}
+$('statsTabBtn').addEventListener('click', () => {
+  if (statsTab && !statsTab.closed) { statsTab.postMessage({ nhl94: 'bye' }, '*'); statsTab = null; setLayout(null); return; }
+  const url = new URL(location.href);
+  url.searchParams.set('layout', 'stats');
+  url.hash = '';
+  statsTab = window.open(url.href, 'nhl94-stats');
+  if (statsTab) { setLayout('rink'); sentNow = null; }
+});
+window.addEventListener('message', e => {
+  const msg = e.data;
+  if (!msg || typeof msg !== 'object' || !msg.nhl94) return;
+  if (LAYOUT === 'stats' && e.source === window.opener) {
+    // The stats tab: take the rink tab's match if it has none of its own, then follow its clock.
+    if (msg.nhl94 === 'bye') { window.close(); return; }
+    if (msg.nhl94 === 'match' && msg.match) { load(msg.match); setPlaying(false); return; }
+    if (msg.nhl94 === 'time' && match) { heardAt = performance.now(); now = msg.now; draw(); }
+    return;
+  }
+  if (msg.nhl94 === 'hello' && LAYOUT !== 'stats' && e.source) {
+    // A stats tab (new, or this tab was reloaded): follow it; send the match if it has none, then the time.
+    statsTab = e.source;
+    if (!document.body.classList.contains('layout-rink')) setLayout('rink');
+    if (!msg.has && match) statsTab.postMessage({ nhl94: 'match', match }, '*');
+    sentNow = null;
+    if (match) sendTime();
+  }
+});
+if (LAYOUT === 'stats') {
+  setLayout('stats');
+  const hello = () => {
+    if (window.opener && !window.opener.closed && performance.now() - heardAt > 1500) window.opener.postMessage({ nhl94: 'hello', has: !!match }, '*');
+  };
+  setTimeout(hello, 300);
+  setInterval(hello, 2000);
+} else if (LAYOUT === 'rink') setLayout('rink');
 
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && shown) { shown = null; panelState = ''; if (match) updatePanels(frameAt(now)); } });
 // A tap or click outside the card and the lineups puts the card away (phones have no pointer to move off it).
