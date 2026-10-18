@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 17  # 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 18  # 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -80,6 +80,56 @@ def puck_seconds_by_zone(m):
     return out, by_pos
 
 
+SIDE_MIDDLE = 20  # a shot within this of the middle (across) is from the middle, not a side: the posts' width
+SIDES_LEN = 19  # numbers per direction in screen_sides
+
+
+def screen_side_aim(d):
+    """The screen side of an aim direction (the stick on the screen: 0 up, 1 up-right ... 7 up-left, 8 none):
+    0 left, 1 middle, 2 right."""
+    return 2 if d in (1, 2, 3) else 0 if d in (5, 6, 7) else 1
+
+
+def screen_sides(m):
+    """Left / right on the screen, split by which way the team was going (the user: people, maybe the computer too,
+    may favour one side of the screen whichever way they attack; Home goes up in periods 1 and 3, Away in 2 and OT).
+    Per team, 2 x SIDES_LEN numbers: going up the screen, then going down, each: game seconds with the puck on a
+    skater's stick by his position (LD, RD, LW, C, RW: going up the left wing is the screen's left, going down its
+    right), then by the puck's half of the screen (left, right); shot attempts from the screen's left / middle / right
+    (within SIDE_MIDDLE of the middle) and the goals from them; shots aimed at the screen's left / middle / right (the
+    stick at the release) and the goals from them."""
+    out = [[0] * (2 * SIDES_LEN), [0] * (2 * SIDES_LEN)]
+    t, P, own, K = m["t"], m["puck"], m.get("owner") or [], 12
+    tick = clock_ticks(m)
+    for i in range(len(t)):
+        if not tick[i]:
+            continue
+        k = own[i] if i < len(own) else -1
+        if k < 0 or m["role"][i * K + k] in "0x" or P[3 * i + 2] < -100:
+            continue
+        team = 0 if k < 6 else 1
+        end = own_end(m, i, team)
+        if end is None:
+            continue
+        base = (0 if end < 0 else 1) * SIDES_LEN  # its own goal at the bottom: going up
+        out[team][base + int(m["role"][i * K + k]) - 1] += tick[i]
+        out[team][base + (5 if P[3 * i] < 0 else 6)] += tick[i]
+    for sh in m.get("shotList") or []:
+        end = own_end(m, sh["f"], sh["team"])
+        if end is None:
+            continue
+        row, goal = out[sh["team"]], sh.get("result") == "goal"
+        base = (0 if end < 0 else 1) * SIDES_LEN
+        side = 0 if sh["x"] < -SIDE_MIDDLE else 2 if sh["x"] > SIDE_MIDDLE else 1
+        row[base + 7 + side] += 1
+        row[base + 10 + side] += goal
+        if sh.get("aim"):
+            side = screen_side_aim(sh["aim"]["d"])
+            row[base + 13 + side] += 1
+            row[base + 16 + side] += goal
+    return out
+
+
 def possession_by_zone(m):
     """Each team's possession in game seconds by where the puck was, in its own view: [[attacking, neutral, defensive]
     for Home, for Away], as the viewer counts it: each second the clock ticks off goes to the team with the puck on a
@@ -139,6 +189,7 @@ def carried_entries_by_position(m):
 def summarize(m, name, date=None):
     t, period, clock = m["t"], m["period"], m["clock"]
     n = len(t)
+    sides = screen_sides(m)  # left / right on the screen, going up and going down
     puck_zone, puck_pos = puck_seconds_by_zone(m)  # game seconds with the puck, by skater and zone, and by position
     entry_pos = carried_entries_by_position(m)
     poss = possession_by_zone(m)  # game seconds, [attacking, neutral, defensive] per team in its own view
@@ -234,6 +285,7 @@ def summarize(m, name, date=None):
             "bigHits": sum(1 for h in hits if h["team"] == team and h.get("outcome") in ("upended", "into the boards", "into the bench")),
             "puckPos": puck_pos[team],  # game seconds with the puck: zone (def, neu, att) x carrier's position (LD, RD, LW, C, RW)
             "entryPos": entry_pos[team],  # carried zone entries by the carrier's position
+            "sides": sides[team],  # screen sides going up, then going down (screen_sides)
             "possZones": poss[team],  # its possession in game seconds: attacking, neutral, defensive zone
             "possAtt": poss[team][0], "possAttAgainst": poss[1 - team][0],  # attacking-zone possession, its own and its opponent's
             "bumped": sum(1 for e in m.get("bumps", []) if e["team"] == team and e.get("kind") != "goalie"),  # its carriers bumped off the puck

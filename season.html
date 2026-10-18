@@ -909,7 +909,7 @@ function playTotals(list) {
     const r = rows.get(abbr) || rows.set(abbr, { abbr, name: g.names[side], gp: 0, humanGames: 0, habits: null, habitGames: 0, pairs: {}, gHuman: [0, 0], gCpu: [0, 0] }).get(abbr);
     r.gp++;
     if (g.humans[side]) r.humanGames++;
-    for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses', 'puckPos', 'entryPos']) r[k] = sumArr(r[k], t[k]);
+    for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses', 'puckPos', 'entryPos', 'sides']) r[k] = sumArr(r[k], t[k]);
     if (t.habits) {
       r.habitGames++;
       const h = r.habits || (r.habits = { minutes: 0, presses: { A: 0, B: 0, C: 0 }, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, dives: 0, goalieSeconds: 0 });
@@ -986,12 +986,12 @@ function viewPlay(list, team) {
     { key: 'rate', label: '\u2192 shot', title: 'Share of these passes that led straight to a shot attempt', value: r => (r.made ? r.shots / r.made : NaN),
       show: r => (r.made ? pct1(100 * r.shots / r.made) : '\u2013') },
   ], 'made');
-  const passing = viewPassing(list, team), carrying = viewCarrying(rows, team), aiming = viewAiming(list, team);
+  const passing = viewPassing(list, team), carrying = viewCarrying(rows, team), aiming = viewAiming(list, team), sides = viewSides(rows, team);
   return '<h2>Play style</h2><h2 style="font-size:14px">How chances were made</h2>' + chances +
     '<h2 style="font-size:14px;margin-top:20px">Person vs computer</h2>' + versus +
     '<h2 style="font-size:14px;margin-top:20px">Controller habits</h2>' + habits +
     `<h2 style="font-size:14px;margin-top:20px">Passing network: ${esc(netTeam.name)} <small class="muted">(pick a team above to see another)</small></h2>` + network +
-    carrying + aiming + passing +
+    carrying + sides + aiming + passing +
     '<p class="note">The person always has the puck carrier, so shots and passes are almost all the person\u2019s; checks and penalties are where the computer\u2019s skaters show.</p>';
 }
 
@@ -1051,6 +1051,36 @@ function viewCarrying(rows, team) {
     { key: 'ent', label: 'Carried in D / C / W', title: 'Zone entries carried in by a defenceman, the centre, a winger (all zones)', value: r => ent(r, 0, 1, 2, 3, 4),
       show: r => `${ent(r, 0, 1)} / ${ent(r, 3)} / ${ent(r, 2, 4)}` },
   ], 'puck') + '<p class="note">Two defencemen, two wingers and one centre: if every position carried the puck equally it would be D 40%, C 20%, W 40%. The person always has the puck carrier, so these are the person’s choices.</p>';
+}
+
+// Screen sides by direction (the summaries' `sides`, tools/season.py screen_sides): a person, or the computer, may favour
+// one side of the screen whichever way the team is going, and Home goes up in periods 1 and 3, Away in 2 and OT. Per
+// direction (19 numbers): carrying seconds by position (LD, RD, LW, C, RW) and by the puck's half of the screen (left,
+// right), shot attempts from the screen's left / middle / right and goals from them, shots aimed left / middle / right
+// (the stick on the screen) and goals from them.
+function viewSides(rows, team) {
+  rows = rows.filter(r => r.sides && (!team || r.abbr === team));
+  if (!rows.length) return '';
+  const lines = rows.flatMap(r => [0, 1].map(dir => ({ ...r, dir, v: r.sides.slice(dir * 19, dir * 19 + 19) })));
+  const carry = r => r.v[0] + r.v[1] + r.v[2] + r.v[3] + r.v[4];
+  const sh = (r, i) => (carry(r) ? 100 * r.v[i] / carry(r) : NaN);
+  const half = (r, i) => (r.v[5] + r.v[6] ? 100 * r.v[i] / (r.v[5] + r.v[6]) : NaN);
+  const three = (r, at) => `${r.v[at]} / ${r.v[at + 1]} / ${r.v[at + 2]}`;
+  const gs = (r, at) => `<small>${r.v[at + 3]}/${r.v[at]} · ${r.v[at + 4]}/${r.v[at + 1]} · ${r.v[at + 5]}/${r.v[at + 2]}</small>`;
+  return '<h2 style="font-size:14px;margin-top:20px">Screen sides, going up and going down</h2>' + table('playSides', lines, [
+    { key: 'name', label: 'Team', left: true, show: teamCell },
+    { key: 'dir', label: 'Going', title: 'Which way the team was attacking on the screen (Home goes up in periods 1 and 3, Away in 2 and OT)', show: r => (r.dir ? '↓ down' : '↑ up') },
+    { key: 'pl', label: 'Puck left %', title: 'Of its time with the puck on a stick going this way: the puck on the screen’s left half', value: r => half(r, 5), show: r => pct1(half(r, 5)) },
+    { key: 'pr', label: 'Puck right %', title: '... on the screen’s right half', value: r => half(r, 6), show: r => pct1(half(r, 6)) },
+    { key: 'lw', label: 'LW %', title: 'Share of the carrying time going this way by the left winger (going up he is on the screen’s left, going down on its right)', value: r => sh(r, 2), show: r => pct1(sh(r, 2)) },
+    { key: 'rw', label: 'RW %', title: '... by the right winger (screen right going up, screen left going down)', value: r => sh(r, 4), show: r => pct1(sh(r, 4)) },
+    { key: 'ld', label: 'LD %', title: '... by the left defenceman', value: r => sh(r, 0), show: r => pct1(sh(r, 0)) },
+    { key: 'rd', label: 'RD %', title: '... by the right defenceman', value: r => sh(r, 1), show: r => pct1(sh(r, 1)) },
+    { key: 'shots', label: 'Shots L / M / R', title: 'Shot attempts from the screen’s left, middle (within the posts’ width) and right', value: r => r.v[7] + r.v[8] + r.v[9], show: r => three(r, 7) },
+    { key: 'shotg', label: 'G / att', title: 'Goals / attempts from the screen’s left, middle and right', sortable: false, show: r => gs(r, 7) },
+    { key: 'aim', label: 'Aimed L / M / R', title: 'Shots aimed at the screen’s left, middle and right (the stick at the release; going down the screen’s left is the shooter’s right)', value: r => r.v[13] + r.v[14] + r.v[15], show: r => three(r, 13) },
+    { key: 'aimg', label: 'G / att', title: 'Goals / shots aimed at the screen’s left, middle and right', sortable: false, show: r => gs(r, 13) },
+  ], 'name') + '<p class="note">Left and right are the screen’s. Going up, the left winger and left defenceman play the screen’s left and a shot aimed left goes to the shooter’s left; going down it is all the other way round. A team that favours one side of the screen whichever way it goes shows it in both rows.</p>';
 }
 
 // Passing by zone: who passes a lot where, and which way. Each skater's passes from the zone picked (his team's view:

@@ -1017,6 +1017,18 @@ Body checks · shoulder / hip / cross-check (hits' `how`; unseen ones left out),
 were already there (Advanced, Genesis games with an attempt). Five BOS-DAL games: aimed high 10 goals in 35, middle 25
 in 90, at the ice 2 in 33. Checked in headless Edge on 2026-10-17_2246_DAL-BOS: every split adds up to its parent.
 
+## Screen sides by direction (2026-10-18)
+
+Someone pointed out to the user that people (maybe the computer too) may favour a side of the SCREEN whichever way
+they attack. season.py `screen_sides` (summary VERSION 18, per team `sides`: 2 x 19 numbers, going up then down, from
+own_end: a team's goalie at -Y = going up): carrying game seconds by position (LD, RD, LW, C, RW) and by the puck's
+half of the screen (x < 0 left), shot attempts from the screen's left / middle / right (SIDE_MIDDLE 20) and goals,
+shots aimed at the screen's left / middle / right (aim.d 5-7 / 0, 4, 8 / 1-3: the stick on the screen) and goals.
+Season page Play style: "Screen sides, going up and going down" (a row per team and direction). Viewer: team stats
+group "Screen sides" (closed at first) with the same numbers live (`ends[f] === team` = going up), each a total and
+· going up / · going down. The five BOS-DAL games together: aimed goals going up 7/36 screen-left, 11/34 right; going
+down 11/32 left, 4/35 right: the shooter's right both ways, not a screen side (small samples).
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the

@@ -543,6 +543,7 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Pass direction and zones</dt><dd>Each pass is classed by the way the puck left the stick, against the way the passer's team attacks: forward (within 30&deg; of straight up the ice), diagonal forward (30&ndash;60&deg;), sideways (within 30&deg; of straight across, so a little forward or back still counts), diagonal back, backward; and by the zone it was made in and the zone it reached (attacking, neutral, defensive, in the passer's team's terms). Shown in the team stats ("Passing by zone and direction"), on the card, and on the season page's Play style tab ("Passing by zone"), with each player's game time with the puck in that zone and passes per minute of it: high means he moves the puck on, low means he skates with it.</dd>
   <dt>Where a goal went in</dt><dd>Each goal in the scoring summary and its banner has a small picture of the net, seen from the shooter's side, with the spot where the puck crossed the goal line (posts at the sides, the crossbar at the top). (Older SNES recordings converted before the puck's height was found show a dashed line across the net instead.)</dd>
   <dt>Where a shot was aimed</dt><dd>Both games aim every shot at one of nine points in the net, picked by the direction the stick is held as you shoot, by screen direction: up, up-left or up-right aims high; left, right or no direction middle height; down-left, down or down-right along the ice; left and right are the screen's sides (so shooting down the screen, the stick's left is the shooter's right). The game then scatters the shot at random (more for hard shots, weak shooters and long range). Shot tooltips say where each was aimed; on a goal's net picture the blue ring is the aim and the yellow dot where it went in; the card and the season page count where each player aims.</dd>
+  <dt>Screen sides</dt><dd>Left and right on the screen, split by which way a team was going (Home attacks up the screen in periods 1 and 3, Away in period 2 and overtime), for anyone who favours one side of the screen whichever way he goes: where the puck was while the team carried it, how much each winger and defenceman carried it (going up the left winger is on the screen's left, going down on its right), where shots came from and where they were aimed. In the team stats' "Screen sides" group, and across games on the season page's Play style tab.</dd>
   <dt>Shot aim</dt><dd>Where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net, high, middle or along the ice, and left, middle or right (one-timers and computer shooters are aimed by the game). The team stats split goals and attempts by height; in the recorded games shots aimed along the ice almost never went in.</dd>
   <dt>Saves: held / rebound / cleared</dt><dd>What became of each save a team's goalies made: held by the goalie (or play stopped), a rebound the shooting team got to first, or cleared by the goalie's own team.</dd>
   <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
@@ -3135,6 +3136,11 @@ const STAT_HELP = {
   'Turnovers \u2192 shot against': 'Giveaways the other team turned into a shot attempt within 5 s (in brackets, how many became goals).',
   // ---- puck control
   'Possession': 'Game time the team controlled the puck. Each second of the game clock goes to the team with the puck on a stick; a loose puck goes to the team that had it if it gets it back, to Transition if the other team gets it.',
+  'Puck on screen left / right': 'Of the team\u2019s time with the puck on a stick: the puck on the screen\u2019s left half or its right half. The rows below split it by which way the team was going (Home goes up in periods 1 and 3, Away in 2 and OT): a side the person favours whichever way he goes shows in both.',
+  'Carried by LW / RW': 'The left and right winger\u2019s shares of the team\u2019s carrying time. Going up the screen the left winger is on the screen\u2019s left; going down, on its right.',
+  'Carried by LD / RD': 'The left and right defenceman\u2019s shares of the team\u2019s carrying time. Going up the screen the left defenceman is on the screen\u2019s left; going down, on its right.',
+  'Shots from L / M / R (G / att)': 'Goals / attempts from the screen\u2019s left, the middle (within the posts\u2019 width) and the screen\u2019s right.',
+  'Aimed at L / M / R (G / att)': 'Goals / shots aimed at the screen\u2019s left, middle and right (the stick at the release). Going up, the screen\u2019s left is the shooter\u2019s left; going down, his right.',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
   'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s.',
@@ -3262,13 +3268,18 @@ const STAT_HELP = {
   'Saves, human': 'Saves / shots while a person controlled him at the moment of the shot.',
   'Saves, CPU': 'Saves / shots while the computer controlled him.',
 };
+// The screen-sides rows' break-downs by direction share one explanation each way.
+for (const parent of ['Puck on screen left / right', 'Carried by LW / RW', 'Carried by LD / RD', 'Shots from L / M / R (G / att)', 'Aimed at L / M / R (G / att)']) {
+  STAT_HELP[parent + '|\u00b7 going up'] = 'The same while the team was attacking up the screen (Home in periods 1 and 3, Away in period 2 and overtime).';
+  STAT_HELP[parent + '|\u00b7 going down'] = 'The same while the team was attacking down the screen (Home in period 2 and overtime, Away in periods 1 and 3).';
+}
 // The explanation for a stat label, by its parent row first for break-down rows ("· attacking zone").
 function statHelp(label, parent) {
   const key = String(label).replace(/\s*\(\d.*$/, '').trim();
   return (parent && STAT_HELP[parent + '|' + key]) || STAT_HELP[key] || (/^Transition/.test(key) ? STAT_HELP.Transition : '');
 }
 // Team-stat groups closed by the viewer (by heading); the long lists start closed.
-let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction']);
+let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction', 'Screen sides']);
 try { const saved = localStorage.getItem('nhl94-closed-groups'); if (saved) closedGroups = new Set(JSON.parse(saved)); } catch (e) { /* defaults */ }
 function fillTeamStats(snap) {
   const box = $('teamStats');
@@ -3366,6 +3377,37 @@ function fillTeamStats(snap) {
   const checkTypes = team => ['shoulder', 'hip', 'cross-check'].map(h => (match.hits || []).filter(e => e.f <= f && e.team === team && e.how === h).length).join(' / ');
   const injuriesCaused = team => (match.injuries || []).filter(e => !e.atStart && e.f <= f && e.team !== team).length;
   const anyInjuries = (match.injuries || []).some(e => !e.atStart && e.f <= f);
+  // Screen sides by direction, as tools/season.py screen_sides counts them for the season page: someone may favour a
+  // side of the screen whichever way his team goes (Home goes up in periods 1 and 3, Away in 2 and OT). For a team and
+  // a direction (0 up, 1 down): carrying game seconds by position (LD, RD, LW, C, RW) and by the puck's half of the
+  // screen; shot attempts from the screen's left / middle / right (within the posts' width) and their goals; shots
+  // aimed at the screen's left / middle / right (the stick on the screen) and their goals.
+  const goingUp = (i, team) => ends && ends[i] === team;
+  const sides = [0, 1].map(team => [0, 1].map(dir => {
+    const v = new Array(19).fill(0);
+    if (!ends || !possession) return v;
+    for (let i = 1; i <= f; i++) {
+      const k = match.owner[i];
+      if (!possession.tick[i] || k < 0 || (k < 6 ? 0 : 1) !== team || goingUp(i, team) === Boolean(dir)) continue;
+      const r = role(i, k);
+      if (r <= 0) continue;
+      v[r - 1] += possession.tick[i];
+      v[match.puck[3 * i] < 0 ? 5 : 6] += possession.tick[i];
+    }
+    for (const sh of list) {
+      if (sh.team !== team || goingUp(sh.f, team) === Boolean(dir)) continue;
+      const goal = sh.result === 'goal' ? 1 : 0, at = sh.x < -20 ? 0 : sh.x > 20 ? 2 : 1;
+      v[7 + at]++; v[10 + at] += goal;
+      if (sh.aim) { const a = [1, 2, 3].includes(sh.aim.d) ? 2 : [5, 6, 7].includes(sh.aim.d) ? 0 : 1; v[13 + a]++; v[16 + a] += goal; }
+    }
+    return v;
+  }));
+  const both = (team, at, n) => Array.from({ length: n }, (_, j) => sides[team][0][at + j] + sides[team][1][at + j]);
+  const pctPair = v => (v[0] + v[1] ? Math.round(100 * v[0] / (v[0] + v[1])) + ' / ' + Math.round(100 * v[1] / (v[0] + v[1])) + '%' : '–');
+  const carryShare = (v, a, b) => { const n = v[0] + v[1] + v[2] + v[3] + v[4]; return n ? Math.round(100 * v[a] / n) + ' / ' + Math.round(100 * v[b] / n) + '%' : '–'; };
+  const triple = (v, at) => v[at + 3] + '/' + v[at] + ' · ' + v[at + 4] + '/' + v[at + 1] + ' · ' + v[at + 5] + '/' + v[at + 2];
+  const sideRows = (label, cell) => [[label, cell(0, null), cell(1, null)], ['· going up', cell(0, 0), cell(1, 0)], ['· going down', cell(0, 1), cell(1, 1)]];
+  const sideOf = (team, dir) => (dir === null ? [...Array(19).keys()].map(j => sides[team][0][j] + sides[team][1][j]) : sides[team][dir]);
   // A one-timer means the pass reached the shooter, but the game never counts it as completed (the shooter never
   // 'has' the puck), so each one-timer attempt is added to completed passes, capped at passes tried.
   const made = t => Math.min(t.passTried, t.passMade + (t.oneTimerTried || 0));
@@ -3472,6 +3514,12 @@ function fillTeamStats(snap) {
       ['Diagonal back / backward', passDir(0, 1), passDir(1, 1)],
       ['Out of own zone', passCross(0, 'def'), passCross(1, 'def')],
       ['Into attacking zone', passInto(0), passInto(1)]] : []),
+    ...(ends && possession ? [section('Screen sides'),
+      ...sideRows('Puck on screen left / right', (team, dir) => pctPair(sideOf(team, dir).slice(5, 7))),
+      ...sideRows('Carried by LW / RW', (team, dir) => carryShare(sideOf(team, dir), 2, 4)),
+      ...sideRows('Carried by LD / RD', (team, dir) => carryShare(sideOf(team, dir), 0, 1)),
+      ...sideRows('Shots from L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 7)),
+      ...(list.some(sh => sh.aim) ? sideRows('Aimed at L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 13)) : [])] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
