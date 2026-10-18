@@ -201,7 +201,13 @@ if anything slightly worse.
   than the built-in edge.
 - **Home record in these games:** Genesis 6 home wins in 8 whole games, SNES 3 in 5, but most of these are the same
   person playing Home against the computer or a friend, so they say nothing about home ice.
-- **Shot scatter** (halved shooting down on the Genesis): a person's scattered shots went wide 32% of the time going up
-  and 36% going down (41 and 42 shots): no difference to see.
+- **Shot scatter** (Genesis): only one of its three parts is halved shooting down. A scattered shot's target point is
+  moved at random sideways (up to 136 units), in depth along the ice (up to 60) and up (never down); the depth part is
+  halved when the shot goes down the screen. The puck's velocity comes from that moved target, so depth scatter
+  changes the shot's angle and speed: little for a shot from in front of the net, more from the side, where a target
+  pushed deeper or nearer swings where the puck crosses the goal line. Worth, by the xG model played both ways on the
+  recorded shots: +1.4% expected goals for shots going down (36.7 against 36.1 if never halved; 174 shots), +3.7% for
+  shots from the side (more than 40 off the middle); nothing going up. About one goal in 300 shots going down: far too
+  small to see in a dozen games (people's scattered shots went wide 32% going up, 36% going down, 41 and 42 shots).
 - **The goalies' sticks**: stick saves were 41% of the shots that reached the top net's goalie and 44% at the bottom
   net (Genesis); SNES 23% and 30%. No clear difference.
