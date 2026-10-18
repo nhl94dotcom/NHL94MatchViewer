@@ -1763,6 +1763,13 @@ Five Genesis games (Documents/NHL94 Viewer, 2026-10-17_2219 ... 2257, nhl94.bin,
   front took it off his stick (checkgoal, as in the shoulder-save bobble) and it crossed the line loose. The game
   credited Courtnall, unassisted (Dallas's last toucher), which the shot list keeps (an opposing skater who keeps the
   puck does not stop the credit).
+- The viewer notes both (the user's wish; credits kept as the game gives them): `add_own_goals` gives a goal
+  `ownGoal` (roster index) when the last player to have the puck within OWN_GOAL_MS 1 s was an opposing skater;
+  `goalNotes` adds "own goal: X put it in his own net" and "the game credits X with both assists (a bug in the game,
+  not the viewer)" to the banner and the scoring summary, an "own goal" tag, two Help entries. Over all recordings:
+  seven own goals (Juneau and Suter in CGY-BOS, Taglianeti in BOS-PIT, Steve Smith in CHI-CGY (SNES), Ciccarelli in
+  capture2_away, Robitaille in capture3_bos_la, Neely); in each Genesis one the defender held the puck 0.3-1.1 s and
+  the scoring team's last toucher (+$18) never changed after, so the game's own record agrees.
 - Two injuries in 2246 (Neely by Modano P1, Sweeney by Tinordi P3), each with the injury's roughing call (code $12,
   no roll), out for the period; a penalty-shot goal (2219, Oates, not a shot on goal, as the code says).
 

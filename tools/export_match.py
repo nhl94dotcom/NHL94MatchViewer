@@ -1485,6 +1485,26 @@ def add_check_payoff(m):
                 break
 
 
+OWN_GOAL_MS = 1000  # the own-goal scorer had the puck this close before the goal
+
+
+def add_own_goals(m):
+    """A goal the other team's skater put in his own net: the last player to have the puck before it went in (within
+    OWN_GOAL_MS) was an opposing skater, not a goalie, and nobody of the scoring team had it after him. The game still
+    credits the scoring team's last toucher (2026-10-17_2246_DAL-BOS P2 1:58: Neely took Courtnall's shot and carried
+    it into his own net, the net's front took it off his stick and it crossed the line loose; the game gave Courtnall
+    the goal). `ownGoal` on the goal: the roster index of the player who put it in."""
+    t, own, K = m['t'], m['owner'], 12
+    role = lambda i, k: m['role'][i * K + k] if 'role' in m else 'x'
+    for g in m.get('goals', []):
+        f, theirs = g['f'], range(6, 12) if g['team'] == 0 else range(6)
+        q = f
+        while q > 0 and t[f] - t[q] <= OWN_GOAL_MS and own[q] < 0:
+            q -= 1
+        if t[f] - t[q] <= OWN_GOAL_MS and own[q] in theirs and role(q, own[q]) != '0':
+            g['ownGoal'] = int(m['roster'][q * K + own[q]], 36)
+
+
 def add_goalie_giveaways(m):
     """Goals off a goalie's giveaway (the user: a goalie out of position passes, the other team picks it off at once
     and scores, directly or with up to two passes): a turnover whose giver was his team's goalie, then a goal by the
@@ -1809,6 +1829,7 @@ def main(argv=None):
         add_check_payoff(match)
         add_goalie_giveaways(match)
     add_goal_spots(match)
+    add_own_goals(match)
     add_shot_aim(match, getattr(system, 'AIM_TABLE', None))
     xg.add_expected_goals(match)
     if match.get("system") == "snes" and rom_path.exists():

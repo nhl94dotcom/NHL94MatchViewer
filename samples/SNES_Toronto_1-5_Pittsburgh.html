@@ -531,6 +531,8 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Where a shot was aimed</dt><dd>Both games aim every shot at one of nine points in the net, picked by the direction the stick is held as you shoot, by screen direction: up, up-left or up-right aims high; left, right or no direction middle height; down-left, down or down-right along the ice; left and right are the screen's sides (so shooting down the screen, the stick's left is the shooter's right). The game then scatters the shot at random (more for hard shots, weak shooters and long range). Shot tooltips say where each was aimed; on a goal's net picture the blue ring is the aim and the yellow dot where it went in; the card and the season page count where each player aims.</dd>
   <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
   <dt>Checks that pay off, goal off a check</dt><dd>A check after which the checking team had the puck within 2 seconds (before the other team got it back); then a shot attempt within 5 seconds of that; or a goal within 8 seconds of the check, when the check was on the puck carrier and the other team never had the puck between: that goal is tagged "off a check".</dd>
+  <dt>Own goal</dt><dd>A goal a defending skater put in his own net: he had the puck last, carrying it, and skated it into the net's front, which knocks it off his stick and lets it slide over the line. The game credits the goal to the scoring team's last player to touch the puck, and the viewer keeps that credit, with an "own goal" tag naming the player who put it in.</dd>
+  <dt>Both assists to one player</dt><dd>Rarely, the game gives one player both assists on a goal. It's a bug in the game: when a player one-times the puck twice in a row (the rebound coming straight back onto his stick), the game lists him twice among the last players to touch it. The viewer shows the game's credit and notes it.</dd>
   <dt>Goalie giveaway</dt><dd>A goal straight off a goalie's bad pass: his pass was picked off and the other team scored within 6 seconds, directly or with up to two passes, without his team getting the puck back. The goal is tagged "goalie giveaway"; it shows on the goalie's card and the season page.</dd>
   <dt>Net knocked off</dt><dd>A skater (or goalie) bumped a net off its spot and play stopped. An attacker knocking the other team's net off gets the faceoff moved out to a dot just outside that zone; a defender knocking his own off keeps it in the zone. The faceoff that follows tells which it was; whoever was nearest the net on that side gets the credit. Shown as a banner, in the team stats (theirs / own), on the card and on the season page. Much more common on the SNES.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
@@ -2460,7 +2462,7 @@ function findCallouts(m) {
   for (const g of m.goals || []) {
     const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')'));
     out.push({ f: g.f, net: g.net, aim: g.aim, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.join(', ') : ''),
-      text: playerName(g.team, g.scorer) + ' (' + g.goals + ')' + (helpers.length ? ' \u2014 assists ' + helpers.join(', ') : ' \u2014 unassisted') });
+      text: playerName(g.team, g.scorer) + ' (' + g.goals + ')' + (helpers.length ? ' \u2014 assists ' + helpers.join(', ') : ' \u2014 unassisted') + goalNotes(g) });
   }
   return out.sort((a, b) => a.f - b.f);
 }
@@ -4076,7 +4078,18 @@ function playerName(team, idx) {
   return p ? '#' + p.num + ' ' + p.name : 'unknown';
 }
 const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot', 'EA Special': 'EA Special',
-  'off a check': 'off a check', 'goalie giveaway': 'goalie giveaway' };
+  'off a check': 'off a check', 'goalie giveaway': 'goalie giveaway', 'own goal': 'own goal' };
+
+// What the game's own credit hides: an own goal (an opposing skater put it in his own net; the game credits the
+// scoring team's last toucher), and a player the game credited with both assists (its one-timer bookkeeping: a
+// player who one-times twice in a row goes into its list of touchers twice; 2026-10-17_2257_BOS-DAL P1 4:25).
+function goalNotes(g) {
+  let out = '';
+  if (g.ownGoal != null) out += ' \u00b7 own goal: ' + playerName(1 - g.team, g.ownGoal).replace(/^#\d+ /, '') + ' put it in his own net';
+  if (g.assists.length === 2 && g.assists[0][0] === g.assists[1][0])
+    out += ' \u00b7 the game credits ' + playerName(g.team, g.assists[0][0]).replace(/^#\d+ /, '') + ' with both assists (a bug in the game, not the viewer)';
+  return out;
+}
 // Where a goal crossed the goal line (the converter's goal.net: x across the mouth as the shooter sees it, posts at
 // +/-20; z the puck's height, Genesis only): a little net seen from the shooter's side with the puck in it.
 const NET_PIC = { halfW: 20, height: 16 };
@@ -4137,9 +4150,9 @@ function fillScoring(f) {
     const line = document.createElement('div'), sub = document.createElement('small');
     line.className = 'goal';
     line.textContent = periodName(g.period) + ' ' + clockText(g.clock) + ' \u00b7 ' + (g.team ? match.team2 : match.team1) + ' \u00b7 ' + playerName(g.team, g.scorer) + ' (' + g.goals + ')';
-    for (const kind of g.kinds) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = GOAL_TAGS[kind] || kind; line.append(tag); }
+    for (const kind of g.kinds.concat(g.ownGoal != null ? ['own goal'] : [])) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = GOAL_TAGS[kind] || kind; line.append(tag); }
     if (g.net) line.prepend(netPicture(g.net, 46, g.aim));
-    sub.textContent = g.assists.length ? 'Assists: ' + g.assists.map(([idx, n]) => playerName(g.team, idx) + ' (' + n + ')').join(', ') : 'Unassisted';
+    sub.textContent = (g.assists.length ? 'Assists: ' + g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')')).join(', ') : 'Unassisted') + goalNotes(g);
     line.append(sub);
     box.append(line);
   }
