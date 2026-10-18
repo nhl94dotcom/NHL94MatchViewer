@@ -33,7 +33,7 @@ def off_line(px, py, gx, gy, net_y):
 
 rows = []
 files = {}
-for p in glob.glob("matches/*.js") + glob.glob(r"C:/Users/USER/Documents/NHL94 Viewer/matches/*.js"):
+for p in glob.glob("matches/*.js") + glob.glob(str(Path.home() / "Documents/NHL94 Viewer/matches/*.js")):
     if not p.endswith(".summary.json") and Path(p).name not in ("season.js", "shot_study.json"):
         files.setdefault(Path(p).name, p)
 for name, p in sorted(files.items()):

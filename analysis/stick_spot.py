@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, "tools")
 from share_game import load_js_object  # noqa: E402
 
-ROM = Path(r"C:/Users/USER/RetroArch-1.17-Win64/ROMs/Genesis/nhl94.bin").read_bytes()
+ROM = (Path.home() / "RetroArch-1.17-Win64/ROMs/Genesis/nhl94.bin").read_bytes()
 HOTLIST = 0xA44C8
 K = 12
 
@@ -36,7 +36,7 @@ def catches(m):
 
 if __name__ == "__main__":
     files = {}
-    for p in glob.glob("matches/*.js") + glob.glob(r"C:/Users/USER/Documents/NHL94 Viewer/matches/*.js"):
+    for p in glob.glob("matches/*.js") + glob.glob(str(Path.home() / "Documents/NHL94 Viewer/matches/*.js")):
         if not p.endswith(".summary.json") and Path(p).name not in ("season.js", "shot_study.json"):
             files.setdefault(Path(p).name, p)
     variants = {(sx, sy, off): [] for sx in (1, -1) for sy in (1, -1) for off in (0, -1)}

@@ -3,7 +3,7 @@
 # sprites.bin, about 30 samples a second, each:
 #   [int64 ms][RAM $B000-$CBFF][uint16 n][n x 8-byte sprite entries][uint16 t][t x (uint16 tile number, 32 bytes)]
 # Words are in the emulator's byte order (little-endian); a byte at address A is at offset A XOR 1.
-param([int]$Seconds = 180, [string]$OutDir = "C:\Users\USER\NHL94_Viewer\captures\sprites_$(Get-Date -Format 'yyyyMMdd_HHmmss')")
+param([int]$Seconds = 180, [string]$OutDir = "$(if ($PSScriptRoot) { Join-Path $PSScriptRoot '..' } else { (Get-Location).Path })\captures\sprites_$(Get-Date -Format 'yyyyMMdd_HHmmss')")
 
 Add-Type -TypeDefinition @'
 using System; using System.IO; using System.Diagnostics; using System.Threading; using System.Collections.Generic; using System.Runtime.InteropServices;

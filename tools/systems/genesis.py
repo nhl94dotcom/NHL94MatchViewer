@@ -53,7 +53,7 @@ CONT_TEAMS = (0xC328, 0xC32A)  # cont1team, cont2team: the team each controller 
 SCORE_SUM_BYTES, SCORE_SUM = 0xC472, 0xC474  # the game's scoring summary: a byte count, then 6 bytes per goal
 TEAM_TABLE = 0x30E
 RINK_LOGO_TABLE_POINTER = 0xFEA5A  # holds the address of a table of one logo address per team
-DEFAULT_ROM = Path(r"C:\Users\USER\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin")
+DEFAULT_ROM = Path.home() / "RetroArch-1.17-Win64/ROMs/Genesis/nhl94.bin"
 
 # The animation words (record +$58) the analysis needs, by name. The game's own names for every animation are in
 # the Genesis disassembly (src/frames94.asm; listed in CLAUDE.md): shotf/shotb, passf/passb, sweepchk, hook, burst,

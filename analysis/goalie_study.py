@@ -21,7 +21,7 @@ K = 12
 
 def games(system):
     files = {}
-    for p in glob.glob("matches/*.js") + glob.glob(r"C:/Users/USER/Documents/NHL94 Viewer/matches/*.js"):
+    for p in glob.glob("matches/*.js") + glob.glob(str(Path.home() / "Documents/NHL94 Viewer/matches/*.js")):
         n = Path(p).name
         if n == "season.js" or "state" in n or "explore" in n or "full_buttons" in n:
             continue

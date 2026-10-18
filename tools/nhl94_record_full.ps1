@@ -1,6 +1,6 @@
 # Records ALL of NHL '94's work RAM at full rate, for finding where something lives. Read-only on the emulator.
 # ram.bin: every ~16 ms, [int64 ms][all 64 KB]. About 4 MB per second, so keep it short.
-param([int]$Seconds = 75, [string]$OutDir = "C:\Users\USER\NHL94_Viewer\captures\full_$(Get-Date -Format 'yyyyMMdd_HHmmss')")
+param([int]$Seconds = 75, [string]$OutDir = "$(if ($PSScriptRoot) { Join-Path $PSScriptRoot '..' } else { (Get-Location).Path })\captures\full_$(Get-Date -Format 'yyyyMMdd_HHmmss')")
 
 Add-Type -TypeDefinition @'
 using System; using System.IO; using System.Diagnostics; using System.Threading; using System.Runtime.InteropServices;

@@ -34,10 +34,10 @@ def stage(m, data, f, k):
 
 def main():
     files = {}
-    for p in glob.glob("matches/*.js") + glob.glob(r"C:/Users/USER/Documents/NHL94 Viewer/matches/*.js"):
+    for p in glob.glob("matches/*.js") + glob.glob(str(Path.home() / "Documents/NHL94 Viewer/matches/*.js")):
         if not p.endswith(".summary.json") and Path(p).name not in ("season.js", "shot_study.json"):
             files.setdefault(Path(p).name, p)
-    rom = Path(r"C:/Users/USER/RetroArch-1.17-Win64/ROMs/SNES/NHL94_Classic.smc").read_bytes()
+    rom = (Path.home() / "RetroArch-1.17-Win64/ROMs/SNES/NHL94_Classic.smc").read_bytes()
     data = xg_snes.RomData(rom)
     exp, got, n, decoded = 0.0, 0, 0, Counter()
     by_diff = Counter()

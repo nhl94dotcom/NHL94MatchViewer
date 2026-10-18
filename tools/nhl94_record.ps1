@@ -2,7 +2,7 @@
 # fast.bin: every ~16 ms, [int64 ms][$B000-$BFFF][$C400-$CDFF] (layout also written to capture.json; $CDFF covers
 # both teams' whole stat blocks).
 # full.bin: every ~1 s, [int64 ms][all 64 KB].
-param([int]$Seconds = 240, [string]$OutDir = "C:\Users\USER\NHL94_Viewer\captures\capture_$(Get-Date -Format 'yyyyMMdd_HHmmss')")
+param([int]$Seconds = 240, [string]$OutDir = "$(if ($PSScriptRoot) { Join-Path $PSScriptRoot '..' } else { (Get-Location).Path })\captures\capture_$(Get-Date -Format 'yyyyMMdd_HHmmss')")
 
 Add-Type -TypeDefinition @'
 using System; using System.IO; using System.Diagnostics; using System.Threading; using System.Runtime.InteropServices;

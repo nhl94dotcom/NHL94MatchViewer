@@ -140,13 +140,13 @@ If the picture is missing the viewer falls back to a drawn rink whose blue lines
 real-rink proportions (about 3 units per foot).
 
 The user is part of an NHL '94 online community that standardizes on RetroArch 1.17 + the Genesis Plus GX core,
-with a trimmed-down menu configuration. The user's install: `C:\Users\USER\RetroArch-1.17-Win64`.
+with a trimmed-down menu configuration. The user's install: `%USERPROFILE%\RetroArch-1.17-Win64`.
 ROM in use: NHL '94, crc32 `9438f5dd`.
 
 ## SNES version
 
 The user wants a SNES version too. The community plays it in RetroArch with the Snes9x core
-(`cores\snes9x_libretro.dll`); ROMs are in `C:\Users\USER\RetroArch-1.17-Win64\ROMs\SNES`: `NHL94.smc` (the base
+(`cores\snes9x_libretro.dll`); ROMs are in `%USERPROFILE%\RetroArch-1.17-Win64\ROMs\SNES`: `NHL94.smc` (the base
 game, crc32 42212a77 without header), `NHL94_Classic.smc` (a small hack that tracks checks per player), league ROMs
 such as `SDL-S14.smc`. SNES hacking is less advanced than Genesis hacking. A colleague is mapping the SNES RAM
 from the Genesis memory map doc. The user's old SNES save-state parser is `reference/snes_savestate_stats.txt` (see below).
@@ -624,7 +624,7 @@ intermissions. NHL '95-based ROMs in that folder (code T-50856) are not supporte
 
 ## ROM data (names and numbers)
 
-The ROM is at `C:\Users\USER\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin` (the same folder has edited variants;
+The ROM is at `%USERPROFILE%\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin` (the same folder has edited variants;
 names must come from whichever ROM was being played). All values big-endian.
 
 - `$30E`: 28 four-byte team pointers, alphabetical by city (Anaheim = 0 ... Winnipeg = 25, All Stars East, West).

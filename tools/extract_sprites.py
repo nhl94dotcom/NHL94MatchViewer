@@ -20,7 +20,7 @@ from pathlib import Path
 # Where games, replays, sprites and settings live: the project folder, or NHL94_HOME (the packaged helper sets it to
 # a folder in Documents, since a single .exe cannot write beside its own files).
 ROOT = Path(os.environ["NHL94_HOME"]) if os.environ.get("NHL94_HOME") else Path(__file__).resolve().parent.parent
-DEFAULT_ROM = Path(r"C:\Users\USER\RetroArch-1.17-Win64\ROMs\Genesis\nhl94.bin")
+DEFAULT_ROM = Path.home() / "RetroArch-1.17-Win64/ROMs/Genesis/nhl94.bin"
 TILES, FRAME_TABLE, FRAME_COUNT = 0x5DE84, 0x9E724, 846  # frames 1-845; the table has one more word, the end
 RINK_PALETTE = 0x59924  # from the NOSE editor's game definitions
 # Pixels are stored one character each: chr(48 + 16 * slot + colour), where the slot says whose colours to use.

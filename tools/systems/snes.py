@@ -317,7 +317,7 @@ class Emulator:
         self.p.close()
 
 
-DEFAULT_ROM = Path(r"C:\Users\USER\RetroArch-1.17-Win64\ROMs\SNES\NHL94.smc")
+DEFAULT_ROM = Path.home() / "RetroArch-1.17-Win64/ROMs/SNES/NHL94.smc"
 
 
 def find_rom(capture):

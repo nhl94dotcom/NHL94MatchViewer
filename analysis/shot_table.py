@@ -14,7 +14,7 @@ from export_match import own_end  # noqa: E402
 
 K = 12
 files = {}
-for p in glob.glob("matches/*.js") + glob.glob(r"C:/Users/USER/Documents/NHL94 Viewer/matches/*.js"):
+for p in glob.glob("matches/*.js") + glob.glob(str(Path.home() / "Documents/NHL94 Viewer/matches/*.js")):
     if p.endswith(".summary.json"):
         continue
     files.setdefault(Path(p).name, p)

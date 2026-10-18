@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems import snes  # noqa: E402
 from systems.common import ROOT  # noqa: E402
 
-ROMS = Path(r"C:\Users\USER\RetroArch-1.17-Win64\ROMs\SNES")
+ROMS = Path.home() / "RetroArch-1.17-Win64/ROMs/SNES"
 
 
 def main(state, rom=None):
