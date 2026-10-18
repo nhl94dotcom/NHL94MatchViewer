@@ -1118,6 +1118,11 @@ From a review of the pages at 1920x1080, 1366x768 and phone width (the user chos
   remembered, `&pane=` in the address) showing parts of the two lineup panels (CSS on main.m-*), the footer compact
   and stuck to the bottom. Headless Edge will not lay out narrower than about 490-500 px: screenshots at 412 are
   cropped, so check at 504.
+- Phones, fixed 2026-10-17 (the user, on Android, could not find the stats): the rink (touch-action none) took every
+  swipe, so the page could not be scrolled down to the tabs; it is now pan-y unless zoomed in (`applyView`). Tapping
+  a tab scrolls it into view. Lineup rows open cards on `pointerenter` from a mouse only: a tap's emulated mouseenter
+  opened the card and its click closed it again. A tap or click outside the card and rows closes it; #popover keeps
+  to the screen (max-height, scrolls). Checked in headless Edge at 504 px with simulated taps; not yet on a phone.
 - One bar on the games list and the season page (NHL '94 Viewer, Games, Season stats, Help); the viewer's scoreboard
   has "&larr; Games" (hidden in a shared game file) and "? Help". The games list shows each game's system and ROM name
   (from /api/season) and keeps recordings under a minute (save-state previews, tests) in a closed list below. The

@@ -94,7 +94,7 @@
   .card .bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--raised); }
   .card .bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
   .card p { margin: 0; color: var(--muted); }
-  #popover { position: fixed; z-index: 20; width: 300px; margin: 0; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); border: 1px solid #3a4450; }
+  #popover { position: fixed; z-index: 20; width: 300px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow-y: auto; margin: 0; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); border: 1px solid #3a4450; }
   .scoring .goal { padding: 3px 0; border-top: 1px solid var(--raised); }
   .scoring .goal:first-of-type { border-top: 0; }
   .scoring .goal small { color: var(--muted); display: block; }
@@ -433,6 +433,9 @@ for his card: this game's numbers, skating, and his ratings.</p>
 <h3>Team stats and scoring</h3>
 <p>The scoring summary is on the left, the team stats on the right, both as of the moment the replay is at. Click a
 group's heading (Shooting, Advanced, Puck control ...) to open or close it; your choice is remembered.</p>
+<p>On a phone the lineups, team stats and scoring are under the rink, behind the <b>Lineups / Team stats / Scoring</b>
+tabs: tap one and the page scrolls down to it, or swipe up anywhere, the rink included (zoomed in, a swipe on the rink
+moves the view instead). Tap a player for his card and tap anywhere else to put it away.</p>
 <h3>The View menu (&#9881; View)</h3>
 <dl>
   <dt>Game sprites</dt><dd>The game's own player pictures; off draws numbered discs.</dd>
@@ -712,7 +715,9 @@ function buildPanel(el, team, name, colour) {
   const teamStats = team === 1 ? `<div class="teamstats" id="teamStats" hidden><h4>Team stats</h4><table></table></div><div class="teamstats penbox" hidden></div>` : '';
   const scoring = team === 0 ? `<div class="teamstats scoring" hidden></div>` : '';
   el.innerHTML = `<h3><span class="swatch" style="background: ${colour}"></span><span class="tname"></span><small>on ice</small></h3>${rows}${pad}${legend}${scoring}${teamStats}`;
-  // Pointing at a row shows that player's card beside the panel; clicking him puts it away.
+  // Pointing at a row with a mouse shows that player's card beside the panel; clicking him puts it away. On a touch
+  // screen a tap opens it and another tap (on the row or anywhere else) puts it away: a tap also sends the "pointing"
+  // events, which opened the card just before the click closed it again.
   el.querySelectorAll('.row').forEach(row => {
     const target = () => {
       const k = Number(row.dataset.k);
@@ -720,8 +725,8 @@ function buildPanel(el, team, name, colour) {
       const r = row.getBoundingClientRect();
       return { team, idx: rosterIndex(frameAt(now), k), x: team ? r.left - 308 : r.right + 8, y: r.top };
     };
-    row.addEventListener('mouseenter', () => hover(target()));
-    row.addEventListener('mouseleave', () => hover(null));
+    row.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hover(target()); });
+    row.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hover(null); });
     row.addEventListener('click', () => toggle(target()));
   });
   // Names and labels come from the match file, so they go in as text, never as markup.
@@ -836,6 +841,10 @@ const FOLLOW = { ms: 300, leadMs: 400, lead: 0.6, zone: 0.25, spring: 7, limit: 
 let followClock = 0, followVel = [0, 0], followAhead = 0;
 const radians = () => cam.angle * Math.PI / 180;
 function applyView(f) {
+  // On a touch screen a finger dragged on the whole rink scrolls the page up and down (to the tabs and stats below
+  // it on a phone); zoomed in, it pans the view instead.
+  const touch = cam.zoom > 1.01 ? 'none' : 'pan-y';
+  if (canvas.style.touchAction !== touch) canvas.style.touchAction = touch;
   // World coordinates from here on: origin at centre ice, +X right, +Y up, before the camera turns them.
   const dpr = window.devicePixelRatio || 1, a = radians(), cw = canvas.width / dpr, ch = canvas.height / dpr;
   // The picture's pixels are TV-shaped (wider than tall). Turned, that stretch should still run across the screen,
@@ -3946,7 +3955,11 @@ function showPane(pane) {
   for (const b of document.querySelectorAll('#mtabs button')) b.setAttribute('aria-pressed', String(b.dataset.pane === pane));
   try { localStorage.setItem('nhl94-mobile-pane', pane); } catch (e) { /* not remembered */ }
 }
-for (const b of document.querySelectorAll('#mtabs button')) b.addEventListener('click', () => showPane(b.dataset.pane));
+// On a phone the tabs sit low under the rink: tapping one brings it and its stats up into view.
+for (const b of document.querySelectorAll('#mtabs button')) b.addEventListener('click', () => {
+  showPane(b.dataset.pane);
+  $('mtabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 showPane(mobilePane);
 // Help: a panel over the page (also opened by #help in the address, as the games and season pages link to it).
 // The search keeps the sections and entries whose words match.
@@ -4314,6 +4327,12 @@ function seekTo(ms) {
 }
 
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && shown) { shown = null; panelState = ''; if (match) updatePanels(frameAt(now)); } });
+// A tap or click outside the card and the lineups puts the card away (phones have no pointer to move off it).
+document.addEventListener('click', e => {
+  if (!shown || e.target.closest('#popover, .row')) return;
+  shown = null; panelState = '';
+  if (match) updatePanels(frameAt(now));
+});
 
 $('play').addEventListener('click', () => {
   if (!playing && now >= match.t[match.t.length - 1]) now = match.t[0];
