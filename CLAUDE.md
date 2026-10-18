@@ -1351,7 +1351,10 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   season.js) and zips it. The source is NHL94_HOME or the project. Made "Documents/NHL94 League share" (.zip 18 MB) from
   the five BOS-DAL games; season.html and viewer.html?match= work opened from the folder in Edge without
   --allow-file-access-from-files (both fall back to script tags). The pages' Games links point at helper.html, which
-  says the helper isn't running there.
+  says the helper isn't running there. The tool prints the folder it read the games from: the user ran it in PowerShell,
+  where `set NHL94_HOME=...` does nothing, and got the three test copies in the project's matches/ instead of the five
+  Documents games. For the user, "Documents/Make league share.bat" (not in git) sets NHL94_HOME and runs it for the
+  BOS-DAL games: double-click.
 - Not there yet: people
   as such (a game knows teams and controllers, not who held them), a shareable season file.
 

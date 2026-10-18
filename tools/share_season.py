@@ -35,6 +35,7 @@ def main():
     out, patterns = Path(sys.argv[1]).resolve(), sys.argv[2:]
     names = sorted(p.stem for p in (SOURCE / "matches").glob("*.js")
                    if p.name != "season.js" and any(fnmatch.fnmatch(p.stem, pat) for pat in patterns))
+    print(f"Games from: {SOURCE}" + ("" if os.environ.get("NHL94_HOME") else "  (the project folder: set NHL94_HOME to use the helper's games)"))
     if not names:
         sys.exit(f"No games in {SOURCE / 'matches'} match {patterns}.")
     if out.exists():
