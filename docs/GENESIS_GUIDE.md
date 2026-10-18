@@ -183,8 +183,10 @@ The computer never holds a direction, so its wins go a random way.
   chance is set by Shot Accuracy (2.1). **From outside the zone, never**: it always scatters.
 - Scatter grows with shot speed, distance and poor accuracy, and **only ever pushes the puck up, never down**. A
   shot aimed along the ice can rise; a high shot can go over the crossbar.
-- **Close in and high:** from within about 17 feet of the goal line, a high shot gets an extra-steep lift ("top
-  shelf").
+- **Close in and high, at a pad stack or an empty net** (goalie pulled): from within about 16 feet of the goal line, a
+  high shot gets a special lift that brings it in just under the crossbar from 10-16 feet and over it from closer
+  (inside about 8 feet). It's for beating a goalie sprawled in a pad stack. It isn't given to one-timers, or at a goalie
+  standing up.
 - **Slapshots:** hold C longer for more power. Weak shooters (section 2.1) can't wind up fully.
 - **A shot that touches the boards, or any stick or body on the way, isn't a shot on goal**, even if the goalie stops
   it.

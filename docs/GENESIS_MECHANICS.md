@@ -209,7 +209,14 @@ goals' aim points and where they crossed the line agree closely.
   Chance = (Shot Accuracy + 1) / (Shot Accuracy + 16) on the working scale: about 55-67% for typical shooters.
 - **Beyond 200, never perfect.**
 - Otherwise random scatter is added: bigger for harder shots, longer distance and poorer accuracy ((shot speed / 16 -
-  Shot Accuracy / 2 + 16) x distance / 64, halved within 250, capped). Across: either way. Height: **only ever upward**.
+  Shot Accuracy / 2 + 16) x distance / 64, halved within 250, capped at 136). Across: either way. Along the ice
+  (which changes the angle): either way, at most 60, **halved when the aim point is below the puck on the screen**, i.e.
+  every shot at the bottom net from in front of it (and a shot at the top net from behind it). Height: **only ever
+  upward**, up to half of that (at most 30). "Shot speed" here is the internal value before the final x 68
+  (`passspeed`). Compared with chaos's forum post "How Shooting Works" (2025-03-25), which reads the same routine:
+  `doshot` halves for distances of 250 **or less** (`cmp.w #$FA,d3; bhi` skips the halving above 250), and a shot from
+  the goal line itself (distance 0 along the ice) isn't halved (`bpl`); `randomd0(n)` returns 0 to n - 1 and the test is
+  "greater than 14", so the perfect chance at working 30 is 31 / 46 = 67.4%, not 69.6%.
 - **Confirmed**: within 200, 82 of 123 shots left the stick within 2 units of the aim point, more often for better
   shooters, roughly as the formula predicts; none of those from beyond 200.
 
@@ -230,6 +237,11 @@ from the game's own scatter rule for an average shooter (working Shot Accuracy 1
 | Up-left / up-right | 57% | 54% | 53% | 3% | 0% |
 | Down (along the ice) | 100% | 100% | 78% | 37% | 5% |
 | Down-left / down-right | 86% | 81% | 74% | 37% | 5% |
+
+**With the goalie pulled (no goalie on the ice), close in, Up is different:** from within 48 units of the goal line a
+high aim gets the top-shelf lift (4.5), which replaces the shot's height speed and so its upward scatter. The puck
+reaches the line about 10-13 high from 30-48 out, just under the crossbar, and over it from closer than about 25. A
+goalie who has only wandered out doesn't count as pulled. Not in the table, which is for 60 and farther.
 
 **At an open net: get within about 180 units (60 feet) if you can, and hold Down or nothing as you shoot, never Up.**
 Not yet checked on recorded shots (only five recorded shots had the goalie far out or pulled; they hint at more going
@@ -253,8 +265,8 @@ wandered, a person having dived or skated him out, and that they were one-timers
 (`shotdiradj`, `CalcAngleOffset`) takes the line from the puck to where the goalie is heading and measures how far the
 middle of the net is from it; **more than 22 units off, and the one-timer is aimed high in the middle** (direction 0).
 That's the worst aim at an open net: the target is 12 units up, the crossbar is at 13 and the scatter only goes up, so
-an exact one-timer goes in just under the bar but almost any scattered one goes over it or off the bar; from within
-about 50 units of the goal line the "top shelf" lift (4.5) steepens it further. Worked out from the scatter rule (an
+an exact one-timer goes in just under the bar but almost any scattered one goes over it or off the bar (the top-shelf
+lift of 4.5 is never given to one-timers). Worked out from the scatter rule (an
 average shooter, Shot Accuracy 15, a 20,000 one-timer) at an empty net:
 
 | One-timer aim | 40 units | 60 | 90 | 120 | 160 |
@@ -270,8 +282,13 @@ do this**: it auto-aims only computer shooters, so SNES one-timers follow the st
 
 ### 4.5 "In-close top shelf"
 
-A high shot (up, up-left or up-right) from close in (within about 50 units of the goal line), at a goalie who is not in
-a pad stack, gets a steeper lift. **Code**
+A high shot (up, up-left or up-right) from close in (the puck within 48 units of the goal line: 216 or more from
+centre), **at a goalie in a pad stack or with no goalie on the ice** (pulled), gets its own lift (`prepshot` sets the
+flag, `puckvzadj` applies it; never for one-timers). It **replaces** the shot's height speed with one worked out from the
+time to the goal line, so the upward scatter is gone: from 30-48 out the puck reaches the line about 10-13 high, over a
+pad stack and just under the crossbar (13); from closer than about 25 it carries over the bar (15-24). **Code**. (Until
+2026-10-18 this section said "a goalie who is *not* in a pad stack", a misreading that chaos's forum post "How Shooting
+Works" has right: the branch after the two pad-stack compares falls into the top-shelf test on a match.)
 
 ### 4.6 Delayed-penalty sniping
 

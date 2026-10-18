@@ -1513,8 +1513,13 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   aim point, rising with ShA much as predicted; beyond 200 none.
 - Auto-aim (shotdiradj): one-timers and computer shooters ignore the stick: middle height on the side away from where
   the goalie is heading (passdir 2 / 6), high in the middle (0) when he is far off centre, 8 with no goalie.
-  High shots from in close (|Y| >= 216, stick up / up-left / up-right) at a goalie not in a pad stack get a steeper
-  lift (puckvzadj: "in-close top shelf").
+  High shots from in close (|Y| >= 216, stick up / up-left / up-right) at a goalie IN a pad stack or with none on the
+  ice (pulled) get puckvzadj ("in-close top shelf"; corrected 2026-10-18 from chaos's forum post, topic 36095): it
+  replaces puckvz (no upward scatter), reaching the goal line ~10-13 high from 30-48 out, over the bar inside ~25; never
+  one-timers. Same post, checked against the code: the scatter is halved at 250 or LESS (his post says more), Y halved
+  when the aim's dy < 0 (bottom net from in front; top net from behind; not dy = 0), the perfect chance is (ShA + 1) /
+  (ShA + 16) (his 69.6% at 30 counts 14 as a success); his wind-up maxima (passspeed 31 for ShP < 20, 35 otherwise;
+  one-timers 31) and speed formula agree with ours.
 - Saves are geometry, not a roll (checkpuckcoll / puckgoalie / puckstick): a puck at height <= 15 within the goalie's
   reach of his centre hits him: reach 12-15 by agility (+2 agility from the "crowd meter broken" flag, which is always
   set), 15 whenever a person controls him, 18 in a pad stack, 12 against a one-timer, 2 less in a shootout. Before
