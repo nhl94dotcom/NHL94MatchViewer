@@ -543,6 +543,8 @@ next season on that ROM starts. Several seasons can share a ROM. Untick a game o
   <dt>Pass direction and zones</dt><dd>Each pass is classed by the way the puck left the stick, against the way the passer's team attacks: forward (within 30&deg; of straight up the ice), diagonal forward (30&ndash;60&deg;), sideways (within 30&deg; of straight across, so a little forward or back still counts), diagonal back, backward; and by the zone it was made in and the zone it reached (attacking, neutral, defensive, in the passer's team's terms). Shown in the team stats ("Passing by zone and direction"), on the card, and on the season page's Play style tab ("Passing by zone"), with each player's game time with the puck in that zone and passes per minute of it: high means he moves the puck on, low means he skates with it.</dd>
   <dt>Where a goal went in</dt><dd>Each goal in the scoring summary and its banner has a small picture of the net, seen from the shooter's side, with the spot where the puck crossed the goal line (posts at the sides, the crossbar at the top). (Older SNES recordings converted before the puck's height was found show a dashed line across the net instead.)</dd>
   <dt>Where a shot was aimed</dt><dd>Both games aim every shot at one of nine points in the net, picked by the direction the stick is held as you shoot, by screen direction: up, up-left or up-right aims high; left, right or no direction middle height; down-left, down or down-right along the ice; left and right are the screen's sides (so shooting down the screen, the stick's left is the shooter's right). The game then scatters the shot at random (more for hard shots, weak shooters and long range). Shot tooltips say where each was aimed; on a goal's net picture the blue ring is the aim and the yellow dot where it went in; the card and the season page count where each player aims.</dd>
+  <dt>Shot aim</dt><dd>Where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net, high, middle or along the ice, and left, middle or right (one-timers and computer shooters are aimed by the game). The team stats split goals and attempts by height; in the recorded games shots aimed along the ice almost never went in.</dd>
+  <dt>Saves: held / rebound / cleared</dt><dd>What became of each save a team's goalies made: held by the goalie (or play stopped), a rebound the shooting team got to first, or cleared by the goalie's own team.</dd>
   <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
   <dt>Checks that pay off, goal off a check</dt><dd>A check after which the checking team had the puck within 2 seconds (before the other team got it back); then a shot attempt within 5 seconds of that; or a goal within 8 seconds of the check, when the check was on the puck carrier and the other team never had the puck between: that goal is tagged "off a check".</dd>
   <dt>Own goal</dt><dd>A goal a defending skater put in his own net: he had the puck last, carrying it, and skated it into the net's front, which knocks it off his stick and lets it slide over the line. The game credits the goal to the scoring team's last player to touch the puck, and the viewer keeps that credit, with an "own goal" tag naming the player who put it in.</dd>
@@ -3127,6 +3129,20 @@ const STAT_HELP = {
   'Turnovers \u2192 shot against': 'Giveaways the other team turned into a shot attempt within 5 s (in brackets, how many became goals).',
   // ---- puck control
   'Possession': 'Game time the team controlled the puck. Each second of the game clock goes to the team with the puck on a stick; a loose puck goes to the team that had it if it gets it back, to Transition if the other team gets it.',
+  'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
+  'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
+  'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s.',
+  'Slapshots (G / att)': 'Goals and attempts from slapshots: shots wound up for 0.8 s or more.',
+  'Aimed shots (G / att)': 'Goals and attempts by where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net (high, middle or along the ice; left, middle or right). One-timers are aimed by the game.',
+  'Aimed shots (G / att)|· high': 'Shots aimed at the top of the net (up held at the release, any side).',
+  'Aimed shots (G / att)|· middle': 'Shots aimed at mid-height (left or right held at the release, or nothing).',
+  'Aimed shots (G / att)|· at the ice': 'Shots aimed along the ice (down held at the release, any side). They go in far less often.',
+  'Shot speed (avg / top mph)': 'The team’s shots and one-timers: average and hardest speed off the stick, in mph at the same scale as skating speeds.',
+  'Saves: held / rebound / cleared': 'What became of the saves this team’s goalies made: held by the goalie (or play stopped), a rebound the shooting team got first, or cleared by his own team.',
+  'Giveaways|· picked off / lost': 'Giveaways split: a pass the other team picked off, or the puck simply lost.',
+  'Takeaways|· hit / poke / hook / steal': 'Takeaways split by how they were made: a body check, a poke check, a hook, or the puck taken straight off his stick.',
+  'Body checks|· shoulder / hip / cross-check': 'The checks that landed, by the checking animation: shoulder, hip or cross-check (checks whose animation was not seen are left out).',
+  'Injuries caused': 'Opposing players this team injured with a check (out for the period or the game).',
   'Carried by D / C / W|· LD / RD': 'The defencemen\u2019s share split by side: the left and the right defenceman\u2019s shares of the team\u2019s time with the puck on a stick (they add up to the D share above).',
   'Carried by D / C / W|· LW / RW': 'The wingers\u2019 share split by side: the left and the right winger\u2019s shares of the team\u2019s time with the puck on a stick (they add up to the W share above).',
   'Possession|· attacking zone': 'Of the team\u2019s possession: time with the puck in the zone it attacks (past the far blue line).',
@@ -3325,6 +3341,25 @@ function fillTeamStats(snap) {
     const mine = list.filter(sh => sh.team === team && sh.kind === 'pass shot');
     return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length;
   };
+  // Goals / attempts of the team's shots that pass a test (shot type, aim ...), as the shot list has them so far.
+  const goalsOf = (team, test) => { const mine = list.filter(sh => sh.team === team && test(sh)); return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length; };
+  const posts = team => list.filter(sh => sh.team === team && sh.result === 'post').length;
+  // Own goals: goals the other team scored that this team's skater put in his own net (the converter's add_own_goals).
+  const ownGoals = team => (match.goals || []).filter(g => g.f <= f && g.team !== team && g.ownGoal != null).length;
+  // Where shots were aimed (the d-pad at the release: the height row of the game's aim table, 12 / 6 / 0).
+  const aimed = (team, z) => goalsOf(team, sh => sh.aim && (z === undefined || sh.aim.z === z));
+  // Shot speed of shots and one-timers, as the player card has it: average and hardest, mph.
+  const speeds = team => list.filter(sh => sh.team === team && sh.speed && ['shot', 'one-timer'].includes(sh.kind)).map(sh => shotMph(sh.speed));
+  const speedText = team => { const v = speeds(team); return v.length ? Math.round(v.reduce((a, x) => a + x, 0) / v.length) + ' / ' + Math.round(Math.max(...v)) : '–'; };
+  // What became of the saves this team's goalies made (the converter's `after`): held (or a whistle), a rebound to
+  // the shooters, cleared by his team (loose ones are left out).
+  const afterSaves = team => ['held', 'rebound', 'cleared'].map(a => list.filter(sh => sh.team !== team && sh.result === 'save' && sh.after === a && sh.resolved <= f).length).join(' / ');
+  // How the puck changed hands, from the converter's turnovers: giveaways picked off / lost, takeaways by how.
+  const gaveHow = team => ['pass picked off', 'lost the puck'].map(h => turnovers.filter(e => e.from === team && e.kind === 'giveaway' && e.how === h).length).join(' / ');
+  const tookHow = team => ['hit', 'poke check', 'hook', 'stolen'].map(h => turnovers.filter(e => e.from !== team && e.kind === 'takeaway' && e.how === h).length).join(' / ');
+  const checkTypes = team => ['shoulder', 'hip', 'cross-check'].map(h => (match.hits || []).filter(e => e.f <= f && e.team === team && e.how === h).length).join(' / ');
+  const injuriesCaused = team => (match.injuries || []).filter(e => !e.atStart && e.f <= f && e.team !== team).length;
+  const anyInjuries = (match.injuries || []).some(e => !e.atStart && e.f <= f);
   // A one-timer means the pass reached the shooter, but the game never counts it as completed (the shooter never
   // 'has' the puck), so each one-timer attempt is added to completed passes, capped at passes tried.
   const made = t => Math.min(t.passTried, t.passMade + (t.oneTimerTried || 0));
@@ -3340,6 +3375,10 @@ function fillTeamStats(snap) {
       ['Wide', ended(0, ['wide', 'miss']), ended(1, ['wide', 'miss'])],
       ['Blocked', ended(0, ['blocked']), ended(1, ['blocked'])],
       ...(uncountedSaves(0) + uncountedSaves(1) ? [['Saved, not counted', uncountedSaves(0), uncountedSaves(1)]] : []),
+      ...(posts(0) + posts(1) ? [['Posts', posts(0), posts(1)]] : []),
+      ...(ownGoals(0) + ownGoals(1) ? [['Own goals (into own net)', ownGoals(0), ownGoals(1)]] : []),
+      ['Wrist shots (G / att)', goalsOf(0, sh => sh.type === 'wrist shot'), goalsOf(1, sh => sh.type === 'wrist shot')],
+      ['Slapshots (G / att)', goalsOf(0, sh => sh.type === 'slapshot'), goalsOf(1, sh => sh.type === 'slapshot')],
     ] : []),
     ...(h.breakTried === undefined ? [] : [
       ['One-timers', h.oneTimerGoals + '/' + h.oneTimerTried, a.oneTimerGoals + '/' + a.oneTimerTried],
@@ -3347,6 +3386,9 @@ function fillTeamStats(snap) {
     // Swings at a pass that never reached the shooter; the game's own count above only has ones that connected.
     ...(match.failedOneTimers ? [['Failed one-timers', failed(0), failed(1)]] : []),
     ...(match.shotList ? [['Pass shots', passShots(0), passShots(1)]] : []),
+    ...(list.some(sh => sh.aim) ? [['Aimed shots (G / att)', aimed(0), aimed(1)],
+      ['· high', aimed(0, 12), aimed(1, 12)], ['· middle', aimed(0, 6), aimed(1, 6)], ['· at the ice', aimed(0, 0), aimed(1, 0)]] : []),
+    ...(match.shotList ? [['Shot speed (avg / top mph)', speedText(0), speedText(1)]] : []),
     ...(h.breakTried === undefined ? [] : [
       ['Breakaways', h.breakGoals + '/' + h.breakTried, a.breakGoals + '/' + a.breakTried],
     ]),
@@ -3385,6 +3427,7 @@ function fillTeamStats(snap) {
           return [
             ['High-danger goals / attempts', goals(0, sh => sh.danger === 'high'), goals(1, sh => sh.danger === 'high')],
             ['Rebound goals / attempts', goals(0, sh => sh.rebound), goals(1, sh => sh.rebound)],
+            ...(list.some(sh => sh.after) ? [['Saves: held / rebound / cleared', afterSaves(0), afterSaves(1)]] : []),
             ...(flips ? [['EA Specials (goals / attempts)', list.filter(sh => sh.team === 0 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 0 && sh.flip).length,
               list.filter(sh => sh.team === 1 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 1 && sh.flip).length]] : []),
             ['Attempts off a pass', list.filter(sh => sh.team === 0 && sh.assist !== undefined).length, list.filter(sh => sh.team === 1 && sh.assist !== undefined).length],
@@ -3414,7 +3457,8 @@ function fillTeamStats(snap) {
     ['Passes', made(h) + '/' + h.passTried, made(a) + '/' + a.passTried],
     ['Pass %', pct(h), pct(a)],
     ...(match.bobbles ? [['Bobbled passes', bobbled(0), bobbled(1)]] : []),
-    ...(match.turnovers ? [['Giveaways', gave(0), gave(1)], ['Takeaways', took(0), took(1)]] : []),
+    ...(match.turnovers ? [['Giveaways', gave(0), gave(1)], ['· picked off / lost', gaveHow(0), gaveHow(1)],
+      ['Takeaways', took(0), took(1)], ['· hit / poke / hook / steal', tookHow(0), tookHow(1)]] : []),
     ...(match.icings ? [['Icings', iced(0), iced(1)]] : []),
     ...(passShape ? [section('Passing by zone and direction'),
       ['From attacking / neutral / defensive', passBy(0, 'zone'), passBy(1, 'zone')],
@@ -3425,12 +3469,14 @@ function fillTeamStats(snap) {
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
+    ...(match.hits && match.hits.some(e => e.how) ? [['· shoulder / hip / cross-check', checkTypes(0), checkTypes(1)]] : []),
     ...(match.hits && match.hits.some(h => h.onCarrier !== undefined) ? [['· on the puck carrier', payoff(0, h => h.onCarrier), payoff(1, h => h.onCarrier)],
       ['· \u2192 puck / shot / goal', ...[0, 1].map(team => payoff(team, h => h.gain !== undefined) + ' / ' + payoff(team, h => h.shotAfter !== undefined && h.shotAfter <= f) + ' / ' + payoff(team, h => h.goalAfter !== undefined && h.goalAfter <= f))]] : []),
     ...(match.bumps ? [['Pucks lost on contact', bumped(0).length, bumped(1).length],
       ['· to the other team', bumped(0).filter(e => e.next === 'opponent').length, bumped(1).filter(e => e.next === 'opponent').length],
       ['Pucks lost on a goalie', onGoalie(0), onGoalie(1)]] : []),
     ...(match.netsOff ? [['Nets knocked off (theirs / own)', netsOff(0, false) + ' / ' + netsOff(0, true), netsOff(1, false) + ' / ' + netsOff(1, true)]] : []),
+    ...(anyInjuries ? [['Injuries caused', injuriesCaused(0), injuriesCaused(1)]] : []),
     ...(skating ? [['Distance skated', milesText(teamSkated(0)), milesText(teamSkated(1))]] : []),
     ...(h.ppTries === undefined ? [] : [
       ['Power play', h.ppGoals + '/' + h.ppTries, a.ppGoals + '/' + a.ppTries],

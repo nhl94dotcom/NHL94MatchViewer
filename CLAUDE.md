@@ -1006,6 +1006,17 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   and value pass 21 characters takes the whole width (`.stat.wide`, its value wrapping), and short stats fill the gaps
   around it (grid-auto-flow dense). Checked in headless Edge on skater and goalie cards of 2026-10-17_2246_DAL-BOS.
 
+## More team stats (2026-10-18)
+
+The user picked eight things the match files had but the team stats did not tally (all in fillTeamStats, each with a
+STAT_HELP explanation): Shooting: Posts and Own goals (into own net) when any, Wrist shots / Slapshots (G / att, by
+`type`), Aimed shots (G / att) with · high / · middle / · at the ice (`aim.z` 12 / 6 / 0), Shot speed (avg / top mph,
+shots and one-timers as the card); Advanced: Saves: held / rebound / cleared (the team's goalies, shots' `after`);
+Puck control: Giveaways · picked off / lost and Takeaways · hit / poke / hook / steal (turnovers' `how`); Physical:
+Body checks · shoulder / hip / cross-check (hits' `how`; unseen ones left out), Injuries caused when any. EA Specials
+were already there (Advanced, Genesis games with an attempt). Five BOS-DAL games: aimed high 10 goals in 35, middle 25
+in 90, at the ice 2 in 33. Checked in headless Edge on 2026-10-17_2246_DAL-BOS: every split adds up to its parent.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
