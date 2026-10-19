@@ -495,97 +495,117 @@ def read_match(cap, rom_path, name, home=None, away=None):
     paused = {i for i in range(count) if cap.word(i, GAME_FLAGS2) & PAUSED}
     cap = LivePlay(cap, [i for i in range(count) if i not in paused and i not in ahead], paused)
     count = cap.count
+    whole = getattr(cap, "raw", None)
     for i in range(count):
+        # This sample's work RAM, read once ($0000-$3FFF, all the addresses read here): picking values out of it is
+        # several times faster than asking the recording for each (tens of millions of reads a game, which the live
+        # broadcast does every few seconds). Save states (no raw) are read value by value.
+        mem = whole(i, 0, 0x4000) if whole else None
+        if mem is not None:
+            w = lambda a, m=mem: m[a] | (m[a + 1] << 8)
+            b = lambda a, m=mem: m[a]
+        else:
+            w = lambda a, i=i: cap.word(i, a)
+            b = lambda a, i=i: cap.byte(i, a)
+        sg = lambda a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(w(a))
         match["t"].append(cap.ms(i))
-        match["period"].append(cap.word(i, PERIOD))
-        match["clock"].append(cap.word(i, CLOCK))
-        match["score"] += [cap.word(i, STAT_ADDRESSES["goals"]), cap.word(i, STAT_ADDRESSES["goals"] + 2)]
-        match["shots"] += [sum(cap.word(i, a + side) for a in SHOTS_BY_PERIOD) for side in (0, 2)]
+        match["period"].append(w(PERIOD))
+        match["clock"].append(w(CLOCK))
+        match["score"] += [w(STAT_ADDRESSES["goals"]), w(STAT_ADDRESSES["goals"] + 2)]
+        match["shots"] += [sum(w(a + side) for a in SHOTS_BY_PERIOD) for side in (0, 2)]
         # The puck's height is not read; while the clock is stopped it is given as -256, as the Genesis game hides
         # the puck from a whistle to the faceoff, which the analysis uses to tell stretches of play apart.
-        stopped = cap.word(i, CLOCK_STOPPED) != 0
-        px, py = signed(i, OBJ_X + 28), signed(i, OBJ_Y + 28)
-        vx, vy = signed(i, PUCK_VX), signed(i, PUCK_VY)
+        stopped = w(CLOCK_STOPPED) != 0
+        px, py = sg(OBJ_X + 28), sg(OBJ_Y + 28)
+        vx, vy = sg(PUCK_VX), sg(PUCK_VY)
         # The puck's height: puckz (integer) and its fraction (the NHL94SNES disassembly's ram94snes.asm), as the
         # Genesis record's +$24. Shots on goal reach 1-18.
-        pz = signed(i, PUCK_Z) + cap.word(i, PUCK_Z_FRAC) / 65536
+        pz = sg(PUCK_Z) + w(PUCK_Z_FRAC) / 65536
         match["puck"] += [px, py, -256 if stopped else round(max(0.0, pz), 1)]
         match["puckV"] += [round(vx / 100), round(vy / 100)]
         # A post, by the Genesis rule: the loose puck turning back out of the end zone right beside a post.
-        if i and cap.byte(i, PUCK_HOLDER) >= 12 and cap.ms(i) - last_post > 1000:
+        if i and b(PUCK_HOLDER) >= 12 and cap.ms(i) - last_post > 1000:
             fresh = (vx, vy) != (signed(i - 1, PUCK_VX), signed(i - 1, PUCK_VY))
             if fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 272 and vy * py < 0 and abs(vx) + abs(vy) >= 1500:
                 match["posts"].append(len(match["t"]) - 1)
                 last_post = cap.ms(i)
         # Team stat snapshots, in common.STAT_FIELDS order (no per-player values yet), when they change and each
         # second, as the Genesis reader keeps them.
-        vector = [sum(cap.word(i, a) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f]) for f in STAT_FIELDS[1:]]
-        vector2 = [sum(cap.word(i, a + 2) for a in SHOTS_BY_PERIOD)] + [cap.word(i, STAT_ADDRESSES[f] + 2) for f in STAT_FIELDS[1:]]
+        vector = [sum(w(a) for a in SHOTS_BY_PERIOD)] + [w(STAT_ADDRESSES[f]) for f in STAT_FIELDS[1:]]
+        vector2 = [sum(w(a + 2) for a in SHOTS_BY_PERIOD)] + [w(STAT_ADDRESSES[f] + 2) for f in STAT_FIELDS[1:]]
         # then 8 values per roster place, as the Genesis reader: goals, assists, shots, penalty minutes ('x' = PIM),
         # checks thrown (where known), ice time (the game keeps none that was found: counted here, each second the
         # clock ticks off going to everyone on the ice), energy, penalty word ($00ss serving ss seconds, $FFFF none;
         # the delayed flag is not known)
-        clock = cap.word(i, CLOCK)
-        if i and cap.word(i, PERIOD) == cap.word(i - 1, PERIOD) and 0 < cap.word(i - 1, CLOCK) - clock <= 3:
+        clock = w(CLOCK)
+        if i and w(PERIOD) == cap.word(i - 1, PERIOD) and 0 < cap.word(i - 1, CLOCK) - clock <= 3:
             for k in range(12):
-                code = signed(i, OBJ_POSITION + 2 * k)
-                place = cap.byte(i, OBJ_ROSTER + 2 * k)
+                code = sg(OBJ_POSITION + 2 * k)
+                place = b(OBJ_ROSTER + 2 * k)
                 if 0 <= code < 6 and place < 26:
                     ice[26 * (k // 6) + place] += cap.word(i - 1, CLOCK) - clock
+        if mem is not None:
+            goals, assists, shots, pim = (mem[a:a + 52] for a in (PLAYER_GOALS, PLAYER_ASSISTS, PLAYER_SHOTS, PLAYER_PIM))
+            checks = mem[PLAYER_CHECKS:PLAYER_CHECKS + 52]
+            energy, boxes = mem[PLAYER_ENERGY:PLAYER_ENERGY + 104], mem[BOX_STATE:BOX_STATE + 104]
+        else:
+            goals, assists, shots, pim, checks = ([b(a + at) for at in range(52)] for a in
+                                                  (PLAYER_GOALS, PLAYER_ASSISTS, PLAYER_SHOTS, PLAYER_PIM, PLAYER_CHECKS))
+            energy = [v for at in range(52) for v in (w(PLAYER_ENERGY + 2 * at) & 255, w(PLAYER_ENERGY + 2 * at) >> 8)]
+            boxes = [v for at in range(52) for v in (w(BOX_STATE + 2 * at) & 255, w(BOX_STATE + 2 * at) >> 8)]
         for side, vec in ((0, vector), (1, vector2)):
             for idx in range(26):
                 at = 26 * side + idx
-                box = cap.word(i, BOX_STATE + 2 * at)
-                vec += [cap.byte(i, PLAYER_GOALS + at), cap.byte(i, PLAYER_ASSISTS + at), cap.byte(i, PLAYER_SHOTS + at),
-                        cap.byte(i, PLAYER_PIM + at), cap.byte(i, PLAYER_CHECKS + at) if checks_known else 0, ice[at],
-                        cap.word(i, PLAYER_ENERGY + 2 * at) >> 8, min(box, 255) if 0 < box < 0x1000 else 0xFFFF]
+                box = boxes[2 * at] | (boxes[2 * at + 1] << 8)
+                vec += [goals[at], assists[at], shots[at], pim[at], checks[at] if checks_known else 0, ice[at],
+                        energy[2 * at + 1], min(box, 255) if 0 < box < 0x1000 else 0xFFFF]
         if (vector, vector2) != last_vectors or cap.ms(i) - last_stat_ms >= 1000:
             stats["f"].append(len(match["t"]) - 1)
             stats["home"].append(vector)
             stats["away"].append(vector2)
             last_vectors, last_stat_ms = (vector, vector2), cap.ms(i)
-        f = cap.word(i, OBJ_FRAME + 28)
+        f = w(OBJ_FRAME + 28)
         puck_frame.append(f"{f if f < 976 else 0:03x}")
         # Who has the puck: $0AE7, an object number (15 = nobody), checked on the first SNES recording: it names the
         # player the puck moves with in all 608 clearly carried moments and reads 15 in 456 of 457 clearly loose
         # ones. Counted only with the puck within 30 of him (at stoppages it stays on the goalie who held it).
-        holder = cap.byte(i, PUCK_HOLDER)
-        near = holder < 12 and math.hypot(signed(i, OBJ_X + 28) - signed(i, OBJ_X + 2 * holder),
-                                          signed(i, OBJ_Y + 28) - signed(i, OBJ_Y + 2 * holder)) <= 30
+        holder = b(PUCK_HOLDER)
+        near = holder < 12 and math.hypot(sg(OBJ_X + 28) - sg(OBJ_X + 2 * holder),
+                                          sg(OBJ_Y + 28) - sg(OBJ_Y + 2 * holder)) <= 30
         match["owner"].append(holder if near else -1)
         # Where a shot is aimed (passdir, the stick's screen direction the shot code reads), whenever it changes
-        v = cap.byte(i, PASS_DIR)
+        v = b(PASS_DIR)
         if not match["aim"] or match["aim"][-1][1] != v:
             match["aim"].append([len(match["t"]) - 1, v])
         # The nets (objects 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then
         # comes out of the zone). [frame, top net x, y, bottom net x, y]
-        nets = [signed(i, OBJ_X + 24), signed(i, OBJ_Y + 24), signed(i, OBJ_X + 26), signed(i, OBJ_Y + 26)]
+        nets = [sg(OBJ_X + 24), sg(OBJ_Y + 24), sg(OBJ_X + 26), sg(OBJ_Y + 26)]
         if not match["nets"] or match["nets"][-1][1:] != nets:
             match["nets"].append([len(match["t"]) - 1] + nets)
         mask = 0
         for k in range(PLAYERS):
-            work = [cap.word(i, a + 2 * k) for a in OBJ_WORK]
+            work = [w(a + 2 * k) for a in OBJ_WORK]
             if work != last_work[k]:
                 match["work"].append([len(match["t"]) - 1, k] + work)
                 last_work[k] = work
-            match["pos"] += [signed(i, OBJ_X + 2 * k), signed(i, OBJ_Y + 2 * k)]
-            face = cap.word(i, OBJ_FACING + 2 * k) & 7
-            spa, step = cap.word(i, OBJ_ANIM + 2 * k), cap.word(i, OBJ_ANIM_STEP + 2 * k)
-            f = cap.word(i, OBJ_FRAME + 2 * k)  # the game's own picture (the Genesis +$06)
+            match["pos"] += [sg(OBJ_X + 2 * k), sg(OBJ_Y + 2 * k)]
+            face = w(OBJ_FACING + 2 * k) & 7
+            spa, step = w(OBJ_ANIM + 2 * k), w(OBJ_ANIM_STEP + 2 * k)
+            f = w(OBJ_FRAME + 2 * k)  # the game's own picture (the Genesis +$06)
             if spa >= 0x8000:
                 spas.add(spa)
             facing.append(str(face))
-            roster.append(DIGITS[min(cap.byte(i, OBJ_ROSTER + 2 * k), 35)])
-            code = signed(i, OBJ_POSITION + 2 * k)
+            roster.append(DIGITS[min(b(OBJ_ROSTER + 2 * k), 35)])
+            code = sg(OBJ_POSITION + 2 * k)
             role.append(str(code) if 0 <= code < 6 else "x")
             anim.append(f"{spa:04x}")
             frame.append(f"{f if f < 976 else 0:03x}")
-            mirror.append("1" if cap.word(i, OBJ_ATTRIBUTE + 2 * k) & 0x0800 else "0")
-            if cap.word(i, OBJ_FLAGS + 2 * k) & 0x0008:
+            mirror.append("1" if w(OBJ_ATTRIBUTE + 2 * k) & 0x0800 else "0")
+            if w(OBJ_FLAGS + 2 * k) & 0x0008:
                 mask |= 1 << k
         match["ctrl"].append(mask)
-        match["pad"].append(genesis_pad(cap.word(i, PAD1)))
-        match["pad2"].append(genesis_pad(cap.word(i, PAD2)))
+        match["pad"].append(genesis_pad(w(PAD1)))
+        match["pad2"].append(genesis_pad(w(PAD2)))
     # The SNES puck leaves the stick for a moment hundreds of times a game while a player skates with it (the
     # byte drops to 15): gaps under 0.15 s with the same player before and after are taken as his.
     own, t = match["owner"], match["t"]
@@ -725,6 +745,9 @@ class LivePlay:
 
     def byte(self, i, address):
         return self.cap.byte(self.keep[i], address)
+
+    def raw(self, i, address, length):
+        return self.cap.raw(self.keep[i], address, length) if hasattr(self.cap, "raw") else None
 
 
 class SaveStates:
