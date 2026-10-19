@@ -1277,7 +1277,7 @@ files from the S3 link; Genesis netplay picks Player 1 / 2 regardless of host, s
 Tapestries (2026-10-18, the user's word): a goal at the end of 2+ quick passes. export_match `add_tapestries` (after
 add_own_goals): the last pass (completed or one-timer) to the scorer within TAPESTRY_GOAL_MS 3 s of the goal; each
 earlier pass completed to the next passer, released within TAPESTRY_GAP_MS 2.5 s (real time) of the next; the other team
-never had the puck; not penalty shots or own goals. Goal `tapestry` {n, chain: roster indices first passer .. scorer}
+never had the puck; not penalty shots or own goals. A goalie's pass counts as one of the passes (the user, 2026-10-18). Goal `tapestry` {n, chain: roster indices first passer .. scorer}
 and kind 'tapestry' (2), 'fine tapestry' (3), 'masterpiece' (4+), beside 'one-timer'. Recordings: about 1 goal in 5;
 capture1 P1 3:18 is 8 passes (Montreal, 10 s, five players, a one-timer). Viewer: tag "fine tapestry · 3 passes"
 (goalKindText), the chain in goalNotes (A -> B -> C), team stats Shooting "Tapestry goals" and "· 2 / 3 / 4+ passes",
