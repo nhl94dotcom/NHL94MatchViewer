@@ -309,6 +309,8 @@ The computer never holds a direction, so its wins go a random way.
   make him move first: pass across, shoot off the rush, follow up rebounds.
 - **The viewer's xG map** (Map menu) shows the chance from every spot, for the shot type, shooter and goalie you pick.
 
+![The computer goalie's early pad stack on a close-in wind-up](img/early_save.svg)
+
 ![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
 
 ---
@@ -359,6 +361,8 @@ The computer never holds a direction, so its wins go a random way.
   3. Most shots don't go exactly where they're aimed: the game adds a small random error, and that error can only push
      the puck **up**.
   4. Aimed just under the crossbar, any error at all sends it over or off the bar. Only a perfect one goes in.
+
+![Why the open-net one-timer sails over the bar](img/open_net_one_timer.svg)
 
   So on a wide-open net a one-timer misses about 4 times in 10, even from point blank, where a normal shot aimed low or
   at the middle would almost never miss. **A pulled goalie is different:** with nobody in net the game aims one-timers

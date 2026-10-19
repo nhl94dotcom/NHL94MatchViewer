@@ -371,6 +371,8 @@ miss. **In the recordings** 10 one-timers got the high-middle aim: 7 went in at 
 one went over at 16 (BOS-DAL 2257, P1 0:57), 2 were saved. Computer shooters are aimed the same way. **The SNES doesn't
 do this**: it auto-aims only computer shooters, so SNES one-timers follow the stick.
 
+![Why the open-net one-timer sails over the bar](img/open_net_one_timer.svg)
+
 ### 4.5 "In-close top shelf"
 
 A high shot (up, up-left or up-right) from close in (the puck within 48 units of the goal line: 216 or more from
@@ -747,6 +749,8 @@ he starts his save move straight away, at his next rethink. He doesn't wait for 
 |---|---|---|
 | Save move started before the release (a median 92 ms before) | 35 | 13 (37%) |
 | Waited for the shot | 65 | 8 (12%) |
+
+![The computer goalie's early pad stack on a close-in wind-up](img/early_save.svg)
 
 - 33 of the 35 early moves came while the clock rule was on; by chance it would be about half.
 - 27 were pad stacks, and 22 of 23 pad stacks slid him toward the middle, away from his side.

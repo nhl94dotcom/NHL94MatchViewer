@@ -1,0 +1,57 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='860' height='550' viewBox='0 0 860 550' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Open-net one-timer</title>
+<rect width='860' height='550' fill='#ffffff'/>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<text x='430.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>The open-net one-timer (Genesis): why it sails over</text>
+<text x='430.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>One-timers ignore the d-pad. With the goalie wandered off, the game aims them high in the middle, just under the crossbar.</text>
+<text x='200.0' y='82.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>1. The sightline test (seen from above)</text>
+<line x1='13.0' y1='120.4' x2='387.0' y2='120.4' stroke='#c94040' stroke-width='2.5' />
+<rect x='156.0' y='87.39999999999998' width='88.0' height='33.0' fill='#f3f5f7' stroke='#1f2933'/>
+<circle cx='332.0' cy='259.0' r='6.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<text x='342.0' y='263.0' font-size='11' fill='#1f2933' text-anchor='start' font-weight='normal'>one-timer</text>
+<circle cx='79.0' cy='171.0' r='28.6' fill='#cfe3f5' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='79.0' y='175.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>G</text>
+<text x='79.0' y='213.6' font-size='11' fill='#3b82c4' text-anchor='middle' font-weight='normal'>goalie wandered out</text>
+<line x1='332.0' y1='259.0' x2='79.0' y2='171.0' stroke='#3b82c4' stroke-width='1.5' stroke-dasharray='5 4' />
+<circle cx='200.0' cy='120.4' r='4.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1.5'/>
+<text x='200.0' y='299.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>the sightline to him passes more than 22</text>
+<text x='200.0' y='313.0' font-size='11' fill='#c94040' text-anchor='middle' font-weight='bold'>from the net's middle: aim HIGH MIDDLE</text>
+<text x='620.0' y='82.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>2. The net as the shooter sees it</text>
+<line x1='368.0' y1='290.0' x2='872.0' y2='290.0' stroke='#52606d' stroke-width='2' />
+<rect x='440' y='173' width='360' height='117' fill='#f3f5f7' stroke='#1f2933' stroke-width='3'/>
+<text x='440.0' y='165.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>crossbar at 13</text>
+<circle cx='620.0' cy='182.0' r='9.0' fill='#c94040' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<line x1='660.0' y1='182.0' x2='660.0' y2='119.0' stroke='#c94040' stroke-width='3' marker-end='url(#arr)'/>
+<text x='668.0' y='155.0' font-size='10' fill='#c94040' text-anchor='start' font-weight='normal'>error goes up only</text>
+<text x='634.0' y='200.0' font-size='11' fill='#c94040' text-anchor='start' font-weight='bold'>the one-timer's aim: 12</text>
+<circle cx='620.0' cy='236.0' r='9.0' fill='#3f9d5c' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<line x1='580.0' y1='236.0' x2='580.0' y2='173.0' stroke='#3f9d5c' stroke-width='3' marker-end='url(#arr)'/>
+<text x='572.0' y='209.0' font-size='10' fill='#3f9d5c' text-anchor='end' font-weight='normal'>error goes up only</text>
+<text x='606.0' y='254.0' font-size='11' fill='#3f9d5c' text-anchor='end' font-weight='bold'>a middle aim: 6</text>
+<text x='60.0' y='410.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='bold'>One-timer aim at an empty net</text>
+<text x='290.0' y='410.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='bold'>40</text>
+<text x='360.0' y='410.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='bold'>60</text>
+<text x='430.0' y='410.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='bold'>90</text>
+<text x='500.0' y='410.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='bold'>120</text>
+<text x='570.0' y='410.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='bold'>160 units</text>
+<text x='60.0' y='430.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>High middle (goalie wandered)</text>
+<text x='290.0' y='430.0' font-size='12' fill='#c94040' text-anchor='middle' font-weight='normal'>61%</text>
+<text x='360.0' y='430.0' font-size='12' fill='#c94040' text-anchor='middle' font-weight='normal'>58%</text>
+<text x='430.0' y='430.0' font-size='12' fill='#c94040' text-anchor='middle' font-weight='normal'>57%</text>
+<text x='500.0' y='430.0' font-size='12' fill='#c94040' text-anchor='middle' font-weight='normal'>55%</text>
+<text x='570.0' y='430.0' font-size='12' fill='#c94040' text-anchor='middle' font-weight='normal'>53%</text>
+<text x='60.0' y='450.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Side, mid-height (usual)</text>
+<text x='290.0' y='450.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>89%</text>
+<text x='360.0' y='450.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>84%</text>
+<text x='430.0' y='450.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>73%</text>
+<text x='500.0' y='450.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>67%</text>
+<text x='570.0' y='450.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>63%</text>
+<text x='60.0' y='470.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Middle, mid-height (goalie pulled)</text>
+<text x='290.0' y='470.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>100%</text>
+<text x='360.0' y='470.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>100%</text>
+<text x='430.0' y='470.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>86%</text>
+<text x='500.0' y='470.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>73%</text>
+<text x='570.0' y='470.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>64%</text>
+<text x='60.0' y='506.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Recorded: 10 one-timers got the high-middle aim: 7 went in at heights 10-13 (just under the bar), 1 went over at 16, 2 were saved.</text>
+<text x='60.0' y='524.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>A pulled goalie doesn't trigger it (no sightline): those one-timers are aimed mid-middle. The SNES never does this.</text>
+</svg>

@@ -970,6 +970,121 @@ def snes_flip():
     return svg(W, oy + 110, b, "The SNES flip")
 
 
+# ---------------------------------------------------------------------------------------------- 18. the early save
+def early_save():
+    """checkanim's wind-up rule (Genesis): shot mode, the puck within 60 of the goal line (|y| > 208), the computer
+    goalie within 20 of the middle, and bit 1 of the seconds left clear: goaliesave at once, nearly always a pad stack
+    sliding toward the middle and past it (gstackr, frame 454 facing down; its body test 6 to that side, reach 18)."""
+    W, S = 860, 5.5
+    ox, oy = 300, 380
+    P = lambda x, y: (ox + x * S, oy - (y - 236) * S)
+    b = [ARROW]
+    b.append(text(W / 2, 28, "Wind up close in and the computer goalie drops early (Genesis)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "To scale, top net. A slapshot wound up within 60 units of the goal line, goalie near the middle: he pad-stacks before the shot.",
+                  12, SOFT, "middle"))
+    gl = P(0, 268)[1]
+    b.append(f"<rect x='{ox - 20 * S}' y='{gl - 15 * S}' width='{40 * S}' height='{15 * S}' fill='#f3f5f7' stroke='{SOFT}'/>")
+    b.append(line(ox - 38 * S, gl, ox + 38 * S, gl, RED, 3))
+    for px in (-20, 20):
+        b.append(circle(ox + px * S, gl, 5, INK, INK))
+    # the open side
+    q = P(6, 268)
+    b.append(f"<rect x='{q[0]}' y='{gl - 3}' width='{14 * S}' height='6' fill='{GOLD}'/>")
+    b.append(text(P(13, 268)[0], gl - 10, "open", 12, "#8a6d00", "middle", "bold"))
+    # where he stood, his slide, the pad stack
+    s0, s1 = P(8, 248), P(-6, 247)
+    b.append(circle(s0[0], s0[1], 14 * S, "none", BLUE, 2, "6 4"))
+    b.append(text(s0[0] + 14 * S + 6, s0[1] - 20, "where he stood", 11, BLUE))
+    b.extend(sprite(454, s1[0], s1[1], S, opacity=0.65))
+    c = P(-12, 247)
+    b.append(circle(c[0], c[1], 18 * S, "none", GREEN, 2.5))
+    b.append(text(c[0], c[1] + 18 * S + 16, "pad stack: reach 18", 11, GREEN, "middle", "bold"))
+    b.append(line(s0[0], s0[1] + 40, s1[0], s1[1] + 40, INK, 2, None, "marker-end='url(#arr)'"))
+    b.append(text((s0[0] + s1[0]) / 2, s0[1] + 58, "slides to the middle and past", 11, INK, "middle"))
+    # the shooter and his shot to the open side
+    sh = P(45, 215)
+    b.append(circle(sh[0], sh[1], 8, "#ffffff", RED, 2.5))
+    b.append(text(sh[0] + 12, sh[1] + 4, "winding up", 12, RED, weight="bold"))
+    t = P(14, 268)
+    b.append(line(sh[0], sh[1], t[0], t[1], RED, 2, "6 4", "marker-end='url(#arr)'"))
+    # the clock rule
+    cy = oy + 190
+    b.append(text(60, cy, "Only when bit 1 of the seconds left is clear: 2 game seconds on, 2 off (0.8 s of real time each).", 12, INK, weight="bold"))
+    for i, sec in enumerate(range(13, -1, -1)):
+        on = not (sec & 2)
+        x = 60 + i * 44
+        b.append(f"<rect x='{x}' y='{cy + 10}' width='40' height='22' fill='{GREEN if on else '#e4e7eb'}' fill-opacity='{0.7 if on else 1}'/>")
+        b.append(text(x + 20, cy + 26, f"0:{sec:02d}", 11, INK, "middle"))
+    b.append(text(60 + 14 * 44 + 8, cy + 26, "green: he can drop early", 11, SOFT))
+    nx = 640
+    notes = [("Recorded (computer goalies,", INK), ("shots from within 60):", INK), ("dropped early: 13 goals in 35", RED),
+             ("(37%)", RED), ("waited: 8 in 65 (12%)", SOFT), ("", SOFT),
+             ("22 of 23 pad stacks slid to", SOFT), ("the middle; all 11 early-save", SOFT), ("goals went in on the", SOFT),
+             ("shooter's side.", SOFT), ("", SOFT),
+             ("He's locked 0.72 s: keep", INK), ("gliding and shoot to your", INK), ("own side of the net.", INK)]
+    for i, (s_, col) in enumerate(notes):
+        b.append(text(nx, 100 + i * 17, s_, 12, col, weight="bold" if col != SOFT else "normal"))
+    return svg(W, cy + 60, b, "Early save")
+
+
+# ---------------------------------------------------------------------------------------------- 19. open-net one-timer
+def open_net_one_timer():
+    """shotdiradj (Genesis): a one-timer whose sightline to the goalie's predicted spot misses the net's middle by more
+    than 22 is aimed high middle (direction 0: target z 12, crossbar 13; the scatter only goes up)."""
+    W = 860
+    b = [ARROW]
+    b.append(text(W / 2, 28, "The open-net one-timer (Genesis): why it sails over", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "One-timers ignore the d-pad. With the goalie wandered off, the game aims them high in the middle, just under the crossbar.",
+                  12, SOFT, "middle"))
+    # left: top-down, the sightline test
+    S, ox, oy = 2.2, 200, 380
+    P = lambda x, y: (ox + x * S, oy - (y - 150) * S)
+    gl = P(0, 268)[1]
+    b.append(text(ox, 82, "1. The sightline test (seen from above)", 13, INK, "middle", "bold"))
+    b.append(line(ox - 85 * S, gl, ox + 85 * S, gl, RED, 2.5))
+    b.append(f"<rect x='{ox - 20 * S}' y='{gl - 15 * S}' width='{40 * S}' height='{15 * S}' fill='#f3f5f7' stroke='{INK}'/>")
+    pk, gk = P(60, 205), P(-55, 245)
+    b.append(circle(pk[0], pk[1], 6, INK, INK))
+    b.append(text(pk[0] + 10, pk[1] + 4, "one-timer", 11, INK))
+    b.append(circle(gk[0], gk[1], 13 * S, "#cfe3f5", BLUE, 2))
+    b.append(text(gk[0], gk[1] + 4, "G", 12, INK, "middle", "bold"))
+    b.append(text(gk[0], gk[1] + 13 * S + 14, "goalie wandered out", 11, BLUE, "middle"))
+    b.append(line(pk[0], pk[1], gk[0], gk[1], BLUE, 1.5, "5 4"))
+    mid = P(0, 268)
+    b.append(circle(mid[0], mid[1], 4, GREEN, GREEN))
+    b.append(text(ox, pk[1] + 40, "the sightline to him passes more than 22", 11, SOFT, "middle"))
+    b.append(text(ox, pk[1] + 54, "from the net's middle: aim HIGH MIDDLE", 11, RED, "middle", "bold"))
+    # right: the net, front view
+    S2, nx0, base = 9, 620, 290
+    b.append(text(nx0, 82, "2. The net as the shooter sees it", 13, INK, "middle", "bold"))
+    b.append(line(nx0 - 28 * S2, base, nx0 + 28 * S2, base, SOFT, 2))
+    b.append(f"<rect x='{nx0 - 20 * S2}' y='{base - 13 * S2}' width='{40 * S2}' height='{13 * S2}' fill='#f3f5f7' stroke='{INK}' stroke-width='3'/>")
+    b.append(text(nx0 - 20 * S2, base - 13 * S2 - 8, "crossbar at 13", 11, SOFT))
+    for (x, z, col, label) in ((0, 12, RED, "the one-timer's aim: 12"), (0, 6, GREEN, "a middle aim: 6")):
+        cx_, cy_ = nx0 + x * S2, base - z * S2
+        b.append(circle(cx_, cy_, 9, col, INK, 1.5))
+        b.append(line(cx_ + (40 if z == 12 else -40), cy_, cx_ + (40 if z == 12 else -40), cy_ - 7 * S2, col, 3, None, "marker-end='url(#arr)'"))
+        b.append(text(cx_ + (48 if z == 12 else -48), cy_ - 3 * S2, "error goes up only", 10, col, "start" if z == 12 else "end"))
+        b.append(text(cx_ + (14 if z == 12 else -14), cy_ + 18, label, 11, col, "start" if z == 12 else "end", "bold"))
+    # the chances
+    ty = base + 120
+    rows = [("One-timer aim at an empty net", "40", "60", "90", "120", "160"),
+            ("High middle (goalie wandered)", "61%", "58%", "57%", "55%", "53%"),
+            ("Side, mid-height (usual)", "89%", "84%", "73%", "67%", "63%"),
+            ("Middle, mid-height (goalie pulled)", "100%", "100%", "86%", "73%", "64%")]
+    for i, row in enumerate(rows):
+        for j, cell in enumerate(row):
+            x = 60 + (0 if j == 0 else 230 + (j - 1) * 70)
+            col = RED if i == 1 and j else INK if i else SOFT
+            b.append(text(x, ty + i * 20, cell + (" units" if i == 0 and j == 5 else ""), 12, col, "start" if j == 0 else "middle",
+                          "bold" if i == 0 else "normal"))
+    notes = ["Recorded: 10 one-timers got the high-middle aim: 7 went in at heights 10-13 (just under the bar), 1 went over at 16, 2 were saved.",
+             "A pulled goalie doesn't trigger it (no sightline): those one-timers are aimed mid-middle. The SNES never does this."]
+    for i, s_ in enumerate(notes):
+        b.append(text(60, ty + 96 + i * 18, s_, 12, SOFT))
+    return svg(W, ty + 140, b, "Open-net one-timer")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -979,7 +1094,7 @@ def main():
              "one_timers.svg": one_timers(), "faceoff_directions.svg": faceoff_directions(),
              "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots(),
              "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions(),
-             "snes_flip.svg": snes_flip()}
+             "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)
