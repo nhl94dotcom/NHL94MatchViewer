@@ -201,6 +201,21 @@ so speed ratings barely separate players: most of the ice skates at full speed.
   only + 8, and a computer goalie **loses his Agility again while a pass is in the air**, so he slides across slowly on
   passes. A person's goalie inside his crease skates at three-quarters of his top speed. **Code**
 
+### 3.3 No runaway speed
+
+The Genesis can leave a skater's "deceleration off" switch on, so his speed bursts stack up to twice top speed
+(GENESIS_MECHANICS 3.4). The SNES has the same switch: `updateplayers` slows each skater by a friction byte from table
+.21 ($FD, $FA, $F7 ... by the frame step) normally and from .22 ($FF, $FF, $FE ...: about a sixth as much friction)
+while pflags bit 0 is set, and above top speed `playeracc` adds nothing but takes nothing off either, so bursts could
+stack the same way. But the switch is **turned off reliably**: only `asspassrec` sets it (on the receiver of a pass),
+and it is cleared when his wait for the pass ends (`asspassrec` .6: anyone has the puck, or the wait runs out), when
+**any stick touches the puck** (`puckstick`, which clears it for that player first thing), by `assnearest` and at
+faceoffs (`resetplstuff`). `FallDown` never sets it, so the Genesis's boards-fall route doesn't exist. **Code**
+
+**Confirmed** (analysis/snes_runaway_study.py, eight SNES games): 791 stretches with the switch on, a median 0.3 s,
+90% under 0.6 s, the longest 2.7 s; the fastest skater with it on went 10,156 (top speed is about 9,000), against
+19,400-20,100 in the Genesis runaways.
+
 ---
 
 ## 4. Shooting
@@ -521,7 +536,10 @@ mid-height. Percent that go in (`analysis/goalie_study.py longsnes`):
   at taking it, or the samples' timing).
 - **The aim:** the receiver's stick blade (the hot spot of his one-timer pose for the way he faces), where it will be
   if he keeps skating: 24 frames ahead (0.4 s), or distance / 4 frames for a short pass, distance / 5 for a long one.
-  A small lift grows with the distance (vertical speed = distance x 8). The receiver gets the "receive a pass" job, a
+  A small lift grows with the distance (vertical speed = distance x 8). **Confirmed:** in the recordings the median
+  pass peaked at 0.2 units high within 50 units, 1.4 at 100-149, 3.3 at 200-249 (a stick plays a puck up to 5); 9-16% of
+  passes went above 5 at most distances. The Genesis lifts targeted passes by their flight time and more (GENESIS_MECHANICS
+  6.1), so long Genesis passes clear sticks far more often. The receiver gets the "receive a pass" job, a
   person's team switches control to him, the passer can't touch the puck for the lead time, and the opposing computer
   goalie's next rethink is delayed (6.1's goalie note, 5.3).
 - **Pass shots** happen: a B pass with nobody in that cone flies off the way you pressed at 2 x 80 (x 256) along the

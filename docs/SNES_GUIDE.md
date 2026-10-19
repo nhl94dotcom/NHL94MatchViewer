@@ -205,7 +205,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 ## 5. Skating and carrying the puck
 
-- **Speed bursts (A without the puck) give a big push**, and with line changes off they cost nothing.
+- **Speed bursts (A without the puck) give a big push**, and with line changes off they cost nothing. They don't
+  stack into a runaway skater as they can on the Genesis: the SNES turns that switch back off reliably (SNES_MECHANICS
+  3.3).
 - **Don't skate into the goalie with the puck.** Any contact knocks you down and loses the puck, unless your Stick
   Handling is 12+ (2.1), in which case you wobble and **keep the puck**. But **a second contact within a second of a
   wobble always knocks you down**: get away from him.

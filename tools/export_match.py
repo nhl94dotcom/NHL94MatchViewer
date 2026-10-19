@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import systems  # noqa: E402
 import xg  # noqa: E402
 import xg_snes  # noqa: E402
-from systems.common import ROOT, STAT_FIELDS  # noqa: E402
+from systems.common import DIGITS, ROOT, STAT_FIELDS  # noqa: E402
 
 
 class Capture:
@@ -1527,6 +1527,78 @@ TAPESTRY_GOAL_MS = 3000   # ... and the goal within this of the last pass, which
 TAPESTRY_LEVELS = [(4, 'masterpiece'), (3, 'fine tapestry'), (2, 'tapestry')]  # passes in the chain -> the goal's kind
 
 
+BUTTERFLY = {"021e", "01ec"}     # gstickl (the butterfly) and gstickr (the kick save): the stick out to the side
+SHOULDER = {"148e", "14c0"}      # ghighr / ghighl: the shoulder saves, whose hold point is up the screen
+FIVE_HOLE_NEAR = 7               # the puck this close to the goalie's centre (his body circle is 12-15)
+ROCKET_SPEED = 26000             # a pass leaving faster than this (normal passes 13,000-23,000)
+RUNAWAY_SPEED = 15500            # a skater with deceleration off moving faster than this (normal top about 9,500)
+
+
+def add_quirks(m):
+    """Quirky events (2026-10-19, the user: the game's oddities, in their own team-stats group), Genesis:
+    - a goal through the legs (`five-hole` kind): in the second before the goal the loose puck, at ice level (height 5 or
+      under), passed within FIVE_HOLE_NEAR of the defending goalie's centre while he was in the butterfly or a kick save
+      (the stick-ring gap, GENESIS_MECHANICS 5.5);
+    - a shoulder-save bobble goal (`goalie bobble` kind): the defending goalie held the puck in a shoulder save in the 2 s
+      before the goal and nobody else had it after him (5.3: the hold point drags it to the net, which strips it);
+    - rocket passes (pass `rocket`): a pass leaving the stick faster than ROCKET_SPEED, not a pass shot (6.1: the meeting
+      time rounded down);
+    - runaway skaters (`runaways`: [start frame, end frame, team, roster index, top speed]): a person's skater with
+      deceleration off left on (3.4) above RUNAWAY_SPEED, from the reader's `fast` samples.
+    Nothing on the SNES (its goalie and passes work differently; `fast` is Genesis only)."""
+    if m.get("system", "genesis") != "genesis":
+        return
+    K, t, P, V, own = 12, m["t"], m["puck"], m["puckV"], m["owner"]
+    role, anim = m["role"], m["anim"]
+    A = lambda f, k: anim[(f * K + k) * 4:(f * K + k) * 4 + 4]
+    pos = lambda f, k: (m["pos"][(f * K + k) * 2], m["pos"][(f * K + k) * 2 + 1])
+    goalie = lambda f, team: next((k for k in range(team * 6, team * 6 + 6) if role[f * K + k] == "0"), None)
+    for g in m.get("goals", []):
+        if "penalty shot" in g.get("kinds", []):
+            continue
+        gf, defending = g["f"], 1 - g["team"]
+        f = gf
+        through = held = False
+        holder_after = None
+        while f > 0 and t[gf] - t[f] <= 2000:
+            gk = goalie(f, defending)
+            if gk is not None:
+                px, py, pz = P[3 * f:3 * f + 3]
+                gx, gy = pos(f, gk)
+                if (t[gf] - t[f] <= 1000 and own[f] < 0 and 0 <= pz <= 5 and A(f, gk) in BUTTERFLY
+                        and math.hypot(px - gx, py - gy) <= FIVE_HOLE_NEAR):
+                    through = True
+                if own[f] == gk and A(f, gk) in SHOULDER and holder_after is None:
+                    held = True
+            if own[f] >= 0 and own[f] != gk and holder_after is None and not held:
+                holder_after = own[f]   # someone else had it after the goalie (scanning backwards: before held)
+            f -= 1
+        if through and "five-hole" not in g["kinds"]:
+            g["kinds"].append("five-hole")
+        if held and "goalie bobble" not in g["kinds"]:
+            g["kinds"].append("goalie bobble")
+    for p in m.get("passes", []):
+        if p.get("result") == "pass shot":
+            continue
+        f = p["f"]
+        speed = max((math.hypot(V[2 * j], V[2 * j + 1]) * 100 for j in range(f, min(len(t), f + 4))), default=0)
+        if speed > ROCKET_SPEED:
+            p["rocket"] = round(speed)
+    runs, cur = [], None
+    for f, k, sp in m.get("fast", []):
+        if cur and cur[2] == k and t[f] - t[cur[1]] <= 300:
+            cur[1], cur[3] = f, max(cur[3], sp * 100)
+        else:
+            if cur:
+                runs.append(cur)
+            cur = [f, f, k, sp * 100]
+    if cur:
+        runs.append(cur)
+    roster = m["roster"]
+    m["runaways"] = [[a, b, 0 if k < 6 else 1, DIGITS.index(roster[a * K + k]), top]
+                     for a, b, k, top in runs if top > RUNAWAY_SPEED and roster[a * K + k] in DIGITS]
+
+
 def add_tapestries(m):
     """Tapestries (2026-10-18, the user's word): a goal at the end of two or more quick passes. Going back from the goal:
     the last pass (completed or one-timed) went to the scorer within TAPESTRY_GOAL_MS of the goal; each pass before it
@@ -1885,6 +1957,7 @@ def analyse(match, system, cap, rom_path):
     add_goal_spots(match)
     add_own_goals(match)
     add_tapestries(match)
+    add_quirks(match)
     add_shot_aim(match, getattr(system, 'AIM_TABLE', None))
     xg.add_expected_goals(match)
     if match.get("system") == "snes" and rom_path.exists():

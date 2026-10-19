@@ -210,6 +210,9 @@ can take him past it and friction brings him back.
 
 ### 3.4 Runaway speed: "deceleration off" left on (a bug)
 
+(The match viewer counts runaways, through-the-legs goals (5.5), shoulder-save bobble goals (5.3) and rocket passes (6.1)
+in the team stats' "Quirky Events". The SNES has the same switch but clears it reliably: SNES_MECHANICS 3.3.)
+
 Now and then a person's skater bursts and shoots off far past top speed, sliding out of control for a second or two
 (the user: usually racing back on defence; switching to another skater is the usual way out).
 

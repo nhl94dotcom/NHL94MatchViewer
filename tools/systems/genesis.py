@@ -6,6 +6,7 @@ The analysis that follows (shots, passes, turnovers ... in export_match.py) and 
 systems, and only see the match file this module builds.
 """
 import json
+import math
 import re
 import struct
 import sys
@@ -409,6 +410,7 @@ class MatchReader:
         self.match["posts"] = []  # frames where the puck came off a goal post
         self.match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
         self.match["aim"] = []  # [frame, aim direction 0-8] whenever it changes (AIM_DIR)
+        self.match["fast"] = []  # [frame, record, speed / 100]: a person's skater moving fast with deceleration off (3.4)
         self.match["work"] = []  # [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever they change (WORK)
         self.last_work = [None] * PLAYERS
         self.aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
@@ -511,6 +513,12 @@ class MatchReader:
             self.role.append(str(code) if code < 6 else "x")
             if cap.byte(i, rec + FLAGS) & 0x08:
                 mask |= 1 << k
+                # Runaway speed (GENESIS_MECHANICS 3.4): a person's skater with "deceleration off" (pflags bit 0) left on
+                # and moving fast: [frame, record, speed in hundreds], for export_match.find_runaways.
+                if cap.byte(i, rec + FLAGS) & 0x01:
+                    vx, vy = struct.unpack("<hh", cap.raw(i, rec + 0x28, 4))
+                    if vx * vx + vy * vy > 12000 ** 2:
+                        self.match["fast"].append([len(self.match["t"]) - 1, k, round(math.hypot(vx, vy) / 100)])
             work = [cap.byte(i, rec + o) for o in WORK]
             if work != self.last_work[k]:
                 self.match["work"].append([len(self.match["t"]) - 1, k] + work)

@@ -1329,6 +1329,24 @@ taking over the receiver) or getting up. Bursts (+~6,300) then stack: 2158 BOS-W
 BOS-WPG P2 ~0:22 (taken over mid-pass, 19,413). Flag set 765 times (690 passes, 65 boards falls); a person with it on
 > 0.5 s 44 times, runaway only with 2+ bursts. GENESIS_MECHANICS 3.4, GENESIS_GUIDE 5.
 
+## Quirky Events (2026-10-19)
+
+The user asked for the game's oddities in their own team-stats group, "Quirky Events" (viewer fillTeamStats, STAT_HELP,
+Help "Quirky events"). export_match `add_quirks` (after add_tapestries; Genesis only): goal kind 'five-hole' (in the second
+before the goal the loose puck at height <= 5 passed within FIVE_HOLE_NEAR 7 of the defending goalie's centre while he was
+in $021E / $01EC: GENESIS_MECHANICS 5.5's blind stick ring), 'goalie bobble' (the defending goalie held it in a shoulder
+save $148E / $14C0 in the 2 s before, nobody else after: 5.3), pass `rocket` (leaving faster than ROCKET_SPEED 26000, not a
+pass shot: 6.1), `runaways` [start, end, team, roster index, top] from genesis MatchReader's new `fast` ([frame, record,
+speed / 100] for a person's skater with pflags bit 0 over 12000), kept above RUNAWAY_SPEED 15500 (3.4). On-ice tags
+"Rocket pass" and "Runaway!", goal tags "through the legs" / "shoulder-save bobble". Found: ANA-ATL goals P1 2:48, 2:11,
+P3 2:24 five-hole and P3 4:00 bobble (exactly the user's); runaways 2149 BOS-WPG, 2158 BOS-WPG and a new one in 2219
+WPG-BOS (15,900); rocket passes 0-5 a game; no five-hole or bobble goal in any other recording.
+SNES side (analysis/snes_runaway_study.py, SNES_MECHANICS 3.3 / 6.1): the same friction-off flag (pflags bit 0, table .22)
+exists, set only by asspassrec and cleared by any stick touch (puckstick), the wait ending, assnearest and faceoffs;
+FallDown never sets it: 791 stretches in eight games, median 0.3 s, max 2.7 s, fastest 10,156, so no runaways. Pass
+lift = distance x 8 (median peak 1.4 at 100-149 units, 3.3 at 200-249); no rocket pass, through-the-legs or bobble
+(already in SNES_MECHANICS 5.1 / 6.1).
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
