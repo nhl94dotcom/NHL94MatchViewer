@@ -19,7 +19,7 @@ from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 import deserve  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 21  # 21: posts (team posts / postsA, skater posts); 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 22  # 22: tapestries (team tap / tapA, skater tapG / tapIn); 21: posts (team posts / postsA, skater posts); 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -279,6 +279,8 @@ def summarize(m, name, date=None):
             "att": sum(1 for s in shots if s["team"] == team), "attA": sum(1 for s in shots if s["team"] == other),
             "posts": sum(1 for s in shots if s["team"] == team and s["result"] == "post"),
             "postsA": sum(1 for s in shots if s["team"] == other and s["result"] == "post"),
+            "tap": sum(1 for g in goals if g["team"] == team and g.get("tapestry")),
+            "tapA": sum(1 for g in goals if g["team"] == other and g.get("tapestry")),
             "ppg": team_value(team, "ppGoals"), "ppTries": team_value(team, "ppTries"),
             "ppgA": team_value(other, "ppGoals"), "pkTimes": team_value(other, "ppTries"),
             "shg": team_value(team, "shGoals"),
@@ -436,6 +438,8 @@ def summarize(m, name, date=None):
                     "g": v[0], "a": v[1], "sog": v[2], "pm": pm,
                     "att": sum(1 for s in shots if s["team"] == team and s["idx"] == idx),
                     "posts": sum(1 for s in shots if s["team"] == team and s["idx"] == idx and s["result"] == "post"),
+                    "tapG": sum(1 for g in goals if g["team"] == team and g["scorer"] == idx and g.get("tapestry")),
+                    "tapIn": sum(1 for g in goals if g["team"] == team and g.get("tapestry") and idx in g["tapestry"]["chain"][:-1]),
                     "ppg": sum(1 for g in goals if g["team"] == team and g["scorer"] == idx and "PPG" in g.get("kinds", [])),
                     "shg": sum(1 for g in goals if g["team"] == team and g["scorer"] == idx and "SHG" in g.get("kinds", [])),
                     "gwg": int(bool(gwg) and gwg["team"] == team and gwg["scorer"] == idx),

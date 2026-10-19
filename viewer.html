@@ -624,6 +624,7 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 
 <section id="h-terms"><h2>Community terms</h2>
 <dl>
+  <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 seconds (real time, flight and a short carry included), the last pass went to the scorer within 3 seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too.</dd>
   <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 2 seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near.</dd>
   <dt>Pass shot</dt><dd>Using the pass button to shoot: the puck goes off quickly with no target. The game does not count it as a shot on goal unless it scores.</dd>
 </dl>
@@ -2556,7 +2557,7 @@ function findCallouts(m) {
   }
   for (const g of m.goals || []) {
     const helpers = g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')'));
-    out.push({ f: g.f, net: g.net, aim: g.aim, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.join(', ') : ''),
+    out.push({ f: g.f, net: g.net, aim: g.aim, kind: 'Goal \u00b7 ' + (g.team ? m.team2 : m.team1) + (g.kinds.length ? ' \u00b7 ' + g.kinds.map(k => goalKindText(g, k)).join(', ') : ''),
       text: playerName(g.team, g.scorer) + ' (' + g.goals + ')' + (helpers.length ? ' \u2014 assists ' + helpers.join(', ') : ' \u2014 unassisted') + goalNotes(g) });
   }
   return out.sort((a, b) => a.f - b.f);
@@ -3211,6 +3212,8 @@ const STAT_HELP = {
   'Deserve to win': 'The Deserve to Win meter (after MoneyPuck\u2019s): how often each team would win if the game\u2019s shots were replayed, each going in with its chance (its xG; pass shots and deflections a typical chance). A team\u2019s shots within 3 seconds count as one chance; a tie goes to sudden-death overtime (10 minutes on the Genesis, 5 on the SNES) at each team\u2019s regulation rate. Before the end, who deserved to be ahead on the shots so far.',
   'Deserve to win|· a tie': 'How often the replays end level (a tie after overtime; before the end, level so far).',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
+  'Tapestry goals': 'Goals at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 s (a short carry is fine), the last went to the scorer within 3 s of the goal, and the other team never had the puck. Tapestry 2 passes, fine tapestry 3, masterpiece 4 or more.',
+  'Tapestry goals|\u00b7 2 / 3 / 4+ passes': 'Tapestry goals by the number of passes: tapestries (2), fine tapestries (3), masterpieces (4 or more).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
   'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s.',
   'Slapshots (G / att)': 'Goals and attempts from slapshots: shots wound up for 0.8 s or more.',
@@ -3433,6 +3436,8 @@ function fillTeamStats(snap) {
   const goalsOf = (team, test) => { const mine = list.filter(sh => sh.team === team && test(sh)); return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length; };
   const posts = team => list.filter(sh => sh.team === team && sh.result === 'post').length;
   // Own goals: goals the other team scored that this team's skater put in his own net (the converter's add_own_goals).
+  const tapestries = (team, n) => (match.goals || []).filter(g => g.f <= f && g.team === team && g.tapestry &&
+    (n === undefined || (n >= 4 ? g.tapestry.n >= 4 : g.tapestry.n === n))).length;
   const ownGoals = team => (match.goals || []).filter(g => g.f <= f && g.team !== team && g.ownGoal != null).length;
   // Where shots were aimed (the d-pad at the release: the height row of the game's aim table, 12 / 6 / 0).
   const aimed = (team, z) => goalsOf(team, sh => sh.aim && (z === undefined || sh.aim.z === z));
@@ -3496,6 +3501,8 @@ function fillTeamStats(snap) {
       ...(uncountedSaves(0) + uncountedSaves(1) ? [['Saved, not counted', uncountedSaves(0), uncountedSaves(1)]] : []),
       ...(posts(0) + posts(1) ? [['Posts', posts(0), posts(1)]] : []),
       ...(ownGoals(0) + ownGoals(1) ? [['Own goals (into own net)', ownGoals(0), ownGoals(1)]] : []),
+      ...(match.passes ? [['Tapestry goals', tapestries(0), tapestries(1)]] : []),
+      ...(tapestries(0) + tapestries(1) ? [['\u00b7 2 / 3 / 4+ passes', [2, 3, 4].map(n => tapestries(0, n)).join(' / '), [2, 3, 4].map(n => tapestries(1, n)).join(' / ')]] : []),
       ['Wrist shots (G / att)', goalsOf(0, sh => sh.type === 'wrist shot'), goalsOf(1, sh => sh.type === 'wrist shot')],
       ['Slapshots (G / att)', goalsOf(0, sh => sh.type === 'slapshot'), goalsOf(1, sh => sh.type === 'slapshot')],
     ] : []),
@@ -4363,12 +4370,18 @@ function playerName(team, idx) {
 }
 const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot', 'EA Special': 'EA Special',
   'off a check': 'off a check', 'goalie giveaway': 'goalie giveaway', 'own goal': 'own goal' };
+// Tapestries (the converter's add_tapestries): a goal at the end of two or more quick passes, its kind by the number.
+const TAPESTRY_KINDS = ['tapestry', 'fine tapestry', 'masterpiece'];
+function goalKindText(g, kind) {
+  return TAPESTRY_KINDS.includes(kind) && g.tapestry ? kind + ' \u00b7 ' + g.tapestry.n + ' passes' : GOAL_TAGS[kind] || kind;
+}
 
 // What the game's own credit hides: an own goal (an opposing skater put it in his own net; the game credits the
 // scoring team's last toucher), and a player the game credited with both assists (its one-timer bookkeeping: a
 // player who one-times twice in a row goes into its list of touchers twice; 2026-10-17_2257_BOS-DAL P1 4:25).
 function goalNotes(g) {
   let out = '';
+  if (g.tapestry) out += ' \u00b7 ' + g.tapestry.chain.map(idx => playerName(g.team, idx).replace(/^#\d+ /, '').split(' ').pop()).join(' \u2192 ');
   if (g.ownGoal != null) out += ' \u00b7 own goal: ' + playerName(1 - g.team, g.ownGoal).replace(/^#\d+ /, '') + ' put it in his own net';
   if (g.assists.length === 2 && g.assists[0][0] === g.assists[1][0])
     out += ' \u00b7 the game credits ' + playerName(g.team, g.assists[0][0]).replace(/^#\d+ /, '') + ' with both assists (a bug in the game, not the viewer)';
@@ -4434,7 +4447,7 @@ function fillScoring(f) {
     const line = document.createElement('div'), sub = document.createElement('small');
     line.className = 'goal';
     line.textContent = periodName(g.period) + ' ' + clockText(g.clock) + ' \u00b7 ' + (g.team ? match.team2 : match.team1) + ' \u00b7 ' + playerName(g.team, g.scorer) + ' (' + g.goals + ')';
-    for (const kind of g.kinds.concat(g.ownGoal != null ? ['own goal'] : [])) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = GOAL_TAGS[kind] || kind; line.append(tag); }
+    for (const kind of g.kinds.concat(g.ownGoal != null ? ['own goal'] : [])) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = goalKindText(g, kind); line.append(tag); }
     if (g.net) line.prepend(netPicture(g.net, 46, g.aim));
     sub.textContent = (g.assists.length ? 'Assists: ' + g.assists.map(([idx, n]) => playerName(g.team, idx) + (n === null || n === undefined ? '' : ' (' + n + ')')).join(', ') : 'Unassisted') + goalNotes(g);
     line.append(sub);
@@ -5189,7 +5202,7 @@ function findHighlights(m) {
     const helpers = (g.assists || []).map(a => playerName(g.team, a[0]).replace(/^#\d+ /, '')).join(', ');
     const kinds = (g.kinds || []).filter(k => k !== 'EV');
     items.push({ f: g.f, ...span(g.f), kind: 'Goal', team: g.team,
-      text: who(g.team, g.scorer) + (helpers ? ' (' + helpers + ')' : ' (unassisted)') + (kinds.length ? ' \u00b7 ' + kinds.join(', ') : '') });
+      text: who(g.team, g.scorer) + (helpers ? ' (' + helpers + ')' : ' (unassisted)') + (kinds.length ? ' \u00b7 ' + kinds.map(k => goalKindText(g, k)).join(', ') : '') });
   }
   // Saves by danger: close in, a one-timer, a rebound, a hard shot. Only the best few.
   const saves = (m.shotList || []).filter(sh => sh.result === 'save').map(sh => {

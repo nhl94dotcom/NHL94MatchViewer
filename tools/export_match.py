@@ -1520,6 +1520,45 @@ def add_own_goals(m):
             g['ownGoal'] = int(m['roster'][q * K + own[q]], 36)
 
 
+TAPESTRY_GAP_MS = 2500    # a tapestry's passes: each released within this (real time) of the pass that reached its passer
+TAPESTRY_GOAL_MS = 3000   # ... and the goal within this of the last pass, which went to the scorer
+TAPESTRY_LEVELS = [(4, 'masterpiece'), (3, 'fine tapestry'), (2, 'tapestry')]  # passes in the chain -> the goal's kind
+
+
+def add_tapestries(m):
+    """Tapestries (2026-10-18, the user's word): a goal at the end of two or more quick passes. Going back from the goal:
+    the last pass (completed or one-timed) went to the scorer within TAPESTRY_GOAL_MS of the goal; each pass before it
+    was completed to the player who made the next one, released within TAPESTRY_GAP_MS (real time, flight and a short
+    carry included) of it; the other team never had the puck from the first pass to the goal (a bobble the receiver
+    gathers himself is fine). The goal gets `tapestry` {n: passes, chain: roster indices from the first passer to the
+    scorer} and a kind by n: 'tapestry' 2, 'fine tapestry' 3, 'masterpiece' 4+. Not penalty shots or own goals."""
+    t, own = m['t'], m['owner']
+    passes = sorted(m.get('passes', []), key=lambda p: p['f'])
+
+    def theirs_had(f0, f1, team):
+        return any(own[q] >= 0 and (own[q] >= 6) != (team == 1) for q in range(f0, f1 + 1))
+
+    for g in m.get('goals', []):
+        if 'penalty shot' in g.get('kinds', []) or g.get('ownGoal') is not None:
+            continue
+        team, gf = g['team'], g['f']
+        last = [p for p in passes if p['team'] == team and p['f'] <= gf and t[gf] - t[p['f']] <= TAPESTRY_GOAL_MS
+                and p.get('to') == g['scorer'] and p['result'] in ('completed', 'one-timer') and not theirs_had(p['f'], gf, team)]
+        if not last:
+            continue
+        chain = [last[-1]]
+        while True:
+            cur = chain[0]
+            prev = [p for p in passes if p['team'] == team and p['f'] < cur['f'] and t[cur['f']] - t[p['f']] <= TAPESTRY_GAP_MS
+                    and p.get('to') == cur['idx'] and p['result'] == 'completed' and not theirs_had(p['f'], cur['f'], team)]
+            if not prev or prev[-1] in chain:
+                break
+            chain.insert(0, prev[-1])
+        if len(chain) >= 2:
+            g['tapestry'] = {'n': len(chain), 'chain': [p['idx'] for p in chain] + [g['scorer']]}
+            g['kinds'].append(next(name for n, name in TAPESTRY_LEVELS if len(chain) >= n))
+
+
 def add_goalie_giveaways(m):
     """Goals off a goalie's giveaway (the user: a goalie out of position passes, the other team picks it off at once
     and scores, directly or with up to two passes): a turnover whose giver was his team's goalie, then a goal by the
@@ -1845,6 +1884,7 @@ def main(argv=None):
         add_goalie_giveaways(match)
     add_goal_spots(match)
     add_own_goals(match)
+    add_tapestries(match)
     add_shot_aim(match, getattr(system, 'AIM_TABLE', None))
     xg.add_expected_goals(match)
     if match.get("system") == "snes" and rom_path.exists():
