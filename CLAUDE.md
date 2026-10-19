@@ -1601,9 +1601,12 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
 - Shots on goal (ChkShotStat): counted when the puck touches the goalie's body (puckgoalie) or his stick catches it, while
   the "shot taken" flag set at the release still stands; any touch (a2touchpuck), the boards (wallcoll) or a stick
   deflection clears it without counting, and nothing counts while the clock is stopped (penalty shots: capture3's
-  Oates). Pass shots never set the flag. Not confirmed as the reason for the "saved, not counted" shots: the uncounted
-  ones are not more often low and fast at the stick (12% against 8-21%), so 60 Hz samples cannot tell, or something else
-  clears the flag.
+  Oates). Pass shots never set the flag. The "saved, not counted" shots, one by one (2026-10-18,
+  analysis/uncounted_study.py, by how each save ended): of 34, 17 knocked away slowly in a random direction (the
+  goalie's stick: deflect's +/-$1000 each way, puck at height <= 5, 16-33 from his centre), 3 with the clock stopped (two
+  arriving after 0:00 at a period's end, capture3's penalty shot), 6 wide off the end boards / behind the net first,
+  about 4 off a skater's body in front (height 8-12); held or bounced radially (body) 165 counted of 173. About 15
+  counted saves also look like stick deflections (sampling). GENESIS_MECHANICS 4.7.
 - Checks (CCStart): only a burst ($0C5E) checks; impact = closing speed along the line between them (at least 5; a
   check needs 20), and hits taken add up (impact(a2)). Knockdown when (base - checker weight + target weight) / 2 -
   impact <= 0, or he is against the boards, else when randomd0(that) <= Chk / 2 (weight = Wgt rating x 8, record +$67);

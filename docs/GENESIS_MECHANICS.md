@@ -349,6 +349,29 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   reaching the goalie, which may explain much of the community's finding that the up direction has about 10% more
   recorded shots on goal. (In these 13 games the middle-height shots went the other way, 16% uncounted going up
   against 7% going down, unexplained, so the recordings alone don't show the 10%.)
+- **Every uncounted save, one by one** (`analysis/uncounted_study.py`, 34 in the Genesis recordings, pass shots
+  left out). How each one ended, against the counted ones:
+
+  | How the save ended | Counted | Not counted |
+  |---|---|---|
+  | Goalie held it at once | 61 | 4 |
+  | Bounced straight out from his centre (his body) | 100 | 4 |
+  | Knocked away slowly in a random direction (a stick) | 15 | 17 |
+  | Went behind the net or to the boards first | 1 | 6 |
+  | The clock stopped before it arrived | 2 | 3 |
+
+  - **Most are the goalie's stick:** a low puck (height 5 or under, usually 0-5.6 just before) 16-33 units from his
+    centre, beyond his body's reach, leaving at most 4,096 each way in a random direction: exactly `deflect`'s
+    random velocity. The stick's deflection touches the puck (a2touchpuck) and clears the flag.
+  - **The clock:** two came in the last second of a period (the clock reached 0:00 while the shot was on its way)
+    and one was a penalty shot.
+  - **Not really saves:** six went wide and came back to the goalie off the end boards or from behind the net (the
+    boards clear the flag).
+  - **A screen:** about four bounced off a skater's body in front first (height 8-12, within about 9 of him; a puck
+    above 8 always hits a skater it passes within 8 of).
+  - About 15 counted saves also looked like stick deflections, so the samples (60 a second) can't tell every case,
+    but the split is clear: a save the goalie makes by holding it or with his body is counted almost every time (165
+    of 173); one his stick knocks away usually isn't.
 
 ### 4.8 One-timers
 
@@ -1495,7 +1518,8 @@ C-then-B check, and the weight bug for computer checkers too.
 
 ## 17. Open questions
 
-- **Saved shots the game didn't count:** the stick-deflection rule doesn't fully explain them.
+- **Saved shots the game didn't count:** explained for most (4.7: the goalie's stick, the clock, wide shots, screens);
+  about 15 counted saves look like stick deflections in the samples too, which the samples can't settle.
 - **15 bobbles** with no explanation yet: maybe the puck reaching the body before the stick.
 - **The penalty shot that ends immediately after the transition:** unexplained. The helper now records the
   penalty-shot flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence
