@@ -297,6 +297,9 @@ The computer never holds a direction, so its wins go a random way.
   speed.
 - **Pass shots:** with nobody in the cone, the puck just goes that way, hard. Aimed at the net, it's a shot the game
   doesn't count unless it scores.
+- **The rocket pass (a bug):** pass to a teammate skating **toward** you from about 50-70 units away and the game can
+  send the puck at twice the normal speed (it rounds the time they'll meet down to the nearest eighth of a second).
+  One or two a game. It can catch a receiver off guard or bounce off his stick.
 - **Bobbles:** a pass faster than the receiver can handle (it depends on his Stick Handling) bounces off his stick.
 - **Why the puck sometimes goes right through a stick:** after a player shoots or passes, his stick ignores the puck
   for about a quarter of a second; after losing a steal, about half a second; after a puck bounces off him, 8 frames;
@@ -423,6 +426,10 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
   stops shots. C freezes him for over half a second at a quarter speed. Its uses: as a shot arrives in close, a save
   move holds the puck instead of giving up a rebound; and pressed before the shot, it's a pad stack (reach 18), which
   slides him away from the side he's on. Never press it early or while sliding across.
+- **Pucks that slip past a save move:** the game picks a stick, glove or shoulder save because the puck is going to
+  miss his body, and the picture stretches toward it, but he's no bigger, so the puck slides past the pad. If you have
+  time, skate him into the puck's line instead of pressing C: his body stops it. (The pad stack is the one move that
+  does reach farther.)
 - Dives (A while moving) stop him dead for over a second; the computer only dives at a slow loose puck right in front
   of him.
 

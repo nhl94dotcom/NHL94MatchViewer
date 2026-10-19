@@ -1304,6 +1304,17 @@ Missed tapestries (the user): the same chain ending in a shot attempt that did n
 "Missed tapestries", Help. Season VERSION 23: team tapMiss / tapMissA, skater tapMiss (TAP MISS columns). Documents
 games: 29 tapestry goals, 78 missed (55 saved, 10 wide, 7 blocked, 6 posts): about 27% finished.
 
+Super-fast passes and pucks past save moves (2026-10-19, the user, Genesis only). Passes: passtoa0 solves the meeting
+time t in whole 1/8 s (truncating divs; 1-24) and sends v = distance x 65536 / (120 t) per axis (capped by divs
+overflow: an overflow leaves the puck nearly still); a receiver skating toward the passer 50-70 away gives t 1.x -> 1:
+27,000-32,000. analysis/fast_pass_study.py replays the word arithmetic from the sample before each targeted pass
+(passplayer $BEE0 set, passspeed $BEDE; receiver +0 / +$14 / +$28 / +$2A, HotList): 750 / 816 within 10%; persons 24 /
+718 over 25,000, goalies 5 / 98. SNES dopass sets speed by distance. Save moves: goaliesave picks the side save when the
+puck will cross 16+ to his side; the body circle doesn't change (pad stack aside), the stick only plays low pucks not
+rising (shots are lifted). analysis/slip_study.py: 12-16 from his centre standing 11 / 82 in, save move 28 / 74; stick
+saves 27 / 47 from 12-20. C freezes a person's goalie (pf2aip: doinput skips his input) ~0.57 s at speed / 4. SNES save
+frames add 12-28 hit areas. GENESIS_MECHANICS 5.5 and 6.1, GENESIS_GUIDE 8 and 12.2.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the

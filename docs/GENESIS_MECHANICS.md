@@ -566,6 +566,28 @@ What a save move does change:
 **The cost:** over half a second frozen at a quarter speed. Press too early, or while you're sliding across, and a
 pass across, a deke or a shooter who keeps moving beats you.
 
+**Why hard shots and passes seem to slip right under a goalie in a save move** (2026-10-19; the user's league knows
+it, Genesis only, and has learned to take the goalie and let the puck hit him instead of pressing C):
+
+- **The game picks a save move because the puck is going to miss his body.** The stick save (`gstick2`) is chosen when
+  the puck is predicted to cross more than 16 units to his side, and the glove and shoulder saves by the same kind of
+  test. The picture then stretches the pad, glove or stick toward the puck, but **his body is still the same 12-15
+  circle around his centre**. A puck passing 15-20 out goes straight past the outstretched pad and in.
+- **The stick doesn't help with shots.** It only plays a puck that is low (5 or under) and **not rising**, and a shot is
+  lifted on its way, so the stick in a save pose almost never touches one; flat passes and pass shots it can catch or
+  knock away.
+- **Recordings** (Genesis shots and passes at a goalie, the puck below 15 as it passed him, by how close it came to his
+  centre): 12-16 units out, a goalie standing let in 11 of 82 (13%), one in a save move 28 of 74 (38%); 16-20 out, 7 of
+  12 against 18 of 24. Stick saves were the worst: 27 goals in 47 from 12-20 out. Two traced examples (2026-10-16_1314
+  BOS-PIT P1 2:06 and P2 4:34, 19,000 shots, the goalie in a kick save): the puck passed 15 from his centre, rising,
+  never touched.
+- **For a person in net:** C freezes him for over half a second at a quarter speed with the controls ignored, so he
+  can't skate into the line. Steering him so the puck meets his body (reach 15 for a person) is what stops it: the
+  league's habit is right.
+- **The pad stack is the exception:** reach 18, shifted 6 units: a real extension.
+- **Why never on the SNES:** there, the save frames add hit areas 12-28 units out to the side (5.1), so a SNES save
+  move really does make the goalie bigger.
+
 Also from the code: **a goalie you control who goes out of view** (more than $74 across or $64 up or down from the
 camera's centre) is moved by the computer's routine, save moves included, until he's back on screen
 (`assgoaliectrl`).
@@ -691,6 +713,18 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
 - **The Passing rating sets pass speed** (160 + 2 x working Passing), **not accuracy.**
 - **Every targeted pass is aimed perfectly** at where the receiver will be if he keeps skating the same way, and lifted
   slightly according to how long it will travel.
+- **The super-fast pass (a bug).** A targeted pass's speed isn't simply its pass speed: `passtoa0` solves for the time t
+  when the puck can meet the receiver's stick if he keeps skating, in whole eighths of a second (1-24), then sets the
+  puck's velocity to cover that distance in t. The division truncates, so a meeting due in 1.9 eighths becomes 1, and
+  the puck is sent to cover the whole distance in an eighth of a second: nearly twice as fast. It happens when **the
+  receiver is skating toward the passer** (they meet sooner) and they're about 50-70 apart: the puck leaves at
+  27,000-32,000 instead of about 15,000 (each direction is capped at 32,767; a bigger answer would wrap and leave the
+  puck almost still). **Confirmed** by replaying the game's own arithmetic on every targeted pass in the BOS-DAL and
+  BOS-WPG games (`analysis/fast_pass_study.py`): 750 of 816 within 10% of the puck's real speed; every pass over 27,000
+  came out of t = 1. Persons' passes: 24 of 718 over 25,000 (one or two a game); goalies' 5 of 98. Examples: 2219
+  BOS-DAL P1 3:40, 2257 BOS-DAL P1 3:18, 2149 BOS-WPG P1 3:32, P2 3:42 and P3 4:38. The computer hardly ever passes
+  when a person has the carrier, which is why it looks like a person's pass. **The SNES sets pass speed from the
+  distance instead**, so it never happens there.
 - **Who it goes to:** the nearest teammate within 45 degrees of the direction held. A teammate straight ahead gets no
   penalty; one 45 degrees off counts as if he were 256 units farther away. With nobody in that cone, the puck just goes
   that way: that's how **pass shots** happen.
