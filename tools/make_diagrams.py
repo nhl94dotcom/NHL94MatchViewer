@@ -1085,6 +1085,105 @@ def open_net_one_timer():
     return svg(W, ty + 140, b, "Open-net one-timer")
 
 
+# ---------------------------------------------------------------------------------------------- 20. puck meets a skater
+def puck_meets_skater():
+    """Genesis checkpuckcoll: the walk tests only players whose body is within 22 of the puck up or down the screen;
+    the stick (puckstick) plays a puck at height <= 5, not rising, within 14 of the blade (GetHot; standing facing up,
+    frame 1: (-4, +20)); the body (puckbody, circle 8) only at height 9-16 (6-8 one frame in 16); above 16 nothing."""
+    W, S = 860, 6
+    ox, oy = 230, 330
+    P = lambda x, y: (ox + x * S, oy - y * S)
+    b = [ARROW]
+    b.append(text(W / 2, 28, "How a skater meets a loose puck (Genesis)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "To scale, with the game's own picture: a skater standing, facing up the page. A puck can go right through him.",
+                  12, SOFT, "middle"))
+    bx, by = -4, 20
+    # the walk's band: bodies within 22 up or down of the puck
+    q = P(-34, 22)
+    b.append(f"<rect x='{q[0]}' y='{q[1]}' width='{68 * S}' height='{44 * S}' fill='{BLUE}' fill-opacity='0.06' stroke='{BLUE}' stroke-dasharray='5 4'/>")
+    q2 = P(-34, -22)
+    b.append(text(q2[0] + 4, q2[1] - 18, "tested only while the puck is within", 10, BLUE))
+    b.append(text(q2[0] + 4, q2[1] - 6, "22 of his body, up or down the screen", 10, BLUE))
+    # stick ring and the part above the band, which the walk never reaches
+    X, Y = P(bx, by)
+    b.append(circle(X, Y, 14 * S, GREEN, GREEN, 2, None, 0.18))
+    clip = f"<clipPath id='above'><rect x='0' y='0' width='{W}' height='{P(0, 22)[1]:.1f}'/></clipPath>"
+    b.append(f"<defs>{clip}</defs>")
+    b.append(f"<circle cx='{X:.1f}' cy='{Y:.1f}' r='{14 * S}' fill='{RED}' fill-opacity='0.25' clip-path='url(#above)'/>")
+    b.extend(sprite(1, ox, oy, S, opacity=0.6))
+    b.append(circle(ox, oy, 8 * S, BLUE, BLUE, 2, None, 0.12))
+    b.append(circle(ox, oy, 4, INK, INK))
+    b.append(circle(X, Y, 5, "#ffffff", INK, 2))
+    labels = [(P(14, 32), "stick: within 14 of the blade", GREEN), (P(14, 38), "but past 22 ahead: never tested", RED),
+              (P(10, -4), "body: circle of 8", BLUE)]
+    for (x, y), s_, col in labels:
+        b.append(text(x, y, s_, 11, col, weight="bold"))
+    # side view: heights
+    hx, base, HS = 560, 330, 11
+    b.append(text(hx + 110, 92, "By the puck's height", 13, INK, "middle", "bold"))
+    bands = [(0, 5, GREEN, "0-5: his stick (if not rising)", "takes it if slow enough, else deflects"),
+             (5, 8, "#e4e7eb", "6-8: passes through him", "the body tests only 1 frame in 16"),
+             (8, 16, BLUE, "9-16: hits his body", "bounces off; a fast one above 12 knocks him over"),
+             (16, 21, "#f3f5f7", "above 16: over everyone", "no test at all")]
+    for lo, hi, col, a, z in bands:
+        y0, y1 = base - hi * HS, base - lo * HS
+        b.append(f"<rect x='{hx}' y='{y0}' width='40' height='{y1 - y0}' fill='{col}' fill-opacity='0.45' stroke='{SOFT}'/>")
+        b.append(text(hx + 48, (y0 + y1) / 2, a, 12, INK, weight="bold"))
+        b.append(text(hx + 48, (y0 + y1) / 2 + 14, z, 11, SOFT))
+    b.append(line(hx - 10, base, hx + 50, base, INK, 2))
+    b.append(text(hx - 14, base + 4, "ice", 10, SOFT, "end"))
+    notes = ["Catching: a stick takes a loose puck slower than 13,000 + 350 x Stick Handling (13,000 flat while a shot's flag stands); faster, it deflects.",
+             "Its own no-touch timer also blinds a stick: 16 frames after shooting or passing, 8 after a bounce off him, 2 s after a fall.",
+             "Recorded (fast loose pucks within 8 of a skater): at 0-5 high 82% went straight through; at 6-8, 94%; above 16, all.",
+             "Skating with the puck his blade is 24-28 ahead, so a puck he loses can sit on his stick untouched. The SNES searches 40, so it doesn't happen there."]
+    for i, s_ in enumerate(notes):
+        b.append(text(40, 490 + i * 18, s_, 12, SOFT))
+    return svg(W, 490 + len(notes) * 18 + 12, b, "Puck meets a skater")
+
+
+# ---------------------------------------------------------------------------------------------- 21. the penalty shot
+def penalty_shot():
+    """Genesis penalty shots (PenShotChk, checkfornewpen, puckshootout, puckpenshot, UpdatePenaltyShotEnd) and the
+    bugs found in the code (GENESIS_MECHANICS 10.3)."""
+    W = 900
+    b = [ARROW]
+    b.append(text(W / 2, 28, "A penalty shot, step by step (Genesis), and where it goes wrong", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Each box is a stage; the red notes under it are the bugs found in the code at that stage.", 12, SOFT, "middle"))
+    steps = [("Foul on a breakaway", ["The roll uses his distance", "from goal, not ratings."]),
+             ("Arm up (delayed)", ["Play goes on until the", "guilty team has the puck."]),
+             ("Whistle", ["The award is saved", "(bit 3: pending)."]),
+             ("Set-up", ["Count the attempt; shot", "clock 25; puck to centre."]),
+             ("The shot", ["Only shooter and goalie", "on the ice."]),
+             ("It ends", ["Goalie has it; or after", "the shot, a touch or 100", "frames; clock out; goal."])]
+    bw, gap, top = 128, 20, 80
+    for i, (title, lines) in enumerate(steps):
+        x = 20 + i * (bw + gap)
+        b.append(f"<rect x='{x}' y='{top}' width='{bw}' height='96' rx='8' fill='#f3f7fb' stroke='{BLUE}' stroke-width='1.5'/>")
+        b.append(text(x + bw / 2, top + 20, title, 12, INK, "middle", "bold"))
+        for k, s_ in enumerate(lines):
+            b.append(text(x + bw / 2, top + 40 + k * 15, s_, 10.5, SOFT, "middle"))
+        if i:
+            b.append(line(x - gap + 2, top + 48, x - 3, top + 48, INK, 1.5, None, "marker-end='url(#arr)'"))
+    bugs = [(0, ["Off by one: charging is", "awarded as \"slashing\",", "slashing as \"roughing\" ..."]),
+            (3, ["Goal after a hesitation:", "\"penalty shot on\" is set a", "frame early, so a puck still", "sliding into that net scores", "after the countdown."]),
+            (4, ["Ghost puck: a puck flipped", "over the glass after the", "whistle stays in no-collision", "mode: it goes through the", "net and boards."]),
+            (5, ["Any other whistle (net off,", "puck out) leaves the award", "pending: the next stoppage", "gives another penalty shot."])]
+    for i, lines in bugs:
+        x = 20 + i * (bw + gap)
+        b.append(line(x + bw / 2, top + 96, x + bw / 2, top + 126, RED, 1.5, "3 3"))
+        for k, s_ in enumerate(lines):
+            b.append(text(x + 4, top + 142 + k * 15, s_, 10.5, RED))
+    y = top + 240
+    b.append(text(20, y, "The SNES penalty shot (SNES_MECHANICS 10)", 13, INK, weight="bold"))
+    snes = ["The puck is given straight to the shooter; a 1000-frame timer. It ends when anyone else takes the puck, the loose puck backs away",
+            "from the goal for 48 frames, it hits the boards or leaves the rink, a goal, or time runs out. A net knocked off isn't among them, so",
+            "the next faceoff starts ANOTHER penalty shot with the shooter wherever he lined up: from the dot outside the zone if he knocked it off."]
+    for k, s_ in enumerate(snes):
+        b.append(text(20, y + 20 + k * 17, s_, 12, SOFT))
+    b.append(text(20, y + 84, "Penalty shots aren't shots on goal in either game (the clock is stopped); a penalty-shot goal still counts as a goal.", 12, SOFT))
+    return svg(W, y + 104, b, "Penalty shot")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -1094,7 +1193,8 @@ def main():
              "one_timers.svg": one_timers(), "faceoff_directions.svg": faceoff_directions(),
              "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots(),
              "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions(),
-             "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer()}
+             "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer(),
+             "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

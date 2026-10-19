@@ -411,6 +411,9 @@ cards and the team stats; the **xG map** (Map menu) shows it for every spot.
 
 ## 12. Penalty shots
 
+
+![A penalty shot step by step, with its bugs](img/penalty_shot.svg)
+
 - **The shot ends as soon as anyone picks up a loose puck, including you**: if you lose the puck, picking it back up
   ends your penalty shot. Don't lose it.
 - It also ends if the loose puck drifts back away from the net for almost a second, hits the boards, or the shot clock

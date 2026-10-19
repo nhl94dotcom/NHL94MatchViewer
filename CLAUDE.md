@@ -1374,7 +1374,11 @@ facing down, 419) and shoulder_bobble (ghighl 667 facing down / 659 facing up; h
 8.2 and SNES_MECHANICS 6.3. Sixth set: early_save (the wind-up rule with gstackr frame 454, its body
 test 6 to the slide side, reach 18, the seconds-left bit-1 strip, recorded rates) in GENESIS_GUIDE 6 and GENESIS_MECHANICS
 5.6; open_net_one_timer (the sightline test and the high-middle aim under the bar, the 4.4 table) in GENESIS_GUIDE 7 and
-GENESIS_MECHANICS 4.4. Frames 453 / 465 are the pad stacks' first (upright) frames, 454 / 466 the sprawls (left / right).
+GENESIS_MECHANICS 4.4. Frames 453 / 465 are the pad stacks' first (upright) frames, 454 / 466 the sprawls (left / right). Seventh set:
+puck_meets_skater (frame 1 standing facing up, blade (-4, +20) from HotList; skating with the puck 24-28 ahead; the 22 walk
+band, the stick's 14 ring with the part past 22 untested, body 8, the height bands) in GENESIS_GUIDE 8 and GENESIS_MECHANICS
+6.2; penalty_shot (the Genesis stages with the code's bugs under them, the SNES retake) in both guides' and both mechanics'
+penalty-shot chapters.
 
 ## Advanced stats (2026-10-16)
 

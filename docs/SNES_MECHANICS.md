@@ -789,6 +789,9 @@ So: **mash B, and hold the d-pad toward the teammate you want it to reach** (bac
 
 ## 10. Penalty shots
 
+
+![A penalty shot step by step, with its bugs](img/penalty_shot.svg)
+
 ### 10.0 Breakaways
 
 `CheckBreakaway`, `StartBreakaway`, `PenShotChk`, `doshot`. **Code.**

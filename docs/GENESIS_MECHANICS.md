@@ -878,6 +878,9 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
 
 ### 6.2 Catching and bobbles
 
+
+![How a skater's stick and body meet a loose puck](img/puck_meets_skater.svg)
+
 - A skater can take a pass only if it's at stick height (5 or lower) and **slower than 13,000 + 350 x his working
   Stickhandling**. A faster puck deflects off his stick in a random direction: a **bobble**.
 - **Confirmed** in part: 300 of 302 catches were within the receiver's limit; of 32 reviewed bobbles, 13 were over it
@@ -1268,6 +1271,9 @@ not the draw winner. **Confirmed:** it agreed with the roll winner only 52 times
 ---
 
 ## 10. Breakaways and penalty shots
+
+
+![A penalty shot step by step, with its bugs](img/penalty_shot.svg)
 
 ### 10.1 What counts as a breakaway
 

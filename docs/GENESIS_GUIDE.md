@@ -407,6 +407,8 @@ The computer never holds a direction, so its wins go a random way.
 - **Over the glass:** outside the attacking zone, out on one side (not right on the boards), facing those boards, the
   flip's spot is pushed past the boards and the puck goes out of play.
 
+![How a skater's stick and body meet a loose puck](img/puck_meets_skater.svg)
+
 ![Where the Genesis flip lands](img/flip_spots.svg)
 
 ![Pass speed by distance, with the travel time rounded down](img/rocket_pass.svg)
@@ -569,6 +571,9 @@ which goalie is stealing games.
 ---
 
 ## 13. Breakaways and penalty shots
+
+
+![A penalty shot step by step, with its bugs](img/penalty_shot.svg)
 
 - **A breakaway is decided at one instant:** as you cross the blue line, **every other skater, your teammates
   included, must be behind you.** A teammate already ahead of you costs you the breakaway.

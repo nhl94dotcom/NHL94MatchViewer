@@ -1,0 +1,63 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='900' height='424' viewBox='0 0 900 424' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Penalty shot</title>
+<rect width='900' height='424' fill='#ffffff'/>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<text x='450.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>A penalty shot, step by step (Genesis), and where it goes wrong</text>
+<text x='450.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Each box is a stage; the red notes under it are the bugs found in the code at that stage.</text>
+<rect x='20' y='80' width='128' height='96' rx='8' fill='#f3f7fb' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='84.0' y='100.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>Foul on a breakaway</text>
+<text x='84.0' y='120.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>The roll uses his distance</text>
+<text x='84.0' y='135.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>from goal, not ratings.</text>
+<rect x='168' y='80' width='128' height='96' rx='8' fill='#f3f7fb' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='232.0' y='100.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>Arm up (delayed)</text>
+<text x='232.0' y='120.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>Play goes on until the</text>
+<text x='232.0' y='135.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>guilty team has the puck.</text>
+<line x1='150.0' y1='128.0' x2='165.0' y2='128.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='316' y='80' width='128' height='96' rx='8' fill='#f3f7fb' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='380.0' y='100.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>Whistle</text>
+<text x='380.0' y='120.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>The award is saved</text>
+<text x='380.0' y='135.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>(bit 3: pending).</text>
+<line x1='298.0' y1='128.0' x2='313.0' y2='128.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='464' y='80' width='128' height='96' rx='8' fill='#f3f7fb' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='528.0' y='100.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>Set-up</text>
+<text x='528.0' y='120.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>Count the attempt; shot</text>
+<text x='528.0' y='135.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>clock 25; puck to centre.</text>
+<line x1='446.0' y1='128.0' x2='461.0' y2='128.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='612' y='80' width='128' height='96' rx='8' fill='#f3f7fb' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='676.0' y='100.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>The shot</text>
+<text x='676.0' y='120.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>Only shooter and goalie</text>
+<text x='676.0' y='135.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>on the ice.</text>
+<line x1='594.0' y1='128.0' x2='609.0' y2='128.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='760' y='80' width='128' height='96' rx='8' fill='#f3f7fb' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='824.0' y='100.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>It ends</text>
+<text x='824.0' y='120.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>Goalie has it; or after</text>
+<text x='824.0' y='135.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>the shot, a touch or 100</text>
+<text x='824.0' y='150.0' font-size='10.5' fill='#52606d' text-anchor='middle' font-weight='normal'>frames; clock out; goal.</text>
+<line x1='742.0' y1='128.0' x2='757.0' y2='128.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<line x1='84.0' y1='176.0' x2='84.0' y2='206.0' stroke='#c94040' stroke-width='1.5' stroke-dasharray='3 3' />
+<text x='24.0' y='222.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>Off by one: charging is</text>
+<text x='24.0' y='237.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>awarded as "slashing",</text>
+<text x='24.0' y='252.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>slashing as "roughing" ...</text>
+<line x1='528.0' y1='176.0' x2='528.0' y2='206.0' stroke='#c94040' stroke-width='1.5' stroke-dasharray='3 3' />
+<text x='468.0' y='222.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>Goal after a hesitation:</text>
+<text x='468.0' y='237.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>"penalty shot on" is set a</text>
+<text x='468.0' y='252.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>frame early, so a puck still</text>
+<text x='468.0' y='267.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>sliding into that net scores</text>
+<text x='468.0' y='282.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>after the countdown.</text>
+<line x1='676.0' y1='176.0' x2='676.0' y2='206.0' stroke='#c94040' stroke-width='1.5' stroke-dasharray='3 3' />
+<text x='616.0' y='222.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>Ghost puck: a puck flipped</text>
+<text x='616.0' y='237.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>over the glass after the</text>
+<text x='616.0' y='252.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>whistle stays in no-collision</text>
+<text x='616.0' y='267.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>mode: it goes through the</text>
+<text x='616.0' y='282.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>net and boards.</text>
+<line x1='824.0' y1='176.0' x2='824.0' y2='206.0' stroke='#c94040' stroke-width='1.5' stroke-dasharray='3 3' />
+<text x='764.0' y='222.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>Any other whistle (net off,</text>
+<text x='764.0' y='237.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>puck out) leaves the award</text>
+<text x='764.0' y='252.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>pending: the next stoppage</text>
+<text x='764.0' y='267.0' font-size='10.5' fill='#c94040' text-anchor='start' font-weight='normal'>gives another penalty shot.</text>
+<text x='20.0' y='320.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>The SNES penalty shot (SNES_MECHANICS 10)</text>
+<text x='20.0' y='340.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>The puck is given straight to the shooter; a 1000-frame timer. It ends when anyone else takes the puck, the loose puck backs away</text>
+<text x='20.0' y='357.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>from the goal for 48 frames, it hits the boards or leaves the rink, a goal, or time runs out. A net knocked off isn't among them, so</text>
+<text x='20.0' y='374.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the next faceoff starts ANOTHER penalty shot with the shooter wherever he lined up: from the dot outside the zone if he knocked it off.</text>
+<text x='20.0' y='404.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Penalty shots aren't shots on goal in either game (the clock is stopped); a penalty-shot goal still counts as a goal.</text>
+</svg>
