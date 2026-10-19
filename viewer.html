@@ -358,6 +358,9 @@
   <select id="heatPuck" aria-label="Who has the puck" title="Count only the moments when that team has the puck (attacking), the other team has it (defending), or nobody does" hidden>
     <option value="">Puck: anyone</option><option value="ours">Attacking: has the puck</option><option value="theirs">Defending: other team has it</option><option value="loose">Loose puck</option>
   </select>
+  <select id="passKind" aria-label="Which passes the map shows" title="One-timer passes: the passes that went into a one-timer, and the ones a teammate swung at and missed" hidden>
+    <option value="">All passes</option><option value="onetimer">One-timer passes</option>
+  </select>
   <select id="xgShot" aria-label="Which shot the xG map is for" hidden>
     <option value="wrist">Wrist shot</option><option value="slap">Slapshot</option><option value="onetimer">One-timer</option>
   </select>
@@ -483,7 +486,9 @@ marker for what it was; click it to jump there.</p>
   <dt>Shot map</dt><dd>Every shot attempt: goals (accent ring), saves (white ring), posts (diamond), wide (hollow), blocked (crossed). Squares are pass shots.</dd>
   <dt>Heat map</dt><dd><b>Skating</b>: where the skaters (or one player) went, puck or not. <b>With the puck</b>: where the puck was while they had it. Filters: period, strength (even, power play, shorthanded) and, for skating, attacking / defending / loose puck. With both teams it shows the difference: each spot in the colour of the team that spent more time there. Time is game time: nothing counts while the clock is stopped.</dd>
   <dt>Turnovers</dt><dd>Giveaways (hollow triangles, in the colour of the team that lost it) and takeaways (filled).</dd>
-  <dt>Passes</dt><dd>Every pass and how it ended.</dd>
+  <dt>Passes</dt><dd>Every pass and how it ended. The menu beside it can show just the <b>one-timer passes</b>: the
+  ones that went into a one-timer (solid) and the ones a teammate swung at and missed (dotted, ending in a small
+  ring).</dd>
   <dt>Zone entries</dt><dd>Where the puck crossed the blue line: carried (disc), passed (diamond), dumped (hollow); an accent ring means a shot attempt came of it.</dd>
   <dt>Goalie report</dt><dd>Every shot a goalie faced, with save rates by distance and type, human or computer in net, and what happened after each save.</dd>
   <dt>xG map</dt><dd>The chance a shot from each spot in the attacking zones goes in, worked out with the game’s own shot and save rules (the same model as each shot’s xG), for the shot type, shooter’s Shot Accuracy and goalie you pick, with the best of the nine aims. <b>As in games</b> puts the goalie where goalies really were when recorded shots were taken (often out of position or moving); <b>set in his spot</b> shows how little gets past a goalie who is ready. Point at a spot for its number and the d-pad direction to aim with. Genesis and SNES games, each with its own game’s rules.</dd>
@@ -1305,6 +1310,7 @@ function setupOverlay(m) {
   who.value = overlayWho = 'both';
   if (q.get('who') && [...who.options].some(o => o.value === q.get('who'))) who.value = overlayWho = q.get('who');
   if (['skate', 'puck'].includes(q.get('heat'))) heatMode = q.get('heat');  // &heat=puck
+  if (q.get('passes') === 'onetimer') { passKind = 'onetimer'; $('passKind').value = 'onetimer'; }  // &passes=onetimer
   // &xgshot=wrist|slap|onetimer, &xgacc=0..6 (the Shot Accuracy step), &xggoalie=cpu|set|person
   if (XG_SHOTS[q.get('xgshot')]) xgShot = q.get('xgshot');
   if (/^[0-6]$/.test(q.get('xgacc') || '')) xgAcc = Number(q.get('xgacc'));
@@ -1356,6 +1362,7 @@ function updateOverlayControls(redraw = true) {
   $('xgShot').hidden = $('xgAcc').hidden = $('xgGoalie').hidden = overlay !== 'xg';
   $('heatMode').hidden = $('heatPeriod').hidden = $('heatStrength').hidden = overlay !== 'heat';
   $('heatPuck').hidden = overlay !== 'heat' || heatMode !== 'skate';
+  $('passKind').hidden = overlay !== 'passes';
   $('overlayInfo').hidden = !overlay;
   heatGrid = null;
   if (redraw && match) draw();
@@ -2103,16 +2110,36 @@ function drawTurnovers(f, colours) {
 // (no target, or a goalie's pass).
 const BOBBLE_COLOUR = '#f5a524';  // the bobble mark on the passes map
 const PASS_WORDS = { completed: 'completed', 'one-timer': 'into a one-timer', intercepted: 'intercepted', failed: 'failed', 'pass shot': 'pass shot' };
+// "One-timer passes" (the user): the passes that went into a one-timer, and the ones a teammate swung at and missed.
+// A missed one is a failed one-timer (match.failedOneTimers: the swinger and his passer), joined to its pass: the
+// passer's latest pass at most 1.5 s before the swing.
+let passKind = '', missedOneTimers = null, missedFor = null;
+function missedOneTimerPasses() {
+  if (missedFor === match) return missedOneTimers;
+  missedFor = match; missedOneTimers = new Map();
+  for (const fo of match.failedOneTimers || []) {
+    let best = null;
+    for (const e of match.passes || []) {
+      if (e.team === fo.team && e.idx === fo.passer && e.f <= fo.f && match.t[fo.f] - match.t[e.f] <= 1500 && (!best || e.f > best.f)) best = e;
+    }
+    if (best) missedOneTimers.set(best, fo);
+  }
+  return missedOneTimers;
+}
 function drawPasses(f, colours) {
-  const list = (match.passes || []).filter(e => known(e, f) && counts(e.team, e.idx));
+  const missed = missedOneTimerPasses(), missedAt = e => { const fo = missed.get(e); return fo && known(fo, f) ? fo : null; };
+  const list = (match.passes || []).filter(e => known(e, f) && counts(e.team, e.idx) &&
+    (passKind !== 'onetimer' || e.result === 'one-timer' || missedAt(e)));
   const tally = [{}, {}];
   ctx.save();
   ctx.scale(1 / xStretch(), 1);
   const sx = xStretch();
   for (const e of list) {
-    tally[e.team][e.result] = (tally[e.team][e.result] || 0) + 1;
+    const miss = passKind === 'onetimer' && e.result !== 'one-timer' ? missedAt(e) : null;
+    const kind = miss ? 'missed one-timer' : e.result;
+    tally[e.team][kind] = (tally[e.team][kind] || 0) + 1;
     const [x0, y0] = onEnds(e.f, f, e.x0, e.y0), [x1, y1] = onEnds(e.f, f, e.x1, e.y1);
-    const style = {
+    const style = miss ? [css('--accent'), [1.5, 3], 1.8] : {
       completed: [colours[e.team], [], 1.8], 'one-timer': [css('--accent'), [], 2.2], intercepted: ['#e5484d', [5, 4], 1.8],
       failed: ['#8b98a7', [1.5, 3], 1.6], 'pass shot': [css('--accent'), [6, 3], 2],
     }[e.result] || ['#8b98a7', [], 1.5];
@@ -2141,6 +2168,8 @@ function drawPasses(f, colours) {
     if (e.result === 'intercepted') {
       const r = 3.5;
       ctx.beginPath(); ctx.moveTo(x1 * sx - r, y1 - r); ctx.lineTo(x1 * sx + r, y1 + r); ctx.moveTo(x1 * sx - r, y1 + r); ctx.lineTo(x1 * sx + r, y1 - r); ctx.stroke();
+    } else if (miss) {
+      ctx.beginPath(); ctx.arc(x1 * sx, y1, 3.5, 0, 2 * Math.PI); ctx.stroke();
     } else if (e.result === 'completed' || e.result === 'one-timer') {
       ctx.fillStyle = style[0];
       ctx.beginPath(); ctx.moveTo(x1 * sx, y1);
@@ -2161,17 +2190,24 @@ function drawPasses(f, colours) {
         (e.result === 'completed' && e.to === e.bobble.idx ? 'he got it back'
           : (e.result === 'completed' && e.to >= 0 ? 'to ' + playerName(e.team, e.to) : PASS_WORDS[e.result] || e.result))
         : (e.to >= 0 ? ' to ' + playerName(e.team, e.to) : '') + ' \u00b7 ' + (PASS_WORDS[e.result] || e.result)) +
+      (missedAt(e) ? ' \u00b7 ' + playerName(e.team, missedAt(e).idx) + ' swung at it for a one-timer and missed' : '') +
       (e.counted === false ? ' (not counted by the game: no target)' : ''));
   }
   const box = $('overlayInfo'), names = [match.team1, match.team2], only = filterTeam(), who = $('overlayWho').selectedOptions[0];
   box.textContent = '';
   const title = document.createElement('b');
-  title.textContent = 'Passes' + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  title.textContent = (passKind === 'onetimer' ? 'One-timer passes' : 'Passes') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
   box.append(title);
   for (const team of [0, 1]) {
     if (only >= 0 && team !== only) continue;
     const c = tally[team], n = Object.values(c).reduce((a, b) => a + b, 0), made = (c.completed || 0) + (c['one-timer'] || 0);
     const line = document.createElement('div');
+    if (passKind === 'onetimer') {
+      const hit = c['one-timer'] || 0, miss = c['missed one-timer'] || 0;
+      line.textContent = names[team] + ': ' + hit + ' into one-timers, ' + miss + ' missed' + (hit + miss ? ' (' + Math.round(100 * hit / (hit + miss)) + '% connected)' : '');
+      box.append(line);
+      continue;
+    }
     line.textContent = names[team] + ': ' + made + ' of ' + n + ' completed' + (c['one-timer'] ? ' (' + c['one-timer'] + ' into one-timers)' : '') +
       (c.intercepted ? ', ' + c.intercepted + ' intercepted' : '') + (c.failed ? ', ' + c.failed + ' failed' : '') +
       (c['pass shot'] ? ', ' + c['pass shot'] + ' pass shot' + (c['pass shot'] === 1 ? '' : 's') : '') +
@@ -2185,9 +2221,10 @@ function drawPasses(f, colours) {
     ['<path d="M1 6 H11" stroke="' + css('--accent') + '" stroke-width="2"/>', 'Into a one-timer'],
     ['<path d="M1 6 H8" stroke="#e5484d" stroke-width="2" stroke-dasharray="3 2"/><path d="M8 3 L11 9 M8 9 L11 3" stroke="#e5484d" stroke-width="1.6"/>', 'Intercepted'],
     ['<path d="M1 6 H11" stroke="#8b98a7" stroke-width="2" stroke-dasharray="1 2"/>', 'Failed'],
+    ...(passKind === 'onetimer' ? [['<path d="M1 6 H7" stroke="' + css('--accent') + '" stroke-width="2" stroke-dasharray="1.5 2"/><circle cx="9" cy="6" r="2.4" fill="none" stroke="' + css('--accent') + '" stroke-width="1.4"/>', 'One-timer missed']] : []),
     ['<path d="M1 6 H11" stroke="' + css('--accent') + '" stroke-width="2" stroke-dasharray="4 2"/>', 'Pass shot'],
     ['<circle cx="6" cy="6" r="4.2" fill="none" stroke="' + BOBBLE_COLOUR + '" stroke-width="1.6"/><path d="M3.6 7.4 L5.2 4.6 L6.8 7.4 L8.4 4.6" fill="none" stroke="' + BOBBLE_COLOUR + '" stroke-width="1.2"/>', 'Bobbled (then how it ended)'],
-  ]) {
+  ].filter(([, text]) => passKind !== 'onetimer' || ['Into a one-timer', 'One-timer missed', 'Bobbled (then how it ended)'].includes(text))) {
     const item = document.createElement('span');
     item.innerHTML = '<svg width="12" height="12" aria-hidden="true">' + shape + '</svg>';
     item.append(text);
@@ -4668,6 +4705,7 @@ $('xgGoalie').addEventListener('change', e => { xgGoalie = e.target.value; updat
 $('heatPeriod').addEventListener('change', e => { heatPeriod = Number(e.target.value); updateOverlayControls(); });
 $('heatStrength').addEventListener('change', e => { heatStrength = e.target.value; updateOverlayControls(); });
 $('heatPuck').addEventListener('change', e => { heatPuck = e.target.value; updateOverlayControls(); });
+$('passKind').addEventListener('change', e => { passKind = e.target.value; updateOverlayControls(); });
 $('heatMode').addEventListener('change', e => {
   heatMode = e.target.value;
   try { localStorage.setItem('nhl94-heat', heatMode); } catch (err) { /* not remembered */ }
