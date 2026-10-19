@@ -1312,7 +1312,10 @@ overflow: an overflow leaves the puck nearly still); a receiver skating toward t
 718 over 25,000, goalies 5 / 98. SNES dopass sets speed by distance. Save moves: goaliesave picks the side save when the
 puck will cross 16+ to his side; the body circle doesn't change (pad stack aside), the stick only plays low pucks not
 rising (shots are lifted). analysis/slip_study.py: 12-16 from his centre standing 11 / 82 in, save move 28 / 74; stick
-saves 27 / 47 from 12-20. C freezes a person's goalie (pf2aip: doinput skips his input) ~0.57 s at speed / 4. SNES save
+saves 27 / 47 from 12-20. Through the legs (the user's clarification: fast flat puck straight at the middle, butterfly):
+butterfly / kick-save frames put the blade 10-13 to the side, so a low non-rising puck through his middle is in the 8-14
+blind band (no stick or body test) until behind his centre, where the body hit bounces it backward (offset x 256, slow)
+into the net; ready stance has the stick in front. ROM + code only; none in the recordings (NEEDS_FROM_YOU 4). C freezes a person's goalie (pf2aip: doinput skips his input) ~0.57 s at speed / 4. SNES save
 frames add 12-28 hit areas. GENESIS_MECHANICS 5.5 and 6.1, GENESIS_GUIDE 8 and 12.2.
 
 ## Advanced stats (2026-10-16)

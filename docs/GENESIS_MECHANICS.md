@@ -588,6 +588,29 @@ it, Genesis only, and has learned to take the goalie and let the puck hit him in
 - **Why never on the SNES:** there, the save frames add hit areas 12-28 units out to the side (5.1), so a SNES save
   move really does make the goalie bigger.
 
+**Through his legs: a fast, flat puck straight at the middle of a goalie in the butterfly** (the user's clarification,
+2026-10-19: the puck heads up or down the ice right at the goalie's middle, he goes into a save move, most often the
+butterfly, and it goes through, sometimes slowing or seeming to be held for a moment). For a puck at ice level (height 5
+or under) and not rising, `.ccx` tests the goalie's stick before his body, and a puck 8-14 units from the blade gets
+neither test that frame (5.1). The butterfly frames (gstickl) and some kick-save frames (gstickr) put the blade 10-13
+units out to the side, so **the middle of his body falls in that blind band.** Along a straight line through his centre
+(stick S, body B, nothing ., one unit each, the puck coming from the right):
+
+| Pose | Through the middle (x = 0) |
+|---|---|
+| Ready, bottom net (frame 407) | `BBBBBBB......SSSSSSSSSSSSSSSS` (the stick, in front, plays it first) |
+| Butterfly, bottom net (472) | `BBBBBBBB...................BB` |
+| Butterfly, top net (480, the puck from the left) | `BB.....................BBBBBB` |
+| Kick save, top net (479, from the left) | `....................BBBBBBBBB` |
+
+So the puck crosses his front half untouched and first meets his body **behind his centre**, toward his goal line. A body
+hit sends the puck straight out from his centre through the contact point, at the offset x 256 (slow): from behind his
+centre that's backward, into his own net, and slowly (or, slow enough, he holds it for a moment). Standing, his stick
+sits in front of his middle and plays the puck first. A puck in the air skips the stick test and meets his body in
+front. That fits what players see: flat pucks only (pass shots, errant passes, slapshots aimed along the ice), straight
+at him, in a butterfly or kick save. **From the ROM and the code; not yet seen in a recording** (shots there are nearly
+always lifted); a test is in NEEDS_FROM_YOU.
+
 Also from the code: **a goalie you control who goes out of view** (more than $74 across or $64 up or down from the
 camera's centre) is moved by the computer's routine, save moves included, until he's back on screen
 (`assgoaliectrl`).

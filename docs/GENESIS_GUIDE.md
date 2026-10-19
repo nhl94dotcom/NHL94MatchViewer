@@ -426,6 +426,10 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
   stops shots. C freezes him for over half a second at a quarter speed. Its uses: as a shot arrives in close, a save
   move holds the puck instead of giving up a rebound; and pressed before the shot, it's a pad stack (reach 18), which
   slides him away from the side he's on. Never press it early or while sliding across.
+- **Through the legs:** a fast puck along the ice straight at a goalie in the butterfly can go right through him: the
+  butterfly moves his stick to the side and leaves a gap in the middle where the game doesn't test the puck at all, and
+  it then bounces off the back of him into the net. Pucks in the air aren't affected. Facing a hard pass shot or a shot
+  along the ice, don't press C: standing, his stick covers his middle.
 - **Pucks that slip past a save move:** the game picks a stick, glove or shoulder save because the puck is going to
   miss his body, and the picture stretches toward it, but he's no bigger, so the puck slides past the pad. If you have
   time, skate him into the puck's line instead of pressing C: his body stops it. (The pad stack is the one move that
