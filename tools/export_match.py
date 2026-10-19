@@ -1531,32 +1531,43 @@ def add_tapestries(m):
     was completed to the player who made the next one, released within TAPESTRY_GAP_MS (real time, flight and a short
     carry included) of it; the other team never had the puck from the first pass to the goal (a bobble the receiver
     gathers himself is fine). The goal gets `tapestry` {n: passes, chain: roster indices from the first passer to the
-    scorer} and a kind by n: 'tapestry' 2, 'fine tapestry' 3, 'masterpiece' 4+. Not penalty shots or own goals."""
+    scorer} and a kind by n: 'tapestry' 2, 'fine tapestry' 3, 'masterpiece' 4+. Not penalty shots or own goals.
+    A missed tapestry (the user): the same chain ending in a shot attempt that did not score (saved, wide, blocked, a
+    post): the shot gets `tapestry` {n, chain} too."""
     t, own = m['t'], m['owner']
     passes = sorted(m.get('passes', []), key=lambda p: p['f'])
 
     def theirs_had(f0, f1, team):
         return any(own[q] >= 0 and (own[q] >= 6) != (team == 1) for q in range(f0, f1 + 1))
 
-    for g in m.get('goals', []):
-        if 'penalty shot' in g.get('kinds', []) or g.get('ownGoal') is not None:
-            continue
-        team, gf = g['team'], g['f']
-        last = [p for p in passes if p['team'] == team and p['f'] <= gf and t[gf] - t[p['f']] <= TAPESTRY_GOAL_MS
-                and p.get('to') == g['scorer'] and p['result'] in ('completed', 'one-timer') and not theirs_had(p['f'], gf, team)]
+    def chain_to(team, who, f):
+        """The passes, first to last, that led to player `who` of `team` acting at frame f (none: [])."""
+        last = [p for p in passes if p['team'] == team and p['f'] <= f and t[f] - t[p['f']] <= TAPESTRY_GOAL_MS
+                and p.get('to') == who and p['result'] in ('completed', 'one-timer') and not theirs_had(p['f'], f, team)]
         if not last:
-            continue
+            return []
         chain = [last[-1]]
         while True:
             cur = chain[0]
             prev = [p for p in passes if p['team'] == team and p['f'] < cur['f'] and t[cur['f']] - t[p['f']] <= TAPESTRY_GAP_MS
                     and p.get('to') == cur['idx'] and p['result'] == 'completed' and not theirs_had(p['f'], cur['f'], team)]
             if not prev or prev[-1] in chain:
-                break
+                return chain
             chain.insert(0, prev[-1])
+
+    for g in m.get('goals', []):
+        if 'penalty shot' in g.get('kinds', []) or g.get('ownGoal') is not None:
+            continue
+        chain = chain_to(g['team'], g['scorer'], g['f'])
         if len(chain) >= 2:
             g['tapestry'] = {'n': len(chain), 'chain': [p['idx'] for p in chain] + [g['scorer']]}
             g['kinds'].append(next(name for n, name in TAPESTRY_LEVELS if len(chain) >= n))
+    for sh in m.get('shotList', []):
+        if sh['result'] == 'goal' or sh.get('idx') is None:
+            continue
+        chain = chain_to(sh['team'], sh['idx'], sh['f'])
+        if len(chain) >= 2:
+            sh['tapestry'] = {'n': len(chain), 'chain': [p['idx'] for p in chain] + [sh['idx']]}
 
 
 def add_goalie_giveaways(m):

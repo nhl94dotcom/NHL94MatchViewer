@@ -624,7 +624,7 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 
 <section id="h-terms"><h2>Community terms</h2>
 <dl>
-  <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 seconds (real time, flight and a short carry included), the last pass went to the scorer within 3 seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too.</dd>
+  <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 seconds (real time, flight and a short carry included), the last pass went to the scorer within 3 seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too. A <b>missed tapestry</b> is the same chain of passes ending in a shot that does not score (saved, wide, blocked or off the post); it is counted in the team stats and named in the shot's tooltip on the shot map.</dd>
   <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 2 seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near.</dd>
   <dt>Pass shot</dt><dd>Using the pass button to shoot: the puck goes off quickly with no target. The game does not count it as a shot on goal unless it scores.</dd>
 </dl>
@@ -1980,6 +1980,8 @@ function shotText(sh) {
   const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special attempt' + (sh.eaDive ? ' (the goalie dived after it)' : '') : '') +
     (sh.afterFlip ? ' \u00b7 EA Special (the rebound)' : sh.rebound ? ' \u00b7 rebound' : '') +
     (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '') +
+    (sh.tapestry && sh.result !== 'goal' ? ' \u00b7 missed tapestry (' + sh.tapestry.n + ' passes: ' +
+      sh.tapestry.chain.map(idx => playerName(sh.team, idx).replace(/^#\d+ /, '').split(' ').pop()).join(' \u2192 ') + ')' : '') +
     (sh.wrap ? ' \u00b7 wraparound' : '') + ({ rush: ' \u00b7 off the rush', zone: ' \u00b7 sustained pressure', faceoff: ' \u00b7 off a faceoff' }[sh.origin] || '');
   const speed = (sh.speed && ['shot', 'one-timer', 'pass shot'].includes(sh.kind) ? ' \u00b7 ' + shotMph(sh.speed).toFixed(0) + ' mph' : '') +
     (sh.aim ? ' \u00b7 aimed ' + aimWords(sh.aim) : '') + (sh.xg !== undefined ? ' \u00b7 xG ' + sh.xg.toFixed(2) : '');
@@ -3213,6 +3215,7 @@ const STAT_HELP = {
   'Deserve to win|· a tie': 'How often the replays end level (a tie after overtime; before the end, level so far).',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'Tapestry goals': 'Goals at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 s (a short carry is fine), the last went to the scorer within 3 s of the goal, and the other team never had the puck. Tapestry 2 passes, fine tapestry 3, masterpiece 4 or more.',
+  'Missed tapestries': 'Shot attempts at the end of two or more quick passes (the same chain as a tapestry) that did not score: saved, wide, blocked or off the post. Tapestry goals over tapestry goals plus missed tapestries is how often the team finished them.',
   'Tapestry goals|\u00b7 2 / 3 / 4+ passes': 'Tapestry goals by the number of passes: tapestries (2), fine tapestries (3), masterpieces (4 or more).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
   'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s.',
@@ -3435,6 +3438,7 @@ function fillTeamStats(snap) {
   // Goals / attempts of the team's shots that pass a test (shot type, aim ...), as the shot list has them so far.
   const goalsOf = (team, test) => { const mine = list.filter(sh => sh.team === team && test(sh)); return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length; };
   const posts = team => list.filter(sh => sh.team === team && sh.result === 'post').length;
+  const missedTapestries = team => list.filter(sh => sh.team === team && sh.tapestry && sh.result !== 'goal').length;
   // Own goals: goals the other team scored that this team's skater put in his own net (the converter's add_own_goals).
   const tapestries = (team, n) => (match.goals || []).filter(g => g.f <= f && g.team === team && g.tapestry &&
     (n === undefined || (n >= 4 ? g.tapestry.n >= 4 : g.tapestry.n === n))).length;
@@ -3502,6 +3506,7 @@ function fillTeamStats(snap) {
       ...(posts(0) + posts(1) ? [['Posts', posts(0), posts(1)]] : []),
       ...(ownGoals(0) + ownGoals(1) ? [['Own goals (into own net)', ownGoals(0), ownGoals(1)]] : []),
       ...(match.passes ? [['Tapestry goals', tapestries(0), tapestries(1)]] : []),
+      ...(match.passes ? [['Missed tapestries', missedTapestries(0), missedTapestries(1)]] : []),
       ...(tapestries(0) + tapestries(1) ? [['\u00b7 2 / 3 / 4+ passes', [2, 3, 4].map(n => tapestries(0, n)).join(' / '), [2, 3, 4].map(n => tapestries(1, n)).join(' / ')]] : []),
       ['Wrist shots (G / att)', goalsOf(0, sh => sh.type === 'wrist shot'), goalsOf(1, sh => sh.type === 'wrist shot')],
       ['Slapshots (G / att)', goalsOf(0, sh => sh.type === 'slapshot'), goalsOf(1, sh => sh.type === 'slapshot')],

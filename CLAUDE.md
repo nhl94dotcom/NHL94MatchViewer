@@ -1282,6 +1282,10 @@ and kind 'tapestry' (2), 'fine tapestry' (3), 'masterpiece' (4+), beside 'one-ti
 capture1 P1 3:18 is 8 passes (Montreal, 10 s, five players, a one-timer). Viewer: tag "fine tapestry · 3 passes"
 (goalKindText), the chain in goalNotes (A -> B -> C), team stats Shooting "Tapestry goals" and "· 2 / 3 / 4+ passes",
 STAT_HELP, Help. Season VERSION 22: team tap / tapA (Team stats TAP), skater tapG / tapIn (Skaters TAP: scored · passed in).
+Missed tapestries (the user): the same chain ending in a shot attempt that did not score: the shot gets `tapestry`
+{n, chain} (chain_to in add_tapestries). Viewer: shot tooltip "missed tapestry (3 passes: A -> B -> C)", team stats
+"Missed tapestries", Help. Season VERSION 23: team tapMiss / tapMissA, skater tapMiss (TAP MISS columns). Documents
+games: 29 tapestry goals, 78 missed (55 saved, 10 wide, 7 blocked, 6 posts): about 27% finished.
 
 ## Advanced stats (2026-10-16)
 
