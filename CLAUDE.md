@@ -1359,7 +1359,11 @@ changes. Second set (the same day): weight_bug (CCStart's knockdown number by we
 byte vs computer 120), shoulder_bobble (ghighr / ghighl hold points, top vs bottom net), rocket_pass (passtoa0 speed vs
 distance at an ideal 15,000), computer_positions (asswingo / asscentero / assdefo boxes by puck zone), rink_feet; in
 GENESIS_GUIDE 9.1, 12.1, 8, 14 and both guides' Distances and speeds, GENESIS_MECHANICS 7.2, 5.3, 6.1, 12.2 and both
-mechanics' Units.
+mechanics' Units. Third set: one_timers (press-to-strike ranges both systems; Genesis scoring by goalie offset, pass
+across, distance from SHOOTING_STUDY part 3), faceoff_directions (dirtab x 32 + 2,048 toward the winner's end, the five
+random directions), penalty_chances (Genesis 5 / R, R = ((40 - Agr) / 2) x 13, person x 2; SNES 1 / R with the person's
+byte wrap, Agr 12 every hit), flip_spots (OneTimerTarget spots, goal-mouth box, over-the-glass strips); in both guides'
+7 and penalties sections, GENESIS_GUIDE 4 and 8, GENESIS_MECHANICS 4.8, 6.3, 8, 9.2, SNES_MECHANICS 4.5, 8.
 
 ## Advanced stats (2026-10-16)
 

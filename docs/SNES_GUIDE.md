@@ -255,6 +255,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 ## 7. One-timers
 
+
+![One-timer timing and what made them score](img/one_timers.svg)
+
 - **How:** pass with B to a teammate, then **press A while the pass is on its way**: control moves to him and he
   swings.
 - **They go where your d-pad points**: you aim them, unlike the Genesis.
@@ -315,6 +318,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 ---
 
 ## 10. Penalties
+
+
+![Penalty chance per check by working Aggression, Genesis and SNES](img/penalty_chances.svg)
 
 ### 10.1 Cold players take the penalties
 

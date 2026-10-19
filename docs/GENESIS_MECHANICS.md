@@ -434,6 +434,9 @@ delayed penalty (0.7 and 0.3 units off the aim point).
 
 ### 4.8 One-timers
 
+
+![One-timer timing and what made them score](img/one_timers.svg)
+
 **Triggering:**
 
 - Pass (B) to a teammate, then **press C while the pass is on its way**. You still control the passer then, and C
@@ -943,6 +946,9 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
 
 ### 6.3 The flip (A with the puck)
 
+
+![Where the Genesis flip lands](img/flip_spots.svg)
+
 **A lob to a fixed spot, not aimed by the d-pad.** **Confirmed.** The spot comes from where your skater is and which
 way he's facing:
 
@@ -1128,6 +1134,9 @@ anywhere on the ice**.
 
 ## 8. Penalties
 
+
+![Penalty chance per check by working Aggression, Genesis and SNES](img/penalty_chances.svg)
+
 ### 8.1 How a penalty is decided
 
 Most penalties come from one roll (`checkagr`):
@@ -1226,6 +1235,9 @@ of play, goals, the end of a period.
 were on the full sweep 23% of the time, mid-swing 47%, standing 26%, as the swing and mashing gaps predict.
 
 ### 9.2 Where the puck goes
+
+
+![The puck's direction and speed for each d-pad direction held at a won faceoff](img/faceoff_directions.svg)
 
 - **The roll winner's held direction, 3 times in 4.** Otherwise one of the five directions from sideways to straight
   at the other end, at random. The computer never holds a direction, so its wins always go the random way.

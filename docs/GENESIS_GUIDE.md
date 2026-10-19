@@ -225,6 +225,9 @@ With line changes off (the usual online setting):
 
 The computer never holds a direction, so its wins go a random way.
 
+
+![The puck's direction and speed for each d-pad direction held at a won faceoff](img/faceoff_directions.svg)
+
 ---
 
 ## 5. Skating and carrying the puck
@@ -309,6 +312,9 @@ The computer never holds a direction, so its wins go a random way.
 ---
 
 ## 7. One-timers
+
+
+![One-timer timing and what made them score](img/one_timers.svg)
 
 **The best way to score.** Against a one-timer the goalie's reach drops to its minimum, whoever he is.
 
@@ -395,6 +401,8 @@ The computer never holds a direction, so its wins go a random way.
 - **Over the glass:** outside the attacking zone, out on one side (not right on the boards), facing those boards, the
   flip's spot is pushed past the boards and the puck goes out of play.
 
+![Where the Genesis flip lands](img/flip_spots.svg)
+
 ![Pass speed by distance, with the travel time rounded down](img/rocket_pass.svg)
 
 
@@ -455,6 +463,9 @@ viewer's Help, "This game's ROM", says whether yours does).
 ---
 
 ## 11. Penalties
+
+
+![Penalty chance per check by working Aggression, Genesis and SNES](img/penalty_chances.svg)
 
 With penalties on:
 

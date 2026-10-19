@@ -557,12 +557,209 @@ def rink():
     return svg(W, ly + 60, b, "The rink in feet")
 
 
+# ---------------------------------------------------------------------------------------------- 11. one-timers
+def one_timers():
+    """Timing from the recordings (C / SNES A press to the strike, or to the end of a failed swing) and what made Genesis
+    one-timers score (SHOOTING_STUDY part 3, 91 one-timers)."""
+    W = 860
+    b = []
+    b.append(text(W / 2, 28, "One-timers: when to press, and what makes them go in", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Press shoot while the pass is on its way; the game times the downswing itself and waits up to 0.8 s at full wind-up.",
+                  12, SOFT, "middle"))
+    L, R = 170, 800
+    X = lambda ms: L + (R - L) * ms / 1000
+    T = 90
+    b.append(text(60, T - 8, "Time from the press (recorded)", 13, INK, weight="bold"))
+    for ms in range(0, 1001, 100):
+        b.append(line(X(ms), T, X(ms), T + 150, GRID, 1))
+        b.append(text(X(ms), T + 166, f"{ms / 1000:.1f} s", 10, SOFT, "middle"))
+    rows = [("Genesis: struck", 0, 870, 210, GREEN), ("Genesis: failed swing over", 300, 960, 585, RED),
+            ("SNES: struck", 0, 590, 199, GREEN), ("SNES: failed swing over", None, None, 465, RED)]
+    for i, (label, a, z, med, col) in enumerate(rows):
+        y = T + 12 + i * 34
+        b.append(text(L - 10, y + 14, label, 12, INK, "end"))
+        if a is not None:
+            b.append(f"<rect x='{X(a)}' y='{y}' width='{X(z) - X(a)}' height='20' rx='4' fill='{col}' fill-opacity='0.3' stroke='{col}'/>")
+        b.append(line(X(med), y - 3, X(med), y + 23, col, 3))
+        b.append(text(X(med) + 5, y + 14, f"median {med} ms" if a is not None else f"median {med} ms (range not kept)", 11, INK))
+    b.append(text(60, T + 190, "So: press no more than about 0.9 s (Genesis) or 0.6 s (SNES) before the puck reaches him; pressing as it arrives strikes at once.",
+                  12, SOFT))
+    # what makes them score
+    T2 = T + 230
+    b.append(text(60, T2, "What made Genesis one-timers score (91 recorded)", 13, INK, weight="bold"))
+    groups = [("Goalie off the puck's line at the strike", [("0-4 units", 11, 28), ("4-10", 18, 38), ("10+", 68, 25)]),
+              ("How far the pass moved the puck across", [("0-40", 19, 32), ("40-90", 47, 34), ("90+", 20, 25)]),
+              ("Distance from the net at the strike", [("under 60", 44, 18), ("60-100", 44, 34), ("100+", 10, 39)])]
+    gw = 260
+    for g, (title, bars) in enumerate(groups):
+        gx = 60 + g * gw
+        b.append(text(gx, T2 + 26, title, 12, INK))
+        base = T2 + 190
+        for k, (lab, pct, n) in enumerate(bars):
+            x = gx + 10 + k * 70
+            h = pct * 1.8
+            b.append(f"<rect x='{x}' y='{base - h}' width='46' height='{h}' fill='{BLUE if pct < 40 else GREEN}' fill-opacity='0.8'/>")
+            b.append(text(x + 23, base - h - 6, f"{pct}%", 12, INK, "middle", "bold"))
+            b.append(text(x + 23, base + 15, lab, 11, SOFT, "middle"))
+            b.append(text(x + 23, base + 29, f"{n} shots", 10, SOFT, "middle"))
+        b.append(line(gx, base, gx + 220, base, SOFT, 1))
+    b.append(text(60, T2 + 248, "Quick passes (under 0.5 s in the air) that move the puck 40-90 across catch the computer goalie off his line; long cross-ice",
+                  12, SOFT))
+    b.append(text(60, T2 + 264, "passes give him time to slide over. On the SNES (55 recorded) only distance showed: 8 of 25 from 60-100 units, none from elsewhere.",
+                  12, SOFT))
+    return svg(W, T2 + 284, b, "One-timers")
+
+
+# ---------------------------------------------------------------------------------------------- 12. faceoff directions
+def faceoff_directions():
+    """Endfaceoff: the puck leaves at dirtab x 32 (6400 straight, 4512 per axis diagonally) plus 2048 toward the
+    winner's own end. Drawn for a winner attacking UP the page."""
+    W, S = 860, 0.022
+    ox, oy = 300, 270
+    b = [ARROW]
+    b.append(text(W / 2, 28, "Which way a won faceoff sends the puck (Genesis)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The winner attacks UP the page. Each arrow is the puck's speed and direction for the d-pad direction held, to scale.",
+                  12, SOFT, "middle"))
+    d = 4512
+    dirs = [("Up", 0, 6400), ("Up-right", d, d), ("Right", 6400, 0), ("Down-right", d, -d), ("Down", 0, -6400),
+            ("Down-left", -d, -d), ("Left", -6400, 0), ("Up-left", -d, d)]
+    random_set = {"Up", "Up-right", "Right", "Left", "Up-left"}
+    b.append(circle(ox, oy, 6, RED, RED))
+    b.append(circle(ox, oy, 6400 * S, "none", GRID, 1, "3 3"))
+    for name, vx, vy in dirs:
+        vy2 = vy - 2048
+        ex, ey = ox + vx * S, oy - vy2 * S
+        col = BLUE if name in random_set else GREEN
+        b.append(line(ox, oy, ex, ey, col, 3, None, "marker-end='url(#arr)'"))
+        sp = math.hypot(vx, vy2)
+        lx, ly = ox + vx * S * 1.0 + (14 if vx > 0 else -14 if vx < 0 else 0), oy - vy2 * S + (-10 if vy2 > 0 else 18)
+        anchor = "start" if vx > 0 else "end" if vx < 0 else "middle"
+        b.append(text(lx, ly, f"{name}: {sp:,.0f}", 11, INK, anchor))
+    b.append(text(ox, oy + 250, "(the dashed circle: the push without the 2,048 toward the winner's end)", 11, SOFT, "middle"))
+    nx = 560
+    notes = [("Every draw adds 2,048 toward the", INK), ("winner's own end:", INK),
+             ("straight back is the fastest (8,448);", SOFT), ("sideways comes out angled back;", SOFT),
+             ("straight forward is slow (4,352).", SOFT), ("", SOFT),
+             ("Hold a direction (green or blue):", INK), ("if you win, the puck goes that way", SOFT), ("3 times in 4.", SOFT), ("", SOFT),
+             ("Hold nothing (the computer never", INK), ("holds one): a random one of the five", SOFT),
+             ("blue directions, from sideways to", SOFT), ("straight at the other team.", SOFT), ("", SOFT),
+             ("Best: straight back to your defence.", GREEN)]
+    for i, (s, c) in enumerate(notes):
+        b.append(text(nx, 100 + i * 17, s, 12, c, weight="bold" if c in (INK, GREEN) else "normal"))
+    return svg(W, oy + 280, b, "Faceoff directions")
+
+
+# ---------------------------------------------------------------------------------------------- 13. penalties by Aggression
+def penalty_chances():
+    """Genesis checkagr: R = ((40 - Agr) / 2) x 13, x 2 for a person's checker; a check that leaves him up is a penalty
+    on randomd0(R) <= 4 (P = 5 / R). SNES: R = (20 - Agr) x 16, the person's doubling done on the low byte (wraps); a
+    check is a penalty on 0 (P = 1 / R; R = 0 every time). Away from the puck (near it, R halves)."""
+    W = 860
+    b = []
+    b.append(text(W / 2, 28, "Penalty chance per check, by working Aggression", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Away from the puck (within 40 of it the chance doubles). Working Aggression is 0-15 on both systems.", 12, SOFT, "middle"))
+    snes_person = [384, 352, 320, 288, 256, 224, 192, 160, 128, 96, 64, 32, 0, 224, 192, 160]
+    panels = [("Genesis: a check that leaves him standing", lambda a: 5 / (((40 - a) // 2) * 13), lambda a: 5 / (((40 - a) // 2) * 26), 4.0),
+              ("SNES: a check", lambda a: 1 / ((20 - a) * 16), lambda a: 1 / snes_person[a] if snes_person[a] else None, 4.0)]
+    for p, (title, cpu, person, top) in enumerate(panels):
+        L = 90 + p * 400
+        R, T, B = L + 320, 100, 330
+        X = lambda a: L + (R - L) * (a + 0.5) / 16
+        Y = lambda v: B - (B - T) * min(v, top) / top
+        b.append(text((L + R) / 2, 84, title, 13, INK, "middle", "bold"))
+        for v in (0, 1, 2, 3, 4):
+            b.append(line(L, Y(v), R, Y(v), GRID, 1))
+            b.append(text(L - 6, Y(v) + 4, f"{v}%", 10, SOFT, "end"))
+        for a in range(16):
+            for k, (fn, col) in enumerate(((cpu, BLUE), (person, RED))):
+                v = fn(a)
+                x = X(a) - 7 + k * 7
+                if v is None:
+                    b.append(f"<rect x='{x}' y='{T}' width='6' height='{B - T}' fill='{RED}'/>")
+                    b.append(text(x + 3, T - 4, "every hit", 10, RED, "middle", "bold"))
+                else:
+                    h = B - Y(100 * v)
+                    b.append(f"<rect x='{x}' y='{B - h}' width='6' height='{h}' fill='{col}'/>")
+            if a % 3 == 0 or a == 15:
+                b.append(text(X(a), B + 15, str(a), 10, SOFT, "middle"))
+        b.append(line(L, B, R, B, SOFT, 1))
+        b.append(text((L + R) / 2, B + 32, "working Aggression", 11, INK, "middle"))
+    ly = 390
+    for j, (col, label) in enumerate(((BLUE, "the computer's skater"), (RED, "a person's skater"))):
+        b.append(f"<rect x='{90 + j * 220}' y='{ly - 10}' width='14' height='12' fill='{col}'/>")
+        b.append(text(110 + j * 220, ly, label, 12))
+    notes = ["Genesis: a person's chance is half the computer's (the range is doubled), so the CB check (contact as the computer) doubles it.",
+             "Genesis working Aggression wraps at 16: rating 1 plays as 2-7, 2 as 8-12, 3 as 12-15 (or 0), 4 as 1-6: rating 4 plays like rating 1.",
+             "SNES: doubling a person's range overflows a byte, so at 12 every check is a penalty and 9-11 are several times the computer's.",
+             "SNES: a \"cold\" Aggression maxes at 15 (the hot / cold bug); 11 of the 14 recorded SNES penalties were by players at 15.",
+             "Other moves have their own thresholds (Genesis: a knockdown 4 / 5, a hook or hold 7 / 5 of these; SNES: a poke trip 5 times these)."]
+    for i, s in enumerate(notes):
+        b.append(text(60, ly + 30 + i * 18, s, 12, SOFT))
+    return svg(W, ly + 30 + len(notes) * 18 + 10, b, "Penalty chances")
+
+
+# ---------------------------------------------------------------------------------------------- 14. the flip
+def flip_spots():
+    """OneTimerTarget (Genesis A with the puck): outside the attacking zone the faceoff circle (+/-116, 194) on the side
+    he faces; inside, the high slot (-5, 171), or the goal mouth (y 259) from 138+ deep within 55 of the middle; +0-9 at
+    random; moved to 60 sideways from him when closer. Over the glass when that puts it past the boards."""
+    W, S = 860, 0.9
+    ox, oy = 250, 80 + 300 * 0.9
+    P = lambda x, y: (ox + x * S, oy - y * S)
+    b = [ARROW]
+    b.append(text(W / 2, 28, "Where the flip lands (Genesis: A with the puck)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The team attacks UP. The d-pad doesn't aim it: the spot comes from where the passer is and which way he faces.",
+                  12, SOFT, "middle"))
+    a = P(-130, 300)
+    b.append(f"<rect x='{a[0]}' y='{a[1]}' width='{260 * S}' height='{360 * S}' fill='#f7fbff' stroke='{INK}' stroke-width='1.5'/>")
+    for yy, col, w in ((88, BLUE, 3), (0, RED, 2), (268, RED, 1.5)):
+        p, q = P(-130, yy), P(130, yy)
+        b.append(line(p[0], p[1], q[0], q[1], col, w))
+    p = P(-20, 268)
+    b.append(f"<rect x='{p[0]}' y='{p[1] - 13}' width='{40 * S}' height='13' fill='#ffffff' stroke='{INK}'/>")
+    # over-the-glass passer strips (outside the attacking zone, 75-125 from the middle, facing the near boards)
+    for sg in (-1, 1):
+        q = P(75 if sg > 0 else -125, 88)
+        b.append(f"<rect x='{q[0]}' y='{q[1]}' width='{50 * S}' height='{88 * S}' fill='{RED}' fill-opacity='0.18' stroke='{RED}' stroke-dasharray='4 3'/>")
+    # goal-mouth passer box
+    q = P(-55, 300)
+    b.append(f"<rect x='{q[0]}' y='{q[1]}' width='{110 * S}' height='{(300 - 226) * S}' fill='{GREEN}' fill-opacity='0.12' stroke='{GREEN}' stroke-dasharray='4 3'/>")
+    # targets (with the 0-9 random)
+    for (tx, ty, col, lab) in ((-116, 194, BLUE, "lofted high (about 57)"), (116, 194, BLUE, ""), (-5, 171, ORANGE, "lofted low"),
+                               (0, 259, GREEN, "")):
+        c = P(tx + 4.5, ty + 4.5)
+        b.append(f"<rect x='{c[0] - 4.5 * S}' y='{c[1] - 4.5 * S}' width='{9 * S}' height='{9 * S}' fill='{col}' stroke='{col}'/>")
+    # example flips
+    ex = [((-40, 30), (-116, 194), BLUE), ((60, -20), (116, 194), BLUE), ((-20, 140), (-5, 171), ORANGE), ((10, 285), (0, 259), GREEN),
+          ((-95, 40), (-155, 50), RED)]
+    for (sx, sy), (tx, ty), col in ex:
+        s0, t0 = P(sx, sy), P(tx, ty)
+        b.append(circle(s0[0], s0[1], 5, "#ffffff", col, 2))
+        b.append(f"<path d='M{s0[0]:.1f},{s0[1]:.1f} Q{(s0[0] + t0[0]) / 2:.1f},{min(s0[1], t0[1]) - 30:.1f} {t0[0]:.1f},{t0[1]:.1f}' fill='none' "
+                 f"stroke='{col}' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#arr)'/>")
+    nx = 520
+    notes = [("Outside the attacking zone", BLUE), ("to the faceoff circle on the side he", SOFT), ("faces (straight ahead: his right),", SOFT),
+             ("lofted high, over everyone's sticks.", SOFT), ("", SOFT),
+             ("Inside the attacking zone", ORANGE), ("to the high slot, lofted low.", SOFT), ("", SOFT),
+             ("Deep, near the middle (green box)", GREEN), ("to the goal mouth.", SOFT), ("", SOFT),
+             ("Over the glass (red strips)", RED), ("Closer to him than 60 sideways, the", SOFT), ("spot is moved to 60 from him: from", SOFT),
+             ("75-125 out, facing the near boards,", SOFT), ("that's past the boards. Whistle.", SOFT), ("", SOFT),
+             ("Each spot gets 0-9 added at random;", SOFT), ("9 of 13 recorded lofted flips came", SOFT), ("down within 12 of it.", SOFT)]
+    for i, (s, c) in enumerate(notes):
+        b.append(text(nx, 100 + i * 17, s, 12, c, weight="bold" if c != SOFT else "normal"))
+    b.append(text(60, oy + 90, "Circles: where each example passer stands. Squares: the landing spots (with their random range).", 12, SOFT))
+    b.append(text(60, oy + 107, "The SNES flip (Y) is a computer-run dump-in aimed by his side of centre instead (SNES_MECHANICS 6.3).", 12, SOFT))
+    return svg(W, oy + 124, b, "The flip")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
              "aim_points_snes.svg": aim_points("snes"), "shot_scatter.svg": scatter(), "faceoff_timing.svg": faceoffs(),
              "weight_bug.svg": weight_bug(), "shoulder_bobble.svg": shoulder_bobble(), "rocket_pass.svg": rocket_pass(),
-             "computer_positions.svg": positioning(), "rink_feet.svg": rink()}
+             "computer_positions.svg": positioning(), "rink_feet.svg": rink(),
+             "one_timers.svg": one_timers(), "faceoff_directions.svg": faceoff_directions(),
+             "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

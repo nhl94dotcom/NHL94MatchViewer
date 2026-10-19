@@ -285,6 +285,9 @@ your d-pad points.** **Code**
 
 ### 4.5 One-timers
 
+
+![One-timer timing and what made them score](img/one_timers.svg)
+
 - **Triggering:** while your pass is on its way to a teammate, press **A**: control moves to the receiver and he swings
   at it (`onetimerreq`). **Code**
 - The swings are their own animations (two of them, never with the puck), seen in the recordings at every "led to a
@@ -695,6 +698,9 @@ the recordings yet.
 ---
 
 ## 8. Penalties
+
+
+![Penalty chance per check by working Aggression, Genesis and SNES](img/penalty_chances.svg)
 
 ### 8.1 The penalty roll, and its overflow (`checkagr`)
 
