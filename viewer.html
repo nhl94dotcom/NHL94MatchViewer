@@ -2112,7 +2112,7 @@ const BOBBLE_COLOUR = '#f5a524';  // the bobble mark on the passes map
 const PASS_WORDS = { completed: 'completed', 'one-timer': 'into a one-timer', intercepted: 'intercepted', failed: 'failed', 'pass shot': 'pass shot' };
 // "One-timer passes" (the user): the passes that went into a one-timer, and the ones a teammate swung at and missed.
 // A missed one is a failed one-timer (match.failedOneTimers: the swinger and his passer), joined to its pass: the
-// passer's latest pass at most 1.5 s before the swing.
+// passer's latest pass at most 2 s before the swing (a few swings come 1.6-1.9 s after it).
 let passKind = '', missedOneTimers = null, missedFor = null;
 function missedOneTimerPasses() {
   if (missedFor === match) return missedOneTimers;
@@ -2120,7 +2120,7 @@ function missedOneTimerPasses() {
   for (const fo of match.failedOneTimers || []) {
     let best = null;
     for (const e of match.passes || []) {
-      if (e.team === fo.team && e.idx === fo.passer && e.f <= fo.f && match.t[fo.f] - match.t[e.f] <= 1500 && (!best || e.f > best.f)) best = e;
+      if (e.team === fo.team && e.idx === fo.passer && e.f <= fo.f && match.t[fo.f] - match.t[e.f] <= 2000 && (!best || e.f > best.f)) best = e;
     }
     if (best) missedOneTimers.set(best, fo);
   }

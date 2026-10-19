@@ -209,6 +209,9 @@
   .hudlinks { position: absolute; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
   .hudlinks.left { left: 12px; } .hudlinks.right { right: 12px; }
   .hudlinks a, .hudlinks button { color: var(--muted); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 1px solid transparent; background: transparent; }
+  #liveBtn { color: #fff; background: #b3261e; border: 0; border-radius: 6px; font-weight: 700; padding: 3px 9px; }
+  #liveBtn.behind { background: transparent; color: var(--text); border: 1px solid #b3261e; font-weight: 600; }
+  #liveBtn.final { background: transparent; color: var(--muted); border: 1px solid #3a4450; }
   .hudlinks a:hover, .hudlinks button:hover { color: var(--text); border-color: #3a4450; }
   @media (max-width: 640px) { .hudlinks.left { display: none; } .hudlinks.right { right: 4px; } }
   [hidden] { display: none !important; }
@@ -332,6 +335,7 @@
   <button id="play">Play</button>
   <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position in recording">
   <span id="time"></span>
+  <button id="liveBtn" hidden title="Watching live: the game a few seconds behind. When you've gone back, this takes you to the live action again">&#9679; LIVE</button>
   <select id="speed" aria-label="Playback speed" title="Playback speed">
     <option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
   </select>
@@ -353,6 +357,9 @@
   </select>
   <select id="heatPuck" aria-label="Who has the puck" title="Count only the moments when that team has the puck (attacking), the other team has it (defending), or nobody does" hidden>
     <option value="">Puck: anyone</option><option value="ours">Attacking: has the puck</option><option value="theirs">Defending: other team has it</option><option value="loose">Loose puck</option>
+  </select>
+  <select id="passKind" aria-label="Which passes the map shows" title="One-timer passes: the passes that went into a one-timer, and the ones a teammate swung at and missed" hidden>
+    <option value="">All passes</option><option value="onetimer">One-timer passes</option>
   </select>
   <select id="xgShot" aria-label="Which shot the xG map is for" hidden>
     <option value="wrist">Wrist shot</option><option value="slap">Slapshot</option><option value="onetimer">One-timer</option>
@@ -462,6 +469,13 @@ moves the view instead). Tap a player for his card and tap anywhere else to put 
 <h3>On a phone</h3>
 <p>The rink is on top; below it, tabs switch between the lineups, the team stats and the scoring summary. The controls
 stay at the bottom.</p>
+<h3>Watching live</h3>
+<p>A live link shows a game while it's being played, about 10 seconds behind. Everything works as in a finished game:
+stats, maps, highlights, clips. The red <b>&#9679; LIVE</b> button beside the clock means you're following the play.
+Go back to watch something again and it turns into <b>Go live</b>: click it to catch up. When the game ends the button
+says <b>Final</b> and the page holds the whole game. The page starts by itself when the next game begins.</p>
+<p>To broadcast your own games, start the helper with <code>--broadcast</code> (see the live helper shortcut). It sends
+each game to a web storage bucket as you play.</p>
 </section>
 
 <section id="h-maps"><h2>Maps and game flow</h2>
@@ -472,7 +486,9 @@ marker for what it was; click it to jump there.</p>
   <dt>Shot map</dt><dd>Every shot attempt: goals (accent ring), saves (white ring), posts (diamond), wide (hollow), blocked (crossed). Squares are pass shots.</dd>
   <dt>Heat map</dt><dd><b>Skating</b>: where the skaters (or one player) went, puck or not. <b>With the puck</b>: where the puck was while they had it. Filters: period, strength (even, power play, shorthanded) and, for skating, attacking / defending / loose puck. With both teams it shows the difference: each spot in the colour of the team that spent more time there. Time is game time: nothing counts while the clock is stopped.</dd>
   <dt>Turnovers</dt><dd>Giveaways (hollow triangles, in the colour of the team that lost it) and takeaways (filled).</dd>
-  <dt>Passes</dt><dd>Every pass and how it ended.</dd>
+  <dt>Passes</dt><dd>Every pass and how it ended. The menu beside it can show just the <b>one-timer passes</b>: the
+  ones that went into a one-timer (solid) and the ones a teammate swung at and missed (dotted, ending in a small
+  ring).</dd>
   <dt>Zone entries</dt><dd>Where the puck crossed the blue line: carried (disc), passed (diamond), dumped (hollow); an accent ring means a shot attempt came of it.</dd>
   <dt>Goalie report</dt><dd>Every shot a goalie faced, with save rates by distance and type, human or computer in net, and what happened after each save.</dd>
   <dt>xG map</dt><dd>The chance a shot from each spot in the attacking zones goes in, worked out with the game’s own shot and save rules (the same model as each shot’s xG), for the shot type, shooter’s Shot Accuracy and goalie you pick, with the best of the nine aims. <b>As in games</b> puts the goalie where goalies really were when recorded shots were taken (often out of position or moving); <b>set in his spot</b> shows how little gets past a goalie who is ready. Point at a spot for its number and the d-pad direction to aim with. Genesis and SNES games, each with its own game’s rules.</dd>
@@ -561,7 +577,7 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Where a goal went in</dt><dd>Each goal in the scoring summary and its banner has a small picture of the net, seen from the shooter's side, with the spot where the puck crossed the goal line (posts at the sides, the crossbar at the top). (Older SNES recordings converted before the puck's height was found show a dashed line across the net instead.)</dd>
   <dt>Where a shot was aimed</dt><dd>Both games aim every shot at one of nine points in the net, picked by the direction the stick is held as you shoot, by screen direction: up, up-left or up-right aims high; left, right or no direction middle height; down-left, down or down-right along the ice; left and right are the screen's sides (so shooting down the screen, the stick's left is the shooter's right). The game then scatters the shot at random (more for hard shots, weak shooters and long range). Shot tooltips say where each was aimed; on a goal's net picture the blue ring is the aim and the yellow dot where it went in; the card and the season page count where each player aims.</dd>
   <dt>Screen sides</dt><dd>Left and right on the screen, split by which way a team was going (Home attacks up the screen in periods 1 and 3, Away in period 2 and overtime), for anyone who favours one side of the screen whichever way he goes: where the puck was while the team carried it, how much each winger and defenceman carried it (going up the left winger is on the screen's left, going down on its right), where shots came from and where they were aimed. In the team stats' "Screen sides" group, and across games on the season page's Play style tab.</dd>
-  <dt>Deserve to win</dt><dd>MoneyPuck's Deserve to Win meter for NHL '94: how often each team would win if the game's shots were replayed, each going in with the chance it had (its xG; pass shots and deflections a typical chance), a team's shots within 3 seconds counted as one chance, and a tie settled in sudden-death overtime (10 minutes on the Genesis, 5 on the SNES). In the team stats, as a dotted line on the Game flow strip (the home team's deserved share up), and on the season page as deserved points beside the real ones. Before the end of a game it says who deserved to be ahead so far. Not a prediction: a team can deserve to win and lose.</dd>
+  <dt>Deserve to win</dt><dd>MoneyPuck's Deserve to Win meter for NHL '94: how often each team would win if the game's shots were replayed, each going in with the chance it had (its xG; pass shots and deflections a typical chance), a team's shots within 3 seconds counted as one chance, and a tie settled in sudden-death overtime (10 minutes on the Genesis, 5 on the SNES). In the team stats, as a dotted line on the Game flow strip (the home team's deserved share up), and on the season page as deserved points beside the real ones (2 a win, 1 a tie, none for an overtime loss). Before the end of a game it says who deserved to be ahead so far. Not a prediction: a team can deserve to win and lose.</dd>
   <dt>Shot aim</dt><dd>Where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net, high, middle or along the ice, and left, middle or right (one-timers and computer shooters are aimed by the game). The team stats split goals and attempts by height; in the recorded games shots aimed along the ice almost never went in.</dd>
   <dt>Saves: held / rebound / cleared</dt><dd>What became of each save a team's goalies made: held by the goalie (or play stopped), a rebound the shooting team got to first, or cleared by the goalie's own team.</dd>
   <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
@@ -759,7 +775,7 @@ function load(m) {
   match = m;
   now = m.t[0];
   panelState = '';
-  spriteCache.clear();
+  if (!liveReloading) spriteCache.clear();  // a live update keeps the drawn pictures: same game, same colours
   buildAnimIndex(m);
   fillRomSettings();
   logoImage = buildLogo(m);
@@ -1300,6 +1316,7 @@ function setupOverlay(m) {
   who.value = overlayWho = 'both';
   if (q.get('who') && [...who.options].some(o => o.value === q.get('who'))) who.value = overlayWho = q.get('who');
   if (['skate', 'puck'].includes(q.get('heat'))) heatMode = q.get('heat');  // &heat=puck
+  if (q.get('passes') === 'onetimer') { passKind = 'onetimer'; $('passKind').value = 'onetimer'; }  // &passes=onetimer
   // &xgshot=wrist|slap|onetimer, &xgacc=0..6 (the Shot Accuracy step), &xggoalie=cpu|set|person
   if (XG_SHOTS[q.get('xgshot')]) xgShot = q.get('xgshot');
   if (/^[0-6]$/.test(q.get('xgacc') || '')) xgAcc = Number(q.get('xgacc'));
@@ -1351,6 +1368,7 @@ function updateOverlayControls(redraw = true) {
   $('xgShot').hidden = $('xgAcc').hidden = $('xgGoalie').hidden = overlay !== 'xg';
   $('heatMode').hidden = $('heatPeriod').hidden = $('heatStrength').hidden = overlay !== 'heat';
   $('heatPuck').hidden = overlay !== 'heat' || heatMode !== 'skate';
+  $('passKind').hidden = overlay !== 'passes';
   $('overlayInfo').hidden = !overlay;
   heatGrid = null;
   if (redraw && match) draw();
@@ -2098,16 +2116,36 @@ function drawTurnovers(f, colours) {
 // (no target, or a goalie's pass).
 const BOBBLE_COLOUR = '#f5a524';  // the bobble mark on the passes map
 const PASS_WORDS = { completed: 'completed', 'one-timer': 'into a one-timer', intercepted: 'intercepted', failed: 'failed', 'pass shot': 'pass shot' };
+// "One-timer passes" (the user): the passes that went into a one-timer, and the ones a teammate swung at and missed.
+// A missed one is a failed one-timer (match.failedOneTimers: the swinger and his passer), joined to its pass: the
+// passer's latest pass at most 2 s before the swing (a few swings come 1.6-1.9 s after it).
+let passKind = '', missedOneTimers = null, missedFor = null;
+function missedOneTimerPasses() {
+  if (missedFor === match) return missedOneTimers;
+  missedFor = match; missedOneTimers = new Map();
+  for (const fo of match.failedOneTimers || []) {
+    let best = null;
+    for (const e of match.passes || []) {
+      if (e.team === fo.team && e.idx === fo.passer && e.f <= fo.f && match.t[fo.f] - match.t[e.f] <= 2000 && (!best || e.f > best.f)) best = e;
+    }
+    if (best) missedOneTimers.set(best, fo);
+  }
+  return missedOneTimers;
+}
 function drawPasses(f, colours) {
-  const list = (match.passes || []).filter(e => known(e, f) && counts(e.team, e.idx));
+  const missed = missedOneTimerPasses(), missedAt = e => { const fo = missed.get(e); return fo && known(fo, f) ? fo : null; };
+  const list = (match.passes || []).filter(e => known(e, f) && counts(e.team, e.idx) &&
+    (passKind !== 'onetimer' || e.result === 'one-timer' || missedAt(e)));
   const tally = [{}, {}];
   ctx.save();
   ctx.scale(1 / xStretch(), 1);
   const sx = xStretch();
   for (const e of list) {
-    tally[e.team][e.result] = (tally[e.team][e.result] || 0) + 1;
+    const miss = passKind === 'onetimer' && e.result !== 'one-timer' ? missedAt(e) : null;
+    const kind = miss ? 'missed one-timer' : e.result;
+    tally[e.team][kind] = (tally[e.team][kind] || 0) + 1;
     const [x0, y0] = onEnds(e.f, f, e.x0, e.y0), [x1, y1] = onEnds(e.f, f, e.x1, e.y1);
-    const style = {
+    const style = miss ? [css('--accent'), [1.5, 3], 1.8] : {
       completed: [colours[e.team], [], 1.8], 'one-timer': [css('--accent'), [], 2.2], intercepted: ['#e5484d', [5, 4], 1.8],
       failed: ['#8b98a7', [1.5, 3], 1.6], 'pass shot': [css('--accent'), [6, 3], 2],
     }[e.result] || ['#8b98a7', [], 1.5];
@@ -2136,6 +2174,8 @@ function drawPasses(f, colours) {
     if (e.result === 'intercepted') {
       const r = 3.5;
       ctx.beginPath(); ctx.moveTo(x1 * sx - r, y1 - r); ctx.lineTo(x1 * sx + r, y1 + r); ctx.moveTo(x1 * sx - r, y1 + r); ctx.lineTo(x1 * sx + r, y1 - r); ctx.stroke();
+    } else if (miss) {
+      ctx.beginPath(); ctx.arc(x1 * sx, y1, 3.5, 0, 2 * Math.PI); ctx.stroke();
     } else if (e.result === 'completed' || e.result === 'one-timer') {
       ctx.fillStyle = style[0];
       ctx.beginPath(); ctx.moveTo(x1 * sx, y1);
@@ -2156,17 +2196,24 @@ function drawPasses(f, colours) {
         (e.result === 'completed' && e.to === e.bobble.idx ? 'he got it back'
           : (e.result === 'completed' && e.to >= 0 ? 'to ' + playerName(e.team, e.to) : PASS_WORDS[e.result] || e.result))
         : (e.to >= 0 ? ' to ' + playerName(e.team, e.to) : '') + ' \u00b7 ' + (PASS_WORDS[e.result] || e.result)) +
+      (missedAt(e) ? ' \u00b7 ' + playerName(e.team, missedAt(e).idx) + ' swung at it for a one-timer and missed' : '') +
       (e.counted === false ? ' (not counted by the game: no target)' : ''));
   }
   const box = $('overlayInfo'), names = [match.team1, match.team2], only = filterTeam(), who = $('overlayWho').selectedOptions[0];
   box.textContent = '';
   const title = document.createElement('b');
-  title.textContent = 'Passes' + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
+  title.textContent = (passKind === 'onetimer' ? 'One-timer passes' : 'Passes') + (overlayWho === 'both' ? '' : ' \u00b7 ' + (who ? who.textContent : ''));
   box.append(title);
   for (const team of [0, 1]) {
     if (only >= 0 && team !== only) continue;
     const c = tally[team], n = Object.values(c).reduce((a, b) => a + b, 0), made = (c.completed || 0) + (c['one-timer'] || 0);
     const line = document.createElement('div');
+    if (passKind === 'onetimer') {
+      const hit = c['one-timer'] || 0, miss = c['missed one-timer'] || 0;
+      line.textContent = names[team] + ': ' + hit + ' into one-timers, ' + miss + ' missed' + (hit + miss ? ' (' + Math.round(100 * hit / (hit + miss)) + '% connected)' : '');
+      box.append(line);
+      continue;
+    }
     line.textContent = names[team] + ': ' + made + ' of ' + n + ' completed' + (c['one-timer'] ? ' (' + c['one-timer'] + ' into one-timers)' : '') +
       (c.intercepted ? ', ' + c.intercepted + ' intercepted' : '') + (c.failed ? ', ' + c.failed + ' failed' : '') +
       (c['pass shot'] ? ', ' + c['pass shot'] + ' pass shot' + (c['pass shot'] === 1 ? '' : 's') : '') +
@@ -2180,9 +2227,10 @@ function drawPasses(f, colours) {
     ['<path d="M1 6 H11" stroke="' + css('--accent') + '" stroke-width="2"/>', 'Into a one-timer'],
     ['<path d="M1 6 H8" stroke="#e5484d" stroke-width="2" stroke-dasharray="3 2"/><path d="M8 3 L11 9 M8 9 L11 3" stroke="#e5484d" stroke-width="1.6"/>', 'Intercepted'],
     ['<path d="M1 6 H11" stroke="#8b98a7" stroke-width="2" stroke-dasharray="1 2"/>', 'Failed'],
+    ...(passKind === 'onetimer' ? [['<path d="M1 6 H7" stroke="' + css('--accent') + '" stroke-width="2" stroke-dasharray="1.5 2"/><circle cx="9" cy="6" r="2.4" fill="none" stroke="' + css('--accent') + '" stroke-width="1.4"/>', 'One-timer missed']] : []),
     ['<path d="M1 6 H11" stroke="' + css('--accent') + '" stroke-width="2" stroke-dasharray="4 2"/>', 'Pass shot'],
     ['<circle cx="6" cy="6" r="4.2" fill="none" stroke="' + BOBBLE_COLOUR + '" stroke-width="1.6"/><path d="M3.6 7.4 L5.2 4.6 L6.8 7.4 L8.4 4.6" fill="none" stroke="' + BOBBLE_COLOUR + '" stroke-width="1.2"/>', 'Bobbled (then how it ended)'],
-  ]) {
+  ].filter(([, text]) => passKind !== 'onetimer' || ['Into a one-timer', 'One-timer missed', 'Bobbled (then how it ended)'].includes(text))) {
     const item = document.createElement('span');
     item.innerHTML = '<svg width="12" height="12" aria-hidden="true">' + shape + '</svg>';
     item.append(text);
@@ -2439,8 +2487,10 @@ function drawPuck(f) {
   // The puck's shadow and resting picture: the Genesis frames, unless the library names its own (the SNES's: its
   // frame 394 is the instant replay's crosshair). A frame of 0 (none read) shows the puck at rest.
   const own = spriteLibrary && spriteLibrary.puck, shadow = own ? own.shadow : PUCK_SHADOW, onIce = own ? own.onIce : PUCK_ON_ICE;
-  const read = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : onIce, key = read === '000' ? onIce : read;
-  const lib = spritesOn && spriteLibrary && m.palettes ? spriteLibrary.frames : null;
+  const read = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : onIce, lib = spritesOn && spriteLibrary && m.palettes ? spriteLibrary.frames : null;
+  // The SNES puck's frame word now and then reads 406, which is a net picture (the user saw the puck turn into a net
+  // for a moment): anything bigger than a puck picture shows the puck at rest.
+  const key = read === '000' || (lib && lib[read] && lib[read].w > 12) ? onIce : read;
   if (lib && lib[key] && lib[shadow]) {
     for (const [k, up] of [[shadow, 0], [key, Math.max(0, z)]]) {
       const sprite = spriteImage(k, lib[k], 0, false);
@@ -2810,6 +2860,7 @@ function refreshPopover(f, snap) {
       live.shotAssists = mine.filter(sh => sh.assist === shown.idx).length;
       live.rebounds = mine.filter(sh => sh.idx === shown.idx && sh.rebound);
     }
+    if (match.shotList) live.posts = match.shotList.filter(sh => known(sh, f) && sh.team === shown.team && sh.idx === shown.idx && resultAt(sh, f) === 'post').length;
     live.takeaways = list.filter(e => e.kind === 'takeaway' && e.from !== shown.team && e.by === shown.idx).length;
     if (match.failedOneTimers) live.failedOneTimers = match.failedOneTimers.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx).length;
     if (match.passes) {
@@ -2960,6 +3011,7 @@ function fillCard(card, p, position, live) {
       addStat(grid, 'Points', live.g + live.a);
       addStat(grid, 'Shots', live.s);
       addStat(grid, 'Shooting %', shootingText(live.g, live.s));
+      if (live.posts !== undefined) addStat(grid, 'Posts', live.posts);
       if (live.xg) addStat(grid, 'xG', live.xg.x.toFixed(2) + ' (' + live.xg.g + ' G)');
       addStat(grid, 'Checks', live.checks);
       if (live.checksBy) addStat(grid, 'Checks: person / CPU', live.checksBy);
@@ -3268,6 +3320,7 @@ const STAT_HELP = {
   'Zone starts': 'Faceoffs he was on the ice for: attacking / neutral / defensive zone.',
   'OZS%': 'Attacking-zone starts as a share of attacking plus defensive starts.',
   'With the puck': 'Game time with the puck on his stick.',
+  'card|Posts': 'His shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'card|Zone entries': 'Times he took the puck into the attacking zone (carried, or passed in by him).',
   'High-danger att.': 'His shot attempts from the slot (within 60 units of the net, no wider than 50 from the middle).',
   'Shot assists': 'His passes that a teammate shot straight off (within 4 s).',
@@ -4516,17 +4569,20 @@ function setPlaying(on) {
 function tick(stamp) {
   if (!playing) return;
   const end = match.t[match.t.length - 1];
-  now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value));
+  now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value) * liveRate(end));
   lastTick = stamp;
   draw();
   playSoundsUpTo(frameAt(now));
   if (reelJob) reelJob.onFrame();
   if (clipJob) clipJob.onFrame();
+  if (now >= end && liveWaiting()) { requestAnimationFrame(tick); return; }  // live: hold at the newest moment until more arrives
   if (now >= end) { setPlaying(false); if (reelJob) reelJob.onFrame(); } else if (playing) requestAnimationFrame(tick);
 }
 
 function seekTo(ms) {
   now = Math.max(match.t[0], Math.min(match.t[match.t.length - 1], ms));
+  // Live: going back (the seek bar, the arrow keys, a map marker) stops following live until "Go live"
+  if (liveState && liveState.following && now < match.t[match.t.length - 1] - liveDelay() - 4000) { liveState.following = false; liveShowButton(); }
   draw();
 }
 
@@ -4597,7 +4653,8 @@ document.addEventListener('click', e => {
 });
 
 $('play').addEventListener('click', () => {
-  if (!playing && now >= match.t[match.t.length - 1]) now = match.t[0];
+  if (!playing && now >= match.t[match.t.length - 1] && !liveWaitingFor()) now = match.t[0];
+  if (liveState && playing) { liveState.following = false; liveShowButton(); }  // pausing a live game: no longer following
   setPlaying(!playing);
 });
 $('seek').addEventListener('input', e => {
@@ -4654,6 +4711,7 @@ $('xgGoalie').addEventListener('change', e => { xgGoalie = e.target.value; updat
 $('heatPeriod').addEventListener('change', e => { heatPeriod = Number(e.target.value); updateOverlayControls(); });
 $('heatStrength').addEventListener('change', e => { heatStrength = e.target.value; updateOverlayControls(); });
 $('heatPuck').addEventListener('change', e => { heatPuck = e.target.value; updateOverlayControls(); });
+$('passKind').addEventListener('change', e => { passKind = e.target.value; updateOverlayControls(); });
 $('heatMode').addEventListener('change', e => {
   heatMode = e.target.value;
   try { localStorage.setItem('nhl94-heat', heatMode); } catch (err) { /* not remembered */ }
@@ -5064,6 +5122,7 @@ async function saveGameFile() {
     const score = match.score.length >= 2 ? match.score[match.score.length - 2] + '-' + match.score[match.score.length - 1] : '';
     const title = match.team1 + ' ' + score + ' ' + match.team2;
     const html = PAGE_SOURCE
+      .replace(/<script>window\.NHL94_LIVE[^<]*<\/script>\n?/, '')  // a file saved from the live page plays as a file
       .replace('<script src="rink_gens.js"><' + '/script>', () => data)
       .replace(/<title>[^<]*<\/title>/, () => '<title>' + title.replace(/[<&]/g, '') + ' \u00b7 NHL \'94<' + '/title>');
     const name = (match.team1 + '_' + score + '_' + match.team2 + '_' + (match.name || '')).replace(/[^\w.-]+/g, '_') + '.html';
@@ -5335,9 +5394,12 @@ $('clipGo').addEventListener('click', () => {
 // On by default; turning them off is remembered.
 try { spritesOn = localStorage.getItem('nhl94-sprites') !== '0'; } catch (e) { spritesOn = true; }
 if (new URLSearchParams(location.search).has('sprites')) spritesOn = true;
-let libraryScript = null;
+let libraryScript = null, libraryRom = null;
 function loadSprites(m) {
-  spriteLibrary = null;
+  // The same ROM's library already loaded (a live update reloads the match every few seconds): keep it, or the players
+  // would show as plain markers, and the puck as another picture, until it had been fetched again.
+  if (spriteLibrary && m.rom && libraryRom === m.rom) return;
+  spriteLibrary = null; libraryRom = null;
   $('spriteToggle').hidden = true;
   if (libraryScript) libraryScript.remove();
   if (window.NHL94_PACKED && window.NHL94_SPRITES) {  // a saved game file carries its sprites
@@ -5351,7 +5413,7 @@ function loadSprites(m) {
   script.src = 'sprites/' + m.rom + '.js';
   script.onload = () => {
     if (script !== libraryScript) return;  // another match was opened meanwhile
-    spriteLibrary = window.NHL94_SPRITES;
+    spriteLibrary = window.NHL94_SPRITES; libraryRom = m.rom;
     $('spriteToggle').hidden = false;
     $('sprites').checked = spritesOn;
     if (match) draw();
@@ -5495,9 +5557,147 @@ function drawBenches() {
 // The Genesis benches from the start (a saved game file carries them already); another system's come with useRink.
 loadScriptOnce(RINKS.genesis.benches, RINKS.genesis.benchData, () => { if (match && rinkSystem === 'genesis') { buildBenches(match); draw(); } });
 
+
+// Live broadcast (tools/live_broadcast.py, 2026-10-18). The helper converts the game being played every few seconds
+// and uploads what changed; window.NHL94_LIVE names the manifest (live.json) beside this page. Its `game` and `seq` say
+// which update is newest and `snapshot` the newest whole-match one: a page joining starts from that snapshot and
+// applies the changes after it (data/<game>/c<n>.json: per key {s: value} | {p: keep, v: append} | {d: {...}} |
+// {x: 1}), then reloads the match keeping the moment shown, the map and the panels. Playback follows the newest data
+// a delay behind; at the newest moment it waits for more instead of stopping.
+let liveState = null, liveReloading = false;  // { game, seq, status, interval, following }; reloading: in liveReload's load()
+const liveWaiting = () => !!liveState && liveState.status !== 'final' && playing;
+const liveWaitingFor = () => !!liveState && liveState.status !== 'final';
+// How far behind the newest data to play: the updates come further apart as a game goes on (each converts the whole
+// game so far: 5 s apart early, up to about 10 at the end of a 15-minute game), so it follows the longest of the last
+// few gaps. Following live, playback runs at 90% or 110% for a while to settle there, rather than freezing at the end
+// of the data or staying too far behind.
+function liveDelay() {
+  const gaps = (liveState && liveState.gaps) || [];
+  const longest = gaps.length ? Math.max(...gaps) : 1000 * ((liveState && liveState.interval) || 5);
+  return Math.min(30000, Math.max(9000, 1.4 * longest + 2000));
+}
+function liveRate(end) {
+  if (!liveState || !liveState.following || liveState.status === 'final' || LAYOUT === 'stats') return 1;
+  const behind = end - now, want = liveDelay();
+  return behind < want - 1000 ? 0.9 : behind > want + 4000 ? 1.1 : 1;
+}
+function liveArrived() {
+  const at = performance.now();
+  if (liveState.arrivedAt) (liveState.gaps = liveState.gaps || []).push(at - liveState.arrivedAt);
+  if (liveState.gaps && liveState.gaps.length > 6) liveState.gaps.shift();
+  liveState.arrivedAt = at;
+}
+async function liveGet(path, zipped) {
+  const r = await fetch(path, { cache: 'no-store' });
+  if (!r.ok) throw new Error(path + ' ' + r.status);
+  if (zipped && window.NHL94_LIVE_UNZIP) return JSON.parse(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text());
+  return r.json();
+}
+function livePatch(obj, patch) {
+  for (const [k, p] of Object.entries(patch)) {
+    if ('s' in p) obj[k] = p.s;
+    else if ('x' in p) delete obj[k];
+    else if ('p' in p) obj[k] = obj[k].slice(0, p.p).concat(p.v);
+    else if ('d' in p) livePatch(obj[k] || (obj[k] = {}), p.d);
+  }
+}
+function liveShowButton() {
+  const b = $('liveBtn');
+  b.hidden = !liveState;
+  if (!liveState || !match) return;
+  const edge = match.t[match.t.length - 1];
+  if (liveState.status === 'final') { b.className = 'final'; b.textContent = 'Final'; b.title = 'The game is over: this is the whole game, as in a finished game file'; return; }
+  // Only the viewer's own pause or seek stops following (seekTo, the Play button); just falling behind doesn't (a tab in
+  // the background stops playing): the next update catches a following page up.
+  b.className = liveState.following ? '' : 'behind';
+  b.innerHTML = liveState.following ? '&#9679; LIVE' : 'Go live';
+}
+function liveReload(m) {
+  // load() again with the bigger match, keeping where the viewer is and what it shows
+  const keep = { now, playing, who: $('overlayWho').value, hl: !$('hlPanel').hidden, follow: liveState.following };
+  setPlaying(false);
+  const started = performance.now();
+  liveReloading = true;
+  try { load(m); } finally { liveReloading = false; }
+  liveState.reloadMs = Math.round(performance.now() - started);
+  now = Math.min(m.t[m.t.length - 1], Math.max(m.t[0], keep.now));
+  const who = $('overlayWho');
+  if ([...who.options].some(o => o.value === keep.who)) who.value = overlayWho = keep.who;
+  if (keep.hl) $('hlOpen').click();
+  const edge = m.t[m.t.length - 1];
+  if (keep.follow && LAYOUT !== 'stats' && edge - now > liveDelay() + 8000) now = edge - liveDelay();  // fell well behind (a tab in the background): catch up
+  liveState.following = keep.follow;
+  lastSoundFrame = frameAt(now);
+  draw();
+  console.log('live: update ' + liveState.seq + ' applied in ' + liveState.reloadMs + ' ms; ' + ((edge - now) / 1000).toFixed(1) + ' s behind the newest data, aiming for ' + (liveDelay() / 1000).toFixed(1));
+  if (keep.playing || (LAYOUT !== 'stats' && keep.follow && liveState.status !== 'final')) setPlaying(true);
+  liveShowButton();
+}
+async function livePoll() {
+  try {
+    const man = await liveGet(window.NHL94_LIVE + '?' + Date.now());
+    if (!man.game || !(man.seq >= 1)) {
+      if (!match) { $('dropTitle').style.display = 'block'; $('dropTitle').textContent = 'Waiting for the game to start\u2026 (this page starts by itself)'; }
+    } else if (!liveState || man.game !== liveState.game || man.seq < liveState.seq) {
+      // Joining (or a new game): the newest snapshot, then the changes since.
+      if (!match) $('dropTitle').textContent = 'Joining the game\u2026';
+      const base = 'data/' + man.game + '/';
+      const m = await liveGet(base + 's' + man.snapshot + '.json', true);
+      for (let n = man.snapshot + 1; n <= man.seq; n++) livePatch(m, await liveGet(base + 'c' + n + '.json', true));
+      liveState = { game: man.game, seq: man.seq, status: man.status, interval: man.interval, following: true };
+      const started = performance.now();
+      load(m);
+      console.log('live: joined at update ' + man.seq + ', loaded in ' + Math.round(performance.now() - started) + ' ms');
+      now = LAYOUT === 'stats' ? now : (man.status === 'final' ? m.t[0] : Math.max(m.t[0], m.t[m.t.length - 1] - liveDelay()));
+      lastSoundFrame = frameAt(now);
+      draw();
+      if (LAYOUT !== 'stats' && man.status !== 'final') setPlaying(true);
+      liveShowButton();
+    } else if (man.seq > liveState.seq) {
+      const base = 'data/' + man.game + '/', patches = [];
+      let fresh = null;
+      if (man.snapshot > liveState.seq) fresh = await liveGet(base + 's' + man.snapshot + '.json', true);
+      for (let n = (fresh ? man.snapshot : liveState.seq) + 1; n <= man.seq; n++) patches.push(await liveGet(base + 'c' + n + '.json', true));
+      const m = fresh || match;
+      for (const p of patches) livePatch(m, p);
+      liveState.seq = man.seq; liveState.status = man.status; liveState.interval = man.interval;
+      liveArrived();
+      liveReload(m);
+    } else if (man.status !== liveState.status) {
+      liveState.status = man.status;
+      liveShowButton();
+    }
+  } catch (e) {
+    console.warn('live:', e);
+    if (!match) $('dropTitle').textContent = 'Waiting for the broadcast\u2026';
+  }
+  setTimeout(livePoll, liveState && liveState.status === 'final' ? 30000 : 2000);
+}
+$('liveBtn').addEventListener('click', () => {
+  if (!liveState || !match || liveState.status === 'final') return;
+  liveState.following = true;
+  now = Math.max(match.t[0], match.t[match.t.length - 1] - liveDelay());
+  lastSoundFrame = frameAt(now);
+  draw();
+  setPlaying(true);
+  liveShowButton();
+});
+$('seek').addEventListener('input', () => { if (liveState) liveShowButton(); });
+document.addEventListener('visibilitychange', () => {  // back to a tab that was in the background: straight back to live
+  if (document.hidden || !liveState || !liveState.following || !match || LAYOUT === 'stats' || liveState.status === 'final') return;
+  const edge = match.t[match.t.length - 1];
+  if (edge - now > liveDelay() + 3000) { now = edge - liveDelay(); lastSoundFrame = frameAt(now); draw(); }
+});
+
 // viewer.html?match=NAME loads matches/NAME.js directly; &t=SECONDS starts at that point.
 const named = new URLSearchParams(location.search).get('match');
-if (window.NHL94_PACKED) {
+if (window.NHL94_LIVE) {
+  $('backGames').hidden = true;
+  for (const el of document.querySelectorAll('#drop .pick-note, #drop .packed-note')) el.style.display = 'none';
+  $('dropTitle').style.display = 'block';
+  $('dropTitle').textContent = 'Connecting to the broadcast…';
+  livePoll();
+} else if (window.NHL94_PACKED) {
   // A saved game file: unpack the game (and sprites) it carries.
   for (const el of document.querySelectorAll('#drop .packed-note')) el.style.display = 'none';
   $('dropTitle').style.display = 'block';
