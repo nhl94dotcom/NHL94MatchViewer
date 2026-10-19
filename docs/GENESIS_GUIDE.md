@@ -483,7 +483,9 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
   loose for a moment, and sometimes trickles in. The game holds the puck at his shoulder, which for the top net's goalie
   sits behind him, at the net. It needs him to catch the puck in that pose, standing near his goal line and roughly
   centred; the net then knocks the puck off him and it can slide in (seen in a recorded game: a pass shot his stick
-  popped up). Usually the net bounces it back out and he picks it up again. Shoot high at the top net and follow it in.
+  popped up). Once the net knocks it off him it keeps sliding the way it was being dragged, into the net: the game's
+  bounce for that case never works. It's rare because he must catch it in that pose near his line. Shoot high at the
+  top net and follow it in.
   It can't happen at the bottom net.
 
 ### 12.2 Playing goal yourself

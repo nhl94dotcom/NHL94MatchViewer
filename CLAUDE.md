@@ -1947,7 +1947,9 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Net (checkgoal): crossbar at height 13 (higher passes over), a puck crossing the line inside the mouth less one unit
   is a goal, exactly at the post or at crossbar height a deflection (counted as a shot on goal: ChkShotStat; the post
   sound; random velocity up to $1000 each way, away from the net); back and sides bounce like the boards; a puck
-  carried into the carrier's own net bounces off (pfgoal on the puck), so only a loose puck can be an own goal.
+  carried into the carrier's own net is stripped (pfgoal on the puck, collflag undoes that frame's move) but NOT bounced:
+  wallcoll's "moving into the surface" test reads a puck moving into the mouth as moving away (2026-10-19, frame by frame
+  on the ANA-ATL shoulder-save goal, frames 1671-1676), so it slides on in; only entries from behind bounce.
 - What each rating does (Genesis; every read of the working ratings, by routine):
   Weight (record $67, rating x 8): acceleration (playeracc: (64 - weight / 4 + Agl + 2) / 2, i.e. each Weight point
   costs as much as 2 Agility points), the check knockdown sum (CCStart, with the person overflow), momentum in

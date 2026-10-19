@@ -589,10 +589,16 @@ the user's 2v2 test game, P3 4:00, which the user took for a bump): Rucchin's fl
 was knocked up by his stick (no-touch 8), he caught it in a high save (ghighl, frame 667, hold point 14 behind him), the
 puck was pulled back to y 260, the net's front took it off him (no-touch 8 again) and it slid in. No skater came within
 17 of it after the pass. The puck isn't sent anywhere new when it's stripped: it keeps the velocity the hold-point pull
-gave it, which points into the net. `checkgoal` means to bounce a puck the defending team carries into its own net off
-the net's front (it marks the puck `pfgoal` and sends it to `wallcoll`), but in this goal the velocity barely changed on
-the strip frame and it crossed the line; why that bounce didn't happen here isn't worked out (17). In the 7 earlier
-top-net shoulder-save losses in the recordings, none went in.
+gave it, which points into the net. **Why it isn't bounced back out** (frame by frame from the recording, then the
+code): on the strip frame (1671) the puck, carried to y 260.7, entered the net's box; `checkgoal` cleared the carrier
+(his no-touch 8), marked the puck `pfgoal` ("in its own team's net") and set the collision flag, which put the puck back
+to its previous position (y 260.0). It then sends the puck to `wallcoll` to bounce off the net's front. But `wallcoll`
+first asks whether the puck is moving into the surface, and with the normal `checkgoal` sets up there, a puck moving
+into the goal mouth reads as moving away from it, so the bounce is skipped and the velocity (1,798 / 1,155) is kept. The
+loose puck slid on, was in the box again at frame 1675 (the mark cleared) and crossed the line at frame 1676. The same
+sign holds at the bottom net: **the net never bounces a puck moving into the mouth**, only one entering from behind. So
+a puck its own team carries into its net is only held back one frame and goes in if it keeps moving (5.9, 13.3). In the
+7 earlier top-net shoulder-save losses in the recordings, the puck never reached the net.
 
 ### 5.4 Goalie whistles
 
@@ -1531,7 +1537,7 @@ All **Confirmed** where numbers are given.
   234 on the SNES (8.1%). With the shot aim points at 16 from the middle, a Genesis shot that drifts outward has 4 units
   of goal left and then only 1 of post before it's wide.
 - The back and sides of the net bounce the puck like the boards.
-- **A puck carried into your own net bounces off.** Only a loose puck can become an own goal. **Code**
+- **A puck carried into your own net is stripped, not bounced.** The net takes it off the carrier and undoes that frame's movement, but the bounce it means to give never fires for a puck moving into the mouth (5.3), so it slides on in: the shoulder-save bobble goal and Neely's own goal (2026-10-17_2246 DAL-BOS) both went in this way. **Confirmed**
 
 ### 13.4 A puck still moving after a whistle
 
@@ -1718,9 +1724,6 @@ C-then-B check, and the weight bug for computer checkers too.
 - **Saved shots the game didn't count:** explained for most (4.7: the goalie's stick, the clock, wide shots, screens);
   about 15 counted saves look like stick deflections in the samples too, which the samples can't settle.
 - **15 bobbles** with no explanation yet: maybe the puck reaching the body before the stick.
-- **The net's bounce on a stripped puck:** `checkgoal` should bounce a puck the defending team carries into its own net
-  off the net's front, but in the recorded shoulder-save bobble goal (5.3) the puck kept its velocity and went in. Which
-  entry (front, side) or timing lets it through isn't known; another recorded case would show it.
 - **The penalty shot that ends immediately after the transition:** unexplained. The helper now records the
   penalty-shot flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence
   will show which ending fires.
