@@ -349,6 +349,9 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   reaching the goalie, which may explain much of the community's finding that the up direction has about 10% more
   recorded shots on goal. (In these 13 games the middle-height shots went the other way, 16% uncounted going up
   against 7% going down, unexplained, so the recordings alone don't show the 10%.)
+- **By direction, in the recordings:** of shots and one-timers that reached the goalie, 126 of 148 were counted going
+  up (85%) and 143 of 157 going down (91%), the opposite of the leagues' 10% more going up, and with only 17 stick
+  knock-aways (9 up, 8 down) too few to show the aim effect above. About 100 whole games would be needed.
 - **Every uncounted save, one by one** (`analysis/uncounted_study.py`, 34 in the Genesis recordings, pass shots
   left out). How each one ended, against the counted ones:
 
@@ -538,7 +541,11 @@ saves facing down (-10, +15) and (+10, +14), facing up (+9, +14) and (-9, +14)).
 the user's 2v2 test game, P3 4:00, which the user took for a bump): Rucchin's flat pass shot at the standing top goalie
 was knocked up by his stick (no-touch 8), he caught it in a high save (ghighl, frame 667, hold point 14 behind him), the
 puck was pulled back to y 260, the net's front took it off him (no-touch 8 again) and it slid in. No skater came within
-17 of it after the pass.
+17 of it after the pass. The puck isn't sent anywhere new when it's stripped: it keeps the velocity the hold-point pull
+gave it, which points into the net. `checkgoal` means to bounce a puck the defending team carries into its own net off
+the net's front (it marks the puck `pfgoal` and sends it to `wallcoll`), but in this goal the velocity barely changed on
+the strip frame and it crossed the line; why that bounce didn't happen here isn't worked out (17). In the 7 earlier
+top-net shoulder-save losses in the recordings, none went in.
 
 ### 5.4 Goalie whistles
 
@@ -623,6 +630,19 @@ where the frames fall. Pucks in the air met his body in front and were saved (th
 the goalie with the puck above the ice were saved and held"). The bottom net's butterfly (frame 472) has the same band;
 the user's period 2 pass shots at it all came off the stick lifted (heights 8-16, see 6.1: a pass shot's lift is random),
 which is why that period gave none.
+
+**Speed helps.** The game checks the puck's position once a frame, so a fast puck takes big steps (its speed / 4096
+units a frame) and more often jumps the thin strip of body (about 2 units) at the front edge of the blind band: a puck at
+13,000 (3 a frame) lands on it about 2 times in 3, one at 22,700 (5.5) about 1 in 3, a full slapshot at 28,000 (7)
+about 1 in 4. A slow puck that comes within 8 of the blade is also simply caught (under 13,000) rather than knocked
+away. Once through, the bounce off the back of him is slow whatever the puck's speed.
+
+**To try for it:** a flat puck is the key, and a pass shot's lift is random. A slapshot with Down held aims at the middle
+at ice level with no lift, and within about 200 units goes exactly there (Shot Accuracy + 1) / (Shot Accuracy + 16) of
+the time, otherwise scattering only upward: probably the more reliable flat puck (not yet tested). Hard (full wind-up;
+a pass shot taken while skating at the net gets the skater's speed added), straight up or down the ice at the goalie's
+middle, dead centre or away from the side his stick goes to in the butterfly, after he has set (a goalie committing while
+the puck is still carried pad-stacks instead, with no band). Expect odds, not a sure thing: 2 in 8 in the test.
 
 Also from the code: **a goalie you control who goes out of view** (more than $74 across or $64 up or down from the
 camera's centre) is moved by the computer's routine, save moves included, until he's back on screen
@@ -1628,6 +1648,13 @@ C-then-B check, and the weight bug for computer checkers too.
 | Wind-up freeze | Within 60 of the goal line he pad-stacks the moment a shot is wound up (when the clock's seconds left mod 4 is 0 or 1), sliding away from the shooter's side, frozen 0.7 s |
 | C in goal | A save move, not a bigger goalie: fewer rebounds in close, a pad stack before the shot (reach 18), frozen 0.6-0.7 s |
 | Goalie pushed in | The net strips a held puck at the goal line; a nudge then counts |
+| Shoulder-save bobble | Top net only: the shoulder save's hold point is behind him, the puck is dragged to the net's front, stripped, can go in |
+| Through the legs | Butterfly / kick save move the stick aside: a flat puck through his middle touches nothing, hits him from behind, goes in |
+| Stick blind ring | A low puck 8-14 from a goalie's blade gets no stick and no body test that frame |
+| Save moves | Add no reach (pad stack aside): the puck slips past the outstretched pad |
+| Rocket pass | A receiver skating toward the passer 50-70 away: the meeting time rounds down, the pass goes up to twice as fast |
+| Pickups | Only players whose body is within 22 up / down of the puck are tested; a stick held out ahead can sit on it untouched |
+| Pass lift | Passes to a teammate rise with their flight time; pass shots get a random lift (flat to about 21) |
 | Flip | Fixed spot by facing; can be flipped over the glass |
 | Weak shooters | No full slapshot (Shot Power < 20) |
 | Awareness slip | Offensive wingers / centre use Defensive Awareness |
@@ -1643,6 +1670,9 @@ C-then-B check, and the weight bug for computer checkers too.
 - **Saved shots the game didn't count:** explained for most (4.7: the goalie's stick, the clock, wide shots, screens);
   about 15 counted saves look like stick deflections in the samples too, which the samples can't settle.
 - **15 bobbles** with no explanation yet: maybe the puck reaching the body before the stick.
+- **The net's bounce on a stripped puck:** `checkgoal` should bounce a puck the defending team carries into its own net
+  off the net's front, but in the recorded shoulder-save bobble goal (5.3) the puck kept its velocity and went in. Which
+  entry (front, side) or timing lets it through isn't known; another recorded case would show it.
 - **The penalty shot that ends immediately after the transition:** unexplained. The helper now records the
   penalty-shot flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence
   will show which ending fires.

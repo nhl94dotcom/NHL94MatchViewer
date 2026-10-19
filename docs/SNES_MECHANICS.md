@@ -347,6 +347,12 @@ Genesis:
 - The glove and stick save ratings are looked up and then overwritten: unused.
 - **Confirmed:** no goal passed within 12.6 units of the goalie's centre (26 goals); saves a median 12.9.
 
+
+**No "through the legs" or shoulder-save bobble here** (the Genesis ones are in GENESIS_MECHANICS 5.3 and 5.5): the SNES
+goalie's save frames add hit areas 12-28 units out to the side on top of his body box, rather than moving a blind ring
+over his middle, and checkgoal returns at once when the puck's carrier is a goalie, so a held puck can't be stripped at
+his net.
+
 ### 5.2 Save moves
 
 At a rethink with the puck going to cross within 24 of the middle in under 19 frames, he picks a move
@@ -478,7 +484,9 @@ mid-height. Percent that go in (`analysis/goalie_study.py longsnes`):
 - **A pass to a teammate gets its speed from the distance** to where he will be (`dopass`): 64 (x 256 = 16,384) up to
   about 96 units (32 feet), two-thirds of the distance in between, 80 (20,480) from 120 units (40 feet) on. **Passing
   only makes it steadier**: a random +/-(16 - Passing) x 256 is added, about +/-4,000 for a poor passer, almost nothing
-  for a good one. A pass with no target leaves at 144 + 4 x Passing. **Code**
+  for a good one. A pass with no target leaves at 144 + 4 x Passing. **Code** Because the speed comes from the
+  distance, the SNES has no "rocket pass": on the Genesis the speed comes from a meeting time rounded down to an eighth
+  of a second, which can double it (GENESIS_MECHANICS 6.1).
 - **The direction** (`setpassmode`, `passmode`): pressing B sets it to the way the passer faces. If the d-pad is held
   (or pressed while B is down) the pass goes **at once** in that direction; otherwise it goes when B is released, the
   way he faces. A goalie behind his net is the exception (no direction set).

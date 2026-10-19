@@ -418,7 +418,10 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
   goal line, and any nudge then puts it in. (Not on the SNES.)
 - **The top net's shoulder-save bobble:** at the top of the screen, a high shot the goalie takes on the shoulder can pop
   loose for a moment, and sometimes trickles in. The game holds the puck at his shoulder, which for the top net's goalie
-  sits behind him, at the net. Shoot high at the top net and follow it in. It can't happen at the bottom net.
+  sits behind him, at the net. It needs him to catch the puck in that pose, standing near his goal line and roughly
+  centred; the net then knocks the puck off him and it can slide in (seen in a recorded game: a pass shot his stick
+  popped up). Usually the net bounces it back out and he picks it up again. Shoot high at the top net and follow it in.
+  It can't happen at the bottom net.
 
 ### 12.2 Playing goal yourself
 
@@ -535,9 +538,13 @@ Puck Control. Ignore Overall, Endurance, and the goalie's glove and stick column
 1. Faceoffs: mash B, hold the d-pad toward your target, back to the defence is safest.
 2. Shoot from inside the zone, aim for a corner away from the goalie; follow up rebounds to the side they come off.
 3. One-timers: B to pass, C while it travels. The best way to score.
-4. Take your goalie when a shot is coming: he gets the full reach. C only as it arrives, never early.
-5. Check heavier players with lighter ones, and along the boards; don't hit the same man twice running.
-6. Pokes only from within 10 feet; hooks rarely.
-7. Ref's arm up for the other team: you can't be called, and your shots go exactly where you aim.
-8. On a breakaway keep skating at the net; make sure no teammate is ahead of you at the blue line.
-9. Flip by facing, not the d-pad.
+4. Take your goalie when a shot is coming: he gets the full reach. C only as it arrives, never early, and not at all
+   for a hard puck along the ice straight at him (the butterfly opens a gap through his legs).
+5. Rocket passes: a pass to a teammate skating toward you from 50-70 away can come out twice as fast.
+6. Going for the five-hole: a hard, flat puck straight at a goalie in the butterfly; a slapshot with Down held is the
+   flattest. Odds, not a sure thing.
+7. Check heavier players with lighter ones, and along the boards; don't hit the same man twice running.
+8. Pokes only from within 10 feet; hooks rarely.
+9. Ref's arm up for the other team: you can't be called, and your shots go exactly where you aim.
+10. On a breakaway keep skating at the net; make sure no teammate is ahead of you at the blue line.
+11. Flip by facing, not the d-pad.
