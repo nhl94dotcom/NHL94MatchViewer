@@ -470,7 +470,7 @@ moves the view instead). Tap a player for his card and tap anywhere else to put 
 <p>The rink is on top; below it, tabs switch between the lineups, the team stats and the scoring summary. The controls
 stay at the bottom.</p>
 <h3>Watching live</h3>
-<p>A live link shows a game while it's being played, about 10 seconds behind. Everything works as in a finished game:
+<p>A live link shows a game while it's being played, about 6 to 8 seconds behind. Everything works as in a finished game:
 stats, maps, highlights, clips. The red <b>&#9679; LIVE</b> button beside the clock means you're following the play.
 Go back to watch something again and it turns into <b>Go live</b>: click it to catch up. When the game ends the button
 says <b>Final</b> and the page holds the whole game. The page starts by itself when the next game begins.</p>
@@ -5586,7 +5586,7 @@ const liveWaitingFor = () => !!liveState && liveState.status !== 'final';
 function liveDelay() {
   const gaps = (liveState && liveState.gaps) || [];
   const longest = gaps.length ? Math.max(...gaps) : 1000 * ((liveState && liveState.interval) || 5);
-  return Math.min(30000, Math.max(9000, 1.4 * longest + 2000));
+  return Math.min(30000, Math.max(6000, 1.4 * longest + 2000));
 }
 function liveRate(end) {
   if (!liveState || !liveState.following || liveState.status === 'final' || LAYOUT === 'stats') return 1;

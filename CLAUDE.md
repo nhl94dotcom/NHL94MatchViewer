@@ -1202,9 +1202,17 @@ off: the flag never sets; on: re-entry with a teammate 10+ inside flags the team
 The user asked for a URL others can watch live, "on par with clicking Play on a full match file". `tools/live_broadcast.py`
 + the helper's `--broadcast <channel> --bucket <bucket>` ("NHL94 Helper - Live.bat", user-specific, not in git):
 - While recording, the helper sync-flushes fast.bin.gz every 2 s (LIVE_FLUSH_S); the broadcaster thread every
-  INTERVAL_S 5 s decompresses what's there (zlib, whole records only), runs the full converter on it
-  (captures/_live_work, `--out captures/_live_work/out`, so nothing appears in matches/ or the games list; about 8 s
-  at the end of a 15-minute game) and uploads to s3://<bucket>/live/<channel>/: data/<game>/s<n>.json (whole match,
+  INTERVAL_S 3 s (2026-10-19; was 5 with a full conversion of about 8 s at a game's end) asks its worker for an update:
+  `export_match.py <recording> --live --name --out captures/_live_work/out` (in the exe `--export --live ...`), one
+  process per game at below-normal priority, stdin "update" -> stdout "ok n" / "wait" / "error ...". The worker keeps a
+  GrowingCapture (decompressobj over only the bytes fast.bin.gz / full.bin.gz grew by) and the system's MatchReader
+  (genesis / snes: read_match split into feed(cap, final, count, checks_known) and result(); feed holds back the last
+  0.5 s, which the rollback test needs), then runs export_match.analyse (everything after read_match) and writes the
+  match. xg.py / xg_snes.py cache each shot's result by all its inputs. Checked: all 28 recordings convert byte for
+  byte as before; feeding in 300-sample pieces equals one go (two Genesis, two SNES); the 5x test of 2219 WPG-BOS: 37
+  updates, 0.12-0.5 s each (max 1.7), the last one identical to the final conversion; SNES 1934 BOS-PIT: 42 updates, up
+  to 1.36 s at the end (result()'s read_penalties and goal scan run over the whole game), the live arrays a prefix of the
+  final ones (the last 0.5 s held back). Then it uploads to s3://<bucket>/live/<channel>/: data/<game>/s<n>.json (whole match,
   every SNAPSHOT_EVERY 6 updates) or c<n>.json (a diff: per key {s} / {p, v} common-prefix tail / {d} / {x}),
   gzip with Content-Encoding, then live.json (no-cache manifest: status waiting / live / final, game, seq, snapshot).
   At start it uploads index.html (viewer.html with window.NHL94_LIVE = 'live.json'), the rink pictures / js and bench
@@ -1212,7 +1220,7 @@ The user asked for a URL others can watch live, "on par with clicking Play on a 
   finished match goes up as the final snapshot. Uploads: boto3, else the AWS CLI (`aws s3 cp`).
 - viewer.html live mode (window.NHL94_LIVE): polls live.json every 2 s, joins from the newest snapshot plus later
   diffs, applies new diffs and re-runs load() keeping the moment, the map's who and the highlights panel (30-40 ms a
-  reload for a 15-minute game in Edge); plays liveDelay() (max 9 s, 2.2 x the interval) behind the newest data and holds
+  reload for a 15-minute game in Edge); plays liveDelay() (at least 6 s, 1.4 x the longest gap between updates + 2 s) behind the newest data and holds
   at the end instead of stopping; footer LIVE / Go live / Final button; the stats tab polls too; a game file saved
   from the live page has the live line removed. Help: "Watching live".
 - Tested: `python tools/live_broadcast.py --test <capture> <folder> --speed N` (a recorded game fed in at N x into a

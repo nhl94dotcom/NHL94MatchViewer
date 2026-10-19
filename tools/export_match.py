@@ -6,8 +6,10 @@ import bisect
 import gzip
 import json
 import math
+import os
 import struct
 import sys
+import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -1800,21 +1802,8 @@ def find_goals(match, rosters):
     return sorted(goals, key=lambda g: g["f"])
 
 
-def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("capture", type=Path, help="folder containing fast.bin or ram.bin")
-    ap.add_argument("--name", help="match name (default: the capture folder's name)")
-    ap.add_argument("--rom", type=Path, help="the ROM that was being played (default: found from the recording, else nhl94.bin)")
-    ap.add_argument("--home", help="home team name (default: read from the ROM)")
-    ap.add_argument("--away", help="away team name (default: read from the ROM)")
-    ap.add_argument("--out", type=Path, default=ROOT / "matches")
-    args = ap.parse_args(argv)
-
-    system = systems.of_capture(args.capture)
-    cap = Capture(args.capture, system)
-    rom_path, rom_note = (args.rom, "given") if args.rom else system.find_rom(args.capture)
-    name = args.name or args.capture.resolve().name
-    match = system.read_match(cap, rom_path, name, args.home, args.away)
+def analyse(match, system, cap, rom_path):
+    """Everything worked out from the samples (goals, shots, passes, ... expected goals), added to the match."""
     match["system"] = system.NAME
     if "stats" in match:
         steady_stats(match)
@@ -1909,6 +1898,100 @@ def main(argv=None):
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 2000 for sh in match.get("shotList", [])):
             goal["kinds"].append("EA Special")
 
+
+
+class GrowingCapture(Capture):
+    """A recording still being written: fast.bin.gz (and full.bin.gz) as the helper sync-flushes them. grow() reads
+    what has been added since the last call, decompressing only that."""
+
+    def __init__(self, folder, system):
+        self.system, self.folder = system, Path(folder)
+        self.swap = system.BYTE_SWAP
+        self.blocks = json.loads((self.folder / "capture.json").read_text())["blocks"]
+        self.sample = 8 + sum(length for _, length in self.blocks)
+        self.full_size = 8 + system.RAM_SIZE
+        self.data, self.full, self.full_ms, self.count = bytearray(), bytearray(), [], 0
+        self._streams = {name: [zlib.decompressobj(31), 0] for name in ("fast.bin.gz", "full.bin.gz")}
+
+    def _read(self, name, into):
+        path = self.folder / name
+        if not path.exists():
+            return
+        stream = self._streams[name]
+        with path.open("rb") as f:
+            f.seek(stream[1])
+            new = f.read()
+        stream[1] += len(new)
+        try:
+            into += stream[0].decompress(new)
+        except zlib.error:
+            pass
+
+    def grow(self):
+        self._read("fast.bin.gz", self.data)
+        self.count = len(self.data) // self.sample
+        before = len(self.full_ms)
+        self._read("full.bin.gz", self.full)
+        self.full_ms += [struct.unpack_from("<q", self.full, j * self.full_size)[0]
+                         for j in range(before, len(self.full) // self.full_size)]
+
+
+def live_worker(args):
+    """The live broadcast's converter (tools/live_broadcast.py starts it at low priority for each game): it keeps the
+    recording read so far and the system's MatchReader, and on each line 'update' on stdin reads only what the
+    recording has grown by, analyses the game so far and writes it to <out>/<name>.js, then answers 'ok <samples>'
+    (or 'wait' with too little yet, 'error <text>'). Reading every sample again each time cost about 8 s a game's end;
+    this way an update costs the new samples plus the analysis."""
+    system = systems.of_capture(args.capture)
+    rom_path = args.rom or system.find_rom(args.capture)[0]
+    name = args.name or args.capture.resolve().name
+    cap = GrowingCapture(args.capture, system)
+    reader = None
+    args.out.mkdir(parents=True, exist_ok=True)
+    target = args.out / f"{name}.js"
+    for line in sys.stdin:
+        command = line.strip()
+        if command == "quit":
+            break
+        if command != "update":
+            continue
+        try:
+            cap.grow()
+            if cap.count < 120:  # under a couple of seconds of play
+                print("wait", flush=True)
+                continue
+            if reader is None:
+                reader = system.MatchReader(cap) if system.NAME == "genesis" else system.MatchReader(cap, rom_path)
+            reader.feed(cap, final=False)
+            match = reader.result(cap, rom_path, name)
+            analyse(match, system, cap, rom_path)
+            temp = target.with_suffix(".tmp")
+            temp.write_text("window.NHL94_MATCH = " + json.dumps(match, separators=(",", ":")) + ";\n", encoding="utf-8")
+            os.replace(temp, target)
+            print(f"ok {cap.count}", flush=True)
+        except Exception as e:  # report and carry on with the next update
+            print("error " + f"{type(e).__name__}: {e}".replace("\n", " ")[:300], flush=True)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("capture", type=Path, help="folder containing fast.bin or ram.bin")
+    ap.add_argument("--name", help="match name (default: the capture folder's name)")
+    ap.add_argument("--rom", type=Path, help="the ROM that was being played (default: found from the recording, else nhl94.bin)")
+    ap.add_argument("--home", help="home team name (default: read from the ROM)")
+    ap.add_argument("--away", help="away team name (default: read from the ROM)")
+    ap.add_argument("--out", type=Path, default=ROOT / "matches")
+    ap.add_argument("--live", action="store_true", help="the live broadcast's worker: on each line 'update' on stdin, read what the recording has grown by and write the match so far (see live_worker)")
+    args = ap.parse_args(argv)
+    if args.live:
+        return live_worker(args)
+
+    system = systems.of_capture(args.capture)
+    cap = Capture(args.capture, system)
+    rom_path, rom_note = (args.rom, "given") if args.rom else system.find_rom(args.capture)
+    name = args.name or args.capture.resolve().name
+    match = system.read_match(cap, rom_path, name, args.home, args.away)
+    analyse(match, system, cap, rom_path)
     args.out.mkdir(parents=True, exist_ok=True)
     target = args.out / f"{name}.js"
     target.write_text("window.NHL94_MATCH = " + json.dumps(match, separators=(",", ":")) + ";\n", encoding="utf-8")

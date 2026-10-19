@@ -451,58 +451,102 @@ def add_hot_cold(cap, match):
             player["hcs"] = values
 
 
-def read_match(cap, rom_path, name, home=None, away=None):
-    """The match file's contents from samples of SNES work RAM (cap: anything with count, ms(i), word(i, address),
-    byte(i, address): a recording, or save states for a still picture). Positions, the puck, who is controlled,
-    roster places, positions, facing, animations and their sprite frames, clock, period, score and shots. Not yet:
-    who has the puck (owner -1), the puck's height, per-player stats, penalties."""
-    import zlib
-    from .common import DIGITS, PLAYERS
-    rom = strip_header(rom_path.read_bytes())
-    teams = read_teams(rom_path)
-    signed = lambda i, a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(cap.word(i, a))
-    match = {"version": 21, "name": name, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
-             "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
-             "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "aim": [], "delayed": [], "penalties": [], "pad": [], "pad2": [],
-             "padLabels": PAD_LABELS, "work": []}  # work: [frame, object, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy]
-    last_work = [None] * PLAYERS
-    facing, roster, role, anim, frame, mirror, puck_frame, spas = [], [], [], [], [], [], [], set()
-    from .common import STAT_FIELDS
-    stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
-    last_vectors, last_stat_ms, last_post = None, -10_000, -10_000
-    ice = [0] * 52  # game seconds on the ice, by roster place (Home's 26, then Away's)
-    # Is the per-player checks array real (NHL94_Classic)? Its totals must equal the teams' checks where the game
-    # ends (the sample with the most goals and shots, before the menus clear them).
-    totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
-              + sum(cap.word(i, a) + cap.word(i, a + 2) for a in SHOTS_BY_PERIOD) for i in range(cap.count)]
-    end = max(range(cap.count), key=lambda i: (totals[i], i)) if cap.count else 0
-    checks_known = all(sum(cap.byte(end, PLAYER_CHECKS + 26 * side + j) for j in range(26))
-                       == cap.word(end, STAT_ADDRESSES["checks"] + 2 * side) for side in (0, 1))
-    # The game ends where its numbers last stood: a research recording runs on into the menus, where the score and
-    # the stats are cleared.
-    totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
-              + sum(cap.word(i, a) + cap.word(i, a + 2) for a in SHOTS_BY_PERIOD) for i in range(cap.count)]
-    peak = max(totals) if totals else 0
-    count = max(i for i, v in enumerate(totals) if v == peak) + 1 if peak else cap.count
-    # Paused and replay samples are left out (the research recorder keeps them), and the timeline closes over them,
-    # as the helper records the Genesis game: only live play.
-    # Netplay's rollback (and RetroArch's run-ahead) runs the game a few frames ahead on guessed input, then rewinds
-    # and replays them: a read made while it was ahead shows everyone a few frames on, and the next one back again (the
-    # user saw skaters jump and jump back in 2026-10-16_1540_CHI-TOR, about 240 times a game). The frame counter
-    # (FRAME_COUNTER) going back a few frames within the next half second, or showing the same frame again (replayed
-    # with the real input), says that sample was ahead of time: it is left out. (Only a few frames: the counter also
-    # jumps or restarts between screens.)
-    frames = [cap.word(i, FRAME_COUNTER) for i in range(count)]
-    ahead = {i for i in range(count) if any((frames[i] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
-                                            for j in range(i + 1, min(count, i + 32)) if cap.ms(j) - cap.ms(i) <= 500)}
-    paused = {i for i in range(count) if cap.word(i, GAME_FLAGS2) & PAUSED}
-    cap = LivePlay(cap, [i for i in range(count) if i not in paused and i not in ahead], paused)
-    count = cap.count
-    whole = getattr(cap, "raw", None)
-    for i in range(count):
+class _Kept:
+    """The live-play samples read so far (as LivePlay, but keep and times grow as the reader goes)."""
+
+    def __init__(self, cap, keep, times):
+        self.cap, self.keep, self.times = cap, keep, times
+
+    @property
+    def count(self):
+        return len(self.keep)
+
+    def ms(self, i):
+        return self.times[i]
+
+    def word(self, i, address):
+        return self.cap.word(self.keep[i], address)
+
+    def byte(self, i, address):
+        return self.cap.byte(self.keep[i], address)
+
+    def raw(self, i, address, length):
+        return self.cap.raw(self.keep[i], address, length) if hasattr(self.cap, "raw") else None
+
+
+class MatchReader:
+    """read_match in pieces: feed() reads samples as a recording grows (the live broadcast gives it the new ones only);
+    result() makes the match file's contents from what has been read so far (copies: the reader goes on)."""
+
+    def __init__(self, cap, rom_path):
+        from .common import PLAYERS, STAT_FIELDS
+        self.rom = strip_header(rom_path.read_bytes())
+        self.teams = read_teams(rom_path)
+        self.match = {"version": 21, "name": None, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
+                      "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
+                      "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "aim": [], "delayed": [], "penalties": [],
+                      "pad": [], "pad2": [], "padLabels": PAD_LABELS, "work": []}
+        # work: [frame, object, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy]
+        self.last_work = [None] * PLAYERS
+        self.facing, self.roster, self.role, self.anim, self.frame, self.mirror, self.puck_frame, self.spas = [], [], [], [], [], [], [], set()
+        self.stats = {"f": [], "home": [], "away": [], "n": len(STAT_FIELDS), "p": 8, "x": "PIM"}
+        self.last_vectors, self.last_stat_ms, self.last_post = None, -10_000, -10_000
+        self.ice = [0] * 52  # game seconds on the ice, by roster place (Home's 26, then Away's)
+        self.checks_known = False
+        self.frames, self.next = [], 0           # raw samples: frame counters, the next to look at
+        self.keep, self.times = [], []           # live-play samples: raw index, time with pauses closed up
+        self.skipped_pause = False               # a paused sample since the last one kept
+        self.view = _Kept(cap, self.keep, self.times)
+        self.libraries = False
+
+    def checks_real(self, cap, i):
+        """Is the per-player checks array real (NHL94_Classic)? Its totals equal the teams' checks at sample i."""
+        return all(sum(cap.byte(i, PLAYER_CHECKS + 26 * side + j) for j in range(26))
+                   == cap.word(i, STAT_ADDRESSES["checks"] + 2 * side) for side in (0, 1))
+
+    def feed(self, cap, final=True, count=None, checks_known=None):
+        """Read the raw samples not read yet, up to `count`. Paused and replay samples are left out (the research
+        recorder keeps them), and the timeline closes over them, as the helper records the Genesis game: only live
+        play. Netplay's rollback (and RetroArch's run-ahead) runs the game a few frames ahead on guessed input, then
+        rewinds and replays them: a read made while it was ahead shows everyone a few frames on, and the next one back
+        again (the user saw skaters jump and jump back in 2026-10-16_1540_CHI-TOR, about 240 times a game). The frame
+        counter (FRAME_COUNTER) going back a few frames within the next half second, or showing the same frame again
+        (replayed with the real input), says that sample was ahead of time: it is left out. (Only a few frames: the
+        counter also jumps or restarts between screens.) So a sample is read once the half second after it is in (all
+        of them when `final`)."""
+        n = cap.count if count is None else count
+        self.frames += [cap.word(i, FRAME_COUNTER) for i in range(len(self.frames), n)]
+        frames, limit = self.frames, n
+        if not final:
+            while limit > self.next and cap.ms(n - 1) - cap.ms(limit - 1) <= 500:
+                limit -= 1
+        if limit <= self.next:
+            return
+        self.checks_known = self.checks_real(cap, limit - 1) if checks_known is None else checks_known
+        for raw in range(self.next, limit):
+            if any((frames[raw] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
+                   for j in range(raw + 1, min(n, raw + 32)) if cap.ms(j) - cap.ms(raw) <= 500):
+                continue
+            if cap.word(raw, GAME_FLAGS2) & PAUSED:
+                self.skipped_pause = True
+                continue
+            if self.keep:
+                gap = cap.ms(raw) - cap.ms(self.keep[-1])
+                self.times.append(self.times[-1] + (min(gap, 17) if self.skipped_pause else gap))
+            else:
+                self.times.append(0)
+            self.keep.append(raw)
+            self.skipped_pause = False
+            self._sample(self.view, len(self.keep) - 1)
+        self.next = limit
+
+    def _sample(self, cap, i):
+        signed = lambda i, a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(cap.word(i, a))
+        from .common import DIGITS, PLAYERS, STAT_FIELDS
         # This sample's work RAM, read once ($0000-$3FFF, all the addresses read here): picking values out of it is
         # several times faster than asking the recording for each (tens of millions of reads a game, which the live
         # broadcast does every few seconds). Save states (no raw) are read value by value.
+        whole = getattr(cap, "raw", None)
         mem = whole(i, 0, 0x4000) if whole else None
         if mem is not None:
             w = lambda a, m=mem: m[a] | (m[a + 1] << 8)
@@ -511,11 +555,11 @@ def read_match(cap, rom_path, name, home=None, away=None):
             w = lambda a, i=i: cap.word(i, a)
             b = lambda a, i=i: cap.byte(i, a)
         sg = lambda a: (lambda v: v - 0x10000 if v >= 0x8000 else v)(w(a))
-        match["t"].append(cap.ms(i))
-        match["period"].append(w(PERIOD))
-        match["clock"].append(w(CLOCK))
-        match["score"] += [w(STAT_ADDRESSES["goals"]), w(STAT_ADDRESSES["goals"] + 2)]
-        match["shots"] += [sum(w(a + side) for a in SHOTS_BY_PERIOD) for side in (0, 2)]
+        self.match["t"].append(cap.ms(i))
+        self.match["period"].append(w(PERIOD))
+        self.match["clock"].append(w(CLOCK))
+        self.match["score"] += [w(STAT_ADDRESSES["goals"]), w(STAT_ADDRESSES["goals"] + 2)]
+        self.match["shots"] += [sum(w(a + side) for a in SHOTS_BY_PERIOD) for side in (0, 2)]
         # The puck's height is not read; while the clock is stopped it is given as -256, as the Genesis game hides
         # the puck from a whistle to the faceoff, which the analysis uses to tell stretches of play apart.
         stopped = w(CLOCK_STOPPED) != 0
@@ -524,17 +568,17 @@ def read_match(cap, rom_path, name, home=None, away=None):
         # The puck's height: puckz (integer) and its fraction (the NHL94SNES disassembly's ram94snes.asm), as the
         # Genesis record's +$24. Shots on goal reach 1-18.
         pz = sg(PUCK_Z) + w(PUCK_Z_FRAC) / 65536
-        match["puck"] += [px, py, -256 if stopped else round(max(0.0, pz), 1)]
-        match["puckV"] += [round(vx / 100), round(vy / 100)]
+        self.match["puck"] += [px, py, -256 if stopped else round(max(0.0, pz), 1)]
+        self.match["puckV"] += [round(vx / 100), round(vy / 100)]
         # A post, by the Genesis rule: the loose puck turning back out of the end zone right beside a post.
-        if i and b(PUCK_HOLDER) >= 12 and cap.ms(i) - last_post > 1000:
+        if i and b(PUCK_HOLDER) >= 12 and cap.ms(i) - self.last_post > 1000:
             fresh = (vx, vy) != (signed(i - 1, PUCK_VX), signed(i - 1, PUCK_VY))
             if (fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 268 and vy * py < 0 and abs(vx) + abs(vy) >= 1500
                 # and not a puck coming out from behind the net past its side (2026-10-18: four of those had read as posts in
                 # CHI-LA): behind the goal line (268) in the half second before
-                and not any(abs(match["puck"][3 * q + 1]) > 268 for q in range(max(0, len(match["t"]) - 31), len(match["t"]) - 1))):
-                match["posts"].append(len(match["t"]) - 1)
-                last_post = cap.ms(i)
+                and not any(abs(self.match["puck"][3 * q + 1]) > 268 for q in range(max(0, len(self.match["t"]) - 31), len(self.match["t"]) - 1))):
+                self.match["posts"].append(len(self.match["t"]) - 1)
+                self.last_post = cap.ms(i)
         # Team stat snapshots, in common.STAT_FIELDS order (no per-player values yet), when they change and each
         # second, as the Genesis reader keeps them.
         vector = [sum(w(a) for a in SHOTS_BY_PERIOD)] + [w(STAT_ADDRESSES[f]) for f in STAT_FIELDS[1:]]
@@ -549,7 +593,7 @@ def read_match(cap, rom_path, name, home=None, away=None):
                 code = sg(OBJ_POSITION + 2 * k)
                 place = b(OBJ_ROSTER + 2 * k)
                 if 0 <= code < 6 and place < 26:
-                    ice[26 * (k // 6) + place] += cap.word(i - 1, CLOCK) - clock
+                    self.ice[26 * (k // 6) + place] += cap.word(i - 1, CLOCK) - clock
         if mem is not None:
             goals, assists, shots, pim = (mem[a:a + 52] for a in (PLAYER_GOALS, PLAYER_ASSISTS, PLAYER_SHOTS, PLAYER_PIM))
             checks = mem[PLAYER_CHECKS:PLAYER_CHECKS + 52]
@@ -563,120 +607,153 @@ def read_match(cap, rom_path, name, home=None, away=None):
             for idx in range(26):
                 at = 26 * side + idx
                 box = boxes[2 * at] | (boxes[2 * at + 1] << 8)
-                vec += [goals[at], assists[at], shots[at], pim[at], checks[at] if checks_known else 0, ice[at],
+                vec += [goals[at], assists[at], shots[at], pim[at], checks[at] if self.checks_known else 0, self.ice[at],
                         energy[2 * at + 1], min(box, 255) if 0 < box < 0x1000 else 0xFFFF]
-        if (vector, vector2) != last_vectors or cap.ms(i) - last_stat_ms >= 1000:
-            stats["f"].append(len(match["t"]) - 1)
-            stats["home"].append(vector)
-            stats["away"].append(vector2)
-            last_vectors, last_stat_ms = (vector, vector2), cap.ms(i)
+        if (vector, vector2) != self.last_vectors or cap.ms(i) - self.last_stat_ms >= 1000:
+            self.stats["f"].append(len(self.match["t"]) - 1)
+            self.stats["home"].append(vector)
+            self.stats["away"].append(vector2)
+            self.last_vectors, self.last_stat_ms = (vector, vector2), cap.ms(i)
         f = w(OBJ_FRAME + 28)
-        puck_frame.append(f"{f if f < 976 else 0:03x}")
+        self.puck_frame.append(f"{f if f < 976 else 0:03x}")
         # Who has the puck: $0AE7, an object number (15 = nobody), checked on the first SNES recording: it names the
         # player the puck moves with in all 608 clearly carried moments and reads 15 in 456 of 457 clearly loose
         # ones. Counted only with the puck within 30 of him (at stoppages it stays on the goalie who held it).
         holder = b(PUCK_HOLDER)
         near = holder < 12 and math.hypot(sg(OBJ_X + 28) - sg(OBJ_X + 2 * holder),
                                           sg(OBJ_Y + 28) - sg(OBJ_Y + 2 * holder)) <= 30
-        match["owner"].append(holder if near else -1)
+        self.match["owner"].append(holder if near else -1)
         # Where a shot is aimed (passdir, the stick's screen direction the shot code reads), whenever it changes
         v = b(PASS_DIR)
-        if not match["aim"] or match["aim"][-1][1] != v:
-            match["aim"].append([len(match["t"]) - 1, v])
+        if not self.match["aim"] or self.match["aim"][-1][1] != v:
+            self.match["aim"].append([len(self.match["t"]) - 1, v])
         # The nets (objects 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then
         # comes out of the zone). [frame, top net x, y, bottom net x, y]
         nets = [sg(OBJ_X + 24), sg(OBJ_Y + 24), sg(OBJ_X + 26), sg(OBJ_Y + 26)]
-        if not match["nets"] or match["nets"][-1][1:] != nets:
-            match["nets"].append([len(match["t"]) - 1] + nets)
+        if not self.match["nets"] or self.match["nets"][-1][1:] != nets:
+            self.match["nets"].append([len(self.match["t"]) - 1] + nets)
         mask = 0
         for k in range(PLAYERS):
             work = [w(a + 2 * k) for a in OBJ_WORK]
-            if work != last_work[k]:
-                match["work"].append([len(match["t"]) - 1, k] + work)
-                last_work[k] = work
-            match["pos"] += [sg(OBJ_X + 2 * k), sg(OBJ_Y + 2 * k)]
+            if work != self.last_work[k]:
+                self.match["work"].append([len(self.match["t"]) - 1, k] + work)
+                self.last_work[k] = work
+            self.match["pos"] += [sg(OBJ_X + 2 * k), sg(OBJ_Y + 2 * k)]
             face = w(OBJ_FACING + 2 * k) & 7
             spa, step = w(OBJ_ANIM + 2 * k), w(OBJ_ANIM_STEP + 2 * k)
             f = w(OBJ_FRAME + 2 * k)  # the game's own picture (the Genesis +$06)
             if spa >= 0x8000:
-                spas.add(spa)
-            facing.append(str(face))
-            roster.append(DIGITS[min(b(OBJ_ROSTER + 2 * k), 35)])
+                self.spas.add(spa)
+            self.facing.append(str(face))
+            self.roster.append(DIGITS[min(b(OBJ_ROSTER + 2 * k), 35)])
             code = sg(OBJ_POSITION + 2 * k)
-            role.append(str(code) if 0 <= code < 6 else "x")
-            anim.append(f"{spa:04x}")
-            frame.append(f"{f if f < 976 else 0:03x}")
-            mirror.append("1" if w(OBJ_ATTRIBUTE + 2 * k) & 0x0800 else "0")
+            self.role.append(str(code) if 0 <= code < 6 else "x")
+            self.anim.append(f"{spa:04x}")
+            self.frame.append(f"{f if f < 976 else 0:03x}")
+            self.mirror.append("1" if w(OBJ_ATTRIBUTE + 2 * k) & 0x0800 else "0")
             if w(OBJ_FLAGS + 2 * k) & 0x0008:
                 mask |= 1 << k
-        match["ctrl"].append(mask)
-        match["pad"].append(genesis_pad(w(PAD1)))
-        match["pad2"].append(genesis_pad(w(PAD2)))
-    # The SNES puck leaves the stick for a moment hundreds of times a game while a player skates with it (the
-    # byte drops to 15): gaps under 0.15 s with the same player before and after are taken as his.
-    own, t = match["owner"], match["t"]
-    i = 1
-    while i < len(own):
-        if own[i] < 0 <= own[i - 1]:
-            j = i
-            while j < len(own) and own[j] < 0 and t[j] - t[i - 1] < 150:
-                j += 1
-            if j < len(own) and own[j] == own[i - 1]:
-                for q in range(i, j):
-                    own[q] = own[j]
-            i = j
-        i += 1
-    match.update(facing="".join(facing), roster="".join(roster), role="".join(role), anim="".join(anim),
-                 frame="".join(frame), mirror="".join(mirror), puckFrame="".join(puck_frame))
-    # The teams shown for most of the recording (at its very end the game may already have gone back to the menus).
-    from collections import Counter
-    home_id, away_id = Counter((cap.word(i, TEAM_IDS[0]), cap.word(i, TEAM_IDS[1]))
-                               for i in range(0, cap.count, max(1, cap.count // 200))).most_common(1)[0][0]
-    match["team1"], match["team2"] = home or "Home", away or "Away"
-    if home_id < len(teams) and away_id < len(teams):
-        match["team1"], match["team2"] = home or teams[home_id]["name"], away or teams[away_id]["name"]
-        match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
-        match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
-        match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
-        add_hot_cold(cap, match)
-    # Goals from the game's own scoring summary. The game raises the byte count before it has written the entry, so
-    # each goal's moment is where the count first covers it, and its contents are read where the summary is
-    # longest (the last such sample: complete, and before the game goes back to the menus and clears it). A goal is
-    # a penalty-shot goal when that team's penalty-shot goals (STAT_ADDRESSES psGoals) went up within 3 s of it.
-    counts = [cap.byte(i, SCORING_COUNT) for i in range(cap.count)]
-    valid = [c if c % 6 == 0 and c <= 240 else -1 for c in counts]
-    longest = max(valid) if valid else 0
-    final = max((i for i, c in enumerate(valid) if c == longest), default=0)
-    goals, tally = [], {}
-    for at in range(0, longest, 6):
-        i = next(i for i, c in enumerate(valid) if c > at)
-        e = bytes(cap.byte(final, SCORING_LIST + at + j) for j in range(6))
-        team = e[2] >> 7
-        people = [e[3]] + [a for a in e[4:6] if a != 0xFF]
-        for n, idx in enumerate(people):
-            tally[(team, idx, n > 0)] = tally.get((team, idx, n > 0), 0) + 1
-        strength = STRENGTH.get(e[2] & 0x7F, "?")
-        kinds = [k for k in (strength,) if k in ("PPG", "SHG")] + (["5 on 3"] if strength == "PP2" else ["3 on 5"] if strength == "SH2" else [])
-        ps = STAT_ADDRESSES["psGoals"] + 2 * team
-        later = next((j for j in range(i, cap.count) if cap.ms(j) - cap.ms(i) > 3000), cap.count - 1)
-        earlier = next((j for j in range(i, -1, -1) if cap.ms(i) - cap.ms(j) > 3000), 0)
-        if cap.word(later, ps) > cap.word(earlier, ps):
-            kinds.append("penalty shot")
-        goals.append({"f": i, "team": team, "period": match["period"][i], "clock": match["clock"][i], "scorer": e[3],
-                      "goals": tally[(team, e[3], False)], "assists": [[a, tally[(team, a, True)]] for a in people[1:]],
-                      "kinds": kinds, "strength": strength})
-    match["goals"] = goals
-    match["stats"] = stats
-    match["rules"] = read_rules(rom)
-    match["penalties"], match["delayed"] = read_penalties(cap, count, match, match["rules"])
-    match["rom"] = f"{zlib.crc32(rom):08x}"
-    match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
-    try:
-        build_sprites(rom)
-    except (struct.error, IndexError) as problem:
-        print(f"no game sprites for {rom_path.name}: {problem}")
-    build_sounds(rom)
-    return match
+        self.match["ctrl"].append(mask)
+        self.match["pad"].append(genesis_pad(w(PAD1)))
+        self.match["pad2"].append(genesis_pad(w(PAD2)))
+
+    def result(self, cap, rom_path, name, home=None, away=None):
+        """The match so far (fresh lists: the reader keeps its own)."""
+        import zlib
+        teams, rom = self.teams, self.rom
+        match = {k: (list(v) if isinstance(v, list) else v) for k, v in self.match.items()}
+        match["name"] = name
+        stats = dict(self.stats, f=list(self.stats["f"]), home=[list(v) for v in self.stats["home"]],
+                     away=[list(v) for v in self.stats["away"]])
+        facing, roster, role, anim, frame, mirror, puck_frame = (self.facing, self.roster, self.role, self.anim,
+                                                                  self.frame, self.mirror, self.puck_frame)
+        spas = self.spas
+        cap = _Kept(self.view.cap, list(self.keep), list(self.times))
+        count = cap.count
+        # The SNES puck leaves the stick for a moment hundreds of times a game while a player skates with it (the
+        # byte drops to 15): gaps under 0.15 s with the same player before and after are taken as his.
+        own, t = match["owner"], match["t"]
+        i = 1
+        while i < len(own):
+            if own[i] < 0 <= own[i - 1]:
+                j = i
+                while j < len(own) and own[j] < 0 and t[j] - t[i - 1] < 150:
+                    j += 1
+                if j < len(own) and own[j] == own[i - 1]:
+                    for q in range(i, j):
+                        own[q] = own[j]
+                i = j
+            i += 1
+        match.update(facing="".join(facing), roster="".join(roster), role="".join(role), anim="".join(anim),
+                     frame="".join(frame), mirror="".join(mirror), puckFrame="".join(puck_frame))
+        # The teams shown for most of the recording (at its very end the game may already have gone back to the menus).
+        from collections import Counter
+        home_id, away_id = Counter((cap.word(i, TEAM_IDS[0]), cap.word(i, TEAM_IDS[1]))
+                                   for i in range(0, cap.count, max(1, cap.count // 200))).most_common(1)[0][0]
+        match["team1"], match["team2"] = home or "Home", away or "Away"
+        if home_id < len(teams) and away_id < len(teams):
+            match["team1"], match["team2"] = home or teams[home_id]["name"], away or teams[away_id]["name"]
+            match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
+            match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
+            match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
+            add_hot_cold(cap, match)
+        # Goals from the game's own scoring summary. The game raises the byte count before it has written the entry, so
+        # each goal's moment is where the count first covers it, and its contents are read where the summary is
+        # longest (the last such sample: complete, and before the game goes back to the menus and clears it). A goal is
+        # a penalty-shot goal when that team's penalty-shot goals (STAT_ADDRESSES psGoals) went up within 3 s of it.
+        counts = [cap.byte(i, SCORING_COUNT) for i in range(cap.count)]
+        valid = [c if c % 6 == 0 and c <= 240 else -1 for c in counts]
+        longest = max(valid) if valid else 0
+        final = max((i for i, c in enumerate(valid) if c == longest), default=0)
+        goals, tally = [], {}
+        for at in range(0, longest, 6):
+            i = next(i for i, c in enumerate(valid) if c > at)
+            e = bytes(cap.byte(final, SCORING_LIST + at + j) for j in range(6))
+            team = e[2] >> 7
+            people = [e[3]] + [a for a in e[4:6] if a != 0xFF]
+            for n, idx in enumerate(people):
+                tally[(team, idx, n > 0)] = tally.get((team, idx, n > 0), 0) + 1
+            strength = STRENGTH.get(e[2] & 0x7F, "?")
+            kinds = [k for k in (strength,) if k in ("PPG", "SHG")] + (["5 on 3"] if strength == "PP2" else ["3 on 5"] if strength == "SH2" else [])
+            ps = STAT_ADDRESSES["psGoals"] + 2 * team
+            later = next((j for j in range(i, cap.count) if cap.ms(j) - cap.ms(i) > 3000), cap.count - 1)
+            earlier = next((j for j in range(i, -1, -1) if cap.ms(i) - cap.ms(j) > 3000), 0)
+            if cap.word(later, ps) > cap.word(earlier, ps):
+                kinds.append("penalty shot")
+            goals.append({"f": i, "team": team, "period": match["period"][i], "clock": match["clock"][i], "scorer": e[3],
+                          "goals": tally[(team, e[3], False)], "assists": [[a, tally[(team, a, True)]] for a in people[1:]],
+                          "kinds": kinds, "strength": strength})
+        match["goals"] = goals
+        match["stats"] = stats
+        match["rules"] = read_rules(rom)
+        match["penalties"], match["delayed"] = read_penalties(cap, count, match, match["rules"])
+        match["rom"] = f"{zlib.crc32(rom):08x}"
+        match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
+        try:
+            build_sprites(rom)
+        except (struct.error, IndexError) as problem:
+            print(f"no game sprites for {rom_path.name}: {problem}")
+        build_sounds(rom)
+        return match
+
+
+
+
+def read_match(cap, rom_path, name, home=None, away=None):
+    """The match file's contents from samples of SNES work RAM (cap: anything with count, ms(i), word(i, address),
+    byte(i, address): a recording, or save states for a still picture). Positions, the puck, who is controlled,
+    roster places, positions, facing, animations and their sprite frames, clock, period, score and shots, stats,
+    goals and penalties."""
+    reader = MatchReader(cap, rom_path)
+    # The game ends where its numbers last stood: a research recording runs on into the menus, where the score and the
+    # stats are cleared. Whether the per-player checks array is real is judged there (the most goals and shots).
+    totals = [cap.word(i, STAT_ADDRESSES["goals"]) + cap.word(i, STAT_ADDRESSES["goals"] + 2)
+              + sum(cap.word(i, a) + cap.word(i, a + 2) for a in SHOTS_BY_PERIOD) for i in range(cap.count)]
+    end = max(range(cap.count), key=lambda i: (totals[i], i)) if cap.count else 0
+    peak = max(totals) if totals else 0
+    count = max(i for i, v in enumerate(totals) if v == peak) + 1 if peak else cap.count
+    reader.feed(cap, final=True, count=count, checks_known=reader.checks_real(cap, end) if cap.count else False)
+    return reader.result(cap, rom_path, name, home, away)
 
 
 def read_penalties(cap, count, match, rules):

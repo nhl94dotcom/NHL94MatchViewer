@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT  # noqa: E402
 
 PROJECT = Path(__file__).resolve().parent.parent      # where viewer.html and the rink pictures are (or the exe's copy)
-INTERVAL_S = 5.0          # at most one update this often (a conversion near the end of a game takes about 6.5 s)
+INTERVAL_S = 3.0          # at most one update this often (the worker reads only the new samples: about 1 s at a game's end)
 REST_SHARE = 0.75         # and after each, rest at least this share of the time it took: the computer isn't kept busy
 SNAPSHOT_EVERY = 6        # a whole-match snapshot every this many updates, for pages that join late
 STATIC_FILES = ["rink_gens.png", "rink_snes.png", "rink_gens.js", "rink_snes.js", "rink_benches.js", "rink_benches_snes.js"]
@@ -163,6 +163,7 @@ class Broadcaster:
         self.thread = None
         self.stop = threading.Event()
         self.last_error = None
+        self.worker = None
 
     # The page and the files it loads beside itself.
     def publish_page(self):
@@ -207,29 +208,48 @@ class Broadcaster:
         with self.lock:
             self.game, self.sent, self.seq, self.snapshot = name, None, 0, 0
 
-    def convert_partial(self, folder, record_size):
-        """Convert the recording so far; returns the match (dict) or None."""
-        data = read_partial_gzip(folder / "fast.bin.gz")
-        data = data[: len(data) - len(data) % record_size]
-        if len(data) < record_size * 120:  # under a couple of seconds of play
-            return None
-        work = self.work
-        work.mkdir(parents=True, exist_ok=True)
-        shutil.copy(folder / "capture.json", work / "capture.json")
-        (work / "fast.bin").write_bytes(data)
-        out = work / "out"
-        args = [str(work), "--name", self.game, "--out", str(out)] + (["--rom", str(self.rom_path)] if self.rom_path else [])
-        # Its own process at low priority: the game and the netplay connection come first, and (in the packaged
-        # helper) the recording keeps its Python thread to itself.
+    def start_worker(self, folder):
+        """The converter's live worker (export_match --live) for this game, in its own process at low priority: the game
+        and the netplay connection come first, and (in the packaged helper) the recording keeps its Python thread to
+        itself. It keeps what it has read, so each update reads only the new samples."""
+        self.stop_worker()
+        out = self.work / "out"
+        args = [str(folder), "--live", "--name", self.game, "--out", str(out)] + (["--rom", str(self.rom_path)] if self.rom_path else [])
         if getattr(sys, "frozen", False):
             cmd = [sys.executable, "--export"] + args
         else:
             cmd = [sys.executable, str(Path(__file__).resolve().parent / "export_match.py")] + args
         flags = getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0) | getattr(subprocess, "CREATE_NO_WINDOW", 0)
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, creationflags=flags)
-        if result.returncode:
-            raise RuntimeError((result.stderr or result.stdout).strip()[-300:])
-        return load_match(out / f"{self.game}.js")
+        self.worker = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                       text=True, cwd=ROOT, creationflags=flags, bufsize=1)
+        self.worker_out = out / f"{self.game}.js"
+
+    def stop_worker(self):
+        worker, self.worker = self.worker, None
+        if worker is None:
+            return
+        try:
+            worker.stdin.write("quit\n")
+            worker.stdin.flush()
+            worker.wait(timeout=10)
+        except Exception:
+            worker.kill()
+
+    def convert_partial(self, folder, record_size=None):
+        """The recording so far, converted: the match (dict), or None while there is too little of it."""
+        if self.worker is None or self.worker.poll() is not None:
+            self.start_worker(folder)
+        self.worker.stdin.write("update\n")
+        self.worker.stdin.flush()
+        answer = self.worker.stdout.readline().strip()
+        if not answer:
+            self.stop_worker()
+            raise RuntimeError("the live converter stopped")
+        if answer.startswith("error"):
+            raise RuntimeError(answer[6:])
+        if answer == "wait":
+            return None
+        return load_match(self.worker_out)
 
     def send(self, match, status="live"):
         """Upload what changed since the last upload."""
@@ -281,6 +301,7 @@ class Broadcaster:
         self.stop.set()
         if self.thread:
             self.thread.join(timeout=60)
+        self.stop_worker()
         try:
             if final_match_path and Path(final_match_path).exists():
                 self.send(load_match(final_match_path), status="final")

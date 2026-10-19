@@ -175,6 +175,9 @@ def _velocity(m, f, k, back_ms=100):
     return ((P[(f * 12 + k) * 2] - P[(j * 12 + k) * 2]) / frames, (P[(f * 12 + k) * 2 + 1] - P[(j * 12 + k) * 2 + 1]) / frames)
 
 
+_CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
+
+
 def add_expected_goals(m):
     """Each shot and one-timer of a Genesis match gets `xg`, the chance it goes in by the game's rules (see above)."""
     if m.get('system', 'genesis') != 'genesis' or not m.get('work'):
@@ -222,11 +225,16 @@ def add_expected_goals(m):
         perfect = (sha + 1) / (sha + 16)
         if any(dl['team'] == team and dl['f'] <= f <= dl.get('end', f) for dl in m.get('delayed', [])):
             perfect = 1.0                                         # ReadGoaliePulled: the delayed-penalty snipe
-        rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
         pp = max(1.0, sh['speed'] / 68)
+        key = (m.get('name', ''), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
+               (gx, gy, vgx, vgy, *gw[:4]) if goalie else None)
+        if key in _CACHE:
+            sh['xg'] = _CACHE[key]
+            continue
+        rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
         goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng) == 'goal'
                     for _ in range(N_SAMPLES))
-        sh['xg'] = round(goals / N_SAMPLES, 3)
+        sh['xg'] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 
 def goalie_states(matches):

@@ -394,113 +394,128 @@ def add_hot_cold(cap, match, settings):
                 player["hc"] = int(raw[0] / 3)
 
 
-def read_match(cap, rom_path, name, home=None, away=None):
-    """The match file's contents from a recording (cap: export_match.Capture) and the ROM it was played on. The
-    shared analysis (shots, passes, goals ...) is added afterwards by export_match.main."""
-    has_pad = cap.offset(PAD1) is not None
+class MatchReader:
+    """read_match in pieces: feed() reads samples as a recording grows (the live broadcast gives it the new ones only),
+    result() makes the match file's contents from what has been read so far (copies: the reader goes on)."""
 
-    match = {"version": 21, "name": name, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
-             "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [], "pos": [], "ctrl": [], "owner": []}
-    if has_pad:
-        match["pad"], match["pad2"] = [], []
-    facing, roster, anim, role, frame, mirror, puck_frame = [], [], [], [], [], [], []
-    match["posts"] = []  # frames where the puck came off a goal post
-    match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
-    match["aim"] = []  # [frame, aim direction 0-8] whenever it changes (AIM_DIR)
-    match["work"] = []  # [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever they change (WORK)
-    last_work = [None] * PLAYERS
-    aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
-    # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
-    stats = {"f": [], "home": [], "away": []}
-    last_counts, last_stat_ms = None, -10_000
-    penalties = []
-    delayed, open_delayed = [], [None, None]
-    last_post = -10_000
-    team_ids = Counter()
-    previous = None
-    # Netplay's rollback runs the game a few frames ahead and rewinds: a read made while it was ahead shows everyone a
-    # few frames on and the next one back (21 times in capture6_netplay_bos_stl; the SNES games far more, see
-    # snes.read_match). The frame counter going back, or showing the same frame again, within half a second says
-    # that sample was ahead of time: it is left out.
-    frames = [cap.word(i, FRAME_COUNTER) for i in range(cap.count)]
-    ahead = {i for i in range(cap.count) if any((frames[i] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
-                                                for j in range(i + 1, min(cap.count, i + 32)) if cap.ms(j) - cap.ms(i) <= 500)}
-    for i in range(cap.count):
-        if i in ahead:
-            continue
+    def __init__(self, cap):
+        self.has_pad = cap.offset(PAD1) is not None
+
+        self.match = {"version": 21, "name": None, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
+                 "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [], "pos": [], "ctrl": [], "owner": []}
+        if self.has_pad:
+            self.match["pad"], self.match["pad2"] = [], []
+        self.facing, self.roster, self.anim, self.role, self.frame, self.mirror, self.puck_frame = [], [], [], [], [], [], []
+        self.match["posts"] = []  # frames where the puck came off a goal post
+        self.match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
+        self.match["aim"] = []  # [frame, aim direction 0-8] whenever it changes (AIM_DIR)
+        self.match["work"] = []  # [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever they change (WORK)
+        self.last_work = [None] * PLAYERS
+        self.aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
+        # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
+        self.stats = {"f": [], "home": [], "away": []}
+        self.last_counts, self.last_stat_ms = None, -10_000
+        self.penalties = []
+        self.delayed, self.open_delayed = [], [None, None]
+        self.last_post = -10_000
+        self.team_ids = Counter()
+        self.previous = None
+        self.frames, self.next = [], 0
+        self.rom_cache = None
+
+    def feed(self, cap, final=True):
+        """Read the samples not read yet. Netplay's rollback runs the game a few frames ahead and rewinds: a read made
+        while it was ahead shows everyone a few frames on and the next one back (21 times in capture6_netplay_bos_stl;
+        the SNES games far more, see snes.read_match). The frame counter going back, or showing the same frame again,
+        within half a second says that sample was ahead of time: it is left out. So a sample is read only once the half
+        second after it is in (all of them when `final`)."""
+        n = cap.count
+        self.frames += [cap.word(i, FRAME_COUNTER) for i in range(len(self.frames), n)]
+        frames, limit = self.frames, n
+        if not final:
+            while limit > self.next and cap.ms(n - 1) - cap.ms(limit - 1) <= 500:
+                limit -= 1
+        for i in range(self.next, limit):
+            if any((frames[i] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
+                   for j in range(i + 1, min(n, i + 32)) if cap.ms(j) - cap.ms(i) <= 500):
+                continue
+            self._sample(cap, i)
+        self.next = limit
+
+    def _sample(self, cap, i):
         # Identical consecutive samples (a paused game, or two reads of one frame) are stored once.
-        key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), (cap.byte(i, PAD1), cap.byte(i, PAD2)) if has_pad else 0)
-        if key == previous:
-            continue
-        previous = key
-        team_ids[(cap.word(i, HOME_TEAM) & 0xFF, cap.word(i, AWAY_TEAM) & 0xFF)] += 1
-        match["t"].append(cap.ms(i))
-        match["period"].append(cap.word(i, 0xC466))
-        match["clock"].append(cap.word(i, 0xC468))
-        match["score"] += [cap.word(i, 0xC6DA), cap.word(i, 0xCA3E)]
-        match["shots"] += [cap.word(i, 0xC6CE), cap.word(i, 0xCA32)]
+        key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), (cap.byte(i, PAD1), cap.byte(i, PAD2)) if self.has_pad else 0)
+        if key == self.previous:
+            return
+        self.previous = key
+        self.team_ids[(cap.word(i, HOME_TEAM) & 0xFF, cap.word(i, AWAY_TEAM) & 0xFF)] += 1
+        self.match["t"].append(cap.ms(i))
+        self.match["period"].append(cap.word(i, 0xC466))
+        self.match["clock"].append(cap.word(i, 0xC468))
+        self.match["score"] += [cap.word(i, 0xC6DA), cap.word(i, 0xCA3E)]
+        self.match["shots"] += [cap.word(i, 0xC6CE), cap.word(i, 0xCA32)]
         puck = BASE + SIZE * PUCK
-        match["puck"] += [cap.fixed(i, puck + X), cap.fixed(i, puck + Y), cap.fixed(i, puck + Z)]
+        self.match["puck"] += [cap.fixed(i, puck + X), cap.fixed(i, puck + Y), cap.fixed(i, puck + Z)]
         # The puck's picture (frames 395-404 of the sprite table; 395 and 399 on the ice, the rest tumbling in the air).
         # Its height reads -256 while the game hides it, at stoppages before the faceoff.
-        puck_frame.append(f"{cap.word(i, puck + FRAME) & 0xFFF:03x}")
+        self.puck_frame.append(f"{cap.word(i, puck + FRAME) & 0xFFF:03x}")
         # Its speed words (+$28 X, +$2A Y, signed, same directions as the position), in hundreds: wrist shots peak at
         # about 11400-13700, slapshots 15000-23600.
         speed_x, speed_y = struct.unpack("<hh", cap.raw(i, puck + 0x28, 4))
-        match["puckV"] += [round(speed_x / 100), round(speed_y / 100)]
+        self.match["puckV"] += [round(speed_x / 100), round(speed_y / 100)]
         # Record 15, the puck's shadow, becomes the goal light after a goal: frames 563-576 (a red lamp, its flash and
         # then its beam turning), for 7-9 seconds, at the end boards behind the net or in the net.
         light = BASE + SIZE * 15
         light_frame = cap.word(i, light + FRAME) & 0xFFF
         if 563 <= light_frame <= 576:
-            match["lights"] += [len(match["t"]) - 1, cap.fixed(i, light + X), cap.fixed(i, light + Y),
+            self.match["lights"] += [len(self.match["t"]) - 1, cap.fixed(i, light + X), cap.fixed(i, light + Y),
                                 cap.fixed(i, light + Z), light_frame]
         owner = cap.byte(i, puck + OWNER)
-        match["owner"].append(owner if cap.byte(i, puck + OWNED) == 0 and owner < PLAYERS else -1)
+        self.match["owner"].append(owner if cap.byte(i, puck + OWNED) == 0 and owner < PLAYERS else -1)
         # A post: the loose puck turns back out of the end zone right beside a post (about 20 units either side of
         # the middle, on the goal line). Found from a post shot the user saw in capture5_league30 at 2:57 of period 1;
         # across all captures the rule fires only three times.
-        if i and cap.byte(i, puck + OWNED) != 0 and cap.ms(i) - last_post > 1000:
+        if i and cap.byte(i, puck + OWNED) != 0 and cap.ms(i) - self.last_post > 1000:
             px, py, vx, vy = struct.unpack("<hxxhxxxxxxhh", cap.raw(i, puck + X, 16))
             before = struct.unpack("<hh", cap.raw(i - 1, puck + 0x28, 4))
             fresh = (vx, vy) != before or cap.byte(i - 1, puck + OWNED) == 0
             if (fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 268 and vy * py < 0 and abs(vx) + abs(vy) >= 1500
                 # and not a puck coming out from behind the net past its side (2026-10-18: four of those had read as posts in
                 # CHI-LA): behind the goal line (268) in the half second before
-                and not any(abs(match["puck"][3 * q + 1]) > 268 for q in range(max(0, len(match["t"]) - 31), len(match["t"]) - 1))):
-                match["posts"].append(len(match["t"]) - 1)
-                last_post = cap.ms(i)
-        if has_pad:
-            match["pad"].append(cap.byte(i, PAD1))
-            match["pad2"].append(cap.byte(i, PAD2))
+                and not any(abs(self.match["puck"][3 * q + 1]) > 268 for q in range(max(0, len(self.match["t"]) - 31), len(self.match["t"]) - 1))):
+                self.match["posts"].append(len(self.match["t"]) - 1)
+                self.last_post = cap.ms(i)
+        if self.has_pad:
+            self.match["pad"].append(cap.byte(i, PAD1))
+            self.match["pad2"].append(cap.byte(i, PAD2))
         # The nets (records 12, 13), whenever either moves: a skater can knock one off its spot (the faceoff then comes
         # out of the zone). [frame, top net x, y, bottom net x, y]
         # Where a shot is aimed (AIM_DIR, the stick's screen direction the shot code reads), whenever it changes
-        if aim_ok:
+        if self.aim_ok:
             v = cap.word(i, AIM_DIR)
-            if not match["aim"] or match["aim"][-1][1] != v:
-                match["aim"].append([len(match["t"]) - 1, v])
+            if not self.match["aim"] or self.match["aim"][-1][1] != v:
+                self.match["aim"].append([len(self.match["t"]) - 1, v])
         nets = [cap.fixed(i, BASE + SIZE * 12 + X), cap.fixed(i, BASE + SIZE * 12 + Y), cap.fixed(i, BASE + SIZE * 13 + X), cap.fixed(i, BASE + SIZE * 13 + Y)]
-        if not match["nets"] or match["nets"][-1][1:] != nets:
-            match["nets"].append([len(match["t"]) - 1] + nets)
+        if not self.match["nets"] or self.match["nets"][-1][1:] != nets:
+            self.match["nets"].append([len(self.match["t"]) - 1] + nets)
         mask = 0
         for k in range(PLAYERS):
             rec = BASE + SIZE * k
-            match["pos"] += [cap.fixed(i, rec + X), cap.fixed(i, rec + Y)]
-            facing.append(str(cap.byte(i, rec + FACING) & 7))
-            roster.append(DIGITS[min(cap.byte(i, rec + ROSTER), 35)])
-            anim.append(f"{cap.word(i, rec + ANIM):04x}")
-            frame.append(f"{cap.word(i, rec + FRAME) & 0xFFF:03x}")
-            mirror.append("0" if cap.byte(i, rec + HAND) & 1 else "1")
+            self.match["pos"] += [cap.fixed(i, rec + X), cap.fixed(i, rec + Y)]
+            self.facing.append(str(cap.byte(i, rec + FACING) & 7))
+            self.roster.append(DIGITS[min(cap.byte(i, rec + ROSTER), 35)])
+            self.anim.append(f"{cap.word(i, rec + ANIM):04x}")
+            self.frame.append(f"{cap.word(i, rec + FRAME) & 0xFFF:03x}")
+            self.mirror.append("0" if cap.byte(i, rec + HAND) & 1 else "1")
             code = cap.byte(i, rec + ROLE)
-            role.append(str(code) if code < 6 else "x")
+            self.role.append(str(code) if code < 6 else "x")
             if cap.byte(i, rec + FLAGS) & 0x08:
                 mask |= 1 << k
             work = [cap.byte(i, rec + o) for o in WORK]
-            if work != last_work[k]:
-                match["work"].append([len(match["t"]) - 1, k] + work)
-                last_work[k] = work
-        match["ctrl"].append(mask)
+            if work != self.last_work[k]:
+                self.match["work"].append([len(self.match["t"]) - 1, k] + work)
+                self.last_work[k] = work
+        self.match["ctrl"].append(mask)
         vectors, counts = [], []
         for block in STAT_BLOCKS:
             vector = [cap.word(i, block + o) for o in TEAM_STATS]
@@ -518,94 +533,115 @@ def read_match(cap, rom_path, name, home=None, away=None):
         # resumes. The offender is only written to the summary after the whistle; it is matched up below.
         for team, block in enumerate(STAT_BLOCKS):
             up = cap.byte(i, block + DELAYED) == 0xFF
-            if up and open_delayed[team] is None:
-                open_delayed[team] = {"f": len(match["t"]) - 1, "team": team}
-            elif not up and open_delayed[team] is not None:
-                open_delayed[team]["end"] = len(match["t"]) - 1
-                delayed.append(open_delayed[team])
-                open_delayed[team] = None
+            if up and self.open_delayed[team] is None:
+                self.open_delayed[team] = {"f": len(self.match["t"]) - 1, "team": team}
+            elif not up and self.open_delayed[team] is not None:
+                self.open_delayed[team]["end"] = len(self.match["t"]) - 1
+                self.delayed.append(self.open_delayed[team])
+                self.open_delayed[team] = None
         listed = cap.word(i, PENALTY_LIST)
-        if listed < 4 * len(penalties) or listed > 240:
-            penalties.clear()  # a new game started, or the list is not set up yet
-        while listed >= 4 * (len(penalties) + 1):
-            at = PENALTY_LIST + 2 + 4 * len(penalties)
+        if listed < 4 * len(self.penalties) or listed > 240:
+            self.penalties.clear()  # a new game started, or the list is not set up yet
+        while listed >= 4 * (len(self.penalties) + 1):
+            at = PENALTY_LIST + 2 + 4 * len(self.penalties)
             when = (cap.byte(i, at) << 8) | cap.byte(i, at + 1)
             code = cap.byte(i, at + 2)
             # f = -1 marks penalties already listed when the recording began
-            penalties.append({"f": len(match["t"]) - 1 if len(match["t"]) > 1 else -1, "period": when >> 14, "secs": when & 0x3FFF,
+            self.penalties.append({"f": len(self.match["t"]) - 1 if len(self.match["t"]) > 1 else -1, "period": when >> 14, "secs": when & 0x3FFF,
                               "team": code >> 7, "code": code & 0x7F, "idx": cap.byte(i, at + 3)})
-        if counts != last_counts or cap.ms(i) - last_stat_ms >= 1000:
-            stats["f"].append(len(match["t"]) - 1)
-            stats["home"].append(vectors[0])
-            stats["away"].append(vectors[1])
-            last_counts, last_stat_ms = counts, cap.ms(i)
-    match["facing"] = "".join(facing)
-    match["roster"] = "".join(roster)  # one base-36 digit per player per frame: index into that team's roster
-    match["role"] = "".join(role)  # one character per player per frame: index into "positions", or x when off the ice
-    for team in (0, 1):
-        if open_delayed[team] is not None:
-            delayed.append({**open_delayed[team], "end": len(match["t"]) - 1})
-    # A penalty listed while the other team's delayed flag was up was called when that flag went up.
-    for p in penalties:
-        for d in delayed:
-            if d["team"] == 1 - p["team"] and d["f"] <= p["f"] <= d["end"] and not d.get("matched"):
-                p["called"], d["matched"] = d["f"], True
-                break
-    match["delayed"] = delayed
-    match["penalties"] = penalties
-    match["frame"] = "".join(frame)  # three hex digits per player per frame: the animation frame, for the sprite library
-    match["puckFrame"] = "".join(puck_frame)  # three hex digits per frame: the puck's picture
-    match["mirror"] = "".join(mirror)  # 1 where the game draws that frame mirrored left-to-right
-    match["anim"] = "".join(anim)  # four hex digits per player per frame: the animation word at record +$58
+        if counts != self.last_counts or cap.ms(i) - self.last_stat_ms >= 1000:
+            self.stats["f"].append(len(self.match["t"]) - 1)
+            self.stats["home"].append(vectors[0])
+            self.stats["away"].append(vectors[1])
+            self.last_counts, self.last_stat_ms = counts, cap.ms(i)
 
-    home_id, away_id = team_ids.most_common(1)[0][0]
-    match["team1"], match["team2"] = home or "Home", away or "Away"
-    if rom_path.exists():
-        teams = read_teams(rom_path)
-        if home_id < len(teams) and away_id < len(teams):
-            match["team1"], match["team2"] = home or teams[home_id]["name"], away or teams[away_id]["name"]
-            match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
-            match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
-            match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
-            # Stats per snapshot: the team values, then 8 per player (goals, assists, shots, checks or PIM, hits taken,
-            # ice time, energy, penalty word) for each roster place.
-            sizes = (len(TEAM_STATS) + 8 * len(teams[home_id]["players"]), len(TEAM_STATS) + 8 * len(teams[away_id]["players"]))
-            stats["n"], stats["p"] = len(TEAM_STATS), 8
-            rom_bytes = rom_path.read_bytes()
-            # Penalty names and lengths: the rule-message table (the NOSE editor's rulesOffset). A code is twice the
-            # rule number; each rule starts with two bytes, the second being the minutes, then its name.
-            rules = {}
-            for number in range(1, 31):
-                at = RULES + struct.unpack_from(">H", rom_bytes, RULES + 2 * number)[0]
-                length = struct.unpack_from(">H", rom_bytes, at + 2)[0]
-                if 2 < length < 30:
-                    minutes = rom_bytes[at + 1]
-                    rules[2 * number] = {"name": rom_bytes[at + 4:at + 2 + length].decode("latin-1").rstrip("\x00"),
-                                         "min": minutes if minutes <= 10 else 0}
-            match["rules"] = rules
-            stats["home"] = [v[:sizes[0]] for v in stats["home"]]
-            stats["away"] = [v[:sizes[1]] for v in stats["away"]]
-            rom_bytes = rom_path.read_bytes()
-            stats["x"] = "Checks" if rom_bytes[PIM_CODE:PIM_CODE + 4] == bytes.fromhex("4e714e71") else "PIM"
-            match["stats"] = stats
-            if teams[home_id]["logo"]:
-                match["logo"] = teams[home_id]["logo"]  # drawn at centre ice in the home palette
-            settings = genesis_settings.rom_settings(rom_bytes)
-            if settings:
-                match["romSettings"] = settings
-            add_hot_cold(cap, match, settings)
-        # Players are drawn from this ROM's own sprites; build its library the first time it is seen.
-        rom = rom_path.read_bytes()
-        match["rom"] = f"{zlib.crc32(rom):08x}"
-        match["anims"] = animation_table(rom)
-        try:
-            build_sprites(rom)
-        except ValueError as problem:
-            print(f"no game sprites for {rom_path.name}: {problem}")
-        build_sounds(rom)
-    else:
-        print(f"ROM not found at {rom_path}; exporting without player names")
-    return match
+    def result(self, cap, rom_path, name, home=None, away=None):
+        """The match so far (fresh lists: the reader keeps its own)."""
+        match = {k: (list(v) if isinstance(v, list) else v) for k, v in self.match.items()}
+        match["name"] = name
+        facing, roster, role, anim, frame, mirror, puck_frame = (self.facing, self.roster, self.role, self.anim,
+                                                                  self.frame, self.mirror, self.puck_frame)
+        stats = {"f": list(self.stats["f"]), "home": [list(v) for v in self.stats["home"]],
+                 "away": [list(v) for v in self.stats["away"]]}
+        penalties = [dict(p) for p in self.penalties]
+        delayed = [dict(d) for d in self.delayed]
+        open_delayed = [dict(d) if d is not None else None for d in self.open_delayed]
+        team_ids = self.team_ids
+        match["facing"] = "".join(facing)
+        match["roster"] = "".join(roster)  # one base-36 digit per player per frame: index into that team's roster
+        match["role"] = "".join(role)  # one character per player per frame: index into "positions", or x when off the ice
+        for team in (0, 1):
+            if open_delayed[team] is not None:
+                delayed.append({**open_delayed[team], "end": len(match["t"]) - 1})
+        # A penalty listed while the other team's delayed flag was up was called when that flag went up.
+        for p in penalties:
+            for d in delayed:
+                if d["team"] == 1 - p["team"] and d["f"] <= p["f"] <= d["end"] and not d.get("matched"):
+                    p["called"], d["matched"] = d["f"], True
+                    break
+        match["delayed"] = delayed
+        match["penalties"] = penalties
+        match["frame"] = "".join(frame)  # three hex digits per player per frame: the animation frame, for the sprite library
+        match["puckFrame"] = "".join(puck_frame)  # three hex digits per frame: the puck's picture
+        match["mirror"] = "".join(mirror)  # 1 where the game draws that frame mirrored left-to-right
+        match["anim"] = "".join(anim)  # four hex digits per player per frame: the animation word at record +$58
+
+        home_id, away_id = team_ids.most_common(1)[0][0]
+        match["team1"], match["team2"] = home or "Home", away or "Away"
+        if rom_path.exists():
+            teams = read_teams(rom_path)
+            if home_id < len(teams) and away_id < len(teams):
+                match["team1"], match["team2"] = home or teams[home_id]["name"], away or teams[away_id]["name"]
+                match["abbr"] = [teams[home_id]["abbr"], teams[away_id]["abbr"]]
+                match["rosters"] = [teams[home_id]["players"], teams[away_id]["players"]]
+                match["palettes"] = [teams[home_id]["palettes"][0], teams[away_id]["palettes"][1]]
+                # Stats per snapshot: the team values, then 8 per player (goals, assists, shots, checks or PIM, hits taken,
+                # ice time, energy, penalty word) for each roster place.
+                sizes = (len(TEAM_STATS) + 8 * len(teams[home_id]["players"]), len(TEAM_STATS) + 8 * len(teams[away_id]["players"]))
+                stats["n"], stats["p"] = len(TEAM_STATS), 8
+                rom_bytes = rom_path.read_bytes()
+                # Penalty names and lengths: the rule-message table (the NOSE editor's rulesOffset). A code is twice the
+                # rule number; each rule starts with two bytes, the second being the minutes, then its name.
+                rules = {}
+                for number in range(1, 31):
+                    at = RULES + struct.unpack_from(">H", rom_bytes, RULES + 2 * number)[0]
+                    length = struct.unpack_from(">H", rom_bytes, at + 2)[0]
+                    if 2 < length < 30:
+                        minutes = rom_bytes[at + 1]
+                        rules[2 * number] = {"name": rom_bytes[at + 4:at + 2 + length].decode("latin-1").rstrip("\x00"),
+                                             "min": minutes if minutes <= 10 else 0}
+                match["rules"] = rules
+                stats["home"] = [v[:sizes[0]] for v in stats["home"]]
+                stats["away"] = [v[:sizes[1]] for v in stats["away"]]
+                rom_bytes = rom_path.read_bytes()
+                stats["x"] = "Checks" if rom_bytes[PIM_CODE:PIM_CODE + 4] == bytes.fromhex("4e714e71") else "PIM"
+                match["stats"] = stats
+                if teams[home_id]["logo"]:
+                    match["logo"] = teams[home_id]["logo"]  # drawn at centre ice in the home palette
+                settings = genesis_settings.rom_settings(rom_bytes)
+                if settings:
+                    match["romSettings"] = settings
+                add_hot_cold(cap, match, settings)
+            # Players are drawn from this ROM's own sprites; build its library the first time it is seen.
+            rom = rom_path.read_bytes()
+            match["rom"] = f"{zlib.crc32(rom):08x}"
+            match["anims"] = animation_table(rom)
+            try:
+                build_sprites(rom)
+            except ValueError as problem:
+                print(f"no game sprites for {rom_path.name}: {problem}")
+            build_sounds(rom)
+        else:
+            print(f"ROM not found at {rom_path}; exporting without player names")
+        return match
+
+
+def read_match(cap, rom_path, name, home=None, away=None):
+    """The match file's contents from a recording (cap: export_match.Capture) and the ROM it was played on. The
+    shared analysis (shots, passes, goals ...) is added afterwards by export_match.main."""
+    reader = MatchReader(cap)
+    reader.feed(cap, final=True)
+    return reader.result(cap, rom_path, name, home, away)
 
 
 # -------------------------------------------------------------------------------------------------------- sounds

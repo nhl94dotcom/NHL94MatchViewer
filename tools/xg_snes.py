@@ -254,6 +254,9 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng):
     return "wide"
 
 
+_CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
+
+
 def add_expected_goals(m, rom):
     """Each shot and one-timer of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's frames)."""
     if m.get("system") != "snes" or not m.get("work"):
@@ -299,11 +302,16 @@ def add_expected_goals(m, rom):
             frame = int(m["frame"][(f * 12 + gk) * 3:(f * 12 + gk) * 3 + 3], 16)
             goalie = Goalie(data, gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4])
         tx, tz = AIM[sh["aim"]["d"]]
-        rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
         pp = max(1.0, sh["speed"] / 136)
         perfect = (sha + 1) / (sha + 16)
+        key = (m.get('name', ''), f, team, sh['idx'], px, py, tx, ty, tz, pp, sha,
+               (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4]) if goalie else None)
+        if key in _CACHE:
+            sh["xg"] = _CACHE[key]
+            continue
+        rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
         goals = sum(play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng) == "goal" for _ in range(N_SAMPLES))
-        sh["xg"] = round(goals / N_SAMPLES, 3)
+        sh["xg"] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 
 def set_spot(px, py, top):
