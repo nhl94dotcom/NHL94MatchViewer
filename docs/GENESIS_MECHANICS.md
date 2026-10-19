@@ -680,7 +680,7 @@ neither test that frame (5.1). The butterfly frames (gstickl) and some kick-save
 units out to the side, so **the middle of his body falls in that blind band.** Along a straight line through his centre
 (stick S, body B, nothing ., one unit each, the puck coming from the right):
 
-![The butterfly's blind ring letting a flat puck through](img/through_the_legs.svg)
+![The butterfly's blind ring letting a flat puck through](img/through_the_legs_goalie.svg)
 
 
 | Pose | Through the middle (x = 0) |

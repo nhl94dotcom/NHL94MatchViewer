@@ -916,7 +916,7 @@ def defence_positions():
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    files = {"saves_reach.svg": saves(), "through_the_legs.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
+    files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
              "aim_points_snes.svg": aim_points("snes"), "shot_scatter.svg": scatter(), "faceoff_timing.svg": faceoffs(),
              "weight_bug.svg": weight_bug(), "shoulder_bobble.svg": shoulder_bobble(), "rocket_pass.svg": rocket_pass(),
              "computer_positions.svg": positioning(), "rink_feet.svg": rink(),

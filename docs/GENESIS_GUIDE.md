@@ -544,7 +544,7 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - Dives (A while moving) stop him dead for over a second; the computer only dives at a slow loose puck right in front
   of him.
 
-![The butterfly's blind ring letting a flat puck through](img/through_the_legs.svg)
+![The butterfly's blind ring letting a flat puck through](img/through_the_legs_goalie.svg)
 
 
 ### 12.3 The computer goalie

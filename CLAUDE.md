@@ -1351,7 +1351,7 @@ lift = distance x 8 (median peak 1.4 at 100-149 units, 3.3 at 200-249); no rocke
 
 The user asked for visuals of the mechanics. `tools/make_diagrams.py` draws SVGs into docs/img, to scale from the game's
 numbers (white background, so they read on GitHub's light and dark themes): saves_reach (reach 12 / 15 / 18 against the
-mouth), through_the_legs (body 13, blade (11, -2.3), the 8-14 ring, the puck a frame at 22,700), aim_points_genesis /
+mouth), through_the_legs_goalie (renamed from through_the_legs.svg so GitHub shows the new version at once; body 13, blade (11, -2.3), the 8-14 ring, the puck a frame at 22,700), aim_points_genesis /
 _snes (both attack directions; SNES post band 17-22), shot_scatter (doshot's s by distance for working ShA 0-30, exact
 chance), faceoff_timing (the 18-frame swing, average value 176 / (18 + gap), the win table). Placed in GENESIS_GUIDE 4, 6,
 12.1, 12.2; GENESIS_MECHANICS 4.1, 4.2, 5.1, 5.5, 9.1; SNES_GUIDE 6; SNES_MECHANICS 4.1. Rerun the script after a number
