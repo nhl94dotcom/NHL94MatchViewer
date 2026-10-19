@@ -14,6 +14,27 @@ means when you play, without the code, see the [Genesis player's guide](GENESIS_
 Buttons are the Genesis pad's: **A** (hook / hold, the flip with the puck), **B** (pass, poke, switch player),
 **C** (shoot, speed burst / check).
 
+## In brief
+
+One line per chapter: the main finding, then the section with the evidence.
+
+1. **Ratings**: play uses rating x 5 + one hot / cold value (byte 0 of the player's 16, a bug), plus hidden power-play, home / away and third-period bonuses (the third-period test is backwards). ([2](#2-ratings-what-the-game-really-uses))
+2. **Skating**: Speed sets top speed; Agility is acceleration, and each Weight point costs as much as 2 Agility. ([3](#3-skating))
+3. **Shooting**: nine aim points chosen by the stick's screen direction; within 200 a shot is perfect (Shot Accuracy + 1) / (Shot Accuracy + 16) of the time, otherwise it scatters, upward only; one-timers are auto-aimed; uncounted saves are mostly the goalie's stick knocking hard low shots away. ([4](#4-shooting))
+4. **Goaltending**: saves are geometry (a 12-15 body circle, 15 for a person, 18 in a pad stack, 12 against one-timers); save moves add no reach; the ring around his stick where nothing touches a low puck lets flat pucks through a butterfly; the top net's shoulder save can drag the puck into the net. ([5](#5-goaltending))
+5. **Passing**: Passing sets speed, not accuracy; the meeting time rounds down (the rocket pass); lift comes from the flight time, or is random for pass shots; a stick can't play the puck while its no-touch timer runs or its body is more than 22 away up or down. ([6](#6-passing-the-flip-and-stickhandling))
+6. **Checking**: only a speed burst checks; the weight bug is a one-byte overflow for a person's checker; the CB check uses the computer's formula; the same pair can't knock down twice running. ([7](#7-checking-hooking-poking-and-collisions))
+7. **Penalties**: Aggression wraps (rating 4 plays like 1); a person's range is doubled; the other team is immune during a delayed penalty; the penalty-shot table is off by one. ([8](#8-penalties))
+8. **Faceoffs**: pure timing (Home wins 17 in 33 at equal timing); the faceoff stat counts first possession, not the draw. ([9](#9-faceoffs))
+9. **Breakaways and penalty shots**: a breakaway is decided as the carrier crosses the blue line ahead of everyone; several penalty-shot bugs. ([10](#10-breakaways-and-penalty-shots))
+10. **Offsides**: off in the leagues; when on, an offside one-timer isn't whistled. ([11](#11-offsides))
+11. **The computer players**: Offensive and Defensive Awareness are only reaction timers; positions are set by the puck's zone. ([12](#12-the-computer-players))
+12. **Puck physics**: friction, boards, the net (a 1-unit post band, crossbar at 13), and what differs up and down the screen. ([13](#13-puck-physics))
+13. **Energy and the crowd**: with line changes off nothing drains energy; the crowd meter's "broken" bonus is always on. ([14](#14-line-changes-energy-and-the-crowd))
+14. **League ROMs**: which gameplay settings the league ROMs change. ([15](#15-league-roms-settings-that-change-the-game))
+
+---
+
 ## Contents
 
 1. [How this was found](#1-how-this-was-found)

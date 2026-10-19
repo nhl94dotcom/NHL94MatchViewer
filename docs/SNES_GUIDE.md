@@ -23,6 +23,27 @@ nothing to say about something, that's why; it doesn't assume the SNES works lik
 Distances: the game measures the rink in units of about **a third of a foot** (blue line to goal line is 180 units, 60
 feet).
 
+## tl;dr
+
+The things about the SNES game that matter most, one line each; the number after each is the section with the details.
+
+1. **A "cold" rating is maxed in play** (a bug): about half of all ratings are maxed every game. Below the band's middle on Edit Lines = maxed. ([1.2](#12-low-in-the-band-is-good))
+2. **Up on the d-pad always shoots high**, whichever way you're attacking. ([6](#6-shooting))
+3. **Don't count on long slapshots**: from the blue line, even the hardest go in only a few percent of the time. Get closer. ([6](#6-shooting))
+4. **The posts are wide**: a shot that drifts a little outward rings off the post. ([6](#6-shooting))
+5. **One-timers go where the d-pad points**; passes across slow the computer goalie. ([7](#7-one-timers))
+6. **Every goalie is the same size**: ratings don't change it. Holding the save button adds a stick, glove or pad area to one side. ([11](#11-goaltending))
+7. **No weight bug**: check anyone, and follow a wobble with a second hit. ([9](#9-checking))
+8. **Cold (maxed) players take the penalties**, and at Aggressiveness 12 a person's skater can be called on every hit. ([10.1](#101-cold-players-take-the-penalties), [10.2](#102-aggressiveness-12-a-possible-penalty-on-every-hit))
+9. **Both teams can be called at one whistle**: a raised arm against the other team doesn't protect you. ([10.5](#105-delayed-penalties))
+10. **Getting up fast**: press hook while down to cut a fall short (a glitch). ([10.3](#103-getting-up-fast-a-glitch))
+11. **A stick ignores the puck for a moment** after its player passes, shoots, swings a one-timer or loses it, which is why pucks go right through players. ([8.1](#81-passing))
+12. **The flip (Y) is a computer-run dump-in**, aimed by your side of centre, not the d-pad. ([8.2](#82-the-flip-y-with-the-puck))
+13. **Your computer teammates are hit-happy** and switch to defence the moment you lose the puck. ([13.1](#131-hit-happy), [13.2](#132-awareness))
+14. **With line changes off, energy never drains**: Endurance and fatigue do nothing. ([14](#14-myths-things-that-dont-matter))
+
+---
+
 ## Contents
 
 1. [Reading the ratings screen](#1-reading-the-ratings-screen)

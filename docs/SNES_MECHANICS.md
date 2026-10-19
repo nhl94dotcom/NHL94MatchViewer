@@ -24,6 +24,26 @@ For what all this means when you play, without the code, see the [SNES player's 
 | **L / R** | | Take the left / right defenceman |
 | **Select** | Line change | Line change |
 
+## In brief
+
+One line per chapter: the main finding, then the section with the evidence.
+
+1. **Ratings**: a negative ("cold") hot / cold byte maxes the rating (an unsigned-shift bug): about 46% of all ratings, every game; the hidden bonuses are the Genesis ones, the third-period one backwards here too. ([2](#2-ratings-what-the-game-really-uses))
+2. **Skating**: Speed and energy set top speed; most skaters skate at full Speed because of the bug. ([3](#3-skating))
+3. **Shooting**: the stick's screen direction picks the aim point (Up is always high); the same perfect-shot roll as the Genesis; long slapshots rarely score; one-timers follow the d-pad. ([4](#4-shooting))
+4. **Goaltending**: a body box plus areas from each save frame; a person's held save button adds an area to one side; the computer goalie's hold rule; the net ignores a puck the goalie holds; posts are a 5-unit band. ([5](#5-goaltending))
+5. **Passing**: speed comes from the distance (so no rocket pass); the receiver is the nearest teammate in a 90-degree cone; the flip is a computer dump-in; a stick can't play the puck while its no-touch timer runs. ([6](#6-passing-the-flip-and-stickhandling))
+6. **Checking**: no weight bug and no CB trick (everyone uses the same formula); no same-pair rule, so a second hit after a wobble knocks him down. ([7](#7-checking-hooking-poking-and-collisions))
+7. **Penalties**: a person's penalty range overflows a byte (Aggression 12: every roll a penalty); no delayed-penalty immunity; anyone can be called for interference. ([8](#8-penalties))
+8. **Faceoffs**: pure timing, as on the Genesis; confirmed on 70 draws. ([9](#9-faceoffs))
+9. **Penalty shots**: a net knocked off during one gives a retake from the side dot; breakaways and injuries. ([10](#10-penalty-shots))
+10. **Offsides**: off in the leagues; when on, one-timers can be offside. ([11](#11-offsides))
+11. **The computer players**: they switch to defence the moment possession changes (no awareness delay) and roll to check twice a frame (hit-happy). ([12](#12-the-computer-players))
+12. **Energy and the crowd**: with line changes off nothing drains energy. ([13](#13-energy-and-the-crowd))
+13. **The ROMs**: what NHL94_Classic and the SDL ROMs change. ([14](#14-the-roms))
+
+---
+
 ## Contents
 
 1. [How this was found](#1-how-this-was-found)

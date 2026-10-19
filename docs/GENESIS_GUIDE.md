@@ -13,6 +13,27 @@ check.
 Distances: the game measures the rink in units of about **a third of a foot** (blue line to goal line is 180 units, 60
 feet).
 
+## tl;dr
+
+The things about the Genesis game that matter most, one line each; the number after each is the section with the details.
+
+1. **Hot and cold is one hidden value for all of a player's ratings**, and the hot / cold players and flame icons the game shows are fake. ([1.2](#12-what-the-position-inside-a-band-means))
+2. **Don't trust Overall**: it weighs ratings that do nothing in your league's setup. ([1.3](#13-dont-trust-overall))
+3. **Close shots go where you aim** (a good shooter's, most of the time); long ones scatter, and only upward. Long slapshots need Shot Power. ([6](#6-shooting))
+4. **One-timers are the best way to score**: the game aims them for you and the goalie's reach shrinks. ([7](#7-one-timers))
+5. **Saves are geometry**: the goalie is a fixed circle, and being in the way is what stops shots. ([12.1](#121-how-saves-work))
+6. **C doesn't make your goalie bigger**: it freezes him in a save move (the pad stack is the one move that reaches farther). Steer him into the puck's line instead. ([12.2](#122-playing-goal-yourself))
+7. **Through the legs**: a hard, flat puck straight at a goalie in the butterfly can slide right through him. ([12.2](#122-playing-goal-yourself))
+8. **The weight bug**: your checks work best with light players against heavier ones. ([9.1](#91-the-weight-bug))
+9. **The CB check works**, but doubles the penalty risk. ([9.2](#92-the-cb-check))
+10. **Delayed penalty against them = free snipe**: your team can't be called, and your shots go exactly where you aim. ([11](#11-penalties))
+11. **Faceoffs are pure timing**: mash B; ratings don't matter. ([4](#4-faceoffs))
+12. **Passes**: Passing sets speed, not accuracy; long passes rise over sticks; pass shots lift at random; a pass to a teammate skating toward you can come out twice as fast. ([8](#8-passing-and-the-flip))
+13. **A stick ignores the puck for a moment** after its player shoots, passes or loses it, which is why pucks go right through players. ([8](#8-passing-and-the-flip))
+14. **With line changes off, energy never drains**: Endurance and fatigue do nothing, and speed bursts are free. ([15](#15-myths-things-that-dont-matter))
+
+---
+
 ## Contents
 
 1. [Reading the ratings screen](#1-reading-the-ratings-screen)
