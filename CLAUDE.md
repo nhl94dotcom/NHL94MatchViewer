@@ -1378,7 +1378,13 @@ GENESIS_MECHANICS 4.4. Frames 453 / 465 are the pad stacks' first (upright) fram
 puck_meets_skater (frame 1 standing facing up, blade (-4, +20) from HotList; skating with the puck 24-28 ahead; the 22 walk
 band, the stick's 14 ring with the part past 22 untested, body 8, the height bands) in GENESIS_GUIDE 8 and GENESIS_MECHANICS
 6.2; penalty_shot (the Genesis stages with the code's bugs under them, the SNES retake) in both guides' and both mechanics'
-penalty-shot chapters.
+penalty-shot chapters. SNES set (2026-10-19, the user: whatever SNES graphics are missing): snes_saves
+(six goalie frames facing down from NHL94_Classic in Toronto's away colours, SNES_PALETTE; body box -11..10; each save
+frame's hot circle and height band from xg_snes RomData.hot: ready 546 none, glove 547, stick 606, pad stack 581,
+butterfly 732, sprawl 780), snes_shot_scatter (doshot with passspeed = speed / 136, a 15,000 shot), snes_hot_cold (shown
+18n +/- floor(3|b| / 4) squashed under 50 vs played: maxed for b < 0), snes_goalie_hold (puckgoalie's hold chance by the
+faster component and PkC, recorded rates); in SNES_GUIDE 1.2, 6, 11.1 and SNES_MECHANICS 2.5, 4.2, 5.1, 5.4. sprite()
+takes a palette and library list.
 
 ## Advanced stats (2026-10-16)
 

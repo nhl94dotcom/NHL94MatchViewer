@@ -87,7 +87,7 @@ GOALIE_PALETTE = ['#b6ffff', '#dadada', '#000000', '#000024', '#000048', '#00006
                   '#b60000', '#000091', '#486dda', '#6d91ff', '#2448b6', '#da9148', '#6db6b6']
 
 
-def sprite(frame, ox, oy, S, mirrored=False, opacity=0.8, libraries=("592e11a8", "9438f5dd")):
+def sprite(frame, ox, oy, S, mirrored=False, opacity=0.8, libraries=("592e11a8", "9438f5dd"), palette=None):
     """One of the game's sprite frames as SVG squares (one per pixel, S across), its anchor (the player's position) at
     (ox, oy), from the sprite library the converter builds (sprites/<rom>.js here or in Documents/NHL94 Viewer).
     Empty when no library is found, so the diagram still draws without it."""
@@ -105,7 +105,7 @@ def sprite(frame, ox, oy, S, mirrored=False, opacity=0.8, libraries=("592e11a8",
                     slot, c = v // 16, v % 16
                     if c == 0:
                         continue
-                    colour = GOALIE_PALETTE[c] if slot == 0 else lib["fixed"][slot - 1][c]
+                    colour = (palette or GOALIE_PALETTE)[c] if slot == 0 else lib["fixed"][slot - 1][c]
                     px, py = fr["x"] + i % fr["w"], fr["y"] + i // fr["w"]
                     if mirrored:
                         px = -px - 1
@@ -1184,6 +1184,167 @@ def penalty_shot():
     return svg(W, y + 104, b, "Penalty shot")
 
 
+# ---------------------------------------------------------------------------------------------- SNES diagrams
+# Toronto's away colours in NHL94_Classic (cd85e387), from the recorded 2026-10-16_1540_CHI-TOR.
+SNES_PALETTE = ['#94ffff', '#dedede', '#000000', '#0000e6', '#00004a', '#0000e6', '#0000e6', '#c59483', '#eeeeee',
+                '#eeeeee', '#0000e6', '#000052', '#0000e6', '#0000e6', '#9c7329', '#4a94b4']
+# Goalie frames facing down (top net) and their save areas from the ROM (xg_snes RomData.hot: hot x, y (up), radius,
+# top and bottom of the height band; a puck within the radius stops when bottom < height <= top, any height if bottom < 0).
+SNES_SAVE_FRAMES = [("Ready (standing)", 546, None), ("Glove", 547, (-8, -3, 6, 15, 7)), ("Stick", 606, (-8, -2, 8, 8, -2)),
+                    ("Pad stack", 581, (-15, -2, 8, 6, -4)), ("Butterfly", 732, (14, -2, 3, 8, 4)), ("Sprawl", 780, (-28, 5, 2, 5, 2))]
+
+
+def snes_saves():
+    W = 900
+    b = []
+    b.append(text(W / 2, 28, "SNES saves: a body box, plus an area for each save frame", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "To scale, top net, the goalie facing down, with the game's own pictures (NHL94_Classic). Stopped: anything in the box, at any height,",
+                  12, SOFT, "middle"))
+    b.append(text(W / 2, 64, "or a puck inside the save frame's circle within its height band. Ratings don't change any of it.", 12, SOFT, "middle"))
+    S = 4.2
+    for i, (title, frame, hot) in enumerate(SNES_SAVE_FRAMES):
+        cx, cy = 150 + (i % 3) * 300, 220 + (i // 3) * 240
+        b.append(text(cx, cy - 118, title, 13, INK, "middle", "bold"))
+        gl = cy - 22 * S
+        b.append(line(cx - 30 * S, gl, cx + 30 * S, gl, RED, 2))
+        for px in (-17, 17):
+            b.append(circle(cx + px * S, gl, 3.5, INK, INK))
+        b.extend(sprite(frame, cx, cy, S, opacity=0.6, libraries=("cd85e387",), palette=SNES_PALETTE))
+        b.append(f"<rect x='{cx - 11 * S}' y='{cy - 10 * S}' width='{21 * S}' height='{21 * S}' fill='{BLUE}' fill-opacity='0.12' stroke='{BLUE}' stroke-width='2'/>")
+        b.append(circle(cx, cy, 3, INK, INK))
+        if hot:
+            hx, hy, r, top, bottom = hot
+            X, Y = cx + hx * S, cy - hy * S
+            b.append(circle(X, Y, r * S, GREEN, GREEN, 2, None, 0.3))
+            band = f"up to {top} high" if bottom < 0 else f"{bottom + 1}-{top} high"
+            b.append(text(cx, cy + 62, f"area: radius {r}, {band}", 11, GREEN, "middle", "bold"))
+        else:
+            b.append(text(cx, cy + 62, "body box only", 11, BLUE, "middle", "bold"))
+    ly = 565
+    notes = [("Blue square: the body box (11 to his left and below, 10 to his right and above), at any height. It never changes.", BLUE),
+             ("Green: the save frame's area. It only exists while that frame shows, and only for pucks in its height band.", GREEN),
+             ("The computer goalie picks a save move as a shot comes (high / low, near / far). A person's goalie makes one while A is held.", SOFT),
+             ("So on the SNES a save move does make the goalie bigger, unlike the Genesis. A diving goalie lets pucks 5 or higher through.", SOFT)]
+    for k, (s_, col) in enumerate(notes):
+        b.append(text(40, ly + k * 18, s_, 12, col))
+    return svg(W, ly + len(notes) * 18 + 12, b, "SNES saves")
+
+
+def snes_scatter():
+    """SNES doshot: exact within 200 when randoma8(16 + ShA) >= 15 ((ShA + 1) / (ShA + 16)); otherwise
+    s = ((passspeed >> 3) - ShA + 16) x d >> 6, halved under 251, at most 136 (passspeed = speed / 136)."""
+    W, H = 860, 470
+    L, R, T, B = 80, 560, 80, 380
+    X = lambda d: L + (R - L) * d / 400
+    Y = lambda v: B - (B - T) * min(v, 140) / 140
+    b = []
+    b.append(text(W / 2, 28, "Shot scatter (SNES): how far off target a shot can go", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Most a 15,000 shot can miss its aim point to either side, by distance and working Shot Accuracy (0-15). Faster shots scatter more.",
+                  12, SOFT, "middle"))
+    chart_frame(b, L, R, T, B, range(0, 401, 50), range(0, 141, 20), X, Y,
+                "distance from the aim point (units; the aim point is at the goal line, 264)", "most it can miss by, each side",
+                lambda d: f"{d}", str)
+    b.append(f"<rect x='{X(0)}' y='{T}' width='{X(200) - X(0)}' height='{B - T}' fill='{GREEN}' fill-opacity='0.07'/>")
+    b.append(line(X(200), T, X(200), B, GREEN, 1.5, "5 4"))
+    b.append(text(X(200) - 4, T + 14, "can be exact", 11, GREEN, "end"))
+    b.append(text(X(200) + 4, T + 14, "never exact", 11, RED))
+    b.append(line(L, Y(17), R, Y(17), RED, 1.5, "6 4"))
+    b.append(text(R - 4, Y(17) - 6, "goal: 17 from the middle (posts to 22)", 11, RED, "end"))
+    pp = 15000 // 136
+    cols = [RED, ORANGE, BLUE, GREEN]
+    for sha, col in zip((0, 5, 10, 15), cols):
+        pts = []
+        for d in range(0, 401, 2):
+            sv = (((pp >> 3) - sha + 16) * d) >> 6
+            sv = min(sv >> 1 if d < 251 else sv, 136)
+            pts.append(f"{X(d):.1f},{Y(sv):.1f}")
+        b.append(f"<polyline points='{' '.join(pts)}' fill='none' stroke='{col}' stroke-width='2.5'/>")
+    lx, ly = R + 30, T + 10
+    b.append(text(lx, ly, "Shot Accuracy (working)", 13, INK, weight="bold"))
+    b.append(text(lx + 190, ly + 18, "exact within 200", 11, SOFT, "end"))
+    for i, (sha, col) in enumerate(zip((0, 5, 10, 15), cols)):
+        y = ly + 40 + i * 24
+        b.append(line(lx, y - 4, lx + 28, y - 4, col, 3))
+        b.append(text(lx + 36, y, str(sha), 13))
+        b.append(text(lx + 190, y, f"{round(100 * (sha + 1) / (sha + 16))}%", 13, INK, "end"))
+    tips = ["Speed matters more than on the", "Genesis: a 25,000 slapshot", "can miss by about 14 more each", "side at 200 than this 15,000 shot.", "",
+            "The hot / cold bug maxes a cold", "Shot Accuracy at 15: 63 of 112", "recorded shots within 200 were", "by shooters at 15."]
+    for i, s_ in enumerate(tips):
+        b.append(text(lx, ly + 150 + i * 16, s_, 12, SOFT))
+    return svg(W, H, b, "SNES shot scatter")
+
+
+def snes_hot_cold():
+    """SNES ratings screen: shown = 18 x nibble + sign x floor(3|b| / 4) (b the hot / cold byte, -12..12), shown as
+    n / 2 + 25 under 50; played = (nibble & 7) x 5 / 2 + (b >> 2) for b >= 0, but 15 (the maximum) for any b < 0."""
+    W = 860
+    L, R = 160, 760
+    X = lambda v: L + (R - L) * (v - 25) / 75
+    squash = lambda v: v / 2 + 25 if v < 50 else min(v, 99)
+    b = []
+    b.append(text(W / 2, 28, "SNES ratings screen: a number just below the band's middle means MAXED in play", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The hot / cold bug: a \"cold\" rating (shown low in its band) plays at 15, the highest there is.", 12, SOFT, "middle"))
+    for v in range(30, 100, 10):
+        b.append(line(X(v), 74, X(v), 74 + 6 * 46, GRID, 1))
+        b.append(text(X(v), 70, str(v), 10, SOFT, "middle"))
+    for n in range(1, 6):
+        y = 84 + (n - 1) * 46
+        b.append(text(L - 12, y + 16, f"rating step {n}", 12, INK, "end", "bold"))
+        cold0, cold1 = squash(18 * n - 9), squash(18 * n - 1)
+        hot0, hot1 = squash(18 * n), squash(18 * n + 9)
+        b.append(f"<rect x='{X(cold0):.1f}' y='{y}' width='{X(cold1) - X(cold0):.1f}' height='22' fill='{RED}' fill-opacity='0.75'/>")
+        b.append(f"<rect x='{X(hot0):.1f}' y='{y}' width='{X(hot1) - X(hot0):.1f}' height='22' fill='{BLUE}' fill-opacity='0.55'/>")
+        b.append(line(X(squash(18 * n)), y - 3, X(squash(18 * n)), y + 25, INK, 2))
+        base = (n & 7) * 5 // 2
+        b.append(text(X(cold0) + 3, y + 15, "15", 11, "#ffffff", weight="bold"))
+        b.append(text(X(hot1) + 6, y + 15, f"plays {base}-{min(15, base + 3)}", 11, INK))
+    y = 84 + 5 * 46
+    b.append(f"<rect x='{L}' y='{y}' width='18' height='12' fill='{RED}' fill-opacity='0.75'/>")
+    b.append(text(L + 24, y + 11, "shown just below the band's middle: plays at 15 (maxed)", 12))
+    b.append(f"<rect x='{L + 380}' y='{y}' width='18' height='12' fill='{BLUE}' fill-opacity='0.55'/>")
+    b.append(text(L + 404, y + 11, "at or above the middle: plays normally", 12))
+    notes = ["The black tick is the band's middle (hot / cold 0). Each rating has its own hot / cold byte, so read every number separately.",
+             "About 46% of all ratings are maxed this way each game. Checked against the user's Edit Lines screenshots: all 99 numbers fit.",
+             "Maxed Aggression means more penalties (11 of 14 recorded); maxed Stick Handling means wobbling instead of falling."]
+    for i, s_ in enumerate(notes):
+        b.append(text(40, y + 40 + i * 18, s_, 12, SOFT))
+    return svg(W, y + 40 + len(notes) * 18 + 10, b, "SNES hot and cold")
+
+
+def snes_goalie_hold():
+    """SNES puckgoalie: held when both speed components are under randoma((2 + PkC) << 9) + $2000; else it bounces."""
+    W, H = 860, 450
+    L, R, T, B = 90, 580, 80, 360
+    X = lambda v: L + (R - L) * v / 20000
+    Y = lambda p: B - (B - T) * p
+    b = []
+    b.append(text(W / 2, 28, "When the SNES goalie holds a shot instead of giving a rebound", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "By the puck's faster speed component as it hits him, and his Puck Control (working 0-15).", 12, SOFT, "middle"))
+    chart_frame(b, L, R, T, B, range(0, 20001, 2500), [0, 0.25, 0.5, 0.75, 1], X, Y, "the puck's faster speed component (across or along)",
+                "chance he holds it", lambda v: f"{v:,}", lambda p: f"{round(p * 100)}%")
+    cols = [RED, ORANGE, BLUE, GREEN]
+    for pkc, col in zip((0, 5, 10, 15), cols):
+        Rr = (2 + pkc) * 512
+        pts = []
+        for v in range(0, 20001, 100):
+            p = 1.0 if v < 8192 else max(0.0, (Rr - (v - 8192)) / Rr)
+            pts.append(f"{X(v):.1f},{Y(p):.1f}")
+        b.append(f"<polyline points='{' '.join(pts)}' fill='none' stroke='{col}' stroke-width='2.5'/>")
+    lx = R + 30
+    b.append(text(lx, T + 4, "Puck Control", 13, INK, weight="bold"))
+    for i, (pkc, col) in enumerate(zip((0, 5, 10, 15), cols)):
+        y = T + 28 + i * 22
+        b.append(line(lx, y - 4, lx + 28, y - 4, col, 3))
+        b.append(text(lx + 36, y, str(pkc), 13))
+    notes = [("Recorded (102 saves):", INK), ("17,000+: held at once 4 of 41", SOFT), ("8,192-17,000: 28 of 45", SOFT),
+             ("under 8,192: 10 of 16 (a diving", SOFT), ("goalie, and some other states,", SOFT), ("don't hold)", SOFT), ("", SOFT),
+             ("A puck he doesn't hold bounces", SOFT), ("off at the speed of where it hit", SOFT), ("him: shoot hard for rebounds.", SOFT)]
+    for i, (s_, c) in enumerate(notes):
+        b.append(text(lx, T + 130 + i * 17, s_, 12, c, weight="bold" if c == INK else "normal"))
+    b.append(text(L, B + 64, "Slower than 8,192 across and along, he always holds it (when he can); faster than 8,192 plus his range, never.", 12, SOFT))
+    return svg(W, H, b, "SNES goalie hold")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -1194,7 +1355,9 @@ def main():
              "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots(),
              "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions(),
              "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer(),
-             "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot()}
+             "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot(),
+             "snes_saves.svg": snes_saves(), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
+             "snes_goalie_hold.svg": snes_goalie_hold()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

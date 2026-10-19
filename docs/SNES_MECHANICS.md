@@ -158,6 +158,9 @@ Working values 0-15. Every place found where the code reads each rating:
 
 ### 2.5 The numbers on the ratings screens
 
+
+![Which numbers on the SNES ratings screen mean a maxed rating in play](img/snes_hot_cold.svg)
+
 The game's screens (Edit Lines and the rosters) show each rating as a number (`CalcAttrib`): n = 18 x the step (0-6) +
 3/4 of that rating's hot / cold value (so -9 to +9), at least 0, at most 100; **under 50 it is squashed to n / 2 + 25**.
 The hot / cold value shown is exactly the one that plays (the screen reads the same table, rating for rating).
@@ -240,6 +243,9 @@ net put their shots high. **Confirmed**: at every person's shot in two games the
 goals crossed the line where they were aimed.
 
 ### 4.2 Perfect shot or scatter
+
+
+![How far a SNES shot can miss its aim, by distance and Shot Accuracy](img/snes_shot_scatter.svg)
 
 - **Within 200 units of the aim point** (about 65 feet), a roll decides whether the shot goes **exactly** where aimed:
   chance (Shot Accuracy + 1) / (Shot Accuracy + 16). That's at most **52%** (Shot Accuracy 15), 35% at 7.
@@ -362,6 +368,9 @@ they were at recorded one-timers, usually still moving across after the pass).
 
 ### 5.1 Saves are geometry
 
+
+![The SNES goalie's body box and the save area of each save frame](img/snes_saves.svg)
+
 The goalie stops a puck only if it physically reaches him (`checkpuckcoll_ccx`), but the shape differs from the
 Genesis:
 
@@ -434,6 +443,9 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   recorded goalie when the puck arrives (100 shots at computer goalies; 78 within 3 units).
 
 ### 5.4 Holding the puck and rebounds
+
+
+![When the SNES goalie holds a shot, by speed and Puck Control](img/snes_goalie_hold.svg)
 
 `puckgoalie`, when the puck touches his body box (5.1). **Code**; the hold rule **Confirmed** (below).
 

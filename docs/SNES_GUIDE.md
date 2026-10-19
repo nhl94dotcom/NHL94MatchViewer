@@ -127,6 +127,9 @@ Below 50 the game squashes the numbers, so the low bands are narrow. Numbers on 
 
 ### 1.2 Low in the band is good
 
+
+![Which numbers on the SNES ratings screen mean a maxed rating in play](img/snes_hot_cold.svg)
+
 The SNES has a bug in its hot / cold values (2.2): **every "cold" value maxes the rating instead of lowering it.** So
 the screen reads backwards:
 
@@ -221,6 +224,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 
 ![The nine aim points in the SNES net, attacking up and down the screen](img/aim_points_snes.svg)
+
+
+![How far a SNES shot can miss its aim, by distance and Shot Accuracy](img/snes_shot_scatter.svg)
 
 - **You aim with the d-pad as you shoot**, at nine spots in the net, **in screen directions**: Up is high, Down is
   along the ice, Left and Right are the screen's sides. So attacking down the screen, Left is the *shooter's* right,
@@ -365,6 +371,11 @@ The SDL league ROMs use **1-minute minors**.
 ## 11. Goaltending
 
 ### 11.1 How saves work
+
+
+![The SNES goalie's body box and the save area of each save frame](img/snes_saves.svg)
+
+![When the SNES goalie holds a shot, by speed and Puck Control](img/snes_goalie_hold.svg)
 
 **There's no save roll.** The goalie stops pucks that reach a **fixed box around his body** (about 10 units, 3 feet,
 each way), at any height, plus areas for his stick and pads that move with his animation. In recorded games no goal
