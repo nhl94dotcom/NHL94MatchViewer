@@ -34,7 +34,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from systems.common import ROOT  # noqa: E402
 
 PROJECT = Path(__file__).resolve().parent.parent      # where viewer.html and the rink pictures are (or the exe's copy)
-INTERVAL_S = 5.0          # at most one update this often (a conversion near the end of a game takes about 8 s)
+INTERVAL_S = 5.0          # at most one update this often (a conversion near the end of a game takes about 6.5 s)
+REST_SHARE = 0.75         # and after each, rest at least this share of the time it took: the computer isn't kept busy
 SNAPSHOT_EVERY = 6        # a whole-match snapshot every this many updates, for pages that join late
 STATIC_FILES = ["rink_gens.png", "rink_snes.png", "rink_gens.js", "rink_snes.js", "rink_benches.js", "rink_benches_snes.js"]
 
@@ -263,7 +264,8 @@ class Broadcaster:
                     print(f"Live broadcast: update failed: {e}")
                     traceback.print_exc()
                 self.last_error = str(e)
-            self.stop.wait(max(0.5, INTERVAL_S - (time.time() - started)))
+            took = time.time() - started
+            self.stop.wait(max(0.5, INTERVAL_S - took, REST_SHARE * took))
 
     def begin(self, recording, record_size):
         self.stop.clear()
