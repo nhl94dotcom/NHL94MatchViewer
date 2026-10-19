@@ -269,6 +269,8 @@ from the game's own scatter rule for an average shooter (working Shot Accuracy 1
 | Down (along the ice) | 100% | 100% | 78% | 41% | 5% |
 | Down-left / down-right | 79% | 75% | 72% | 41% | 5% |
 
+![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
+
 **At an open net: get within about 180 units (60 feet) if you can, and hold Down or nothing as you shoot, never Up.**
 Not yet checked on recorded shots (only five recorded shots had the goalie far out or pulled; they hint at more going
 wide: 24% wide with him 35-70 units out, 16% in his crease).

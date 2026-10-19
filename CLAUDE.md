@@ -1363,7 +1363,12 @@ mechanics' Units. Third set: one_timers (press-to-strike ranges both systems; Ge
 across, distance from SHOOTING_STUDY part 3), faceoff_directions (dirtab x 32 + 2,048 toward the winner's end, the five
 random directions), penalty_chances (Genesis 5 / R, R = ((40 - Agr) / 2) x 13, person x 2; SNES 1 / R with the person's
 byte wrap, Agr 12 every hit), flip_spots (OneTimerTarget spots, goal-mouth box, over-the-glass strips); in both guides'
-7 and penalties sections, GENESIS_GUIDE 4 and 8, GENESIS_MECHANICS 4.8, 6.3, 8, 9.2, SNES_MECHANICS 4.5, 8.
+7 and penalties sections, GENESIS_GUIDE 4 and 8, GENESIS_MECHANICS 4.8, 6.3, 8, 9.2, SNES_MECHANICS 4.5, 8. Fourth set:
+through_the_legs now overlays the game's own frame 480 (the butterfly, $021E) at 0.6 opacity, the blade at its real hot
+point (9, -2) from the ANA-ATL goals (`sprite()` reads sprites/<rom>.js here or in Documents; GOALIE_PALETTE is that
+game's Atlanta away palette; without a library the diagram draws without it: so a fresh clone can regenerate the
+others); empty_net (MECHANICS 4.2 tables, both systems), computer_defence (assdefd / asswingd / asscenterd spots for
+three puck positions); in both guides' shooting lists and both mechanics 4.2, GENESIS_GUIDE 14, GENESIS_MECHANICS 12.2.
 
 ## Advanced stats (2026-10-16)
 

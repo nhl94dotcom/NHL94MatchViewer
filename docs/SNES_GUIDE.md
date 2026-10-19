@@ -251,6 +251,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   crossbar's height always hits the body and bounces off, and a hard one can knock him over. Anything higher sails
   over everyone.
 
+![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
+
 ---
 
 ## 7. One-timers

@@ -1,0 +1,144 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='860' height='538' viewBox='0 0 860 538' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Empty net</title>
+<rect width='860' height='538' fill='#ffffff'/>
+<text x='430.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>Shooting at an empty net: the chance it goes in, by aim and distance</text>
+<text x='430.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>From each game's scatter rule, for an average shooter and a 15,000 shot you aim yourself (Genesis Shot Accuracy 15, SNES 10).</text>
+<text x='240.0' y='78.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>Genesis</text>
+<line x1='102.9' y1='90.0' x2='102.9' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='102.9' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>60</text>
+<line x1='171.4' y1='90.0' x2='171.4' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='171.4' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>120</text>
+<line x1='240.0' y1='90.0' x2='240.0' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='240.0' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>180</text>
+<line x1='285.7' y1='90.0' x2='285.7' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='285.7' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>220</text>
+<line x1='377.1' y1='90.0' x2='377.1' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='377.1' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>300</text>
+<line x1='80.0' y1='330.0' x2='400.0' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='72.0' y='334.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>0%</text>
+<line x1='80.0' y1='270.0' x2='400.0' y2='270.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='72.0' y='274.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>25%</text>
+<line x1='80.0' y1='210.0' x2='400.0' y2='210.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='72.0' y='214.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>50%</text>
+<line x1='80.0' y1='150.0' x2='400.0' y2='150.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='72.0' y='154.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>75%</text>
+<line x1='80.0' y1='90.0' x2='400.0' y2='90.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='72.0' y='94.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>100%</text>
+<text x='240.0' y='370.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>distance from the net (units; 3 to a foot)</text>
+<text x='28' y='210.0' font-size='12' fill='#1f2933' text-anchor='middle' transform='rotate(-90 28 210.0)'>chance it goes in</text>
+<rect x='262.8571428571429' y='90' width='137.1428571428571' height='240' fill='#c94040' fill-opacity='0.05'/>
+<text x='266.9' y='102.0' font-size='10' fill='#c94040' text-anchor='start' font-weight='normal'>never exact</text>
+<polyline points='102.9,90.0 171.4,133.2 240.0,174.0 285.7,282.0 377.1,325.2' fill='none' stroke='#1f2933' stroke-width='2.5'/>
+<circle cx='102.9' cy='90.0' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='171.4' cy='133.2' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='240.0' cy='174.0' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='285.7' cy='282.0' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='377.1' cy='325.2' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<polyline points='102.9,123.6 171.4,162.0 240.0,176.4 285.7,282.0 377.1,322.8' fill='none' stroke='#52606d' stroke-width='2.5' stroke-dasharray='6 3'/>
+<circle cx='102.9' cy='123.6' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='171.4' cy='162.0' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='240.0' cy='176.4' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='285.7' cy='282.0' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='377.1' cy='322.8' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<polyline points='102.9,188.4 171.4,195.6 240.0,202.8 285.7,322.8 377.1,330.0' fill='none' stroke='#c94040' stroke-width='2.5'/>
+<circle cx='102.9' cy='188.4' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='171.4' cy='195.6' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='240.0' cy='202.8' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='285.7' cy='322.8' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='377.1' cy='330.0' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<polyline points='102.9,193.2 171.4,200.4 240.0,202.8 285.7,322.8 377.1,330.0' fill='none' stroke='#e8833a' stroke-width='2.5' stroke-dasharray='6 3'/>
+<circle cx='102.9' cy='193.2' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='171.4' cy='200.4' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='240.0' cy='202.8' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='285.7' cy='322.8' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='377.1' cy='330.0' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<polyline points='102.9,90.0 171.4,90.0 240.0,142.8 285.7,241.2 377.1,318.0' fill='none' stroke='#3f9d5c' stroke-width='2.5'/>
+<circle cx='102.9' cy='90.0' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='171.4' cy='90.0' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='240.0' cy='142.8' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='285.7' cy='241.2' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='377.1' cy='318.0' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<polyline points='102.9,123.6 171.4,135.6 240.0,152.4 285.7,241.2 377.1,318.0' fill='none' stroke='#3b82c4' stroke-width='2.5' stroke-dasharray='6 3'/>
+<circle cx='102.9' cy='123.6' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='171.4' cy='135.6' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='240.0' cy='152.4' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='285.7' cy='241.2' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='377.1' cy='318.0' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<text x='640.0' y='78.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>SNES</text>
+<line x1='502.9' y1='90.0' x2='502.9' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='502.9' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>60</text>
+<line x1='571.4' y1='90.0' x2='571.4' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='571.4' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>120</text>
+<line x1='640.0' y1='90.0' x2='640.0' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='640.0' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>180</text>
+<line x1='685.7' y1='90.0' x2='685.7' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='685.7' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>220</text>
+<line x1='777.1' y1='90.0' x2='777.1' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='777.1' y='348.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>300</text>
+<line x1='480.0' y1='330.0' x2='800.0' y2='330.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='472.0' y='334.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>0%</text>
+<line x1='480.0' y1='270.0' x2='800.0' y2='270.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='472.0' y='274.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>25%</text>
+<line x1='480.0' y1='210.0' x2='800.0' y2='210.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='472.0' y='214.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>50%</text>
+<line x1='480.0' y1='150.0' x2='800.0' y2='150.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='472.0' y='154.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>75%</text>
+<line x1='480.0' y1='90.0' x2='800.0' y2='90.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='472.0' y='94.0' font-size='11' fill='#52606d' text-anchor='end' font-weight='normal'>100%</text>
+<text x='640.0' y='370.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='normal'>distance from the net (units; 3 to a foot)</text>
+<text x='428' y='210.0' font-size='12' fill='#1f2933' text-anchor='middle' transform='rotate(-90 428 210.0)'></text>
+<rect x='662.8571428571429' y='90' width='137.1428571428571' height='240' fill='#c94040' fill-opacity='0.05'/>
+<text x='666.9' y='102.0' font-size='10' fill='#c94040' text-anchor='start' font-weight='normal'>never exact</text>
+<polyline points='502.9,90.0 571.4,121.2 640.0,181.2 685.7,277.2 777.1,322.8' fill='none' stroke='#1f2933' stroke-width='2.5'/>
+<circle cx='502.9' cy='90.0' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='571.4' cy='121.2' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='640.0' cy='181.2' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='685.7' cy='277.2' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<circle cx='777.1' cy='322.8' r='3.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<polyline points='502.9,140.4 571.4,166.8 640.0,190.8 685.7,277.2 777.1,322.8' fill='none' stroke='#52606d' stroke-width='2.5' stroke-dasharray='6 3'/>
+<circle cx='502.9' cy='140.4' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='571.4' cy='166.8' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='640.0' cy='190.8' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='685.7' cy='277.2' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<circle cx='777.1' cy='322.8' r='3.0' fill='#52606d' fill-opacity='1' stroke='#52606d' stroke-width='1'/>
+<polyline points='502.9,200.4 571.4,212.4 640.0,222.0 685.7,322.8 777.1,330.0' fill='none' stroke='#c94040' stroke-width='2.5'/>
+<circle cx='502.9' cy='200.4' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='571.4' cy='212.4' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='640.0' cy='222.0' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='685.7' cy='322.8' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<circle cx='777.1' cy='330.0' r='3.0' fill='#c94040' fill-opacity='1' stroke='#c94040' stroke-width='1'/>
+<polyline points='502.9,210.0 571.4,217.2 640.0,222.0 685.7,322.8 777.1,330.0' fill='none' stroke='#e8833a' stroke-width='2.5' stroke-dasharray='6 3'/>
+<circle cx='502.9' cy='210.0' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='571.4' cy='217.2' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='640.0' cy='222.0' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='685.7' cy='322.8' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<circle cx='777.1' cy='330.0' r='3.0' fill='#e8833a' fill-opacity='1' stroke='#e8833a' stroke-width='1'/>
+<polyline points='502.9,90.0 571.4,90.0 640.0,142.8 685.7,231.6 777.1,318.0' fill='none' stroke='#3f9d5c' stroke-width='2.5'/>
+<circle cx='502.9' cy='90.0' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='571.4' cy='90.0' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='640.0' cy='142.8' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='685.7' cy='231.6' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<circle cx='777.1' cy='318.0' r='3.0' fill='#3f9d5c' fill-opacity='1' stroke='#3f9d5c' stroke-width='1'/>
+<polyline points='502.9,140.4 571.4,150.0 640.0,157.2 685.7,231.6 777.1,318.0' fill='none' stroke='#3b82c4' stroke-width='2.5' stroke-dasharray='6 3'/>
+<circle cx='502.9' cy='140.4' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='571.4' cy='150.0' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='640.0' cy='157.2' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='685.7' cy='231.6' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<circle cx='777.1' cy='318.0' r='3.0' fill='#3b82c4' fill-opacity='1' stroke='#3b82c4' stroke-width='1'/>
+<line x1='80.0' y1='396.0' x2='110.0' y2='396.0' stroke='#1f2933' stroke-width='3' />
+<text x='118.0' y='400.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Nothing held</text>
+<line x1='340.0' y1='396.0' x2='370.0' y2='396.0' stroke='#52606d' stroke-width='3' stroke-dasharray='6 3' />
+<text x='378.0' y='400.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Left or right</text>
+<line x1='600.0' y1='396.0' x2='630.0' y2='396.0' stroke='#c94040' stroke-width='3' />
+<text x='638.0' y='400.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Up (high)</text>
+<line x1='80.0' y1='416.0' x2='110.0' y2='416.0' stroke='#e8833a' stroke-width='3' stroke-dasharray='6 3' />
+<text x='118.0' y='420.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Up-left / up-right</text>
+<line x1='340.0' y1='416.0' x2='370.0' y2='416.0' stroke='#3f9d5c' stroke-width='3' />
+<text x='378.0' y='420.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Down (along the ice)</text>
+<line x1='600.0' y1='416.0' x2='630.0' y2='416.0' stroke='#3b82c4' stroke-width='3' stroke-dasharray='6 3' />
+<text x='638.0' y='420.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Down-left / down-right</text>
+<text x='60.0' y='456.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Hold Down or nothing at an open net, never Up: the random error only pushes the puck up, so a high aim has no room under the bar.</text>
+<text x='60.0' y='474.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Attacking up the screen, pushing toward the net IS holding Up. Let go of the d-pad, or hold Down, as you shoot.</text>
+<text x='60.0' y='492.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Get closer: inside about 180 units (60 ft) most aims still go in; past 200 no shot is exact and the error is wide.</text>
+<text x='60.0' y='510.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis one-timers ignore the d-pad and go high at an open net (GENESIS_MECHANICS 4.4); SNES one-timers follow it.</text>
+</svg>

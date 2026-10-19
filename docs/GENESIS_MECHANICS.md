@@ -294,6 +294,8 @@ from the game's own scatter rule for an average shooter (working Shot Accuracy 1
 | Down (along the ice) | 100% | 100% | 78% | 37% | 5% |
 | Down-left / down-right | 86% | 81% | 74% | 37% | 5% |
 
+![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
+
 **With the goalie pulled (no goalie on the ice), close in, Up is different:** from within 48 units of the goal line a
 high aim gets the top-shelf lift (4.5), which replaces the shot's height speed and so its upward scatter. The puck
 reaches the line about 10-13 high from 30-48 out, just under the crossbar, and over it from closer than about 25. A
@@ -1392,6 +1394,8 @@ About 0.25 s at the bottom and 0.12 s at the top; the range within a rating is h
 
 
 ![Where computer skaters go on offence, by the puck's zone](img/computer_positions.svg)
+
+![Where computer skaters go on defence, by the puck's zone](img/computer_defence.svg)
 
 Coordinates: x across (right wing +, left wing -), y toward the net the team attacks; boxes are centre +/- range.
 

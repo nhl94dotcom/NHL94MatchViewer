@@ -309,6 +309,8 @@ The computer never holds a direction, so its wins go a random way.
   make him move first: pass across, shoot off the rush, follow up rebounds.
 - **The viewer's xG map** (Map menu) shows the chance from every spot, for the shot type, shooter and goalie you pick.
 
+![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
+
 ---
 
 ## 7. One-timers
@@ -581,6 +583,8 @@ which goalie is stealing games.
 
 
 ![Where computer skaters go on offence, by the puck's zone](img/computer_positions.svg)
+
+![Where computer skaters go on defence, by the puck's zone](img/computer_defence.svg)
 
 - **Awareness is reaction time** for computer players: 0.25 s at the bottom, 0.12 s at the top. It decides how fast
   they react to turnovers, loose pucks and rushes. **It never affects the player you control.**

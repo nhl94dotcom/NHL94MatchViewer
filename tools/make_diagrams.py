@@ -81,11 +81,46 @@ def saves():
     return svg(820, ly + 100, b, "Saves are geometry")
 
 
+# Atlanta's away colours in the 2-on-2 ROM of the recorded through-the-legs goals (2026-10-19_0818_ANA-ATL).
+GOALIE_PALETTE = ['#b6ffff', '#dadada', '#000000', '#000024', '#000048', '#00006d', '#da9191', '#b66d6d', '#ff9100',
+                  '#b60000', '#000091', '#486dda', '#6d91ff', '#2448b6', '#da9148', '#6db6b6']
+
+
+def sprite(frame, ox, oy, S, mirrored=False, opacity=0.8, libraries=("592e11a8", "9438f5dd")):
+    """One of the game's sprite frames as SVG squares (one per pixel, S across), its anchor (the player's position) at
+    (ox, oy), from the sprite library the converter builds (sprites/<rom>.js here or in Documents/NHL94 Viewer).
+    Empty when no library is found, so the diagram still draws without it."""
+    import json
+    for crc in libraries:
+        for folder in (OUT.parent.parent / "sprites", Path.home() / "Documents" / "NHL94 Viewer" / "sprites"):
+            f = folder / f"{crc}.js"
+            if f.exists():
+                t = f.read_text(encoding="utf-8")
+                lib = json.loads(t[t.index("{"):t.rindex("}") + 1])
+                fr = lib["frames"][f"{frame:03x}"]
+                out = [f"<g opacity='{opacity}' shape-rendering='crispEdges'>"]
+                for i, ch in enumerate(fr["p"]):
+                    v = ord(ch) - 48
+                    slot, c = v // 16, v % 16
+                    if c == 0:
+                        continue
+                    colour = GOALIE_PALETTE[c] if slot == 0 else lib["fixed"][slot - 1][c]
+                    px, py = fr["x"] + i % fr["w"], fr["y"] + i // fr["w"]
+                    if mirrored:
+                        px = -px - 1
+                    out.append(f"<rect x='{ox + px * S:.1f}' y='{oy + py * S:.1f}' width='{S + 0.4:.1f}' height='{S + 0.4:.1f}' fill='{colour}'/>")
+                out.append("</g>")
+                return out
+    return []
+
+
 # ---------------------------------------------------------------------------------------------- 2. through the legs
 def through_legs():
-    """The butterfly's blind ring (Genesis): body circle 13, blade 11 to his side, the stick's 8-14 ring."""
+    """The butterfly's blind ring (Genesis): body circle 13, the stick's 8-14 ring around the blade of frame 480 (the
+    butterfly, $021E, facing down, not mirrored: the hot point 9 to his right, 2 in front, as in the recorded goals),
+    with the game's own picture of that frame under it."""
     S, cx, cy = 11, 330, 300          # goalie's centre on screen; game +y (toward his net) is screen up
-    reach, bx, by = 13, 11, -2.3      # a typical computer goalie; the blade in a butterfly / kick save
+    reach, bx, by = 13, 9, -2         # a typical computer goalie; the blade of frame 480 (HotList)
     P = lambda x, y: (cx + x * S, cy - y * S)
     b = [ARROW]
     b.append(text(360, 28, "Through the legs: the butterfly's blind ring (Genesis)", 17, anchor="middle", weight="bold"))
@@ -104,11 +139,17 @@ def through_legs():
             f"M{X - 8 * S},{Y} a{8 * S},{8 * S} 0 1,0 {16 * S},0 a{8 * S},{8 * S} 0 1,0 {-16 * S},0 z'/>")
     b.append(ring)
     b.append(circle(X, Y, 8 * S, GREEN, GREEN, 1.5, None, 0.35))
-    b.append(f"<rect x='{X - 7}' y='{Y - 4}' width='14' height='8' fill='{INK}'/>")
-    b.append(text(X, Y + 20, "blade", 12, INK, "middle", "bold"))
+    b.extend(sprite(480, cx, cy, S, opacity=0.6))
+    b.append(circle(cx, cy, reach * S, "none", BLUE, 2))
+    b.append(circle(X, Y, 14 * S, "none", ORANGE, 2))
+    b.append(circle(X, Y, 8 * S, "none", GREEN, 2))
+    b.append(circle(X, Y, 6, INK, "#ffffff", 2))
+    b.append(line(X + 6, Y + 6, X + 3 * S, Y + 4 * S, INK, 1))
+    b.append(text(X + 3 * S + 4, Y + 4 * S + 12, "blade (the stick's hot point)", 12, INK, weight="bold"))
     b.append(line(cx - 7, cy - 7, cx + 7, cy + 7, INK, 2.5))
     b.append(line(cx - 7, cy + 7, cx + 7, cy - 7, INK, 2.5))
-    b.append(text(cx - 12, cy - 10, "his centre", 12, INK, "end", "bold"))
+    b.append(line(cx - 8, cy + 4, cx - 15 * S, cy + 3 * S, INK, 1))
+    b.append(text(cx - 15 * S - 4, cy + 3 * S + 4, "his centre (position)", 12, INK, "end", "bold"))
     # the puck's path straight at his middle, one dot a frame at about 22,700 (5.5 units a frame)
     step = 22700 / 4096
     y = -13.4 - 4 * step              # one frame lands just short of his body, the next inside the ring
@@ -127,7 +168,7 @@ def through_legs():
     b.append(line(h0[0], h0[1], h1[0], h1[1], RED, 2.5, None, "marker-end='url(#arr)'"))
     # notes on the right
     nx = 600
-    notes = [(P(0, -12)[1], "1. Front strip: about 2 units of body", "test before the ring begins. A fast puck", "(3-7 units a frame) often steps over it."),
+    notes = [(P(0, -12)[1], "1. Front edge: only a sliver of his body", "is tested before the ring begins; the", "puck steps straight over it."),
              (P(0, -2)[1], "2. Blind ring (8-14 from the blade):", "the stick doesn't play the puck, and the", "body test is skipped. It slides through."),
              (P(0, 10)[1], "3. Out of the ring behind his centre:", "the body test hits, and the bounce goes", "out from his centre: back, into the net.")]
     for yy, *ls in notes:
@@ -135,6 +176,7 @@ def through_legs():
         for i, s in enumerate(ls):
             b.append(text(nx, yy + 4 + i * 15, s, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
     ly = int(P(0, -40)[1])
+    b.append(text(70, ly - 18, "Under the rings: the game's own picture of the goalie in that butterfly (frame 480), drawn as on screen, his body rising up the page from his position.", 12, INK))
     leg = [("#cfe3f5", BLUE, "body circle (reach 13 here; 12-15 by Agility)"),
            (GREEN, GREEN, "within 8 of the blade: the stick plays a low puck"),
            (ORANGE, ORANGE, "8-14 from the blade: nothing is tested at all")]
@@ -752,6 +794,126 @@ def flip_spots():
     return svg(W, oy + 124, b, "The flip")
 
 
+# ---------------------------------------------------------------------------------------------- 15. open-net chances
+EMPTY_NET = {  # chance an aimed shot goes into an empty net, by aim, at 60 / 120 / 180 / 220 / 300 units (MECHANICS 4.2)
+    "genesis": {"Nothing held": [100, 82, 65, 20, 2], "Left or right": [86, 70, 64, 20, 3], "Up (high)": [59, 56, 53, 3, 0],
+                "Up-left / up-right": [57, 54, 53, 3, 0], "Down (along the ice)": [100, 100, 78, 37, 5],
+                "Down-left / down-right": [86, 81, 74, 37, 5]},
+    "snes": {"Nothing held": [100, 87, 62, 22, 3], "Left or right": [79, 68, 58, 22, 3], "Up (high)": [54, 49, 45, 3, 0],
+             "Up-left / up-right": [50, 47, 45, 3, 0], "Down (along the ice)": [100, 100, 78, 41, 5],
+             "Down-left / down-right": [79, 75, 72, 41, 5]}}
+
+
+def empty_net():
+    W = 860
+    b = []
+    b.append(text(W / 2, 28, "Shooting at an empty net: the chance it goes in, by aim and distance", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "From each game's scatter rule, for an average shooter and a 15,000 shot you aim yourself (Genesis Shot Accuracy 15, SNES 10).",
+                  12, SOFT, "middle"))
+    dists = [60, 120, 180, 220, 300]
+    cols = {"Nothing held": INK, "Left or right": SOFT, "Up (high)": RED, "Up-left / up-right": ORANGE,
+            "Down (along the ice)": GREEN, "Down-left / down-right": BLUE}
+    for p, system in enumerate(("genesis", "snes")):
+        L = 80 + p * 400
+        R, T, B = L + 320, 90, 330
+        X = lambda d: L + (R - L) * (d - 40) / 280
+        Y = lambda v: B - (B - T) * v / 100
+        b.append(text((L + R) / 2, 78, "Genesis" if system == "genesis" else "SNES", 13, INK, "middle", "bold"))
+        chart_frame(b, L, R, T, B, dists, range(0, 101, 25), X, Y, "distance from the net (units; 3 to a foot)",
+                    "chance it goes in" if p == 0 else "", str, lambda v: f"{v}%")
+        b.append(f"<rect x='{X(200)}' y='{T}' width='{R - X(200)}' height='{B - T}' fill='{RED}' fill-opacity='0.05'/>")
+        b.append(text(X(200) + 4, T + 12, "never exact", 10, RED))
+        for aim, vals in EMPTY_NET[system].items():
+            dash = "6 3" if "/" in aim or aim == "Left or right" else None
+            pts = " ".join(f"{X(d):.1f},{Y(v):.1f}" for d, v in zip(dists, vals))
+            b.append(f"<polyline points='{pts}' fill='none' stroke='{cols[aim]}' stroke-width='2.5'"
+                     + (f" stroke-dasharray='{dash}'" if dash else "") + "/>")
+            for d, v in zip(dists, vals):
+                b.append(circle(X(d), Y(v), 3, cols[aim], cols[aim], 1))
+    ly = 400
+    for i, (aim, col) in enumerate(cols.items()):
+        x, y = 80 + (i % 3) * 260, ly + (i // 3) * 20
+        dash = "6 3" if "/" in aim or aim == "Left or right" else None
+        b.append(line(x, y - 4, x + 30, y - 4, col, 3, dash))
+        b.append(text(x + 38, y, aim, 12))
+    notes = ["Hold Down or nothing at an open net, never Up: the random error only pushes the puck up, so a high aim has no room under the bar.",
+             "Attacking up the screen, pushing toward the net IS holding Up. Let go of the d-pad, or hold Down, as you shoot.",
+             "Get closer: inside about 180 units (60 ft) most aims still go in; past 200 no shot is exact and the error is wide.",
+             "Genesis one-timers ignore the d-pad and go high at an open net (GENESIS_MECHANICS 4.4); SNES one-timers follow it."]
+    for i, s in enumerate(notes):
+        b.append(text(60, ly + 56 + i * 18, s, 12, SOFT))
+    return svg(W, ly + 56 + len(notes) * 18 + 10, b, "Empty net")
+
+
+# ---------------------------------------------------------------------------------------------- 16. defensive positions
+def defence_positions():
+    """Genesis defending jobs (the team defends the BOTTOM net, attacking up): assdefd (D: 50 behind the deepest attacker,
+    no deeper than about 205, x 65 on his side or 0 with the puck on the other side), asswingd (x 100 on his side or the
+    puck's x when it's on his side; y the puck's y beyond 78 from his goal... -158 with it in the zone, the goal line
+    with it behind), asscenterd (x half the puck's; y -128 with the puck in the zone, else halfway to it)."""
+    W, S = 860, 0.5
+    b = []
+    b.append(text(W / 2, 28, "Where computer skaters go on defence (Genesis), by where the puck is", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The defending team's own net is at the BOTTOM. Hollow marks: the attacking carrier (puck) and their deepest player.",
+                  12, SOFT, "middle"))
+
+    def spots(px, py, deep):
+        in_zone, behind = py < -88, py < -268
+        side = lambda sg: px * sg > 0
+        d_y = max(deep - 50, -205)
+        out = {"LD": (0 if not side(-1) else -65, d_y), "RD": (0 if not side(1) else 65, d_y)}
+        for name, sg in (("LW", -1), ("RW", 1)):
+            wx = px if side(sg) else sg * 100
+            wy = -268 if behind else -158 if in_zone else py
+            out[name] = (wx, wy)
+        out["C"] = (px / 2, -128 if in_zone else (py - 128) / 2)
+        return out
+
+    panels = [("Puck in the neutral zone", (35, 20), -40), ("Puck in his zone", (60, -180), -230), ("Puck behind his net", (-30, -285), -285)]
+    cols = {"LD": BLUE, "RD": BLUE, "LW": GREEN, "RW": GREEN, "C": ORANGE}
+    for i, (title, (px, py), deep) in enumerate(panels):
+        ox, oy = 160 + i * 270, 90 + 300 * S
+        P = lambda x, y: (ox + x * S * 1.6, oy - y * S)
+        x0, y0 = P(-130, 300)
+        b.append(f"<rect x='{x0}' y='{y0}' width='{260 * S * 1.6}' height='{600 * S}' rx='{30 * S}' fill='#f7fbff' stroke='{SOFT}' stroke-width='1.5'/>")
+        for yy, col, w in ((88, BLUE, 3), (-88, BLUE, 3), (0, RED, 2), (268, RED, 1.5), (-268, RED, 1.5)):
+            a, c = P(-130, yy), P(130, yy)
+            b.append(line(a[0], a[1], c[0], c[1], col, w))
+        a = P(-20, -268)
+        b.append(f"<rect x='{a[0]}' y='{a[1]}' width='{40 * S * 1.6}' height='8' fill='#ffffff' stroke='{INK}'/>")
+        b.append(text(ox, y0 - 12, title, 13, INK, "middle", "bold"))
+        for name, (x, y) in spots(px, py, deep).items():
+            c = P(x, y)
+            if math.hypot(x - px, y - py) < 25:      # on (or at) the carrier: drawn beside it, joined to it
+                k = P(px, py)
+                c = (k[0] + 24, k[1] - 16)
+                b.append(line(k[0], k[1], c[0], c[1], cols[name], 1.5))
+            b.append(circle(c[0], c[1], 10, cols[name], "#ffffff", 1.5, None, 0.9))
+            b.append(text(c[0], c[1] + 4, name, 9, "#ffffff", "middle", "bold"))
+        c = P(px, py)
+        b.append(circle(c[0], c[1], 8, "#ffffff", INK, 2.5))
+        b.append(circle(c[0], c[1], 3, INK, INK))
+        d = P(px - 40 if px > 0 else px + 40, deep) if deep != py else None
+        if d:
+            b.append(circle(d[0], d[1], 8, "#ffffff", RED, 2.5))
+    ly = 90 + 600 * S + 40
+    items = [(BLUE, "defencemen: 50 behind the deepest attacker (no deeper than ~205); the one away from the puck moves to the middle"),
+             (GREEN, "wingers: level with the puck (on the puck's side: right on the carrier); at 158 in the zone; at the goal line behind it"),
+             (ORANGE, "centre: halfway between the puck and the high slot (128 out); in the slot once the puck is in the zone")]
+    for i, (col, s) in enumerate(items):
+        b.append(circle(70, ly + i * 20 - 4, 7, col, "#ffffff", 1.5))
+        b.append(text(84, ly + i * 20, s, 12))
+    b.append(circle(70, ly + 60 - 4, 7, "#ffffff", INK, 2))
+    b.append(text(84, ly + 60, "the attacking carrier", 12))
+    b.append(circle(290, ly + 60 - 4, 7, "#ffffff", RED, 2))
+    b.append(text(304, ly + 60, "their deepest player (sets the defencemen's depth)", 12))
+    notes = ["One skater, whoever is nearest, chases the carrier instead (assnearest); the defencemen re-read the deepest attacker only at",
+             "their Defensive Awareness ticks (7-15 frames), so a quick step-out and back in leaves them where they were."]
+    for i, s in enumerate(notes):
+        b.append(text(60, ly + 94 + i * 17, s, 12, SOFT))
+    return svg(W, ly + 140, b, "Computer defence")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -759,7 +921,8 @@ def main():
              "weight_bug.svg": weight_bug(), "shoulder_bobble.svg": shoulder_bobble(), "rocket_pass.svg": rocket_pass(),
              "computer_positions.svg": positioning(), "rink_feet.svg": rink(),
              "one_timers.svg": one_timers(), "faceoff_directions.svg": faceoff_directions(),
-             "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots()}
+             "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots(),
+             "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)
