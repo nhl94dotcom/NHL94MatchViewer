@@ -16,7 +16,9 @@ record or check and what it will settle. Newest at the bottom of each section.
    nothing. *Settles:* the empty-net table in the mechanics docs (section 4.2), worked out from the code but not yet
    seen on real shots.
 
-4. **Pucks through the goalie's legs (Genesis).** In a two-controller practice game: with one controller, send fast
+4. ~~**Pucks through the goalie's legs (Genesis).**~~ Done (2026-10-19): the user's 2v2 game confirmed it (three goals);
+   one more recorded going down the screen would show the bottom net's band too.
+   Was: **Pucks through the goalie's legs (Genesis).** In a two-controller practice game: with one controller, send fast
    flat pucks straight at the goalie's middle (a pass shot: B with nobody ahead, toward the net; or a slapshot aimed
    along the ice, Down held); with the other, have the goalie press C as it arrives (a butterfly) a few times, and not
    press it a few times. Note roughly when. *Settles:* the blind band through the middle of a butterfly (GENESIS_MECHANICS

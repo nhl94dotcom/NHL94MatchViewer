@@ -534,7 +534,11 @@ line** (his ready stance holds it 4-6 units in front). Standing about 242-250 fr
 front (261), and a carried puck entering the net is taken off its carrier, who can't touch it for 8 frames, and
 bounced away (`checkgoal`). Loose on the next frame, it is a goal if it then crosses the line inside the mouth;
 otherwise he takes it back. It can't happen at the bottom net. **Code** (the hold points read from the ROM: shoulder
-saves facing down (-10, +15) and (+10, +14), facing up (+9, +14) and (-9, +14)); no case in the recordings yet.
+saves facing down (-10, +15) and (+10, +14), facing up (+9, +14) and (-9, +14)). **Confirmed** (2026-10-19_0818_ANA-ATL,
+the user's 2v2 test game, P3 4:00, which the user took for a bump): Rucchin's flat pass shot at the standing top goalie
+was knocked up by his stick (no-touch 8), he caught it in a high save (ghighl, frame 667, hold point 14 behind him), the
+puck was pulled back to y 260, the net's front took it off him (no-touch 8 again) and it slid in. No skater came within
+17 of it after the pass.
 
 ### 5.4 Goalie whistles
 
@@ -608,8 +612,17 @@ hit sends the puck straight out from his centre through the contact point, at th
 centre that's backward, into his own net, and slowly (or, slow enough, he holds it for a moment). Standing, his stick
 sits in front of his middle and plays the puck first. A puck in the air skips the stick test and meets his body in
 front. That fits what players see: flat pucks only (pass shots, errant passes, slapshots aimed along the ice), straight
-at him, in a butterfly or kick save. **From the ROM and the code; not yet seen in a recording** (shots there are nearly
-always lifted); a test is in NEEDS_FROM_YOU.
+at him, in a butterfly or kick save. **Confirmed** on the user's 2v2 test game (2026-10-19_0818_ANA-ATL, three goals at
+the top net: P1 2:48, P1 2:11, P3 2:24; `analysis/goal_trace.py` prints any goal this way): Rucchin's flat pass shots at
+about 22,700 went straight up at the goalie in the butterfly (frame 480, blade 9-13 to the side), passed 1-4 units from
+his centre entirely in the blind band, met his body 8-13 behind his centre and bounced backward at 2,200-3,500 (his
+no-touch going to 10), into the net. Of the eight flat pass shots through the middle of the butterfly in that period,
+six were saved: the puck came within 8 of the blade at some frame (2 units toward his stick side), or a frame landed on
+the thin strip of body at the front edge. So it's partly the line (dead centre, or away from his stick side) and partly
+where the frames fall. Pucks in the air met his body in front and were saved (the user: "all of my attempts that hit
+the goalie with the puck above the ice were saved and held"). The bottom net's butterfly (frame 472) has the same band;
+the user's period 2 pass shots at it all came off the stick lifted (heights 8-16, see 6.1: a pass shot's lift is random),
+which is why that period gave none.
 
 Also from the code: **a goalie you control who goes out of view** (more than $74 across or $64 up or down from the
 camera's centre) is moved by the computer's routine, save moves included, until he's back on screen
@@ -748,6 +761,14 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   BOS-DAL P1 3:40, 2257 BOS-DAL P1 3:18, 2149 BOS-WPG P1 3:32, P2 3:42 and P3 4:38. The computer hardly ever passes
   when a person has the carrier, which is why it looks like a person's pass. **The SNES sets pass speed from the
   distance instead**, so it never happens there.
+- **Why some passes lift off the ice** (`dopass`, `passtoa0`): a pass to a teammate is lifted by how long it will take
+  to reach him: its vertical speed is 256 x the flight time in eighths of a second (capped at 12), so its peak height is
+  about (eighths)^2 / 12: a quick pass stays on the ice, one of about a second rises to 5 (over sticks), long passes to 12.
+  A pass with nobody to take it (a pass shot, a pass into space) gets a **random** lift, 0 to 4,095: a peak anywhere from 0
+  to about 21, fresh each time. **Confirmed** (the BOS-DAL, BOS-WPG and ANA-ATL games): 675 of 691 passes to a teammate left
+  with 256 x t (median 256 at one eighth, about 2,000 at a second, 3,000 at the cap); 113 passes to nobody spread 0 to about
+  4,000 (quartiles 900, 2,000, 3,100). While rising faster than $200 a pass can't be played by any stick (6.2), so a lifted
+  pass sails over sticks until it comes down.
 - **Who it goes to:** the nearest teammate within 45 degrees of the direction held. A teammate straight ahead gets no
   penalty; one 45 degrees off counts as if he were 256 units farther away. With nobody in that cone, the puck just goes
   that way: that's how **pass shots** happen.

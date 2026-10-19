@@ -1315,7 +1315,12 @@ rising (shots are lifted). analysis/slip_study.py: 12-16 from his centre standin
 saves 27 / 47 from 12-20. Through the legs (the user's clarification: fast flat puck straight at the middle, butterfly):
 butterfly / kick-save frames put the blade 10-13 to the side, so a low non-rising puck through his middle is in the 8-14
 blind band (no stick or body test) until behind his centre, where the body hit bounces it backward (offset x 256, slow)
-into the net; ready stance has the stick in front. ROM + code only; none in the recordings (NEEDS_FROM_YOU 4). C freezes a person's goalie (pf2aip: doinput skips his input) ~0.57 s at speed / 4. SNES save
+into the net; ready stance has the stick in front. Confirmed on the user's 2v2 game 2026-10-19_0818_ANA-ATL (ROM 784b3674,
+Anaheim vs Atlanta): goals P1 2:48, P1 2:11, P3 2:24 (frame 480, puck 1-4 from his centre in the band, bounced back
+from 8-13 behind at 2,200-3,500); 2 of 8 such flat pass shots in P1 went in; P3 4:00 was the top net's shoulder-save
+bobble (stick knock-up, ghighl hold point 14 behind, net strips it). analysis/goal_trace.py <capture> <period> <m:ss>
+traces any moment. Pass lift: targeted puckvz = 256 x min(t, 12) (move.b into puckvz's high byte; 675 / 691),
+untargeted randomd0($1000) (quartiles 900 / 2,000 / 3,100); peak height ~ vz^2 / 786432. C freezes a person's goalie (pf2aip: doinput skips his input) ~0.57 s at speed / 4. SNES save
 frames add 12-28 hit areas. GENESIS_MECHANICS 5.5 and 6.1, GENESIS_GUIDE 8 and 12.2.
 
 ## Advanced stats (2026-10-16)

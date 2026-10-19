@@ -297,6 +297,9 @@ The computer never holds a direction, so its wins go a random way.
   speed.
 - **Pass shots:** with nobody in the cone, the puck just goes that way, hard. Aimed at the net, it's a shot the game
   doesn't count unless it scores.
+- **Why some passes lift:** a pass to a teammate rises by how long it will take: quick passes stay on the ice,
+  passes of a second or more rise over sticks (and can't be caught while still going up). A pass to nobody (a pass shot)
+  gets a random lift, anywhere from flat to well over the goalie's pads: you can't choose it.
 - **The rocket pass (a bug):** pass to a teammate skating **toward** you from about 50-70 units away and the game can
   send the puck at twice the normal speed (it rounds the time they'll meet down to the nearest eighth of a second).
   One or two a game. It can catch a receiver off guard or bounce off his stick.
