@@ -448,6 +448,27 @@ gave mostly pad stacks (16). With A, 8 goals in 25 (xG 0.41 a shot); without, 4 
 him back into the net with it does nothing. On the Genesis the net strips the puck from him at the goal line, and a
 nudge then scores (GENESIS_MECHANICS 5.9). **Code**
 
+### 5.8 Long slapshots
+
+Worked out with the expected-goals model's rules (4.7), the computer goalie started where recorded SNES computer
+goalies stood at shots from 90+ units, working Shot Accuracy 15, aimed just inside a post or at the middle at
+mid-height. Percent that go in (`analysis/goalie_study.py longsnes`):
+
+| Spot | 16,000 | 20,000 | 24,000 | 28,000 |
+|---|---|---|---|---|
+| 120 out, 25 to the side: far / near / middle | 2.0 / 2.5 / 2.5 | 1.7 / 2.5 / 2.4 | 2.2 / 4.3 / 2.3 | 3.7 / **7.1** / 2.8 |
+| 120 out, 60 to the side | 2.6 / 2.6 / 2.6 | 2.3 / 4.5 / 2.7 | 2.0 / 4.4 / 2.1 | 4.4 / **9.1** / 2.3 |
+| 160 out, 25 to the side | 1.8 / 1.7 / 2.4 | 2.3 / 2.2 / 2.1 | 1.7 / 2.0 / 2.0 | 2.0 / 2.5 / 2.1 |
+| 200 out, 25 to the side | 0.5 / 0.7 / 0.9 | 0.7 / 0.8 / 0.9 | 0.6 / 0.6 / 0.4 | 0.4 / 1.0 / 0.6 |
+
+- **Long slapshots hardly ever score on the SNES**: a few percent at best, against 15-23% for the hardest Genesis
+  shots from 40 feet (GENESIS_MECHANICS 5.8). The SNES goalie keeps sliding through his save moves, which also stretch
+  his reach to one side, and the goal mouth is narrower (35 against 41) with wide posts.
+- **Power helps less, and only at the near post**: with the hardest shots the near post is about twice as good as the
+  far one. Shot Accuracy changes little (a 26,000 shot 120 out at the near post: 2.9% at working 5, 4.5% at 15).
+- **Confirmed** on the recordings: 1 goal in 17 SNES slapshots from 100-200 units out (the model's xG for them: 0.7),
+  against 5 in 39 on the Genesis (xG 4.5).
+
 ---
 
 ## 6. Passing, the flip and stickhandling

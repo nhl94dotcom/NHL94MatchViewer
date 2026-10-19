@@ -173,6 +173,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **No delayed-penalty bonus**: a referee's raised arm doesn't make your shots more accurate (the Genesis does).
 - **A hard shot that deflects off the goalie's stick or glove isn't a shot on goal**, high or low (in his glove saves
   the glove reaches 7-15 off the ice). About 1 in 7 shots that reach the goalie go uncounted, whichever way you aim.
+- **Don't count on long slapshots.** From the blue line to about 40 feet out, even the hardest shots go in only a
+  few percent of the time on the SNES (1 in 17 in recorded games), far less than on the Genesis. If you do shoot from
+  there, the near post is the better aim. Get closer or pass across instead.
 - **The posts are wide on the SNES.** The scoring part of the net is narrower than on the Genesis, and the last 5
   units on each side are post: a shot aimed at a side that drifts a little outward rings off the post (about 1 shot in
   12 that reaches the net, four times the Genesis rate). There's no crossbar to hit: anything high enough to reach it

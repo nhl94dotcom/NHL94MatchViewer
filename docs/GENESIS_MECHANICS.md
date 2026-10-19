@@ -638,7 +638,8 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   had usually picked a stick save: he chooses a low move for a puck under height 8, and it doesn't change his reach.
   The four slapshot goals from 100+ were all by a Shot Accuracy 27 shooter; far post and near post were mixed. The
   model doesn't show the far-post advantage players report; recorded examples would settle it
-  (NEEDS_FROM_YOU).
+  (NEEDS_FROM_YOU). Over all the Genesis recordings, slapshots from 100-200 units out scored 5 times in 39 (13%), where
+  the model's xG for them adds up to 4.5. On the SNES it's far harder: SNES_MECHANICS 5.8.
 
 ### 5.9 Pushing the goalie into the net with the puck
 

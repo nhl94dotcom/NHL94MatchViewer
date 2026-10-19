@@ -230,7 +230,51 @@ def part_long():
               " | ".join(f"{D} out: far {chance(25, 264 - D, -16, 26000, sha):4.1f} near {chance(25, 264 - D, 16, 26000, sha):4.1f}" for D in (120, 160, 200)))
 
 
+def part_long_snes():
+    """Long slapshots on the SNES, as part_long: xg_snes's rules, the computer goalie started where recorded SNES
+    computer goalies stood at shots from 90+ (relative to xg_snes.set_spot, + toward the shooter's side)."""
+    import xg_snes
+    rom = (Path.home() / "RetroArch-1.17-Win64/ROMs/SNES/NHL94_Classic.smc").read_bytes()
+    data = xg_snes.RomData(rom)
+    states = []
+    for n, m in games("snes"):
+        for s in m["shotList"]:
+            if s["kind"] != "shot" or s["result"] == "blocked" or s.get("gctl") != "cpu":
+                continue
+            f = s["f"]
+            gk = goalie(m, f, 1 - s["team"])
+            if gk is None:
+                continue
+            (gx, gy), (px, py) = pos(m, f, gk), puck(m, f)
+            sg = 1 if gy > 0 else -1
+            px, py, gx, gy = px * sg, py * sg, gx * sg, gy * sg
+            if math.hypot(px, 268 - py) < 90 or abs(px) < 15:
+                continue
+            sx, sy = xg_snes.set_spot(px, py, True)
+            vx, vy = xg._velocity(m, f, gk)
+            side = 1 if px > 0 else -1
+            states.append(((gx - sx) * side, gy - sy, vx * sg * side, vy * sg))
+
+    def chance(px, py, aimx, speed, sha, n=3000):
+        rng = random.Random(7)
+        sx, sy = xg_snes.set_spot(px, py, True)
+        goals = 0
+        for _ in range(n):
+            dx, dy, vx, vy = states[rng.randrange(len(states))]
+            G = xg_snes.Goalie(data, sx + dx, sy + dy, vx * 4096, vy * 4096, 4, 546, 48, 10, 10, 11)
+            goals += xg_snes.play_out(px, py, aimx, 264, 6, speed / 136, sha, (sha + 1) / (sha + 16), G, rng) == "goal"
+        return 100 * goals / n
+    print(f"== snes: long slapshots, % goals (computer goalie as recorded: {len(states)} states; working Shot Accuracy 15)")
+    for D, ax in ((120, 25), (120, 60), (160, 25), (160, 60), (200, 25)):
+        print(f"  {D} out, {ax} to the side:", " | ".join(
+            f"{sp}: far {chance(ax, 264 - D, -15, sp, 15):4.1f} near {chance(ax, 264 - D, 15, sp, 15):4.1f} mid {chance(ax, 264 - D, 0, sp, 15):4.1f}"
+            for sp in (16000, 20000, 24000, 28000)))
+    for sha in (5, 10, 15):
+        print(f"  Shot Accuracy {sha:2}, a 26000 slapshot 25 to the side:",
+              " | ".join(f"{D} out: far {chance(25, 264 - D, -15, 26000, sha):4.1f} near {chance(25, 264 - D, 15, 26000, sha):4.1f}" for D in (120, 160, 200)))
+
+
 if __name__ == "__main__":
-    parts = {"button": part_button, "lag": part_lag, "windup": part_windup, "long": part_long}
+    parts = {"button": part_button, "lag": part_lag, "windup": part_windup, "long": part_long, "longsnes": part_long_snes}
     for p in sys.argv[1:] or parts:
         parts[p]()
