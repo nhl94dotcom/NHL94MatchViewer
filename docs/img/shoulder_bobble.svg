@@ -1,0 +1,38 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='820' height='525' viewBox='0 0 820 525' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Shoulder-save bobble</title>
+<rect width='820' height='525' fill='#ffffff'/>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<text x='410.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>The shoulder-save bobble (Genesis): why only the top net</text>
+<text x='410.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Seen from above, to scale. In a shoulder save the game holds the puck at a point 14-15 up the screen from the goalie.</text>
+<rect x='126.0' y='145.0' width='168.0' height='63.0' fill='#f3f5f7' stroke='#52606d'/>
+<line x1='42.0' y1='208.0' x2='378.0' y2='208.0' stroke='#c94040' stroke-width='3' />
+<circle cx='126.0' cy='208.0' r='4.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='294.0' cy='208.0' r='4.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<line x1='126.0' y1='237.4' x2='294.0' y2='237.4' stroke='#e8833a' stroke-width='2' stroke-dasharray='5 3' />
+<text x='298.2' y='241.4' font-size='11' fill='#e8833a' text-anchor='start' font-weight='normal'>net front</text>
+<circle cx='210.0' cy='300.4' r='54.6' fill='#cfe3f5' fill-opacity='0.8' stroke='#3b82c4' stroke-width='2'/>
+<text x='210.0' y='304.4' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>G</text>
+<line x1='210.0' y1='300.4' x2='168.0' y2='237.4' stroke='#1f2933' stroke-width='1.5' stroke-dasharray='3 3' marker-end='url(#arr)'/>
+<circle cx='168.0' cy='237.4' r='7.0' fill='#c94040' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<text x='210.0' y='90.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Top net: goalie faces down</text>
+<text x='210.0' y='400.0' font-size='12' fill='#c94040' text-anchor='middle' font-weight='normal'>The hold point is BEHIND him, past the net's</text>
+<text x='210.0' y='417.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>front. The puck is pulled there, the net</text>
+<text x='210.0' y='434.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>strips it off his stick, and it slides in</text>
+<text x='210.0' y='451.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>(the net never bounces a puck moving into it).</text>
+<rect x='526.0' y='292.0' width='168.0' height='63.0' fill='#f3f5f7' stroke='#52606d'/>
+<line x1='442.0' y1='292.0' x2='778.0' y2='292.0' stroke='#c94040' stroke-width='3' />
+<circle cx='526.0' cy='292.0' r='4.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='694.0' cy='292.0' r='4.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<line x1='526.0' y1='262.6' x2='694.0' y2='262.6' stroke='#e8833a' stroke-width='2' stroke-dasharray='5 3' />
+<text x='698.2' y='266.6' font-size='11' fill='#e8833a' text-anchor='start' font-weight='normal'>net front</text>
+<circle cx='610.0' cy='199.6' r='54.6' fill='#cfe3f5' fill-opacity='0.8' stroke='#3b82c4' stroke-width='2'/>
+<text x='610.0' y='203.6' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>G</text>
+<line x1='610.0' y1='199.6' x2='647.8' y2='140.8' stroke='#1f2933' stroke-width='1.5' stroke-dasharray='3 3' marker-end='url(#arr)'/>
+<circle cx='647.8' cy='140.8' r='7.0' fill='#3f9d5c' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<text x='610.0' y='90.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Bottom net: goalie faces up</text>
+<text x='610.0' y='400.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>The hold point is in FRONT of him, out in</text>
+<text x='610.0' y='417.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>the ice. The puck stays on his stick, well</text>
+<text x='610.0' y='434.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>away from the net: nothing can happen.</text>
+<text x='60.0' y='490.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>It also needs him standing near his goal line and roughly centred when he catches it, which is why it's rare.</text>
+<text x='60.0' y='507.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Recorded: one goal (ANA-ATL P3 4:00, a pass shot his stick popped up). Shoot high at the top net and follow it in.</text>
+</svg>

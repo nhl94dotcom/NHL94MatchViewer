@@ -1355,8 +1355,11 @@ mouth), through_the_legs (body 13, blade (11, -2.3), the 8-14 ring, the puck a f
 _snes (both attack directions; SNES post band 17-22), shot_scatter (doshot's s by distance for working ShA 0-30, exact
 chance), faceoff_timing (the 18-frame swing, average value 176 / (18 + gap), the win table). Placed in GENESIS_GUIDE 4, 6,
 12.1, 12.2; GENESIS_MECHANICS 4.1, 4.2, 5.1, 5.5, 9.1; SNES_GUIDE 6; SNES_MECHANICS 4.1. Rerun the script after a number
-changes. Possible next ones: the weight bug, the shoulder-save bobble, the rocket pass, computer positioning, the rink in
-feet.
+changes. Second set (the same day): weight_bug (CCStart's knockdown number by weight difference, person 240 wrapping in a
+byte vs computer 120), shoulder_bobble (ghighr / ghighl hold points, top vs bottom net), rocket_pass (passtoa0 speed vs
+distance at an ideal 15,000), computer_positions (asswingo / asscentero / assdefo boxes by puck zone), rink_feet; in
+GENESIS_GUIDE 9.1, 12.1, 8, 14 and both guides' Distances and speeds, GENESIS_MECHANICS 7.2, 5.3, 6.1, 12.2 and both
+mechanics' Units.
 
 ## Advanced stats (2026-10-16)
 

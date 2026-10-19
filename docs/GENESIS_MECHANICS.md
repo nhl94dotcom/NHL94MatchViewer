@@ -612,6 +612,9 @@ sign holds at the bottom net: **the net never bounces a puck moving into the mou
 a puck its own team carries into its net is only held back one frame and goes in if it keeps moving (5.9, 13.3). In the
 7 earlier top-net shoulder-save losses in the recordings, the puck never reached the net.
 
+![The shoulder save's hold point at the top net and the bottom net](img/shoulder_bobble.svg)
+
+
 ### 5.4 Goalie whistles
 
 - Holding the puck: about 2.3 s (140 frames) after he takes it; 5 frames if he took it in a dive.
@@ -861,6 +864,9 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   penalty; one 45 degrees off counts as if he were 256 units farther away. With nobody in that cone, the puck just goes
   that way: that's how **pass shots** happen.
 
+![Pass speed by distance, with the travel time rounded down](img/rocket_pass.svg)
+
+
 ### 6.2 Catching and bobbles
 
 - A skater can take a pass only if it's at stick height (5 or lower) and **slower than 13,000 + 350 x his working
@@ -988,6 +994,9 @@ recordings that went over the glass (heights 44 and 42 at the boards).
 - **Goalies can't be knocked down.**
 
 ### 7.2 The weight bug and the CB check
+
+
+![Knockdown number by weight difference, for a person's checker and the computer's](img/weight_bug.svg)
 
 The community knows the **weight bug**: a person-controlled skater checks better when light, a computer one better
 when heavy. The cause:
@@ -1368,6 +1377,9 @@ About 0.25 s at the bottom and 0.12 s at the top; the range within a rating is h
 - Bonuses (2.3) and a loud crowd (14.3) speed reactions up slightly.
 
 ### 12.2 Where computer skaters position themselves
+
+
+![Where computer skaters go on offence, by the puck's zone](img/computer_positions.svg)
 
 Coordinates: x across (right wing +, left wing -), y toward the net the team attacks; boxes are centre +/- range.
 
@@ -1753,6 +1765,9 @@ C-then-B check, and the weight bug for computer checkers too.
 ## 18. Appendix: units, addresses and sources
 
 ### Units
+
+
+![The rink with its landmarks in game units and feet](img/rink_feet.svg)
 
 - **Position:** game units. The rink runs about -130 to +130 across and -300 to +300 along; goal lines at +/-268,
   blue lines at about +/-88. About 3 units per foot.

@@ -45,6 +45,9 @@ The things about the SNES game that matter most, one line each; the number after
 
 ## Distances and speeds
 
+
+![The rink with its landmarks in game units and feet](img/rink_feet.svg)
+
 Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
 speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 

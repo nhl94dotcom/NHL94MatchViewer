@@ -306,10 +306,263 @@ def faceoffs():
     return svg(W, ty + 200, b, "Faceoff timing")
 
 
+def chart_frame(b, L, R, T, B, xs, ys, X, Y, xlabel, ylabel, xfmt=str, yfmt=str):
+    for v in xs:
+        b.append(line(X(v), T, X(v), B, GRID, 1))
+        b.append(text(X(v), B + 18, xfmt(v), 11, SOFT, "middle"))
+    for v in ys:
+        b.append(line(L, Y(v), R, Y(v), GRID, 1))
+        b.append(text(L - 8, Y(v) + 4, yfmt(v), 11, SOFT, "end"))
+    b.append(text((L + R) / 2, B + 40, xlabel, 12, INK, "middle"))
+    b.append(f"<text x='{L - 52}' y='{(T + B) / 2}' font-size='12' fill='{INK}' text-anchor='middle' "
+             f"transform='rotate(-90 {L - 52} {(T + B) / 2})'>{ylabel}</text>")
+
+
+# ---------------------------------------------------------------------------------------------- 6. the weight bug
+def weight_bug():
+    """CCStart: knockdown automatic when (base - checker weight + target weight) / 2 - impact <= 0, else a roll against
+    that number; base 240 for a checker a person controls (summed in ONE byte: wraps past 255), 120 for the computer.
+    Weight = 8 per rating step (8 lb)."""
+    W, H = 820, 470
+    L, R, T, B = 110, 560, 80, 360
+    X = lambda d: L + (R - L) * (d + 8) / 16
+    Y = lambda v: B - (B - T) * v / 130
+    b = []
+    b.append(text(W / 2, 28, "The weight bug (Genesis): how hard it is to knock a man down", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The game's knockdown number: lower is easier (at or below the hit's impact, he goes down for sure; above it, a roll).",
+                  12, SOFT, "middle"))
+    chart_frame(b, L, R, T, B, range(-8, 9, 2), range(0, 131, 20), X, Y,
+                "target's weight minus the checker's (lb; one rating step = 8 lb)", "knockdown number (lower = easier)",
+                lambda d: f"{d * 8:+d}" if d else "0")
+    b.append(line(X(0), T, X(0), B, SOFT, 1, "3 3"))
+    person = [(d, ((240 + 8 * d) & 0xFF) // 2) for d in range(-8, 9)]
+    cpu = [(d, max(0, 120 + 8 * d) // 2) for d in range(-8, 9)]
+    for pts, col in ((cpu, BLUE), (person[:10], RED), (person[10:], RED)):
+        b.append("<polyline points='" + " ".join(f"{X(d):.1f},{Y(v):.1f}" for d, v in pts) +
+                 f"' fill='none' stroke='{col}' stroke-width='2.5'/>")
+        for d, v in pts:
+            b.append(circle(X(d), Y(v), 3.5, col, col, 1))
+    b.append(text(X(2.6), Y(38), "16+ lb heavier: near 0", 11, RED))
+    b.append(text(X(-7.8), Y(person[0][1]) + 22, "a person's checker", 12, RED, weight="bold"))
+    b.append(text(X(-7.6), Y(cpu[0][1]) + 22, "computer checker (and the CB check)", 12, BLUE, weight="bold"))
+    b.append(text(X(2) + 6, Y(person[9][1]) + 4, "wraps past 255", 11, RED))
+    lx = R + 30
+    notes = [("Why:", INK), ("the sum (240 - checker + target)", SOFT), ("is done in one byte, so for a", SOFT),
+             ("person's checker it wraps round", SOFT), ("past 255 once the target is 2+", SOFT), ("steps (16+ lb) heavier.", SOFT),
+             ("", SOFT), ("Recorded knockdown rates", INK), ("(target heavier / same / lighter):", SOFT),
+             ("person 48% / 15% / 7%", RED), ("computer 15% / 27% / 34%", BLUE), ("", SOFT),
+             ("CB check: C to burst, then B to", SOFT), ("switch away before contact: the", SOFT),
+             ("computer's line, but double the", SOFT), ("charging / roughing risk.", SOFT)]
+    for i, (s, c) in enumerate(notes):
+        b.append(text(lx, T + 4 + i * 17, s, 12, c, weight="bold" if c == INK else "normal"))
+    b.append(text(L, B + 64, "Light checkers on heavy carriers is the person's best check; a heavy person-controlled checker on a light man almost never works.",
+                  12, SOFT))
+    return svg(W, H, b, "The weight bug")
+
+
+# ---------------------------------------------------------------------------------------------- 7. shoulder-save bobble
+def shoulder_bobble():
+    """ghighr / ghighl hold points: facing down (top goalie) (-10, +15) / (+10, +14), i.e. behind him; facing up
+    (+9, -14) / (-9, -14) in front. The held puck is pulled toward it; the net's front strips a carried puck."""
+    W, S = 820, 4.2
+    b = [ARROW]
+    b.append(text(W / 2, 28, "The shoulder-save bobble (Genesis): why only the top net", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Seen from above, to scale. In a shoulder save the game holds the puck at a point 14-15 up the screen from the goalie.",
+                  12, SOFT, "middle"))
+    for panel, (ox, top) in enumerate(((210, True), (610, False))):
+        oy = 250
+        gy_game = 246 if top else -246
+        Pp = lambda x, y: (ox + x * S, oy - (y - (258 if top else -258)) * S)
+        goal = 268 if top else -268
+        # net and goal line
+        ny = Pp(0, goal)[1]
+        depth = -15 * S if top else 15 * S
+        b.append(f"<rect x='{ox - 20 * S}' y='{min(ny, ny + depth):.1f}' width='{40 * S}' height='{abs(depth):.1f}' fill='#f3f5f7' stroke='{SOFT}'/>")
+        b.append(line(ox - 40 * S, ny, ox + 40 * S, ny, RED, 3))
+        for px in (-20, 20):
+            b.append(circle(ox + px * S, ny, 4, INK, INK))
+        fy = Pp(0, 261 if top else -261)[1]
+        b.append(line(ox - 20 * S, fy, ox + 20 * S, fy, ORANGE, 2, "5 3"))
+        b.append(text(ox + 21 * S, fy + 4, "net front", 11, ORANGE))
+        gx, gyy = Pp(0, gy_game)
+        b.append(circle(gx, gyy, 13 * S, "#cfe3f5", BLUE, 2, None, 0.8))
+        b.append(text(gx, gyy + 4, "G", 14, INK, "middle", "bold"))
+        hx, hy = (-10, gy_game + 15) if top else (9, gy_game + 14)
+        HX, HY = Pp(hx, hy)
+        b.append(line(gx, gyy, HX, HY, INK, 1.5, "3 3", "marker-end='url(#arr)'"))
+        b.append(circle(HX, HY, 7, RED if top else GREEN, INK, 1.5))
+        title = "Top net: goalie faces down" if top else "Bottom net: goalie faces up"
+        b.append(text(ox, 90, title, 15, INK, "middle", "bold"))
+        if top:
+            ls = ["The hold point is BEHIND him, past the net's", "front. The puck is pulled there, the net",
+                  "strips it off his stick, and it slides in", "(the net never bounces a puck moving into it)."]
+        else:
+            ls = ["The hold point is in FRONT of him, out in", "the ice. The puck stays on his stick, well", "away from the net: nothing can happen."]
+        for i, s in enumerate(ls):
+            b.append(text(ox, 400 + i * 17, s, 12, RED if top and i == 0 else SOFT, "middle"))
+    b.append(text(60, 490, "It also needs him standing near his goal line and roughly centred when he catches it, which is why it's rare.", 12, SOFT))
+    b.append(text(60, 507, "Recorded: one goal (ANA-ATL P3 4:00, a pass shot his stick popped up). Shoot high at the top net and follow it in.", 12, SOFT))
+    return svg(W, 525, b, "Shoulder-save bobble")
+
+
+# ---------------------------------------------------------------------------------------------- 8. the rocket pass
+def rocket_pass():
+    """passtoa0: the meeting time in whole eighths of a second, rounded down (at least 1), and the speed that covers the
+    distance in that time; a pass whose ideal speed is 15,000 (a mid Passing rating) travels 27.5 units an eighth."""
+    W, H = 820, 470
+    L, R, T, B = 110, 600, 80, 360
+    X = lambda d: L + (R - L) * d / 200
+    Y = lambda v: B - (B - T) * v / 34000
+    b = []
+    b.append(text(W / 2, 28, "The rocket pass (Genesis): the travel time is rounded down", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The game times a pass to meet the receiver in whole eighths of a second, rounded down, then sends it fast enough to get there.",
+                  12, SOFT, "middle"))
+    chart_frame(b, L, R, T, B, range(0, 201, 25), range(0, 34001, 5000), X, Y,
+                "distance from the passer to where the receiver catches it (units; 3 to a foot)", "pass speed",
+                str, lambda v: f"{v:,}")
+    b.append(f"<rect x='{L}' y='{Y(34000)}' width='{R - L}' height='{Y(25000) - Y(34000)}' fill='{RED}' fill-opacity='0.07'/>")
+    b.append(text(R - 6, Y(25000) - 6, "rocket: over 25,000", 11, RED, "end"))
+    b.append(line(L, Y(15000), R, Y(15000), SOFT, 1.5, "6 4"))
+    b.append(text(R - 6, Y(15000) + 16, "the speed it should be: 15,000", 11, SOFT, "end"))
+    per = 15000 / 4096 * 7.5
+    pts = []
+    for i in range(2, 401):
+        d = i / 2
+        t = max(1, int(d / per))
+        pts.append(f"{X(d):.1f},{Y(min(33800, 15000 * (d / per) / t)):.1f}")
+    b.append(f"<polyline points='{' '.join(pts)}' fill='none' stroke='{RED}' stroke-width='2.5'/>")
+    for k in range(1, 8):
+        b.append(text(X(k * per), B - 6, f"{k}/8 s", 10, SOFT, "middle"))
+    lx = R + 25
+    notes = [("Where it bites:", INK), ("a meeting just over an eighth", SOFT), ("of a second away (28-55 units)", SOFT),
+             ("is timed as one eighth, so the", SOFT), ("pass goes up to twice as fast.", SOFT), ("", SOFT),
+             ("That's a receiver skating", SOFT), ("toward you from about 50-70", SOFT), ("units (17-23 ft) away.", SOFT), ("", SOFT),
+             ("Longer passes are off by less", SOFT), ("(at most 1/8 s of 2, 3, 4 ...).", SOFT), ("", SOFT),
+             ("Recorded: 24 of 718 person", SOFT), ("passes over 25,000.", SOFT)]
+    for i, (s, c) in enumerate(notes):
+        b.append(text(lx, T + 4 + i * 17, s, 12, c, weight="bold" if c == INK else "normal"))
+    b.append(text(L, B + 64, "The SNES sets a pass's speed from the distance instead, so it has no rocket pass.", 12, SOFT))
+    return svg(W, H, b, "Rocket pass")
+
+
+# ---------------------------------------------------------------------------------------------- 9. computer positioning
+def positioning():
+    """Genesis asswingo / asscentero / assdefo boxes by the puck's zone (y toward the goal the team attacks)."""
+    W, S = 860, 0.5
+    b = []
+    b.append(text(W / 2, 28, "Where computer skaters go on offence (Genesis), by where the puck is", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The team attacks UP. Each skater picks a random spot in his box and keeps it until the puck changes zone.",
+                  12, SOFT, "middle"))
+    panels = [("Puck in own zone", -180,
+               {"W": [(80, -70, 20, 10)], "C": [(0, -70, 60, 10)]}, None),
+              ("Puck in the neutral zone", 0,
+               {"W": [(100, 58, 20, 5)], "C": [(0, 60, 60, 10)]}, None),
+              ("Puck in the attacking zone", 180,
+               {"W": [(60, 230, 50, 20)], "C": [(0, 170, 40, 30)], "D": [(80, 98, 6, 4)]}, None),
+              ("Puck behind the goal line", 285,
+               {"W": [(80, 250, 30, 20)], "C": [(0, 170, 80, 20)], "D": [(80, 98, 6, 4)]}, None)]
+    cols = {"W": GREEN, "C": ORANGE, "D": BLUE}
+    for i, (title, puck_y, boxes, _) in enumerate(panels):
+        ox, oy = 110 + i * 210, 260
+        P = lambda x, y: (ox + x * S, oy - y * S)
+        x0, y0 = P(-130, 300)
+        b.append(f"<rect x='{x0}' y='{y0}' width='{260 * S}' height='{600 * S}' rx='{46 * S}' fill='#f7fbff' stroke='{SOFT}' stroke-width='1.5'/>")
+        for yy, col, w in ((88, BLUE, 3), (-88, BLUE, 3), (0, RED, 2), (268, RED, 1.5), (-268, RED, 1.5)):
+            a, c = P(-130, yy), P(130, yy)
+            b.append(line(a[0], a[1], c[0], c[1], col, w))
+        for yy in (268, -268):
+            a = P(-20, yy)
+            b.append(f"<rect x='{a[0]}' y='{a[1] - (8 if yy > 0 else 0)}' width='{40 * S}' height='8' fill='#ffffff' stroke='{INK}'/>")
+        for who, bl in boxes.items():
+            for (bx, by, hx, hy) in bl:
+                for sg in ((-1, 1) if bx else (1,)):
+                    a = P(sg * bx - hx, by + hy)
+                    b.append(f"<rect x='{a[0]:.1f}' y='{a[1]:.1f}' width='{2 * hx * S:.1f}' height='{2 * hy * S:.1f}' fill='{cols[who]}' "
+                             f"fill-opacity='0.35' stroke='{cols[who]}' stroke-width='1.5'/>")
+                    c = P(sg * bx, by)
+                    b.append(text(c[0], c[1] + 4, who, 11, INK, "middle", "bold"))
+        pp = P(-30 if puck_y < 285 else 40, puck_y)
+        b.append(circle(pp[0], pp[1], 6, INK, "#ffffff", 2))
+        b.append(text(ox, oy - 300 * S - 14, title, 13, INK, "middle", "bold"))
+        if "D" not in boxes:
+            b.append(text(ox, oy + 300 * S + 18, "D: hang back (defensive spots)", 11, SOFT, "middle"))
+        else:
+            b.append(text(ox, oy + 300 * S + 18, "D: just inside the blue line", 11, SOFT, "middle"))
+    ly = 260 + 300 * S + 50
+    for j, (who, label) in enumerate((("W", "wingers (left box: left wing)"), ("C", "centre"), ("D", "defencemen"))):
+        x = 110 + j * 230
+        b.append(f"<rect x='{x}' y='{ly - 11}' width='22' height='13' fill='{cols[who]}' fill-opacity='0.35' stroke='{cols[who]}'/>")
+        b.append(text(x + 30, ly, label, 12))
+    b.append(circle(110 + 3 * 230 - 30, ly - 5, 6, INK, "#ffffff", 2))
+    b.append(text(110 + 3 * 230 - 18, ly, "the puck", 12))
+    notes = ["A skater switches to his defensive job when the other team gets the puck, at his next awareness tick (7-15 frames).",
+             "The box is re-picked when the puck changes zone (or 1 tick in 128), so forwards drift to new spots as play moves."]
+    for k, s in enumerate(notes):
+        b.append(text(60, ly + 26 + k * 17, s, 12, SOFT))
+    return svg(W, ly + 70, b, "Computer positioning")
+
+
+# ---------------------------------------------------------------------------------------------- 10. the rink in feet
+def rink():
+    """The rink lying on its side: game units and feet (3 units to a foot)."""
+    W, S = 860, 1.2
+    ox, oy = 430, 250
+    P = lambda x, y: (ox + y * S, oy - x * S)      # game y runs left-right here, game x up-down
+    b = [ARROW]
+    b.append(text(W / 2, 28, "The rink in game units and feet (both systems; about 3 units to a foot)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Lying on its side: the screen's up is to the right here. The top net is on the right.", 12, SOFT, "middle"))
+    a = P(130, -300)
+    b.append(f"<rect x='{a[0]}' y='{a[1]}' width='{600 * S}' height='{260 * S}' rx='{46 * S}' fill='#f7fbff' stroke='{INK}' stroke-width='2'/>")
+    for yy, col, w in ((88, BLUE, 4), (-88, BLUE, 4), (0, RED, 3), (268, RED, 2), (-268, RED, 2)):
+        p, q = P(-130, yy), P(130, yy)
+        b.append(line(p[0], p[1], q[0], q[1], col, w))
+    for yy in (268, -268):
+        p = P(20, yy)
+        d = 15 * S if yy > 0 else -15 * S
+        b.append(f"<rect x='{min(p[0], p[0] + d)}' y='{p[1]}' width='{abs(d)}' height='{40 * S}' fill='#ffffff' stroke='{INK}'/>")
+        g = P(0, yy - 22 if yy > 0 else yy + 22)
+        b.append(circle(g[0], g[1], 4, BLUE, BLUE))
+    for (x, y) in [(sx * 70, sy * 206) for sx in (-1, 1) for sy in (-1, 1)] + [(sx * 70, sy * 65) for sx in (-1, 1) for sy in (-1, 1)] + [(0, 0)]:
+        p = P(x, y)
+        b.append(circle(p[0], p[1], 3.5, RED, RED))
+        if abs(y) == 206:
+            b.append(circle(p[0], p[1], 30 * S, "none", RED, 1))
+    c = P(0, 0)
+    b.append(circle(c[0], c[1], 30 * S, "none", BLUE, 1))
+    # the slot: within 60 of the net, 50 wide
+    p = P(50, 268 - 60)
+    b.append(f"<rect x='{p[0]}' y='{p[1]}' width='{60 * S}' height='{100 * S}' fill='{GOLD}' fill-opacity='0.18' stroke='{GOLD}' stroke-dasharray='4 3'/>")
+    s1 = P(-55, 268 - 30)
+    b.append(text(s1[0], s1[1], "high danger", 10, "#8a6d00", "middle"))
+
+    def dim(y1, y2, x, label, below=False):
+        p, q = P(x, y1), P(x, y2)
+        b.append(line(p[0], p[1], q[0], q[1], INK, 1.2, None, "marker-start='url(#arr)' marker-end='url(#arr)'"))
+        b.append(text((p[0] + q[0]) / 2, p[1] + (16 if below else -6), label, 11, INK, "middle"))
+
+    dim(-300, 300, 150, "600 units = 200 ft")
+    dim(0, 88, -150, "88 = 29 ft", True)
+    dim(88, 268, -150, "180 = 60 ft (the attacking zone)", True)
+    dim(268, 300, -150, "32 = 11 ft", True)
+    p, q = P(130, -330), P(-130, -330)
+    b.append(line(p[0], p[1], q[0], q[1], INK, 1.2, None, "marker-start='url(#arr)' marker-end='url(#arr)'"))
+    b.append(f"<text x='{p[0] - 8}' y='{(p[1] + q[1]) / 2}' font-size='11' fill='{INK}' text-anchor='middle' "
+             f"transform='rotate(-90 {p[0] - 8} {(p[1] + q[1]) / 2})'>260 units = 87 ft</text>")
+    ly = oy + 130 * S + 70
+    notes = ["Goal lines at 268 from centre; blue lines at 88; end-zone dots 70 across, 62 out from the goal line (21 ft); goalies stand",
+             "about 20-25 out (7-8 ft, blue dots). Goal mouth 40 units wide (13 ft) on the Genesis; the SNES scores 34 wide, posts to 44.",
+             "High danger (shot maps): within 60 of the net and 50 to either side. Shots can be exact within 200 of the aim point (67 ft)."]
+    for i, s in enumerate(notes):
+        b.append(text(40, ly + i * 17, s, 12, SOFT))
+    return svg(W, ly + 60, b, "The rink in feet")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
-             "aim_points_snes.svg": aim_points("snes"), "shot_scatter.svg": scatter(), "faceoff_timing.svg": faceoffs()}
+             "aim_points_snes.svg": aim_points("snes"), "shot_scatter.svg": scatter(), "faceoff_timing.svg": faceoffs(),
+             "weight_bug.svg": weight_bug(), "shoulder_bobble.svg": shoulder_bobble(), "rocket_pass.svg": rocket_pass(),
+             "computer_positions.svg": positioning(), "rink_feet.svg": rink()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

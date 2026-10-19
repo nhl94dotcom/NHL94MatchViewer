@@ -35,6 +35,9 @@ The things about the Genesis game that matter most, one line each; the number af
 
 ## Distances and speeds
 
+
+![The rink with its landmarks in game units and feet](img/rink_feet.svg)
+
 Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
 speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 
@@ -392,6 +395,9 @@ The computer never holds a direction, so its wins go a random way.
 - **Over the glass:** outside the attacking zone, out on one side (not right on the boards), facing those boards, the
   flip's spot is pushed past the boards and the puck goes out of play.
 
+![Pass speed by distance, with the travel time rounded down](img/rocket_pass.svg)
+
+
 ---
 
 ## 9. Checking
@@ -409,6 +415,9 @@ the two players' weights, and **for the player you control** the sum overflows:
 The computer's checkers work the sensible way: heavier checkers do better. Recorded games: a person checking a man
 2+ steps heavier knocked him down 48% of the time, 7% against a man 2+ steps lighter; computer checkers the other way
 round, 15% and 34%.
+
+![Knockdown number by weight difference, for a person's checker and the computer's](img/weight_bug.svg)
+
 
 **What to do:** check bigger players with smaller ones. **Your heavy carriers are vulnerable** to a human opponent's
 lighter checkers; against the computer's checkers, weight protects them.
@@ -499,6 +508,9 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
   top net and follow it in.
   It can't happen at the bottom net.
 
+![The shoulder save's hold point at the top net and the bottom net](img/shoulder_bobble.svg)
+
+
 ### 12.2 Playing goal yourself
 
 - Stay in your area: **a goalie you control who skates more than about 33 feet out from his goal line** (past the
@@ -555,6 +567,9 @@ which goalie is stealing games.
 ---
 
 ## 14. Your computer teammates
+
+
+![Where computer skaters go on offence, by the puck's zone](img/computer_positions.svg)
 
 - **Awareness is reaction time** for computer players: 0.25 s at the bottom, 0.12 s at the top. It decides how fast
   they react to turnovers, loose pucks and rushes. **It never affects the player you control.**

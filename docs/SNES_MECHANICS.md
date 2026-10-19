@@ -969,6 +969,9 @@ everything in this document applies to all of these ROMs.
 
 ### Units
 
+
+![The rink with its landmarks in game units and feet](img/rink_feet.svg)
+
 - **Position:** game units, as on the Genesis: the rink runs about -130 to +130 across and -300 to +300 along; goal
   lines at +/-268, blue lines at +/-88. About 3 units per foot.
 - **Speed:** the game's velocity words; skaters top out around 9,000.
