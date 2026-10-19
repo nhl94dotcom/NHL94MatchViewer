@@ -2444,8 +2444,10 @@ function drawPuck(f) {
   // The puck's shadow and resting picture: the Genesis frames, unless the library names its own (the SNES's: its
   // frame 394 is the instant replay's crosshair). A frame of 0 (none read) shows the puck at rest.
   const own = spriteLibrary && spriteLibrary.puck, shadow = own ? own.shadow : PUCK_SHADOW, onIce = own ? own.onIce : PUCK_ON_ICE;
-  const read = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : onIce, key = read === '000' ? onIce : read;
-  const lib = spritesOn && spriteLibrary && m.palettes ? spriteLibrary.frames : null;
+  const read = m.puckFrame ? m.puckFrame.substr(f * 3, 3) : onIce, lib = spritesOn && spriteLibrary && m.palettes ? spriteLibrary.frames : null;
+  // The SNES puck's frame word now and then reads 406, which is a net picture (the user saw the puck turn into a net
+  // for a moment): anything bigger than a puck picture shows the puck at rest.
+  const key = read === '000' || (lib && lib[read] && lib[read].w > 12) ? onIce : read;
   if (lib && lib[key] && lib[shadow]) {
     for (const [k, up] of [[shadow, 0], [key, Math.max(0, z)]]) {
       const sprite = spriteImage(k, lib[k], 0, false);
