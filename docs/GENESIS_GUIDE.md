@@ -227,6 +227,10 @@ The computer never holds a direction, so its wins go a random way.
   and take passes in stride.
 - **Speed bursts (C without the puck) give a big push** in the direction you face, and with line changes off they
   cost nothing.
+- **Runaway speed (a bug):** right after your skater is knocked into the boards, or after you take over a teammate as a
+  pass is coming to him, the game can leave his friction off. Bursts then stack instead of fading, and two of them can
+  send him off at twice top speed, sliding out of control. Go easy on bursts for a few seconds after those moments;
+  touching the puck fixes him, and switching to another skater gets you out of it (as you've learned).
 - **Don't skate into the goalie with the puck.** Any contact with him knocks you down and loses the puck, unless your
   Stick Handling lets you wobble (81+ usually, 99 always).
 - Players skate at about 20-33 mph; the puck in a hard slapshot goes 90-100 mph.

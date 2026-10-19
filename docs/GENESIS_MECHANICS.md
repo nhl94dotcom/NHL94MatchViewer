@@ -208,6 +208,29 @@ can take him past it and friction brings him back.
 - Speed bursts (C without the puck) add speed in the direction faced (32 x the direction's push for a fresh player);
   with line changes on they cost energy.
 
+### 3.4 Runaway speed: "deceleration off" left on (a bug)
+
+Now and then a person's skater bursts and shoots off far past top speed, sliding out of control for a second or two
+(the user: usually racing back on defence; switching to another skater is the usual way out).
+
+- **The flag:** each skater has a "deceleration off" bit (`pfdoff`, `pflags` bit 0). With it set, friction takes 1/512
+  of his speed a frame instead of 1/64 (`updateplayers`: the puck's friction), so he keeps 0.97 of his speed a second
+  instead of 0.39. A speed burst normally fades back to cruising speed in about half a second; with the flag on it barely
+  fades, so **each burst stacks on the last** (about +6,300 each): two bursts take a skater from 8,000 to 20,000, more
+  than twice top speed (normal skating never exceeds about 9,500). Nothing caps speed above the top: skating input only
+  limits how fast he can accelerate.
+- **What sets it:** a computer skater about to receive a pass (`asspassrec`, so he glides onto the puck), and any fall
+  into the boards or the bench (`FallDown`). **What should clear it:** the end of the pass-receiving job, his stick touching
+  the puck (`puckstick`), or a new chasing job (`assnearest`). **The leaks:** if a person takes control of that skater
+  while the pass is coming, the job ends through `assexit`, which doesn't clear the flag; and a fall into the boards
+  never clears it when he gets up. Either way a person's skater keeps puck-like friction until he touches the puck or the
+  computer gives him a job (which it does once you switch away from him).
+- **Confirmed** (the BOS-DAL and BOS-WPG games): the two runaways, 2026-10-18_2158 BOS-WPG P3 about 1:24 (knocked into
+  the boards 3.6 s before; bursts at 8,300 -> 14,600, then 13,700 -> 20,079; he slid about 160 units, 53 feet, before
+  stopping) and 2026-10-18_2149 BOS-WPG P2 about 0:22 (taken over while a pass was coming; three bursts, 19,413). The flag
+  was set 765 times in all (690 pass receptions, 65 boards or bench falls, 10 others); a person skated with it on for over
+  half a second 44 times, and it ran away only when he also burst twice or more.
+
 ---
 
 ## 4. Shooting
@@ -1676,6 +1699,7 @@ C-then-B check, and the weight bug for computer checkers too.
 | Through the legs | Butterfly / kick save move the stick aside: a flat puck through his middle touches nothing, hits him from behind, goes in |
 | Stick blind ring | A low puck 8-14 from a goalie's blade gets no stick and no body test that frame |
 | Save moves | Add no reach (pad stack aside): the puck slips past the outstretched pad |
+| Runaway speed | After a boards fall, or taking over a teammate as a pass comes to him, friction stays off: bursts stack past 20,000 until he touches the puck or you switch |
 | Rocket pass | A receiver skating toward the passer 50-70 units (17-23 ft) away: the meeting time rounds down, the pass goes up to twice as fast |
 | Pickups | Only players whose body is within 22 up / down of the puck are tested; a stick held out ahead can sit on it untouched |
 | Pass lift | Passes to a teammate rise with their flight time; pass shots get a random lift (flat to about 21) |
