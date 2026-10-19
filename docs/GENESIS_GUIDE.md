@@ -193,6 +193,8 @@ The computer never holds a direction, so its wins go a random way.
 - **Shots along the ice often aren't counted as shots on goal**: a hard low shot that the goalie's stick deflects
   doesn't count (about 4 in 10 of those that reached him, against 1 in 30 high shots). Holding Down toward the net
   when attacking down the screen aims along the ice, so teams going down get fewer shots on goal counted.
+- **Posts are rare on the Genesis**: the post is only a sliver beside the goal mouth, so a shot that drifts wide of the
+  goal usually just misses (about 1 shot in 45 that reaches the net hits a post; four times as many on the SNES).
 - **Defenders block low shots only with their sticks.** A low shot almost always passes straight through a
   defender's body; only his stick blade stops it (a soft shot he takes, a hard one deflects at random). A shot at
   mid-height (lifted, below the crossbar's height) always hits the body and bounces off; a hard one can knock him

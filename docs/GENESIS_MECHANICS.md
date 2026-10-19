@@ -1303,6 +1303,20 @@ All **Confirmed** where numbers are given.
   less 1) is a goal.
 - **Exactly at the post, or exactly at crossbar height:** a deflection away from the net in a random direction, slowly,
   and **it counts as a shot on goal** (with the "oooh").
+- **How a post is decided** (`checkgoal`): the net is a box 21 either side of the middle (its half-width 16 plus the
+  puck's collision radius 5, read from the puck's record +$4A) and 7 deep around the goal line. A puck entering it
+  through the front is placed on its front edge along its path: within 20 of the middle it's a goal, between 20 and 21
+  a post, so **the post is a 1-unit band on each side**. The integer height exactly 13 (13.0 up to 14) is the crossbar.
+  A puck entering the box from the side bounces off like the boards. **The SNES post is five times as wide:**
+
+| | Goal if it crosses within | Post band, each side | Crossbar | Goal mouth |
+|---|---|---|---|---|
+| Genesis | 20 of the middle | **1 unit** (20-21) | a 1-unit band at height 13 | 41 wide |
+| SNES | 17 of the middle | **5 units** (18-22) | none (anything at 13 or higher passes over) | 35 wide |
+
+  **Confirmed:** over the recordings 7 of the 316 Genesis shots that reached the net hit a post (2.2%), against 19 of
+  234 on the SNES (8.1%). With the shot aim points at 16 from the middle, a Genesis shot that drifts outward has 4 units
+  of goal left and then only 1 of post before it's wide.
 - The back and sides of the net bounce the puck like the boards.
 - **A puck carried into your own net bounces off.** Only a loose puck can become an own goal. **Code**
 

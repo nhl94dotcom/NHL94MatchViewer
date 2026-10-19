@@ -325,8 +325,22 @@ Genesis:
   frame's hot point, within a band of heights, both read from the frame's record (frame number - 1, as the drawing code
   reads it). A save move's frames change it.
 - **The net:** a goal when the puck's centre crosses the net's front (9 units out from the net, y 259) within 17 of the
-  middle below the crossbar (13); 18-22 out is a post (`checkgoal`). **Confirmed** with the model in 4.7: it predicts
-  16.6-17.6 posts where the recordings had 18.
+  middle below the crossbar (13); 18-22 out is a post (`checkgoal`). **Posts are why SNES shots ring off the iron so
+  often:** the post is a 5-unit band on each side of a 35-wide mouth, against a 1-unit band beside a 41-wide mouth on the
+  Genesis:
+
+| | Goal if it crosses within | Post band, each side | Crossbar | Goal mouth |
+|---|---|---|---|---|
+| Genesis | 20 of the middle | **1 unit** (20-21) | a 1-unit band at height 13 | 41 wide |
+| SNES | 17 of the middle | **5 units** (18-22) | none (anything at 13 or higher passes over) | 35 wide |
+
+  The aim points are 15 from the middle, so a shot aimed at a side has only 2 units of goal outside it, then 5 of post.
+  A post deflects the puck away at a random speed and angle, counts as a shot on goal, and ends any breakaway or
+  one-timer credit. **The crossbar can't be hit:** the code tests for height 13 only after it has already let anything at
+  13 or more pass over (dead code). **Confirmed** in the recordings: 19 of the 234 SNES shots that reached the net hit a
+  post (8.1%), against 7 of 316 on the Genesis (2.2%).
+- The expected-goals model (4.7), which uses these widths, predicted 16.6-17.6 posts where the first five SNES games
+  had 18.
 - **No changes for Agility, for a person controlling him, for pad stacks or for one-timers.** (On the Genesis all four
   change his reach.)
 - **A diving goalie lets pucks at height 5 or more through.**
