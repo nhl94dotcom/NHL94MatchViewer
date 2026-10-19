@@ -510,6 +510,38 @@ user noticed that the same player never seems to bobble twice running, and that'
 comes from a teammate who just picked up the loose puck close by, a short, slow pass. A long pass back would bobble
 again. In one recorded game the user reviewed, ten passes bounced off the receiver's stick.
 
+**Who can take a loose puck at all** (`checkpuckcoll`, `checkpuckcoll_ccx`; the Genesis rules are in GENESIS_MECHANICS
+6.2). In order, a player's stick is skipped when:
+
+1. **His no-touch timer runs** (`nopuck`, a word per object, counted down by the frames each update takes). It is set
+   when he:
+
+   | Event | Frames (60 a second) |
+   |---|---|
+   | shoots (`doshot`) or makes an untargeted pass (`dopass`) | 16 |
+   | makes a targeted pass | the pass's lead time (up to about 24) |
+   | swings a one-timer (`asspassrec`) | 10 |
+   | flips it (`assdumpin`, the Y button) | 30 |
+   | loses it to a steal, and the stealer too (`puckstick`) | 20 + Stick Handling (energy-scaled) |
+   | knocks a too-fast puck off his stick, or it bounces off his body, or the net takes it off his stick | 8 |
+   | carries it into the goalie (`puckgoalie`; the goalie gets 10) | 20 |
+   | falls (`FallDown`) | 120 |
+   | lines up for a faceoff (`assfaceoffpl`) | 20 |
+   | heads to the penalty box, or glides back out of a breakaway play | 60 |
+   | celebrates a goal (`assscore`) | 1,800 |
+
+2. **The game doesn't reach him**: it tests only players whose body is within 40 of the puck up or down the screen
+   (the Genesis: 22). A stick reaches about 20 in front, so on the SNES this never cut anyone off in the recordings.
+3. **The puck is at height 5 or more, or still rising** (`puckvz` $100 or more): only bodies then.
+4. **It's out of reach**: the blade more than 14 from it (7 while the puck's own timer runs, right after a deflection).
+5. **It's too fast**: over 13,000 + 700 x Stick Handling (13,000 flat while the shot flag stands); it deflects.
+
+**Confirmed** on every moment a skater's blade came within 14 of a loose puck in seven SNES games
+(`analysis/snes_pickup_study.py`): with nothing in the way he took it 924 times in 1,023 (90%; the rest mostly at the
+edge of reach between samples); with his timer running 21 in 1,208 (2%, the timer running out between samples), the
+puck too high 0 in 80, too fast 0 in 21 (19 deflected), still rising 16 in 366. Most timer misses were the passer just
+after his pass, then shooters, centres at a faceoff and fallen players.
+
 ### 6.3 The flip (Y with the puck): a computer-run dump-in
 
 Pressing Y hands your skater to the computer's dump-in routine (`assdumpin`, `DumpInTarget`). **Code**; no SNES flip in
