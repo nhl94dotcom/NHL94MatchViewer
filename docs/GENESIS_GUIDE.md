@@ -208,6 +208,9 @@ With line changes off (the usual online setting):
 
 **Ratings play no part. It's timing, and you can't see the drop coming in time.**
 
+
+![The faceoff swing over time and the win chances](img/faceoff_timing.svg)
+
 1. **Mash B as fast as you can** from when the faceoff box appears until the drop (3-5 seconds, random). Each press
    swings the stick once; what counts is how far into the swing you are at the drop. Fast mashing keeps you in the
    swing; holding B does nothing.
@@ -238,6 +241,11 @@ The computer never holds a direction, so its wins go a random way.
 ---
 
 ## 6. Shooting
+
+
+![The nine aim points in the net, attacking up and down the screen](img/aim_points_genesis.svg)
+
+![How far a shot can miss its aim, by distance and Shot Accuracy](img/shot_scatter.svg)
 
 - **You aim with the d-pad as you shoot**, at nine spots in the net. **In screen directions**: Up is high, Down is
   along the ice, Left and Right are the screen's sides. So when you're attacking down the screen, Left is the
@@ -471,6 +479,9 @@ With penalties on:
 **There's no save roll.** A puck at stick or body height that comes within the goalie's **reach** of his centre is
 stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by Agility (2.2), 18 in a pad stack.
 
+![The goalie's reach circles against the goal mouth](img/saves_reach.svg)
+
+
 - **Take the goalie yourself** (B with the puck loose or the other team's): **he always has the full reach, 15.** In
   recorded games, with a person in net, no goal except one-timers went in within 20 units of him.
 - **One-timers cut his reach to 12** whoever controls him.
@@ -507,6 +518,9 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
   does reach farther.)
 - Dives (A while moving) stop him dead for over a second; the computer only dives at a slow loose puck right in front
   of him.
+
+![The butterfly's blind ring letting a flat puck through](img/through_the_legs.svg)
+
 
 ### 12.3 The computer goalie
 

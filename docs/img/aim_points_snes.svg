@@ -1,0 +1,65 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='820' height='420' viewBox='0 0 820 420' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Aim points (SNES)</title>
+<rect width='820' height='420' fill='#ffffff'/>
+<text x='410.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>The nine aim points (SNES): the d-pad as you shoot, in SCREEN directions</text>
+<text x='410.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>The net as the shooter sees it, to scale. Up is always high and Down always along the ice; Left and Right swap with the direction you attack.</text>
+<text x='221.4' y='92.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Attacking UP the screen</text>
+<text x='221.4' y='110.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>screen right = shooter's right</text>
+<line x1='11.4' y1='250.0' x2='431.4' y2='250.0' stroke='#52606d' stroke-width='2' />
+<rect x='102.4' y='159' width='238' height='91' fill='#f3f5f7' stroke='#1f2933' stroke-width='3'/>
+<rect x='67.4' y='159' width='35' height='91' fill='#d9a400' fill-opacity='0.35'/>
+<rect x='340.4' y='159' width='35' height='91' fill='#d9a400' fill-opacity='0.35'/>
+<text x='221.4' y='137.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>crossbar at height 13</text>
+<text x='102.4' y='286.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>shooter's left</text>
+<text x='340.4' y='286.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>shooter's right</text>
+<circle cx='221.4' cy='166.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='221.4' y='172.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↑</text>
+<circle cx='326.4' cy='166.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='326.4' y='172.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↗</text>
+<circle cx='326.4' cy='208.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='326.4' y='214.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>→</text>
+<circle cx='326.4' cy='250.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='326.4' y='256.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↘</text>
+<circle cx='221.4' cy='250.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='221.4' y='256.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↓</text>
+<circle cx='116.4' cy='250.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='116.4' y='256.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↙</text>
+<circle cx='116.4' cy='208.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='116.4' y='214.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>←</text>
+<circle cx='116.4' cy='166.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='116.4' y='172.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↖</text>
+<circle cx='221.4' cy='208.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='221.4' y='214.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>·</text>
+<text x='598.6' y='92.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Attacking DOWN the screen</text>
+<text x='598.6' y='110.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>screen right = shooter's LEFT</text>
+<line x1='388.6' y1='250.0' x2='808.6' y2='250.0' stroke='#52606d' stroke-width='2' />
+<rect x='479.6' y='159' width='238' height='91' fill='#f3f5f7' stroke='#1f2933' stroke-width='3'/>
+<rect x='444.6' y='159' width='35' height='91' fill='#d9a400' fill-opacity='0.35'/>
+<rect x='717.6' y='159' width='35' height='91' fill='#d9a400' fill-opacity='0.35'/>
+<text x='598.6' y='137.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>crossbar at height 13</text>
+<text x='479.6' y='286.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>shooter's left</text>
+<text x='717.6' y='286.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>shooter's right</text>
+<circle cx='598.6' cy='166.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='598.6' y='172.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↑</text>
+<circle cx='493.6' cy='166.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='493.6' y='172.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↗</text>
+<circle cx='493.6' cy='208.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='493.6' y='214.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>→</text>
+<circle cx='493.6' cy='250.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='493.6' y='256.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↘</text>
+<circle cx='598.6' cy='250.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='598.6' y='256.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↓</text>
+<circle cx='703.6' cy='250.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='703.6' y='256.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↙</text>
+<circle cx='703.6' cy='208.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='703.6' y='214.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>←</text>
+<circle cx='703.6' cy='166.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='703.6' y='172.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>↖</text>
+<circle cx='598.6' cy='208.0' r='14.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
+<text x='598.6' y='214.0' font-size='18' fill='#3b82c4' text-anchor='middle' font-weight='bold'>·</text>
+<text x='60.0' y='320.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>The game aims at one of these nine spots, then adds a random error (unless the shot comes out exact: see the scatter diagram).</text>
+<text x='60.0' y='338.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>The error only ever pushes the puck UP, so a high aim (just under the crossbar) can clear the bar; a low or middle aim has room.</text>
+<text x='60.0' y='356.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>One-timers follow the d-pad on the SNES; only computer shooters are aimed by the game.</text>
+<text x='60.0' y='374.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Pushing toward the net while attacking up means holding Up, which aims high.</text>
+<text x='60.0' y='392.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: the posts are a 5-unit band (gold) from 17 to 22 out, so a shot drifting outward rings off the post.</text>
+</svg>

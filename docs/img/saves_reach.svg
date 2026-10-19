@@ -1,0 +1,33 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='820' height='648' viewBox='0 0 820 648' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Saves are geometry</title>
+<rect width='820' height='648' fill='#ffffff'/>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<text x='410.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>Saves are geometry: the goalie's reach against the goal mouth</text>
+<text x='410.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Seen from above, to scale. A puck that passes within his reach of his centre is stopped; anything wider goes by.</text>
+<rect x='250' y='116' width='320' height='120' fill='#f3f5f7' stroke='#52606d'/>
+<line x1='154.0' y1='236.0' x2='666.0' y2='236.0' stroke='#c94040' stroke-width='3' />
+<text x='674.0' y='240.0' font-size='12' fill='#c94040' text-anchor='start' font-weight='normal'>goal line</text>
+<circle cx='250.0' cy='236.0' r='5.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='570.0' cy='236.0' r='5.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<text x='410.0' y='188.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>net</text>
+<circle cx='410.0' cy='380.0' r='144.0' fill='none' fill-opacity='1' stroke='#3f9d5c' stroke-width='2.5' stroke-dasharray='6 4'/>
+<circle cx='410.0' cy='380.0' r='120.0' fill='#3b82c4' fill-opacity='0.1' stroke='#3b82c4' stroke-width='2.5'/>
+<circle cx='410.0' cy='380.0' r='96.0' fill='none' fill-opacity='1' stroke='#e8833a' stroke-width='2.5'/>
+<circle cx='410.0' cy='380.0' r='4.0' fill='#1f2933' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
+<text x='418.0' y='384.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>G</text>
+<line x1='290.0' y1='268.0' x2='250.0' y2='268.0' stroke='#3b82c4' stroke-width='5' />
+<line x1='530.0' y1='268.0' x2='570.0' y2='268.0' stroke='#3b82c4' stroke-width='5' />
+<line x1='314.0' y1='282.0' x2='250.0' y2='282.0' stroke='#e8833a' stroke-width='5' />
+<line x1='506.0' y1='282.0' x2='570.0' y2='282.0' stroke='#e8833a' stroke-width='5' />
+<text x='578.0' y='272.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>left open, shooting straight on:</text>
+<text x='578.0' y='286.0' font-size='12' fill='#3b82c4' text-anchor='start' font-weight='normal'>5 units (1.7 ft) a side at reach 15,</text>
+<text x='578.0' y='300.0' font-size='12' fill='#e8833a' text-anchor='start' font-weight='normal'>8 units (2.7 ft) a side at reach 12</text>
+<line x1='110.0' y1='544.0' x2='150.0' y2='544.0' stroke='#3f9d5c' stroke-width='3' stroke-dasharray='6 4' />
+<text x='160.0' y='548.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>18: pad stack (shifted 6 toward the side he slides to)</text>
+<line x1='110.0' y1='564.0' x2='150.0' y2='564.0' stroke='#3b82c4' stroke-width='3' />
+<text x='160.0' y='568.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>15: a person in net (always), or a computer goalie with top Agility</text>
+<line x1='110.0' y1='584.0' x2='150.0' y2='584.0' stroke='#e8833a' stroke-width='3' />
+<text x='160.0' y='588.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>12: against any one-timer; also the least agile computer goalie</text>
+<text x='110.0' y='614.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Computer goalies: reach 12-15 by Agility. Only a puck at height 15 or less can hit him; low pucks meet his stick first.</text>
+<text x='110.0' y='630.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Shots come from below. 1 unit is about 4 inches; posts 20 units (6.7 ft) either side of the middle.</text>
+</svg>

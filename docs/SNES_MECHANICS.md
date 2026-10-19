@@ -222,6 +222,9 @@ faceoffs (`resetplstuff`). `FallDown` never sets it, so the Genesis's boards-fal
 
 ### 4.1 The nine aim points
 
+
+![The nine aim points in the SNES net, attacking up and down the screen](img/aim_points_snes.svg)
+
 Every shot is aimed at one of nine points in the net (`doshot`, `shotsets`), picked by **the direction the d-pad is
 held as the shot is taken**, in **screen** directions:
 

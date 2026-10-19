@@ -240,6 +240,9 @@ Now and then a person's skater bursts and shoots off far past top speed, sliding
 
 ### 4.1 The nine aim points
 
+
+![The nine aim points in the net, attacking up and down the screen](img/aim_points_genesis.svg)
+
 Every shot is aimed at one of nine points in the net, picked by **the direction the d-pad is held as the shot is
 taken**, in **screen** directions:
 
@@ -254,6 +257,9 @@ are 16 units either side of the middle (the posts are at about 20) and at height
 goals' aim points and where they crossed the line agree closely.
 
 ### 4.2 Perfect shot or scatter
+
+
+![How far a shot can miss its aim, by distance and Shot Accuracy](img/shot_scatter.svg)
 
 - **Within 200 units of the aim point** (about 65 feet), a roll decides whether the shot goes **exactly** where aimed.
   Chance = (Shot Accuracy + 1) / (Shot Accuracy + 16) on the working scale: about 55-67% for typical shooters.
@@ -506,6 +512,9 @@ shot faces a goalie placed and moving as goalies really were at one of the recor
 
 ### 5.1 Saves are geometry, not a dice roll
 
+
+![The goalie's reach circles against the goal mouth](img/saves_reach.svg)
+
 The goalie stops a puck only if it physically reaches him:
 
 - **Body:** a puck at height 15 or lower within his **reach** of his centre is stopped.
@@ -662,6 +671,9 @@ or under) and not rising, `.ccx` tests the goalie's stick before his body, and a
 neither test that frame (5.1). The butterfly frames (gstickl) and some kick-save frames (gstickr) put the blade 10-13
 units out to the side, so **the middle of his body falls in that blind band.** Along a straight line through his centre
 (stick S, body B, nothing ., one unit each, the puck coming from the right):
+
+![The butterfly's blind ring letting a flat puck through](img/through_the_legs.svg)
+
 
 | Pose | Through the middle (x = 0) |
 |---|---|
@@ -1187,6 +1199,9 @@ of play, goals, the end of a period.
 ## 9. Faceoffs
 
 ### 9.1 What decides the draw
+
+
+![The faceoff swing over time and the win chances](img/faceoff_timing.svg)
 
 **Ratings play no part. It's timing.**
 

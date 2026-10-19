@@ -216,6 +216,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 ## 6. Shooting
 
+
+![The nine aim points in the SNES net, attacking up and down the screen](img/aim_points_snes.svg)
+
 - **You aim with the d-pad as you shoot**, at nine spots in the net, **in screen directions**: Up is high, Down is
   along the ice, Left and Right are the screen's sides. So attacking down the screen, Left is the *shooter's* right,
   and **Up is always high**: pushing toward the top net puts shots high.

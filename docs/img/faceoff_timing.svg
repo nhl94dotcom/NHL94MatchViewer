@@ -1,0 +1,89 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='820' height='484' viewBox='0 0 820 484' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Faceoff timing</title>
+<rect width='820' height='484' fill='#ffffff'/>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<text x='410.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>Faceoffs (Genesis): it's where your swing is at the drop</text>
+<text x='410.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Each new B press swings the stick once (18 frames, 0.3 s). Holding B does nothing. Ratings play no part.</text>
+<text x='200.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>0</text>
+<text x='242.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>6</text>
+<text x='284.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>12</text>
+<text x='326.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>18</text>
+<text x='368.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>24</text>
+<text x='410.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>30</text>
+<text x='452.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>36</text>
+<text x='494.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>42</text>
+<text x='536.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>48</text>
+<text x='578.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>54</text>
+<text x='620.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>60</text>
+<text x='662.0' y='76.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>66</text>
+<text x='190.0' y='76.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>frames:</text>
+<text x='190.0' y='112.0' font-size='13' fill='#1f2933' text-anchor='end' font-weight='normal'>Mashing flat out</text>
+<rect x='200' y='92' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='214' y='92' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='284' y='92' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='326' y='92' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='340' y='92' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='410' y='92' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='452' y='92' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='466' y='92' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='536' y='92' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='578' y='92' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='592' y='92' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<text x='674.0' y='106.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>average 9.8</text>
+<text x='674.0' y='120.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>home wins 57% vs 8</text>
+<text x='190.0' y='158.0' font-size='13' fill='#1f2933' text-anchor='end' font-weight='normal'>4 frames between swings</text>
+<rect x='200' y='138' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='214' y='138' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='284' y='138' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='326' y='138' width='28' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='354' y='138' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='368' y='138' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='438' y='138' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='480' y='138' width='28' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='508' y='138' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='522' y='138' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='592' y='138' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='634' y='138' width='28' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<text x='674.0' y='152.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>average 8.0</text>
+<text x='674.0' y='166.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>home wins 52% vs 8</text>
+<text x='190.0' y='204.0' font-size='13' fill='#1f2933' text-anchor='end' font-weight='normal'>12 frames between swings</text>
+<rect x='200' y='184' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='214' y='184' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='284' y='184' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='326' y='184' width='84' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='410' y='184' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='424' y='184' width='70' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='494' y='184' width='42' height='28' fill='#3f9d5c' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='536' y='184' width='84' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='620' y='184' width='14' height='28' fill='#e4e7eb' stroke='#ffffff' stroke-width='0.5'/>
+<rect x='634' y='184' width='28' height='28' fill='#9cc3e6' stroke='#ffffff' stroke-width='0.5'/>
+<text x='674.0' y='198.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>average 5.9</text>
+<text x='674.0' y='212.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>home wins 45% vs 8</text>
+<rect x='200' y='240' width='22' height='14' fill='#e4e7eb'/>
+<text x='228.0' y='252.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>wind-up or stance: worth 0</text>
+<rect x='390' y='240' width='22' height='14' fill='#9cc3e6'/>
+<text x='418.0' y='252.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>middle of the swing: worth 8</text>
+<rect x='580' y='240' width='22' height='14' fill='#3f9d5c'/>
+<text x='608.0' y='252.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>the sweep: worth 16</text>
+<text x='60.0' y='284.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>At the drop (3-5 s after the box appears, at random), the game compares the two centres' values:</text>
+<text x='60.0' y='304.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>Home wins with chance (17 + home - away) / 33, so the home team has a 17-in-33 edge at equal timing.</text>
+<text x='140.0' y='334.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>home \ away</text>
+<text x='230.0' y='334.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>0</text>
+<text x='320.0' y='334.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>8</text>
+<text x='410.0' y='334.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>16</text>
+<text x='140.0' y='354.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>0</text>
+<text x='230.0' y='354.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='normal'>52%</text>
+<text x='320.0' y='354.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='normal'>27%</text>
+<text x='410.0' y='354.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='normal'>3%</text>
+<text x='140.0' y='374.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>8</text>
+<text x='230.0' y='374.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='normal'>76%</text>
+<text x='320.0' y='374.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='normal'>52%</text>
+<text x='410.0' y='374.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='normal'>27%</text>
+<text x='140.0' y='394.0' font-size='13' fill='#52606d' text-anchor='middle' font-weight='normal'>16</text>
+<text x='230.0' y='394.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>100%</text>
+<text x='320.0' y='394.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>76%</text>
+<text x='410.0' y='394.0' font-size='13' fill='#1f2933' text-anchor='middle' font-weight='bold'>52%</text>
+<text x='60.0' y='424.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>The drop picture changes only 9-17 frames before the drop: too late to time one swing.</text>
+<text x='60.0' y='442.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>So mash: the faster the presses come, the more time you spend in the middle and the sweep.</text>
+<text x='60.0' y='460.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Hold the d-pad toward a teammate: a win sends the puck that way 3 times in 4.</text>
+</svg>
