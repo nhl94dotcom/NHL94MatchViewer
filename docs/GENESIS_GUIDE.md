@@ -460,6 +460,12 @@ viewer's Help, "This game's ROM", says whether yours does).
 
 - **Any stick touching the carrier's puck can steal it**, a roll each frame they touch; better Stick Handling on
   either side shifts the odds.
+- **B without the puck: poke or switch?** One rule decides: when you **let go** of B (a tap, under about 0.3 s), the
+  game picks whichever of your skaters is **nearest to where the puck will be a moment later**. If that's the one you
+  control, he pokes; if it's a teammate, control switches to him. So to poke you must be your team's nearest skater to the
+  puck's path, not just close to the carrier. While your skater is busy (mid-check, falling, shooting) B switches at once
+  on the press: that's the CB check. B pressed together with C is ignored. Holding B instead of tapping does nothing on
+  release.
 - **Poke check (B without the puck):** only from close. In recorded games two-thirds of pokes were from more than 10
   feet away and did nothing. Within 10 feet: tripped him 28%, knocked the puck loose 30%, took it 12%, nothing 19%.
   **Facing him, a poke that bumps his body trips him**, and with penalties on that's always a trip (and a chance of a

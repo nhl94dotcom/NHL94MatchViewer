@@ -322,6 +322,10 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **Boards:** a player knocked over anywhere in the outer lanes, behind the net or near a corner, with you on the
   inside, is thrown into the boards, from much farther out than on the Genesis.
 - **Goalies can't be knocked down.** Skating into one fast knocks *you* down.
+- **B without the puck: poke or switch?** On the SNES it acts as you **press** B. Within about 20 units (7 feet) of the
+  carrier your skater always pokes. Farther away the game picks your skater nearest the puck, favouring one between the
+  puck and your own net: if that's yours he pokes, otherwise control switches. Unlike the Genesis, it goes by where the
+  puck is now, not where it's heading.
 - Y without the puck is a hook or hold, and B near the carrier a poke check; what they do on the SNES hasn't been read
   yet.
 

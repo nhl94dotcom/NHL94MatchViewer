@@ -1386,6 +1386,19 @@ butterfly 732, sprawl 780), snes_shot_scatter (doshot with passspeed = speed / 1
 faster component and PkC, recorded rates); in SNES_GUIDE 1.2, 6, 11.1 and SNES_MECHANICS 2.5, 4.2, 5.1, 5.4. sprite()
 takes a palette and library list.
 
+## B without the puck: poke or switch (2026-10-19)
+
+The user asked how the game decides. Genesis (input94.asm doinput, title94.asm chgplayer, Sweepcheck): on B's RELEASE
+within 17 frames of the press (bholdtimer $11), chgplayer takes the team's on-ice skater nearest the puck + velocity /
+256 (about 16 frames ahead), skipping goalies, pf2unav, pfalock and the other controller's skater, the current skater
+INCLUDED: the current one -> Sweepcheck (poke), else switch. Locked (pfalock): doinput_islocked switches on the PRESS
+(the CB check) and marks the new skater's pflags3 bit 6 so its release does nothing; the same flag swallows the release
+after B+C on one frame and after a goalie's pass. analysis/b_button_study.py: 1,510 of 1,536 releases as predicted
+(576 pokes, 934 switches), 815 / 844 locked presses switched, 808 / 837 flagged releases did nothing. SNES (doinput,
+findpc): on the PRESS; a carried puck with puckdist2 < 100 (about 20 units) and the skater unlocked -> poke; else the
+lowest puckdist (no lead) + 32 x (direction steps beyond 1 from up-ice) while carried; current -> poke (unless
+locked), else switch; not checked on recordings. GENESIS_MECHANICS 7.5, GENESIS_GUIDE 10, SNES_MECHANICS 7.3, SNES_GUIDE 9.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the

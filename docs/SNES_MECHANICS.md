@@ -668,6 +668,20 @@ the recordings yet.
 
 ### 7.3 Hooks, holds and pokes
 
+**B without the puck: poke or switch?** (`doinput`, and the choosing routine the disassembly files as `findpc`.)
+Different from the Genesis:
+
+- **When:** on the **press** of B, locked in an animation or not.
+- **Always a poke** when the puck is carried, your skater isn't locked, and he's within about 20 units of the puck
+  (`puckdist2`, (dx^2 + dy^2) / 4, under 100).
+- **Otherwise the choice:** among your team's skaters on the ice (goalies and the other controller's skater left out;
+  locked ones only while skating or in a check / burst animation), the lowest of **distance to the puck itself** (no
+  look-ahead) plus, while the puck is carried, **32 for each 45 degrees** beyond the first that the direction to the
+  puck turns away from straight up-ice (toward the goal he attacks): a skater with the puck in front of him, between it
+  and his own net, is preferred. Your own skater is included: if he's chosen he pokes (if not locked; locked, nothing);
+  otherwise control switches.
+- Not yet checked against the recordings.
+
 - **Y without the puck** starts a hook or hold (`holdplayer`; the hook is animation `SPAhook`, then `SPAhook2`); what it
   does to the victim hasn't been read for the SNES.
 - **The get-up glitch** (known in the community: a knocked-down player gets up at once if his person presses the hook

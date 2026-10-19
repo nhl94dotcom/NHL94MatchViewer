@@ -1107,6 +1107,32 @@ anywhere on the ice**.
 
 ### 7.5 Hooks, holds and pokes
 
+**B without the puck: poke or switch?** (`doinput`, `chgplayer`, `Sweepcheck`; 2026-10-19, the user asked.) One rule
+decides both:
+
+- **When:** on the **release** of B, if it came within 17 frames (0.28 s) of the press. Held longer, nothing happens on
+  release (holding about 0.3 s is the goalie switch, depending on the goalie-control setting).
+- **The choice:** the game finds, among your team's skaters on the ice, **the one nearest the spot the puck will reach in
+  about 16 frames** (its position plus its velocity / 256). Goalies, players unavailable, players locked in an
+  animation (falling, checking, shooting) and the other controller's skater are left out; **your own skater is
+  included**. If that nearest skater is **the one you already control, he poke checks** (`Sweepcheck`, 16 frames).
+  Otherwise **control switches** to that skater.
+- **Locked in an animation** (mid-check, a burst, a fall, a shot): B acts on the **press** instead
+  (`doinput_islocked`), and since your locked skater can't be chosen, it always **switches** to the nearest other skater.
+  This is the CB check (7.2): C bursts, which locks him, and B switches away at once. The new skater is marked so the
+  coming release doesn't act again.
+- **A release that does nothing:** when B and C were pressed on the same frame (then B is ignored altogether), when the
+  press already switched (above), or after a goalie's pass to your skater.
+
+**Confirmed** (analysis/b_button_study.py, controller 1's B taps on defence in 16 Genesis games): of 1,536 releases
+that reach the choice, 1,510 did what the rule predicts (576 pokes, 934 switches; the 26 others are timing between
+samples); 815 of 844 presses with the skater locked switched at once; 837 releases were already used (B with C, or after
+a locked switch) and 808 of them did nothing.
+
+**In practice:** to poke, your skater must be the nearest of your team to where the puck is going, not just close to
+the carrier; if a teammate is nearer the puck's path, B hands control to him instead. Tap B (don't hold it) and press it
+on its own, not with C.
+
 **Hook / hold (A without the puck):**
 
 - The reach lasts 0.5 s. A hold instead of a hook happens right after contact with the opponent ahead of you.
