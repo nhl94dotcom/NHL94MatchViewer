@@ -464,7 +464,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
             px, py, vx, vy = struct.unpack("<hxxhxxxxxxhh", cap.raw(i, puck + X, 16))
             before = struct.unpack("<hh", cap.raw(i - 1, puck + 0x28, 4))
             fresh = (vx, vy) != before or cap.byte(i - 1, puck + OWNED) == 0
-            if fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 272 and vy * py < 0 and abs(vx) + abs(vy) >= 1500:
+            if (fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 268 and vy * py < 0 and abs(vx) + abs(vy) >= 1500
+                # and not a puck coming out from behind the net past its side (2026-10-18: four of those had read as posts in
+                # CHI-LA): behind the goal line (268) in the half second before
+                and not any(abs(match["puck"][3 * q + 1]) > 268 for q in range(max(0, len(match["t"]) - 31), len(match["t"]) - 1))):
                 match["posts"].append(len(match["t"]) - 1)
                 last_post = cap.ms(i)
         if has_pad:

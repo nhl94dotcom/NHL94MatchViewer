@@ -1411,7 +1411,8 @@ def add_goal_spots(m):
             if abs(x) > 24:
                 continue
             up = y1 > 0  # the shooter faces +Y: his left is -X; at the -Y net his left is +X
-            g['net'] = {'x': round(x if up else -x, 1), 'z': round(max(0.0, z), 1), 'end': 'top' if up else 'bottom'}
+            # under the crossbar (13): a goal can't cross higher, so a projection above it is the samples' error
+            g['net'] = {'x': round(x if up else -x, 1), 'z': round(min(12.9, max(0.0, z)), 1), 'end': 'top' if up else 'bottom'}
             break
 
 
@@ -1508,11 +1509,14 @@ def add_own_goals(m):
     t, own, K = m['t'], m['owner'], 12
     role = lambda i, k: m['role'][i * K + k] if 'role' in m else 'x'
     for g in m.get('goals', []):
+        if 'penalty shot' in g.get('kinds', []):
+            continue  # (2026-10-18_1934_BOS-PIT: the SNES penalty shot went unrecorded and a defender holding the
+            # puck at the whistle before it read as an own goal)
         f, theirs = g['f'], range(6, 12) if g['team'] == 0 else range(6)
         q = f
         while q > 0 and t[f] - t[q] <= OWN_GOAL_MS and own[q] < 0:
             q -= 1
-        if t[f] - t[q] <= OWN_GOAL_MS and own[q] in theirs and role(q, own[q]) != '0':
+        if t[f] - t[q] <= OWN_GOAL_MS and own[q] in theirs and role(q, own[q]) != '0' and m['puck'][3 * q + 2] > -100:
             g['ownGoal'] = int(m['roster'][q * K + own[q]], 36)
 
 

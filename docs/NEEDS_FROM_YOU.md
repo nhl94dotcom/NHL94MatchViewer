@@ -42,8 +42,9 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 1. **Goalie giveaway goals** (a goalie's pass picked off, a goal within 6 s): Moog twice, Joseph, Belfour in the older
    recordings. Are they right?
-2. **Own goals** found in the older games: Juneau and Suter (CGY-BOS), Ciccarelli (capture2), Robitaille (capture3),
-   Steve Smith (CHI-CGY, SNES). Did each defender really put it in his own net?
+2. **Own goals** found in the older games: Juneau and Suter (CGY-BOS), Ciccarelli (capture2), Robitaille (capture3).
+   Did each defender really put it in his own net? (Steve Smith's in CHI-CGY was not one: it was an unrecorded SNES
+   penalty-shot goal, fixed 2026-10-18.)
 3. **Unconfirmed posts:** capture5 P3 4:47 and capture3 P2 2:32.
 4. **Long far-post slapshot goals (Genesis).** The game, the time and the shooter of a few. The xG model doesn't show
    the far post beating the near post except with the hardest shots (GENESIS_MECHANICS 5.8). The examples would show

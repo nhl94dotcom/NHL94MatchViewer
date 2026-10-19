@@ -1226,6 +1226,25 @@ VERSION 21 (team posts / postsA, skater posts), season page Skaters POST and Tea
 team stats already had Posts. The live launcher sets NHL94_HOME to Documents/NHL94 Viewer and copies the current pages
 there first (the Python helper doesn't copy pages; the exe does).
 
+Review of the user's two live test games (2026-10-18_1934_BOS-PIT, 2026-10-18_2006_CHI-LA, both SNES on
+NHL94_Classic): shots on goal, goals, checks and faceoffs equal the game's; counted passes 45/50, 45/47, 62/65 (the
+known gap). Found and fixed:
+- SNES penalty shots were never recorded by the helper: snes.View.on_ice needs each team's on-ice roster places to
+  differ, and in a penalty shot the parked players (x = -240) can share one (research capture: 4297 in-game samples
+  skipped, both penalty shots). Parked objects are now left out of the test (433 skipped: pre-faceoff moments).
+  Replaying snes_2026-10-15_1755 through the helper (scratchpad helper_test_snes_ps.py) now records both penalty
+  shots. The puck shows during the shooter's run and hides after the shot (gmclock).
+- The two SNES "own goals" (Wesley in BOS-PIT, Steve Smith in CHI-CGY) were those unrecorded penalty-shot goals: a
+  defender holding the puck at the whistle before. add_own_goals skips penalty-shot goals and hidden-puck samples.
+- Posts: the puck coming out from behind the net past its side read as a post (|y| up to 272). Both readers now
+  want |y| <= 268 and the puck not behind the goal line (268) in the half second before: 43 -> 28 posts over all
+  recordings, every removal one of those; shots on goal still equal the game's everywhere.
+- Goal heights projected above the crossbar (up to 13.9) are capped at 12.9.
+- SNES puck frame 406 (a net picture) in the puck's frame word: the viewer shows the puck at rest for any frame
+  wider than 12.
+Not changed: Stevens' P3 4:52 goal had xG 0.0 (a person in net, emulated as the computer goalie); CHI-LA's 13
+"lost it on the goalie" bumps are unreviewed.
+
 ## Things needed from the user
 
 `docs/NEEDS_FROM_YOU.md` (the user asked for it to be kept, 2026-10-18): recordings to make, things to note when they

@@ -360,10 +360,13 @@ class View:
             self.clock = 0
         self.score = (word(STAT_ADDRESSES["goals"]), word(STAT_ADDRESSES["goals"] + 2))
         self.teams = (word(TEAM_IDS[0]), word(TEAM_IDS[1]))
-        rosters = [block[OBJ_ROSTER + 2 * k] for k in range(12)]
         # A line-up on the ice: each team's places hold different players ($FF = nobody). At the menus they can all
         # read 0 (2026-10-16_1528: the helper took the menus' MTL vs LA for a game under way, a second before the
-        # real teams were picked).
+        # real teams were picked). Players parked off the ice (x = -240: the penalty box, everyone but the shooter and
+        # goalie in a penalty shot) don't count: in a penalty shot two of them can share a place, which had stopped
+        # the recording for every SNES penalty shot (2026-10-18_1934_BOS-PIT: Jagr's penalty-shot goal not recorded).
+        x = lambda k: (lambda v: v - 0x10000 if v >= 0x8000 else v)(word(OBJ_X + 2 * k))
+        rosters = [block[OBJ_ROSTER + 2 * k] if x(k) != -240 else 0xFF for k in range(12)]
         lineup = lambda places: (lambda on: bool(on) and len(set(on)) == len(on))([r for r in places if r != 0xFF])
         self.on_ice = lineup(rosters[:6]) and lineup(rosters[6:])
         self.screen = word(GAME_FLAGS2)
@@ -526,7 +529,10 @@ def read_match(cap, rom_path, name, home=None, away=None):
         # A post, by the Genesis rule: the loose puck turning back out of the end zone right beside a post.
         if i and b(PUCK_HOLDER) >= 12 and cap.ms(i) - last_post > 1000:
             fresh = (vx, vy) != (signed(i - 1, PUCK_VX), signed(i - 1, PUCK_VY))
-            if fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 272 and vy * py < 0 and abs(vx) + abs(vy) >= 1500:
+            if (fresh and 14 <= abs(px) <= 28 and 252 <= abs(py) <= 268 and vy * py < 0 and abs(vx) + abs(vy) >= 1500
+                # and not a puck coming out from behind the net past its side (2026-10-18: four of those had read as posts in
+                # CHI-LA): behind the goal line (268) in the half second before
+                and not any(abs(match["puck"][3 * q + 1]) > 268 for q in range(max(0, len(match["t"]) - 31), len(match["t"]) - 1))):
                 match["posts"].append(len(match["t"]) - 1)
                 last_post = cap.ms(i)
         # Team stat snapshots, in common.STAT_FIELDS order (no per-player values yet), when they change and each
