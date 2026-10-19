@@ -470,7 +470,7 @@ moves the view instead). Tap a player for his card and tap anywhere else to put 
 <p>The rink is on top; below it, tabs switch between the lineups, the team stats and the scoring summary. The controls
 stay at the bottom.</p>
 <h3>Watching live</h3>
-<p>A live link shows a game while it's being played, about 10 seconds behind. Everything works as in a finished game:
+<p>A live link shows a game while it's being played, about 6 to 8 seconds behind. Everything works as in a finished game:
 stats, maps, highlights, clips. The red <b>&#9679; LIVE</b> button beside the clock means you're following the play.
 Go back to watch something again and it turns into <b>Go live</b>: click it to catch up. When the game ends the button
 says <b>Final</b> and the page holds the whole game. The page starts by itself when the next game begins.</p>
@@ -624,6 +624,7 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 
 <section id="h-terms"><h2>Community terms</h2>
 <dl>
+  <dt>Quirky events</dt><dd>A team-stats group (Genesis games) counting four oddities of the game's code: <b>through-the-legs goals</b> (a flat puck slides through a goalie in the butterfly or a kick save, because those moves take his stick out of the puck's way and nothing else touches it), <b>shoulder-save bobble goals</b> (the top net's goalie catches the puck in a shoulder save, it is dragged behind him to the net and knocked in), <b>rocket passes</b> (a short pass to a teammate skating toward the passer that comes out up to twice as fast, from the game rounding the pass's travel time down) and <b>runaway skaters</b> (a person's skater whose speed bursts keep adding up after taking over a pass or falling into the boards). Goals get a tag, and rocket passes and runaways show on the ice.</dd>
   <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 seconds (real time, flight and a short carry included), the last pass went to the scorer within 3 seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). A goalie's pass out of his zone counts as one of the passes. The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too. A <b>missed tapestry</b> is the same chain of passes ending in a shot that does not score (saved, wide, blocked or off the post); it is counted in the team stats and named in the shot's tooltip on the shot map.</dd>
   <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 2 seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near.</dd>
   <dt>Pass shot</dt><dd>Using the pass button to shoot: the puck goes off quickly with no target. The game does not count it as a shot on goal unless it scores.</dd>
@@ -3221,6 +3222,10 @@ const STAT_HELP = {
   'Deserve to win|· a tie': 'How often the replays end level (a tie after overtime; before the end, level so far).',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'Tapestry goals': 'Goals at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 s (a short carry is fine), the last went to the scorer within 3 s of the goal, and the other team never had the puck. Tapestry 2 passes, fine tapestry 3, masterpiece 4 or more.',
+  'Through-the-legs goals': 'Goals that slid through the goalie: a flat puck (height 5 or under) passed within 7 units of his centre in the second before the goal while he was in the butterfly or a kick save. Those moves put his stick out to the side, and a low puck 8-14 units from the stick touches neither stick nor body that frame, so it slides through and in. A quirk of the Genesis game.',
+  'Shoulder-save bobble goals': 'Goals scored after the defending goalie caught the puck in a shoulder save and nobody else touched it: the top net\'s shoulder save holds the puck behind him, it is dragged to the front of the net, the net knocks it off his stick and it slides in. A quirk of the Genesis game.',
+  'Rocket passes': 'Passes that left the stick faster than 26,000 (about 88 mph; ordinary passes are 13,000-23,000). The game times a pass to meet the receiver and rounds that time down, so a short pass to a teammate skating toward the passer can come out up to twice as fast. A quirk of the Genesis game.',
+  'Runaway skaters': 'Times a person\'s skater went faster than 15,500 (about 52 mph; flat out is about 9,000) because the game left his "slow down" switch off after he took over a pass or fell into the boards, so speed bursts kept adding up. A quirk of the Genesis game.',
   'Missed tapestries': 'Shot attempts at the end of two or more quick passes (the same chain as a tapestry) that did not score: saved, wide, blocked or off the post. Tapestry goals over tapestry goals plus missed tapestries is how often the team finished them.',
   'Tapestry goals|\u00b7 2 / 3 / 4+ passes': 'Tapestry goals by the number of passes: tapestries (2), fine tapestries (3), masterpieces (4 or more).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
@@ -3449,6 +3454,10 @@ function fillTeamStats(snap) {
   const tapestries = (team, n) => (match.goals || []).filter(g => g.f <= f && g.team === team && g.tapestry &&
     (n === undefined || (n >= 4 ? g.tapestry.n >= 4 : g.tapestry.n === n))).length;
   const ownGoals = team => (match.goals || []).filter(g => g.f <= f && g.team !== team && g.ownGoal != null).length;
+  // Quirky events (the converter's add_quirks, Genesis): goals of a kind, rocket passes, runaway skaters.
+  const quirkGoals = (team, kind) => (match.goals || []).filter(g => g.f <= f && g.team === team && (g.kinds || []).includes(kind)).length;
+  const rockets = team => (match.passes || []).filter(p => p.f <= f && p.team === team && p.rocket).length;
+  const runaways = team => (match.runaways || []).filter(r => r[0] <= f && r[2] === team).length;
   // Where shots were aimed (the d-pad at the release: the height row of the game's aim table, 12 / 6 / 0).
   const aimed = (team, z) => goalsOf(team, sh => sh.aim && (z === undefined || sh.aim.z === z));
   // Shot speed of shots and one-timers, as the player card has it: average and hardest, mph.
@@ -3612,6 +3621,11 @@ function fillTeamStats(snap) {
       ...sideRows('Carried by LD / RD', (team, dir) => carryShare(sideOf(team, dir), 0, 1)),
       ...sideRows('Shots from L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 7)),
       ...(list.some(sh => sh.aim) ? sideRows('Aimed at L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 13)) : [])] : []),
+    ...(match.runaways ? [section('Quirky Events'),
+      ['Through-the-legs goals', quirkGoals(0, 'five-hole'), quirkGoals(1, 'five-hole')],
+      ['Shoulder-save bobble goals', quirkGoals(0, 'goalie bobble'), quirkGoals(1, 'goalie bobble')],
+      ['Rocket passes', rockets(0), rockets(1)],
+      ['Runaway skaters', runaways(0), runaways(1)]] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
@@ -4380,7 +4394,8 @@ function playerName(team, idx) {
   return p ? '#' + p.num + ' ' + p.name : 'unknown';
 }
 const GOAL_TAGS = { PPG: 'PPG', SHG: 'SHG', breakaway: 'breakaway', 'one-timer': 'one-timer', 'penalty shot': 'penalty shot', 'EA Special': 'EA Special',
-  'off a check': 'off a check', 'goalie giveaway': 'goalie giveaway', 'own goal': 'own goal' };
+  'off a check': 'off a check', 'goalie giveaway': 'goalie giveaway', 'own goal': 'own goal',
+  'five-hole': 'through the legs', 'goalie bobble': 'shoulder-save bobble' };
 // Tapestries (the converter's add_tapestries): a goal at the end of two or more quick passes, its kind by the number.
 const TAPESTRY_KINDS = ['tapestry', 'fine tapestry', 'masterpiece'];
 function goalKindText(g, kind) {
@@ -4503,6 +4518,17 @@ function draw() {
   for (const b of eventTagsOn ? breakaways : []) {
     const since = m.t[f] - m.t[b.f];
     if (since >= 0 && since <= POST_FLASH_MS) drawTag(m.puck[3 * f], m.puck[3 * f + 1], 'Breakaway', 30);
+  }
+  // Rocket passes (the converter's add_quirks): a tag over the puck as it leaves.
+  for (const p of eventTagsOn ? m.passes || [] : []) {
+    const since = m.t[f] - m.t[p.f];
+    if (p.rocket && since >= 0 && since <= POST_FLASH_MS) drawTag(m.puck[3 * f], m.puck[3 * f + 1], 'Rocket pass', 30);
+  }
+  // Runaway skaters (deceleration left off): a tag over him while it lasts.
+  for (const r of eventTagsOn ? m.runaways || [] : []) {
+    if (f < r[0] || f > r[1] + 30) continue;
+    const k = [...Array(6).keys()].map(i => r[2] * 6 + i).find(k => m.roster && parseInt(m.roster[f * PLAYERS + k], 36) === r[3]);
+    if (k !== undefined) drawTag(m.pos[(f * PLAYERS + k) * 2], m.pos[(f * PLAYERS + k) * 2 + 1], 'Runaway!', DISC + 32);
   }
   // Bobbled passes (the converter's bobbles): the pass bounced off the teammate it reached. A tag over him.
   for (const b of eventTagsOn ? m.bobbles || [] : []) {
@@ -5592,7 +5618,7 @@ const liveWaitingFor = () => !!liveState && liveState.status !== 'final';
 function liveDelay() {
   const gaps = (liveState && liveState.gaps) || [];
   const longest = gaps.length ? Math.max(...gaps) : 1000 * ((liveState && liveState.interval) || 5);
-  return Math.min(30000, Math.max(9000, 1.4 * longest + 2000));
+  return Math.min(30000, Math.max(6000, 1.4 * longest + 2000));
 }
 function liveRate(end) {
   if (!liveState || !liveState.following || liveState.status === 'final' || LAYOUT === 'stats') return 1;
