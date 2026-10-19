@@ -11,6 +11,9 @@ marked with what supports it:
 The SNES game is different in many ways that matter: see [SNES_MECHANICS.md](SNES_MECHANICS.md). For what all this
 means when you play, without the code, see the [Genesis player's guide](GENESIS_GUIDE.md).
 
+Distances are game units, **about 3 to a foot** (divide by 3 for feet); the rink's landmarks, common distances and
+speeds in feet and mph are in [Units](#units) in the appendix.
+
 Buttons are the Genesis pad's: **A** (hook / hold, the flip with the puck), **B** (pass, poke, switch player),
 **C** (shoot, speed burst / check).
 
@@ -794,7 +797,7 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   when the puck can meet the receiver's stick if he keeps skating, in whole eighths of a second (1-24), then sets the
   puck's velocity to cover that distance in t. The division truncates, so a meeting due in 1.9 eighths becomes 1, and
   the puck is sent to cover the whole distance in an eighth of a second: nearly twice as fast. It happens when **the
-  receiver is skating toward the passer** (they meet sooner) and they're about 50-70 apart: the puck leaves at
+  receiver is skating toward the passer** (they meet sooner) and they're about 50-70 units (17-23 feet) apart: the puck leaves at
   27,000-32,000 instead of about 15,000 (each direction is capped at 32,767; a bigger answer would wrap and leave the
   puck almost still). **Confirmed** by replaying the game's own arithmetic on every targeted pass in the BOS-DAL and
   BOS-WPG games (`analysis/fast_pass_study.py`): 750 of 816 within 10% of the puck's real speed; every pass over 27,000
@@ -1673,7 +1676,7 @@ C-then-B check, and the weight bug for computer checkers too.
 | Through the legs | Butterfly / kick save move the stick aside: a flat puck through his middle touches nothing, hits him from behind, goes in |
 | Stick blind ring | A low puck 8-14 from a goalie's blade gets no stick and no body test that frame |
 | Save moves | Add no reach (pad stack aside): the puck slips past the outstretched pad |
-| Rocket pass | A receiver skating toward the passer 50-70 away: the meeting time rounds down, the pass goes up to twice as fast |
+| Rocket pass | A receiver skating toward the passer 50-70 units (17-23 ft) away: the meeting time rounds down, the pass goes up to twice as fast |
 | Pickups | Only players whose body is within 22 up / down of the puck are tested; a stick held out ahead can sit on it untouched |
 | Pass lift | Passes to a teammate rise with their flight time; pass shots get a random lift (flat to about 21) |
 | Flip | Fixed spot by facing; can be flipped over the glass |
@@ -1710,6 +1713,42 @@ C-then-B check, and the weight bug for computer checkers too.
   blue lines at about +/-88. About 3 units per foot.
 - **Speed:** the game's velocity words; a position moves by speed / 4096 units a frame. A puck speed of 23,000 is about
   78 mph; skaters top out around 9,000.
+
+Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
+speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
+
+**The rink:**
+
+| Landmark | Units | Feet |
+|---|---|---|
+| Rink length / width | about 600 / 260 | about 200 / 87 |
+| Centre of the rink to each goal line | 268 | about 89 |
+| Centre to each blue line | 88 | about 29 |
+| Blue line to goal line (the attacking zone) | 180 | 60 |
+| Goal line to where the goalie stands | about 20-25 | 7-8 |
+| End-zone faceoff dots: out from the goal line / across from the middle | 62 / 70 | 21 / 23 |
+| Goal mouth (scoring part) | 20 either side of the middle | about 7 either side |
+
+**Distances that come up a lot:**
+
+| Distance | Units | Feet | Where it comes up |
+|---|---|---|---|
+| A goalie's body reach | 12-15 (18 in a pad stack) | 4-5 (6) | what a shot must miss to score |
+| A stick's reach for a loose puck | 14 | about 5 | catching passes, the goalie's stick |
+| A player's body to the puck, up or down, for his stick to be checked | 22 | about 7 | pucks going through a stick |
+| A pass that can come out "rocket" fast (Genesis) | 50-70 | 17-23 | about a third of the zone's length |
+| High-danger shot (the slot) | within 60 of the net | within 20 | shot maps |
+| Shots that can go exactly where aimed | within 200 of the aim point | within about 67 | roughly from the blue line in |
+
+**Speeds:**
+
+| Speed number | Units a frame | About | Example |
+|---|---|---|---|
+| 9,000 | 2.2 | 30 mph | a skater flat out |
+| 15,000 | 3.7 | 50 mph | a typical pass |
+| 23,000 | 5.6 | 78 mph | a hard pass shot or slapshot |
+| 29,000 | 7.1 | 98 mph | the hardest slapshots |
+
 - **Time:** frames at 60 a second. The game clock runs at 2.5x real time (24 frames per game second).
 - **Ratings:** editor values 0-6 (0-15 on some ROMs); working values 0-30.
 

@@ -20,8 +20,7 @@ nothing to say about something, that's why; it doesn't assume the SNES works lik
 | **X** | | Take the goalie |
 | **L / R** | | Take the left / right defenceman |
 
-Distances: the game measures the rink in units of about **a third of a foot** (blue line to goal line is 180 units, 60
-feet).
+Distances are in the game's units, about **3 to a foot**: see [Distances and speeds](#distances-and-speeds).
 
 ## tl;dr
 
@@ -41,6 +40,44 @@ The things about the SNES game that matter most, one line each; the number after
 12. **The flip (Y) is a computer-run dump-in**, aimed by your side of centre, not the d-pad. ([8.2](#82-the-flip-y-with-the-puck))
 13. **Your computer teammates are hit-happy** and switch to defence the moment you lose the puck. ([13.1](#131-hit-happy), [13.2](#132-awareness))
 14. **With line changes off, energy never drains**: Endurance and fatigue do nothing. ([14](#14-myths-things-that-dont-matter))
+
+---
+
+## Distances and speeds
+
+Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
+speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
+
+**The rink:**
+
+| Landmark | Units | Feet |
+|---|---|---|
+| Rink length / width | about 600 / 260 | about 200 / 87 |
+| Centre of the rink to each goal line | 268 | about 89 |
+| Centre to each blue line | 88 | about 29 |
+| Blue line to goal line (the attacking zone) | 180 | 60 |
+| Goal line to where the goalie stands | about 20-25 | 7-8 |
+| End-zone faceoff dots: out from the goal line / across from the middle | 62 / 70 | 21 / 23 |
+| Goal mouth (scoring part) | 17 either side of the middle (posts out to 22) | about 6 either side |
+
+**Distances that come up a lot:**
+
+| Distance | Units | Feet | Where it comes up |
+|---|---|---|---|
+| A goalie's body | a box about 10 either side of his centre, plus areas from his save poses | 3-4 | what a shot must miss to score |
+| A stick's reach for a loose puck | 14 | about 5 | catching passes, the goalie's stick |
+| A player's body to the puck, up or down, for his stick to be checked | 40 | about 13 | pucks going through a stick |
+| High-danger shot (the slot) | within 60 of the net | within 20 | shot maps |
+| Shots that can go exactly where aimed | within 200 of the aim point | within about 67 | roughly from the blue line in |
+
+**Speeds:**
+
+| Speed number | Units a frame | About | Example |
+|---|---|---|---|
+| 9,000 | 2.2 | 30 mph | a skater flat out |
+| 15,000 | 3.7 | 50 mph | a typical pass |
+| 23,000 | 5.6 | 78 mph | a hard pass shot or slapshot |
+| 29,000 | 7.1 | 98 mph | the hardest slapshots |
 
 ---
 

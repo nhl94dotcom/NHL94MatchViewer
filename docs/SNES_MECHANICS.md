@@ -13,6 +13,9 @@ the game's own code and is marked with what supports it:
 
 For what all this means when you play, without the code, see the [SNES player's guide](SNES_GUIDE.md).
 
+Distances are game units, **about 3 to a foot** (divide by 3 for feet); the rink's landmarks, common distances and
+speeds in feet and mph are in [Units](#units) in the appendix.
+
 **Buttons** (from the game's input code, `doinput`):
 
 | Button | With the puck | Without the puck |
@@ -948,6 +951,41 @@ everything in this document applies to all of these ROMs.
 - **Position:** game units, as on the Genesis: the rink runs about -130 to +130 across and -300 to +300 along; goal
   lines at +/-268, blue lines at +/-88. About 3 units per foot.
 - **Speed:** the game's velocity words; skaters top out around 9,000.
+
+Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
+speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
+
+**The rink:**
+
+| Landmark | Units | Feet |
+|---|---|---|
+| Rink length / width | about 600 / 260 | about 200 / 87 |
+| Centre of the rink to each goal line | 268 | about 89 |
+| Centre to each blue line | 88 | about 29 |
+| Blue line to goal line (the attacking zone) | 180 | 60 |
+| Goal line to where the goalie stands | about 20-25 | 7-8 |
+| End-zone faceoff dots: out from the goal line / across from the middle | 62 / 70 | 21 / 23 |
+| Goal mouth (scoring part) | 17 either side of the middle (posts out to 22) | about 6 either side |
+
+**Distances that come up a lot:**
+
+| Distance | Units | Feet | Where it comes up |
+|---|---|---|---|
+| A goalie's body | a box about 10 either side of his centre, plus areas from his save poses | 3-4 | what a shot must miss to score |
+| A stick's reach for a loose puck | 14 | about 5 | catching passes, the goalie's stick |
+| A player's body to the puck, up or down, for his stick to be checked | 40 | about 13 | pucks going through a stick |
+| High-danger shot (the slot) | within 60 of the net | within 20 | shot maps |
+| Shots that can go exactly where aimed | within 200 of the aim point | within about 67 | roughly from the blue line in |
+
+**Speeds:**
+
+| Speed number | Units a frame | About | Example |
+|---|---|---|---|
+| 9,000 | 2.2 | 30 mph | a skater flat out |
+| 15,000 | 3.7 | 50 mph | a typical pass |
+| 23,000 | 5.6 | 78 mph | a hard pass shot or slapshot |
+| 29,000 | 7.1 | 98 mph | the hardest slapshots |
+
 - **Time:** frames at 60 a second.
 - **Ratings:** steps 0-6; working values 0-15.
 

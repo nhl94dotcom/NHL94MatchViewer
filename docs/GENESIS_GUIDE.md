@@ -10,8 +10,7 @@ Playing the SNES version? It differs in important ways: see the [SNES player's g
 Buttons: **A** hook / hold (the flip with the puck), **B** pass / poke / switch player, **C** shoot / speed burst and
 check.
 
-Distances: the game measures the rink in units of about **a third of a foot** (blue line to goal line is 180 units, 60
-feet).
+Distances are in the game's units, about **3 to a foot**: see [Distances and speeds](#distances-and-speeds).
 
 ## tl;dr
 
@@ -31,6 +30,45 @@ The things about the Genesis game that matter most, one line each; the number af
 12. **Passes**: Passing sets speed, not accuracy; long passes rise over sticks; pass shots lift at random; a pass to a teammate skating toward you can come out twice as fast. ([8](#8-passing-and-the-flip))
 13. **A stick ignores the puck for a moment** after its player shoots, passes or loses it, which is why pucks go right through players. ([8](#8-passing-and-the-flip))
 14. **With line changes off, energy never drains**: Endurance and fatigue do nothing, and speed bursts are free. ([15](#15-myths-things-that-dont-matter))
+
+---
+
+## Distances and speeds
+
+Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
+speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
+
+**The rink:**
+
+| Landmark | Units | Feet |
+|---|---|---|
+| Rink length / width | about 600 / 260 | about 200 / 87 |
+| Centre of the rink to each goal line | 268 | about 89 |
+| Centre to each blue line | 88 | about 29 |
+| Blue line to goal line (the attacking zone) | 180 | 60 |
+| Goal line to where the goalie stands | about 20-25 | 7-8 |
+| End-zone faceoff dots: out from the goal line / across from the middle | 62 / 70 | 21 / 23 |
+| Goal mouth (scoring part) | 20 either side of the middle | about 7 either side |
+
+**Distances that come up a lot:**
+
+| Distance | Units | Feet | Where it comes up |
+|---|---|---|---|
+| A goalie's body reach | 12-15 (18 in a pad stack) | 4-5 (6) | what a shot must miss to score |
+| A stick's reach for a loose puck | 14 | about 5 | catching passes, the goalie's stick |
+| A player's body to the puck, up or down, for his stick to be checked | 22 | about 7 | pucks going through a stick |
+| A pass that can come out "rocket" fast (Genesis) | 50-70 | 17-23 | about a third of the zone's length |
+| High-danger shot (the slot) | within 60 of the net | within 20 | shot maps |
+| Shots that can go exactly where aimed | within 200 of the aim point | within about 67 | roughly from the blue line in |
+
+**Speeds:**
+
+| Speed number | Units a frame | About | Example |
+|---|---|---|---|
+| 9,000 | 2.2 | 30 mph | a skater flat out |
+| 15,000 | 3.7 | 50 mph | a typical pass |
+| 23,000 | 5.6 | 78 mph | a hard pass shot or slapshot |
+| 29,000 | 7.1 | 98 mph | the hardest slapshots |
 
 ---
 
@@ -321,7 +359,7 @@ The computer never holds a direction, so its wins go a random way.
 - **Why some passes lift:** a pass to a teammate rises by how long it will take: quick passes stay on the ice,
   passes of a second or more rise over sticks (and can't be caught while still going up). A pass to nobody (a pass shot)
   gets a random lift, anywhere from flat to well over the goalie's pads: you can't choose it.
-- **The rocket pass (a bug):** pass to a teammate skating **toward** you from about 50-70 units away and the game can
+- **The rocket pass (a bug):** pass to a teammate skating **toward** you from about 50-70 units (17-23 feet) away and the game can
   send the puck at twice the normal speed (it rounds the time they'll meet down to the nearest eighth of a second).
   One or two a game. It can catch a receiver off guard or bounce off his stick.
 - **Bobbles:** a pass faster than the receiver can handle (it depends on his Stick Handling) bounces off his stick.
@@ -561,7 +599,7 @@ Puck Control. Ignore Overall, Endurance, and the goalie's glove and stick column
 3. One-timers: B to pass, C while it travels. The best way to score.
 4. Take your goalie when a shot is coming: he gets the full reach. C only as it arrives, never early, and not at all
    for a hard puck along the ice straight at him (the butterfly opens a gap through his legs).
-5. Rocket passes: a pass to a teammate skating toward you from 50-70 away can come out twice as fast.
+5. Rocket passes: a pass to a teammate skating toward you from 17-23 feet away can come out twice as fast.
 6. Going for the five-hole: a hard, flat puck straight at a goalie in the butterfly; a slapshot with Down held is the
    flattest. Odds, not a sure thing.
 7. Check heavier players with lighter ones, and along the boards; don't hit the same man twice running.
