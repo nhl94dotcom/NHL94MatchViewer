@@ -479,8 +479,23 @@ mid-height. Percent that go in (`analysis/goalie_study.py longsnes`):
   about 96 units (32 feet), two-thirds of the distance in between, 80 (20,480) from 120 units (40 feet) on. **Passing
   only makes it steadier**: a random +/-(16 - Passing) x 256 is added, about +/-4,000 for a poor passer, almost nothing
   for a good one. A pass with no target leaves at 144 + 4 x Passing. **Code**
-- How the receiver is chosen: **not read yet**.
-- **Pass shots** happen: a B pass with nobody to take it flies off the way you pressed (one scored in the recordings).
+- **The direction** (`setpassmode`, `passmode`): pressing B sets it to the way the passer faces. If the d-pad is held
+  (or pressed while B is down) the pass goes **at once** in that direction; otherwise it goes when B is released, the
+  way he faces. A goalie behind his net is the exception (no direction set).
+- **The receiver** (`dopass`): of the passer's five teammates, **never the goalie** and nobody off the ice, only those
+  in the pass direction or 45 degrees either side of it count. Each is scored by (distance squared) / 4, plus 4,096 for
+  one 45 degrees off (like being 128 units farther, close in), and the lowest score gets the pass. The Genesis rule is
+  the same idea (GENESIS_MECHANICS 6.1). **Confirmed** on 594 completed SNES passes: 96% of receivers were within one
+  45-degree step of the pass direction, 83% exactly the rule's pick (the rest mostly a teammate other than the one aimed
+  at taking it, or the samples' timing).
+- **The aim:** the receiver's stick blade (the hot spot of his one-timer pose for the way he faces), where it will be
+  if he keeps skating: 24 frames ahead (0.4 s), or distance / 4 frames for a short pass, distance / 5 for a long one.
+  A small lift grows with the distance (vertical speed = distance x 8). The receiver gets the "receive a pass" job, a
+  person's team switches control to him, the passer can't touch the puck for the lead time, and the opposing computer
+  goalie's next rethink is delayed (6.1's goalie note, 5.3).
+- **Pass shots** happen: a B pass with nobody in that cone flies off the way you pressed at 2 x 80 (x 256) along the
+  8-way direction plus half the passer's own speed, **lifted at random up to about 21 units high**, so it can sail over
+  the goalie or the net (one scored in the recordings).
 
 ### 6.2 Catching and bobbles
 
@@ -861,7 +876,6 @@ everything in this document applies to all of these ROMs.
 
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **Computer goalies' poke and dive**: which goalies use them.
-- **Not read yet for the SNES:** pass targeting and catching.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.
 

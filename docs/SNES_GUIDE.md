@@ -210,7 +210,12 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **Bobbles:** a pass bounces off the receiver's stick when it's faster than he can handle, which depends on his Stick
   Handling. Long passes to poor stickhandlers bobble; short passes almost never do. That's why the same player hardly
   ever bobbles twice in a row: the pass back to him usually comes from close by. A long pass back would bobble again.
-- **Pass shots:** with nobody to take it, the puck flies off the way you pressed, and can score.
+- **Which way:** hold the d-pad toward your teammate as you press B and the pass goes at once that way. Without a
+  direction, it goes when you let go of B, the way your player is facing.
+- **Who gets it:** the nearest teammate straight that way, or 45 degrees either side (those count as a bit farther).
+  **Never your goalie.**
+- **Pass shots:** with nobody in that direction, the puck flies off the way you pressed, at a random height (it can
+  go high), and can score.
 
 ### 8.2 The flip (Y with the puck)
 
