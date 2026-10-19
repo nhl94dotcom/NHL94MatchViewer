@@ -56,6 +56,7 @@ def saves():
                                   (15, BLUE, None, "15: a person in net, or an agile computer goalie"),
                                   (12, ORANGE, None, "12: against a one-timer (or the least agile)")):
         b.append(circle(cx, gy, r * S, BLUE if r == 15 else "none", color, 2.5, dash, 0.10 if r == 15 else 1))
+    b.extend(sprite(419, cx, gy, S, opacity=0.55))
     b.append(circle(cx, gy, 4, INK, INK))
     b.append(text(cx + 8, gy + 4, "G", 13, INK, weight="bold"))
     # what's left open straight on, at reach 15 and 12
@@ -404,12 +405,13 @@ def weight_bug():
 
 # ---------------------------------------------------------------------------------------------- 7. shoulder-save bobble
 def shoulder_bobble():
-    """ghighr / ghighl hold points: facing down (top goalie) (-10, +15) / (+10, +14), i.e. behind him; facing up
-    (+9, -14) / (-9, -14) in front. The held puck is pulled toward it; the net's front strips a carried puck."""
+    """ghighr / ghighl hold points (HotList, in game units, +y up the screen): facing down (top goalie) (-10, +15) /
+    (+10, +14), i.e. behind him; facing up (+9, +14) / (-9, +14), in front. Drawn: ghighl, frames 667 / 659. The held
+    puck is pulled toward it; the net's front strips a carried puck."""
     W, S = 820, 4.2
     b = [ARROW]
     b.append(text(W / 2, 28, "The shoulder-save bobble (Genesis): why only the top net", 17, anchor="middle", weight="bold"))
-    b.append(text(W / 2, 48, "Seen from above, to scale. In a shoulder save the game holds the puck at a point 14-15 up the screen from the goalie.",
+    b.append(text(W / 2, 48, "To scale, with the game's own pictures (ghighl, frames 667 and 659). In a shoulder save the puck is held 14 up the screen from him.",
                   12, SOFT, "middle"))
     for panel, (ox, top) in enumerate(((210, True), (610, False))):
         oy = 250
@@ -427,9 +429,10 @@ def shoulder_bobble():
         b.append(line(ox - 20 * S, fy, ox + 20 * S, fy, ORANGE, 2, "5 3"))
         b.append(text(ox + 21 * S, fy + 4, "net front", 11, ORANGE))
         gx, gyy = Pp(0, gy_game)
-        b.append(circle(gx, gyy, 13 * S, "#cfe3f5", BLUE, 2, None, 0.8))
-        b.append(text(gx, gyy + 4, "G", 14, INK, "middle", "bold"))
-        hx, hy = (-10, gy_game + 15) if top else (9, gy_game + 14)
+        b.append(circle(gx, gyy, 13 * S, "#cfe3f5", BLUE, 2, None, 0.5))
+        b.extend(sprite(667 if top else 659, gx, gyy, S, opacity=0.7))
+        b.append(circle(gx, gyy, 4, INK, INK))
+        hx, hy = (10, gy_game + 14) if top else (-9, gy_game + 14)
         HX, HY = Pp(hx, hy)
         b.append(line(gx, gyy, HX, HY, INK, 1.5, "3 3", "marker-end='url(#arr)'"))
         b.append(circle(HX, HY, 7, RED if top else GREEN, INK, 1.5))
@@ -914,6 +917,59 @@ def defence_positions():
     return svg(W, ly + 140, b, "Computer defence")
 
 
+# ---------------------------------------------------------------------------------------------- 17. the SNES flip
+def snes_flip():
+    """SNES assdumpin / DumpInTarget: outside the attacking zone (+/-80, 180) on the passer's side of centre (x sign, not
+    his facing); inside it (0, 215); a goalie (0, 105). Scatter +/-(20-25 + 2 x (15 - Pas)) across, +/-(20-70) along."""
+    W, S = 860, 0.9
+    ox, oy = 250, 80 + 300 * 0.9
+    P = lambda x, y: (ox + x * S, oy - y * S)
+    b = [ARROW]
+    b.append(text(W / 2, 28, "Where the SNES flip goes (Y with the puck)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "The team attacks UP. The computer takes the flip over: the spot depends on which SIDE OF CENTRE he's on, not his facing.",
+                  12, SOFT, "middle"))
+    a = P(-130, 300)
+    b.append(f"<rect x='{a[0]}' y='{a[1]}' width='{260 * S}' height='{360 * S}' fill='#f7fbff' stroke='{INK}' stroke-width='1.5'/>")
+    # passer regions: left and right of centre outside the zone, and the zone
+    for (x0, x1, col) in ((-130, 0, BLUE), (0, 130, GREEN)):
+        q = P(x0, 88)
+        b.append(f"<rect x='{q[0]}' y='{q[1]}' width='{(x1 - x0) * S}' height='{148 * S}' fill='{col}' fill-opacity='0.08'/>")
+    q = P(-130, 300)
+    b.append(f"<rect x='{q[0]}' y='{q[1]}' width='{260 * S}' height='{212 * S}' fill='{ORANGE}' fill-opacity='0.06'/>")
+    for yy, col, w in ((88, BLUE, 3), (0, RED, 2), (268, RED, 1.5)):
+        p0, q0 = P(-130, yy), P(130, yy)
+        b.append(line(p0[0], p0[1], q0[0], q0[1], col, w))
+    p0 = P(-20, 268)
+    b.append(f"<rect x='{p0[0]}' y='{p0[1] - 13}' width='{40 * S}' height='13' fill='#ffffff' stroke='{INK}'/>")
+    # targets with their scatter: Passing 15 (solid) and 0 (dashed), along +/-70
+    for tx, ty, col in ((-80, 180, BLUE), (80, 180, GREEN), (0, 215, ORANGE)):
+        for pas, dash in ((15, None), (0, "5 4")):
+            hw = 25 + 2 * (15 - pas)
+            q = P(tx - hw, ty + 70)
+            b.append(f"<rect x='{q[0]:.1f}' y='{q[1]:.1f}' width='{2 * hw * S:.1f}' height='{140 * S:.1f}' fill='none' stroke='{col}' "
+                     f"stroke-width='1.5'" + (f" stroke-dasharray='{dash}'" if dash else "") + "/>")
+        c = P(tx, ty)
+        b.append(circle(c[0], c[1], 6, col, INK, 1.5))
+    for (sx, sy), (tx, ty), col in (((-30, 20), (-80, 180), BLUE), ((45, -20), (80, 180), GREEN), ((60, 150), (0, 215), ORANGE)):
+        s0, t0 = P(sx, sy), P(tx, ty)
+        b.append(circle(s0[0], s0[1], 5, "#ffffff", col, 2))
+        b.append(f"<path d='M{s0[0]:.1f},{s0[1]:.1f} Q{(s0[0] + t0[0]) / 2:.1f},{min(s0[1], t0[1]) - 30:.1f} {t0[0]:.1f},{t0[1]:.1f}' "
+                 f"fill='none' stroke='{col}' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#arr)'/>")
+    nx = 520
+    notes = [("Left of centre, outside the zone", BLUE), ("deep on the left: 80 from the middle,", SOFT), ("180 up (between circle and corner).", SOFT), ("", SOFT),
+             ("Right of centre, outside the zone", GREEN), ("the same on the right.", SOFT), ("", SOFT),
+             ("Inside the attacking zone", ORANGE), ("in front of the net (0, 215).", SOFT), ("", SOFT),
+             ("Scatter (Passing is the accuracy):", INK), ("solid box: Passing 15, +/-25 across;", SOFT), ("dashed: Passing 0, +/-55 across;", SOFT),
+             ("along the ice +/-20 to 70.", SOFT), ("", SOFT),
+             ("He turns to face up the ice first,", SOFT), ("so a sideways skater flips late.", SOFT),
+             ("A goalie flips to about centre ice.", SOFT)]
+    for i, (s_, c) in enumerate(notes):
+        b.append(text(nx, 100 + i * 17, s_, 12, c, weight="bold" if c != SOFT else "normal"))
+    b.append(text(60, oy + 90, "Circles: example passers. Dots: the spots. Not seen in a recording yet; from the NHL94SNES code (assdumpin, DumpInTarget).",
+                  12, SOFT))
+    return svg(W, oy + 110, b, "The SNES flip")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -922,7 +978,8 @@ def main():
              "computer_positions.svg": positioning(), "rink_feet.svg": rink(),
              "one_timers.svg": one_timers(), "faceoff_directions.svg": faceoff_directions(),
              "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots(),
-             "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions()}
+             "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions(),
+             "snes_flip.svg": snes_flip()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

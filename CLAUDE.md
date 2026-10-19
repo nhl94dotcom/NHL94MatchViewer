@@ -1368,7 +1368,10 @@ through_the_legs now overlays the game's own frame 480 (the butterfly, $021E) at
 point (9, -2) from the ANA-ATL goals (`sprite()` reads sprites/<rom>.js here or in Documents; GOALIE_PALETTE is that
 game's Atlanta away palette; without a library the diagram draws without it: so a fresh clone can regenerate the
 others); empty_net (MECHANICS 4.2 tables, both systems), computer_defence (assdefd / asswingd / asscenterd spots for
-three puck positions); in both guides' shooting lists and both mechanics 4.2, GENESIS_GUIDE 14, GENESIS_MECHANICS 12.2.
+three puck positions); in both guides' shooting lists and both mechanics 4.2, GENESIS_GUIDE 14, GENESIS_MECHANICS 12.2. Fifth set: the game's own goalie frames on saves_reach (gready
+facing down, 419) and shoulder_bobble (ghighl 667 facing down / 659 facing up; hold points from HotList (+10, +14) and
+(-9, +14), replacing the earlier (-10, +15) / (+9, +14)); snes_flip (DumpInTarget spots and Passing scatter) in SNES_GUIDE
+8.2 and SNES_MECHANICS 6.3.
 
 ## Advanced stats (2026-10-16)
 

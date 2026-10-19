@@ -601,6 +601,8 @@ after his pass, then shooters, centres at a faceoff and fallen players.
 
 ### 6.3 The flip (Y with the puck): a computer-run dump-in
 
+![Where the SNES flip goes](img/snes_flip.svg)
+
 Pressing Y hands your skater to the computer's dump-in routine (`assdumpin`, `DumpInTarget`). **Code**; no SNES flip in
 the recordings yet.
 

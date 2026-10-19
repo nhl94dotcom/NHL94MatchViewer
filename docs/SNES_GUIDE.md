@@ -294,6 +294,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 ### 8.2 The flip (Y with the puck)
 
+![Where the SNES flip goes](img/snes_flip.svg)
+
 **The SNES flip is a computer dump-in**, not a lob you place:
 
 - **Outside the attacking zone:** it goes deep, between the faceoff circle and the corner, **on whichever side of centre
