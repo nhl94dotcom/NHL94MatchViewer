@@ -33,8 +33,28 @@ def hot(frame):
     return struct.unpack_from(">bb", ROM, HOTLIST + 2 * frame)
 
 
+def walked(cap, i):
+    """The objects checkpuckcoll's walk reaches from the puck (the game's own lists: Ylist $B84A, OOlistpos $B86A, OOlist
+    $B88A), compared exactly as the code does: each neighbour's Ylist entry against the puck's word at +$14."""
+    Y = [sw(cap.word(i, 0xB84A + 2 * o)) for o in range(16)]
+    pos = [cap.word(i, 0xB86A + 2 * o) for o in range(16)]
+    order = [cap.byte(i, 0xB88A + j) // 2 for j in range(16)]
+    py = sw(cap.word(i, rec(PUCK, 0x14)))
+    got, d1 = set(), pos[PUCK]
+    while d1 < 15 and Y[order[d1 + 1]] - py <= 22:
+        got.add(order[d1 + 1])
+        d1 += 1
+    d1 = pos[PUCK]
+    while d1 > 0 and py - Y[order[d1 - 1]] <= 22:
+        got.add(order[d1 - 1])
+        d1 -= 1
+    return got
+
+
 def reason(cap, i, k, d2, puck_nopuck, speed, z, zvel, shot):
     """What the code does with this player and this puck this frame (in .ccx / puckstick order)."""
+    if k not in walked(cap, i):
+        return "not reached by the walk"
     pfl, pfl2 = cap.byte(i, rec(k, 0x62)), cap.byte(i, rec(k, 0x63))
     if pfl & 0x04:
         return "no collision (pfnc)"
@@ -76,7 +96,7 @@ def study(folder, tab, examples):
             examples.append((Path(folder).name, i0, k, d, len(rs)))
 
     for i in range(cap.count - 3):
-        if cap.byte(i, 0xFFF7) or cap.byte(i, rec(PUCK, 0x60)) != 0xFF:
+        if cap.byte(i, 0xFFF7) or cap.byte(i, rec(PUCK, 0x60)) != 0xFF or cap.byte(i, 0xC2EC) & 0x80:  # (sfhor: stoppage screens)
             for k in list(open_):
                 close(k, i)
             continue

@@ -1266,8 +1266,12 @@ Who takes a loose puck (2026-10-18, the user: sometimes a magnet, sometimes it g
 analysis/pickup_study.py reads the raw BOS-DAL captures, which hold sflags2): .ccx skips a player whose no-touch timer
 (+$5E) runs (shot / pass 16 frames, steal both 20 + Stk / 2, deflect / body bounce / net strip 8, puck into the goalie
 20 (goalie 10), fall 120, faceoff 20, goalie dive 8); then height > 5, Zvel > $200, reach 14 (7 while the puck's own
-+$5E runs), goalie 8, speed limit. Blade contacts: timer running 1,078, taken 27; predicted catch 210, taken 121 (misses
-mostly first within 11-14: sampling at the reach edge). Record fields: Xpos 0, Ypos $14, Zpos $18 are current; the
++$5E runs), goalie 8, speed limit. Blade contacts: timer running 1,078, taken 27. The walk (checkpuckcoll .0 / .1): Ylist ($B84A,
+the sort key: our Y; X only while sflags bit 7 sfhor is set, at stoppage screens), OOlistpos $B86A, OOlist $B88A
+(object x 2); from the puck outward, stopping at the first object more than 22 ($16) up or down from the puck's Y: only
+players whose BODY is within 22 in y are tested, so a stick held 20 out in front can sit on the puck untested (2219
+sample 9170). Clean test (seven Genesis games: slow low puck within 11 of the blade, timer out, not shooting / passing /
+faceoff, reached by the walk): 117 / 137 taken, 7 another stick first, 13 after a whistle (gmode bit 0, puck pfnc). Record fields: Xpos 0, Ypos $14, Zpos $18 are current; the
 match file reads OldXpos / OldYpos / OldZpos ($1C / $20 / $24, the previous frame's). Ylist ($B84A) holds our X: the
 game's internal axes are the NHLPA93 horizontal ones, swapped for display (sfhor). GENESIS_MECHANICS 6.2, GENESIS_GUIDE 8.
 Uncounted saves explained in GENESIS_MECHANICS 4.7 (analysis/uncounted_study.py); by direction the recordings show

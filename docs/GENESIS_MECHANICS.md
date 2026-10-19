@@ -753,6 +753,19 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   blocked rows are mostly the same timing (the timer runs out, or the puck comes down, between two samples).
   **So the puck going through a stick is almost always the no-touch timer:** the player just shot, passed, lost a
   steal, fell or had a puck bounce off him. Goalies: 134 contacts with their timer running, 15 taken.
+- **The second filter: only players whose body is near the puck up or down the screen are tested at all.**
+  `checkpuckcoll` doesn't look at every player: it walks the game's list of objects sorted by their up-down position
+  (Ylist $B84A, OOlistpos $B86A, OOlist $B88A) outward from the puck and stops at the first one more than 22 units
+  (`cbody + cstick`) above or below the puck's own position. The test is on the player's BODY, but a stick held out in
+  front reaches up to about 20 units, so a skater facing up or down the ice can have his blade right on the puck and
+  never be tested; he takes it only once his body comes within 22. Example (2026-10-17_2219_BOS-DAL, sample 9170): a
+  standing skater's blade 7.8 units from a slow puck, his body 26 below it; not tested for five samples, then taken the
+  sample his body came within 21. A stick held out sideways is never affected.
+- **Checked:** every moment in seven Genesis games where a slow, low puck sat well inside a blade's reach (11 units),
+  the player's timer was out, he wasn't shooting, passing or in a faceoff, and the walk reached him: **117 of 137 he
+  took, 7 times another player's stick took it first (the walk tests them in list order), and the other 13 came after a
+  whistle** (the clock stopped and the puck in no-collision mode, `pflags` bit 2, until the faceoff). So within what 60
+  samples a second can show, the rule is complete.
 - **The "magnet":** once a stick takes the puck, `pucknorm` pulls it a quarter of the way to the blade spot every frame.
   With a reach of 14 (several puck widths) the puck visibly slides onto the stick from well away from it.
 

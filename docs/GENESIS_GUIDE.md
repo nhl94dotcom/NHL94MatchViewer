@@ -301,6 +301,10 @@ The computer never holds a direction, so its wins go a random way.
 - **Why the puck sometimes goes right through a stick:** after a player shoots or passes, his stick ignores the puck
   for about a quarter of a second; after losing a steal, about half a second; after a puck bounces off him, 8 frames;
   after a fall, 2 seconds. A puck that is in the air (above stick height) or still rising also goes by.
+- **A stick held out in front can miss a puck right on it.** The game only checks a player's stick when his body is
+  within about 22 units of the puck up or down the screen. Skating up or down the ice with the stick out ahead, the
+  blade can touch the puck before the game checks it; it's taken a moment later as he closes in. A stick held out to
+  the side never has this problem.
 - **Why it sometimes looks like a magnet:** any stick within about 14 units (several puck widths) takes a slow, low
   puck, and the game then slides the puck onto the blade over a few frames.
 - **The flip (A with the puck) isn't aimed by the d-pad.** It goes to a fixed spot from where you are and **which way
