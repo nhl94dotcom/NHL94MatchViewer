@@ -721,9 +721,40 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
 - **Pass speed follows Passing:** median pass speed 13,500 for passers rated 0-2, 15,000 at 3-4, 16,600 at 5-6.
   Interceptions didn't fall for the better passers in these games (22%, 24%, 27%), nor bobbles follow the receiver's
   Stick Handling: who passes, where and to whom varies too much in a dozen games.
-- **Not explained yet:** about half the slow, low pucks that passed within reach of a blade (as computed) weren't
-  taken. The game's rule says they all should be, so either the computed blade is off by more than its few units for
-  skaters in motion, or a condition hasn't been found.
+- **Mostly explained now: the no-touch timer.** Every player has a timer (record +$5E, in frames) during which his
+  stick and body ignore the puck completely; `.ccx` skips him before any other test. It is set when he:
+
+  | Event | Frames (60 a second) |
+  |---|---|
+  | shoots or passes (`doshot`, `dopass`) | 16 |
+  | carries the puck into the goalie (`puckgoalie`; the goalie gets 10) | 20 |
+  | loses it to a steal, and the stealer too (`puckstick`) | 20 + Stick Handling / 2 (about 0.4-0.6 s) |
+  | knocks a too-fast puck off his stick, or it bounces off his body | 8 |
+  | has it taken off his stick by the net (`checkgoal`) | 8 |
+  | falls (`FallDown`) | 120 |
+  | lines up for a faceoff (`assfaceoffpl`) | 20 |
+  | dives, as a goalie | 8 |
+
+  The puck has a timer of its own (puck record +$5E), and while it runs every stick's reach shrinks from 14 to 7.
+  **Confirmed** on every moment a blade came within reach of a loose puck in the five BOS-DAL games
+  (`analysis/pickup_study.py`, read straight from the recordings, all flags included):
+
+  | What the code says | Skater contacts | Took it | Deflected | Went through |
+  |---|---|---|---|---|
+  | His no-touch timer is running | 1,078 | 27 (3%) | 166 | 885 |
+  | Puck rising | 261 | 56 | 22 | 183 |
+  | Puck above 5 | 153 | 24 | 20 | 109 |
+  | Puck's own timer (reach 7), outside 7 | 73 | 35 | 5 | 33 |
+  | Catch | 210 | 121 (58%) | 9 | 80 |
+  | Too fast: deflects | 5 | 0 | 1 | 4 |
+
+  Over half of the predicted catches that went through first came within 11-14 units, the edge of reach, where the
+  recordings (a frame behind and sometimes a frame apart) can't tell in from out; the "took it" cases among the
+  blocked rows are mostly the same timing (the timer runs out, or the puck comes down, between two samples).
+  **So the puck going through a stick is almost always the no-touch timer:** the player just shot, passed, lost a
+  steal, fell or had a puck bounce off him. Goalies: 134 contacts with their timer running, 15 taken.
+- **The "magnet":** once a stick takes the puck, `pucknorm` pulls it a quarter of the way to the blade spot every frame.
+  With a reach of 14 (several puck widths) the puck visibly slides onto the stick from well away from it.
 
 ### 6.3 The flip (A with the puck)
 

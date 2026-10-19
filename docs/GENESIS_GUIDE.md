@@ -298,6 +298,11 @@ The computer never holds a direction, so its wins go a random way.
 - **Pass shots:** with nobody in the cone, the puck just goes that way, hard. Aimed at the net, it's a shot the game
   doesn't count unless it scores.
 - **Bobbles:** a pass faster than the receiver can handle (it depends on his Stick Handling) bounces off his stick.
+- **Why the puck sometimes goes right through a stick:** after a player shoots or passes, his stick ignores the puck
+  for about a quarter of a second; after losing a steal, about half a second; after a puck bounces off him, 8 frames;
+  after a fall, 2 seconds. A puck that is in the air (above stick height) or still rising also goes by.
+- **Why it sometimes looks like a magnet:** any stick within about 14 units (several puck widths) takes a slow, low
+  puck, and the game then slides the puck onto the blade over a few frames.
 - **The flip (A with the puck) isn't aimed by the d-pad.** It goes to a fixed spot from where you are and **which way
   your skater faces**:
   - outside the attacking zone: a high lob to the attacking-zone faceoff circle on the side you face;

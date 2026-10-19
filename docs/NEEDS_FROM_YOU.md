@@ -26,9 +26,9 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## Questions only you or your league can answer
 
-1. **Does the opponent's iPhone open the game files from the S3 link?** If not, what the page shows.
-2. **In online league games, is Home always the netplay host?** If so, the host's connection could be part of the
-   home edge.
+1. ~~**Does the opponent's iPhone open the game files from the S3 link?**~~ Yes (2026-10-18).
+2. ~~**In online league games, is Home always the netplay host?**~~ No (2026-10-18): Genesis players pick Player 1 or 2
+   in RetroArch whoever hosts, and SNES players pick their side in the game, so hosting isn't part of the home edge.
 
 ## Checks you could run on your box-score database
 

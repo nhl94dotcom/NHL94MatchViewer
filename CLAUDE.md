@@ -1262,6 +1262,18 @@ Passes against the rule (Genesis, nhl94.bin games): rising or above 5 untouched 
 pass's `to` is the actual catcher for completed passes, so receiver-vs-other comparisons are circular). In
 GENESIS_MECHANICS 6.2.
 
+Who takes a loose puck (2026-10-18, the user: sometimes a magnet, sometimes it goes through the stick;
+analysis/pickup_study.py reads the raw BOS-DAL captures, which hold sflags2): .ccx skips a player whose no-touch timer
+(+$5E) runs (shot / pass 16 frames, steal both 20 + Stk / 2, deflect / body bounce / net strip 8, puck into the goalie
+20 (goalie 10), fall 120, faceoff 20, goalie dive 8); then height > 5, Zvel > $200, reach 14 (7 while the puck's own
++$5E runs), goalie 8, speed limit. Blade contacts: timer running 1,078, taken 27; predicted catch 210, taken 121 (misses
+mostly first within 11-14: sampling at the reach edge). Record fields: Xpos 0, Ypos $14, Zpos $18 are current; the
+match file reads OldXpos / OldYpos / OldZpos ($1C / $20 / $24, the previous frame's). Ylist ($B84A) holds our X: the
+game's internal axes are the NHLPA93 horizontal ones, swapped for display (sfhor). GENESIS_MECHANICS 6.2, GENESIS_GUIDE 8.
+Uncounted saves explained in GENESIS_MECHANICS 4.7 (analysis/uncounted_study.py); by direction the recordings show
+85% counted going up, 91% down (the opposite of the database's gap; samples small). The opponent's iPhone opens game
+files from the S3 link; Genesis netplay picks Player 1 / 2 regardless of host, so hosting isn't part of the home edge.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
