@@ -106,7 +106,7 @@
   .scoring .goal { padding: 3px 0; border-top: 1px solid var(--raised); }
   .scoring .goal:first-of-type { border-top: 0; }
   .scoring .goal small { color: var(--muted); display: block; }
-  .scoring .tag { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; }
+  .scoring .tag { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; white-space: nowrap; display: inline-block; }
   .card h5 { margin: 10px 0 6px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
   .row { position: relative; }
   .row .live { text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -3506,8 +3506,8 @@ function fillTeamStats(snap) {
       ...(posts(0) + posts(1) ? [['Posts', posts(0), posts(1)]] : []),
       ...(ownGoals(0) + ownGoals(1) ? [['Own goals (into own net)', ownGoals(0), ownGoals(1)]] : []),
       ...(match.passes ? [['Tapestry goals', tapestries(0), tapestries(1)]] : []),
-      ...(match.passes ? [['Missed tapestries', missedTapestries(0), missedTapestries(1)]] : []),
       ...(tapestries(0) + tapestries(1) ? [['\u00b7 2 / 3 / 4+ passes', [2, 3, 4].map(n => tapestries(0, n)).join(' / '), [2, 3, 4].map(n => tapestries(1, n)).join(' / ')]] : []),
+      ...(match.passes ? [['Missed tapestries', missedTapestries(0), missedTapestries(1)]] : []),
       ['Wrist shots (G / att)', goalsOf(0, sh => sh.type === 'wrist shot'), goalsOf(1, sh => sh.type === 'wrist shot')],
       ['Slapshots (G / att)', goalsOf(0, sh => sh.type === 'slapshot'), goalsOf(1, sh => sh.type === 'slapshot')],
     ] : []),
