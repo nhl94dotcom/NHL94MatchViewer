@@ -330,8 +330,14 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   carrier your skater always pokes. Farther away the game picks your skater nearest the puck, favouring one between the
   puck and your own net: if that's yours he pokes, otherwise control switches. Unlike the Genesis, it goes by where the
   puck is now, not where it's heading.
-- Y without the puck is a hook or hold, and B near the carrier a poke check; what they do on the SNES hasn't been read
-  yet.
+- **Y without the puck** hooks the nearest opponent in front of you, or **holds** him if he's facing you. If it catches
+  him, he keeps the puck but flails and slows to your speed (and a wind-up for a shot is cancelled). Holds connect far
+  more often than hooks (136 of 344 against 107 of 594 in recorded games), so go face to face.
+- **The poke (B near the carrier)** only takes the puck through the stick's steal roll. With penalties on, a poke that
+  touches him in front always knocks him over (a tripping risk); with penalties off, a person's poke trips him only now
+  and then. Nearly half of people's pokes were from too far away to do anything (403 of 874).
+- **The other buttons:** X takes your goalie (with manual goalie switched on) and pokes with him; L and R jump to the
+  defenceman on that side of the screen (with defence control on); Select opens the line-change box.
 
 ---
 

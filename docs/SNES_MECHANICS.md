@@ -681,18 +681,40 @@ Different from the Genesis:
   look-ahead) plus, while the puck is carried, **32 for each 45 degrees** beyond the first that the direction to the
   puck turns away from straight up-ice (toward the goal he attacks): a skater with the puck in front of him, between it
   and his own net, is preferred. Your own skater is included: if he's chosen he pokes (if not locked; locked, nothing);
-  otherwise control switches.
-- Not yet checked against the recordings.
+  otherwise control switches. Locked skaters (down, hooking, holding) are never chosen, his own current one included,
+  so B while your skater is down always switches; skaters turning or in a check animation can be.
+- **With a loose puck** there is no direction term and no "close" rule: the skater nearest the puck gets control, and if
+  he's already yours he pokes, at nothing.
+- **Checked** (analysis/snes_hook_poke_study.py, 15 games, 1,682 B presses without the puck and not within 0.5 s of
+  another): the rule predicts 78% (switch 910 of 946 right; the preferred direction is the puck up-ice of him: 72% the
+  other way round). Most misses are a predicted poke that didn't come, or the reverse, with the skater turning or
+  gliding (animations $EBB0, $EBE2, $EAFE): the game's own distance figure (`puckdist`) and lock state aren't in the
+  recordings.
 
-- **Y without the puck** starts a hook or hold (`holdplayer`; the hook is animation `SPAhook`, then `SPAhook2`); what it
-  does to the victim hasn't been read for the SNES.
+- **Y without the puck** (`Holdplayer`, `Acheck`): picks the nearest opponent in front (distance + 16 for each 45
+  degrees he is off your facing) and starts a **hook** (`SPAhook`, $F864), or a **hold** (`SPAHold`, $F374) when he faces
+  you (roughly face to face). Not as a goalie, nor while locked in anything but a speed burst.
+- **When it connects** (`holdcheck`, from the collision code; the target within 45 degrees of where you face and not
+  locked): **both players' speeds are averaged** (the carrier slows to your pace), he flails (`SPAflail`, $F46A) and
+  **keeps the puck** (a shot wind-up is cancelled), you go into `SPAhook2` / `SPAHold2`; then a hooking / holding roll,
+  or a penalty shot if he was on a breakaway.
+- **Recorded** (15 games): 594 hooks started (58 by people, 536 by the computer), 107 caught someone; 344 holds (37 /
+  307), 136 caught someone: the hold, used face to face, connects far more often. On the carrier: hooks 27 (he kept the
+  puck 1.5 s in 14, the hooking team got it in 12; his speed 56 -> 48 units/s), holds 46 (23 kept, 18 won; 73 -> 47).
 - **The get-up glitch** (known in the community: a knocked-down player gets up at once if his person presses the hook
   button). The SNES input code checks the hook button **before** the animation lock that holds a falling player down,
   and `holdplayer` refuses only during a speed burst, so the hook animation replaces the fall and he is back up. The
   Genesis checks the lock first, so it can't happen there. **Confirmed**: three times in the recordings a person pressed
   Y while down and was up and hooking 0.5-1.2 s later, where falls otherwise last 2.3 s.
-- **B without the puck** near the carrier is a poke check (its animation confirmed from the recordings); its effects
-  haven't been read.
+- **The poke** (`SPAsweepchk`, $F208) takes the puck only through the stick-steal roll (6.4). Its body touching a
+  skater within 45 degrees in front (`Bcheck`): **with penalties on, or poked by a computer skater, he always goes down**
+  (a fall or a wobble), with a tripping roll; **a person's poke with penalties off** trips him only when randoma8(16 +
+  your Checking - his Stickhandling) is 12 or more.
+- **Recorded:** people poked 874 times, 403 from more than 30 away (out of reach); of the 471 in reach, 85 tripped someone
+  and 141 won the puck. The computer poked 364 times, 340 out of reach.
+- **X** takes your goalie when the team's manual goalie option is on; a goalie you control pokes with X (`SPAgpoke`).
+  **L / R** take the defenceman on the left / right of the screen when defence control is on (`PadTakeLeftDefense`,
+  `PadTakeRightDefense`). **Select** opens the line-change box.
 
 ### 7.4 Skaters and goalies colliding
 
