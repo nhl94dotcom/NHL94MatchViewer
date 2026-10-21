@@ -328,7 +328,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **Goalies can't be knocked down.** Skating into one fast knocks *you* down.
 - **Don't burst into the net.** A speed burst into either net with the puck anywhere near it knocks the net off
   about one time in eight per frame of contact, and the whistle moves the faceoff out of the zone if it's the
-  other team's net: the end of your pressure. Skating into it without bursting never does.
+  other team's net: the end of your pressure. Skating into it without bursting never does. If you're pinned against
+  the net, every burst you make there rolls the dice again, so skate off it instead of bursting.
 - **B without the puck: poke or switch?** On the SNES it acts as you **press** B. Within about 20 units (7 feet) of the
   carrier your skater always pokes. Farther away the game picks your skater nearest the puck, favouring one between the
   puck and your own net: if that's yours he pokes, otherwise control switches. Unlike the Genesis, it goes by where the

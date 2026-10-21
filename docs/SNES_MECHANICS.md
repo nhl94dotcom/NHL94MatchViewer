@@ -794,6 +794,17 @@ less likely per frame, needs the puck within 40, and no burst.** Recorded: 7 net
 them in one game, 2026-10-16_2018_PHI-VAN, against the computer), each time a person's skater in a burst just before;
 1 in 191 minutes of Genesis play.
 
+**Stuck on the net** (the user: a skater who goes diagonally into the front or back of the net stays there, and every
+burst can knock it off; not on the Genesis). The bounce off the net is the same code in both games (`wallcoll`: the
+speed into the net cut to a quarter, at least 1,000 back out, the speed along it kept), and the recordings show skaters
+pinned against the back or sides of a net for a second or more on both: 4.1 an hour barely moving on the Genesis, 1.3
+on the SNES (analysis/net_stuck_study.py and the check in this section's history). What differs is the knock: on the
+SNES every burst from there rolls the 1-in-8 chance on each frame while the puck is anywhere within 128 units, and a
+burst (about 7,000 at full energy) on top of the push into the net reaches the 8,192 it needs; on the Genesis the puck
+must be within 40, right at the net, and the chance is 1 in 32 a frame. Of the 7 SNES nets knocked off in the
+recordings, 4 came after the skater had been against the net 0.6-1.2 s with one or two bursts already made; all 7 by
+a person's skater.
+
 ## 8. Penalties
 
 
