@@ -1238,7 +1238,7 @@ The user asked for a URL others can watch live, "on par with clicking Play on a 
   growing gzip, uploads written to a folder; served with http.server, NHL94_LIVE_UNZIP since it sends no
   Content-Encoding): 2246 DAL-BOS at 10x, 12 updates, the page joined mid-game and played 11 s behind with all stats;
   snapshot + diffs rebuild the match exactly; final 5-8 equals the real conversion. The helper end to end with the
-  fake emulator (scratchpad helper_test_live.py): 6 live updates and the final.
+  fake emulator (tests/helper_live.py): 6 live updates and the final.
 
 Posts (2026-10-18, the user): the card's "Posts" (his shots with result 'post', live-knowledge aware), season summaries
 VERSION 21 (team posts / postsA, skater posts), season page Skaters POST and Team stats POST a game (· against). The
@@ -1251,7 +1251,7 @@ known gap). Found and fixed:
 - SNES penalty shots were never recorded by the helper: snes.View.on_ice needs each team's on-ice roster places to
   differ, and in a penalty shot the parked players (x = -240) can share one (research capture: 4297 in-game samples
   skipped, both penalty shots). Parked objects are now left out of the test (433 skipped: pre-faceoff moments).
-  Replaying snes_2026-10-15_1755 through the helper (scratchpad helper_test_snes_ps.py) now records both penalty
+  Replaying snes_2026-10-15_1755 through the helper (tests/helper_snes_penalty_shots.py) now records both penalty
   shots. The puck shows during the shooter's run and hides after the shot (gmclock).
 - The two SNES "own goals" (Wesley in BOS-PIT, Steve Smith in CHI-CGY) were those unrecorded penalty-shot goals: a
   defender holding the puck at the whistle before. add_own_goals skips penalty-shot goals and hidden-puck samples.
@@ -1419,7 +1419,7 @@ nhl94_helper Recording.step: once live play is recorded, samples with other team
 end the recording only as a new game's opening faceoff (P1, 0-0, clock >= 290); teams update only before the first
 sample. genesis MatchReader._sample: game_teams = the first on-ice sample's team ids; later samples with other teams
 are left out (only ANA-ATL's one misread sample and explore1_menus are affected elsewhere). Tested by feeding the two
-pieces through Recording.step (scratchpad helper_test_highlights.py): one recording, BOS-NYI, 5-4. tools/merge_recordings.py
+pieces through Recording.step (tests/helper_highlights.py): one recording, BOS-NYI, 5-4. tools/merge_recordings.py
 joins split pieces (times shifted end to end) and converts: game 1 is now Documents 2026-10-21_1054_BOS-NYI (the
 fragments' match files removed from the list; their captures kept). The user's BOS-NYI playoff series is 1137 NYI 4-2,
 1147 NYI 6-3, 1156 BOS 2-3 NYI (project matches/: the helper ran from Python that day); the 1054 / 1121 Boston wins

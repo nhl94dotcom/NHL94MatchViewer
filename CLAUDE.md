@@ -58,6 +58,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`), and `match_report.py <match> ...`
   (a standard Genesis match report per game into `reports/<match>.md`, git-ignored: chances and luck, hot / cold,
   goaltending, faceoff timing, C vs CB checking against the weight bug, pokes, rush defence, leading / trailing).
+- `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
+  `helper_snes_penalty_shots.py` ...): a recording played back as if RetroArch were running it; run one after changing
+  the helper or a system's `View`.
 - `samples/`: three game files for the README (remake with `share_game.make_game_file` after viewer changes worth
   showing).
 - Disassemblies (rebuild the ROMs byte for byte): Genesis github.com/abdulahmad/NHL94Genesis (`src/frames94.asm`
