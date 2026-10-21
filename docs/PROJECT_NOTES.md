@@ -2173,6 +2173,14 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Stk / 2, both scaled by energy) <= 2 (<= 4, and from farther, with the carrier in the slot).
 - Crowd: CwdExciteLvl $B8A2 (fast.bin): +10 a shot, +20 big hits, +30 goals (less for the visitors), -1 a tick; the meter
   is sqrt(level x 4) + 65 dB. SNES CwdExciteLvl $19BE.
+- Disassembly bug hunt (2026-10-21): Genesis CPgoalie pulls only at exactly 2 behind (bne); icing always on, armed by
+  a2touchpuck, cancelled by PuckIChk when |puckx| <= $2C at the goal line (iflags $BF80 = ifcgl 0, ifdir 1, ifok 2;
+  icingPlayer $BF81; checked 5/5 and 67/68 in the recordings); wallcollb: Z 19-29 out of play except Y >= $118 (top end
+  bounces; glass break at x 13-15, Yvel >= $FA0); PenGoalStuff clears PenBuf only when the scored-on team has 6 on the
+  ice; setInjuryType game injury for H/F 3, 5, 6, 7; the person goalie's C save lead 160 + 16 x (clock & 7), six
+  branchless cmpi after .near. SNES: no icing window; chk4shot cmp #$2711 dead (square, not circle), shoots under 5 s
+  left. The converter's icing finder can take an over-the-glass whistle for an icing (capture6 P1 1:44); iflags would
+  settle it. nhl94.com's bug list (35 items) has none of these.
 - Genesis game options (2026-10-21): addresses from ram94.asm's rs list summed from varstart $B000 (it reproduces
   SortCords $B04A, CwdExciteLvl $B8A2, BA_PS_flags $C2F2, CurCrowdMeter $C30E): Optperlen $D050, OptGoalie $D052,
   OptPen $D056 (0 off, 2 on), OptLine $D058. Outside fast.bin's blocks, so read from full.bin (Capture.word falls back).

@@ -506,6 +506,10 @@ With penalties on:
 - **Goalie interference:** knocking into a goalie in his crease. On a team a person plays, only the skater you control
   can be called.
 - Fighting, instigating and delay of game are never called.
+- **Icing is always on**, even with penalties off: a clear from your own half that crosses the far goal line and is
+  touched first by an opponent's skater. **Send clears down the middle**: a puck crossing the goal line within about
+  15 feet of the middle is never icing. A shorthanded team can't ice, and a goalie's touch waves it off.
+- **The computer only pulls its goalie when two goals down** in the last minute, never when one down (a bug).
 
 ---
 

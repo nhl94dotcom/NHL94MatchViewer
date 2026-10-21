@@ -646,6 +646,11 @@ would pick** (`goaliesave`, the table in 5.3), chosen from where the puck is pre
 is cut to a quarter and **he is locked in the move until it ends**: no skating, no other button. The moves last about
 0.57 s (glove, stick, shoulder) and 0.72 s (pad stack). **Code**; the lengths measured over 300+ recorded moves.
 
+**Where he aims** (`doinput`, C pressed): the move is chosen from the puck's position plus its velocity times a lead
+time of 160 + 16 x (the clock's seconds mod 8), 64 less when the puck is beyond either blue line: like the wind-up
+freeze (5.6), it hangs on the game clock. After that, six bounds tests (on the target and on the puck past either goal
+line) have lost their branches and do nothing, so a person can start a save move from anywhere. **Code**
+
 **What it doesn't do: make him bigger.** His reach is 15 whatever he does (5.1). Glove, shoulder and stick saves don't
 change it, and the glove and stick save ratings are never used. **Being in the way is what saves shots.**
 
@@ -1113,7 +1118,9 @@ anywhere on the ice**.
 - **Injuries:** on a knockdown, a 1-in-4 chance of an injury roll, which succeeds more often the harder the hit (impact
   out of 160). **An injury always gives the hitter a roughing minor** (with penalties on). **Whether the injured player
   is out for the period or the game depends on the checker's H/F (fighting) rating.** **Code**, with one confirmed case
-  (an injury that came with a roughing call).
+  (an injury that came with a roughing call). Not in order of the rating: checkers at H/F 3, 5, 6 and 7 (of 0-7) put
+  him out for the game, 0, 1, 2 and 4 only for the period (`setInjuryType`: the rating / 2, with 3 or an odd rating
+  meaning the game).
 
 ### 7.5 Hooks, holds and pokes
 
@@ -1251,6 +1258,10 @@ whole spread is only about 1.5 to 1.
   called). **Goalie interference and the roughing on an injury skip this rule**, so they can still put the other team
   in the box at that whistle. **Code**
 - A player who already has a penalty pending can't get a second one.
+- **A goal against a team at full strength wipes every pending penalty; against a team already shorthanded it wipes
+  none** (`PenGoalStuff`), so a delayed penalty against a shorthanded team is still served after the power-play goal
+  (on top of the one player let out of the box). The SNES waives the scored-on team's pending penalties either way.
+  **Code**
 
 ### 8.5 Fouls on a breakaway
 
@@ -1263,7 +1274,24 @@ whole spread is only about 1.5 to 1.
 ### 8.6 Other whistles
 
 Forced stoppages that aren't penalties: a goalie holding the puck, a person's goalie skating too far out, the puck out
-of play, goals, the end of a period.
+of play, goals, the end of a period, icing.
+
+### 8.7 Icing
+
+**Code** (`a2touchpuck`, `PuckIChk`; iflags $BF80), **Confirmed** (2026-10-21, reading iflags in every recording).
+**Icing is always on**, whatever the penalty option (`AddPenalty` lets it through first). Touch-up icing:
+
+- **Armed** each time a skater touches the puck on his own side of the red line, unless his team has fewer players on
+  the ice (a shorthanded team can't ice).
+- **Pending** when the loose puck then crosses the far goal line **more than 44 units (about 15 feet) from the
+  middle**. **Crossing within 44 of the middle cancels it**, wider than the net and the crease: a clear sent down the
+  middle of the ice is never icing. Recorded: of the armed pucks crossing a goal line, 5 of 5 within 44 were cancelled
+  and 67 of 68 wider went pending (the one exception crossed at 47, on the edge).
+- **Called** when a skater of the other team touches it first; **waved off** if a skater of the icing team, or either
+  goalie, touches it first.
+- The SNES has no 44-unit window (SNES_MECHANICS 8.3): there any crossing counts.
+
+The disassembly's comment on `.set` ("puck within the crease width: icing goes on") has it the other way round.
 
 ---
 
@@ -1510,6 +1538,11 @@ Using the "Rgh" pass/shoot bias rating (2.4):
 - **Clears:** on the penalty kill, or when nobody pressures its carrier, the computer shoots the puck down the ice from
   its own half and **flips** it from the neutral zone.
 - The computer's own one-timers are described in 4.8.
+- **Pulling the goalie (a bug):** a computer team (never one a person controls) pulls its goalie in the third period
+  with 60 seconds or less left and the puck in its attacking half (at a faceoff there, or while it has the puck)
+  **only when exactly two goals behind** (`CPgoalie`: `cmp #2` then `bne`, commented "exit if behind by more than 2").
+  **Down by one, it never pulls him.** The SNES port tests "one or two behind", which shows what was meant. **Code**
+  (no recorded game had a computer team trailing late).
 
 ### 12.5 How computer players change with the puck's zone
 
@@ -1619,6 +1652,12 @@ All **Confirmed** where numbers are given.
 - The puck keeps about **98% of its speed along the boards** but only **a quarter of its speed off them**. Rim shots
   ride the boards; pucks fired straight in die. A hard hit adds a little random hop.
 - **A shot that touches the boards can never count as a shot on goal.**
+- **How high is out of play** (`wallcollb`): at the boards a puck up to height 18 bounces; above 29 it's out of play;
+  **between 19 and 29 it's out of play off the side boards and the bottom end, but bounces off the top end's glass**
+  (Y 280 and beyond). The one exception at the top end is the hidden **glass break**: a puck at that height, moving up
+  the ice at 4,000 or more, hitting the glass 13-15 units right of the middle breaks it (an animation, a sound, a big
+  crowd roar) and is out of play. **Code**; **Confirmed** at the top end (8 pucks at 19-29 bounced back in), none that
+  high reached the bottom end in the recordings.
 
 ### 13.3 The net
 
@@ -1805,6 +1844,9 @@ C-then-B check, and the weight bug for computer checkers too.
 | Repeated checks | Same checker on same target ignored until another knockdown |
 | Aggression | Wraps: rating 4 plays like 1, ratings 6 and 3 most penalised |
 | Penalty-shot table | Off by one; holding and interference give no penalty shot |
+| Pulling the goalie | The computer pulls its goalie late only when exactly two behind, never one |
+| Icing | Always on; no icing if the puck crosses the goal line within 44 of the middle; a shorthanded team can't ice |
+| Glass | Pucks 19-29 high stay in off the top end's glass, go out of play off the sides and the bottom end |
 | Delayed penalties | Other team immune (except interference, injury roughing) |
 | Delayed-penalty sniping | Every shot within 200 perfect |
 | One-timers | Auto-aimed; goalie reach 12; dodge offside |

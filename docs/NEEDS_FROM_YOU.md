@@ -76,3 +76,9 @@ and our recordings agree with each other; the comments are the slips).
 4. **NHL94SNES, routines/logic/assgoalie.asm, the computer goalie's poke roll:** the comment says "1 in 6"; the code
    takes a RandomWord under $0A00, 1 in 25.6. In the same routine, the person's goalie test `bit.w #$4000` on JoyPad is
    commented "B held?"; $4000 is Y (B is $8000), and the pad test above it, $0040, is X.
+5. **NHL94Genesis, checks94.asm, CPgoalie:** "exit if behind by more than 2" sits on `cmp #2` / `bne`, which exits for
+   anything but exactly 2: a code bug (the SNES port tests one or two behind), not only a comment slip.
+6. **NHL94Genesis, checks94.asm, PuckIChk `.set`:** "puck within the crease width: icing goes on to the goal line
+   check"; it's reached when the puck is *outside* ±$2C, and within it icing is cancelled.
+7. **NHL94SNES, routines/checks/chk4shot.asm:** `cmp.w #$2711` ("distance^2 > 100*100?") has no branch after it, so the
+   test does nothing (the Genesis branches with `bhi`).

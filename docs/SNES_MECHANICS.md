@@ -884,6 +884,12 @@ charging, slashing, cross-checking, hooking, tripping, penalty shot, interferenc
 - **There's no immunity for the other team:** both teams can be called for anything at one whistle. **Confirmed**: both
   multi-penalty whistles in the recordings (a cross-check then interference by the other team at one whistle).
 - A player who already has a penalty pending can't get a second one. **Code**
+- **After a goal** (`PenGoalStuff`) the scored-on team's pending penalties are waived, the scoring team's still
+  served (the Genesis keeps them all when the scored-on team is already shorthanded). In overtime the goal ends the game
+  and the list is cleared. **Code**
+- **Icing** (`PuckIChk`, `a2touchpuck`): touch-up icing as on the Genesis (armed by a touch in your own half when not
+  shorthanded, called when the other team's skater touches it first, waved off by your own skater or a goalie), but
+  **any crossing of the far goal line counts**: there's no Genesis-style 44-unit window in the middle. **Code**
 
 ### 8.4 Penalty lengths
 
@@ -1023,7 +1029,15 @@ out he makes his decisions again. **It never affects the player you're controlli
 ### 12.3 How the computer carrier decides
 
 It uses the pass / shoot bias rating to choose between shooting and passing (`chk4shot`, `chk4pass`), as the Genesis
-does; the exact odds haven't been compared. **Code**
+does. **Code** Differences found (2026-10-21):
+
+- **The last 5 seconds:** with the clock running and under 5 seconds left in a period, a computer carrier shoots at
+  once.
+- **"Close to the net" is a square, not a circle:** the 16-times-likelier shot within 100 units of the goal-line
+  centre uses a 200 x 200 square there; the distance-squared test that should trim it to a circle (`cmp #$2711`) is
+  followed by no branch, so it does nothing. The square's corners in front of the goal line (100-141 units out, toward
+  the boards) get the close-in odds. Not seen in the recordings (computer carriers spent only 5 s there).
+- **No shot from behind the goal line or from his own half.**
 
 ### 12.4 Positioning and line changes
 
