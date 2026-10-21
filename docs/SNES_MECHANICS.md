@@ -797,6 +797,15 @@ fails. Example (nhl94.com's clip of 2020-10-28, QUE-PHI, 2nd 2:43): Sundin (Chec
 hot / cold bug had maxed his Checking that game). The check animation plays, the bump pushes Brind'Amour back to the
 boards, and the two stay overlapped there (7.6).
 
+**Why a full-speed push is rare.** The bump runs after every check, landed or not (only pokes and hooks / holds skip
+it), and moves the victim by about the hitter's weight share of the closing speed along the line between them (about
+half), and the hitter on with him, so the two travel together. A soft check (most are from behind or the side) pushes
+little; a hard one usually knocks him down, and the fall hides the push. So the push shows only when a hard hit fails
+its knockdown roll. **Recorded** (bursts that reached a man during the burst, 15 games): closing under 120 units a second,
+626 checks, 20-42% knockdowns, the rest pushed a median 16-32; closing 160+, 95 checks, 58-82% knockdowns, and the 31
+who stayed up were pushed a median 73-92 (about two a game). A low-Checking hitter on a heavier man (the clip) makes it
+far likelier.
+
 **Passing through (ghosting)**, **Code**, partly explained. Two players touching (closer than 16) are always handled
 the same way: a check if the hitter is in the burst animation, then a bounce, unless the game judges them to be moving
 apart. Three ways a pair is skipped:
