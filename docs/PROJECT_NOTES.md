@@ -2177,8 +2177,8 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   a2touchpuck, cancelled by PuckIChk when |puckx| <= $2C at the goal line (iflags $BF80 = ifcgl 0, ifdir 1, ifok 2;
   icingPlayer $BF81; checked 5/5 and 67/68 in the recordings); wallcollb: Z 19-29 out of play except Y >= $118 (top end
   bounces; glass break at x 13-15, Yvel >= $FA0); PenGoalStuff clears PenBuf only when the scored-on team has 6 on the
-  ice; setInjuryType game injury for H/F 3, 5, 6, 7; the person goalie's C save lead 160 + 16 x (clock & 7), six
-  branchless cmpi after .near. SNES: no icing window; chk4shot cmp #$2711 dead (square, not circle), shoots under 5 s
+  ice; setInjuryType game injury for H/F 3, 5, 6, 7; the person goalie's C press computes a target (lead 160 + 16 x
+  (clock & 7)) and six branchless cmpi, all dead: goaliesave overwrites d0 / d1 and never reads d2. SNES: no icing window; chk4shot cmp #$2711 dead (square, not circle), shoots under 5 s
   left. The converter's icing finder can take an over-the-glass whistle for an icing (capture6 P1 1:44); iflags would
   settle it. nhl94.com's bug list (35 items) has none of these.
 - Genesis game options (2026-10-21): addresses from ram94.asm's rs list summed from varstart $B000 (it reproduces

@@ -646,10 +646,13 @@ would pick** (`goaliesave`, the table in 5.3), chosen from where the puck is pre
 is cut to a quarter and **he is locked in the move until it ends**: no skating, no other button. The moves last about
 0.57 s (glove, stick, shoulder) and 0.72 s (pad stack). **Code**; the lengths measured over 300+ recorded moves.
 
-**Where he aims** (`doinput`, C pressed): the move is chosen from the puck's position plus its velocity times a lead
-time of 160 + 16 x (the clock's seconds mod 8), 64 less when the puck is beyond either blue line: like the wind-up
-freeze (5.6), it hangs on the game clock. After that, six bounds tests (on the target and on the puck past either goal
-line) have lost their branches and do nothing, so a person can start a save move from anywhere. **Code**
+**How the move is chosen** (`doinput_cbut` `.press`, then `goaliesave`): he turns to face the puck where it is now,
+then `goaliesave` picks the move from the angle between that facing and the point where the puck is predicted to cross
+his goal line (`puckcross`, worked out every 5 frames), and from the puck's height. **Leftover code:** before that, the
+press works out a target (the puck's position plus its velocity times a lead time of 160 + 16 x the clock's seconds
+mod 8, 64 less beyond either blue line, clamped and scaled), and then six bounds tests on it and on the puck that have
+no branches after them. `goaliesave` overwrites those registers in its first lines and never reads the rest, so none
+of it has any effect: probably what's left of an earlier design in which C moved the goalie. **Code**
 
 **What it doesn't do: make him bigger.** His reach is 15 whatever he does (5.1). Glove, shoulder and stick saves don't
 change it, and the glove and stick save ratings are never used. **Being in the way is what saves shots.**
