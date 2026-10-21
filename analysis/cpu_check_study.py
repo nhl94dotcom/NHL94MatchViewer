@@ -7,7 +7,6 @@ a target (an "opening"), and whether / how soon he bursts ($0C5E) or hooks ($112
 recording's full RAM snapshots: 0 off, 2 on).
 python analysis/cpu_check_study.py"""
 import json
-import math
 import statistics
 import sys
 from collections import defaultdict
