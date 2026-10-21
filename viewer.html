@@ -3718,10 +3718,21 @@ function fillTeamStats(snap) {
 // skating.get('team:idx') = { f: frames, d: distance so far (units) at f, top: top speed so far (units/s) at f }.
 const UNITS_PER_FOOT = 536 / 178;  // the goal lines are 536 units apart; 178 ft in the NHL
 let skating = null;
+// A live update only adds samples at the end, so on a live reload the per-sample scans below carry on from where the
+// last one stopped (each was half the reload's time late in a game) instead of going over the whole game again.
+// resumeScan gives the saved scan when the match still starts with the samples it went over, else null.
+let skatingScan = null, lineScan = null;
+function resumeScan(scan, m) {
+  return liveReloading && scan && scan.name === m.name && scan.n > 0 && m.t.length >= scan.n && m.t[scan.n - 1] === scan.lastT &&
+    m.t[0] === scan.firstT ? scan : null;
+}
+function endScan(scan, m, done) { Object.assign(scan, { name: m.name, n: done, lastT: m.t[done - 1], firstT: m.t[0] }); return scan; }
 function findSkating(m) {
-  const map = new Map(), near = new Array(PLAYERS).fill(null), quick = new Array(PLAYERS).fill(null);
+  const scan = resumeScan(skatingScan, m) ||
+    { map: new Map(), near: new Array(PLAYERS).fill(null), quick: new Array(PLAYERS).fill(null), n: 0 };
+  const { map, near, quick } = scan;
   const entry = key => { let e = map.get(key); if (!e) map.set(key, e = { f: [], d: [], top: [], dist: 0, best: 0 }); return e; };
-  for (let i = 0; i < m.t.length; i++) {
+  for (let i = scan.n; i < m.t.length; i++) {
     const live = m.puck[3 * i + 2] >= PUCK_HIDDEN_Z;
     // A gap in the recording (the helper leaves out intermissions, pauses and replays) or a new period: players
     // are put in their places across it, which is not skating, so measuring starts again.
@@ -3750,6 +3761,7 @@ function findSkating(m) {
       }
     }
   }
+  if (m.t.length) skatingScan = endScan(scan, m, m.t.length);
   return map;
 }
 function skatingAt(team, idx, f) {
@@ -3773,11 +3785,13 @@ const mphText = unitsPerS => (unitsPerS / UNITS_PER_FOOT * 3600 / 5280).toFixed(
 // busiest skaters is line changes (games without: 0-7.4%; with: 15-55% in the recordings).
 let lineChanges = [false, false];
 function findLineChanges(m) {
-  const ms = [new Map(), new Map()];
-  for (let i = 0; i + 1 < m.t.length; i++) {
+  const scan = resumeScan(lineScan, m) || { ms: [new Map(), new Map()], n: 0 }, ms = scan.ms;
+  // scan.n: the samples counted so far (each sample i needs sample i + 1 for its length)
+  for (let i = scan.n; i + 1 < m.t.length; i++) {
     const dt = Math.min(100, m.t[i + 1] - m.t[i]);
     for (let k = 0; k < PLAYERS; k++) if (role(i, k) >= 1) { const t = ms[k < 6 ? 0 : 1], idx = rosterIndex(i, k); t.set(idx, (t.get(idx) || 0) + dt); }
   }
+  if (m.t.length > 1) lineScan = endScan(scan, m, m.t.length - 1);
   return ms.map(t => {
     const v = [...t.values()].sort((x, y) => y - x), total = v.reduce((x, y) => x + y, 0);
     return total > 0 && v.slice(5).reduce((x, y) => x + y, 0) / total > 0.12;
@@ -4625,6 +4639,7 @@ function setPlaying(on) {
 
 function tick(stamp) {
   if (!playing) return;
+  if (livePending && liveDue()) { liveApplyPending(); return; }  // the reload starts the playback loop again
   const end = match.t[match.t.length - 1];
   now = Math.min(end, now + (stamp - lastTick) * Number($('speed').value) * liveRate(end));
   lastTick = stamp;
@@ -5654,9 +5669,30 @@ function livePatch(obj, patch) {
   for (const [k, p] of Object.entries(patch)) {
     if ('s' in p) obj[k] = p.s;
     else if ('x' in p) delete obj[k];
-    else if ('p' in p) obj[k] = obj[k].slice(0, p.p).concat(p.v);
-    else if ('d' in p) livePatch(obj[k] || (obj[k] = {}), p.d);
+    else if ('p' in p) {
+      // A list is cut and extended where it is: copying the whole of every list for a short tail made megabytes of
+      // garbage at each update late in a game (strings can only be copied)
+      if (Array.isArray(obj[k])) { obj[k].length = p.p; for (const v of p.v) obj[k].push(v); } else obj[k] = obj[k].slice(0, p.p).concat(p.v);
+    } else if ('d' in p) livePatch(obj[k] || (obj[k] = {}), p.d);
   }
+}
+// Updates come every few seconds, but playback runs several seconds behind them, so the new data isn't needed at once.
+// They wait here and the match is reloaded (load(), whose time grows with the game) only when playback comes within
+// LIVE_LEAD_MS of the end of what is loaded, after LIVE_HOLD_MS at most (so the stats keep up), or straight away when
+// not following live. Fewer reloads, so fewer of the pauses that made play look choppier as a game went on.
+const LIVE_LEAD_MS = 1500, LIVE_HOLD_MS = 12000;
+let livePending = null;  // { fresh: a whole-match snapshot or null, patches: [...], since: performance.now() }
+function liveDue() {
+  if (!livePending || !match) return false;
+  if (!playing || !liveState.following || liveState.status === 'final' || LAYOUT === 'stats') return true;
+  return match.t[match.t.length - 1] - now < LIVE_LEAD_MS || performance.now() - livePending.since > LIVE_HOLD_MS;
+}
+function liveApplyPending() {
+  const pend = livePending;
+  livePending = null;
+  const m = pend.fresh || match;
+  for (const p of pend.patches) livePatch(m, p);
+  liveReload(m);
 }
 function liveShowButton() {
   const b = $('liveBtn');
@@ -5702,6 +5738,7 @@ async function livePoll() {
       const m = await liveGet(base + 's' + man.snapshot + '.json', true);
       for (let n = man.snapshot + 1; n <= man.seq; n++) livePatch(m, await liveGet(base + 'c' + n + '.json', true));
       liveState = { game: man.game, seq: man.seq, status: man.status, interval: man.interval, following: true };
+      livePending = null;  // anything still waiting belonged to the last game
       const started = performance.now();
       load(m);
       console.log('live: joined at update ' + man.seq + ', loaded in ' + Math.round(performance.now() - started) + ' ms');
@@ -5715,11 +5752,12 @@ async function livePoll() {
       let fresh = null;
       if (man.snapshot > liveState.seq) fresh = await liveGet(base + 's' + man.snapshot + '.json', true);
       for (let n = (fresh ? man.snapshot : liveState.seq) + 1; n <= man.seq; n++) patches.push(await liveGet(base + 'c' + n + '.json', true));
-      const m = fresh || match;
-      for (const p of patches) livePatch(m, p);
+      // A snapshot replaces whatever was waiting; patches add to it
+      if (fresh || !livePending) livePending = { fresh, patches, since: (livePending && !fresh && livePending.since) || performance.now() };
+      else livePending.patches.push(...patches);
       liveState.seq = man.seq; liveState.status = man.status; liveState.interval = man.interval;
       liveArrived();
-      liveReload(m);
+      if (liveDue()) liveApplyPending();
     } else if (man.status !== liveState.status) {
       liveState.status = man.status;
       liveShowButton();

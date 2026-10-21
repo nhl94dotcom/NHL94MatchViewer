@@ -1239,6 +1239,17 @@ The user asked for a URL others can watch live, "on par with clicking Play on a 
   reload for a 15-minute game in Edge); plays liveDelay() (at least 6 s, 1.4 x the longest gap between updates + 2 s) behind the newest data and holds
   at the end instead of stopping; footer LIVE / Go live / Final button; the stats tab polls too; a game file saved
   from the live page has the live line removed. Help: "Watching live".
+- Live smoothness (2026-10-21, the user: play got choppier as each game went on). Measured end to end (the live test
+  of 2026-10-21_1147_NYI-BOS at 1x into a folder, served locally, the page watched in headless Edge over the DevTools
+  protocol, every animation frame logged): drawing stays at 0.2-2 ms a frame all game; what grew was each update's
+  reload, load() over the whole game (9 ms early, 35-38 ms late, half of it findSkating, then findLineChanges and
+  findPossession) plus livePatch copying every list, every 3 s, with playback stopped: 27 frames over 50 ms in the
+  last 4 minutes. Now findSkating and findLineChanges carry on from the last reload's samples (resumeScan: same game,
+  same first and last-seen sample; checked equal to a full pass on a Genesis and a SNES game fed in four pieces),
+  livePatch extends lists in place, and updates wait (livePending) until playback is within LIVE_LEAD_MS 1.5 s of the
+  loaded end or LIVE_HOLD_MS 12 s have passed (at once when not following). Same test: 108 reloads instead of 169,
+  8-13 ms each at the end, 9 frames over 50 ms in the last 4 minutes. The long holds at the end of the data in that
+  test are the recording's own breaks (intermissions, pauses: no samples for 80 s at a time), not lag.
 - Tested: `python tools/live_broadcast.py --test <capture> <folder> --speed N` (a recorded game fed in at N x into a
   growing gzip, uploads written to a folder; served with http.server, NHL94_LIVE_UNZIP since it sends no
   Content-Encoding): 2246 DAL-BOS at 10x, 12 updates, the page joined mid-game and played 11 s behind with all stats;
