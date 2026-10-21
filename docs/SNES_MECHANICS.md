@@ -667,7 +667,15 @@ the recordings yet.
   animation is shorter than the wait. **Confirmed** (CHI-TOR P3 4:18: Roenick wobbled, then fell 0.9 s later).
 - There is **no "same checker, same target" rule**: you can knock the same man down again straight away (the Genesis
   ignores it).
-- The upend (flip fall) depends on Checking (threshold not read).
+- **Which way he falls** (`FallDown`, for a fall in open ice; near the boards it's a boards fall, 7.4): **backward**
+  when the hitter is within one direction step (45 degrees) of where he faces, a hit from the front; otherwise
+  **forward**, unless he is skating **straight up or down the ice** (facing exactly up or down the screen) and the
+  hitter's working **Checking is 10 or more** (of 15): then he's **upended** (`SPAflip`, $F6C0). Nothing else matters:
+  not the impact, not his weight. The Genesis needs Checking 20+ (of its larger scale, 7.4 there).
+- **Confirmed** (analysis/snes_upend_study.py, 15 games, 788 falls with an opponent skater beside him, taken as the
+  hitter): the rule gives the right fall for 714 (91%); 95 were upends (12%), 88 of them with the victim facing straight
+  up or down and the hitter at Checking 10+. Most misses are where the nearest skater wasn't the hitter, or a facing
+  that changed on the frame of the hit.
 
 ### 7.3 Hooks, holds and pokes
 

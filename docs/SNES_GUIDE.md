@@ -164,7 +164,7 @@ you take him, are played by the computer.
 | **Shot Power** | How hard he shoots. **Anyone can take a full slapshot** | Moderate |
 | **Shot Accuracy** | The chance a shot goes **exactly** where you aimed (from inside the zone): 17% at 2, 29% at 5, 35% at 7, 42% at 10, 46% at 12, **52% maxed** | **A lot** for your shooters |
 | **Stick Handling** | Keeping and stealing the puck, catching passes, and **wobbling instead of falling when hit** (12 or more) | Wobble: **step 5 and 6 always; step 4 only at 78 and up or when maxed; lower steps only when maxed** |
-| **Checking** | Your knockdown chance on a check; **how often your computer teammates go for a hit** | Moderate for you, big for the computer's players (13.1) |
+| **Checking** | Your knockdown chance on a check; **upending** (10+ of 15 as played, 9); **how often your computer teammates go for a hit** | Moderate for you, big for the computer's players (13.1) |
 | **Pass Accuracy** | How steady your passes' speed is (the game sets the speed by distance), **and how far your flips stray** | Moderate: steadier passes bobble less; it's the flip's accuracy (8.2) |
 | **Off. Awareness** | How quickly **computer-controlled** teammates react on offence and to loose pucks (0.25 s down to 0.12 s) | **Nothing for the player you control** |
 | **Def. Awareness** | How quickly computer teammates react on defence (0.37 s down to 0.12 s: a bigger range than Offensive) | Matters for the four skaters you're not controlling |
@@ -318,6 +318,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **There's no weight bug**: a person and the computer check the same way, and a heavier checker does only slightly
   better (50% against 39% in recorded games). **The Genesis "CB check" gains nothing here.**
 - **No "same man" rule**: you can knock the same player down again straight away.
+- **Upending** (the flip): hit a man from the side or behind while he skates **straight up or down the ice**, with a
+  checker whose Checking is high (10 or more of 15 as played, which the hot / cold bug gives many players). Hit him from
+  the front and he falls backward; at an angle, forward. One fall in eight in recorded games was an upend.
 - **A man who wobbles keeps the puck**, but **a second hit within a second always knocks him down**: follow up.
 - **A soft check can leave you glued to the carrier.** If your burst meets him without much closing speed, he stays up
   and the two of you skate along together, even overlapping, and from then on no check can land: the game only checks
