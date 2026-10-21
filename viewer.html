@@ -3941,7 +3941,9 @@ const DTW_FALLBACK = {
   snes: { shot: 0.19, 'one-timer': 0.17, 'pass shot': 0.19, deflection: 0.25, other: 0.25 },
 };
 function deserveToWin(m, upto) {
-  const system = m.system || 'genesis', t = m.t, last = t.length - 1, final = upto >= last;
+  // The end of the data is the end of the game unless a live broadcast says it is still going on
+  const going = typeof liveState !== 'undefined' && liveState && liveState.status !== 'final';
+  const system = m.system || 'genesis', t = m.t, last = t.length - 1, final = upto >= last && !going;
   const shots = (m.shotList || []).filter(sh => sh.f <= upto && known(sh, upto) && resultAt(sh, upto) !== 'blocked').sort((a, b) => a.f - b.f);
   const fl = [], lastOf = {};
   for (const sh of shots) {
@@ -3960,10 +3962,10 @@ function deserveToWin(m, upto) {
   let alive = 1;
   for (const x of fl) if (m.period[x.f] === 3) { otWin[x.team] += alive * (1 - x.miss); alive *= x.miss; }
   if (final) {
-    if (!m._dtwClock) {
+    if (!m._dtwClock || m._dtwClock.n !== t.length) {  // a live game grows: work it out again
       const len = [0, 0, 0], ot = [];
       for (let i = 0; i <= last; i++) { if (m.period[i] < 3) len[m.period[i]] = Math.max(len[m.period[i]], m.clock[i]); else if (m.period[i] === 3) ot.push(m.clock[i]); }
-      m._dtwClock = { reg: len[0] + len[1] + len[2] || 1, otPlayed: ot.length ? Math.max(...ot) - Math.min(...ot) : 0 };
+      m._dtwClock = { n: t.length, reg: len[0] + len[1] + len[2] || 1, otPlayed: ot.length ? Math.max(...ot) - Math.min(...ot) : 0 };
     }
     const rest = Math.max(0, (DTW_OT[system] || 600) - m._dtwClock.otPlayed);
     const rate = reg.map(r => r.reduce((a, p) => a + p, 0) / m._dtwClock.reg), both = rate[0] + rate[1];

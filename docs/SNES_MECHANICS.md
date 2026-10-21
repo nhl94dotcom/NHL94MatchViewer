@@ -216,9 +216,10 @@ and it is cleared when his wait for the pass ends (`asspassrec` .6: anyone has t
 **any stick touches the puck** (`puckstick`, which clears it for that player first thing), by `assnearest` and at
 faceoffs (`resetplstuff`). `FallDown` never sets it, so the Genesis's boards-fall route doesn't exist. **Code**
 
-**Confirmed** (analysis/snes_runaway_study.py, eight SNES games): 791 stretches with the switch on, a median 0.3 s,
-90% under 0.6 s, the longest 2.7 s; the fastest skater with it on went 10,156 (top speed is about 9,000), against
-19,400-20,100 in the Genesis runaways.
+**Confirmed** (analysis/snes_runaway_study.py; 15 SNES games as of 2026-10-21, eight at first): 1,683 stretches with
+the switch on, a median 0.3 s, 90% under 0.6 s, the longest 2.9 s; the fastest skater with it on went 11,553, for 0.6 s
+(a person's, 2026-10-19_2246_TOR-NYI; before that 10,156; top speed is about 9,000), against 19,400-20,100 in the
+Genesis runaways.
 
 ---
 

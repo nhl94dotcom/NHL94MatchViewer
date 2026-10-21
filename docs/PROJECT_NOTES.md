@@ -1355,7 +1355,8 @@ P3 2:24 five-hole and P3 4:00 bobble (exactly the user's); runaways 2149 BOS-WPG
 WPG-BOS (15,900); rocket passes 0-5 a game; no five-hole or bobble goal in any other recording.
 SNES side (analysis/snes_runaway_study.py, SNES_MECHANICS 3.3 / 6.1): the same friction-off flag (pflags bit 0, table .22)
 exists, set only by asspassrec and cleared by any stick touch (puckstick), the wait ending, assnearest and faceoffs;
-FallDown never sets it: 791 stretches in eight games, median 0.3 s, max 2.7 s, fastest 10,156, so no runaways. Pass
+FallDown never sets it: 791 stretches in eight games, median 0.3 s, max 2.7 s, fastest 10,156, so no runaways (15 games
+by 2026-10-21: 1,683 stretches, max 2.9 s, fastest 11,553 for 0.6 s). Pass
 lift = distance x 8 (median peak 1.4 at 100-149 units, 3.3 at 200-249); no rocket pass, through-the-legs or bobble
 (already in SNES_MECHANICS 5.1 / 6.1).
 
@@ -2407,3 +2408,35 @@ since the rollback filter), the exe rebuilt, the Documents games re-converted, t
 - `captures/capture1/` - the 4-minute capture described above (paused for its first 48 seconds).
 
 The PowerShell scripts were run with `Invoke-Expression (Get-Content -Raw <script>)`; all of them only read from the emulator.
+
+## Full review (2026-10-21)
+
+A review of everything so far, with checks that stay in tests/ (see CLAUDE.md, After changes). Every recording in both
+game folders re-converted identically to its match file before the fixes, and every match now passes
+tests/check_matches.py (goals, per-player goals, shots on goal, checks, faceoffs against the game's own counts; the
+pass count's known small gap is shown, not failed). Fixed:
+- SNES: the clock-stopped flag (which hides the puck) can flicker at a drop, which made duplicate faceoffs in three games
+  (2026-10-16_1528_TOR-CHI, 2026-10-19_2246_TOR-NYI, 2026-10-20_2138_CGY-TOR): `steady_puck`. The faceoff winner is
+  now the first faceoff-count rise up to the next stoppage or 6 s after the drop (a scramble took 7.8 s; a quick whistle
+  had the count 2.4 s after the drop).
+- A check by a player whose position read $FF (mid line change; Tkachuk, 2026-10-18_2149_BOS-WPG) had no hit.
+- Passes are matched to the game's passes-tried count in time order (no total changed).
+- The helper flushes its recording every 2 s always (not only when broadcasting), marks each recording `unconverted`
+  until it is converted and converts any left so at the next start (the helper closed mid-game; tested with the exe);
+  the converter reads a cut-off gzip up to the cut; the new-game test no longer assumes 5-minute periods; a bad
+  Content-Length is refused; a game-file request for a missing game answers with an error the page shows.
+- Live broadcast: begin() waits for the last game's update loop; the viewer's deserve-to-win treats a live game as
+  over only when the broadcast says final, and its cached clock lengths follow the growing match.
+- share_season.py no longer puts roms/names_scan.json in the share (it lists every ROM file's full path, the Windows
+  user name included); the two league shares in Documents were remade without it. It also refuses to delete an output
+  folder that is not empty and not an earlier share.
+- Season page: the PTS help (no point for an overtime loss) and five headings without help.
+- analysis/matchup_review.py read the summaries' high-danger and rebound lists crossed (not quoted in any answer);
+  match_report.py: played periods only, blocked shots out of the score-state xG, Genesis-only sections say so on SNES
+  games; bos_nyi_deep.py used a piece of the joined game; snes_runaway_study.py had no default recordings.
+Checked and fine: the viewer's xG, SNES xG and deserve-to-win ports against the Python (tests/xg_parity.py); 192 viewer
+loads over every match with no script error (tests/viewer_smoke.py); every team-stat break-down adds up
+(tests/viewer_stat_sums.py; recordings that began mid-game differ by design); every team-stat row and season heading
+has help; the season page's tabs; the repository and its whole history hold no bucket, profile, home path or key.
+The disassemblies' new commits (Genesis 150+, SNES 100+ since our copies) are names and comments; none changes a
+mechanics finding, and three new comments disagree with their code (NEEDS_FROM_YOU).

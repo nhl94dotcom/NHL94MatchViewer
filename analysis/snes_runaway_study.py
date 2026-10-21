@@ -4,7 +4,7 @@ while pflags bit 0 is set, so that flag is the Genesis pfdoff. asspassrec sets i
 when his wait ends (asspassrec .6), when his stick touches the puck (puckstick, any player), in assnearest and in
 resetplstuff (faceoffs). FallDown never sets it. For every recorded sample: skaters with the flag on, how long it stays
 on, how fast they go, and whether a person had them.
-python analysis/snes_runaway_study.py [capture folders]"""
+python analysis/snes_runaway_study.py [capture folders]   (default: every SNES recording with a match, both game folders)"""
 import math
 import sys
 from collections import Counter
@@ -21,7 +21,11 @@ def sw(v):
 
 
 def main():
-    folders = [Path(a) for a in sys.argv[1:]]
+    folders = [Path(a) for a in sys.argv[1:]] or [
+        cap for home in (Path("."), Path.home() / "Documents" / "NHL94 Viewer") for cap in sorted((home / "captures").glob("*"))
+        if (cap / "capture.json").exists() and '"snes"' in (cap / "capture.json").read_text() and (home / "matches" / f"{cap.name}.js").exists()]
+    seen = set()  # a game copied into both folders counts once
+    folders = [f for f in folders if not (f.name in seen or seen.add(f.name))]
     speeds = Counter()
     runs = []
     for folder in folders:
