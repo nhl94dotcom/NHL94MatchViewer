@@ -130,6 +130,10 @@ Added to working ratings when a player comes on the ice.
 | Home / away | per team, set in the ROM | Offensive and Defensive Awareness, Stickhandling, Shot Accuracy, Passing | Home team adds its home value, away team subtracts its away value (Shot Accuracy +1 / +2 at home, -1 away in the games checked). **Confirmed** |
 | Power play | team on the power play, per-team ROM value | Offensive Awareness, Stickhandling, Shot Accuracy, Passing | **Confirmed** |
 | Penalty kill | team killing a penalty | minus to the same | **Code** |
+
+The power play and penalty kill halves of the team byte are read swapped, as on the Genesis (GENESIS_MECHANICS 2.3):
+the power play adds the half meant as the penalty-kill deficit, and the penalty kill takes off the half meant as the
+power-play bonus. The NOSE4Web editor's fix swaps them back on the SNES too. **Code**
 | Comeback | team tied or trailing in the third period, both teams in overtime | +2 Offensive Awareness, +2 Checking, +4 pass/shoot bias | **Bugged**, see below |
 
 **The comeback bonus is backwards** (**Confirmed**). The test that should switch it on for the last half of the third

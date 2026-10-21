@@ -122,6 +122,16 @@ Added to working ratings when a player comes on the ice.
 | Penalty kill | team killing a penalty, per-team ROM value | minus to Offensive Awareness, Stickhandling, Shot Accuracy | **Confirmed** |
 | Comeback | team tied or trailing in the third period, both teams in overtime | +2 Offensive Awareness, +2 Checking, +4 pass/shoot bias | **Bugged**, see below |
 
+**The power play and penalty kill values are swapped** (**Code**, both systems; the Genesis disassembly marks it a
+bug). Each team has one byte for both: the original game's data puts the **power-play bonus in the high half** and the
+**penalty-kill deficit in the low half** (the strongest teams, Pittsburgh, Boston, Detroit, Toronto, Washington, St.
+Louis and both All-Star teams, have 2 and 0 or 1; the weakest, Anaheim, Florida, Ottawa, San Jose and Tampa Bay, 0 and
+2). The game reads them the other way round: **on the power play it adds the low half, and on the penalty kill it takes
+off the high half.** So on the original ROM a strong team gets nothing on its power play and loses 2 on the penalty
+kill, and a weak team gains 2 on the power play and loses nothing shorthanded. Small amounts (2 on the 0-30 working
+scale), but backwards. The NOSE4Web editor's "Power play and penalty kill fix" (its own, not one of smozoma's smozROM
+hacks, which don't touch this) swaps the two reads in place, so each half means what the data says; it is correct (15).
+
 **The comeback bonus is backwards** (**Confirmed**). The test that should switch it on for the last half of the third
 period is the wrong way round, so it is **on while more than half of the third period is left** (with 5-minute
 periods, before 2:30) **and off for the last half**. In overtime both teams have it throughout.
@@ -1765,6 +1775,7 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 | Second assist | missed when two players pass back and forth | fixed |
 | Plus-minus | not kept | kept |
 | Three stars | the original choice | fuller formulas |
+| Power play / penalty kill bonus (2.3) | reads the team byte's halves swapped | the editor's fix reads them as the data means |
 
 **What the ROMs in one large collection of league ROMs use** (65 Genesis ROMs, 51 of them NHL '94-based):
 
