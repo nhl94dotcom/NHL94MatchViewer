@@ -610,7 +610,8 @@ which goalie is stealing games.
   behind the deepest attacker and update that only at their reaction ticks. Low-rated defencemen get beaten on rushes.
 - Players busy in an animation (falling, shooting, checking) don't react at all until it ends: a forward who just lost
   the puck is out of the play for up to a second.
-- **With penalties on, computer skaters try to check only half as often.**
+- **With penalties on, computer skaters check a little less**: in recorded games they went for a check at 9% of
+  chances against 12% with penalties off (the code halves one roll, but only some of their jobs look for a check).
 - **Where computer players go, by the puck's zone** (feet from the goal line they attack or defend; the blue line is
   about 60):
 
