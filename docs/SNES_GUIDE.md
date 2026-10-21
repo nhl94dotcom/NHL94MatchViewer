@@ -318,6 +318,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **There's no weight bug**: a person and the computer check the same way, and a heavier checker does only slightly
   better (50% against 39% in recorded games). **The Genesis "CB check" gains nothing here.**
 - **No "same man" rule**: you can knock the same player down again straight away.
+- **Burst from close.** The check only counts during the first 0.4 s of a burst. Reach your man later and you just
+  shove him along (he stays up and keeps the puck).
 - **Upending** (the flip): hit a man from the side or behind while he skates **straight up or down the ice**, with a
   checker whose Checking is high (10 or more of 15 as played, which the hot / cold bug gives many players). Hit him from
   the front and he falls backward; at an angle, forward. One fall in eight in recorded games was an upend.

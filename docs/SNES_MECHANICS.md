@@ -777,6 +777,34 @@ Different from the Genesis:
   passed through 81%, taken 13%, changed course 7%; 5-7, 6 times: passed through every time; 8-15, 5 times: hit him
   every time.
 
+### 7.5b Bursts that shove, and players passing through
+
+**The shove (the user's "fast-moving wall")**, **Code** (`checkcheck`, `checkplcoll`), **Confirmed**. A check is only
+considered while the hitter's animation is the burst itself (`SPAburst`, $F342): **24 frames, 0.4 s**, drawn as an
+ordinary skating frame. A burst lasts much longer as speed than as an animation, so a burster who reaches a man after
+those 0.4 s is just a fast skater bumping into him: no check, no fall, no animation on either, and a carrier keeps
+the puck. The bump (`checkplcoll`) shares their speeds by weight along the line between them, so the burster carries
+him along in the direction he burst. **Recorded** (analysis/snes_burst_contact_study.py, 15 games): of bursts reaching an
+opponent after the animation had ended, 204 of 260 did nothing but shove; inside the 0.4 s a check came 936 times in
+1,180 (416 knockdowns). To check, burst from close: within about 0.4 s of skating of your man.
+
+**Passing through (ghosting)**, **Code**, partly explained. Two players touching (closer than 16) are always handled
+the same way: a check if the hitter is in the burst animation, then a bounce, unless the game judges them to be moving
+apart. Three ways a pair is skipped:
+
+- **A player in a boards fall** (animations $FD3A-$FE60 and the like) is moved by the animation and never tested for
+  collisions: anyone can skate through him. The three slow pass-throughs in the recordings were all this.
+- **Two players at exactly the same speed** are skipped (7.6).
+- **Overflow at extreme speed:** "moving apart" is worked out from their relative speed in 16 bits, which wraps past
+  32,767 (about 480 units a second along one axis); then a head-on pair looks as if it's separating and is skipped
+  entirely. One burst on top of top speed reaches about 270 units a second (the recorded maximum, 267), so it takes a
+  second burst stacked on the first, head-on against a fast skater. Not seen in the recordings.
+
+The user's GIF (PIT-WPG, 3rd 4:10: 55 bursting down into 13 carrying up) fits none of these: they closed at about 290
+units a second (timed by the game clock in the GIF, 404 ms a clock second), and neither was in a boards fall. Its cause
+is still open; a recorded case would show it frame by frame (the helper records the speeds, animations and flags
+involved).
+
 ### 7.6 Players tangled together
 
 **Code** (`checkplcoll`, `checkcheck`), **Confirmed** on two overtime winners. Two players can end up skating on top of
@@ -1134,6 +1162,7 @@ everything in this document applies to all of these ROMs.
 ## 16. Open questions and parts not read yet
 
 - **Instant whistles on a person goalie's catch** (5.4): about 1 catch in 16, cause not found.
+- **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example.
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.

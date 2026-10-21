@@ -29,6 +29,9 @@ record or check and what it will settle. Newest at the bottom of each section.
 1. **A Genesis penalty shot that ends the moment it starts.** Note the game and roughly when. The helper now records
    the penalty-shot flags, so a recorded one can be traced.
 2. **A SNES injury.** None recorded yet; it would confirm the SNES injury rules.
+2b. **A SNES ghost** (a skater passing straight through an opponent, as in the PIT-WPG GIF). Note the game and the time
+   with the helper recording: the recording holds the speeds, animations and flags needed to see why. The known causes
+   (a player in a boards fall, identical speeds, or a stacked burst head-on at extreme speed) don't fit the GIF.
 3. **Helper processes still running with its window closed.** Note how you last started the helper (double-click, a
    shortcut, at startup).
 
