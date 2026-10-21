@@ -755,7 +755,7 @@ def season():
     heat-map file that is missing on the way."""
     when, games = dates(), []
     for path in sorted(MATCHES.glob("*.js")):
-        if path.name == "season.js":
+        if path.name == "season.js" or path.name.startswith("_"):  # "_": the live broadcast's work and tests, never games
             continue
         try:
             games.append(summary(path.stem, when.get(path.stem)))

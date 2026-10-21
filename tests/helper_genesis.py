@@ -65,4 +65,4 @@ for k in range(75):
     except Exception as e:
         print('api error', e)
 print('games:', [(g['name'], g['score'], g['seconds']) for g in json.loads(urllib.request.urlopen('http://localhost:9495/api/state').read())['games']][:3])
-print('capture.json:', [open(os.path.join(HOME, 'captures', d, 'capture.json')).read() for d in os.listdir(os.path.join(HOME, 'captures'))])
+print('capture.json:', [open(os.path.join(HOME, 'captures', d, 'capture.json')).read() for d in os.listdir(os.path.join(HOME, 'captures')) if os.path.exists(os.path.join(HOME, 'captures', d, 'capture.json'))])

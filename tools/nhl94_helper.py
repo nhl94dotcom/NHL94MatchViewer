@@ -113,7 +113,7 @@ def refresh_index():
     with index_lock:
         games = {g["name"]: g for g in load_index()}
         for path in sorted((ROOT / "matches").glob("*.js")):
-            if path.stem not in games and path.name != "season.js":
+            if path.stem not in games and path.name != "season.js" and not path.name.startswith("_"):  # "_": live tests
                 try:
                     games[path.stem] = game_entry(path.stem)
                 except Exception:

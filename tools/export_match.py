@@ -866,7 +866,7 @@ def find_passes(m):
         if not stats.get('f'):
             break
         rises = [t[stats['f'][i]] for i in range(1, len(stats['f'])) if stats[side][i][tried] > stats[side][i - 1][tried]]
-        for p in out:
+        for p in sorted(out, key=lambda e: e['f']):  # in time order, so a teammate's pass just after cannot take this one's rise
             if p['team'] == team:
                 hit = next((r for r in rises if -300 <= r - t[p['f']] <= 1500), None)
                 p['counted'] = hit is not None

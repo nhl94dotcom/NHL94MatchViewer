@@ -16,7 +16,7 @@ import nhl94_helper as H
 from pathlib import Path
 from systems import snes
 
-SRC = (Path.home() / 'Documents/NHL94 Viewer/captures/2026-10-16_1528_MTL-LA')
+SRC = (Path.home() / 'Documents/NHL94 Viewer/captures/2026-10-16_1528_TOR-CHI')
 fast = gzip.decompress((SRC / 'fast.bin.gz').read_bytes())
 full = gzip.decompress((SRC / 'full.bin.gz').read_bytes())
 print('loaded', flush=True)
