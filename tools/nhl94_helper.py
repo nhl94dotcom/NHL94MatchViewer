@@ -48,7 +48,9 @@ INDEX_FILE = ROOT / "matches" / "games.json"
 SAMPLE_S, FULL_EVERY_S = 0.015, 10.0
 MIN_GAME_S = 45          # shorter recordings (a few seconds of play, then back to the menus) are not kept
 FINAL_WAIT_S = 3.0       # keep recording this long after the final horn
-LIVE_FLUSH_S = 2.0       # broadcasting live: make the recording readable this often (tools/live_broadcast.py)
+LIVE_FLUSH_S = 2.0       # make the recording readable this often: for the live broadcast (tools/live_broadcast.py), and
+                         # so a recording cut off by the helper closing mid-game loses only its last seconds
+UNFINISHED = "unconverted"  # a file in a recording's folder until it is converted: the next start converts it
 broadcaster = None       # a live_broadcast.Broadcaster with --broadcast
 
 try:  # Windows sleeps in 15.6 ms steps unless asked for 1 ms
@@ -186,6 +188,7 @@ class Recording:
         if fingerprint:
             layout["rom_crc32"] = fingerprint
         (self.folder / "capture.json").write_text(json.dumps(layout))
+        (self.folder / UNFINISHED).write_text("recorded by the helper, not converted yet")
         self.fast = gzip.open(self.folder / "fast.bin.gz", "wb", compresslevel=3)
         self.full = gzip.open(self.folder / "full.bin.gz", "wb", compresslevel=3)
         self.live_ms, self.last_wall, self.last_full = 0.0, time.perf_counter(), -1e9
@@ -193,6 +196,7 @@ class Recording:
         self.record_size = 8 + sum(b[1] for b in self.system.BLOCKS)
         self.previous, self.samples = None, 0
         self.view, self.final_since, self.menu_since, self.joined_mid_game = view, None, None, not (view.period == 0 and view.clock >= 290)
+        self.top_clock = view.clock  # the period length, as far as seen: a new game starts with its clock near it
 
     def step(self, view):
         """One sample. Returns why it ended ('final', 'menus', 'new game') or None to carry on."""
@@ -210,7 +214,7 @@ class Recording:
         # and named it WSH-FLA). Not recorded and not compared against, however long; only a new game's opening faceoff
         # (first period, 0-0, the clock at the start) with other teams ends this recording.
         if view.live and self.samples and view.teams != old.teams:
-            if view.period == 0 and view.score == (0, 0) and view.clock >= 290:
+            if view.period == 0 and view.score == (0, 0) and view.clock >= min(290, self.top_clock - 10):
                 return "new game"
             return None
         # A new game started without the old one finishing (the clock going back up within a period, other than to
@@ -231,6 +235,7 @@ class Recording:
         if not view.live:
             return None  # paused, instant replay, or between screens: not recorded, and not counted as game time
         self.live_ms += elapsed
+        self.top_clock = max(self.top_clock, view.clock)
         if view.teams != old.teams and not self.samples:  # the teams picked after the recording began (it began on a menu screen)
             self.teams = team_abbreviations(self.system, self.rom_path, *view.teams) if self.rom_path else [f"T{t}" for t in view.teams]
         self.view = view
@@ -238,8 +243,9 @@ class Recording:
         if data != self.previous:
             self.fast.write(struct.pack("<q", round(self.live_ms)) + data)
             self.previous, self.samples = data, self.samples + 1
-        if broadcaster and now - self.last_flush >= LIVE_FLUSH_S:
-            self.fast.flush(zlib.Z_SYNC_FLUSH)  # so the live broadcast can read what is recorded so far
+        if now - self.last_flush >= LIVE_FLUSH_S:
+            self.fast.flush(zlib.Z_SYNC_FLUSH)  # readable so far: by the live broadcast, and if the helper is closed now
+            self.full.flush(zlib.Z_SYNC_FLUSH)
             self.last_flush = now
         if now - self.last_full >= FULL_EVERY_S:
             full = self.emu.read(0, self.system.RAM_SIZE)
@@ -286,6 +292,10 @@ def convert(rec, why):
             if result.returncode != 0:
                 status.set("idle", f"Could not convert {rec.name}: {(result.stderr or result.stdout).strip().splitlines()[-1:]}")
                 return
+        try:
+            (rec.folder / UNFINISHED).unlink()
+        except OSError:
+            pass
         settings = load_settings()
         if settings.get("auto_game_file"):
             import share_game
@@ -434,7 +444,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         name = (query.get("name") or [""])[0]
         if name and not all(ch.isalnum() or ch in "_-" for ch in name):
             return self.send_json({"error": "bad name"}, 400)
-        length = int(self.headers.get("Content-Length") or 0)
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = -1
+        if length < 0:
+            return self.send_json({"error": "bad request"}, 400)
         if length > 5_000_000:
             return self.send_json({"error": "too large"}, 413)
         try:
@@ -481,6 +496,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_json({"error": "unknown"}, 404)
 
 
+def convert_leftovers():
+    """Convert recordings the helper made but never converted: it was closed (or the computer stopped) while a game was
+    being recorded or converted. Each still has the UNFINISHED file; it is removed whether or not the conversion works,
+    so a recording that cannot be read is tried once, not at every start."""
+    for folder in sorted((ROOT / "captures").glob(f"*/{UNFINISHED}")):
+        folder = folder.parent
+        status.set("converting", f"Converting {folder.name}, left unconverted last time")
+        try:
+            convert_folder(folder)
+            status.set("idle", f"Saved {folder.name}")
+        except BaseException as e:  # SystemExit from the converter too
+            status.set("idle", f"Could not convert {folder.name}: {e}")
+        try:
+            (folder / UNFINISHED).unlink()
+        except OSError:
+            pass
+
+
 def convert_folder(folder):
     """Convert a recording folder by hand (--convert <folder>): for re-converting after an update, and for testing the
     packaged helper's built-in converter."""
@@ -490,7 +523,13 @@ def convert_folder(folder):
     with index_lock:
         old = next((g for g in load_index() if g["name"] == folder.name), None)  # keep when it was played
         games = [g for g in load_index() if g["name"] != folder.name]
-        games.append(game_entry(folder.name, old and old.get("date")))
+        date = old and old.get("date")
+        if not date:  # when it was played, from the name the helper gave it (2026-10-21_1137_...)
+            try:
+                date = datetime.datetime.strptime(folder.name[:15], "%Y-%m-%d_%H%M").isoformat(timespec="minutes")
+            except ValueError:
+                pass
+        games.append(game_entry(folder.name, date))
         save_index(games)
     update_season()
     print(f"Converted {folder.name}")
@@ -613,6 +652,8 @@ def main():
         print(f"(Not listening on ::1: {e})", flush=True)
     if "--broadcast" in sys.argv:
         start_broadcast()
+    if (ROOT / "captures").exists():
+        threading.Thread(target=convert_leftovers, daemon=True).start()
     page = f"http://localhost:{PORT}/helper.html"
     print(f"Your games: {page}", flush=True)
     if load_settings().get("open_browser", True) and "--no-browser" not in sys.argv:

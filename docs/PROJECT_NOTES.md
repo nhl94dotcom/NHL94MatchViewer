@@ -825,8 +825,9 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   where it ended: completed (receiver), one-timer, intercepted, failed, pass shot; `counted` = the game's passes-tried
   count rose with it. The game counts only targeted passes: B presses with no target and goalie passes are not
   counted (20 of the user's 62 in 2026-10-14_1540_CGY-BOS); 92-98% of the game's counted passes match one here.
-  Shown on the player card and the "Passes" map. Faceoffs (`faceoffs`): drop spot, winner (the faceoff count rising
-  between the whistle and 6 s after the drop; matches the game exactly in all captures) and zone (Home's view;
+  Shown on the player card and the "Passes" map. Faceoffs (`faceoffs`): drop spot, winner (the first faceoff count to rise
+  after the whistle, up to the next stoppage or 6 s after the drop, whichever is later: the game credits whoever first
+  takes the puck, 7.8 s later in one SNES scramble, 2.4 s after a drop whistled dead at 0.6 s in another; 2026-10-21, was 'within 6 s'; with the SNES drop flicker smoothed, steady_puck, matches the game everywhere) and zone (Home's view;
   |Y| < 100 neutral), split in the team stats. Icings (`icings`): touch-up icing - released in own half, crossed the far goal
   line untouched, whistle when a defender touches it (or play stops), faceoff back in that team's zone. Confirmed on the
   user's two in 2026-10-14_1540_CGY-BOS (Juneau, Sweeney, 2nd period); also finds Shanahan in capture6 (P1 1:44, unconfirmed). Shown as a team stat and a banner. Overtime is period index 3 ("OT"; 10 min).

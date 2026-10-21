@@ -19,6 +19,23 @@ import xg_snes  # noqa: E402
 from systems.common import DIGITS, ROOT, STAT_FIELDS  # noqa: E402
 
 
+def read_gzip(path):
+    """A recording's gzip, or as much of it as can be read when it was cut off (the helper closed or the computer
+    stopped mid-game: the file then lacks its end, and gzip.decompress refuses all of it). The helper flushes every
+    LIVE_FLUSH_S, so a cut-off recording loses at most the last couple of seconds."""
+    data = path.read_bytes()
+    try:
+        return gzip.decompress(data)
+    except (EOFError, OSError, zlib.error):
+        out = zlib.decompressobj(31)
+        try:
+            raw = out.decompress(data)
+        except zlib.error:
+            raw = b""
+        print(f"{path.name} was cut off; reading the {len(raw):,} bytes before the cut", file=sys.stderr)
+        return raw
+
+
 class Capture:
     """Samples of work RAM: an 8-byte millisecond stamp, then one or more blocks of RAM in host byte order."""
 
@@ -31,7 +48,7 @@ class Capture:
         else:
             # The helper writes the same samples gzipped (fast.bin.gz, full.bin.gz).
             fast = folder / "fast.bin"
-            self.data = fast.read_bytes() if fast.exists() else gzip.decompress((folder / "fast.bin.gz").read_bytes())
+            self.data = fast.read_bytes() if fast.exists() else read_gzip(folder / "fast.bin.gz")
             layout = folder / "capture.json"
             self.blocks = json.loads(layout.read_text())["blocks"] if layout.exists() else self.system.OLD_BLOCKS
         self.sample = 8 + sum(length for _, length in self.blocks)
@@ -41,7 +58,7 @@ class Capture:
         if (folder / "ram.bin").exists():
             self.full = b""
         else:
-            self.full = full.read_bytes() if full.exists() else gzip.decompress(packed.read_bytes()) if packed.exists() else b""
+            self.full = full.read_bytes() if full.exists() else read_gzip(packed) if packed.exists() else b""
         self.full_size = full_size
         self.full_ms = [struct.unpack_from("<q", self.full, j * full_size)[0] for j in range(len(self.full) // full_size)]
 
@@ -533,6 +550,29 @@ def find_failed_one_timers(m):
     return sorted(out, key=lambda e: e['f'])
 
 
+PUCK_BLIP_MS = 60  # the puck shown for less than this between hidden samples was not play
+
+
+def steady_puck(m):
+    """Hide the puck through a moment of showing in the middle of a stoppage. On the SNES the puck is hidden by the
+    clock-stopped flag, which can flicker at the drop: in 2026-10-19_2246_TOR-NYI it showed the puck for one sample and
+    hid it again, or showed two, hid one, then showed it for good; each flicker read as a second stoppage and so a
+    second faceoff (two duplicates there; no other recording had one). Run before anything reads stoppages."""
+    P, t, N = m['puck'], m['t'], len(m['t'])
+    i = 1
+    while i < N:
+        if P[3 * i + 2] > -100 and P[3 * i - 1] < -100:  # shown after hidden: how long for?
+            j = i
+            while j < N and P[3 * j + 2] > -100:
+                j += 1
+            if j < N and t[j] - t[i] < PUCK_BLIP_MS:  # hidden again soon: part of the stoppage
+                for k in range(i, j):
+                    P[3 * k:3 * k + 3] = [P[3 * i - 3], P[3 * i - 2], P[3 * i - 1]]
+            i = j
+        else:
+            i += 1
+
+
 def whistles(m):
     """Stretches when the game hides the puck (a whistle until the next faceoff): [(first hidden frame, faceoff frame)]."""
     P, N = m['puck'], len(m['t'])
@@ -599,7 +639,7 @@ def own_end(m, i, team):
 
 def find_faceoffs(m):
     """Every faceoff: where the puck was dropped, who won it (the team whose faceoff count, team stat +$0E, went up
-    within 3 s) and in which zone, for Home (Away's is the mirror: Home's attacking zone is Away's defensive one).
+    first after the drop, before the next stoppage) and in which zone, for Home (Away's is the mirror: Home's attacking zone is Away's defensive one).
     Zones by the dot: |Y| under 100 is neutral (centre and the four neutral dots); otherwise the end the team
     defends (its goalie's end) is its defensive zone.
     Returns [{f (the drop), x, y, won (0 Home, 1 Away, -1 unknown), zone (Home's view: att, neu, def)}]."""
@@ -623,11 +663,22 @@ def find_faceoffs(m):
             zone = 'def' if (y > 0) == (home_end > 0) else 'att'
         won = -1
         if stats.get('f'):
-            before = max([i for i, f in enumerate(stats['f']) if f <= a] or [0])  # from the whistle: the win can count at the drop
-            after = max([i for i, f in enumerate(stats['f']) if t[f] <= t[b] + 6000] or [0])
-            for team, side in ((0, 'home'), (1, 'away')):
-                if stats[side][after][at] > stats[side][before][at]:
-                    won = team
+            # The game credits the faceoff when someone first takes the puck after the drop, however long that takes
+            # (a scramble: 7.8 s in 2026-10-16_1528_TOR-CHI P2 4:51), and can credit it a moment into the next stoppage
+            # (a whistle 0.6 s after the drop, the count 2.4 s after it, P3 3:52 there): the first rise of either count
+            # from the whistle (the win can count at the drop) to the next stoppage or 6 s after the drop, whichever is
+            # later, and never past the next drop.
+            nxt = next((a2 for a2, b2 in starts if a2 > b), N)
+            next_drop = next((b2 for a2, b2 in starts if b2 > b), N)
+            before = max([i for i, f in enumerate(stats['f']) if f <= a] or [0])
+            for i in range(before + 1, len(stats['f'])):
+                f = stats['f'][i]
+                if f >= next_drop or (f > nxt and t[f] > t[b] + 6000):
+                    break
+                rose = [team for team, side in ((0, 'home'), (1, 'away')) if stats[side][i][at] > stats[side][before][at]]
+                if rose:
+                    won = rose[0] if len(rose) == 1 else -1
+                    break
         out.append({'f': b, 'x': round(x), 'y': round(y), 'won': won, 'zone': zone})
     return out
 
@@ -908,7 +959,12 @@ def find_hits(m):
                 rise = b[n + per * idx + slot] - a[n + per * idx + slot]
                 if not 0 < rise <= 3:
                     continue
+                # the game names the thrower: look him up whatever his position reads (Tkachuk's check in
+                # 2026-10-18_2149_BOS-WPG P3 came with his position $FF, off the ice, mid line change)
                 k = next((k for k in mine if int(roster[f * 12 + k], 36) == idx), None)
+                if k is None:
+                    k = next((k for k in range(team * 6, team * 6 + 6) if roster[f * 12 + k] != 'z'
+                              and int(roster[f * 12 + k], 36) == idx), None)
                 if k is not None:
                     record(f, team, k, rise)
     return sorted(out, key=lambda e: e['f'])
@@ -1899,6 +1955,8 @@ def find_goals(match, rosters):
 def analyse(match, system, cap, rom_path):
     """Everything worked out from the samples (goals, shots, passes, ... expected goals), added to the match."""
     match["system"] = system.NAME
+    if "puck" in match:
+        steady_puck(match)
     if "stats" in match:
         steady_stats(match)
     if "stats" in match and "rosters" in match and "goals" not in match:
