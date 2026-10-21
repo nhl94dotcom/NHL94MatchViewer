@@ -160,6 +160,7 @@ function fillRows(body, games) {
       make.disabled = true; make.textContent = 'Making…';
       const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } }).then(r => r.json()).catch(() => null);
       if (r && r.file) { const a = document.createElement('a'); a.href = r.file + '?' + Date.now(); a.download = r.file.split('/').pop(); a.click(); }
+      else alert('Could not make the game file' + (r && r.error ? ': ' + r.error : ' (is the helper still running?)'));
       make.disabled = false; make.textContent = 'Game file';
     };
     actions.append(make);

@@ -23,10 +23,10 @@ PAGES = ["season.html", "viewer.html", "helper.html", "rink_gens.png", "rink_sne
 
 
 def load_match_head(path):
-    """The match file's ROM checksum (for its sprites and sounds), read without parsing the whole file."""
+    """The match file's ROM checksum (for its sprites and sounds) and system, read without parsing the whole file."""
     text = path.read_text(encoding="utf-8")
-    at = text.find('"rom":')
-    return json.loads(text[at + 6:text.index(",", at)].strip()) if at >= 0 else None
+    field = lambda key: (lambda at: json.loads(text[at + len(key) + 3:text.index(",", at)].strip()) if at >= 0 else None)(text.find(f'"{key}":'))
+    return field("rom"), field("system") or "genesis"
 
 
 def main():
@@ -39,29 +39,39 @@ def main():
     if not names:
         sys.exit(f"No games in {SOURCE / 'matches'} match {patterns}.")
     if out.exists():
+        # Only ever replace an earlier share (or an empty folder): never a folder given by mistake (Documents, the games)
+        earlier = (out / "season.html").exists() and (out / "matches" / "season.js").exists() and not (out / "captures").exists()
+        if any(out.iterdir()) and not earlier:
+            sys.exit(f"{out} is not empty and is not an earlier share: give a new folder.")
+        if out in (SOURCE.resolve(), HERE.parent) or SOURCE.resolve().is_relative_to(out):
+            sys.exit(f"{out} holds the games themselves: give a new folder.")
         shutil.rmtree(out)
     (out / "matches" / "heat").mkdir(parents=True)
     for page in PAGES:
         if (SOURCE / page).exists():
             shutil.copy2(SOURCE / page, out / page)
-    roms = set()
+    roms, keys = set(), set()
     for name in names:
         shutil.copy2(SOURCE / "matches" / f"{name}.js", out / "matches" / f"{name}.js")
-        roms.add(load_match_head(SOURCE / "matches" / f"{name}.js"))
+        rom, system = load_match_head(SOURCE / "matches" / f"{name}.js")
+        roms.add(rom)
+        keys.add(f"{system}:{rom}")
     for folder in ("sprites", "sounds"):
         for rom in roms - {None}:
             src = SOURCE / folder / f"{rom}.js"
             if src.exists():
                 (out / folder).mkdir(exist_ok=True)
                 shutil.copy2(src, out / folder / src.name)
-    # ROM names for the season page (no ROMs themselves)
-    for f in ("names.json", "names_scan.json"):
-        if (SOURCE / "roms" / f).exists():
-            (out / "roms").mkdir(exist_ok=True)
-            shutil.copy2(SOURCE / "roms" / f, out / "roms" / f)
+    # The names of these games' ROMs for the season page (NHL94_Classic, SDL16 ...), and nothing else: the helper's
+    # names_scan.json lists every ROM file on this computer with its full path (user name included), so it never goes.
+    known = json.loads((SOURCE / "roms" / "names.json").read_text(encoding="utf-8")) if (SOURCE / "roms" / "names.json").exists() else {}
+    (out / "roms").mkdir(exist_ok=True)
+    (out / "roms" / "names.json").write_text(json.dumps({k: v for k, v in known.items() if k in keys}, indent=1), encoding="utf-8")
     # The season data for just these games: summaries, heat maps and matches/season.js, made in the new folder
     env = dict(os.environ, NHL94_HOME=str(out))
     subprocess.run([sys.executable, str(HERE / "season.py")], env=env, check=True, stdout=subprocess.DEVNULL)
+    for f in ("names_scan.json", "retroarch.json"):  # a ROM it could not name sends romnames scanning this computer
+        (out / "roms" / f).unlink(missing_ok=True)
     archive = shutil.make_archive(str(out), "zip", root_dir=out.parent, base_dir=out.name)
     size = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
     print(f"{len(names)} games: {', '.join(names)}")

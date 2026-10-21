@@ -288,6 +288,11 @@ class Broadcaster:
             self.stop.wait(max(0.5, INTERVAL_S - took, REST_SHARE * took))
 
     def begin(self, recording, record_size):
+        # The last game's loop must be gone first: one still mid-update would carry on once the stop flag is cleared,
+        # sending its game under the new name and sharing the converter with the new loop.
+        if self.thread and self.thread.is_alive():
+            self.stop.set()
+            self.thread.join(timeout=60)
         self.stop.clear()
         self.start_game(recording.name)
         self.thread = threading.Thread(target=self.run_game, args=(recording, record_size), daemon=True)

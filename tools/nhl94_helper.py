@@ -472,7 +472,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self.send_json({"seasons": saved})
         if url.path == "/api/game-file" and name:
             import share_game
-            path = share_game.make_game_file(name)
+            if not (ROOT / "matches" / f"{name}.js").exists():
+                return self.send_json({"error": "no such game"}, 404)
+            try:
+                path = share_game.make_game_file(name)
+            except Exception as e:
+                traceback.print_exc()
+                return self.send_json({"error": f"could not make the game file: {e}"}, 500)
             with index_lock:
                 games = load_index()
                 for g in games:
