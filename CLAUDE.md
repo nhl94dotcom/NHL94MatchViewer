@@ -1072,6 +1072,14 @@ analysis/shot_study.py prints the tables): 13 Genesis games / 387 shots and one-
 same for person-played teams (20% / 20%); backhands score more (21% against 14%, xG agrees: slower, less scatter);
 rebound shots 8/17 Genesis; a person in net faces harder shots (xG 32% against 23%); off-wing shooters a little better.
 
+Home / away x up / down (2026-10-21, the user asked for the four cells): analysis/shot_table.py now also writes
+matches/shot_study_periods.json (each team's game seconds per period and direction) and a shot's `person_team` (the
+team had a ctrl bit in most samples; BOS-WPG had people on both sides); analysis/home_direction_study.py prints
+SHOOTING_STUDY's first section: per cell game minutes, attempts / shots on goal / goals per 5:00, rates, xG, uncounted
+stops, aims, exact shots, and rate ratios with 95% ranges. 19 Genesis / 8 SNES games: every range includes 1.00; Away
+going up (period 2) weakest on both systems; Genesis up / down shots on goal 0.89 (0.73-1.09); SNES home goals 1.52
+(0.93-2.47). Home attacks up in P1 and P3, down in P2 and OT (all games).
+
 Study part 2 (2026-10-18, analysis/direction_study.py, SHOOTING_STUDY.md part 2): count per team-period (Home goes up 2
 periods, and a person mostly played Home, so raw up / down totals mix in the person's team). Genesis per period up /
 down: shots on goal 3.8 / 4.3, goals 1.2 / 1.3, checks 6.9 / 6.4 (34 team-periods each): no clear direction effect

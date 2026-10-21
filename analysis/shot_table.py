@@ -1,7 +1,10 @@
 """One row per shot or one-timer in every whole recorded game, with what the study needs: system, home / away, up / down
 the screen, person or computer, type, forehand / backhand, handedness, side of the ice in the shooter's view, speed,
 distance, aim, whether it left the stick exactly at the aim point (a "perfect" shot), working Shot Accuracy, the result,
-the goalie's move and what followed the save, score state, period half. Writes matches/shot_study.json for analysis/shot_study.py. Run from the project folder: python analysis/shot_table.py"""
+the goalie's move and what followed the save, score state, period half; whether a person played the shooting team (it
+had the controlled-skater marker in most samples). Writes matches/shot_study.json for analysis/shot_study.py, and
+matches/shot_study_periods.json: the game seconds each team played in each period and which way it attacked then
+(home / away x up / down exposure, so rates can be per 5:00). Run from the project folder: python analysis/shot_table.py"""
 import glob
 import json
 import math
@@ -19,7 +22,7 @@ for p in glob.glob("matches/*.js") + glob.glob(str(Path.home() / "Documents/NHL9
         continue
     files.setdefault(Path(p).name, p)
 
-rows = []
+rows, periods = [], []
 for name, p in sorted(files.items()):
     try:
         m = json.loads(load_js_object(Path(p)))
@@ -29,6 +32,22 @@ for name, p in sorted(files.items()):
         continue
     system = m.get("system", "genesis")
     t, P, N = m["t"], m["puck"], len(m["t"])
+    ctrl = m.get("ctrl") or []
+    person = [sum(1 for v in ctrl if v & (0x3F << (6 * team))) > len(ctrl) / 2 for team in (0, 1)]
+    # each period's game seconds (the clock's fall) and, per team, its direction (most samples' goalie end)
+    for per in sorted(set(m["period"])):
+        idx = [i for i in range(N) if m["period"][i] == per]
+        clocks = [m["clock"][i] for i in idx]
+        secs = max(clocks) - min(clocks)
+        if per > 3 or secs <= 0:
+            continue
+        for team in (0, 1):
+            ends = [own_end(m, i, team) for i in idx[::25]]
+            ups = sum(e == -1 for e in ends)
+            downs = sum(e == 1 for e in ends)
+            if ups + downs:
+                periods.append({"game": name, "system": system, "period": per, "home": team == 0, "up": ups > downs,
+                                "person": person[team], "secs": secs})
     work = {}
     for w in m.get("work", []):
         work.setdefault(w[1], []).append(w)
@@ -88,7 +107,7 @@ for name, p in sorted(files.items()):
         period, clock = m["period"][f], m["clock"][f]
         length = max(m["clock"][q] for q in range(N) if m["period"][q] == period) if period < 3 else 600
         rows.append({
-            "game": name, "system": system, "home": team == 0, "up": up, "human": bool(sh.get("human")),
+            "game": name, "system": system, "home": team == 0, "up": up, "human": bool(sh.get("human")), "person_team": person[team],
             "kind": sh["kind"], "type": sh.get("type"), "hand": hand, "right": right, "his_x": his_x, "x": x, "y": y,
             "dist": dist, "speed": sh.get("speed", 0), "aim": sh.get("aim"), "perfect": perfect,
             "sha": working_sha(f, k) if k is not None else None, "result": sh["result"], "counted": sh.get("counted"),
@@ -102,5 +121,6 @@ for name, p in sorted(files.items()):
             rows[-1]["goalie_hc"] = gr.get("hc") if isinstance(gr.get("hc"), int) else None
             rows[-1]["goalie_name"] = gr["name"]
 json.dump(rows, open(Path("matches") / "shot_study.json", "w"))  # matches/ is not in git
+json.dump(periods, open(Path("matches") / "shot_study_periods.json", "w"))
 print(len(rows), "shots;", sum(r["system"] == "genesis" for r in rows), "Genesis,", sum(r["system"] == "snes" for r in rows), "SNES;",
       len({r["game"] for r in rows}), "games")
