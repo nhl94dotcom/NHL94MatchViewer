@@ -60,3 +60,16 @@ record or check and what it will settle. Newest at the bottom of each section.
 5. **A Genesis goalie pushed into his net with the puck.** Note the game and time when it happens; none recorded yet
    (GENESIS_MECHANICS 5.9 explains it from the code).
 6. **Cross-crease goals you remember**, either system, to check against the wind-up rule (5.6 / 5.7).
+
+## To pass on to the disassembly maintainers (if you like)
+
+Found in the 2026-10-21 review: three new comments that say something different from the code they sit on (the code
+and our recordings agree with each other; the comments are the slips).
+1. **NHL94Genesis, collide94.asm, the breakaway roll in checkagr:** the comment says "d0 = 3..5"; the code loads 8, 7,
+   4 or 3 by the fouled player's distance from the goal line (over 117, 59-117, 45-58, closer).
+2. **NHL94SNES, routines/collide/puckgoalie.asm, the hold test:** the comment says the catch limit is
+   random((2 + shotspd) x 512) + $C00; the code adds $2000 (`adc.w #$2000`).
+3. **NHL94SNES, routines/collide/setplayer.asm, the third-period bonus:** the comment says no bonus in the first half
+   of the period; the code skips the bonus when (period length / 2 - seconds left) is positive, i.e. in the second
+   half, so the bonus is on while more than half the third period is left (the game's clock counts down). Our
+   recordings show the same.

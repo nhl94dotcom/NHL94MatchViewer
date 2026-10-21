@@ -27,14 +27,16 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - Viewer / season page changed: copy `viewer.html` and `season.html` to `Documents\NHL94 Viewer`; upload the live page
   (live_broadcast `S3Target` + the index.html transform with `window.NHL94_LIVE = 'live.json'`; never `publish_page`,
   which resets the manifest); rebuild the exe (`cmd /c "tools\build_helper.bat < nul"`) if the helper isn't running.
-- Converter changed: re-convert the recordings in both game folders (below) and run `tools/season.py` in each; check
-  that shots on goal, goals, checks still equal the game's own counts.
+- Converter changed: re-convert the recordings in both game folders (below; only those that already have a match
+  file: other capture folders are tests, pieces of merged games or cut-off recordings) and run `tools/season.py` in
+  each; `python tests/check_matches.py` checks goals, shots on goal, checks and faceoffs against the game's own counts.
 - Keep in step: viewer `STAT_HELP` / Help (`#help`) with every stat; season.html `HEAD_HELP`; season.py `VERSION` bump
   when summaries change; `tools/xg.py` with the viewer's XG port, `tools/xg_snes.py` with XG_SNES, `tools/deserve.py`
-  with the viewer's `deserveToWin`.
+  with the viewer's `deserveToWin` (`python tests/xg_parity.py` compares all three).
 - Check viewer changes by rendering in headless Edge
   (`msedge --headless=new --screenshot=out.png --window-size=W,H "file:///.../viewer.html?match=<name>&t=<s>"`;
-  narrowest usable width about 504).
+  narrowest usable width about 504). `python tests/viewer_smoke.py` loads every match many ways and reports script
+  errors; `python tests/viewer_stat_sums.py` checks that every team-stat break-down adds up to its row.
 
 ## Where things are
 
@@ -60,7 +62,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   goaltending, faceoff timing, C vs CB checking against the weight bug, pokes, rush defence, leading / trailing).
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
   `helper_snes_penalty_shots.py` ...): a recording played back as if RetroArch were running it; run one after changing
-  the helper or a system's `View`.
+  the helper or a system's `View`. Also `check_matches.py`, `xg_parity.py`, `viewer_smoke.py`, `viewer_stat_sums.py`
+  (see After changes).
 - `samples/`: three game files for the README (remake with `share_game.make_game_file` after viewer changes worth
   showing).
 - Disassemblies (rebuild the ROMs byte for byte): Genesis github.com/abdulahmad/NHL94Genesis (`src/frames94.asm`

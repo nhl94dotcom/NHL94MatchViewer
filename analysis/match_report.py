@@ -110,6 +110,7 @@ def report(name):
     L = []
     w = L.append
     final = (m["score"][-2], m["score"][-1])
+    genesis = m.get("system", "genesis") == "genesis"  # sections 5, 7, 8 and the controller numbers read Genesis animations
     w(f"# {ab[0]} {final[0]} - {final[1]} {ab[1]}  ({name})\n")
     w(f"{m['team1']} at home, {m['team2']} away. Played on {m.get('rom')}; penalties: "
       f"{'none called' if not m.get('penalties') else len(m['penalties'])}.\n")
@@ -143,7 +144,8 @@ def report(name):
     # 2. the game's story
     w("## 2. The game's story\n")
     w("| Period | " + " | ".join(f"{a} goals / xG / attempts" for a in ab) + " |\n|---|---|---|")
-    for p in sorted(set(m["period"])):
+    played = {m["period"][i] for i in range(1, N) if m["period"][i] == m["period"][i - 1] and m["clock"][i] < m["clock"][i - 1]}
+    for p in sorted(played):  # periods the clock ran in (the index moves on to 3 and 4 after the final horn)
         if p > 3:
             continue
         cells = []
@@ -151,7 +153,7 @@ def report(name):
             sel = [s for s in shots if s["team"] == team and m["period"][s["f"]] == p]
             cells.append(f"{sum(s['result'] == 'goal' for s in sel)} / {sum(s.get('xg') or 0 for s in sel if s['result'] != 'blocked'):.1f} / {len(sel)}")
         w(f"| {'P' + str(p + 1) if p < 3 else 'OT'} | {cells[0]} | {cells[1]} |")
-    w("\nGoals, with who deserved to be ahead on the chances so far:\n")
+    w("\nGoals, with how often the scoring team would be ahead if the shots so far were replayed (deserve to win, mid-game):\n")
     sc = [0, 0]
     for g in m["goals"]:
         sc[g["team"]] += 1
@@ -161,7 +163,7 @@ def report(name):
         kinds = ", ".join(g.get("kinds", []))
         w(f"- {G.clock_text(g['f'])} **{ab[g['team']]} {G.name_of(g['team'], g['scorer'])}**"
           f"{' (' + assists + ')' if assists else ''}{' - ' + kinds if kinds else ''}. {ab[0]} {sc[0]}-{sc[1]} {ab[1]}; "
-          f"on the chances so far {ab[g['team']]} deserved to be ahead {100 * lead:.0f}%.")
+          f"on the shots so far {ab[g['team']]} would be ahead {100 * lead:.0f}% of the time.")
     # runs: 4+ unanswered attempts
     seq = sorted(shots, key=lambda s: s["f"])
     run, runs = [], []
@@ -182,8 +184,12 @@ def report(name):
 
     # 3. ratings as played
     w("## 3. Ratings as played (hot / cold)\n")
-    w("Genesis: one hot / cold value per player for all his ratings, -3 to +2 on the 0-30 working scale (the game's "
-      "scouting screen and cards show something else).\n")
+    if genesis:
+        w("Genesis: one hot / cold value per player for all his ratings, -3 to +2 on the 0-30 working scale (the game's "
+          "scouting screen and cards show something else).\n")
+    else:
+        w("SNES: each rating has its own hot / cold value; a 'cold' one is played at the maximum, 15 (the game's sign bug). "
+          "Shown as how many of each player's ratings are maxed.\n")
     ice = [Counter(), Counter()]
     for f in range(0, N - 1, 3):
         dt = min(300, t[f + 3] - t[f]) if f + 3 < N else 0
@@ -195,9 +201,12 @@ def report(name):
         cells = []
         for i in regs:
             r = m["rosters"][team][i]
-            cells.append(f"{r['name']}{' (G)' if r.get('g') else ''} {r.get('hc', 0):+d}")
+            if genesis:
+                cells.append(f"{r['name']}{' (G)' if r.get('g') else ''} {r.get('hc', 0):+d}")
+            else:
+                cells.append(f"{r['name']}{' (G)' if r.get('g') else ''} {sum(1 for v in (r.get('hcs') or []) if v == 'max')} maxed")
         hcs = [m["rosters"][team][i].get("hc", 0) for i in regs]
-        w(f"- **{ab[team]}** (most-used, with hot/cold): {', '.join(cells)}. Average {sum(hcs) / max(1, len(hcs)):+.1f}.")
+        w(f"- **{ab[team]}** (most-used, with hot/cold): {', '.join(cells)}." + (f" Average {sum(hcs) / max(1, len(hcs)):+.1f}." if genesis else ""))
     w("\nA goalie's Agility sets his reach (12-15); -3 can cost about a unit of reach, +2 add one. For skaters it moves "
       "Speed, Agility, Shot Accuracy and the rest together.\n")
 
@@ -221,27 +230,30 @@ def report(name):
 
     # 5. faceoffs
     w("## 5. Faceoffs\n")
-    fo = m.get("faceoffs", [])
-    st = [[], []]
-    rolls = [0, 0]
-    for e in fo:
-        f = e["f"]
-        vals = []
+    if not genesis:
+        w("Genesis games only (the swing's frames are the Genesis ones).\n")
+    else:
+        fo = m.get("faceoffs", [])
+        st = [[], []]
+        rolls = [0, 0]
+        for e in fo:
+            f = e["f"]
+            vals = []
+            for team in (0, 1):
+                c = next((k for k in range(team * 6, team * 6 + 6) if m["role"][f * K + k] == "4"), None)
+                vals.append(FACEOFF_STATE.get(G.frame(f, c), 0) if c is not None else 0)
+            for team in (0, 1):
+                st[team].append(vals[team])
+            if vals[0] != vals[1]:
+                rolls[0 if vals[0] > vals[1] else 1] += 1
+        won = Counter(e.get("won") for e in fo)
         for team in (0, 1):
-            c = next((k for k in range(team * 6, team * 6 + 6) if m["role"][f * K + k] == "4"), None)
-            vals.append(FACEOFF_STATE.get(G.frame(f, c), 0) if c is not None else 0)
-        for team in (0, 1):
-            st[team].append(vals[team])
-        if vals[0] != vals[1]:
-            rolls[0 if vals[0] > vals[1] else 1] += 1
-    won = Counter(e.get("won") for e in fo)
-    for team in (0, 1):
-        s = st[team]
-        w(f"- **{ab[team]}**: swing at the drop: sweep {pct(s.count(16), len(s))}, middle {pct(s.count(8), len(s))}, "
-          f"nothing {pct(s.count(0), len(s))} (average {sum(s) / max(1, len(s)):.1f} of 16); better timing than the other centre "
-          f"{rolls[team]} times; won the puck first {won[team]} of {len(fo)}.")
-    w("\nThe draw is pure timing: being in the swing's sweep at the drop is worth the most, and only faster mashing gets "
-      "you there more often. 'Won the puck first' is the game's own faceoff stat.\n")
+            s = st[team]
+            w(f"- **{ab[team]}**: swing at the drop: sweep {pct(s.count(16), len(s))}, middle {pct(s.count(8), len(s))}, "
+              f"nothing {pct(s.count(0), len(s))} (average {sum(s) / max(1, len(s)):.1f} of 16); better timing than the other centre "
+              f"{rolls[team]} times; won the puck first {won[team]} of {len(fo)}.")
+        w("\nThe draw is pure timing: being in the swing's sweep at the drop is worth the most, and only faster mashing gets "
+          "you there more often. 'Won the puck first' is the game's own faceoff stat.\n")
 
     # 6. shot timing
     w("## 6. Shot timing: at a set goalie or a moving one\n")
@@ -265,78 +277,84 @@ def report(name):
 
     # 7. checking: C vs CB against the weight bug
     w("## 7. Checking, and C vs CB skill\n")
-    w("This ROM has the original checking code: a check the person's skater makes himself (C) is almost automatic "
-      "against a man 2+ weight steps heavier and poor against anyone else; a CB check (C, then B to switch away before "
-      "contact, so the computer makes it) is better when the checker is the same weight or heavier. The right choice: C "
-      "into heavier men, CB otherwise.\n")
-    hits = m.get("hits", [])
-    for team in (0, 1):
-        opp = 1 - team
-        cnt = Counter()
-        weight = lambda tm, idx: m["rosters"][tm][idx]["a"][0] if 0 <= idx < len(m["rosters"][tm]) else None
-        for f in range(1, N - 1):
-            k = G.ctrl(f, team)
-            if k is None or G.anim(f, k) != "0c5e" or G.anim(f - 1, k) == "0c5e":
-                continue
-            # contact: an opposing skater's body within 20 in the next 0.6 s
-            contact = None
-            for q in range(f, G.at(t[f] + 600)):
-                x, y = G.pos(q, k)
-                o = next((oo for oo in range(opp * 6, opp * 6 + 6) if m["role"][q * K + oo] in "12345"
-                          and math.hypot(G.pos(q, oo)[0] - x, G.pos(q, oo)[1] - y) < 20), None)
-                if o is not None:
-                    contact = (q, o)
-                    break
-            if contact is None:
-                cnt["miss"] += 1
-                continue
-            q, o = contact
-            kind = "C" if m["ctrl"][q] >> k & 1 else "CB"
-            me, him = G.roster(q, k), G.roster(q, o)
-            wc, wt = weight(team, me), weight(opp, him)
-            if wc is None or wt is None:
-                continue
-            down = any(h["team"] == team and h["by"] == me and h["on"] == him and -200 <= t[h["f"]] - t[q] <= 900 for h in hits)
-            right = (kind == "C") == (wt - wc >= 2)
-            cnt[kind] += 1
-            cnt[kind + "_down"] += down
-            cnt["right" if right else "wrong"] += 1
-            cnt[("right" if right else "wrong") + "_down"] += down
-        cpu = sum(1 for h in hits if h["team"] == team and not h.get("human"))
-        pers = sum(1 for h in hits if h["team"] == team and h.get("human"))
-        w(f"- **{ab[team]}**: the person's checks that reached a man: C {cnt['C']} (knocked down {cnt['C_down']}), "
-          f"CB {cnt['CB']} (down {cnt['CB_down']}); bursts that met nobody {cnt['miss']}. Right choice for the weights "
-          f"{cnt['right']} times (down {cnt['right_down']}, {pct(cnt['right_down'], cnt['right'])}), wrong {cnt['wrong']} times "
-          f"(down {cnt['wrong_down']}, {pct(cnt['wrong_down'], cnt['wrong'])}). Knockdowns by computer skaters on their own: {cpu}; by the person's skater "
-          f"{pers} (a burst lasts under 0.1 s, so some fall between samples and are not in the counts above).")
-    w("")
+    if not genesis:
+        w("Genesis games only (the weight bug and the burst animation are the Genesis ones).\n")
+    else:
+        w("This ROM has the original checking code: a check the person's skater makes himself (C) is almost automatic "
+          "against a man 2+ weight steps heavier and poor against anyone else; a CB check (C, then B to switch away before "
+          "contact, so the computer makes it) is better when the checker is the same weight or heavier. The right choice: C "
+          "into heavier men, CB otherwise.\n")
+        hits = m.get("hits", [])
+        for team in (0, 1):
+            opp = 1 - team
+            cnt = Counter()
+            weight = lambda tm, idx: m["rosters"][tm][idx]["a"][0] if 0 <= idx < len(m["rosters"][tm]) else None
+            for f in range(1, N - 1):
+                k = G.ctrl(f, team)
+                if k is None or G.anim(f, k) != "0c5e" or G.anim(f - 1, k) == "0c5e":
+                    continue
+                # contact: an opposing skater's body within 20 in the next 0.6 s
+                contact = None
+                for q in range(f, G.at(t[f] + 600)):
+                    x, y = G.pos(q, k)
+                    o = next((oo for oo in range(opp * 6, opp * 6 + 6) if m["role"][q * K + oo] in "12345"
+                              and math.hypot(G.pos(q, oo)[0] - x, G.pos(q, oo)[1] - y) < 20), None)
+                    if o is not None:
+                        contact = (q, o)
+                        break
+                if contact is None:
+                    cnt["miss"] += 1
+                    continue
+                q, o = contact
+                kind = "C" if m["ctrl"][q] >> k & 1 else "CB"
+                me, him = G.roster(q, k), G.roster(q, o)
+                wc, wt = weight(team, me), weight(opp, him)
+                if wc is None or wt is None:
+                    continue
+                down = any(h["team"] == team and h["by"] == me and h["on"] == him and -200 <= t[h["f"]] - t[q] <= 900 for h in hits)
+                right = (kind == "C") == (wt - wc >= 2)
+                cnt[kind] += 1
+                cnt[kind + "_down"] += down
+                cnt["right" if right else "wrong"] += 1
+                cnt[("right" if right else "wrong") + "_down"] += down
+            cpu = sum(1 for h in hits if h["team"] == team and not h.get("human"))
+            pers = sum(1 for h in hits if h["team"] == team and h.get("human"))
+            w(f"- **{ab[team]}**: the person's checks that reached a man: C {cnt['C']} (knocked down {cnt['C_down']}), "
+              f"CB {cnt['CB']} (down {cnt['CB_down']}); bursts that met nobody {cnt['miss']}. Right choice for the weights "
+              f"{cnt['right']} times (down {cnt['right_down']}, {pct(cnt['right_down'], cnt['right'])}), wrong {cnt['wrong']} times "
+              f"(down {cnt['wrong_down']}, {pct(cnt['wrong_down'], cnt['wrong'])}). Knockdowns by computer skaters on their own: {cpu}; by the person's skater "
+              f"{pers} (a burst lasts under 0.1 s, so some fall between samples and are not in the counts above).")
+        w("")
 
     # 8. pokes (this ROM's B-check hack: a poke that bumps the carrier trips him, as with penalties on)
     w("## 8. Pokes (B)\n")
-    for team in (0, 1):
-        opp = 1 - team
-        c = Counter()
-        for f in range(1, N - 1):
-            k = G.ctrl(f, team)
-            if k is None or G.anim(f, k) != "0b24" or G.anim(f - 1, k) == "0b24":
-                continue
-            c["pokes"] += 1
-            o = m["owner"][f]
-            x, y = G.pos(f, k)
-            dpuck = math.hypot(x - m["puck"][3 * f], y - m["puck"][3 * f + 1])
-            if dpuck > 30:
-                c["far"] += 1
-                continue
-            end = G.at(t[f] + 700)
-            if o in range(opp * 6, opp * 6 + 6) and any(G.anim(q, o) in DOWN for q in range(f, end)):
-                c["trip"] += 1
-            elif any(m["owner"][q] in range(team * 6, team * 6 + 6) for q in range(f, end)):
-                c["won"] += 1
-            else:
-                c["nothing"] += 1
-        w(f"- **{ab[team]}**: {c['pokes']} pokes; {c['far']} from out of reach (over 30: they do nothing); of the rest, "
-          f"tripped the carrier {c['trip']}, won the puck {c['won']}, nothing {c['nothing']}.")
-    w("")
+    if not genesis:
+        w("Genesis games only (the poke animation is the Genesis one).\n")
+    else:
+        for team in (0, 1):
+            opp = 1 - team
+            c = Counter()
+            for f in range(1, N - 1):
+                k = G.ctrl(f, team)
+                if k is None or G.anim(f, k) != "0b24" or G.anim(f - 1, k) == "0b24":
+                    continue
+                c["pokes"] += 1
+                o = m["owner"][f]
+                x, y = G.pos(f, k)
+                dpuck = math.hypot(x - m["puck"][3 * f], y - m["puck"][3 * f + 1])
+                if dpuck > 30:
+                    c["far"] += 1
+                    continue
+                end = G.at(t[f] + 700)
+                if o in range(opp * 6, opp * 6 + 6) and any(G.anim(q, o) in DOWN for q in range(f, end)):
+                    c["trip"] += 1
+                elif any(m["owner"][q] in range(team * 6, team * 6 + 6) for q in range(f, end)):
+                    c["won"] += 1
+                else:
+                    c["nothing"] += 1
+            w(f"- **{ab[team]}**: {c['pokes']} pokes; {c['far']} from out of reach (over 30: they do nothing); of the rest, "
+              f"tripped the carrier {c['trip']}, won the puck {c['won']}, nothing {c['nothing']}.")
+        w("")
 
     # 9. rush defence
     w("## 9. Rush defence\n")
@@ -421,13 +439,13 @@ def report(name):
                 diff = m["score"][2 * f + team] - m["score"][2 * f + opp]
                 state = "leading" if diff > 0 else "trailing" if diff < 0 else "tied"
                 att[state] += 1
-                xg[state] += s.get("xg") or 0
+                xg[state] += (s.get("xg") or 0) if s["result"] != "blocked" else 0
         cells = []
         for state in ("leading", "tied", "trailing"):
             if secs[state] >= 30:
                 p5 = 300 / secs[state]
-                cells.append(f"{state} {secs[state] // 60}:{secs[state] % 60:02d}: attempts {att[state] * p5:.1f} and xG {xg[state] * p5:.2f} per 5:00, "
-                             f"person's bursts {bursts[state] * p5:.0f} / pokes {pokes[state] * p5:.0f} per 5:00")
+                cells.append(f"{state} {secs[state] // 60}:{secs[state] % 60:02d}: attempts {att[state] * p5:.1f} and xG {xg[state] * p5:.2f} per 5:00"
+                             + (f", person's bursts {bursts[state] * p5:.0f} / pokes {pokes[state] * p5:.0f} per 5:00" if genesis else ""))
         w(f"- **{ab[team]}**: " + "; ".join(cells) + ".")
     w("")
 

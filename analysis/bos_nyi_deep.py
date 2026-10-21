@@ -14,7 +14,7 @@ from share_game import load_js_object  # noqa: E402
 from export_match import own_end  # noqa: E402
 
 K = 12
-GAMES = [("D", "2026-10-21_1102_BOS-NYI", "BOS won"), ("D", "2026-10-21_1121_BOS-NYI", "BOS won"),
+GAMES = [("D", "2026-10-21_1054_BOS-NYI", "BOS won"), ("D", "2026-10-21_1121_BOS-NYI", "BOS won"),
          ("P", "2026-10-21_1137_NYI-BOS", "NYI won"), ("P", "2026-10-21_1147_NYI-BOS", "NYI won"),
          ("P", "2026-10-21_1156_BOS-NYI", "NYI won")]
 BASE = {"D": Path(os.path.expanduser("~/Documents/NHL94 Viewer/matches")), "P": Path("matches")}

@@ -391,7 +391,7 @@ function playerLines(list, goalies) {
 // A sortable table: columns {key, label, value(row) for sorting, show(row) for display, title, left, asc}.
 // Explanations for column headings that do not carry their own (by the heading's text), shown on hover.
 const HEAD_HELP = {
-  GP: 'Games played', W: 'Wins', L: 'Losses (in regulation)', OTL: 'Overtime losses', T: 'Ties', PTS: 'Points: 2 a win, 1 an overtime loss or a tie',
+  GP: 'Games played', W: 'Wins', L: 'Losses (in regulation)', OTL: 'Overtime losses', T: 'Ties', PTS: 'Points: 2 a win, 1 a tie, none for an overtime loss (as the leagues count them)',
   GF: 'Goals for', GA: 'Goals against', 'GA/GP': 'Goals against a game', DIFF: 'Goal difference (for minus against)',
   G: 'Goals', A: 'Assists', PPG: 'Power-play goals', SHG: 'Shorthanded goals', PIM: 'Penalty minutes',
   'S%': 'Shooting percentage: goals / shots on goal', 'SV%': 'Save percentage: saves / shots on goal against',
@@ -1213,7 +1213,7 @@ async function drawGoalieMap(list) {
     ...Object.entries(SHOT_TYPES).map(([k, n]) => [n, rowsFor(s => s[4] === k)]),
     ['High danger (the slot)', rowsFor(s => s[5].includes('h'))], ['Rebounds', rowsFor(s => s[5].includes('r'))],
     ['EA Specials', rowsFor(s => s[5].includes('e'))], ['Wraparounds', rowsFor(s => s[5].includes('x'))]].filter(([, v]) => v[0]);
-  $('gmSide').innerHTML = `<table><thead><tr><th class="left">Shots</th><th>Faced</th><th>Goals</th><th>SV%</th></tr></thead><tbody>` +
+  $('gmSide').innerHTML = `<table><thead><tr><th class="left" title="The kind of shot, or where it came from">Shots</th><th title="Shots of this kind that reached the goalie (on goal, posts and saves the game did not count)">Faced</th><th title="Goals from them">Goals</th><th title="Save percentage on them: (faced - goals) / faced">SV%</th></tr></thead><tbody>` +
     lines.map(([n, v]) => `<tr><td class="left">${n}</td><td>${v[0]}</td><td>${v[1]}</td><td>${svp(v[0], v[1])}</td></tr>`).join('') + '</tbody></table>' +
     '<p class="note">Red: goals. Hollow: saves (yellow: off the post). Every shot that reached him, his net at the top.</p>';
 }
@@ -1222,7 +1222,7 @@ const teamNameOf = abbr => { for (const g of games) { const i = g.abbr.indexOf(a
 function viewGames(list, team) {
   const excluded = excludedSet(), rows = pool(true, true).map(g => ({ ...g, off: excluded.has(g.name) }));
   return '<h2>Games</h2>' + table('games', rows, [
-    { key: 'in', label: 'Count', sortable: false, show: r => `<input type="checkbox" data-game="${esc(r.name)}"${r.off ? '' : ' checked'} aria-label="Count this game">` },
+    { key: 'in', label: 'Count', title: 'Count this game in the stats (untick to leave it out)', sortable: false, show: r => `<input type="checkbox" data-game="${esc(r.name)}"${r.off ? '' : ' checked'} aria-label="Count this game">` },
     { key: 'date', label: 'When', left: true, show: r => esc((r.date || '').replace('T', ' ')) },
     { key: 'home', label: 'Home', left: true, value: r => r.names[0], show: r => esc(r.names[0]) + (r.humans[0] ? '' : '<span class="tag">CPU</span>') + (r.abbr[0] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'score', label: 'Score', value: r => r.score[0] - r.score[1], show: r => `<b>${r.score[0]}–${r.score[1]}</b>${r.overtime ? ' <small>OT</small>' : ''}` },
