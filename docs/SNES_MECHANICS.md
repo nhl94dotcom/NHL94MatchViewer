@@ -747,6 +747,14 @@ each other, and then neither can knock the other over.
   scored 1.8 s after they parted. 2026-10-19_2316_NYI-TOR OT: Ellett (computer) burst into King (a person) twice down
   the right wing, each time starting a shoulder check that didn't land, and skated stride for stride 11-14 apart into
   the corner; King passed out and Turgeon one-timed the winner 0.6 s later.
+- **How often** (analysis/tangle_study.py, every recorded game, 2026-10-21): a carrier and a defender within 14 units for
+  0.7 s or more 45 times in 137 minutes of SNES play (about 20 an hour), once in 191 minutes of Genesis play. The defender
+  had tried a check in 16 of the 45; the carrier's team got a shot within 5 s in 15, a goal in 3. A carrier and a
+  defender within 14 units: 3,076 samples on the SNES, 38% of them moving exactly alike; 147 on the Genesis, 2% alike.
+- **Why the Genesis differs:** its collision (`checkcx`) drops a contact only when the two are moving apart, so players
+  touching at matching speeds still add at least 5 impact a frame and run the check test; and its knockdown test uses the
+  impact built up over the contact. The SNES drops contacts at exactly matching speeds, and `checkcheck` judges each
+  collision's own strength (32 needed in one frame), so a soft, lasting contact never adds up to a knockdown.
 
 ## 8. Penalties
 
