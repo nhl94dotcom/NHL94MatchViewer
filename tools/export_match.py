@@ -1770,7 +1770,7 @@ def add_play_context(m):
     - m['habits']: for each team a person played, what that person did with the controller: button presses
       (A, B, C) and minutes of live play, and the controlled skater's actions (speed bursts / check lunges and the
       checks landed, poke checks and hooks and the takeaways they made, the goalie's dives and the game time a person
-      had the goalie (presses and bursts are per real minute of live play: how busy the thumbs were); one-timers and passes come from the shot and pass lists' `human`). Hooks are not known on the SNES."""
+      had the goalie (presses and bursts are per real minute of live play: how busy the thumbs were); one-timers and passes come from the shot and pass lists' `human`). SNES hooks include holds (the same button)."""
     t, P, own = m['t'], m['puck'], m['owner']
     N, K = len(t), 12
     ctrl = m.get('ctrl') or []

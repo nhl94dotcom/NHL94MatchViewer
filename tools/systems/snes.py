@@ -27,7 +27,8 @@ ACTIONS = {
     "pass": {"ec66", "ecd8"},
     "goalie_pass": {"e34e"},
     "poke": {"f208"},
-    "hook": {"f864"},                 # SPAhook (Y without the puck; $F3D8 SPAhook2 follows), named in the disassembly
+    "hook": {"f864", "f374"},         # Y without the puck: SPAhook ($F3D8 SPAhook2 follows) or SPAHold, when the man faces
+                                      # you ($F3A6 SPAHold2 follows); Holdplayer / Acheck in the disassembly
     "lunge": {"f342"},
     "down": {"f49c", "f54e"},         # falling forward, backward
     "dive": {"e4b6"},

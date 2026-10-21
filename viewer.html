@@ -3182,7 +3182,7 @@ function playRows(f, list) {
       ['Speed bursts / check tries', ...both(team => val(team, x => x.bursts))],
       ['Checks landed (person)', ...both(team => val(team, x => x.checks))],
       ['Poke checks (takeaways)', ...both(team => val(team, x => x.pokes + ' (' + x.pokeTakeaways + ')'))],
-      ...(m.system === 'snes' ? [] : [['Hooks (takeaways)', ...both(team => val(team, x => x.hooks + ' (' + x.hookTakeaways + ')'))]]),
+      [m.system === 'snes' ? 'Hooks / holds (takeaways)' : 'Hooks (takeaways)', ...both(team => val(team, x => x.hooks + ' (' + x.hookTakeaways + ')'))],
       ['Goalie: time controlled', ...both(team => val(team, x => secondsText(1000 * x.goalieSeconds)))],
       ['Goalie dives', ...both(team => val(team, x => x.dives))]);
   }
@@ -3313,6 +3313,7 @@ const STAT_HELP = {
   'Checks landed (person)': 'Checks the person\u2019s skater landed.',
   'Poke checks (takeaways)': 'Poke checks by the person\u2019s skater (and how many took the puck).',
   'Hooks (takeaways)': 'Hooks by the person\u2019s skater (and how many took the puck).',
+  'Hooks / holds (takeaways)': 'Hooks and holds by the person\u2019s skater (Y without the puck: a hold when the man faces you, else a hook), and how many took the puck. One that connects slows the carrier to your pace; he keeps the puck.',
   'Goalie: time controlled': 'Game time the person controlled the goalie (game-clock seconds, like ice time).',
   'Attack-zone possession per goal': 'The team\u2019s possession in its attacking zone (game time), divided by its goals: how long it needed the puck in the other team\u2019s end for each goal. Lower is more dangerous. Seen from the other side, it is how long this team let the other one have the puck in its own end for each goal it allowed.',
   'Goalie dives': 'Dives by the goalie while the person controlled him.',
