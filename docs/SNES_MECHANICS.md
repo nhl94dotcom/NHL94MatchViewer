@@ -778,6 +778,22 @@ each other, and then neither can knock the other over.
   impact built up over the contact. The SNES drops contacts at exactly matching speeds, and `checkcheck` judges each
   collision's own strength (32 needed in one frame), so a soft, lasting contact never adds up to a knockdown.
 
+### 7.7 Knocking the net off
+
+**Code** (`checkgoalp`), **Confirmed** on the recordings. A skater running into a net knocks it off its spot when, on
+a frame he's touching it:
+
+- a **1-in-8** random test passes (`seed & $01C0` zero);
+- he's in a **speed burst** (`SPAburst`: A without the puck);
+- **the puck is within 128 units** of the net up or down the ice (most of that zone);
+- he's moving faster than **8,192** across or along the ice.
+
+The net takes 3/16 of his speed, he stops dead, and play is whistled (the faceoff goes to a dot just outside the zone
+when an attacker did it, in the zone when a defender did). **The Genesis rule (GENESIS_MECHANICS 7.7) is four times
+less likely per frame, needs the puck within 40, and no burst.** Recorded: 7 nets off in 137 minutes of SNES play (6 of
+them in one game, 2026-10-16_2018_PHI-VAN, against the computer), each time a person's skater in a burst just before;
+1 in 191 minutes of Genesis play.
+
 ## 8. Penalties
 
 

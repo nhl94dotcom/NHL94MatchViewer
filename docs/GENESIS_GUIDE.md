@@ -454,6 +454,9 @@ viewer's Help, "This game's ROM", says whether yours does).
 - Players with Stick Handling 81+ may wobble instead of falling (2.1).
 - **Injuries:** a hard knockdown can injure; the injury always gives the hitter a roughing minor (with penalties on).
 
+- **Nets rarely come off on the Genesis:** skating into the net fast, with the puck within about 13 feet of it,
+  knocks it off one time in 32 per frame of contact (the SNES is far touchier).
+
 ---
 
 ## 10. Taking the puck: pokes and hooks
