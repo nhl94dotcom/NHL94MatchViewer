@@ -788,6 +788,15 @@ him along in the direction he burst. **Recorded** (analysis/snes_burst_contact_s
 opponent after the animation had ended, 204 of 260 did nothing but shove; inside the 0.4 s a check came 936 times in
 1,180 (416 knockdowns). To check, burst from close: within about 0.4 s of skating of your man.
 
+**A check that lands but knocks nothing over** looks much the same, except that the hitter shows his check
+animation. The victim shows nothing: the game has no reaction for a failed knockdown, only the bump. The roll (7.1):
+the single contact must be worth 32+, then a random number below (120 + victim's weight - hitter's weight) / 2 - the
+impact must come out under the hitter's working Checking. A light, low-Checking hitter on a heavy man almost always
+fails. Example (nhl94.com's clip of 2020-10-28, QUE-PHI, 2nd 2:43): Sundin (Checking 1, weight 56) checks Brind'Amour
+(weight 72) head-on; the range is 68 - impact, so at impact 32-50 his chance is about 1 in 6 to 1 in 12 (unless the
+hot / cold bug had maxed his Checking that game). The check animation plays, the bump pushes Brind'Amour back to the
+boards, and the two stay overlapped there (7.6).
+
 **Passing through (ghosting)**, **Code**, partly explained. Two players touching (closer than 16) are always handled
 the same way: a check if the hitter is in the burst animation, then a bounce, unless the game judges them to be moving
 apart. Three ways a pair is skipped:
