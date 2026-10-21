@@ -60,7 +60,7 @@ def main():
         row("pokes (took it)", lambda t, i: f"{t['habits']['pokes']} ({t['habits']['pokeTakeaways']})" if t.get("habits") else "-")
         row("bursts / C presses / B presses", lambda t, i: f"{t['habits']['bursts']} / {t['habits']['presses']['C']} / {t['habits']['presses']['B']}" if t.get("habits") else "-")
         row("goalie by person (s)", lambda t, i: t["habits"]["goalieSeconds"] if t.get("habits") else "-")
-        row("deserve to win", lambda t, i: f"{100 * (t['dtw'][0] + t['dtw'][1]):.0f}%" if t.get("dtw") else "-")
+        row("deserve to win", lambda t, i: f"{100 * t['dtw'][0]:.0f}%" if t.get("dtw") else "-")
         w = max(len(r[0]) for r in rows)
         print(f"{'':{w}}  {ab[order[0]]:>16} {ab[order[1]]:>16}")
         for label, v in rows:
