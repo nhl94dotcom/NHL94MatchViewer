@@ -822,9 +822,14 @@ def find_passes(m):
             s0 = i
             while i < N and anim(i, k) in PASS:
                 i += 1
-            rel, j = None, max(1, s0)
-            while j < N and t[j] <= t[i - 1] + 300:  # the puck leaves his stick during the animation or just after
-                if own[j] < 0 and own[j - 1] == k:
+            # The puck leaves his stick during the animation or just after, or a sample or two before the animation
+            # shows (178 of the game's counted passes had been missed that way, goalies' included); an opponent can
+            # have it on the very next sample.
+            rel, j = None, s0
+            while j > 1 and t[s0] - t[j - 1] <= 120:
+                j -= 1
+            while j < N and t[j] <= t[i - 1] + 300:
+                if own[j] != k and own[j - 1] == k:
                     rel = j; break
                 j += 1
             if rel is None:
@@ -859,7 +864,7 @@ def find_passes(m):
     out = [p for p in out if (p['f'], p['team'], p['idx']) not in seen and not seen.add((p['f'], p['team'], p['idx']))]
     # Did the game count it (its passes-tried count, team stat +$12, going up within 1.5 s)? It counts only passes
     # aimed at a receiver: in 2026-10-14_1540_CGY-BOS 20 of the user's 62 passes were B presses with no target (the
-    # puck went the way he pushed, as with a pass shot), and goalie passes ($0366) are never counted.
+    # puck went the way he pushed, as with a pass shot). A goalie's pass counts like anyone's when it has a target.
     stats = m.get('stats') or {}
     tried = STAT_FIELDS.index('passTried')
     for team, side in ((0, 'home'), (1, 'away')):

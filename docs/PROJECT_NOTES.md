@@ -868,8 +868,12 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   the puck; every "led to a one-timer" candidate met one), now in snes ACTIONS "shoot": SNES one-timers are found at
   last (game 2: 7 plus 6 failed against the game's 11 tried; counted shots still equal the game's in all three SNES
   games). find_passes now keeps one pass per player and release (a passing move in two pieces had listed 6 twice in
-  2026-10-16_1528_TOR-CHI; no Genesis pass changed). Known gap: in 2026-10-16_1528_TOR-CHI the game counts 56 / 52
-  passes tried, the converter matches 55 / 49 (before these changes too). Each bobbled pass carries `bobble` {f, idx, x, y}: the passes map draws
+  2026-10-16_1528_TOR-CHI; no Genesis pass changed). The pass-count gap (2026-10-21): the converter had matched 178
+  fewer passes than the game's passes tried across the recordings. The carrier often loses the puck a sample or two
+  before his pass animation shows (goalies' passes too: the game counts a goalie's pass that has a target, through the
+  same passto), and an opponent can have it on the very next sample; find_passes now looks from 120 ms before the
+  animation and takes any change of owner. Now 4,416 of 4,449 across both folders (most of the rest in old project
+  copies with no recording to re-convert). Each bobbled pass carries `bobble` {f, idx, x, y}: the passes map draws
   it to that spot with an orange bobble ring, then a thinner line on to its outcome (the user asked for that; the
   tooltip says "bobbled, then ..."). Also shown: a "Bobbled" tag over the receiver,
   team stats (Bobbled passes, under Pass %), the card, Help, and the season page (team BOB a game, skater BOB;
