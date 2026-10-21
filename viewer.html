@@ -678,6 +678,12 @@ const ACTIONS = { '1122': 'Hook', '0b24': 'Poke check', '0c5e': 'Burst', '0718':
 const POST_X = 20, POST_Y = 265, POST_FLASH_MS = 900, CALLOUT_MS = 4000;
 const SHOOTING = ['07fc', '092e'], SLAPSHOT_MS = 800, ONE_TIMER_GRACE_MS = 100, TAG_LINGER_MS = 400;
 const PAD = { up: 1, down: 2, left: 4, right: 8, B: 16, C: 32, A: 64 }, PAD_FLASH_MS = 350;
+// The SNES controller as the game reads it (doinput): A shoots / bursts, B passes / pokes / switches, Y flips / hooks,
+// X takes the goalie, L and R the defenceman on that side of the screen. SNES match files keep its words (padSnes).
+const SNES_PAD = { up: 0x0800, down: 0x0400, left: 0x0200, right: 0x0100, Y: 0x4000, B: 0x8000, A: 0x0080, X: 0x0040, L: 0x0020, R: 0x0010 };
+let snesPads = null;  // [controller 1, controller 2]: the SNES words at every frame, from match.padSnes
+// The buttons shown for this match (bits as the arrays teamPads() returns hold them) and their names
+const padSet = () => (snesPads ? { bits: SNES_PAD, buttons: ['Y', 'B', 'A', 'X', 'L', 'R'] } : { bits: PAD, buttons: ['A', 'B', 'C'] });
 const $ = id => document.getElementById(id);
 const canvas = $('rink'), ctx = canvas.getContext('2d');
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -744,7 +750,9 @@ function role(f, k) {
 function buildPanel(el, team, name, colour) {
   const rows = PANEL_ORDER.map(() => `<div class="row" data-team="${team}" data-k="-1"><span class="pos"></span><span class="num"></span><span class="who"></span><span class="live"></span><span class="dot"></span><span class="energy"><i></i></span></div>`).join('');
   const legend = team === 0 ? `<div class="legend"><span><i style="border: 2.5px solid var(--accent)"></i>Controlled by a person</span><span><i style="border: 2.5px solid var(--text)"></i>Has the puck</span></div>` : '';
-  const pad = `<div class="pad" hidden><span data-b="${PAD.left}">&#9664;</span><span data-b="${PAD.up}">&#9650;</span><span data-b="${PAD.down}">&#9660;</span><span data-b="${PAD.right}">&#9654;</span><i></i><span data-b="${PAD.A}">A</span><span data-b="${PAD.B}">B</span><span data-b="${PAD.C}">C</span></div>`;
+  const ps = padSet(), bits = ps.bits;
+  const pad = `<div class="pad" hidden><span data-b="${bits.left}">&#9664;</span><span data-b="${bits.up}">&#9650;</span><span data-b="${bits.down}">&#9660;</span><span data-b="${bits.right}">&#9654;</span><i></i>` +
+    ps.buttons.map(b => `<span data-b="${bits[b]}">${snesPads ? b : padLabel(b)}</span>`).join('') + '</div>';
   const teamStats = team === 1 ? `<div class="teamstats" id="teamStats" hidden><h4>Team stats</h4><table></table></div><div class="teamstats penbox" hidden></div>` : '';
   const scoring = team === 0 ? `<div class="teamstats scoring" hidden></div>` : '';
   el.innerHTML = `<h3><span class="swatch" style="background: ${colour}"></span><span class="tname"></span><small>on ice</small></h3>${rows}${pad}${legend}${scoring}${teamStats}`;
@@ -769,6 +777,14 @@ function buildPanel(el, team, name, colour) {
 
 function load(m) {
   match = m;
+  snesPads = null;
+  if (m.padSnes && m.padSnes.length) {
+    snesPads = [new Uint16Array(m.t.length), new Uint16Array(m.t.length)];
+    m.padSnes.forEach((row, j) => {
+      const end = j + 1 < m.padSnes.length ? m.padSnes[j + 1][0] : m.t.length;
+      snesPads[0].fill(row[1], row[0], end); snesPads[1].fill(row[2], row[0], end);
+    });
+  }
   now = m.t[0];
   panelState = '';
   if (!liveReloading) spriteCache.clear();  // a live update keeps the drawn pictures: same game, same colours
@@ -817,10 +833,6 @@ function load(m) {
   for (const id of ['hud', 'rink', 'controls', 'viewbar', 'mtabs']) $(id).hidden = false;
   buildPanel($('lineup1'), 0, m.team1, 'var(--team1)');
   buildPanel($('lineup2'), 1, m.team2, 'var(--team2)');
-  for (const key of document.querySelectorAll('.pad span')) {  // the buttons' names on this system's controller
-    const name = Object.keys(PAD).find(b => PAD[b] === Number(key.dataset.b));
-    if (['A', 'B', 'C'].includes(name)) key.textContent = padLabel(name);
-  }
   const startAt = Number(new URLSearchParams(location.search).get('t'));
   if (startAt > 0) now = Math.min(m.t[m.t.length - 1], startAt * 1000);
   resize();
@@ -2638,9 +2650,9 @@ function padTeam(f) {
 // that team has a controlled skater.
 function teamPads(f) {
   const out = [null, null], first = padTeam(f);
-  if (first >= 0) out[first] = match.pad;
+  if (first >= 0) out[first] = snesPads ? snesPads[0] : match.pad;
   const second = match.pad2Team;
-  if (match.pad2 && second >= 0 && second !== first && (match.ctrl[f] >> (6 * second)) & 63) out[second] = match.pad2;
+  if (match.pad2 && second >= 0 && second !== first && (match.ctrl[f] >> (6 * second)) & 63) out[second] = snesPads ? snesPads[1] : match.pad2;
   return out;
 }
 
@@ -3163,7 +3175,10 @@ function playRows(f, list) {
     const per = (team, n) => (hb[team] && hb[team].minutes ? (n / hb[team].minutes).toFixed(1) : '\u2013');
     const val = (team, fn) => (hb[team] ? fn(hb[team]) : '\u2013');
     rows.push(section('Controller (whole game)'),
-      ['Presses a minute (A / B / C)', ...both(team => val(team, x => ['A', 'B', 'C'].map(b => per(team, x.presses[b])).join(' / ')))],
+      ...(() => {  // each button the converter counted (Genesis A / B / C; SNES A / B / X / Y / L / R / Select)
+        const names = Object.keys((hb[0] || hb[1]).presses);
+        return [['Presses a minute (' + names.join(' / ') + ')', ...both(team => val(team, x => names.map(b => per(team, x.presses[b] || 0)).join(' / ')))]];
+      })(),
       ['Speed bursts / check tries', ...both(team => val(team, x => x.bursts))],
       ['Checks landed (person)', ...both(team => val(team, x => x.checks))],
       ['Poke checks (takeaways)', ...both(team => val(team, x => x.pokes + ' (' + x.pokeTakeaways + ')'))],
@@ -3293,7 +3308,7 @@ const STAT_HELP = {
   'Saves, person in net': 'Saves / shots faced while the person was controlling the goalie at the moment of the shot.',
   'Saves, CPU in net': 'Saves / shots faced while the computer had the goalie.',
   // ---- controller
-  'Presses a minute (A / B / C)': 'How often the person pressed each button, a minute of live play (real time: how busy the thumbs were).',
+  'Presses a minute': 'How often the person pressed each button, a minute of live play (real time: how busy the thumbs were). On the SNES: A shoots or bursts, B passes, pokes or switches player, Y flips or hooks, X takes the goalie (with manual goalie on), L and R the defenceman on that side of the screen (with defence control on), Select opens the line-change box.',
   'Speed bursts / check tries': 'C without the puck: a speed burst or a check lunge (the game uses one move for both).',
   'Checks landed (person)': 'Checks the person\u2019s skater landed.',
   'Poke checks (takeaways)': 'Poke checks by the person\u2019s skater (and how many took the puck).',
@@ -3358,7 +3373,8 @@ for (const parent of ['Puck on screen left / right', 'Carried by LW / RW', 'Carr
 // The explanation for a stat label, by its parent row first for break-down rows ("· attacking zone").
 function statHelp(label, parent) {
   const key = String(label).replace(/\s*\(\d.*$/, '').trim();
-  return (parent && STAT_HELP[parent + '|' + key]) || STAT_HELP[key] || (/^Transition/.test(key) ? STAT_HELP.Transition : '');
+  return (parent && STAT_HELP[parent + '|' + key]) || STAT_HELP[key] || STAT_HELP[String(label).replace(/\s*\(.*$/, '').trim()] ||
+    (/^Transition/.test(key) ? STAT_HELP.Transition : '');
 }
 // Team-stat groups closed by the viewer (by heading); the long lists start closed.
 let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction', 'Screen sides']);
@@ -4555,7 +4571,7 @@ function draw() {
   // Button presses pop up beside the skater each controller is driving.
   teamPads(f).forEach((pad, team) => {
     if (!pad) return;
-    const pressed = recentPad(f, pad), letters = ['A', 'B', 'C'].filter(b => pressed & PAD[b]).map(b => padLabel(b));
+    const ps = padSet(), pressed = recentPad(f, pad), letters = ps.buttons.filter(b => pressed & ps.bits[b]).map(b => (snesPads ? b : padLabel(b)));
     let k = team * 6;
     while (!((m.ctrl[f] >> k) & 1)) k++;
     const x = m.pos[(f * PLAYERS + k) * 2], y = m.pos[(f * PLAYERS + k) * 2 + 1];

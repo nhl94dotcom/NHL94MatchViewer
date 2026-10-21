@@ -88,11 +88,15 @@ PAD1 = 0x0776                     # controller 1, held (SNES bits: B $8000, Y $4
                                   # $0400, Left $0200, Right $0100, A $0080, X $0040)
 PAD2 = 0x0778                     # controller 2: its presses answered by Pittsburgh's skater 149 times to 75 in the
                                   # online match (controller 1: Toronto 210 to 100)
-# The match file keeps buttons in the Genesis layout the viewer and the analysis use ($80 Start, $40 A, $20 C, $10 B,
-# $08 Right, $04 Left, $02 Down, $01 Up), by what they do: SNES B passes or poke-checks like the Genesis B, SNES A
-# shoots or checks like the Genesis C, Y and X go on the Genesis A. PAD_LABELS names them for the viewer.
-PAD_MAP = ((0x8000, 0x10), (0x0080, 0x20), (0x4000, 0x40), (0x0040, 0x40), (0x1000, 0x80),
+# The match file keeps buttons in the Genesis layout the analysis uses ($80 Start, $40 A, $20 C, $10 B, $08 Right,
+# $04 Left, $02 Down, $01 Up), by what they do: SNES B passes or poke-checks like the Genesis B, SNES A shoots or checks
+# like the Genesis C, Y (the flip with the puck, a hook or hold without) like the Genesis A. PAD_LABELS names them.
+# The SNES's own words are kept too (`padSnes`, every change: [frame, controller 1, controller 2]) for the buttons the
+# Genesis has no counterpart for, as doinput reads them: X takes the goalie (with manual goalie on), L and R take the
+# defenceman on the left / right of the screen (with defence control on), Select opens the line-change box.
+PAD_MAP = ((0x8000, 0x10), (0x0080, 0x20), (0x4000, 0x40), (0x1000, 0x80),
            (0x0800, 0x01), (0x0400, 0x02), (0x0200, 0x04), (0x0100, 0x08))
+SNES_BUTTONS = {"A": 0x0080, "B": 0x8000, "X": 0x0040, "Y": 0x4000, "L": 0x0020, "R": 0x0010, "Select": 0x2000, "Start": 0x1000}
 PAD_LABELS = {"A": "Y", "B": "B", "C": "A"}
 
 
@@ -485,7 +489,7 @@ class MatchReader:
         self.match = {"version": 21, "name": None, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
                       "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
                       "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "aim": [], "delayed": [], "penalties": [],
-                      "pad": [], "pad2": [], "padLabels": PAD_LABELS, "work": []}
+                      "pad": [], "pad2": [], "padLabels": PAD_LABELS, "padSnes": [], "work": []}
         # work: [frame, object, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy]
         self.last_work = [None] * PLAYERS
         self.facing, self.roster, self.role, self.anim, self.frame, self.mirror, self.puck_frame, self.spas = [], [], [], [], [], [], [], set()
@@ -656,6 +660,9 @@ class MatchReader:
         self.match["ctrl"].append(mask)
         self.match["pad"].append(genesis_pad(w(PAD1)))
         self.match["pad2"].append(genesis_pad(w(PAD2)))
+        words = [w(PAD1), w(PAD2)]
+        if not self.match["padSnes"] or self.match["padSnes"][-1][1:] != words:
+            self.match["padSnes"].append([len(self.match["t"]) - 1] + words)
 
     def result(self, cap, rom_path, name, home=None, away=None):
         """The match so far (fresh lists: the reader keeps its own)."""

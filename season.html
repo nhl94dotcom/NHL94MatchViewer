@@ -390,6 +390,9 @@ function playerLines(list, goalies) {
 // ---------------------------------------------------------------------------------------------------- tables
 // A sortable table: columns {key, label, value(row) for sorting, show(row) for display, title, left, asc}.
 // Explanations for column headings that do not carry their own (by the heading's text), shown on hover.
+// What the SNES buttons do, as the game reads them (Genesis: A hooks or flips, B passes / pokes / switches, C shoots / bursts)
+const PRESS_HELP = { A: 'shoot, burst', B: 'pass, poke, switch player', X: 'take the goalie (manual goalie on)', Y: 'flip, hook or hold',
+  L: 'take the defenceman on the left of the screen (defence control on)', R: 'take the defenceman on the right of the screen', Select: 'line-change box' };
 const HEAD_HELP = {
   GP: 'Games played', W: 'Wins', L: 'Losses (in regulation)', OTL: 'Overtime losses', T: 'Ties', PTS: 'Points: 2 a win, 1 a tie, none for an overtime loss (as the leagues count them)',
   GF: 'Goals for', GA: 'Goals against', 'GA/GP': 'Goals against a game', DIFF: 'Goal difference (for minus against)',
@@ -952,8 +955,9 @@ function playTotals(list) {
     for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses', 'puckPos', 'entryPos', 'sides']) r[k] = sumArr(r[k], t[k]);
     if (t.habits) {
       r.habitGames++;
-      const h = r.habits || (r.habits = { minutes: 0, presses: { A: 0, B: 0, C: 0 }, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, dives: 0, goalieSeconds: 0 });
-      for (const k of Object.keys(h)) if (k === 'presses') for (const b of 'ABC') h.presses[b] += t.habits.presses[b] || 0; else h[k] += t.habits[k] || 0;
+      const h = r.habits || (r.habits = { minutes: 0, presses: {}, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, dives: 0, goalieSeconds: 0 });
+      // presses by button name: Genesis A / B / C, SNES A / B / X / Y / L / R / Select
+      for (const k of Object.keys(h)) if (k === 'presses') for (const [b, n] of Object.entries(t.habits.presses || {})) h.presses[b] = (h.presses[b] || 0) + n; else h[k] += t.habits[k] || 0;
     }
     // Passing pairs by name (players are matched across games by name)
     const name = idx => ((g.players[side].find(p => p.idx === idx) || {}).name || '#' + idx);
@@ -1004,7 +1008,9 @@ function viewPlay(list, team) {
   const habits = withHabits.length ? table('playHabits', withHabits, [
     { key: 'name', label: 'Team', left: true, show: teamCell },
     { key: 'habitGames', label: 'GP', title: 'Games with this team\u2019s controller recorded' },
-    ...['A', 'B', 'C'].map(b => ({ key: 'p' + b, label: b + '/min', title: `${b} presses a minute of live play`, value: r => hm(r, r.habits.presses[b]), show: r => hm(r, r.habits.presses[b]).toFixed(1) })),
+    // a column for each button these games counted, in controller order
+    ...['A', 'B', 'C', 'X', 'Y', 'L', 'R', 'Select'].filter(b => withHabits.some(r => b in r.habits.presses)).map(b => ({ key: 'p' + b, label: b + '/min',
+      title: `${b} presses a minute of live play` + (PRESS_HELP[b] ? ` (SNES: ${PRESS_HELP[b]})` : ''), value: r => hm(r, r.habits.presses[b] || 0), show: r => hm(r, r.habits.presses[b] || 0).toFixed(1) })),
     { key: 'bursts', label: 'Bursts/min', title: 'C without the puck: speed bursts and check lunges, a minute', value: r => hm(r, r.habits.bursts), show: r => hm(r, r.habits.bursts).toFixed(1) },
     { key: 'checks', label: 'Checks/GP', title: 'Checks the person\u2019s skater landed, a game', value: r => r.habits.checks / r.habitGames, show: r => per(r.habits.checks, r.habitGames) },
     { key: 'pokes', label: 'Pokes/GP', value: r => r.habits.pokes / r.habitGames, show: r => per(r.habits.pokes, r.habitGames) },

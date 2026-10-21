@@ -1841,11 +1841,19 @@ def add_play_context(m):
     live = [q for q in range(N - 1) if P[3 * q + 2] >= -100]
     minutes = sum(min(100, t[q + 1] - t[q]) for q in live) / 60000
     habits = [None, None]
-    for pad, team in pads:
+    snes_buttons = getattr(systems.of_match(m), 'SNES_BUTTONS', None) if m.get('padSnes') else None
+    for which, (pad, team) in enumerate(pads):
         if not pad or team not in (0, 1):
             continue
-        presses = {name: sum(1 for q in range(1, len(pad)) if pad[q] & bit and not pad[q - 1] & bit)
-                   for name, bit in (('A', PAD_A), ('B', PAD_B), ('C', PAD_C))}
+        if snes_buttons:
+            # A SNES game: every button of the SNES controller, from its own words ([frame, controller 1, controller 2]
+            # at each change), named as on the controller (Start left out: it pauses)
+            words = [row[1 + which] for row in m['padSnes']]
+            presses = {name: sum(1 for a, b in zip(words, words[1:]) if b & bit and not a & bit)
+                       for name, bit in snes_buttons.items() if name != 'Start'}
+        else:
+            presses = {name: sum(1 for q in range(1, len(pad)) if pad[q] & bit and not pad[q - 1] & bit)
+                       for name, bit in (('A', PAD_A), ('B', PAD_B), ('C', PAD_C))}
         mine = range(team * 6, team * 6 + 6)
         starts = lambda words, goalie=False: [(q, k) for q in range(1, N) for k in mine
                                               if ctrl and ctrl[q] >> k & 1 and anim(q, k) in words and anim(q - 1, k) not in words
