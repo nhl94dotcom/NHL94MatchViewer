@@ -319,6 +319,10 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   better (50% against 39% in recorded games). **The Genesis "CB check" gains nothing here.**
 - **No "same man" rule**: you can knock the same player down again straight away.
 - **A man who wobbles keeps the puck**, but **a second hit within a second always knocks him down**: follow up.
+- **A soft check can leave you glued to the carrier.** If your burst meets him without much closing speed, he stays up
+  and the two of you skate along together, even overlapping, and from then on no check can land: the game only checks
+  players who are moving toward each other. Peel off and come at him again rather than riding along. With the puck, it's
+  the reverse: a defender stuck to you can't knock you over, so keep going (two overtime winners came this way).
 - **Boards:** a player knocked over anywhere in the outer lanes, behind the net or near a corner, with you on the
   inside, is thrown into the boards, from much farther out than on the Genesis.
 - **Goalies can't be knocked down.** Skating into one fast knocks *you* down.

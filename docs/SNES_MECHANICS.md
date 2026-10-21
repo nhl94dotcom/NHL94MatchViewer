@@ -729,6 +729,25 @@ Different from the Genesis:
 
 ---
 
+### 7.6 Players tangled together
+
+**Code** (`checkplcoll`, `checkcheck`), **Confirmed** on two overtime winners. Two players can end up skating on top of
+each other, and then neither can knock the other over.
+
+- The collision code works only on two players within 16 units **who are closing on each other** (their relative speed
+  points toward each other). Moving at the same speed, or drifting apart, they are skipped: no push apart, no impact, and
+  **no check can land**, because `checkcheck` (7.1) is only reached from a collision.
+- A collision never moves anyone; it only changes speeds. Each player gets **the other's speed plus a share of the push
+  by weight**, so a soft contact (too slow for a knockdown) leaves the two moving almost as one.
+- So a defender who bursts into the carrier without enough closing speed starts his shoulder-check animation, doesn't
+  knock him down, and then glides along with him, overlapping, until one of them changes speed or direction. Against the
+  boards both stop dead and stay overlapped. Further bursts don't help: there is no closing speed to make an impact.
+- **Recorded:** 2026-10-19_2256_TOR-NYI OT: Turgeon (computer) burst into Gilmour (a person) skating down the left side
+  and into the corner; the two spent 2.3 s 2-5 units apart behind the New York net; Gilmour came out with the puck and
+  scored 1.8 s after they parted. 2026-10-19_2316_NYI-TOR OT: Ellett (computer) burst into King (a person) twice down
+  the right wing, each time starting a shoulder check that didn't land, and skated stride for stride 11-14 apart into
+  the corner; King passed out and Turgeon one-timed the winner 0.6 s later.
+
 ## 8. Penalties
 
 
