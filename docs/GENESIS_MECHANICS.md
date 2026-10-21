@@ -1478,6 +1478,11 @@ chasing.
   the range doubles, so computer skaters check half as often.** On a hit, if an opponent is within 30 units exactly in
   the direction he faces, he goes for **a body check (3 in 4) or a hook/hold**, always a hook/hold when the carrier is
   in the slot. **Code**
+- **Recorded** (analysis/cpu_check_study.py; the penalty option read from each recording): a computer skater with an
+  opponent squarely in front within 30 units tried a check at 12% of such openings with penalties off (2,746 openings,
+  4 games) and 9% with them on (10,520, 14 games), after a median 45 ms against 60 ms. The direction the code says, but
+  milder than "half as often": only the chasing and defending jobs look for a check at all, and when they do the roll
+  comes up within a few frames either way.
 - **The chaser's mode:** a roll on (40 - Checking) switches him into **attack** for 4 seconds; high-Checking players
   attack the carrier far more often. More often on his team's power play, much less on the penalty kill, never for a
   defenceman already within 20 of the puck. With the opposing carrier in the slot he gets **+6 Speed** and his Checking
@@ -1824,7 +1829,7 @@ C-then-B check, and the weight bug for computer checkers too.
   penalty-shot flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence
   will show which ending fires.
 - **Code-only items worth confirming** when the situations come up: offsides; goalie interference; penalty odds by
-  situation; computer checking frequency with penalties off; own goals off a carried puck; penalty-shot retakes.
+  situation; own goals off a carried puck; penalty-shot retakes.
 
 ---
 
