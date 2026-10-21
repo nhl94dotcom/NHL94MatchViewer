@@ -1743,7 +1743,8 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   shotspd $1363, shotacc $1383, endurance $1423 ..., a word per object). BUG, checked in all three SNES games
   (NHL94_Classic and SDL16): the shift is unsigned and the sign extension tests `bit #$00`, so a negative ("cold")
   byte becomes 60-63 and the rating goes to the maximum, 15. About 46% of every player's ratings are maxed each game.
-  HotColdRaised $19CE: the crowd meter reaching 110 dB raises four bytes of each entry by 2 until it drops under 105.
+  HotColdRaised $19CE: meant to raise four bytes of each entry by 2 at 110 dB, but the raise (ShowCrowdMeter .11) is
+  never called; 0 in every recording (2026-10-21, analysis/crowd_study.py).
 - Hidden bonuses (both systems; Genesis checked): power play / penalty kill (the team's ROM byte: PP to OfA, Stk, ShA,
   Pas; PK negative to OfA, Stk, ShA), home / away (a per-team ROM byte: home nibble added, away nibble subtracted, to
   OfA, DfA, Stk, ShA, Pas: Boston +2 at home, -1 away; Calgary 0 at home), and ThirdPBonus +2 to OfA and Chk (+4 PS
@@ -2168,6 +2169,9 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Stk / 2, both scaled by energy) <= 2 (<= 4, and from farther, with the carrier in the slot).
 - Crowd: CwdExciteLvl $B8A2 (fast.bin): +10 a shot, +20 big hits, +30 goals (less for the visitors), -1 a tick; the meter
   is sqrt(level x 4) + 65 dB. SNES CwdExciteLvl $19BE.
+- Crowd record flag (2026-10-21, analysis/crowd_study.py): Genesis BA_PS_flags $C2F2, sflags7 $C2FC (bit 6 is the word's
+  high byte: & $4000), CurCrowdMeter $C30E, CrowdRecord $C310 (checked against sqrt(level x 4) + 65). CrowdRecord was
+  $50 in all 17 recorded games (no saved record), and the flag was on 73% of live play. SNES: no crowd effect at all.
 - SNES checks of the above (2026-10-17, same tests on the SNES recordings): home / away and PP bonuses confirmed (ShA:
   home +1 / +2, away -1; arrays as listed under Hot / cold (SNES), Chk = aggress $1483); the third-period bonus confirmed
   with the same backwards test. Both systems set ratings only when players are put on the ice (faceoffs, changes), so

@@ -488,6 +488,8 @@ time instead of 96%). That's why SNES games are so physical, and why the compute
 - **Offensive Awareness for the player you control.**
 - **"High numbers are always better"**: a number just below its band's middle beats one just above it (1.2).
 - **Ratings on faceoffs.**
+- **The crowd**: on the SNES the meter changes nothing in play. The code meant to make players hotter at 110 dB is never
+  run.
 - **"Heavy players get flattened"** (a Genesis thing): the SNES has no weight bug.
 - **The comeback bonus** for a team behind in the third: small, and because of a bug it's on in the *first* half of
   the period and off in the second.

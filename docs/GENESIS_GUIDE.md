@@ -648,7 +648,9 @@ which goalie is stealing games.
   screen isn't that variation (1.2).
 - **Ratings on faceoffs.**
 - **Pass Accuracy as accuracy**: it's speed.
-- **"A loud crowd makes players faster"**: the crowd's speed bonus is on for everyone, always.
+- **"A loud crowd makes players faster"**: the crowd's speed bonus is on for everyone, always. The crowd does one
+  small thing: while the meter is at the arena record or above (80 dB without a saved record), the computer's skaters
+  on both teams react a frame quicker. In recorded games that was 73% of the time, so it's the normal state.
 - **The comeback bonus** for a team behind in the third: small, and because of a bug it's on in the *first* half of
   the period and off in the second.
 

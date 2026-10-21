@@ -1720,7 +1720,13 @@ change. **Code**
 - Shots (+10), big hits (+20) and goals (+30, less for the visitors) raise the crowd's excitement; it fades a little
   every tick. The meter in decibels is the square root of (excitement x 4) + 65.
 - **While the meter is at or above the home arena's record** (or 80 dB without one), every computer player on both
-  teams reacts a frame faster.
+  teams reacts a frame faster: each awareness timer (`temp1`, reloaded from Offensive or Defensive Awareness) restarts
+  one frame shorter (sflags7 bit 6, set or cleared every frame in `updateplayers`). A person's poke check with penalties
+  off also trips a little more often with it on (Bcheck: 2 off the roll), but that part is on always (sflags8 bit 1).
+- **Recorded** (analysis/crowd_study.py, the 17 games since the flags were recorded, 141 minutes): no arena had a
+  saved record, so the bar was always 80 dB; the meter sat at a median 81-93 dB and **the flag was on 73% of live play**
+  (371 spells), off mostly in quiet stretches after faceoffs. In practice the computer's quicker reactions are the
+  normal state, and a quiet building slows them slightly. Both teams alike, so it favours neither.
 - The "+2 Agility, +2 Speed" crowd bonus in the skating code is hard-wired on for everyone, always; a loud building
   does **not** add speed.
 

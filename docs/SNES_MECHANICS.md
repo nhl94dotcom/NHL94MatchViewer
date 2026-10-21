@@ -111,8 +111,9 @@ Before each game the game rolls random "hot / cold" values for every player (`Cr
 - Checked in all three SNES games where it was tested (NHL94_Classic and SDL16). Effects seen elsewhere in this
   document: more than half of all skaters skate at maximum speed; most penalties are taken by players at maximum
   Aggression; many shooters have maximum Shot Accuracy.
-- A loud crowd (110 dB or more) raises four of each player's values by 2 until it drops under 105 (**Code**), which can
-  turn a slightly "cold" (maxed) rating back into an ordinary one.
+- A loud crowd does **not** change the hot / cold values. The code that would raise four of each player's values by 2
+  at 110 dB (`ShowCrowdMeter` `.11`) is never called; only the undo (`LowerHotColdTable`, at under 105 dB) is, and it
+  does nothing while `HotColdRaised` ($19CE) is 0. **Confirmed**: 0 all through 15 recorded games, meters up to 128 dB.
 
 **Bottom line:** the bug flattens the ratings. A player's real ratings matter far less than on the Genesis, and which
 of them are maxed changes every game.
@@ -1028,8 +1029,10 @@ In the leagues' usual setting (line changes off) none of this happens.
 - **With line changes Off, energy never drains**: skating and bursts cost nothing, **fatigue doesn't exist and
   Endurance does nothing**. **Confirmed**: every skater stayed at full energy all game in all four recorded games.
 - With line changes On, energy scales top speed (down to half) and shot power.
-- The crowd's excitement rises with shots, hits and goals (`CwdExciteLvl`). At 110 dB it raises four hot / cold values
-  of every player by 2 until it falls under 105 (2.2). **Code**
+- The crowd's excitement rises with shots, hits and goals (`CwdExciteLvl`); the meter is sqrt(excitement x 4) + 65 dB
+  (`CurCrowdMeter` $19C2, at most 128). **The crowd has no effect on play**: the 110 dB flag (`CrowdLoud` $19C0) only
+  triggers an undo of a hot / cold raise that is never made (2.2). **Code**, **Confirmed** (analysis/crowd_study.py:
+  15 games, meter median 72-86 dB, peaks 86-128, `HotColdRaised` always 0).
 
 ---
 
