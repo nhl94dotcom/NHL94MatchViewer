@@ -55,7 +55,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `extract_sprites.py`, `embed_rink.py`, `bench_mask.py`.
 - `analysis/`: one-off studies (each documents itself at the top): shot / one-timer / passing / pickup / goalie studies,
   `goal_trace.py <capture> <period> <m:ss>` (any moment frame by frame), `b_button_study.py`, the BOS-NYI series
-  scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`).
+  scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`), and `match_report.py <match> ...`
+  (a standard Genesis match report per game into `reports/<match>.md`, git-ignored: chances and luck, hot / cold,
+  goaltending, faceoff timing, C vs CB checking against the weight bug, pokes, rush defence, leading / trailing).
 - `samples/`: three game files for the README (remake with `share_game.make_game_file` after viewer changes worth
   showing).
 - Disassemblies (rebuild the ROMs byte for byte): Genesis github.com/abdulahmad/NHL94Genesis (`src/frames94.asm`
