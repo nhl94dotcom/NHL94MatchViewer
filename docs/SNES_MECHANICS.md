@@ -1069,5 +1069,5 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 
 - SNES disassembly: [github.com/Mhopkinsinc/NHL94SNES](https://github.com/Mhopkinsinc/NHL94SNES)
   (`src/routines/hockey`, `src/routines/logic`, `src/routines/stats`, `src/ram94snes.asm`)
-- Recordings and save states read with this project's helper; the project's `CLAUDE.md` holds the detailed notes,
+- Recordings and save states read with this project's helper; the project's `docs/PROJECT_NOTES.md` holds the detailed notes,
   addresses and test methods behind each finding.

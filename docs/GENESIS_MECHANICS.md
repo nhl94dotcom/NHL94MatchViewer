@@ -1882,5 +1882,5 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
   `onetimer94.asm`, `replay94.asm`, `stats94.asm`, `cards94.asm`)
 - League ROM settings: the NOSE4Web editor, [github.com/nhl94dotcom/NOSE4Web](https://github.com/nhl94dotcom/NOSE4Web)
   (`src/core/hacks.ts`), after smozoma's smozROM and the NHL94 forums.
-- Recordings made with this project's helper; the project's `CLAUDE.md` holds the detailed notes, addresses and test
+- Recordings made with this project's helper; the project's `docs/PROJECT_NOTES.md` holds the detailed notes, addresses and test
   methods behind each finding.

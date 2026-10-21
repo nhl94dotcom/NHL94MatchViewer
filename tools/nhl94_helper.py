@@ -12,7 +12,7 @@ Start it by hand (python tools/nhl94_helper.py, or the shortcut) and leave it ru
 
 Recordings are gzipped (fast.bin.gz, full.bin.gz), with pauses left out of the timeline. The ROM is copied out of the
 emulator into roms/ (named by its fingerprint) for the converter, so no ROM folder needs setting up.
-See CLAUDE.md, "Game states (for the helper)".
+See docs/PROJECT_NOTES.md, "Game states (for the helper)".
 """
 import datetime
 import gzip

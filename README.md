@@ -48,5 +48,5 @@ screen, how to pick a lineup, what works on the ice): [Genesis guide](docs/GENES
 [SNES guide](docs/SNES_GUIDE.md). A study of the recorded games' shooting and goaltending, up and down the screen and
 home and away: [shooting study](docs/SHOOTING_STUDY.md).
 
-`CLAUDE.md` is the detailed record: how the game's memory is laid out, the ROM formats, how each stat is worked out
+`docs/PROJECT_NOTES.md` is the detailed record: how the game's memory is laid out, the ROM formats, how each stat is worked out
 and how it was checked.
