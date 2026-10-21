@@ -1422,6 +1422,18 @@ fragments' match files removed from the list; their captures kept). The user's B
 1147 NYI 6-3, 1156 BOS 2-3 NYI (project matches/: the helper ran from Python that day); the 1054 / 1121 Boston wins
 were left out of the series for technical reasons.
 
+## One-timers struck at the stick's reach (2026-10-21)
+
+The user asked why a cross-ice one-timer had no xG: Derek King's two doorstep goals in 2026-10-21_1137_NYI-BOS were
+backhand one-timer swings ($092E) meeting the puck 26-31 from his body at the far post, past find_shots' body tests
+(25 in the swing, 30 in scorer_touch), so they became kind 'other' (no xG). find_shots now also accepts a course change
+within STICK_NEAR 14 of the swinging player's stick blade (Genesis: HotList at ROM $A44C8 per sprite frame, x negated when
+mirrored, y negated; analyse() hands the table over as match['_hot'], removed after), at that sample or the one before.
+12 / 14 / 18 tried on the 12 games that changed: the shot list's one-timers 120 / 130 / 140 against the game's own
+one-timers-tried count 131 (old rule 123). King's goals: one-timers, xG 0.66 and 0.76. Shots on goal unchanged against
+the game's counts (2219 BOS-DAL's 9 vs 8 was already so: Oates's penalty-shot goal). 2026-10-19_2115_LA-BUF's fast.bin.gz
+is cut off (no end-of-stream marker) and fails to convert, before and after (2117 LA-BUF is the game).
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the

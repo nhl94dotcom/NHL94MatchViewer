@@ -139,6 +139,9 @@ def steady_stats(m):
                 i = j
 
 
+STICK_NEAR = 14  # a one-timer strike: the puck this close to the swinging stick's blade (12-18 tried: 14 matches the game's own count, 130 vs 131 in 12 games)
+
+
 def find_shots(m, goals=None):
     """Every shot, with where it was taken from and how it ended, for the viewer's shot map. The game keeps only
     totals, so shots are found from the animations:
@@ -171,6 +174,25 @@ def find_shots(m, goals=None):
     vel = lambda i: (V[2 * i] * 100, V[2 * i + 1] * 100)
     kick = lambda i: math.hypot(vel(i)[0] - vel(i - 1)[0], vel(i)[1] - vel(i - 1)[1])
     near = lambda i, k, d: math.hypot(P[3 * i] - pos(i, k)[0], P[3 * i + 1] - pos(i, k)[1]) < d
+    # The stick blade (Genesis: the ROM's HotList point of the player's sprite frame, x negated when mirrored, y
+    # negated), when analyse() handed over the table: a backhand one-timer at the far post meets the puck 26-31 from
+    # the shooter's body (Derek King's two goals in 2026-10-21_1137_NYI-BOS), past the body test below.
+    hot = m.get('_hot')
+
+    def near_stick(i, k, d):
+        if not hot:
+            return False
+        for q in (i, i - 1):
+            fr = int(m['frame'][(q * K + k) * 3:(q * K + k) * 3 + 3], 16)
+            if not 0 < fr < len(hot):
+                continue
+            hx, hy = hot[fr]
+            if m['mirror'][q * K + k] == '1':
+                hx = -hx
+            x, y = pos(q, k)
+            if math.hypot(P[3 * i] - (x + hx), P[3 * i + 1] - (y - hy)) < d:
+                return True
+        return False
     roster_idx = lambda i, k: (lambda v: v if v < 35 else -1)(int(m['roster'][i * K + k], 36))
     role = lambda i, k: m['role'][i * K + k] if 'role' in m else 'x'
     shots, posts = [], m.get('posts', [])
@@ -238,7 +260,7 @@ def find_shots(m, goals=None):
                 if own[j] < 0 and own[j - 1] == k:
                     rel = j; break
                 if kind == 'shot' and own[j] < 0 and own[j - 1] < 0 and not any(abs(j - p) <= 2 for p in posts):  # not a bounce off a post
-                    if near(j, k, 25) and kick(j) > 5000:
+                    if (near(j, k, 25) or near_stick(j, k, STICK_NEAR)) and kick(j) > 5000:
                         rel = j; break
                 j += 1
             if rel is None:
@@ -318,7 +340,7 @@ def find_shots(m, goals=None):
             if t[g] - t[i] > 2000 or i <= floor + 2:
                 break
             for k in (range(6) if team == 0 else range(6, 12)):
-                if roster_idx(i, k) == idx and near(i, k, 30) and (kick(i) > 3000 or own[i - 1] == k):
+                if roster_idx(i, k) == idx and (near(i, k, 30) or near_stick(i, k, STICK_NEAR)) and (kick(i) > 3000 or own[i - 1] == k):
                     touches.append((i, k))
         if not touches:
             return None
@@ -1937,7 +1959,12 @@ def analyse(match, system, cap, rom_path):
     # have them yet (the SNES) gets the replay without it.
     if all(system.ACTIONS.get(a) for a in ("shoot", "pass")) and any(o >= 0 for o in match["owner"]):
         # Shots for the shot map, credited where the game counted them (and to the scorer it named, when known).
+        if system.NAME == "genesis" and rom_path:
+            # The stick blades' HotList (ROM $A44C8: x, y bytes per sprite frame), for find_shots' one-timer test.
+            rom = Path(rom_path).read_bytes()
+            match["_hot"] = [struct.unpack_from(">bb", rom, 0xA44C8 + 2 * fr) for fr in range(846)]
         match["shotList"] = find_shots(match, match.get("goals"))
+        match.pop("_hot", None)
         match["turnovers"] = find_turnovers(match)
         match["failedOneTimers"] = find_failed_one_timers(match)
         match["passes"] = find_passes(match)
