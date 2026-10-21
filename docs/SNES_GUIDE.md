@@ -431,8 +431,11 @@ went in within 12.6 units of a goalie's centre.
   and shoot before he catches up.
 - **A goalie holding the puck can't be pushed into the net** (on the Genesis he can).
 - **Passes slow him down** (7): attack with passes across and one-timers.
-- He has two attacking moves: a **poke check** at a carrier close in front, and a **dive at the carrier**. In recorded
-  games no computer goalie dived, so these may be rare.
+- He has two attacking moves, the same for every goalie: a **poke check** at a carrier close in front (now and then,
+  then not again for 4 seconds), and a **dive** at a loose rebound, which he gets a single small chance at right after
+  each save. In recorded games computer goalies poked 18 times in 137 minutes and never dived.
+- **Your own goalie** (manual goalie on): X pokes, holding Y dives (toward the d-pad direction, or at the puck), holding A
+  makes save moves.
 - **When he has the puck and an opponent comes within about 7 feet, he drops onto it and covers it** for a second and a
   half; with nobody near he looks to pass it out. A goalie you control never does this.
 

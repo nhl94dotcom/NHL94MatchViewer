@@ -425,10 +425,18 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
 
 - **Passes slow him down:** every pass delays his next rethink by half his Defensive Awareness value plus one frame,
   and he loses his Agility while a pass is in flight. **Code**
-- **Attacking moves:** a **poke check** at a carrier within 35 units in front of the goal line, on a random roll (about
-  1 in 26 per frame), then 4 seconds before he can poke again; and a **dive at the puck carrier** when the puck is within
-  45 and an attacker within 60 (about 1 in 32 per frame), then 6 seconds before he can dive again. **Code**. In four
-  games no computer goalie dived at all (all 6 dives were by people), so which goalies use these is unclear.
+- **Attacking moves** (`assgoalie`), every goalie alike (no rating enters):
+  - a **poke check** (`SPAgpoke`, $E528) at an opponent carrying the puck within 35 units, in front of the goal line, on
+    a random roll each time he thinks (1 in 25.6), then 4 seconds before he can poke again;
+  - a **dive** (`SPAgdive`, $E4B6) at a **loose** puck within 45 in front of the goal line with an attacker within 60
+    of it, on a 1-in-32 roll, then 6 seconds before the next. The dive is tested only at one moment: a counter set to 4
+    when the puck touches him (`puckgoalie`) counts down while the puck is on his half and stops at -1, and the dive
+    is only possible when it reads 0. So **the computer's dive is a rebound dive, with one 1-in-32 chance per save**.
+  - **Recorded** (15 games, 137 minutes): computer goalies poked 18 times and never dived (229 saves; about 90 left a
+    loose rebound near him with an attacker close, so 2 or 3 dives at most would be expected). People's goalies dived 14
+    times.
+- **A goalie you control** (`assgoalie`, when he's yours): **X pokes** (toward the d-pad direction, or at the puck with
+  the pad centred), **Y held dives** (the same way), and A held starts save moves (5.5).
 - **Covering the puck** (`assgoalie`): once a computer goalie has held the puck a moment, now and then (a 1-in-4 roll)
   he checks the opposing skaters. **If one is within 20 units of the puck he drops onto it and covers it** (`SPAgcover`)
   for 90 frames; within 35, he waits; with nobody within 35 he looks to pass it out (`chk4pass`). A goalie a person
@@ -1101,7 +1109,6 @@ everything in this document applies to all of these ROMs.
 ## 16. Open questions and parts not read yet
 
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
-- **Computer goalies' poke and dive**: which goalies use them.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.
 

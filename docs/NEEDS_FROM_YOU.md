@@ -63,7 +63,7 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## To pass on to the disassembly maintainers (if you like)
 
-Found in the 2026-10-21 review: three new comments that say something different from the code they sit on (the code
+Found in the 2026-10-21 review and studies: comments that say something different from the code they sit on (the code
 and our recordings agree with each other; the comments are the slips).
 1. **NHL94Genesis, collide94.asm, the breakaway roll in checkagr:** the comment says "d0 = 3..5"; the code loads 8, 7,
    4 or 3 by the fouled player's distance from the goal line (over 117, 59-117, 45-58, closer).
@@ -73,3 +73,6 @@ and our recordings agree with each other; the comments are the slips).
    of the period; the code skips the bonus when (period length / 2 - seconds left) is positive, i.e. in the second
    half, so the bonus is on while more than half the third period is left (the game's clock counts down). Our
    recordings show the same.
+4. **NHL94SNES, routines/logic/assgoalie.asm, the computer goalie's poke roll:** the comment says "1 in 6"; the code
+   takes a RandomWord under $0A00, 1 in 25.6. In the same routine, the person's goalie test `bit.w #$4000` on JoyPad is
+   commented "B held?"; $4000 is Y (B is $8000), and the pad test above it, $0040, is X.
