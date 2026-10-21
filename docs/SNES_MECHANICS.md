@@ -473,7 +473,14 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
 - **Confirmed** (102 SNES saves, the faster speed component just before the save): 17,000 or more, held at once 4 of 41
   (10%); 8,192-17,000, 28 of 45 (62%), the random range at work; under 8,192, 10 of 16 (the rule says all; the sampled
   speeds and the "held at once" test are rough).
-- **Not read yet:** the hold and out-of-range whistles.
+- **The hold whistle** (`puckglue`, `assgoalie`): taking the puck starts a count of **140 frames (2.33 s)**, as on the
+  Genesis, or **5 frames when he catches it in a dive** (a dive catch is a whistle at once). For a goalie a person
+  controls, the count runs down only while he stays within about 62 units of his goal line (y beyond +/-187); **holding
+  the puck any farther out is whistled at once** (the Genesis line is 170 from centre). **Confirmed:** people's goalies
+  never kept the puck longer than 2.34 s before a whistle or a pass (245 pickups), and all 6 dive catches were whistled
+  at once. A computer goalie covers instead (5.3); his whistles came 0.6-3.3 s after he got the puck (11).
+- **Open:** about 15 times (of 245) a person's goalie got the whistle the instant he caught the puck, near his net,
+  with no dive, no penalty and no button held; no route for it has been found in the code yet.
 
 ### 5.5 The save button for a person in net (A, held)
 
@@ -1108,6 +1115,7 @@ everything in this document applies to all of these ROMs.
 
 ## 16. Open questions and parts not read yet
 
+- **Instant whistles on a person goalie's catch** (5.4): about 1 catch in 16, cause not found.
 - **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
 - **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
   checking as more games are recorded.

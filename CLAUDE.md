@@ -139,5 +139,7 @@ gctl ...), `passes`, `turnovers`, `hits`, `zoneEntries`, `faceoffs`, `penalties`
 
 ## Known gaps
 
-- SNES: hook animation's effect, flip in recordings, pass-speed and faceoff timing details; some studies need more
-  games. `2026-10-19_2115_LA-BUF`'s recording is cut off (gzip without its end) and won't convert.
+- Settled, don't redo: SNES faceoffs (timing, SNES_MECHANICS 9), SNES pass speed (by distance, no rocket pass), SNES
+  hooks / holds / pokes (7.3), upends (7.2), goalie poke / dive (5.3), puck physics (7.8), the crowd (both systems).
+- Open: SNES flip not yet seen in a recording; the open-questions sections of both mechanics docs; some studies need
+  more games. `2026-10-19_2115_LA-BUF`'s recording is cut off (gzip without its end) and won't convert.
