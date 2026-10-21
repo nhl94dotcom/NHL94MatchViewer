@@ -421,6 +421,7 @@ class MatchReader:
         self.delayed, self.open_delayed = [], [None, None]
         self.last_post = -10_000
         self.team_ids = Counter()
+        self.game_teams = None  # the teams of the first sample with players on the ice (see _sample)
         self.previous = None
         self.frames, self.next = [], 0
         self.rom_cache = None
@@ -445,6 +446,14 @@ class MatchReader:
         self.next = limit
 
     def _sample(self, cap, i):
+        # Between periods the Genesis sometimes shows highlights of another game (2026-10-21, the user: a WSH-FLA game at
+        # 5-4 in the third period appeared in a BOS-NYI intermission): samples whose teams are not this game's are left out.
+        teams = (cap.word(i, HOME_TEAM) & 0xFF, cap.word(i, AWAY_TEAM) & 0xFF)
+        if self.game_teams is None:
+            if any(cap.byte(i, BASE + SIZE * k + ROSTER) != 0xFF for k in range(PLAYERS)):
+                self.game_teams = teams
+        elif teams != self.game_teams:
+            return
         # Identical consecutive samples (a paused game, or two reads of one frame) are stored once.
         key = (cap.raw(i, BASE, SIZE * 16), cap.raw(i, 0xC466, 4), (cap.byte(i, PAD1), cap.byte(i, PAD2)) if self.has_pad else 0)
         if key == self.previous:

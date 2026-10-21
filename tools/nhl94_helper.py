@@ -205,6 +205,14 @@ class Recording:
                 return "menus"
             return None
         self.menu_since = None
+        # Other teams once this game is under way: between periods the Genesis sometimes shows highlights of another game
+        # (2026-10-21: a WSH-FLA game at 5-4 in the third period, during a long BOS-NYI intermission, split the recording
+        # and named it WSH-FLA). Not recorded and not compared against, however long; only a new game's opening faceoff
+        # (first period, 0-0, the clock at the start) with other teams ends this recording.
+        if view.live and self.samples and view.teams != old.teams:
+            if view.period == 0 and view.score == (0, 0) and view.clock >= 290:
+                return "new game"
+            return None
         # A new game started without the old one finishing (the clock going back up within a period, other than to
         # start a period).
         if view.live and (view.period < old.period or (view.period == old.period == 0 and view.clock > old.clock + 5 and old.clock != 0)):
@@ -223,7 +231,7 @@ class Recording:
         if not view.live:
             return None  # paused, instant replay, or between screens: not recorded, and not counted as game time
         self.live_ms += elapsed
-        if view.teams != old.teams:  # the teams picked after the recording began (it began on a menu screen)
+        if view.teams != old.teams and not self.samples:  # the teams picked after the recording began (it began on a menu screen)
             self.teams = team_abbreviations(self.system, self.rom_path, *view.teams) if self.rom_path else [f"T{t}" for t in view.teams]
         self.view = view
         data = b"".join(view.blocks)

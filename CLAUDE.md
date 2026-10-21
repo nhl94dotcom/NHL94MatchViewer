@@ -1407,6 +1407,21 @@ findpc): on the PRESS; a carried puck with puckdist2 < 100 (about 20 units) and 
 lowest puckdist (no lead) + 32 x (direction steps beyond 1 from up-ice) while carried; current -> poke (unless
 locked), else switch; not checked on recordings. GENESIS_MECHANICS 7.5, GENESIS_GUIDE 10, SNES_MECHANICS 7.3, SNES_GUIDE 9.
 
+## Intermission highlights and split recordings (2026-10-21)
+
+Between periods the Genesis sometimes shows highlights of ANOTHER game (the user); during a long BOS-NYI intermission
+the recording held 26 s of a WSH-FLA game at 5-4 in P3 (team ids 24 / 8 instead of 1 / 13), which made the helper
+rename it WSH-FLA and, when the real game came back at P2 with a lower period, split it as a "new game". Fixed:
+nhl94_helper Recording.step: once live play is recorded, samples with other teams are not recorded or compared; they
+end the recording only as a new game's opening faceoff (P1, 0-0, clock >= 290); teams update only before the first
+sample. genesis MatchReader._sample: game_teams = the first on-ice sample's team ids; later samples with other teams
+are left out (only ANA-ATL's one misread sample and explore1_menus are affected elsewhere). Tested by feeding the two
+pieces through Recording.step (scratchpad helper_test_highlights.py): one recording, BOS-NYI, 5-4. tools/merge_recordings.py
+joins split pieces (times shifted end to end) and converts: game 1 is now Documents 2026-10-21_1054_BOS-NYI (the
+fragments' match files removed from the list; their captures kept). The user's BOS-NYI playoff series is 1137 NYI 4-2,
+1147 NYI 6-3, 1156 BOS 2-3 NYI (project matches/: the helper ran from Python that day); the 1054 / 1121 Boston wins
+were left out of the series for technical reasons.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
