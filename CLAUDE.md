@@ -61,7 +61,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - `samples/`: three game files for the README (remake with `share_game.make_game_file` after viewer changes worth
   showing).
 - Disassemblies (rebuild the ROMs byte for byte): Genesis github.com/abdulahmad/NHL94Genesis (`src/frames94.asm`
-  animation names, `src/stubinc/ram_addrs.inc` RAM names), SNES github.com/Mhopkinsinc/NHL94SNES (`src/ram94snes.asm`).
+  animation names, `src/ram94.asm` RAM names), SNES github.com/abdulahmad/NHL94SNES (`src/ram94s.asm`; the Mhopkinsinc
+  repo is a stale fork). Both change daily (names, comments): clones in `%USERPROFILE%\NHL94_disasm`; `git pull` both
+  before reading, and cite names from the current copy.
 
 ## How it reads the games
 

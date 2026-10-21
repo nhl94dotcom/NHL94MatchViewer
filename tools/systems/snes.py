@@ -2,7 +2,7 @@
 (CLAUDE.md, "SNES version"), in the shape genesis.py has, to be filled in as the rest is found.
 
 Known: the team stats and the scoring summary (from the user's save-state parser), the object arrays, clock,
-period and controller (from the NHL94SNES disassembly, github.com/Mhopkinsinc/NHL94SNES, checked on save states),
+period and controller (from the NHL94SNES disassembly, github.com/abdulahmad/NHL94SNES, checked on save states),
 and the ROM's teams (read_teams). Not known yet: who has the puck, the screen state (menus, pause), per-player
 stats, the animation words, the sprites, and how to find work RAM inside the running Snes9x core.
 """
@@ -61,7 +61,7 @@ STRENGTH = {0: "SH2", 1: "SHG", 2: "EV", 3: "PPG", 4: "PP2"}
 
 # Objects, as on the Genesis: 0-5 Home, 6-11 Away, 12 and 13 the nets (0, +/-268), 14 the puck, 15 its shadow. Each
 # field is an array of 16 words (index = object * 2), not a record per object. Names from the NHL94SNES disassembly's
-# ram94snes.asm; checked on the 445 save states: positions in the Genesis units (goalies at about +/-243, the
+# ram94s.asm; checked on the 445 save states: positions in the Genesis units (goalies at about +/-243, the
 # nets at +/-268), exactly one joystick-controlled skater per team.
 OBJ_X, OBJ_Y = 0x0D55, 0x0DB7     # integer positions (signed)
 # Shot aiming (doshot in the NHL94SNES disassembly): passdir, the stick's screen direction (0 up, 1 up-right ... 7
@@ -137,7 +137,7 @@ def strip_header(data):
 
 
 # ------------------------------------------------------------------------------------------------------ the ROM
-# From the NHL94SNES disassembly (github.com/Mhopkinsinc/NHL94SNES), which rebuilds NHL94.smc byte for byte:
+# From the NHL94SNES disassembly (github.com/abdulahmad/NHL94SNES), which rebuilds NHL94.smc byte for byte:
 TEAM_LIST = 0x9CA5E7              # a long pointer (address word, bank byte, 0) to each team record, 28 teams
 HOME_PALETTES, AWAY_PALETTES = 0x96CD4E, 0x96C9CE  # 16 colours per team (white jerseys at home, dark away)
 
@@ -565,7 +565,7 @@ class MatchReader:
         stopped = w(CLOCK_STOPPED) != 0
         px, py = sg(OBJ_X + 28), sg(OBJ_Y + 28)
         vx, vy = sg(PUCK_VX), sg(PUCK_VY)
-        # The puck's height: puckz (integer) and its fraction (the NHL94SNES disassembly's ram94snes.asm), as the
+        # The puck's height: puckz (integer) and its fraction (the NHL94SNES disassembly's ram94s.asm), as the
         # Genesis record's +$24. Shots on goal reach 1-18.
         pz = sg(PUCK_Z) + w(PUCK_Z_FRAC) / 65536
         self.match["puck"] += [px, py, -256 if stopped else round(max(0.0, pz), 1)]

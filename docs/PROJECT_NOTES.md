@@ -218,8 +218,8 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   period; period 0-3, 3 = OT), a byte (bit 7 = Away; low bits strength: 0 SH two men short, 1 SH, 2 even, 3 PP,
   4 PP two men up), then scorer, first and second assist as roster indices ($FF = none; all 3334 goals in the states
   fit). The Genesis may have a similar summary; it was never looked for (goals are worked out from stat changes).
-- The NHL94SNES disassembly (github.com/Mhopkinsinc/NHL94SNES; the user pointed to it) rebuilds `NHL94.smc` byte for
-  byte (same SHA-1), so its addresses hold for the base ROM. `src/ram94snes.asm` names RAM; `docs/name_map.csv`
+- The NHL94SNES disassembly (github.com/abdulahmad/NHL94SNES; the user pointed to the Mhopkinsinc fork, now stale) rebuilds `NHL94.smc` byte for
+  byte (same SHA-1), so its addresses hold for the base ROM. `src/ram94s.asm` (ram94snes.asm before 2026-10-21) names RAM; `docs/name_map.csv`
   every address; `src/data/teamdata94s.asm` the team database. Its sibling NHLPA93SNES has a fuller RAM list
   (`src/ram93snes.asm`; different addresses, same names and flag meanings). Its agent instructions are for that
   project, not this one.
@@ -352,7 +352,7 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   gained `puck: {shadow, onIce}` for the viewer to use; a puck frame of 0 shows the puck at rest (SNES frame 0 is a
   skater).
   Puck height (2026-10-16, after the user asked for SNES goal heights): `puckz` $0DF9 with its fraction $0DFD (named
-  in the NHL94SNES disassembly's ram94snes.asm; also puckvz $0E01, shadowz $0DFB), now the match file's puck height
+  in the NHL94SNES disassembly's ram94s.asm; also puckvz $0E01, shadowz $0DFB), now the match file's puck height
   as on the Genesis: goals cross the line at 0-13 (Genesis 0-13), the puck is in the air about a fifth of the time,
   dump-ins reach 45. Nothing else changed (shots, checks, passes, bobbles, bumps). Not known yet: the hook.
 
@@ -466,7 +466,7 @@ statistics over the three captures (what the puck did, who was near, what came b
 
 The Genesis disassembly (github.com/abdulahmad/NHL94Genesis, the user pointed to it; it rebuilds the user's nhl94.bin,
 crc32 9438f5dd, byte for byte) names every animation in `src/frames94.asm` (SPA<name> = offset, i.e. the record's
-+$58 word) and every RAM variable in `src/stubinc/ram_addrs.inc` (its `src/ram94.asm` is an old 93 list: wrong
++$58 word) and every RAM variable in `src/ram94.asm` (since 2026-10-21; before, `src/stubinc/ram_addrs.inc`, when ram94.asm was an old 93 list with wrong
 offsets). The names, which settle the table above:
 $0002 gready, $0114 gready2, $0146 gglover, $0178 gglovel, $01AA gglovel2, $01EC gstickr, $021E gstickl, $0250 gstackr,
 $02A2 gstackl, $02F4 gdive, $0366 gswing (the goalie's pass), $03D8 gskate, $046A pflip, $050C glide, $053E skatewp
@@ -1722,7 +1722,7 @@ sample. Across all captures it fires three times: that one, `capture5_league30` 
 ## Game mechanics from the disassemblies (2026-10-17)
 
 Read from the commented Genesis disassembly (github.com/abdulahmad/NHL94Genesis: src/crowd94.asm, collide94.asm,
-input94.asm, checks94.asm) and the SNES one (Mhopkinsinc/NHL94SNES: src/routines/hockey/setplayer.asm,
+input94.asm, checks94.asm) and the SNES one (abdulahmad/NHL94SNES: src/routines/collide/setplayer.asm,
 Create_HotCold_Table.asm), and checked against the recordings where marked. Nothing is built from them yet.
 - Working ratings (Genesis): `setplayer` turns each rating nibble r into r x 5 + hot/cold, clamped 0-30, whenever a
   player comes on the ice, and keeps them in his record: +$67 Wgt (nibble x 8), $68 Agl, $69 Spd, $6A OfA and $6B DfA
@@ -2081,8 +2081,8 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   within 100 of the net, x 2 per defender in the shooting lane) <= 7 (odd values) or 8; chk4pass considers a pass when
   randomd0(16 + spodds) <= 12. Aggression ($73, 0-15 after the wrap): penalties (checkagr, checkint); goalies: the reach-out
   glove save at 11+ (this slot is GL for goalies). Fighting / H/F: injury length for the hitter's victims.
-- What each rating does (SNES; working ratings 0-15, arrays a word per object; NB the array named aggress holds
-  Checking and GGSleft holds a skater's Aggression): Weight: acceleration (playeracc: 32 - Wgt + 1.5 x Agl, so a Weight
+- What each rating does (SNES; working ratings 0-15, arrays a word per object; the arrays, as renamed 2026-10-21: checking $1483,
+  aggress $1443 (Aggression; GGSleft is its goalie alias), fighting $1463; before, aggress held Checking and GGSleft Aggression): Weight: acceleration (playeracc: 32 - Wgt + 1.5 x Agl, so a Weight
   point costs 2/3 of an Agility point), checks, collisions. Agility: acceleration, stopping (dostop), the goalie's skating
   to loose pucks; goalies: a person's goalie without the puck gets 2 x Agl + 8 more, a computer goalie (or one with the
   puck) only + 8 and loses his Agl again while a pass is in flight (passReceiverPlayerNum set): sluggish across the
@@ -2096,7 +2096,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   cold bug puts many players at 15); the chaser's attack roll uses 20 - Chk the same way. Endurance: energy. Pass /
   shoot bias (spodds): chk4shot / chk4pass. Aggression (GGSleft): penalties (checkagr, checkint, with the person
   overflow). Goalie save ratings (glove / stick, in the passacc / endurance / spodds / GGSleft slots): looked up in
-  puckgoalie, then overwritten before use, so unused as on the Genesis. Fighting (fightagg): never read.
+  puckgoalie, then overwritten before use, so unused as on the Genesis. Fighting (fighting, once fightagg): never read.
 - One-timers (Genesis): triggered by a C press (doinput) while the person still controls the passer of a targeted pass
   in flight (lastplayer = him, passplayer set; the receiver not a goalie, not a person's, not already one-timing), or by
   the pass's receiver himself with the puck loose; only with the puck on the attacking half (PuckOnAttackHalf); for

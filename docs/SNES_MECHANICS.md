@@ -72,15 +72,16 @@ One line per chapter: the main finding, then the section with the evidence.
 ## 1. How this was found
 
 The game has been disassembled by the community into source code that rebuilds `NHL94.smc` byte for byte:
-[Mhopkinsinc/NHL94SNES](https://github.com/Mhopkinsinc/NHL94SNES).
+[abdulahmad/NHL94SNES](https://github.com/abdulahmad/NHL94SNES).
 
 The NHL '94 Viewer's helper records the game's memory about 60 times a second while you play in RetroArch (the Snes9x
 core). That gives every player's position, speed, animation and *working* ratings, so the code's rules can be checked
 against real games. The checks here used four recorded SNES games (online, NHL94_Classic and SDL16) and several hundred
 save states. Numbers like "11 of 14" are counts from those.
 
-Routine and variable names in `code style` are the disassembly's names. Two of its rating arrays are misnamed: the one
-called `aggress` holds **Checking**, and `GGSleft` holds a skater's **Aggression**.
+Routine and variable names in `code style` are the disassembly's names. The rating arrays are `checking` ($1483),
+`aggress` ($1443, a skater's **Aggression**; `GGSleft` is its goalie name) and `fighting` ($1463). Copies of the
+disassembly from before 21 October 2026 called the Checking array `aggress` and the Aggression array `GGSleft`.
 
 ---
 
@@ -149,10 +150,10 @@ Working values 0-15. Every place found where the code reads each rating:
 | **Shot Accuracy** | The chance a shot goes exactly where aimed, and how far it scatters if not |
 | **Passing** | How steady a pass's speed is (6.1), the speed of a pass with no target (144 + 4 x Passing), **and the flip's accuracy** (6.3) |
 | **Stickhandling** | Steals, catching passes, and wobbling instead of falling when hit (12+) |
-| **Checking** (array `aggress`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.3) |
+| **Checking** (array `checking`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.3) |
 | **Endurance** | Energy, which only matters with line changes on |
 | **Pass / shoot bias** | Whether a **computer** puck carrier shoots or passes (`chk4shot`, `chk4pass`) |
-| **Aggression** (array `GGSleft`) | Penalty odds, with an overflow bug (8.1) |
+| **Aggression** (array `aggress`) | Penalty odds, with an overflow bug (8.1) |
 | **Fighting** | **Never read** |
 | **Goalie glove / stick save ratings** | **Nothing.** They are looked up and then overwritten before use |
 
@@ -1067,7 +1068,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 
 ### Sources
 
-- SNES disassembly: [github.com/Mhopkinsinc/NHL94SNES](https://github.com/Mhopkinsinc/NHL94SNES)
-  (`src/routines/hockey`, `src/routines/logic`, `src/routines/stats`, `src/ram94snes.asm`)
+- SNES disassembly: [github.com/abdulahmad/NHL94SNES](https://github.com/abdulahmad/NHL94SNES)
+  (`src/routines/hockey`, `src/routines/logic`, `src/routines/stats`, `src/ram94s.asm`)
 - Recordings and save states read with this project's helper; the project's `docs/PROJECT_NOTES.md` holds the detailed notes,
   addresses and test methods behind each finding.
