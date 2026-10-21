@@ -758,8 +758,6 @@ Different from the Genesis:
   passed through 81%, taken 13%, changed course 7%; 5-7, 6 times: passed through every time; 8-15, 5 times: hit him
   every time.
 
----
-
 ### 7.6 Players tangled together
 
 **Code** (`checkplcoll`, `checkcheck`), **Confirmed** on two overtime winners. Two players can end up skating on top of
@@ -813,6 +811,22 @@ burst (about 7,000 at full energy) on top of the push into the net reaches the 8
 must be within 40, right at the net, and the chance is 1 in 32 a frame. Of the 7 SNES nets knocked off in the
 recordings, 4 came after the skater had been against the net 0.6-1.2 s with one or two bursts already made; all 7 by
 a person's skater.
+
+### 7.8 The puck sliding, flying and off the boards
+
+**Code** (`updateplayers`, `wallcoll`), **Confirmed** where measured. The same as the Genesis (GENESIS_MECHANICS 13.1,
+13.2), by a different route:
+
+- **On the ice the puck keeps about 88% of its speed a second.** It goes through the skaters' friction step, with its
+  "gliding" bit set (table `.22`: $FF/256 a step at the usual two frames a step). Measured (analysis/puck_glide_study.py):
+  a median 0.881 a second over 262 clean stretches (the Genesis 0.895 over 227).
+- **In the air there's no friction** (measured 1.000, 245 stretches). Gravity 96 a step; **on landing it bounces back up
+  at half its landing speed** (a bounce sound when that's big).
+- **Boards** (`wallcoll`, the same code as the Genesis): the speed into the boards is quartered and reversed, the speed
+  along them loses 1/64 + 1/128 (about 98% kept). Rim shots ride the boards; pucks fired straight in die. A hard hit
+  (more than 4,096 into the boards) pops the puck up by a random amount, with a sound.
+
+---
 
 ## 8. Penalties
 

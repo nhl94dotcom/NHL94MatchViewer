@@ -1165,8 +1165,6 @@ on its own, not with C.
   rams a skater into the boards briefly turns into a cross-checking skater sprite**. **Confirmed** once in the
   recordings.
 
----
-
 ### 7.7 Knocking the net off
 
 **Code** (`checkgoalp`, `CheckBump`). A skater running into a net knocks it off its spot when, on a frame he's touching
@@ -1174,6 +1172,8 @@ it, a **1-in-32** test passes (the video counter's low bits), **the puck is with
 ice, and he's moving faster than **8,192** across or along the ice (no burst needed). The net takes a quarter of his
 speed, he stops, and play is whistled. The SNES does it four times as readily (SNES_MECHANICS 7.7). Recorded: once in
 191 minutes of Genesis play (2026-10-21_1054_BOS-NYI, a skater going into the net as a goal went in).
+
+---
 
 ## 8. Penalties
 
