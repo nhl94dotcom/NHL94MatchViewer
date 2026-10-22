@@ -1118,8 +1118,12 @@ anywhere on the ice**.
   impact is under a random 16-31, and he hasn't wobbled in the last second. The wobble lets go of the puck for an
   instant; he usually picks it straight back up.
 - **Upend (flip fall):** a checker with working Checking 20+ can upend a player facing a certain way. **Code**
-- **Injuries:** on a knockdown, a 1-in-4 chance of an injury roll, which succeeds more often the harder the hit (impact
-  out of 160). **An injury always gives the hitter a roughing minor** (with penalties on). **Whether the injured player
+- **Injuries:** only **the puck carrier**, only when he **falls backward** (hit from the front), only while the clock
+  runs, and only when he is **facing straight up or straight down the ice** (facing 0 or 4 of 8; `facedir & 3` = 0,
+  not a random 1 in 4). Then the roll succeeds more often the harder the hit (impact out of 160). **Confirmed:** all 5
+  recorded injuries were puck carriers facing straight down the ice; carriers face straight up or down about 40% of
+  the time. A carrier who skates straight up and down the ice and takes head-on hits gets hurt far more often than one
+  who skates on diagonals. **An injury always gives the hitter a roughing minor** (with penalties on). **Whether the injured player
   is out for the period or the game depends on the checker's H/F (fighting) rating.** **Code**, with one confirmed case
   (an injury that came with a roughing call). Not in order of the rating: checkers at H/F 3, 5, 6 and 7 (of 0-7) put
   him out for the game, 0, 1, 2 and 4 only for the period (`setInjuryType`: the rating / 2, with 3 or an odd rating

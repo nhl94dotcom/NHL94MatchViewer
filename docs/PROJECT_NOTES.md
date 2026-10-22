@@ -2184,6 +2184,12 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   Stk / 2, both scaled by energy) <= 2 (<= 4, and from farther, with the carrier in the slot).
 - Crowd: CwdExciteLvl $B8A2 (fast.bin): +10 a shot, +20 big hits, +30 goals (less for the visitors), -1 a tick; the meter
   is sqrt(level x 4) + 65 dB. SNES CwdExciteLvl $19BE.
+- Genesis injuries (2026-10-21, a question about an RL bot that draws many penalties): the injury roll (collide94,
+  after the knockdown) needs a2 = the puck carrier, SPAfallback, facedir & 3 = 0 (facing straight up or down; the
+  docs' old "1 in 4 chance" was this facing test), the clock running, then randomd0(160) <= impact. All 5 recorded
+  injuries: carriers facing 4. Carriers face 0 / 4 about 40% of the time. CCStart only rolls a check's penalty (and
+  knockdown) when the impact d4 >= $14, so soft hits are never called. A straight-line carrier taking head-on hits
+  gets hurt (automatic roughing) and draws the check-penalty rolls far more often.
 - Disassembly bug hunt (2026-10-21): Genesis CPgoalie pulls only at exactly 2 behind (bne); icing always on, armed by
   a2touchpuck, cancelled by PuckIChk when |puckx| <= $2C at the goal line (iflags $BF80 = ifcgl 0, ifdir 1, ifok 2;
   icingPlayer $BF81; checked 5/5 and 67/68 in the recordings); wallcollb: Z 19-29 out of play except Y >= $118 (top end
