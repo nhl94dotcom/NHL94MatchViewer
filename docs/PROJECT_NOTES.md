@@ -1454,6 +1454,47 @@ one-timers-tried count 131 (old rule 123). King's goals: one-timers, xG 0.66 and
 the game's counts (2219 BOS-DAL's 9 vs 8 was already so: Oates's penalty-shot goal). 2026-10-19_2115_LA-BUF's fast.bin.gz
 is cut off (no end-of-stream marker) and fails to convert, before and after (2117 LA-BUF is the game).
 
+## Scoring map: shots played in the real game (2026-10-22)
+
+The user asked for an exact scoring map (the chance a shot scores by spot, aim, shot type). `analysis/scoring_map/`
+(build.py's docstring is the how-to). In progress; what's settled:
+
+- **Engine**: the real game, headless. The disassembly builds (SNASM68k via its `build:dev`) from a copy; patch_rom.py
+  adds a doshot hook without moving anything outside $B502-$C3xx: the dead lead-time block in `doinput_cbut` `.press`
+  (gameclock .. the six branchless cmpi, 164 bytes) becomes two subroutines (SMAPIN at doshot's start, SMAPEX before its
+  sfx call) and padding, 8 bytes shorter, paying for the two bsr.w. Hook RAM $FFE000-$E031 (never touched in menus or
+  play: the stack only reaches down to $FEC2). The hook records doshot's inputs (seed, passspeed, passdir, puck, the
+  goalies' SPA) and, when $E000 is set, replaces puckvx / vy / vz at .ex. emu.py is a ctypes libretro frontend for a
+  copy of RetroArch's genesis_plus_gx core (about 4,500 frames a second; one core per process: a second Emu instance
+  takes over the DLL's callbacks, which silently broke the first run). RetroArch savestates are RASTATE containers
+  (chunk "MEM ").
+- **doshot ported exactly** (shotport.py, 68000 integer rules incl. divs overflow leaving the register, the byte
+  arithmetic in the scatter size, puckvzadj): the game's launch equals the port's on 129 of 129 shots, both nets, 7 with
+  the top-shelf lift. The LCG: seed = seed x $BB40E62D + 1, randomd0(n) = ((seed >> 8) & $FFFF) x n >> 16.
+- **What is random after the release**: the goalie's movement code (checkanim, findpc, goaliesave) never calls the
+  generator, but what happens on contact does (hold or rebound, 5.2; the stick's deflection direction). Replays first
+  kept the seed and were biased (5.6% against 7.8% natural at one spot); the seed is now randomised after the release.
+  Checked: the estimate equals natural shots (the game's own draws from a random seed) at three spots within one
+  standard error (51.6 / 52.0%, 32.6 / 33.9%, 7.3 / 7.8%).
+- **The moment matters**: a perfect slapshot just inside the post at mid-height from 108 out scored at 13 of 16
+  moments: the goalie committed to a stick save (gstick, $01EC) at once and stayed at x 0 (reach 13, the puck at 16),
+  unless his rethink happened to fall before; findpc (every 5 frames) and his rethink cycle set it. The map uses 120
+  moments: clock 590-583 x 15 settle lengths.
+- **Fast stop**: decided when the goalie has held the puck 20 frames, or it has moved away from the goal 4 frames, or
+  it is 12 past the goal line; agrees with a 240-frame play-out on 1,475 of 1,475. (A first version stopped as soon as
+  he held it and missed the top net's shoulder-save bobble, 5.3: six goals at frames 48-79.)
+- **Harness limit near the net**: the shooter is held on his spot while the goalie sets, and within about 30 units of
+  the net's centre the goalie's set spot is the puck itself, so he skates onto it and the shot starts inside his reach
+  (65-100% "goals" from 28-48 out in the middle). validity.py keeps spots where the puck starts 20+ from the goalie's
+  centre and in front of him: 1,279 of 1,472.
+- **Recorded shots replayed** (replay_recorded.py: 135 aimed shots at computer goalies, recorded puck spot to the unit,
+  aim, speed, Shot Accuracy, the goalie's position, velocity and working ratings): totals agree (20.5 / 22.5 expected
+  with a 2 / 4-unit goalie blur, 22 scored) but shot by shot the replay is too sure (113 shots at a standing goalie:
+  log loss 0.253 with the 2-unit blur, xg.py 0.23, one rate 0.357): the recordings (60 Hz, not frame-locked, the
+  previous frame's position, velocity over 100 ms, no AI state) don't pin the moment down finely enough, and xg.py's
+  fitted spread suits that. Goalies recorded mid-save or diving are replayed standing (their animation isn't set):
+  22 such shots, the replay's worst.
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
