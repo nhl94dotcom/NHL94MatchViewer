@@ -1,7 +1,7 @@
 """SVG heat maps of the scoring map: python render_map.py RUN OUT.svg [mode] (RUN in paths.RUNS)
 mode best: each spot's chance with its best aim (and the aim as an arrow); mode mid: aimed at the middle (no d-pad).
-Four panels: wrist shot / slapshot x the top net / the bottom net, both drawn with the net at the top (the bottom net's
-panels flipped up and down, so screen left stays left)."""
+Four panels: wrist shot / slapshot x the top net / the bottom net, each drawn as on the screen (the bottom net at the
+bottom of its panels)."""
 import glob
 import json
 import sys
@@ -42,27 +42,32 @@ def text(x, y, s, size=12, color=INK, anchor="start", weight="normal"):
 
 S = 1.45          # px per unit
 PW, PH = 250 * S, 200 * S
-panels = [("top", 3, "Wrist shot, top net"), ("top", 20, "Slapshot, top net"),
-          ("bottom", 3, "Wrist shot, bottom net"), ("bottom", 20, "Slapshot, bottom net")]
+panels = [("top", 3, "Wrist shot: top net (attacking up the screen)"),
+          ("top", 20, "Slapshot: top net (attacking up the screen)"),
+          ("bottom", 3, "Wrist shot: bottom net (attacking down the screen)"),
+          ("bottom", 20, "Slapshot: bottom net (attacking down the screen)")]
+GAP = 70                                    # between the rows of panels: the top row's titles, the bottom row's nets
 W = 2 * PW + 3 * 40
-H = 2 * (PH + 60) + 110
+H = 100 + 2 * PH + GAP + 20 + 120
 body = [f"<rect width='{W}' height='{H}' fill='#ffffff'/>"]
-title = "Chance a shot scores against a set computer goalie, best aim" if mode == "best" else \
-    "Chance a shot scores against a set computer goalie, aimed at the middle"
+title = "Chance a shot scores against a set computer goalie, best aim" if mode == "best" else     "Chance a shot scores against a set computer goalie, aimed at the middle"
 body.append(text(W / 2, 26, title + " (Genesis, played in the real game)", 16, anchor="middle", weight="bold"))
 body.append(text(W / 2, 46, "Average shooter (working Shot Power 20, Shot Accuracy 15), standing still with the puck; "
                  "the goalie has set himself. Each square: one spot, 800+ shots per aim.", 11, SOFT, "middle"))
 for pi, (net, hold, name) in enumerate(panels):
     ox = 40 + (pi % 2) * (PW + 40)
-    oy = 80 + (pi // 2) * (PH + 60)
-    P = lambda x, y: (ox + (x + 125) * S, oy + (268 - y) * S)
-    body.append(text(ox, oy - 8, name, 13, weight="bold"))
+    oy = 100 + (pi // 2) * (PH + GAP)
+    # drawn as on the screen: the top net at the top of its panels, the bottom net at the bottom of its panels
+    if net == "top":
+        P = lambda x, y, ox=ox, oy=oy: (ox + (x + 125) * S, oy + (268 - y) * S)
+    else:
+        P = lambda x, y, ox=ox, oy=oy: (ox + (x + 125) * S, oy + (y - 68) * S)
+    body.append(text(ox, oy - (22 if net == "top" else 8), name, 13, weight="bold"))   # clear of the net
     body.append(f"<rect x='{ox}' y='{oy}' width='{PW}' height='{PH}' fill='#f3f5f7' stroke='{SOFT}'/>")
     for r in rows:
         if r["net"] != net or r["hold"] != hold:
             continue
-        x = r["x"] if net == "top" else r["x"]
-        cx, cy = P(x, r["y"])
+        cx, cy = P(r["x"], r["y"])
         if not r["aims"]:
             body.append(f"<rect x='{cx - 5 * S:.1f}' y='{cy - 5 * S:.1f}' width='{10 * S:.1f}' height='{10 * S:.1f}' "
                         f"fill='#e4e7eb'/>")
@@ -78,29 +83,32 @@ for pi, (net, hold, name) in enumerate(panels):
                 L = 4.2 * S / (1.41 if dx and dy else 1)
                 body.append(f"<line x1='{cx - dx * L:.1f}' y1='{cy - dy * L:.1f}' x2='{cx + dx * L:.1f}' "
                             f"y2='{cy + dy * L:.1f}' stroke='{INK}' stroke-width='1.2' marker-end='url(#a)'/>")
-    # rink marks: goal line, net, crease, dots, blue line
+    # rink marks: goal line, net (behind the goal line), faceoff dots, blue line
     gl = P(0, 268)[1]
     body.append(f"<line x1='{ox}' y1='{gl}' x2='{ox + PW}' y2='{gl}' stroke='#c94040' stroke-width='1.5'/>")
-    body.append(f"<rect x='{P(-20, 0)[0]}' y='{gl - 8 * S}' width='{40 * S}' height='{8 * S}' fill='none' "
+    ny = gl - 8 * S if net == "top" else gl
+    body.append(f"<rect x='{P(-20, 0)[0]}' y='{ny}' width='{40 * S}' height='{8 * S}' fill='none' "
                 f"stroke='{INK}' stroke-width='1.5'/>")
     for dx in (-70, 70):
         c = P(dx, 206)
         body.append(f"<circle cx='{c[0]:.1f}' cy='{c[1]:.1f}' r='2.5' fill='#c94040'/>")
     bl = P(0, 88)[1]
-    if bl <= oy + PH:
-        body.append(f"<line x1='{ox}' y1='{bl}' x2='{ox + PW}' y2='{bl}' stroke='#3b82c4' stroke-width='2'/>")
+    body.append(f"<line x1='{ox}' y1='{bl}' x2='{ox + PW}' y2='{bl}' stroke='#3b82c4' stroke-width='2'/>")
     for yy in (100, 150, 200, 250):
         body.append(text(ox - 4, P(0, yy)[1] + 4, str(268 - yy), 9, SOFT, "end"))
 body.insert(0, "<defs><marker id='a' viewBox='0 0 10 10' refX='5' refY='5' markerWidth='4' markerHeight='4' "
                "orient='auto'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>")
 # legend
-lx, ly = 40, H - 50
+lx, ly = 40, 100 + 2 * PH + GAP + 30
 for i, p in enumerate([0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.45, 0.6]):
     body.append(f"<rect x='{lx + i * 62}' y='{ly}' width='58' height='14' fill='{colour(p)}' stroke='#d9e2ec'/>")
     body.append(text(lx + i * 62 + 29, ly + 28, f"{round(p * 100)}%", 10, SOFT, "middle"))
-body.append(text(lx + 8 * 62 + 10, ly + 4, "Units from the goal line at the left. Arrows: the best d-pad "
-                 "direction (dot: nothing held),", 10, SOFT))
-body.append(text(lx + 8 * 62 + 10, ly + 18, "shown where it scores 3% or more. Grey: no real shot there (the puck would start within the goalie's reach).", 10, SOFT))
+notes = ["Numbers at the left of each panel: units from the goal line (about 3 to a foot). Blue line: the blue line.",
+         "Arrows: the d-pad direction to hold as you shoot, the best of the nine aims (dot: nothing held); shown where it",
+         "scores 3% or more. Up aims high, Down along the ice, Left / Right at the screen's sides, at both nets.",
+         "Grey: no real shot there (the puck would start within the goalie's reach)."]
+for i, n in enumerate(notes):
+    body.append(text(lx, ly + 52 + 15 * i, n, 11, SOFT))
 svg = (f"<svg xmlns='http://www.w3.org/2000/svg' width='{W:.0f}' height='{H:.0f}' viewBox='0 0 {W:.0f} {H:.0f}' "
        f"{FONT}>\n<title>Scoring map</title>\n" + "\n".join(body) + "\n</svg>\n")
 open(out, "w", encoding="utf-8").write(svg)
