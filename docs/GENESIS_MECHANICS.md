@@ -23,7 +23,7 @@ One line per chapter: the main finding, then the section with the evidence.
 
 1. **Ratings**: play uses rating x 5 + one hot / cold value (byte 0 of the player's 16, a bug), plus hidden power-play, home / away and third-period bonuses (the third-period test is backwards). ([2](#2-ratings-what-the-game-really-uses))
 2. **Skating**: Speed sets top speed; Agility is acceleration, and each Weight point costs as much as 2 Agility. ([3](#3-skating))
-3. **Shooting**: nine aim points chosen by the stick's screen direction; within 200 a shot is perfect (Shot Accuracy + 1) / (Shot Accuracy + 16) of the time, otherwise it scatters, upward only; one-timers are auto-aimed; uncounted saves are mostly the goalie's stick knocking hard low shots away. ([4](#4-shooting))
+3. **Shooting**: nine aim points chosen by the stick's screen direction; within 200 a shot is perfect (Shot Accuracy + 1) / (Shot Accuracy + 16) of the time, otherwise it scatters, upward only; one-timers are auto-aimed; uncounted saves are mostly the goalie's stick knocking hard low shots away; played in the real game, a set goalie gives up almost nothing to wrist shots but 20% to a Down slapshot from the middle. ([4](#4-shooting))
 4. **Goaltending**: saves are geometry (a 12-15 body circle, 15 for a person, 18 in a pad stack, 12 against one-timers); save moves add no reach; the ring around his stick where nothing touches a low puck lets flat pucks through a butterfly; the top net's shoulder save can drag the puck into the net. ([5](#5-goaltending))
 5. **Passing**: Passing sets speed, not accuracy; the meeting time rounds down (the rocket pass); lift comes from the flight time, or is random for pass shots; a stick can't play the puck while its no-touch timer runs or its body is more than 22 away up or down. ([6](#6-passing-the-flip-and-stickhandling))
 6. **Checking**: only a speed burst checks; the weight bug is a one-byte overflow for a person's checker; the CB check uses the computer's formula; the same pair can't knock down twice running. ([7](#7-checking-hooking-poking-and-collisions))
@@ -523,6 +523,64 @@ shot faces a goalie placed and moving as goalies really were at one of the recor
 `xg.goalie_states`). With goalies as in games, wrist shots from the slot come out at about 0.2, slapshots up to about
 0.28, one-timers 0.37-0.5, and shots from the points under 0.07.
 
+### 4.10 The scoring map: shots played in the real game
+
+**Real game** (2026-10-22; `analysis/scoring_map/`, PROJECT_NOTES "Scoring map"). Instead of a model, the game itself:
+the ROM rebuilt from the disassembly with a small hook in `doshot`, run headless, every shot set up and played to the
+end. The shot's random draws (the perfect-shot roll and the three scatter draws) are sampled from their exact
+distribution through an exact port of `doshot` (it matches the game on 129 of 129 shots), and the moment of the shot
+from 120 phases of the game clock and the goalie's cycles. **Checked** against the game's own draws: 3,000 natural
+shots at each of four spots agree within about one standard error (for example 44.4% natural, 43.0% mapped).
+
+**The situation it covers:** an average shooter (working Shot Power 20, Shot Accuracy 15) standing still with the
+puck; every other skater away; the computer goalie (Los Angeles, working Agility 13, Defensive Awareness 10) set in his
+spot for that puck; a wrist shot (C tapped) or a full slapshot, each of the nine aims. Spots where the puck would start
+within 24 units of his centre (in the middle closer than about 40-60 out, and along the goal line) are left out: holding
+a shooter there isn't something a game allows.
+
+![The chance a shot scores against a set computer goalie, best aim, by spot](img/scoring_map.svg)
+
+**What a set goalie gives up:**
+
+- **Wrist shots: almost nothing.** Averaged over the nine aims under 1% from every distance; the best aim reaches 4-5%
+  only in patches. A set goalie is beaten by a wrist shot only through the two quirks below.
+- **A slapshot with Down held, straight at him from the middle: 20% on average, up to 47%.** It's the flat puck through
+  the butterfly (5.5): he picks the butterfly for a low puck arriving at his middle, the puck crosses the blind ring
+  around his stick untouched, meets his body behind his centre and bounces into the net. From within 30 of the middle,
+  88-168 units out: 20.7% at the top net, 13.6% at the bottom (best spots 47% / 42%); from the sides (60+ across) only
+  5.5% / 0.8%. Nothing held does the same from about 150-170 out (the perfect shot peaks at height 5: flat enough).
+- **Within about 60 of the goal line, the early pad stack** (5.6): a slapshot wound up there finds him already stacking
+  at about half of the moments (46-48%), and a down-diagonal aim to the side he slides away from scores 30-50%; the
+  best aim averages 18% (top) and 24% (bottom) along that row. Wrist shots trigger it too (34%) but score less.
+- **Top net only: the shoulder-save bobble** (5.3). A high wrist shot from the far left boards, about 78 out, scored
+  31%: every one of those goals was a puck the goalie had caught in a high save and dragged back over his own line.
+- **Top against bottom:** the best slapshot from 88-168 out scores 14-16% at the top net, 6-8% at the bottom.
+
+| Best aim, by distance from the goal line | Wrist, top / bottom | Slapshot, top / bottom |
+|---|---|---|
+| 128-168 units | 1.4% / 0.2% | 14.2% / 7.6% |
+| 88-128 | 1.8% / 0.1% | 16.4% / 5.7% |
+| 58-88 | 4.3% / 4.7% | 13.4% / 11.2% |
+| 18-58 (valid spots only) | 3.5% / 1.2% | 5.6% / 6.7% |
+
+**The moment matters.** The same perfect slapshot just inside the post at mid-height from 108 out went in at 13 of 16
+moments: he committed to a stick save at once and stayed put (reach 13, the puck at 16, 5.5), unless his rethink fell
+first and he slid over. Whether it does depends on where the shot falls in `findpc`'s 5-frame cycle and his rethink
+countdown, which no player can see.
+
+**Against the xG model (4.9):** averaged over the nine aims the two agree (slapshots 88-128 out at the top net: 3.1%
+in the game, 3.8% in the model), but the model can't see the Down slapshot: it leaves out the goalie's stick, and with
+it the blind ring. So it puts the best aims in the wrong places and underrates a set goalie's worst cases (best aim
+88-168 out: 14-16% in the game, 1-7% in the model).
+
+**Recorded shots replayed in the game** (135 aimed shots at computer goalies; the recorded spot, aim, speed and
+shooter, the goalie's position, speed and ratings): the expected total matches (20.5-22.5, with the goalie's recorded
+position blurred by 2-4 units, against 22 scored), but shot by
+shot the xG model predicts recorded games better (log loss 0.23 against 0.25 at goalies standing ready). A recording
+doesn't pin the moment down finely enough (60 samples a second, not locked to the game's frames; no goalie AI state),
+and the game's outcome turns on a few units and a frame. **So the viewer keeps its xG model for recorded games; the
+map shows what the rules do.**
+
 ---
 
 ## 5. Goaltending
@@ -735,10 +793,12 @@ away. Once through, the bounce off the back of him is slow whatever the puck's s
 
 **To try for it:** a flat puck is the key, and a pass shot's lift is random. A slapshot with Down held aims at the middle
 at ice level with no lift, and within about 200 units goes exactly there (Shot Accuracy + 1) / (Shot Accuracy + 16) of
-the time, otherwise scattering only upward: probably the more reliable flat puck (not yet tested). Hard (full wind-up;
-a pass shot taken while skating at the net gets the skater's speed added), straight up or down the ice at the goalie's
-middle, dead centre or away from the side his stick goes to in the butterfly, after he has set (a goalie committing while
-the puck is still carried pad-stacks instead, with no band). Expect odds, not a sure thing: 2 in 8 in the test.
+the time, otherwise scattering only upward: **tested in the real game (4.10): from the middle 88-168 out against a set
+computer goalie it goes in 20% of the time at the top net and 14% at the bottom, up to 47% at the best spots.** Hard
+(full wind-up; a pass shot taken while skating at the net gets the skater's speed added), straight up or down the ice
+at the goalie's middle, dead centre or away from the side his stick goes to in the butterfly, after he has set (a
+goalie committing while the puck is still carried pad-stacks instead, with no band). Expect odds, not a sure thing: 2
+in 8 in the test.
 
 Also from the code: **a goalie you control who goes out of view** (more than $74 across or $64 up or down from the
 camera's centre) is moved by the computer's routine, save moves included, until he's back on screen

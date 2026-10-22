@@ -307,6 +307,13 @@ The computer never holds a direction, so its wins go a random way.
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.
+- **The exception: a slapshot with Down held, straight at a set computer goalie from the middle.** Played in the game
+  itself (the scoring map, below), it goes in about 1 time in 5 from between the tops of the circles and the blue line,
+  up to nearly half at the best spots, because the flat puck slides through his butterfly. Better at the top net than
+  the bottom. Wrist shots at a set goalie almost never go in (under 1 in 20 from anywhere). Not yet tried on purpose in
+  a real game.
+
+![The chance a shot scores against a set computer goalie, best aim, by spot](img/scoring_map.svg)
 - **The viewer's xG map** (Map menu) shows the chance from every spot, for the shot type, shooter and goalie you pick.
 
 ![The computer goalie's early pad stack on a close-in wind-up](img/early_save.svg)
@@ -676,7 +683,7 @@ Puck Control. Ignore Overall, Endurance, and the goalie's glove and stick column
    for a hard puck along the ice straight at him (the butterfly opens a gap through his legs).
 5. Rocket passes: a pass to a teammate skating toward you from 17-23 feet away can come out twice as fast.
 6. Going for the five-hole: a hard, flat puck straight at a goalie in the butterfly; a slapshot with Down held is the
-   flattest. Odds, not a sure thing.
+   flattest: about 1 in 5 from the middle at a set computer goalie. Odds, not a sure thing.
 7. Check heavier players with lighter ones, and along the boards; don't hit the same man twice running.
 8. Pokes only from within 10 feet; hooks rarely.
 9. Ref's arm up for the other team: you can't be called, and your shots go exactly where you aim.

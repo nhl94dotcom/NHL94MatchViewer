@@ -1457,7 +1457,25 @@ is cut off (no end-of-stream marker) and fails to convert, before and after (211
 ## Scoring map: shots played in the real game (2026-10-22)
 
 The user asked for an exact scoring map (the chance a shot scores by spot, aim, shot type). `analysis/scoring_map/`
-(build.py's docstring is the how-to). In progress; what's settled:
+(build.py's docstring is the how-to). First map done: set goalie (GENESIS_MECHANICS 4.10, docs/img/scoring_map.svg).
+
+- **Run 1**: 23 x 16 spots (x -110..110, y 100..250 by 10) x wrist (C 3 frames, passspeed 18 -> 173) and slapshot
+  (C 20+, 35 -> 337) x both nets x 9 aims, 800 launches per aim (perfect / scatter split by the perfect chance), 30
+  processes, about 2 hours (each job 3-5 minutes with 30 running). 1,260 of 1,472 jobs valid (puck 24+ from the
+  goalie's centre and in front of him; validity.py). The shooter's working Shot Power 20, Shot Accuracy 15; the goalie
+  Los Angeles's (weight 48, Agility 13, Speed 13, Def. Awareness 10 working).
+- **Mechanisms behind the high cells, each traced**: the Down slapshot straight at the middle goes through the
+  butterfly's blind ring (gstick $021E frame 480; the puck at height 0 passes his centre, meets his body behind it and
+  bounces in at about 2,550); the "middle" perfect slapshot from 150-170 out peaks at height 5 and does the same; the
+  row 55-70 out is the wind-up rule's pad stack (he was stacking at 46-48% of the release moments for slapshots, 34%
+  for wrist shots); the far-left high wrist shot at the top net is the shoulder-save bobble (11 of 24 moments, every
+  goal after a high save $148E with the puck held).
+- **Checked** against natural shots (validate.py) at four spots: 51.6 / 52.0%, 32.6 / 33.9%, 7.3 / 7.8%, 43.0 / 44.4%.
+- **Not done yet**: the "as in games" goalie (map_run.py takes xg.goalie_states' JSON as its 7th argument: each launch
+  first puts the goalie where a recorded computer goalie was, relative to his set spot, moving as he was; 315 states
+  from 16 games), other shooters (its 5th / 6th arguments), one-timers (the harness only makes normal shots).
+
+What's settled about the method:
 
 - **Engine**: the real game, headless. The disassembly builds (SNASM68k via its `build:dev`) from a copy; patch_rom.py
   adds a doshot hook without moving anything outside $B502-$C3xx: the dead lead-time block in `doinput_cbut` `.press`

@@ -24,6 +24,13 @@ record or check and what it will settle. Newest at the bottom of each section.
    press it a few times. Note roughly when. *Settles:* the blind band through the middle of a butterfly (GENESIS_MECHANICS
    5.5): the puck should pass through untouched when it's at ice level and not rising, and bounce backward off him.
 
+5. **Down slapshots at a set computer goalie (Genesis).** In a practice game against the computer, stand still with
+   the puck in the middle, roughly between the tops of the faceoff circles and the blue line, let the goalie settle,
+   and take a dozen full slapshots holding Down; then a dozen holding Left or Right. Do it at both ends. *Settles:*
+   the scoring map (GENESIS_MECHANICS 4.10), which plays these shots in the game itself and says about 20% go in
+   holding Down (more at the top net) and only a few percent with the other aims. Only real play shows whether a
+   standing slapshot like that is something a person can set up.
+
 ## Things to note when they happen
 
 1. **A Genesis penalty shot that ends the moment it starts.** Note the game and roughly when. The helper now records

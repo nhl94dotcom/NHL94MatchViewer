@@ -1,9 +1,9 @@
 """Which map spots are real shots: python validity.py RUN -> paths.RUNS / RUN / validity.json
 The harness holds the shooter on his spot while the goalie sets himself, and within about 30 units of the net's centre
 the goalie's set spot is the puck itself: he skates onto it, and the shooter ends up shooting from inside or behind
-him, which no game allows. A spot counts when, at the release, the puck is at least 20 units from the goalie's centre
-(beyond any reach, the pad stack's 18 included) and in front of him, and the shooter is beyond the 16 at which
-players collide. Measured at one moment per spot (clock 590, 85 frames to settle)."""
+him, which no game allows. A spot counts when, at the release, the puck is at least MIN_PUCK (24) units from the
+goalie's centre (beyond any reach, the pad stack's 18 included, with room) and in front of him, and the shooter is
+beyond the 16 at which players collide. Measured at one moment per spot (clock 590, 85 frames to settle)."""
 import json
 import sys
 
@@ -13,6 +13,7 @@ from paths import RUNS, STATE_TOP, STATE_BOTTOM
 
 XS = range(-110, 111, 10)
 YS = range(100, 251, 10)
+MIN_PUCK = 24        # the pad stack's reach 18, plus room: at 20 a wrist shot from beside him still "scored" half the time
 
 
 def main():
@@ -40,7 +41,7 @@ def main():
                     dp = ((en["px"] - gx) ** 2 + (en["py"] - gy) ** 2) ** 0.5
                     ds = ((sx - gx) ** 2 + (sy - gy) ** 2) ** 0.5
                     front = sg * en["py"] < sg * gy
-                    ok = dp >= 20 and ds >= 16 and front
+                    ok = dp >= MIN_PUCK and ds >= 16 and front
                     out[f"{net},{hold},{x},{y}"] = dict(ok=ok, puck=[en["px"], en["py"]], goalie=[gx, gy],
                                                         puck_goalie=round(dp, 1), shooter_goalie=round(ds, 1),
                                                         front=front)
