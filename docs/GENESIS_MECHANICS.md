@@ -838,6 +838,19 @@ camera's centre) is moved by the computer's routine, save moves included, until 
 result, 19 shots, 7 goals; not pressed, 45 shots, 18 goals. The C shots were easier ones (xG 0.21 a shot against 0.37),
 so if anything pressing did worse than expected, but there are too few shots to tell.
 
+**Holding C while he holds the puck: he skates up and to the left, at either net (a bug).** With the puck, C has no
+job for a goalie (`doinput_ispc` starts a shot only for a skater), so the input goes on to the skating routine with
+`d0`, which `ReadJoy` fills with the d-pad direction in its low four bits and the buttons held in the high four (C =
+`$20`). A skater's skating routine masks the buttons off (`doplayeracc`: `andi.w #$F,d0`); the goalie's
+(`goalieacc`, `.normalgoalie`) masks them only for a computer goalie (`.goalieacc2`), so for a person's goalie the
+wanted direction is `$28` (no direction, plus C). That isn't 8 ("none"), so he turns toward it one step a frame
+(`.d1`); 40 is a multiple of 8, so the turn logic treats it as "up" but never reaches it (it is never equal to his
+facing), and his facing flips between up (0) and up-left (7) every frame while he skates along it (`playeracc` with
+his facing). Facing 0 is up the screen at both ends, so he goes up and a little left whatever net he is in. With a
+d-pad direction held too, the same flip-flop should make him drift one step anticlockwise of where you point (not
+checked). **Code** (`input94.asm` `doinput_ispc`, `video94.asm` `ReadJoy`, `checks94.asm` `goalieacc`; seen in play
+by the user, 2026-10-23).
+
 ### 5.6 Save moves that start before the shot: the wind-up rule
 
 **The rule** (`checkanim`): **while a shot is being wound up** (shot mode: a person holding C with the puck), with the
