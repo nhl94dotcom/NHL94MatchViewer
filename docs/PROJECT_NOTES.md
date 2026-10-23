@@ -1574,6 +1574,21 @@ banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harn
   frames94s.asm table sizes: E1E2 glove r, E214 glove l, E246 stick r, E278 stick l, E2AA stack r, E2FC stack l, E73E
   butterfly, E7D0 sprawl l, E862 sprawl r (xg_snes.SAVES is in GoalieSaveList order).
 
+**One-timer study, pilot (2026-10-23).** `ot_harness.py` (pass, press, swing, strike, play-out on both systems),
+`ot_run.py` (chunked and resumable: jobs appended to a JSONL as they finish, a chunk stops starting jobs after its time
+budget, the next run skips finished jobs; the user approves each chunk), `ot_report.py`. Harness lessons: (1) a
+receiver whose position is rewritten every frame can't touch the puck (not even catch a plain pass): he's held only
+while the goalie settles; (2) SNES passes need B held with the direction for 4 frames (the loop runs every other frame;
+a release before it reads the direction passes the way he faces, setpassmode); (3) the SNES one-timer's aim is read
+during the swing, so the d-pad is held from the press, and the aims branch at the press, not at the strike; (4) the
+Genesis strike is puckstick -> onetimershot when the puck reaches the blade (within 8) in the one-timer state.
+Pilot (net top; receivers (0,200), (40,230), (-30,150); passers 60 and 120 away in 8 directions; 30 jobs a system;
+early press = 2 frames after the release, late = about 6 frames before arrival; 32 moments; Genesis 8 seeds, SNES 9
+aims x 4 seeds): Genesis early 896 strikes in 960, goal rate per job median 16.6% (max 81%), late 688 in 737, median
+1.7%; SNES early 867 in 959, median 5.0% over the aims (best aim median 26%), late median 2.7%. Moment-to-moment sd of
+a job's rate: Genesis early median 0.16 (max 0.33), so 32 moments give about +/-3 points; SNES (aims pooled) 0.05.
+Times in gentle mode: Genesis 30 jobs in 3.2 min, SNES in 15.5 min; CPU averaged 5% (peak 19%).
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the
