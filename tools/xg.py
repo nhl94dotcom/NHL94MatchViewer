@@ -29,6 +29,45 @@ REACH = [12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15,
 PAD_STACK = {"0250": -6, "02a2": 6}   # gstackr / gstackl: the body test moves 6 to one side
 DIRTAB = [(0, 200), (141, 141), (200, 0), (141, -141), (0, -200), (-141, -141), (-200, 0), (-141, 141)]
 DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
+HOT_LIST = 0xA44C8   # stick hot points: x, y bytes per sprite frame (x negated when the frame is drawn mirrored, y negated)
+READY = 0x0002       # SPAgready
+SAVE_ANIM = [0x146, 0x178, 0x250, 0x2A2, 0x1EC, 0x21E, 0x148E, 0x14C0, 0x14F2, 0x1544]   # goaliesave .saveanim
+
+
+class GenesisRom:
+    """What the stick model reads from the ROM: each sprite frame's stick hot point, and the animation scripts (8
+    lists of (frame, frames shown) per animation, one per direction faced; found as tools/systems/genesis.py finds
+    them, by the standing animation $050C)."""
+
+    def __init__(self, rom):
+        import struct
+        self.rom = rom
+        self.word = lambda a: struct.unpack_from(">H", rom, a)[0]
+        self.sword = lambda a: struct.unpack_from(">h", rom, a)[0]
+        self.base = next((b for b in range(0, len(rom) - 0x2000, 2)
+                          if all(self.word(b + 0x50C + 2 * e) == 18 + 4 * e for e in range(8))
+                          and self.word(b + 0x50C + 18) == 1), None)
+        self._anim = {}
+
+    def hot(self, frame, mirrored):
+        """The blade relative to the player's centre, in rink units (y up the screen)."""
+        hx, hy = self.rom[HOT_LIST + 2 * frame], self.rom[HOT_LIST + 2 * frame + 1]
+        hx, hy = hx - 256 if hx > 127 else hx, hy - 256 if hy > 127 else hy
+        return (-hx if mirrored else hx), -hy
+
+    def anim(self, spa, facing):
+        key = (spa, facing)
+        if key not in self._anim:
+            at = self.base + spa + self.word(self.base + spa + 2 * (facing & 7))
+            seq = []
+            while len(seq) < 40:
+                frame, t = self.word(at), self.sword(at + 2)
+                seq.append((frame, abs(t)))
+                at += 4
+                if t < 0:
+                    break
+            self._anim[key] = seq
+        return self._anim[key]
 
 
 def vtoa(dx, dy):
@@ -41,7 +80,11 @@ def vtoa(dx, dy):
 class Goalie:
     """The computer goalie's movement, frame by frame. Velocities in the game's words (units x 4096 a frame)."""
 
-    def __init__(self, x, y, vx, vy, weight, agility, speed, aidef):
+    def __init__(self, x, y, vx, vy, weight, agility, speed, aidef, rom=None, frame=None, facing=4, mirror=False):
+        """rom (GenesisRom), frame, facing, mirror: the stick model (play_out's `stick`): the frame he shows at the
+        release, the way he faces and whether he's drawn mirrored; his save move then runs its own frames."""
+        self.rom, self.frame0, self.facing, self.mirror = rom, frame, facing, mirror
+        self.seq, self.t = None, 0
         self.x, self.y, self.vx, self.vy = x, y, vx, vy
         self.acc = (64 - weight // 4 + agility + 2 + agility + 16) // 2   # playeracc; goalies count Agility twice, + 16
         n = min(30, speed + 2)                                            # MaxSpeed, the odd half-step included
@@ -56,7 +99,36 @@ class Goalie:
         self.x += rng.gauss(0, GOALIE_SPREAD)
         self.y += rng.gauss(0, GOALIE_SPREAD)
 
-    def think(self, px, py, pvx, pvy):
+    def frame(self):
+        """The sprite frame he shows now: his save move's, frame by frame, else the one at the release."""
+        if not self.seq:
+            return self.frame0
+        t = self.t
+        for fr, n in self.seq:
+            if t < n:
+                return fr
+            t -= n
+        return self.seq[-1][0]
+
+    def blade(self):
+        hx, hy = self.rom.hot(self.frame(), self.mirror)
+        return self.x + hx, self.y + hy
+
+    def save_move(self, xc, frames, pz, pvz):
+        """goaliesave: the move from the side the puck will cross on (against the way he faces, flipped for a mirrored
+        goalie) and its height: high, a shoulder save within 16 of him else a glove save; low, the kick save or the
+        butterfly, or the stick save when it arrives within 8 frames more than 16 to his side. (The pad stack needs a
+        carried puck: never here.)"""
+        side = ((vtoa(xc - self.x, self.gl - self.y) % 8 - self.facing) & 7) >> 2
+        if self.mirror:
+            side ^= 1
+        if pz > 8 or pvz > 0x800:
+            move = side + 6 if abs(self.x - xc) <= 16 else side
+        else:
+            move = side + 8 if frames <= 8 and not -16 < self.x - xc <= 16 else side + 4
+        self.seq, self.t = self.rom.anim(SAVE_ANIM[move], self.facing), 0
+
+    def think(self, px, py, pvx, pvy, pz=0, pvz=0):
         clamp = lambda v: max(-259, min(259, v))
         k = self.k - 64 if abs(py) > 219 else self.k
         rx, ry = px + k * pvx / 65536, clamp(py + k * pvy / 65536) - self.d3
@@ -71,17 +143,21 @@ class Goalie:
                 if frames <= 12 and abs(py) <= 264:
                     self.locked = True                          # goaliesave: a save move, his speed quartered
                     self.vx, self.vy = int(self.vx / 4), int(self.vy / 4)
+                    if self.rom and self.frame0 is not None:
+                        self.save_move(xc, frames, pz, pvz)
                 gx = xc if abs(py) <= 252 else (24 if px >= 0 else -24)
         self.dir = vtoa(gx - (self.x + int(self.vx / 256)), gy - (self.y + int(self.vy / 256)))
 
-    def step(self, px, py, pvx, pvy):
+    def step(self, px, py, pvx, pvy, pz=0, pvz=0):
+        if self.seq:
+            self.t += 1
         self.vx -= int(self.vx / 64)
         self.vy -= int(self.vy / 64)
         if not self.locked:
             self.timer -= 1
             if self.timer < 0:
                 self.timer = self.aidef >> 2
-                self.think(px, py, pvx, pvy)
+                self.think(px, py, pvx, pvy, pz, pvz)
             if self.dir == 8:                                   # stopna
                 self.vx = 0 if abs(self.vx) <= 150 else self.vx - math.copysign(150, self.vx)
                 self.vy = 0 if abs(self.vy) <= 150 else self.vy - math.copysign(150, self.vy)
@@ -94,8 +170,14 @@ class Goalie:
         self.y += self.vy / 4096
 
 
-def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng):
-    """One shot as the game plays it: 'goal', 'save', 'post', 'over' or 'wide'."""
+def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False):
+    """One shot as the game plays it: 'goal', 'save', 'post', 'over' or 'wide' ('stick' with `stick`).
+
+    stick (2026-10-23, off until it is shown to predict the recordings better): the goalie's stick as checkpuckcoll
+    .ccx tests it, before his body, for a puck at height 5 or less rising no faster than $200: the blade (his sprite
+    frame's hot point) within 8 units plays it (puckstick: caught or deflected, no goal); 8-14 units, nothing that frame
+    and the body test skipped (the blind ring the Down slapshot goes through: GENESIS_MECHANICS 4.10, 5.5). Needs the
+    goalie made with rom and frame."""
     (px, py, pz), (tx, ty, tz) = start, target
     dx, dy, z = tx - px, ty - py, tz
     d3 = max(1, int(math.hypot(dx, dy)))
@@ -133,7 +215,16 @@ def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng):
             return "post" if abs(cx) <= 21 else "wide"
         x, y, h = nx, ny, nh
         if G:
-            G.step(x, y, vx, vy)
+            G.step(x, y, vx, vy, h, vz)
+            if stick and G.frame0 is not None and h <= 5 and vz <= 0x200:
+                bx, by = G.blade()
+                sdx, sdy = bx - x, by - y
+                if abs(sdx) <= 14 and abs(sdy) <= 14:
+                    d2 = sdx * sdx + sdy * sdy
+                    if d2 <= 64:
+                        return "stick"
+                    if d2 <= 196:
+                        continue                              # the blind ring: no body test this frame
             gdx, gdy = G.x + shift - x, G.y - y
             if h <= 15 and abs(gdx) <= reach and abs(gdy) <= reach and gdx * gdx + gdy * gdy <= reach * reach:
                 return "save"
@@ -178,8 +269,10 @@ def _velocity(m, f, k, back_ms=100):
 _CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
 
 
-def add_expected_goals(m):
-    """Each shot and one-timer of a Genesis match gets `xg`, the chance it goes in by the game's rules (see above)."""
+def add_expected_goals(m, stick_rom=None):
+    """Each shot and one-timer of a Genesis match gets `xg`, the chance it goes in by the game's rules (see above).
+    stick_rom: the ROM's bytes to model the goalie's stick (play_out's `stick`); off by default."""
+    rom = GenesisRom(stick_rom) if stick_rom else None
     if m.get('system', 'genesis') != 'genesis' or not m.get('work'):
         return
     rows = {}
@@ -213,7 +306,10 @@ def add_expected_goals(m):
             anim = m['anim'][(f * 12 + gk) * 4:(f * 12 + gk) * 4 + 4]
             if anim in PAD_STACK:
                 reach, shift = 18, PAD_STACK[anim]
-            goalie = Goalie(gx, gy, vgx * 4096, vgy * 4096, *gw[:4])
+            gfr = int(m['frame'][(f * 12 + gk) * 3:(f * 12 + gk) * 3 + 3], 16) if rom and 'frame' in m else None
+            goalie = Goalie(gx, gy, vgx * 4096, vgy * 4096, *gw[:4], rom=rom, frame=gfr or None,
+                            facing=int(m['facing'][f * 12 + gk]) if rom else 4,
+                            mirror=bool(rom) and m.get('mirror', '')[f * 12 + gk:f * 12 + gk + 1] == '1')
             coming = (gx + 8 * vgx, gy + 8 * vgy)   # shotdiradj looks half his velocity's high byte ahead
         if sh['kind'] == 'one-timer' or not sh.get('human'):
             d = auto_aim(px, py, *coming, gl) if coming else 8
@@ -227,13 +323,13 @@ def add_expected_goals(m):
             perfect = 1.0                                         # ReadGoaliePulled: the delayed-penalty snipe
         pp = max(1.0, sh['speed'] / 68)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
-               (gx, gy, vgx, vgy, *gw[:4]) if goalie else None)
+               (gx, gy, vgx, vgy, *gw[:4]) if goalie else None, bool(rom))
         if key in _CACHE:
             sh['xg'] = _CACHE[key]
             continue
         rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
-        goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng) == 'goal'
-                    for _ in range(N_SAMPLES))
+        goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng,
+                             stick=bool(rom)) == 'goal' for _ in range(N_SAMPLES))
         sh['xg'] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 
