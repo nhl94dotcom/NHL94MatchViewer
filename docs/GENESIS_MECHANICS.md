@@ -525,7 +525,7 @@ shot faces a goalie placed and moving as goalies really were at one of the recor
 
 ### 4.10 The scoring map: shots played in the real game
 
-**Real game** (2026-10-22; `analysis/scoring_map/`, PROJECT_NOTES "Scoring map"). Instead of a model, the game itself:
+**Real game** (2026-10-22; `analysis/scoring_map/`, PROJECT_NOTES "Scoring map"; the whole method, with pictures of each kind of goal: [SCORING_MAP](SCORING_MAP.md)). Instead of a model, the game itself:
 the ROM rebuilt from the disassembly with a small hook in `doshot`, run headless, every shot set up and played to the
 end. The shot's random draws (the perfect-shot roll and the three scatter draws) are sampled from their exact
 distribution through an exact port of `doshot` (it matches the game on 129 of 129 shots), and the moment of the shot

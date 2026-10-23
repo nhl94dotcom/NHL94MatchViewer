@@ -371,7 +371,7 @@ they were at recorded one-timers, usually still moving across after the pass).
 
 ### 4.8 The scoring map: shots played in the real game
 
-**Real game** (2026-10-23; `analysis/scoring_map/snes_*.py`, PROJECT_NOTES "Scoring map"). As on the Genesis
+**Real game** (2026-10-23; `analysis/scoring_map/snes_*.py`, PROJECT_NOTES "Scoring map"; the whole method, with pictures of each kind of goal: [SCORING_MAP](SCORING_MAP.md)). As on the Genesis
 (GENESIS_MECHANICS 4.10), but with the unmodified ROM: the game runs headless in Snes9x, the shooter is held on a spot
 with the puck while the computer goalie sets himself, and each shot is played to the end. The frame the puck leaves the
 stick is replayed from many random seeds, so the game rolls its own dice for everything (the perfect-shot roll, the

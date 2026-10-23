@@ -1,0 +1,40 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='980' height='440' viewBox='0 0 980 440' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<rect width='980' height='440' fill='white'/>
+<text x='24' y='32' font-size='18' font-weight='bold' fill='#1f2933'>How the goals went in: share of all goals in a fresh sample of the maps' shots</text>
+<text x='24' y='70' font-size='15' font-weight='bold' fill='#1f2933'>Genesis: 12,810 goals from 1,088,208 shots (1.18%)</text>
+<text x='330' y='99' font-size='13' fill='#1f2933' text-anchor='end'>Through the butterfly's blind ring</text>
+<rect x='340' y='87' width='198.4' height='16' fill='#2563eb'/>
+<text x='544.4' y='100' font-size='12' fill='#52606d'>47.2%  (6,051)</text>
+<text x='330' y='123' font-size='13' fill='#1f2933' text-anchor='end'>Past or through his early pad stack</text>
+<rect x='340' y='111' width='94.7' height='16' fill='#2563eb'/>
+<text x='440.7' y='124' font-size='12' fill='#52606d'>22.6%  (2,889)</text>
+<text x='330' y='147' font-size='13' fill='#1f2933' text-anchor='end'>Clean: never within his reach</text>
+<rect x='340' y='135' width='89.5' height='16' fill='#2563eb'/>
+<text x='435.5' y='148' font-size='12' fill='#52606d'>21.3%  (2,729)</text>
+<text x='330' y='171' font-size='13' fill='#1f2933' text-anchor='end'>Held, then carried into the net (top net)</text>
+<rect x='340' y='159' width='29.7' height='16' fill='#2563eb'/>
+<text x='375.7' y='172' font-size='12' fill='#52606d'>7.1%  (905)</text>
+<text x='330' y='195' font-size='13' fill='#1f2933' text-anchor='end'>Off the goalie (deflection)</text>
+<rect x='340' y='183' width='7.7' height='16' fill='#2563eb'/>
+<text x='353.7' y='196' font-size='12' fill='#52606d'>1.8%  (236)</text>
+<text x='24' y='230' font-size='15' font-weight='bold' fill='#1f2933'>SNES: 2,725 goals from 761,400 shots (0.36%)</text>
+<text x='330' y='259' font-size='13' fill='#1f2933' text-anchor='end'>Past a right-side save move</text>
+<rect x='340' y='247' width='214.5' height='16' fill='#0d9488'/>
+<text x='560.5' y='260' font-size='12' fill='#52606d'>51.1%  (1,392)</text>
+<text x='330' y='283' font-size='13' fill='#1f2933' text-anchor='end'>Off the goalie (deflection)</text>
+<rect x='340' y='271' width='99.4' height='16' fill='#0d9488'/>
+<text x='445.4' y='284' font-size='12' fill='#52606d'>23.7%  (645)</text>
+<text x='330' y='307' font-size='13' fill='#1f2933' text-anchor='end'>Past a left-side save move</text>
+<rect x='340' y='295' width='89.4' height='16' fill='#0d9488'/>
+<text x='435.4' y='308' font-size='12' fill='#52606d'>21.3%  (580)</text>
+<text x='330' y='331' font-size='13' fill='#1f2933' text-anchor='end'>During a poke check</text>
+<rect x='340' y='319' width='9.2' height='16' fill='#0d9488'/>
+<text x='355.2' y='332' font-size='12' fill='#52606d'>2.2%  (60)</text>
+<text x='330' y='355' font-size='13' fill='#1f2933' text-anchor='end'>Clean: before he moved</text>
+<rect x='340' y='343' width='6.6' height='16' fill='#0d9488'/>
+<text x='352.6' y='356' font-size='12' fill='#52606d'>1.6%  (43)</text>
+<text x='330' y='379' font-size='13' fill='#1f2933' text-anchor='end'>Held, then in</text>
+<rect x='340' y='367' width='1.5' height='16' fill='#0d9488'/>
+<text x='346.8' y='380' font-size='12' fill='#52606d'>0.2%  (5)</text>
+<text x='24' y='414' font-size='12' fill='#52606d'>Every valid spot, both nets, wrist shots and slapshots, all nine aims, equally weighted; each goal sorted from the puck's and the goalie's state every frame.</text>
+</svg>

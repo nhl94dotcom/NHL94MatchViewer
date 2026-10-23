@@ -7,7 +7,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 **This file is the short brief. The full history and every finding (addresses, routines, checks, dates) is in
 `docs/PROJECT_NOTES.md`: search it before re-deriving anything.** Game mechanics in plain English and in detail are in
 `docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `docs/GENESIS_MECHANICS.md`, `docs/SNES_MECHANICS.md`; studies in
-`docs/SHOOTING_STUDY.md`; open questions for the user in `docs/NEEDS_FROM_YOU.md`.
+`docs/SHOOTING_STUDY.md` and `docs/SCORING_MAP.md` (shots played in the real game, the method and pictures of each kind of
+goal); open questions for the user in `docs/NEEDS_FROM_YOU.md`.
 
 ## Rules (from the user)
 
