@@ -1,4 +1,4 @@
-"""The one-timer study, in chunks: python ot_run.py SYSTEM PLAN RUN [minutes]
+"""The one-timer study, in chunks: python ot_run.py SYSTEM PLAN RUN [minutes] [net]
 -> paths.RUNS / RUN / ot_<SYSTEM>_<PLAN>.jsonl, one line per finished job (a receiver spot R and a passer spot P at
 one net). A run starts jobs only until `minutes` (default 60) have gone by, then waits for the ones under way and
 stops; the next run with the same arguments skips every finished job, so a study is done in as many chunks as wanted
@@ -12,7 +12,8 @@ out. Kept per moment, so the spread
 between moments can be measured.
 
 Plans: "pilot" (net top; receivers 68 out in the middle, 38 out to the right, 118 out to the left; passers 60 and 120
-from each in 8 directions)."""
+from each in 8 directions); "full" (both nets; receivers 7 across, -90 to 90, x 6 distances, 30 to 155 out; passers
+60 and 120 away in 8 directions, on the ice; top net first)."""
 import json
 import math
 import random
@@ -41,6 +42,21 @@ def plan_jobs(plan):
                          round(R[1] + dist * math.cos(math.radians(ang))))
                     if abs(P[0]) <= 110 and 10 <= P[1] <= 255:
                         jobs.append(("top", R, P))
+        return jobs
+    if plan == "full":
+        # receivers: 7 across x 6 distances out (30-155 from the goal line); passers 60 and 120 away in 8
+        # directions, on the ice; the top net first, then the bottom (so each net is a whole chunk or two)
+        jobs = []
+        for net in ("top", "bottom"):
+            for out in (30, 55, 80, 105, 130, 155):
+                for rx in (-90, -60, -30, 0, 30, 60, 90):
+                    R = (rx, 268 - out)
+                    for ang in range(0, 360, 45):
+                        for dist in (60, 120):
+                            P = (round(R[0] + dist * math.sin(math.radians(ang))),
+                                 round(R[1] + dist * math.cos(math.radians(ang))))
+                            if abs(P[0]) <= 110 and 10 <= P[1] <= 255:
+                                jobs.append((net, R, P))
         return jobs
     raise ValueError(plan)
 
@@ -90,6 +106,7 @@ def job(args):
 def main():
     system, plan, run = sys.argv[1], sys.argv[2], sys.argv[3]
     minutes = float(sys.argv[4]) if len(sys.argv) > 4 else 60
+    only = sys.argv[5] if len(sys.argv) > 5 else None             # one net only (top / bottom)
     path = RUNS / run / f"ot_{system}_{plan}.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     done = set()
@@ -97,7 +114,7 @@ def main():
         for line in open(path):
             d = json.loads(line)
             done.add((d["net"], tuple(d["R"]), tuple(d["P"])))
-    todo = [j for j in plan_jobs(plan) if (j[0], tuple(j[1]), tuple(j[2])) not in done]
+    todo = [j for j in plan_jobs(plan) if (j[0], tuple(j[1]), tuple(j[2])) not in done and only in (None, j[0])]
     print(f"{system} {plan}: {len(done)} jobs done before, {len(todo)} to go; this chunk: up to {minutes:g} minutes",
           flush=True)
     t0, deadline = time.time(), time.time() + 60 * minutes

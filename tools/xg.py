@@ -80,11 +80,13 @@ def vtoa(dx, dy):
 class Goalie:
     """The computer goalie's movement, frame by frame. Velocities in the game's words (units x 4096 a frame)."""
 
-    def __init__(self, x, y, vx, vy, weight, agility, speed, aidef, rom=None, frame=None, facing=4, mirror=False):
+    def __init__(self, x, y, vx, vy, weight, agility, speed, aidef, rom=None, frame=None, facing=4, mirror=False,
+                 puck_control=10):
         """rom (GenesisRom), frame, facing, mirror: the stick model (play_out's `stick`): the frame he shows at the
         release, the way he faces and whether he's drawn mirrored; his save move then runs its own frames."""
         self.rom, self.frame0, self.facing, self.mirror = rom, frame, facing, mirror
         self.seq, self.t = None, 0
+        self.puck_control, self.nopuck = puck_control, 0
         self.x, self.y, self.vx, self.vy = x, y, vx, vy
         self.acc = (64 - weight // 4 + agility + 2 + agility + 16) // 2   # playeracc; goalies count Agility twice, + 16
         n = min(30, speed + 2)                                            # MaxSpeed, the odd half-step included
@@ -170,14 +172,21 @@ class Goalie:
         self.y += self.vy / 4096
 
 
-def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False):
+def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False, rebound=False):
     """One shot as the game plays it: 'goal', 'save', 'post', 'over' or 'wide' ('stick' with `stick`).
 
     stick (2026-10-23, off until it is shown to predict the recordings better): the goalie's stick as checkpuckcoll
     .ccx tests it, before his body, for a puck at height 5 or less rising no faster than $200: the blade (his sprite
     frame's hot point) within 8 units plays it (puckstick: caught or deflected, no goal); 8-14 units, nothing that frame
     and the body test skipped (the blind ring the Down slapshot goes through: GENESIS_MECHANICS 4.10, 5.5). Needs the
-    goalie made with rom and frame."""
+    goalie made with rom and frame.
+
+    rebound (2026-10-23, off until shown to help): a body touch isn't always a save (puckgoalie): he holds the puck only
+    if both its speed components are under a random limit, (random((2 + Puck Control) x 512) + $C00) x 2, a quarter
+    of that when he's standing (not in a save move) with the puck in close (within 44 across, 210-270 out); otherwise
+    it bounces straight out from his centre through where it touched him at 256 x that offset a frame (slowly), its
+    height speed cleared, and he can't touch it for 10 frames. A touch behind his centre so drifts into the net: the
+    other half of the through-the-legs goal (5.5)."""
     (px, py, pz), (tx, ty, tz) = start, target
     dx, dy, z = tx - px, ty - py, tz
     d3 = max(1, int(math.hypot(dx, dy)))
@@ -216,6 +225,11 @@ def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=F
         x, y, h = nx, ny, nh
         if G:
             G.step(x, y, vx, vy, h, vz)
+            if G.nopuck > 0:                                  # just bounced off him: no touch for 10 frames
+                G.nopuck -= 1
+                if abs(y) > 300 or abs(x) > 140:
+                    return "wide"
+                continue
             if stick and G.frame0 is not None and h <= 5 and vz <= 0x200:
                 bx, by = G.blade()
                 sdx, sdy = bx - x, by - y
@@ -227,7 +241,15 @@ def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=F
                         continue                              # the blind ring: no body test this frame
             gdx, gdy = G.x + shift - x, G.y - y
             if h <= 15 and abs(gdx) <= reach and abs(gdy) <= reach and gdx * gdx + gdy * gdy <= reach * reach:
-                return "save"
+                if not rebound:
+                    return "save"
+                limit = min(0x7FFF, (rng.randrange((2 + G.puck_control) << 9) + 0xC00) * 2)
+                if not G.locked and abs(x) <= 0x2C and 0xD2 <= abs(y) <= 0x10E:
+                    limit >>= 2                               # standing, the puck in close: a quarter
+                if abs(vx) <= limit and abs(vy) <= limit:
+                    return "save"                             # held
+                vx, vy, vz = 256 * (x - G.x), 256 * (y - G.y), 0.0
+                G.nopuck = 10
         if abs(y) > 300 or abs(x) > 140:
             return "wide"
     return "wide"
@@ -269,9 +291,10 @@ def _velocity(m, f, k, back_ms=100):
 _CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
 
 
-def add_expected_goals(m, stick_rom=None):
+def add_expected_goals(m, stick_rom=None, rebound=False):
     """Each shot and one-timer of a Genesis match gets `xg`, the chance it goes in by the game's rules (see above).
-    stick_rom: the ROM's bytes to model the goalie's stick (play_out's `stick`); off by default."""
+    stick_rom: the ROM's bytes to model the goalie's stick (play_out's `stick`); rebound: play_out's `rebound`; both
+    off by default."""
     rom = GenesisRom(stick_rom) if stick_rom else None
     if m.get('system', 'genesis') != 'genesis' or not m.get('work'):
         return
@@ -309,7 +332,8 @@ def add_expected_goals(m, stick_rom=None):
             gfr = int(m['frame'][(f * 12 + gk) * 3:(f * 12 + gk) * 3 + 3], 16) if rom and 'frame' in m else None
             goalie = Goalie(gx, gy, vgx * 4096, vgy * 4096, *gw[:4], rom=rom, frame=gfr or None,
                             facing=int(m['facing'][f * 12 + gk]) if rom else 4,
-                            mirror=bool(rom) and m.get('mirror', '')[f * 12 + gk:f * 12 + gk + 1] == '1')
+                            mirror=bool(rom) and m.get('mirror', '')[f * 12 + gk:f * 12 + gk + 1] == '1',
+                            puck_control=gw[4] if len(gw) > 4 else 10)
             coming = (gx + 8 * vgx, gy + 8 * vgy)   # shotdiradj looks half his velocity's high byte ahead
         if sh['kind'] == 'one-timer' or not sh.get('human'):
             d = auto_aim(px, py, *coming, gl) if coming else 8
@@ -323,13 +347,13 @@ def add_expected_goals(m, stick_rom=None):
             perfect = 1.0                                         # ReadGoaliePulled: the delayed-penalty snipe
         pp = max(1.0, sh['speed'] / 68)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
-               (gx, gy, vgx, vgy, *gw[:4]) if goalie else None, bool(rom))
+               (gx, gy, vgx, vgy, *gw[:5]) if goalie else None, bool(rom), rebound)
         if key in _CACHE:
             sh['xg'] = _CACHE[key]
             continue
         rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
         goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng,
-                             stick=bool(rom)) == 'goal' for _ in range(N_SAMPLES))
+                             stick=bool(rom), rebound=rebound) == 'goal' for _ in range(N_SAMPLES))
         sh['xg'] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 
