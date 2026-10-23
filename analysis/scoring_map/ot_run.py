@@ -4,7 +4,8 @@ one net). A run starts jobs only until `minutes` (default 60) have gone by, then
 stops; the next run with the same arguments skips every finished job, so a study is done in as many chunks as wanted
 and can be stopped at any time (an unfinished job is simply run again). Gentle mode (lowload.py).
 
-Each job: for each press timing ("early": 2 frames after the pass leaves; "late": about 6 frames before it arrives)
+Each job: for each press timing ("early": 2-5 frames after the pass leaves; "late": 2-10 frames before he would take
+it, spread over the moments since the swing has narrow timing holes)
 and each of MOMENTS moments (the clock and settle cycles; on the SNES also the goalie's random seed), the pass up to
 the press (ot_harness); then for each aim (SNES: the nine d-pad directions, held from the press; Genesis: none, it
 aims itself) the swing, and if it strikes the puck, the strike frame replayed with SEEDS random seeds, each played
@@ -80,7 +81,8 @@ def job(args):
         rows = []
         for p in range(MOMENTS):
             ot.setup(net, P, R, p, rnd)
-            press, info = ot.pass_to_press(timing)
+            by = 2 + p % 4 if timing == "early" else 2 + (p * 5) % 9   # spread over the moments (timing holes)
+            press, info = ot.pass_to_press(timing, by=by)
             if press is None:
                 rows.append({"p": p, "passed": False, "why": info})
                 breathe()

@@ -1608,6 +1608,13 @@ aims x 4 seeds): Genesis early 896 strikes in 960, goal rate per job median 16.6
 1.7%; SNES early 867 in 959, median 5.0% over the aims (best aim median 26%), late median 2.7%. Moment-to-moment sd of
 a job's rate: Genesis early median 0.16 (max 0.33), so 32 moments give about +/-3 points; SNES (aims pooled) 0.05.
 Times in gentle mode: Genesis 30 jobs in 3.2 min, SNES in 15.5 min; CPU averaged 5% (peak 19%).
+**Late press fixed (2026-10-23):** "late" was timed by the puck's distance to the receiver's centre, which on slower
+passes came after his blade (10-13 in front of him) had already taken it, so the press took an ordinary shot (the pilot's
+Genesis late median of 1.7% was that). Now the pass is played once without a press to find the frame he'd take it, and
+late = 2-10 frames before that; early = 2-5 frames after the release; both spread over the moments because the swing
+has narrow timing holes (a long pass across whiffed at every moment pressed 6 frames before the catch, struck at 4 and
+8). Genesis pilot again (otpilot2): early median 16.6%, late 16.2%; the pass reached the late press 876 / 960 (737
+before). Chunk 1 of the full study (Genesis top) ran with the old timing and is superseded.
 
 ## Advanced stats (2026-10-16)
 

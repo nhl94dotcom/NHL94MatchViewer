@@ -179,27 +179,47 @@ class OneTimer:
             s.give_puck(PASSER)
             self.run()
 
-    def pass_to_press(self, timing, max_frames=90):
-        """Pass toward the receiver and play up to the one-timer press: timing "early" (2 frames after the puck leaves)
-        or "late" (when it's about 6 frames from him). Returns (the state just before the press frame, frames from the
+    def pass_to_press(self, timing, max_frames=90, by=2):
+        """Pass toward the receiver and play up to the one-timer press: timing "early" (`by` frames after the puck
+        leaves) or "late" (`by` frames before he would take the pass: found by playing the pass once with no press
+        first; timing it by the puck's distance to his centre came too late on slower passes, after his blade, 10-13
+        in front of him, had already taken it, and the press was then an ordinary shot). The game's swing has narrow
+        timing holes (a long pass across whiffed at every moment pressed 6 frames before the catch, struck at 4 and
+        8), so ot_run spreads `by` over the moments. Returns (the state just before the press frame, frames from the
         release to the press) or (None, why)."""
         s, e = self.s, self.e
         d = DIRS[direction(self.R[0] - self.P[0], self.R[1] - self.P[1])]
-        released = None
-        for f in range(max_frames):
-            if released is not None:
-                px, py = s.xy(s.PUCK)
-                vx, vy = s.v(s.PUCK)
-                dist = math.hypot(self.R[0] - px, self.R[1] - py)
-                speed = math.hypot(vx, vy) / 4096 or 1e-9
-                if (timing == "early" and f - released >= 2) or (timing == "late" and dist / speed <= 6):
-                    return e.serialize(), f - released
-            self.run([s.pass_button] + d if f < 4 else d)   # 4 frames: the SNES loop runs every other frame, and a
-            if released is None and s.carrier() != PASSER:  # release before it reads the direction passes the way
-                released = f                                # he faces
-            if released is None and f > 20:
-                return None, "no pass"
-        return None, "puck never near"
+        start = e.serialize()
+
+        def play(until):
+            """Play the pass from the start; stop just before frame `until` (the press) or when he takes the puck."""
+            e.unserialize(start)
+            released = None
+            for f in range(max_frames):
+                if f == until:
+                    return e.serialize(), released, f
+                self.run([s.pass_button] + d if f < 4 else d)   # 4 frames: the SNES loop runs every other frame,
+                if released is None and s.carrier() != PASSER:  # and a release before it reads the direction passes
+                    released = f                                # the way he faces
+                if released is None and f > 20:
+                    return None, None, "no pass"
+                if released is not None and s.carrier() == RECEIVER:
+                    return None, released, f                    # he has it
+            return None, released, "puck never near"
+
+        _, released, caught = play(None)
+        if released is None:
+            return None, caught
+        if timing == "early":
+            press = released + by
+        else:
+            if not isinstance(caught, int):
+                return None, "never taken (no late press)"
+            press = max(released + 1, caught - by)
+        state, released, f = play(press)
+        if state is None:
+            return None, "taken before the press"
+        return state, press - released
 
     def swing(self, press, aim, max_frames=60):
         """From the press: the one-timer button for 2 frames and the aim's d-pad held (the SNES aims the strike by the
