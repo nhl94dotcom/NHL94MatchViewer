@@ -41,8 +41,9 @@ goal); open questions for the user in `docs/NEEDS_FROM_YOU.md`.
 
 ## Where things are
 
-- Two game folders: the project (`captures/`, `matches/`, used when the helper runs from Python) and
-  `Documents\NHL94 Viewer` (the exe's home; `NHL94_HOME` selects it for any tool). Recordings, matches, ROM copies,
+- Two game folders: the project (`captures/`, `matches/`, used when `tools/nhl94_helper.py` runs on its own: tests)
+  and `Documents\NHL94 Viewer` (the real games: the exe's home, and every launcher .bat sets `NHL94_HOME` to it, as
+  any tool can). Recordings, matches, ROM copies,
   sprites, sounds and build output are git-ignored.
 - `NHL94 Helper.bat` / `dist\NHL94 Helper.exe`: `tools/nhl94_helper.py` waits for RetroArch, records each game (live
   play only), converts it, serves http://localhost:9494/helper.html (games list, viewer, season page). Live broadcast:

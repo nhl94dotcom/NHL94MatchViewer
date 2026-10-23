@@ -9,7 +9,9 @@ there is no live view yet.
 
 ## Workflow
 
-The easy way: double-click `NHL94 Helper.bat` (runs `python tools/nhl94_helper.py`) and leave its window open while
+The easy way: double-click `NHL94 Helper.bat` (runs `python tools/nhl94_helper.py` with `NHL94_HOME` set to
+`Documents\NHL94 Viewer`, the exe's folder, and copies the pages and rink pictures there; until 2026-10-23 it used the
+project folder, and the day's three BOS-LA games had to be copied across) and leave its window open while
 playing. It waits for RetroArch with NHL '94, records each game from the opening faceoff to the final horn (live play
 only: $FFF7 = 0; pauses and instant replays are left out, timeline included), converts it as
 `<date>_<time>_<HOME>-<AWAY>`, and lists games at http://localhost:9494/helper.html (bound to this computer only;
