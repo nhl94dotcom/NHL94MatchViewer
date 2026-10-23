@@ -1544,7 +1544,9 @@ banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harn
   07FF. Video memory isn't exposed by the core, but its save state holds it (found after the state's 1 KB sprite-table
   copy, which reappears in video memory at DC00; work RAM at state offset 16): animate.py fills those rows with 07FF
   before each frame drawn (goal_frames.hide_genesis_hud). Display only: the four Genesis spots' 120-shot tallies were
-  identical with and without it.
+  identical with and without it. That left a flash now and then (the game rewrites the clock's and score box's map
+  entries at the start of a frame, before it is drawn), so the boxes' tile graphics are cleared too: the EA logo
+  1C6-1D0, the borders 3FC-404 and the small font from smallfontchars (B012 = 405), 64 characters.
 - **Controls**: A shoots (cbut $0080; ShotMode: a tap jumps the animation to its end, so the wrist shot leaves at frame
   3, passspeed 15 + frames; a slapshot at frame 26), B passes, Y flips. Boot: 12 x Start from power-on reaches the
   rink's "Start Game" menu, then Start again: Los Angeles (home, pad 1, the centre object 2 controlled) v Montreal, Los

@@ -89,12 +89,18 @@ def genesis_vram(e):
 
 
 def hide_genesis_hud(e, vram):
-    """Blank the clock and score boxes for the next frame drawn: they are rows 23-27 of the front tile layer (plane A,
-    map at VmMAP1, 64 columns), which doesn't scroll; every other tile there is the transparent 07FF. Only what is
-    drawn changes: the game never reads video memory back."""
+    """Blank the clock and score boxes for the next frame drawn. They are rows 23-27 of the front tile layer (plane A,
+    map at VmMAP1, 64 columns), which doesn't scroll; every other tile there is the transparent 07FF. Blanking the map
+    alone left a flash now and then: the game rewrites those map entries (the clock each second, the score box) at the
+    start of a frame, before it is drawn. So the boxes' tile graphics are cleared as well (colour 0 is transparent):
+    the EA logo 1C6-1D0, the box borders 3FC-404 and the small font from smallfontchars (405) on, 64 characters.
+    Only what is drawn changes: the game never reads video memory back."""
     s = bytearray(e.serialize())
     a = vram + e.w(0xB004) + 2 * 64 * 23              # VmMAP1
     s[a:a + 2 * 64 * 5] = bytes([0xFF, 0x07]) * (64 * 5)   # 07FF, stored low byte first
+    font = e.w(0xB012)                                # smallfontchars
+    for lo, hi in ((0x1C6, 0x1D1), (0x3FC, 0x405), (font, font + 64)):
+        s[vram + 32 * lo:vram + 32 * hi] = bytes(32 * (hi - lo))
     e.unserialize(bytes(s))
 
 
