@@ -6,7 +6,7 @@ clock, the frames he has to settle) times `seeds` release seeds (the shot's draw
 working Shot Power and Shot Accuracy default to 13 / 13, the median of the recorded SNES shots. Validity as validity.py:
 at the release the puck at least 24 from the goalie's centre and in front of him, the shooter 16 or more from him.
 Defaults: all 120 moments (every clock x settle pair) x 4 seeds; run snes1 used 16 x 24, too few moments (the rate
-swings about 0.27 from moment to moment: PROJECT_NOTES). Gentle mode (lowload.py): 6 workers, below-normal priority."""
+swings about 0.27 from moment to moment: PROJECT_NOTES). Gentle mode (lowload.py)."""
 import json
 import random
 import sys
@@ -15,7 +15,7 @@ from multiprocessing import Pool
 
 from paths import RUNS, SNES_STATE_TOP, SNES_STATE_BOTTOM
 import snes_harness as H
-from lowload import WORKERS, gentle
+from lowload import WORKERS, breathe, gentle
 
 XS = range(-110, 111, 10)
 YS = range(90, 251, 10)
@@ -72,6 +72,7 @@ def job(args):
                     h.fire(pre, aim, rnd.getrandbits(32))
                     r, _f = h.decide()
                     c["n"] += 1
+                    breathe()
                     c["g"] += r
     return f"{net},{x},{y}", out
 

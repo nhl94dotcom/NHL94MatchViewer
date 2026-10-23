@@ -10,7 +10,7 @@ the edge of the goalie's body box, so the bottom-net lane spot scores 20.4% with
   and the net, goals in about the spot's real proportion, each labelled with what happened (GOAL, SAVED, POST, MISSED);
 - <name>_fan.gif: all N shots at once from above, the puck's trail coloured by result, the shooter's spot marked, the
   goalie each shot's dark dot.
-Gentle mode (lowload.py): a few worker processes at below-normal priority."""
+Gentle mode (lowload.py): two worker processes at idle priority, resting as long as they work."""
 import json
 import random
 import sys
@@ -21,7 +21,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from lowload import WORKERS, gentle
+from lowload import WORKERS, breathe, gentle
 
 FONT = "C:/Windows/Fonts/segoeui.ttf"
 FONTB = "C:/Windows/Fonts/segoeuib.ttf"
@@ -121,18 +121,19 @@ def play(spec, n):
             if released:
                 pre = st                              # the state before the release frame
                 break
-            windup.append(box(spec, net_on_screen(e, system, net), grab(e)))
+            img = grab(e)
+            windup.append(box(spec, net_on_screen(e, system, net, img), img))
         if pre is None:
             continue
         seed = rnd.getrandbits(32)
         s0 = o.score0(net)
         img = frame(h, lambda: o.fire(net, pre, aim, seed))
-        frames, states = windup + [box(spec, net_on_screen(e, system, net), img)], [o.state(net)]
+        frames, states = windup + [box(spec, net_on_screen(e, system, net, img), img)], [o.state(net)]
         goal, k, away, held, tail = None, None, 0, 0, 10
         for f in range(150):
             img = frame(h, step)
             st = o.state(net)
-            frames.append(box(spec, net_on_screen(e, system, net), img))
+            frames.append(box(spec, net_on_screen(e, system, net, img), img))
             states.append(st)
             if goal is not None:
                 tail -= 1
@@ -149,6 +150,7 @@ def play(spec, n):
         if k is None:
             goal, k = False, len(states) - 1
         shots.append((outcome(states, k, goal), frames, states, k, len(windup)))
+        breathe()
     return spec, shots
 
 

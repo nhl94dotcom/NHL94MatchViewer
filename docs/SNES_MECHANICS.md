@@ -293,6 +293,12 @@ wide: 24% wide with him 35-70 units out, 16% in his crease).
 Shot speed is (Shot Power x energy + 20) x the wind-up. **Anyone can wind up fully**: the wind-up code doesn't read
 Shot Power, so weak shooters can take full slapshots. **Code**
 
+**Backhands lose a quarter of their power** (`doshot`), and facing only picks which it is (`SetShotMode`,
+`Findhittype`, as on the Genesis): the direction from the shooter to the net against the way he faces, a backhand when
+the net is 45 to 180 degrees round to his backhand side (by his handedness), a forehand otherwise. Nothing else in the
+shot reads his facing: the aim point, the perfect-shot roll and the scatter depend on the d-pad, the puck's spot, its
+speed and Shot Accuracy. **Code**
+
 ### 4.4 Auto-aim
 
 Only **computer** shooters are auto-aimed (`shotdiradj` is skipped for a person's player). **Your one-timers go where

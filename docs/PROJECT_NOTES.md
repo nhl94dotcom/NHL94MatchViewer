@@ -1532,6 +1532,13 @@ banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harn
   skipped past the goalie's box edge (-234 to -245, goalie at y -238) was checked at -240 and saved. 480 shots each,
   parked / kept: top lane 53.6 / 53.8%, bottom lane 26.5 / 20.4%, mirror 1.7 / 0.8%. Genesis unchanged (51 / 52 of
   120). Any SNES study should keep the realistic set of skaters on the ice (or test the sensitivity).
+  **SNES screen position**: the rink never scrolls sideways (the net's middle is column 128) and the screen follows the
+  rink layer's scroll (07DC, a ring buffer; goal-line row = 422 - 07DC at the bottom net in one test), not Vpos (0D37),
+  which ran up to 9 pixels off it; the first SNES animations jerked because their crop followed Vpos and the scroll-lock
+  x (0D4B, 12 -> 26 during a shot). goal_frames.net_on_screen now reads the goal line's row off each frame.
+  **Gentle mode** (lowload.py, 2026-10-23): 6 workers at below-normal priority still spun the user's fan up; now 2 workers
+  at idle priority, each sleeping as long as it works (DUTY 0.5): the animations took 107 s instead of 28, the machine
+  averaging 8% CPU (about 5% idle).
 - **Controls**: A shoots (cbut $0080; ShotMode: a tap jumps the animation to its end, so the wrist shot leaves at frame
   3, passspeed 15 + frames; a slapshot at frame 26), B passes, Y flips. Boot: 12 x Start from power-on reaches the
   rink's "Start Game" menu, then Start again: Los Angeles (home, pad 1, the centre object 2 controlled) v Montreal, Los

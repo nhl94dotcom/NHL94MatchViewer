@@ -20,7 +20,7 @@ import sys
 import zlib
 from multiprocessing import Pool
 
-from lowload import WORKERS, gentle
+from lowload import WORKERS, breathe, gentle
 
 from paths import RUNS, STATE_TOP, STATE_BOTTOM, SNES_STATE_TOP, SNES_STATE_BOTTOM
 
@@ -242,6 +242,7 @@ def job(args):
                     o.fire(net, pre, aim, seed)
                     g, path = play(o, net)
                     shots += 1
+                    breathe()
                     if g:
                         t, anim, dmin, z = classify(system, path, net)
                         goals.append(dict(net=net, x=x, y=y, kind=kind, aim=aim, p=p, seed=seed, type=t, anim=anim,

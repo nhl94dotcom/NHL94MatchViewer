@@ -12,7 +12,7 @@ from harness import Harness, fire, decide, rec, SHOOTER, GOALIE
 from paths import RUNS, STATE_TOP, STATE_BOTTOM
 from mapper import CLOCKS, SETTLES, set_ratings
 from shotport import launch, perfect_chance, scatter_ranges
-from lowload import gentle
+from lowload import breathe, gentle
 
 gentle()
 
@@ -96,6 +96,7 @@ with open(out, "a") as fo:
                     pre, i = inps[k] if k < len(inps) else inps[rng.randrange(len(inps))]
                     fire(h, pre, launch(i, True), post_seed=rng.getrandbits(32), goalie=pick(rng))
                     gp += decide(h)[0]
+                    breathe()
                 for _ in range(n_s):
                     pre, i = inps[rng.randrange(len(inps))]
                     adj, yadj, zr, d3 = scatter_ranges(i)
@@ -103,6 +104,7 @@ with open(out, "a") as fo:
                                rng.randrange(-yadj, yadj) if yadj else 0, rng.randrange(zr) if zr else 0)
                     fire(h, pre, v, post_seed=rng.getrandbits(32), goalie=pick(rng))
                     gs += decide(h)[0]
+                    breathe()
                 perf = gp / n_p if n_p else 0.0
                 sc = gs / n_s if n_s else 0.0
                 var = (p * p * perf * (1 - perf) / n_p if n_p else 0) + \

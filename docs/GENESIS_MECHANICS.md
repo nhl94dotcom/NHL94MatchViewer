@@ -317,6 +317,13 @@ wide: 24% wide with him 35-70 units out, 16% in his crease).
 
 ### 4.3 Shot power and the wind-up
 
+**Facing only picks forehand or backhand** (`SetShotMode`, `Findhittype`; the same on the SNES, 4.3 there). When the
+shot starts, the game takes the direction from the shooter to the net (the 8-way direction to the end boards behind
+it) against the way he faces: straight ahead or toward his forehand side, a forehand; the net 45 to 180 degrees round
+to his backhand side (which side that is follows his handedness), a backhand, a quarter weaker. Nothing else in the
+shot reads his facing: the aim point, the perfect-shot roll and the scatter depend on the d-pad, the puck's spot, its
+speed and Shot Accuracy. The swing's animation does decide where the puck sits as it leaves the stick. **Code**
+
 Shot speed grows with working Shot Power and with how long the wind-up runs; backhands lose a quarter of their power;
 fatigue scales it (only with line changes on). **Shooters with working Shot Power below 20 have the wind-up cut short
 (step 8 instead of 16), so they can't take a full slapshot.** **Confirmed**: those shooters topped out at 20,746

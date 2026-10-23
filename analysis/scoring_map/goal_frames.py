@@ -37,12 +37,12 @@ def replay(system, g):
     extra = [goalie_frame(h.e, system)]
     for f in range(160):
         img = frame(h, lambda: o.step(net))
-        out.append((img, o.state(net), net_on_screen(h.e, system, net)))
+        out.append((img, o.state(net), net_on_screen(h.e, system, net, img)))
         extra.append(goalie_frame(h.e, system))
         if o.scored(net, s0):
             for _ in range(20):                       # a moment past the goal: the light, the puck in the net
                 img = frame(h, lambda: h.e.run(1))
-                out.append((img, o.state(net), net_on_screen(h.e, system, net)))
+                out.append((img, o.state(net), net_on_screen(h.e, system, net, img)))
                 extra.append(goalie_frame(h.e, system))
             return out, extra
     raise RuntimeError("the replay didn't score: not the same shot")
@@ -63,13 +63,30 @@ def goalie_frame(e, system):
     return e.w(0x0D97 + 22), e.w(0x1163 + 22)
 
 
-def net_on_screen(e, system, net):
-    """Where the middle of the goal line is drawn (pixels), from the camera: Genesis camera y / x words at BD18 / BD1C,
-    SNES Vpos (0D37) and the scroll lock x (0D4B); offsets read off frames with the puck in the open."""
+def net_on_screen(e, system, net, img=None):
+    """Where the middle of the goal line is drawn (pixels). Genesis: from the camera words at BD18 / BD1C (offsets read
+    off frames with the puck in the open). SNES: the rink never scrolls sideways (the net's middle is column 128), and
+    the screen follows the rink layer's own scroll (07DC, a ring buffer), not the game's camera (Vpos 0D37, which runs
+    up to 9 pixels off it and made the first SNES animations jerk), so the goal line's row is read off the frame
+    itself: the row with the most goal-line red. Without a frame, or with the line hidden, the Vpos estimate."""
     gl = 268 if net == "top" else -268
     if system == "genesis":
         return 126.5 - e.sw(0xBD1C), e.sw(0xBD18) - gl + 118
-    return 124 - e.sw(0x0D4B), e.sw(0x0D37) - gl + 114
+    row = goal_line_row(img) if img is not None else None
+    return 128, row if row is not None else e.sw(0x0D37) - gl + 114
+
+
+def goal_line_row(img):
+    """The SNES goal line's row: the row where most pixels are its red (a full-width line; the circles and the crease
+    have far fewer). None if no row is at least 40% red."""
+    from PIL import ImageChops
+    r, g, b = img.convert("RGB").split()
+    red = ImageChops.multiply(ImageChops.multiply(r.point(lambda v: 255 if v > 180 else 0),
+                                                  g.point(lambda v: 255 if v < 120 else 0)),
+                              b.point(lambda v: 255 if v < 140 else 0))
+    rows = list(red.resize((1, img.height), Image.BOX).getdata())
+    best = max(range(len(rows)), key=lambda y: rows[y])
+    return best if rows[best] >= 0.4 * 255 else None
 
 
 def key_frames(out, typ):
