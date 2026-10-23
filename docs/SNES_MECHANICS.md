@@ -398,12 +398,14 @@ goalie's ratings hardly matter here: his body box, his set spot and his save fra
   for Shot Accuracy 13 (14 in 29). A few units outside the lane it falls to 0-30%; from the mirror spots on the
   shooter's right, aimed at that side, mostly 0-3% (at the top net 0-2% everywhere; at the bottom one spot 21 off
   centre reached 31%).
-- **Why** (traced shot by shot): the puck, going exactly where aimed, passes 12-13 units to the side of the goalie's
-  centre, just outside his body box (11). He starts a side save move, but on **his right** the frame he holds longest
-  (20 frames; `GoalieSaveList` move $E862, frame 780 facing down, 768 facing up) puts its save area 25-28 units out
-  with a radius of 2-3, beyond the post, so the puck goes through the gap. On his left the matching move ($E7D0,
-  frames 756 / 744) sits 19-22 out and covers it.
-  His right is the screen's left at the top net (he faces down) and its right at the bottom (he faces up): the
+- **Why** (`analysis/scoring_map/goal_types.py`: a fresh sample of 761,400 shots, every goal classified from the puck
+  and the goalie frame by frame; 911 of its goals came from the lane): the puck, going exactly where aimed, passes
+  11-13 units from the goalie's centre, just outside his body box (11), and his save move's area (a small circle with
+  a height band, 5.1) misses it. In the lane he was in his **right** glove save (54% of the goals), right stick save
+  (32%) or right sprawl (10%), never a left one: the right stick and sprawl areas have a radius of 2-4 and start 2-5
+  off the ice, so a puck on the ice slides under them; the right glove's area sits 6-8 out, inside his body box, and
+  the puck passes beside it. Over the whole sample 1,392 goals went past right-side moves against 580 past left-side
+  ones. His right is the screen's left at the top net (he faces down) and its right at the bottom (he faces up): the
   shooter's left both times.
 - **Wrist shots** find the same lane only at the top net, 68-78 out (27-30%); elsewhere their best aim reaches 5-15% in a
   few spots.

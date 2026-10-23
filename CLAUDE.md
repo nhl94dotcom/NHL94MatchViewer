@@ -65,7 +65,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `analysis/scoring_map/` plays shots in the real game (Genesis): a test ROM built from the disassembly with a doshot
   hook, run headless through a libretro frontend over a copy of the Genesis Plus GX core; `build.py`'s docstring is
   the how-to (work files in `%USERPROFILE%\NHL94_scoring_map`). Its findings: GENESIS_MECHANICS 4.10. The SNES map
-  (`snes_*.py`) runs the retail ROM in a copy of the Snes9x core with no hook: SNES_MECHANICS 4.8.
+  (`snes_*.py`) runs the retail ROM in a copy of the Snes9x core with no hook: SNES_MECHANICS 4.8. `goal_types.py`
+  sorts the maps' goals by how they went in; `goal_frames.py` / `goal_diagram.py` picture one (the game's own frames).
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
   `helper_snes_penalty_shots.py` ...): a recording played back as if RetroArch were running it; run one after changing
   the helper or a system's `View`. Also `check_matches.py`, `xg_parity.py`, `viewer_smoke.py`, `viewer_stat_sums.py`

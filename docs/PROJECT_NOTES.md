@@ -1536,6 +1536,19 @@ banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harn
   seeds) to separate it from the 10-unit grid. Traced: the perfect shot passes 12-13 from the goalie's centre, outside
   his body box; his side save move on his right ($E862) holds a frame with its area at 25-28, on his left ($E7D0) at
   19-22. xg_snes.py's averages agree but it doesn't find the lane (its 2-unit goalie spread blurs it).
+- **How the goals go in (2026-10-23)**: `goal_types.py SYSTEM RUN` plays a fresh natural sample over the maps' spots
+  (Genesis 12 moments x 8 seeds: 1,088,208 shots, 12,810 goals; SNES 8 x 8: 761,400 shots, 2,725 goals) and sorts each
+  goal from the puck and goalie state every frame (held; a speed jump near a post / the goalie, and for the Genesis
+  whether it touched him behind his centre low = the blind ring; his animation at the closest pass). Genesis: blind
+  ring 47%, pad stack 23%, clean (never within reach 13) 21%, held then in 7% (top net), off the goalie 2%. SNES: past a
+  right-side save move 51%, off the goalie 24%, past a left-side move 21%, during a poke check ($E528) 2%. The lane's
+  911 goals: 873 past right-side moves (glove 491, stick 293, sprawl 89). Goal-frame checks: the last frame of a goal's
+  path is after the game has moved the puck (left out); the Genesis goal registers with the puck at y about 260.
+  `goal_frames.py` replays a goal exactly (same moment and seeds) and saves four of the game's own frames cropped on
+  the net (camera: Genesis BD18 / BD1C, offsets 118 / 126.5; SNES Vpos 0D37 and 0D4B, 114 / 124, read off frames);
+  `goal_diagram.py` draws the crease from above and the puck's height. SNES save-move addresses checked against the
+  frames94s.asm table sizes: E1E2 glove r, E214 glove l, E246 stick r, E278 stick l, E2AA stack r, E2FC stack l, E73E
+  butterfly, E7D0 sprawl l, E862 sprawl r (xg_snes.SAVES is in GoalieSaveList order).
 
 ## Advanced stats (2026-10-16)
 
