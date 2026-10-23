@@ -1,7 +1,7 @@
 """How the two people played, beyond the box score (2026-10-23, the user: metrics for the people themselves, their
 decisions). Both teams measured the same way over a set of Genesis games between them, totals and per game. Only what
 the person's own skater (or goalie) did counts. Shots in a period's last END_S game-clock seconds are left out of the
-judging (everyone throws the puck at the net then).
+judging (everyone throws the puck at the net then) unless they were a decent chance (xG 0.10 or more).
 - Decisions with the puck: at each of the person's passes and shots in the attacking zone (within 180 of the goal line),
   the options he had, valued the same way: shoot (the xG model from that spot at the goalie as he was, the game's own
   aim, a wrist shot), pass to each teammate (the league's completion rate for that length and gap to the nearest
@@ -20,8 +20,13 @@ judging (everyone throws the puck at the net then).
 - Defensive position: while the other team has the puck in his end, his skater in position (goal-side and within 25 of
   the line from the puck to his net), goal-side but off that line, or caught up ice; the same at each shot against
   from his end, with its xG. Switch timing: a switch that took him from out of position to in position, or the reverse.
-- The goalie when the person took him: takeovers, how many a shot followed within 2 s, of what kind, and person against
-  computer in net for the same kinds of shot.
+- The goalie when the person took him, by the reason (the user's list): an opposing breakaway (their carrier in our half
+  with none of our skaters nearer our net), a one-timer coming (their pass in the air toward our end), a carrier driving
+  at the net (within 130, closing), the puck fired down the ice (theirs last, moving fast toward our end, 100+ out), a
+  loose puck near the net (within 100), a carrier behind or beside the net (within 45, or behind the goal line); then
+  whether a shot followed within 3 s, goals, xG, and whether his team had the puck next. Times the game handed him the
+  goalie because the goalie caught the puck are not decisions and are counted apart. Person against computer in net
+  for the same kinds of shot.
 python analysis/coach_report.py <TEAM> <TEAM> <match name> ...  -> reports/coach_<first match>.md"""
 import json
 import math
@@ -38,7 +43,7 @@ from share_game import load_js_object  # noqa: E402
 from coach_models import Models, lane_gap  # noqa: E402
 import xg as XG  # noqa: E402
 
-K, END_S, ZONE, SAMPLES = 12, 10, 180, 150
+K, END_S, DECENT, ZONE, SAMPLES = 12, 5, 0.10, 180, 150
 CHECK_REACH, CHECK_CONE = 70, 35       # a burst at an opponent this close and this many degrees off his facing
 DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
 
@@ -86,8 +91,10 @@ def goalie(m, f, team):
     return next((k for k in range(team * 6, team * 6 + 6) if m["role"][f * K + k] == "0"), None)
 
 
-def late(m, f):
-    return m["clock"][f] <= END_S
+def late(m, f, xg=None):
+    """A throw at the net in a period's last END_S game-clock seconds (everyone shoots then): left out of the judging
+    unless it was a decent chance (xG DECENT or more)."""
+    return m["clock"][f] <= END_S and (xg is None or xg < DECENT)
 
 
 def position_state(m, f, k, ny):
@@ -139,7 +146,7 @@ def decisions(m, team, M, S, c):
     for what, ev in events:
         f = max(1, ev["f"] - 1)
         k = m["owner"][f]
-        if k not in skaters(m, f, team) or late(m, f):
+        if k not in skaters(m, f, team) or (what == "shot" and late(m, f, ev.get("xg") or 0)):
             continue
         e = own_end(m, f, 1 - team)
         if e is None:
@@ -190,7 +197,7 @@ def measure(m, team, M):
     for s in shots:
         if s["team"] != team or not s.get("human") or s["kind"] not in ("shot", "one-timer"):
             continue
-        if late(m, s["f"]):
+        if late(m, s["f"], s.get("xg") or 0):
             c["sh_late"] += 1
             continue
         e = own_end(m, s["f"], opp)
@@ -277,6 +284,16 @@ def measure(m, team, M):
             away = angle_to(fx, fy, px - x, py - y) > 45
             near_pass = any(abs(t[p["f"]] - t[f]) <= 600 and seg_dist(x, y, p["x0"], p["y0"], p["x1"], p["y1"]) < 25
                             for p in m.get("passes", []) if p["team"] == opp)
+            zone = "own" if abs(ny - py) <= ZONE else ("att" if abs(ny - py) >= 536 - ZONE else "neu")
+            cost = any(0 < t[s["f"]] - t[f] <= 4000 for s in opp_shots)
+            if d <= 30:
+                kind = "steal"
+            elif away or near_pass:
+                kind = "lane"
+            else:
+                kind = "wasted"
+            c[f"k_{kind}_{zone}"] += 1
+            c[f"k_{kind}_cost"] += cost
             if d <= 30:
                 c["k_steal"] += 1
                 c["k_steal_won"] += any(m["owner"][q] in mine for q in range(f, N) if t[q] - t[f] <= 700)
@@ -302,7 +319,7 @@ def measure(m, team, M):
         prev_k, prev_state = k, position_state(m, f, k, ny)
     # ---- where his skater was at each shot against from his end
     for s in opp_shots:
-        if s["kind"] not in ("shot", "one-timer") or late(m, s["f"]):
+        if s["kind"] not in ("shot", "one-timer") or late(m, s["f"], s.get("xg") or 0):
             continue
         f = max(0, s["f"] - 1)
         k, e = ctrl_skater(m, f, team), own_end(m, f, team)
@@ -321,14 +338,26 @@ def measure(m, team, M):
         gk = goalie(m, f, team)
         on = gk is not None and bool(m["ctrl"][f] >> gk & 1)
         if on and not gk_prev:
-            c["gt"] += 1
-            nxt = next((s for s in opp_shots if 0 <= t[s["f"]] - t[f] <= 2000 and s["kind"] in ("shot", "one-timer")), None)
-            if nxt:
-                c["gt_shot"] += 1
-                c["gt_shot_" + ("onetimer" if nxt["kind"] == "one-timer" else nxt["type"].split()[0])] += 1
+            e = own_end(m, f, team)
+            if e is not None:
+                why = takeover_reason(m, f, team, 268 * e)
+                if why == "auto":
+                    c["gt_auto"] += 1
+                    gk_prev = on
+                    continue
+                c["gt"] += 1
+                c["gt_" + why] += 1
+                end = next((q for q in range(f, N) if t[q] - t[f] > 3000), N - 1)
+                nxt = next((s for s in opp_shots if 0 <= t[s["f"]] - t[f] <= 3000 and s["kind"] in ("shot", "one-timer")), None)
+                if nxt:
+                    c[f"gt_{why}_shot"] += 1
+                    c[f"gt_{why}_goal"] += nxt["result"] == "goal"
+                    c[f"gt_{why}_xg"] += nxt.get("xg") or 0
+                won = next((q for q in range(f, end) if m["owner"][q] >= 0), None)
+                c[f"gt_{why}_ours"] += won is not None and m["owner"][won] in mine
         gk_prev = on
     for s in opp_shots:
-        if s["kind"] not in ("shot", "one-timer") or late(m, s["f"]):
+        if s["kind"] not in ("shot", "one-timer") or late(m, s["f"], s.get("xg") or 0):
             continue
         who = "p" if s.get("gctl") == "human" else "c"
         kind = "onetimer" if s["kind"] == "one-timer" else s["type"].split()[0]
@@ -336,6 +365,48 @@ def measure(m, team, M):
         c[f"g{who}_{kind}_goal"] += s["result"] == "goal"
         c[f"g{who}_{kind}_xg"] += s.get("xg") or 0
     return c
+
+
+REASONS = [("breakaway", "1 an opposing breakaway"), ("onetimer", "2 a one-timer coming (their pass in the air)"),
+           ("drive", "3 a carrier driving at the net (shot or deke)"), ("dump", "4 the puck fired down the ice"),
+           ("loose", "5 a loose puck near the net"), ("behind", "6 a carrier behind or beside the net"),
+           ("other", "none of these")]
+# also "auto": the goalie caught the puck and the game gave the person control of him (not a decision)
+
+
+def takeover_reason(m, f, team, ny):
+    """Why the person took the goalie (the user's six reasons), from the moment he did."""
+    t, opp = m["t"], 1 - team
+    theirs = range(opp * 6, opp * 6 + 6)
+    gk = goalie(m, f, team)
+    if any(m["owner"][q] == gk for q in range(max(0, f - 6), min(len(t), f + 7))):
+        return "auto"                          # he caught it: the game hands the person his goalie
+    o = m["owner"][f]
+    px, py = m["puck"][3 * f], m["puck"][3 * f + 1]
+    if o in theirs:
+        cx, cy = P(m, f, o)
+        near = math.hypot(cx, ny - cy)
+        if near < 45 or abs(cy) >= 264 and cy * ny > 0:
+            return "behind"
+        if abs(ny - cy) < 268 and not any(math.hypot(*P(m, f, k)[:1], ny - P(m, f, k)[1]) < near
+                                          for k in skaters(m, f, team)):
+            return "breakaway"
+        b = next((q for q in range(f, 0, -1) if t[f] - t[q] >= 150), f)
+        bx, by = P(m, b, o)
+        if near < 130 and math.hypot(bx, ny - by) - near > 3:
+            return "drive"
+        return "other"
+    if o >= 0:
+        return "other"
+    if any(p["team"] == opp and 0 <= t[f] - t[p["f"]] <= 1200 and abs(ny - p["y1"]) < ZONE for p in m.get("passes", [])):
+        return "onetimer"
+    last = next((m["owner"][q] for q in range(f, 0, -1) if m["owner"][q] >= 0), -1)
+    vy = m["puckV"][2 * f + 1] * 100 if "puckV" in m else 0
+    if last in theirs and math.hypot(px, ny - py) > 100 and vy * ny > 0 and abs(vy) > 8000:
+        return "dump"
+    if math.hypot(px, ny - py) < 100:
+        return "loose"
+    return "other"
 
 
 def pct(a, b):
@@ -378,13 +449,19 @@ def rows(c):
         ("Pokes (B)", "steal attempts (within reach) / won the puck", f"{c['k_steal']} / {c['k_steal_won']} ({pct(c['k_steal_won'], c['k_steal'])})", "+"),
         ("Pokes (B)", "passing-lane pokes / a pass picked off within 1 s", f"{c['k_lane']} / {c['k_lane_won']}", "+"),
         ("Pokes (B)", "wasted (out of reach, at the carrier, no pass near)", c["k_wasted"], "-"),
+        ("Pokes (B)", "passing-lane pokes in their end / neutral zone / his end",
+         f"{c['k_lane_att']} / {c['k_lane_neu']} / {c['k_lane_own']}", ""),
+        ("Pokes (B)", "a shot against within 4 s: after a steal attempt / lane poke / wasted",
+         f"{pct(c['k_steal_cost'], c['k_steal'])} / {pct(c['k_lane_cost'], c['k_lane'])} / {pct(c['k_wasted_cost'], c['k_wasted'])}", "-"),
         ("Defensive position", "his skater in position / goal-side off the line / caught up ice",
          f"{pct(c['pos_n_in'], pos_n)} / {pct(c['pos_n_off'], pos_n)} / {pct(c['pos_n_up'], pos_n)}", ""),
         ("Defensive position", "at shots against: in position / off the line / up ice (xG of those shots)",
          " / ".join(f"{c['sa_' + st]} ({c['sa_xg_' + st]:.1f})" for st in ("in", "off", "up")), ""),
         ("Defensive position", "switches: into position / out of position (of all)", f"{c['sw_good']} / {c['sw_bad']} (of {c['sw']})", ""),
-        ("Goalie", "takeovers / a shot followed within 2 s", f"{c['gt']} / {c['gt_shot']}", ""),
-        ("Goalie", "· that shot: one-timer / slapshot / wrist", f"{c['gt_shot_onetimer']} / {c['gt_shot_slapshot']} / {c['gt_shot_wrist']}", ""),
+        ("Goalie", "takeovers (and times the game handed him the goalie, who had caught the puck)", f"{c['gt']} ({c['gt_auto']})", ""),
+    ] + [("Goalie", f"· {label}: takeovers / a shot within 3 s / goals (xG) / his team had the puck next",
+          f"{c['gt_' + key]} / {c[f'gt_{key}_shot']} / {c[f'gt_{key}_goal']} ({c[f'gt_{key}_xg']:.1f}) / {c[f'gt_{key}_ours']}", "")
+         for key, label in REASONS] + [
         ("Goalie", "one-timers faced, person in net: shots / goals / xG each", g("p", "onetimer"), ""),
         ("Goalie", "one-timers faced, computer in net", g("c", "onetimer"), ""),
         ("Goalie", "slapshots faced, person in net", g("p", "slapshot"), ""),
