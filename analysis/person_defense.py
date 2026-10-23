@@ -9,7 +9,7 @@ about decision making). While the other team has the puck in your zone:
 - carries into your slot by the other team.
 Decisions: pokes out of reach (over 30 from the puck: they do nothing), passes picked off in your own zone, shots at a
 set goalie (within 5 of the puck's line) from 120+, the expected goals of your person's shots.
-python analysis/person_defense.py"""
+python analysis/person_defense.py   (the BOS-NYI games; coach_report.py runs these measures on any games)"""
 import json
 import math
 import os
@@ -186,7 +186,7 @@ def measure(m, team):
 
 
 def team_index(m, abbr):
-    return 0 if m["team1"] == {"BOS": "Boston", "NYI": "New York"}[abbr] else 1
+    return m["abbr"].index(abbr) if "abbr" in m else (0 if m["team1"] == {"BOS": "Boston", "NYI": "New York"}[abbr] else 1)
 
 
 def report(c):
@@ -213,21 +213,26 @@ def report(c):
     }
 
 
-tot = {}
-for w, n, grp in GAMES:
-    m = json.loads(load_js_object(BASE[w] / f"{n}.js"))
-    for ab in ("BOS", "NYI"):
-        tot.setdefault((grp, ab), Counter()).update(measure(m, team_index(m, ab)))
-        tot.setdefault((n, ab), Counter()).update(measure(m, team_index(m, ab)))
-for grp in ("series", "contrast"):
-    rb, rn = report(tot[(grp, "BOS")]), report(tot[(grp, "NYI")])
-    print(f"\n==== {grp} totals")
-    wdt = max(len(k) for k in rb)
-    print(f"{'':{wdt}}  {'BOS':>16} {'NYI':>16}")
-    for k in rb:
-        print(f"{k:{wdt}}  {str(rb[k]):>16} {str(rn[k]):>16}")
-print("\nper game: in the shooting lane / near the passing lane / in the slot / pressing, BOS vs NYI")
-for w, n, grp in GAMES:
-    rb, rn = report(tot[(n, "BOS")]), report(tot[(n, "NYI")])
-    keys = ["· my skater in the shooting lane at the release", "· my skater near the passing lane", "· my skater in my slot", "· my skater pressing the carrier (within 25)"]
-    print(f"  {n[11:]:14} BOS " + " / ".join(rb[k] for k in keys) + "   NYI " + " / ".join(rn[k] for k in keys))
+def main():
+    tot = {}
+    for w, n, grp in GAMES:
+        m = json.loads(load_js_object(BASE[w] / f"{n}.js"))
+        for ab in ("BOS", "NYI"):
+            tot.setdefault((grp, ab), Counter()).update(measure(m, team_index(m, ab)))
+            tot.setdefault((n, ab), Counter()).update(measure(m, team_index(m, ab)))
+    for grp in ("series", "contrast"):
+        rb, rn = report(tot[(grp, "BOS")]), report(tot[(grp, "NYI")])
+        print(f"\n==== {grp} totals")
+        wdt = max(len(k) for k in rb)
+        print(f"{'':{wdt}}  {'BOS':>16} {'NYI':>16}")
+        for k in rb:
+            print(f"{k:{wdt}}  {str(rb[k]):>16} {str(rn[k]):>16}")
+    print("\nper game: in the shooting lane / near the passing lane / in the slot / pressing, BOS vs NYI")
+    for w, n, grp in GAMES:
+        rb, rn = report(tot[(n, "BOS")]), report(tot[(n, "NYI")])
+        keys = ["· my skater in the shooting lane at the release", "· my skater near the passing lane", "· my skater in my slot", "· my skater pressing the carrier (within 25)"]
+        print(f"  {n[11:]:14} BOS " + " / ".join(rb[k] for k in keys) + "   NYI " + " / ".join(rn[k] for k in keys))
+
+
+if __name__ == "__main__":
+    main()

@@ -3,7 +3,7 @@ cleverly than BOS's?). Both teams measured the same way, per game:
 offence (the person always has the carrier): carries, how long, whether they reach the slot, how they end; passes;
 the person's turnovers. Defence (the other team has the puck): bursts and what a missed one costs, pokes and from how
 far, control switches, whether the controlled skater is the one nearest the puck, the gap at the other team's entries.
-python analysis/person_play.py"""
+python analysis/person_play.py   (the BOS-NYI games; coach_report.py runs these measures on any games)"""
 import json
 import math
 import os
@@ -142,7 +142,7 @@ def measure(m, team):
 
 
 def team_index(m, abbr):
-    return 0 if m["team1"] == {"BOS": "Boston", "NYI": "New York"}[abbr] else 1
+    return m["abbr"].index(abbr) if "abbr" in m else (0 if m["team1"] == {"BOS": "Boston", "NYI": "New York"}[abbr] else 1)
 
 
 def report(c):
@@ -168,15 +168,20 @@ def report(c):
     }
 
 
-tot = {("series", "BOS"): Counter(), ("series", "NYI"): Counter(), ("contrast", "BOS"): Counter(), ("contrast", "NYI"): Counter()}
-for w, n, grp in GAMES:
-    m = json.loads(load_js_object(BASE[w] / f"{n}.js"))
-    for ab in ("BOS", "NYI"):
-        tot[(grp, ab)] += measure(m, team_index(m, ab))
-for grp in ("series", "contrast"):
-    rb, rn = report(tot[(grp, "BOS")]), report(tot[(grp, "NYI")])
-    print(f"\n==== {grp} ({'the three NYI wins' if grp == 'series' else 'the two Boston wins'}), totals")
-    wdt = max(len(k) for k in rb)
-    print(f"{'':{wdt}}  {'BOS':>28} {'NYI':>28}")
-    for k in rb:
-        print(f"{k:{wdt}}  {str(rb[k]):>28} {str(rn[k]):>28}")
+def main():
+    tot = {("series", "BOS"): Counter(), ("series", "NYI"): Counter(), ("contrast", "BOS"): Counter(), ("contrast", "NYI"): Counter()}
+    for w, n, grp in GAMES:
+        m = json.loads(load_js_object(BASE[w] / f"{n}.js"))
+        for ab in ("BOS", "NYI"):
+            tot[(grp, ab)] += measure(m, team_index(m, ab))
+    for grp in ("series", "contrast"):
+        rb, rn = report(tot[(grp, "BOS")]), report(tot[(grp, "NYI")])
+        print(f"\n==== {grp} ({'the three NYI wins' if grp == 'series' else 'the two Boston wins'}), totals")
+        wdt = max(len(k) for k in rb)
+        print(f"{'':{wdt}}  {'BOS':>28} {'NYI':>28}")
+        for k in rb:
+            print(f"{k:{wdt}}  {str(rb[k]):>28} {str(rn[k]):>28}")
+
+
+if __name__ == "__main__":
+    main()
