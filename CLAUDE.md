@@ -64,8 +64,9 @@ goal); open questions for the user in `docs/NEEDS_FROM_YOU.md`.
   goaltending, faceoff timing, C vs CB checking against the weight bug, pokes, rush defence, leading / trailing), and
   `play_by_play.py <match>` (each goal's build-up, big saves, posts, hits, injuries, rushes, the flow by minute: the raw
   material for a written match story; check every detail of a story against it, never add colour it doesn't show).
-  `coach_report.py <TEAM> <TEAM> <match> ...` (how the two people played, their own skater only: shot selection, passing
-  decisions, carries, checking, defensive position, the goalie when they took him; `reports/coach_<match>.md`).
+  `coach_report.py <TEAM> <TEAM> <match> ...` (how the two people played, their own skater only: decisions with the puck
+  valued against the other options, shot selection, passing, bursts and pokes by purpose, defensive position and switch
+  timing, goalie takeovers; `reports/coach_<match>.md`; league tables from `coach_models.py`, cached in reports/).
   `analysis/scoring_map/` plays shots in the real game (Genesis): a test ROM built from the disassembly with a doshot
   hook, run headless through a libretro frontend over a copy of the Genesis Plus GX core; `build.py`'s docstring is
   the how-to (work files in `%USERPROFILE%\NHL94_scoring_map`). Its findings: GENESIS_MECHANICS 4.10. The SNES map
