@@ -13,10 +13,11 @@ also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10 and [SNES_MECHANICS](SNES
 4. [What went wrong and how it was fixed](#what-went-wrong-and-how-it-was-fixed)
 5. [Building the SNES simulator](#building-the-snes-simulator)
 6. [The goals that went in](#the-goals-that-went-in)
-7. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
-8. [The maps](#the-maps)
-9. [Limits and what comes next](#limits-and-what-comes-next)
-10. [Rebuilding it yourself](#rebuilding-it-yourself)
+7. [Makes and misses, animated](#makes-and-misses-animated)
+8. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
+9. [The maps](#the-maps)
+10. [Limits and what comes next](#limits-and-what-comes-next)
+11. [Rebuilding it yourself](#rebuilding-it-yourself)
 
 ## At a glance
 
@@ -261,6 +262,61 @@ units from his centre and glances into the net. Most of these were wrist shots (
 
 ![SNES deflection goal: the puck's path and height](img/scoring_map/s4_off_path.svg)
 
+## Makes and misses, animated
+
+At each worthwhile spot, 120 shots were played (one at each of the 120 moments, a fresh random seed each,
+`animate.py`) and kept frame by frame. For each spot there are two animations, both at half speed:
+
+- **Nine real clips** side by side: the game's own frames zoomed on the net, with goals and saves in the spot's real
+  proportion, each labelled when it's decided.
+- **All 120 shots from above at once:** each puck's trail (orange went in, grey saved) and the goalie as a dark dot.
+  Shots that went exactly where aimed share one path, so many goals can look like a single orange line.
+
+The Genesis rates are the map's (all 120 moments). The SNES rates come from 480 shots over all 120 moments, because the
+SNES map's 16 moments a spot turned out to be too few (see the SNES run above).
+
+### Genesis: slapshot holding Down, straight in (top net 43%, bottom 10%)
+
+![Genesis top net, Down slapshot from 118 out: nine real clips](img/scoring_map/genesis_down_slapshot_top_clips.gif)
+
+![Genesis top net, Down slapshot from 118 out: all 120 shots from above](img/scoring_map/genesis_down_slapshot_top_fan.gif)
+
+The same shot at the bottom net goes in far less often:
+
+![Genesis bottom net, Down slapshot from 118 out: nine real clips](img/scoring_map/genesis_down_slapshot_bottom_clips.gif)
+
+![Genesis bottom net, Down slapshot from 118 out: all 120 shots from above](img/scoring_map/genesis_down_slapshot_bottom_fan.gif)
+
+### Genesis: the early pad stack (34%)
+
+![Genesis bottom net, wrist shot down-left from 68 out: nine real clips](img/scoring_map/genesis_pad_stack_clips.gif)
+
+![Genesis bottom net, wrist shot down-left from 68 out: all 120 shots from above](img/scoring_map/genesis_pad_stack_fan.gif)
+
+### Genesis: the shoulder-save bobble (31%)
+
+![Genesis top net, high wrist shot from the far left: nine real clips](img/scoring_map/genesis_shoulder_bobble_clips.gif)
+
+![Genesis top net, high wrist shot from the far left: all 120 shots from above](img/scoring_map/genesis_shoulder_bobble_fan.gif)
+
+### SNES: the lane (top net 54%, bottom 27%)
+
+![SNES top net, slapshot holding Left from 10 left of centre, 88 out: nine real clips](img/scoring_map/snes_lane_top_clips.gif)
+
+![SNES top net lane: all 120 shots from above](img/scoring_map/snes_lane_top_fan.gif)
+
+![SNES bottom net, slapshot holding Right from 10 right of centre, 118 out: nine real clips](img/scoring_map/snes_lane_bottom_clips.gif)
+
+![SNES bottom net lane: all 120 shots from above](img/scoring_map/snes_lane_bottom_fan.gif)
+
+### SNES: the mirror shot (2%)
+
+The same slapshot from 10 right of centre, aimed right, at the top net: his left-side saves cover it.
+
+![SNES top net mirror shot: nine real clips](img/scoring_map/snes_mirror_top_clips.gif)
+
+![SNES top net mirror shot: all 120 shots from above](img/scoring_map/snes_mirror_top_fan.gif)
+
 ## How often each kind of goal happens
 
 On the Genesis nearly half the goals go through the butterfly's blind ring; on the SNES half go past a save move on
@@ -342,6 +398,7 @@ the two disassemblies in `%USERPROFILE%\NHL94_disasm`. Work files go to `%USERPR
 | Goal types | `goal_types.py genesis RUN` | `goal_types.py snes RUN` |
 | One goal, pictured | `goal_frames.py genesis RUN TYPE N OUT.png`, then `goal_diagram.py genesis OUT.json OUT.svg "Title"` | the same with `snes` |
 | The share chart | `goal_chart.py RUN OUT.svg` | (both systems in one chart) |
+| The animations | `animate.py OUT_DIR` (all seven spots, both systems; gentle mode) | |
 
 The game frames in this page are screenshots of the games as the emulator drew them, shown to explain how the goals
 happen.
