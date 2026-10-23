@@ -12,6 +12,9 @@ from harness import Harness, fire, decide, rec, SHOOTER, GOALIE
 from paths import RUNS, STATE_TOP, STATE_BOTTOM
 from mapper import CLOCKS, SETTLES, set_ratings
 from shotport import launch, perfect_chance, scatter_ranges
+from lowload import gentle
+
+gentle()
 
 worker, workers = int(sys.argv[1]), int(sys.argv[2])
 (RUNS / sys.argv[3]).mkdir(parents=True, exist_ok=True)

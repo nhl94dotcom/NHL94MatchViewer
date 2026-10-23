@@ -383,6 +383,11 @@ shots) standing still with the puck; every other skater away; Montreal's compute
 seeds), 2.07 million valid shots in all. Spots where the puck would start within 24 of his centre are left out. The
 goalie's ratings hardly matter here: his body box, his set spot and his save frames are the same for every goalie.
 **Checked**: with the goalie moved out of the way the same harness scores at the empty-net rates of 4.2.
+**Too few moments, found later (2026-10-23):** the map sampled 16 of the 120 moments (clock x settle) a spot, and the
+goal rate swings by about 0.27 (standard deviation) from moment to moment, so a single square is only good to about 7
+points either way. Over all 120 moments (480 shots each): the top-net lane spot (10 left of centre, 88 out, Left held)
+53.6% (map 47.7%), the bottom-net one (10 right, 118 out, Right held) 26.5% (map 30.2%), the mirror spot 1.7% (map
+0.8%). The findings stand; the squares' exact values would need a rerun at 120 moments.
 
 ![The chance a shot scores against a set SNES computer goalie, best aim, by spot](img/snes_scoring_map.svg)
 

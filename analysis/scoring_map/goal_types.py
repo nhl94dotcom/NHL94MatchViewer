@@ -20,6 +20,8 @@ import sys
 import zlib
 from multiprocessing import Pool
 
+from lowload import WORKERS, gentle
+
 from paths import RUNS, STATE_TOP, STATE_BOTTOM, SNES_STATE_TOP, SNES_STATE_BOTTOM
 
 KINDS = {"genesis": {"wrist": 3, "slap": 20}, "snes": {"wrist": 3, "slap": 40}}
@@ -214,6 +216,7 @@ def classify(system, path, net):
 
 
 def _init(system):
+    gentle()
     S["sys"] = system
     S["o"] = Gen() if system == "genesis" else Snes()
 
@@ -249,7 +252,7 @@ def job(args):
 def main():
     system, run = sys.argv[1], sys.argv[2]
     phases, seeds = (int(sys.argv[3]), int(sys.argv[4])) if len(sys.argv) > 4 else (8, 8)
-    workers = int(sys.argv[5]) if len(sys.argv) > 5 else 30
+    workers = int(sys.argv[5]) if len(sys.argv) > 5 else WORKERS
     ys = range(100, 251, 10) if system == "genesis" else range(90, 251, 10)
     jobs = [(net, x, y, phases, seeds) for net in ("top", "bottom") for y in ys for x in range(-110, 111, 10)]
     shots, goals, kept = 0, [], {}

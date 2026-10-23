@@ -4,7 +4,9 @@ Every spot (shooter x -110..110, y 90..250 from centre ice, steps of 10) at both
 full slapshot (A held), each of the nine aims; `phases` moments (a random seed for the goalie's own random draws, the
 clock, the frames he has to settle) times `seeds` release seeds (the shot's draws and everything after). The shooter's
 working Shot Power and Shot Accuracy default to 13 / 13, the median of the recorded SNES shots. Validity as validity.py:
-at the release the puck at least 24 from the goalie's centre and in front of him, the shooter 16 or more from him."""
+at the release the puck at least 24 from the goalie's centre and in front of him, the shooter 16 or more from him.
+Defaults: all 120 moments (every clock x settle pair) x 4 seeds; run snes1 used 16 x 24, too few moments (the rate
+swings about 0.27 from moment to moment: PROJECT_NOTES). Gentle mode (lowload.py): 6 workers, below-normal priority."""
 import json
 import random
 import sys
@@ -13,6 +15,7 @@ from multiprocessing import Pool
 
 from paths import RUNS, SNES_STATE_TOP, SNES_STATE_BOTTOM
 import snes_harness as H
+from lowload import WORKERS, gentle
 
 XS = range(-110, 111, 10)
 YS = range(90, 251, 10)
@@ -23,6 +26,7 @@ _h = {}
 
 
 def _init(shp, sha):
+    gentle()
     e = None
     for net, st, top in (("top", SNES_STATE_TOP, True), ("bottom", SNES_STATE_BOTTOM, False)):
         h = H.Harness(state=st, top=top, emu=e)
@@ -74,9 +78,9 @@ def job(args):
 
 def main():
     run = sys.argv[1]
-    phases, seeds = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (16, 24)
+    phases, seeds = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (120, 4)
     shp, sha = (int(sys.argv[4]), int(sys.argv[5])) if len(sys.argv) > 5 else (13, 13)
-    workers = int(sys.argv[6]) if len(sys.argv) > 6 else 30
+    workers = int(sys.argv[6]) if len(sys.argv) > 6 else WORKERS
     jobs = [(net, x, y, phases, seeds) for net in ("top", "bottom") for y in YS for x in XS]
     res = {"meta": dict(phases=phases, seeds=seeds, shp=shp, sha=sha)}
     with Pool(workers, initializer=_init, initargs=(shp, sha)) as pool:

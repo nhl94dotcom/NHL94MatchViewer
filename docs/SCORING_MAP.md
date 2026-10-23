@@ -166,6 +166,12 @@ settle) x 24 release seeds = 384 shots per aim at every spot. The shooter is the
 working Shot Power 13 and Shot Accuracy 13, the median of 297 recorded shots. 782 jobs on 30 processes, about 1 hour
 50 minutes, 2.07 million valid shots.
 
+**Too few moments, found later (2026-10-23):** the map sampled 16 of the 120 moments (clock x settle) a spot, and the
+goal rate swings by about 0.27 (standard deviation) from moment to moment, so a single square is only good to about 7
+points either way. Over all 120 moments (480 shots each): the top-net lane spot (10 left of centre, 88 out, Left held)
+53.6% (map 47.7%), the bottom-net one (10 right, 118 out, Right held) 26.5% (map 30.2%), the mirror spot 1.7% (map
+0.8%). The findings stand; the squares' exact values would need a rerun at 120 moments.
+
 **7. Narrowing the lane.** The 10-unit grid showed hot squares next to near-zero ones. A second pass at 2- and 3-unit
 steps across the middle (96 shots per aim per spot) showed one lane about 10 units wide, and tracing single shots frame
 by frame showed why (below).
