@@ -24,12 +24,12 @@ class GameInfo(C.Structure):
 
 
 class Emu:
-    def __init__(self, rom=ROM):
+    def __init__(self, rom=ROM, core=CORE):
         """One per process: the core is a single DLL, and a second Emu would take over its callbacks."""
-        self.lib = C.CDLL(str(CORE))
+        self.lib = C.CDLL(str(core))
         self.held = set()
         self.frame = None
-        self._sysdir = C.c_char_p(str(CORE.parent).encode())
+        self._sysdir = C.c_char_p(str(Path(core).parent).encode())
         self._cbs = [ENV_CB(self._env), VIDEO_CB(self._video), AUDIO_CB(lambda l, r: None),
                      AUDIO_BATCH_CB(lambda d, n: n), POLL_CB(lambda: None), STATE_CB(self._state)]
         L = self.lib
@@ -77,10 +77,11 @@ class Emu:
         return 0
 
     want_frame = False
+    PAD = PAD
 
     # --- control
     def run(self, n=1, hold=()):
-        self.held = {PAD[b] for b in hold}
+        self.held = {self.PAD[b] for b in hold}
         for _ in range(n):
             self.lib.retro_run()
 

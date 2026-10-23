@@ -1513,6 +1513,30 @@ What's settled about the method:
   fitted spread suits that. Goalies recorded mid-save or diving are replayed standing (their animation isn't set):
   22 such shots, the replay's worst.
 
+**SNES map (2026-10-23; SNES_MECHANICS 4.8, docs/img/snes_scoring_map.svg).** The user asked for the same study on the
+SNES. `snes_emu.py` (the frontend over a copy of RetroArch's snes9x core, about 3,500 frames a second; SYSTEM_RAM is
+banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harness.py`, `snes_map_run.py`,
+`snes_compare_xg.py`; render_map.py draws a SNES run too.
+
+- **No test ROM**: the retail ROM (the disassembly's lst/nhl94snes.sfc) unmodified. The release frame is found by the
+  puck coming loose (puckc $0AD9 negative) during the wind-up; that frame is replayed with a fresh seed ($0792 / $0794,
+  RandomWord's two shift registers, both kept nonzero), so every draw is the game's own. Natural sampling instead of the
+  Genesis's split by the perfect chance: 16 moments (a seed for the settle, the clock, 80-94 frames to settle) x 24
+  release seeds per aim. The goalie's positioning calls the generator (his look-ahead), unlike the Genesis.
+- **Controls**: A shoots (cbut $0080; ShotMode: a tap jumps the animation to its end, so the wrist shot leaves at frame
+  3, passspeed 15 + frames; a slapshot at frame 26), B passes, Y flips. Boot: 12 x Start from power-on reaches the
+  rink's "Start Game" menu, then Start again: Los Angeles (home, pad 1, the centre object 2 controlled) v Montreal, Los
+  Angeles attacking the top net in period 1. Positions: Xpos / Ypos integer words with Xfrac / Yfrac beside them.
+- **Run snes1**: x -110..110, y 90..250 by 10, both nets, wrist (A 3 frames) and slapshot (A 40), 9 aims; Shot Power /
+  Accuracy 13 / 13 (the median of 297 recorded SNES shots); Montreal's goalie (weight 48, legstr 8, legspd 8, aidef 7
+  working). 782 jobs on 30 processes, about 1 h 50; 2.07 million valid shots. Checked with the goalie moved away: the
+  empty-net rates of 4.2.
+- **Result**: averaged over the aims everything under about 1%; the hot cells are one lane (the shooter's left of
+  centre by 6-16, aimed at that side, about the perfect-shot chance). Scanned at 2- and 3-unit steps (6 moments x 16
+  seeds) to separate it from the 10-unit grid. Traced: the perfect shot passes 12-13 from the goalie's centre, outside
+  his body box; his side save move on his right ($E862) holds a frame with its area at 25-28, on his left ($E7D0) at
+  19-22. xg_snes.py's averages agree but it doesn't find the lane (its 2-unit goalie spread blurs it).
+
 ## Advanced stats (2026-10-16)
 
 As the NHL's analysts count them, from the shot list, goals, faceoffs and who was on the ice (role and roster at the

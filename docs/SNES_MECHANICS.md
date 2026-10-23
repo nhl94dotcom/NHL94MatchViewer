@@ -33,7 +33,7 @@ One line per chapter: the main finding, then the section with the evidence.
 
 1. **Ratings**: a negative ("cold") hot / cold byte maxes the rating (an unsigned-shift bug): about 46% of all ratings, every game; the hidden bonuses are the Genesis ones, the third-period one backwards here too. ([2](#2-ratings-what-the-game-really-uses))
 2. **Skating**: Speed and energy set top speed; most skaters skate at full Speed because of the bug. ([3](#3-skating))
-3. **Shooting**: the stick's screen direction picks the aim point (Up is always high); the same perfect-shot roll as the Genesis; long slapshots rarely score; one-timers follow the d-pad. ([4](#4-shooting))
+3. **Shooting**: the stick's screen direction picks the aim point (Up is always high); the same perfect-shot roll as the Genesis; long slapshots rarely score; one-timers follow the d-pad. Played in the real game, a set goalie stops nearly every shot from a standstill, except a slapshot from just left of centre (the shooter's left) aimed at that side: about half go in (4.8). ([4](#4-shooting))
 4. **Goaltending**: a body box plus areas from each save frame; a person's held save button adds an area to one side; the computer goalie's hold rule; the net ignores a puck the goalie holds; posts are a 5-unit band. ([5](#5-goaltending))
 5. **Passing**: speed comes from the distance (so no rocket pass); the receiver is the nearest teammate in a 90-degree cone; the flip is a computer dump-in; a stick can't play the puck while its no-touch timer runs. ([6](#6-passing-the-flip-and-stickhandling))
 6. **Checking**: no weight bug and no CB trick (everyone uses the same formula); no same-pair rule, so a second hit after a wobble knocks him down. ([7](#7-checking-hooking-poking-and-collisions))
@@ -368,6 +368,60 @@ sliding through his save move**, that makes the saves.
 
 The viewer shows SNES xG on shots, cards, team stats, the season page and the xG map (one-timers there face goalies as
 they were at recorded one-timers, usually still moving across after the pass).
+
+### 4.8 The scoring map: shots played in the real game
+
+**Real game** (2026-10-23; `analysis/scoring_map/snes_*.py`, PROJECT_NOTES "Scoring map"). As on the Genesis
+(GENESIS_MECHANICS 4.10), but with the unmodified ROM: the game runs headless in Snes9x, the shooter is held on a spot
+with the puck while the computer goalie sets himself, and each shot is played to the end. The frame the puck leaves the
+stick is replayed from many random seeds, so the game rolls its own dice for everything (the perfect-shot roll, the
+scatter, the goalie's random look-ahead, rebounds, posts): no ported code to trust.
+
+**The situation it covers:** a typical shooter (working Shot Power 13, Shot Accuracy 13, the median of 297 recorded SNES
+shots) standing still with the puck; every other skater away; Montreal's computer goalie set in his spot; a wrist shot
+(A tapped) or a full slapshot (A held), each of the nine aims; 384 shots per aim at every spot (16 moments x 24
+seeds), 2.07 million valid shots in all. Spots where the puck would start within 24 of his centre are left out. The
+goalie's ratings hardly matter here: his body box, his set spot and his save frames are the same for every goalie.
+**Checked**: with the goalie moved out of the way the same harness scores at the empty-net rates of 4.2.
+
+![The chance a shot scores against a set SNES computer goalie, best aim, by spot](img/snes_scoring_map.svg)
+
+**What a set goalie gives up:**
+
+- **Almost nothing, from almost everywhere.** Averaged over the nine aims: wrist shots under 0.4% from every distance,
+  slapshots at most 1.1%; within about 60 units of the goal line nothing (0.0-0.4%). A set SNES goalie is harder to
+  beat from a standstill than a Genesis one (no through-the-legs gap, no shoulder bobble, no early pad stack).
+- **The exception: a lane on the goalie's right.** A slapshot from just to the **shooter's left** of centre (6-16
+  units off the middle; at the top net x -16 to -6, at the bottom +6 to +16), aimed at that same side (the screen's
+  left at the top net, its right at the bottom; high, middle or low all work), scores **about half the time** from
+  80-120 units out (25-40 feet): 41-57 goals in 96 shots at 1-unit steps across the lane, about the perfect-shot chance
+  for Shot Accuracy 13 (14 in 29). A few units outside the lane it falls to 0-30%; from the mirror spots on the
+  shooter's right, aimed at that side, mostly 0-3% (at the top net 0-2% everywhere; at the bottom one spot 21 off
+  centre reached 31%).
+- **Why** (traced shot by shot): the puck, going exactly where aimed, passes 12-13 units to the side of the goalie's
+  centre, just outside his body box (11). He starts a side save move, but on **his right** the frame he holds longest
+  (20 frames; `GoalieSaveList` move $E862, frame 780 facing down, 768 facing up) puts its save area 25-28 units out
+  with a radius of 2-3, beyond the post, so the puck goes through the gap. On his left the matching move ($E7D0,
+  frames 756 / 744) sits 19-22 out and covers it.
+  His right is the screen's left at the top net (he faces down) and its right at the bottom (he faces up): the
+  shooter's left both times.
+- **Wrist shots** find the same lane only at the top net, 68-78 out (27-30%); elsewhere their best aim reaches 5-15% in a
+  few spots.
+- **Top against bottom:** slapshots average 1.0-1.1% at the bottom net, 0.3-0.7% at the top.
+
+| Distance from the goal line (shooter) | Wrist, top / bottom (mean of aims) | Slapshot, top / bottom (mean of aims) |
+|---|---|---|
+| 128-178 units | 0.09% / 0.34% | 0.27% / 1.02% |
+| 88-127 | 0.04% / 0.19% | 0.66% / 1.13% |
+| 58-87 | 0.36% / 0.02% | 0.38% / 0.08% |
+| 18-57 (valid spots only) | 0.00% / 0.00% | 0.04% / 0.00% |
+
+**Against the xG model (4.7):** averaged over the aims they agree (slapshots 88-127 out: 0.7% / 1.1% in the game,
+1.3% / 1.6% in the model; elsewhere both under about 1%), but the model doesn't find the lane: at the model's best aim
+the game scores 1.3-2.4% from 88-178 out, where its own best aim gives 2.7-4.6% on average and about 50% in the lane.
+The lane is a few units wide and comes from frame-exact save areas, which the model's goalie (a 2-unit random spread on
+his position) blurs away.
+
 
 ---
 
@@ -1168,6 +1222,7 @@ everything in this document applies to all of these ROMs.
 | Goalie pushed in | Impossible: the net ignores a puck the goalie holds |
 | Flip | A computer dump-in by side of centre; scatters by Passing |
 | Weak shooters | No limit: anyone can take a full slapshot |
+| Set goalie's right | A slapshot from 6-16 units to the shooter's left of centre, 25-40 feet out, aimed at that side: about half go in (his side save leaves a gap, 4.8) |
 | Computer skaters | Hit-happy (two check rolls a frame) |
 | Turnovers | Computer skaters switch to defence at once (no awareness delay, unlike the Genesis) |
 | Faceoffs | Pure timing; held direction 3 in 4 |

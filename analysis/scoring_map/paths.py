@@ -14,3 +14,10 @@ LISTING = BUILD / "output" / "build" / "nhl94 .lst"
 STATE_TOP = WORK / "live.state"                                   # period 1: home shoots at the top net
 STATE_BOTTOM = WORK / "live_p2.state"                             # period 2: the bottom net
 RUNS = WORK / "runs"
+
+# The SNES map (snes_*.py): the retail ROM (the disassembly's own copy; no test ROM needed) and Snes9x
+SNES_ROM = Path.home() / "NHL94_disasm" / "NHL94SNES" / "lst" / "nhl94snes.sfc"
+SNES_CORE_SOURCE = RETROARCH / "cores" / "snes9x_libretro.dll"
+SNES_CORE = WORK / "core" / "snes9x_libretro.dll"
+SNES_STATE_TOP = WORK / "snes_top.state"
+SNES_STATE_BOTTOM = WORK / "snes_bottom.state"

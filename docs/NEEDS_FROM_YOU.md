@@ -30,6 +30,11 @@ record or check and what it will settle. Newest at the bottom of each section.
    the scoring map (GENESIS_MECHANICS 4.10), which plays these shots in the game itself and says about 20% go in
    holding Down (more at the top net) and only a few percent with the other aims. Only real play shows whether a
    standing slapshot like that is something a person can set up.
+6. **Slapshots from just left of centre at a set computer goalie (SNES).** In a practice game, stand still with the
+   puck a stride to your own left of the middle (2-5 feet), 25-40 feet out, let the goalie settle, and take a dozen
+   full slapshots aimed at that side (attacking up the screen: Left; attacking down: Right). Then a dozen from a stride
+   to your right, aimed at your right. *Settles:* SNES_MECHANICS 4.8, which plays these in the game itself and says
+   about half the first kind go in and almost none of the second.
 
 ## Things to note when they happen
 

@@ -1,4 +1,5 @@
-"""SVG heat maps of the scoring map: python render_map.py RUN OUT.svg [mode] (RUN in paths.RUNS)
+"""SVG heat maps of the scoring map: python render_map.py RUN OUT.svg [mode] (RUN in paths.RUNS; a run of
+snes_map_run.py draws the SNES map)
 mode best: each spot's chance with its best aim (and the aim as an arrow); mode mid: aimed at the middle (no d-pad).
 Four panels: wrist shot / slapshot x the top net / the bottom net, each drawn as on the screen (the bottom net at the
 bottom of its panels)."""
@@ -10,14 +11,27 @@ from paths import RUNS
 
 run, out = RUNS / sys.argv[1], sys.argv[2]
 mode = sys.argv[3] if len(sys.argv) > 3 else "best"
-rows = [json.loads(l) for f in glob.glob(f"{run}/w*.jsonl") for l in open(f)]
-try:            # validity.py's verdicts: spots where the shot would start inside the goalie's reach are left out
-    VALID = json.load(open(run / "validity.json"))
-    for r in rows:
-        if not VALID.get(f"{r['net']},{r['hold']},{r['x']},{r['y']}", {"ok": True})["ok"]:
-            r["aims"] = []
-except FileNotFoundError:
-    pass
+SNES = (run / "snes_map.json").exists()
+if SNES:        # snes_map_run.py: counts per spot and aim, over the moments where the shot was a real one
+    res = json.load(open(run / "snes_map.json"))
+    META = res.pop("meta")
+    rows = []
+    for k, v in res.items():
+        net, x, y = k.split(",")
+        for kind, hold in (("wrist", 3), ("slap", 20)):
+            cs = [v[f"{kind},{a}"] for a in range(9)]
+            ok = all(c["valid"] * 2 >= META["phases"] for c in cs)   # a real shot at half the moments or more
+            rows.append(dict(net=net, hold=hold, x=int(x), y=int(y),
+                             aims=[dict(aim=a, chance=c["g"] / c["n"]) for a, c in enumerate(cs)] if ok else []))
+else:
+    rows = [json.loads(l) for f in glob.glob(f"{run}/w*.jsonl") for l in open(f)]
+    try:        # validity.py's verdicts: spots where the shot would start inside the goalie's reach are left out
+        VALID = json.load(open(run / "validity.json"))
+        for r in rows:
+            if not VALID.get(f"{r['net']},{r['hold']},{r['x']},{r['y']}", {"ok": True})["ok"]:
+                r["aims"] = []
+    except FileNotFoundError:
+        pass
 
 INK, SOFT = "#1f2933", "#52606d"
 FONT = "font-family='Segoe UI, Helvetica, Arial, sans-serif'"
@@ -51,9 +65,16 @@ W = 2 * PW + 3 * 40
 H = 100 + 2 * PH + GAP + 20 + 120
 body = [f"<rect width='{W}' height='{H}' fill='#ffffff'/>"]
 title = "Chance a shot scores against a set computer goalie, best aim" if mode == "best" else     "Chance a shot scores against a set computer goalie, aimed at the middle"
-body.append(text(W / 2, 26, title + " (Genesis, played in the real game)", 16, anchor="middle", weight="bold"))
-body.append(text(W / 2, 46, "Average shooter (working Shot Power 20, Shot Accuracy 15), standing still with the puck; "
-                 "the goalie has set himself. Each square: one spot, 800+ shots per aim.", 11, SOFT, "middle"))
+if SNES:
+    body.append(text(W / 2, 26, title + " (SNES, played in the real game)", 16, anchor="middle", weight="bold"))
+    body.append(text(W / 2, 46, f"Typical shooter (working Shot Power {META['shp']}, Shot Accuracy {META['sha']}), "
+                     "standing still with the puck; the goalie has set himself. Each square: one spot, "
+                     f"{META['phases'] * META['seeds']} shots per aim.", 11, SOFT, "middle"))
+else:
+    body.append(text(W / 2, 26, title + " (Genesis, played in the real game)", 16, anchor="middle", weight="bold"))
+    body.append(text(W / 2, 46, "Average shooter (working Shot Power 20, Shot Accuracy 15), standing still with the "
+                     "puck; the goalie has set himself. Each square: one spot, 800+ shots per aim.", 11, SOFT,
+                     "middle"))
 for pi, (net, hold, name) in enumerate(panels):
     ox = 40 + (pi % 2) * (PW + 40)
     oy = 100 + (pi // 2) * (PH + GAP)

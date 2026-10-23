@@ -256,6 +256,15 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   body; only his stick blade stops it (a soft shot he takes, a hard one deflects at random). A lifted shot below the
   crossbar's height always hits the body and bounces off, and a hard one can knock him over. Anything higher sails
   over everyone.
+- **Against a set computer goalie, one spot works: a stride to your own left of centre.** Played out in the game
+  itself, a goalie who has set himself stops almost every shot from a standing shooter, from anywhere (under 1% on
+  average). The exception: stand 2-5 feet to **your left** of the middle, 25-40 feet out, and take a full slapshot
+  aimed at that same side (attacking up the screen hold Left; attacking down, Right; high or low doesn't matter). About
+  half go in: the shot goes just past his body on **his right**, and his save move on that side reaches out beyond the
+  post, leaving a gap. The same shot from your right, aimed right, almost never scores. It's a narrow lane: a couple of
+  feet farther from the middle and it's gone. (Mechanics 4.8; not yet tried in a real game.)
+
+![The chance a shot scores against a set SNES goalie, best aim, by spot](img/snes_scoring_map.svg)
 
 ![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
 
@@ -519,3 +528,5 @@ penalties are on. The goalie's ratings don't change his size.
 5. Stay out of the goalie's crease: anyone can be called, and maxed-Aggressiveness players 40% of the time.
 6. The flip (Y) goes deep on your side of centre; good Pass Accuracy keeps it closer to target.
 7. Penalty shot: don't lose the puck; picking it back up ends the shot.
+8. A set goalie: stand a stride to your left of centre, 25-40 feet out, and slapshot at that side (Left going up,
+   Right going down).
