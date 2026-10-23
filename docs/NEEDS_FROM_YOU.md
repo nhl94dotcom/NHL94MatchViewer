@@ -24,7 +24,7 @@ record or check and what it will settle. Newest at the bottom of each section.
    press it a few times. Note roughly when. *Settles:* the blind band through the middle of a butterfly (GENESIS_MECHANICS
    5.5): the puck should pass through untouched when it's at ice level and not rising, and bounce backward off him.
 
-   Both shooting tests below (items 5 and 6) are on one printable page with tally boxes: [PRACTICE_CARD](PRACTICE_CARD.md).
+   The three shooting tests below (items 5, 6 and 7) are on one printable page with tally boxes: [PRACTICE_CARD](PRACTICE_CARD.md).
 
 5. **Down slapshots at a set computer goalie (Genesis).** In a practice game against the computer, stand still with
    the puck in the middle, roughly between the tops of the faceoff circles and the blue line, let the goalie settle,
@@ -38,6 +38,10 @@ record or check and what it will settle. Newest at the bottom of each section.
    to your right, aimed at your right. *Settles:* SNES_MECHANICS 4.8, which plays these in the game itself and says
    about half the first kind go in and almost none of the second. This matters more than it looked: the SNES lane's
    rate depends on the game's frame timing, which changes with who is on the ice (SNES_MECHANICS 4.8).
+7. **One-timers from a pass across and from the same side (Genesis).** In a practice game, a dozen one-timers by a
+   teammate within about 18 feet of the goal line from a pass across the net's centre line, then a dozen from a pass
+   from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_MAP, "One-timers (Genesis)"),
+   which plays them in the game itself: about 63% from across, 20-30% from the same side.
 
 ## Things to note when they happen
 

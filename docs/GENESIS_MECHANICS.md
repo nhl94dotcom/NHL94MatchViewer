@@ -605,6 +605,11 @@ struck the puck in 83-91% of presses the pass reached; goals per strike by the r
 inside 18 feet a pass across at the same depth scores 63%, from his own side 20-30%. Pressing early or late in the
 pass makes no difference on average. The nets agree on average but individual set-ups differ by up to 60 points (the
 same sensitivity to a unit of position as the Down slapshot), so a set-up's rate holds for one net, not both.
+**Why the pass across works:** at the strike the goalie is a median 12 units off the puck-to-net line after a pass
+across (moving 50 units a second), 3.7 after one from the same side (29 a second); 10 or more off the line, 86% went in,
+within 5 of it 25%. **The xG model (4.9) already gets this right:** at 748 strikes, the game 20.7% and the model 22.1%,
+correlation 0.83, across 69% / 67%, same side 24% / 24%; the stick, rebound or an exact goalie position don't improve
+it, so it is unchanged.
 
 ---
 

@@ -1,6 +1,6 @@
-# Practice card: two shooting tests
+# Practice card: three shooting tests
 
-Two quick tests that check, in real play, what the scoring maps found by playing shots in the game itself
+Three quick tests that check, in real play, what the scoring maps found by playing shots in the game itself
 ([SCORING_MAP](SCORING_MAP.md)). Each takes about 15 minutes. **Run the NHL '94 Helper while you play** so every shot
 is recorded; the tally boxes are a backup. Afterwards, tell me the game's name (or date and time).
 
@@ -62,6 +62,29 @@ shoot.
 **The game itself says:** from the lane about half go in at the top net and 1 in 4 or 5 at the bottom; from the mirror
 spot almost none (1-2%). On the SNES the exact rate depends on which frames the game skips, which changes with who is
 on the ice, so a real game is the only true test.
+
+---
+
+## Test 3 (Genesis): the one-timer, pass across against pass from the same side
+
+**Set-up:** your teammate in close, **within about 18 feet of the goal line** (inside the faceoff dots' depth), and
+you with the puck **level with him or a little farther out**. **Buttons:** B to pass (pointing the d-pad at him), then
+**C while the pass is on its way** for the one-timer (the Genesis aims it for you). Let the goalie settle before the
+pass, as in the other tests.
+
+1. Twelve one-timers with the pass **across**: you on the other side of the net's centre line from him.
+2. Twelve with the pass **from his own side**: you on his side, farther out.
+
+Tally only the passes he swung at; a pass he caught or missed is neither.
+
+| | One-timers | Goals | Saves | Missed the net |
+|---|---|---|---|---|
+| Pass across | | | | |
+| Pass from his side | | | | |
+
+**The game itself says:** with the receiver that close, the pass across scores about 63% of the time (on the doorstep,
+right in front, up to 90-99%); from his own side 20-30%. Pressing C early or late in the pass makes no difference on
+average.
 
 ---
 

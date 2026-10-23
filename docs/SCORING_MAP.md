@@ -410,8 +410,12 @@ pass that rarely connects); they are not real gaps.
   never scores. Compare a standing shot at a set goalie: about 1% averaged over the spots and aims.
 - **The pass across is the one to make.** With the receiver inside 18 feet: a pass from the other side at the same
   depth scores 63% on average (13 of 18 set-ups over half), one from the other side and farther out 43%, one from his
-  own side 20-30%. (Why, frame by frame, is not traced yet; the recorded-games study points the same way: the goalie
-  10 or more off the puck-to-net line at the strike scored 68%.)
+  own side 20-30%. **Why: the goalie is still on his way.** At the strike the computer goalie is a median 12 units off
+  the line from the puck to the middle of the net after a pass across, moving 50 units a second, against 3.7 units and
+  29 a second after a pass from the same side (a sample of 210 strikes with the receiver inside 18 feet, read from the
+  game at the strike frame). Over both kinds, a goalie 10 or more off that line let in 86%, one within 5 of it 25%. The
+  pass across moves the puck across his crease and he follows it; the one-timer leaves before he is square again. (The
+  recorded-games study found the same: the goalie 10 or more off the line at the strike, 68% scored.)
 - **The best set-ups are close to automatic:** the receiver on the doorstep in front of the net with the pass from 14-20
   feet to either side (90-99%); the receiver 10 feet to one side on the doorstep with the pass from 30 feet on the far
   side (88-94%); the receiver 18 feet out and 10 to one side, the pass from 10 feet to the other side (77-79%).
@@ -426,7 +430,16 @@ pass that rarely connects); they are not real gaps.
   part 3) found 44% scored inside 100 units (33 feet) and 10% beyond, with passes that moved the puck across scoring
   most.
 
-The SNES half (nine aims per set-up, so about nine hours) is running in one-hour chunks.
+**The xG model gets one-timers right.** At 748 strikes from 59 of the set-ups (both nets, both timings, 8 moments
+each; `ot_xg_check.py`) the game's own rate, from 8 fresh seeds a strike, was set beside the viewer's xG for a recorded
+one-timer from the same state (the goalie's position, speed and ratings, the puck's spot and speed, auto-aim, reach
+12): the game 20.7% overall, the model 22.1%; correlation 0.83 strike by strike; log loss 0.290 against 0.510 for one
+rate for all. Pass across (receiver inside 18 feet): game 69%, model 67%; from the same side 24% and 24%. Without the
+position blur, or with the goalie's stick and rebound, it does no better (log loss 0.32), so the model stays as it is:
+what decides a one-timer is where the goalie is when it is struck, and the model already reads that from the
+recording.
+
+The SNES half (nine aims per set-up, about six hours) is running in one-hour chunks.
 
 ## Limits and what comes next
 
@@ -443,7 +456,7 @@ yet about shots off the rush or a person in net; one-timers are above (Genesis; 
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.
 - **Next, if wanted:** a moving-goalie map using goalie states from recorded games (about 2 hours a system); other
-  shooters; the SNES one-timers (running); one-timers in the xG models; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
+  shooters; the SNES one-timers (running) and their check against the SNES xG model; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
   recorded games.
 
 ## Rebuilding it yourself
