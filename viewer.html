@@ -105,6 +105,8 @@
   #popover { position: fixed; z-index: 20; width: 300px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow-y: auto; margin: 0; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); border: 1px solid #3a4450; }
   .scoring .goal { padding: 3px 0; border-top: 1px solid var(--raised); }
   .scoring .goal:first-of-type { border-top: 0; }
+  .scoring .goal[data-f] { cursor: pointer; border-radius: 4px; }
+  .scoring .goal[data-f]:hover { background: var(--raised); }
   .scoring .goal small { color: var(--muted); display: block; }
   .scoring .tag { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; white-space: nowrap; display: inline-block; }
   .card h5 { margin: 10px 0 6px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
@@ -452,7 +454,9 @@ scoring open in a new browser tab, and this tab keeps just the rink, the clock a
 this one as it plays and as you seek, so you can put it on a second screen. <b>Stats back in this tab</b> (same menu)
 closes it and brings them back. Works in a game file too.</p>
 <h3>Team stats and scoring</h3>
-<p>The scoring summary is on the left, the team stats on the right, both as of the moment the replay is at. Click a
+<p>The scoring summary is on the left, the team stats on the right, both as of the moment the replay is at. Goal
+times are the game clock, the time left in the period, as the game shows it. Click a goal to watch it from 5 seconds
+before (not on the live page). Click a
 group's heading (Shooting, Advanced, Puck control ...) to open or close it; your choice is remembered.</p>
 <p>On a phone the lineups, team stats and scoring are under the rink, behind the <b>Lineups / Team stats / Scoring</b>
 tabs: tap one and the page scrolls down to it, or swipe up anywhere, the rink included (zoomed in, a swipe on the rink
@@ -4547,6 +4551,17 @@ function fillScoring(f) {
   box.hidden = !match.goals;
   if (box.hidden) return;
   box.textContent = '';
+  // A click on a goal plays it from HIGHLIGHT_BEFORE ahead, as Highlights do (not on the live page, which follows play).
+  const jump = !window.NHL94_LIVE;
+  if (jump && !box.dataset.wired) {
+    box.dataset.wired = '1';
+    box.addEventListener('click', e => {
+      const line = e.target.closest('.goal[data-f]');
+      if (!line || !match) return;
+      seekTo(match.t[Number(line.dataset.f)] - HIGHLIGHT_BEFORE);
+      setPlaying(true);
+    });
+  }
   const head = document.createElement('h4');
   head.textContent = 'Scoring';
   box.append(head);
@@ -4554,6 +4569,7 @@ function fillScoring(f) {
   for (const g of goals) {
     const line = document.createElement('div'), sub = document.createElement('small');
     line.className = 'goal';
+    if (jump) { line.dataset.f = g.f; line.title = 'Watch it (from ' + HIGHLIGHT_BEFORE / 1000 + ' seconds before)'; }
     line.textContent = periodName(g.period) + ' ' + clockText(g.clock) + ' \u00b7 ' + (g.team ? match.team2 : match.team1) + ' \u00b7 ' + playerName(g.team, g.scorer) + ' (' + g.goals + ')';
     for (const kind of g.kinds.concat(g.ownGoal != null ? ['own goal'] : [])) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = goalKindText(g, kind); line.append(tag); }
     if (g.net) line.prepend(netPicture(g.net, 46, g.aim));
