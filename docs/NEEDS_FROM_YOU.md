@@ -24,6 +24,8 @@ record or check and what it will settle. Newest at the bottom of each section.
    press it a few times. Note roughly when. *Settles:* the blind band through the middle of a butterfly (GENESIS_MECHANICS
    5.5): the puck should pass through untouched when it's at ice level and not rising, and bounce backward off him.
 
+   Both shooting tests below (items 5 and 6) are on one printable page with tally boxes: [PRACTICE_CARD](PRACTICE_CARD.md).
+
 5. **Down slapshots at a set computer goalie (Genesis).** In a practice game against the computer, stand still with
    the puck in the middle, roughly between the tops of the faceoff circles and the blue line, let the goalie settle,
    and take a dozen full slapshots holding Down; then a dozen holding Left or Right. Do it at both ends. *Settles:*
