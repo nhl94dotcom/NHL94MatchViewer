@@ -1586,7 +1586,13 @@ and 210-270 out; else bounce at 256 x the offset from his centre, Zvel 0, no tou
 one spot (x 0, 118 out) 43% game, 44% model. GOALIE_SPREAD hides the blind ring: blur 4 -> 16% there, 2 -> 23%, 0 ->
 44%. On the recorded games (661 shots) the new model doesn't help: log loss 0.3314 before and with it at blur 4,
 0.378 / 0.428 / 0.479 at blur 2 / 1 / 0 (recordings don't pin the goalie down to a few units). Not adopted for
-recorded shots; a candidate for the viewer's xG map (set goalies).
+recorded shots. The Down overshoot traced: in the game the same butterfly (21E) at x -10 and +10, the puck
+  leaving 6 units left of the shooter and 12 in front, the goalie at y 240; from those real starts the model matches the
+  edges (x -20: 3% / 4%, +20: 18% / 19%) but not the middle (12% / 43%): the puck clips the body 12.4 from his centre
+  in front of him the frame before it would enter the ring. Which happens turns on a unit of start or goalie position
+  (5.6 units a frame), so the model matches averages, not spots. Viewer (2026-10-23): the xG map's set goalie uses the
+  stick and rebound with no blur (XG_GEN_ROM from `xg.py --stick-tables <rom>`; checked against Python, the Down
+  slapshot from the slot 0.345 JS / 0.363 Python, 3,000 shots each); as-in-games and recorded xG unchanged.
 
 **One-timer study, pilot (2026-10-23).** `ot_harness.py` (pass, press, swing, strike, play-out on both systems),
 `ot_run.py` (chunked and resumable: jobs appended to a JSONL as they finish, a chunk stops starting jobs after its time

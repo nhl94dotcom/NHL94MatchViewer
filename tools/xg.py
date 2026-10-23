@@ -21,6 +21,7 @@ Shots with a shooting animation only (shots and one-timers); pass shots and defl
 import copy
 import math
 import random
+import sys
 
 N_SAMPLES = 400
 GOALIE_SPREAD = 4.0   # units: the emulated goalie's position error, fitted (log loss) over the recordings
@@ -387,7 +388,22 @@ def goalie_states(matches):
     return out
 
 
-if __name__ == "__main__":
+def stick_tables(rom):
+    """What the viewer's xG map needs for the stick model (XG_GEN_ROM): the ready frame for each facing, the ten save
+    moves' (frame, frames shown) lists for each facing (goaliesave's .saveanim order), and each of those frames' blade
+    offset unmirrored (x, y up the screen)."""
+    g = GenesisRom(rom)
+    ready = [g.anim(READY, f)[0][0] for f in range(8)]
+    saves = [[g.anim(spa, f) for f in range(8)] for spa in SAVE_ANIM]
+    frames = set(ready) | {fr for move in saves for seq in move for fr, _ in seq}
+    return {"ready": ready, "saves": saves, "hot": {str(fr): list(g.hot(fr, False)) for fr in sorted(frames)}}
+
+
+if __name__ == "__main__" and len(sys.argv) > 2 and sys.argv[1] == "--stick-tables":
+    # python tools/xg.py --stick-tables <rom>: the viewer's XG_GEN_ROM
+    import json
+    print(json.dumps(stick_tables(open(sys.argv[2], "rb").read()), separators=(",", ":")))
+elif __name__ == "__main__":
     # python tools/xg.py matches/a.js matches/b.js ...: the goalie states for the viewer's XG_GOALIE_STATES
     import json
     import sys

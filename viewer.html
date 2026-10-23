@@ -368,7 +368,7 @@
     <option value="0">Accuracy 25-29</option><option value="1">Accuracy 29-38</option><option value="2">Accuracy 38-47</option><option value="3">Accuracy 47-62</option>
     <option value="4" selected>Accuracy 63-80</option><option value="5">Accuracy 81-98</option><option value="6">Accuracy 99</option>
   </select>
-  <select id="xgGoalie" aria-label="The goalie the xG map is for" title="As in games: each shot faces a goalie placed and moving the way goalies really were when recorded shots were taken. Set: standing in his spot" hidden>
+  <select id="xgGoalie" aria-label="The goalie the xG map is for" title="As in games: each shot faces a goalie placed and moving the way goalies really were when recorded shots were taken. Set: standing in his spot (Genesis: with his stick modelled)" hidden>
     <option value="cpu">Computer goalie, as in games</option><option value="set">Computer goalie, set in his spot</option><option value="person">Person in net, as in games</option>
   </select>
   </div>
@@ -491,7 +491,7 @@ marker for what it was; click it to jump there.</p>
   ring).</dd>
   <dt>Zone entries</dt><dd>Where the puck crossed the blue line: carried (disc), passed (diamond), dumped (hollow); an accent ring means a shot attempt came of it.</dd>
   <dt>Goalie report</dt><dd>Every shot a goalie faced, with save rates by distance and type, human or computer in net, and what happened after each save.</dd>
-  <dt>xG map</dt><dd>The chance a shot from each spot in the attacking zones goes in, worked out with the game’s own shot and save rules (the same model as each shot’s xG), for the shot type, shooter’s Shot Accuracy and goalie you pick, with the best of the nine aims. <b>As in games</b> puts the goalie where goalies really were when recorded shots were taken (often out of position or moving); <b>set in his spot</b> shows how little gets past a goalie who is ready. Point at a spot for its number and the d-pad direction to aim with. Genesis and SNES games, each with its own game’s rules.</dd>
+  <dt>xG map</dt><dd>The chance a shot from each spot in the attacking zones goes in, worked out with the game’s own shot and save rules (the same model as each shot’s xG), for the shot type, shooter’s Shot Accuracy and goalie you pick, with the best of the nine aims. <b>As in games</b> puts the goalie where goalies really were when recorded shots were taken (often out of position or moving); <b>set in his spot</b> shows how little gets past a goalie who is ready; on the Genesis that one also models his stick, which lets a flat slapshot straight at him slip through his butterfly and in off him, as it does in the game (the scoring maps, GENESIS_MECHANICS 4.10). Point at a spot for its number and the d-pad direction to aim with. Genesis and SNES games, each with its own game’s rules.</dd>
   <dt>Game flow</dt><dd>A strip over the controls: each team's shot attempts piling up over the game, goals as dots, power plays shaded. Click it to jump there.</dd>
 </dl>
 </section>
@@ -1422,6 +1422,9 @@ function drawShotMarker(x, y, result, colour, square) {
 // the two were told apart).
 const MISSES = ['wide', 'blocked', 'miss'];
 // ---- xG model (Genesis): a port of tools/xg.py's Goalie and play_out, for the xG map. Keep the two in step.
+// The Genesis goalie's stick, for the xG map's set goalie (tools/xg.py stick_tables): his ready frame for each facing,
+// the ten save moves' (frame, frames shown) lists for each facing (goaliesave's order) and each frame's blade offset.
+const XG_GEN_ROM = {"ready":[407,410,413,416,419,422,425,428],"saves":[[[[408,32]],[[411,32]],[[414,32]],[[417,32]],[[420,32]],[[423,32]],[[426,32]],[[429,32]]],[[[409,32]],[[412,32]],[[415,32]],[[418,32]],[[421,32]],[[424,32]],[[427,32]],[[430,32]]],[[[447,8],[448,32]],[[449,8],[450,32]],[[449,8],[450,32]],[[451,8],[452,32]],[[453,8],[454,32]],[[455,8],[456,32]],[[455,8],[456,32]],[[457,8],[458,32]]],[[[459,8],[460,32]],[[461,8],[462,32]],[[461,8],[462,32]],[[463,8],[464,32]],[[465,8],[466,32]],[[467,8],[468,32]],[[467,8],[468,32]],[[469,8],[470,32]]],[[[471,32]],[[473,32]],[[475,32]],[[477,32]],[[479,32]],[[481,32]],[[483,32]],[[485,32]]],[[[472,32]],[[474,32]],[[476,32]],[[478,32]],[[480,32]],[[482,32]],[[484,32]],[[486,32]]],[[[658,32]],[[660,32]],[[662,32]],[[664,32]],[[666,32]],[[668,32]],[[670,32]],[[672,32]]],[[[659,32]],[[661,32]],[[663,32]],[[665,32]],[[667,32]],[[669,32]],[[671,32]],[[673,32]]],[[[674,4],[675,32]],[[678,4],[679,32]],[[682,4],[683,32]],[[686,4],[687,32]],[[690,4],[691,32]],[[694,4],[695,32]],[[698,4],[699,32]],[[702,4],[703,32]]],[[[676,4],[677,32]],[[680,4],[681,32]],[[684,4],[685,32]],[[688,4],[689,32]],[[692,4],[693,32]],[[696,4],[697,32]],[[700,4],[701,32]],[[704,4],[705,32]]]],"hot":{"407":[0,7],"408":[7,4],"409":[-6,8],"410":[4,6],"411":[11,-1],"412":[1,9],"413":[11,0],"414":[8,-2],"415":[10,9],"416":[11,-4],"417":[1,-5],"418":[3,-3],"419":[1,-6],"420":[-4,-1],"421":[4,-5],"422":[-7,-7],"423":[-8,2],"424":[-7,-8],"425":[-10,-4],"426":[-10,0],"427":[-10,-2],"428":[-6,1],"429":[-5,6],"430":[-11,5],"447":[4,4],"448":[7,1],"449":[-1,3],"450":[10,0],"451":[5,-5],"452":[-2,-8],"453":[1,-5],"454":[-10,1],"455":[-12,-3],"456":[-14,4],"457":[-6,4],"458":[7,8],"459":[-1,8],"460":[-10,5],"461":[-1,7],"462":[-1,5],"463":[11,-4],"464":[11,8],"465":[-3,-6],"466":[12,-3],"467":[2,-7],"468":[2,-5],"469":[-11,1],"470":[-14,0],"471":[7,14],"472":[-10,3],"473":[19,10],"474":[3,13],"475":[21,2],"476":[4,13],"477":[8,-8],"478":[13,4],"479":[-9,-5],"480":[9,-2],"481":[-19,-5],"482":[4,-5],"483":[-18,8],"484":[-8,-6],"485":[-12,15],"486":[-13,3],"658":[9,14],"659":[-9,14],"660":[12,10],"661":[-6,17],"662":[2,9],"663":[6,21],"664":[-7,10],"665":[10,15],"666":[-10,15],"667":[10,14],"668":[-9,15],"669":[8,9],"670":[-3,18],"671":[2,10],"672":[7,19],"673":[-12,14],"674":[5,7],"675":[9,7],"676":[-6,7],"677":[-9,7],"678":[8,5],"679":[13,1],"680":[2,9],"681":[0,5],"682":[17,-5],"683":[21,-8],"684":[15,2],"685":[16,1],"686":[7,-6],"687":[8,-9],"688":[17,0],"689":[22,1],"690":[-8,-6],"691":[-15,-7],"692":[10,-5],"693":[19,-7],"694":[-12,-4],"695":[-17,-3],"696":[0,-8],"697":[-2,-12],"698":[-8,2],"699":[-12,2],"700":[-16,-4],"701":[-18,-8],"702":[0,8],"703":[-1,6],"704":[-9,1],"705":[-22,-1]}};
 const XG = (() => {
   const SPREAD = 4.0;
   const AIM = [[0, 12], [16, 12], [16, 6], [16, 0], [0, 0], [-16, 0], [-16, 6], [-16, 12], [0, 6]];
@@ -1435,9 +1438,27 @@ const XG = (() => {
     const n = Math.min(30, speed + 2);
     return { x, y, vx: 0, vy: 0, acc: Math.floor((64 - Math.floor(weight / 4) + agility + 2 + agility + 16) / 2),
       vmax: (20 + (n >> 1)) * 275 + (n % 2 && n < 30 ? 137 : 0), aidef, d3: y > 0 ? 260 : -260, gl: y > 0 ? 264 : -264,
-      timer: 0, dir: 8, locked: false, k: 216 };
+      timer: 0, dir: 8, locked: false, k: 216, frame0: null, facing: 4, mirror: false, seq: null, t: 0, pc: 15, nopuck: 0 };
   }
-  function think(G, px, py, pvx, pvy) {
+  // The stick model (tools/xg.py, play_out's stick and rebound): the frame he shows, his blade, his save move.
+  function frameNow(G) {
+    if (!G.seq) return G.frame0;
+    let t = G.t;
+    for (const [fr, n] of G.seq) { if (t < n) return fr; t -= n; }
+    return G.seq[G.seq.length - 1][0];
+  }
+  function blade(G) {
+    const [hx, hy] = XG_GEN_ROM.hot[frameNow(G)];
+    return [G.x + (G.mirror ? -hx : hx), G.y + hy];
+  }
+  function saveMove(G, xc, frames, pz, pvz) {  // goaliesave: by the side the puck will cross on and its height
+    let side = ((vtoa(xc - G.x, G.gl - G.y) % 8 - G.facing) & 7) >> 2;
+    if (G.mirror) side ^= 1;
+    const move = pz > 8 || pvz > 0x800 ? (Math.abs(G.x - xc) <= 16 ? side + 6 : side)
+      : (frames <= 8 && !(-16 < G.x - xc && G.x - xc <= 16) ? side + 8 : side + 4);
+    G.seq = XG_GEN_ROM.saves[move][G.facing]; G.t = 0;
+  }
+  function think(G, px, py, pvx, pvy, pz = 0, pvz = 0) {
     const clamp = v => Math.max(-259, Math.min(259, v));
     const k = Math.abs(py) > 219 ? G.k - 64 : G.k;
     let rx = px + k * pvx / 65536, ry = clamp(py + k * pvy / 65536) - G.d3;
@@ -1447,16 +1468,20 @@ const XG = (() => {
     if (pvy && (G.gl - py) * pvy > 0) {
       const frames = (G.gl - py) * 4096 / pvy, xc = px + (G.gl - py) * pvx / pvy;
       if (frames <= 34 && Math.abs(xc) <= 24) {
-        if (frames <= 12 && Math.abs(py) <= 264) { G.locked = true; G.vx = Math.trunc(G.vx / 4); G.vy = Math.trunc(G.vy / 4); }
+        if (frames <= 12 && Math.abs(py) <= 264) {
+          G.locked = true; G.vx = Math.trunc(G.vx / 4); G.vy = Math.trunc(G.vy / 4);
+          if (G.frame0 != null) saveMove(G, xc, frames, pz, pvz);
+        }
         gx = Math.abs(py) <= 252 ? xc : (px >= 0 ? 24 : -24);
       }
     }
     G.dir = vtoa(gx - (G.x + Math.trunc(G.vx / 256)), gy - (G.y + Math.trunc(G.vy / 256)));
   }
-  function step(G, px, py, pvx, pvy) {
+  function step(G, px, py, pvx, pvy, pz = 0, pvz = 0) {
+    if (G.seq) G.t++;
     G.vx -= Math.trunc(G.vx / 64); G.vy -= Math.trunc(G.vy / 64);
     if (!G.locked) {
-      if (--G.timer < 0) { G.timer = G.aidef >> 2; think(G, px, py, pvx, pvy); }
+      if (--G.timer < 0) { G.timer = G.aidef >> 2; think(G, px, py, pvx, pvy, pz, pvz); }
       if (G.dir === 8) {
         G.vx = Math.abs(G.vx) <= 150 ? 0 : G.vx - Math.sign(G.vx) * 150;
         G.vy = Math.abs(G.vy) <= 150 ? 0 : G.vy - Math.sign(G.vy) * 150;
@@ -1467,8 +1492,10 @@ const XG = (() => {
     }
     G.x += G.vx / 4096; G.y += G.vy / 4096;
   }
-  // One shot as the game plays it (doshot's aim and scatter, the flight, checkgoal, the goalie's reach).
-  function playOut(px, py, pz, tx, ty, tz, pp, sha, perfect, G0, reach, shift) {
+  // One shot as the game plays it (doshot's aim and scatter, the flight, checkgoal, the goalie's reach). extra: {stick,
+  // rebound, spread} as tools/xg.py's play_out (the stick before the body for a low puck, the blind ring 8-14 from the
+  // blade; a body touch held or bounced off; the goalie's position blur), off unless given.
+  function playOut(px, py, pz, tx, ty, tz, pp, sha, perfect, G0, reach, shift, extra = {}) {
     let dx = tx - px, dy = ty - py, z = tz;
     const d3 = Math.max(1, Math.floor(Math.hypot(dx, dy)));
     if (!(d3 <= 200 && Math.random() < perfect)) {
@@ -1481,13 +1508,14 @@ const XG = (() => {
         if (sy >> 1 > 0) z += rand(sy >> 1);
       }
     }
-    const vx = pp * 68 * dx / d3, vy = pp * 68 * dy / d3;
+    let vx = pp * 68 * dx / d3, vy = pp * 68 * dy / d3;
     let vz = z ? Math.min(0x1800, pp * 68 * z / d3 + d3 * 0xB33 / pp) : 0;
+    const spread = extra.spread ?? SPREAD;
     let G = null;
     if (G0) {
       G = { ...G0 };
       G.timer = rand((G.aidef >> 2) + 1) - 1; G.k = 0xA0 + 16 * rand(8);
-      G.x += SPREAD * gauss(); G.y += SPREAD * gauss();
+      G.x += spread * gauss(); G.y += spread * gauss();
     }
     let x = px, y = py, h = pz;
     const front = ty > 0 ? 261 : -261;
@@ -1504,9 +1532,28 @@ const XG = (() => {
       }
       x = nx; y = ny; h = nh;
       if (G) {
-        step(G, x, y, vx, vy);
+        step(G, x, y, vx, vy, h, vz);
+        if (G.nopuck > 0) {  // just bounced off him: no touch for 10 frames
+          G.nopuck--;
+          if (Math.abs(y) > 300 || Math.abs(x) > 140) return 'wide';
+          continue;
+        }
+        if (extra.stick && G.frame0 != null && h <= 5 && vz <= 0x200) {
+          const [bx, by] = blade(G), sdx = bx - x, sdy = by - y;
+          if (Math.abs(sdx) <= 14 && Math.abs(sdy) <= 14) {
+            const d2 = sdx * sdx + sdy * sdy;
+            if (d2 <= 64) return 'stick';
+            if (d2 <= 196) continue;  // the blind ring: no body test this frame
+          }
+        }
         const gdx = G.x + shift - x, gdy = G.y - y;
-        if (h <= 15 && Math.abs(gdx) <= reach && Math.abs(gdy) <= reach && gdx * gdx + gdy * gdy <= reach * reach) return 'save';
+        if (h <= 15 && Math.abs(gdx) <= reach && Math.abs(gdy) <= reach && gdx * gdx + gdy * gdy <= reach * reach) {
+          if (!extra.rebound) return 'save';
+          let limit = Math.min(0x7FFF, (rand((2 + G.pc) << 9) + 0xC00) * 2);
+          if (!G.locked && Math.abs(x) <= 0x2C && Math.abs(y) >= 0xD2 && Math.abs(y) <= 0x10E) limit >>= 2;
+          if (Math.abs(vx) <= limit && Math.abs(vy) <= limit) return 'save';  // held
+          vx = 256 * (x - G.x); vy = 256 * (y - G.y); vz = 0; G.nopuck = 10;
+        }
       }
       if (Math.abs(y) > 300 || Math.abs(x) > 140) return 'wide';
     }
@@ -1532,6 +1579,8 @@ const XG = (() => {
   // {weight, agility, speed, aidef}, n}.
   // opts.states: goalie states to start from, [dx, dy, vx, vy] from his set spot (units; units a frame) as if the shot
   // were at the top net, one picked at random for each shot (null: the goalie set in his spot, standing still).
+  // opts.stick: the stick and rebound model with no position blur (only for the set goalie: it matches the game's own
+  // averages there, GENESIS_MECHANICS 4.10; on recorded games it gains nothing, so they keep the plain model).
   function spot(px, py, top, opts) {
     const gl = top ? 264 : -264, [sx, sy] = setSpot(px, py, top), g = opts.goalie, sg = top ? 1 : -1;
     let reach = REACH[Math.min(19, (g.agility + 2) >> 1)];
@@ -1542,20 +1591,24 @@ const XG = (() => {
       const st = opts.states ? opts.states[rand(opts.states.length)] : [0, 0, 0, 0];
       const G = goalie(sx + sg * st[0], sy + sg * st[1], g.weight, g.agility, g.speed, g.aidef);
       G.vx = sg * st[2] * 4096; G.vy = sg * st[3] * 4096;
+      if (opts.stick) {  // set, facing the puck, in his ready frame
+        G.facing = vtoa(px - G.x, py - G.y) % 8; G.frame0 = XG_GEN_ROM.ready[G.facing];
+      }
       return G;
     };
+    const extra = opts.stick ? { stick: true, rebound: true, spread: 0 } : {};
     const aims = opts.oneTimer ? null : [0, 1, 2, 3, 4, 5, 6, 7, 8];
     if (!aims) {  // a one-timer: the game aims it from where the goalie is heading, so the aim follows each goalie state
       let goals = 0;
       for (let i = 0; i < opts.n; i++) {
         const G0 = start(), d = autoAim(px, py, G0.x + 8 * G0.vx / 4096, G0.y + 8 * G0.vy / 4096, gl);
-        if (playOut(px, py, 0, AIM[d][0], gl, AIM[d][1], pp, opts.sha, perfect, G0, reach, 0) === 'goal') goals++;
+        if (playOut(px, py, 0, AIM[d][0], gl, AIM[d][1], pp, opts.sha, perfect, G0, reach, 0, extra) === 'goal') goals++;
       }
       return [{ d: -1, xg: goals / opts.n }];
     }
     return aims.map(d => {
       let goals = 0;
-      for (let i = 0; i < opts.n; i++) if (playOut(px, py, 0, AIM[d][0], gl, AIM[d][1], pp, opts.sha, perfect, start(), reach, 0) === 'goal') goals++;
+      for (let i = 0; i < opts.n; i++) if (playOut(px, py, 0, AIM[d][0], gl, AIM[d][1], pp, opts.sha, perfect, start(), reach, 0, extra) === 'goal') goals++;
       return { d, xg: goals / opts.n };
     });
   }
@@ -1749,7 +1802,7 @@ function startXgMap(key) {
     ? { speed: XG_SHOTS[xgShot].speed, sha: (5 * xgAcc) >> 1, goalie: { weight: 48, agility: 10, speed: 10, aidef: 12 }, n: 120,
         states: xgGoalie === 'set' ? null : XG_SNES_GOALIE_STATES[xgShot === 'onetimer' && xgGoalie !== 'person' ? 'onetimer' : xgGoalie === 'person' ? 'person' : 'cpu'] }
     : { speed: XG_SHOTS[xgShot].speed, sha: 5 * xgAcc, oneTimer: xgShot === 'onetimer', person: xgGoalie === 'person',
-        goalie: { weight: 48, agility: 20, speed: 20, aidef: 10 }, n: 120,
+        goalie: { weight: 48, agility: 20, speed: 20, aidef: 10 }, n: 120, stick: xgGoalie === 'set',
         states: xgGoalie === 'set' ? null : XG_GOALIE_STATES[xgGoalie === 'person' ? 'person' : 'cpu'] };
   const model = snes ? XG_SNES_MODEL : XG;
   const spots = [];
@@ -1825,7 +1878,9 @@ function drawXgMap() {
     ' \u00b7 ' + (xgShot === 'onetimer' && !snesMap ? 'aimed by the game' : 'the best of the nine aims') + ' \u00b7 yellow 0.05, red 0.40 or more. Point at a spot for its number.';
   note.textContent = snesMap
     ? (xgShot !== 'onetimer' ? 'The goalie’s own movement decides most SNES saves: he slides to where the shot will cross and keeps going through his save move.' : '') + (xgShot === 'onetimer' ? 'SNES one-timers follow the shot rules; the map\u2019s one-timer faces goalies as they were at recorded one-timers, usually still moving across after the pass.' : '')
-    : 'The goalie matters more than the spot: in recorded games, with him within 3 units of his spot 1 shot in 31 went in; 10 or more out of position, 22 in 59.';
+    : xgGoalie === 'set'
+      ? 'Set goalie, his stick modelled: a flat slapshot straight at him (Down held) can slip through his butterfly and go in off him, as it does in the game. In recorded games the goalie matters more than the spot.'
+      : 'The goalie matters more than the spot: in recorded games, with him within 3 units of his spot 1 shot in 31 went in; 10 or more out of position, 22 in 59.';
   box.append(title, line, note);
 }
 // Map markers that can be clicked: device-pixel position, the frame to replay from and a description.

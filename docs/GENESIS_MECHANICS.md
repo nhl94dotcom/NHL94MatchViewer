@@ -580,6 +580,15 @@ in the game, 3.8% in the model), but the model can't see the Down slapshot: it l
 it the blind ring. So it puts the best aims in the wrong places and underrates a set goalie's worst cases (best aim
 88-168 out: 14-16% in the game, 1-7% in the model).
 
+**The model's stick and rebound** (2026-10-23, `tools/xg.py`: the goalie's stick before his body for a low puck, with
+the blind ring; a body touch held or bounced off, by `puckgoalie`'s rule). With them, and the goalie placed exactly
+(no position blur), the model matches the map's averages: slapshots 88-168 out averaged over five aims, 7.2% in the
+game and 7.2% in the model at the top net, 4.9% and 5.1% at the bottom (without them: 0.5%). Spot by spot it can't
+match: the ring is a few units wide and the puck moves about 5.6 units a frame, so a unit's difference in where the
+puck starts or where he stands decides whether it clips his body first. On recorded games it gains nothing (log loss
+0.3314 either way with the usual blur, worse with less): a recording doesn't place the goalie within a few units. So
+the viewer's xG for recorded shots is unchanged; the xG map's set goalie uses the stick and the rebound.
+
 **Recorded shots replayed in the game** (135 aimed shots at computer goalies; the recorded spot, aim, speed and
 shooter, the goalie's position, speed and ratings): the expected total matches (20.5-22.5, with the goalie's recorded
 position blurred by 2-4 units, against 22 scored), but shot by
