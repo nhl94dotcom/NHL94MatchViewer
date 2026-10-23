@@ -361,8 +361,18 @@ def find_shots(m, goals=None):
                     touches.append((i, k))
         if not touches:
             return None
-        i, k = next(((i, k) for i, k in touches if anim(i, k) in SHOOT), touches[0])
-        found = shot(i, k, team, 'one-timer' if anim(i, k) in SHOOT else 'deflection')
+
+        def swinging(i, k):
+            # In a shooting swing he began without the puck. The follow-through of his own shot is not one: Sweeney's
+            # wrist shot (2026-10-23_1117_BOS-LA P1 0:31) came back off the post into his body and crept in.
+            q = i
+            while q > 0 and anim(q, k) in SHOOT:
+                if own[q] == k:
+                    return False
+                q -= 1
+            return anim(i, k) in SHOOT
+        i, k = next(((i, k) for i, k in touches if swinging(i, k)), touches[0])
+        found = shot(i, k, team, 'one-timer' if swinging(i, k) else 'deflection')
         found['known'] = g  # found only when the game counted it
         return add(found)
 

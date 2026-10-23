@@ -2567,6 +2567,14 @@ BOS-PIT Oates "cold: -3 on every rating", TOR-CHI Gilmour "maxed: Speed, Off. aw
 the CDL game's settings list. All recordings re-converted (nothing else changed; full_buttons had not been re-converted
 since the rollback filter), the exe rebuilt, the Documents games re-converted, the samples remade.
 
+## Post, body, goal (2026-10-23)
+
+Sweeney's 5-0 goal in 2026-10-23_1117_BOS-LA (P1 0:29) went post, his own body, in: the post sent the puck back out at
+height 12, `puckbody` bounced it off him toward the net at 3 mph (the bounce is his offset from the puck, not a
+reflection: GENESIS_MECHANICS 13.5) and it crept over the line. The converter had named that touch a one-timer
+(`scorer_touch` took any touch in a shooting animation for one); it now needs a swing begun without the puck, so the
+follow-through of his own shot is a deflection. All recordings re-converted.
+
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the

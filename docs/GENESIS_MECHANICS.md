@@ -1792,6 +1792,12 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
     set from how far off-centre it hit, not from the shot). A fast one (over about 12,300) above height 12 **knocks
     him over**; a slower one makes him play the **glove-catch animation** (the "knocked it down" look), but the puck
     still bounces off: he doesn't get it.
+  - **The bounce ignores where the puck was going.** `puckbody` keeps nothing of its speed: the new speed's high
+    bytes are the puck's offset from his centre (x 256 a frame), and its height speed is cleared. A puck touching him on
+    his net side therefore heads for the net, however fast it was leaving it. **Confirmed:** Sweeney's post
+    (2026-10-23_1117_BOS-LA P1 0:31) came back out at height 12 into his body as he followed his shot in, 4 to his side
+    and 2 on his net side; it left at (-775, 515) (offset (-4, 2) in the high bytes, the old low bytes kept), dropped
+    to the ice and crept the last 5 units over 0.7 s into the net, the goalie 30 out and never in reach.
   - A skater swinging at a one-timer is never hit by the body rule.
 - Any touch clears the "shot taken" flag, so a blocked or deflected shot is never a shot on goal.
 - **Confirmed** (13 Genesis games, a loose puck at speed passing within 8 of a skater's centre): height 0-5, 470 times:
