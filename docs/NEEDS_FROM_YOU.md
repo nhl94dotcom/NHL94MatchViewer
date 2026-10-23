@@ -34,7 +34,8 @@ record or check and what it will settle. Newest at the bottom of each section.
    puck a stride to your own left of the middle (2-5 feet), 25-40 feet out, let the goalie settle, and take a dozen
    full slapshots aimed at that side (attacking up the screen: Left; attacking down: Right). Then a dozen from a stride
    to your right, aimed at your right. *Settles:* SNES_MECHANICS 4.8, which plays these in the game itself and says
-   about half the first kind go in and almost none of the second.
+   about half the first kind go in and almost none of the second. This matters more than it looked: the SNES lane's
+   rate depends on the game's frame timing, which changes with who is on the ice (SNES_MECHANICS 4.8).
 
 ## Things to note when they happen
 

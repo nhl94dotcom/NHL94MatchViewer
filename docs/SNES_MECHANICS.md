@@ -389,6 +389,15 @@ points either way. Over all 120 moments (480 shots each): the top-net lane spot 
 53.6% (map 47.7%), the bottom-net one (10 right, 118 out, Right held) 26.5% (map 30.2%), the mirror spot 1.7% (map
 0.8%). The findings stand; the squares' exact values would need a rerun at 120 moments.
 
+**The lane depends on the game's frame timing** (found making the animations, 2026-10-23). The SNES game doesn't move
+the puck every frame, and the lane puck passes at the edge of the goalie's body box (11-12 from his centre), so which
+frames it is checked on decides goal or save. Replaying the same shots with only the shooter's position changed (left
+where he shot, instead of moved away as the map does with every skater) shifted the frames the puck stood still on,
+and the result with them: over 480 shots each, 53.8% at the top-net lane spot (53.6% with him moved), 20.4% at the
+bottom-net one (26.5%), 0.8% at the mirror spot (1.7%). The Genesis moves the puck every frame and didn't change. In a
+real game, with ten skaters on the ice, the timing differs again: the lane is real, but its rate in games is uncertain
+until the practice test in NEEDS_FROM_YOU (item 6) is done.
+
 ![The chance a shot scores against a set SNES computer goalie, best aim, by spot](img/snes_scoring_map.svg)
 
 **What a set goalie gives up:**

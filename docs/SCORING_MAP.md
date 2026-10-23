@@ -173,6 +173,15 @@ points either way. Over all 120 moments (480 shots each): the top-net lane spot 
 53.6% (map 47.7%), the bottom-net one (10 right, 118 out, Right held) 26.5% (map 30.2%), the mirror spot 1.7% (map
 0.8%). The findings stand; the squares' exact values would need a rerun at 120 moments.
 
+**The lane depends on the game's frame timing** (found making the animations, 2026-10-23). The SNES game doesn't move
+the puck every frame, and the lane puck passes at the edge of the goalie's body box (11-12 from his centre), so which
+frames it is checked on decides goal or save. Replaying the same shots with only the shooter's position changed (left
+where he shot, instead of moved away as the map does with every skater) shifted the frames the puck stood still on,
+and the result with them: over 480 shots each, 53.8% at the top-net lane spot (53.6% with him moved), 20.4% at the
+bottom-net one (26.5%), 0.8% at the mirror spot (1.7%). The Genesis moves the puck every frame and didn't change. In a
+real game, with ten skaters on the ice, the timing differs again: the lane is real, but its rate in games is uncertain
+until the practice test in NEEDS_FROM_YOU (item 6) is done.
+
 **7. Narrowing the lane.** The 10-unit grid showed hot squares next to near-zero ones. A second pass at 2- and 3-unit
 steps across the middle (96 shots per aim per spot) showed one lane about 10 units wide, and tracing single shots frame
 by frame showed why (below).
@@ -267,13 +276,15 @@ units from his centre and glances into the net. Most of these were wrist shots (
 At each worthwhile spot, 120 shots were played (one at each of the 120 moments, a fresh random seed each,
 `animate.py`) and kept frame by frame. For each spot there are two animations, both at half speed:
 
-- **Nine real clips** side by side: the game's own frames zoomed on the net, with goals and saves in the spot's real
-  proportion, each labelled when it's decided.
-- **All 120 shots from above at once:** each puck's trail (orange went in, grey saved) and the goalie as a dark dot.
-  Shots that went exactly where aimed share one path, so many goals can look like a single orange line.
+- **Nine real clips** side by side: the game's own frames from the wind-up on, showing the shooter and the net, with
+  goals in the spot's real proportion, each labelled with what happened (GOAL, SAVED, POST, MISSED) when it's decided.
+- **All 120 shots from above at once:** each puck's trail (orange in, grey saved, purple off the post, pale missed), the
+  shooter's spot, and the goalie as a dark dot. Shots that went exactly where aimed share one path, so many goals can
+  look like a single orange line.
 
-The Genesis rates are the map's (all 120 moments). The SNES rates come from 480 shots over all 120 moments, because the
-SNES map's 16 moments a spot turned out to be too few (see the SNES run above).
+The shooter stays on the ice after the release (the map moves him away). The Genesis rates are the map's (all 120
+moments; keeping the shooter changes nothing there). The SNES rates come from 480 shots over all 120 moments with the
+shooter on the ice, since on the SNES that changes the result (the frame timing above).
 
 ### Genesis: slapshot holding Down, straight in (top net 43%, bottom 10%)
 
@@ -299,7 +310,7 @@ The same shot at the bottom net goes in far less often:
 
 ![Genesis top net, high wrist shot from the far left: all 120 shots from above](img/scoring_map/genesis_shoulder_bobble_fan.gif)
 
-### SNES: the lane (top net 54%, bottom 27%)
+### SNES: the lane (top net 54%, bottom 20%)
 
 ![SNES top net, slapshot holding Left from 10 left of centre, 88 out: nine real clips](img/scoring_map/snes_lane_top_clips.gif)
 
@@ -309,7 +320,7 @@ The same shot at the bottom net goes in far less often:
 
 ![SNES bottom net lane: all 120 shots from above](img/scoring_map/snes_lane_bottom_fan.gif)
 
-### SNES: the mirror shot (2%)
+### SNES: the mirror shot (1%)
 
 The same slapshot from 10 right of centre, aimed right, at the top net: his left-side saves cover it.
 
