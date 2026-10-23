@@ -1539,6 +1539,12 @@ banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harn
   **Gentle mode** (lowload.py, 2026-10-23): 6 workers at below-normal priority still spun the user's fan up; now 2 workers
   at idle priority, each sleeping as long as it works (DUTY 0.5): the animations took 107 s instead of 28, the machine
   averaging 8% CPU (about 5% idle).
+  **Genesis clock and score boxes** in the animations: rows 23-27 of plane A (map at VmMAP1 = E000, 64 columns), which
+  doesn't scroll, so with the crop following the rink they slid into view; every other plane A tile is the transparent
+  07FF. Video memory isn't exposed by the core, but its save state holds it (found after the state's 1 KB sprite-table
+  copy, which reappears in video memory at DC00; work RAM at state offset 16): animate.py fills those rows with 07FF
+  before each frame drawn (goal_frames.hide_genesis_hud). Display only: the four Genesis spots' 120-shot tallies were
+  identical with and without it.
 - **Controls**: A shoots (cbut $0080; ShotMode: a tap jumps the animation to its end, so the wrist shot leaves at frame
   3, passspeed 15 + frames; a slapshot at frame 26), B passes, Y flips. Boot: 12 x Start from power-on reaches the
   rink's "Start Game" menu, then Start again: Los Angeles (home, pad 1, the centre object 2 controlled) v Montreal, Los

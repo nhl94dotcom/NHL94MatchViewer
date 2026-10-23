@@ -85,7 +85,7 @@ def play(spec, n):
     """n shots from the spot: [(outcome, [cropped frames from the wind-up on], [states after the release], the
     decision's index in the states, wind-up frames)]."""
     import goal_types as G
-    from goal_frames import frame, grab, net_on_screen
+    from goal_frames import frame, grab, net_on_screen, genesis_vram, hide_genesis_hud
     from snes_harness import DIRPAD
     gentle()
     name, system, net, x, y, kind, aim = spec[:7]
@@ -96,9 +96,15 @@ def play(spec, n):
     sign = 1 if net == "top" else -1
     hold = G.KINDS[system][kind]
     button = "C" if system == "genesis" else "A"
+    vram = genesis_vram(e) if system == "genesis" else None
+
+    def clean():                                      # the Genesis clock and score boxes off the next frame drawn
+        if vram is not None:
+            hide_genesis_hud(e, vram)
     rnd = random.Random(zlib.crc32(name.encode()))
 
     def step():                                       # as the map's play-out, but the shooter stays where he shot
+        clean()
         h.park(keep_shooter=True)                     # (the map parks him too; he's far from the puck by then)
         e.run(1)
     shots, p = [], 0
@@ -112,6 +118,7 @@ def play(spec, n):
         windup, pre = [], None
         n0 = e.w(0xE010)                              # Genesis: the test ROM's doshot count
         for f in range(90):
+            clean()
             st = e.serialize()
             h.park()
             e.want_frame = True
@@ -127,7 +134,7 @@ def play(spec, n):
             continue
         seed = rnd.getrandbits(32)
         s0 = o.score0(net)
-        img = frame(h, lambda: o.fire(net, pre, aim, seed))
+        img = frame(h, lambda: o.fire(net, pre, aim, seed))   # pre was saved with the boxes already blanked
         frames, states = windup + [box(spec, net_on_screen(e, system, net, img), img)], [o.state(net)]
         goal, k, away, held, tail = None, None, 0, 0, 10
         for f in range(150):

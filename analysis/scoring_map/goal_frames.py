@@ -76,6 +76,28 @@ def net_on_screen(e, system, net, img=None):
     return 128, row if row is not None else e.sw(0x0D37) - gl + 114
 
 
+def genesis_vram(e):
+    """Where the Genesis video memory sits in the core's save state: right after its 1 KB copy of the sprite table,
+    whose bytes reappear inside video memory at the sprite table's address (found, not assumed, per core version)."""
+    s = e.serialize()
+    i = s.find(bytes(e.ram[:4096]))                   # work RAM
+    for a in range(i + 65536, i + 65536 + 40000):
+        blk = s[a:a + 512]
+        if blk.count(0) <= 400 and s.find(blk, a + 0x400, a + 0x400 + 0x10000) > 0:
+            return a + 0x400
+    raise RuntimeError("video memory not found in the state")
+
+
+def hide_genesis_hud(e, vram):
+    """Blank the clock and score boxes for the next frame drawn: they are rows 23-27 of the front tile layer (plane A,
+    map at VmMAP1, 64 columns), which doesn't scroll; every other tile there is the transparent 07FF. Only what is
+    drawn changes: the game never reads video memory back."""
+    s = bytearray(e.serialize())
+    a = vram + e.w(0xB004) + 2 * 64 * 23              # VmMAP1
+    s[a:a + 2 * 64 * 5] = bytes([0xFF, 0x07]) * (64 * 5)   # 07FF, stored low byte first
+    e.unserialize(bytes(s))
+
+
 def goal_line_row(img):
     """The SNES goal line's row: the row where most pixels are its red (a full-width line; the circles and the crease
     have far fewer). None if no row is at least 40% red."""
