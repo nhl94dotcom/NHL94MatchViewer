@@ -1614,7 +1614,9 @@ Genesis late median of 1.7% was that). Now the pass is played once without a pre
 late = 2-10 frames before that; early = 2-5 frames after the release; both spread over the moments because the swing
 has narrow timing holes (a long pass across whiffed at every moment pressed 6 frames before the catch, struck at 4 and
 8). Genesis pilot again (otpilot2): early median 16.6%, late 16.2%; the pass reached the late press 876 / 960 (737
-before). Chunk 1 of the full study (Genesis top) ran with the old timing and is superseded.
+before). Chunk 1 of the full study (Genesis top) ran with the old timing and is superseded. SNES pilot again: early median 4.9% over
+the aims (best aim 25.4%), late 4.3% (best 24.2%; was 2.7%); the pass reached the late press 860 / 960 (818 before),
+a strike in 769 of those (early 866 / 959); 30 jobs in 15.2 min.
 
 ## Advanced stats (2026-10-16)
 
