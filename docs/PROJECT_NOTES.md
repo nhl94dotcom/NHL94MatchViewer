@@ -1619,6 +1619,15 @@ has narrow timing holes (a long pass across whiffed at every moment pressed 6 fr
 before). Chunk 1 of the full study (Genesis top) ran with the old timing and is superseded. SNES pilot again: early median 4.9% over
 the aims (best aim 25.4%), late 4.3% (best 24.2%; was 2.7%); the pass reached the late press 860 / 960 (818 before),
 a strike in 769 of those (early 866 / 959); 30 jobs in 15.2 min.
+**Genesis full run (2026-10-23, run otfull, two chunks: top 412 jobs in 47.9 min, bottom 412 in 42.7 min, gentle
+mode).** 42 receivers x 6-13 passers x 2 nets, early and late, 32 moments, 8 seeds a strike. The pass reached the
+press 25,884 / 26,368 early, 21,819 / 26,368 late; strikes 21,560 and 19,962. Goal rate per job median 2.7% (both
+timings; most jobs are far out), mean 14-16% both nets. Per receiver (pooled): doorstep middle 62%, 18 ft out 46-53%
+within 10 ft of the middle, 27 ft 31-44%, 35 ft 2-14%, beyond 1-2%. Receiver inside 18 ft: pass across at the same
+depth 63% (13 of 18 over 50%), across from farther out 43%, from his own side 20-30%. Top vs bottom by set-up:
+correlation 0.82 early / 0.73 late, 56 / 70 set-ups more than 15 points apart; mirroring the bottom net in x gives 0.85
+/ 0.73 (no mirror effect). Write-up: SCORING_MAP "One-timers (Genesis)", GENESIS_MECHANICS 4.10. SNES chunk 1 (top)
+started the same day.
 
 ## Advanced stats (2026-10-16)
 

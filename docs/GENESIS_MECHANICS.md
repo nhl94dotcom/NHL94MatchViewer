@@ -597,6 +597,15 @@ doesn't pin the moment down finely enough (60 samples a second, not locked to th
 and the game's outcome turns on a few units and a frame. **So the viewer keeps its xG model for recorded games; the
 map shows what the rules do.**
 
+**One-timers in the real game** (2026-10-23, `ot_run.py`, the whole study in [SCORING_MAP](SCORING_MAP.md),
+"One-timers (Genesis)"): a pass to a standing receiver, C pressed during the pass, the strike (`puckstick` ->
+`onetimershot`, auto-aimed) played out at a set computer goalie; 824 set-ups over both nets. **Real game:** the swing
+struck the puck in 83-91% of presses the pass reached; goals per strike by the receiver's spot: the doorstep middle
+62%, 18 feet out within 10 of the middle about 50%, 27 feet 31-44%, 35 feet 2-14%, beyond that 1-2%. With the receiver
+inside 18 feet a pass across at the same depth scores 63%, from his own side 20-30%. Pressing early or late in the
+pass makes no difference on average. The nets agree on average but individual set-ups differ by up to 60 points (the
+same sensitivity to a unit of position as the Down slapshot), so a set-up's rate holds for one net, not both.
+
 ---
 
 ## 5. Goaltending

@@ -16,8 +16,9 @@ also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10 and [SNES_MECHANICS](SNES
 7. [Makes and misses, animated](#makes-and-misses-animated)
 8. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
 9. [The maps](#the-maps)
-10. [Limits and what comes next](#limits-and-what-comes-next)
-11. [Rebuilding it yourself](#rebuilding-it-yourself)
+10. [One-timers (Genesis)](#one-timers-genesis)
+11. [Limits and what comes next](#limits-and-what-comes-next)
+12. [Rebuilding it yourself](#rebuilding-it-yourself)
 
 ## At a glance
 
@@ -377,10 +378,60 @@ close to the goalie for a real shot.
   about half the time. The mirror shot on the right scores 0-3%.
 - The rays of blue squares pointing at the net are the same gap reached from farther out at an angle.
 
+## One-timers (Genesis)
+
+The same harness, now with a pass: a passer holds the puck, a teammate stands where the one-timer will be taken, the
+computer goalie sets himself, the passer passes toward the teammate and the one-timer button (C) is pressed during the
+pass, then the swing is played to the strike and the shot played out from fresh random draws. The Genesis aims
+one-timers itself, so there is no aim to choose. 824 set-ups: 42 receiver spots (10 to 52 feet out, up to 30 feet
+either side of the middle) with 6-13 passer spots each, at both nets, each with the button pressed early (2-5 frames
+after the pass leaves) and late (2-10 frames before the receiver would take it), 32 moments of the game clock per
+set-up. Same shooter and goalie as the maps. (`ot_harness.py`, `ot_run.py`, `ot_report.py`; run 2026-10-23 in
+gentle mode, two one-hour chunks.)
+
+**The swing usually connects:** the pass reached the press in 98% of early presses and 83% of late ones (otherwise
+the receiver had already taken it), and the swing struck the puck in 83% and 91% of those.
+
+**Where it scores** (goals per struck one-timer, averaged over the passers, both nets and both timings):
+
+| Receiver's distance out | Middle | 10 ft to one side | 20 ft | 30 ft |
+| --- | --- | --- | --- | --- |
+| 10 ft (the doorstep) | 62% | 39-40% | 17-27% | 8% |
+| 18 ft | 49% | 46-53% | 32-34% | 9% |
+| 27 ft | 44% | 31-40% | 15-17% | 5-6% |
+| 35 ft | 13% | 6-14% | 2-3% | 1-2% |
+| 43 ft | 2% | 1-2% | under 10% | under 15% |
+| 52 ft | 1% | 0-2% | 0-2% | 1-2% |
+
+Two ranges in a cell are the left and right sides. A few far spots show a high best rate from a handful of strikes (a
+pass that rarely connects); they are not real gaps.
+
+- **Inside about 27 feet and within 20 feet of the middle, a one-timer is a good chance;** beyond 35 feet it almost
+  never scores. Compare a standing shot at a set goalie: about 1% averaged over the spots and aims.
+- **The pass across is the one to make.** With the receiver inside 18 feet: a pass from the other side at the same
+  depth scores 63% on average (13 of 18 set-ups over half), one from the other side and farther out 43%, one from his
+  own side 20-30%. (Why, frame by frame, is not traced yet; the recorded-games study points the same way: the goalie
+  10 or more off the puck-to-net line at the strike scored 68%.)
+- **The best set-ups are close to automatic:** the receiver on the doorstep in front of the net with the pass from 14-20
+  feet to either side (90-99%); the receiver 10 feet to one side on the doorstep with the pass from 30 feet on the far
+  side (88-94%); the receiver 18 feet out and 10 to one side, the pass from 10 feet to the other side (77-79%).
+- **Timing barely matters on average:** early and late presses score the same overall (about 14-16% over every
+  set-up). A given set-up can favour one; the swing has narrow timing holes where it whiffs.
+- **The two nets agree on average** (14-16% each) **but not spot by spot:** about one set-up in six differs by more
+  than 15 points between the top and bottom net, up to 60. It is not a left-right mirror (flipping one net doesn't
+  line them up better) and not sampling noise (about 1 point a set-up): as with the Down slapshot in the maps, a unit of
+  position decides whether the puck meets the goalie's body, so which net is better at a spot is geometry no player can
+  aim for.
+- **Recorded games agree:** the earlier study of 91 recorded Genesis one-timers ([SHOOTING_STUDY](SHOOTING_STUDY.md)
+  part 3) found 44% scored inside 100 units (33 feet) and 10% beyond, with passes that moved the puck across scoring
+  most.
+
+The SNES half (nine aims per set-up, so about nine hours) is running in one-hour chunks.
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing
-yet about shots off the rush, one-timers or a person in net.
+yet about shots off the rush or a person in net; one-timers are above (Genesis; SNES to come).
 
 - **Not yet seen in real play.** Two practice tests are on the request list ([NEEDS_FROM_YOU](NEEDS_FROM_YOU.md)
   items 5 and 6): a dozen Down slapshots from the middle on the Genesis, and a dozen slapshots from the SNES left lane
@@ -392,7 +443,7 @@ yet about shots off the rush, one-timers or a person in net.
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.
 - **Next, if wanted:** a moving-goalie map using goalie states from recorded games (about 2 hours a system); other
-  shooters; one-timers; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
+  shooters; the SNES one-timers (running); one-timers in the xG models; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
   recorded games.
 
 ## Rebuilding it yourself
