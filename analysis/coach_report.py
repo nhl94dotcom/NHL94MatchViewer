@@ -20,6 +20,14 @@ judging (everyone throws the puck at the net then) unless they were a decent cha
 - Defensive position: while the other team has the puck in his end, his skater in position (goal-side and within 25 of
   the line from the puck to his net), goal-side but off that line, or caught up ice; the same at each shot against
   from his end, with its xG. Switch timing: a switch that took him from out of position to in position, or the reverse.
+- Using what the game rewards (the studies: SCORING_MAP, GENESIS_MECHANICS): passes across the slot, shots at a goalie
+  off the shot line, Down slapshots from the middle (30-55 feet out, the gap through the butterfly), C into heavier men
+  and CB otherwise (the weight bug), each person's count.
+- Who shoots: the shooter's working Shot Accuracy (hot / cold included) against the best on the ice for his team then.
+- Transition: after his team lost the puck outside the other team's end, how soon his skater was in position
+  (goal-side and on the puck-net line) and how often a shot against came within 5 s; after his team won it, how often a shot came within 5 s.
+- Pass risk: each of his passes' chance of getting through (the league table: length and gap to the nearest opponent),
+  expected against actual completions, and the risky ones (under 50%) by zone.
 - The goalie when the person took him, by the reason (the user's list): an opposing breakaway (their carrier in our half
   with none of our skaters nearer our net), a one-timer coming (their pass in the air toward our end), a carrier driving
   at the net (within 130, closing), the puck fired down the ice (theirs last, moving fast toward our end, 100+ out), a
@@ -188,7 +196,7 @@ def decisions(m, team, M, S, c):
 def measure(m, team, M):
     t, N, opp = m["t"], len(m["t"]), 1 - team
     mine, theirs = range(team * 6, team * 6 + 6), range(opp * 6, opp * 6 + 6)
-    c = Counter()
+    c = Counter(games=1)
     shots = m.get("shotList", [])
     hits = [h for h in m.get("hits", []) if h["team"] == team and h.get("human")]
     opp_shots = [s for s in shots if s["team"] == opp]
@@ -328,6 +336,89 @@ def measure(m, team, M):
         st = position_state(m, f, k, 268 * e)
         c["sa_" + st] += 1
         c["sa_xg_" + st] += s.get("xg") or 0
+    # ---- using what the game rewards: Down slapshots from the middle; C vs CB for the weights
+    for s in shots:
+        if s["team"] != team or not s.get("human") or s.get("type") != "slapshot" or late(m, s["f"], s.get("xg") or 0):
+            continue
+        e = own_end(m, s["f"], opp)
+        if e is None or abs(s["x"]) > 30 or not 90 <= abs(268 * e - s["y"]) <= 170:
+            continue
+        down = s.get("aim", {}).get("d") == 4
+        c["rw_mid_slap"] += 1
+        c["rw_down"] += down
+        c["rw_down_goal"] += down and s["result"] == "goal"
+
+    def weight(tm, idx):
+        return m["rosters"][tm][idx]["a"][0] if 0 <= idx < len(m["rosters"][tm]) else None
+    for f in range(1, N - 1):
+        k = ctrl_skater(m, f, team)
+        if k is None or anim(m, f, k) != "0c5e" or anim(m, f - 1, k) == "0c5e":
+            continue
+        contact = None
+        for q in range(f, min(N, f + 60)):
+            if t[q] - t[f] > 600:
+                break
+            x, y = P(m, q, k)
+            o = next((oo for oo in skaters(m, q, opp) if math.hypot(P(m, q, oo)[0] - x, P(m, q, oo)[1] - y) < 20), None)
+            if o is not None:
+                contact = (q, o)
+                break
+        if contact:
+            q, o = contact
+            wc, wt = weight(team, roster(m, q, k)), weight(opp, roster(m, q, o))
+            if wc is not None and wt is not None:
+                c["rw_cb"] += 1
+                c["rw_cb_right"] += ((m["ctrl"][q] >> k & 1) == 1) == (wt - wc >= 2)
+    # ---- who shoots: the shooter's working Shot Accuracy against the best on the ice
+    work = {}
+    for r in m.get("work", []):
+        work.setdefault(r[1], []).append(r)
+    for s in shots:
+        if s["team"] != team or s["kind"] not in ("shot", "one-timer") or late(m, s["f"], s.get("xg") or 0):
+            continue
+        f = s["f"]
+        on = skaters(m, f, team)
+        sha = {k: (XG._work(work, f, k) or [0] * 6)[5] for k in on}
+        shooter = next((k for k in on if roster(m, f, k) == s["idx"]), None)
+        if shooter is None or not sha:
+            continue
+        c["ws"] += 1
+        c["ws_sha"] += sha[shooter]
+        c["ws_best"] += max(sha.values())
+        c["ws_top"] += sha[shooter] >= max(sha.values()) - 1
+    # ---- transition
+
+    def in_position(q, ny):
+        k = ctrl_skater(m, q, team)
+        return k is not None and position_state(m, q, k, ny) == "in"
+    for g in m.get("turnovers", []):
+        f = g["f"]
+        e = own_end(m, f, team)
+        if e is None:
+            continue
+        ny = 268 * e
+        if g["from"] == team and abs(ny - g["y"]) < 536 - ZONE:     # lost outside their end
+            c["tr_lost"] += 1
+            c["tr_lost_shot"] += any(0 < t[s["f"]] - t[f] <= 5000 for s in opp_shots)
+            back = next((q for q in range(f, N) if t[q] - t[f] <= 5000 and in_position(q, ny)), None)
+            c["tr_back_n"] += 1
+            c["tr_back_s"] += (t[back] - t[f]) / 1000 if back is not None else 5
+            c["tr_back_quick"] += back is not None and t[back] - t[f] <= 2000
+        elif g["from"] == opp:
+            c["tr_won"] += 1
+            c["tr_won_shot"] += any(s["team"] == team and 0 < t[s["f"]] - t[f] <= 5000 for s in shots)
+    # ---- pass risk
+    for p in m.get("passes", []):
+        if p["team"] != team or not p.get("human") or p.get("result") == "pass shot":
+            continue
+        pr = M.completion(math.hypot(p["x1"] - p["x0"], p["y1"] - p["y0"]), lane_gap(m, p["f"], team, p["x0"], p["y0"], p["x1"], p["y1"]))
+        c["pr_n"] += 1
+        c["pr_exp"] += pr
+        c["pr_ok"] += p["result"] in ("completed", "one-timer")
+        if pr < 0.5:
+            z = p.get("zone", "?")
+            c["pr_risky_" + z] += 1
+            c["pr_risky_ok_" + z] += p["result"] in ("completed", "one-timer")
     # ---- the person's checks that the game counted
     for h in hits:
         c["hit"] += 1
@@ -458,6 +549,22 @@ def rows(c):
         ("Defensive position", "at shots against: in position / off the line / up ice (xG of those shots)",
          " / ".join(f"{c['sa_' + st]} ({c['sa_xg_' + st]:.1f})" for st in ("in", "off", "up")), ""),
         ("Defensive position", "switches: into position / out of position (of all)", f"{c['sw_good']} / {c['sw_bad']} (of {c['sw']})", ""),
+        ("Using what the game rewards", "passes across the slot, a game", f"{c['pa_across'] / max(1, c['games']):.1f}", "+"),
+        ("Using what the game rewards", "shots at a goalie 10+ off the shot line", pct(c["sh_off10"], c["sh"]), "+"),
+        ("Using what the game rewards", "slapshots from the middle (30-55 ft): tried / holding Down / Down goals",
+         f"{c['rw_mid_slap']} / {c['rw_down']} / {c['rw_down_goal']}", "+"),
+        ("Using what the game rewards", "bursts that met a man: right C / CB choice for the weights", f"{pct(c['rw_cb_right'], c['rw_cb'])} of {c['rw_cb']}", "+"),
+        ("Who shoots", "shooter's working Shot Accuracy / the best on the ice then (avg)",
+         f"{c['ws_sha'] / max(1, c['ws']):.1f} / {c['ws_best'] / max(1, c['ws']):.1f}", ""),
+        ("Who shoots", "shots by the best shooter on the ice (within 1)", pct(c["ws_top"], c["ws"]), "+"),
+        ("Transition", "his team lost the puck outside their end: his skater in position within 2 s", pct(c["tr_back_quick"], c["tr_back_n"]), "+"),
+        ("Transition", "· average time to in position (5 s if never)", f"{c['tr_back_s'] / max(1, c['tr_back_n']):.1f} s", "-"),
+        ("Transition", "· a shot against within 5 s", pct(c["tr_lost_shot"], c["tr_lost"]), "-"),
+        ("Transition", "his team won the puck: a shot within 5 s", pct(c["tr_won_shot"], c["tr_won"]), "+"),
+        ("Pass risk", "completed: actual / expected from the league table", f"{c['pr_ok']} / {c['pr_exp']:.0f} of {c['pr_n']}", "+"),
+        ("Pass risk", "risky passes (under 50% to get through) in their end / neutral / his end",
+         f"{c['pr_risky_att']} / {c['pr_risky_neu']} / {c['pr_risky_def']}", "-"),
+        ("Pass risk", "· of those completed", f"{c['pr_risky_ok_att']} / {c['pr_risky_ok_neu']} / {c['pr_risky_ok_def']}", ""),
         ("Goalie", "takeovers (and times the game handed him the goalie, who had caught the puck)", f"{c['gt']} ({c['gt_auto']})", ""),
     ] + [("Goalie", f"· {label}: takeovers / a shot within 3 s / goals (xG) / his team had the puck next",
           f"{c['gt_' + key]} / {c[f'gt_{key}_shot']} / {c[f'gt_{key}_goal']} ({c[f'gt_{key}_xg']:.1f}) / {c[f'gt_{key}_ours']}", "")
