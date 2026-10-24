@@ -567,6 +567,38 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
   games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
   the sides apart yet.
 
+## EA Specials (Genesis, 2026-10-24)
+
+The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the
+loose puck and at once shoots inside the near post, open because the goalie was pushed back (and may have dived at the
+loose puck). The user's view: the best shooters are bad at it, because their harder shots are held more; middling
+shooters' shots are bobbled more. `ea_run.py`: one left-handed shooter at each of 9 spots (40 / 70 / 100 to the side,
+60 / 90 / 120 out), standing or skating in at 1.5 a frame, every Shot Power and Shot Accuracy from roster step 2 to 6
+(working 10-30), all nine aims, 8 moments x 2 seeds, both nets: 129,600 first shots. After the shot a simple bot plays
+the rest: skate on; once the goalie has touched the puck and it is loose, chase it; on claiming it, tap C aimed at the
+near post.
+
+- **The first shot to bobble is aimed across, at the far side from the shooter:** 60-77% of those are touched and
+  left loose, against 14-28% aimed down along the ice (held 70-85%).
+- **Shot Power (far-side first shots, every spot):** held 20% / 19% / 21% / 21% / 27% from steps 2 to 6, bobbled 63% /
+  69% / 72% / 72% / 66%. Weak shots (2-3) miss the net more (11-16%, against 6% at 5-6). So the hardest shooter's
+  shots are held more and bobbled less, as the user said, but only at the top: steps 3-5 are much the same.
+- **The goalie's dive at the loose puck falls steadily with Shot Power:** after a bobble he dives 43% / 35% / 25% /
+  18% / 17% of the time (steps 2-6). Close in (40 to the side) it is 55% at step 2 and 21% at step 6.
+- **The whole play, close in (40 to the side), where it works best:** a goal from the bobble 10% / 11% / 9% / 8% / 4%
+  of first shots (steps 2-6), with 89-95% of bobbles claimed. The strongest shooter scores about half as often, held
+  35% against 16%. From 100 to the side the shooter seldom gets to the puck first (14-41% claimed) and it hardly works
+  (0-1%). Over all spots, steps 2 to 6: 5 / 6 / 5 / 4 / 4%.
+- **Shot Accuracy hardly matters here:** held 49-57%, bobbled 41-42% over all aims; only misses fall (8% to 2%).
+- **Pushed back:** measured as the goalie's movement toward his goal line within 20 frames of the save, only 0.3-0.8
+  units after far-side shots (up to 3 after shots he holds). So in these runs the save doesn't move the goalie; the
+  opening comes from the dive and from where the loose puck goes.
+- **Limits:** the bot is no person. It takes about 44 frames to claim the puck, and half the bobbles end with nothing
+  (the puck not reached, or the follow-up still loose), so the scoring rates here are a floor. The comparisons between
+  ratings are fair: every shooter had the same bot. The game's hold rule (the goalie holds a puck whose speed parts
+  are under a random threshold set by Puck Control) would predict faster shots held less, the opposite of what
+  happened at step 6; that is still to be traced.
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing
