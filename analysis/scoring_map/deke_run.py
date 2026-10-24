@@ -11,7 +11,10 @@ still held, so the shot is aimed at that side.
 A move: start (x, y), velocity (units a frame), first facing, the d-pad held coming in, the d-pad of the swing, the
 goalie distance at which the swing starts, frames from the swing to C, frames C is held; all in the attacker's view
 (x + his right, y toward the net, facing 0 toward the net, clockwise), turned for the bottom net. The shooter's hand
-is set (+$76 bit 0). MOMENTS moments (clock, settle) x SEEDS seeds after the release, played out (harness.decide).
+is set in attribute bit 3 (+$04: set = right-handed, the flipped picture), which is what the game reads (Findhittype,
+the stick's hot points), and in +$76 bit 0 to match (before 2026-10-24 11:00 only +$76 was set, which the game
+ignores: every shooter was the test skater's own left hand). NHL94_DEKE_HANDS="R" plays one hand. MOMENTS moments
+(clock, settle) x SEEDS seeds after the release, played out (harness.decide).
 Chunked and resumable; gentle mode.
 python deke_run.py PLAN RUN [minutes]   -> paths.RUNS / RUN / deke_<PLAN>.jsonl"""
 import itertools
@@ -33,6 +36,7 @@ MOMENTS, SEEDS = 12, 4
 GOAL_Y = 264
 # Shot Power, Shot Accuracy: the map's usual shooter; NHL94_SMAP_RATINGS="shp,sha" for others
 RATINGS = tuple(map(int, os.environ.get("NHL94_SMAP_RATINGS", "20,15").split(",")))
+HANDS = os.environ.get("NHL94_DEKE_HANDS", "L,R").split(",")
 KEYS = ("plan", "net", "hand", "x0", "side", "D", "lag", "hold", "var")
 PAD = {"U": 0, "UR": 1, "R": 2, "DR": 3, "D": 4, "DL": 5, "L": 6, "UL": 7}
 
@@ -46,7 +50,7 @@ def plan_jobs(plan):
     var: "side" (C with the swing's side held: aimed at that side, middle height), "low" (that side along the ice),
     "still" (the control: no swing, the puck kept where it was, the same shot at the same moment)."""
     jobs = []
-    for net, hand, side, var in itertools.product(("top", "bottom"), ("L", "R"), (1, -1), ("side", "low", "still")):
+    for net, hand, side, var in itertools.product(("top", "bottom"), HANDS, (1, -1), ("side", "low", "still")):
         if plan == "deke":
             for x0, D, lag in itertools.product((-30, -15, 0, 15, 30), (60, 72, 85), (4, 7, 10, 13, 16, 19)):
                 jobs.append((plan, net, hand, x0, side, D, lag, 4, var))
@@ -97,8 +101,9 @@ def job(args):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
         set_ratings(h, *RATINGS)
-        b = e.b(rec(SHOOTER) + 0x76)
-        e.setb(rec(SHOOTER) + 0x76, (b | 1) if hand == "L" else (b & ~1))
+        b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)     # the game reads the hand from attribute bit 3
+        e.setb(rec(SHOOTER) + 0x76, (b | 1) if hand == "L" else (b & ~1))      # (set: right-handed, drawn flipped)
+        e.setb(rec(SHOOTER) + 4, (a & ~8) if hand == "L" else (a | 8))
         e.setb(rec(SHOOTER) + 0x55, screen_dir(face, top))
         e.setw(rec(SHOOTER) + 0x28, round(sg * vx * 4096) & 0xFFFF)
         e.setw(rec(SHOOTER) + 0x2A, round(sg * vy * 4096) & 0xFFFF)

@@ -527,6 +527,46 @@ and both sides.
   - So the far-post slapshot is a skating shot: across toward the stick side, released in front of the middle. Neely's
     7-4 left from 50 before the middle, 86 out, earlier than any release tried here.
 
+## Dekes and floaters (Genesis, 2026-10-24)
+
+`deke_run.py` plays the user's close-in moves (PROJECT_NOTES "Examples in the 2026-10-23 BOS-LA games") against a set
+computer goalie, with the inputs read from those recordings. He comes in with his facing a step to one side. Close in,
+he holds the other diagonal (up-left or up-right; straight left or right turns him sideways and C then drops the
+puck). His facing swings two steps, and the puck crosses in front of him in about 15 frames while his skating barely
+changes. He then taps C with the swing's side held, a wrist shot aimed at that side. The usual shooter is 20 / 15. Each
+hand was played (attribute bit 3, which the game reads; the first run set only +$76, which it ignores, so its "right-
+handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds per set-up, 4,320 set-ups a hand.
+"Still" is the control: the same shot at the same moment with no swing.
+
+- **The swing is the goal.** The same shots without it score 0-1% (deke and floater alike); with it, the best set-ups
+  score 60-93%.
+- **Deke (straight in: Neely's 1-0s, his near-post 9-0):** come in about 30 off the middle on the side you will swing
+  toward, drifting toward the middle. Start the swing about 72 from the goalie, shoot 13-19 frames later (released
+  about 45 out), and the shot goes in at the post on the side he came from.
+  - Left-hander swinging to his left (forehand): 83-88%. Right-hander to his left (backhand): 80-93%. Right-hander to
+    his right (forehand, swing at 85): 57-66%. Left-hander to his right (backhand): 46%.
+  - Over the whole grid: lefty to his left 32%, to his right 3%; righty to his left 16%, to his right 12%. **Two
+    things add up: a swing to the forehand** (each mirror-image pair, a lefty against a righty, favours the forehand
+    swing: 45% against 25%, 28% against 6%), **and a swing to the shooter's own left** whatever his hand. That second
+    one is the same at both nets, so it is in the game, not the screen; the routine behind it isn't found yet.
+  - Swung too late (shot more than about 16 frames after a swing begun at 60), the goalie takes the puck first.
+  - Along the ice instead of mid-height: a little worse (27% against 30% over the grid).
+- **Floater (Juneau's 3-0, Sweeney's 4-0):** skate up and across on the diagonal from the forehand side, 35-50 out to
+  the side, swing the puck back to the forehand, and hold C 6-9 frames: the far post from about 60 out.
+  - Left-hander from his left, swung back left: 54-60% (swing at 95 from the goalie, C 14-18 frames later).
+    Right-hander from his right, swung back right: 50-65% (swing at 110, C 22 frames later; the edge of the grid, so
+    it may be better still a little later).
+  - Swung to the backhand instead: 26% (lefty), 29-38% (righty) at best; the forehand rule holds for the floater with
+    no left-right bias.
+- **Why it works:** the goalie doesn't follow the swing. He moves with the shooter's skating (6-9 units across the
+  floater, as he does with no swing) and is 2-5 units off the puck's line to the net at the release, the same as
+  without a swing. What changes is the shot: the puck leaves from 10-18 units across the shooter on the swing's side,
+  aimed at that side, at a goalie standing where he was for the puck's old place. Exactly which save test it beats is
+  not yet traced.
+- **The recorded games** (`analysis/deke_games.py`, 158 close wrist shots by a person at a computer goalie in 47
+  games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
+  the sides apart yet.
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing

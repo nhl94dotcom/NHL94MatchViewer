@@ -4,7 +4,8 @@ plays in the game: PROJECT_NOTES "Examples in the 2026-10-23 BOS-LA games"), aga
 swing. A swing: the puck's place across the shooter's skating line (his right +) changed by SWING units or more, from
 one side to the other, within SWING_FRAMES samples before the release. Shots: a person's wrist shots (`human`) at a
 computer goalie (`gctl` cpu), the shooter within NEAR of the goalie at the release; sorted by how far out
-(deke: within 45 of the goalie; floater range: 45-70) and by the shooter's sideways speed (a floater crosses).
+(deke: within 45 of the goalie; floater range: 45-70), by the shooter's sideways speed (a floater crosses) and by
+which side of him the puck was on at the release (his forehand side: a right-hander's right).
 python analysis/deke_games.py [match ...]   (default: every Genesis match in the game folders)"""
 import json
 import math
@@ -50,12 +51,14 @@ def shots(name):
                 across.append(((px - ax) * vy - (py - ay) * vx) / sp)
             else:                                     # standing: across the ice, his right +
                 across.append((px - ax) * up)
+        rh = m["mirror"][f * P.K + k] == "1"          # right-handed (drawn mirrored): his forehand is his right
         last = across[-1]                             # released on one side, earlier at least 5 on the other
         swing = abs(last) > 3 and any(abs(v) >= 5 and (v < 0) != (last < 0) and abs(v - last) >= SWING
                                       for v in across)
         out.append(dict(match=name, clock=g.clock(f), shooter=g.full(t, s["idx"]), goal=s.get("result") == "goal",
                         xg=s.get("xg") or 0, dist=round(dist), swing=swing, side_speed=round(abs(vx * up), 2),
-                        x=round(sx * up), y=round(sy * up), puck_across=round(across[-1], 1)))
+                        x=round(sx * up), y=round(sy * up), puck_across=round(across[-1], 1),
+                        hand="R" if rh else "L", forehand=(last > 0) == rh))
     return out
 
 
@@ -72,7 +75,8 @@ def main(names):
     for r in rows:
         rng = "close (deke range, within 45)" if r["dist"] <= 45 else "45-70 (floater range)"
         mv = "crossing" if r["side_speed"] >= 1.0 else "straight in"
-        groups[(rng, mv, "swing" if r["swing"] else "no swing")].append(r)
+        side = "to forehand" if r["forehand"] else "to backhand"
+        groups[(rng, mv, ("swing " if r["swing"] else "no swing, ") + side)].append(r)
     print(f"{len(rows)} wrist shots by a person at a computer goalie within {NEAR} of him, in {len(names)} games")
     print("| Range | Skating | Puck | Shots | Goals | Rate | xG rate |")
     print("|---|---|---|---|---|---|---|")
