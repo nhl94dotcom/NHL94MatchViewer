@@ -59,6 +59,19 @@ def plan_jobs(plan):
                             if abs(P[0]) <= 110 and 10 <= P[1] <= 255:
                                 jobs.append((net, R, P))
         return jobs
+    if plan == "ratings":
+        # for comparing shooters (NHL94_OT_RATINGS): the cross-slot one-timer's best receivers (in front, 30 and 55
+        # out, and 30 to either side 55 out) with passes from either side, 60 and 120 away
+        jobs = []
+        for net in ("top", "bottom"):
+            for R in ((0, 238), (0, 213), (30, 213), (-30, 213)):
+                for ang in (60, 90, 120, 240, 270, 300):
+                    for dist in (60, 120):
+                        P = (round(R[0] + dist * math.sin(math.radians(ang))),
+                             round(R[1] + dist * math.cos(math.radians(ang))))
+                        if abs(P[0]) <= 110 and 10 <= P[1] <= 255:
+                            jobs.append((net, R, P))
+        return jobs
     raise ValueError(plan)
 
 

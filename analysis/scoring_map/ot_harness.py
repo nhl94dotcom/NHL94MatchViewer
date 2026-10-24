@@ -5,6 +5,7 @@ moment of the pass, and the swing is played to the frame the game strikes the pu
 the d-pad held from the press (held only at the strike it changes nothing: the aim is read during the swing); the
 Genesis aims one-timers itself. The strike frame is then replayed from fresh random seeds and each shot played out. Nobody else is on the ice but the two goalies; the passer and
 the receiver stay where they are (the SNES result depends on who is on the ice: PROJECT_NOTES, "Frame timing")."""
+import os
 import math
 
 from lowload import gentle
@@ -150,7 +151,9 @@ class Snes:
 class OneTimer:
     def __init__(self, system):
         gentle()
-        self.s = Genesis() if system == "genesis" else Snes()
+        r = os.environ.get("NHL94_OT_RATINGS")            # "shp,sha": the receiver's working ratings (else the defaults)
+        kw = dict(zip(("shp", "sha"), map(int, r.split(",")))) if r else {}
+        self.s = Genesis(**kw) if system == "genesis" else Snes(**kw)
         self.e = self.s.e
 
     def park(self, keep):

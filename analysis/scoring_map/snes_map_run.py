@@ -22,7 +22,7 @@ XS = range(-110, 111, 10)
 YS = range(90, 251, 10)
 SHOTS = {"wrist": 3, "slap": 40}
 SUBSET = os.environ.get("NHL94_SMAP_SUBSET")   # slapmid: slapshots only (set here: the workers load this module afresh)
-if SUBSET == "slapmid":
+if SUBSET in ("slapmid", "slapcore"):
     SHOTS = {"slap": 40}
 MIN_PUCK = 24
 
@@ -89,6 +89,8 @@ def main():
     jobs = [(net, x, y, phases, seeds) for net in ("top", "bottom") for y in YS for x in XS]
     if SUBSET == "slapmid":                                 # as map_run.py: slapshots, middle half, 30-55 feet out
         jobs =[j for j in jobs if abs(j[1]) <= 60 and j[1] % 20 == 0 and 100 <= j[2] <= 180 and j[2] % 20 == 0]
+    if SUBSET == "slapcore":                                # 9 spots in the middle, for many shooters
+        jobs = [j for j in jobs if j[1] in (-40, 0, 40) and j[2] in (120, 140, 160)]
     path = RUNS / run / "snes_map.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     res = json.load(open(path)) if path.exists() else {"meta": dict(phases=phases, seeds=seeds, shp=shp, sha=sha)}

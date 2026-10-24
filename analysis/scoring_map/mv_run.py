@@ -15,6 +15,7 @@ like ot_run.py; gentle mode.
 python mv_run.py PLAN RUN [minutes]   -> paths.RUNS / RUN / mv_<PLAN>.jsonl"""
 import json
 import math
+import os
 import random
 import sys
 import time
@@ -28,8 +29,10 @@ from paths import RUNS, STATE_TOP, STATE_BOTTOM
 
 MOMENTS, SEEDS, SPEED = 16, 4, 8000
 SLAP_HOLD = 20                     # frames of C for a full slapshot (map_run.py's hold)
-SLAPS = ("slapx", "slapxslow")
-SLAP_RATINGS = (27, 27)            # Shot Power, Shot Accuracy: a strong, accurate shooter (the user's far-post slapshots)
+SLAPS = ("slapx", "slapxslow", "slapxr")
+# Shot Power, Shot Accuracy: a strong, accurate shooter (the user's far-post slapshots); NHL94_SMAP_RATINGS="shp,sha"
+# sets others (slapxr: the far-post slapshot's best part, for comparing shooters)
+SLAP_RATINGS = tuple(map(int, os.environ.get("NHL94_SMAP_RATINGS", "27,27").split(",")))
 GOAL_Y = 264
 
 
@@ -40,6 +43,12 @@ def plan_jobs(plan):
             if plan == "cross":
                 for out in (25, 35, 45):
                     for rel in (-40, -20, 0, 20, 40):
+                        jobs.append((plan, net, side, out, rel))
+            elif plan == "slapxr":                     # toward his stick side only (left-handed: to his left)
+                if side != (1 if net == "top" else -1):
+                    continue
+                for out in (85, 105, 125):
+                    for rel in (-60, -40):
                         jobs.append((plan, net, side, out, rel))
             elif plan in SLAPS:
                 for out in (85, 105, 125):

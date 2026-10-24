@@ -1,0 +1,183 @@
+"""Dekes and floaters in the real game (Genesis test ROM), 2026-10-24: the user's close-in moves against the computer
+goalie, as in the 2026-10-23 BOS-LA games (PROJECT_NOTES "Examples in the 2026-10-23 BOS-LA games"). Every move is
+the same few inputs, read from those recordings: the skater comes in carrying the puck on one side (his facing a step
+to that side), and close to the goalie holds the d-pad the other way: his facing swings two steps, the puck crosses
+in front of him in about 15 frames while his skating barely changes, and he taps C (a wrist shot) with that direction
+still held, so the shot is aimed at that side.
+- deke (straight in: Neely's 1-0s; near-post deke, Neely's 9-0: coming in off the middle, drifting toward it, the
+  puck pulled back out away from the middle)
+- floater (Juneau's 3-0, Sweeney's 4-0: up and across on a diagonal, the puck swung back the other way and floated
+  toward the far post from 45-55 out)
+A move: start (x, y), velocity (units a frame), first facing, the d-pad held coming in, the d-pad of the swing, the
+goalie distance at which the swing starts, frames from the swing to C, frames C is held; all in the attacker's view
+(x + his right, y toward the net, facing 0 toward the net, clockwise), turned for the bottom net. The shooter's hand
+is set (+$76 bit 0). MOMENTS moments (clock, settle) x SEEDS seeds after the release, played out (harness.decide).
+Chunked and resumable; gentle mode.
+python deke_run.py PLAN RUN [minutes]   -> paths.RUNS / RUN / deke_<PLAN>.jsonl"""
+import itertools
+import json
+import math
+import os
+import random
+import sys
+import time
+import zlib
+from multiprocessing import Pool
+
+from harness import Harness, decide, rec, DIRPAD, E, SHOOTER, GOALIE, PUCKC
+from lowload import WORKERS, breathe, gentle
+from mapper import set_ratings
+from paths import RUNS, STATE_TOP, STATE_BOTTOM
+
+MOMENTS, SEEDS = 12, 4
+GOAL_Y = 264
+# Shot Power, Shot Accuracy: the map's usual shooter; NHL94_SMAP_RATINGS="shp,sha" for others
+RATINGS = tuple(map(int, os.environ.get("NHL94_SMAP_RATINGS", "20,15").split(",")))
+KEYS = ("plan", "net", "hand", "x0", "side", "D", "lag", "hold", "var")
+PAD = {"U": 0, "UR": 1, "R": 2, "DR": 3, "D": 4, "DL": 5, "L": 6, "UL": 7}
+
+
+def screen_dir(d, top):
+    return d if top else (d + 4) % 8
+
+
+def plan_jobs(plan):
+    """(plan, net, hand, x0, side, D, lag, hold, var): side +1 = carried on his right coming in, swung to his left;
+    var: "side" (C with the swing's side held: aimed at that side, middle height), "low" (that side along the ice),
+    "still" (the control: no swing, the puck kept where it was, the same shot at the same moment)."""
+    jobs = []
+    for net, hand, side, var in itertools.product(("top", "bottom"), ("L", "R"), (1, -1), ("side", "low", "still")):
+        if plan == "deke":
+            for x0, D, lag in itertools.product((-30, -15, 0, 15, 30), (60, 72, 85), (4, 7, 10, 13, 16, 19)):
+                jobs.append((plan, net, hand, x0, side, D, lag, 4, var))
+        elif plan == "floater":       # side +1: from his left going right (Juneau, Sweeney), -1 the mirror
+            for x0, D, lag, hold in itertools.product((50, 35), (80, 95, 110), (6, 10, 14, 18, 22), (3, 6, 9)):
+                jobs.append((plan, net, hand, -side * x0, side, D, lag, hold, var))
+    return jobs
+
+
+def move(plan, x0, side):
+    """Start y, velocity (x, y), first facing, d-pad coming in, d-pad of the swing, the swing's side (attacker's
+    view). The swing is held on the diagonal (straight to the side, he keeps turning and faces across, and C then
+    drops the puck instead of shooting)."""
+    if plan == "deke":
+        drift = -0.5 if x0 > 0 else 0.5 if x0 < 0 else 0.0     # off the middle: drifting toward it (Neely's 9-0)
+        return 140, (drift, 2.1), (1 if side > 0 else 7), ("UR" if side > 0 else "UL"), ("UL" if side > 0 else "UR")
+    # floater: up and across at about 2 a frame, facing the way he goes, the puck on his leading side
+    return 105, (1.5 * side, 1.5), (1 if side > 0 else 7), ("UR" if side > 0 else "UL"), ("UL" if side > 0 else "UR")
+
+
+AIM = {("side", 1): "L", ("side", -1): "R", ("low", 1): "DL", ("low", -1): "DR"}
+
+
+_h = {}
+
+
+def _init():
+    gentle()
+    top = Harness(state=STATE_TOP, top=True)
+    _h["top"], _h["bottom"] = top, Harness(state=STATE_BOTTOM, top=False, emu=top.e)
+
+
+def job(args):
+    plan, net, hand, x0, side, D, lag, hold, var = args
+    h = _h[net]
+    e = h.e
+    top = net == "top"
+    sg = 1 if top else -1
+    rnd = random.Random(zlib.crc32(json.dumps(args).encode()))
+    y0, (vx, vy), face, pad_in, pad_swing = move(plan, x0, side)
+    if var == "still":
+        pad_swing, aim = pad_in, ("L" if side > 0 else "R")
+    else:
+        aim = AIM[(var, side)]
+    din, dsw, dam = (screen_dir(PAD[k], top) for k in (pad_in, pad_swing, aim))
+    res = dict(GOAL=0, NO=0, noshot=0, lost=0, n=0, release=[0.0, 0.0], gdist=0.0, goff=0.0, pside=0.0, gmove=0.0)
+    for p in range(MOMENTS):
+        clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
+        h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
+        set_ratings(h, *RATINGS)
+        b = e.b(rec(SHOOTER) + 0x76)
+        e.setb(rec(SHOOTER) + 0x76, (b | 1) if hand == "L" else (b & ~1))
+        e.setb(rec(SHOOTER) + 0x55, screen_dir(face, top))
+        e.setw(rec(SHOOTER) + 0x28, round(sg * vx * 4096) & 0xFFFF)
+        e.setw(rec(SHOOTER) + 0x2A, round(sg * vy * 4096) & 0xFFFF)
+        n0, swing, pre, g0 = e.w(E["n"]), None, None, None
+        for f in range(200):
+            sx, sy = e.sw(rec(SHOOTER)), e.sw(rec(SHOOTER) + 0x14)
+            gx, gy = e.sw(rec(GOALIE)), e.sw(rec(GOALIE) + 0x14)
+            if e.w(PUCKC) != SHOOTER:
+                break
+            if swing is None and math.hypot(sx - gx, sy - gy) <= D:
+                swing, g0 = f, gx
+            c = swing is not None and f >= swing + lag
+            d = din if swing is None else dam if c else dsw
+            c = c and f < swing + lag + hold
+            st = e.serialize()
+            h.park()
+            e.run(1, hold=(["C"] if c else []) + DIRPAD[d])
+            if e.w(E["n"]) != n0:
+                pre = st
+                break
+        if pre is None:
+            res["lost" if swing is not None else "noshot"] += 1
+            continue
+        e.unserialize(pre)
+        sx, sy = e.sw(rec(SHOOTER)), e.sw(rec(SHOOTER) + 0x14)
+        gx, gy = e.sw(rec(GOALIE)), e.sw(rec(GOALIE) + 0x14)
+        px, py = e.sw(rec(14)), e.sw(rec(14) + 0x14)
+        gl = sg * GOAL_Y
+        L = math.hypot(-px, gl - py) or 1
+        res["n"] += 1
+        res["release"][0] += sg * sx
+        res["release"][1] += GOAL_Y - sg * sy
+        res["gdist"] += math.hypot(sx - gx, sy - gy)
+        res["goff"] += abs((gx - px) * (gl - py) - (gy - py) * (-px)) / L     # goalie off the puck's line to the net
+        res["pside"] += sg * (px - sx)                                         # where the puck was, across (his right +)
+        res["gmove"] += sg * (gx - g0)                                         # how far the goalie moved since the swing
+        for _ in range(SEEDS):
+            e.unserialize(pre)
+            e.setl(0xD066, rnd.getrandbits(32))
+            h.park()
+            e.run(1, hold=DIRPAD[dam])
+            g, _f = decide(h)
+            res["GOAL" if g else "NO"] += 1
+            breathe()
+    if res["n"]:
+        res["release"] = [round(v / res["n"], 1) for v in res["release"]]
+        for k in ("gdist", "goff", "pside", "gmove"):
+            res[k] = round(res[k] / res["n"], 1)
+    return dict(zip(KEYS, args), **res)
+
+
+def main():
+    plan, run = sys.argv[1], sys.argv[2]
+    minutes = float(sys.argv[3]) if len(sys.argv) > 3 else 60
+    path = RUNS / run / f"deke_{plan}.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    done = set()
+    if path.exists():
+        for line in open(path):
+            d = json.loads(line)
+            done.add(tuple(d[k] for k in KEYS))
+    todo = [j for j in plan_jobs(plan) if j not in done]
+    print(f"{plan}: {len(done)} jobs done before, {len(todo)} to go; this chunk: up to {minutes:g} minutes", flush=True)
+    t0, deadline, finished = time.time(), time.time() + 60 * minutes, 0
+    with Pool(WORKERS, initializer=_init) as pool, open(path, "a") as f:
+        pending, queue = [], list(todo)
+        while queue or pending:
+            while queue and len(pending) < WORKERS and time.time() < deadline:
+                pending.append(pool.apply_async(job, (queue.pop(0),)))
+            if not pending:
+                break
+            time.sleep(1)
+            for a in [a for a in pending if a.ready()]:
+                pending.remove(a)
+                f.write(json.dumps(a.get()) + "\n")
+                f.flush()
+                finished += 1
+    print(f"chunk over: {finished} jobs in {(time.time() - t0) / 60:.1f} minutes; {len(todo) - finished} left", flush=True)
+
+
+if __name__ == "__main__":
+    main()

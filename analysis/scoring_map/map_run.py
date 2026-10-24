@@ -32,6 +32,10 @@ jobs = [(net, hold, x, y) for net in ("top", "bottom") for hold in (3, 20) for y
 # by 20), for comparing shooters there (the user: far-post slapshots by strong, accurate shooters)
 if __import__("os").environ.get("NHL94_SMAP_SUBSET") == "slapmid":
     jobs = [j for j in jobs if j[1] == 20 and abs(j[2]) <= 60 and j[2] % 20 == 0 and 100 <= j[3] <= 180 and j[3] % 20 == 0]
+# slapcore: slapshots from 9 spots in the middle (x -40, 0, 40; y 120, 140, 160), for many shooters (2026-10-24, the
+# user: what Shot Power and Shot Accuracy do to each kind of shot)
+if __import__("os").environ.get("NHL94_SMAP_SUBSET") == "slapcore":
+    jobs = [j for j in jobs if j[1] == 20 and j[2] in (-40, 0, 40) and j[3] in (120, 140, 160)]
 done = set()
 try:
     for line in open(out):
