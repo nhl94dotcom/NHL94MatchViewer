@@ -552,7 +552,9 @@ and both sides.
   - **A fault in the runs at one start, found 2026-10-24:** from 130 to the right at 125 out at the top net, the
     skater is turned back toward centre ice about 24 frames in (the release points read 190-254 out), so those
     set-ups say nothing about the shot. They are left out of every 125-out figure here; that start's cause is not yet
-    found. The other three starts at 125 out (left at the top net, both at the bottom) skate normally.
+    found. Mapped: at the top net only, a skater crossing leftward at 125-140 out is turned back on reaching
+    about 70-78 to the right of the middle (at 145 out and beyond he passes; at the bottom net, nothing). No object
+    record stands there. No other run crosses that patch (the diagonal and standing runs were checked). The other three starts at 125 out (left at the top net, both at the bottom) skate normally.
   - So the far-post slapshot is a skating shot: across toward the stick side, released in front of the middle. Neely's
     7-4 left from 50 before the middle, 86 out, earlier than any release tried here.
 - **Every Shot Power and Accuracy (plan "slapxr", 2026-10-24):** crossing toward the stick side only, the wind-up
@@ -621,11 +623,14 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
   toward, drifting toward the middle. Start the swing about 72 from the goalie, shoot 13-19 frames later (released
   about 45 out), and the shot goes in at the post on the side he came from.
   - Left-hander swinging to his left (forehand): 83-88%. Right-hander to his left (backhand): 80-93%. Right-hander to
-    his right (forehand, swing at 85): 57-66%. Left-hander to his right (backhand): 46%.
+    his right (forehand, swing at 85): 57-66%. Left-hander to his right: 46%, but **not a backhand deke** (the
+    user, from the animations): the two-step swing doesn't get the puck across to his right. At the release it was
+    still about 4 units on his left over the grid, against about 14 across in the right-hander's backhand deke.
   - Over the whole grid: lefty to his left 32%, to his right 3%; righty to his left 16%, to his right 12%. **Two
     things add up: a swing to the forehand** (each mirror-image pair, a lefty against a righty, favours the forehand
     swing: 45% against 25%, 28% against 6%), **and a swing to the shooter's own left** whatever his hand. That second
-    one is the same at both nets, so it is in the game, not the screen; the routine behind it isn't found yet.
+    one is the same at both nets, so it is in the game, not the screen. The left-hander's swing to his right doesn't
+    get the puck across (above), so part of this is that swing failing, not the goalie; see "Why it works".
   - Swung too late (shot more than about 16 frames after a swing begun at 60), the goalie takes the puck first.
   - Along the ice instead of mid-height: a little worse (27% against 30% over the grid).
 - **Floater (Juneau's 3-0, Sweeney's 4-0):** skate up and across on the diagonal from the forehand side, 35-50 out to
@@ -635,7 +640,19 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
     it may be better still a little later).
   - Swung to the backhand instead: 26% (lefty), 29-38% (righty) at best; the forehand rule holds for the floater with
     no left-right bias.
-- **Why it works:** the goalie doesn't follow the swing; he moves with the shooter's skating (6-9 units across the
+- **Why the deke works: it baits a pad stack that slides the wrong way** (traced 2026-10-24: the goalie's save and
+  where the puck crossed, 48 attempts per set-up and net). With the puck still carried, the swing makes the computer
+  goalie commit early, and a carried puck gets the pad stack (`goaliesave`, checks94.asm). That code ignores the
+  puck's side: it moves the goalie 6 units toward the middle of the ice (x = 0) and slides him that way at $1000, and
+  picks the stack picture (R or L) from the end he defends, the side of centre he is on and his catching hand. The deke
+  has carried the puck out to the side the shooter came from, so he slides away from it: in the right-hander's
+  backhand deke (83%) he was already stacking at the release, 4-5 to the right of the middle, and the puck went in 13
+  beside him. Against the deke swung to the shooter's left the goalie stacked, made a shoulder save or kicked, and
+  80-100% of each went in. In the left-hander's mirror image (swing right, the same timing), the puck was still at the
+  middle when the goalie stacked (-3), so the same slide put him on it: 0 of 20.
+  - The swings to the right get a butterfly instead, and the butterfly differs by net: it let in 62-85% going down
+    (the bottom net) against 18-39% going up. That is why those dekes score so much better going down.
+- **The goalie off the puck's line (deke and floater):** the goalie doesn't follow the swing; he moves with the shooter's skating (6-9 units across the
   floater, as he does with no swing). The puck leaves from 10-18 units across the shooter on the swing's side, aimed
   at that side. In the best deke (a lefty swinging left, 85%) that leaves the goalie 11 units off the puck's line to
   the net at the release, against 4 with no swing. In the other best set-ups he is no further off it (righty swinging
@@ -668,7 +685,8 @@ left; about 85 from the goalie hold Up-Right; about 13 frames later tap C with R
 ![Deke, right-hander, swing to his right: four real attempts](img/scoring_map/deke_righty_forehand_clips.gif)
 ![Deke, right-hander, swing to his right: every attempt from above](img/scoring_map/deke_righty_forehand_paths.gif)
 
-**Deke, left-hander, swing to his right (backhand): 46%.** The same inputs as the right-hander's.
+**Deke, left-hander, swing to his right: 46%.** The same inputs as the right-hander's. Not a backhand deke: the
+puck doesn't get across to his right (above).
 
 ![Deke, left-hander, swing to his right: four real attempts](img/scoring_map/deke_lefty_right_clips.gif)
 ![Deke, left-hander, swing to his right: every attempt from above](img/scoring_map/deke_lefty_right_paths.gif)
@@ -700,7 +718,7 @@ The same moves going down (48 attempts per move at each net):
 | Deke, left-hander, swing to his left (forehand) | 75% | 96% |
 | Deke, right-hander, swing to his left (backhand) | 85% | 81% |
 | Deke, right-hander, swing to his right (forehand) | 44% | 88% |
-| Deke, left-hander, swing to his right (backhand) | 31% | 60% |
+| Deke, left-hander, swing to his right (the puck doesn't get across) | 31% | 60% |
 | Floater, left-hander, across from his left | 71% | 50% |
 | Floater, right-hander, across from his right | 65% | 65% |
 | The same deke with no swing | 0% | 0% |
@@ -728,10 +746,10 @@ Animated going down, the same inputs (`deke_animate.py`, the DOWN list; rates: t
 ![Going down: deke, right-hander, swing to his right (forehand): 88%: four real attempts](img/scoring_map/deke_righty_forehand_down_clips.gif)
 ![Going down: deke, right-hander, swing to his right (forehand): 88%: every attempt from above](img/scoring_map/deke_righty_forehand_down_paths.gif)
 
-**Going down: deke, left-hander, swing to his right (backhand): 60%.**
+**Going down: deke, left-hander, swing to his right: 60%** (not a backhand: the puck doesn't get across).
 
-![Going down: deke, left-hander, swing to his right (backhand): 60%: four real attempts](img/scoring_map/deke_lefty_right_down_clips.gif)
-![Going down: deke, left-hander, swing to his right (backhand): 60%: every attempt from above](img/scoring_map/deke_lefty_right_down_paths.gif)
+![Going down: deke, left-hander, swing to his right: 60%: four real attempts](img/scoring_map/deke_lefty_right_down_clips.gif)
+![Going down: deke, left-hander, swing to his right: 60%: every attempt from above](img/scoring_map/deke_lefty_right_down_paths.gif)
 
 **Going down: floater, right-hander, across from his right: 65%.**
 
