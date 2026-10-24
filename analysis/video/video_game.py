@@ -87,23 +87,31 @@ def steady(rows, key, n=5):
     return out
 
 
+def plausible(r):
+    """A HUD reading that can be real: period 1-4 (4 is overtime), the clock 0-10 minutes, both scores read. Screens
+    without the HUD (intermissions, menus) can read as steady nonsense such as period 7 at 7-7."""
+    return r["period"] in (1, 2, 3, 4) and r["clock"] is not None and 0 <= r["clock"] <= 600 \
+        and r["ts"] is not None and r["bs"] is not None
+
+
 def games(timeline, out):
     rows = read_timeline(timeline)
+    for r in rows:
+        if not plausible(r):
+            r["period"] = r["clock"] = r["ts"] = r["bs"] = None
     teams = steady(rows, "top", 10)
     bots = steady(rows, "bottom", 10)
     periods = steady(rows, "period")
     ts, bs = steady(rows, "ts"), steady(rows, "bs")
     found, cur = [], None
     for k, r in enumerate(rows):
-        if teams[k] and bots[k]:
-            key = (teams[k], bots[k])
-            # a new game: other teams, or the score back to 0-0 at period 1 after goals were seen
-            new = cur is None or key != cur["key"] or (periods[k] == 1 and ts[k] == 0 and bs[k] == 0
-                                                       and (cur["away"] or cur["home"]) and cur["last_period"] in (2, 3, 4))
-            if new:
-                cur = {"key": key, "away_team": key[0], "home_team": key[1], "away": 0, "home": 0, "rows": [],
-                       "last_period": 1, "goals": []}
-                found.append(cur)
+        key = (teams[k], bots[k]) if teams[k] and bots[k] else None
+        down = cur is not None and ts[k] is not None and bs[k] is not None and \
+            (ts[k] < cur["away"] or bs[k] < cur["home"])          # the score went back: a new game
+        if key and (cur is None or key != cur["key"]) or down:
+            cur = {"key": key or cur["key"], "away_team": (key or cur["key"])[0], "home_team": (key or cur["key"])[1],
+                   "away": 0, "home": 0, "rows": [], "last_period": 1, "goals": []}
+            found.append(cur)
         if cur is None:
             continue
         cur["rows"].append(k)
@@ -113,8 +121,11 @@ def games(timeline, out):
             if vals[k] is not None and vals[k] == cur[side] + 1:
                 cur["goals"].append({"team": side, "k": k, "period": cur["last_period"], "clock": rows[k]["clock"]})
                 cur[side] += 1
-            elif vals[k] is not None and vals[k] > cur[side] + 1:
-                cur[side] = vals[k]                  # a jump (missed frames): take the score as it is
+            elif vals[k] is not None and cur[side] < vals[k] <= cur[side] + 3:
+                for _ in range(vals[k] - cur[side]):  # a jump (the score unread for a while): a goal each, timed here
+                    cur["goals"].append({"team": side, "k": k, "period": cur["last_period"], "clock": rows[k]["clock"],
+                                         "late": True})
+                cur[side] = vals[k]
     result = []
     for g in found:
         if g["away"] + g["home"] == 0 and len(g["rows"]) < 2000:
@@ -131,7 +142,10 @@ def summarise(rows, g, periods):
     last_clock, last_t, state, out_since, pending = None, None, None, -1e9, None
     rush = {"home": 0, "away": 0}
     zone = {"home": 0, "away": 0}
-    goal_ks = {gl["k"]: gl for gl in g["goals"]}
+    goal_ks = {}
+    for gl in g["goals"]:
+        goal_ks.setdefault(gl["k"], []).append(gl)
+    unknown = {"home": 0, "away": 0}
     for k in g["rows"]:
         r = rows[k]
         p = periods[k]
@@ -164,10 +178,11 @@ def summarise(rows, g, periods):
             pending = None
         elif pending and state != pending[0]:
             pending = None
-        if k in goal_ks:
-            gl = goal_ks[k]
+        for gl in goal_ks.get(k, ()):
             since = in_zone_since[gl["team"]]
-            if state == gl["team"] and since is not None and r["t"] - since <= RUSH_S + 1.5:
+            if gl.get("late"):
+                unknown[gl["team"]] += 1             # found from a jump in the score: when it went in isn't known
+            elif state == gl["team"] and since is not None and r["t"] - since <= RUSH_S + 1.5:
                 rush[gl["team"]] += 1
             else:
                 zone[gl["team"]] += 1
@@ -178,7 +193,7 @@ def summarise(rows, g, periods):
             "start_t": rows[g["rows"][0]]["t"], "end_t": rows[g["rows"][-1]]["t"],
             "zone_s": {k: round(v) for k, v in zone_s.items()}, "entries": entries,
             "goals": [{"team": gl["team"], "period": gl["period"], "clock": gl["clock"], "t": rows[gl["k"]]["t"]} for gl in g["goals"]],
-            "goals_rush": rush, "goals_zone": zone}
+            "goals_rush": rush, "goals_zone": zone, "goals_unknown": unknown}
 
 
 if __name__ == "__main__":
