@@ -2607,6 +2607,32 @@ tagged by the converter as `flip` / `afterFlip` and the goal kind "EA Special").
 one-timer study cover (2) and (6) against a computer goalie at rest; (1), (3), (4), (5) and (7) are moving shooters or rebounds and, for
 (3) and (4), a person moving the goalie: not studied in the game yet.
 
+**Near and far post** (the user, 2026-10-24): by the shooter's hand. Right-handed: the goalie's left is the far post,
+his right the near post; left-handed: the goalie's right is far, his left near (the far post is on the shooter's
+forehand side). On the SNES slapshot goals are rarer and usually near post.
+
+**Examples in the 2026-10-23 BOS-LA games** (the user named them; each checked against the recording):
+- **Straight-on deke** (1107 LA-BOS, Neely 1-0, P1 3:30; right-handed): skating straight in with the puck on his right,
+  it crossed to his left about half a second before the release and went in on that side (xG 0.70). Also 1126 LA-BOS
+  Neely 1-0, a standard deke.
+- **A computer teammate in the goalie's way** (1107, Neely's 7-1 slapshot, P3 4:09): Juneau stayed 16 from the LA
+  goalie (bodies in contact) from the release to the goal, the goalie moved 2 across, and the puck went past his other
+  side; Juneau never touched it. Not something to do on purpose; notable when it happens.
+- **The floater** (1117 BOS-LA, Juneau 3-0 P1 2:29 and Sweeney 4-0 P1 2:18, both left-handed): skating up and across
+  from his left to his right (or straight up a little wide of the post) to finish a little wide of the post, the
+  puck turned from his right side to his left at the end, a soft wrist shot (12,700-15,500) into the opposite post.
+  The user: other league players do this better than the user.
+- **Slapshot from the middle, bumped** (1117, Neely 7-0, P2 2:20): Gretzky in contact (17) for the last third of a
+  second of the wind-up; Neely pushed about 15 to his right, which moved the shot's line.
+- **The near-post deke** (1117, Neely 9-0, P3 2:29): skating in, drifting a little toward the middle to be level with
+  the near post as he reaches the goalie, then a quick turn moving the puck away from the middle and a quick wrist shot
+  point-blank. xG gave it 0.01: the model misses this deke.
+- **Far-post slapshots** (1126 LA-BOS, Neely 4-1 P2 2:54, 6-3 P3 4:49, 7-4 P3 0:39): each skating from his left to
+  his right with the puck on his forehand, in at his right (the goalie's left: far). 7-4 from out wide (x 50 from the
+  middle, 178 up the ice; usually it starts nearer the wing), the goalie 17 over toward the near post; the user was
+  surprised 4-1 went in. LA's 4-3 (Sandstrom, left-handed): skating to his left, in at the far post (the goalie's
+  right), a person in goal moved him the wrong way.
+
 ## RetroArch videos as a source (pilot, 2026-10-23)
 
 The user keeps RetroArch .mkv captures of league games (51 GB, mostly Genesis; H.264 from x264, lossy; pauses and

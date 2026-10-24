@@ -482,13 +482,19 @@ and `snes_map_run.py`), a set computer goalie. "Best aim" is the best of the nin
 
 - **Strength nearly doubles a slapshot's chance on both systems**, at every distance (Genesis 100 out 12% to 23%, 140
   out 17% to 28%, 180 out 10% to 14%; SNES best at 120 out, 5.7% to 10.8%).
-- **The best aim is not the far post here.** On the Genesis it is Down (the middle at ice level: through the
-  butterfly's blind ring, 4.2), 22% at the top net and 9% at the bottom for the strong shooter; the next best are
-  aims to the **near** side (7-8%); the far side stays at 0-3%. On the SNES the near-side aims are the only ones that
-  score (strong shooter: 3-11% by aim and net; far side 0-1%).
-- So against a goalie set square to the shooter the far post doesn't open up, whoever shoots. The far-post goals the
-  user sees in games probably come when the goalie is moving or not square (a pass before the shot, the shooter
-  skating across, a person in net), which this test doesn't have.
+- **Near and far post (the league's words, the user):** by the shooter's hand, wherever he is. Right-handed: the
+  goalie's left is the far post, his right the near post; left-handed: the goalie's right is far, his left near. So
+  the far post is on the shooter's forehand side. Both test shooters shoot left (Genesis +$76 bit 0 set; SNES
+  attribute bit $0800 clear), so their far post is the goalie's right.
+- **Genesis, from the middle of the ice: the far post is the best aim** (strong shooter: far post at mid-height 21%,
+  high 19%, against 11% for Down's ice-level middle; usual shooter 14% / 12% / 9%). From his forehand side (left of
+  the middle for a left-hander) Down is best (9%), the far post next (5%); from his backhand side Down (13%), the near
+  post hardly scores (2% or less).
+- **SNES: the post on the shooter's side of the ice.** From his forehand side the far post (strong 5-6%, usual 3-4%),
+  from his backhand side the near post (strong 6% high, usual 3%), from the middle almost nothing (2% or less). The
+  user: SNES slapshot goals are rare and usually near post; the near post scores from the backhand side here.
+- A standing shooter, a set computer goalie: the user's far-post slapshots in games are taken skating across (below:
+  Neely's in the 2026-10-23 games), which this part doesn't have.
 
 ## Moving shooters (Genesis, 2026-10-24)
 
@@ -497,8 +503,10 @@ a wrist shot (C tapped) at a set release point with each of the nine aims; 16 mo
 and both sides.
 
 - **Across the crease (the user's method 3: a soft shot into the far side before the goalie gets there):** from 90 to
-  one side, skating across. **Aimed the way he is skating (toward the far side)**: 51-53% at 35 out (about 11 feet),
-  32-38% at 45 out; **aimed back the way he came: 0-1%**; straight at the middle 13% at 35 out, 2% at 45. Released
+  one side, skating across. **Aimed the way he is skating**: 51-53% at 35 out (about 11 feet), 32-38% at 45 out;
+  **aimed back the way he came: 0-1%**; straight at the middle 13% at 35 out, 2% at 45. The way he skates decides,
+  not the post: crossing toward his forehand side that is the far post (55% at 35 out), toward his backhand side the
+  near post (48%). Released
   just before the middle is best (35 out: 80% at 20 short of the middle, 72% at the middle, 49% at 20 past, 18% at 40
   past). Holding nothing but his skating direction scores as well as aiming that way. At 25 out he never gets the shot
   off: the goalie takes the puck.
