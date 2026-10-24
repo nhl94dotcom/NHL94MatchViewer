@@ -10,6 +10,9 @@ still held, so the shot is aimed at that side.
   toward the far post from 45-55 out)
 - deke2 (the user's refinements, 2026-10-24: start 30 / 45 / 60 to the side, swing 50-72 from the goalie, shoot with
   the swing's side held, straight Up, or Up and toward the swing's side)
+- dekebh (the deke on the backhand, and the same for the forehand to compare: C once the puck is 4-16 units across
+  on the swing's side, not at a set time, since a left-hander's puck takes about 8 frames longer to cross; the swing
+  begun 72-115 from the goalie; kept: his facing at the release and whether it was a backhand by the game's rule)
 - floaterbh (the floater on the backhand: across from the backhand side, swung back to the backhand; a wider timing
   grid, aimed at that side or up and toward it)
 A move: start (x, y), velocity (units a frame), first facing, the d-pad held coming in, the d-pad of the swing, the
@@ -60,6 +63,12 @@ def plan_jobs(plan):
                 ("side", "up", "upside")):
             jobs.append((plan, net, hand, -side * X, side, D, lag, 4, var))
         return jobs
+    if plan == "dekebh":              # the deke on the backhand, shot once the puck is across (the user, 2026-10-24):
+        for net, hand, side, X, D, T, var in itertools.product(           # lag = how far across (units) the puck
+                ("top", "bottom"), HANDS, (1, -1), (15, 30, 45), (72, 85, 100, 115), (4, 8, 12, 16),
+                ("side", "up", "upside")):                             # must be on the swing's side before C
+            jobs.append((plan, net, hand, -side * X, side, D, T, 4, var))
+        return jobs
     if plan == "floaterbh":           # the floater on the backhand: across from the backhand side, swung back to it
         for net, hand, X, D, lag, hold, var in itertools.product(
                 ("top", "bottom"), HANDS, (35, 50), (80, 95, 110, 125), (10, 14, 18, 22, 26, 30), (3, 6, 9),
@@ -81,7 +90,7 @@ def move(plan, x0, side):
     """Start y, velocity (x, y), first facing, d-pad coming in, d-pad of the swing, the swing's side (attacker's
     view). The swing is held on the diagonal (straight to the side, he keeps turning and faces across, and C then
     drops the puck instead of shooting)."""
-    if plan in ("deke", "deke2"):
+    if plan in ("deke", "deke2", "dekebh"):
         drift = -0.5 if x0 > 0 else 0.5 if x0 < 0 else 0.0     # off the middle: drifting toward it (Neely's 9-0)
         return 140, (drift, 2.1), (1 if side > 0 else 7), ("UR" if side > 0 else "UL"), ("UL" if side > 0 else "UR")
     # floater: up and across at about 2 a frame, facing the way he goes, the puck on his leading side
@@ -114,7 +123,8 @@ def job(args):
     else:
         aim = AIM[(var, side)]
     din, dsw, dam = (screen_dir(PAD[k], top) for k in (pad_in, pad_swing, aim))
-    res = dict(GOAL=0, NO=0, noshot=0, lost=0, n=0, release=[0.0, 0.0], gdist=0.0, goff=0.0, pside=0.0, gmove=0.0)
+    res = dict(GOAL=0, NO=0, noshot=0, lost=0, n=0, release=[0.0, 0.0], gdist=0.0, goff=0.0, pside=0.0, gmove=0.0,
+               faces={}, backhand=0)
     for p in range(MOMENTS):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
@@ -125,7 +135,7 @@ def job(args):
         e.setb(rec(SHOOTER) + 0x55, screen_dir(face, top))
         e.setw(rec(SHOOTER) + 0x28, round(sg * vx * 4096) & 0xFFFF)
         e.setw(rec(SHOOTER) + 0x2A, round(sg * vy * 4096) & 0xFFFF)
-        n0, swing, pre, g0 = e.w(E["n"]), None, None, None
+        n0, swing, pre, g0, trig = e.w(E["n"]), None, None, None, None
         for f in range(200):
             sx, sy = e.sw(rec(SHOOTER)), e.sw(rec(SHOOTER) + 0x14)
             gx, gy = e.sw(rec(GOALIE)), e.sw(rec(GOALIE) + 0x14)
@@ -133,9 +143,17 @@ def job(args):
                 break
             if swing is None and math.hypot(sx - gx, sy - gy) <= D:
                 swing, g0 = f, gx
-            c = swing is not None and f >= swing + lag
-            d = din if swing is None else dam if c else dsw
-            c = c and f < swing + lag + hold
+            if plan == "dekebh":                 # C once the puck is `lag` across toward the swing's side
+                across = -side * sg * (e.sw(rec(14)) - sx)
+                if trig is None and swing is not None and (across >= lag or var == "still" and f >= swing + 16):
+                    trig = f
+                c = trig is not None
+                d = din if swing is None else dam if c else dsw
+                c = c and f < trig + hold
+            else:
+                c = swing is not None and f >= swing + lag
+                d = din if swing is None else dam if c else dsw
+                c = c and f < swing + lag + hold
             st = e.serialize()
             h.park()
             e.run(1, hold=(["C"] if c else []) + DIRPAD[d])
@@ -158,6 +176,12 @@ def job(args):
         res["goff"] += abs((gx - px) * (gl - py) - (gy - py) * (-px)) / L     # goalie off the puck's line to the net
         res["pside"] += sg * (px - sx)                                         # where the puck was, across (his right +)
         res["gmove"] += sg * (gx - g0)                                         # how far the goalie moved since the swing
+        face = (e.b(rec(SHOOTER) + 0x55) - (0 if top else 4)) % 8             # his facing, attacker's view
+        res["faces"][str(face)] = res["faces"].get(str(face), 0) + 1
+        # a backhand by the game's rule (Findhittype): the net 45-180 degrees round to his backhand side
+        to_net = round(math.degrees(math.atan2(sg * -sx, sg * (gl - sy))) / 45) % 8      # the net's direction
+        rel = (face - to_net) % 8
+        res["backhand"] += (rel in (4, 5, 6, 7)) if hand == "R" else (rel in (1, 2, 3, 4))
         for _ in range(SEEDS):
             e.unserialize(pre)
             e.setl(0xD066, rnd.getrandbits(32))
