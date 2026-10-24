@@ -1,7 +1,7 @@
 """Animated dekes and floaters (Genesis test ROM): python deke_animate.py OUT_DIR [N]
 Each method in METHODS (the best set-ups from deke_run.py and the no-swing control, at the top net: going up the
 screen) and DOWN (the same moves at the bottom net: going down) played N times (12 moments x seeds), the game's own
-frames kept from the approach to the result. The captions give the big run's rate (deke_run.py: METHODS 96 shots,
+frames kept from the approach to the result; ACROSS: the dekebh set-ups (C once the puck is across). The captions give the big run's rate (deke_run.py: METHODS 96 shots,
 both nets; DOWN that net's 48) and the GIFs show goals in about that proportion. Two GIFs per method:
 - <name>_clips.gif: four of the attempts side by side, cropped to the net, each labelled with what happened;
 - <name>_paths.gif: every attempt at once from above, lined up on the release: the shooter (grey), the puck (orange
@@ -39,6 +39,22 @@ METHODS = [
      "Floater, left-hander across from his left, swung back left", (58, 96)),
     ("floater_righty", ("floater", "top", "R", 35, -1, 110, 22, 9, "side"),
      "Floater, right-hander across from his right, swung back right", (62, 96)),
+]
+# the deke shot once the puck is across (deke_run.py dekebh): the true backhand dekes and the forehand ones to compare;
+# rates: that net's 48 shots in the full run
+ACROSS = [
+    ("dekebh_lefty_backhand", ("dekebh", "top", "L", 45, -1, 85, 8, 4, "side"),
+     "Backhand deke, left-hander, swung to his right", (47, 48)),
+    ("dekebh_lefty_backhand_down", ("dekebh", "bottom", "L", 45, -1, 85, 8, 4, "side"),
+     "Going down: backhand deke, left-hander, swung to his right", (45, 48)),
+    ("dekebh_righty_backhand", ("dekebh", "top", "R", -30, 1, 72, 8, 4, "side"),
+     "Backhand deke, right-hander, swung to his left", (38, 48)),
+    ("dekebh_righty_backhand_down", ("dekebh", "bottom", "R", -30, 1, 72, 8, 4, "side"),
+     "Going down: backhand deke, right-hander, swung to his left", (41, 48)),
+    ("dekebh_lefty_forehand", ("dekebh", "top", "L", -30, 1, 72, 8, 4, "side"),
+     "Forehand deke shot once across, left-hander, swung to his left", (40, 48)),
+    ("dekebh_righty_forehand", ("dekebh", "top", "R", 45, -1, 85, 16, 4, "side"),
+     "Forehand deke shot once across, right-hander, swung to his right", (46, 48)),
 ]
 # the same moves going down the screen (the bottom net); rates: that net's 48 shots in the full run
 DOWN = [
@@ -109,7 +125,7 @@ def play(method, n):
         e.setb(rec(SHOOTER) + 0x55, D.screen_dir(face, top))
         e.setw(rec(SHOOTER) + 0x28, round(sg * vx * 4096) & 0xFFFF)
         e.setw(rec(SHOOTER) + 0x2A, round(sg * vy * 4096) & 0xFFFF)
-        n0, swing, rel = e.w(E["n"]), None, None
+        n0, swing, rel, trig = e.w(E["n"]), None, None, None
         frames, paths = [], []
         for f in range(200):
             sx, sy = e.sw(rec(SHOOTER)), e.sw(rec(SHOOTER) + 0x14)
@@ -118,9 +134,16 @@ def play(method, n):
                 break
             if swing is None and math.hypot(sx - gx, sy - gy) <= Dd:
                 swing = f
-            c = swing is not None and f >= swing + lag
-            d = din if swing is None else dam if c else dsw
-            c = c and f < swing + lag + hold
+            if plan == "dekebh":                     # C once the puck is `lag` across on the swing's side
+                if trig is None and swing is not None and -side * sg * (e.sw(rec(PUCK)) - sx) >= lag:
+                    trig = f
+                c = trig is not None
+                d = din if swing is None else dam if c else dsw
+                c = c and f < trig + hold
+            else:
+                c = swing is not None and f >= swing + lag
+                d = din if swing is None else dam if c else dsw
+                c = c and f < swing + lag + hold
             h.park()
             paths.append(where())
             frames.append(shot_frame((["C"] if c else []) + DIRPAD[d]))
@@ -275,11 +298,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS + DOWN if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN + ACROSS if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS],
               open(out_dir / "methods.json", "w"), indent=1)
 
 

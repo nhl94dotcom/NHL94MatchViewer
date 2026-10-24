@@ -795,6 +795,68 @@ Rates below count a puck the goalie took before the shot as a failure (out of 96
 - Going up and going down are close for the best set-ups (45 / 46 and 45 / 47 of 48 for the swings to the left; the
   swings to the right still differ by net: 43 / 30 and 40 / 24).
 
+### The deke on the backhand (plan "dekebh", 2026-10-24)
+
+The user, from the animations: the left-hander's "swing to his right" above isn't a backhand deke, because the puck never
+gets far enough across. Traced: a left-hander carries the puck about 16 out on his left, a right-hander about 12 out
+on his right, and the facing only starts to turn about 9 frames into the swing; 14 frames in, the right-hander's
+puck was 12 across to his left, the left-hander's still 3 short of his middle. So a shot at a set time comes too
+early for some moves. `deke_run.py dekebh` shoots instead **once the puck is a set distance across on the swing's
+side** (4 / 8 / 12 / 16 units), with the swing begun earlier (72 / 85 / 100 / 115 from the goalie), from 15 / 30 / 45
+to the side; both hands, both directions, both nets, aimed to the side, straight Up, or Up and toward the side; and
+each release is checked against the game's own forehand / backhand rule (`Findhittype`: the net 45-180 degrees round
+to his backhand side). Out of 96 attempts (both nets), a puck the goalie took before the shot counted as a failure:
+
+| Move | Rate | Best set-up | Backhands (the game's rule) |
+|---|---|---|---|
+| Left-hander, **backhand** (swing to his right) | **96%** (top 47, bottom 45 of 48) | from 45 to his right, swing 85 from the goalie, C when the puck is 8 across | 24 of 24 |
+| Right-hander, **backhand** (swing to his left) | **82%** (top 38, bottom 41 of 48; 83% aimed up and across) | from 30 to his left, swing at 72, C at 8 across | 24 of 24 |
+| Left-hander, forehand (swing to his left) | 89% (top 40, bottom 45) | from 30, swing at 72, C at 8 across | 0 |
+| Right-hander, forehand (swing to his right) | 88% (top 46, bottom 38) | from 45, swing at 85, C at 16 across | 0 |
+
+- **The backhand deke works**, for both hands, going up and going down, once the shot waits for the puck to be across.
+  The lopsided results of the timed tests mostly go away: all four moves score 83-96%.
+- **What is left of the left-right difference:** swings to the shooter's right need to begin earlier (about 85 from
+  the goalie against 72 for swings to his left), whatever his hand, because the puck takes longer to get across that
+  way.
+- How far across before C matters less than when the swing starts (over the grid: 9-25% at each distance against
+  0-42% at each start).
+- Aimed straight Up: 0-3%. Up and toward the side: a little below the side (17-30% against 21-38% over the grid).
+- A first run of this plan had a bug (the facing kept at each release overwrote the move's starting facing, so every
+  later moment's skater came in already turned); its results were set aside and the run repeated.
+
+Animated (`deke_animate.py`, the ACROSS list; rates: that net's 48):
+
+**Backhand deke, left-hander, swing to his right, going up: 98% (47 of 48).**
+
+![Backhand deke, left-hander, swing to his right, going up: 98% (47 of 48): four real attempts](img/scoring_map/dekebh_lefty_backhand_clips.gif)
+![Backhand deke, left-hander, swing to his right, going up: 98% (47 of 48): every attempt from above](img/scoring_map/dekebh_lefty_backhand_paths.gif)
+
+**Backhand deke, left-hander, swing to his right, going down: 94% (45 of 48).**
+
+![Backhand deke, left-hander, swing to his right, going down: 94% (45 of 48): four real attempts](img/scoring_map/dekebh_lefty_backhand_down_clips.gif)
+![Backhand deke, left-hander, swing to his right, going down: 94% (45 of 48): every attempt from above](img/scoring_map/dekebh_lefty_backhand_down_paths.gif)
+
+**Backhand deke, right-hander, swing to his left, going up: 79% (38 of 48).**
+
+![Backhand deke, right-hander, swing to his left, going up: 79% (38 of 48): four real attempts](img/scoring_map/dekebh_righty_backhand_clips.gif)
+![Backhand deke, right-hander, swing to his left, going up: 79% (38 of 48): every attempt from above](img/scoring_map/dekebh_righty_backhand_paths.gif)
+
+**Backhand deke, right-hander, swing to his left, going down: 85% (41 of 48).**
+
+![Backhand deke, right-hander, swing to his left, going down: 85% (41 of 48): four real attempts](img/scoring_map/dekebh_righty_backhand_down_clips.gif)
+![Backhand deke, right-hander, swing to his left, going down: 85% (41 of 48): every attempt from above](img/scoring_map/dekebh_righty_backhand_down_paths.gif)
+
+**Forehand deke shot once across, left-hander, swing to his left, going up: 83% (40 of 48).**
+
+![Forehand deke shot once across, left-hander, swing to his left, going up: 83% (40 of 48): four real attempts](img/scoring_map/dekebh_lefty_forehand_clips.gif)
+![Forehand deke shot once across, left-hander, swing to his left, going up: 83% (40 of 48): every attempt from above](img/scoring_map/dekebh_lefty_forehand_paths.gif)
+
+**Forehand deke shot once across, right-hander, swing to his right, going up: 96% (46 of 48).**
+
+![Forehand deke shot once across, right-hander, swing to his right, going up: 96% (46 of 48): four real attempts](img/scoring_map/dekebh_righty_forehand_clips.gif)
+![Forehand deke shot once across, right-hander, swing to his right, going up: 96% (46 of 48): every attempt from above](img/scoring_map/dekebh_righty_forehand_paths.gif)
+
 ## EA Specials (Genesis, 2026-10-24)
 
 The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the
