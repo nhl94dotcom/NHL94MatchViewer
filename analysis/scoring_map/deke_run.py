@@ -8,6 +8,10 @@ still held, so the shot is aimed at that side.
   puck pulled back out away from the middle)
 - floater (Juneau's 3-0, Sweeney's 4-0: up and across on a diagonal, the puck swung back the other way and floated
   toward the far post from 45-55 out)
+- deke2 (the user's refinements, 2026-10-24: start 30 / 45 / 60 to the side, swing 50-72 from the goalie, shoot with
+  the swing's side held, straight Up, or Up and toward the swing's side)
+- floaterbh (the floater on the backhand: across from the backhand side, swung back to the backhand; a wider timing
+  grid, aimed at that side or up and toward it)
 A move: start (x, y), velocity (units a frame), first facing, the d-pad held coming in, the d-pad of the swing, the
 goalie distance at which the swing starts, frames from the swing to C, frames C is held; all in the attacker's view
 (x + his right, y toward the net, facing 0 toward the net, clockwise), turned for the bottom net. The shooter's hand
@@ -50,6 +54,19 @@ def plan_jobs(plan):
     var: "side" (C with the swing's side held: aimed at that side, middle height), "low" (that side along the ice),
     "still" (the control: no swing, the puck kept where it was, the same shot at the same moment)."""
     jobs = []
+    if plan == "deke2":               # the user's refinements (2026-10-24): from further out to the side, closer in,
+        for net, hand, side, X, D, lag, var in itertools.product(        # the stick up (U) or up and across
+                ("top", "bottom"), HANDS, (1, -1), (30, 45, 60), (50, 60, 72), (10, 13, 16, 19, 22),
+                ("side", "up", "upside")):
+            jobs.append((plan, net, hand, -side * X, side, D, lag, 4, var))
+        return jobs
+    if plan == "floaterbh":           # the floater on the backhand: across from the backhand side, swung back to it
+        for net, hand, X, D, lag, hold, var in itertools.product(
+                ("top", "bottom"), HANDS, (35, 50), (80, 95, 110, 125), (10, 14, 18, 22, 26, 30), (3, 6, 9),
+                ("side", "upside")):
+            side = -1 if hand == "L" else 1
+            jobs.append((plan, net, hand, -side * X, side, D, lag, hold, var))
+        return jobs
     for net, hand, side, var in itertools.product(("top", "bottom"), HANDS, (1, -1), ("side", "low", "still")):
         if plan == "deke":
             for x0, D, lag in itertools.product((-30, -15, 0, 15, 30), (60, 72, 85), (4, 7, 10, 13, 16, 19)):
@@ -64,14 +81,15 @@ def move(plan, x0, side):
     """Start y, velocity (x, y), first facing, d-pad coming in, d-pad of the swing, the swing's side (attacker's
     view). The swing is held on the diagonal (straight to the side, he keeps turning and faces across, and C then
     drops the puck instead of shooting)."""
-    if plan == "deke":
+    if plan in ("deke", "deke2"):
         drift = -0.5 if x0 > 0 else 0.5 if x0 < 0 else 0.0     # off the middle: drifting toward it (Neely's 9-0)
         return 140, (drift, 2.1), (1 if side > 0 else 7), ("UR" if side > 0 else "UL"), ("UL" if side > 0 else "UR")
     # floater: up and across at about 2 a frame, facing the way he goes, the puck on his leading side
     return 105, (1.5 * side, 1.5), (1 if side > 0 else 7), ("UR" if side > 0 else "UL"), ("UL" if side > 0 else "UR")
 
 
-AIM = {("side", 1): "L", ("side", -1): "R", ("low", 1): "DL", ("low", -1): "DR"}
+AIM = {("side", 1): "L", ("side", -1): "R", ("low", 1): "DL", ("low", -1): "DR",
+       ("up", 1): "U", ("up", -1): "U", ("upside", 1): "UL", ("upside", -1): "UR"}
 
 
 _h = {}

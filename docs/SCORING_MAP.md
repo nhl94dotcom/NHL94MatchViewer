@@ -544,28 +544,65 @@ and both sides.
   the shots left from 7 before the middle to 70 past it. Starting at half speed changed nothing (he speeds back up with
   the d-pad held: the same release points).
   - **Crossing toward his stick side, the far post (ahead of him) is the shot: 50-62% released just before or at the
-    middle from 85-105 out** (13-23% from 125 out), against 21% for the best standing slapshot from the middle. It
+    middle from 85-105 out** (from 125 out, at the bottom net only: 64% with the wind-up begun 60 before the
+    middle, 36% from 40 before; see the note below), against 21% for the best standing slapshot from the middle. It
     falls fast once he is past the middle (10-15% released 30 past, 0-4% beyond). The near post (behind him): 0-2%.
   - Crossing toward his backhand side the near post is ahead, and does worse: 34-36% released at the middle from 85
-    out, 6-16% from 105, about nothing from 125.
+    out, 6-16% from 105, 0-34% from 125 (uneven between the nets).
+  - **A fault in the runs at one start, found 2026-10-24:** from 130 to the right at 125 out at the top net, the
+    skater is turned back toward centre ice about 24 frames in (the release points read 190-254 out), so those
+    set-ups say nothing about the shot. They are left out of every 125-out figure here; that start's cause is not yet
+    found. The other three starts at 125 out (left at the top net, both at the bottom) skate normally.
   - So the far-post slapshot is a skating shot: across toward the stick side, released in front of the middle. Neely's
     7-4 left from 50 before the middle, 86 out, earlier than any release tried here.
 - **Every Shot Power and Accuracy (plan "slapxr", 2026-10-24):** crossing toward the stick side only, the wind-up
-  begun 60 or 40 before the middle, 85 / 105 / 125 out (about 28 / 35 / 42 feet), both nets, roster steps 2-6 of each
-  (working = step x 5). The best aim's chance, averaged over the set-ups (in brackets by distance):
+  begun 60 or 40 before the middle, 85 / 105 / 125 out (about 28 / 35 / 42 feet), both nets (125 out: the bottom net
+  only, the fault above), roster steps 2-6 of each (working = step x 5). The best aim's chance, averaged over the set-ups (in brackets by distance):
 
   | Shot Power \ Accuracy | 2 | 4 | 6 |
   |---|---|---|---|
-  | 2 | 6% (14 / 4 / 2%) | 6% (14 / 4 / 1%) | 7% (16 / 5 / 2%) |
-  | 3 | 10% (23 / 6 / 2%) | 13% (26 / 9 / 4%) | 14% (29 / 10 / 4%) |
-  | **4** | 29% (48 / 33 / 5%) | **37% (62 / 41 / 7%)** | 40% (70 / 45 / 7%) |
-  | 5 | 34% (46 / 44 / 12%) | 45% (61 / 56 / 16%) | 50% (68 / 62 / 19%) |
-  | 6 | 39% (47 / 55 / 16%) | 51% (62 / 69 / 23%) | 58% (68 / 78 / 27%) |
+  | 2 | 7% (14 / 4 / 2%) | 7% (14 / 4 / 1%) | 9% (16 / 5 / 3%) |
+  | 3 | 12% (23 / 6 / 4%) | 15% (26 / 9 / 5%) | 17% (29 / 10 / 6%) |
+  | **4** | 34% (48 / 33 / 9%) | **44% (62 / 41 / 10%)** | 48% (70 / 45 / 11%) |
+  | 5 | 41% (46 / 44 / 23%) | 53% (61 / 56 / 30%) | 59% (68 / 62 / 36%) |
+  | 6 | 47% (47 / 55 / 30%) | 61% (62 / 69 / 43%) | 68% (68 / 78 / 50%) |
 
-  - **The same threshold between Shot Power 3 and 4 as standing** (13% to 37% at accuracy 4): the user's 4 / 4 rule.
+  - **The same threshold between Shot Power 3 and 4 as standing** (15% to 44% at accuracy 4): the user's 4 / 4 rule.
   - **Distance needs power:** from 85 out power 4 is as good as 5 or 6 (about 60%); from 105 out each step adds 10-15
-    points; from 125 out only 5-6 score at all (12-27%; power 4 5-7%).
+    points; from 125 out power 4 scores about 10%, 5 about 30%, 6 30-50%.
   - Accuracy adds 10-20 points at power 4-6, a few at 2-3.
+
+### The skating far-post slapshot by rating, animated
+
+`slapx_animate.py`: the slapxr set-up at the bottom net (a left-hander starting 130 to his right,
+crossing to his stick side, the wind-up begun 60 before the middle), aimed at the far post ahead of him. Each rate is
+the ratings run's for that exact set-up and aim (64 shots); the clips show goals in about that proportion. Each pair:
+four attempts in the game's own frames, then 24 attempts from above, turned so the net is at the top.
+
+**Shot Power 3 / Accuracy 3, 105 out (35 ft): 3%** (2 of 64).
+
+![Shot Power 3 / Accuracy 3, 105 out (35 ft): 3%: four real attempts](img/scoring_map/slapx_3_3_105_clips.gif)
+![Shot Power 3 / Accuracy 3, 105 out (35 ft): 3%: every attempt from above](img/scoring_map/slapx_3_3_105_paths.gif)
+
+**Shot Power 4 / Accuracy 4, 105 out (35 ft): 44%** (28 of 64).
+
+![Shot Power 4 / Accuracy 4, 105 out (35 ft): 44%: four real attempts](img/scoring_map/slapx_4_4_105_clips.gif)
+![Shot Power 4 / Accuracy 4, 105 out (35 ft): 44%: every attempt from above](img/scoring_map/slapx_4_4_105_paths.gif)
+
+**Shot Power 6 / Accuracy 6, 105 out (35 ft): 80%** (51 of 64).
+
+![Shot Power 6 / Accuracy 6, 105 out (35 ft): 80%: four real attempts](img/scoring_map/slapx_6_6_105_clips.gif)
+![Shot Power 6 / Accuracy 6, 105 out (35 ft): 80%: every attempt from above](img/scoring_map/slapx_6_6_105_paths.gif)
+
+**Shot Power 4 / Accuracy 4, 125 out (42 ft): 14%** (9 of 64).
+
+![Shot Power 4 / Accuracy 4, 125 out (42 ft): 14%: four real attempts](img/scoring_map/slapx_4_4_125_clips.gif)
+![Shot Power 4 / Accuracy 4, 125 out (42 ft): 14%: every attempt from above](img/scoring_map/slapx_4_4_125_paths.gif)
+
+**Shot Power 6 / Accuracy 6, 125 out (42 ft): 59%** (38 of 64).
+
+![Shot Power 6 / Accuracy 6, 125 out (42 ft): 59%: four real attempts](img/scoring_map/slapx_6_6_125_clips.gif)
+![Shot Power 6 / Accuracy 6, 125 out (42 ft): 59%: every attempt from above](img/scoring_map/slapx_6_6_125_paths.gif)
 
 ## Dekes and floaters (Genesis, 2026-10-24)
 
