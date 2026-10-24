@@ -1,7 +1,8 @@
 """Animated dekes and floaters (Genesis test ROM): python deke_animate.py OUT_DIR [N]
-Each method in METHODS (the best set-ups from deke_run.py, the top net, and the no-swing control) played N times (12
-moments x seeds), the game's own frames kept from the approach to the result. The captions give the big run's rate
-(deke_run.py: 96 shots, both nets) and the GIFs show goals in about that proportion. Two GIFs per method:
+Each method in METHODS (the best set-ups from deke_run.py and the no-swing control, at the top net: going up the
+screen) and DOWN (the same moves at the bottom net: going down) played N times (12 moments x seeds), the game's own
+frames kept from the approach to the result. The captions give the big run's rate (deke_run.py: METHODS 96 shots,
+both nets; DOWN that net's 48) and the GIFs show goals in about that proportion. Two GIFs per method:
 - <name>_clips.gif: four of the attempts side by side, cropped to the net, each labelled with what happened;
 - <name>_paths.gif: every attempt at once from above, lined up on the release: the shooter (grey), the puck (orange
   for a goal, slate for a stop) and the goalie (dark), with the swing's start marked.
@@ -38,6 +39,23 @@ METHODS = [
      "Floater, left-hander across from his left, swung back left", (58, 96)),
     ("floater_righty", ("floater", "top", "R", 35, -1, 110, 22, 9, "side"),
      "Floater, right-hander across from his right, swung back right", (62, 96)),
+]
+# the same moves going down the screen (the bottom net); rates: that net's 48 shots in the full run
+DOWN = [
+    ("deke_lefty_forehand_down", ("deke", "bottom", "L", -30, 1, 72, 16, 4, "side"),
+     "Going down: deke, left-hander, swung to his left (forehand)", (46, 48)),
+    ("deke_righty_left_down", ("deke", "bottom", "R", -30, 1, 72, 16, 4, "side"),
+     "Going down: deke, right-hander, swung to his left (backhand)", (39, 48)),
+    ("deke_righty_forehand_down", ("deke", "bottom", "R", 30, -1, 85, 13, 4, "side"),
+     "Going down: deke, right-hander, swung to his right (forehand)", (42, 48)),
+    ("deke_lefty_right_down", ("deke", "bottom", "L", 30, -1, 85, 13, 4, "side"),
+     "Going down: deke, left-hander, swung to his right (backhand)", (29, 48)),
+    ("deke_no_swing_down", ("deke", "bottom", "L", -30, 1, 72, 16, 4, "still"),
+     "Going down: the same approach and shot with no swing (control)", (0, 32)),
+    ("floater_lefty_down", ("floater", "bottom", "L", -50, 1, 95, 18, 6, "side"),
+     "Going down: floater, left-hander across from his left, swung back left", (24, 48)),
+    ("floater_righty_down", ("floater", "bottom", "R", 35, -1, 110, 22, 9, "side"),
+     "Going down: floater, right-hander across from his right, swung back right", (31, 48)),
 ]
 COL = {"GOAL": "#ea580c", "STOPPED": "#475569"}
 PUCK = 14
@@ -159,8 +177,10 @@ def clips_gif(method, shots, path):
         img = Image.new("RGB", (W, H), "white")
         d = ImageDraw.Draw(img)
         d.text((pad, 6), title, fill="#1f2933", font=f1)
-        d.text((pad, 26), f"{100 * rate:.0f}% go in ({g} of {n} in the full run, both nets).", fill="#52606d", font=f2)
-        d.text((pad, 42), "The game's own frames, top net, half speed, lined up on the swing.", fill="#52606d", font=f2)
+        scope = "both nets" if n > 48 else "this net"
+        d.text((pad, 26), f"{100 * rate:.0f}% go in ({g} of {n} in the full run, {scope}).", fill="#52606d", font=f2)
+        d.text((pad, 42), f"The game's own frames, {args[1]} net, half speed, lined up on the swing.", fill="#52606d",
+               font=f2)
         for i, (res, fr, _, rel, sw) in enumerate(pick):
             off = max(0, (sw or 20) - 20)                # start each clip 20 frames before its swing
             j = min(off + t, len(fr) - 1)
@@ -188,11 +208,12 @@ def paths_gif(method, shots, path):
     """Every attempt from above, lined up on the release (the attacker's view: the net at the top)."""
     name, args, title, (g, n) = method
     S, pad, head = 3.0, 14, 64
-    x_lo, x_hi, y_lo, y_hi = -80, 80, 95, 280            # rink units (top net: y up the ice)
+    x_lo, x_hi, y_lo, y_hi = -80, 80, 95, 280            # rink units from the net's end (as on the screen)
     W, H = int((x_hi - x_lo) * S) + 2 * pad, int((y_hi - y_lo) * S) + head + pad + 20
+    sg = 1 if args[1] == "top" else -1
 
-    def P(x, y):
-        return pad + (x - x_lo) * S, head + (y_hi - y) * S
+    def P(x, y):                                         # top net at the top, bottom net at the bottom
+        return pad + (x - x_lo) * S, head + ((y_hi - y) if sg > 0 else (-y_lo - y)) * S
     f1, f2 = ImageFont.truetype(FONTB, 15), ImageFont.truetype(FONT, 12)
     before = max(s[3] for s in shots)
     after = min(40, min(len(s[2]) - s[3] for s in shots))
@@ -207,11 +228,13 @@ def paths_gif(method, shots, path):
         d.text((pad, 42), "Puck: orange goal, slate stopped. Grey: shooter. Black: goalie. Blue: swing starts.",
                fill="#52606d", font=f2)
         d.rectangle((pad, head, W - pad, H - 20), fill="#eef6fb")
-        gl = P(0, 268)[1]
+        gl = P(0, sg * 268)[1]
         d.line((pad, gl, W - pad, gl), fill="#c94040", width=2)
-        a, b = P(-20, 276), P(20, 268)
-        d.rectangle((a[0], a[1], b[0], b[1]), outline="#52606d", width=2)
-        d.arc((P(-40, 228)[0], P(0, 308)[1], P(40, 228)[0], P(0, 228)[1]), 0, 180, fill="#7aa7c7")
+        a, b = P(-20, sg * 276), P(20, sg * 268)
+        d.rectangle((a[0], min(a[1], b[1]), b[0], max(a[1], b[1])), outline="#52606d", width=2)
+        r = 40 * S                                       # the crease: a half circle in front of the goal line
+        d.arc((P(0, 0)[0] - r, gl - r, P(0, 0)[0] + r, gl + r), 0 if sg > 0 else 180, 180 if sg > 0 else 360,
+              fill="#7aa7c7")
         for s in order:
             res, _, pts, rel, sw = s
             i = min(max(rel + t, 0), len(pts) - 1)
@@ -252,11 +275,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN],
               open(out_dir / "methods.json", "w"), indent=1)
 
 

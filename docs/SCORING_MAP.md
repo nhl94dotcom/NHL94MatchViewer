@@ -689,6 +689,64 @@ right; about 95 from the goalie hold Up-Left; about 18 frames later hold C 6 fra
 
 ![The same deke with no swing: four real attempts](img/scoring_map/deke_no_swing_clips.gif)
 ![The same deke with no swing: every attempt from above](img/scoring_map/deke_no_swing_paths.gif)
+
+### Going down the screen (the bottom net)
+
+The full run played every set-up at both nets; the animations above are all at the top net, going up the screen.
+The same moves going down (48 attempts per move at each net):
+
+| Move | Going up (top net) | Going down (bottom net) |
+|---|---|---|
+| Deke, left-hander, swing to his left (forehand) | 75% | 96% |
+| Deke, right-hander, swing to his left (backhand) | 85% | 81% |
+| Deke, right-hander, swing to his right (forehand) | 44% | 88% |
+| Deke, left-hander, swing to his right (backhand) | 31% | 60% |
+| Floater, left-hander, across from his left | 71% | 50% |
+| Floater, right-hander, across from his right | 65% | 65% |
+| The same deke with no swing | 0% | 0% |
+
+- The moves work going down too, and the swings to the shooter's right do much better going down: the right-hander's
+  forehand deke doubles (44% to 88%), the left-hander's backhand one nearly does (31% to 60%). So the left-right
+  difference in the deke (above) depends partly on the direction of play, not only on the shooter's left.
+- Over the whole grid the picture is the same as before: a left-hander swinging to his left 33% up, 31% down; to his
+  right 2% / 4%; a right-hander to his left 15% / 17%, to his right 7% / 18%.
+
+Animated going down, the same inputs (`deke_animate.py`, the DOWN list; rates: the bottom net's 48):
+
+**Going down: deke, left-hander, swing to his left (forehand): 96%.**
+
+![Going down: deke, left-hander, swing to his left (forehand): 96%: four real attempts](img/scoring_map/deke_lefty_forehand_down_clips.gif)
+![Going down: deke, left-hander, swing to his left (forehand): 96%: every attempt from above](img/scoring_map/deke_lefty_forehand_down_paths.gif)
+
+**Going down: deke, right-hander, swing to his left (backhand): 81%.**
+
+![Going down: deke, right-hander, swing to his left (backhand): 81%: four real attempts](img/scoring_map/deke_righty_left_down_clips.gif)
+![Going down: deke, right-hander, swing to his left (backhand): 81%: every attempt from above](img/scoring_map/deke_righty_left_down_paths.gif)
+
+**Going down: deke, right-hander, swing to his right (forehand): 88%.**
+
+![Going down: deke, right-hander, swing to his right (forehand): 88%: four real attempts](img/scoring_map/deke_righty_forehand_down_clips.gif)
+![Going down: deke, right-hander, swing to his right (forehand): 88%: every attempt from above](img/scoring_map/deke_righty_forehand_down_paths.gif)
+
+**Going down: deke, left-hander, swing to his right (backhand): 60%.**
+
+![Going down: deke, left-hander, swing to his right (backhand): 60%: four real attempts](img/scoring_map/deke_lefty_right_down_clips.gif)
+![Going down: deke, left-hander, swing to his right (backhand): 60%: every attempt from above](img/scoring_map/deke_lefty_right_down_paths.gif)
+
+**Going down: floater, right-hander, across from his right: 65%.**
+
+![Going down: floater, right-hander, across from his right: 65%: four real attempts](img/scoring_map/floater_righty_down_clips.gif)
+![Going down: floater, right-hander, across from his right: 65%: every attempt from above](img/scoring_map/floater_righty_down_paths.gif)
+
+**Going down: floater, left-hander, across from his left: 50%.**
+
+![Going down: floater, left-hander, across from his left: 50%: four real attempts](img/scoring_map/floater_lefty_down_clips.gif)
+![Going down: floater, left-hander, across from his left: 50%: every attempt from above](img/scoring_map/floater_lefty_down_paths.gif)
+
+**Going down: the same deke with no swing: 0%.**
+
+![Going down: the same deke with no swing: 0%: four real attempts](img/scoring_map/deke_no_swing_down_clips.gif)
+![Going down: the same deke with no swing: 0%: every attempt from above](img/scoring_map/deke_no_swing_down_paths.gif)
 - **The recorded games** (`analysis/deke_games.py`, 158 close wrist shots by a person at a computer goalie in 47
   games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
   the sides apart yet.
