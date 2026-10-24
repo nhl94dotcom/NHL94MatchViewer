@@ -769,6 +769,32 @@ Animated going down, the same inputs (`deke_animate.py`, the DOWN list; rates: t
   games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
   the sides apart yet.
 
+### The user's refinements (plan "deke2", 2026-10-24)
+
+From the user, after the animations: come in from a bit farther out to the side, get a little closer to the goalie,
+and shoot with the stick straight up or a bit up and toward the swing's side. `deke_run.py deke2`: both hands, both
+swing directions, both nets; starting 30 / 45 / 60 to the side, the swing begun 50 / 60 / 72 from the goalie, C 10-22
+frames later, aimed to the side (as before), straight Up, or Up and toward the swing's side; 12 moments x 4 seeds.
+Rates below count a puck the goalie took before the shot as a failure (out of 96 attempts, both nets).
+
+| Move | Before (the first grid) | Now | Best set-up |
+|---|---|---|---|
+| Left-hander, swing to his left (forehand) | 85% | **95%** | from 45 to his left, swing 60 from the goalie, C 10 frames later |
+| Right-hander, swing to his left (backhand side) | 83% | **96%** | from 45, swing at 60, C 13 frames later |
+| Right-hander, swing to his right (forehand) | 66% | **76%** | from 45-60 to his right, swing at 72, C 22 frames later |
+| Left-hander, swing to his right (backhand side) | 46% (the puck never got across) | **67%** | from 45, swing at 72, C 22 frames later: the puck 12 across to his right |
+
+- **Farther out to the side helps every move** (45 to the side is best for all four; 30 was the first grid's).
+  Getting closer before the swing (60 instead of 72) helps the swings to the left; the swings to the right need the
+  longer swing (72, C 22 frames later) to get the puck across.
+- **The stick:** up and toward the swing's side does as well as holding the side (73-93% against 66-96% at each
+  move's best); **straight Up is clearly worse** (60% for the right-hander's forehand deke, 33-48% for the others).
+  Against the computer goalie, keep the stick angled toward the swing.
+- **The left-hander's swing to his right now gets the puck across** with the longer swing (12 units to his right at
+  the release), and scores 67%. A test that waits for the puck to be across before shooting (plan "dekebh") is next.
+- Going up and going down are close for the best set-ups (45 / 46 and 45 / 47 of 48 for the swings to the left; the
+  swings to the right still differ by net: 43 / 30 and 40 / 24).
+
 ## EA Specials (Genesis, 2026-10-24)
 
 The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the
