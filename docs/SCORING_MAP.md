@@ -469,6 +469,44 @@ set-up; averaged over the passers, both nets and both timings):
 - Averaged over every set-up and aim, a SNES one-timer scores about 6%; the Up aim is the poorest (3.6%), the
   diagonals toward the shooter's sides the best (7-9%), but the right aim depends on the spot and the net.
 
+## Strong shooters' slapshots (2026-10-24)
+
+The user: far-post slapshots work more often for strong, accurate shooters. The same 70 spots for each (slapshots from
+the middle half of the ice, x -60..60 by 20, 30-55 feet out, both nets; `NHL94_SMAP_SUBSET=slapmid` with `map_run.py`
+and `snes_map_run.py`), a set computer goalie. "Best aim" is the best of the nine aims at each spot.
+
+| | Usual shooter | Strong shooter |
+|---|---|---|
+| Genesis (Shot Power / Accuracy 20 / 15 against 27 / 27) | 13% at the best aim | **23%** |
+| SNES (13 / 13 against 15 / 15, the most the SNES gives) | 3.8% | **6.1%** |
+
+- **Strength nearly doubles a slapshot's chance on both systems**, at every distance (Genesis 100 out 12% to 23%, 140
+  out 17% to 28%, 180 out 10% to 14%; SNES best at 120 out, 5.7% to 10.8%).
+- **The best aim is not the far post here.** On the Genesis it is Down (the middle at ice level: through the
+  butterfly's blind ring, 4.2), 22% at the top net and 9% at the bottom for the strong shooter; the next best are
+  aims to the **near** side (7-8%); the far side stays at 0-3%. On the SNES the near-side aims are the only ones that
+  score (strong shooter: 3-11% by aim and net; far side 0-1%).
+- So against a goalie set square to the shooter the far post doesn't open up, whoever shoots. The far-post goals the
+  user sees in games probably come when the goalie is moving or not square (a pass before the shot, the shooter
+  skating across, a person in net), which this test doesn't have.
+
+## Moving shooters (Genesis, 2026-10-24)
+
+`mv_run.py`: the shooter skates (speed 8000) with the d-pad held his way while a set computer goalie waits, and takes
+a wrist shot (C tapped) at a set release point with each of the nine aims; 16 moments x 4 seeds per aim, both nets
+and both sides.
+
+- **Across the crease (the user's method 3: a soft shot into the far side before the goalie gets there):** from 90 to
+  one side, skating across. **Aimed the way he is skating (toward the far side)**: 51-53% at 35 out (about 11 feet),
+  32-38% at 45 out; **aimed back the way he came: 0-1%**; straight at the middle 13% at 35 out, 2% at 45. Released
+  just before the middle is best (35 out: 80% at 20 short of the middle, 72% at the middle, 49% at 20 past, 18% at 40
+  past). Holding nothing but his skating direction scores as well as aiming that way. At 25 out he never gets the shot
+  off: the goalie takes the puck.
+- **On the 45-degree diagonal straight for the net (method 5: the near post as the goalie starts for the far
+  one):** almost nothing against a set computer goalie: 0-2% released 100 to 60 out, 5-8% at 45 out aimed at the near
+  side, far side and middle 0%. The goalie stays on the puck's line (1-6 units off it), so there is no near post to
+  hit; the method needs the goalie to start across first, which a computer goalie doesn't do on his own here.
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing
