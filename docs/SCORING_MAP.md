@@ -496,6 +496,30 @@ and `snes_map_run.py`), a set computer goalie. "Best aim" is the best of the nin
 - A standing shooter, a set computer goalie: the user's far-post slapshots in games are taken skating across (below:
   Neely's in the 2026-10-23 games), which this part doesn't have.
 
+### Every Shot Power and Accuracy (Genesis, 2026-10-24)
+
+The user: long far-post slapshots are taken by shooters of 4 / 4 or better; below 4, especially in power, the puck
+doesn't get past the goalie often enough. The same slapshot (held 20 frames) from 18 spots (x -40 / 0 / 40, 104-144
+out, both nets; `NHL94_SMAP_SUBSET=slapcore`), a set computer goalie, for each roster step 2-6 of Shot Power and of
+Shot Accuracy (working value = step x 5, before hot / cold). The best aim's chance, averaged over the spots (in
+brackets: from the middle, x 0):
+
+| Shot Power \ Accuracy | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| 2 | 4% (7%) | 4% (9%) | 5% (9%) | 4% (9%) | 5% (10%) |
+| 3 | 5% (8%) | 6% (10%) | 7% (12%) | 7% (13%) | 7% (13%) |
+| **4** | 14% (25%) | 17% (30%) | **19% (33%)** | 20% (33%) | 21% (36%) |
+| 5 | 19% (31%) | 22% (38%) | 24% (41%) | 27% (44%) | 27% (46%) |
+| 6 | 24% (31%) | 28% (36%) | 31% (41%) | 34% (44%) | 35% (46%) |
+
+- **Shot Power has a threshold between 3 and 4, as the user said:** at accuracy 4 the chance nearly triples from 7%
+  to 19%. Below 4 the slapshot hardly scores from anywhere (4-7%), whatever the accuracy. Above 4 each step of power
+  adds 5-10 points over the spots, but from the middle 5 and 6 are about level.
+- **Accuracy matters only once the power is there:** from 2 to 6 it adds 1-2 points at power 2-3, 7-11 points at
+  power 4-6.
+- **Distance:** from the middle at accuracy 4, power 4 scores 27% / 35% / 58% at 144 / 124 / 104 out (about 48 / 41 /
+  35 feet); power 3 7-17%, power 2 7-15%.
+
 ## Moving shooters (Genesis, 2026-10-24)
 
 `mv_run.py`: the shooter skates (speed 8000) with the d-pad held his way while a set computer goalie waits, and takes
