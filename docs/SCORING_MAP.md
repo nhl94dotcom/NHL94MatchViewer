@@ -857,6 +857,47 @@ Animated (`deke_animate.py`, the ACROSS list; rates: that net's 48):
 ![Forehand deke shot once across, right-hander, swing to his right, going up: 96% (46 of 48): four real attempts](img/scoring_map/dekebh_righty_forehand_clips.gif)
 ![Forehand deke shot once across, right-hander, swing to his right, going up: 96% (46 of 48): every attempt from above](img/scoring_map/dekebh_righty_forehand_paths.gif)
 
+### The floater on the backhand (plan "floaterbh", 2026-10-24)
+
+The user asked for the floater on the backhand as well as the forehand. `deke_run.py floaterbh`: skating up and across
+from the backhand side (a left-hander from his right, a right-hander from his left), 35 or 50 out to the side, the puck
+swung back to the backhand at 80 / 95 / 110 / 125 from the goalie, C held 3 / 6 / 9 frames, 10-30 frames after the
+swing, aimed to the side or up and toward it; both hands, both nets; each release checked against the game's backhand
+rule. Out of 96 attempts (both nets), a puck lost before the shot counted as a failure:
+
+| Move | Rate | Best set-up | Backhands |
+|---|---|---|---|
+| Left-hander, backhand floater | **51%** (going up 22, going down 27 of 48) | from 50 to his right, swing at 110, C held 9 frames, 26 frames after the swing | 24 of 24 |
+| Right-hander, backhand floater | **41%** (going up 26, going down 13 of 48) | from 50 to his left, swing at 95, C held 9 frames, 14 frames after | 24 of 24 |
+
+- **It works, on a true backhand, but in a narrow window:** over the whole grid only 3% (left-hander) and 5%
+  (right-hander) go in, against the forehand floater's 54-65% at its best. The swing has to start from far out (95-110)
+  and C be held long (9 frames). The left-hander's needs a much longer wait (26 frames) than the right-hander's (14):
+  the same slower crossing to the shooter's right as in the deke.
+- Up and toward the side scores about the same as the side.
+
+Animated (`deke_animate.py`, the FLOATERBH list; rates: that net's 48):
+
+**Backhand floater, left-hander, going up: 46% (22 of 48).**
+
+![Backhand floater, left-hander, going up: 46% (22 of 48): four real attempts](img/scoring_map/floaterbh_lefty_clips.gif)
+![Backhand floater, left-hander, going up: 46% (22 of 48): every attempt from above](img/scoring_map/floaterbh_lefty_paths.gif)
+
+**Backhand floater, left-hander, going down: 56% (27 of 48).**
+
+![Backhand floater, left-hander, going down: 56% (27 of 48): four real attempts](img/scoring_map/floaterbh_lefty_down_clips.gif)
+![Backhand floater, left-hander, going down: 56% (27 of 48): every attempt from above](img/scoring_map/floaterbh_lefty_down_paths.gif)
+
+**Backhand floater, right-hander, going up: 54% (26 of 48).**
+
+![Backhand floater, right-hander, going up: 54% (26 of 48): four real attempts](img/scoring_map/floaterbh_righty_clips.gif)
+![Backhand floater, right-hander, going up: 54% (26 of 48): every attempt from above](img/scoring_map/floaterbh_righty_paths.gif)
+
+**Backhand floater, right-hander, going down: 27% (13 of 48).**
+
+![Backhand floater, right-hander, going down: 27% (13 of 48): four real attempts](img/scoring_map/floaterbh_righty_down_clips.gif)
+![Backhand floater, right-hander, going down: 27% (13 of 48): every attempt from above](img/scoring_map/floaterbh_righty_down_paths.gif)
+
 ## EA Specials (Genesis, 2026-10-24)
 
 The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the

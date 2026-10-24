@@ -1,7 +1,8 @@
 """Animated dekes and floaters (Genesis test ROM): python deke_animate.py OUT_DIR [N]
 Each method in METHODS (the best set-ups from deke_run.py and the no-swing control, at the top net: going up the
 screen) and DOWN (the same moves at the bottom net: going down) played N times (12 moments x seeds), the game's own
-frames kept from the approach to the result; ACROSS: the dekebh set-ups (C once the puck is across). The captions give the big run's rate (deke_run.py: METHODS 96 shots,
+frames kept from the approach to the result; ACROSS: the dekebh set-ups (C once the puck is across);
+FLOATERBH: the backhand floater. The captions give the big run's rate (deke_run.py: METHODS 96 shots,
 both nets; DOWN that net's 48) and the GIFs show goals in about that proportion. Two GIFs per method:
 - <name>_clips.gif: four of the attempts side by side, cropped to the net, each labelled with what happened;
 - <name>_paths.gif: every attempt at once from above, lined up on the release: the shooter (grey), the puck (orange
@@ -55,6 +56,17 @@ ACROSS = [
      "Forehand deke shot once across, left-hander, swung to his left", (40, 48)),
     ("dekebh_righty_forehand", ("dekebh", "top", "R", 45, -1, 85, 16, 4, "side"),
      "Forehand deke shot once across, right-hander, swung to his right", (46, 48)),
+]
+# the floater on the backhand (deke_run.py floaterbh), going up and going down; rates: that net's 48
+FLOATERBH = [
+    ("floaterbh_lefty", ("floaterbh", "top", "L", 50, -1, 110, 26, 9, "side"),
+     "Backhand floater, left-hander, across from his right, swung back right", (22, 48)),
+    ("floaterbh_lefty_down", ("floaterbh", "bottom", "L", 50, -1, 110, 26, 9, "side"),
+     "Going down: backhand floater, left-hander, swung back right", (27, 48)),
+    ("floaterbh_righty", ("floaterbh", "top", "R", -50, 1, 95, 14, 9, "side"),
+     "Backhand floater, right-hander, across from his left, swung back left", (26, 48)),
+    ("floaterbh_righty_down", ("floaterbh", "bottom", "R", -50, 1, 95, 14, 9, "side"),
+     "Going down: backhand floater, right-hander, swung back left", (13, 48)),
 ]
 # the same moves going down the screen (the bottom net); rates: that net's 48 shots in the full run
 DOWN = [
@@ -298,11 +310,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS + DOWN + ACROSS if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH],
               open(out_dir / "methods.json", "w"), indent=1)
 
 
