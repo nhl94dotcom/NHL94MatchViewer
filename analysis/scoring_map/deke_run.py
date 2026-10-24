@@ -176,11 +176,11 @@ def job(args):
         res["goff"] += abs((gx - px) * (gl - py) - (gy - py) * (-px)) / L     # goalie off the puck's line to the net
         res["pside"] += sg * (px - sx)                                         # where the puck was, across (his right +)
         res["gmove"] += sg * (gx - g0)                                         # how far the goalie moved since the swing
-        face = (e.b(rec(SHOOTER) + 0x55) - (0 if top else 4)) % 8             # his facing, attacker's view
-        res["faces"][str(face)] = res["faces"].get(str(face), 0) + 1
+        f_rel = (e.b(rec(SHOOTER) + 0x55) - (0 if top else 4)) % 8            # his facing, attacker's view
+        res["faces"][str(f_rel)] = res["faces"].get(str(f_rel), 0) + 1
         # a backhand by the game's rule (Findhittype): the net 45-180 degrees round to his backhand side
         to_net = round(math.degrees(math.atan2(sg * -sx, sg * (gl - sy))) / 45) % 8      # the net's direction
-        rel = (face - to_net) % 8
+        rel = (f_rel - to_net) % 8
         res["backhand"] += (rel in (4, 5, 6, 7)) if hand == "R" else (rel in (1, 2, 3, 4))
         for _ in range(SEEDS):
             e.unserialize(pre)
