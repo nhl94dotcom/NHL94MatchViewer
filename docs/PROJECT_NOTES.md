@@ -2593,6 +2593,28 @@ reflection: GENESIS_MECHANICS 13.5) and it crept over the line. The converter ha
 (`scorer_touch` took any touch in a shooting animation for one); it now needs a swing begun without the puck, so the
 follow-through of his own shot is a deflection. All recordings re-converted.
 
+## RetroArch videos as a source (pilot, 2026-10-23)
+
+The user keeps RetroArch .mkv captures of league games (51 GB, mostly Genesis; H.264 from x264, lossy; pauses and
+intermissions included). Pilot on nhl94-261023-110709.mkv (the three BOS-LA games of 2026-10-23, also recorded by the
+helper), game 1 (`analysis/video/`: video_lines.py, video_pilot.py; PyAV and numpy installed for it):
+- **The picture:** the game draws 256 x 224 (H32) and the video stretches it to 320 x 224, 60 frames a second. A game
+  position (x, y) is at pixel (1.25 (x - Hpos + 126.5), Vpos - y + 111), Hpos / Vpos the camera words BD1C / BD18
+  (updatescroll: Hscroll = -64 - Hpos), at the skates (the sprite's bottom is about 6 pixels lower).
+- **Line-up:** video frame = the game's frame counter (B03E) + an offset found stretch by stretch from where the blue
+  lines (+-86) are drawn; the offset grows at each pause and intermission (the video keeps running, the counter stops)
+  and the counter is reset to just below 0 at each period's start. 54 stretches of 600 samples, median match 0.81, the
+  offset drifting about a frame a stretch.
+- **The rink** rebuilt from the video (a median of 400 aligned frames with the camera moving) is clean.
+- **Players:** every on-screen player shows in the foreground (pixels unlike every rink pixel within one pixel: the
+  stretch draws edges differently at each scroll position), but only 53% of player-moments are on screen at all (the
+  camera shows part of the rink); of those, 73% are a blob of their own once thin leftovers are trimmed, 27% merged
+  with others; the blob bottom puts a player within 5 pixels of his spot only 38% of the time.
+- **The puck** (a small dark blob) was found within 6 pixels in 15% of the frames it was on screen.
+- **Not tested:** the camera from the video alone (an archive game has no recording): vertical from the lines,
+  horizontal not yet. Conclusion so far: a video gives the players on screen, roughly, and little of the puck; the
+  person-play measures need everyone and the puck, so Helper recordings stay the source; videos are for watching.
+
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the
