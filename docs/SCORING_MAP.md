@@ -514,6 +514,18 @@ and both sides.
   one):** almost nothing against a set computer goalie: 0-2% released 100 to 60 out, 5-8% at 45 out aimed at the near
   side, far side and middle 0%. The goalie stays on the puck's line (1-6 units off it), so there is no near post to
   hit; the method needs the goalie to start across first, which a computer goalie doesn't do on his own here.
+- **Slapshots skating across (the user's far-post slapshot; Neely's 4-1, 6-3 and 7-4 in 2026-10-23_1126_LA-BOS),
+  plans "slapx" / "slapxslow":** a strong shooter (27 / 27, left-handed) from 130 to one side, 85 / 105 / 125 out
+  (about 28 / 35 / 42 feet), a full wind-up begun at five points across; he glides about 50 through the wind-up, so
+  the shots left from 7 before the middle to 70 past it. Starting at half speed changed nothing (he speeds back up with
+  the d-pad held: the same release points).
+  - **Crossing toward his stick side, the far post (ahead of him) is the shot: 50-62% released just before or at the
+    middle from 85-105 out** (13-23% from 125 out), against 21% for the best standing slapshot from the middle. It
+    falls fast once he is past the middle (10-15% released 30 past, 0-4% beyond). The near post (behind him): 0-2%.
+  - Crossing toward his backhand side the near post is ahead, and does worse: 34-36% released at the middle from 85
+    out, 6-16% from 105, about nothing from 125.
+  - So the far-post slapshot is a skating shot: across toward the stick side, released in front of the middle. Neely's
+    7-4 left from 50 before the middle, 86 out, earlier than any release tried here.
 
 ## Limits and what comes next
 

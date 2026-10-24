@@ -7,7 +7,11 @@ wrist shot (C tapped) with each of the nine aims; the shot frame is replayed wit
 (harness.decide). Kept per aim, with where he released and how far the goalie was off the puck's line to the net.
 Plans: "cross" (from 90 to one side, 25 / 35 / 45 out from the goal line, skating across; released at -40, -20, 0, 20,
 40 across, signed so negative is before the middle), "diag" (from 130 to one side and 130 out, skating at 45 degrees
-straight for the net's middle, so released at 100, 80, 60, 45 out he is as far to the side). Chunked and resumable like ot_run.py; gentle mode.
+straight for the net's middle, so released at 100, 80, 60, 45 out he is as far to the side), "slapx" / "slapxslow"
+(2026-10-24, the user's far-post slapshot skating across, as Neely's in 2026-10-23_1126_LA-BOS: from 130 to one side,
+85 / 105 / 125 out, skating across at SPEED or half of it, a full wind-up (C held SLAP_HOLD frames) begun at -60, -40,
+-20, 0, 20 across; he glides on through the wind-up, so the release is later: kept as "rel"). Chunked and resumable
+like ot_run.py; gentle mode.
 python mv_run.py PLAN RUN [minutes]   -> paths.RUNS / RUN / mv_<PLAN>.jsonl"""
 import json
 import math
@@ -19,9 +23,13 @@ from multiprocessing import Pool
 
 from harness import Harness, decide, rec, DIRPAD, E, SHOOTER, GOALIE, PUCKC
 from lowload import WORKERS, breathe, gentle
+from mapper import set_ratings
 from paths import RUNS, STATE_TOP, STATE_BOTTOM
 
 MOMENTS, SEEDS, SPEED = 16, 4, 8000
+SLAP_HOLD = 20                     # frames of C for a full slapshot (map_run.py's hold)
+SLAPS = ("slapx", "slapxslow")
+SLAP_RATINGS = (27, 27)            # Shot Power, Shot Accuracy: a strong, accurate shooter (the user's far-post slapshots)
 GOAL_Y = 264
 
 
@@ -32,6 +40,10 @@ def plan_jobs(plan):
             if plan == "cross":
                 for out in (25, 35, 45):
                     for rel in (-40, -20, 0, 20, 40):
+                        jobs.append((plan, net, side, out, rel))
+            elif plan in SLAPS:
+                for out in (85, 105, 125):
+                    for rel in (-60, -40, -20, 0, 20):
                         jobs.append((plan, net, side, out, rel))
             elif plan == "diag":
                 for rel in (100, 80, 60, 45):
@@ -50,16 +62,16 @@ def _init():
 
 def travel(plan, side, sg):
     """The d-pad direction he skates (0 up the screen, clockwise) and his velocity (units x 4096 a frame)."""
-    if plan == "cross":
+    if plan == "cross" or plan in SLAPS:
         d = 6 if side > 0 else 2                       # from the right going left, or from the left going right
-        return d, (-SPEED * side, 0)
+        return d, (-(SPEED // 2 if plan == "slapxslow" else SPEED) * side, 0)
     vx, vy = -SPEED * side * 0.7071, SPEED * sg * 0.7071   # toward the middle and toward the net
     d = (7 if side > 0 else 1) if sg > 0 else (5 if side > 0 else 3)
     return d, (round(vx), round(vy))
 
 
 def reached(plan, side, sg, x, y, rel):
-    if plan == "cross":
+    if plan == "cross" or plan in SLAPS:
         return -side * x >= rel                        # past `rel` across, in his direction of travel
     return GOAL_Y - sg * y <= rel                      # as close as `rel` out
 
@@ -77,11 +89,13 @@ def job(args):
     for p in range(MOMENTS):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(x0, y0, settle=settle, clock=clock)
+        if plan in SLAPS:
+            set_ratings(h, *SLAP_RATINGS)
         e.setb(rec(SHOOTER) + 0x55, d)                 # facing his way (else he turns as he goes, and curves in)
         e.setw(rec(SHOOTER) + 0x28, vx & 0xFFFF)
         e.setw(rec(SHOOTER) + 0x2A, vy & 0xFFFF)
         go = None
-        for f in range(150):                           # skate to the release point
+        for f in range(300):                           # skate to the release point
             x, y = e.sw(rec(SHOOTER)), e.sw(rec(SHOOTER) + 0x14)
             if e.w(PUCKC) != SHOOTER:
                 break                                  # lost it (the goalie poked it, or it slid off)
@@ -97,10 +111,11 @@ def job(args):
         for a in range(9):
             e.unserialize(go)
             n0, pre = e.w(E["n"]), None
-            for f in range(40):                        # the wrist shot: C tapped, the aim held, his skating kept up
-                st = e.serialize()
+            hold = SLAP_HOLD if plan in SLAPS else 3
+            for f in range(hold + 40):                 # the shot: C tapped (held for a slapshot), the aim held,
+                st = e.serialize()                     # his skating kept up
                 h.park()
-                e.run(1, hold=(["C"] if f < 3 else []) + DIRPAD[a] + (DIRPAD[d] if a == 8 else []))
+                e.run(1, hold=(["C"] if f < hold else []) + DIRPAD[a] + (DIRPAD[d] if a == 8 else []))
                 if e.w(E["n"]) != n0:
                     pre = st
                     break
