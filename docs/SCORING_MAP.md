@@ -464,6 +464,8 @@ set-up; averaged over the passers, both nets and both timings):
   other side scores 36% over the aims and 58% at the best aim; one from his own side 7% and 16%.
 - **The doorstep in the middle is a little weaker than on the Genesis** (62% at the best aim against 62% with the
   Genesis's own aim; 44% over all the aims), and the SNES falls off faster with distance.
+- **The SNES xG model gets them right:** at 3,627 strikes played in the game (`ot_xg_check_snes.py`) the game 8.9%,
+  the model 7.8%, correlation 0.82; the pass across 45% / 42%, from the same side 1% / 3%. Unchanged.
 - Averaged over every set-up and aim, a SNES one-timer scores about 6%; the Up aim is the poorest (3.6%), the
   diagonals toward the shooter's sides the best (7-9%), but the right aim depends on the spot and the net.
 
@@ -482,7 +484,7 @@ yet about shots off the rush or a person in net; one-timers are above (both syst
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.
 - **Next, if wanted:** a moving-goalie map using goalie states from recorded games (about 2 hours a system); other
-  shooters; a check of the SNES one-timers against the SNES xG model; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
+  shooters; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
   recorded games.
 
 ## Rebuilding it yourself

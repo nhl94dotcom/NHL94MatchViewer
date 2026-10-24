@@ -450,6 +450,11 @@ the press, 824 set-ups over both nets. **Real game:** 92% of presses the pass re
 strike over all the aims (at the best aim): the doorstep middle 44% (62%), 18 feet out in the middle 24% (56%), 27
 feet 13% (34%), 35 feet 8% (26%), beyond about 2% (under 11%). With the receiver inside 18 feet, a pass from the other
 side 36% (58%), from his own side 7% (16%). The aim roughly doubles the chance at the right direction.
+**The xG model (4.7) gets SNES one-timers right too:** at 3,627 strikes (59 set-ups, both timings, 4 moments, all nine
+aims; `ot_xg_check_snes.py`) the game scored 8.9%, the model 7.8%; correlation 0.82 strike by strike; log loss 0.158
+against 0.299 for one rate for all. Pass across (receiver inside 18 feet): game 45%, model 42%; same side 1% and 3%.
+By aim the model is within 2 points everywhere (a little low on the diagonals); by distance it is close in front
+(54% / 51% within about 13 feet) and a little low far out (2.9% / 1.9% beyond 30 feet). Unchanged.
 
 
 ---
