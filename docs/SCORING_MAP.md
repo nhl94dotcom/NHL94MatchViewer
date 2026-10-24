@@ -16,7 +16,7 @@ also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10 and [SNES_MECHANICS](SNES
 7. [Makes and misses, animated](#makes-and-misses-animated)
 8. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
 9. [The maps](#the-maps)
-10. [One-timers (Genesis)](#one-timers-genesis)
+10. [One-timers (Genesis, then SNES)](#one-timers-genesis)
 11. [Limits and what comes next](#limits-and-what-comes-next)
 12. [Rebuilding it yourself](#rebuilding-it-yourself)
 
@@ -439,12 +439,38 @@ position blur, or with the goalie's stick and rebound, it does no better (log lo
 what decides a one-timer is where the goalie is when it is struck, and the model already reads that from the
 recording.
 
-The SNES half (nine aims per set-up, about six hours) is running in one-hour chunks.
+### One-timers on the SNES
+
+The same 824 set-ups on the SNES (retail ROM, Snes9x), the one-timer button A pressed early or late in the pass and
+each of the nine d-pad directions held from the press (the SNES reads the aim during the swing), 32 moments, 4 seeds a
+strike. Run 2026-10-23 in nine one-hour chunks, gentle mode.
+
+**The swing connects even more often than on the Genesis:** 92% of the presses the pass reached struck the puck.
+
+**Where it scores** (goals per struck one-timer; first averaged over the nine aims, then at the best aim for each
+set-up; averaged over the passers, both nets and both timings):
+
+| Receiver's distance out | Middle | 10 ft to one side | 20 ft | 30 ft |
+| --- | --- | --- | --- | --- |
+| 10 ft (the doorstep) | 44% / 62% | 35% / 53-55% | 10-11% / 4-20% | 7-9% / 12-14% |
+| 18 ft | 24% / 56% | 18-21% / 38-46% | 9-12% / 21-27% | 2-3% / 5-8% |
+| 27 ft | 13% / 34% | 11-15% / 31-37% | 9-10% / 25-26% | 2-3% / 6-9% |
+| 35 ft | 8% / 26% | 5-8% / 16-24% | 5-7% / 14-15% | 1% / 3% |
+| 43 ft and beyond | 0-3% / 1-11% | | | |
+
+- **The aim matters on the SNES** (the Genesis aims one-timers itself): the best aim roughly doubles the average one,
+  and beyond the doorstep it is the difference between a poor chance and a good one.
+- **The pass across is even more decisive than on the Genesis:** with the receiver inside 18 feet, a pass from the
+  other side scores 36% over the aims and 58% at the best aim; one from his own side 7% and 16%.
+- **The doorstep in the middle is a little weaker than on the Genesis** (62% at the best aim against 62% with the
+  Genesis's own aim; 44% over all the aims), and the SNES falls off faster with distance.
+- Averaged over every set-up and aim, a SNES one-timer scores about 6%; the Up aim is the poorest (3.6%), the
+  diagonals toward the shooter's sides the best (7-9%), but the right aim depends on the spot and the net.
 
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing
-yet about shots off the rush or a person in net; one-timers are above (Genesis; SNES to come).
+yet about shots off the rush or a person in net; one-timers are above (both systems).
 
 - **Not yet seen in real play.** Two practice tests are on the request list ([NEEDS_FROM_YOU](NEEDS_FROM_YOU.md)
   items 5 and 6): a dozen Down slapshots from the middle on the Genesis, and a dozen slapshots from the SNES left lane
@@ -456,7 +482,7 @@ yet about shots off the rush or a person in net; one-timers are above (Genesis; 
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.
 - **Next, if wanted:** a moving-goalie map using goalie states from recorded games (about 2 hours a system); other
-  shooters; the SNES one-timers (running) and their check against the SNES xG model; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
+  shooters; a check of the SNES one-timers against the SNES xG model; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
   recorded games.
 
 ## Rebuilding it yourself

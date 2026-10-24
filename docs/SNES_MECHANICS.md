@@ -444,6 +444,13 @@ the game scores 1.3-2.4% from 88-178 out, where its own best aim gives 2.7-4.6% 
 The lane is a few units wide and comes from frame-exact save areas, which the model's goalie (a 2-unit random spread on
 his position) blurs away.
 
+**One-timers in the real game** (2026-10-23, `ot_run.py`, the whole study in [SCORING_MAP](SCORING_MAP.md), "One-timers
+on the SNES"): a pass to a standing receiver, A pressed during the pass with one of the nine d-pad directions held from
+the press, 824 set-ups over both nets. **Real game:** 92% of presses the pass reached struck the puck; goals per
+strike over all the aims (at the best aim): the doorstep middle 44% (62%), 18 feet out in the middle 24% (56%), 27
+feet 13% (34%), 35 feet 8% (26%), beyond about 2% (under 11%). With the receiver inside 18 feet, a pass from the other
+side 36% (58%), from his own side 7% (16%). The aim roughly doubles the chance at the right direction.
+
 
 ---
 
