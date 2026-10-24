@@ -582,11 +582,14 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
     it may be better still a little later).
   - Swung to the backhand instead: 26% (lefty), 29-38% (righty) at best; the forehand rule holds for the floater with
     no left-right bias.
-- **Why it works:** the goalie doesn't follow the swing. He moves with the shooter's skating (6-9 units across the
-  floater, as he does with no swing) and is 2-5 units off the puck's line to the net at the release, the same as
-  without a swing. What changes is the shot: the puck leaves from 10-18 units across the shooter on the swing's side,
-  aimed at that side, at a goalie standing where he was for the puck's old place. Exactly which save test it beats is
-  not yet traced.
+- **Why it works:** the goalie doesn't follow the swing; he moves with the shooter's skating (6-9 units across the
+  floater, as he does with no swing). The puck leaves from 10-18 units across the shooter on the swing's side, aimed
+  at that side. In the best deke (a lefty swinging left, 85%) that leaves the goalie 11 units off the puck's line to
+  the net at the release, against 4 with no swing. In the other best set-ups he is no further off it (righty swinging
+  right 2 against 5, floaters 2-4 against 3-4), so there the swing must beat a save test some other way (the shot's
+  angle across him); which one is not yet traced. Averaged over the whole grid he is 2-5 units off either way.
+- **Animations:** `deke_animate.py` plays each best set-up 24 times at the top net and makes two GIFs per move: four
+  attempts in the game's own frames, and every attempt from above (shooter, puck and goalie paths, the swing marked).
 - **The recorded games** (`analysis/deke_games.py`, 158 close wrist shots by a person at a computer goalie in 47
   games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
   the sides apart yet.
