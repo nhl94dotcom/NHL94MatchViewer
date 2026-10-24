@@ -550,6 +550,22 @@ and both sides.
     out, 6-16% from 105, about nothing from 125.
   - So the far-post slapshot is a skating shot: across toward the stick side, released in front of the middle. Neely's
     7-4 left from 50 before the middle, 86 out, earlier than any release tried here.
+- **Every Shot Power and Accuracy (plan "slapxr", 2026-10-24):** crossing toward the stick side only, the wind-up
+  begun 60 or 40 before the middle, 85 / 105 / 125 out (about 28 / 35 / 42 feet), both nets, roster steps 2-6 of each
+  (working = step x 5). The best aim's chance, averaged over the set-ups (in brackets by distance):
+
+  | Shot Power \ Accuracy | 2 | 4 | 6 |
+  |---|---|---|---|
+  | 2 | 6% (14 / 4 / 2%) | 6% (14 / 4 / 1%) | 7% (16 / 5 / 2%) |
+  | 3 | 10% (23 / 6 / 2%) | 13% (26 / 9 / 4%) | 14% (29 / 10 / 4%) |
+  | **4** | 29% (48 / 33 / 5%) | **37% (62 / 41 / 7%)** | 40% (70 / 45 / 7%) |
+  | 5 | 34% (46 / 44 / 12%) | 45% (61 / 56 / 16%) | 50% (68 / 62 / 19%) |
+  | 6 | 39% (47 / 55 / 16%) | 51% (62 / 69 / 23%) | 58% (68 / 78 / 27%) |
+
+  - **The same threshold between Shot Power 3 and 4 as standing** (13% to 37% at accuracy 4): the user's 4 / 4 rule.
+  - **Distance needs power:** from 85 out power 4 is as good as 5 or 6 (about 60%); from 105 out each step adds 10-15
+    points; from 125 out only 5-6 score at all (12-27%; power 4 5-7%).
+  - Accuracy adds 10-20 points at power 4-6, a few at 2-3.
 
 ## Dekes and floaters (Genesis, 2026-10-24)
 
