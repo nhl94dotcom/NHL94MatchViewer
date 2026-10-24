@@ -590,6 +590,52 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
   angle across him); which one is not yet traced. Averaged over the whole grid he is 2-5 units off either way.
 - **Animations:** `deke_animate.py` plays each best set-up 24 times at the top net and makes two GIFs per move: four
   attempts in the game's own frames, and every attempt from above (shooter, puck and goalie paths, the swing marked).
+  They are below (the rates are the full run's: 96 attempts, both nets).
+
+### The moves, animated
+
+Each pair: four attempts in the game's own frames, then every attempt from above. Top net, a 20 / 15 shooter, half
+speed. Coordinates are in units from the middle of the ice (3 units are about a foot); frames are 1/60 s.
+
+**Deke, left-hander, swing to his left (forehand): 85%.** Come in about 30 left of the middle with the puck on
+his right, drifting toward the middle; about 72 from the goalie hold Up-Left; about 16 frames later tap C with Left
+held.
+
+![Deke, left-hander, swing to his left: four real attempts](img/scoring_map/deke_lefty_forehand_clips.gif)
+![Deke, left-hander, swing to his left: every attempt from above](img/scoring_map/deke_lefty_forehand_paths.gif)
+
+**Deke, right-hander, swing to his left (backhand): 83%.** The same inputs.
+
+![Deke, right-hander, swing to his left: four real attempts](img/scoring_map/deke_righty_left_clips.gif)
+![Deke, right-hander, swing to his left: every attempt from above](img/scoring_map/deke_righty_left_paths.gif)
+
+**Deke, right-hander, swing to his right (forehand): 66%.** About 30 right of the middle with the puck on his
+left; about 85 from the goalie hold Up-Right; about 13 frames later tap C with Right held.
+
+![Deke, right-hander, swing to his right: four real attempts](img/scoring_map/deke_righty_forehand_clips.gif)
+![Deke, right-hander, swing to his right: every attempt from above](img/scoring_map/deke_righty_forehand_paths.gif)
+
+**Deke, left-hander, swing to his right (backhand): 46%.** The same inputs as the right-hander's.
+
+![Deke, left-hander, swing to his right: four real attempts](img/scoring_map/deke_lefty_right_clips.gif)
+![Deke, left-hander, swing to his right: every attempt from above](img/scoring_map/deke_lefty_right_paths.gif)
+
+**Floater, right-hander, across from his right: 65%.** About 35 right of the middle, skating up and across to the
+left; about 110 from the goalie hold Up-Right; about 22 frames later hold C 9 frames with Right held.
+
+![Floater, right-hander: four real attempts](img/scoring_map/floater_righty_clips.gif)
+![Floater, right-hander: every attempt from above](img/scoring_map/floater_righty_paths.gif)
+
+**Floater, left-hander, across from his left: 60%.** About 50 left of the middle, skating up and across to the
+right; about 95 from the goalie hold Up-Left; about 18 frames later hold C 6 frames with Left held.
+
+![Floater, left-hander: four real attempts](img/scoring_map/floater_lefty_clips.gif)
+![Floater, left-hander: every attempt from above](img/scoring_map/floater_lefty_paths.gif)
+
+**The control: the left-hander's best deke with no swing: 0% (0 of 80).**
+
+![The same deke with no swing: four real attempts](img/scoring_map/deke_no_swing_clips.gif)
+![The same deke with no swing: every attempt from above](img/scoring_map/deke_no_swing_paths.gif)
 - **The recorded games** (`analysis/deke_games.py`, 158 close wrist shots by a person at a computer goalie in 47
   games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
   the sides apart yet.
