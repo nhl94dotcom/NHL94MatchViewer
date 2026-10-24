@@ -2601,8 +2601,10 @@ side before the goalie (or the person taking him and sliding him across) gets th
 the goalie across: hesitate or turn slightly back toward your own end, then a light shot at the near post (a goal, or a
 post, if he did slide); (5) on a diagonal toward the net the goalie sometimes starts for the far post, leaving a small
 gap at the near post; (6) now and then a slapshot. Genesis: 1, 2, 3, 4 and 6 are the common ones against people, and
-slapshots to the far post (strong, accurate shooters) work more often than on the SNES. The scoring map and the
-one-timer study cover (2) and (6) against a computer goalie at rest; (1), (3), (4) and (5) are moving shooters and, for
+slapshots to the far post (strong, accurate shooters) work more often than on the SNES; and (7) the EA Special (the
+flipped wrist shot from the side that the goalie bobbles, then the follow-up into the open side: "Shot context" below,
+tagged by the converter as `flip` / `afterFlip` and the goal kind "EA Special"). The scoring map and the
+one-timer study cover (2) and (6) against a computer goalie at rest; (1), (3), (4), (5) and (7) are moving shooters or rebounds and, for
 (3) and (4), a person moving the goalie: not studied in the game yet.
 
 ## RetroArch videos as a source (pilot, 2026-10-23)
