@@ -2639,6 +2639,17 @@ helper), game 1 (`analysis/video/`: video_lines.py, video_pilot.py; PyAV and num
   Every third frame gives the same: 200 s for the 29-minute video in gentle mode. `video_archive.py` runs a folder in
   chunks (work files, the font and the rink picture in `%USERPROFILE%\NHL94_video`). The user's archive: 66 Genesis
   videos (30.5 h), 48 SNES (256 wide, 15.1 h, not read yet), one unreadable.
+- **The archive read (2026-10-24, gentle, about 4 hours):** all 66 Genesis videos, 203 games found. The learned font
+  only knew BOS and LA's letters; every letter is drawn identically, so the score box's cells thresholded fall into 26
+  exact pictures, labelled by eye (`video_teams.py`, table in the work folder's letters.json): 20 teams named (BOS, LA,
+  CGY, DET, MTL, WPG, DAL, PIT, PHI, BUF, CHI, NYI, VAN, HFD, QUE, NYR and league-ROM teams HEL, LVW, NIU, MNS).
+- **What goes with winning** (`video_wins.py`, 182 whole games: 7-14 minutes of video, not tied): the team with more
+  attacking-zone time won 79% (zone share 55 / 45; correlation with the goal difference +0.71), more entries 70%
+  (+0.51); 38 winners had less zone time but finished better. 84% of the timed goals came within 6.5 s of the play
+  entering the zone (the rule counts any re-entry as a rush, so this is an upper bound on rush goals). Scoring first
+  won 73%, leading after 1 period 80%, after 2 periods 91%; down 1 after two, 13 of 54 came back; down 2 or more, 2 of
+  107. Home won 55%. Goals by period 414 / 482 / 523. Zone time partly follows the score (a trailing team presses),
+  so it is not all cause.
 
 ## Not yet known
 
