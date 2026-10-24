@@ -2614,6 +2614,17 @@ helper), game 1 (`analysis/video/`: video_lines.py, video_pilot.py; PyAV and num
 - **Not tested:** the camera from the video alone (an archive game has no recording): vertical from the lines,
   horizontal not yet. Conclusion so far: a video gives the players on screen, roughly, and little of the puck; the
   person-play measures need everyone and the puck, so Helper recordings stay the source; videos are for watching.
+- **What a video can give for many games (the user: what goes with winning):** the HUD read by a learned font
+  (`video_hud.py`; digits and letters kept apart, the game draws 0 and O alike): period, clock, score and both teams
+  97% of frames right on all three games; the camera up and down the ice from the video alone (`video_camera.py`:
+  the lines' rows, and a lone blue line told apart by the frame's row profile of red and blue against the rink's) 94-98%
+  within 10 pixels of the recorded camera; the play's zone from the camera agrees with the puck's 83-87%.
+  `video_game.py` puts them together: the games in a video (teams and final score right for all three), each team's
+  attacking-zone time (video 132 / 212, 233 / 100, 165 / 190 s against the puck's 125 / 210, 221 / 107, 136 / 198), zone
+  entries (with hysteresis; 22 / 26, 27 / 19, 22 / 23 against 29 / 33, 26 / 19, 23 / 25) and rush goals (all equal).
+  Every third frame gives the same: 200 s for the 29-minute video in gentle mode. `video_archive.py` runs a folder in
+  chunks (work files, the font and the rink picture in `%USERPROFILE%\NHL94_video`). The user's archive: 66 Genesis
+  videos (30.5 h), 48 SNES (256 wide, 15.1 h, not read yet), one unreadable.
 
 ## Not yet known
 
