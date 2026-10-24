@@ -2593,6 +2593,18 @@ reflection: GENESIS_MECHANICS 13.5) and it crept over the line. The converter ha
 (`scorer_touch` took any touch in a shooting animation for one); it now needs a swing begun without the puck, so the
 follow-through of his own shot is a deflection. All recordings re-converted.
 
+## How league players score against people (the user, 2026-10-23)
+
+The usual ways, in the user's words condensed. SNES: (1) straight at the goalie, fake one way and shoot the other at
+close range; (2) the one-timer; (3) across the goal just in front of the crease, a soft wrist shot into the open far
+side before the goalie (or the person taking him and sliding him across) gets there; (4) expecting the person to slide
+the goalie across: hesitate or turn slightly back toward your own end, then a light shot at the near post (a goal, or a
+post, if he did slide); (5) on a diagonal toward the net the goalie sometimes starts for the far post, leaving a small
+gap at the near post; (6) now and then a slapshot. Genesis: 1, 2, 3, 4 and 6 are the common ones against people, and
+slapshots to the far post (strong, accurate shooters) work more often than on the SNES. The scoring map and the
+one-timer study cover (2) and (6) against a computer goalie at rest; (1), (3), (4) and (5) are moving shooters and, for
+(3) and (4), a person moving the goalie: not studied in the game yet.
+
 ## RetroArch videos as a source (pilot, 2026-10-23)
 
 The user keeps RetroArch .mkv captures of league games (51 GB, mostly Genesis; H.264 from x264, lossy; pauses and
