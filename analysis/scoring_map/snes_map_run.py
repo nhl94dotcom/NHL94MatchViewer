@@ -8,6 +8,7 @@ at the release the puck at least 24 from the goalie's centre and in front of him
 Defaults: all 120 moments (every clock x settle pair) x 4 seeds; run snes1 used 16 x 24, too few moments (the rate
 swings about 0.27 from moment to moment: PROJECT_NOTES). Gentle mode (lowload.py)."""
 import json
+import os
 import random
 import sys
 import zlib
@@ -20,6 +21,9 @@ from lowload import WORKERS, breathe, gentle
 XS = range(-110, 111, 10)
 YS = range(90, 251, 10)
 SHOTS = {"wrist": 3, "slap": 40}
+SUBSET = os.environ.get("NHL94_SMAP_SUBSET")   # slapmid: slapshots only (set here: the workers load this module afresh)
+if SUBSET == "slapmid":
+    SHOTS = {"slap": 40}
 MIN_PUCK = 24
 
 _h = {}
@@ -83,14 +87,18 @@ def main():
     shp, sha = (int(sys.argv[4]), int(sys.argv[5])) if len(sys.argv) > 5 else (13, 13)
     workers = int(sys.argv[6]) if len(sys.argv) > 6 else WORKERS
     jobs = [(net, x, y, phases, seeds) for net in ("top", "bottom") for y in YS for x in XS]
-    res = {"meta": dict(phases=phases, seeds=seeds, shp=shp, sha=sha)}
+    if SUBSET == "slapmid":                                 # as map_run.py: slapshots, middle half, 30-55 feet out
+        jobs =[j for j in jobs if abs(j[1]) <= 60 and j[1] % 20 == 0 and 100 <= j[2] <= 180 and j[2] % 20 == 0]
+    path = RUNS / run / "snes_map.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    res = json.load(open(path)) if path.exists() else {"meta": dict(phases=phases, seeds=seeds, shp=shp, sha=sha)}
+    jobs = [j for j in jobs if f"{j[0]},{j[1]},{j[2]}" not in res]       # resumable: saved after every spot
     with Pool(workers, initializer=_init, initargs=(shp, sha)) as pool:
         for i, (k, v) in enumerate(pool.imap_unordered(job, jobs)):
             res[k] = v
-            if i % 50 == 0:
+            json.dump(res, open(path, "w"))
+            if i % 10 == 0:
                 print(i, "of", len(jobs), flush=True)
-    (RUNS / run).mkdir(parents=True, exist_ok=True)
-    json.dump(res, open(RUNS / run / "snes_map.json", "w"))
     print("done")
 
 

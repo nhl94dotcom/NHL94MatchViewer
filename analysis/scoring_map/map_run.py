@@ -28,6 +28,10 @@ GOALIES = json.load(open(sys.argv[7]))["cpu"] if len(sys.argv) > 7 else None
 XS = range(-110, 111, 10)
 YS = range(100, 251, 10)
 jobs = [(net, hold, x, y) for net in ("top", "bottom") for hold in (3, 20) for y in YS for x in XS]
+# NHL94_SMAP_SUBSET=slapmid: slapshots only, from the middle half of the ice 30-55 feet out (x -60..60 by 20, y 100..180
+# by 20), for comparing shooters there (the user: far-post slapshots by strong, accurate shooters)
+if __import__("os").environ.get("NHL94_SMAP_SUBSET") == "slapmid":
+    jobs = [j for j in jobs if j[1] == 20 and abs(j[2]) <= 60 and j[2] % 20 == 0 and 100 <= j[3] <= 180 and j[3] % 20 == 0]
 done = set()
 try:
     for line in open(out):
