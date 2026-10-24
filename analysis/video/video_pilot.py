@@ -67,16 +67,21 @@ def align(cap, fc, B, start_k=0, window=600, span=60 * 180):
         r1 = np.round(cy[s] + CY - BLUE_Y).astype(int)
         r2 = np.round(cy[s] + CY + BLUE_Y).astype(int)
         vis = ((r1 >= 0) & (r1 < 190)) | ((r2 >= 0) & (r2 < 190))
-        best = search(B, fc, s, r1, r2, vis, k0 - 3, k0 + (span if out else len(B)))   # the first: anywhere
-        if best[0] < 0.45:                       # lost (an intermission longer than `span`): look further on
-            wide = search(B, fc, s, r1, r2, vis, k0 - 3, len(B))
-            best = max(best, wide)
+        if not out:                                # the first stretch: anywhere in the video
+            best = search(B, fc, s, r1, r2, vis, -int(fc.max()), len(B))
+        else:                                      # near the last offset (it drifts a frame or two) ...
+            best = search(B, fc, s, r1, r2, vis, k0 - 20, k0 + 20)
+            if best[0] < 0.5:                      # ... else a pause or an intermission: the first good match after it
+                wide = search(B, fc, s, r1, r2, vis, k0 + 20, k0 + 4 * span, first=0.6)    # (a later moment of the
+                best = max(best, wide)                                                       # video can match too)
         out.append((a, int(s[-1]), best[1], round(float(best[0]), 3)))
         k0 = best[1]
     return out
 
 
-def search(B, fc, s, r1, r2, vis, k_from, k_to):
+def search(B, fc, s, r1, r2, vis, k_from, k_to, first=None):
+    """The offset in k_from .. k_to that puts the blue lines where the video shows them: the best, or with `first` the
+    best of the first run of offsets scoring that much or more."""
     best = (-1, k_from)
     for k in range(k_from, k_to):
         j = fc[s] + k
@@ -86,6 +91,8 @@ def search(B, fc, s, r1, r2, vis, k_from, k_to):
             continue
         h = (B[j, np.clip(r1, 0, 191)] & (r1 >= 0) & (r1 < 190)) | (B[j, np.clip(r2, 0, 191)] & (r2 >= 0) & (r2 < 190))
         score = h[vis].mean() if vis.any() else 0
+        if first is not None and best[0] >= first and score < first:
+            break                                # past the first good run
         if score > best[0]:
             best = (score, k)
     return best
