@@ -21,7 +21,10 @@ release level with the faceoff dot across and a little deeper, about 40-44 out a
 where the puck is released, not where he starts (a move "r<kind><speed>" starts him LEAD frames of skating back, the
 wrist shot leaving the stick 4 frames after C); a negative x is his left side, taken by a right-hander (a
 left-hander from his right, a right-hander from his left: the user, 2026-10-25); skating at the goal at 1.5 or 2.5 a
-frame or in at 45 degrees; each job also gives the mean release spot ("release": across, out).
+frame or in at 45 degrees; each job also gives the mean release spot ("release": across, out); "depth" (the user,
+2026-10-25: the best depth for each net, after "xspot" found the bottom net's 14 ft three times the top net's): the
+release 40-88 out (13-29 ft), 22-28 ft to either side, at the goal or at 45 degrees at 2.5, Shot Power 2 / 4 (run with
+NHL94_EA_MOMENTS=48: one set-up's rate over 24 moments wandered).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -57,6 +60,9 @@ def plan_jobs(plan="ea"):
     if plan == "xspot":
         return list(itertools.product(("top", "bottom"), (-75, -70, -65, 65, 70, 75), (38, 42, 46), (2, 4, 6), (4,),
                                       ("rgoal1.5", "rgoal2.5", "rdiag2.5")))
+    if plan == "depth":
+        return list(itertools.product(("top", "bottom"), (-85, -75, -65, 65, 75, 85), (40, 52, 64, 76, 88), (2, 4), (4,),
+                                      ("rgoal2.5", "rdiag2.5")))
     if plan == "dots":
         return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), STEPS, (2, 4, 6),
                                       ("goal1.5", "goal2.5")))
