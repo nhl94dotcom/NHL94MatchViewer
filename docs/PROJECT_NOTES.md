@@ -1811,6 +1811,24 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   jumps from each stretch's end to the next one's start); "Save as video" records them as one video in real time
   with the clip tool's frame (scoreboard strip, banner), like Clip's video, not run to the end in headless Edge.
 
+
+**Harness facts and corrections (2026-10-25).**
+- **The test goalie is Kelly Hrudey** (Los Angeles; retail Agility 3, Speed 3, Defensive Awareness 4, Puck Control 4)
+  with the game's single hot / cold value at -2: working 13 / 13 / 18 / 18. A mid-pack retail starter, not a backup.
+- **Record +$6B is `aidef`, not Defensive Awareness:** setplayer stores 15 - (DfA + bonus) / 4, 7-15 (collide94.asm);
+  the computer goalie's reaction timer is aidef / 4 frames (checks94.asm). The SNES stores a goalie's as
+  (30 - DfA) / 2 on its 0-15 scale (setplayer.asm, `.t1x`). `NHL94_GOALIE` wrote its third value there raw until
+  2026-10-25, so the first goalie runs (10 / 20 / 30) also gave the goalie 2 / 5 / 7-frame reactions; now it converts.
+- **Raising only the test goalie's Agility to 20** took the far-post slapshot from the middle (35 ft, top net, the
+  shooter 4 / 4) from 58% to 3%, the best aim over the 18 slapcore spots from 19% to 9% (`rt_g1_agl20_slap`).
+- **A puck carried into the net counts as a goal**: deke_run counted any puck gone before the shot as lost; a fast
+  skater (working Agility / Speed 30) carried it in at 78 of 120 such moments. Now counted (`carried`).
+- **The Genesis test skater is left-handed** by the bit the game reads (attribute +$04 bit 3 clear; +$76 bit 0 set).
+  ea_run's spots at +x are his right (his off-wing); the docs had called them his forehand side (question to the user).
+- **CDL goalie edit** (`CDL_Season_12.bin` against `nhl94.bin`): 43 of 48 goalies have +1 Agility, Defensive
+  Awareness and Puck Control (Joseph and Potvin already at 6 in DfA), Fuhr +1 Agility only, Roy and Belfour unchanged;
+  stick and glove ratings unchanged. No goalie on either ROM has Speed above 4 (working 20).
+
 ## Season stats (stats across games)
 
 `season.html` totals any set of games (2026-10-15). `tools/season.py` makes a small summary of each converted game,
