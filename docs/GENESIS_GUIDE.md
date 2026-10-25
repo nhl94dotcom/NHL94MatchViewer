@@ -309,9 +309,9 @@ The computer never holds a direction, so its wins go a random way.
 - **Dekes: the swing is what scores.** Come in about 15 feet to one side, and when you are about 20 feet from the
   goalie press the diagonal the other way (Up-Left or Up-Right going up the screen): your facing swings two steps and
   the puck crosses in front of you in about a quarter of a second. Then tap C with that side still held. Against the
-  computer goalie the best set-ups score 82-96%, and the same shot without the swing 0-1%: the swing usually makes him drop
-  into a pad stack, and his pad stack always slides toward the middle of the ice, away from where you took the puck.
-  On the backhand, wait until the puck is across (about 2-3 feet) before C. Swings to your right need to start a
+  computer goalie the best set-ups score 82-96%, and the same shot without the swing 0-1%: the swing usually makes him
+  drop into a pad stack, and his pad stack always slides toward the middle of the ice, away from where you took the
+  puck. On the backhand, wait until the puck is across (about 2-3 feet) before C. Swings to your right need to start a
   little earlier (about 28 feet from the goalie) than swings to your left.
 - **Floaters:** skate up and across on the diagonal from your forehand side, about 12-17 feet out to the side, swing
   the puck back to the forehand about 30-35 feet from the goalie and hold C for 6-9 frames: it floats toward the far

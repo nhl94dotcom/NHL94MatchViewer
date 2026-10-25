@@ -31,7 +31,9 @@ record or check and what it will settle. Newest at the bottom of each section.
    and take a dozen full slapshots holding Down; then a dozen holding Left or Right. Do it at both ends. *Settles:*
    the scoring map (GENESIS_MECHANICS 4.10), which plays these shots in the game itself and says about 20% go in
    holding Down (more at the top net) and only a few percent with the other aims. Only real play shows whether a
-   standing slapshot like that is something a person can set up.
+   standing slapshot like that is something a person can set up. The map's goalie is Los Angeles's Kelly Hrudey (a
+   mid-pack retail starter); better goalies stop far more slapshots (SCORING_MAP, "The computer goalie's ratings"), so
+   note which goalie you shot at.
 6. **Slapshots from just left of centre at a set computer goalie (SNES).** In a practice game, stand still with the
    puck a stride to your own left of the middle (2-5 feet), 25-40 feet out, let the goalie settle, and take a dozen
    full slapshots aimed at that side (attacking up the screen: Left; attacking down: Right). Then a dozen from a stride
@@ -59,6 +61,15 @@ record or check and what it will settle. Newest at the bottom of each section.
 1. ~~**Does the opponent's iPhone open the game files from the S3 link?**~~ Yes (2026-10-18).
 2. ~~**In online league games, is Home always the netplay host?**~~ No (2026-10-18): Genesis players pick Player 1 or 2
    in RetroArch whoever hosts, and SNES players pick their side in the game, so hosting isn't part of the home edge.
+3. **Which side is the EA Special taken from?** (2026-10-25) The EA studies put a left-handed shooter on his right
+   (his off-wing, the stick toward the middle; `ea_run.py` calls that his forehand side). The rest of the scoring doc
+   uses "forehand side" for a left-hander's left. If the play is usually from the other side (a left-hander on his
+   left), the study should be repeated from there.
+4. **The CDL goalie edit** (2026-10-25). In `CDL_Season_12.bin` every goalie but Roy, Belfour and Fuhr has +1
+   Agility, +1 Defensive Awareness and +1 Puck Control over the retail ROM (capped at 6); Fuhr has +1 Agility only, Roy
+   and Belfour nothing; the four stick and glove ratings are unchanged for all. Is that the edit you meant by "+1 to all stick / glove attributes", and is it the same every season?
+   (The stick and glove ratings do nothing in the game, except that Glove Left of 3 or more (2 when hot) lets him use the
+   reaching glove save; Agility, Speed, Defensive Awareness and Puck Control are the ones that play.)
 
 ## Checks you could run on your box-score database
 
@@ -76,9 +87,9 @@ record or check and what it will settle. Newest at the bottom of each section.
    Did each defender really put it in his own net? (Steve Smith's in CHI-CGY was not one: it was an unrecorded SNES
    penalty-shot goal, fixed 2026-10-18.)
 3. **Unconfirmed posts:** capture5 P3 4:47 and capture3 P2 2:32.
-4. **Long far-post slapshot goals (Genesis).** The game, the time and the shooter of a few. The xG model doesn't show
-   the far post beating the near post except with the hardest shots (GENESIS_MECHANICS 5.8). The examples would show
-   what's different.
+4. ~~**Long far-post slapshot goals (Genesis).**~~ Mostly answered (2026-10-24): Neely's in the 2026-10-23 BOS-LA games
+   were skating shots, and played in the game the far-post slapshot is a skating shot across toward the stick side,
+   50-62% for a strong shooter (SCORING_MAP, "Moving shooters"). More examples are still welcome.
 5. **A Genesis goalie pushed into his net with the puck.** Note the game and time when it happens; none recorded yet
    (GENESIS_MECHANICS 5.9 explains it from the code).
 6. **Cross-crease goals you remember**, either system, to check against the wind-up rule (5.6 / 5.7).
