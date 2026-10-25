@@ -602,6 +602,60 @@ Power 3 most are saved or go wide (in the 24 here: 16 saved, 7 wide, 1 goal). At
 ![Shot Power 6 / Accuracy 6: 72%: four real attempts](img/scoring_map/genesis_slap_6_6_clips.gif)
 ![Shot Power 6 / Accuracy 6: 72%: every attempt from above](img/scoring_map/genesis_slap_6_6_fan.gif)
 
+### Every Shot Power and Accuracy (SNES, 2026-10-25)
+
+The same question on the SNES: the slapshot (held 40 frames, as the SNES map) from the same 18 spots (x -40 / 0 / 40,
+108-148 out, both nets; `snes_map_run.py` with `NHL94_SMAP_SUBSET=slapcore`), 60 moments x 4 seeds = 240 shots per aim,
+a set computer goalie, for each roster step 2-6 (SNES working value 5 / 7 / 10 / 12 / 15, the most being 15; the
+recorded shots' median shooter is 13 / 13, between steps 5 and 6).
+
+The best aim's chance averaged over the 18 spots:
+
+| Shot Power \ Accuracy | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| 2 | 0% | 0% | 0% | 0% | 0% |
+| 3 | 0% | 0% | 0% | 0% | 0% |
+| 4 | 1% | 1% | 1% | 1% | 1% |
+| 5 | 2% | 2% | 2% | 2% | 2% |
+| 6 | 4% | 4% | 5% | 5% | 5% |
+
+The four best spots (goals of 240 at each spot's best aim). The x here is the screen's, the same on both nets, so 40
+left of centre is the left-handed shooter's forehand side on the top net and his backhand side on the bottom. All four
+best aims are at the near post (the left post: Up-Left on the top net, Down-Left on the bottom, Left from the middle):
+
+| Spot | Accuracy | Power 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| Bottom net, 40 left, 148 out (50 ft) | 2 | 1 | 1 | 10 | 24 | 25 |
+| | 4 | 0 | 1 | 15 | 36 | 38 |
+| | 6 | 0 | 2 | 15 | 39 | **44 (18%)** |
+| Top net, 40 left, 148 out | 4 | 0 | 0 | 8 | 12 | 34 |
+| | 6 | 0 | 0 | 10 | 17 | **42 (18%)** |
+| Bottom net, 40 left, 128 out | 6 | 0 | 1 | 1 | 7 | 39 |
+| Top net, middle, 108 out | 6 | 0 | 1 | 0 | 2 | 35 |
+
+- **The SNES has a power threshold too, but higher up and steeper.** Below step 4 nothing scores (0-2 of 240 at the
+  best spots). Step 4 opens one spot: the bottom net from 40 left, 6%. Step 5 widens that spot to 15-16%.
+  Only at step 6 (working 15, the most there is) do the other spots open, at 15-18% each. On the Genesis the jump is
+  between 3 and 4 and everything above it scores.
+- **Accuracy matters less than on the Genesis.** From 2 to 6 it adds about 1 point over the spots at power 6. At the
+  best spot it lifts 25 to 44 of 240 at power 6, and nothing at power 2-3.
+- Even at 6 / 6 the SNES slapshot from here scores 5% over the spots against the Genesis's 35%: SNES slapshot goals
+  are rare and near post (as the user says), and they come from the near-post side of the ice, far out.
+
+**Animated (`animate.py`, the RATED spots):** the best spot, the bottom net from 40 left of centre 148 out at the near
+post, at 4 / 4 (6% in the ratings run) and 6 / 6 (18%). The shooter stays on the ice here, which shifts the SNES's
+frame timing a little (see the top of `animate.py`): of the 120 shots filmed, 2 went in at 4 / 4 and 23 at 6 / 6.
+
+**Shot Power 4 / Accuracy 4: 6%.**
+
+![SNES Shot Power 4 / Accuracy 4: 6%: real attempts](img/scoring_map/snes_slap_4_4_clips.gif)
+![SNES Shot Power 4 / Accuracy 4: 6%: every attempt from above](img/scoring_map/snes_slap_4_4_fan.gif)
+
+**Shot Power 6 / Accuracy 6: 18%.**
+
+![SNES Shot Power 6 / Accuracy 6: 18%: real attempts](img/scoring_map/snes_slap_6_6_clips.gif)
+![SNES Shot Power 6 / Accuracy 6: 18%: every attempt from above](img/scoring_map/snes_slap_6_6_fan.gif)
+
 
 ## Moving shooters (Genesis, 2026-10-24)
 

@@ -456,6 +456,11 @@ against 0.299 for one rate for all. Pass across (receiver inside 18 feet): game 
 By aim the model is within 2 points everywhere (a little low on the diagonals); by distance it is close in front
 (54% / 51% within about 13 feet) and a little low far out (2.9% / 1.9% beyond 30 feet). Unchanged.
 
+**Slapshots by Shot Power and Accuracy** (2026-10-25, SCORING_MAP "Every Shot Power and Accuracy (SNES)"): 18 spots
+108-148 out, roster steps 2-6 (working 5-15). Below step 4 nothing scores; step 4 opens only the bottom net from 40 left of
+centre at the near post (6%); step 6, the most, opens the other spots (15-18% at the best aim, all near post). Accuracy
+adds little (about 1 point over the spots). The Genesis threshold is lower (between 3 and 4) and much bigger.
+
 
 ---
 

@@ -48,7 +48,11 @@ RATED = [
     (f"genesis_slap_{p}_{a}", "genesis", "top", 0, 160, "slap", 6,
      f"Genesis, top net: slapshot at the far post from the middle, 36 ft, Shot Power {p} / Accuracy {a}", r, (p, a),
      "the ratings run: 400 launches at 120 moments")
-    for p, a, r in ((3, 4, 0.10), (4, 4, 0.58), (6, 6, 0.72))]
+    for p, a, r in ((3, 4, 0.10), (4, 4, 0.58), (6, 6, 0.72))] + [
+    (f"snes_slap_{p}_{a}", "snes", "bottom", -40, 120, "slap", 5,
+     f"SNES, bottom net: slapshot at the near post, 40 left of centre, 50 ft, Shot Power {p} / Accuracy {a}", r, (p, a),
+     "the ratings run: 240 shots at 60 moments, the shooter parked")
+    for p, a, r in ((4, 4, 15 / 240), (6, 6, 44 / 240))]
 MAP_SHOTS = {"genesis": "the map: 800 launches at 120 moments",   # what each rate rests on
              "snes": "480 shots over 120 moments, the shooter left on the ice"}
 COL = {"GOAL": "#ea580c", "SAVED": "#475569", "POST": "#7c3aed", "MISSED": "#94a3b8"}
@@ -117,9 +121,13 @@ def play(spec, n):
     shots, p = [], 0
     while len(shots) < n and p < 4 * n:
         o.setup(net, x, y, p, rnd)                    # a different moment each time (clock and settle cycles)
-        if len(spec) > 9:
+        if len(spec) > 9 and system == "genesis":
             from mapper import set_ratings
             set_ratings(h, 5 * spec[9][0], 5 * spec[9][1])
+        elif len(spec) > 9:                           # SNES working ratings 0-15: roster step x 2.5, as the ratings runs
+            import snes_harness as SH
+            e.setw(SH.SHOTSPD + SH.o(SH.SHOOTER), int(2.5 * spec[9][0]))
+            e.setw(SH.SHOTACC + SH.o(SH.SHOOTER), int(2.5 * spec[9][1]))
         p += 1
         settled = e.serialize()
         if o.shoot(net, aim, hold) is None:           # no shot, or not a real one (the SNES validity test)
