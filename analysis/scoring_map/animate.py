@@ -26,7 +26,8 @@ from lowload import WORKERS, breathe, gentle
 FONT = "C:/Windows/Fonts/segoeui.ttf"
 FONTB = "C:/Windows/Fonts/segoeuib.ttf"
 # name, system, net, shooter x, shooter y (from centre), shot, aim (d-pad), what it shows, its rate (see above);
-# optionally the shooter's (Shot Power, Shot Accuracy) roster steps and what the rate rests on (the ratings runs)
+# optionally the shooter's (Shot Power, Shot Accuracy) roster steps and what the rate rests on (the ratings runs),
+# and the computer goalie's working ratings (Agility, Speed, Defensive Awareness, Puck Control: harness NHL94_GOALIE)
 SPOTS = [
     ("genesis_down_slapshot_top", "genesis", "top", 0, 150, "slap", 4,
      "Genesis, top net: slapshot holding Down, straight in, 118 units out", 0.430),
@@ -52,7 +53,12 @@ RATED = [
     (f"snes_slap_{p}_{a}", "snes", "bottom", -40, 120, "slap", 5,
      f"SNES, bottom net: slapshot at the near post, 40 left of centre, 50 ft, Shot Power {p} / Accuracy {a}", r, (p, a),
      "the ratings run: 240 shots at 60 moments, the shooter parked")
-    for p, a, r in ((4, 4, 15 / 240), (6, 6, 44 / 240))]
+    for p, a, r in ((4, 4, 15 / 240), (6, 6, 44 / 240))] + [
+    (f"genesis_slap_goalie_{g}", "genesis", "top", 0, 160, "slap", 6,
+     f"Genesis, top net: the same far-post slapshot (Shot Power 4 / Accuracy 4) against a goalie rated {g}", r, (4, 4),
+     f"the goalie run: 400 launches at 120 moments; goalie Agility, Speed, Def. Awareness, Puck Control all {g}",
+     (g, g, g, g))
+    for g, r in ((10, 0.57), (20, 0.03))]
 MAP_SHOTS = {"genesis": "the map: 800 launches at 120 moments",   # what each rate rests on
              "snes": "480 shots over 120 moments, the shooter left on the ice"}
 COL = {"GOAL": "#ea580c", "SAVED": "#475569", "POST": "#7c3aed", "MISSED": "#94a3b8"}
@@ -100,6 +106,9 @@ def play(spec, n):
     from snes_harness import DIRPAD
     gentle()
     name, system, net, x, y, kind, aim = spec[:7]
+    if len(spec) > 11:                                # the goalie's ratings: the harness reads them as it starts
+        import os
+        os.environ["NHL94_GOALIE"] = ",".join(map(str, spec[11]))
     G._init(system)
     o = G.S["o"]
     h = o.h[net]

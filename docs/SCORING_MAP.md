@@ -1188,6 +1188,51 @@ moments: **29% at Shot Power 2 (35 of 120), 4% at Power 6 (5 of 120)**.
 ![EA Special from beside the faceoff dot, Shot Power 6: every attempt from above](img/scoring_map/ea_dot_power_6_paths.gif)
 
 
+## The computer goalie's ratings (Genesis, 2026-10-25)
+
+Every run above used one computer goalie, the test state's (working Agility 13, Speed 13, Defensive Awareness 10,
+Puck Control 18; his save ratings are never used). Here the same shots against goalies with all four of those at 10,
+20 or 30 (`harness.py`: `NHL94_GOALIE`), the shooter at Shot Power / Accuracy 4 / 4:
+
+| Goalie | Standing slapshot (best aim, 18 spots) | Far post from the middle, 35 ft | Skating far-post slapshot (best aim) | One-timers | Dekes and floaters |
+| --- | --- | --- | --- | --- | --- |
+| Test goalie (13 / 13 / 10 / 18) | 19% | 58% | 37% | 58% | 72% |
+| 10 | 21% | 57% | 41% | 60% | 72% |
+| 20 | **5%** | **3%** | **15%** | 62% | 67% |
+| 30 | **7%** | **2%** | **7%** | 59% | 63% |
+
+The runs: the standing slapshot as "Every Shot Power and Accuracy" (`map_run.py`, slapcore, 400 launches at 120
+moments a spot); the skating one as plan "slapxr" (`mv_run.py`); the one-timers as plan "ratings" (`ot_run.py`, about
+26,000 struck each); the dekes and floaters as `deke_run.py` plan "best" (the best set-up of each move and hand, both
+nets, 24 moments x 4 seeds; the test goalie re-run over the same moments for the comparison).
+
+- **Slapshots depend on the goalie's ratings more than on anything else measured here.** From a goalie rated 10 (or
+  the test goalie) to one rated 20, the standing slapshot's best chance falls from about 20% to 5%. The far post from
+  the middle, the best single spot, falls from 57% to 3%. The skating far-post slapshot falls from 41% to 15%, then to
+  7% at 30. The goalie gets across to the far post sooner, and the shot is stopped farther out (animated below).
+- **One-timers don't care** (58-62% at every level). This fits the Genesis one-timer finding: it beats a goalie still
+  moving across, before his ratings come into it.
+- **Dekes lose a little and floaters nothing.** Over the best set-ups 72% / 72% / 67% / 63%. The left-hander's
+  forehand deke falls from 90% to 69% and his backhand deke from 97% to 67%; the right-hander's dekes stay at 77-91%,
+  and the floaters at 42-56% whatever the goalie.
+- **So the test goalie was a weak one,** and the slapshot rates in this document are for a weak goalie. Against an
+  average-to-strong computer goalie the slapshot is a poor shot, and one-timers and dekes are worth even more by
+  comparison.
+- **Which rating does it** is not yet known: all four moved together. A run with one rating at a time would tell.
+
+**Animated (`animate.py`, the RATED spots):** the far-post slapshot from the middle 35 ft out (top net, the shooter 4 /
+4), against a goalie rated 10 (the run 57%; 66 of the 120 filmed went in) and 20 (3%; none of the 120).
+
+**Goalie rated 10: 57%.**
+
+![Far-post slapshot against a goalie rated 10: real attempts](img/scoring_map/genesis_slap_goalie_10_clips.gif)
+![Far-post slapshot against a goalie rated 10: every attempt from above](img/scoring_map/genesis_slap_goalie_10_fan.gif)
+
+**Goalie rated 20: 3%.**
+
+![Far-post slapshot against a goalie rated 20: real attempts](img/scoring_map/genesis_slap_goalie_20_clips.gif)
+![Far-post slapshot against a goalie rated 20: every attempt from above](img/scoring_map/genesis_slap_goalie_20_fan.gif)
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing
