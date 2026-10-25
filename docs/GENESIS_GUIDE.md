@@ -303,8 +303,9 @@ The computer never holds a direction, so its wins go a random way.
     far more slapshots (12.3).
 - **The far-post slapshot is a skating shot.** Skate across the slot toward your stick side (a left-hander toward the
   screen's left going up), wind up, and release just before the middle of the ice, 28-35 feet out, aimed at the far
-  post ahead of you: a 27 / 27 shooter scored 50-62% this way in the game itself, against about 21% for the best
-  standing slapshot. Past the middle it falls away fast; aimed at the near post (behind you) almost never. Shot Power 4
+  post ahead of you: a 27 / 27 shooter scored 50-62% this way in the game itself. Standing still in the middle at
+  the same distance does as well at the top net (the far post, 65-69%) but much worse at the bottom (21-45%), so
+  skate across above all when attacking down the screen. Past the middle it falls away fast; aimed at the near post (behind you) almost never. Shot Power 4
   is the threshold here too (15% at 3 / 4, 44% at 4 / 4).
 - **Dekes: the swing is what scores.** Come in about 15 feet to one side, and when you are about 20 feet from the
   goalie press the diagonal the other way (Up-Left or Up-Right going up the screen): your facing swings two steps and

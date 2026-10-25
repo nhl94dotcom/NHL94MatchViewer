@@ -626,7 +626,8 @@ the far post 21%. (Corrected 2026-10-25: this said the far post was best, agains
 **Moving shooters** (2026-10-24, SCORING_MAP "Moving shooters"; `mv_run.py`): a wrist shot skating across the crease
 scores 51-53% about 11 feet out aimed the way he skates, 0-1% aimed back. **The far-post slapshot is a skating shot:**
 a strong shooter (27 / 27) crossing toward his stick side, released just before the middle 28-35 feet out, 50-62%,
-falling fast once past the middle; standing, the best slapshot is about 21%. By rating (plan "slapxr") the same
+falling fast once past the middle; standing in the middle at those distances the best aim scores 65-69% at the top
+net but 21-45% at the bottom, so skating across pays most at the bottom net. By rating (plan "slapxr") the same
 threshold between Shot Power 3 and 4 (15% to 44% at Accuracy 4), and from farther out each step of power counts.
 
 **Dekes and floaters** (2026-10-24 / 25, SCORING_MAP "Dekes and floaters"; `deke_run.py`): close in, a two-step swing

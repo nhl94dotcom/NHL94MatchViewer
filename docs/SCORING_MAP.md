@@ -753,7 +753,9 @@ and both sides.
   the d-pad held: the same release points).
   - **Crossing toward his stick side, the far post (ahead of him) is the shot: 50-62% released just before or at the
     middle from 85-105 out** (from 125 out, at the bottom net only: 64% with the wind-up begun 60 before the
-    middle, 36% from 40 before; see the note below), against 21% for the best standing slapshot from the middle. It
+    middle, 36% from 40 before; see the note below). Standing in the middle at those distances (84-104 out) the best
+    aim scores 65-69% at the top net (the far post) but 21-45% at the bottom (Down), so the skating shot's edge is
+    at the bottom net (corrected 2026-10-25: this compared it with 21%, an average over farther spots). It
     falls fast once he is past the middle (10-15% released 30 past, 0-4% beyond). The near post (behind him): 0-2%.
   - Crossing toward his backhand side the near post is ahead, and does worse: 34-36% released at the middle from 85
     out, 6-16% from 105, 0-34% from 125 (uneven between the nets).
