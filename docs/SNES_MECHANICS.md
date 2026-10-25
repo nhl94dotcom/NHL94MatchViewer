@@ -470,6 +470,38 @@ is lower (between 3 and 4) and much bigger.
 step 2 to 6), Power little (3-5); the stick meets the puck 92% whatever the ratings; ratings matter most 18 feet out
 and to the side, least on the doorstep (82% at 2 / 2, 89% at 6 / 6). As on the Genesis.
 
+### 4.10 Dekes in recorded games
+
+The user's examples (2026-10-25), traced sample by sample from the match files (positions, facing, the controller's
+buttons): Fleury's goal to make it 2-1 and Suter's to make it 6-1 (`2026-10-20_2119_TOR-CGY`), Neely's 1-0
+(`2026-10-18_1934_BOS-PIT`), Robitaille's 2-0 (`2026-10-18_2006_CHI-LA`), Roberts's 1-1 (`2026-10-17_1719_CHI-CGY`).
+All five are the same move:
+
+| | Fleury | Suter | Neely | Robitaille | Roberts |
+| --- | --- | --- | --- | --- | --- |
+| Coming in | down the middle | from 11 ft to his left, across to the middle | from 20 ft to his right, cutting to the middle | from 13 ft to his left, to the middle | from 13 ft to his left, diagonally to the middle |
+| The swing: d-pad turned (from the goalie) | to his right, 16 ft | to his left, straight across, 22 ft | back to his right, diagonally, 28 ft | to his left, straight across, 21 ft | to his right, straight across, 19 ft |
+| The puck carried across | 12 units | 30 | 14 | 17 | 30 |
+| A tapped (from the goalie) | 9 ft | 11 ft | 13 ft | 9 ft | 14 ft |
+| The puck leaves the stick | 5-7 ft | 5-7 ft | 8 ft | 6 ft | 7 ft |
+| The puck to the side of the goalie at the release | 6 ft | 5 ft | 7 ft | 6 ft | 4 ft |
+| Height | low | low | high | low | low |
+
+- **The move:** come in toward the middle; 16-28 feet from the goalie turn the d-pad to one side, mostly straight
+  across (the skater turns side-on and the puck slides 4-10 feet across in front of him); keep that direction held;
+  tap A 9-14 feet out; the puck leaves the stick 5-8 feet from the goalie and 4-7 feet to his side, and goes in low (one of the five high).
+  Either side, swung back toward the side he came from (Neely) or on across (Suter, Robitaille).
+- **Like the Genesis deke** (GENESIS_MECHANICS 5.8: a swing, then the shot), but closer in: the Genesis best set-ups
+  swing 20-24 feet out and the shot follows from about 10-15 feet; on the SNES the d-pad is still held sideways at
+  the shot, and the release is right on top of the goalie.
+- **The goalie** barely moves before the release (0-9 units across); a person in net pressed the save button
+  (Fleury's goal) and it still went in.
+- **Not a deke:** Juneau's goal to make it 11-2 (`2026-10-18_1934_BOS-PIT`), the user's example of a goal that
+  scores on the SNES but not on the Genesis: skating across the slot from the left at full speed, a wrist shot 14-16
+  feet out, high, into the side he came from; the goalie did not react before it was in.
+
+Next: these plays in the harness (`snes_harness.py`), against the SNES goalie profiles.
+
 
 ---
 
