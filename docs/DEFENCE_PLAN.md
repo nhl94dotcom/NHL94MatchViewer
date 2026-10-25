@@ -2,7 +2,8 @@
 
 The question behind every study here is the user's: **how do you win at NHL '94?** The shooting studies
 ([SCORING_MAP](SCORING_MAP.md)) answer half of it: which chances score and how to make them. This plan is the other half:
-how to stop them. It is a plan, not findings: each study gets its results written into the right doc when it runs
+how to stop them. It is a plan, not findings: the results go into [DEFENCE_STUDY](DEFENCE_STUDY.md) as they come in (phase 1,
+the recorded games, 2026-10-25), and into the right doc for each kind of finding
 (SCORING_MAP for plays run in the game, a new section of GENESIS_MECHANICS for mechanics, the guides for the practical
 advice).
 
