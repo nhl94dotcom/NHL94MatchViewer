@@ -54,7 +54,7 @@ be a weak one: see the goalie section):
 | [Moving shooters](#moving-shooters-genesis-2026-10-24) | The far-post slapshot is a skating shot: across toward the stick side, released before the middle: 50-62% from 28-35 ft for a strong shooter (27 / 27), 44% on average at 4 / 4 |
 | [Dekes and floaters](#dekes-and-floaters-genesis-2026-10-24) | The swing is the goal (0-1% without it): the best dekes 82-96% (the backhand deke too), floaters 50-65%, backhand floaters 41-51%. The timing suits one skating speed |
 | [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out |
-| [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Better goalies stop the slapshot (far post from the middle 57% to 3%) but not one-timers; being re-run with real goalie profiles |
+| [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Goalie Agility stops the slapshot (far post from the middle 58% to 3% from Agility 13 to 20), Puck Control a little, Speed and Defensive Awareness not at all; one-timers don't care; real goalie profiles being run |
 
 ## Building the Genesis simulator
 
@@ -1267,15 +1267,15 @@ moments: **29% at Shot Power 2 (35 of 120), 4% at Power 6 (5 of 120)**.
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)
 
-**Correction (2026-10-25, being re-run):** the levels below set the goalie's Agility, Speed and Puck Control to
+**Correction (2026-10-25):** the levels in the first table set the goalie's Agility, Speed and Puck Control to
 10 / 20 / 30, but the third number went into the slot that holds `aidef`, not Defensive Awareness: the game stores
 15 - DfA / 4 there (7-15) and his reaction timer is a quarter of it. So "20" and "30" also gave him a slower
 reaction (5 and 7 frames) than any real goalie (1-3), and the test goalie's "10" is Defensive Awareness about 20.
-The slapshot still fell, so Agility, Speed or Puck Control did it. The runs are being repeated with real goalie
-profiles from the ROMs and with one rating at a time; this section will be replaced.
+**Defensive Awareness turns out to make no difference to the slapshot** (one rating at a time, below), so that
+table stands for Agility, Speed and Puck Control moved together.
 
-Every run above used one computer goalie, the test state's (working Agility 13, Speed 13, Defensive Awareness 10,
-Puck Control 18; his save ratings are never used). Here the same shots against goalies with all four of those at 10,
+Every run above used one computer goalie, the test state's (Hrudey: working Agility 13, Speed 13, `aidef` 10, which is
+Defensive Awareness about 20, Puck Control 18; his save ratings are never used). Here the same shots against goalies with all four of those at 10,
 20 or 30 (`harness.py`: `NHL94_GOALIE`), the shooter at Shot Power / Accuracy 4 / 4:
 
 | Goalie | Standing slapshot (best aim, 18 spots) | Far post from the middle, 35 ft | Skating far-post slapshot (best aim) | One-timers | Dekes and floaters |
@@ -1303,7 +1303,43 @@ nets, 24 moments x 4 seeds; the test goalie re-run over the same moments for the
 - **So the test goalie was a weak one,** and the slapshot rates in this document are for a weak goalie. Against an
   average-to-strong computer goalie the slapshot is a poor shot, and one-timers and dekes are worth even more by
   comparison.
-- **Which rating does it** is not yet known: all four moved together. A run with one rating at a time would tell.
+- **Which rating does it:** Agility, with some help from Puck Control (one rating at a time, above).
+
+### One rating at a time: Agility stops slapshots
+
+The standing slapshot again (slapcore, 18 spots, 400 launches at 120 moments a spot), the shooter at a working 20 / 20
+(roster 4 / 4), changing one goalie rating at a time (working values; a roster rating is a fifth of it: 10 is 2, 20
+is 4, 30 is 6). Defensive Awareness is set as the game sets it (`aidef`, reaction 3 frames at 10, 2 at 20, 1 at 30).
+
+| Goalie (Agility / Speed / Def. Awareness / Puck Control) | Best aim, average of 18 spots | Far post from the middle, 35 ft |
+| --- | --- | --- |
+| Test goalie, Hrudey (13 / 13 / about 20 / 18) | 18.9% | 58% |
+| Agility 20 | **8.9%** | **3%** |
+| Speed 20 | 18.7% | 58% |
+| Def. Awareness 30 | 18.9% | 61% |
+| Puck Control 25 | 15.4% | 55% |
+| All four 20 | 8.4% | 4% |
+| Agility 10 | **16.9%** | **57%** |
+| Agility 30 | **4.6%** | **1%** |
+| Speed 10 | 8.3% | 3% |
+| Def. Awareness 10 | 7.8% | 2% |
+| Def. Awareness 30 | 8.3% | 2% |
+| Puck Control 10 | 11.4% | 3% |
+| Puck Control 30 | 6.3% | 3% |
+
+(The rows below "All four 20" change one rating from 20 / 20 / 20 / 20.)
+
+- **Agility is the rating that stops slapshots.** Hrudey's 13 raised to 20 halves the best-aim chance (18.9% to 8.9%)
+  and closes the far post from the middle (58% to 3%); from 20, lowering it to 10 doubles the chance again (16.9%)
+  and raising it to 30 halves it (4.6%). Agility is the goalie's reach (GENESIS_MECHANICS 5.1): a longer reach covers
+  the far post the shot was beating.
+- **Puck Control helps some:** from 20 to 10 the chance rises from 8.4% to 11.4%, to 30 it falls to 6.3%; from
+  Hrudey's 18 to 25 it falls from 18.9% to 15.4%. It doesn't open or close the far post from the middle. Puck Control
+  is how often he holds the shot; a shot he doesn't hold can still go in.
+- **Speed and Defensive Awareness do nothing** to the standing slapshot (within a point at every level).
+- **For a league goalie** (roster ratings, a fifth of the working ones): Hrudey is a roster Agility 3 played cold; a
+  goalie with roster Agility 4 or more (working 20+) stops most of the slapshot chances in this document. The real
+  goalie profiles (retail, CDL, Roy, Belfour) are being run against every kind of shot.
 
 **Animated (`animate.py`, the RATED spots):** the far-post slapshot from the middle 35 ft out (top net, the shooter 4 /
 4), against a goalie rated 10 (the run 57%; 66 of the 120 filmed went in) and 20 (3%; none of the 120).
