@@ -1313,7 +1313,16 @@ shot it skates at the middle of the goal line, and at the loose puck once the go
 the top net, Shot Power 2, Accuracy 4, against the test goalie: skating straight across against skating in at 45
 degrees.
 
-<!-- EA angle GIFs: added when rendered -->
+**Skating straight across: 0 of 120.** The paths view shows why: carrying his sideways speed, the shooter loops
+away past the goalie and comes back too late for the loose puck.
+
+![EA Special skating straight across: four real attempts](img/scoring_map/ea_angle_across_clips.gif)
+![EA Special skating straight across: every attempt from above](img/scoring_map/ea_angle_across_paths.gif)
+
+**Skating in at 45 degrees: 17 of 120 (14%).**
+
+![EA Special skating in at 45 degrees: four real attempts](img/scoring_map/ea_angle_diag_clips.gif)
+![EA Special skating in at 45 degrees: every attempt from above](img/scoring_map/ea_angle_diag_paths.gif)
 
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)

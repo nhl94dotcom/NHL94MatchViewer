@@ -174,4 +174,19 @@ goal line. The share of plays that ended in a goal (no defender: 88%).
 "Dekes"), with the defender 7 ft toward the middle from the carrier's lane, 24 ft out, standing or left to the
 computer, and left to the computer from 7 ft toward the boards. The defender is green in the paths view.
 
-<!-- defender GIFs: added when rendered -->
+Filmed (attempts where he never got a shot off are left out of the standing case's count):
+
+**A defender standing in his path: 0 of 38 go in.**
+
+![Deke against a defender standing in his path: four real attempts](img/scoring_map/def_deke_slot_static_clips.gif)
+![Deke against a defender standing in his path: every attempt from above](img/scoring_map/def_deke_slot_static_paths.gif)
+
+**A computer defender starting in his path: 2 of 48 go in.**
+
+![Deke against a computer defender starting in his path: four real attempts](img/scoring_map/def_deke_slot_cpu_clips.gif)
+![Deke against a computer defender starting in his path: every attempt from above](img/scoring_map/def_deke_slot_cpu_paths.gif)
+
+**A computer defender starting toward the boards: 35 of 48 go in** (no defender: 94% for this set-up).
+
+![Deke against a computer defender starting by the boards: four real attempts](img/scoring_map/def_deke_boards_cpu_clips.gif)
+![Deke against a computer defender starting by the boards: every attempt from above](img/scoring_map/def_deke_boards_cpu_paths.gif)

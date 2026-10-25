@@ -16,7 +16,12 @@ end-zone faceoff dot, 70 to the side and about 60 out, with the skater skating t
 "angle" (the user, 2026-10-25: the shooter always faces straight across the rink or diagonally toward the goalie
 as he shoots, never straight up the ice, so he is placed to claim the rebound: moves "across<speed>" (straight
 across toward the middle), "diag<speed>" (45 degrees toward the middle and the goal line) and "goal<speed>"; Shot
-Accuracy 4; for the goalie profiles too, NHL94_GOALIE).
+Accuracy 4; for the goalie profiles too, NHL94_GOALIE); "xspot" (the user, 2026-10-25, two marked screenshots: the
+release level with the faceoff dot across and a little deeper, about 40-44 out against the dot's 62): x and out are
+where the puck is released, not where he starts (a move "r<kind><speed>" starts him LEAD frames of skating back, the
+wrist shot leaving the stick 4 frames after C); a negative x is his left side, taken by a right-hander (a
+left-hander from his right, a right-hander from his left: the user, 2026-10-25); skating at the goal at 1.5 or 2.5 a
+frame or in at 45 degrees; each job also gives the mean release spot ("release": across, out).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -39,6 +44,7 @@ FIRST, FOLLOW = 60, 90         # frames to the first result; frames more for the
 STEPS = (2, 3, 4, 5, 6)        # roster steps (x 5 = working)
 PUCK = 14
 KEYS = ("net", "x", "out", "shp", "sha", "move")
+LEAD = 4                       # frames from C to the release of a wrist shot (measured 2026-10-25)
 MOVES = (0.0, 1.5)             # standing, or skating toward the net at 1.5 a frame as he shoots (down the side)
 
 
@@ -48,6 +54,9 @@ def plan_jobs(plan="ea"):
     if plan == "angle":
         return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), (2, 4, 6), (4,),
                                       ("across2.5", "diag2.5", "goal2.5")))
+    if plan == "xspot":
+        return list(itertools.product(("top", "bottom"), (-75, -70, -65, 65, 70, 75), (38, 42, 46), (2, 4, 6), (4,),
+                                      ("rgoal1.5", "rgoal2.5", "rdiag2.5")))
     if plan == "dots":
         return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), STEPS, (2, 4, 6),
                                       ("goal1.5", "goal2.5")))
@@ -146,15 +155,24 @@ def job(args):
     top = net == "top"
     sg = 1 if top else -1
     rnd = random.Random(zlib.crc32(json.dumps(args).encode()))
-    res = {}
+    res, rel = {}, [0.0, 0.0, 0]
+    at_release = isinstance(move, str) and move.startswith("r")
     for p in range(MOMENTS):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
-        h.setup(sg * x, sg * (GOAL_Y - out), settle=settle, clock=clock)
-        set_ratings(h, shp * 5, sha * 5)
+        x0, y0 = sg * x, sg * (GOAL_Y - out)
         if isinstance(move, str):                        # skating toward the middle: across, 45 degrees, at the goal
-            kind = move.rstrip("0123456789.")
-            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg, 0), diag=(-sg, sg))[kind]
-            v = float(move[len(kind):]) / math.hypot(dx, dy)
+            kind = move.rstrip("0123456789.").lstrip("r")
+            sx = 1 if x > 0 else -1                      # the side he is on (attacker's view)
+            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg * sx, 0), diag=(-sg * sx, sg))[kind]
+            v = float(move[len(move.rstrip("0123456789.")):]) / math.hypot(dx, dy)
+            if at_release:                               # started back along his line, to release at (x, out)
+                x0, y0 = round(x0 - LEAD * dx * v), round(y0 - LEAD * dy * v)
+        h.setup(x0, y0, settle=settle, clock=clock)
+        set_ratings(h, shp * 5, sha * 5)
+        b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)      # the hand (as deke_run.job): a left-hander on
+        e.setb(rec(SHOOTER) + 0x76, (b | 1) if x > 0 else (b & ~1))   # his right, a right-hander on his left
+        e.setb(rec(SHOOTER) + 4, (a & ~8) if x > 0 else (a | 8))
+        if isinstance(move, str):
             e.setb(rec(SHOOTER) + 0x55, toward(dx, dy))
             e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
             e.setw(rec(SHOOTER) + 0x2A, round(dy * v * 4096) & 0xFFFF)
@@ -171,6 +189,10 @@ def job(args):
             if pre is None:
                 c["noshot"] += 1
                 continue
+            e.unserialize(pre)
+            rel[0] += sg * e.sw(rec(SHOOTER))
+            rel[1] += GOAL_Y - sg * e.sw(rec(SHOOTER) + 0x14)
+            rel[2] += 1
             for s in range(SEEDS):
                 e.unserialize(pre)
                 e.setl(0xD066, rnd.getrandbits(32))
@@ -196,7 +218,10 @@ def job(args):
             c["bob_back"] = round(c["bob_back"] / c["bobble"], 1)
         if c["claimed"]:
             c["claim_f"] = round(c["claim_f"] / c["claimed"], 1)
-    return dict(zip(KEYS, args), aims=res)
+    out_ = dict(zip(KEYS, args), aims=res)
+    if rel[2]:
+        out_["release"] = [round(rel[0] / rel[2], 1), round(rel[1] / rel[2], 1)]
+    return out_
 
 
 def main():
