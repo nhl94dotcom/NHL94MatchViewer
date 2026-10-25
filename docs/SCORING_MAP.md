@@ -1235,7 +1235,7 @@ releases the shot at the spots the user marked.
   first shots at steps 2-5, standing 1-3%. Shot Accuracy again changes little (2-3%).
 
 **Animated** (`ea_animate.py`): the spot where Shot Power makes the most difference. A left-hander standing 30 ft out
-and 13 ft to his right at the top net (the GIF captions say "forehand side", `ea_run.py`'s name for it), the first wrist shot aimed across (Left), with ea_run's own bot playing
+and 13 ft to his right at the top net, the first wrist shot aimed across (Left), with ea_run's own bot playing
 on and Shot Accuracy 2-6 in turn. Measured over 120 game moments, the play ends in a goal **22% of the time at Shot
 Power 2 (26 of 120) and 2% at Power 6 (2 of 120)**. At Power 2 every first shot was bobbled and the goalie dived in 79%
 of plays. At Power 6, 20% were held at once and he dived in 32%. The EA run had given 39% and 0% at this set-up, but

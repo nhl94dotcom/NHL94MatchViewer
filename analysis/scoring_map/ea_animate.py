@@ -1,5 +1,5 @@
 """Animated EA Specials (Genesis test ROM): python ea_animate.py OUT_DIR [N] [names]
-Each case in CASES is one set-up of ea_run.py (a left-hander standing 40 to the side, his forehand side, the first
+Each case in CASES is one set-up of ea_run.py (a left-hander standing 40 to his right, his off-wing, the first
 wrist shot aimed across) with one Shot Power / Accuracy; the follow-up is ea_run's own bot (play(): skate on, chase
 the loose puck once the goalie has touched it, tap C at the near post on claiming it). N attempts (moments x seeds),
 the game's own frames from the wind-up to the end of the play. The captions give this script's own rate over 120
@@ -28,7 +28,7 @@ FONTB = "C:/Windows/Fonts/segoeuib.ttf"
 # name, net, x (to the side), out, aim, Shot Power step, Shot Accuracy step (None: 2-6 in turn, as the rate is
 # over every accuracy), title, goals / plays over 120 moments (play(case, 120)); optionally ea_run's move (a string:
 # skating at the middle of the goal line at that speed) and the caption's description of the set-up
-STANDING = ("Left-handed, 30 ft out, 13 ft to his forehand side,", "aimed across, Shot Accuracy 2-6 in turn.")
+STANDING = ("Left-handed, 30 ft out, 13 ft to his right,", "aimed across, Shot Accuracy 2-6 in turn.")
 CASES = [
     ("ea_power_2", "top", 40, 90, 6, 2, None, "EA Special, Shot Power 2: the weak shot is bobbled and the goalie dives",
      (26, 120)),
@@ -36,10 +36,10 @@ CASES = [
     # the faceoff dots (plan "dots", 2026-10-25): the run's best top-net set-up, 85 to the side, 75 out, skating at
     # the goal at 2.5 a frame, aimed Up-Left
     ("ea_dot_power_2", "top", 85, 75, 7, 2, None, "EA Special from beside the faceoff dot, skating at the goal, Shot Power 2",
-     (35, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his forehand side,",
+     (35, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his right,",
                             "skating in, aimed Up-Left, Accuracy 2-6.")),
     ("ea_dot_power_6", "top", 85, 75, 7, 6, None, "EA Special from beside the faceoff dot, skating at the goal, Shot Power 6",
-     (5, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his forehand side,",
+     (5, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his right,",
                             "skating in, aimed Up-Left, Accuracy 2-6.")),
     # the shooter's line (plan "angle", 2026-10-25): skating straight across against at 45 degrees, from 23 ft to his
     # right and 25 ft out, Shot Power 2, Accuracy 4, aimed Up-Left; rates: the filmed plays themselves (None)

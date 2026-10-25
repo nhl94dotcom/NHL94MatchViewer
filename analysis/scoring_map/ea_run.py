@@ -1,13 +1,13 @@
-"""EA Specials in the real game (Genesis test ROM), 2026-10-24. The play (the user): from the side, on his forehand,
-a skater takes a wrist shot meant to be bobbled, the save pushing the goalie back; he skates on, claims the loose puck
+"""EA Specials in the real game (Genesis test ROM), 2026-10-24. The play (the user): from the side (a left-hander
+from his right), a skater takes a wrist shot meant to be bobbled, the save pushing the goalie back; he skates on, claims the loose puck
 and at once shoots a wrist shot inside the near post, open because the goalie was pushed back (and may have gone into
 a dive trying to smother it). The user: the best shooters are bad at it (their harder wrist shots are caught and held
 more), middling shooters' shots are saved but bobbled more. So each job is one shooter (working Shot Power and Shot
 Accuracy, roster steps 2-6 = 10-30) at one spot; each aim, each of MOMENTS moments, SEEDS seeds after the release.
 Standing or skating toward the net (MOVES). Per play: the first result (goal straight in; held; touched and loose = a bobble; missed), the release speed; for a
 bobble the loose puck's speed, how far the goalie went back toward his line, a dive, whether and how fast the shooter
-claimed it, and the follow-up (goal, held, none). Spots in the attacker's view on the forehand side (a left-hander:
-his right). Gentle mode, chunked.
+claimed it, and the follow-up (goal, held, none). Spots in the attacker's view on his
+off-wing (first called his forehand side; a left-hander: his right). Gentle mode, chunked.
 Plans: "ea" (the first run: 40 / 70 / 100 to the side, standing or skating straight up the ice); "firm" (2026-10-24:
 40 to the side only, Shot Accuracy 2 / 4 / 6, for more moments: NHL94_EA_MOMENTS; one set-up's rate over 8 moments
 wandered: ea_animate.py); "dots" (the user, 2026-10-24: more EA Specials come from farther to the side, on or near the
