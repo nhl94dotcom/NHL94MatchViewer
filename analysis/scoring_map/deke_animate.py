@@ -96,7 +96,19 @@ DEKE2 = [
     ("deke2_lefty_right_upside", ("deke2", "top", "L", 45, -1, 72, 22, 4, "upside"),
      "Refined deke, left-hander, from 15 ft right, swung right, shot up-right", (40, 48)),
 ]
-COL = {"GOAL": "#ea580c", "STOPPED": "#475569"}
+# the shooter's skating (deke_run.py plan "best" with NHL94_DEKE_SKATE, 2026-10-25): the same backhand deke by a skater
+# of working Agility / Speed 20 and 30 (the set-ups were tuned at the test state's 13); rates: that net's 24 moments x 4
+# seeds; the fast skater reached the goalie before the swing ended and carried the puck into the net at all 24 (the
+# fifth item: Agility, Speed; the sixth: the caption's scope)
+SKATE = [
+    ("dekebh_lefty_skate_20", ("dekebh", "top", "L", 45, -1, 85, 8, 4, "side"),
+     "Backhand deke, left-hander, Agility / Speed 20", (96, 96), (20, 20), "this net"),
+    ("dekebh_lefty_skate_30", ("dekebh", "top", "L", 45, -1, 85, 8, 4, "side"),
+     "Backhand deke, left-hander, Agility / Speed 30: he carries it in", (96, 96), (30, 30),
+     "this net; carried in, no shot"),
+]
+COL = {"GOAL": "#ea580c", "CARRIED": "#ea580c", "STOPPED": "#475569", "LOST": "#7c3aed"}
+GOALS = ("GOAL", "CARRIED")                          # CARRIED: he took the puck into the net himself, no shot
 PUCK = 14
 
 
@@ -141,6 +153,9 @@ def play(method, n):
         p += 1
         h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
         set_ratings(h, *D.RATINGS)
+        if len(method) > 4:                          # the skater's working Agility and Speed, as deke_run's SKATE
+            for off, v in zip((0x68, 0x69), method[4]):
+                e.setb(rec(SHOOTER) + off, v)
         vram = vram or genesis_vram(e)
         b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)
         e.setb(rec(SHOOTER) + 0x76, (b | 1) if hand == "L" else (b & ~1))
@@ -173,6 +188,15 @@ def play(method, n):
             if e.w(E["n"]) != n0:
                 rel = f
                 break
+        if rel is None and frames and e.w(PUCKC) != SHOOTER:   # the puck gone before the shot: LOST, or CARRIED IN
+            rel, s0 = len(frames) - 1, e.w(SCORE_HOME)         # when he took it into the net himself (a goal)
+            for f in range(40):
+                h.park(keep_shooter=True)
+                paths.append(where())
+                frames.append(shot_frame([]))
+            out.append(("CARRIED" if e.w(SCORE_HOME) != s0 else "LOST", frames, paths, rel, swing))
+            breathe()
+            continue
         if rel is None:
             continue
         e.setl(0xD066, rnd.getrandbits(32))       # a fresh seed after the release, as the run's
@@ -200,15 +224,15 @@ def play(method, n):
 
 
 def tally(shots):
-    g = sum(s[0] == "GOAL" for s in shots)
+    g = sum(s[0] in GOALS for s in shots)
     return f"{g} of {len(shots)} in"
 
 
 def clips_gif(method, shots, path):
-    name, args, title, (g, n) = method
+    name, args, title, (g, n) = method[:4]
     rate = g / n
-    goals = [s for s in shots if s[0] == "GOAL"]
-    others = [s for s in shots if s[0] != "GOAL"]
+    goals = [s for s in shots if s[0] in GOALS]
+    others = [s for s in shots if s[0] not in GOALS]
     r = random.Random(1)
     k = min(len(goals), max(round(4 * rate), 1 if goals and rate > 0 else 0))
     pick = r.sample(goals, k) + r.sample(others, min(len(others), 4 - k))
@@ -225,7 +249,7 @@ def clips_gif(method, shots, path):
         img = Image.new("RGB", (W, H), "white")
         d = ImageDraw.Draw(img)
         d.text((pad, 6), title, fill="#1f2933", font=f1)
-        scope = "both nets" if n > 48 else "this net"
+        scope = method[5] if len(method) > 5 else "both nets" if n > 48 else "this net"
         d.text((pad, 26), f"{100 * rate:.0f}% go in ({g} of {n} in the full run, {scope}).", fill="#52606d", font=f2)
         d.text((pad, 42), f"The game's own frames, {args[1]} net, half speed, lined up on the swing.", fill="#52606d",
                font=f2)
@@ -239,10 +263,12 @@ def clips_gif(method, shots, path):
                 state, col = "coming in", "#cbd2d9"
             elif j < rel:
                 state, col = "swing", "#94a3b8" if args[8] == "still" else "#0ea5e9"
-            elif j < rel + 6 or (res == "GOAL" and j < len(fr) - 12) or (res != "GOAL" and j < len(fr) - 4):
+            elif j < rel + 6 or (res in GOALS and j < len(fr) - 12) or (res not in GOALS and j < len(fr) - 4):
                 state, col = "shot", "#64748b"
             else:
-                state, col = ("GOAL", COL["GOAL"]) if res == "GOAL" else ("STOPPED", COL["STOPPED"])
+                state, col = {"GOAL": ("GOAL", COL["GOAL"]), "CARRIED": ("GOAL: CARRIED IN", COL["GOAL"]),
+                                  "LOST": ("LOST THE PUCK", COL["LOST"])}.get(
+                    res, ("STOPPED", COL["STOPPED"]))
             if args[8] == "still" and state == "swing":
                 state = "no swing"
             d.rectangle((x, y + ch, x + cw - 1, y + ch + lab - 4), fill=col)
@@ -254,7 +280,7 @@ def clips_gif(method, shots, path):
 
 def paths_gif(method, shots, path):
     """Every attempt from above, lined up on the release (the attacker's view: the net at the top)."""
-    name, args, title, (g, n) = method
+    name, args, title, (g, n) = method[:4]
     S, pad, head = 3.0, 14, 64
     x_lo, x_hi, y_lo, y_hi = -80, 80, 95, 280            # rink units from the net's end (as on the screen)
     W, H = int((x_hi - x_lo) * S) + 2 * pad, int((y_hi - y_lo) * S) + head + pad + 20
@@ -265,7 +291,7 @@ def paths_gif(method, shots, path):
     f1, f2 = ImageFont.truetype(FONTB, 15), ImageFont.truetype(FONT, 12)
     before = max(s[3] for s in shots)
     after = min(40, min(len(s[2]) - s[3] for s in shots))
-    order = sorted(shots, key=lambda s: s[0] == "GOAL")
+    order = sorted(shots, key=lambda s: s[0] in GOALS)
     frames = []
     for t in range(-before, after):
         img = Image.new("RGB", (W, H), "white")
@@ -273,7 +299,8 @@ def paths_gif(method, shots, path):
         d.text((pad, 6), title, fill="#1f2933", font=f1)
         d.text((pad, 26), f"Every attempt from above: {len(shots)} here, {tally(shots)}; full run {100 * g / n:.0f}%.",
                fill="#52606d", font=f2)
-        d.text((pad, 42), "Puck: orange goal, slate stopped. Grey: shooter. Black: goalie. Blue: swing starts.",
+        d.text((pad, 42), "Puck: orange goal, slate stopped" + (", purple lost" if any(s[0] == "LOST" for s in shots)
+                                                                     else "") + ". Grey: shooter. Black: goalie. Blue: swing starts.",
                fill="#52606d", font=f2)
         d.rectangle((pad, head, W - pad, H - 20), fill="#eef6fb")
         gl = P(0, sg * 268)[1]
@@ -295,7 +322,7 @@ def paths_gif(method, shots, path):
             if len(pk) > 1:
                 d.line(pk[:max(1, rel - lo + 1)], fill="#94a3b8", width=1)
                 if i > rel:
-                    d.line(pk[rel - lo:], fill=col, width=2 if res == "GOAL" else 1)
+                    d.line(pk[rel - lo:], fill=col, width=2 if res in GOALS else 1)
             if sw is not None and sw <= i:
                 c = P(*pts[sw][0])
                 d.ellipse((c[0] - 3, c[1] - 3, c[0] + 3, c[1] + 3), fill="#0ea5e9")
@@ -323,11 +350,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE],
               open(out_dir / "methods.json", "w"), indent=1)
 
 

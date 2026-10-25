@@ -614,7 +614,7 @@ it, so it is unchanged.
 **The computer goalie's ratings** (2026-10-25, SCORING_MAP "The computer goalie's ratings"): the scoring map's test
 goalie is a weak one (working Agility 13, Speed 13, Defensive Awareness 10, Puck Control 18). With all four at 20,
 the standing slapshot's best chance falls from about 20% to 5% (the far post from the middle 57% to 3%) and the
-skating far-post slapshot from 41% to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (72% to
+skating far-post slapshot from 41% to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (71% to
 63% at 30), floaters not at all. Which of the four ratings does it is not yet separated.
 
 ---

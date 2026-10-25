@@ -35,7 +35,7 @@ import time
 import zlib
 from multiprocessing import Pool
 
-from harness import Harness, decide, rec, DIRPAD, E, SHOOTER, GOALIE, PUCKC
+from harness import Harness, decide, rec, DIRPAD, E, SHOOTER, GOALIE, PUCKC, SCORE_HOME
 from lowload import WORKERS, breathe, gentle
 from mapper import set_ratings
 from paths import RUNS, STATE_TOP, STATE_BOTTOM
@@ -134,8 +134,8 @@ def job(args):
     else:
         aim = AIM[(var, side)]
     din, dsw, dam = (screen_dir(PAD[k], top) for k in (pad_in, pad_swing, aim))
-    res = dict(GOAL=0, NO=0, noshot=0, lost=0, n=0, release=[0.0, 0.0], gdist=0.0, goff=0.0, pside=0.0, gmove=0.0,
-               faces={}, backhand=0)
+    res = dict(GOAL=0, NO=0, noshot=0, lost=0, carried=0, n=0, release=[0.0, 0.0], gdist=0.0, goff=0.0, pside=0.0,
+               gmove=0.0, faces={}, backhand=0)
     for p in range(MOMENTS):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
@@ -175,7 +175,14 @@ def job(args):
                 pre = st
                 break
         if pre is None:
-            res["lost" if swing is not None else "noshot"] += 1
+            if swing is not None:                # the puck gone before any shot: lost, or carried into the net by
+                s0 = e.w(SCORE_HOME)             # the skater himself (a goal: found 2026-10-25 with fast skaters)
+                for _ in range(60):
+                    h.park()
+                    e.run(1)
+                res["carried" if e.w(SCORE_HOME) != s0 else "lost"] += 1
+            else:
+                res["noshot"] += 1
             continue
         e.unserialize(pre)
         sx, sy = e.sw(rec(SHOOTER)), e.sw(rec(SHOOTER) + 0x14)

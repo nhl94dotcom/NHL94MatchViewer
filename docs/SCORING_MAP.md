@@ -1099,6 +1099,50 @@ Animated (`deke_animate.py`, the FLOATERBH list; rates: that net's 48):
 ![Backhand floater, right-hander, going down: 27% (13 of 48): four real attempts](img/scoring_map/floaterbh_righty_down_clips.gif)
 ![Backhand floater, right-hander, going down: 27% (13 of 48): every attempt from above](img/scoring_map/floaterbh_righty_down_paths.gif)
 
+### By the shooter's skating and shot (plan "best", 2026-10-25)
+
+The best set-up of each move and hand (`deke_run.py` plan "best": the refined dekes, the backhand deke, both
+floaters; both nets, 24 moments x 4 seeds), played by nine kinds of skater: working Agility and Speed 10, 20 or 30
+(`NHL94_DEKE_SKATE`; the test state's skater has 13 / 13, and the set-ups were tuned on him), crossed with Shot Power
+and Accuracy 10, 20 or 30 (roster steps 2, 4, 6), against the test goalie. Goals per attempt; a puck lost before the
+shot counts as a failure, a puck the skater carried into the net himself as a goal:
+
+| Agility / Speed \ Shot | 10 | 20 | 30 |
+| --- | --- | --- | --- |
+| 10 (slow) | 31% | 45% | 53% |
+| 20 | 64% | 71% | 76% |
+| 30 (fast) | 57% | 59% | 61% |
+| Test skater (13) with 20 / 20 | | 71% | |
+
+- **Skating counts most, and the timing is tuned to the skater.** The slow skater (10) keeps the puck every time but
+  scores 31-53%: the swing starts at a fixed distance from the goalie, and he gets there too slowly for it to beat
+  him. Skaters of 13-20 score 64-76%. The fast skater (30) runs out of room: in a quarter of his attempts he reached
+  the goalie with the puck still on his stick and no shot taken. In 78 of those 120 he carried it into the net (a
+  goal), in 42 he lost it. A fast skater needs the swing started farther out.
+- **The shot ratings add 15-22 points for a slow skater and 10-12 for the others** (10 to 30), mostly through the
+  floaters (the slow skater's backhand floater 2-6% at 10, 28-31% at 30). The dekes hardly depend on them.
+- **The carried-in goal** (animated below): on the left-hander's backhand deke at the top net the fast skater took the
+  puck into the net at all 24 moments, past a goalie already down. The game gives the goal: the puck crosses the line
+  on his stick.
+- **A correction to the runs above:** until 2026-10-25 `deke_run.py` counted a puck gone before the shot as lost, even
+  when the skater had carried it in. The best set-ups had few (the test skater's "best" run: 8 carried, 9 lost of 480
+  moments; corrected over all of them 71%, against 72% counted per shot). The grids behind the earlier sections had
+  more lost attempts (the refined dekes 44% of their moments, the dekes 9-12%, the backhand dekes 12%), so some of
+  their set-ups may score more than reported. Re-running them with the fix would settle it.
+
+**Animated (`deke_animate.py`, the SKATE list):** the left-hander's backhand deke at the top net, by a skater of 20
+(96 of 96 in the run, shot in) and 30 (24 of 24 moments carried in, no shot).
+
+**Agility / Speed 20: shot in.**
+
+![Backhand deke, Agility / Speed 20: four real attempts](img/scoring_map/dekebh_lefty_skate_20_clips.gif)
+![Backhand deke, Agility / Speed 20: every attempt from above](img/scoring_map/dekebh_lefty_skate_20_paths.gif)
+
+**Agility / Speed 30: carried in.**
+
+![Backhand deke, Agility / Speed 30: four real attempts](img/scoring_map/dekebh_lefty_skate_30_clips.gif)
+![Backhand deke, Agility / Speed 30: every attempt from above](img/scoring_map/dekebh_lefty_skate_30_paths.gif)
+
 ## EA Specials (Genesis, 2026-10-24)
 
 The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the
@@ -1202,9 +1246,9 @@ Puck Control 18; his save ratings are never used). Here the same shots against g
 
 | Goalie | Standing slapshot (best aim, 18 spots) | Far post from the middle, 35 ft | Skating far-post slapshot (best aim) | One-timers | Dekes and floaters |
 | --- | --- | --- | --- | --- | --- |
-| Test goalie (13 / 13 / 10 / 18) | 19% | 58% | 37% | 58% | 72% |
-| 10 | 21% | 57% | 41% | 60% | 72% |
-| 20 | **5%** | **3%** | **15%** | 62% | 67% |
+| Test goalie (13 / 13 / 10 / 18) | 19% | 58% | 37% | 58% | 71% |
+| 10 | 21% | 57% | 41% | 60% | 71% |
+| 20 | **5%** | **3%** | **15%** | 62% | 68% |
 | 30 | **7%** | **2%** | **7%** | 59% | 63% |
 
 The runs: the standing slapshot as "Every Shot Power and Accuracy" (`map_run.py`, slapcore, 400 launches at 120
@@ -1218,8 +1262,9 @@ nets, 24 moments x 4 seeds; the test goalie re-run over the same moments for the
   7% at 30. The goalie gets across to the far post sooner, and the shot is stopped farther out (animated below).
 - **One-timers don't care** (58-62% at every level). This fits the Genesis one-timer finding: it beats a goalie still
   moving across, before his ratings come into it.
-- **Dekes lose a little and floaters nothing.** Over the best set-ups 72% / 72% / 67% / 63%. The left-hander's
-  forehand deke falls from 90% to 69% and his backhand deke from 97% to 67%; the right-hander's dekes stay at 77-91%,
+- **Dekes lose a little and floaters nothing.** Over the best set-ups 71% / 71% / 68% / 63% (goals per attempt, a
+  puck carried in counted as a goal). The left-hander's forehand deke falls from 80-83% to 67% and his backhand deke
+  from 95-97% to 67%; the right-hander's dekes stay at 77-91%,
   and the floaters at 42-56% whatever the goalie.
 - **So the test goalie was a weak one,** and the slapshot rates in this document are for a weak goalie. Against an
   average-to-strong computer goalie the slapshot is a poor shot, and one-timers and dekes are worth even more by
