@@ -128,6 +128,10 @@ What the games show so far:
   the thing to watch as more games come in.
 - **Home on the SNES scored 1.52 times as often per minute** (range 0.93-2.47), the biggest gap here, but 41 goals
   against 27 in 8 games is still within chance; its attempts and shots on goal were equal (1.02, 1.06).
+- **Played in the game itself, single shots do differ by net** ([SCORING_MAP](SCORING_MAP.md)): the Down slapshot
+  from the middle scores about 21% at the top net against 14% at the bottom, the shoulder-save bobble happens only at
+  the top net, and a deke swung to the shooter's right does much better going down. Other shots favour neither net or
+  the other one, so over the mix of shots in a game they can cancel out, as here.
 - The built-in reasons Home should win slightly more (the hidden home / away rating bonus, the home centre's faceoff
   edge, Home going up in two regulation periods) are in GENESIS_MECHANICS.md 13.6.
 

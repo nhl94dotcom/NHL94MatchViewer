@@ -2,7 +2,7 @@
 
 Every shot in these maps and studies was played in the real game, not a model: the Genesis and SNES ROMs ran headless thousands of
 times faster than real time, and each shot was played out until it was a goal or a save. (2026-10-23. The findings are
-also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10 and [SNES_MECHANICS](SNES_MECHANICS.md) 4.8; the run notes in
+also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10-4.11 and [SNES_MECHANICS](SNES_MECHANICS.md) 4.8-4.9; the run notes in
 [PROJECT_NOTES](PROJECT_NOTES.md), "Scoring map"; the tools in [`analysis/scoring_map/`](../analysis/scoring_map/).)
 
 ## Contents

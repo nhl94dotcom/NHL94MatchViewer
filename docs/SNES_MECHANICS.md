@@ -444,6 +444,10 @@ the game scores 1.3-2.4% from 88-178 out, where its own best aim gives 2.7-4.6% 
 The lane is a few units wide and comes from frame-exact save areas, which the model's goalie (a 2-unit random spread on
 his position) blurs away.
 
+### 4.9 Other shots played in the real game
+
+The same harness with a pass, and the slapshot at every rating; each study in full in [SCORING_MAP](SCORING_MAP.md).
+
 **One-timers in the real game** (2026-10-23, `ot_run.py`, the whole study in [SCORING_MAP](SCORING_MAP.md), "One-timers
 on the SNES"): a pass to a standing receiver, A pressed during the pass with one of the nine d-pad directions held from
 the press, 824 set-ups over both nets. **Real game:** 92% of presses the pass reached struck the puck; goals per

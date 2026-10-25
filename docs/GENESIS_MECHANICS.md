@@ -598,6 +598,10 @@ doesn't pin the moment down finely enough (60 samples a second, not locked to th
 and the game's outcome turns on a few units and a frame. **So the viewer keeps its xG model for recorded games; the
 map shows what the rules do.**
 
+### 4.11 Other shots played in the real game
+
+The same harness, with a pass, a moving shooter or a follow-up; each study in full in [SCORING_MAP](SCORING_MAP.md).
+
 **One-timers in the real game** (2026-10-23, `ot_run.py`, the whole study in [SCORING_MAP](SCORING_MAP.md),
 "One-timers", Genesis): a pass to a standing receiver, C pressed during the pass, the strike (`puckstick` ->
 `onetimershot`, auto-aimed) played out at a set computer goalie; 824 set-ups over both nets. **Real game:** the swing
@@ -968,12 +972,16 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   - **Shot Accuracy** about doubles the chance at 40 feet (a 26,000 shot: 10% at working 5, 20% at 27), and matters
     less farther out.
   - Beyond 200, almost nothing.
-- **Recordings:** 15 Genesis goals came from 90+ units. Most went in at mid-height (about 6) just inside a post. The goalie
-  had usually picked a stick save: he chooses a low move for a puck under height 8, and it doesn't change his reach.
-  The four slapshot goals from 100+ were all by a Shot Accuracy 27 shooter; far post and near post were mixed. The
-  model doesn't show the far-post advantage players report; recorded examples would settle it
-  (NEEDS_FROM_YOU). Over all the Genesis recordings, slapshots from 100-200 units out scored 5 times in 39 (13%), where
-  the model's xG for them adds up to 4.5. On the SNES it's far harder: SNES_MECHANICS 5.8.
+- **Recordings:** 15 Genesis goals came from 90+ units. Most went in at mid-height (about 6) just inside a post. The
+  goalie had usually picked a stick save: he chooses a low move for a puck under height 8, and it doesn't change his
+  reach. The four slapshot goals from 100+ were all by a Shot Accuracy 27 shooter; far post and near post were mixed.
+  The model doesn't show the far-post advantage players report. **Played in the game itself (4.10-4.11) it shows:**
+  standing, from the middle, the far post is the best aim for a strong shooter (21% against 11% holding Down), and the
+  far-post slapshot players describe is a skating shot, across toward the stick side and released before the middle
+  (50-62% from 28-35 feet for a 27 / 27 shooter). Both need Shot Power 4 or more on the roster (a working 20), and
+  both fall a long way against better goalies. Over all the Genesis recordings, slapshots from 100-200 units out
+  scored 5 times in 39 (13%), where the model's xG for them adds up to 4.5. On the SNES it's far harder:
+  SNES_MECHANICS 5.8.
 
 ### 5.9 Pushing the goalie into the net with the puck
 
