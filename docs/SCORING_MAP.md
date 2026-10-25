@@ -1130,6 +1130,12 @@ near post.
   ratings are fair: every shooter had the same bot. The game's hold rule (the goalie holds a puck whose speed parts
   are under a random threshold set by Puck Control) would predict faster shots held less, the opposite of what
   happened at step 6; that is still to be traced.
+- **Firmed up (plan "firm", 2026-10-25):** the 40-to-the-side spots again over 48 moments (6 times as many),
+  Shot Accuracy 2 / 4 / 6, 155,520 first shots. The far-side first shots end in a goal 8% / 12% / 8% / 7% / 4% of the
+  time at Shot Power 2-6, against the first run's 10% / 11% / 9% / 8% / 4%: the result holds. Steps 2-5 are much the
+  same and step 6 scores about half as often. By distance, 40 ft out (120) is where it works: 12% / 20% / 18% / 18%
+  / 9%; at 30 ft 2-14%, falling with power; at 20 ft (60) about 1%. Skating in at 1.5 a frame scores 3-4% of all
+  first shots at steps 2-5, standing 1-3%. Shot Accuracy again changes little (2-3%).
 
 **Animated** (`ea_animate.py`): the spot where Shot Power makes the most difference. A left-hander standing 30 ft out
 and 13 ft to his forehand side at the top net, the first wrist shot aimed across (Left), with ea_run's own bot playing
