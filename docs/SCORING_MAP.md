@@ -1180,6 +1180,13 @@ right, 60 / 90 / 120 out: his off-wing, the stick toward the middle; `ea_run.py`
 the rest: skate on; once the goalie has touched the puck and it is loose, chase it; on claiming it, tap C aimed at the
 near post.
 
+**How the play is really taken (the user, 2026-10-25):** a left-hander from the right side (this study's side), a
+right-hander from the left, now and then a backhand flip from the other side. The shooter always faces straight
+across the rink or diagonally toward the goalie as he wrists the puck, never straight up the ice (he would have to
+turn sharply to claim the rebound). So the standing and straight-up-the-ice shooters of the first two runs below
+aren't the real play; the faceoff-dot run (skating at the goal) is, and plan "angle" (being run) plays it skating
+straight across, at 45 degrees and at the goal, against the test goalie and the goalie profiles.
+
 - **The first shot to bobble is aimed across, at the far side from the shooter:** 60-77% of those are touched and
   left loose, against 14-28% aimed down along the ice (held 70-85%).
 - **Shot Power (far-side first shots, every spot):** held 20% / 19% / 21% / 21% / 27% from steps 2 to 6, bobbled 63% /

@@ -12,7 +12,11 @@ Plans: "ea" (the first run: 40 / 70 / 100 to the side, standing or skating strai
 40 to the side only, Shot Accuracy 2 / 4 / 6, for more moments: NHL94_EA_MOMENTS; one set-up's rate over 8 moments
 wandered: ea_animate.py); "dots" (the user, 2026-10-24: more EA Specials come from farther to the side, on or near the
 end-zone faceoff dot, 70 to the side and about 60 out, with the skater skating toward the goal as he shoots: move
-"goal<speed>" sets his speed toward the middle of the goal line and he keeps skating at the goal after the shot).
+"goal<speed>" sets his speed toward the middle of the goal line and he keeps skating at the goal after the shot);
+"angle" (the user, 2026-10-25: the shooter always faces straight across the rink or diagonally toward the goalie
+as he shoots, never straight up the ice, so he is placed to claim the rebound: moves "across<speed>" (straight
+across toward the middle), "diag<speed>" (45 degrees toward the middle and the goal line) and "goal<speed>"; Shot
+Accuracy 4; for the goalie profiles too, NHL94_GOALIE).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -41,6 +45,9 @@ MOVES = (0.0, 1.5)             # standing, or skating toward the net at 1.5 a fr
 def plan_jobs(plan="ea"):
     if plan == "firm":
         return list(itertools.product(("top", "bottom"), (40,), (60, 90, 120), STEPS, (2, 4, 6), MOVES))
+    if plan == "angle":
+        return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), (2, 4, 6), (4,),
+                                      ("across2.5", "diag2.5", "goal2.5")))
     if plan == "dots":
         return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), STEPS, (2, 4, 6),
                                       ("goal1.5", "goal2.5")))
@@ -144,9 +151,10 @@ def job(args):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(sg * x, sg * (GOAL_Y - out), settle=settle, clock=clock)
         set_ratings(h, shp * 5, sha * 5)
-        if isinstance(move, str):                        # skating at the middle of the goal line
-            dx, dy = -sg * x, sg * out
-            v = float(move[4:]) / math.hypot(dx, dy)
+        if isinstance(move, str):                        # skating toward the middle: across, 45 degrees, at the goal
+            kind = move.rstrip("0123456789.")
+            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg, 0), diag=(-sg, sg))[kind]
+            v = float(move[len(kind):]) / math.hypot(dx, dy)
             e.setb(rec(SHOOTER) + 0x55, toward(dx, dy))
             e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
             e.setw(rec(SHOOTER) + 0x2A, round(dy * v * 4096) & 0xFFFF)

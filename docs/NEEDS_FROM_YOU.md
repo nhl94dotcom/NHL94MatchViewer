@@ -61,15 +61,15 @@ record or check and what it will settle. Newest at the bottom of each section.
 1. ~~**Does the opponent's iPhone open the game files from the S3 link?**~~ Yes (2026-10-18).
 2. ~~**In online league games, is Home always the netplay host?**~~ No (2026-10-18): Genesis players pick Player 1 or 2
    in RetroArch whoever hosts, and SNES players pick their side in the game, so hosting isn't part of the home edge.
-3. **Which side is the EA Special taken from?** (2026-10-25) The EA studies put a left-handed shooter on his right
-   (his off-wing, the stick toward the middle; `ea_run.py` calls that his forehand side). The rest of the scoring doc
-   uses "forehand side" for a left-hander's left. If the play is usually from the other side (a left-hander on his
-   left), the study should be repeated from there.
-4. **The CDL goalie edit** (2026-10-25). In `CDL_Season_12.bin` every goalie but Roy, Belfour and Fuhr has +1
-   Agility, +1 Defensive Awareness and +1 Puck Control over the retail ROM (capped at 6); Fuhr has +1 Agility only, Roy
-   and Belfour nothing; the four stick and glove ratings are unchanged for all. Is that the edit you meant by "+1 to all stick / glove attributes", and is it the same every season?
-   (The stick and glove ratings do nothing in the game, except that Glove Left of 3 or more (2 when hot) lets him use the
-   reaching glove save; Agility, Speed, Defensive Awareness and Puck Control are the ones that play.)
+3. ~~**Which side is the EA Special taken from?**~~ Answered (2026-10-25): a left-hander from the right side (down the
+   right wing, turning a little toward the middle, a wrist shot at the goalie), a right-hander from the left; now and
+   then a backhand flip from the other side. **The shooter always faces straight across the rink or diagonally toward
+   the goalie as he shoots, never straight up the ice**, so he is placed to claim the rebound. The studies' side was
+   right; the standing and straight-up-the-ice runs aren't the real play, and plan "angle" plays it across and at an
+   angle (SCORING_MAP "EA Specials").
+4. ~~**The CDL goalie edit**~~ Settled (2026-10-25): the studies use what `CDL_Season_12.bin` holds: every goalie but
+   Roy, Belfour and Fuhr has +1 Agility, +1 Defensive Awareness and +1 Puck Control over the retail ROM (capped at 6),
+   Fuhr +1 Agility only, Roy and Belfour nothing; the stick and glove ratings are unchanged.
 
 ## Checks you could run on your box-score database
 
