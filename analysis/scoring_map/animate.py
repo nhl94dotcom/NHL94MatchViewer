@@ -55,10 +55,12 @@ RATED = [
      "the ratings run: 240 shots at 60 moments, the shooter parked")
     for p, a, r in ((4, 4, 15 / 240), (6, 6, 44 / 240))] + [
     (f"genesis_slap_goalie_{g}", "genesis", "top", 0, 160, "slap", 6,
-     f"Genesis, top net: the same far-post slapshot (Shot Power 4 / Accuracy 4) against a goalie rated {g}", r, (4, 4),
-     f"the goalie run: 400 launches at 120 moments; goalie Agility, Speed, Def. Awareness, Puck Control all {g}",
-     (g, g, g, g))
-    for g, r in ((10, 0.57), (20, 0.03))]
+     f"Genesis, top net: the same far-post slapshot (Shot Power 4 / Accuracy 4) against {who}", r, (4, 4),
+     f"the goalie profile run: 400 launches at 120 moments; goalie Agility / Speed / Def. Awareness / Puck Control "
+     f"{' / '.join(map(str, rat))} (working)", rat)
+    for g, who, rat, r in (("retail", "a typical retail starter", (20, 20, 25, 20), 0.04),
+                           ("roy", "Roy", (30, 20, 20, 30), 0.02))]
+# (2026-10-25: the earlier goalie_10 / goalie_20 GIFs wrote the third rating into aidef raw; replaced by these)
 MAP_SHOTS = {"genesis": "the map: 800 launches at 120 moments",   # what each rate rests on
              "snes": "480 shots over 120 moments, the shooter left on the ice"}
 COL = {"GOAL": "#ea580c", "SAVED": "#475569", "POST": "#7c3aed", "MISSED": "#94a3b8"}
