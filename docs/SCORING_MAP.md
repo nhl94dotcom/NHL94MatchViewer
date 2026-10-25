@@ -1392,17 +1392,23 @@ moments x 4 seeds, both nets.)
   slapshots from the middle (6%).
 
 **Animated (`animate.py`, the RATED spots):** the far-post slapshot from the middle 35 ft out (top net, the shooter 4 /
-4), against a goalie rated 10 (the run 57%; 66 of the 120 filmed went in) and 20 (3%; none of the 120).
+4), against Hrudey (the run 58%), a typical retail starter (4%; 4 of the 120 filmed went in) and Roy (2%; 2 of 120).
+(The goalie GIFs made before 2026-10-25, "rated 10 / 20", had the Defensive Awareness slot wrong and are replaced.)
 
-**Goalie rated 10: 57%.**
+**Hrudey: 58%.**
 
-![Far-post slapshot against a goalie rated 10: real attempts](img/scoring_map/genesis_slap_goalie_10_clips.gif)
-![Far-post slapshot against a goalie rated 10: every attempt from above](img/scoring_map/genesis_slap_goalie_10_fan.gif)
+![Far-post slapshot against Hrudey: real attempts](img/scoring_map/genesis_slap_4_4_clips.gif)
+![Far-post slapshot against Hrudey: every attempt from above](img/scoring_map/genesis_slap_4_4_fan.gif)
 
-**Goalie rated 20: 3%.**
+**A typical retail starter (Agility 4): 4%.**
 
-![Far-post slapshot against a goalie rated 20: real attempts](img/scoring_map/genesis_slap_goalie_20_clips.gif)
-![Far-post slapshot against a goalie rated 20: every attempt from above](img/scoring_map/genesis_slap_goalie_20_fan.gif)
+![Far-post slapshot against a retail starter: real attempts](img/scoring_map/genesis_slap_goalie_retail_clips.gif)
+![Far-post slapshot against a retail starter: every attempt from above](img/scoring_map/genesis_slap_goalie_retail_fan.gif)
+
+**Roy: 2%.**
+
+![Far-post slapshot against Roy: real attempts](img/scoring_map/genesis_slap_goalie_roy_clips.gif)
+![Far-post slapshot against Roy: every attempt from above](img/scoring_map/genesis_slap_goalie_roy_fan.gif)
 
 ## Limits and what comes next
 
