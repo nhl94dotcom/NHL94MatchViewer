@@ -499,6 +499,17 @@ viewer's Help, "This game's ROM", says whether yours does).
 - **Goalies can't be knocked down.** Skating into one fast knocks *you* down.
 - Players with Stick Handling 81+ may wobble instead of falling (2.1).
 - **Injuries:** a hard knockdown can injure; the injury always gives the hitter a roughing minor (with penalties on).
+- **A speed burst doesn't stop you picking up the puck.** Your stick stays where it is when you skate, so a pass that
+  reaches it can be caught mid-burst (39 of 657 passes and loose pucks taken from the other team in 17 recorded games
+  were taken mid-burst). What costs you the interception is that **the burst locks you in**: the push sends you
+  along the way you face (at the man you meant to hit, usually not into the passing lane), and the d-pad does
+  nothing until it ends. A fast pass that touches your stick bounces off it rather than sticking (that's true
+  with or without a burst).
+- **Steal the pass, then hit him anyway:** a check lands on whoever your burst runs into, puck or no puck, and
+  having just taken the puck doesn't end the burst. So if you take his pass and run into him while still bursting,
+  he gets checked as well. In the recorded games it happened 11 times, every time after a burst, 7 of them along
+  the boards: there a check that lands hard enough always knocks him down, so it shows. While you're locked in the
+  burst or the check that follows, you can't pass or shoot the puck you just took.
 
 - **Nets rarely come off on the Genesis:** skating into the net fast, with the puck within about 13 feet of it,
   knocks it off one time in 32 per frame of contact (the SNES is far touchier).

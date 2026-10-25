@@ -1181,6 +1181,19 @@ recordings that went over the glass (heights 44 and 42 at the boards).
   or 240 for a checker a person controls). At 0 or below, or with the target against the boards, **he goes down**.
   Otherwise a roll against half the checker's working Checking decides.
 - **Goalies can't be knocked down.**
+- **A burst doesn't block a pickup** (2026-10-25, the disassembly). `burst` (input94) adds speed along the facing
+  direction and starts `SPAburst` with `pfalock`. That animation is the plain skating frames (`SPFskate`), so the
+  stick hot point is where it is when skating. It sets neither `nopuck` nor `pf2unav`, the only player-side bars in
+  `checkpuckcoll` (with `pfnc`). The usual rules apply: the stick hot point within 14 of the puck (`cstick`; 7 while
+  the puck's own `nopuck` runs) and slow enough to catch (`puckstick`: speed squared against (13000 + 350 x Stk)
+  squared, else deflected and `nopuck` 8). While `pfalock` is set, `doinput_islocked` ignores the d-pad (only B,
+  to switch), and returns at once if he is the carrier, so no pass or shot until the animation ends. In 17
+  recorded Genesis games 39 of 657 loose pucks taken from the other team were taken in a burst ($0C5E).
+- **A check on the passer after a pick-off.** `CCStart` checks whenever a player in `SPAburst` collides with an
+  opponent; it never asks who has the puck, and catching the puck (`puckglue`) doesn't end the burst. So a burster
+  who takes the pass and then reaches the passer still checks him. In the 17 games: 11 pick-offs followed within
+  0.7 s by the taker's check animation (all mid-burst), 7 along the boards (the boards' automatic knockdown), 2
+  knockdowns. (`analysis`-style scan of the match files: owner changes plus the `anim` words.)
 
 ### 7.2 The weight bug and the CB check
 
