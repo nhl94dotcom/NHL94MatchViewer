@@ -649,7 +649,10 @@ chance falls from about 20% to 5% (the far post from the middle 57% to 3%) and t
 to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (71% to 63% at 30), floaters not at all.
 **One rating at a time, Agility does it** (his reach, 5.1): Agility 13 to 20 alone takes the standing slapshot's best
 chance from 18.9% to 8.9% and the far post from the middle from 58% to 3%; Puck Control helps a little (20 to 30:
-8.4% to 6.3%); Speed and Defensive Awareness (`aidef`, his reaction) change nothing. Real goalie profiles are being run.
+8.4% to 6.3%); Speed and Defensive Awareness (`aidef`, his reaction) change nothing. **Real goalie profiles**
+(SCORING_MAP "Real goalie profiles"): against Roy and Belfour (roster Agility 6) a 4 / 4 shooter's standing slapshot
+scores 3-4% (19% against Hrudey), the skating far-post slapshot 9% (37%), floaters 16-20% (51%); one-timers 48-51%
+(58%) and dekes 72-76% (85%) hold up. A retail starter (Agility 4) halves the slapshots; the CDL edit adds a little.
 
 ---
 

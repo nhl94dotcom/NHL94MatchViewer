@@ -19,7 +19,7 @@ The things about the Genesis game that matter most, one line each; the number af
 1. **Hot and cold is one hidden value for all of a player's ratings**, and the hot / cold players and flame icons the game shows are fake. ([1.2](#12-what-the-position-inside-a-band-means))
 2. **Don't trust Overall**: it weighs ratings that do nothing in your league's setup. ([1.3](#13-dont-trust-overall))
 3. **Close shots go where you aim** (a good shooter's, most of the time); long ones scatter, and only upward. Long slapshots need Shot Power. ([6](#6-shooting))
-4. **One-timers are the best way to score**: the game aims them for you and the goalie's reach shrinks. ([7](#7-one-timers))
+4. **One-timers are the best way to score**: the game aims them for you and the goalie's reach shrinks. Against Roy or Belfour they still score about half the time in the game's own tests; slapshots almost never. ([7](#7-one-timers), [12.3](#123-the-computer-goalie))
 5. **Saves are geometry**: the goalie is a fixed circle, and being in the way is what stops shots. ([12.1](#121-how-saves-work))
 6. **C doesn't make your goalie bigger**: it freezes him in a save move (the pad stack is the one move that reaches farther). Steer him into the puck's line instead. ([12.2](#122-playing-goal-yourself))
 7. **Through the legs**: a hard, flat puck straight at a goalie in the butterfly can slide right through him. ([12.2](#122-playing-goal-yourself))
@@ -178,7 +178,7 @@ Not on the screen: **Fighting** (how long players he injures stay out) and a **p
 
 | Column | What it does |
 |---|---|
-| **Agility** | **His reach**, which decides saves (section 12): 99: 15 units; 81-98: 14 (15 when hot); 63-80: 14 (13 when very cold); below 63: 13; 25-29: 12-13. **When you control him yourself he always has 15** |
+| **Agility** | **His reach**, which decides saves (section 12), and the rating that makes a computer goalie good: against Roy or Belfour (6) slapshots almost never score (12.3). Reach: 99: 15 units; 81-98: 14 (15 when hot); 63-80: 14 (13 when very cold); below 63: 13; 25-29: 12-13. **When you control him yourself he always has 15** |
 | **Puck Control** | Whether he holds a shot or gives a rebound |
 | **Def. Awareness** | How often the computer goalie re-squares to the puck, and how fast he goes for loose pucks |
 | **Speed**, **Weight** | Skating |
@@ -616,6 +616,11 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - So what beats him is **time**: a quick, hard shot from close in, or a pass across that makes him slide again (a
   one-timer), leaves him short of the crossing point. A slow shot from far out gives him time to get there.
 - Point-blank shots at him while he's standing still mostly rebound.
+- **His Agility (reach) is what makes him good.** Played in the game itself (SCORING_MAP), a 4 / 4 shooter's best
+  standing slapshot scores 19% against Hrudey (a mid-pack starter played cold), 8% against a typical starter with
+  Agility 4, and 3-4% against Roy or Belfour (6). One-timers (58% down to 48-51%) and dekes (85% down to 72-76%)
+  hardly mind; floaters fade (51% down to 16-20%). **Against a good goalie, one-timers and dekes are the shots.**
+  Speed and Defensive Awareness made no difference to slapshots.
 
 The viewer's **xG** (expected goals) plays every shot out this way, hundreds of times, and shows the chance it had of
 going in: on each shot, the player cards and the team stats. It's a fair way to see who is getting good chances and

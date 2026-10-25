@@ -54,7 +54,7 @@ be a weak one: see the goalie section):
 | [Moving shooters](#moving-shooters-genesis-2026-10-24) | The far-post slapshot is a skating shot: across toward the stick side, released before the middle: 50-62% from 28-35 ft for a strong shooter (27 / 27), 44% on average at 4 / 4 |
 | [Dekes and floaters](#dekes-and-floaters-genesis-2026-10-24) | The swing is the goal (0-1% without it): the best dekes 82-96% (the backhand deke too), floaters 50-65%, backhand floaters 41-51%. The timing suits one skating speed |
 | [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out |
-| [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Goalie Agility stops the slapshot (far post from the middle 58% to 3% from Agility 13 to 20), Puck Control a little, Speed and Defensive Awareness not at all; one-timers don't care; real goalie profiles being run |
+| [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Goalie Agility stops the slapshot (far post from the middle 58% to 3% from Agility 13 to 20), Puck Control a little, Speed and Defensive Awareness not at all. Against Roy and Belfour slapshots score 3-7%, floaters 16-20%; one-timers (48-51%) and dekes (72-76%) hold up |
 
 ## Building the Genesis simulator
 
@@ -1352,8 +1352,43 @@ is 4, 30 is 6). Defensive Awareness is set as the game sets it (`aidef`, reactio
   is how often he holds the shot; a shot he doesn't hold can still go in.
 - **Speed and Defensive Awareness do nothing** to the standing slapshot (within a point at every level).
 - **For a league goalie** (roster ratings, a fifth of the working ones): Hrudey is a roster Agility 3 played cold; a
-  goalie with roster Agility 4 or more (working 20+) stops most of the slapshot chances in this document. The real
-  goalie profiles (retail, CDL, Roy, Belfour) are being run against every kind of shot.
+  goalie with roster Agility 4 or more (working 20+) stops most of the slapshot chances in this document (the real
+  goalie profiles, below).
+
+### Real goalie profiles: every shot against retail, CDL, Roy and Belfour
+
+The same studies against four goalie profiles from the ROMs (working ratings, a roster rating x 5): a typical retail
+starter (roster Agility 4, Speed 4, Defensive Awareness 5, Puck Control 4: working 20 / 20 / 25 / 20); the same goalie
+with the CDL edit (+1 Agility, Defensive Awareness and Puck Control, as `CDL_Season_12.bin` has it: 25 / 20 / 30 / 25);
+Roy (6 / 4 / 4 / 6: 30 / 20 / 20 / 30) and Belfour (6 / 4 / 6 / 5: 30 / 20 / 30 / 25), the two the leagues leave
+unedited and rank above the rest. Hrudey, the test goalie, for comparison.
+
+| Goalie | Standing slapshot, shooter 4 / 4 (best aim, 18 spots) | Standing slapshot, shooter 27 / 27 (best aim, 70 middle spots; top / bottom net) | Skating far-post slapshot, 4 / 4 (best) | One-timers, receiver 4 / 4 | Dekes (best set-ups) | Floaters (best set-ups) |
+| --- | --- | --- | --- | --- | --- | --- |
+| Hrudey (13 / 13 / about 20 / 18) | 19% | 23% (29% / 17%) | 37% | 58% | 85% | 51% |
+| Retail starter (20 / 20 / 25 / 20) | 8% | 13% (15% / 12%) | 18% | 54% | 81% | 33% |
+| CDL starter (25 / 20 / 30 / 25) | 6% | 11% (13% / 9%) | 19% | 51% | 82% | 26% |
+| Roy (30 / 20 / 20 / 30) | **3%** | **6%** (7% / 5%) | **9%** | 51% | 72% | 20% |
+| Belfour (30 / 20 / 30 / 25) | **4%** | **7%** (9% / 5%) | **9%** | 48% | 76% | 16% |
+
+(The CDL slapshot from the middle was run with Defensive Awareness 25, before the profile was corrected; that rating
+makes no difference to slapshots. Dekes and floaters: goals per attempt, a puck carried in counted as a goal, 24
+moments x 4 seeds, both nets.)
+
+- **Against Roy and Belfour the slapshot is close to worthless:** 3-4% for a 4 / 4 shooter and 6-7% for the best
+  shooters even from the middle, a third or less of what the same shots score against Hrudey. The far post from the
+  middle is gone (1%); straight Down holds a little at the bottom net. Even the retail starter halves every slapshot.
+- **One-timers barely notice the goalie:** 58% against Hrudey, 48-51% against Roy and Belfour. They beat a goalie still
+  sliding across, before his reach comes into it.
+- **Dekes hold up:** 85% against Hrudey, 72-76% against Roy and Belfour; the swing baits the pad stack whoever is in
+  net.
+- **Floaters fade:** 51% against Hrudey, a third against a retail starter, 16-20% against Roy and Belfour. A floater
+  is a slow shot at the far post, which a longer reach covers.
+- **The CDL edit** makes the ordinary goalies a little better (slapshots 8% to 6%, floaters 33% to 26%) and leaves dekes
+  and one-timers where they were; Roy and Belfour stay well above them, as the leagues rank them.
+- **The top net stays the better one for slapshots** against every goalie.
+- **So against a good goalie, score with one-timers and dekes.** The ranking of the shots is the same for every
+  goalie, but the gap grows: against Roy a one-timer is worth about eight standing slapshots.
 
 **Animated (`animate.py`, the RATED spots):** the far-post slapshot from the middle 35 ft out (top net, the shooter 4 /
 4), against a goalie rated 10 (the run 57%; 66 of the 120 filmed went in) and 20 (3%; none of the 120).
