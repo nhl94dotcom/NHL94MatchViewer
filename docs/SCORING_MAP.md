@@ -985,15 +985,16 @@ From the user, after the animations: come in from a bit farther out to the side,
 and shoot with the stick straight up or a bit up and toward the swing's side. `deke_run.py deke2`: both hands, both
 swing directions, both nets; starting 30 / 45 / 60 to the side, the swing begun 50 / 60 / 72 from the goalie, C 10-22
 frames later, aimed to the side (as before), straight Up, or Up and toward the swing's side; 12 moments x 4 seeds.
-Rates below count a puck gone before the shot as a failure (out of 96 attempts, both nets); some of those were the
-skater carrying it in, a goal (found 2026-10-25: "By the shooter's skating and shot" below).
+Rates below are out of 96 attempts (both nets). A puck the skater carried into the net himself counts as a goal: the
+first count missed those (found 2026-10-25, "By the shooter's skating and shot" below), and the grid was re-counted
+(run again with the fix, run "dekes2_c"); the shots-only figures are in brackets.
 
 | Move | Before (the first grid) | Now | Best set-up |
 |---|---|---|---|
 | Left-hander, swing to his left (forehand) | 85% | **95%** | from 45 to his left, swing 60 from the goalie, C 10 frames later |
 | Right-hander, swing to his left (backhand side) | 83% | **96%** | from 45, swing at 60, C 13 frames later |
-| Right-hander, swing to his right (forehand) | 66% | **76%** | from 45-60 to his right, swing at 72, C 22 frames later |
-| Left-hander, swing to his right (backhand side) | 46% (the puck never got across) | **67%** | from 45, swing at 72, C 22 frames later: the puck 12 across to his right |
+| Right-hander, swing to his right (forehand) | 66% | **80%** (76% counting only shots) | from 45-60 to his right, swing at 72, C 22 frames later |
+| Left-hander, swing to his right (backhand side) | 46% (the puck never got across) | **83%** (67% counting only shots) | from 45, swing at 72, C 22 frames later: the puck 12 across to his right |
 
 - **Farther out to the side helps every move** (45 to the side is best for all four; 30 was the first grid's).
   Getting closer before the swing (60 instead of 72) helps the swings to the left; the swings to the right need the
@@ -1004,7 +1005,11 @@ skater carrying it in, a goal (found 2026-10-25: "By the shooter's skating and s
 - **The left-hander's swing to his right now gets the puck across** with the longer swing (12 units to his right at
   the release), and scores 67%. A test that waits for the puck to be across before shooting (plan "dekebh") is next.
 - Going up and going down are close for the best set-ups (45 / 46 and 45 / 47 of 48 for the swings to the left; the
-  swings to the right still differ by net: 43 / 30 and 40 / 24).
+  swings to the right still differ by net: the right-hander 47 / 30 of 48 counting carried-in goals, the left-hander
+  44 / 36).
+- **Skating it in:** the right-hander from 45 to his right with the swing begun at 60 and C 22 frames later never
+  shoots. He reaches the goalie first and carries the puck into the net in 20 of 24 moments (83%: top net 8 of 12,
+  bottom 12 of 12). Begun at 72 he shoots instead (80%).
 
 **Animated** (`deke_animate.py`, DEKE2: each best set-up going up, 24 attempts; rates are that net's 48 in the run):
 
@@ -1161,7 +1166,13 @@ shot counts as a failure, a puck the skater carried into the net himself as a go
   when the skater had carried it in. The best set-ups had few (the test skater's "best" run: 8 carried, 9 lost of 480
   moments; corrected over all of them 71%, against 72% counted per shot). The grids behind the earlier sections had
   more lost attempts (the refined dekes 44% of their moments, the dekes 9-12%, the backhand dekes 12%), so some of
-  their set-ups may score more than reported. Re-running them with the fix would settle it.
+  their set-ups may score more than reported. **Re-run with the fix (2026-10-25: the dekes, refined dekes, backhand
+dekes and backhand floaters, runs "dekes_c", "dekes2_c", "dekes3_c"):** the shots themselves came out identical, so
+only the carried-in goals are new. Every best set-up of the first deke grid, the backhand deke and the backhand
+floater stands (none carried it in). The refined dekes' swings to the right go up: the left-hander's from 67% to 83%,
+the right-hander's from 76% to 80% (the table above is updated). Over whole grids the rates rise 0-2 points for the
+first dekes, 0-6 for the backhand dekes and 4-9 for the refined dekes (the left-hander's swing to his left 22% to
+31%), which started closest to the goalie.
 
 **Animated (`deke_animate.py`, the SKATE list):** the left-hander's backhand deke at the top net, by a skater of 20
 (96 of 96 in the run, shot in) and 30 (24 of 24 moments carried in, no shot).
