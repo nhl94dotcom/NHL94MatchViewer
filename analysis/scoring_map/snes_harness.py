@@ -6,6 +6,8 @@ three scatter draws, and everything after: rebounds, holds, post deflections), a
 
 With no hook the shot's draws aren't steered, so each (spot, aim) is sampled: phases (the goalie's state, from the
 seed and the moment) times release seeds."""
+import os
+
 from paths import SNES_STATE_TOP
 from snes_emu import SnesEmu
 
@@ -17,6 +19,7 @@ SCORE_HOME = 0x178E               # tmscore, home word
 CLOCK = 0x1632
 PUCKZ, PUCKVZ = 0x0DF9, 0x0E01
 SPA, SHOTSPD, SHOTACC = 0x11A3, 0x1363, 0x1383
+LEGSTR, LEGSPD, AIDEF = 0x12E3, 0x1303, 0x1343   # working Agility, Speed, aidef (word arrays, setplayer)
 PASSDIR, PASSSPEED = 0x0D03, 0x0D05
 
 SHOOTER = 2                       # home centre, pad 1
@@ -37,6 +40,14 @@ class Harness:
         self.base = open(state, "rb").read()
         self.top = top
         self.park_y = -230 if top else 230
+        g = os.environ.get("NHL94_SNES_GOALIE")  # "agl,spd,dfa,pkc": the computer goalie's working ratings, 0-15
+        if g:                                     # (Puck Control in the shotspd slot); aidef is stored, not DfA:
+            e = self.e                            # setplayer's goalie formula (15 - DfA + 15) / 2, 7-15
+            e.unserialize(self.base)
+            agl, spd, dfa, pkc = map(int, g.split(","))
+            for a, v in ((LEGSTR, agl), (LEGSPD, spd), (AIDEF, (30 - dfa) // 2), (SHOTSPD, pkc)):
+                e.setw(a + o(GOALIE), v)
+            self.base = e.serialize()
 
     def sw(self, a):
         v = self.e.w(a)

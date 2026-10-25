@@ -9,6 +9,8 @@ still held, so the shot is aimed at that side.
 - floater (Juneau's 3-0, Sweeney's 4-0: up and across on a diagonal, the puck swung back the other way and floated
   toward the far post from 45-55 out)
 - best (each move's best set-up, 2026-10-24: for comparing goalies and shooters)
+- retime (2026-10-25: the best set-ups with the swing begun at other distances and C at other times, to re-tune them
+  for slower and faster skaters: NHL94_DEKE_SKATE)
 - deke2 (the user's refinements, 2026-10-24: start 30 / 45 / 60 to the side, swing 50-72 from the goalie, shoot with
   the swing's side held, straight Up, or Up and toward the swing's side)
 - dekebh (the deke on the backhand, and the same for the forehand to compare: C once the puck is 4-16 units across
@@ -67,6 +69,13 @@ def plan_jobs(plan):
                      ("floater", net, "L", -50, 1, 95, 18, 6, "side"), ("floater", net, "R", 35, -1, 110, 22, 9, "side"),
                      ("floaterbh", net, "L", 50, -1, 110, 26, 9, "side"),
                      ("floaterbh", net, "R", -50, 1, 95, 14, 9, "side")]
+        return jobs
+    if plan == "retime":              # the best set-ups re-timed: the swing 15 nearer to 60 farther out, C 6 earlier
+        for job in plan_jobs("best"):  # to 6 later (dekebh: the puck 6 less to 6 more across)
+            for dD, dl in itertools.product((-15, 0, 15, 30, 45, 60), (-6, -3, 0, 3, 6)):
+                j = list(job)
+                j[5], j[6] = j[5] + dD, max(2, j[6] + dl)
+                jobs.append(tuple(j))
         return jobs
     if plan == "deke2":               # the user's refinements (2026-10-24): from further out to the side, closer in,
         for net, hand, side, X, D, lag, var in itertools.product(        # the stick up (U) or up and across

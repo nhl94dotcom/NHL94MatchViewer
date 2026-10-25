@@ -32,11 +32,13 @@ class Harness:
         emu: share one emulator (the core is one DLL per process: a second Emu would take over its callbacks)."""
         self.e = emu or Emu(rom)
         self.base = open(state, "rb").read()
-        g = os.environ.get("NHL94_GOALIE")       # "agl,spd,dfa,pkc": the computer goalie's working ratings (the
-        if g:                                     # states' own: 13, 13, 10, 18); Puck Control is the ShP slot
-            e = self.e
-            e.unserialize(self.base)
-            for off, v in zip((0x68, 0x69, 0x6B, 0x6C), map(int, g.split(","))):
+        g = os.environ.get("NHL94_GOALIE")       # "agl,spd,dfa,pkc": the computer goalie's working ratings, 0-30
+        if g:                                     # (the states' own: 13, 13, about 20, 18); Puck Control is the ShP slot
+            e = self.e                            # +$6B holds aidef, not the rating: setplayer stores 15 - DfA / 4
+            e.unserialize(self.base)              # (7-15; his reaction timer is aidef / 4 frames). Before 2026-10-25
+            agl, spd, dfa, pkc = map(int, g.split(","))     # the value given was written there as it was
+            aidef = (((dfa >> 1) ^ 0xF) + 0xF) >> 1
+            for off, v in zip((0x68, 0x69, 0x6B, 0x6C), (agl, spd, aidef, pkc)):
                 e.setb(rec(GOALIE) + off, v)
             self.base = e.serialize()
         self.top = top
