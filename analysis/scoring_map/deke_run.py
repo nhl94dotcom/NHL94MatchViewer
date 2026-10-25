@@ -8,6 +8,7 @@ still held, so the shot is aimed at that side.
   puck pulled back out away from the middle)
 - floater (Juneau's 3-0, Sweeney's 4-0: up and across on a diagonal, the puck swung back the other way and floated
   toward the far post from 45-55 out)
+- best (each move's best set-up, 2026-10-24: for comparing goalies and shooters)
 - deke2 (the user's refinements, 2026-10-24: start 30 / 45 / 60 to the side, swing 50-72 from the goalie, shoot with
   the swing's side held, straight Up, or Up and toward the swing's side)
 - dekebh (the deke on the backhand, and the same for the forehand to compare: C once the puck is 4-16 units across
@@ -39,11 +40,12 @@ from lowload import WORKERS, breathe, gentle
 from mapper import set_ratings
 from paths import RUNS, STATE_TOP, STATE_BOTTOM
 
-MOMENTS, SEEDS = 12, 4
+MOMENTS, SEEDS = int(os.environ.get("NHL94_DEKE_MOMENTS") or 12), 4
 GOAL_Y = 264
 # Shot Power, Shot Accuracy: the map's usual shooter; NHL94_SMAP_RATINGS="shp,sha" for others
 RATINGS = tuple(map(int, os.environ.get("NHL94_SMAP_RATINGS", "20,15").split(",")))
 HANDS = os.environ.get("NHL94_DEKE_HANDS", "L,R").split(",")
+SKATE = os.environ.get("NHL94_DEKE_SKATE")     # "agl,spd": the shooter's working Agility and Speed (else the state's)
 KEYS = ("plan", "net", "hand", "x0", "side", "D", "lag", "hold", "var")
 PAD = {"U": 0, "UR": 1, "R": 2, "DR": 3, "D": 4, "DL": 5, "L": 6, "UL": 7}
 
@@ -57,6 +59,15 @@ def plan_jobs(plan):
     var: "side" (C with the swing's side held: aimed at that side, middle height), "low" (that side along the ice),
     "still" (the control: no swing, the puck kept where it was, the same shot at the same moment)."""
     jobs = []
+    if plan == "best":                # each move's best set-up (deke2, dekebh, floater, floaterbh), to compare goalies
+        for net in ("top", "bottom"):  # (NHL94_GOALIE) and shooters (NHL94_SMAP_RATINGS, NHL94_DEKE_SKATE)
+            jobs += [("deke2", net, "L", -45, 1, 60, 10, 4, "side"), ("deke2", net, "R", -45, 1, 60, 13, 4, "side"),
+                     ("deke2", net, "R", 60, -1, 72, 22, 4, "side"), ("deke2", net, "L", 45, -1, 72, 22, 4, "upside"),
+                     ("dekebh", net, "L", 45, -1, 85, 8, 4, "side"), ("dekebh", net, "R", -30, 1, 72, 8, 4, "side"),
+                     ("floater", net, "L", -50, 1, 95, 18, 6, "side"), ("floater", net, "R", 35, -1, 110, 22, 9, "side"),
+                     ("floaterbh", net, "L", 50, -1, 110, 26, 9, "side"),
+                     ("floaterbh", net, "R", -50, 1, 95, 14, 9, "side")]
+        return jobs
     if plan == "deke2":               # the user's refinements (2026-10-24): from further out to the side, closer in,
         for net, hand, side, X, D, lag, var in itertools.product(        # the stick up (U) or up and across
                 ("top", "bottom"), HANDS, (1, -1), (30, 45, 60), (50, 60, 72), (10, 13, 16, 19, 22),
@@ -129,6 +140,9 @@ def job(args):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
         set_ratings(h, *RATINGS)
+        if SKATE:
+            for off, v in zip((0x68, 0x69), map(int, SKATE.split(","))):
+                e.setb(rec(SHOOTER) + off, v)
         b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)     # the game reads the hand from attribute bit 3
         e.setb(rec(SHOOTER) + 0x76, (b | 1) if hand == "L" else (b & ~1))      # (set: right-handed, drawn flipped)
         e.setb(rec(SHOOTER) + 4, (a & ~8) if hand == "L" else (a | 8))

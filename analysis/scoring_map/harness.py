@@ -2,6 +2,8 @@
 for `settle` frames (the computer goalie sets himself), then shoot() winds up (C held `hold` frames), releases with
 the d-pad held for the aim, and stops on the frame doshot runs. play_out() runs on with every skater kept away
 until the shot is decided."""
+import os
+
 from emu import Emu
 from paths import ROM, STATE_TOP
 
@@ -30,6 +32,13 @@ class Harness:
         emu: share one emulator (the core is one DLL per process: a second Emu would take over its callbacks)."""
         self.e = emu or Emu(rom)
         self.base = open(state, "rb").read()
+        g = os.environ.get("NHL94_GOALIE")       # "agl,spd,dfa,pkc": the computer goalie's working ratings (the
+        if g:                                     # states' own: 13, 13, 10, 18); Puck Control is the ShP slot
+            e = self.e
+            e.unserialize(self.base)
+            for off, v in zip((0x68, 0x69, 0x6B, 0x6C), map(int, g.split(","))):
+                e.setb(rec(GOALIE) + off, v)
+            self.base = e.serialize()
         self.top = top
         self.park_y = -230 if top else 230
 

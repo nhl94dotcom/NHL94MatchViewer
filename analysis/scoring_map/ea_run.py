@@ -8,10 +8,16 @@ Standing or skating toward the net (MOVES). Per play: the first result (goal str
 bobble the loose puck's speed, how far the goalie went back toward his line, a dive, whether and how fast the shooter
 claimed it, and the follow-up (goal, held, none). Spots in the attacker's view on the forehand side (a left-hander:
 his right). Gentle mode, chunked.
-python ea_run.py RUN [minutes]   -> paths.RUNS / RUN / ea.jsonl"""
+Plans: "ea" (the first run: 40 / 70 / 100 to the side, standing or skating straight up the ice); "firm" (2026-10-24:
+40 to the side only, Shot Accuracy 2 / 4 / 6, for more moments: NHL94_EA_MOMENTS; one set-up's rate over 8 moments
+wandered: ea_animate.py); "dots" (the user, 2026-10-24: more EA Specials come from farther to the side, on or near the
+end-zone faceoff dot, 70 to the side and about 60 out, with the skater skating toward the goal as he shoots: move
+"goal<speed>" sets his speed toward the middle of the goal line and he keeps skating at the goal after the shot).
+python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
 import math
+import os
 import random
 import sys
 import time
@@ -23,7 +29,7 @@ from lowload import WORKERS, breathe, gentle
 from mapper import set_ratings
 from paths import RUNS, STATE_TOP, STATE_BOTTOM
 
-MOMENTS, SEEDS = 8, 2
+MOMENTS, SEEDS = int(os.environ.get("NHL94_EA_MOMENTS") or 8), 2
 GOAL_Y = 264
 FIRST, FOLLOW = 60, 90         # frames to the first result; frames more for the follow-up
 STEPS = (2, 3, 4, 5, 6)        # roster steps (x 5 = working)
@@ -32,7 +38,12 @@ KEYS = ("net", "x", "out", "shp", "sha", "move")
 MOVES = (0.0, 1.5)             # standing, or skating toward the net at 1.5 a frame as he shoots (down the side)
 
 
-def plan_jobs():
+def plan_jobs(plan="ea"):
+    if plan == "firm":
+        return list(itertools.product(("top", "bottom"), (40,), (60, 90, 120), STEPS, (2, 4, 6), MOVES))
+    if plan == "dots":
+        return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), STEPS, (2, 4, 6),
+                                      ("goal1.5", "goal2.5")))
     return list(itertools.product(("top", "bottom"), (40, 70, 100), (60, 90, 120), STEPS, STEPS, MOVES))
 
 
@@ -64,7 +75,7 @@ def park_except(h, keep):
 DIVE = 0x02F4                  # the goalie's dive animation ($02F4)
 
 
-def play(h, sg):
+def play(h, sg, at_goal=False):
     """From the release (the user's play): the shooter skates on toward the net; once the goalie has touched the puck
     and it is loose, he skates at it, and as soon as he has it taps C aimed at the near post (the side of the net he
     is on: a wrist shot at once). Returns the first result ('goal' straight in, 'held', 'bobble', 'miss') and what
@@ -88,7 +99,10 @@ def play(h, sg):
                 e.run(1, hold=["C"] + DIRPAD[aim])
             continue
         if touched is None or info["shot"]:
-            pad = DIRPAD[0 if sg > 0 else 4]             # on toward the net
+            if at_goal:                                  # on at the middle of the goal line
+                pad = DIRPAD[toward(-sx, sg * GOAL_Y - sy)]
+            else:
+                pad = DIRPAD[0 if sg > 0 else 4]         # on toward the net
         else:
             pad = DIRPAD[toward(px - sx, py - sy)]
         e.run(1, hold=pad)
@@ -130,7 +144,13 @@ def job(args):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         h.setup(sg * x, sg * (GOAL_Y - out), settle=settle, clock=clock)
         set_ratings(h, shp * 5, sha * 5)
-        if move:
+        if isinstance(move, str):                        # skating at the middle of the goal line
+            dx, dy = -sg * x, sg * out
+            v = float(move[4:]) / math.hypot(dx, dy)
+            e.setb(rec(SHOOTER) + 0x55, toward(dx, dy))
+            e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
+            e.setw(rec(SHOOTER) + 0x2A, round(dy * v * 4096) & 0xFFFF)
+        elif move:
             e.setb(rec(SHOOTER) + 0x55, 0 if top else 4)
             e.setw(rec(SHOOTER) + 0x2A, round(sg * move * 4096) & 0xFFFF)
         base = e.serialize()
@@ -149,7 +169,7 @@ def job(args):
                 h.park()
                 e.run(1, hold=DIRPAD[aim])
                 c["speed"] += math.hypot(e.sw(rec(PUCK) + 0x28), e.sw(rec(PUCK) + 0x2A))
-                r, info = play(h, sg)
+                r, info = play(h, sg, at_goal=isinstance(move, str))
                 c["n"] += 1
                 c[r] += 1
                 if r == "bobble":
@@ -174,14 +194,15 @@ def job(args):
 def main():
     run = sys.argv[1]
     minutes = float(sys.argv[2]) if len(sys.argv) > 2 else 60
-    path = RUNS / run / "ea.jsonl"
+    plan = sys.argv[3] if len(sys.argv) > 3 else "ea"
+    path = RUNS / run / ("ea.jsonl" if plan == "ea" else f"ea_{plan}.jsonl")
     path.parent.mkdir(parents=True, exist_ok=True)
     done = set()
     if path.exists():
         for line in open(path):
             d = json.loads(line)
             done.add(tuple(d[k] for k in KEYS))
-    todo = [j for j in plan_jobs() if j not in done]
+    todo = [j for j in plan_jobs(plan) if j not in done]
     print(f"EA Specials: {len(done)} jobs done before, {len(todo)} to go; this chunk: up to {minutes:g} minutes", flush=True)
     t0, deadline, finished = time.time(), time.time() + 60 * minutes, 0
     with Pool(WORKERS, initializer=_init) as pool, open(path, "a") as f:
