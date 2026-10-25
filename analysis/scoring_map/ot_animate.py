@@ -1,10 +1,12 @@
-"""Animated one-timers (Genesis test ROM): python ot_animate.py OUT_DIR [N] [names]
+"""Animated one-timers (Genesis test ROM; SNES retail ROM): python ot_animate.py OUT_DIR [N] [names]
 Each case in CASES is one set-up of ot_run.py's plan "ratings" (top net) with the receiver's Shot Power / Accuracy
 steps: the passer at P with the puck, the receiver at R, the goalie settled; the pass, the one-timer button (C) pressed
 early or late in the pass as ot_run spreads it over the moments, the swing to the strike, the strike frame given a
 fresh random seed as in the run, then played out. N attempts (moments), the game's own frames from before the pass to
 the result; whiffs are left out (the rates are per struck one-timer). The captions give the ratings run's rate for that
-very set-up (512 struck: 32 moments x 2 timings x 8 seeds); the clips show goals in about that proportion.
+very set-up (Genesis 512 struck: 32 moments x 2 timings x 8 seeds; SNES about 244 at the one aim: 4 seeds); the clips
+show goals in about that proportion. A SNES case names its aim (the d-pad held through the swing, ot_run's AIMS) and is
+replayed with ot_harness's own steps (pass_to_press, swing, strike, play_out), every frame filmed.
 Two GIFs per case:
 - <name>_clips.gif: four attempts side by side, the whole screen, each labelled with what is happening;
 - <name>_paths.gif: every attempt at once from above, lined up on the strike: passer and receiver (grey), the puck
@@ -26,7 +28,7 @@ from lowload import WORKERS, breathe
 FONT = "C:/Windows/Fonts/segoeui.ttf"
 FONTB = "C:/Windows/Fonts/segoeuib.ttf"
 # name, receiver R, passer P (net coordinates, top net), Shot Power step, Shot Accuracy step, title, the run's
-# goals / struck one-timers at this set-up and these ratings
+# goals / struck one-timers at this set-up and these ratings; optionally the system and the aim (SNES)
 CASES = [
     ("ot_across", (30, 213), (-30, 213), 4, 4,
      "One-timer, the pass across (18 ft out, 10 ft to the side)", (455, 512)),
@@ -36,14 +38,88 @@ CASES = [
      "One-timer from the side, Shot Power 2 / Accuracy 2", (104, 512)),
     ("ot_rating_6_6", (30, 213), (82, 243), 6, 6,
      "One-timer from the side, Shot Power 6 / Accuracy 6", (345, 512)),
+    ("snes_ot_rating_2_2", (30, 213), (-90, 213), 2, 2,
+     "SNES one-timer, the long pass across, Shot Power 2 / Accuracy 2", (115, 244), ("snes", 8)),
+    ("snes_ot_rating_6_6", (30, 213), (-90, 213), 6, 6,
+     "SNES one-timer, the long pass across, Shot Power 6 / Accuracy 6", (210, 244), ("snes", 8)),
 ]
 COL = {"GOAL": "#ea580c", "SAVED": "#475569", "POST": "#475569", "MISSED": "#475569"}
 SHOWN = {"GOAL": "GOAL", "SAVED": "SAVED", "POST": "POST", "MISSED": "WIDE"}
 
 
+def play_snes(case, n):
+    """As play(), on the SNES: the run's own steps replayed from the set-up in one go, filmed (the same frames the run
+    plays: the pass with the pass button for 4 frames, the press, A for 2 frames with the aim held, the strike seeded)."""
+    name, R, P, shp, sha = case[:5]
+    aim = case[7][1]
+    os.environ["NHL94_OT_RATINGS"] = f"{int(2.5 * shp)},{int(2.5 * sha)}"    # SNES working 0-15, as the ratings runs
+    from goal_frames import grab
+    from ot_harness import OneTimer, PASSER, RECEIVER, DIRS, direction
+    ot = OneTimer("snes")
+    s, e = ot.s, ot.e
+    rnd = random.Random(zlib.crc32(name.encode()))
+    run, film = e.run, []
+
+    def filmed(k, hold=None):
+        if film:
+            e.want_frame = True
+        run(k, hold=hold) if hold is not None else run(k)
+        e.want_frame = False
+        if film:
+            film[0].append(grab(e).copy())
+            film[1].append(tuple(s.xy(k) for k in (PASSER, RECEIVER, s.PUCK, s.GOALIE)))
+    e.run = filmed
+    shots, p = [], 0
+    while len(shots) < n and p < 4 * n:
+        timing = ("early", "late")[p % 2]
+        by = 2 + p % 4 if timing == "early" else 2 + (p * 5) % 9
+        ot.setup("top", P, R, p, rnd)
+        p += 1
+        start = e.serialize()
+        press_state, info = ot.pass_to_press(timing, by=by)
+        if press_state is None:
+            breathe()
+            continue
+        pre, sf = ot.swing(press_state, aim)
+        if pre is None:
+            breathe()
+            continue
+        seed = rnd.getrandbits(32)
+        # the whole attempt again, filmed: the pass to the press (as pass_to_press's play), the swing, the strike
+        d = DIRS[direction(ot.R[0] - ot.P[0], ot.R[1] - ot.P[1])]
+        e.unserialize(start)
+        film[:] = [[], []]
+        rel, f = None, 0
+        while (rel is None or f < rel + info) and f < 90:  # info: frames from the release to the press
+            ot.run([s.pass_button] + d if f < 4 else d)
+            if rel is None and s.carrier() != PASSER:
+                rel = f
+            f += 1
+        press = len(film[0])
+        s.reset_mark()
+        for k in range(sf):
+            ot.run(([s.ot_button] if k < 2 else []) + DIRS[aim])
+        strike = len(film[0])
+        s.set_seed(seed)
+        ot.run(DIRS[aim])
+        res = ot.play_out()
+        for _ in range(12 if res == "GOAL" else 6):
+            ot.run()
+        frames, pts = film
+        film.clear()
+        if rel is not None and f == rel + info:
+            hold = 15
+            shots.append((res, [frames[0]] * hold + frames, [pts[0]] * hold + pts, rel + hold, press + hold,
+                          strike + hold))
+        breathe()
+    return case, shots
+
+
 def play(case, n):
     """n struck one-timers: [(result, [frames], [(passer, receiver, puck, goalie)], release, press, strike)]."""
     name, R, P, shp, sha = case[:5]
+    if len(case) > 7:
+        return play_snes(case, n)
     os.environ["NHL94_OT_RATINGS"] = f"{shp * 5},{sha * 5}"
     from animate import outcome
     from goal_frames import grab, genesis_vram, hide_genesis_hud
@@ -155,7 +231,8 @@ def tally(shots):
 
 
 def clips_gif(case, shots, path):
-    name, R, P, shp, sha, title, (g, n) = case
+    name, R, P, shp, sha, title, (g, n) = case[:7]
+    snes = len(case) > 7
     rate = g / n
     goals = [s for s in shots if s[0] == "GOAL"]
     others = [s for s in shots if s[0] != "GOAL"]
@@ -178,7 +255,8 @@ def clips_gif(case, shots, path):
         d.text((pad, 6), title, fill="#1f2933", font=f1)
         d.text((pad, 26), f"{100 * rate:.0f}% of struck one-timers go in here ({g} of {n} in the ratings run, "
                           f"Shot Power {shp} / Accuracy {sha}).", fill="#52606d", font=f2)
-        d.text((pad, 42), "The game's own frames, top net, half speed, lined up on the pass.", fill="#52606d", font=f2)
+        d.text((pad, 42), "The game's own frames, top net, half speed, lined up on the pass"
+                          + (", no direction held." if snes else "."), fill="#52606d", font=f2)
         for i, (res, fr, _, rel, press, strike) in enumerate(pick):
             j = min(max(0, rel - lead) + t, len(fr) - 1)
             x = pad + (i % 2) * (cw + pad)
@@ -189,7 +267,7 @@ def clips_gif(case, shots, path):
             elif j < press:
                 state, col = "the pass", "#94a3b8"
             elif j < strike:
-                state, col = "C: the swing", "#0ea5e9"
+                state, col = ("A" if snes else "C") + ": the swing", "#0ea5e9"
             elif (res == "GOAL" and j < len(fr) - 12) or (res != "GOAL" and j < len(fr) - 6):
                 state, col = "one-timer", "#64748b"
             else:
@@ -203,7 +281,7 @@ def clips_gif(case, shots, path):
 
 def paths_gif(case, shots, path):
     """Every attempt from above, lined up on the strike, the net at the top."""
-    name, R, P, shp, sha, title, (g, n) = case
+    name, R, P, shp, sha, title, (g, n) = case[:7]
     S, pad, head = 2.6, 14, 64
     x_lo, x_hi, y_lo, y_hi = -120, 120, 140, 282
     W, H = int((x_hi - x_lo) * S) + 2 * pad, int((y_hi - y_lo) * S) + head + pad + 20

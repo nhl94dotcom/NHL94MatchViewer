@@ -532,6 +532,47 @@ set-up; averaged over the passers, both nets and both timings):
 - Averaged over every set-up and aim, a SNES one-timer scores about 6%; the Up aim is the poorest (3.6%), the
   diagonals toward the shooter's sides the best (7-9%), but the right aim depends on the spot and the net.
 
+#### One-timers by Shot Power and Accuracy (SNES, 2026-10-25)
+
+The Genesis ratings study again on the SNES: the same 60 set-ups (four receivers, passes from either side, both nets,
+early and late presses, 32 moments), all nine aims, 4 seeds a strike: about 120,000 struck one-timers per pair. Shot
+Power and Accuracy at steps 2, 4 and 6 (SNES working 5 / 10 / 15; the recorded shots' median is 13 / 13). Each cell
+is goals per struck one-timer over all the aims, then at each set-up's best aim:
+
+| Shot Power \ Accuracy | 2 | 4 | 6 |
+| --- | --- | --- | --- |
+| 2 | 26% / 54% | 29% / 61% | 31% / 66% |
+| 4 | 29% / 57% | 32% / 65% | 34% / 70% |
+| 6 | 30% / 57% | 33% / 65% | 35% / 71% |
+
+- **As on the Genesis, Accuracy is the rating that counts for one-timers.** At the best aim it adds 12-14 points from 2
+  to 6. Power adds 3-5 points, all of it between 2 and 4. There is no jump like the SNES slapshot's at Power 6.
+- **The stick meets the puck 92% of the time whatever the ratings**, as on the Genesis.
+- **By receiver**, with Power and Accuracy rated the same (at the best aim):
+
+| Receiver | 2/2 | 4/4 | 6/6 |
+| --- | --- | --- | --- |
+| In front, 10 ft out | 82% | 87% | 89% |
+| In front, 18 ft out | 50% | 65% | 72% |
+| 18 ft out, 10 ft to the screen's left | 44% | 55% | 62% |
+| 18 ft out, 10 ft to the screen's right | 47% | 58% | 65% |
+
+  On the doorstep the weak shooter loses only 7 points; 18 feet out, 18-22 points, the same pattern as the Genesis.
+
+**Animated (`ot_animate.py`, the SNES cases):** the long pass across (from 40 feet away, the far side) to a receiver
+18 feet out and 10 feet to the side, top net, with no direction held through the swing: the run's 47% at 2/2 and 86% at
+6/6 (244 struck each). Of the 48 filmed here, 28 went in at 2/2 and 38 at 6/6.
+
+**Shot Power 2 / Accuracy 2: 47%.**
+
+![SNES one-timer, Shot Power 2 / Accuracy 2: four real attempts](img/scoring_map/snes_ot_rating_2_2_clips.gif)
+![SNES one-timer, Shot Power 2 / Accuracy 2: every attempt from above](img/scoring_map/snes_ot_rating_2_2_paths.gif)
+
+**Shot Power 6 / Accuracy 6: 86%.**
+
+![SNES one-timer, Shot Power 6 / Accuracy 6: four real attempts](img/scoring_map/snes_ot_rating_6_6_clips.gif)
+![SNES one-timer, Shot Power 6 / Accuracy 6: every attempt from above](img/scoring_map/snes_ot_rating_6_6_paths.gif)
+
 ## Strong shooters' slapshots (2026-10-24)
 
 The user: far-post slapshots work more often for strong, accurate shooters. The same 70 spots for each (slapshots from
