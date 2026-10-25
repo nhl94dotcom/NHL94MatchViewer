@@ -439,6 +439,41 @@ position blur, or with the goalie's stick and rebound, it does no better (log lo
 what decides a one-timer is where the goalie is when it is struck, and the model already reads that from the
 recording.
 
+#### One-timers by Shot Power and Accuracy (Genesis, 2026-10-24)
+
+To see what the receiver's ratings change, the best one-timer spots were played again with every pair of Shot Power and
+Shot Accuracy from 2 to 6, the same steps as the slapshot table below. There were four receivers: in front of the net
+10 and 18 feet out, and 18 feet out with 10 feet to either side. Passes came from either side, 20 and 40 feet away.
+That made 60 set-ups at both nets, with early and late presses, giving about 26,000 struck one-timers per pair (plan
+`ratings` in `ot_run.py`, run in gentle mode).
+
+Each cell is goals per struck one-timer:
+
+| Shot Power \ Accuracy | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 48% | 51% | 55% | 57% | 60% |
+| 3 | 49% | 53% | 57% | 59% | 62% |
+| 4 | 50% | 54% | 58% | 60% | 63% |
+| 5 | 50% | 55% | 59% | 62% | 64% |
+| 6 | 49% | 54% | 59% | 61% | 64% |
+
+- **For one-timers, Accuracy is the rating that counts.** Each step of Accuracy adds 2-4 points, about 15 from 2 to 6.
+  Power adds at most 1-3 points. There is no jump between Power 3 and 4 like the one for standing slapshots. The
+  one-timer is already fast, and it beats a goalie who is still moving rather than one who is set.
+- **The stick meets the puck 90% of the time whatever the ratings.** Ratings change where the shot goes, not whether the
+  swing connects.
+- **Off to one side, ratings matter most.** With Power and Accuracy rated the same, by receiver:
+
+| Receiver | 2/2 | 3/3 | 4/4 | 5/5 | 6/6 |
+| --- | --- | --- | --- | --- | --- |
+| In front, 10 ft out | 60% | 62% | 65% | 67% | 69% |
+| In front, 18 ft out | 54% | 59% | 63% | 66% | 68% |
+| 18 ft out, 10 ft to the screen's left | 42% | 48% | 54% | 57% | 60% |
+| 18 ft out, 10 ft to the screen's right | 37% | 43% | 50% | 57% | 60% |
+
+  On the doorstep a weak shooter gives up only 9 points to a strong one. From the side the gap is 18-23 points. There,
+  an accurate shooter scores about as well as a weak one does from straight in front.
+
 ### One-timers on the SNES
 
 The same 824 set-ups on the SNES (retail ROM, Snes9x), the one-timer button A pressed early or late in the pass and
