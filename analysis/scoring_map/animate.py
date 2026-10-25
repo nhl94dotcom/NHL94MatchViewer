@@ -1,4 +1,4 @@
-"""Animated makes and misses from the maps' worthwhile spots: python animate.py OUT_DIR [N]
+"""Animated makes and misses from the maps' worthwhile spots: python animate.py OUT_DIR [N] [names]
 For each spot in SPOTS, N shots (default 120: one at each of the 120 moments, a fresh release seed each) played in the
 game, each kept frame by frame. A sample this size wanders from the true rate, so the captions give a bigger sample's
 (Genesis: the map's; SNES: 480 shots over the same 120 moments, since the SNES map's 16 moments a spot are too few) and
@@ -25,7 +25,8 @@ from lowload import WORKERS, breathe, gentle
 
 FONT = "C:/Windows/Fonts/segoeui.ttf"
 FONTB = "C:/Windows/Fonts/segoeuib.ttf"
-# name, system, net, shooter x, shooter y (from centre), shot, aim (d-pad), what it shows, its rate (see above)
+# name, system, net, shooter x, shooter y (from centre), shot, aim (d-pad), what it shows, its rate (see above);
+# optionally the shooter's (Shot Power, Shot Accuracy) roster steps and what the rate rests on (the ratings runs)
 SPOTS = [
     ("genesis_down_slapshot_top", "genesis", "top", 0, 150, "slap", 4,
      "Genesis, top net: slapshot holding Down, straight in, 118 units out", 0.430),
@@ -42,6 +43,12 @@ SPOTS = [
     ("snes_mirror_top", "snes", "top", 10, 180, "slap", 2,
      "SNES, top net: the mirror shot, holding Right, 10 right of centre, 88 out", 0.008),
 ]
+# the slapshot's power threshold (SCORING_MAP "Every Shot Power and Accuracy"): the far post from the middle, 36 ft
+RATED = [
+    (f"genesis_slap_{p}_{a}", "genesis", "top", 0, 160, "slap", 6,
+     f"Genesis, top net: slapshot at the far post from the middle, 36 ft, Shot Power {p} / Accuracy {a}", r, (p, a),
+     "the ratings run: 400 launches at 120 moments")
+    for p, a, r in ((3, 4, 0.10), (4, 4, 0.58), (6, 6, 0.72))]
 MAP_SHOTS = {"genesis": "the map: 800 launches at 120 moments",   # what each rate rests on
              "snes": "480 shots over 120 moments, the shooter left on the ice"}
 COL = {"GOAL": "#ea580c", "SAVED": "#475569", "POST": "#7c3aed", "MISSED": "#94a3b8"}
@@ -110,6 +117,9 @@ def play(spec, n):
     shots, p = [], 0
     while len(shots) < n and p < 4 * n:
         o.setup(net, x, y, p, rnd)                    # a different moment each time (clock and settle cycles)
+        if len(spec) > 9:
+            from mapper import set_ratings
+            set_ratings(h, 5 * spec[9][0], 5 * spec[9][1])
         p += 1
         settled = e.serialize()
         if o.shoot(net, aim, hold) is None:           # no shot, or not a real one (the SNES validity test)
@@ -191,7 +201,8 @@ def clips_gif(spec, shots, out):
         img = Image.new("RGB", (W, H), "white")
         d = ImageDraw.Draw(img)
         d.text((pad, 8), title, fill="#1f2933", font=f1)
-        d.text((pad, 34), f"Overall {100 * rate:.0f}% of these go in ({MAP_SHOTS[system]}).", fill="#52606d", font=f2)
+        basis = spec[10] if len(spec) > 10 else MAP_SHOTS[system]
+        d.text((pad, 34), f"Overall {100 * rate:.0f}% of these go in ({basis}).", fill="#52606d", font=f2)
         d.text((pad, 52), f"This sample of {len(shots)}: {tally(shots)}. Nine shown, from the wind-up, at half speed.",
                fill="#52606d", font=f2)
         for i, (res, fr, _, kk, nw) in enumerate(pick):
@@ -274,14 +285,16 @@ def job(args):
 def main():
     out_dir = Path(sys.argv[1])
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 120
+    only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
+    spots = [s for s in SPOTS + RATED if s[0] in only] if only else SPOTS
     out_dir.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     # a fresh process per spot (one emulator per process), at most WORKERS at once
-    with Pool(min(WORKERS, len(SPOTS)), maxtasksperchild=1) as pool:
-        for r in pool.imap_unordered(job, [(s, n, out_dir) for s in SPOTS]):
+    with Pool(min(WORKERS, len(spots)), maxtasksperchild=1) as pool:
+        for r in pool.imap_unordered(job, [(s, n, out_dir) for s in spots]):
             print(*r, flush=True)
-    print("done", round(time.time() - t0), "s with", min(WORKERS, len(SPOTS)), "workers")
-    json.dump([s[0] for s in SPOTS], open(out_dir / "spots.json", "w"))
+    print("done", round(time.time() - t0), "s with", min(WORKERS, len(spots)), "workers")
+    json.dump([s[0] for s in spots], open(out_dir / "spots.json", "w"))
 
 
 if __name__ == "__main__":

@@ -474,6 +474,34 @@ Each cell is goals per struck one-timer:
   On the doorstep a weak shooter gives up only 9 points to a strong one. From the side the gap is 18-23 points. There,
   an accurate shooter scores about as well as a weak one does from straight in front.
 
+#### One-timers, animated
+
+`ot_animate.py`: four set-ups from the ratings run at the top net, each played 32 times (the press early or late in the
+pass, as in the run), the game's own frames from the pass to the result. Rates are from the run (512 struck
+one-timers each). The paths view lines every attempt up on the strike and draws the goalie's track. After the pass
+across he is still sliding when the puck is struck. After the pass from the same side he is already square.
+
+**The pass across, receiver 18 ft out and 10 ft to the side, Shot Power 4 / Accuracy 4: 89% (455 of 512).**
+
+![The pass across, receiver 18 ft out and 10 ft to the side, Shot Power 4 / Accuracy 4: 89% (455 of 512): four real attempts](img/scoring_map/ot_across_clips.gif)
+![The pass across, receiver 18 ft out and 10 ft to the side, Shot Power 4 / Accuracy 4: 89% (455 of 512): every attempt from above](img/scoring_map/ot_across_paths.gif)
+
+**The pass from his own side, 20 ft farther to his side, same receiver and ratings: 38% (197 of 512).**
+
+![The pass from his own side, 20 ft farther to his side, same receiver and ratings: 38% (197 of 512): four real attempts](img/scoring_map/ot_same_side_clips.gif)
+![The pass from his own side, 20 ft farther to his side, same receiver and ratings: 38% (197 of 512): every attempt from above](img/scoring_map/ot_same_side_paths.gif)
+
+**From the side (the pass from 17 ft farther to his side and 10 ft nearer the goal line), Shot Power 2 / Accuracy 2: 20% (104 of 512).**
+
+![From the side (the pass from 17 ft farther to his side and 10 ft nearer the goal line), Shot Power 2 / Accuracy 2: 20% (104 of 512): four real attempts](img/scoring_map/ot_rating_2_2_clips.gif)
+![From the side (the pass from 17 ft farther to his side and 10 ft nearer the goal line), Shot Power 2 / Accuracy 2: 20% (104 of 512): every attempt from above](img/scoring_map/ot_rating_2_2_paths.gif)
+
+**The same set-up, Shot Power 6 / Accuracy 6: 67% (345 of 512).**
+
+![The same set-up, Shot Power 6 / Accuracy 6: 67% (345 of 512): four real attempts](img/scoring_map/ot_rating_6_6_clips.gif)
+![The same set-up, Shot Power 6 / Accuracy 6: 67% (345 of 512): every attempt from above](img/scoring_map/ot_rating_6_6_paths.gif)
+
+
 ### One-timers on the SNES
 
 The same 824 set-ups on the SNES (retail ROM, Snes9x), the one-timer button A pressed early or late in the pass and
@@ -554,6 +582,26 @@ brackets: from the middle, x 0):
   power 4-6.
 - **Distance:** from the middle at accuracy 4, power 4 scores 27% / 35% / 58% at 144 / 124 / 104 out (about 48 / 41 /
   35 feet); power 3 7-17%, power 2 7-15%.
+
+**Animated (`animate.py`, the RATED spots):** the far post (aim Left) from the middle 108 out (36 ft), top net, the
+best single spot and aim for showing the threshold. Rates are from the ratings run (400 launches at 120 moments). At
+Power 3 most are saved or go wide (in the 24 here: 16 saved, 7 wide, 1 goal). At Power 4 most go in (17 of 24).
+
+**Shot Power 3 / Accuracy 4: 10%.**
+
+![Shot Power 3 / Accuracy 4: 10%: four real attempts](img/scoring_map/genesis_slap_3_4_clips.gif)
+![Shot Power 3 / Accuracy 4: 10%: every attempt from above](img/scoring_map/genesis_slap_3_4_fan.gif)
+
+**Shot Power 4 / Accuracy 4: 58%.**
+
+![Shot Power 4 / Accuracy 4: 58%: four real attempts](img/scoring_map/genesis_slap_4_4_clips.gif)
+![Shot Power 4 / Accuracy 4: 58%: every attempt from above](img/scoring_map/genesis_slap_4_4_fan.gif)
+
+**Shot Power 6 / Accuracy 6: 72%.**
+
+![Shot Power 6 / Accuracy 6: 72%: four real attempts](img/scoring_map/genesis_slap_6_6_clips.gif)
+![Shot Power 6 / Accuracy 6: 72%: every attempt from above](img/scoring_map/genesis_slap_6_6_fan.gif)
+
 
 ## Moving shooters (Genesis, 2026-10-24)
 
@@ -830,6 +878,29 @@ Rates below count a puck the goalie took before the shot as a failure (out of 96
 - Going up and going down are close for the best set-ups (45 / 46 and 45 / 47 of 48 for the swings to the left; the
   swings to the right still differ by net: 43 / 30 and 40 / 24).
 
+**Animated** (`deke_animate.py`, DEKE2: each best set-up going up, 24 attempts; rates are that net's 48 in the run):
+
+**Refined deke, left-hander, from 15 ft to his left, swing to his left: 94% (45 of 48).**
+
+![Refined deke, left-hander, from 15 ft to his left, swing to his left: 94% (45 of 48): four real attempts](img/scoring_map/deke2_lefty_forehand_clips.gif)
+![Refined deke, left-hander, from 15 ft to his left, swing to his left: 94% (45 of 48): every attempt from above](img/scoring_map/deke2_lefty_forehand_paths.gif)
+
+**Refined deke, right-hander, from 15 ft to his left, swing to his left: 94% (45 of 48).**
+
+![Refined deke, right-hander, from 15 ft to his left, swing to his left: 94% (45 of 48): four real attempts](img/scoring_map/deke2_righty_left_clips.gif)
+![Refined deke, right-hander, from 15 ft to his left, swing to his left: 94% (45 of 48): every attempt from above](img/scoring_map/deke2_righty_left_paths.gif)
+
+**Refined deke, right-hander, from 20 ft to his right, swing to his right: 81% (39 of 48).**
+
+![Refined deke, right-hander, from 20 ft to his right, swing to his right: 81% (39 of 48): four real attempts](img/scoring_map/deke2_righty_forehand_clips.gif)
+![Refined deke, right-hander, from 20 ft to his right, swing to his right: 81% (39 of 48): every attempt from above](img/scoring_map/deke2_righty_forehand_paths.gif)
+
+**Refined deke, left-hander, from 15 ft to his right, swing to his right, stick up and right: 83% (40 of 48).**
+
+![Refined deke, left-hander, from 15 ft to his right, swing to his right, stick up and right: 83% (40 of 48): four real attempts](img/scoring_map/deke2_lefty_right_upside_clips.gif)
+![Refined deke, left-hander, from 15 ft to his right, swing to his right, stick up and right: 83% (40 of 48): every attempt from above](img/scoring_map/deke2_lefty_right_upside_paths.gif)
+
+
 ### The deke on the backhand (plan "dekebh", 2026-10-24)
 
 The user, from the animations: the left-hander's "swing to his right" above isn't a backhand deke, because the puck never
@@ -964,6 +1035,25 @@ near post.
   ratings are fair: every shooter had the same bot. The game's hold rule (the goalie holds a puck whose speed parts
   are under a random threshold set by Puck Control) would predict faster shots held less, the opposite of what
   happened at step 6; that is still to be traced.
+
+**Animated** (`ea_animate.py`): the spot where Shot Power makes the most difference. A left-hander standing 30 ft out
+and 13 ft to his forehand side at the top net, the first wrist shot aimed across (Left), with ea_run's own bot playing
+on and Shot Accuracy 2-6 in turn. Measured over 120 game moments, the play ends in a goal **22% of the time at Shot
+Power 2 (26 of 120) and 2% at Power 6 (2 of 120)**. At Power 2 every first shot was bobbled and the goalie dived in 79%
+of plays. At Power 6, 20% were held at once and he dived in 32%. The EA run had given 39% and 0% at this set-up, but
+its 80 plays share 8 moments, so a single set-up's rate there moves a lot from moment to moment. Its averages over many
+spots are steadier. The paths view colours the goalie red while he dives.
+
+**EA Special, Shot Power 2: 22% (26 of 120).**
+
+![EA Special, Shot Power 2: 22% (26 of 120): four real attempts](img/scoring_map/ea_power_2_clips.gif)
+![EA Special, Shot Power 2: 22% (26 of 120): every attempt from above](img/scoring_map/ea_power_2_paths.gif)
+
+**EA Special, Shot Power 6: 2% (2 of 120).**
+
+![EA Special, Shot Power 6: 2% (2 of 120): four real attempts](img/scoring_map/ea_power_6_clips.gif)
+![EA Special, Shot Power 6: 2% (2 of 120): every attempt from above](img/scoring_map/ea_power_6_paths.gif)
+
 
 ## Limits and what comes next
 

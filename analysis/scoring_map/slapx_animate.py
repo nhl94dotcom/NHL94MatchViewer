@@ -123,6 +123,8 @@ def clips_gif(case, shots, path):
     r = random.Random(1)
     k = min(len(goals), max(round(4 * rate), 1 if goals and rate > 0 else 0))
     pick = r.sample(goals, k) + r.sample(others, min(len(others), 4 - k))
+    rest = [s for s in goals if all(s is not q for q in pick)]    # too few misses: more goals to fill the four
+    pick += r.sample(rest, min(4 - len(pick), len(rest)))
     r.shuffle(pick)
     cw, ch = pick[0][1][0].size
     pad, lab, head = 8, 26, 62

@@ -2,7 +2,7 @@
 Each method in METHODS (the best set-ups from deke_run.py and the no-swing control, at the top net: going up the
 screen) and DOWN (the same moves at the bottom net: going down) played N times (12 moments x seeds), the game's own
 frames kept from the approach to the result; ACROSS: the dekebh set-ups (C once the puck is across);
-FLOATERBH: the backhand floater. The captions give the big run's rate (deke_run.py: METHODS 96 shots,
+FLOATERBH: the backhand floater; DEKE2: the user's refinements. The captions give the big run's rate (deke_run.py: METHODS 96 shots,
 both nets; DOWN that net's 48) and the GIFs show goals in about that proportion. Two GIFs per method:
 - <name>_clips.gif: four of the attempts side by side, cropped to the net, each labelled with what happened;
 - <name>_paths.gif: every attempt at once from above, lined up on the release: the shooter (grey), the puck (orange
@@ -84,6 +84,17 @@ DOWN = [
      "Going down: floater, left-hander across from his left, swung back left", (24, 48)),
     ("floater_righty_down", ("floater", "bottom", "R", 35, -1, 110, 22, 9, "side"),
      "Going down: floater, right-hander across from his right, swung back right", (31, 48)),
+]
+# the user's refinements (deke_run.py deke2): from farther out to the side, swung closer in; rates: that net's 48
+DEKE2 = [
+    ("deke2_lefty_forehand", ("deke2", "top", "L", -45, 1, 60, 10, 4, "side"),
+     "Refined deke, left-hander, from 15 ft to the left, swung to his left", (45, 48)),
+    ("deke2_righty_left", ("deke2", "top", "R", -45, 1, 60, 13, 4, "side"),
+     "Refined deke, right-hander, from 15 ft to the left, swung to his left", (45, 48)),
+    ("deke2_righty_forehand", ("deke2", "top", "R", 60, -1, 72, 22, 4, "side"),
+     "Refined deke, right-hander, from 20 ft to the right, swung to his right", (39, 48)),
+    ("deke2_lefty_right_upside", ("deke2", "top", "L", 45, -1, 72, 22, 4, "upside"),
+     "Refined deke, left-hander, from 15 ft right, swung right, shot up-right", (40, 48)),
 ]
 COL = {"GOAL": "#ea580c", "STOPPED": "#475569"}
 PUCK = 14
@@ -201,6 +212,8 @@ def clips_gif(method, shots, path):
     r = random.Random(1)
     k = min(len(goals), max(round(4 * rate), 1 if goals and rate > 0 else 0))
     pick = r.sample(goals, k) + r.sample(others, min(len(others), 4 - k))
+    rest = [s for s in goals if all(s is not q for q in pick)]    # too few misses: more goals to fill the four
+    pick += r.sample(rest, min(4 - len(pick), len(rest)))
     r.shuffle(pick)
     Z, pad, lab, head = 1.5, 8, 26, 62
     cw, ch = int(160 * Z), int(200 * Z)
@@ -310,11 +323,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2],
               open(out_dir / "methods.json", "w"), indent=1)
 
 
