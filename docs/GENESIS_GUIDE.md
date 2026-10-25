@@ -299,7 +299,7 @@ The computer never holds a direction, so its wins go a random way.
   - **Played in the game itself** (the scoring studies, [SCORING_MAP](SCORING_MAP.md)): a standing slapshot from 35-48
     feet needs **Shot Power 4 or better on the roster scale** (a working 20). At 2-3 it scores 4-7% at the best aim
     whatever the accuracy; at 4 / 4 about 19%; at 6 / 6 35%. Accuracy only helps once the power is there. From the
-    middle the far post is the best aim. These numbers are against Los Angeles's Kelly Hrudey; better goalies stop
+    middle, the far post at the top net from about 28-41 feet; otherwise hold Down (straight at him). These numbers are against Los Angeles's Kelly Hrudey; better goalies stop
     far more slapshots (12.3).
 - **The far-post slapshot is a skating shot.** Skate across the slot toward your stick side (a left-hander toward the
   screen's left going up), wind up, and release just before the middle of the ice, 28-35 feet out, aimed at the far

@@ -619,8 +619,9 @@ it, so it is unchanged.
 **Slapshots by the shooter's ratings** (2026-10-24, SCORING_MAP "Slapshots and the shooter's ratings"): the slapshot
 from 18 spots 104-144 out, every roster step 2-6 of Shot Power and Shot Accuracy. **A threshold between Shot Power 3
 and 4:** the best aim's chance over the spots 4-7% at power 2-3, 14-21% at 4, up to 35% at 6 / 6; Accuracy adds 7-11
-points once the power is there (power 4-6), 1-2 below it. From the middle the far post is the best aim (21% for a
-27 / 27 shooter over 70 spots, against 11% for Down).
+points once the power is there (power 4-6), 1-2 below it. From the middle (a 27 / 27 shooter): at the top net the far
+post from 28-41 ft (31-69%), Down from farther; at the bottom net Down (31-60% from 35-55 ft). Over both, Down 28%,
+the far post 21%. (Corrected 2026-10-25: this said the far post was best, against 11% for Down, a slip in the aims.)
 
 **Moving shooters** (2026-10-24, SCORING_MAP "Moving shooters"; `mv_run.py`): a wrist shot skating across the crease
 scores 51-53% about 11 feet out aimed the way he skates, 0-1% aimed back. **The far-post slapshot is a skating shot:**
@@ -978,8 +979,8 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   goalie had usually picked a stick save: he chooses a low move for a puck under height 8, and it doesn't change his
   reach. The four slapshot goals from 100+ were all by a Shot Accuracy 27 shooter; far post and near post were mixed.
   The model doesn't show the far-post advantage players report. **Played in the game itself (4.10-4.11) it shows:**
-  standing, from the middle, the far post is the best aim for a strong shooter (21% against 11% holding Down), and the
-  far-post slapshot players describe is a skating shot, across toward the stick side and released before the middle
+  standing, from the middle, the far post is the best aim for a strong shooter at the top net from 28-41 ft (31-69%),
+  Down everywhere else (corrected 2026-10-25), and the far-post slapshot players describe is also a skating shot, across toward the stick side and released before the middle
   (50-62% from 28-35 feet for a 27 / 27 shooter). Both need Shot Power 4 or more on the roster (a working 20), and
   both fall a long way against better goalies. Over all the Genesis recordings, slapshots from 100-200 units out
   scored 5 times in 39 (13%), where the model's xG for them adds up to 4.5. On the SNES it's far harder:

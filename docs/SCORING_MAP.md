@@ -613,10 +613,15 @@ and `snes_map_run.py`), a set computer goalie. "Best aim" is the best of the nin
   goalie's left is the far post, his right the near post; left-handed: the goalie's right is far, his left near. So
   the far post is on the shooter's forehand side. Both test shooters shoot left (Genesis attribute +$04 bit 3 clear,
   which is what the game reads; SNES attribute bit $0800 clear), so their far post is the goalie's right.
-- **Genesis, from the middle of the ice: the far post is the best aim** (strong shooter: far post at mid-height 21%,
-  high 19%, against 11% for Down's ice-level middle; usual shooter 14% / 12% / 9%). From his forehand side (left of
-  the middle for a left-hander) Down is best (9%), the far post next (5%); from his backhand side Down (13%), the near
-  post hardly scores (2% or less).
+- **Genesis, from the middle of the ice: it depends on the net and the distance.** Over the 10 middle spots (28-55 ft,
+  both nets) Down (straight at him) averages 28% for a strong shooter (27 / 27), the far post at mid-height 21%, high
+  19%; for the usual shooter (20 / 15) 17% / 14% / 12%. At the top net the far post is the shot from 28-41 ft (65%,
+  69%, 31%) and Down from 48-55 ft (48-51%); at the bottom net Down from 35-55 ft (31-60%), the far post no more than
+  18%. From his forehand side (left of the middle for a left-hander) Down is best (10%), the far post next (5%); from
+  his backhand side Down (21%), the near post hardly scores (1% or less). *Corrected 2026-10-25: this bullet said the
+  far post was the best aim from the middle, against 11% for Down; that Down figure had taken the wrong aim at the
+  bottom net.* Against a goalie with Agility 20 (roster 4) the far post closes (23% at 35 ft at the top net, near
+  nothing elsewhere) and Down holds best (bottom net 40-43% at 35-41 ft).
 - **SNES: the post on the shooter's side of the ice.** From his forehand side the far post (strong 5-6%, usual 3-4%),
   from his backhand side the near post (strong 6% high, usual 3%), from the middle almost nothing (2% or less). The
   user: SNES slapshot goals are rare and usually near post; the near post scores from the backhand side here.
