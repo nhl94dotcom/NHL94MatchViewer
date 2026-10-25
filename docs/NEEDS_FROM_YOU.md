@@ -40,7 +40,7 @@ record or check and what it will settle. Newest at the bottom of each section.
    rate depends on the game's frame timing, which changes with who is on the ice (SNES_MECHANICS 4.8).
 7. **One-timers from a pass across and from the same side (Genesis).** In a practice game, a dozen one-timers by a
    teammate within about 18 feet of the goal line from a pass across the net's centre line, then a dozen from a pass
-   from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_MAP, "One-timers (Genesis)"),
+   from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_MAP, "One-timers", Genesis),
    which plays them in the game itself: about 63% from across, 20-30% from the same side.
 
 ## Things to note when they happen

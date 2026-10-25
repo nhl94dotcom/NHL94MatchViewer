@@ -1626,7 +1626,7 @@ timings; most jobs are far out), mean 14-16% both nets. Per receiver (pooled): d
 within 10 ft of the middle, 27 ft 31-44%, 35 ft 2-14%, beyond 1-2%. Receiver inside 18 ft: pass across at the same
 depth 63% (13 of 18 over 50%), across from farther out 43%, from his own side 20-30%. Top vs bottom by set-up:
 correlation 0.82 early / 0.73 late, 56 / 70 set-ups more than 15 points apart; mirroring the bottom net in x gives 0.85
-/ 0.73 (no mirror effect). Write-up: SCORING_MAP "One-timers (Genesis)", GENESIS_MECHANICS 4.10. SNES chunk 1 (top)
+/ 0.73 (no mirror effect). Write-up: SCORING_MAP "One-timers", Genesis, GENESIS_MECHANICS 4.10. SNES chunk 1 (top)
 started the same day.
 **xG check (`ot_xg_check.py 14 8`, 2026-10-23, one process at duty 0.33 beside SNES chunk 2):** 59 set-ups (every 14th
 job), 748 strikes; at each the strike state read from RAM, 8 seeds played out, and xg.play_out 400 times from it as

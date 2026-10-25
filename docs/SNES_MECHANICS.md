@@ -457,9 +457,11 @@ By aim the model is within 2 points everywhere (a little low on the diagonals); 
 (54% / 51% within about 13 feet) and a little low far out (2.9% / 1.9% beyond 30 feet). Unchanged.
 
 **Slapshots by Shot Power and Accuracy** (2026-10-25, SCORING_MAP "Every Shot Power and Accuracy (SNES)"): 18 spots
-108-148 out, roster steps 2-6 (working 5-15). Below step 4 nothing scores; step 4 opens only the bottom net from 40 left of
-centre at the near post (6%); step 6, the most, opens the other spots (15-18% at the best aim, all near post). Accuracy
-adds little (about 1 point over the spots). The Genesis threshold is lower (between 3 and 4) and much bigger.
+108-148 out, roster steps 2-6 (working 5-15). Below step 4 nothing scores; step 4 opens only the bottom net from 40
+left of centre at the near post (6%); step 6, the most, opens the other spots (15-18% at the best aim, every one at
+the post on the shooter's side of the ice). Accuracy adds little (about 1 point over the spots). The Genesis threshold
+is lower (between 3 and 4) and much bigger.
+
 **One-timers by Shot Power and Accuracy** (2026-10-25, SCORING_MAP): Accuracy counts (12-14 points at the best aim from
 step 2 to 6), Power little (3-5); the stick meets the puck 92% whatever the ratings; ratings matter most 18 feet out
 and to the side, least on the doorstep (82% at 2 / 2, 89% at 6 / 6). As on the Genesis.

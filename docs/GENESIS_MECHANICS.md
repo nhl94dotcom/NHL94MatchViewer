@@ -540,7 +540,8 @@ from 120 phases of the game clock and the goalie's cycles. **Checked** against t
 shots at each of four spots agree within about one standard error (for example 44.4% natural, 43.0% mapped).
 
 **The situation it covers:** an average shooter (working Shot Power 20, Shot Accuracy 15) standing still with the
-puck; every other skater away; the computer goalie (Los Angeles, working Agility 13, Defensive Awareness 10) set in his
+puck; every other skater away; the computer goalie (Los Angeles's Kelly Hrudey, working Agility 13, Speed 13, Puck
+Control 18 and `aidef` 10, which is Defensive Awareness about 18-20: his roster 3 / 3 / 4 / 4 with a cold -2) set in his
 spot for that puck; a wrist shot (C tapped) or a full slapshot, each of the nine aims. Spots where the puck would start
 within 24 units of his centre (in the middle closer than about 40-60 out, and along the goal line) are left out: holding
 a shooter there isn't something a game allows.
@@ -598,7 +599,7 @@ and the game's outcome turns on a few units and a frame. **So the viewer keeps i
 map shows what the rules do.**
 
 **One-timers in the real game** (2026-10-23, `ot_run.py`, the whole study in [SCORING_MAP](SCORING_MAP.md),
-"One-timers (Genesis)"): a pass to a standing receiver, C pressed during the pass, the strike (`puckstick` ->
+"One-timers", Genesis): a pass to a standing receiver, C pressed during the pass, the strike (`puckstick` ->
 `onetimershot`, auto-aimed) played out at a set computer goalie; 824 set-ups over both nets. **Real game:** the swing
 struck the puck in 83-91% of presses the pass reached; goals per strike by the receiver's spot: the doorstep middle
 62%, 18 feet out within 10 of the middle about 50%, 27 feet 31-44%, 35 feet 2-14%, beyond that 1-2%. With the receiver
@@ -611,8 +612,33 @@ within 5 of it 25%. **The xG model (4.9) already gets this right:** at 748 strik
 correlation 0.83, across 69% / 67%, same side 24% / 24%; the stick, rebound or an exact goalie position don't improve
 it, so it is unchanged.
 
+**Slapshots by the shooter's ratings** (2026-10-24, SCORING_MAP "Slapshots and the shooter's ratings"): the slapshot
+from 18 spots 104-144 out, every roster step 2-6 of Shot Power and Shot Accuracy. **A threshold between Shot Power 3
+and 4:** the best aim's chance over the spots 4-7% at power 2-3, 14-21% at 4, up to 35% at 6 / 6; Accuracy adds 7-11
+points once the power is there (power 4-6), 1-2 below it. From the middle the far post is the best aim (21% for a
+27 / 27 shooter over 70 spots, against 11% for Down).
+
+**Moving shooters** (2026-10-24, SCORING_MAP "Moving shooters"; `mv_run.py`): a wrist shot skating across the crease
+scores 51-53% about 11 feet out aimed the way he skates, 0-1% aimed back. **The far-post slapshot is a skating shot:**
+a strong shooter (27 / 27) crossing toward his stick side, released just before the middle 28-35 feet out, 50-62%,
+falling fast once past the middle; standing, the best slapshot is about 21%. By rating (plan "slapxr") the same
+threshold between Shot Power 3 and 4 (15% to 44% at Accuracy 4), and from farther out each step of power counts.
+
+**Dekes and floaters** (2026-10-24 / 25, SCORING_MAP "Dekes and floaters"; `deke_run.py`): close in, a two-step swing
+of the d-pad moves the puck across in front of him in about 15 frames; a wrist shot with the swing's side held then
+scores 82-96% at the best set-ups (the backhand deke too, shot once the puck is across), the same shot with no swing
+0-1%. It baits the computer goalie's pad stack, which ignores the puck's side and slides toward the middle of the ice
+(`goaliesave`). Floaters (up and across, the puck swung back, C held 6-9 frames) 50-65% on the forehand, 41-51% on the
+backhand. The timing is tuned to the skater: a slow one (working Agility / Speed 10) scores 31-53%, a fast one (30)
+reaches the goalie before shooting and carries the puck in or loses it.
+
+**EA Specials** (2026-10-24 / 25, SCORING_MAP "EA Specials"; `ea_run.py`, a bot playing the rebound): a first wrist
+shot aimed across is bobbled 60-80% of the time; from 13 feet to the side the play ends in a goal 7-12% of first
+shots at Shot Power 2-5, 4% at 6 (the hardest shots are held more and the goalie dives at the loose puck less).
+
 **The computer goalie's ratings** (2026-10-25, SCORING_MAP "The computer goalie's ratings"): the scoring map's test
-goalie is a weak one (working Agility 13, Speed 13, Defensive Awareness 10, Puck Control 18). With all four at 20,
+goalie is Hrudey with a cold -2 (working Agility 13, Speed 13, Puck Control 18, `aidef` 10). Setting Agility, Speed
+and Puck Control to 20 (and, by mistake, `aidef` to 20: a slower reaction than any real goalie; being re-run),
 the standing slapshot's best chance falls from about 20% to 5% (the far post from the middle 57% to 3%) and the
 skating far-post slapshot from 41% to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (71% to
 63% at 30), floaters not at all. Which of the four ratings does it is not yet separated.

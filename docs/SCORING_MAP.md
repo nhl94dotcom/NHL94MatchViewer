@@ -1,6 +1,6 @@
-# NHL '94 Scoring Maps: How the Simulation Was Built
+# NHL '94 Scoring Maps and Shot Studies
 
-Every shot in these maps was played in the real game, not a model: the Genesis and SNES ROMs ran headless thousands of
+Every shot in these maps and studies was played in the real game, not a model: the Genesis and SNES ROMs ran headless thousands of
 times faster than real time, and each shot was played out until it was a goal or a save. (2026-10-23. The findings are
 also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10 and [SNES_MECHANICS](SNES_MECHANICS.md) 4.8; the run notes in
 [PROJECT_NOTES](PROJECT_NOTES.md), "Scoring map"; the tools in [`analysis/scoring_map/`](../analysis/scoring_map/).)
@@ -16,9 +16,14 @@ also in [GENESIS_MECHANICS](GENESIS_MECHANICS.md) 4.10 and [SNES_MECHANICS](SNES
 7. [Makes and misses, animated](#makes-and-misses-animated)
 8. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
 9. [The maps](#the-maps)
-10. [One-timers (Genesis, then SNES)](#one-timers-genesis)
-11. [Limits and what comes next](#limits-and-what-comes-next)
-12. [Rebuilding it yourself](#rebuilding-it-yourself)
+10. [One-timers](#one-timers)
+11. [Slapshots and the shooter's ratings](#slapshots-and-the-shooters-ratings)
+12. [Moving shooters (Genesis, 2026-10-24)](#moving-shooters-genesis-2026-10-24)
+13. [Dekes and floaters (Genesis, 2026-10-24)](#dekes-and-floaters-genesis-2026-10-24)
+14. [EA Specials (Genesis, 2026-10-24)](#ea-specials-genesis-2026-10-24)
+15. [The computer goalie's ratings (Genesis, 2026-10-25)](#the-computer-goalies-ratings-genesis-2026-10-25)
+16. [Limits and what comes next](#limits-and-what-comes-next)
+17. [Rebuilding it yourself](#rebuilding-it-yourself)
 
 ## At a glance
 
@@ -38,6 +43,18 @@ from a few gaps in the game's own rules.
 The two systems took different roads to the same harness. The Genesis map rebuilt the ROM from the disassembly with a
 hook in the shot routine so its dice could be covered exactly; the SNES map ran the untouched ROM and let the game roll
 its own dice millions of times.
+
+**The studies since the maps** (all Genesis unless named; a set computer goalie, the test state's, which turned out to
+be a weak one: see the goalie section):
+
+| Study | The headline |
+| --- | --- |
+| [One-timers](#one-timers) | The pass across is the play: 63% with the receiver inside 18 ft (SNES 58% at the best aim). Shot Accuracy adds about 15 points from 2 to 6, Shot Power almost nothing |
+| [Slapshots and the shooter's ratings](#slapshots-and-the-shooters-ratings) | Genesis: a threshold between Shot Power 3 and 4 (7% to 19% at the best aim over the spots). SNES: nothing below 4, the spots open only at 6 |
+| [Moving shooters](#moving-shooters-genesis-2026-10-24) | The far-post slapshot is a skating shot: across toward the stick side, released before the middle: 50-62% from 28-35 ft for a strong shooter (27 / 27), 44% on average at 4 / 4 |
+| [Dekes and floaters](#dekes-and-floaters-genesis-2026-10-24) | The swing is the goal (0-1% without it): the best dekes 82-96% (the backhand deke too), floaters 50-65%, backhand floaters 41-51%. The timing suits one skating speed |
+| [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out |
+| [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Better goalies stop the slapshot (far post from the middle 57% to 3%) but not one-timers; being re-run with real goalie profiles |
 
 ## Building the Genesis simulator
 
@@ -109,7 +126,8 @@ units from his centre and in front of him, and the shooter at least 16 away (`va
 
 **The run.** 23 x 16 spots (x -110 to 110, 100 to 250 from centre ice, every 10 units), both nets, wrist shot and
 slapshot, all nine aims; shooter working Shot Power 20, Shot Accuracy 15; Los Angeles's goalie (weight 48, Agility
-13, Speed 13, Defensive Awareness 10). 30 processes, about 2 hours.
+13, Speed 13, Puck Control 18, and an `aidef` of 10, which is Defensive Awareness about 20: the game stores 15 - DfA /
+4). 30 processes, about 2 hours.
 
 ## What went wrong and how it was fixed
 
@@ -349,7 +367,8 @@ each frame between the stick and the net:
   (`GoalieSaveList`). Of the 911 goals from the lane, 873 passed a right-side move (glove 491, stick 293, sprawl 89),
   35 were deflections and 3 passed a left-side move.
 
-The two systems' rates differ partly by design: the Genesis map's shooter is stronger (Shot Accuracy 15 against 13).
+The two systems' rates differ partly by design, and not the way the numbers suggest: the Genesis map's shooter has
+Shot Accuracy 15 of 30, the SNES map's 13 of 15, so the SNES shooter is the relatively stronger one.
 
 ## The maps
 
@@ -378,7 +397,9 @@ close to the goalie for a real shot.
   about half the time. The mirror shot on the right scores 0-3%.
 - The rays of blue squares pointing at the net are the same gap reached from farther out at an angle.
 
-## One-timers (Genesis)
+## One-timers
+
+### Genesis
 
 The same harness, now with a pass: a passer holds the puck, a teammate stands where the one-timer will be taken, the
 computer goalie sets himself, the passer passes toward the teammate and the one-timer button (C) is pressed during the
@@ -439,7 +460,7 @@ position blur, or with the goalie's stick and rebound, it does no better (log lo
 what decides a one-timer is where the goalie is when it is struck, and the model already reads that from the
 recording.
 
-#### One-timers by Shot Power and Accuracy (Genesis, 2026-10-24)
+### Genesis: by Shot Power and Accuracy (2026-10-24)
 
 To see what the receiver's ratings change, the best one-timer spots were played again with every pair of Shot Power and
 Shot Accuracy from 2 to 6, the same steps as the slapshot table below. There were four receivers: in front of the net
@@ -474,7 +495,7 @@ Each cell is goals per struck one-timer:
   On the doorstep a weak shooter gives up only 9 points to a strong one. From the side the gap is 18-23 points. There,
   an accurate shooter scores about as well as a weak one does from straight in front.
 
-#### One-timers, animated
+### Genesis, animated
 
 `ot_animate.py`: four set-ups from the ratings run at the top net, each played 32 times (the press early or late in the
 pass, as in the run), the game's own frames from the pass to the result. Rates are from the run (512 struck
@@ -502,7 +523,7 @@ across he is still sliding when the puck is struck. After the pass from the same
 ![The same set-up, Shot Power 6 / Accuracy 6: 67% (345 of 512): every attempt from above](img/scoring_map/ot_rating_6_6_paths.gif)
 
 
-### One-timers on the SNES
+### SNES
 
 The same 824 set-ups on the SNES (retail ROM, Snes9x), the one-timer button A pressed early or late in the pass and
 each of the nine d-pad directions held from the press (the SNES reads the aim during the swing), 32 moments, 4 seeds a
@@ -525,14 +546,14 @@ set-up; averaged over the passers, both nets and both timings):
   and beyond the doorstep it is the difference between a poor chance and a good one.
 - **The pass across is even more decisive than on the Genesis:** with the receiver inside 18 feet, a pass from the
   other side scores 36% over the aims and 58% at the best aim; one from his own side 7% and 16%.
-- **The doorstep in the middle is a little weaker than on the Genesis** (62% at the best aim against 62% with the
-  Genesis's own aim; 44% over all the aims), and the SNES falls off faster with distance.
+- **The doorstep in the middle is as good as on the Genesis at the best aim** (62% against the Genesis's 62% with its
+  own aim) but only 44% over all the aims, and the SNES falls off faster with distance.
 - **The SNES xG model gets them right:** at 3,627 strikes played in the game (`ot_xg_check_snes.py`) the game 8.9%,
   the model 7.8%, correlation 0.82; the pass across 45% / 42%, from the same side 1% / 3%. Unchanged.
 - Averaged over every set-up and aim, a SNES one-timer scores about 6%; the Up aim is the poorest (3.6%), the
   diagonals toward the shooter's sides the best (7-9%), but the right aim depends on the spot and the net.
 
-#### One-timers by Shot Power and Accuracy (SNES, 2026-10-25)
+### SNES: by Shot Power and Accuracy (2026-10-25)
 
 The Genesis ratings study again on the SNES: the same 60 set-ups (four receivers, passes from either side, both nets,
 early and late presses, 32 moments), all nine aims, 4 seeds a strike: about 120,000 struck one-timers per pair. Shot
@@ -573,7 +594,9 @@ is goals per struck one-timer over all the aims, then at each set-up's best aim:
 ![SNES one-timer, Shot Power 6 / Accuracy 6: four real attempts](img/scoring_map/snes_ot_rating_6_6_clips.gif)
 ![SNES one-timer, Shot Power 6 / Accuracy 6: every attempt from above](img/scoring_map/snes_ot_rating_6_6_paths.gif)
 
-## Strong shooters' slapshots (2026-10-24)
+## Slapshots and the shooter's ratings
+
+### Strong shooters (2026-10-24)
 
 The user: far-post slapshots work more often for strong, accurate shooters. The same 70 spots for each (slapshots from
 the middle half of the ice, x -60..60 by 20, 30-55 feet out, both nets; `NHL94_SMAP_SUBSET=slapmid` with `map_run.py`
@@ -588,8 +611,8 @@ and `snes_map_run.py`), a set computer goalie. "Best aim" is the best of the nin
   out 17% to 28%, 180 out 10% to 14%; SNES best at 120 out, 5.7% to 10.8%).
 - **Near and far post (the league's words, the user):** by the shooter's hand, wherever he is. Right-handed: the
   goalie's left is the far post, his right the near post; left-handed: the goalie's right is far, his left near. So
-  the far post is on the shooter's forehand side. Both test shooters shoot left (Genesis +$76 bit 0 set; SNES
-  attribute bit $0800 clear), so their far post is the goalie's right.
+  the far post is on the shooter's forehand side. Both test shooters shoot left (Genesis attribute +$04 bit 3 clear,
+  which is what the game reads; SNES attribute bit $0800 clear), so their far post is the goalie's right.
 - **Genesis, from the middle of the ice: the far post is the best aim** (strong shooter: far post at mid-height 21%,
   high 19%, against 11% for Down's ice-level middle; usual shooter 14% / 12% / 9%). From his forehand side (left of
   the middle for a left-hander) Down is best (9%), the far post next (5%); from his backhand side Down (13%), the near
@@ -662,7 +685,9 @@ The best aim's chance averaged over the 18 spots:
 
 The four best spots (goals of 240 at each spot's best aim). The x here is the screen's, the same on both nets, so 40
 left of centre is the left-handed shooter's forehand side on the top net and his backhand side on the bottom. All four
-best aims are at the near post (the left post: Up-Left on the top net, Down-Left on the bottom, Left from the middle):
+best aims are at the post on the screen's left, the side of the ice he shoots from (Up-Left on the top net, Down-Left
+on the bottom, Left from the middle). By the league's definition (the shooter's hand) that is the far post at the top
+net and the near post at the bottom, as in the strong-shooter result above: the post on his side of the ice.
 
 | Spot | Accuracy | Power 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|
@@ -681,10 +706,10 @@ best aims are at the near post (the left post: Up-Left on the top net, Down-Left
 - **Accuracy matters less than on the Genesis.** From 2 to 6 it adds about 1 point over the spots at power 6. At the
   best spot it lifts 25 to 44 of 240 at power 6, and nothing at power 2-3.
 - Even at 6 / 6 the SNES slapshot from here scores 5% over the spots against the Genesis's 35%: SNES slapshot goals
-  are rare and near post (as the user says), and they come from the near-post side of the ice, far out.
+  are rare (as the user says), and they go in at the post on the shooter's side of the ice, from far out.
 
 **Animated (`animate.py`, the RATED spots):** the best spot, the bottom net from 40 left of centre 148 out at the near
-post, at 4 / 4 (6% in the ratings run) and 6 / 6 (18%). The shooter stays on the ice here, which shifts the SNES's
+post (his backhand side, the post nearest him), at 4 / 4 (6% in the ratings run) and 6 / 6 (18%). The shooter stays on the ice here, which shifts the SNES's
 frame timing a little (see the top of `animate.py`): of the 120 shots filmed, 2 went in at 4 / 4 and 23 at 6 / 6.
 
 **Shot Power 4 / Accuracy 4: 6%.**
@@ -836,6 +861,9 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
   the net at the release, against 4 with no swing. In the other best set-ups he is no further off it (righty swinging
   right 2 against 5, floaters 2-4 against 3-4), so there the swing must beat a save test some other way (the shot's
   angle across him); which one is not yet traced. Averaged over the whole grid he is 2-5 units off either way.
+- **The recorded games** (`analysis/deke_games.py`, 158 close wrist shots by a person at a computer goalie in 47
+  games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
+  the sides apart yet.
 - **Animations:** `deke_animate.py` plays each best set-up 24 times at the top net and makes two GIFs per move: four
   attempts in the game's own frames, and every attempt from above (shooter, puck and goalie paths, the swing marked).
   They are below (the rates are the full run's: 96 attempts, both nets).
@@ -943,9 +971,6 @@ Animated going down, the same inputs (`deke_animate.py`, the DOWN list; rates: t
 
 ![Going down: the same deke with no swing: 0%: four real attempts](img/scoring_map/deke_no_swing_down_clips.gif)
 ![Going down: the same deke with no swing: 0%: every attempt from above](img/scoring_map/deke_no_swing_down_paths.gif)
-- **The recorded games** (`analysis/deke_games.py`, 158 close wrist shots by a person at a computer goalie in 47
-  games): a swing to the forehand 32% (25 shots, xG 33%) close straight in, to the backhand 40% (15); too few to tell
-  the sides apart yet.
 
 ### The user's refinements (plan "deke2", 2026-10-24)
 
@@ -953,7 +978,8 @@ From the user, after the animations: come in from a bit farther out to the side,
 and shoot with the stick straight up or a bit up and toward the swing's side. `deke_run.py deke2`: both hands, both
 swing directions, both nets; starting 30 / 45 / 60 to the side, the swing begun 50 / 60 / 72 from the goalie, C 10-22
 frames later, aimed to the side (as before), straight Up, or Up and toward the swing's side; 12 moments x 4 seeds.
-Rates below count a puck the goalie took before the shot as a failure (out of 96 attempts, both nets).
+Rates below count a puck gone before the shot as a failure (out of 96 attempts, both nets); some of those were the
+skater carrying it in, a goal (found 2026-10-25: "By the shooter's skating and shot" below).
 
 | Move | Before (the first grid) | Now | Best set-up |
 |---|---|---|---|
@@ -1148,8 +1174,8 @@ shot counts as a failure, a puck the skater carried into the net himself as a go
 The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the
 loose puck and at once shoots inside the near post, open because the goalie was pushed back (and may have dived at the
 loose puck). The user's view: the best shooters are bad at it, because their harder shots are held more; middling
-shooters' shots are bobbled more. `ea_run.py`: one left-handed shooter at each of 9 spots (40 / 70 / 100 to the side,
-60 / 90 / 120 out), standing or skating in at 1.5 a frame, every Shot Power and Shot Accuracy from roster step 2 to 6
+shooters' shots are bobbled more. `ea_run.py`: one left-handed shooter at each of 9 spots (40 / 70 / 100 to his
+right, 60 / 90 / 120 out: his off-wing, the stick toward the middle; `ea_run.py` calls it his forehand side), standing or skating in at 1.5 a frame, every Shot Power and Shot Accuracy from roster step 2 to 6
 (working 10-30), all nine aims, 8 moments x 2 seeds, both nets: 129,600 first shots. After the shot a simple bot plays
 the rest: skate on; once the goalie has touched the puck and it is loose, chase it; on claiming it, tap C aimed at the
 near post.
@@ -1172,8 +1198,9 @@ near post.
 - **Limits:** the bot is no person. It takes about 44 frames to claim the puck, and half the bobbles end with nothing
   (the puck not reached, or the follow-up still loose), so the scoring rates here are a floor. The comparisons between
   ratings are fair: every shooter had the same bot. The game's hold rule (the goalie holds a puck whose speed parts
-  are under a random threshold set by Puck Control) would predict faster shots held less, the opposite of what
-  happened at step 6; that is still to be traced.
+  are under a random threshold set by Puck Control) predicts faster shots held less. Over all aims that is what
+  happens (the firm-up below: held 46% / 51% / 58% / 58% / 40% at steps 2-6), but the far-side shots at step 6 are
+  held more (35% against 16-24%); that is still to be traced.
 - **Firmed up (plan "firm", 2026-10-25):** the 40-to-the-side spots again over 48 moments (6 times as many),
   Shot Accuracy 2 / 4 / 6, 155,520 first shots. The far-side first shots end in a goal 8% / 12% / 8% / 7% / 4% of the
   time at Shot Power 2-6, against the first run's 10% / 11% / 9% / 8% / 4%: the result holds. Steps 2-5 are much the
@@ -1182,7 +1209,7 @@ near post.
   first shots at steps 2-5, standing 1-3%. Shot Accuracy again changes little (2-3%).
 
 **Animated** (`ea_animate.py`): the spot where Shot Power makes the most difference. A left-hander standing 30 ft out
-and 13 ft to his forehand side at the top net, the first wrist shot aimed across (Left), with ea_run's own bot playing
+and 13 ft to his right at the top net (the GIF captions say "forehand side", `ea_run.py`'s name for it), the first wrist shot aimed across (Left), with ea_run's own bot playing
 on and Shot Accuracy 2-6 in turn. Measured over 120 game moments, the play ends in a goal **22% of the time at Shot
 Power 2 (26 of 120) and 2% at Power 6 (2 of 120)**. At Power 2 every first shot was bobbled and the goalie dived in 79%
 of plays. At Power 6, 20% were held at once and he dived in 32%. The EA run had given 39% and 0% at this set-up, but
@@ -1203,7 +1230,7 @@ spots are steadier. The paths view colours the goalie red while he dives.
 
 The user: more EA Specials come from farther to the side, on or near the end-zone faceoff dot, with the skater
 skating toward the goal as he shoots. The dot is about 70 to the side and 60 out (23 ft and 20 ft). `ea_run.py` plan
-"dots": spots 55 / 70 / 85 to the side (18 / 23 / 28 ft) and 45 / 60 / 75 out (15 / 20 / 25 ft), his forehand side as
+"dots": spots 55 / 70 / 85 to the side (18 / 23 / 28 ft) and 45 / 60 / 75 out (15 / 20 / 25 ft), on his right as
 before, skating straight at the middle of the goal line at 1.5 or 2.5 a frame (and still skating at it after the
 shot), Shot Power 2-6, Shot Accuracy 2 / 4 / 6, all nine aims, 24 moments x 2 seeds, both nets: 233,280 first shots.
 The same bot plays on.
@@ -1223,7 +1250,7 @@ The same bot plays on.
   55 of 144 (38%); top net, 85 to the side, 75 out, Up-Left, 46 of 144 (32%). These rest on 24 moments, so like the
   first run's single set-ups they wander (below: 29% over 120 moments).
 
-**Animated** (`ea_animate.py`, the dots cases): the best top-net set-up, 28 ft to his forehand side and 25 ft out,
+**Animated** (`ea_animate.py`, the dots cases): the best top-net set-up, 28 ft to his right and 25 ft out,
 skating at the goal at 2.5 a frame, the first wrist shot Up-Left, Shot Accuracy 2-6 in turn. Measured over 120 game
 moments: **29% at Shot Power 2 (35 of 120), 4% at Power 6 (5 of 120)**.
 
@@ -1239,6 +1266,13 @@ moments: **29% at Shot Power 2 (35 of 120), 4% at Power 6 (5 of 120)**.
 
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)
+
+**Correction (2026-10-25, being re-run):** the levels below set the goalie's Agility, Speed and Puck Control to
+10 / 20 / 30, but the third number went into the slot that holds `aidef`, not Defensive Awareness: the game stores
+15 - DfA / 4 there (7-15) and his reaction timer is a quarter of it. So "20" and "30" also gave him a slower
+reaction (5 and 7 frames) than any real goalie (1-3), and the test goalie's "10" is Defensive Awareness about 20.
+The slapshot still fell, so Agility, Speed or Puck Control did it. The runs are being repeated with real goalie
+profiles from the ROMs and with one rating at a time; this section will be replaced.
 
 Every run above used one computer goalie, the test state's (working Agility 13, Speed 13, Defensive Awareness 10,
 Puck Control 18; his save ratings are never used). Here the same shots against goalies with all four of those at 10,

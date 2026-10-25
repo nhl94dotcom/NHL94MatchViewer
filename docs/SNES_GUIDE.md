@@ -247,7 +247,10 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   the glove reaches 7-15 off the ice). About 1 in 7 shots that reach the goalie go uncounted, whichever way you aim.
 - **Don't count on long slapshots.** From the blue line to about 40 feet out, even the hardest shots go in only a
   few percent of the time on the SNES (1 in 17 in recorded games), far less than on the Genesis. If you do shoot from
-  there, the near post is the better aim. Get closer or pass across instead.
+  there, aim at the post on your side of the ice. Get closer or pass across instead. Played in the game itself, only
+  the hardest shooters make it worth trying: below Shot Power 4 on the roster nothing goes in; at 4 one spot works
+  (about 6%); only at 6, the most, does it open up, and then about 15-18% at the best spots and 5% on average
+  ([SCORING_MAP](SCORING_MAP.md)). Shot Accuracy adds little.
 - **The posts are wide on the SNES.** The scoring part of the net is narrower than on the Genesis, and the last 5
   units on each side are post: a shot aimed at a side that drifts a little outward rings off the post (about 1 shot in
   12 that reaches the net, four times the Genesis rate). There's no crossbar to hit: anything high enough to reach it
@@ -284,6 +287,10 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **They beat computer goalies:** while a pass is in the air the computer goalie **loses his Agility** and is slow to
   slide across, and every pass delays his next adjustment. A quick pass across and a one-timer catches him moving.
 - **Offsides on:** a one-timer by an offside player is whistled.
+- **Played in the game itself** (the one-timer study, [SCORING_MAP](SCORING_MAP.md)): with the receiver inside 18
+  feet, a pass across scores 58% at the best aim (36% averaged over the aims), one from his own side 16%. On the
+  doorstep in front, 62% at the best aim. The aim matters: the best direction roughly doubles the chance. Of the
+  receiver's ratings Shot Accuracy counts (12-14 points from 2 to 6), Shot Power hardly.
 
 ---
 

@@ -296,6 +296,29 @@ The computer never holds a direction, so its wins go a random way.
 - **Long slapshots need Shot Power.** From the blue line to about 40 feet out, a slapshot under about 20,000 almost
   never goes in. Only the hardest shooters' forehands (24,000+) beat the goalie's slide: about 15-23% from 40 feet near
   the middle. A backhand loses a quarter of its power. With that power, the far post works as well as the near one.
+  - **Played in the game itself** (the scoring studies, [SCORING_MAP](SCORING_MAP.md)): a standing slapshot from 35-48
+    feet needs **Shot Power 4 or better on the roster scale** (a working 20). At 2-3 it scores 4-7% at the best aim
+    whatever the accuracy; at 4 / 4 about 19%; at 6 / 6 35%. Accuracy only helps once the power is there. From the
+    middle the far post is the best aim. These numbers are against Los Angeles's Kelly Hrudey; better goalies stop
+    far more slapshots (12.3).
+- **The far-post slapshot is a skating shot.** Skate across the slot toward your stick side (a left-hander toward the
+  screen's left going up), wind up, and release just before the middle of the ice, 28-35 feet out, aimed at the far
+  post ahead of you: a 27 / 27 shooter scored 50-62% this way in the game itself, against about 21% for the best
+  standing slapshot. Past the middle it falls away fast; aimed at the near post (behind you) almost never. Shot Power 4
+  is the threshold here too (15% at 3 / 4, 44% at 4 / 4).
+- **Dekes: the swing is what scores.** Come in about 15 feet to one side, and when you are about 20 feet from the
+  goalie press the diagonal the other way (Up-Left or Up-Right going up the screen): your facing swings two steps and
+  the puck crosses in front of you in about a quarter of a second. Then tap C with that side still held. Against the
+  computer goalie the best set-ups score 82-96%, and the same shot without the swing 0-1%: the swing usually makes him drop
+  into a pad stack, and his pad stack always slides toward the middle of the ice, away from where you took the puck.
+  On the backhand, wait until the puck is across (about 2-3 feet) before C. Swings to your right need to start a
+  little earlier (about 28 feet from the goalie) than swings to your left.
+- **Floaters:** skate up and across on the diagonal from your forehand side, about 12-17 feet out to the side, swing
+  the puck back to the forehand about 30-35 feet from the goalie and hold C for 6-9 frames: it floats toward the far
+  post, 50-65% at the best set-ups (on the backhand 41-51%, a narrow window).
+- **The timing above suits an average skater.** A slow one (Agility / Speed about 2 on the roster) got there too
+  slowly and scored 31-53% with the same inputs; a very fast one reached the goalie before shooting and often carried
+  the puck in (a goal) or lost it. Start the swing farther out with a fast skater.
 - **Delayed penalty = free snipe.** While the referee's arm is up for a penalty against the other team, the game
   pulls your goalie, and **every shot your team takes from inside the zone goes exactly where you aim it**. Shoot for
   a corner.
@@ -303,7 +326,11 @@ The computer never holds a direction, so its wins go a random way.
   off to his left. Point-blank shots at a goalie standing still rebound about 60% of the time; get a man to the side
   you're shooting at.
 - **The EA Special** (community name): a wrist shot from the side that the goalie bobbles and is pushed back on, then
-  a quick follow-up into the open side. It fits the rebound rule above.
+  a quick follow-up into the open side. It fits the rebound rule above. Played in the game itself with a simple bot
+  following up: aim the first shot **across**, at the far side (bobbled 60-80% of the time; aimed along the ice he
+  holds it). From about 13 feet to the side the play scored 7-12% of first shots at Shot Power 2-5 and about half that
+  at 6: the hardest shots are held more and the goalie dives at the loose puck less. It worked best about 40 feet out.
+  A person following up should do better than the bot.
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.
@@ -375,6 +402,11 @@ The computer never holds a direction, so its wins go a random way.
   at the middle would almost never miss. **A pulled goalie is different:** with nobody in net the game aims one-timers
   at the middle, half height, and they rarely miss from close in. **When the goalie is out of position, take the pass and shoot normally,
   holding Down or nothing.** (The SNES doesn't have this problem: there your d-pad aims one-timers.)
+- **Played in the game itself** (the one-timer study, [SCORING_MAP](SCORING_MAP.md)): with the receiver inside 18
+  feet, **a pass from the other side of the net scores 63%**, one from his own side 20-30%: after the pass across the
+  goalie is still sliding when the puck is struck. On the doorstep in front with the pass from the side, 90-99%. Beyond
+  35 feet one-timers almost never score. Of the receiver's ratings **Shot Accuracy is the one that counts** (about 15
+  points from 2 to 6); Shot Power hardly matters.
 - **Quick and moderate beats long and cross-ice.** In the recorded games, one-timers set up by a pass that moved the
   puck about 13-30 feet across scored nearly half the time; long passes across the whole ice scored a fifth of the
   time. The computer goalie re-aims every few frames, so a long pass gives him time to slide over and set; a quick pass
