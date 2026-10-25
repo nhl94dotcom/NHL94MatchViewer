@@ -1202,8 +1202,9 @@ near post.
 right-hander from the left, now and then a backhand flip from the other side. The shooter always faces straight
 across the rink or diagonally toward the goalie as he wrists the puck, never straight up the ice (he would have to
 turn sharply to claim the rebound). So the standing and straight-up-the-ice shooters of the first two runs below
-aren't the real play; the faceoff-dot run (skating at the goal) is, and plan "angle" (below) plays it skating
-straight across, at 45 degrees and at the goal, against the test goalie and the goalie profiles.
+aren't the real play; the faceoff-dot run (skating at the goal) is, plan "angle" (below) plays it skating
+straight across, at 45 degrees and at the goal, against the test goalie and the goalie profiles, and plan "xspot"
+releases the shot at the spots the user marked.
 
 - **The first shot to bobble is aimed across, at the far side from the shooter:** 60-77% of those are touched and
   left loose, against 14-28% aimed down along the ice (held 70-85%).
@@ -1220,7 +1221,7 @@ straight across, at 45 degrees and at the goal, against the test goalie and the 
 - **Pushed back:** measured as the goalie's movement toward his goal line within 20 frames of the save, only 0.3-0.8
   units after far-side shots (up to 3 after shots he holds). So in these runs the save doesn't move the goalie; the
   opening comes from the dive and from where the loose puck goes.
-- **Limits:** the bot is no person. It takes about 44 frames to claim the puck, and half the bobbles end with nothing
+- **Limits:** the bot is no person. In this first run it took about 44 frames to claim the puck, and half the bobbles end with nothing
   (the puck not reached, or the follow-up still loose), so the scoring rates here are a floor. The comparisons between
   ratings are fair: every shooter had the same bot. The game's hold rule (the goalie holds a puck whose speed parts
   are under a random threshold set by Puck Control) predicts faster shots held less. Over all aims that is what
@@ -1342,7 +1343,8 @@ end-zone faceoff dot across the ice and a little deeper (the dot is 70 to the si
 the side and 40-44 out, 23 ft and 14 ft). `ea_run.py` plan "xspot" places the release itself there: the skater starts
 4 frames of skating back along his line, since a wrist shot leaves the stick 4 frames after C. The release lands
 within a unit or two of the target. Spots 65 / 70 / 75 to the side (22 / 23 / 25 ft) and 38 / 42 / 46 out (13-15 ft),
-on both sides, each on the forehand (a left-hander from his right, a right-hander from his left: the user). He skates
+on both sides, each the way the user takes it (a left-hander from his right, a right-hander from his left: the
+off-wing, the stick toward the middle). He skates
 at the middle of the goal line at 1.5 or 2.5 a frame or in at 45 degrees. Shot Power 2 / 4 / 6, Shot Accuracy 4,
 all nine aims, 24 moments x 2 seeds, both nets: 139,968 first shots each against the test goalie (Hrudey) and Roy. The
 same bot plays on.
@@ -1422,7 +1424,7 @@ nets, 24 moments x 4 seeds; the test goalie re-run over the same moments for the
 - **So the test goalie was a weak one,** and the slapshot rates in this document are for a weak goalie. Against an
   average-to-strong computer goalie the slapshot is a poor shot, and one-timers and dekes are worth even more by
   comparison.
-- **Which rating does it:** Agility, with some help from Puck Control (one rating at a time, above).
+- **Which rating does it:** Agility, with some help from Puck Control (one rating at a time, below).
 
 ### One rating at a time: Agility stops slapshots
 
@@ -1517,15 +1519,17 @@ moments x 4 seeds, both nets.)
 
 ## Limits and what comes next
 
-The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near) and say nothing
-yet about shots off the rush or a person in net; one-timers are above (both systems).
+The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near). The studies
+since add skating shooters, one-timers, dekes, floaters and EA Specials, other goalies (Genesis) and, as a pilot, one
+defender (DEFENCE_STUDY). None of it covers a person in net yet: those tests are to be designed with the user.
 
 - **Not yet seen in real play.** Two practice tests are on the request list ([NEEDS_FROM_YOU](NEEDS_FROM_YOU.md)
   items 5 and 6): a dozen Down slapshots from the middle on the Genesis, and a dozen slapshots from the SNES left lane
   against its mirror.
-- **One shooter, one goalie per system.** Other ratings change the perfect-shot chance (the SNES lane scores about that
-  chance: 35% at Shot Accuracy 7, 52% at 15). The goalie's ratings barely matter on the SNES (the same body box and save
-  frames for all); on the Genesis Agility sets his reach (12-15).
+- **The goalie.** On the Genesis the goalie's Agility sets his reach (12-15) and decides most slapshots (above:
+  real goalie profiles). On the SNES every goalie has the same body box and save frames, so his ratings should matter
+  less; runs against SNES goalie profiles are under way. The shooter's ratings are covered for both systems
+  ("Slapshots and the shooter's ratings").
 - **Recorded games still use the xG models.** Replaying 135 recorded Genesis shots in the game gave the right total but
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.

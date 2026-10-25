@@ -31,8 +31,8 @@ record or check and what it will settle. Newest at the bottom of each section.
    and take a dozen full slapshots holding Down; then a dozen holding Left or Right. Do it at both ends. *Settles:*
    the scoring map (GENESIS_MECHANICS 4.10), which plays these shots in the game itself and says about 20% go in
    holding Down (more at the top net) and only a few percent with the other aims. Only real play shows whether a
-   standing slapshot like that is something a person can set up. The map's goalie is Los Angeles's Kelly Hrudey (a
-   mid-pack retail starter); better goalies stop far more slapshots (SCORING_MAP, "The computer goalie's ratings"), so
+   standing slapshot like that is something a person can set up. The map's goalie is Los Angeles's Kelly Hrudey, played
+   cold, which makes him weaker than a typical starter; better goalies stop far more slapshots (SCORING_MAP, "The computer goalie's ratings"), so
    note which goalie you shot at.
 6. **Slapshots from just left of centre at a set computer goalie (SNES).** In a practice game, stand still with the
    puck a stride to your own left of the middle (2-5 feet), 25-40 feet out, let the goalie settle, and take a dozen
@@ -44,6 +44,14 @@ record or check and what it will settle. Newest at the bottom of each section.
    teammate within about 18 feet of the goal line from a pass across the net's centre line, then a dozen from a pass
    from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_MAP, "One-timers", Genesis),
    which plays them in the game itself: about 63% from across, 20-30% from the same side.
+8. **SNES dekes and moves (the 2v2 ROM).** A game with plenty of dekes and other moves that work on the SNES, the
+   misses included, and roughly when you played it. *Settles:* how the SNES deke is done (SNES_MECHANICS 4.10 has
+   five examples so far); the SNES deke runner waits for it.
+9. **The EA Special at the bottom net (Genesis, optional).** In a practice game against the computer, going down the
+   screen: a right-hander from his left, released about 14 feet out and level with the faceoff dot, skating at the
+   goal, a weak wrist shot with no direction held, then C again only once you have the puck. A dozen tries, and note
+   the goalie. *Settles:* whether a person gets the 43-55% the game gave a bot (SCORING_MAP, "Released from the
+   marked spots").
 
 ## Things to note when they happen
 
@@ -70,6 +78,8 @@ record or check and what it will settle. Newest at the bottom of each section.
 4. ~~**The CDL goalie edit**~~ Settled (2026-10-25): the studies use what `CDL_Season_12.bin` holds: every goalie but
    Roy, Belfour and Fuhr has +1 Agility, +1 Defensive Awareness and +1 Puck Control over the retail ROM (capped at 6),
    Fuhr +1 Agility only, Roy and Belfour nothing; the stick and glove ratings are unchanged.
+5. **Tests with a person in net** (Genesis): how a person's goalie reacts to the deke and the floater is to be
+   designed with you before anything is run.
 
 ## Checks you could run on your box-score database
 
