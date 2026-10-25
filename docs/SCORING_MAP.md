@@ -1388,7 +1388,8 @@ moments x 4 seeds, both nets.)
   and one-timers where they were; Roy and Belfour stay well above them, as the leagues rank them.
 - **The top net stays the better one for slapshots** against every goalie.
 - **So against a good goalie, score with one-timers and dekes.** The ranking of the shots is the same for every
-  goalie, but the gap grows: against Roy a one-timer is worth about eight standing slapshots.
+  goalie, but the gap grows: against Roy a one-timer (51%) is worth about eight of the best shooter's standing
+  slapshots from the middle (6%).
 
 **Animated (`animate.py`, the RATED spots):** the far-post slapshot from the middle 35 ft out (top net, the shooter 4 /
 4), against a goalie rated 10 (the run 57%; 66 of the 120 filmed went in) and 20 (3%; none of the 120).
