@@ -642,10 +642,12 @@ shots at Shot Power 2-5, 4% at 6 (the hardest shots are held more and the goalie
 
 **The computer goalie's ratings** (2026-10-25, SCORING_MAP "The computer goalie's ratings"): the scoring map's test
 goalie is Hrudey with a cold -2 (working Agility 13, Speed 13, Puck Control 18, `aidef` 10). Setting Agility, Speed
-and Puck Control to 20 (and, by mistake, `aidef` to 20: a slower reaction than any real goalie; being re-run),
-the standing slapshot's best chance falls from about 20% to 5% (the far post from the middle 57% to 3%) and the
-skating far-post slapshot from 41% to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (71% to
-63% at 30), floaters not at all. Which of the four ratings does it is not yet separated.
+and Puck Control to 20 (and, by mistake, `aidef` to 20, which turned out not to matter), the standing slapshot's best
+chance falls from about 20% to 5% (the far post from the middle 57% to 3%) and the skating far-post slapshot from 41%
+to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (71% to 63% at 30), floaters not at all.
+**One rating at a time, Agility does it** (his reach, 5.1): Agility 13 to 20 alone takes the standing slapshot's best
+chance from 18.9% to 8.9% and the far post from the middle from 58% to 3%; Puck Control helps a little (20 to 30:
+8.4% to 6.3%); Speed and Defensive Awareness (`aidef`, his reaction) change nothing. Real goalie profiles are being run.
 
 ---
 
