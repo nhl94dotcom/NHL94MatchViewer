@@ -1192,8 +1192,8 @@ recordings that went over the glass (heights 44 and 42 at the boards).
 - **A check on the passer after a pick-off.** `CCStart` checks whenever a player in `SPAburst` collides with an
   opponent; it never asks who has the puck, and catching the puck (`puckglue`) doesn't end the burst. So a burster
   who takes the pass and then reaches the passer still checks him. In the 17 games: 11 pick-offs followed within
-  0.7 s by the taker's check animation (all mid-burst), 7 along the boards (the boards' automatic knockdown), 2
-  knockdowns. (`analysis`-style scan of the match files: owner changes plus the `anim` words.)
+  0.7 s by the taker's check animation (all mid-burst), 7 along the boards, 2 knocking him
+  down (a scan of the match files: the puck's owner and each player's `anim` word).
 
 ### 7.2 The weight bug and the CB check
 
