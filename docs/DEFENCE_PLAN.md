@@ -165,8 +165,16 @@ results.
 Each harness study gets a short pilot first (a few set-ups, checked by eye with animations) before the full run, the
 way the deke and EA studies were built.
 
-## Questions for the user
+## The user's answers (2026-10-25)
 
-1. Penalties on or off for the poke study (trips count only when they are on)? League settings are assumed.
-2. Which defensive habits do good players say matter most? Those go first in study 2 and in the harness grids.
-3. Any situations people say are hardest to defend that aren't in the list above?
+1. **Penalties on** for the poke study (and the checks): trips and other calls count.
+2. **What good players say matters:**
+   - **Accurate checks:** they don't miss, so they don't send their skater wildly out of position. Study 2 measures
+     missed checks and where the checker ends up; study 7 prices a miss.
+   - **Anticipation:** they read the other person's plan, cutting off the pass across so the one-timer often isn't even
+     tried. In the games (study 2): passes across that were never made, the defender in the passing lane; in the
+     harness (study 4): the defender in the lane against the one-timer play.
+   - **Staying in the slot** against slapshots, though always staying there risks being too passive. Study 2 measures
+     time in the slot against chances against and against how often the carrier gets in close; study 4 tests the slot
+     position against the slapshot and the deke (does sitting in the slot give the deke away?).
+3. No other hard-to-defend situations named yet.
