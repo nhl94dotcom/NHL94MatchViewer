@@ -641,6 +641,9 @@ reaches the goalie before shooting and carries the puck in or loses it.
 **EA Specials** (2026-10-24 / 25, SCORING_MAP "EA Specials"; `ea_run.py`, a bot playing the rebound): a first wrist
 shot aimed across is bobbled 60-80% of the time; from 13 feet to the side the play ends in a goal 7-12% of first
 shots at Shot Power 2-5, 4% at 6 (the hardest shots are held more and the goalie dives at the loose puck less).
+Skating as the play is really taken (plan "angle"): at 45 degrees or straight at the goal 3-4% at the best aim,
+straight across about 1% (the bot reaches 7-10% of the bobbles, against 58-69%); against Roy 3-3.5% (the goalie dives
+after a bobble 7-8% of the time against Hrudey's 17-21%), so goalie quality matters far less than for slapshots.
 
 **The computer goalie's ratings** (2026-10-25, SCORING_MAP "The computer goalie's ratings"): the scoring map's test
 goalie is Hrudey with a cold -2 (working Agility 13, Speed 13, Puck Control 18, `aidef` 10). Setting Agility, Speed

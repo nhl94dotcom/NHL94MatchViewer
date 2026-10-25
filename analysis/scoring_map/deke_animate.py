@@ -2,7 +2,7 @@
 Each method in METHODS (the best set-ups from deke_run.py and the no-swing control, at the top net: going up the
 screen) and DOWN (the same moves at the bottom net: going down) played N times (12 moments x seeds), the game's own
 frames kept from the approach to the result; ACROSS: the dekebh set-ups (C once the puck is across);
-FLOATERBH: the backhand floater; DEKE2: the user's refinements. The captions give the big run's rate (deke_run.py: METHODS 96 shots,
+FLOATERBH: the backhand floater; DEKE2: the user's refinements; DEFENDER: a deke against one defender (def_run.py). The captions give the big run's rate (deke_run.py: METHODS 96 shots,
 both nets; DOWN that net's 48) and the GIFs show goals in about that proportion. Two GIFs per method:
 - <name>_clips.gif: four of the attempts side by side, cropped to the net, each labelled with what happened;
 - <name>_paths.gif: every attempt at once from above, lined up on the release: the shooter (grey), the puck (orange
@@ -107,6 +107,18 @@ SKATE = [
      "Backhand deke, left-hander, Agility / Speed 30: he carries it in", (96, 96), (30, 30),
      "this net; carried in, no shot"),
 ]
+# one defender (def_run.py, 2026-10-25): the refined left-hander's deke from 15 ft to his left (he drifts toward the
+# middle) with the away left defenceman put 20 to his right of the lane he starts in (toward the middle) or 20 to his
+# left (toward the boards), 70 out (about 23 ft); "static": held there; "cpu": the game plays him once the shooter
+# starts in. Rates: the filmed plays themselves (None); the seventh item: mode, dx, dout as in def_run.job
+DEFENDER = [
+    ("def_deke_slot_static", ("deke2", "top", "L", -45, 1, 60, 10, 4, "side"),
+     "Deke vs a defender standing in his path", None, None, None, ("static", 20, 70)),
+    ("def_deke_slot_cpu", ("deke2", "top", "L", -45, 1, 60, 10, 4, "side"),
+     "Deke vs a computer defender starting in his path", None, None, None, ("cpu", 20, 70)),
+    ("def_deke_boards_cpu", ("deke2", "top", "L", -45, 1, 60, 10, 4, "side"),
+     "Deke vs a computer defender starting by the boards", None, None, None, ("cpu", -20, 70)),
+]
 COL = {"GOAL": "#ea580c", "CARRIED": "#ea580c", "STOPPED": "#475569", "LOST": "#7c3aed"}
 GOALS = ("GOAL", "CARRIED")                          # CARRIED: he took the puck into the net himself, no shot
 PUCK = 14
@@ -119,9 +131,14 @@ def play(method, n):
     from harness import decide, rec, DIRPAD, E, SHOOTER, GOALIE, PUCKC, SCORE_HOME
     from mapper import set_ratings
     gentle()
-    D._init()
     name, args = method[0], method[1]
     plan, net, hand, x0, side, Dd, lag, hold, var = args
+    dfd = method[6] if len(method) > 6 else None
+    if dfd:
+        import def_run
+        def_run._init()
+    else:
+        D._init()
     h = D._h[net]
     e = h.e
     top = net == "top"
@@ -134,8 +151,12 @@ def play(method, n):
         pad_swing = pad_in
     din, dsw, dam = (D.screen_dir(D.PAD[k], top) for k in (pad_in, pad_swing, aim))
 
-    def where():
-        return tuple((e.sw(rec(k)), e.sw(rec(k) + 0x14)) for k in (SHOOTER, PUCK, GOALIE))
+    if dfd:                                          # as def_run.job
+        h.mode = dfd[0]
+        h.defender = (sg * (x0 + dfd[1]), sg * (264 - dfd[2]))
+
+    def where():                                     # the fourth: the defender (def_run.DEF)
+        return tuple((e.sw(rec(k)), e.sw(rec(k) + 0x14)) for k in (SHOOTER, PUCK, GOALIE, 10))
 
     def shot_frame(hold_pad):
         hide_genesis_hud(e, vram)
@@ -153,7 +174,7 @@ def play(method, n):
         p += 1
         h.setup(sg * x0, sg * y0, settle=settle, clock=clock)
         set_ratings(h, *D.RATINGS)
-        if len(method) > 4:                          # the skater's working Agility and Speed, as deke_run's SKATE
+        if len(method) > 4 and method[4]:            # the skater's working Agility and Speed, as deke_run's SKATE
             for off, v in zip((0x68, 0x69), method[4]):
                 e.setb(rec(SHOOTER) + off, v)
         vram = vram or genesis_vram(e)
@@ -249,8 +270,9 @@ def clips_gif(method, shots, path):
         img = Image.new("RGB", (W, H), "white")
         d = ImageDraw.Draw(img)
         d.text((pad, 6), title, fill="#1f2933", font=f1)
-        scope = method[5] if len(method) > 5 else "both nets" if n > 48 else "this net"
-        d.text((pad, 26), f"{100 * rate:.0f}% go in ({g} of {n} in the full run, {scope}).", fill="#52606d", font=f2)
+        scope = method[5] if len(method) > 5 and method[5] else "both nets" if n > 48 else "this net"
+        d.text((pad, 26), f"{100 * rate:.0f}% go in ({g} of {n} filmed here)." if len(method) > 6 else
+               f"{100 * rate:.0f}% go in ({g} of {n} in the full run, {scope}).", fill="#52606d", font=f2)
         d.text((pad, 42), f"The game's own frames, {args[1]} net, half speed, lined up on the swing.", fill="#52606d",
                font=f2)
         for i, (res, fr, _, rel, sw) in enumerate(pick):
@@ -297,11 +319,12 @@ def paths_gif(method, shots, path):
         img = Image.new("RGB", (W, H), "white")
         d = ImageDraw.Draw(img)
         d.text((pad, 6), title, fill="#1f2933", font=f1)
-        d.text((pad, 26), f"Every attempt from above: {len(shots)} here, {tally(shots)}; full run {100 * g / n:.0f}%.",
-               fill="#52606d", font=f2)
+        dfd = method[6] if len(method) > 6 else None
+        d.text((pad, 26), f"Every attempt from above: {len(shots)} here, {tally(shots)}" +
+               ("." if dfd else f"; full run {100 * g / n:.0f}%."), fill="#52606d", font=f2)
         d.text((pad, 42), "Puck: orange goal, slate stopped" + (", purple lost" if any(s[0] == "LOST" for s in shots)
-                                                                     else "") + ". Grey: shooter. Black: goalie. Blue: swing starts.",
-               fill="#52606d", font=f2)
+                                                                     else "") + ". Grey: shooter. Black: goalie. Blue: swing starts." +
+               (" Green: defender." if dfd else ""), fill="#52606d", font=f2)
         d.rectangle((pad, head, W - pad, H - 20), fill="#eef6fb")
         gl = P(0, sg * 268)[1]
         d.line((pad, gl, W - pad, gl), fill="#c94040", width=2)
@@ -330,6 +353,9 @@ def paths_gif(method, shots, path):
             d.ellipse((c[0] - 3, c[1] - 3, c[0] + 3, c[1] + 3), fill=col)
             gc = P(*pts[i][2])
             d.ellipse((gc[0] - 3, gc[1] - 3, gc[0] + 3, gc[1] + 3), fill="#1f2933")
+            if dfd:
+                dc = P(*pts[i][3])
+                d.ellipse((dc[0] - 3, dc[1] - 3, dc[0] + 3, dc[1] + 3), fill="#16a34a")
         d.text((pad, H - 18), f"frame {t:+d} from the release (half speed)", fill="#52606d", font=f2)
         frames.append(img.quantize(colors=48, dither=Image.Dither.NONE))
     frames += [frames[-1]] * 40
@@ -340,6 +366,8 @@ def job(a):
     method, n, out_dir = a
     t0 = time.time()
     method, shots = play(method, n)
+    if method[3] is None:                            # the rate is the filmed plays' own
+        method = method[:3] + ((sum(s[0] in GOALS for s in shots), len(shots)),) + method[4:]
     clips_gif(method, shots, out_dir / f"{method[0]}_clips.gif")
     paths_gif(method, shots, out_dir / f"{method[0]}_paths.gif")
     return method[0], tally(shots), round(time.time() - t0)
@@ -350,11 +378,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE + DEFENDER if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3][0], shots=m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3] and m[3][0], shots=m[3] and m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE + DEFENDER],
               open(out_dir / "methods.json", "w"), indent=1)
 
 

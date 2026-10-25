@@ -331,7 +331,9 @@ The computer never holds a direction, so its wins go a random way.
   following up: aim the first shot **across**, at the far side (bobbled 60-80% of the time; aimed along the ice he
   holds it). From about 13 feet to the side the play scored 7-12% of first shots at Shot Power 2-5 and about half that
   at 6: the hardest shots are held more and the goalie dives at the loose puck less. It worked best about 40 feet out.
-  A person following up should do better than the bot.
+  Skating in at 45 degrees or straight at the goal works about equally (3-4% for the bot, a little less against a
+  great goalie: he dives less, so use a medium Shot Power against him); skating straight across the bot almost
+  never gets back to the rebound. A person following up should do better than the bot.
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.

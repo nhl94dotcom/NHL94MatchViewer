@@ -9,7 +9,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 `docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `docs/GENESIS_MECHANICS.md`, `docs/SNES_MECHANICS.md`; studies in
 `docs/SHOOTING_STUDY.md` and `docs/SCORING_MAP.md` (shots played in the real game, the method and pictures of each kind of
 goal); the plan for the defence studies in `docs/DEFENCE_PLAN.md`, their results in `docs/DEFENCE_STUDY.md`
-(`analysis/defence_games.py` for the recorded games); open questions for the user in
+(`analysis/defence_games.py` for the recorded games, `analysis/scoring_map/def_run.py` for a defender in the harness); open questions for the user in
 `docs/NEEDS_FROM_YOU.md`.
 
 ## Rules (from the user)

@@ -105,3 +105,73 @@ These are correlations from a few games. Two cautions: a strong opponent makes a
 several habits at once, and some of the measures overlap with what they are compared against (more passes across
 allowed is partly the same thing as more chances against). The harness studies (DEFENCE_PLAN phases 2-3) test the
 same habits one at a time, and more games will firm these up.
+
+## One defender against the deke and the floater (the harness, a pilot; 2026-10-25)
+
+DEFENCE_PLAN study 4, first pass. `analysis/scoring_map/def_run.py`: the 20 best deke and floater set-ups of the
+scoring map (SCORING_MAP "Dekes": each move's best for each hand, both nets; the shooter at Shot Power / Accuracy 4,
+the computer goalie the test goalie, Hrudey), each played with one defending skater added: the away team's left
+defenceman (working Weight 88, Agility 20, Speed 20, Checking 15). He is put at one of 45 spots: across from the lane
+the shooter comes in on, 0 to 13 ft either way, and 13 to 34 ft out from the goal line. Two ways:
+
+- **Standing:** held still at his spot for the whole play. Does his body alone stop it?
+- **Left to the computer:** let go as the shooter starts in, so the game's own defensive play takes over (chasing,
+  poking, checking).
+
+12 moments x 4 seeds per set-up and spot, 1,820 set-ups. Without a defender the dekes score 88% and the floaters 54%.
+
+**The attacker is a bot with fixed inputs, blind to the defender:** it skates into a defender in its way where a
+person would go round him. So "standing" maps where a body breaks the move, not what a person would do about it.
+"Left to the computer" is the realistic case, and the numbers are for the computer defender, not a person (the
+person-controlled defender is study 9).
+
+### The deke: stand where he is going, not where he is
+
+The deke carriers come in about 15 ft to one side and drift toward the middle as they swing. Columns: how far the
+defender starts across from the carrier's lane, toward the middle (+) or toward the boards (-); rows: out from the
+goal line. The share of plays that ended in a goal (no defender: 88%).
+
+| Out \ across | 13 ft boards | 10 | 7 | 3 | 0 | 3 ft middle | 7 | 10 | 13 ft middle |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Standing** | | | | | | | | | |
+| 13 ft | 88 | 88 | 88 | 88 | 86 | 80 | **3** | **10** | 64 |
+| 19 ft | 89 | 88 | 88 | 88 | 88 | 30 | **0** | 28 | 77 |
+| 24 ft | 88 | 88 | 88 | 88 | 68 | **3** | **0** | 18 | 83 |
+| 29 ft | 88 | 88 | 88 | 88 | **12** | **1** | **3** | 77 | 88 |
+| 34 ft | 88 | 88 | 88 | 82 | 30 | **0** | 43 | 86 | 88 |
+| **Left to the computer** | | | | | | | | | |
+| 13 ft | 87 | 75 | 66 | 60 | 38 | 47 | 35 | 28 | 34 |
+| 19 ft | 88 | 86 | 77 | 63 | 28 | 25 | 23 | 27 | 35 |
+| 24 ft | 88 | 88 | 87 | 74 | 30 | **6** | **6** | 25 | 51 |
+| 29 ft | 88 | 88 | 88 | 88 | 17 | **7** | **7** | 47 | 45 |
+| 34 ft | 89 | 88 | 88 | 66 | **6** | 16 | 31 | 57 | 61 |
+
+- **The deke is stopped by a body on the carrier's path:** a band 3-7 ft from his lane toward the middle of the
+  slot, from 13 to 34 ft out. Over that band a standing defender takes the deke from 88% to 16% (at its best spots
+  0-3%), and one left to the computer to 20% (6-7% at its best, 24-29 ft out).
+- **Toward the boards he does little.** A standing defender anywhere on the boards side of the carrier's lane never
+  touches the play (88%); one left to the computer starting there gets 81%: the carrier is going the other way.
+- **How the deke fails against the computer defender in the band:** the puck lost before a shot 15% of the time (3%
+  with no defender), no shot at all 16%, and of the shots still taken 71% are saved (9% with no defender): rushed
+  off the planned timing, from the wrong place. Over all 45 spots the computer defender takes the deke from 88% to
+  52%.
+- **For a person defending:** don't chase the carrier toward the boards; get to the slot between him and the middle,
+  about 20-30 ft out, and let him come to you. (Whether a person carrying the puck simply goes round that defender is
+  the next question: this bot can't.)
+
+### The floater
+
+- **No standing defender on this grid changed the floater** (54% everywhere but one spot): the floater carrier
+  crosses 25-26 ft from the lane he starts in before he shoots (from 22-26 ft out), beyond the grid's reach across,
+  so only the farthest spot toward the middle (34 ft out, 13 ft across) was on his path; he skated into it (0%). A
+  grid for the floater must follow his line across.
+- **Left to the computer,** a defender toward the middle cuts it to 30-48%, and from the farthest spots toward the
+  middle (34 ft out, 10-13 ft across) to 8-13%: he meets the carrier as he crosses. From the boards side, nothing.
+
+### Animated
+
+`deke_animate.py`, the DEFENDER cases: the refined left-hander's deke from 15 ft to his left (no defender: SCORING_MAP
+"Dekes"), with the defender 7 ft toward the middle from the carrier's lane, 24 ft out, standing or left to the
+computer, and left to the computer from 7 ft toward the boards. The defender is green in the paths view.
+
+<!-- defender GIFs: added when rendered -->

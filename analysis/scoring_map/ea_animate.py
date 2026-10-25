@@ -40,6 +40,12 @@ CASES = [
     ("ea_dot_power_6", "top", 85, 75, 7, 6, None, "EA Special from beside the faceoff dot, skating at the goal, Shot Power 6",
      (5, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his forehand side,",
                             "skating in, aimed Up-Left, Accuracy 2-6.")),
+    # the shooter's line (plan "angle", 2026-10-25): skating straight across against at 45 degrees, from 23 ft to his
+    # right and 25 ft out, Shot Power 2, Accuracy 4, aimed Up-Left; rates: the filmed plays themselves (None)
+    ("ea_angle_across", "top", 70, 75, 7, 2, 4, "EA Special skating straight across", None, "across2.5",
+     ("Left-handed, 25 ft out, 23 ft to his right,", "skating straight across, aimed Up-Left, Power 2.")),
+    ("ea_angle_diag", "top", 70, 75, 7, 2, 4, "EA Special skating in at 45 degrees", None, "diag2.5",
+     ("Left-handed, 25 ft out, 23 ft to his right,", "skating in at 45 degrees, aimed Up-Left, Power 2.")),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4
@@ -78,9 +84,10 @@ def play(case, n):
         h.setup(sg * x, sg * (A.GOAL_Y - out), settle=settle, clock=clock)
         set_ratings(h, shp * 5, (sha or 2 + len(plays) % 5) * 5)
         move = case[9] if len(case) > 9 else None
-        if move:                                       # as ea_run.job: skating at the middle of the goal line
-            dx, dy = -sg * x, sg * out
-            v = float(move[4:]) / math.hypot(dx, dy)
+        if move:                                       # as ea_run.job: across, at 45 degrees or at the goal
+            kind = move.rstrip("0123456789.")
+            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg, 0), diag=(-sg, sg))[kind]
+            v = float(move[len(kind):]) / math.hypot(dx, dy)
             e.setb(rec(SHOOTER) + 0x55, A.toward(dx, dy))
             e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
             e.setw(rec(SHOOTER) + 0x2A, round(dy * v * 4096) & 0xFFFF)
@@ -218,6 +225,8 @@ def job(a):
     case, n, out_dir = a
     t0 = time.time()
     case, plays = play(case, n)
+    if case[8] is None:                                # the rate is the filmed plays' own
+        case = case[:8] + ((sum(s[1] for s in plays), len(plays)),) + case[9:]
     clips_gif(case, plays, out_dir / f"{case[0]}_clips.gif")
     paths_gif(case, plays, out_dir / f"{case[0]}_paths.gif")
     return case[0], tally(plays), round(time.time() - t0)
@@ -232,7 +241,7 @@ def main():
     with Pool(min(WORKERS, len(cases)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(c, n, out_dir) for c in cases]):
             print(*r, flush=True)
-    json.dump([dict(name=c[0], title=c[7], goals=c[8][0], plays=c[8][1]) for c in cases],
+    json.dump([dict(name=c[0], title=c[7], goals=c[8] and c[8][0], plays=c[8] and c[8][1]) for c in cases],
               open(out_dir / "cases.json", "w"), indent=1)
 
 

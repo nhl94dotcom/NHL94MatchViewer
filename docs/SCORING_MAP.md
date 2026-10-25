@@ -53,7 +53,7 @@ be a weak one: see the goalie section):
 | [Slapshots and the shooter's ratings](#slapshots-and-the-shooters-ratings) | Genesis: a threshold between Shot Power 3 and 4 (7% to 19% at the best aim over the spots). SNES: nothing below 4, the spots open only at 6 |
 | [Moving shooters](#moving-shooters-genesis-2026-10-24) | The far-post slapshot is a skating shot: across toward the stick side, released before the middle: 50-62% from 28-35 ft for a strong shooter (27 / 27), 44% on average at 4 / 4 |
 | [Dekes and floaters](#dekes-and-floaters-genesis-2026-10-24) | The swing is the goal (0-1% without it): the best dekes 82-96% (the backhand deke too), floaters 50-65%, backhand floaters 41-51%. The timing suits one skating speed |
-| [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out |
+| [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out. Skating in at 45 degrees or at the goal 3-4% at the best aim, hardly changed by a better goalie; straight across about 1% (the bot can't get back to the rebound) |
 | [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Goalie Agility stops the slapshot (far post from the middle 58% to 3% from Agility 13 to 20), Puck Control a little, Speed and Defensive Awareness not at all. Against Roy and Belfour slapshots score 3-7%, floaters 16-20%; one-timers (48-51%) and dekes (72-76%) hold up |
 
 ## Building the Genesis simulator
@@ -1191,7 +1191,7 @@ near post.
 right-hander from the left, now and then a backhand flip from the other side. The shooter always faces straight
 across the rink or diagonally toward the goalie as he wrists the puck, never straight up the ice (he would have to
 turn sharply to claim the rebound). So the standing and straight-up-the-ice shooters of the first two runs below
-aren't the real play; the faceoff-dot run (skating at the goal) is, and plan "angle" (being run) plays it skating
+aren't the real play; the faceoff-dot run (skating at the goal) is, and plan "angle" (below) plays it skating
 straight across, at 45 degrees and at the goal, against the test goalie and the goalie profiles.
 
 - **The first shot to bobble is aimed across, at the far side from the shooter:** 60-77% of those are touched and
@@ -1277,6 +1277,43 @@ moments: **29% at Shot Power 2 (35 of 120), 4% at Power 6 (5 of 120)**.
 
 ![EA Special from beside the faceoff dot, Shot Power 6: four real attempts](img/scoring_map/ea_dot_power_6_clips.gif)
 ![EA Special from beside the faceoff dot, Shot Power 6: every attempt from above](img/scoring_map/ea_dot_power_6_paths.gif)
+
+### Across, at 45 degrees or at the goal, against real goalies (plan "angle", 2026-10-25)
+
+The user: the shooter faces straight across the rink or diagonally toward the goalie as he shoots, never straight up
+the ice. `ea_run.py` plan "angle": the dots run's 9 spots (18 / 23 / 28 ft to his right, 15 / 20 / 25 ft out), a
+left-hander skating at 2.5 a frame straight across toward the middle, at 45 degrees (across and toward the goal
+line) or straight at the middle of the goal line, Shot Power 2 / 4 / 6, Shot Accuracy 4, all nine aims, 24 moments x
+2 seeds, both nets: 7,776 first shots per goalie. Four goalies: the test goalie (Hrudey) and the profiles of
+[the goalie section](#real-goalie-profiles) (a retail starter, the CDL edit, Roy). The same bot plays on (after the
+shot it skates at the middle of the goal line, and at the loose puck once the goalie has touched it).
+
+| Goalie | Straight across | At 45 degrees | At the goal | Goalie dives after a bobble |
+| --- | --- | --- | --- | --- |
+| Test goalie (Hrudey) | 0.1% (best aim 1.3%) | 1.8% (best aim 3.8%) | 2.0% (best aim 4.4%) | 17-21% |
+| Retail starter | 0.1% (1.1%) | 1.5% (3.4%) | 1.5% (3.4%) | 11-13% |
+| CDL | 0.1% (1.2%) | 1.2% (2.5%) | 1.6% (3.4%) | 11% |
+| Roy | 0.1% (1.3%) | 1.1% (2.9%) | 1.4% (3.5%) | 7-8% |
+
+(Goals off the rebound, over all nine aims; in brackets the best aim's whole-play rate, the two nets averaged.)
+
+- **Straight across hardly ever works for the bot.** The first shot is bobbled as often (38-46%), but the shooter
+  reaches only 7-10% of the bobbles, against 58-69% at 45 degrees or at the goal: moving sideways at full speed he
+  carries on past the loose puck. Its few goals (best aim about 1%) are first shots straight in, not rebounds. A
+  person who turns at once may do better than this bot, which steers at the puck from the moment it is loose but
+  can't shed its sideways speed in time; the animation below shows it.
+- **45 degrees and straight at the goal are about the same** (best aim 2.5-4.4%), and both are best from the widest,
+  farthest spot (28 ft to the side, 25 ft out: 5-13% at the best aim, every goalie).
+- **Better goalies take less off this play than off slapshots.** From Hrudey to Roy the best aim at the goal falls
+  from 4.4% to 3.5% (the slapshot's best: 19% to 3%). What changes is the dive: a good goalie dives at the loose puck less than
+  half as often (17-21% against 7-8%). So the weak first shot loses its edge: against Hrudey Shot Power 2 is best (8.0%
+  at the best aim, at the goal, against 3.5% at Power 4), against Roy Power 4 (4.6%, against 3.6% at 2).
+
+**Animated** (`ea_animate.py`, the angle cases): the same spot, 23 ft to his right and 25 ft out, aimed Up-Left at
+the top net, Shot Power 2, Accuracy 4, against the test goalie: skating straight across against skating in at 45
+degrees.
+
+<!-- EA angle GIFs: added when rendered -->
 
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)
