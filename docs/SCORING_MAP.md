@@ -1149,6 +1149,44 @@ spots are steadier. The paths view colours the goalie red while he dives.
 ![EA Special, Shot Power 6: 2% (2 of 120): four real attempts](img/scoring_map/ea_power_6_clips.gif)
 ![EA Special, Shot Power 6: 2% (2 of 120): every attempt from above](img/scoring_map/ea_power_6_paths.gif)
 
+### From the faceoff dots, skating at the goal (plan "dots", 2026-10-25)
+
+The user: more EA Specials come from farther to the side, on or near the end-zone faceoff dot, with the skater
+skating toward the goal as he shoots. The dot is about 70 to the side and 60 out (23 ft and 20 ft). `ea_run.py` plan
+"dots": spots 55 / 70 / 85 to the side (18 / 23 / 28 ft) and 45 / 60 / 75 out (15 / 20 / 25 ft), his forehand side as
+before, skating straight at the middle of the goal line at 1.5 or 2.5 a frame (and still skating at it after the
+shot), Shot Power 2-6, Shot Accuracy 2 / 4 / 6, all nine aims, 24 moments x 2 seeds, both nets: 233,280 first shots.
+The same bot plays on.
+
+- **Over the dots the play ends in a goal 1-3% of the time** (Shot Power 2 to 6: 2 / 2 / 1 / 1 / 1%), about what the
+  first run found 70 to the side (2-4%), less than its best close-in skating spot (40 to the side, 120 out, skating:
+  8%).
+- **Farther to the side and faster is better here.** 85 to the side (28 ft): 3-4% skating at 2.5, 1-2% at 1.5; 55
+  to the side: 0-2%. At 2.5 a frame the shooter claims fewer bobbles (63% against 87%) but more of his follow-ups go in
+  (4% of bobbles against 2%): he arrives sooner, while the goalie is still down.
+- **The first shot to bobble is aimed across again** (top net Up-Left / Left, bottom net Down-Right / Right): 70-79%
+  bobbled, the goalie diving after 29-43% of those. Aimed at the near side or down the ice, 66-79% are held.
+- **Shot Power 6 behaves differently from here:** held 41% against 55-58% at steps 2-5 and bobbled 55%, but his
+  bobbles are claimed less (65% against 76-79%) and the goalie dives less (14% against 19-22%), so it still scores the
+  least. Shot Accuracy changes nothing (2% at every step).
+- **The best single set-ups** (all at Power 2-3, skating at 2.5): bottom net, 85 to the side, 45 out, no direction held,
+  55 of 144 (38%); top net, 85 to the side, 75 out, Up-Left, 46 of 144 (32%). These rest on 24 moments, so like the
+  first run's single set-ups they wander (below: 29% over 120 moments).
+
+**Animated** (`ea_animate.py`, the dots cases): the best top-net set-up, 28 ft to his forehand side and 25 ft out,
+skating at the goal at 2.5 a frame, the first wrist shot Up-Left, Shot Accuracy 2-6 in turn. Measured over 120 game
+moments: **29% at Shot Power 2 (35 of 120), 4% at Power 6 (5 of 120)**.
+
+**From beside the faceoff dot, Shot Power 2: 29% (35 of 120).**
+
+![EA Special from beside the faceoff dot, Shot Power 2: four real attempts](img/scoring_map/ea_dot_power_2_clips.gif)
+![EA Special from beside the faceoff dot, Shot Power 2: every attempt from above](img/scoring_map/ea_dot_power_2_paths.gif)
+
+**From beside the faceoff dot, Shot Power 6: 4% (5 of 120).**
+
+![EA Special from beside the faceoff dot, Shot Power 6: four real attempts](img/scoring_map/ea_dot_power_6_clips.gif)
+![EA Special from beside the faceoff dot, Shot Power 6: every attempt from above](img/scoring_map/ea_dot_power_6_paths.gif)
+
 
 ## Limits and what comes next
 

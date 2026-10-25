@@ -10,6 +10,7 @@ clips show goals in about that proportion. Two GIFs per case:
   a goal, slate otherwise) and the goalie (black; red where he dived).
 Gentle mode (lowload.py)."""
 import json
+import math
 import random
 import sys
 import time
@@ -24,11 +25,21 @@ from lowload import WORKERS, breathe
 FONT = "C:/Windows/Fonts/segoeui.ttf"
 FONTB = "C:/Windows/Fonts/segoeuib.ttf"
 # name, net, x (to the side), out, aim, Shot Power step, Shot Accuracy step (None: 2-6 in turn, as the rate is
-# over every accuracy), title, goals / plays over 120 moments (play(case, 120), 2026-10-24)
+# over every accuracy), title, goals / plays over 120 moments (play(case, 120)); optionally ea_run's move (a string:
+# skating at the middle of the goal line at that speed) and the caption's description of the set-up
+STANDING = ("Left-handed, 30 ft out, 13 ft to his forehand side,", "aimed across, Shot Accuracy 2-6 in turn.")
 CASES = [
     ("ea_power_2", "top", 40, 90, 6, 2, None, "EA Special, Shot Power 2: the weak shot is bobbled and the goalie dives",
      (26, 120)),
     ("ea_power_6", "top", 40, 90, 6, 6, None, "EA Special, Shot Power 6: the hard shot is held or cleared", (2, 120)),
+    # the faceoff dots (plan "dots", 2026-10-25): the run's best top-net set-up, 85 to the side, 75 out, skating at
+    # the goal at 2.5 a frame, aimed Up-Left
+    ("ea_dot_power_2", "top", 85, 75, 7, 2, None, "EA Special from beside the faceoff dot, skating at the goal, Shot Power 2",
+     (35, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his forehand side,",
+                            "skating in, aimed Up-Left, Accuracy 2-6.")),
+    ("ea_dot_power_6", "top", 85, 75, 7, 6, None, "EA Special from beside the faceoff dot, skating at the goal, Shot Power 6",
+     (5, 120), "goal2.5", ("Left-handed, 25 ft out, 28 ft to his forehand side,",
+                            "skating in, aimed Up-Left, Accuracy 2-6.")),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4
@@ -66,6 +77,13 @@ def play(case, n):
         p += 1
         h.setup(sg * x, sg * (A.GOAL_Y - out), settle=settle, clock=clock)
         set_ratings(h, shp * 5, (sha or 2 + len(plays) % 5) * 5)
+        move = case[9] if len(case) > 9 else None
+        if move:                                       # as ea_run.job: skating at the middle of the goal line
+            dx, dy = -sg * x, sg * out
+            v = float(move[4:]) / math.hypot(dx, dy)
+            e.setb(rec(SHOOTER) + 0x55, A.toward(dx, dy))
+            e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
+            e.setw(rec(SHOOTER) + 0x2A, round(dy * v * 4096) & 0xFFFF)
         vram = vram or genesis_vram(e)
         film[:] = [[], []]
         pre, _f = h.shoot(aim, 3)
@@ -79,7 +97,7 @@ def play(case, n):
         rel = len(film[0])
         h.park()
         e.run(1, hold=DIRPAD[aim])
-        r, info = A.play(h, sg)
+        r, info = A.play(h, sg, at_goal=bool(move))
         for _ in range(12):
             A.park_except(h, (SHOOTER,))
             e.run(1)
@@ -123,10 +141,9 @@ def clips_gif(case, plays, path):
         img = Image.new("RGB", (W, H), "white")
         d = ImageDraw.Draw(img)
         d.text((pad, 6), title, fill="#1f2933", font=f1)
-        d.text((pad, 26), f"{100 * rate:.0f}% end in a goal ({g} of {n} plays). Left-handed, 30 ft out, 13 ft to his "
-                          "forehand side,", fill="#52606d", font=f2)
-        d.text((pad, 42), "aimed across, Shot Accuracy 2-6 in turn. The game's own frames, top net, half speed;",
-               fill="#52606d", font=f2)
+        desc = case[10] if len(case) > 10 else STANDING
+        d.text((pad, 26), f"{100 * rate:.0f}% end in a goal ({g} of {n} plays). {desc[0]}", fill="#52606d", font=f2)
+        d.text((pad, 42), f"{desc[1]} The game's own frames, top net, half speed;", fill="#52606d", font=f2)
         d.text((pad, 58), "after the shot, the run's bot plays on.", fill="#52606d", font=f2)
         for i, (label, goal, fr, _, rel) in enumerate(pick):
             j = min(max(0, rel - lead) + t, len(fr) - 1)
@@ -157,7 +174,7 @@ def paths_gif(case, plays, path):
     """Every play from above, lined up on the release, the net at the top."""
     title, (g, n) = case[7], case[8]
     S, pad, head = 3.0, 14, 64
-    x_lo, x_hi, y_lo, y_hi = -90, 90, 150, 282
+    x_lo, x_hi, y_lo, y_hi = -110, 110, 150, 282
     W, H = int((x_hi - x_lo) * S) + 2 * pad, int((y_hi - y_lo) * S) + head + pad + 20
 
     def Q(x, y):
