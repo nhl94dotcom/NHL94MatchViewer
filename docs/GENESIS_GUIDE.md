@@ -333,7 +333,11 @@ The computer never holds a direction, so its wins go a random way.
   at 6: the hardest shots are held more and the goalie dives at the loose puck less. It worked best about 40 feet out.
   Skating in at 45 degrees or straight at the goal works about equally (3-4% for the bot, a little less against a
   great goalie: he dives less, so use a medium Shot Power against him); skating straight across the bot almost
-  never gets back to the rebound. A person following up should do better than the bot.
+  never gets back to the rebound. A person following up should do better than the bot. Released from level with the
+  faceoff dot and a little deeper (14 feet out), one version stands out: shooting down the screen, a right-hander from
+  his left, skating at the goal at full speed, Shot Power 2, no direction held. It scored about half the time even
+  against Roy (55% against a weak goalie, 43% against Roy): the bobble drops at his stick and he shoots again before
+  the goalie moves. The same play shooting up the screen scored 18%.
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.

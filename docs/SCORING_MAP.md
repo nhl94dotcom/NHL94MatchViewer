@@ -53,7 +53,7 @@ be a weak one: see the goalie section):
 | [Slapshots and the shooter's ratings](#slapshots-and-the-shooters-ratings) | Genesis: a threshold between Shot Power 3 and 4 (7% to 19% at the best aim over the spots). SNES: nothing below 4, the spots open only at 6 |
 | [Moving shooters](#moving-shooters-genesis-2026-10-24) | The far-post slapshot is a skating shot: across toward the stick side, released before the middle: 50-62% from 28-35 ft for a strong shooter (27 / 27), 44% on average at 4 / 4 |
 | [Dekes and floaters](#dekes-and-floaters-genesis-2026-10-24) | The swing is the goal (0-1% without it): the best dekes 82-96% (the backhand deke too), floaters 50-65%, backhand floaters 41-51%. The timing suits one skating speed |
-| [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out. Skating in at 45 degrees or at the goal 3-4% at the best aim, hardly changed by a better goalie; straight across about 1% (the bot can't get back to the rebound) |
+| [EA Specials](#ea-specials-genesis-2026-10-24) | With a simple bot playing the rebound: from 13 ft to his right, a first shot aimed across ends in a goal 7-12% of the time at Shot Power 2-5 and 4% at 6; best from 40 ft out. Skating in at 45 degrees or at the goal 3-4% at the best aim, hardly changed by a better goalie; straight across about 1% (the bot can't get back to the rebound). Released at the user's marked spots (14 ft out, level with the faceoff dot): 1-4% on average, but a right-hander from his left at the bottom net, skating at the goal, Shot Power 2, no direction held: 55% against the test goalie, 43% against Roy |
 | [The computer goalie's ratings](#the-computer-goalies-ratings-genesis-2026-10-25) | Goalie Agility stops the slapshot (far post from the middle 58% to 3% from Agility 13 to 20), Puck Control a little, Speed and Defensive Awareness not at all. Against Roy and Belfour slapshots score 3-7%, floaters 16-20%; one-timers (48-51%) and dekes (72-76%) hold up |
 
 ## Building the Genesis simulator
@@ -1323,6 +1323,54 @@ away past the goalie and comes back too late for the loose puck.
 
 ![EA Special skating in at 45 degrees: four real attempts](img/scoring_map/ea_angle_diag_clips.gif)
 ![EA Special skating in at 45 degrees: every attempt from above](img/scoring_map/ea_angle_diag_paths.gif)
+
+### Released from the marked spots (plan "xspot", 2026-10-25)
+
+The user: the runs above released the shot too late. In two marked screenshots the release is level with the
+end-zone faceoff dot across the ice and a little deeper (the dot is 70 to the side and 62 out; the marks about 70 to
+the side and 40-44 out, 23 ft and 14 ft). `ea_run.py` plan "xspot" places the release itself there: the skater starts
+4 frames of skating back along his line, since a wrist shot leaves the stick 4 frames after C. The release lands
+within a unit or two of the target. Spots 65 / 70 / 75 to the side (22 / 23 / 25 ft) and 38 / 42 / 46 out (13-15 ft),
+on both sides, each on the forehand (a left-hander from his right, a right-hander from his left: the user). He skates
+at the middle of the goal line at 1.5 or 2.5 a frame or in at 45 degrees. Shot Power 2 / 4 / 6, Shot Accuracy 4,
+all nine aims, 24 moments x 2 seeds, both nets: 139,968 first shots each against the test goalie (Hrudey) and Roy. The
+same bot plays on.
+
+- **On average this is no better than the later release.** Over every aim and set-up the play ends in a goal 1.6% of
+  the time against Hrudey and 1.1% against Roy. At each set-up's best aim it is 3-4% (Roy 3%), as in the angle run.
+- **One set-up is far better than the rest, and Roy stops little more of it: bottom net, a right-hander from his
+  left.** He releases 25 ft to his left, skating at the goal at 2.5 a frame, Shot Power 2, no direction held. It
+  scored 62 of 144 against Hrudey (43%) and 55 of 144 against Roy (38%). By depth (13 / 14 / 15 ft out) it was
+  31 / 50 / 48% against Hrudey and 46 / 54 / 15% against Roy. The first shot is bobbled 83-94% of the time and the
+  shooter reaches nearly every bobble at once (95-96%). The goalie hardly goes back or dives (3-4 dives in 144), so
+  the goal is the quick follow-up, not a dive. That is why Roy, who dives less, gives up nearly as much here.
+- **The same play elsewhere is much weaker.** At the top net it scored 7% against Hrudey and 3% against Roy. The
+  shot is bobbled and claimed just as often, but 72-84% of the follow-ups are held. A left-hander from his right
+  at the bottom net scored 18% against both goalies. The top and bottom nets differ, as they do for slapshots.
+- **What helps over every set-up:** skating at the goal at 2.5 a frame (best aim 5.5% against Hrudey, 3.4% against
+  Roy), against 1.5 a frame (1.9%, 2.5%) or 45 degrees (3.8%, 3.2%). Also the widest spot: 25 ft to the side 5.1%,
+  22 ft 2.0% (Roy 4.2%, 1.8%). Also Shot Power 2: Hrudey 4.7% against 2.4% at 6, Roy 4.0% against 2.3%. And the
+  right-hander from his left: 4.5% against 2.9% (Roy 3.8%, 2.2%). Depth matters less (13 ft out 2.8%, 15 ft 4.5%).
+
+**Animated** (`ea_animate.py`, the xspot cases): the standout set-up, 120 game moments each. The bottom net's plays
+are turned round in the paths view so the net is at the top.
+
+**Bottom net, against the test goalie: 55% (66 of 120).** The bobble drops at the shooter's stick, and he shoots again
+before the goalie has moved.
+
+![EA Special from the marked spot, bottom net: four real attempts](img/scoring_map/ea_xspot_bottom_clips.gif)
+![EA Special from the marked spot, bottom net: every attempt from above](img/scoring_map/ea_xspot_bottom_paths.gif)
+
+**Bottom net, against Roy: 43% (52 of 120).**
+
+![EA Special from the marked spot, bottom net, against Roy: four real attempts](img/scoring_map/ea_xspot_bottom_roy_clips.gif)
+![EA Special from the marked spot, bottom net, against Roy: every attempt from above](img/scoring_map/ea_xspot_bottom_roy_paths.gif)
+
+**The same play at the top net: 18% (22 of 120).** The run's 24 moments gave 7%: a single set-up's rate wanders
+there. Over 120 moments the bottom net is still about three times better.
+
+![EA Special from the marked spot, top net: four real attempts](img/scoring_map/ea_xspot_top_clips.gif)
+![EA Special from the marked spot, top net: every attempt from above](img/scoring_map/ea_xspot_top_paths.gif)
 
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)

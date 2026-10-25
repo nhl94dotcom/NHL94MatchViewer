@@ -11,6 +11,7 @@ clips show goals in about that proportion. Two GIFs per case:
 Gentle mode (lowload.py)."""
 import json
 import math
+import os
 import random
 import sys
 import time
@@ -46,6 +47,17 @@ CASES = [
      ("Left-handed, 25 ft out, 23 ft to his right,", "skating straight across, aimed Up-Left, Power 2.")),
     ("ea_angle_diag", "top", 70, 75, 7, 2, 4, "EA Special skating in at 45 degrees", None, "diag2.5",
      ("Left-handed, 25 ft out, 23 ft to his right,", "skating in at 45 degrees, aimed Up-Left, Power 2.")),
+    # the user's marked spots (plan "xspot", 2026-10-25): released 25 ft to his left and 14 ft out by a right-hander
+    # skating at the goal at 2.5 a frame, Shot Power 2, Accuracy 4, no direction held; the bottom net (the run's
+    # best, against the test goalie and Roy) and the top net (the same play, far less); ea_run's "r" move: x and out
+    # are the release; optionally the goalie's working ratings (harness NHL94_GOALIE)
+    ("ea_xspot_bottom", "bottom", -75, 42, 8, 2, 4, "EA Special from the marked spot, bottom net", None, "rgoal2.5",
+     ("Right-handed, released 14 ft out, 25 ft to his left,", "skating at the goal, no direction held, Power 2.")),
+    ("ea_xspot_bottom_roy", "bottom", -75, 42, 8, 2, 4, "EA Special from the marked spot, bottom net, against Roy",
+     None, "rgoal2.5", ("Right-handed, released 14 ft out, 25 ft to his left,",
+                        "skating at the goal, no direction held, Power 2."), (30, 20, 20, 30)),
+    ("ea_xspot_top", "top", -75, 42, 8, 2, 4, "EA Special from the marked spot, top net", None, "rgoal2.5",
+     ("Right-handed, released 14 ft out, 25 ft to his left,", "skating at the goal, no direction held, Power 2.")),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4
@@ -57,6 +69,8 @@ def play(case, n):
     from goal_frames import grab, genesis_vram, hide_genesis_hud
     from harness import rec, DIRPAD, SHOOTER, GOALIE
     from mapper import set_ratings
+    if len(case) > 11:                                 # the goalie's working ratings
+        os.environ["NHL94_GOALIE"] = ",".join(map(str, case[11]))
     A._init()
     name, net, x, out, aim, shp, sha = case[:7]
     h = A._h[net]
@@ -74,20 +88,28 @@ def play(case, n):
         e.want_frame = False
         if film:
             film[0].append(grab(e).copy())
-            film[1].append(tuple((e.sw(rec(k)), e.sw(rec(k) + 0x14)) for k in (SHOOTER, A.PUCK, GOALIE))
+            film[1].append(tuple((sg * e.sw(rec(k)), sg * e.sw(rec(k) + 0x14)) for k in (SHOOTER, A.PUCK, GOALIE))
                            + (e.w(rec(GOALIE) + 0x58) == DIVE,))
     e.run = filmed
     plays, p = [], 0
     while len(plays) < n and p < 3 * n:
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         p += 1
-        h.setup(sg * x, sg * (A.GOAL_Y - out), settle=settle, clock=clock)
-        set_ratings(h, shp * 5, (sha or 2 + len(plays) % 5) * 5)
         move = case[9] if len(case) > 9 else None
+        x0, y0 = sg * x, sg * (A.GOAL_Y - out)
         if move:                                       # as ea_run.job: across, at 45 degrees or at the goal
-            kind = move.rstrip("0123456789.")
-            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg, 0), diag=(-sg, sg))[kind]
-            v = float(move[len(kind):]) / math.hypot(dx, dy)
+            kind = move.rstrip("0123456789.").lstrip("r")
+            sx = 1 if x > 0 else -1
+            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg * sx, 0), diag=(-sg * sx, sg))[kind]
+            v = float(move[len(move.rstrip("0123456789.")):]) / math.hypot(dx, dy)
+            if move.startswith("r"):                   # started back along his line, to release at (x, out)
+                x0, y0 = round(x0 - A.LEAD * dx * v), round(y0 - A.LEAD * dy * v)
+        h.setup(x0, y0, settle=settle, clock=clock)
+        set_ratings(h, shp * 5, (sha or 2 + len(plays) % 5) * 5)
+        b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)      # the hand, as ea_run.job
+        e.setb(rec(SHOOTER) + 0x76, (b | 1) if x > 0 else (b & ~1))
+        e.setb(rec(SHOOTER) + 4, (a & ~8) if x > 0 else (a | 8))
+        if move:
             e.setb(rec(SHOOTER) + 0x55, A.toward(dx, dy))
             e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
             e.setw(rec(SHOOTER) + 0x2A, round(dy * v * 4096) & 0xFFFF)
@@ -150,7 +172,7 @@ def clips_gif(case, plays, path):
         d.text((pad, 6), title, fill="#1f2933", font=f1)
         desc = case[10] if len(case) > 10 else STANDING
         d.text((pad, 26), f"{100 * rate:.0f}% end in a goal ({g} of {n} plays). {desc[0]}", fill="#52606d", font=f2)
-        d.text((pad, 42), f"{desc[1]} The game's own frames, top net, half speed;", fill="#52606d", font=f2)
+        d.text((pad, 42), f"{desc[1]} The game's own frames, {case[1]} net, half speed;", fill="#52606d", font=f2)
         d.text((pad, 58), "after the shot, the run's bot plays on.", fill="#52606d", font=f2)
         for i, (label, goal, fr, _, rel) in enumerate(pick):
             j = min(max(0, rel - lead) + t, len(fr) - 1)
@@ -178,7 +200,7 @@ def trail(d, pts, fill, width):
 
 
 def paths_gif(case, plays, path):
-    """Every play from above, lined up on the release, the net at the top."""
+    """Every play from above, lined up on the release, the net at the top (the bottom net's plays turned round)."""
     title, (g, n) = case[7], case[8]
     S, pad, head = 3.0, 14, 64
     x_lo, x_hi, y_lo, y_hi = -110, 110, 150, 282
