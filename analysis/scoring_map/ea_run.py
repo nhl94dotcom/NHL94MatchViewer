@@ -24,7 +24,10 @@ left-hander from his right, a right-hander from his left: the user, 2026-10-25);
 frame or in at 45 degrees; each job also gives the mean release spot ("release": across, out); "depth" (the user,
 2026-10-25: the best depth for each net, after "xspot" found the bottom net's 14 ft three times the top net's): the
 release 40-88 out (13-29 ft), 22-28 ft to either side, at the goal or at 45 degrees at 2.5, Shot Power 2 / 4 (run with
-NHL94_EA_MOMENTS=48: one set-up's rate over 24 moments wandered).
+NHL94_EA_MOMENTS=48: one set-up's rate over 24 moments wandered); "refine" (the user, 2026-10-25, around "depth"'s
+best: both nets peaked 64-76 out): the release 60-84 out, 58-80 to the side (top net: his left only, the right-hander,
+the better side there), Shot Power 2 / 3 / 4; plus the bottom net's close spot from "xspot" (34-46 out, 70-80 to his
+left, Shot Power 2 / 3).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -63,6 +66,12 @@ def plan_jobs(plan="ea"):
     if plan == "depth":
         return list(itertools.product(("top", "bottom"), (-85, -75, -65, 65, 75, 85), (40, 52, 64, 76, 88), (2, 4), (4,),
                                       ("rgoal2.5", "rdiag2.5")))
+    if plan == "refine":
+        top = itertools.product(("top",), (-80, -72, -65, -58), (60, 68, 76, 84), (2, 3, 4), (4,), ("rgoal2.5", "rdiag2.5"))
+        bottom = itertools.product(("bottom",), (-80, -72, -65, -58, 58, 65, 72, 80), (60, 68, 76, 84), (2, 3, 4), (4,),
+                                   ("rgoal2.5", "rdiag2.5"))
+        close = itertools.product(("bottom",), (-80, -75, -70), (34, 40, 46), (2, 3), (4,), ("rgoal2.5",))
+        return list(top) + list(bottom) + list(close)
     if plan == "dots":
         return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), STEPS, (2, 4, 6),
                                       ("goal1.5", "goal2.5")))
