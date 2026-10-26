@@ -58,6 +58,19 @@ CASES = [
                         "skating at the goal, no direction held, Power 2."), (30, 20, 20, 30)),
     ("ea_xspot_top", "top", -75, 42, 8, 2, 4, "EA Special from the marked spot, top net", None, "rgoal2.5",
      ("Right-handed, released 14 ft out, 25 ft to his left,", "skating at the goal, no direction held, Power 2.")),
+    # plan "refine" (2026-10-26): each net's best set-up against both goalies (the worse of the two): a right-hander
+    # skating in at 45 degrees at 2.5 a frame, Shot Power 3; top: released 68 out, 72 to his left, Up held; bottom:
+    # 76 out, 80 to his left, Down-Left held (at the goal and across)
+    ("ea_refine_top", "top", -72, 68, 0, 3, 4, "EA Special, the refined top-net set-up", None, "rdiag2.5",
+     ("Right-handed, released 23 ft out, 24 ft to his left,", "skating in at 45 degrees, Up held, Power 3.")),
+    ("ea_refine_top_roy", "top", -72, 68, 0, 3, 4, "EA Special, the refined top-net set-up, against Roy", None,
+     "rdiag2.5", ("Right-handed, released 23 ft out, 24 ft to his left,", "skating in at 45 degrees, Up held, Power 3."),
+     (30, 20, 20, 30)),
+    ("ea_refine_bottom", "bottom", -80, 76, 5, 3, 4, "EA Special, the refined bottom-net set-up", None, "rdiag2.5",
+     ("Right-handed, released 25 ft out, 27 ft to his left,", "skating in at 45 degrees, Down-Left held, Power 3.")),
+    ("ea_refine_bottom_roy", "bottom", -80, 76, 5, 3, 4, "EA Special, the refined bottom-net set-up, against Roy", None,
+     "rdiag2.5", ("Right-handed, released 25 ft out, 27 ft to his left,",
+                  "skating in at 45 degrees, Down-Left held, Power 3."), (30, 20, 20, 30)),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4

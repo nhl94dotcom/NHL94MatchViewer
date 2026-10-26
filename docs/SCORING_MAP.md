@@ -1417,8 +1417,60 @@ is the first shot or the follow-up.
 
 So there are two kinds of EA Special. The bottom net has a narrow close spot that scores about half the time (the
 top net under half that). Both nets also have a broad spot about 25 ft out, the top net's best a little below the
-bottom's. The plan "refine"
-run looks closer around both (results below when it finishes).
+bottom's. The plan "refine" run looks closer around both (next).
+
+### The best set-up at each net (plan "refine", 2026-10-26)
+
+`ea_run.py` plan "refine" looks around the depth sweep's best. The release is 60 / 68 / 76 / 84 out (20-28 ft) and 58 / 65 /
+72 / 80 to the side (19-27 ft): at the top net only to his left (the right-hander, the better side there), at the bottom
+net to either side. He skates at the goal or in at 45 degrees at 2.5 a frame. Shot Power is 2 / 3 / 4, Shot Accuracy 4,
+all nine aims. The bottom net's close spot is in too (34-46 out, 70-80 to his left, Shot Power 2 / 3, skating at the
+goal). 48 moments x 2 seeds against each of Hrudey and Roy, 306 set-ups each.
+
+**A single set-up's best against one goalie doesn't hold against the other.** Hrudey's two best were a left-hander at
+the bottom net from 28 ft out and 19 ft to his right, holding Up-Right: 73%; and a right-hander at the top net from the
+same spot on his left: 60%. Roy held them to 32% and 16-18%. So the picks below are by the worse of the two goalies.
+Then they were played again over 120 new moments for the GIFs.
+
+| Net | Set-up (a right-hander, from his left, skating in at 45 degrees, Shot Power 3) | Hrudey (run / 120 moments) | Roy (run / 120 moments) |
+| --- | --- | --- | --- |
+| Top | released 23 ft out, 24 ft to the side, Up held (straight at the goal) | 33% / **24%** | 23% / **20%** |
+| Bottom | released 25 ft out, 27 ft to the side, Down-Left held (at the goal and across, to the far side) | 46% / **42%** | 52% / **54%** |
+| Bottom, close (xspot) | released 14 ft out, 25 ft to the side, skating at the goal, Shot Power 2, nothing held | 50% / 55% | 45% / 43% |
+
+- **The bottom net is about twice the top net** for the best set-ups, as for every depth in the sweep. Its broad spot
+  (25 ft out, near the faceoff dot) is now as good as the close spot, and it is a much wider target.
+  Around it, 68-76 out and 65-80 to the side, holding Down and toward the far side (Down-Left for the right-hander,
+  Down-Right for the left-hander) gave 13-30% against Roy.
+- **The top net's best is about 1 in 5** against either goalie, the same spot and aim against both. Around it, 68-76
+  out and 72-80 to the side, Up held: 16-22% against Hrudey and 10-13% against Roy (Roy does a little better against
+  Down-Right held there, 14-15%, which does little against Hrudey).
+- **Shot Power:** against Hrudey the weakest shot is best (2 over 4 by about one and a half to nearly two times); against Roy,
+  2, 3 and 4 are even. Shot Power 3 is the safe middle.
+- **Every goal here is the follow-up.** The first shot almost never goes in; it is the bobble and the shot after it.
+
+**Animated** (`ea_animate.py`, the refine cases): 120 game moments each. The bottom net's plays are turned round in
+the paths view so the net is at the top.
+
+**Top net, against the test goalie: 24% (29 of 120).**
+
+![EA Special, the refined top-net set-up: four real attempts](img/scoring_map/ea_refine_top_clips.gif)
+![EA Special, the refined top-net set-up: every attempt from above](img/scoring_map/ea_refine_top_paths.gif)
+
+**Top net, against Roy: 20% (24 of 120).**
+
+![EA Special, the refined top-net set-up, against Roy: four real attempts](img/scoring_map/ea_refine_top_roy_clips.gif)
+![EA Special, the refined top-net set-up, against Roy: every attempt from above](img/scoring_map/ea_refine_top_roy_paths.gif)
+
+**Bottom net, against the test goalie: 42% (50 of 120).**
+
+![EA Special, the refined bottom-net set-up: four real attempts](img/scoring_map/ea_refine_bottom_clips.gif)
+![EA Special, the refined bottom-net set-up: every attempt from above](img/scoring_map/ea_refine_bottom_paths.gif)
+
+**Bottom net, against Roy: 54% (65 of 120).**
+
+![EA Special, the refined bottom-net set-up, against Roy: four real attempts](img/scoring_map/ea_refine_bottom_roy_clips.gif)
+![EA Special, the refined bottom-net set-up, against Roy: every attempt from above](img/scoring_map/ea_refine_bottom_roy_paths.gif)
 
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)

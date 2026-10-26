@@ -337,7 +337,10 @@ The computer never holds a direction, so its wins go a random way.
   faceoff dot and a little deeper (14 feet out), one version stands out: shooting down the screen, a right-hander from
   his left, skating at the goal at full speed, Shot Power 2, no direction held. It scored about half the time even
   against Roy (55% against a weak goalie, 43% against Roy): the bobble drops at his stick and he shoots again before
-  the goalie moves. The same play shooting up the screen scored 18%.
+  the goalie moves. The same play shooting up the screen scored 18%. A little farther out works as well down the
+  screen and is easier to find: a right-hander from his left, released about 25 feet out and level with the faceoff
+  dot (27 feet to the side), skating in at 45 degrees, Shot Power 3, holding Down and toward the far side: 42% against
+  a weak goalie, 54% against Roy. Up the screen the best was 20-24% (23 feet out, 24 to his left, holding Up).
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.
