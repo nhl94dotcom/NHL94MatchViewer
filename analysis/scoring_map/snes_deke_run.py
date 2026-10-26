@@ -144,45 +144,10 @@ def replay(args):
     def att(k):
         return sg * h.sw(H.XPOS + k), GOAL_Y - sg * h.sw(H.YPOS + k)
     for p in range(MOMENTS):
-        x, y, vx, vy = r["sk"]
-        h.setup(round(fl * x), round(fl * y), settle=80 + (p * 7) % 15, clock=590 - p % 8, seed=rnd.getrandbits(32))
-        w = e.w(ATTR + s)
-        e.setw(ATTR + s, (w | 0x800) if hand == "R" else (w & ~0x800))
-        for k, wk in ((s, r["work"][0]), (g, r["work"][1])):     # the recorded skater's and goalie's working ratings
-            for a, v in zip(WORK, wk):
-                e.setw(a + k, v)
-        e.setw(FACING + s, r["face"] if fl > 0 else (r["face"] + 4) % 8)
-        e.setw(H.XVEL + s, round(fl * vx * 4096) & 0xFFFF)
-        e.setw(H.YVEL + s, round(fl * vy * 4096) & 0xFFFF)
-        gx0, gy0, _gvx, _gvy = r["g"]
-        h.put(H.GOALIE, round(fl * gx0), round(fl * gy0))
         res["moments"] += 1
-        s0 = e.w(H.SCORE_HOME)
-        gpath, pre, pressed, last = [], None, None, []
-        for f, v in enumerate(r["pads"]):
-            gpath.append(att(g)[0])
-            d = [b for bit, b in BITS if v & bit]
-            if fl < 0:
-                d = [FLIP[b] for b in d]
-            if "A" in d and pressed is None:
-                pressed = f
-            if pressed is not None and aim != "played":
-                d = (["A"] if "A" in d else []) + aim_pad(aim, side, sg)
-            st = e.serialize()
-            h.park()
-            e.run(1, hold=d)
-            last = [b for b in d if b != "A"]
-            if e.w(H.SCORE_HOME) != s0:
-                res["carried"] += 1
-                break
-            if e.w(H.PUCKC) != s:
-                if pressed is not None and e.w(H.PUCKC) & 0x8000:
-                    pre = st
-                else:
-                    res["lost"] += 1
-                break
-        else:
-            res["noshot"] += 1
+        out, pre, last, gpath = approach(h, r, fl, hand, side, sg, aim, p, rnd)
+        if out != "shot":
+            res[out] += 1
         breathe()
         if pre is None:
             continue
@@ -206,6 +171,49 @@ def replay(args):
         res["release"] = [round(v / res["shots"], 1) for v in res["release"]]
         res["gx"], res["gslide"] = round(res["gx"] / res["shots"], 1), round(res["gslide"] / res["shots"], 1)
     return dict(zip(KEYS, args), **res)
+
+
+def approach(h, r, fl, hand, side, sg, aim, p, rnd):
+    """One moment of a recorded try up to the shot: set up (the moment's settle, clock and seed from rnd), the hand,
+    the recorded working ratings, speed and facing, the goalie where he was, then the recorded pads (turned round when
+    fl is -1; from the A press the aim's when aim is not "played"). Returns (outcome: "shot" / "carried" / "lost" /
+    "noshot", the state just before the release frame, the last d-pad held, the goalie's path across)."""
+    e = h.e
+    s, g = H.o(H.SHOOTER), H.o(H.GOALIE)
+    x, y, vx, vy = r["sk"]
+    h.setup(round(fl * x), round(fl * y), settle=80 + (p * 7) % 15, clock=590 - p % 8, seed=rnd.getrandbits(32))
+    w = e.w(ATTR + s)
+    e.setw(ATTR + s, (w | 0x800) if hand == "R" else (w & ~0x800))
+    for k, wk in ((s, r["work"][0]), (g, r["work"][1])):     # the recorded skater's and goalie's working ratings
+        for a, v in zip(WORK, wk):
+            e.setw(a + k, v)
+    e.setw(FACING + s, r["face"] if fl > 0 else (r["face"] + 4) % 8)
+    e.setw(H.XVEL + s, round(fl * vx * 4096) & 0xFFFF)
+    e.setw(H.YVEL + s, round(fl * vy * 4096) & 0xFFFF)
+    gx0, gy0, _gvx, _gvy = r["g"]
+    h.put(H.GOALIE, round(fl * gx0), round(fl * gy0))
+    s0 = e.w(H.SCORE_HOME)
+    gpath, pressed, last = [], None, []
+    for f, v in enumerate(r["pads"]):
+        gpath.append(sg * h.sw(H.XPOS + g))
+        d = [b for bit, b in BITS if v & bit]
+        if fl < 0:
+            d = [FLIP[b] for b in d]
+        if "A" in d and pressed is None:
+            pressed = f
+        if pressed is not None and aim != "played":
+            d = (["A"] if "A" in d else []) + aim_pad(aim, side, sg)
+        st = e.serialize()
+        h.park()
+        e.run(1, hold=d)
+        last = [b for b in d if b != "A"]
+        if e.w(H.SCORE_HOME) != s0:
+            return "carried", None, last, gpath
+        if e.w(H.PUCKC) != s:
+            if pressed is not None and e.w(H.PUCKC) & 0x8000:
+                return "shot", st, last, gpath
+            return "lost", None, last, gpath
+    return "noshot", None, last, gpath
 
 
 def pad(ax, ay, sg):
