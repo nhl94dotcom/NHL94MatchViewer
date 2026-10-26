@@ -44,9 +44,9 @@ record or check and what it will settle. Newest at the bottom of each section.
    teammate within about 18 feet of the goal line from a pass across the net's centre line, then a dozen from a pass
    from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_MAP, "One-timers", Genesis),
    which plays them in the game itself: about 63% from across, 20-30% from the same side.
-8. **SNES dekes and moves (the 2v2 ROM).** A game with plenty of dekes and other moves that work on the SNES, the
-   misses included, and roughly when you played it. *Settles:* how the SNES deke is done (SNES_MECHANICS 4.10 has
-   five examples so far); the SNES deke runner waits for it.
+8. ~~**SNES dekes and moves (the 2v2 ROM).**~~ Done (2026-10-25): the user's 2v2 game (`2026-10-25_1951_MTL-LA`) is
+   traced and its 26 tries replayed in the game at both nets and by both hands (SNES_MECHANICS 4.10, with GIFs). A
+   short game trying the cut going down the screen, released inside about 13 feet, would confirm it in play.
 9. **The EA Special at the bottom net (Genesis, optional).** In a practice game against the computer, going down the
    screen: a right-hander from his left, released about 14 feet out and level with the faceoff dot, skating at the
    goal, a weak wrist shot with no direction held, then C again only once you have the puck. A dozen tries, and note

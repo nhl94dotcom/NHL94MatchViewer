@@ -530,10 +530,68 @@ a wrist shot goes into it. Seldom seen on the Genesis.
 - **Other goals in the game:** three cuts across the crease from the right corner (skating left, 3-11 ft out, in at
   the far post), and one straight down the right lane.
 
-So the cut needs the goalie to come off the near post and a release inside about 11 ft. Whether the bottom net's
-goalie stays put whatever the aim, or the low aim was the trouble, the harness can tell.
+So the cut needs the goalie to come off the near post and a release inside about 11 ft.
 
-Next: these plays in the harness (`snes_harness.py`), against the SNES goalie profiles.
+**The tries replayed in the real game** (`analysis/scoring_map/snes_deke_run.py`, plan "replay", 2026-10-25). Each of
+the 26 tries (15 cuts, 11 dekes from the left) was replayed from 1.5 s before the shot: the skater where he was, at
+his speed and facing, with his own working ratings and the LA goalie's, then the user's recorded d-pad and A frame by
+frame. Each was played at its own net and turned round at the other, by a left- and a right-hander, with the aim as
+played or, from the A press, high or middle at the near post: 24 game moments each, every shot with 4 release seeds,
+goals carried in counted. Only the skater and the goalie are on the ice. **Checked:** the replayed skater follows the
+recorded path to within about 5 units, and the 11 Up-net cuts score 37% (the user: 6 of 11).
+
+- **The cut works at the Down net.** It's the tries, not the net. The 11 cuts from the Up-net periods score 39% at
+  the Up net and **46% turned round at the Down net**. The 4 Down-net tries score 12% there and 21% at the Up net:
+  they fail at either net. So the user's 0 of 4 going down came from those four tries.
+- **What makes a try work:** released close and the goalie sliding a little toward the middle.
+
+  | The try's release (out from the goal line) | Tries | Scored (both nets, all hands and aims) |
+  | --- | --- | --- |
+  | 25-38 (8-13 ft), the goalie sliding 3-12 toward the middle | 5 | 47-88% |
+  | 41-47 (14-16 ft) | 4 | 6-73% (two good, two poor) |
+  | 48-76 (16-25 ft) | 3 | 1-22% |
+  | 26-40, the goalie not sliding (0-2), sliding toward the near post (-7), or all the way (25) | 3 | 0-3% |
+
+  Each try is counted at each net separately (both hands, all three aims); the range runs over every try in the row.
+
+- **Hand:** a right-hander does as well or better: 47% against 32% at the Down net, 35% against 33% at the Up net
+  (the aim as played).
+- **Aim: hardly matters.** Up net: high 33%, middle 35%, as played 34%. Down net: high 33%, middle 40%, as played
+  40%. The middle aim at the bottom net (4.10 above) was not the trouble.
+
+![SNES cut, Down net, right-hander: four real attempts](img/scoring_map/snes_cut_down_righty_clips.gif)
+![SNES cut, Down net, right-hander: every attempt from above](img/scoring_map/snes_cut_down_righty_paths.gif)
+
+The user's own cut at P3 2:18 turned round to the Down net, by a right-hander: 88% in the run (21 of 24 here).
+
+![SNES cut, Up net, left-hander: four real attempts](img/scoring_map/snes_cut_up_lefty_clips.gif)
+![SNES cut, Up net, left-hander: every attempt from above](img/scoring_map/snes_cut_up_lefty_paths.gif)
+
+The same try as played, Up net, left-hander: 73% (16 of 24 here).
+
+![SNES cut released too far out: four real attempts](img/scoring_map/snes_cut_far_out_clips.gif)
+![SNES cut released too far out: every attempt from above](img/scoring_map/snes_cut_far_out_paths.gif)
+
+The try at P3 4:02, released about 62 out (21 ft): 3% (1 of 24 here).
+
+- **The deke from the left: the same story.** The 5 Up-net tries score 43% at the Up net and 37% at the Down net; the
+  6 Down-net tries 25% at the Down net and 19% at the Up net. So again the tries decide it, not the net. A
+  left-hander does better at the Down net (36% against 22%, as played) and the same at the Up net (31%). The high aim
+  helps a right-hander at the Down net (32% against 18% for the middle).
+
+![SNES deke from his left, Down net, left-hander: four real attempts](img/scoring_map/snes_deke_down_lefty_clips.gif)
+![SNES deke from his left, Down net, left-hander: every attempt from above](img/scoring_map/snes_deke_down_lefty_paths.gif)
+
+The try at P2 3:40, as played: 67% (16 of 24 here).
+
+![SNES deke from his left, Up net, left-hander: four real attempts](img/scoring_map/snes_deke_up_lefty_clips.gif)
+![SNES deke from his left, Up net, left-hander: every attempt from above](img/scoring_map/snes_deke_up_lefty_paths.gif)
+
+The try at P3 4:51, as played: 67% (14 of 24 here).
+
+So both moves work at both nets and by either hand. For the cut: release inside about 13 ft, after the goalie has
+started sliding toward the middle. Next: tuned inputs from scratch (the "near" grid, with the recorded ratings) to
+find the best release depth and timing, and these plays against the SNES goalie profiles.
 
 
 ---

@@ -266,6 +266,11 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   half go in: the shot goes just past his body on **his right**, and his save move on that side reaches out beyond the
   post, leaving a gap. The same shot from your right, aimed right, almost never scores. It's a narrow lane: a couple of
   feet farther from the middle and it's gone. (Mechanics 4.8; not yet tried in a real game.)
+- **The near-post cut works at both nets, by either hand.** Skate in down one side, cut toward the middle, turn to
+  face straight up the ice at about the post's line and shoot inside the near post once the goalie starts sliding
+  toward the middle. **Shoot from within about 13 feet**: from farther out it rarely scores. Your own tries replayed in
+  the game scored as well going down as going up, and a right-hander did at least as well as a left-hander; high or
+  middle aim hardly mattered. The deke coming in on your left works at both nets too. (Mechanics 4.10, with GIFs.)
 
 ![The chance a shot scores against a set SNES goalie, best aim, by spot](img/snes_scoring_map.svg)
 
