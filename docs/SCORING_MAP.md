@@ -1648,6 +1648,51 @@ moments x 4 seeds, both nets.)
 ![Far-post slapshot against Roy: real attempts](img/scoring_map/genesis_slap_goalie_roy_clips.gif)
 ![Far-post slapshot against Roy: every attempt from above](img/scoring_map/genesis_slap_goalie_roy_fan.gif)
 
+### SNES goalie profiles (2026-10-26)
+
+The SNES studies again against SNES goalie profiles. The working ratings run 0-15, a roster step x 2.5: a backup
+(Agility / Speed / Defensive Awareness / Puck Control 5 / 7 / 5 / 5), a typical retail starter (10 / 10 / 12 / 10) and
+Roy (15 / 10 / 10 / 15). The test goalie has 8 / 8 / about 15 / 15. The runs are the standing slapshot (18 spots, 60
+moments x 4 seeds, the shooter at 6 / 6, the best case: `snes_map_run.py` slapcore, `NHL94_SNES_GOALIE`) and the
+one-timer ratings run (60 set-ups, all aims, the receiver at 4 / 4: `ot_run.py snes ratings`).
+
+| Goalie | Standing slapshot, best aim (18 spots; top / bottom net) | One-timers, all aims / best aim |
+| --- | --- | --- |
+| Test goalie (8 / 8 / ~15 / 15) | 5.5% (5.5% / 5.5%) | 32% / 64% |
+| Backup (5 / 7 / 5 / 5) | 5.3% (5.0% / 5.6%) | 37% / 69% |
+| Retail starter (10 / 10 / 12 / 10) | 4.8% (4.7% / 4.9%) | 33% / 65% |
+| Roy (15 / 10 / 10 / 15) | **3.6% (1.4% / 5.8%)** | 35% / 67% |
+
+- **On the SNES the goalie barely matters**, unlike the Genesis, where Roy cuts every slapshot to a third. Every SNES
+  goalie has the same body box and save frames (SNES_MECHANICS 5.1). His Agility only sets how fast he skates (5.3).
+- **One-timers don't notice him at all** (64-69% at the best aim, in no order): a computer goalie loses his Agility
+  while a pass is in the air (SNES_MECHANICS 5.3), so every goalie slides across alike.
+- **The one exception: Roy closes the top net's best slapshot.** That is Up-Left from 40 left of centre, 50 ft out: 42
+  of 240 went in against the test goalie, 61 against the retail starter and 5 against Roy. His bottom net is as open
+  as anyone's (5.8%). The run doesn't separate his Agility 15 from his Puck Control 15; the test goalie also has Puck
+  Control 15 and lets that shot in, so it is likely the Agility, getting him across in time.
+
+**Animated (`animate.py`, the SNES goalie cases):** that top-net slapshot, 120 shots each (other moments than the
+run's).
+
+**Test goalie: 18% (21 of 120; the run 18%).**
+
+![SNES slapshot Up-Left, top net, against the test goalie: real attempts](img/scoring_map/snes_slap_goalie_test_clips.gif)
+![SNES slapshot Up-Left, top net, against the test goalie: every attempt from above](img/scoring_map/snes_slap_goalie_test_fan.gif)
+
+**A typical retail starter: 17% (20 of 120; the run 25%).**
+
+![SNES slapshot Up-Left, top net, against a retail starter: real attempts](img/scoring_map/snes_slap_goalie_retail_clips.gif)
+![SNES slapshot Up-Left, top net, against a retail starter: every attempt from above](img/scoring_map/snes_slap_goalie_retail_fan.gif)
+
+**Roy: 8% (9 of 120; the run 2%).**
+
+![SNES slapshot Up-Left, top net, against Roy: real attempts](img/scoring_map/snes_slap_goalie_roy_clips.gif)
+![SNES slapshot Up-Left, top net, against Roy: every attempt from above](img/scoring_map/snes_slap_goalie_roy_fan.gif)
+
+So against Roy on the SNES, shoot slapshots at the bottom net, or use one-timers, which score the same against
+every goalie.
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near). The studies
@@ -1658,8 +1703,8 @@ defender (DEFENCE_STUDY). None of it covers a person in net yet: those tests are
   items 5 and 6): a dozen Down slapshots from the middle on the Genesis, and a dozen slapshots from the SNES left lane
   against its mirror.
 - **The goalie.** On the Genesis the goalie's Agility sets his reach (12-15) and decides most slapshots (above:
-  real goalie profiles). On the SNES every goalie has the same body box and save frames, so his ratings should matter
-  less; runs against SNES goalie profiles are under way. The shooter's ratings are covered for both systems
+  real goalie profiles). On the SNES every goalie has the same body box and save frames, and the profiles barely matter
+  (SNES goalie profiles, above), except that Roy closes the top net's best slapshot. The shooter's ratings are covered for both systems
   ("Slapshots and the shooter's ratings").
 - **Recorded games still use the xG models.** Replaying 135 recorded Genesis shots in the game gave the right total but
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal

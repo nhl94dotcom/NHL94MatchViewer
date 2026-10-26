@@ -60,6 +60,17 @@ RATED = [
      f"{' / '.join(map(str, rat))} (working)", rat)
     for g, who, rat, r in (("retail", "a typical retail starter", (20, 20, 25, 20), 0.04),
                            ("roy", "Roy", (30, 20, 20, 30), 0.02))]
+# the SNES goalie profiles (2026-10-26): the top net's best slapshot for a 6 / 6 shooter, Up-Left from 40 left of
+# centre, 50 ft, against the test goalie, a typical retail starter and Roy (SNES working ratings 0-15)
+RATED += [
+    (f"snes_slap_goalie_{g}", "snes", "top", -40, 120, "slap", 7,
+     f"SNES, top net: slapshot Up-Left from 40 left of centre, 50 ft, Shot Power 6 / Accuracy 6, against {who}", r, (6, 6),
+     "the goalie profile run: 240 shots at 60 moments, the shooter parked" + (
+         f"; goalie Agility / Speed / Def. Awareness / Puck Control {' / '.join(map(str, rat))} (working)" if rat else ""),
+     rat)
+    for g, who, rat, r in (("test", "the test goalie", None, 42 / 240), ("retail", "a typical retail starter",
+                                                                         (10, 10, 12, 10), 61 / 240),
+                           ("roy", "Roy", (15, 10, 10, 15), 5 / 240))]
 # (2026-10-25: the earlier goalie_10 / goalie_20 GIFs wrote the third rating into aidef raw; replaced by these)
 MAP_SHOTS = {"genesis": "the map: 800 launches at 120 moments",   # what each rate rests on
              "snes": "480 shots over 120 moments, the shooter left on the ice"}
@@ -108,9 +119,9 @@ def play(spec, n):
     from snes_harness import DIRPAD
     gentle()
     name, system, net, x, y, kind, aim = spec[:7]
-    if len(spec) > 11:                                # the goalie's ratings: the harness reads them as it starts
+    if len(spec) > 11 and spec[11]:                   # the goalie's ratings: the harness reads them as it starts
         import os
-        os.environ["NHL94_GOALIE"] = ",".join(map(str, spec[11]))
+        os.environ["NHL94_SNES_GOALIE" if system == "snes" else "NHL94_GOALIE"] = ",".join(map(str, spec[11]))
     G._init(system)
     o = G.S["o"]
     h = o.h[net]

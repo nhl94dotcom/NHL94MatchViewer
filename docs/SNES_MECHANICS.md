@@ -681,6 +681,10 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   **He stops dead when an opposing carrier winds up a shot** while skating mostly up or down the ice.
 - **Confirmed:** emulating all this and driving it with the recorded puck, the goalie lands a median 0.8 units from the
   recorded goalie when the puck arrives (100 shots at computer goalies; 78 within 3 units).
+- **His ratings, played in the game** (SCORING_MAP "SNES goalie profiles", 2026-10-26): from a backup to Roy, the
+  standing slapshot's best chance moves only 5.5% to 3.6% and one-timers not at all (64-69% at the best aim). The
+  exception: Roy (Agility 15) all but closes the top net's best slapshot (Up-Left from 40 left of centre: 2% against
+  18-25% for the others).
 
 ### 5.4 Holding the puck and rebounds
 
