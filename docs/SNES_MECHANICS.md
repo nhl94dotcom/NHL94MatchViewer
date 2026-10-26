@@ -521,10 +521,12 @@ a wrist shot goes into it. Seldom seen on the Genesis.
   toward the goal aims low (Up on the d-pad is always high, 4.1), so the user held only toward the near post, the
   middle height row. The high near-post aim going down is Up and the near side on the d-pad, away from the net
   (coming from the right attacking down: Up-Left). The four tries don't separate the two.
-- **The mirror image, from the left side, works at both nets:** going up 3 goals in 5 (two wide, from 49 across and
-  from 59 out), aimed high at the near post (Up-Left); going down 3 in 6 (two posts, one save from 50 out), aimed at
-  the near post at the middle height (the d-pad toward the near post only). In the goals the goalie had moved 0-8
-  toward the middle; in the two posts going down he had moved 6-10 *toward* the near post.
+- **Not the mirror image: the deke from the left.** The left-handers also scored coming in on their left (their
+  forehand side) and deking, with no EA Special-like approach (the user: a different move, though the goalie comes off
+  the near post in the same way). Going up 3 goals in 5 (two wide, from 49 across and from 59 out), aimed high at the
+  near post (Up-Left); going down 3 in 6 (two posts, one save from 50 out), aimed at the near post at the middle
+  height. In the goals the goalie had moved 0-8 toward the middle; in the two posts going down he had moved 6-10
+  *toward* the near post. So that deke worked at both nets for left-handers, and the near-post cut only going up.
 - **Other goals in the game:** three cuts across the crease from the right corner (skating left, 3-11 ft out, in at
   the far post), and one straight down the right lane.
 
