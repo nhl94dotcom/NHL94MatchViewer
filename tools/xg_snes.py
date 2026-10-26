@@ -1,4 +1,4 @@
-"""Expected goals from the SNES game's own rules (2026-10-17; see docs/SNES_MECHANICS.md 4.7).
+"""Expected goals from the SNES game's own rules (2026-10-17; see docs/SNES_SHOOTING.md 4.7).
 
 Every shot is played out N_SAMPLES times the way the SNES game would (doshot, updateplayers, checkgoal,
 checkpuckcoll_ccx, assgoalie): sent exactly at its aim point with chance (Shot Accuracy + 1) / (Shot Accuracy + 16)

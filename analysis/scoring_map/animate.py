@@ -44,7 +44,7 @@ SPOTS = [
     ("snes_mirror_top", "snes", "top", 10, 180, "slap", 2,
      "SNES, top net: the mirror shot, holding Right, 10 right of centre, 88 out", 0.008),
 ]
-# the slapshot's power threshold (SCORING_MAP "Every Shot Power and Accuracy"): the far post from the middle, 36 ft
+# the slapshot's power threshold (SCORING_GENESIS "Every Shot Power and Accuracy"): the far post from the middle, 36 ft
 RATED = [
     (f"genesis_slap_{p}_{a}", "genesis", "top", 0, 160, "slap", 6,
      f"Genesis, top net: slapshot at the far post from the middle, 36 ft, Shot Power {p} / Accuracy {a}", r, (p, a),

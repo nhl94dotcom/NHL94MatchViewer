@@ -9,7 +9,7 @@ release in units a game frame (60 a second), his working Agility / Speed at the 
 full speed holding the d-pad from them (TOP_SPEED, measured in the scoring-map harness 2026-10-26: Agility / Speed
 10 1.75, 13 1.85, 18 2.0, 20 2.05, 30 2.35, in between by straight lines), the aim held and what came of it.
 The EA runs had the skater at 2.5 (beyond any skater), then at 1.7 (the user: a little below full speed, tapping the
-d-pad) and found the bottom net's best at 20 ft out (SCORING_MAP "Skating speed and a person's slop")."""
+d-pad) and found the bottom net's best at 20 ft out (SCORING_GENESIS_EA "Skating speed and a person's slop")."""
 import json
 import math
 import os

@@ -1,4 +1,4 @@
-"""SNES goalies' attacking moves (2026-10-21; SNES_MECHANICS 5.3). Code (assgoalie): a computer goalie pokes
+"""SNES goalies' attacking moves (2026-10-21; SNES_SHOOTING 5.3). Code (assgoalie): a computer goalie pokes
 (SPAgpoke $E528) at an opponent carrier within 35 in front of the goal line on a 1-in-25.6 roll, then waits 4 s; he
 dives (SPAgdive $E4B6) at a loose puck within 45 with an attacker within 60 of it on a 1-in-32 roll, but only when the
 counter puckgoalie sets to 4 on a touch has counted down to exactly 0: one chance per save. Counts each goalie

@@ -109,7 +109,7 @@ same habits one at a time, and more games will firm these up.
 ## One defender against the deke and the floater (the harness, a pilot; 2026-10-25)
 
 DEFENCE_PLAN study 4, first pass. `analysis/scoring_map/def_run.py`: the 20 best deke and floater set-ups of the
-scoring map (SCORING_MAP "Dekes": each move's best for each hand, both nets; the shooter at Shot Power / Accuracy 4,
+scoring map (SCORING_GENESIS_DEKES "Dekes": each move's best for each hand, both nets; the shooter at Shot Power / Accuracy 4,
 the computer goalie the test goalie, Hrudey), each played with one defending skater added: the away team's left
 defenceman (working Weight 88, Agility 20, Speed 20, Checking 15). He is put at one of 45 spots: across from the lane
 the shooter comes in on, 0 to 13 ft either way, and 13 to 34 ft out from the goal line. Two ways:
@@ -170,7 +170,7 @@ goal line. The share of plays that ended in a goal (no defender: 88%).
 
 ### Animated
 
-`deke_animate.py`, the DEFENDER cases: the refined left-hander's deke from 15 ft to his left (no defender: SCORING_MAP
+`deke_animate.py`, the DEFENDER cases: the refined left-hander's deke from 15 ft to his left (no defender: SCORING_GENESIS_DEKES
 "Dekes"), with the defender 7 ft toward the middle from the carrier's lane, 24 ft out, standing or left to the
 computer, and left to the computer from 7 ft toward the boards. The defender is green in the paths view.
 

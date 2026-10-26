@@ -1,4 +1,4 @@
-"""The scoring map (2026-10-22; GENESIS_MECHANICS 4.10): the chance a shot scores, played in the real game.
+"""The scoring map (2026-10-22; GENESIS_SHOOTING 4.10): the chance a shot scores, played in the real game.
 
 How it works: a test ROM built from the Genesis disassembly with a hook in doshot (patch_rom.py) runs headless in a
 copy of RetroArch's Genesis Plus GX core (emu.py, a minimal libretro frontend). The hook records doshot's inputs and

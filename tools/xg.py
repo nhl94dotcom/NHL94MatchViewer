@@ -1,4 +1,4 @@
-"""Expected goals from the Genesis game's own rules (2026-10-17; see docs/GENESIS_MECHANICS.md 4.9).
+"""Expected goals from the Genesis game's own rules (2026-10-17; see docs/GENESIS_SHOOTING.md 4.9).
 
 Every shot is played out N_SAMPLES times the way the game would: the shot code (doshot) sends it at the aim point
 exactly, with chance (Shot Accuracy + 1) / (Shot Accuracy + 16) from within 200 of that point (always while the
@@ -179,7 +179,7 @@ def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=F
     stick (2026-10-23, off until it is shown to predict the recordings better): the goalie's stick as checkpuckcoll
     .ccx tests it, before his body, for a puck at height 5 or less rising no faster than $200: the blade (his sprite
     frame's hot point) within 8 units plays it (puckstick: caught or deflected, no goal); 8-14 units, nothing that frame
-    and the body test skipped (the blind ring the Down slapshot goes through: GENESIS_MECHANICS 4.10, 5.5). Needs the
+    and the body test skipped (the blind ring the Down slapshot goes through: GENESIS_SHOOTING 4.10, 5.5). Needs the
     goalie made with rom and frame.
 
     rebound (2026-10-23, off until shown to help): a body touch isn't always a save (puckgoalie): he holds the puck only

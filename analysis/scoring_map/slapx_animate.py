@@ -1,7 +1,7 @@
 """Animated far-post slapshots skating across, by shooter rating (Genesis test ROM): python slapx_animate.py OUT_DIR [N]
 Each case in CASES is mv_run.py's plan "slapxr" (crossing toward the stick side, the wind-up begun 60 before the
 middle) for one Shot Power / Accuracy at one distance, at the bottom net (the top net's start from the right at 125
-out is faulty: SCORING_MAP "Moving shooters"), aimed at the far post ahead of him (Right). N attempts (moments x
+out is faulty: SCORING_GENESIS "Moving shooters"), aimed at the far post ahead of him (Right). N attempts (moments x
 seeds), the game's own frames kept from the start of the skate to the result. The captions give the ratings run's
 rate for that very set-up and aim (64 shots: 16 moments x 4 seeds); the clips show goals in about that proportion.
 Two GIFs per case:

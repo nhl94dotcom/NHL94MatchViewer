@@ -5,10 +5,12 @@ match file, and replays it in a browser viewer with full stats, maps, clips, sea
 for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes9x cores).
 
 **This file is the short brief. The full history and every finding (addresses, routines, checks, dates) is in
-`docs/PROJECT_NOTES.md`: search it before re-deriving anything.** Game mechanics in plain English and in detail are in
-`docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `docs/GENESIS_MECHANICS.md`, `docs/SNES_MECHANICS.md`; studies in
-`docs/SHOOTING_STUDY.md` and `docs/SCORING_MAP.md` (shots played in the real game, the method and pictures of each kind of
-goal); the plan for the defence studies in `docs/DEFENCE_PLAN.md`, their results in `docs/DEFENCE_STUDY.md`
+`docs/PROJECT_NOTES.md` (the technical reference), `docs/VIEWER_NOTES.md` (the viewer, stats and broadcast) and
+`docs/STUDY_NOTES.md` (the studies' working notes): search them before re-deriving anything.** Game mechanics in plain
+English and in detail are in `docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `docs/GENESIS_MECHANICS.md`,
+`docs/SNES_MECHANICS.md` (sections 4-5, shooting and goaltending, in `docs/GENESIS_SHOOTING.md` / `docs/SNES_SHOOTING.md`);
+studies in `docs/SHOOTING_STUDY.md` and the scoring maps (shots played in the real game): `docs/SCORING_MAP.md` (the
+overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`, `SCORING_SNES.md`; the plan for the defence studies in `docs/DEFENCE_PLAN.md`, their results in `docs/DEFENCE_STUDY.md`
 (`analysis/defence_games.py` for the recorded games, `analysis/scoring_map/def_run.py` for a defender in the harness); open questions for the user in
 `docs/NEEDS_FROM_YOU.md`.
 
@@ -73,8 +75,8 @@ goal); the plan for the defence studies in `docs/DEFENCE_PLAN.md`, their results
   the result over every Genesis game with a person on each side; `reports/coach_predict.md`).
   `analysis/scoring_map/` plays shots in the real game (Genesis): a test ROM built from the disassembly with a doshot
   hook, run headless through a libretro frontend over a copy of the Genesis Plus GX core; `build.py`'s docstring is
-  the how-to (work files in `%USERPROFILE%\NHL94_scoring_map`). Its findings: GENESIS_MECHANICS 4.10. The SNES map
-  (`snes_*.py`) runs the retail ROM in a copy of the Snes9x core with no hook: SNES_MECHANICS 4.8. `goal_types.py`
+  the how-to (work files in `%USERPROFILE%\NHL94_scoring_map`). Its findings: GENESIS_SHOOTING 4.10. The SNES map
+  (`snes_*.py`) runs the retail ROM in a copy of the Snes9x core with no hook: SNES_SHOOTING 4.8. `goal_types.py`
   sorts the maps' goals by how they went in; `goal_frames.py` / `goal_diagram.py` picture one (the game's own frames);
   `animate.py` makes GIFs of makes and misses at the worthwhile spots. Long runs use gentle mode (`lowload.py`: 2
   workers at idle priority, each resting as long as it works; the user's fan; about 30x slower than 30 workers).

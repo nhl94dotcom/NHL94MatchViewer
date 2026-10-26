@@ -842,7 +842,7 @@ def empty_net():
     notes = ["Hold Down or nothing at an open net, never Up: the random error only pushes the puck up, so a high aim has no room under the bar.",
              "Attacking up the screen, pushing toward the net IS holding Up. Let go of the d-pad, or hold Down, as you shoot.",
              "Get closer: inside about 180 units (60 ft) most aims still go in; past 200 no shot is exact and the error is wide.",
-             "Genesis one-timers ignore the d-pad and go high at an open net (GENESIS_MECHANICS 4.4); SNES one-timers follow it."]
+             "Genesis one-timers ignore the d-pad and go high at an open net (GENESIS_SHOOTING 4.4); SNES one-timers follow it."]
     for i, s in enumerate(notes):
         b.append(text(60, ly + 56 + i * 18, s, 12, SOFT))
     return svg(W, ly + 56 + len(notes) * 18 + 10, b, "Empty net")

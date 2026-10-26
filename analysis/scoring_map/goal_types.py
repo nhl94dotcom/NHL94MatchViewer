@@ -9,7 +9,7 @@ by what happened between the stick and the net, from the puck's and the goalie's
 - off the post / off the goalie: the puck's speed jumped near a post / near the goalie before it went in;
 - Genesis: in his pad stack (SPAgstackr / l at the puck's closest pass); through the blind ring (the puck passed
   within his reach, 15, low, untouched: the butterfly's ring around his stick); clean (it never came within his reach);
-- SNES: past a save move (named by GoalieSaveList: the sprawl right $E862 is the lane of SNES_MECHANICS 4.8); clean
+- SNES: past a save move (named by GoalieSaveList: the sprawl right $E862 is the lane of SNES_SHOOTING 4.8); clean
   (he hadn't started a save).
 
 Each goal keeps its setup (spot, aim, moment, release seed: replays exactly, see goal_frames.py) and, for the first

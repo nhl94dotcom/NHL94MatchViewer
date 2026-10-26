@@ -495,7 +495,7 @@ marker for what it was; click it to jump there.</p>
   ring).</dd>
   <dt>Zone entries</dt><dd>Where the puck crossed the blue line: carried (disc), passed (diamond), dumped (hollow); an accent ring means a shot attempt came of it.</dd>
   <dt>Goalie report</dt><dd>Every shot a goalie faced, with save rates by distance and type, human or computer in net, and what happened after each save.</dd>
-  <dt>xG map</dt><dd>The chance a shot from each spot in the attacking zones goes in, worked out with the game’s own shot and save rules (the same model as each shot’s xG), for the shot type, shooter’s Shot Accuracy and goalie you pick, with the best of the nine aims. <b>As in games</b> puts the goalie where goalies really were when recorded shots were taken (often out of position or moving); <b>set in his spot</b> shows how little gets past a goalie who is ready; on the Genesis that one also models his stick, which lets a flat slapshot straight at him slip through his butterfly and in off him, as it does in the game (the scoring maps, GENESIS_MECHANICS 4.10). Point at a spot for its number and the d-pad direction to aim with. Genesis and SNES games, each with its own game’s rules.</dd>
+  <dt>xG map</dt><dd>The chance a shot from each spot in the attacking zones goes in, worked out with the game’s own shot and save rules (the same model as each shot’s xG), for the shot type, shooter’s Shot Accuracy and goalie you pick, with the best of the nine aims. <b>As in games</b> puts the goalie where goalies really were when recorded shots were taken (often out of position or moving); <b>set in his spot</b> shows how little gets past a goalie who is ready; on the Genesis that one also models his stick, which lets a flat slapshot straight at him slip through his butterfly and in off him, as it does in the game (the scoring maps, GENESIS_SHOOTING 4.10). Point at a spot for its number and the d-pad direction to aim with. Genesis and SNES games, each with its own game’s rules.</dd>
   <dt>Game flow</dt><dd>A strip over the controls: each team's shot attempts piling up over the game, goals as dots, power plays shaded. Click it to jump there.</dd>
 </dl>
 </section>
@@ -1585,7 +1585,7 @@ const XG = (() => {
   // opts.states: goalie states to start from, [dx, dy, vx, vy] from his set spot (units; units a frame) as if the shot
   // were at the top net, one picked at random for each shot (null: the goalie set in his spot, standing still).
   // opts.stick: the stick and rebound model with no position blur (only for the set goalie: it matches the game's own
-  // averages there, GENESIS_MECHANICS 4.10; on recorded games it gains nothing, so they keep the plain model).
+  // averages there, GENESIS_SHOOTING 4.10; on recorded games it gains nothing, so they keep the plain model).
   function spot(px, py, top, opts) {
     const gl = top ? 264 : -264, [sx, sy] = setSpot(px, py, top), g = opts.goalie, sg = top ? 1 : -1;
     let reach = REACH[Math.min(19, (g.agility + 2) >> 1)];

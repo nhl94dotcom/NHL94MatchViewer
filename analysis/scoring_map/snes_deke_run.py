@@ -1,5 +1,5 @@
 """SNES dekes in the real game (retail ROM, snes_harness), 2026-10-25: the two moves of the user's 2v2 game
-(`2026-10-25_1951_MTL-LA`, SNES_MECHANICS 4.10), played by d-pad inputs from a standing start, as a person skates them.
+(`2026-10-25_1951_MTL-LA`, SNES_SHOOTING 4.10), played by d-pad inputs from a standing start, as a person skates them.
 - "cut" (the near-post cut): in down one side, wide (x0 across); from CUT_OUT out cut toward the middle holding
   up-and-in; at TURN out hold up-and-out (he turns to face up the ice: the recording turned at about 90-100 out, 0.7 s
   before the shot); tap A once he is OA out, with the aim held: "high" (Up on the d-pad, always high, and the near side) or "mid" (the near side only). Going down the
@@ -47,7 +47,7 @@ START_OUT, CUT_OUT = 230, 175          # standing start; the cut begins once he 
 KEYS = ("move", "net", "side", "hand", "x0", "a", "b", "aim")
 MATCH = os.environ.get("NHL94_SDEKE_MATCH") or "2026-10-25_1951_MTL-LA"
 LEAD = 90                              # replay: frames before the shot
-# the user's tries in the 2v2 game (SNES_MECHANICS 4.10): (period-clock, move, side); team 0 (MTL, pad 1)
+# the user's tries in the 2v2 game (SNES_SHOOTING 4.10): (period-clock, move, side); team 0 (MTL, pad 1)
 TRIES = [(k, "cut", 1) for k in ("P1-2:31", "P1-1:53", "P1-1:26", "P3-4:02", "P3-3:51", "P3-3:07", "P3-2:59",
                                  "P3-2:18", "P3-1:42", "P3-0:57", "P3-0:11", "P2-2:25", "P2-1:54", "P2-0:57",
                                  "P2-0:13")]

@@ -1,6 +1,6 @@
 """Dekes and floaters in the recorded Genesis games (2026-10-24): how often a person's close-in wrist shot scores
 when the puck was swung across in front of the shooter just before the release (the move scoring_map/deke_run.py
-plays in the game: PROJECT_NOTES "Examples in the 2026-10-23 BOS-LA games"), against the same kind of shot without a
+plays in the game: STUDY_NOTES "Examples in the 2026-10-23 BOS-LA games"), against the same kind of shot without a
 swing. A swing: the puck's place across the shooter's skating line (his right +) changed by SWING units or more, from
 one side to the other, within SWING_FRAMES samples before the release. Shots: a person's wrist shots (`human`) at a
 computer goalie (`gctl` cpu), the shooter within NEAR of the goalie at the release; sorted by how far out

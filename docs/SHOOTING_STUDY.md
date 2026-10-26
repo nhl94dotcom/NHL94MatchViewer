@@ -8,7 +8,7 @@ more games come in: `python analysis/shot_table.py`, then `python analysis/shot_
 
 Terms: an **attempt** is any shot or one-timer (on goal, wide or blocked). **Uncounted stops** are shots that reached
 the goalie and were stopped but not counted as shots on goal. **xG** is expected goals from the game's own rules
-(GENESIS_MECHANICS.md 4.9, SNES_MECHANICS.md 4.7). **Up** means the shooting team was attacking up the screen.
+(GENESIS_SHOOTING.md 4.9, SNES_SHOOTING.md 4.7). **Up** means the shooting team was attacking up the screen.
 
 ## Home / away and up / down, together (reworked 2026-10-21)
 
@@ -344,4 +344,4 @@ before), the goalie's position when the pass left and at the strike, and the res
 
 **SNES** (55 one-timers, 8 goals, 15%): no clear pattern by pass. Within 60-100 units 8 of 25 scored, none of 30 from
 elsewhere; goalie 10+ off his line 3 of 16 (xG 42%). The SNES goalie gets sluggish while a pass is in the air
-(SNES_MECHANICS.md 5), which may blunt the pass effects seen on the Genesis; more games needed.
+(SNES_SHOOTING.md 5), which may blunt the pass effects seen on the Genesis; more games needed.

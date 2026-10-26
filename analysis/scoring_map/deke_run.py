@@ -1,5 +1,5 @@
 """Dekes and floaters in the real game (Genesis test ROM), 2026-10-24: the user's close-in moves against the computer
-goalie, as in the 2026-10-23 BOS-LA games (PROJECT_NOTES "Examples in the 2026-10-23 BOS-LA games"). Every move is
+goalie, as in the 2026-10-23 BOS-LA games (STUDY_NOTES "Examples in the 2026-10-23 BOS-LA games"). Every move is
 the same few inputs, read from those recordings: the skater comes in carrying the puck on one side (his facing a step
 to that side), and close to the goalie holds the d-pad the other way: his facing swings two steps, the puck crosses
 in front of him in about 15 frames while his skating barely changes, and he taps C (a wrist shot) with that direction

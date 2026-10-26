@@ -44,12 +44,13 @@ reel), Game flow, and pointing at a player in the lineups for his card.
 ## More
 
 How NHL '94 really plays, read from the games' code and checked against recorded games (ratings, saves, checks,
-penalties, faceoffs, the computer players and the bugs), one document per system:
-[Genesis](docs/GENESIS_MECHANICS.md) and [SNES](docs/SNES_MECHANICS.md). The player's versions (how to read the ratings
+penalties, faceoffs, the computer players and the bugs), two documents per system:
+[Genesis](docs/GENESIS_MECHANICS.md) with its [shooting and goaltending](docs/GENESIS_SHOOTING.md), and
+[SNES](docs/SNES_MECHANICS.md) with [its](docs/SNES_SHOOTING.md). The player's versions (how to read the ratings
 screen, how to pick a lineup, what works on the ice): [Genesis guide](docs/GENESIS_GUIDE.md) and
 [SNES guide](docs/SNES_GUIDE.md). A study of the recorded games' shooting and goaltending, up and down the screen and
 home and away: [shooting study](docs/SHOOTING_STUDY.md). Shots played in the real game, headless, to map where a set
-goalie can be beaten and show how each kind of goal goes in: [scoring maps](docs/SCORING_MAP.md).
+goalie can be beaten and show how each kind of goal goes in: [scoring maps](docs/SCORING_MAP.md) (with the Genesis shots, dekes and EA Specials and the SNES on pages of their own).
 
-`docs/PROJECT_NOTES.md` is the detailed record: how the game's memory is laid out, the ROM formats, how each stat is worked out
-and how it was checked.
+`docs/PROJECT_NOTES.md` is the detailed record: how the game's memory is laid out, the ROM formats; `docs/VIEWER_NOTES.md`
+how each stat is worked out and how it was checked; `docs/STUDY_NOTES.md` the studies' working notes.

@@ -21,7 +21,7 @@ record or check and what it will settle. Newest at the bottom of each section.
    Was: **Pucks through the goalie's legs (Genesis).** In a two-controller practice game: with one controller, send fast
    flat pucks straight at the goalie's middle (a pass shot: B with nobody ahead, toward the net; or a slapshot aimed
    along the ice, Down held); with the other, have the goalie press C as it arrives (a butterfly) a few times, and not
-   press it a few times. Note roughly when. *Settles:* the blind band through the middle of a butterfly (GENESIS_MECHANICS
+   press it a few times. Note roughly when. *Settles:* the blind band through the middle of a butterfly (GENESIS_SHOOTING
    5.5): the puck should pass through untouched when it's at ice level and not rising, and bounce backward off him.
 
    The three shooting tests below (items 5, 6 and 7) are on one printable page with tally boxes: [PRACTICE_CARD](PRACTICE_CARD.md).
@@ -29,28 +29,28 @@ record or check and what it will settle. Newest at the bottom of each section.
 5. **Down slapshots at a set computer goalie (Genesis).** In a practice game against the computer, stand still with
    the puck in the middle, roughly between the tops of the faceoff circles and the blue line, let the goalie settle,
    and take a dozen full slapshots holding Down; then a dozen holding Left or Right. Do it at both ends. *Settles:*
-   the scoring map (GENESIS_MECHANICS 4.10), which plays these shots in the game itself and says about 20% go in
+   the scoring map (GENESIS_SHOOTING 4.10), which plays these shots in the game itself and says about 20% go in
    holding Down (more at the top net) and only a few percent with the other aims. Only real play shows whether a
    standing slapshot like that is something a person can set up. The map's goalie is Los Angeles's Kelly Hrudey, played
-   cold, which makes him weaker than a typical starter; better goalies stop far more slapshots (SCORING_MAP, "The computer goalie's ratings"), so
+   cold, which makes him weaker than a typical starter; better goalies stop far more slapshots (SCORING_GENESIS, "The computer goalie's ratings"), so
    note which goalie you shot at.
 6. **Slapshots from just left of centre at a set computer goalie (SNES).** In a practice game, stand still with the
    puck a stride to your own left of the middle (2-5 feet), 25-40 feet out, let the goalie settle, and take a dozen
    full slapshots aimed at that side (attacking up the screen: Left; attacking down: Right). Then a dozen from a stride
-   to your right, aimed at your right. *Settles:* SNES_MECHANICS 4.8, which plays these in the game itself and says
+   to your right, aimed at your right. *Settles:* SNES_SHOOTING 4.8, which plays these in the game itself and says
    about half the first kind go in and almost none of the second. This matters more than it looked: the SNES lane's
-   rate depends on the game's frame timing, which changes with who is on the ice (SNES_MECHANICS 4.8).
+   rate depends on the game's frame timing, which changes with who is on the ice (SNES_SHOOTING 4.8).
 7. **One-timers from a pass across and from the same side (Genesis).** In a practice game, a dozen one-timers by a
    teammate within about 18 feet of the goal line from a pass across the net's centre line, then a dozen from a pass
-   from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_MAP, "One-timers", Genesis),
+   from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_GENESIS, "One-timers", Genesis),
    which plays them in the game itself: about 63% from across, 20-30% from the same side.
 8. ~~**SNES dekes and moves (the 2v2 ROM).**~~ Done (2026-10-25): the user's 2v2 game (`2026-10-25_1951_MTL-LA`) is
-   traced and its 26 tries replayed in the game at both nets and by both hands (SNES_MECHANICS 4.10, with GIFs). A
+   traced and its 26 tries replayed in the game at both nets and by both hands (SNES_SHOOTING 4.10, with GIFs). A
    short game trying the cut going down the screen, released inside about 13 feet, would confirm it in play.
 9. **The EA Special at the bottom net (Genesis, optional).** In a practice game against the computer, going down the
    screen: a right-hander from his left, released about 14 feet out and level with the faceoff dot, skating at the
    goal, a weak wrist shot with no direction held, then C again only once you have the puck. A dozen tries, and note
-   the goalie. *Settles:* whether a person gets the 43-55% the game gave a bot (SCORING_MAP, "Released from the
+   the goalie. *Settles:* whether a person gets the 43-55% the game gave a bot (SCORING_GENESIS_EA, "Released from the
    marked spots").
 
 ## Things to note when they happen
@@ -74,7 +74,7 @@ record or check and what it will settle. Newest at the bottom of each section.
    then a backhand flip from the other side. **The shooter always faces straight across the rink or diagonally toward
    the goalie as he shoots, never straight up the ice**, so he is placed to claim the rebound. The studies' side was
    right; the standing and straight-up-the-ice runs aren't the real play, and plan "angle" plays it across and at an
-   angle (SCORING_MAP "EA Specials").
+   angle (SCORING_GENESIS_EA "EA Specials").
 4. ~~**The CDL goalie edit**~~ Settled (2026-10-25): the studies use what `CDL_Season_12.bin` holds: every goalie but
    Roy, Belfour and Fuhr has +1 Agility, +1 Defensive Awareness and +1 Puck Control over the retail ROM (capped at 6),
    Fuhr +1 Agility only, Roy and Belfour nothing; the stick and glove ratings are unchanged.
@@ -99,9 +99,9 @@ record or check and what it will settle. Newest at the bottom of each section.
 3. **Unconfirmed posts:** capture5 P3 4:47 and capture3 P2 2:32.
 4. ~~**Long far-post slapshot goals (Genesis).**~~ Mostly answered (2026-10-24): Neely's in the 2026-10-23 BOS-LA games
    were skating shots, and played in the game the far-post slapshot is a skating shot across toward the stick side,
-   50-62% for a strong shooter (SCORING_MAP, "Moving shooters"). More examples are still welcome.
+   50-62% for a strong shooter (SCORING_GENESIS, "Moving shooters"). More examples are still welcome.
 5. **A Genesis goalie pushed into his net with the puck.** Note the game and time when it happens; none recorded yet
-   (GENESIS_MECHANICS 5.9 explains it from the code).
+   (GENESIS_SHOOTING 5.9 explains it from the code).
 6. **Cross-crease goals you remember**, either system, to check against the wind-up rule (5.6 / 5.7).
 
 ## To pass on to the disassembly maintainers (if you like)

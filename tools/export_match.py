@@ -1631,7 +1631,7 @@ def add_quirks(m):
     """Quirky events (2026-10-19, the user: the game's oddities, in their own team-stats group), Genesis:
     - a goal through the legs (`five-hole` kind): in the second before the goal the loose puck, at ice level (height 5 or
       under), passed within FIVE_HOLE_NEAR of the defending goalie's centre while he was in the butterfly or a kick save
-      (the stick-ring gap, GENESIS_MECHANICS 5.5);
+      (the stick-ring gap, GENESIS_SHOOTING 5.5);
     - a shoulder-save bobble goal (`goalie bobble` kind): the defending goalie held the puck in a shoulder save in the 2 s
       before the goal and nobody else had it after him (5.3: the hold point drags it to the net, which strips it);
     - rocket passes (pass `rocket`): a pass leaving the stick faster than ROCKET_SPEED, not a pass shot (6.1: the meeting

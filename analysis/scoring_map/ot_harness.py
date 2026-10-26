@@ -4,7 +4,7 @@ passes toward R (B with the d-pad pointed at him), the one-timer button (Genesis
 moment of the pass, and the swing is played to the frame the game strikes the puck (doshot): on the SNES once per aim,
 the d-pad held from the press (held only at the strike it changes nothing: the aim is read during the swing); the
 Genesis aims one-timers itself. The strike frame is then replayed from fresh random seeds and each shot played out. Nobody else is on the ice but the two goalies; the passer and
-the receiver stay where they are (the SNES result depends on who is on the ice: PROJECT_NOTES, "Frame timing")."""
+the receiver stay where they are (the SNES result depends on who is on the ice: STUDY_NOTES, "Frame timing")."""
 import os
 import math
 

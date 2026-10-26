@@ -140,5 +140,5 @@
 <text x='60.0' y='456.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Hold Down or nothing at an open net, never Up: the random error only pushes the puck up, so a high aim has no room under the bar.</text>
 <text x='60.0' y='474.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Attacking up the screen, pushing toward the net IS holding Up. Let go of the d-pad, or hold Down, as you shoot.</text>
 <text x='60.0' y='492.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Get closer: inside about 180 units (60 ft) most aims still go in; past 200 no shot is exact and the error is wide.</text>
-<text x='60.0' y='510.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis one-timers ignore the d-pad and go high at an open net (GENESIS_MECHANICS 4.4); SNES one-timers follow it.</text>
+<text x='60.0' y='510.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis one-timers ignore the d-pad and go high at an open net (GENESIS_SHOOTING 4.4); SNES one-timers follow it.</text>
 </svg>
