@@ -500,6 +500,37 @@ All five are the same move:
   scores on the SNES but not on the Genesis: skating across the slot from the left at full speed, a wrist shot 14-16
   feet out, high, into the side he came from; the goalie did not react before it was in.
 
+**The near-post cut** (the user's 2v2 game, `2026-10-25_1951_MTL-LA`, MTL 17-5 against the computer's LA: Muller
+and Damphousse; the user's description, then every MTL shot traced). Skating in down the right side (the EA Special's
+side), the skater cuts across toward the middle as he comes in, and at about the post's line turns quickly to face
+straight up the ice. The goalie slides a little toward the middle (his right), leaving a sliver at the near post, and
+a wrist shot goes into it. Seldom seen on the Genesis.
+
+- **The traced move** (attacker's view, units from the middle of the ice and out from the goal line, 3 to the foot):
+  in from 50-80 across, about 150 out; facing up-left or left while cutting in, turned to face up 0.1-0.2 s before
+  the shot; Up-Right held at the shot (the high aim at the near post, height row 12). The puck leaves the stick 14-27
+  across (5-9 ft right of centre) and in the goals 25-34 out (8-11 ft), and goes in high (10-12 off the ice) at
+  13-16 across, inside the near post. The goalie tried a glove save on most of them.
+- **Going up (the top net): 6 goals in 11 tries**, the game's last five goals among them. The five that failed (four
+  saves, one post): released farther out (35-47, three of the four 38 or more) or too wide (a post from 43 across).
+  The goalie moved 2-9 units toward the middle in the second before the goals (average 5) and 1-3 before the saves
+  (he moved 2 toward the near post before the post): he slides off the near post either way, a little more in the
+  goals, so how close the release is splits them more cleanly than the slide.
+- **Going down (the bottom net): 0 in 4** from the right side, as the user found. The goalie stayed on the near post:
+  three times he moved 0-2 from where he was (10-15 across); the fourth, released 55 out, he came in from 22 to 14. And the shots were not the same shot: going down, holding the d-pad
+  toward the goal aims low (Up on the d-pad is always high, 4.1), so the user held only toward the near post, the
+  middle height row. The high near-post aim going down is Up and the near side on the d-pad, away from the net
+  (coming from the right attacking down: Up-Left). The four tries don't separate the two.
+- **The mirror image, from the left side, works at both nets:** going up 3 goals in 5 (two wide, from 49 across and
+  from 59 out), aimed high at the near post (Up-Left); going down 3 in 6 (two posts, one save from 50 out), aimed at
+  the near post at the middle height (the d-pad toward the near post only). In the goals the goalie had moved 0-8
+  toward the middle; in the two posts going down he had moved 6-10 *toward* the near post.
+- **Other goals in the game:** three cuts across the crease from the right corner (skating left, 3-11 ft out, in at
+  the far post), and one straight down the right lane.
+
+So the cut needs the goalie to come off the near post and a release inside about 11 ft. Whether the bottom net's
+goalie stays put whatever the aim, or the low aim was the trouble, the harness can tell.
+
 Next: these plays in the harness (`snes_harness.py`), against the SNES goalie profiles.
 
 
