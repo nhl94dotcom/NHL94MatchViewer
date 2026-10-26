@@ -380,19 +380,7 @@ The computer never holds a direction, so its wins go a random way.
 - **You can't aim it**: the game aims one-timers itself. It looks along a sightline from the puck through the
   goalie, carried on past him toward the net:
 
-  ```
-   Goalie in position: the sightline           Goalie wandered: the sightline
-   runs into the net                           misses the net
-                                                                   /
-                                                                  /  <- carries on past him...
-        |   NET   |                              |   NET   |     /
-        |____o____|                              |____o____|    /    <- ...and misses the net
-            /                                                  /
-           G   <- goalie                                      G   <- goalie, out to the side
-          /                                                  /
-         /                                                  /
-        P   <- puck                                        P   <- puck
-  ```
+  ![How the game aims a one-timer: the sightline from the puck through the goalie, in position and wandered out](img/sightline.svg)
 
   | The goalie | Where your one-timer goes |
   |---|---|

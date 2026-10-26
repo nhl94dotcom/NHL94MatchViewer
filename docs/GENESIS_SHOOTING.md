@@ -113,21 +113,9 @@ fatigue scales it (only with line changes on). **Shooters with working Shot Powe
 **One-timers ignore the d-pad.** The game aims them itself (`shotdiradj`), and computer shooters the same way. It
 draws **a sightline from the puck through the goalie** and carries it on past him toward the goal line. More exactly,
 it uses where he's about to be: his position plus half the high byte of his speed. Then it measures how far the middle
-of the net (`o` below) is from that line, straight across:
+of the net is from that line, straight across:
 
-```
- Goalie in position: the sightline           Goalie wandered: the sightline
- runs into the net                           misses the net
-                                                                 /
-                                                                /  <- carries on past him...
-      |   NET   |                              |   NET   |     /
-      |____o____|                              |____o____|    /    <- ...and misses the net
-          /                                                  /
-         G   <- goalie                                      G   <- goalie, out to the side
-        /                                                  /
-       /                                                  /
-      P   <- puck                                        P   <- puck
-```
+![How the game aims a one-timer: the sightline from the puck through the goalie, in position and wandered out](img/sightline.svg)
 
 | Opposing goalie | Where the one-timer is aimed |
 |---|---|

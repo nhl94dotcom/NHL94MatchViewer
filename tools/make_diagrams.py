@@ -1085,6 +1085,52 @@ def open_net_one_timer():
     return svg(W, ty + 140, b, "Open-net one-timer")
 
 
+def sightline():
+    """shotdiradj / CalcAngleOffset (Genesis): a one-timer's sightline runs from the puck through the goalie's spot (where
+    he's about to be) and on toward the goal line; the net's middle within 22 of it (straight across) gets the post aim
+    away from him, farther the high-middle aim (GENESIS_SHOOTING 4.4). Two cases to scale, from above."""
+    W, H = 860, 480
+    b = [ARROW]
+    b.append(text(W / 2, 28, "How the game aims a one-timer (Genesis): the sightline through the goalie", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "A line from the puck through the goalie, carried on toward the net. Seen from above, to scale.",
+                  12, SOFT, "middle"))
+    S = 2.6
+    for i, (title, puck, goalie, ok) in enumerate((("Goalie in position", (70, 170), (12, 240), True),
+                                                   ("Goalie wandered out to the side", (70, 170), (55, 226), False))):
+        ox = 215 + i * 430
+        P = lambda x, y: (ox + (x - 15) * S, 118 + (275 - y) * S)
+        b.append(text(ox, 82, title, 14, INK, "middle", "bold"))
+        gx0, gy = P(-60, 264)
+        b.append(line(gx0, gy, P(90, 264)[0], gy, RED, 2.5))
+        b.append(text(P(-60, 264)[0], gy + 14, "goal line", 10, RED))
+        b.append(f"<rect x='{P(-20, 0)[0]:.1f}' y='{P(0, 274)[1]:.1f}' width='{40 * S:.1f}' height='{10 * S:.1f}' fill='#f3f5f7' stroke='{INK}'/>")
+        b.append(f"<rect x='{P(-22, 0)[0]:.1f}' y='{gy - 3:.1f}' width='{44 * S:.1f}' height='6' fill='{GREEN}' fill-opacity='0.25'/>")
+        mx, my = P(0, 264)
+        b.append(circle(mx, my, 4, GREEN, GREEN))
+        # the sightline, from the puck through the goalie to the goal line and a little past
+        (px, py), (gx, gy_) = puck, goalie
+        dx, dy = gx - px, gy_ - py
+        t = (272 - py) / dy
+        ex, ey = px + dx * t, py + dy * t
+        b.append(line(*P(px, py), *P(ex, ey), BLUE if ok else ORANGE, 2, "6 4", "marker-end='url(#arr)'"))
+        b.append(circle(*P(gx, gy_), 13 * S, "#cfe3f5", BLUE, 2))
+        b.append(text(P(gx, gy_)[0], P(gx, gy_)[1] + 4, "G", 13, INK, "middle", "bold"))
+        b.append(circle(*P(px, py), 5, INK, INK))
+        b.append(text(P(px, py)[0] - 10, P(px, py)[1] + 4, "puck (the one-timer)", 11, INK, "end"))
+        # the net's middle: its distance from the line, straight across
+        n = math.hypot(dx, dy)
+        d = ((0 - px) * dy - (264 - py) * dx) / n
+        fx, fy = 0 - d * dy / n, 264 + d * dx / n
+        b.append(line(*P(0, 264), *P(fx, fy), INK, 1.2))
+        b.append(text(P(0, 264)[0], P(0, 274)[1] - 8, f"the net's middle: {abs(d):.0f} from the line", 11, INK, "middle"))
+        verdict = ("within 22: he's between puck and net", "aim just inside the post away from him") if ok else                   ("more than 22: the line misses the net", "aim HIGH MIDDLE, just under the bar")
+        b.append(text(ox, 428, verdict[0], 12, SOFT, "middle"))
+        b.append(text(ox, 446, verdict[1], 13, BLUE if ok else RED, "middle", "bold"))
+    b.append(text(W / 2, 472, "Green band: within 22 of the middle (the posts are 20 out). The goalie's spot is where he's about to be: his position plus half the high byte of his speed.",
+                  11, SOFT, "middle"))
+    return svg(W, H, b, "One-timer sightline")
+
+
 # ---------------------------------------------------------------------------------------------- 20. puck meets a skater
 def puck_meets_skater():
     """Genesis checkpuckcoll: the walk tests only players whose body is within 22 of the puck up or down the screen;
@@ -1354,7 +1400,7 @@ def main():
              "one_timers.svg": one_timers(), "faceoff_directions.svg": faceoff_directions(),
              "penalty_chances.svg": penalty_chances(), "flip_spots.svg": flip_spots(),
              "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions(),
-             "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer(),
+             "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer(), "sightline.svg": sightline(),
              "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot(),
              "snes_saves.svg": snes_saves(), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
              "snes_goalie_hold.svg": snes_goalie_hold()}
