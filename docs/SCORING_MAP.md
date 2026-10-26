@@ -1385,6 +1385,41 @@ there. Over 120 moments the bottom net is still about three times better.
 ![EA Special from the marked spot, top net: four real attempts](img/scoring_map/ea_xspot_top_clips.gif)
 ![EA Special from the marked spot, top net: every attempt from above](img/scoring_map/ea_xspot_top_paths.gif)
 
+### The best depth at each net (plan "depth", 2026-10-25)
+
+The user: find the best EA Special at both nets, the Up (top) and the Down (bottom) one. Is the best depth different?
+`ea_run.py` plan "depth" releases the shot 40 / 52 / 64 / 76 / 88 out (13-29 ft), 65 / 75 / 85 to either side (22-28
+ft), skating at the goal or in at 45 degrees at 2.5 a frame, Shot Power 2 / 4, Shot Accuracy 4, all nine aims, 48
+moments x 2 seeds: 207,360 first shots against each of Hrudey (the test goalie) and Roy. The bot plays on, so a goal
+is the first shot or the follow-up.
+
+**Both nets peak at the same depth: about 21-25 ft out.** Over every aim and set-up, the play ended in a goal:
+
+| Released (out) | 13 ft | 17 ft | 21 ft | 25 ft | 29 ft |
+| --- | --- | --- | --- | --- | --- |
+| Top net, Hrudey | 1.6% | 2.5% | 3.3% | **4.4%** | 3.0% |
+| Bottom net, Hrudey | 1.9% | 2.9% | 5.6% | **5.8%** | 5.4% |
+| Top net, Roy | 1.0% | 1.6% | 2.1% | **2.9%** | 1.7% |
+| Bottom net, Roy | 1.4% | 2.2% | **5.1%** | 4.3% | 3.0% |
+
+- **The bottom net is better at every depth**, by about 1.2-2.4 times. So it isn't a different depth the top net
+  needs: it is simply harder.
+- **At the top net, the right-hander from his left** (3.7% against 2.2%; Roy 2.5% against 1.2%). At the bottom net
+  the hands are close (left-hander 4.6% against 4.0%; Roy 3.5% against 2.9%).
+- **Shot Power 2** beats 4 against Hrudey (top 3.6% against 2.4%, bottom 5.0% against 3.6%); against Roy they are
+  even.
+- **The best single spots** (the best aim for each hand): at the top net a right-hander 21-25 ft out and 22-25 ft to
+  his left, 12-21% against Hrudey and 8-18% against Roy; at the bottom net 25 ft out and 25 ft to the side, either
+  hand, 13-24% against both goalies.
+- **The close spot from "xspot" holds up, at the bottom net only:** a right-hander 13 ft out and 25 ft to his left,
+  skating at the goal, Shot Power 2, no direction held: 50% against Hrudey and 45% against Roy over these 48 moments.
+  At the top net the same play gave 22% and 16%, as the xspot GIF's 18%.
+
+So there are two kinds of EA Special. The bottom net has a narrow close spot that scores about half the time (the
+top net under half that). Both nets also have a broad spot about 25 ft out, the top net's best a little below the
+bottom's. The plan "refine"
+run looks closer around both (results below when it finishes).
+
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)
 
