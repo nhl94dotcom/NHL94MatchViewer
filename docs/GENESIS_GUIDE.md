@@ -319,7 +319,9 @@ The computer never holds a direction, so its wins go a random way.
   post, 50-65% at the best set-ups (on the backhand 41-51%, a narrow window).
 - **The timing above suits an average skater.** A slow one (Agility / Speed about 2 on the roster) got there too
   slowly and scored 31-53% with the same inputs; a very fast one reached the goalie before shooting and often carried
-  the puck in (a goal) or lost it. Start the swing farther out with a fast skater.
+  the puck in (a goal) or lost it. Re-timed in the game: a slow skater should start the swing about 5 feet nearer
+  the goalie (45% to 57% over every move, the backhand dekes near-certain), a fast one about 5 feet farther out and
+  shoot a little later (59% to 71%).
 - **Delayed penalty = free snipe.** While the referee's arm is up for a penalty against the other team, the game
   pulls your goalie, and **every shot your team takes from inside the zone goes exactly where you aim it**. Shoot for
   a corner.

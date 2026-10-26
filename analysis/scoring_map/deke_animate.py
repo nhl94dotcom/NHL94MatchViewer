@@ -107,6 +107,20 @@ SKATE = [
      "Backhand deke, left-hander, Agility / Speed 30: he carries it in", (96, 96), (30, 30),
      "this net; carried in, no shot"),
 ]
+# re-timed for the skater (deke_run.py plan "retime", 2026-10-26, Shot Power / Accuracy 20 / 20: NHL94_SMAP_RATINGS):
+# the slow skater's (10) backhand deke with the tuned timing and with the swing begun 15 nearer and C 3 earlier; the
+# fast skater's (30) floater with the tuned timing and with the swing begun 15 farther out and C 6 later; rates: the
+# filmed plays themselves (None)
+RETIME = [
+    ("retime_slow_tuned", ("dekebh", "top", "L", 45, -1, 85, 8, 4, "side"),
+     "Backhand deke, Agility / Speed 10, as tuned", None, (10, 10), "this net"),
+    ("retime_slow_nearer", ("dekebh", "top", "L", 45, -1, 70, 5, 4, "side"),
+     "Backhand deke, Agility / Speed 10, the swing begun 15 nearer", None, (10, 10), "this net"),
+    ("retime_fast_tuned", ("floater", "top", "L", -50, 1, 95, 18, 6, "side"),
+     "Floater, Agility / Speed 30, as tuned", None, (30, 30), "this net"),
+    ("retime_fast_farther", ("floater", "top", "L", -50, 1, 110, 24, 6, "side"),
+     "Floater, Agility / Speed 30, the swing begun 15 farther out", None, (30, 30), "this net"),
+]
 # one defender (def_run.py, 2026-10-25): the refined left-hander's deke from 15 ft to his left (he drifts toward the
 # middle) with the away left defenceman put 20 to his right of the lane he starts in (toward the middle) or 20 to his
 # left (toward the boards), 70 out (about 23 ft); "static": held there; "cpu": the game plays him once the shooter
@@ -378,11 +392,11 @@ def main():
     n = int(sys.argv[2]) if len(sys.argv) > 2 else 24
     only = sys.argv[3].split(",") if len(sys.argv) > 3 else None
     out_dir.mkdir(parents=True, exist_ok=True)
-    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE + DEFENDER if not only or m[0] in only]
+    todo = [m for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE + RETIME + DEFENDER if not only or m[0] in only]
     with Pool(min(WORKERS, len(todo)), maxtasksperchild=1) as pool:
         for r in pool.imap_unordered(job, [(m, n, out_dir) for m in todo]):
             print(*r, flush=True)
-    json.dump([dict(name=m[0], title=m[2], goals=m[3] and m[3][0], shots=m[3] and m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE + DEFENDER],
+    json.dump([dict(name=m[0], title=m[2], goals=m[3] and m[3][0], shots=m[3] and m[3][1]) for m in METHODS + DOWN + ACROSS + FLOATERBH + DEKE2 + SKATE + RETIME + DEFENDER],
               open(out_dir / "methods.json", "w"), indent=1)
 
 

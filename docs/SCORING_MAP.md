@@ -1187,6 +1187,50 @@ first dekes, 0-6 for the backhand dekes and 4-9 for the refined dekes (the left-
 ![Backhand deke, Agility / Speed 30: four real attempts](img/scoring_map/dekebh_lefty_skate_30_clips.gif)
 ![Backhand deke, Agility / Speed 30: every attempt from above](img/scoring_map/dekebh_lefty_skate_30_paths.gif)
 
+### Re-timed for slow and fast skaters (plan "retime", 2026-10-26)
+
+The same best set-ups (`deke_run.py` plan "retime"), with the swing begun 15 nearer the goalie to 60 farther out than
+tuned, and C pressed 6 frames earlier to 6 later (the backhand deke: the puck 6 less to 6 more across). It was played
+by the slow (Agility / Speed 10) and the fast (30) skater, Shot Power / Accuracy 20 / 20, both nets, 12 moments x 4
+seeds a timing. A puck carried in counts as a goal.
+
+| Skater | As tuned (on the 13 / 13 skater) | One change for every move | Each move's own best timing |
+| --- | --- | --- | --- |
+| Agility / Speed 10 (slow) | 45% | **57%**: the swing begun 15 nearer | 70% |
+| Agility / Speed 30 (fast) | 59% | **71%**: the swing begun 15 farther out, C 3 frames later | 82% |
+
+- **A slow skater should start the swing closer; a fast one farther out.** That fits the earlier result: the slow
+  skater got there too slowly for the swing to beat the goalie, and the fast one ran out of room.
+- **For the slow skater, "15 nearer" was the closest timing tried**, and it was the best timing for 15 of the 20
+  set-ups. Starting the swing nearer still may do better; this run doesn't show it.
+- **The biggest gains are in the dekes.** The slow skater's backhand dekes went from 25-56% to 81-100%, the
+  left-hander's refined deke from 50% to 98% at both nets. The fast skater's refined deke swung to the right went from
+  4-48% to 92-100% (as tuned, at the top net, he lost the puck before shooting in 9 of 48). The floaters gain less (the slow skater's 8-54% to 27-75%).
+- "Each move's own best" picks the best of 30 timings at 48 attempts each, so it flatters a little. The
+  one-change column doesn't.
+
+**Animated (`deke_animate.py`, the RETIME list):** 48 moments each, at the top net.
+
+**The slow skater's backhand deke as tuned: 33% (16 of 48).**
+
+![Backhand deke, Agility / Speed 10, as tuned: four real attempts](img/scoring_map/retime_slow_tuned_clips.gif)
+![Backhand deke, Agility / Speed 10, as tuned: every attempt from above](img/scoring_map/retime_slow_tuned_paths.gif)
+
+**The same with the swing begun 15 nearer and C 3 earlier: 100% (48 of 48).**
+
+![Backhand deke, Agility / Speed 10, the swing begun 15 nearer: four real attempts](img/scoring_map/retime_slow_nearer_clips.gif)
+![Backhand deke, Agility / Speed 10, the swing begun 15 nearer: every attempt from above](img/scoring_map/retime_slow_nearer_paths.gif)
+
+**The fast skater's floater as tuned: 77% (37 of 48).**
+
+![Floater, Agility / Speed 30, as tuned: four real attempts](img/scoring_map/retime_fast_tuned_clips.gif)
+![Floater, Agility / Speed 30, as tuned: every attempt from above](img/scoring_map/retime_fast_tuned_paths.gif)
+
+**The same with the swing begun 15 farther out and C 6 later: 90% (43 of 48).**
+
+![Floater, Agility / Speed 30, the swing begun 15 farther out: four real attempts](img/scoring_map/retime_fast_farther_clips.gif)
+![Floater, Agility / Speed 30, the swing begun 15 farther out: every attempt from above](img/scoring_map/retime_fast_farther_paths.gif)
+
 ## EA Specials (Genesis, 2026-10-24)
 
 The user's play: a wrist shot meant to be bobbled, the save pushing the goalie back. The skater skates on, claims the
