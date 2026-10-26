@@ -403,7 +403,8 @@ const HEAD_HELP = {
   Home: 'Record at home', Away: 'Record away', Score: 'Final score', When: 'When it was played',
   'Checks: person': 'Checks landed by the skater a person was controlling', 'Penalties: person': 'Penalties taken by the skater a person was controlling',
   CPU: 'The same, by the computer’s skaters', 'Person %': 'Share of the team’s checks a person landed',
-  'Pokes/GP': 'Poke checks by the person’s skater, a game', 'Hooks/GP': 'Hooks by the person’s skater, a game (Genesis only)',
+  'Pokes/GP': 'Poke checks by the person’s skater, a game', 'Hooks/GP': 'Hooks by the person’s skater, a game (SNES: hooks and holds, get-ups left out)',
+  'Get-ups/GP': 'SNES: times a game the person’s knocked-down skater got straight up by pressing Y (the get-up glitch: the game swaps the fall for a hook)',
   'Dives/GP': 'Goalie dives while a person controlled him, a game', 'SV% CPU in net': 'Save % on shots faced with the computer controlling the goalie',
   'Passes completed': 'Completed passes from the first player to the second (a picked-off pass has no known target)',
   '/GP': 'A game', Count: 'How many', Goals: 'Goals', Wins: 'Wins',
@@ -955,7 +956,7 @@ function playTotals(list) {
     for (const k of ['persHits', 'persPen', 'origin', 'oddMan', 'wrap', 'humanPasses', 'puckPos', 'entryPos', 'sides']) r[k] = sumArr(r[k], t[k]);
     if (t.habits) {
       r.habitGames++;
-      const h = r.habits || (r.habits = { minutes: 0, presses: {}, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, dives: 0, goalieSeconds: 0 });
+      const h = r.habits || (r.habits = { minutes: 0, presses: {}, bursts: 0, checks: 0, pokes: 0, pokeTakeaways: 0, hooks: 0, hookTakeaways: 0, getUps: 0, dives: 0, goalieSeconds: 0 });
       // presses by button name: Genesis A / B / C, SNES A / B / X / Y / L / R / Select
       for (const k of Object.keys(h)) if (k === 'presses') for (const [b, n] of Object.entries(t.habits.presses || {})) h.presses[b] = (h.presses[b] || 0) + n; else h[k] += t.habits[k] || 0;
     }
@@ -1016,6 +1017,7 @@ function viewPlay(list, team) {
     { key: 'pokes', label: 'Pokes/GP', value: r => r.habits.pokes / r.habitGames, show: r => per(r.habits.pokes, r.habitGames) },
     { key: 'pokeTk', label: 'Poke \u2192 takeaway', title: 'Poke checks that took the puck', value: r => (r.habits.pokes ? r.habits.pokeTakeaways / r.habits.pokes : NaN), show: r => (r.habits.pokes ? pct1(100 * r.habits.pokeTakeaways / r.habits.pokes) : '–') },
     { key: 'hooks', label: 'Hooks/GP', value: r => r.habits.hooks / r.habitGames, show: r => per(r.habits.hooks, r.habitGames) },
+    ...(withHabits.some(r => r.habits.getUps) ? [{ key: 'getUps', label: 'Get-ups/GP', value: r => r.habits.getUps / r.habitGames, show: r => per(r.habits.getUps, r.habitGames) }] : []),
     { key: 'passPct', label: 'Pass %', title: 'Passes by the person\u2019s skater that got to a teammate (or a one-timer)', value: r => (r.humanPasses && r.humanPasses[0] ? r.humanPasses[1] / r.humanPasses[0] : NaN),
       show: r => (r.humanPasses && r.humanPasses[0] ? pct1(100 * r.humanPasses[1] / r.humanPasses[0]) : '–') },
     { key: 'goalie', label: 'Goalie time/GP', title: 'Game time a person controlled the goalie, a game', value: r => r.habits.goalieSeconds / r.habitGames, show: r => mmss(r.habits.goalieSeconds / r.habitGames) },

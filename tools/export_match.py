@@ -1785,7 +1785,8 @@ def add_play_context(m):
     - m['habits']: for each team a person played, what that person did with the controller: button presses
       (A, B, C) and minutes of live play, and the controlled skater's actions (speed bursts / check lunges and the
       checks landed, poke checks and hooks and the takeaways they made, the goalie's dives and the game time a person
-      had the goalie (presses and bursts are per real minute of live play: how busy the thumbs were); one-timers and passes come from the shot and pass lists' `human`). SNES hooks include holds (the same button)."""
+      had the goalie (presses and bursts are per real minute of live play: how busy the thumbs were); one-timers and passes come from the shot and pass lists' `human`). SNES hooks include holds (the same button) and leave out
+      `getUps`: hooks the get-up glitch started (Y pressed while knocked down)."""
     t, P, own = m['t'], m['puck'], m['owner']
     N, K = len(t), 12
     ctrl = m.get('ctrl') or []
@@ -1876,6 +1877,11 @@ def add_play_context(m):
         lunges = starts(act.get('lunge', set()))
         pokes = starts(act.get('poke', set()))
         hooks = starts(act.get('hook', set()))
+        # SNES: Y pressed while knocked down gets him up at once, straight into a hook (the get-up glitch,
+        # SNES_MECHANICS 7.3): a hook starting the sample after a fall or upend is that, not a hook at anyone
+        downs = set(getattr(systems.of_match(m), 'HIT_OUTCOMES', {})) if snes_buttons else set()
+        getups = [(q, k) for q, k in hooks if anim(q - 1, k) in downs]
+        hooks = [h for h in hooks if h not in getups]
         dives = starts(act.get('dive', set()), goalie=True)
         # game seconds a person had the goalie (the clock's ticks while he carried the controlled marker)
         goalie_s = sum(ticks[q] for q in range(N) if ticks[q] and ctrl and any(ctrl[q] >> k & 1 and m['role'][q * K + k] == '0' for k in mine))
@@ -1887,6 +1893,7 @@ def add_play_context(m):
             'bursts': len(lunges), 'checks': sum(1 for h in m.get('hits', []) if h['team'] == team and h.get('human')),
             'pokes': len(pokes), 'pokeTakeaways': sum(1 for e in takes if e.get('how') == 'poke check' and controlled(e['lost'], team, e.get('by'))),
             'hooks': len(hooks), 'hookTakeaways': sum(1 for e in takes if e.get('how') == 'hook' and controlled(e['lost'], team, e.get('by'))),
+            **({'getUps': len(getups)} if snes_buttons else {}),
             'dives': len(dives), 'goalieSeconds': goalie_s,  # game seconds
         }
     if any(habits):

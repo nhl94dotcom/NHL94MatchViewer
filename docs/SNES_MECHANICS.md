@@ -900,7 +900,10 @@ Different from the Genesis:
   button). The SNES input code checks the hook button **before** the animation lock that holds a falling player down,
   and `holdplayer` refuses only during a speed burst, so the hook animation replaces the fall and he is back up. The
   Genesis checks the lock first, so it can't happen there. **Confirmed**: three times in the recordings a person pressed
-  Y while down and was up and hooking 0.5-1.2 s later, where falls otherwise last 2.3 s.
+  Y while down and was up and hooking 0.5-1.2 s later, where falls otherwise last 2.3 s. In the recordings a get-up
+  shows as a hook starting the very sample after a fall or upend (a real hook never follows one that closely); the
+  converter counts these apart as `getUps` and leaves them out of `hooks` (2026-10-25). In the user's 4-game TOR-NYI
+  set (2026-10-25) one person used it 30 times (their skater down 1.35 s a fall on average), the other never (2.2 s).
 - **The poke** (`SPAsweepchk`, $F208) takes the puck only through the stick-steal roll (6.4). Its body touching a
   skater within 45 degrees in front (`Bcheck`): **with penalties on, or poked by a computer skater, he always goes down**
   (a fall or a wobble), with a tripping roll; **a person's poke with penalties off** trips him only when randoma8(16 +

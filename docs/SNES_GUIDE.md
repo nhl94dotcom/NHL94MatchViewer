@@ -390,7 +390,8 @@ every qualifying contact**, and 9-11 more often than the computer. On the screen
 
 **When your player is knocked down, press Y (hook) and he gets up at once**, straight into a hook. The game checks the
 hook button before the lock that keeps a fallen player down. In recorded games, players who did it were up in 0.5-1.2 s
-instead of 2.3. It is a hook, though: near an opponent it can draw a hooking call.
+instead of 2.3. It is a hook, though: near an opponent it can draw a hooking call. The viewer and the season page
+count these as **Get-ups**, apart from real hooks.
 
 ### 10.4 Goalie interference
 

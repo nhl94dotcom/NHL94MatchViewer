@@ -2699,6 +2699,18 @@ helper), game 1 (`analysis/video/`: video_lines.py, video_pilot.py; PyAV and num
   107. Home won 55%. Goals by period 414 / 482 / 523. Zone time partly follows the score (a trailing team presses),
   so it is not all cause.
 
+## SNES get-up glitch apart from hooks (2026-10-25)
+
+The user's opponent in the 4-game TOR-NYI set (2026-10-25_2121 ... _2153) said most of the 40 "hooks" the viewer
+showed were Y pressed to get up after being knocked down (the get-up glitch, SNES_MECHANICS 7.3). Checked: 30 of the
+40 began the sample right after a fall. Over the 15 SNES games in Documents\NHL94 Viewer, 81 hooks by a controlled skater:
+56 began exactly one sample after a fall or upend, 1 began 8+ samples after one, 24 had none in the 40 samples before,
+so the rule is clean. `find_habits` (export_match.py) now counts a hook starting the sample after a fall or upend
+(the system's HIT_OUTCOMES animations; a stumble is not a fall) as `getUps`, SNES only, and leaves it out of `hooks`;
+hook takeaways unchanged. Viewer: a "Get-ups (hook glitch)" row under Controller (SNES), with help; season page: a
+Get-ups/GP column when any game has one, HEAD_HELP for it and Hooks/GP (no longer "Genesis only"); season.py VERSION
+25. All SNES recordings with a match file re-converted in both game folders: only `habits` changed.
+
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the

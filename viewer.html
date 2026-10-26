@@ -614,6 +614,7 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Presses a minute</dt><dd>A, B and C presses per minute of live play.</dd>
   <dt>Speed bursts / check tries</dt><dd>C without the puck: the game uses it for both.</dd>
   <dt>Poke check, hook &rarr; takeaway</dt><dd>Poke checks and hooks by the person's skater, and how many took the puck.</dd>
+  <dt>Get-ups (hook glitch)</dt><dd>SNES: times the person's knocked-down skater got straight up by pressing Y (the game swaps the fall for a hook). Not counted as hooks.</dd>
   <dt>Goalie time, dives</dt><dd>Time a person controlled the goalie, and the dives.</dd>
 </dl>
 <h3>Game score and three stars</h3>
@@ -3242,6 +3243,7 @@ function playRows(f, list) {
       ['Checks landed (person)', ...both(team => val(team, x => x.checks))],
       ['Poke checks (takeaways)', ...both(team => val(team, x => x.pokes + ' (' + x.pokeTakeaways + ')'))],
       [m.system === 'snes' ? 'Hooks / holds (takeaways)' : 'Hooks (takeaways)', ...both(team => val(team, x => x.hooks + ' (' + x.hookTakeaways + ')'))],
+      ...(m.system === 'snes' ? [['Get-ups (hook glitch)', ...both(team => val(team, x => x.getUps === undefined ? '–' : x.getUps))]] : []),
       ['Goalie: time controlled', ...both(team => val(team, x => secondsText(1000 * x.goalieSeconds)))],
       ['Goalie dives', ...both(team => val(team, x => x.dives))]);
   }
@@ -3372,7 +3374,8 @@ const STAT_HELP = {
   'Checks landed (person)': 'Checks the person\u2019s skater landed.',
   'Poke checks (takeaways)': 'Poke checks by the person\u2019s skater (and how many took the puck).',
   'Hooks (takeaways)': 'Hooks by the person\u2019s skater (and how many took the puck).',
-  'Hooks / holds (takeaways)': 'Hooks and holds by the person\u2019s skater (Y without the puck: a hold when the man faces you, else a hook), and how many took the puck. One that connects slows the carrier to your pace; he keeps the puck.',
+  'Hooks / holds (takeaways)': 'Hooks and holds by the person\u2019s skater (Y without the puck: a hold when the man faces you, else a hook), and how many took the puck. One that connects slows the carrier to your pace; he keeps the puck. Get-ups (below) are not counted here.',
+  'Get-ups (hook glitch)': 'Times the person\u2019s skater was knocked down and got straight back up by pressing Y: the game starts a hook in place of the fall (the get-up glitch), so he is up in about a second instead of two. Counted apart from real hooks.',
   'Goalie: time controlled': 'Game time the person controlled the goalie (game-clock seconds, like ice time).',
   'Attack-zone possession per goal': 'The team\u2019s possession in its attacking zone (game time), divided by its goals: how long it needed the puck in the other team\u2019s end for each goal. Lower is more dangerous. Seen from the other side, it is how long this team let the other one have the puck in its own end for each goal it allowed.',
   'Goalie dives': 'Dives by the goalie while the person controlled him.',
