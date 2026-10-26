@@ -342,7 +342,11 @@ The computer never holds a direction, so its wins go a random way.
   the goalie moves. The same play shooting up the screen scored 18%. A little farther out works as well down the
   screen and is easier to find: a right-hander from his left, released about 25 feet out and level with the faceoff
   dot (27 feet to the side), skating in at 45 degrees, Shot Power 3, holding Down and toward the far side: 42% against
-  a weak goalie, 54% against Roy. Up the screen the best was 20-24% (23 feet out, 24 to his left, holding Up).
+  a weak goalie, 54% against Roy. Up the screen the best was 20-24% (23 feet out, 24 to his left, holding Up). **But** all of these had the skater
+  faster than any skater can go (2.5 a frame; full speed is 1.75-2.35), and they are knife-edges: a foot or a frame
+  off halves them. At a little below full speed (1.7, the way people skate in to be placed for the rebound) the
+  bottom net's best so far is about 20 feet out, 27 to the side, holding Down and toward your own side: 40% against
+  either goalie, and only at that depth (SCORING_MAP, "Skating speed and a person's slop"; a finer search is running).
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.

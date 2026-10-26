@@ -1465,6 +1465,9 @@ bottom's. The plan "refine" run looks closer around both (next).
 
 ### The best set-up at each net (plan "refine", 2026-10-26)
 
+**Note (2026-10-26):** this search and every EA run before it had the skater at 2.5 a frame, which no skater reaches.
+At a real skater's speed these set-ups mostly fail; see "Skating speed and a person's slop" below.
+
 `ea_run.py` plan "refine" looks around the depth sweep's best. The release is 60 / 68 / 76 / 84 out (20-28 ft) and 58 / 65 /
 72 / 80 to the side (19-27 ft): at the top net only to his left (the right-hander, the better side there), at the bottom
 net to either side. He skates at the goal or in at 45 degrees at 2.5 a frame. Shot Power is 2 / 3 / 4, Shot Accuracy 4,
@@ -1516,6 +1519,69 @@ the paths view so the net is at the top.
 ![EA Special, the refined bottom-net set-up, against Roy: four real attempts](img/scoring_map/ea_refine_bottom_roy_clips.gif)
 ![EA Special, the refined bottom-net set-up, against Roy: every attempt from above](img/scoring_map/ea_refine_bottom_roy_paths.gif)
 
+
+### Skating speed and a person's slop (plans "slop", "slopfull", "refine" at 1.7, "lefttop", 2026-10-26)
+
+**Every EA run above had the skater at 2.5 a frame. No skater gets there.** The test skater (working Agility / Speed
+18) tops out at 2.0 holding the d-pad; a 10 / 10 skater at 1.75, 20 / 20 at 2.05, 30 / 30 at 2.35 (measured). And
+people don't take an EA Special at full speed: the user skates a little below it, tapping the d-pad rather than
+holding it, to be placed for the rebound rather than charging at the net. So the set-ups above are the best for a
+speed nobody plays at. This section is about what happens at real speeds. The search at 1.7 is not finished (a finer
+one is running), so its figures are provisional.
+
+**How forgiving the 2.5 set-ups are (plan "slop").** A person can't release at the exact spot and frame. Each moment
+draws its own errors (uniform, either way) in the release spot, the skating speed and angle and the release frame:
+small (1 ft, 0.2 a frame, 5 degrees, 1 frame), medium (3 ft, 0.5, 10 degrees, 2 frames), large (5 ft, 1.0, 20
+degrees, 3 frames). Nine of the best set-ups, each with its best aim, 120 moments, Hrudey / Roy:
+
+| Set-up (a right-hander from his left; out and side in ft) | exact | small | medium | large |
+| --- | --- | --- | --- | --- |
+| Top: 23 out, 24 side, in at 45°, Power 3, Up | 34 / 20 | 16 / 10 | 11 / 8 | 4 / 2 |
+| Top: 25 out, 27 side, in at 45°, Power 4, Up | 15 / 19 | 9 / 7 | 5 / 5 | 3 / 1 |
+| Top: 23 out, 27 side, at the goal, Power 4, Down-Right | 12 / 26 | 15 / 24 | 8 / 13 | 1 / 2 |
+| Top: 25 out, 24 side, in at 45°, Power 3, Up | 22 / 17 | 16 / 8 | 8 / 5 | 6 / 3 |
+| Bottom: 25 out, 27 side, in at 45°, Power 3, Down-Left | 50 / 52 | 15 / 16 | 16 / 20 | 9 / 6 |
+| Bottom: 25 out, 27 side, in at 45°, Power 4, Down-Left | 63 / 58 | 23 / 29 | 15 / 18 | 7 / 7 |
+| Bottom: 28 out, 19 side, in at 45°, Power 2, Up-Left | 69 / 49 | 55 / 18 | 37 / 16 | 14 / 5 |
+| Bottom: 13 out, 25 side, at the goal, Power 2, nothing held | 52 / 48 | 30 / 18 | 3 / 5 | 2 / 1 |
+| Bottom: 11 out, 27 side, at the goal, Power 2, nothing held | 38 / 56 | 20 / 14 | 5 / 3 | 3 / 2 |
+
+- **They are knife-edges.** Even the small errors (a foot, a frame) halve most of them, and the close spot is gone at
+  medium. A person playing the 2.5 set-ups would get about 15-20% at the bottom net and 10-15% at the top.
+
+**At the test skater's real top speed (plan "slopfull": the same, at 2.0 a frame).** The timing tuned for 2.5 doesn't
+carry over: exact, Hrudey / Roy, the bottom net's best (25 out, Power 3, Down-Left) falls from 50 / 52% to 2 / 1%, the
+close spot from 52 / 48% to 10 / 15%, the top net's best from 34 / 20% to 31 / 6%. This shows the set-ups are tuned to
+the speed, not that the EA Special fails at real speed; so the search was run again at a real one.
+
+**The search again at 1.7 a frame (plan "refine", NHL94_EA_SPEED=1.7):** the same grid (306 set-ups, 48 moments x 2
+seeds against each goalie), a little below the test skater's full speed, as the user plays it. By the worse of the two
+goalies:
+
+| Net | Best set-up at 1.7 (in at 45°) | Hrudey | Roy |
+| --- | --- | --- | --- |
+| Bottom | a right-hander from his left, released 20 ft out, 27 ft to the side, Power 4, Down-Right (toward his own side: the near side) | 40% | 40% |
+| Bottom | a left-hander from his right, the same spot mirrored, Power 4, Down-Left (the near side) | 32% | 31% |
+| Top | a right-hander from his left, 20 ft out, 27 ft to the side, Power 2, Down held | 19% | 18% |
+| Top | the same, 23 ft out, Up | 26% | 17% |
+
+- **The bottom net still does about twice the top,** as at 2.5, and the best aim there turns from the far side to the
+  near side.
+- **The bottom net works at one depth only.** The right-hander's best at each release depth (the worse goalie): 15 ft
+  out 5%, **20 ft 40%**, 23 ft 9%, 25 ft 5%; the left-hander's the same shape. At 20 ft, skating in at 45 degrees,
+  it is steady: 29-40% against both goalies from 22-27 ft to the side at every Shot Power (one cell of nine, 22 ft
+  and Power 4, 4% against Roy). Skating at the goal works against Hrudey but Roy often stops it (4-6% in four of
+  nine cells), and from 19 ft to the side it fails (1-25%). So the depth is most of the skill.
+- **Both nets' best are at the edge of the grid** (the top net's at its widest, nearest corner), so a finer search
+  (plan "fine": 17-21 ft out at the bottom net, 19-24 ft at the top, sides to 29 ft) is running. Holding Down at the top
+  net is odd and may not survive it. Plans "slop", "lefttop" and the goalie- and skater-rating plans will be run again
+  at 1.7 from its best.
+
+**The left-hander at the top net (plan "lefttop", at 2.5, so provisional).** The refine grid at the top net mirrored for
+a left-hander from his right (plus the close spot on that side), against both goalies. His best: released 28 ft out,
+19 ft to the side, in at 45 degrees, Power 2, Up-Left: **54% / 30%** (Hrudey / Roy), against the right-hander's 34 / 20%
+at the same speed. It is on the grid's far edge too. The close spot for him (11 ft out, 27 ft to the side, Left held)
+gave 16 / 15%.
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)
 

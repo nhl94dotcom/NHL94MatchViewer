@@ -27,7 +27,18 @@ release 40-88 out (13-29 ft), 22-28 ft to either side, at the goal or at 45 degr
 NHL94_EA_MOMENTS=48: one set-up's rate over 24 moments wandered); "refine" (the user, 2026-10-25, around "depth"'s
 best: both nets peaked 64-76 out): the release 60-84 out, 58-80 to the side (top net: his left only, the right-hander,
 the better side there), Shot Power 2 / 3 / 4; plus the bottom net's close spot from "xspot" (34-46 out, 70-80 to his
-left, Shot Power 2 / 3).
+left, Shot Power 2 / 3); its skating speed from NHL94_EA_SPEED (default 2.5; run again at 1.7, the user, 2026-10-26:
+in an EA Special a person skates a little below full speed, tapping the d-pad rather than holding it, to be placed for
+the rebound); "fine" (finer steps around "refine"'s best at 1.7: 52-64 out at the bottom net, 56-72 at the top);
+"lefttop" (the user, 2026-10-26: "refine"'s top-net grid mirrored for the left-hander from his
+right, plus the close spot on that side); "slop" (2026-10-26: how forgiving each of the best set-ups is: a person
+can't release at the exact spot and frame, so each moment draws its own errors in the release spot, the skating speed
+and angle and the release frame, at four levels (ERRORS), only the set-up's best aim; run with NHL94_EA_MOMENTS=120);
+"slopfull" (the same at 2.0 a frame: the test skater, working Agility / Speed 18, tops out at 2.0 holding the d-pad, and
+the earlier plans' 2.5 is beyond any skater's: 30 / 30 reaches 2.35; started at 2.5 he slows to 2.0 in about 12 frames);
+"slopparts" (each kind of error alone, at the small and medium sizes); "goalie" (the goalie's ratings one at a time, NHL94_GOALIE: BEST, the best aim and its neighbours); "skate" (the
+shooter's working Agility / Speed, NHL94_EA_SKATE: BEST at his own full speed and 0.3 below, released as found or 8
+nearer / farther).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -52,9 +63,46 @@ PUCK = 14
 KEYS = ("net", "x", "out", "shp", "sha", "move")
 LEAD = 4                       # frames from C to the release of a wrist shot (measured 2026-10-25)
 MOVES = (0.0, 1.5)             # standing, or skating toward the net at 1.5 a frame as he shoots (down the side)
+# plan "slop": each level's largest error (uniform within +-): release spot across and out (units, 3 a foot), skating
+# speed (a frame), skating angle (degrees), release frame (frames along his line)
+ERRORS = {"exact": (0, 0, 0, 0), "small": (3, 0.2, 5, 1), "medium": (9, 0.5, 10, 2), "large": (15, 1.0, 20, 3)}
+# plan "slopparts": one kind of error at a time, at the small and medium sizes
+PARTS = {f"{k}_{lv}": tuple(v if i == j else 0 for j, v in enumerate(ERRORS[lv]))
+         for i, k in enumerate(("spot", "speed", "angle", "frame")) for lv in ("small", "medium")}
+LEVELS = tuple(ERRORS)
+ERRORS.update(PARTS)
+# the best set-ups of "refine" by the worse of Hrudey and Roy (and the bottom net's close spot), with the best aim
+SLOP = [("top", -72, 68, 3, 4, "rdiag2.5", 0), ("top", -80, 76, 4, 4, "rdiag2.5", 0),
+        ("top", -80, 68, 4, 4, "rgoal2.5", 3), ("top", -72, 76, 3, 4, "rdiag2.5", 0),
+        ("bottom", -80, 76, 3, 4, "rdiag2.5", 5), ("bottom", -80, 76, 4, 4, "rdiag2.5", 5),
+        ("bottom", -58, 84, 2, 4, "rdiag2.5", 7), ("bottom", -75, 40, 2, 4, "rgoal2.5", 8),
+        ("bottom", -80, 34, 2, 4, "rgoal2.5", 8)]
+# plans "goalie" and "skate": each net's best set-up and the bottom net's close spot, with the best aim and its two
+# neighbours; the skating speed from NHL94_EA_SPEED (default 2.5, as "refine")
+BEST = [("top", -72, 68, 3, 4, "rdiag", (7, 0, 1)), ("bottom", -80, 76, 3, 4, "rdiag", (4, 5, 6)),
+        ("bottom", -75, 40, 2, 4, "rgoal", (8,))]
+SKATE = os.environ.get("NHL94_EA_SKATE")       # "agl,spd": the shooter's working Agility and Speed (else the state's
+TOP_SPEED = {10: 1.75, 13: 1.85, 18: 2.0, 20: 2.05, 30: 2.35}   # 18 / 18); his full speed holding the d-pad, measured
 
 
 def plan_jobs(plan="ea"):
+    if plan == "slop":                 # (net, x, out, shp, sha, move, aims, error level)
+        return [s[:6] + ((s[6],), lvl) for s in SLOP for lvl in LEVELS]
+    if plan == "slopparts":
+        return [s[:6] + ((s[6],), lvl) for s in SLOP for lvl in PARTS]
+    if plan == "slopfull":             # the same at the test skater's own full speed: 2.0 a frame (Agility / Speed 18;
+        return [s[:5] + (s[5].replace("2.5", "2.0"), (s[6],), lvl) for s in SLOP for lvl in LEVELS]   # 2.5 is beyond
+    if plan == "goalie":               # the goalie's ratings one at a time (NHL94_GOALIE), the shooter as he is
+        v = os.environ.get("NHL94_EA_SPEED", "2.5")
+        return [(n, x, o, p, a, m + v, aims, "exact") for n, x, o, p, a, m, aims in BEST]
+    if plan == "skate":                # the shooter's skating (NHL94_EA_SKATE): at his own full speed and 0.3 below,
+        top = TOP_SPEED[int(SKATE.split(",")[1])] if SKATE else 2.0     # released as found or 8 nearer / farther
+        return [(n, x, o + d, p, a, m + f"{v:.2f}", aims, "exact") for n, x, o, p, a, m, aims in BEST
+                for v in (top, top - 0.3) for d in (-8, 0, 8)]
+    if plan == "lefttop":
+        grid = itertools.product(("top",), (58, 65, 72, 80), (60, 68, 76, 84), (2, 3, 4), (4,), ("rgoal2.5", "rdiag2.5"))
+        close = itertools.product(("top",), (70, 75, 80), (34, 40, 46), (2, 3), (4,), ("rgoal2.5",))
+        return list(grid) + list(close)
     if plan == "firm":
         return list(itertools.product(("top", "bottom"), (40,), (60, 90, 120), STEPS, (2, 4, 6), MOVES))
     if plan == "angle":
@@ -66,12 +114,19 @@ def plan_jobs(plan="ea"):
     if plan == "depth":
         return list(itertools.product(("top", "bottom"), (-85, -75, -65, 65, 75, 85), (40, 52, 64, 76, 88), (2, 4), (4,),
                                       ("rgoal2.5", "rdiag2.5")))
-    if plan == "refine":
-        top = itertools.product(("top",), (-80, -72, -65, -58), (60, 68, 76, 84), (2, 3, 4), (4,), ("rgoal2.5", "rdiag2.5"))
+    if plan == "refine":               # at NHL94_EA_SPEED a frame (default 2.5, as first run)
+        v = os.environ.get("NHL94_EA_SPEED", "2.5")
+        top = itertools.product(("top",), (-80, -72, -65, -58), (60, 68, 76, 84), (2, 3, 4), (4,), ("rgoal" + v, "rdiag" + v))
         bottom = itertools.product(("bottom",), (-80, -72, -65, -58, 58, 65, 72, 80), (60, 68, 76, 84), (2, 3, 4), (4,),
-                                   ("rgoal2.5", "rdiag2.5"))
-        close = itertools.product(("bottom",), (-80, -75, -70), (34, 40, 46), (2, 3), (4,), ("rgoal2.5",))
+                                   ("rgoal" + v, "rdiag" + v))
+        close = itertools.product(("bottom",), (-80, -75, -70), (34, 40, 46), (2, 3), (4,), ("rgoal" + v,))
         return list(top) + list(bottom) + list(close)
+    if plan == "fine":                 # around "refine"'s best at NHL94_EA_SPEED (at 1.7 both nets peaked at 60 out, the
+        v = os.environ.get("NHL94_EA_SPEED", "1.7")           # bottom net only there: 5-9% at 46 and 68), finer steps
+        bottom = itertools.product(("bottom",), (-88, -80, -72, -65, 65, 72, 80, 88), (52, 56, 60, 64), (2, 3, 4), (4,),
+                                   ("rgoal" + v, "rdiag" + v))
+        top = itertools.product(("top",), (-88, -84, -80, -76), (56, 60, 64, 68, 72), (2, 3), (4,), ("rgoal" + v, "rdiag" + v))
+        return list(bottom) + list(top)
     if plan == "dots":
         return list(itertools.product(("top", "bottom"), (55, 70, 85), (45, 60, 75), STEPS, (2, 4, 6),
                                       ("goal1.5", "goal2.5")))
@@ -164,7 +219,10 @@ def play(h, sg, at_goal=False):
 
 
 def job(args):
-    net, x, out, shp, sha, move = args
+    net, x, out, shp, sha, move = args[:6]
+    aims = args[6] if len(args) > 6 else range(9)
+    err = ERRORS[args[7]] if len(args) > 7 else ERRORS["exact"]
+    erng = random.Random(zlib.crc32((json.dumps(args) + "err").encode()))
     h = _h[net]
     e = h.e
     top = net == "top"
@@ -174,16 +232,24 @@ def job(args):
     at_release = isinstance(move, str) and move.startswith("r")
     for p in range(MOMENTS):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
-        x0, y0 = sg * x, sg * (GOAL_Y - out)
+        ex, eo = erng.uniform(-err[0], err[0]), erng.uniform(-err[0], err[0])     # this moment's errors
+        ev, ea, ef = erng.uniform(-err[1], err[1]), erng.uniform(-err[2], err[2]), erng.uniform(-err[3], err[3])
+        x0, y0 = sg * (x + ex), sg * (GOAL_Y - out - eo)
         if isinstance(move, str):                        # skating toward the middle: across, 45 degrees, at the goal
             kind = move.rstrip("0123456789.").lstrip("r")
             sx = 1 if x > 0 else -1                      # the side he is on (attacker's view)
             dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg * sx, 0), diag=(-sg * sx, sg))[kind]
-            v = float(move[len(move.rstrip("0123456789.")):]) / math.hypot(dx, dy)
-            if at_release:                               # started back along his line, to release at (x, out)
-                x0, y0 = round(x0 - LEAD * dx * v), round(y0 - LEAD * dy * v)
+            if ea:                                       # his skating line turned by the angle error
+                c, s_ = math.cos(math.radians(ea)), math.sin(math.radians(ea))
+                dx, dy = dx * c - dy * s_, dx * s_ + dy * c
+            v = (float(move[len(move.rstrip("0123456789.")):]) + ev) / math.hypot(dx, dy)
+            if at_release:                               # started back along his line, to release at (x, out); a
+                x0, y0 = round(x0 - (LEAD + ef) * dx * v), round(y0 - (LEAD + ef) * dy * v)   # timing error moves it
         h.setup(x0, y0, settle=settle, clock=clock)
         set_ratings(h, shp * 5, sha * 5)
+        if SKATE:
+            for off, val in zip((0x68, 0x69), map(int, SKATE.split(","))):
+                e.setb(rec(SHOOTER) + off, val)
         b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)      # the hand (as deke_run.job): a left-hander on
         e.setb(rec(SHOOTER) + 0x76, (b | 1) if x > 0 else (b & ~1))   # his right, a right-hander on his left
         e.setb(rec(SHOOTER) + 4, (a & ~8) if x > 0 else (a | 8))
@@ -195,7 +261,7 @@ def job(args):
             e.setb(rec(SHOOTER) + 0x55, 0 if top else 4)
             e.setw(rec(SHOOTER) + 0x2A, round(sg * move * 4096) & 0xFFFF)
         base = e.serialize()
-        for aim in range(9):
+        for aim in aims:
             c = res.setdefault(str(aim), dict(n=0, goal=0, held=0, bobble=0, miss=0, noshot=0, speed=0, bob_v=0,
                                               bob_back=0, dive=0, claimed=0, claim_f=0, follow_goal=0,
                                               follow_held=0, follow_none=0, follow_in_off_goalie=0))
@@ -234,6 +300,8 @@ def job(args):
         if c["claimed"]:
             c["claim_f"] = round(c["claim_f"] / c["claimed"], 1)
     out_ = dict(zip(KEYS, args), aims=res)
+    if len(args) > 7:
+        out_["only"], out_["err"] = list(args[6]), args[7]
     if rel[2]:
         out_["release"] = [round(rel[0] / rel[2], 1), round(rel[1] / rel[2], 1)]
     return out_
@@ -249,7 +317,7 @@ def main():
     if path.exists():
         for line in open(path):
             d = json.loads(line)
-            done.add(tuple(d[k] for k in KEYS))
+            done.add(tuple(d[k] for k in KEYS) + ((tuple(d["only"]), d["err"]) if "err" in d else ()))
     todo = [j for j in plan_jobs(plan) if j not in done]
     print(f"EA Specials: {len(done)} jobs done before, {len(todo)} to go; this chunk: up to {minutes:g} minutes", flush=True)
     t0, deadline, finished = time.time(), time.time() + 60 * minutes, 0
