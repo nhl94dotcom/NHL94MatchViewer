@@ -502,7 +502,7 @@ marker for what it was; click it to jump there.</p>
 
 <section id="h-high"><h2>Highlights, clips and game files</h2>
 <dl>
-  <dt>Highlights</dt><dd>The game's three stars, and its highlights (goals, big saves, posts, big hits, breakaways that came to a shot), each from 5 seconds before to 2 after. Click one to watch it, Play all to see them in turn, or Save as video.</dd>
+  <dt>Highlights</dt><dd>The game's three stars, and its highlights (goals, big saves, posts, big hits, EA Special attempts, breakaways that came to a shot), each from 5 seconds before to 2 after. Click one to watch it, Play all to see them in turn, or Save as video.</dd>
   <dt>Clip</dt><dd>Saves any stretch (up to a minute; or pick a goal) as a video or an animated GIF, at normal or half speed, as the ice looks now (angle, zoom, follow, map).</dd>
   <dt>Save game file</dt><dd>One page with this game, the viewer, the rink, sprites and sounds inside (about 5 MB). It opens in any browser, phones included, by itself: send it to your opponent.</dd>
 </dl>
@@ -631,7 +631,7 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 <dl>
   <dt>Quirky events</dt><dd>A team-stats group (Genesis games) counting four oddities of the game's code: <b>through-the-legs goals</b> (a flat puck slides through a goalie in the butterfly or a kick save, because those moves take his stick out of the puck's way and nothing else touches it), <b>shoulder-save bobble goals</b> (the top net's goalie catches the puck in a shoulder save, it is dragged behind him to the net and knocked in), <b>rocket passes</b> (a short pass to a teammate skating toward the passer that comes out up to twice as fast, from the game rounding the pass's travel time down) and <b>runaway skaters</b> (a person's skater whose speed bursts keep adding up after taking over a pass or falling into the boards). Goals get a tag, and rocket passes and runaways show on the ice.</dd>
   <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 seconds (real time, flight and a short carry included), the last pass went to the scorer within 3 seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). A goalie's pass out of his zone counts as one of the passes. The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too. A <b>missed tapestry</b> is the same chain of passes ending in a shot that does not score (saved, wide, blocked or off the post); it is counted in the team stats and named in the shot's tooltip on the shot map.</dd>
-  <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 2 seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near.</dd>
+  <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 2 seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near. Each attempt's shot line gives where it was released (feet out from the goal line and to the side) and how fast the shooter was skating, as a share of his full speed; attempts that didn't score are in the Highlights. In the game itself (the scoring map) the play worked best released about 20 ft out and 27 ft to the side, a little below full speed.</dd>
   <dt>Pass shot</dt><dd>Using the pass button to shoot: the puck goes off quickly with no target. The game does not count it as a shot on goal unless it scores.</dd>
 </dl>
 </section>
@@ -2037,6 +2037,28 @@ function heatImage(cells, colours) {
 // A shot's speed in mph: the shot list's puck speed (the game's speed words) at the skating scale (PUCK_SPEED_SCALE in
 // the converter: 0.015 game units a second per speed unit, measured from loose pucks).
 const shotMph = speed => speed * 0.015 / UNITS_PER_FOOT * 3600 / 5280;
+// An EA Special attempt measured as the scoring map's EA runs set it up (analysis/ea_real.py does the same): released
+// `out` feet from the goal line (264) and `side` feet from the middle, the shooter's skating speed over the quarter
+// second before the release as a share of his full speed holding the d-pad (from his working Speed: 10 1.75, 13 1.85,
+// 18 2.0, 20 2.05, 30 2.35 units a frame, measured in the game 2026-10-26).
+const EA_TOP_SPEED = [[10, 1.75], [13, 1.85], [18, 2.0], [20, 2.05], [30, 2.35]];
+function eaDetail(sh) {
+  const m = match, f = sh.f, k = [...Array(6).keys()].map(i => sh.team * 6 + i).find(k => rosterIndex(f, k) === sh.idx);
+  const out = ((264 - Math.abs(sh.y)) / UNITS_PER_FOOT).toFixed(0), side = (Math.abs(sh.x) / UNITS_PER_FOOT).toFixed(0);
+  let text = out + ' ft out, ' + side + ' ft to the side';
+  const work = k === undefined ? [] : (m.work || []).filter(w => w[1] === k && w[0] <= f);
+  let q0 = f;
+  while (q0 > 0 && m.t[f] - m.t[q0] < 250) q0--;
+  if (work.length && m.t[f] > m.t[q0]) {
+    const at = (q, i) => m.pos[(q * PLAYERS + k) * 2 + i];
+    const v = Math.hypot(at(f, 0) - at(q0, 0), at(f, 1) - at(q0, 1)) / ((m.t[f] - m.t[q0]) / 1000) / 60;
+    const r = Math.min(30, Math.max(10, work[work.length - 1][4]));
+    const j = Math.max(0, EA_TOP_SPEED.findIndex(([a, va], i) => i < EA_TOP_SPEED.length - 1 && r <= EA_TOP_SPEED[i + 1][0]));
+    const [[a, va], [b, vb]] = [EA_TOP_SPEED[j], EA_TOP_SPEED[j + 1]];
+    text += ', at ' + Math.min(100, Math.round(100 * v / (va + (vb - va) * (r - a) / (b - a)))) + '% of his full speed';
+  }
+  return text;
+}
 function shotText(sh) {
   // "P2 3:15 · #8 Cam Neely · pass shot · goal"
   const at = periodName(match.period[sh.f]) + ' ' + clockText(match.clock[sh.f]);
@@ -2050,7 +2072,7 @@ function shotText(sh) {
     ? ' \u00b7 ' + (sh.save === 'none' ? (sh.result === 'goal' ? 'goalie did not move' : 'goalie stood his ground') : (sh.result === 'goal' ? 'goalie tried a ' : '') + SAVE_WORDS[sh.save]) : '';
   // From the converter's shot context: where it was taken, a rebound or an EA Special (the community's name for a
   // flipped wrist shot from the side that the goalie bobbles, then put in), and who set it up.
-  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special attempt' + (sh.eaDive ? ' (the goalie dived after it)' : '') : '') +
+  const context = (sh.danger === 'high' ? ' \u00b7 high danger' : '') + (sh.flip ? ' \u00b7 EA Special attempt (' + eaDetail(sh) + (sh.eaDive ? '; the goalie dived after it' : '') + ')' : '') +
     (sh.afterFlip ? ' \u00b7 EA Special (the rebound)' : sh.rebound ? ' \u00b7 rebound' : '') +
     (sh.assist !== undefined ? ' \u00b7 set up by ' + playerName(sh.team, sh.assist).replace(/^#\d+ /, '') : '') +
     (sh.tapestry && sh.result !== 'goal' ? ' \u00b7 missed tapestry (' + sh.tapestry.n + ' passes: ' +
@@ -5329,8 +5351,8 @@ function gameScores(m) {
   return out.sort((a, b) => b.score - a.score);
 }
 
-// The highlights: every goal, the most dangerous saves, posts, big hits and breakaways that came to a shot but not a
-// goal, each from 5 s before its key moment (the goal, save, shot, hit) to 2 s after (the user's choice), in time
+// The highlights: every goal, the most dangerous saves, posts, big hits, EA Special attempts and breakaways that came
+// to a shot but not a goal, each from 5 s before its key moment (the goal, save, shot, hit) to 2 s after (the user's choice), in time
 // order; overlapping ones are joined into one stretch.
 const NET_Y = 268, HIGHLIGHT_BEFORE = 5000, HIGHLIGHT_AFTER = 2000;
 function findHighlights(m) {
@@ -5367,6 +5389,14 @@ function findHighlights(m) {
   for (const e of (m.injuries || []).filter(e => !e.atStart)) {
     items.push({ f: e.f, ...span(e.f), kind: 'Injury', team: e.team, text: who(e.team, e.idx).replace(/^#\d+ /, '') + ' is hurt' +
       (e.by !== null && e.by !== undefined ? ' (' + who(1 - e.team, e.by).replace(/^#\d+ /, '') + '’s check)' : '') });
+  }
+  // EA Special attempts that didn't score (one that did is shown as the goal, tagged EA Special).
+  const ENDING = { save: 'saved', post: 'off the post', wide: 'wide', blocked: 'blocked' };
+  for (const sh of (m.shotList || []).filter(s => s.flip)) {
+    const after = (m.shotList || []).find(s => s.afterFlip && s.team === sh.team && s.f > sh.f && at(s.f) - at(sh.f) <= 2000);
+    if (after && after.result === 'goal') continue;
+    items.push({ f: sh.f, ...span(sh.f), kind: 'EA Special try', team: sh.team,
+      text: who(sh.team, sh.idx) + ': ' + (ENDING[sh.result] || sh.result) + (after ? ', the rebound ' + (ENDING[after.result] || after.result) : '') });
   }
   for (const b of findBreakaways(m)) {
     // Only breakaways that came to a shot and not a goal (a goal is shown as the goal); the rest are just skating.

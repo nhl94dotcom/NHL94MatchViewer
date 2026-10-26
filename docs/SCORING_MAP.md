@@ -1583,6 +1583,25 @@ a left-hander from his right (plus the close spot on that side), against both go
 at the same speed. It is on the grid's far edge too. The close spot for him (11 ft out, 27 ft to the side, Left held)
 gave 16 / 15%.
 
+### EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)
+
+The converter marks EA Special attempts (a person's forehand wrist shot from the side at a goalie in position, carried
+in; `export_match.add_shot_context`). `ea_real.py` measures each the way the EA runs set them up: the release depth and
+side, the shooter's skating speed over the quarter second before it, and that as a share of his full speed (from his
+working Speed rating). The viewer now gives the same on each attempt's shot line and puts attempts that didn't score in
+the Highlights.
+
+**25 attempts in 9 of the 17 recorded Genesis games** (14 of them in one game, 2026-10-16_1314_BOS-PIT):
+
+- **Three scored on the follow-up, all at the top net** (3 of 17 there, none of 8 at the bottom net). They were released
+  21, 24 and 37 ft out, at 87%, 92% and 65% of the shooter's full speed. Five attempts had a follow-up shot at all.
+- **People do skate in below full speed,** as the user said: a median of 78% of full speed (1.59 a frame). 10 attempts
+  were under 70%, 8 at 70-90%, 7 at 90% or more. The search at 1.7 is about 85% for the test skater.
+- **Released a median of 22 ft out and 21 ft to the side** (16-37 ft out). The game's best at the bottom net, 20 ft out
+  and 27 ft to the side, is wider than people usually go.
+- **Too few to test the simulation:** four bottom-net attempts came within 4 ft of 20 ft out, none of them near the
+  1.7 set-up's speed and aim. The recordings show how people play it, not yet whether the bot's best works for them.
+
 ## The computer goalie's ratings (Genesis, 2026-10-25)
 
 **Correction (2026-10-25):** the levels in the first table set the goalie's Agility, Speed and Puck Control to

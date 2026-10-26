@@ -71,6 +71,30 @@ CASES = [
     ("ea_refine_bottom_roy", "bottom", -80, 76, 5, 3, 4, "EA Special, the refined bottom-net set-up, against Roy", None,
      "rdiag2.5", ("Right-handed, released 25 ft out, 27 ft to his left,",
                   "skating in at 45 degrees, Down-Left held, Power 3."), (30, 20, 20, 30)),
+    # speed and slop (2026-10-26): the bottom-net refine set-up with a person's small errors (plan "slop": 1 ft, 0.2 a
+    # frame, 5 degrees, 1 frame, each play its own); the same at 2.0 a frame (the test skater's full speed: plan
+    # "slopfull"); the search at 1.7 (a little below full speed, as people play it): the bottom net's best, released
+    # 60 out and 80 to his left, Down-Right held, Power 4, and the same released 68 out; the left-hander at the top
+    # net (plan "lefttop", at 2.5): 84 out, 58 to his right, Up-Left held, Power 2
+    ("ea_slop_bottom_small", "bottom", -80, 76, 5, 3, 4, "EA Special, the refined bottom-net set-up, small errors", None,
+     "rdiag2.5", ("Right-handed, about 25 ft out, 27 ft to his left, at 2.5,",
+                  "off by up to 1 ft, 0.2 a frame, 5 degrees, 1 frame."), None, "small"),
+    ("ea_slop_bottom_2_0", "bottom", -80, 76, 5, 3, 4, "EA Special, the refined bottom-net set-up at full speed (2.0)",
+     None, "rdiag2.0", ("Right-handed, released 25 ft out, 27 ft to his left,",
+                        "at 2.0 a frame (his full speed), Down-Left held, Power 3.")),
+    ("ea_speed17_bottom", "bottom", -80, 60, 3, 4, 4, "EA Special at 1.7 a frame, bottom net", None, "rdiag1.7",
+     ("Right-handed, released 20 ft out, 27 ft to his left, at 1.7,", "in at 45 degrees, Down-Right held, Power 4.")),
+    ("ea_speed17_bottom_roy", "bottom", -80, 60, 3, 4, 4, "EA Special at 1.7 a frame, bottom net, against Roy", None,
+     "rdiag1.7", ("Right-handed, released 20 ft out, 27 ft to his left, at 1.7,",
+                  "in at 45 degrees, Down-Right held, Power 4."), (30, 20, 20, 30)),
+    ("ea_speed17_bottom_23ft", "bottom", -80, 68, 3, 4, 4, "EA Special at 1.7 a frame, bottom net, 3 ft deeper", None,
+     "rdiag1.7", ("Right-handed, released 23 ft out, 27 ft to his left, at 1.7,",
+                  "in at 45 degrees, Down-Right held, Power 4.")),
+    ("ea_lefttop", "top", 58, 84, 7, 2, 4, "EA Special, the left-hander at the top net", None, "rdiag2.5",
+     ("Left-handed, released 28 ft out, 19 ft to his right, at 2.5,", "in at 45 degrees, Up-Left held, Power 2.")),
+    ("ea_lefttop_roy", "top", 58, 84, 7, 2, 4, "EA Special, the left-hander at the top net, against Roy", None,
+     "rdiag2.5", ("Left-handed, released 28 ft out, 19 ft to his right, at 2.5,",
+                  "in at 45 degrees, Up-Left held, Power 2."), (30, 20, 20, 30)),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4
@@ -82,7 +106,7 @@ def play(case, n):
     from goal_frames import grab, genesis_vram, hide_genesis_hud
     from harness import rec, DIRPAD, SHOOTER, GOALIE
     from mapper import set_ratings
-    if len(case) > 11:                                 # the goalie's working ratings
+    if len(case) > 11 and case[11]:                    # the goalie's working ratings
         os.environ["NHL94_GOALIE"] = ",".join(map(str, case[11]))
     A._init()
     name, net, x, out, aim, shp, sha = case[:7]
@@ -90,6 +114,7 @@ def play(case, n):
     e = h.e
     sg = 1 if net == "top" else -1
     rnd = random.Random(zlib.crc32(name.encode()))
+    erng = random.Random(zlib.crc32((name + "err").encode()))
     run, film = e.run, []
     vram = None
 
@@ -109,14 +134,20 @@ def play(case, n):
         clock, settle = 590 - (p * 3) % 8, 80 + (p * 7) % 15
         p += 1
         move = case[9] if len(case) > 9 else None
-        x0, y0 = sg * x, sg * (A.GOAL_Y - out)
+        err = A.ERRORS[case[12]] if len(case) > 12 else A.ERRORS["exact"]     # a person's slop (as ea_run "slop")
+        ex, eo = erng.uniform(-err[0], err[0]), erng.uniform(-err[0], err[0])
+        ev, ea, ef = erng.uniform(-err[1], err[1]), erng.uniform(-err[2], err[2]), erng.uniform(-err[3], err[3])
+        x0, y0 = sg * (x + ex), sg * (A.GOAL_Y - out - eo)
         if move:                                       # as ea_run.job: across, at 45 degrees or at the goal
             kind = move.rstrip("0123456789.").lstrip("r")
             sx = 1 if x > 0 else -1
             dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg * sx, 0), diag=(-sg * sx, sg))[kind]
-            v = float(move[len(move.rstrip("0123456789.")):]) / math.hypot(dx, dy)
+            if ea:                                     # his skating line turned by the angle error
+                c, s_ = math.cos(math.radians(ea)), math.sin(math.radians(ea))
+                dx, dy = dx * c - dy * s_, dx * s_ + dy * c
+            v = (float(move[len(move.rstrip("0123456789.")):]) + ev) / math.hypot(dx, dy)
             if move.startswith("r"):                   # started back along his line, to release at (x, out)
-                x0, y0 = round(x0 - A.LEAD * dx * v), round(y0 - A.LEAD * dy * v)
+                x0, y0 = round(x0 - (A.LEAD + ef) * dx * v), round(y0 - (A.LEAD + ef) * dy * v)
         h.setup(x0, y0, settle=settle, clock=clock)
         set_ratings(h, shp * 5, (sha or 2 + len(plays) % 5) * 5)
         b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)      # the hand, as ea_run.job
