@@ -859,8 +859,13 @@ offsides on.
     (`tst.w position(a1)` / `beq.w .next` to `ble.w .next` in `passmode`): untested.
 - **Related, not confirmed:** a goalie's pass made just as a penalty is whistled can leave the penalized player
   skating about the box scene without going in, and the game waits there (the user's `not_going_into_box.mp4`).
-  `passto` gives the receiver a new pass-receiving assignment on top of whatever he was doing; if he was the man just
-  sent to the box, that may hold up his trip there. A recording of one would settle it. And **B can switch players
+  The call gives the penalized player the box assignment (`asspenalty`, by `assreplace`). If a goalie's pass then
+  picks him as its receiver, `passto` pushes the pass-receiving assignment on top of it (`assinsert`), and
+  `asspassrec` does nothing while the clock is stopped (`donothing`: he coasts to a stop) and never exits then. The
+  clock stays stopped through the penalty scene, so his box assignment underneath never runs again: he never reaches
+  the box. **Code**; a recording of one would confirm it. (Where the off-ice players are: every faceoff parks them all
+  at -240, 0, level with the red line well outside the left boards, for both teams; the bench door is at -136 and the
+  box at +136.) And **B can switch players
   while your goalie keeps the puck** (the user's GIF): while a player is locked in an animation, B switches control
   (`doinput_islocked`) unless he already carries the puck, so a B press during the goalie's save move, before the puck
   is his, moves control to a skater and leaves the goalie to the computer, who holds it (a whistle). Likely, not traced.
