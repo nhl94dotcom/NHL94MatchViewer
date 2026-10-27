@@ -1341,6 +1341,9 @@ EA_OUTWARD = 15            # ... not moving out toward the side faster than this
 EA_CARRIED = 600           # ... having carried the puck at least this long (ms)
 EA_BACKWARD = 50           # ... by a shooter not skating toward his own end faster than this (units/s; standing or drifting is
                            # fine: Sweeney's real one in 2026-10-16_1314_BOS-PIT drifted back at 30, Juneau's non-one at P3 4:09 skated back at 80)
+EA_BACKHAND = False        # analysis only (analysis/ea_real.py): the same rule for backhand attempts, from the backhand
+                           # side; the match files always mark forehand ones (the user: the play is a forehand one, and
+                           # backhand tries are much harder)
 # In the recordings (226 attempts) a third of the attempts from that slot scored (20 of 60) and 14% of the rest; a
 # tighter slot (50 x 40) scores 38% but holds only one attempt in seven. Goals by distance from the net: under 50
 # units 35%, 50-75 24%, 75-100 18%, farther about 8%.
@@ -1418,12 +1421,12 @@ def add_shot_context(m):
         # Always a forehand (the user): his last shooting animation before the release is the forehand one ...
         k = shooter[0]
         last = next((anim(q, k) for q in range(sh['f'], max(0, sh['f'] - 90), -1) if anim(q, k) in shoot), None)
-        if last not in forehand:
+        if (last in forehand) == EA_BACKHAND:
             continue
         # ... so from his forehand side, as the attacker sees it: right-handed (drawn mirrored) from the left,
         # left-handed from the right.
         from_left = sh['x'] * (1 if net_y > 0 else -1) < 0
-        if (m['mirror'][sh['f'] * K + k] == '1') != from_left:
+        if ((m['mirror'][sh['f'] * K + k] == '1') != from_left) != EA_BACKHAND:
             continue
         # Never skating away from the goal (the user: standing still is fine; away = moving toward his own end), over
         # the half second before the release.
