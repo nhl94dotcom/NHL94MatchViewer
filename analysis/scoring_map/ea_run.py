@@ -38,7 +38,10 @@ and angle and the release frame, at four levels (ERRORS), only the set-up's best
 the earlier plans' 2.5 is beyond any skater's: 30 / 30 reaches 2.35; started at 2.5 he slows to 2.0 in about 12 frames);
 "slopparts" (each kind of error alone, at the small and medium sizes); "goalie" (the goalie's ratings one at a time, NHL94_GOALIE: BEST, the best aim and its neighbours); "skate" (the
 shooter's working Agility / Speed, NHL94_EA_SKATE: BEST at his own full speed and 0.3 below, released as found or 8
-nearer / farther).
+nearer / farther). At 1.7, from "fine"'s best (the bottom net forgiving 21 ft out, 64): "slop17" / "slopparts17" (SLOP17,
+as "slop" / "slopparts"); "speed" (the user, 2026-10-26: how far below full speed works: SPEED17 at 1.5-2.0 a frame,
+released 56-72 out); "lefttop17" ("lefttop" at 1.7, around the right-hander's best depth); "goalie17" / "skate17" (as
+"goalie" / "skate" from BEST17; "skate17" releases 4 nearer / farther).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -81,6 +84,15 @@ SLOP = [("top", -72, 68, 3, 4, "rdiag2.5", 0), ("top", -80, 76, 4, 4, "rdiag2.5"
 # neighbours; the skating speed from NHL94_EA_SPEED (default 2.5, as "refine")
 BEST = [("top", -72, 68, 3, 4, "rdiag", (7, 0, 1)), ("bottom", -80, 76, 3, 4, "rdiag", (4, 5, 6)),
         ("bottom", -75, 40, 2, 4, "rgoal", (8,))]
+# the same at 1.7 from "fine"'s best (by the worse of Hrudey and Roy): the bottom net 64 out, a right-hander at the
+# goal or in at 45 degrees, the left-hander in at 45; the top net's best cell
+SLOP17 = [("bottom", -80, 64, 4, 4, "rgoal1.7", 3), ("bottom", -72, 64, 2, 4, "rgoal1.7", 3),
+          ("bottom", -80, 64, 4, 4, "rdiag1.7", 3), ("bottom", -88, 64, 2, 4, "rdiag1.7", 3),
+          ("bottom", 80, 64, 2, 4, "rdiag1.7", 5), ("bottom", 72, 64, 4, 4, "rgoal1.7", 5),
+          ("top", -76, 60, 2, 4, "rdiag1.7", 3), ("top", -80, 68, 2, 4, "rdiag1.7", 0)]
+BEST17 = [("bottom", -80, 64, 4, 4, "rgoal", (2, 3, 4)), ("bottom", -80, 64, 4, 4, "rdiag", (2, 3, 4)),
+          ("bottom", 80, 64, 2, 4, "rdiag", (4, 5, 6)), ("top", -76, 60, 2, 4, "rdiag", (2, 3, 4))]
+SPEED17 = BEST17
 SKATE = os.environ.get("NHL94_EA_SKATE")       # "agl,spd": the shooter's working Agility and Speed (else the state's
 TOP_SPEED = {10: 1.75, 13: 1.85, 18: 2.0, 20: 2.05, 30: 2.35}   # 18 / 18); his full speed holding the d-pad, measured
 
@@ -99,6 +111,22 @@ def plan_jobs(plan="ea"):
         top = TOP_SPEED[int(SKATE.split(",")[1])] if SKATE else 2.0     # released as found or 8 nearer / farther
         return [(n, x, o + d, p, a, m + f"{v:.2f}", aims, "exact") for n, x, o, p, a, m, aims in BEST
                 for v in (top, top - 0.3) for d in (-8, 0, 8)]
+    if plan == "slop17":
+        return [s[:6] + ((s[6],), lvl) for s in SLOP17 for lvl in LEVELS]
+    if plan == "slopparts17":
+        return [s[:6] + ((s[6],), lvl) for s in SLOP17 for lvl in PARTS]
+    if plan == "speed":                # the skating speed 1.5-2.0 a frame (the test skater's full speed is 2.0)
+        return [(n, x, o, p, a, m + v, aims, "exact") for n, x, _o, p, a, m, aims in SPEED17
+                for v in ("1.5", "1.6", "1.7", "1.8", "1.9", "2.0") for o in (56, 60, 64, 68, 72)]
+    if plan == "goalie17":
+        return [(n, x, o, p, a, m + "1.7", aims, "exact") for n, x, o, p, a, m, aims in BEST17]
+    if plan == "skate17":              # his own full speed and 0.3 below, released 4 nearer / farther
+        top = TOP_SPEED[int(SKATE.split(",")[1])] if SKATE else 2.0
+        return [(n, x, o + d, p, a, m + f"{v:.2f}", aims, "exact") for n, x, o, p, a, m, aims in BEST17
+                for v in (top, top - 0.3) for d in (-4, 0, 4)]
+    if plan == "lefttop17":
+        return list(itertools.product(("top",), (65, 72, 80, 88), (56, 60, 64, 68, 72), (2, 3, 4), (4,),
+                                      ("rgoal1.7", "rdiag1.7")))
     if plan == "lefttop":
         grid = itertools.product(("top",), (58, 65, 72, 80), (60, 68, 76, 84), (2, 3, 4), (4,), ("rgoal2.5", "rdiag2.5"))
         close = itertools.product(("top",), (70, 75, 80), (34, 40, 46), (2, 3), (4,), ("rgoal2.5",))
