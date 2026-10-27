@@ -857,11 +857,14 @@ offsides on.
   - **Avoiding it:** a short-handed goalie shouldn't pass toward the left of centre ice unless a teammate is clearly
     nearer in that direction. A ROM fix would be for the receiver search to skip players who aren't on the ice
     (`tst.w position(a1)` / `beq.w .next` to `ble.w .next` in `passmode`): untested.
-- **Related, not confirmed:** a goalie's pass made just as a penalty is whistled can leave the penalized player
+- **Related, not confirmed:** a pass to the penalized player made after the penalty is whistled can leave him
   skating about the box scene without going in, and the game waits there (the user's `not_going_into_box.mp4`).
-  The call gives the penalized player the box assignment (`asspenalty`, by `assreplace`). If a goalie's pass then
-  picks him as its receiver, `passto` pushes the pass-receiving assignment on top of it (`assinsert`), and
-  `asspassrec` does nothing while the clock is stopped (`donothing`: he coasts to a stop) and never exits then. The
+  The call gives the penalized player the box assignment (`asspenalty`, by `assreplace`). If any pass then (a
+  skater's or the goalie's: every pass does this, the goalie's control handover plays no part) picks him as its
+  receiver, `passto` pushes the pass-receiving assignment on top of it (`assinsert`), and
+  `asspassrec` does nothing while the clock is stopped (`donothing`: he coasts to a stop; before it looks at who controls
+  him) and never exits then. A pass already on its way when the penalty is called is harmless: the call replaces his
+  current assignment (the pass reception) with the box. No clock check stops passing during the stoppage. The
   clock stays stopped through the penalty scene, so his box assignment underneath never runs again: he never reaches
   the box. **Code**; a recording of one would confirm it. (Where the off-ice players are: every faceoff parks them all
   at -240, 0, level with the red line well outside the left boards, for both teams; the bench door is at -136 and the
