@@ -248,6 +248,17 @@ reaches him: the swing snaps forward when the puck is already at the blade.
 The computer one-times on its own in the attacking zone (and now and then outside it), but only for teams no person
 controls.
 
+**A computer one-timer can look like a fumbled pass** (the user, 2026-10-27: a pass that the receiver seemed to bobble,
+then the puck shot off him with no one-timer animation; `2026-10-27_0744_HFD-EDM`, P3 1:30, Hartford's only goal).
+Traced from the recording: the puck was never carried. The pass left at rocket speed, then 0.1 s later was lifted (up
+to 8-9 high) and slowed toward a point in front of the receiver, changed course once more in the air with nobody near
+it, and was struck 0.5 s later, 6 high, at 20,400 (a one-timer's speed), high at the far post, past a glove save. The
+lift is the one-timer pass (`OneTimerPass`: the puck flipped up and sent to a target in front of the receiver,
+`OneTimerTarget`), which reads on screen as a bobble. The receiver had gone into the **backhand** shooting animation
+(`shotb`, $092E) 0.2 s before the strike: the game picks forehand or backhand by the angle to the net
+(`setonetimeranim`), and a backhand one-timer has none of the forehand's familiar wind-up. What changed the puck's
+course in the air the second time isn't settled.
+
 ### 4.9 Expected goals from the game's own rules
 
 Because shots and saves are decided by fixed rules plus a few random rolls, the chance a shot goes in can be worked

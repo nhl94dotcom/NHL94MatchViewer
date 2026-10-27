@@ -827,6 +827,31 @@ offsides on.
   there is whistled.
 - **Backwards entries:** a carrier whose body leads the puck in by more than 10 units (skating backwards) could put
   himself offside.
+- **The lost control star (a goalie's pass to nobody)** (the user, 2026-10-27: after passing with his goalie, the
+  star stayed on the goalie, the pad did nothing and B didn't switch, until a teammate picked the puck up; seen now
+  and then, it seemed, on penalty kills). **Code** and **Confirmed** (`2026-10-27_0733_EDM-HFD`, a 2v2 ROM, P2 1:16 to
+  0:57, 7.3 s). Three pieces of code combine:
+  - **The pass picks a receiver** (`passmode` .findplayer): the nearest teammate within 45 degrees of the pass
+    direction, skipping the passer, goalies and players marked unavailable (`pf2unav`). It doesn't skip players who
+    aren't on the ice (position negative).
+  - **A goalie a person controls hands control to the receiver at once** (`passto`: only for a goalie's pass; a
+    skater's pass leaves control with the passer).
+  - **A player not on the ice is never updated** (`updateplayers`: position negative skips him), and the pads are read
+    in that update, for the player each pad controls. With control on such a player nothing reads the pad: no skating,
+    no B. Control comes back only when the game reassigns it (a teammate taking the puck, a faceoff).
+  - **The empty slots of a ROM that dresses fewer than six** (this 2v2 ROM: records 3-5 of each team, position $FFFF,
+    parked at -240, 0, the left side of centre ice) are **not marked unavailable** (read from the recording's RAM), so
+    they are receivers. A goalie's pass toward them (from the top net down and to the left, from the bottom net up and
+    to the left, or straight across to the left) with no real teammate nearer in that 45-degree cone goes to the empty
+    slot (the last of the three wins the tie), and control with it. In the game here: the goalie passed down-left, the
+    puck went toward the empty slot and nobody, and control sat on record 5 until EDM's other skater picked up the
+    loose puck.
+  - **Why it seems to happen on penalty kills:** with a man in the box there is one real teammate fewer to be nearer
+    than the empty slot, and a short-handed goalie passes more. A boxed player is marked unavailable from the moment
+    he heads for the box (`asspenalty`) until he is back on the ice (`assepen`), so he can't be the receiver himself.
+    On a ROM with all six dressed there is no empty slot, so it shouldn't happen there; the recorded six-a-side games
+    (16) show none; in the three small-side games it
+    happened once.
 
 ---
 
@@ -1259,6 +1284,7 @@ C-then-B check, and the weight bug for computer checkers too.
 | Aggression | Wraps: rating 4 plays like 1, ratings 6 and 3 most penalised |
 | Penalty-shot table | Off by one; holding and interference give no penalty shot |
 | Pulling the goalie | The computer pulls its goalie late only when exactly two behind, never one |
+| Lost control star | A person's goalie passing toward an empty roster slot (ROMs dressing fewer than six) hands control to that slot: the pad is dead until a teammate takes the puck (11.2) |
 | Icing | Always on; no icing if the puck crosses the goal line within 44 of the middle; a shorthanded team can't ice |
 | Glass | Pucks 19-29 high stay in off the top end's glass, go out of play off the sides and the bottom end |
 | Delayed penalties | Other team immune (except interference, injury roughing) |

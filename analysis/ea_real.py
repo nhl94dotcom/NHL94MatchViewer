@@ -51,12 +51,21 @@ def attempts(m):
         follow = next((s for s in shots[i + 1:] if s.get("afterFlip") and s["team"] == sh["team"]
                        and 0 < t[s["f"]] - t[f] <= 2000), None)
         aim = (sh.get("aim") or {}).get("d", 8)
+        fside = None
+        if follow:                                   # the follow-up's aim against the side he shoots it from (screen
+            fd = (follow.get("aim") or {}).get("d", 8)   # x): near post, far post or the middle
+            fd = 8 if fd is None else fd
+            across = 1 if fd in (1, 2, 3) else -1 if fd in (5, 6, 7) else 0
+            fside = "middle" if across == 0 else "near" if across * follow["x"] > 0 else "far"
+            fside += "-" + ("high" if fd in (7, 0, 1) else "low" if fd in (3, 4, 5) else "mid")
         yield dict(game=m["name"], period=m["period"][f] + 1, clock=m["clock"][f], net="top" if top else "bottom",
                    hand="right" if m["mirror"][f * K + k] == "1" else "left", out=round(GOAL_Y - abs(sh["y"])),
                    side=round(abs(sh["x"])), speed=round(speed, 2), agl=agl, spd=spd,
                    full=round(top_speed(spd), 2) if spd is not None else None, aim=AIMS[aim if aim is not None else 8],
                    result=sh["result"], dive=bool(sh.get("eaDive")),
-                   follow=follow["result"] if follow else None,
+                   follow=follow["result"] if follow else None, follow_aim=fside,
+                   follow_kind=follow.get("kind") if follow else None,
+                   follow_gap=round((t[follow["f"]] - t[f]) / 1000, 2) if follow else None,
                    ea_goal=bool(follow and follow["result"] == "goal"))
 
 
@@ -72,11 +81,11 @@ def main():
         games += 1
         rows += list(attempts(m))
     print(f"{len(rows)} attempts in {games} Genesis games")
-    print("game                       P clock net    hand  out side speed  A/S   full  aim         result   follow   EA")
+    print("game                       P clock net    hand  out side speed  A/S   full  aim         result   follow   follow aim  after EA")
     for r in rows:
         print(f"{r['game'][:26]:26} {r['period']} {r['clock'] // 60:2}:{r['clock'] % 60:02} {r['net']:6} {r['hand']:5} "
               f"{r['out']:4} {r['side']:4} {r['speed']:5.2f} {r['agl']}/{r['spd']} {r['full'] or 0:5.2f} {r['aim']:11} "
-              f"{r['result']:8} {str(r['follow']):8} {'GOAL' if r['ea_goal'] else ''}")
+              f"{r['result']:8} {str(r['follow']):8} {str(r['follow_aim']):11} {str(r['follow_gap']):5} {'GOAL' if r['ea_goal'] else ''}")
     for net in ("top", "bottom"):
         rs = [r for r in rows if r["net"] == net]
         if rs:
