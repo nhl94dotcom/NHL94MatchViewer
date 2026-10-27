@@ -213,6 +213,7 @@ def play(h, sg, at_goal=False):
             g0 = gy
         if e.w(PUCKC) == SHOOTER and touched is not None and not info["shot"]:
             info["claim"], info["shot"] = f - touched, True
+            info["claim_x"] = sg * sx                    # where he claims it (attacker's view: + his right)
             near = 2 if sx > 0 else 6                    # the near post: the side of the net he is on (screen)
             aim = dict(near=near, center=8, far=8 - near)[FOLLOW_AIM]
             for c in range(12):                         # C 3 frames, the aim held until the puck leaves (the
@@ -325,6 +326,8 @@ def job(args):
                     c["bob_back"] += info["back"]
                     c["dive"] += info["dive"]
                     c["claimed"] += info["claim"] is not None
+                    if info.get("claim_x") is not None:  # claimed across the middle from where he started
+                        c["claim_across"] = c.get("claim_across", 0) + (info["claim_x"] * x < 0)
                     c["claim_f"] += info["claim"] or 0
                     c["follow_" + info["follow"]] += 1
                 breathe()
