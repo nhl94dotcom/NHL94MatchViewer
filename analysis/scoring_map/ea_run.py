@@ -42,7 +42,9 @@ nearer / farther). At 1.7, from "fine"'s best (the bottom net forgiving 21 ft ou
 as "slop" / "slopparts"); "speed" (the user, 2026-10-26: how far below full speed works: SPEED17 at 1.5-2.0 a frame,
 released 56-72 out); "lefttop17" ("lefttop" at 1.7, around the right-hander's best depth); "goalie17" / "skate17" (as
 "goalie" / "skate" from BEST17; "skate17" releases 4 nearer / farther); "follow" (BEST17, every aim, run once for
-each follow-up aim, NHL94_EA_FOLLOW).
+each follow-up aim, NHL94_EA_FOLLOW); "real2v2" (the user's own set-ups from two 2v2 games, 2026-10-27) and "wide"
+(first shots from everywhere, 13-37 ft to the side, 12-36 ft out), both at NHL94_EA_SPEED (default 1.6, about 78% of
+a 20 / 20 skater's 2.05), run with the 2v2 ROM's ratings (NHL94_EA_SKATE=20,20; Hartford's goalie 20 / 20 / 30 / 20).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -87,12 +89,13 @@ BEST = [("top", -72, 68, 3, 4, "rdiag", (7, 0, 1)), ("bottom", -80, 76, 3, 4, "r
         ("bottom", -75, 40, 2, 4, "rgoal", (8,))]
 # the same at 1.7 from "fine"'s best (by the worse of Hrudey and Roy): the bottom net 64 out, a right-hander at the
 # goal or in at 45 degrees, the left-hander in at 45; the top net's best cell
-SLOP17 = [("bottom", -80, 64, 4, 4, "rgoal1.7", 3), ("bottom", -72, 64, 2, 4, "rgoal1.7", 3),
-          ("bottom", -80, 64, 4, 4, "rdiag1.7", 3), ("bottom", -88, 64, 2, 4, "rdiag1.7", 3),
-          ("bottom", 80, 64, 2, 4, "rdiag1.7", 5), ("bottom", 72, 64, 4, 4, "rgoal1.7", 5),
-          ("top", -76, 60, 2, 4, "rdiag1.7", 3), ("top", -80, 68, 2, 4, "rdiag1.7", 0)]
-BEST17 = [("bottom", -80, 64, 4, 4, "rgoal", (2, 3, 4)), ("bottom", -80, 64, 4, 4, "rdiag", (2, 3, 4)),
-          ("bottom", 80, 64, 2, 4, "rdiag", (4, 5, 6)), ("top", -76, 60, 2, 4, "rdiag", (2, 3, 4))]
+# (2026-10-27: from "fine" run again with the follow-up's aim fixed, test goalie; until then the follow-up was aimed
+# by the skating d-pad, and these were the first shots that went straight in)
+SLOP17 = [("top", -84, 68, 3, 4, "rdiag1.7", 2), ("top", -80, 72, 3, 4, "rgoal1.7", 2),
+          ("bottom", -88, 52, 3, 4, "rgoal1.7", 6), ("bottom", 88, 52, 3, 4, "rgoal1.7", 2),
+          ("bottom", 88, 60, 4, 4, "rdiag1.7", 2), ("bottom", -72, 64, 2, 4, "rgoal1.7", 3)]
+BEST17 = [("top", -84, 68, 3, 4, "rdiag", (1, 2, 3)), ("bottom", -88, 52, 3, 4, "rgoal", (5, 6, 7)),
+          ("bottom", 88, 52, 3, 4, "rgoal", (1, 2, 3)), ("bottom", -72, 64, 2, 4, "rgoal", (2, 3, 4))]
 SPEED17 = BEST17
 # the follow-up's aim (the user, 2026-10-26: people aim it at the middle or the far post, the middle better):
 # "near" (Right / Left at the side he is on: every run before plan "follow"), "center" (nothing held), "far"
@@ -120,8 +123,8 @@ def plan_jobs(plan="ea"):
     if plan == "slopparts17":
         return [s[:6] + ((s[6],), lvl) for s in SLOP17 for lvl in PARTS]
     if plan == "speed":                # the skating speed 1.5-2.0 a frame (the test skater's full speed is 2.0)
-        return [(n, x, o, p, a, m + v, aims, "exact") for n, x, _o, p, a, m, aims in SPEED17
-                for v in ("1.5", "1.6", "1.7", "1.8", "1.9", "2.0") for o in (56, 60, 64, 68, 72)]
+        return [(n, x, o + d, p, a, m + v, aims, "exact") for n, x, o, p, a, m, aims in SPEED17
+                for v in ("1.5", "1.6", "1.7", "1.8", "1.9", "2.0") for d in (-8, -4, 0, 4, 8)]
     if plan == "goalie17":
         return [(n, x, o, p, a, m + "1.7", aims, "exact") for n, x, o, p, a, m, aims in BEST17]
     if plan == "skate17":              # his own full speed and 0.3 below, released 4 nearer / farther
@@ -130,6 +133,14 @@ def plan_jobs(plan="ea"):
                 for v in (top, top - 0.3) for d in (-4, 0, 4)]
     if plan == "follow":               # BEST17 with every aim, for each NHL94_EA_FOLLOW
         return [(n, x, o, p, a, m + "1.7") for n, x, o, p, a, m, _aims in BEST17]
+    if plan == "real2v2":              # the user's own set-ups (two 2v2 games, 2026-10-27: released about 64-80 out,
+        v = os.environ.get("NHL94_EA_SPEED", "1.6")     # 50-70 to the side, at about 78% of full speed), both hands
+        return list(itertools.product(("top", "bottom"), (-70, -60, -50, 50, 60, 70), (64, 72, 80), (4,), (4,),
+                                      ("rgoal" + v, "rdiag" + v)))
+    if plan == "wide":                 # everywhere a first shot might be taken from (the user: look for a spot he
+        v = os.environ.get("NHL94_EA_SPEED", "1.6")     # hasn't found): 13-37 ft to either side, 12-36 ft out
+        return list(itertools.product(("top", "bottom"), (-112, -100, -85, -70, -55, -40, 40, 55, 70, 85, 100, 112),
+                                      (36, 48, 60, 72, 84, 96, 108), (4,), (4,), ("rgoal" + v, "rdiag" + v)))
     if plan == "lefttop17":
         return list(itertools.product(("top",), (65, 72, 80, 88), (56, 60, 64, 68, 72), (2, 3, 4), (4,),
                                       ("rgoal1.7", "rdiag1.7")))
