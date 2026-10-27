@@ -14,6 +14,7 @@ EA Specials played in the real Genesis game with a bot following up, and the one
    - [The best set-up at each net (plan "refine", 2026-10-26)](#the-best-set-up-at-each-net-plan-refine-2026-10-26)
    - [Skating speed and a person's slop (plans "slop", "slopfull", "refine" at 1.7, "lefttop", 2026-10-26)](#skating-speed-and-a-persons-slop-plans-slop-slopfull-refine-at-17-lefttop-2026-10-26)
    - [Why it works: what the goalie does (the user's 2v2 games, 2026-10-27)](#why-it-works-what-the-goalie-does-the-users-2v2-games-2026-10-27)
+   - [The whole zone, and the user's set-ups, in the simulation (plans "wide" and "real2v2", 2026-10-27)](#the-whole-zone-and-the-users-set-ups-in-the-simulation-plans-wide-and-real2v2-2026-10-27)
    - [EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)](#ea-specials-in-the-recorded-games-analysisea_realpy-2026-10-26)
 
 ## EA Specials (Genesis, 2026-10-24)
@@ -481,6 +482,67 @@ and out from his goal line, medians:
 - **So the near post is open for the follow-up,** with the goalie past the middle chasing where the first shot was
   going, not where the puck went. In the misses he moved a little less (16 units against 20). It is also why the
   first shot is aimed at the far post: aimed at the near post he has no reason to cross.
+
+### The whole zone, and the user's set-ups, in the simulation (plans "wide" and "real2v2", 2026-10-27)
+
+Both run after the follow-up fix, with the 2v2 ROM's ratings (skater Agility / Speed 20 / 20, Shot Power 20, Hartford's
+goalie), skating in at 1.6 a frame (78% of full speed, the user's median), the follow-up at the near post. In the EA
+runs `x` and `out` are **the shooter's** position at the release. The converter's shot spot is the puck's, which in the
+user's attempts sat a median 17.5 units (6 ft) nearer the middle than the shooter and level with him. So the user's
+releases, taken as the shooter's spot, were about 22-24 ft out and 25-27 ft to the side.
+
+**"wide": first shots from everywhere** (13-37 ft to either side, 12-36 ft out, at the goal or in at 45 degrees, every
+aim; 32,256 plays). Goals per attempt with the first shot at the far post, mid height (the best aim in 220 of the 336
+set-ups, and the user's), both sides and both moves together:
+
+| Out \ to the side | 13 ft | 18 ft | 23 ft | 28 ft | 33 ft | 37 ft |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Top net** 12 ft | 0 | 1 | 1 | 3 | 23 | 10 |
+| 16 ft | 0 | 1 | 3 | 17 | 17 | 23 |
+| 20 ft | 0 | 1 | 5 | 33 | 32 | 32 |
+| 24 ft | 4 | 8 | **73** | **75** | 72 | 65 |
+| 28 ft | 43 | 69 | **78** | 73 | 69 | 60 |
+| 32 ft | 63 | 66 | 73 | **77** | 71 | 67 |
+| 36 ft | 66 | 66 | 63 | 69 | 61 | 63 |
+| **Bottom net** 12 ft | 0 | 1 | 2 | 1 | 9 | 0 |
+| 16 ft | 0 | 1 | 2 | 19 | 21 | 16 |
+| 20 ft | 0 | 0 | 7 | 40 | 44 | 21 |
+| 24 ft | 1 | 6 | **78** | **85** | 77 | 69 |
+| 28 ft | 24 | 69 | **89** | **85** | 77 | 71 |
+| 32 ft | 74 | 76 | **85** | **86** | 78 | 73 |
+| 36 ft | 72 | 77 | 71 | 82 | 74 | 76 |
+
+- **No hidden spot:** the best is a broad plateau, **24-32 ft out and 23-28 ft to the side** (73-89%), and the user's
+  usual release is already on it. Beyond it the rate falls slowly. Closer than 24 ft, or narrower than about 20 ft, it
+  falls off a cliff: the goalie holds about half the first shots, and the rest are claimed with the goalie still
+  covering the near post.
+- **The two nets come out alike** (the bottom net a few points better), so the net itself doesn't explain the user's
+  difference (below).
+- Farther out costs little time: from 24 ft the shooter claimed the rebound a median 12-14 frames after the save, from
+  36 ft 19-21.
+- The best single cells were 88-91% (bottom net, 28 ft out, 23-28 ft to the side). Every best cell is a follow-up goal;
+  no first shot went straight in.
+
+**"real2v2": the user's set-ups** (17-23 ft to either side, 21-27 ft out, both moves; matching the converter's puck
+spot, so 6 ft narrower than the user really was) gave the same picture: from 27 ft out 61-64%, from 21 ft 5-7%.
+
+**Against the user's games (70 forehand attempts):** each attempt given the "wide" rate at its nearest grid cell, by
+the shooter's own spot:
+
+| | Attempts | Simulation predicts | Shooter scored | Defender claimed |
+| --- | --- | --- | --- | --- |
+| Top net, where the simulation gives over 50% | 24 | 74% | 10 (42%) | 4 |
+| Top net, the rest | 16 | 9% | 5 (31%) | 4 |
+| Bottom net, where the simulation gives over 50% | 24 | 82% | 4 (17%) | 8 |
+| Bottom net, the rest | 6 | 15% | 0 | 2 |
+
+- **The simulation doesn't match the user's play.** It is far too optimistic on its plateau (the bot has no defender
+  and no hesitation), and too pessimistic close in at the top net, where the user scored 5 of 16.
+- **The bottom net's trouble is after the shot, not the release:** 24 of the 30 attempts were from good spots. Of the
+  bottom net's 30, the defender claimed the puck in 10, and in 7 the user's side had it but took no shot within 2 s (in
+  5 of those the shooter himself had claimed it, 0.3-1.7 s after the save). At the top net it was 8 and 4 of 40.
+- Not yet checked: where the goalie stands at the release in the simulation against the user's games (15 units toward
+  the near post at the release in the user's goals). The defender test (plan E) would show what a defender changes.
 
 ### EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)
 
