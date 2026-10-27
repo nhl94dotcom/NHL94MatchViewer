@@ -79,10 +79,12 @@ def play(h, sg):
         gx, gy = h.sw(H.XPOS + g), h.sw(H.YPOS + g)
         if e.w(H.PUCKC) == s and touched is not None and not shot:
             info["claim"], shot = f - touched, True
-            for _ in range(3):
+            near = "RIGHT" if sx > 0 else "LEFT"
+            for c in range(12):                          # A 3 frames, the aim held until the puck leaves
                 h.park()
-                near = "RIGHT" if sx > 0 else "LEFT"
-                e.run(1, hold=["A"] + dict(near=[near], center=[], far=[FLIP[near]])[FOLLOW_AIM])
+                e.run(1, hold=(["A"] if c < 3 else []) + dict(near=[near], center=[], far=[FLIP[near]])[FOLLOW_AIM])
+                if e.w(H.PUCKC) != s:
+                    break
             continue
         if touched is None or shot:
             pad = H.DIRPAD[toward(-sx, sg * GOAL_Y - sy)]

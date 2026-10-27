@@ -215,9 +215,11 @@ def play(h, sg, at_goal=False):
             info["claim"], info["shot"] = f - touched, True
             near = 2 if sx > 0 else 6                    # the near post: the side of the net he is on (screen)
             aim = dict(near=near, center=8, far=8 - near)[FOLLOW_AIM]
-            for c in range(3):
-                park_except(h, (SHOOTER,))
-                e.run(1, hold=["C"] + DIRPAD[aim])
+            for c in range(12):                         # C 3 frames, the aim held until the puck leaves (the
+                park_except(h, (SHOOTER,))              # d-pad at the release is the aim: before 2026-10-27 it was
+                e.run(1, hold=(["C"] if c < 3 else []) + DIRPAD[aim])   # held 3 frames only, and the skating
+                if e.w(PUCKC) != SHOOTER:               # d-pad aimed the follow-up)
+                    break
             continue
         if touched is None or info["shot"]:
             if at_goal:                                  # on at the middle of the goal line
