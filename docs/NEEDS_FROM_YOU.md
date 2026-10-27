@@ -48,10 +48,11 @@ record or check and what it will settle. Newest at the bottom of each section.
    traced and its 26 tries replayed in the game at both nets and by both hands (SNES_SHOOTING 4.10, with GIFs). A
    short game trying the cut going down the screen, released inside about 13 feet, would confirm it in play.
 9. **The EA Special at the bottom net (Genesis, optional).** In a practice game against the computer, going down the
-   screen: a right-hander from his left, released about 14 feet out and level with the faceoff dot, skating at the
-   goal, a weak wrist shot with no direction held, then C again only once you have the puck. A dozen tries, and note
-   the goalie. *Settles:* whether a person gets the 43-55% the game gave a bot (SCORING_GENESIS_EA, "Released from the
-   marked spots").
+   screen at a little below full speed (tapping the d-pad, as you play it): a right-hander from his left, released
+   20-21 feet out from the goal line and a little wide of the faceoff dot, holding Down and toward your
+   own side, any Shot Power, then C again only once you have the puck. A dozen tries, and note the goalie. *Settles:*
+   whether a person gets the about 40% the game gave a bot at that speed against both a weak goalie and Roy
+   (SCORING_GENESIS_EA, "Skating speed and a person's slop", the finer search).
 
 ## Things to note when they happen
 

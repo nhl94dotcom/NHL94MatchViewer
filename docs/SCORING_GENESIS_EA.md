@@ -310,8 +310,8 @@ the paths view so the net is at the top.
 18) tops out at 2.0 holding the d-pad; a 10 / 10 skater at 1.75, 20 / 20 at 2.05, 30 / 30 at 2.35 (measured). And
 people don't take an EA Special at full speed: the user skates a little below it, tapping the d-pad rather than
 holding it, to be placed for the rebound rather than charging at the net. So the set-ups above are the best for a
-speed nobody plays at. This section is about what happens at real speeds. The search at 1.7 is not finished (a finer
-one is running), so its figures are provisional.
+speed nobody plays at. This section is about what happens at real speeds: at 1.7 a frame the bottom net's EA Special
+still goes in about 40% of the time against both goalies, from a wide, forgiving spot 20-21 ft out (below).
 
 **How forgiving the 2.5 set-ups are (plan "slop").** A person can't release at the exact spot and frame. Each moment
 draws its own errors (uniform, either way) in the release spot, the skating speed and angle and the release frame:
@@ -333,10 +333,22 @@ degrees, 3 frames). Nine of the best set-ups, each with its best aim, 120 moment
 - **They are knife-edges.** Even the small errors (a foot, a frame) halve most of them, and the close spot is gone at
   medium. A person playing the 2.5 set-ups would get about 15-20% at the bottom net and 10-15% at the top.
 
+**The bottom net's 2.5 set-up with the small errors, against the test goalie: 24% (29 of 120 in the GIF's own plays).**
+Each play is off by up to a foot, 0.2 a frame, 5 degrees and a frame, so the release spots spread.
+
+![EA Special at 2.5 with small errors: four real attempts](img/scoring_map/ea_slop_bottom_small_clips.gif)
+![EA Special at 2.5 with small errors: every attempt from above](img/scoring_map/ea_slop_bottom_small_paths.gif)
+
 **At the test skater's real top speed (plan "slopfull": the same, at 2.0 a frame).** The timing tuned for 2.5 doesn't
 carry over: exact, Hrudey / Roy, the bottom net's best (25 out, Power 3, Down-Left) falls from 50 / 52% to 2 / 1%, the
 close spot from 52 / 48% to 10 / 15%, the top net's best from 34 / 20% to 31 / 6%. This shows the set-ups are tuned to
 the speed, not that the EA Special fails at real speed; so the search was run again at a real one.
+
+**The bottom net's 2.5 set-up at 2.0 a frame: 2% (3 of 120).** Same release spot, aim and Shot Power; only the
+skating speed differs.
+
+![EA Special, the 2.5 set-up at 2.0 a frame: four real attempts](img/scoring_map/ea_slop_bottom_2_0_clips.gif)
+![EA Special, the 2.5 set-up at 2.0 a frame: every attempt from above](img/scoring_map/ea_slop_bottom_2_0_paths.gif)
 
 **The search again at 1.7 a frame (plan "refine", NHL94_EA_SPEED=1.7):** the same grid (306 set-ups, 48 moments x 2
 seeds against each goalie), a little below the test skater's full speed, as the user plays it. By the worse of the two
@@ -356,16 +368,68 @@ goalies:
   it is steady: 29-40% against both goalies from 22-27 ft to the side at every Shot Power (one cell of nine, 22 ft
   and Power 4, 4% against Roy). Skating at the goal works against Hrudey but Roy often stops it (4-6% in four of
   nine cells), and from 19 ft to the side it fails (1-25%). So the depth is most of the skill.
-- **Both nets' best are at the edge of the grid** (the top net's at its widest, nearest corner), so a finer search
-  (plan "fine": 17-21 ft out at the bottom net, 19-24 ft at the top, sides to 29 ft) is running. Holding Down at the top
-  net is odd and may not survive it. Plans "slop", "lefttop" and the goalie- and skater-rating plans will be run again
-  at 1.7 from its best.
+- **Both nets' best were at the edge of the grid,** so a finer search followed (next).
+
+**The 20 ft set-up, against the test goalie: 35% (42 of 120); against Roy: 33% (39 of 120); 3 ft deeper: 0 of 120.**
+
+![EA Special at 1.7, bottom net, 20 ft out: four real attempts](img/scoring_map/ea_speed17_bottom_clips.gif)
+![EA Special at 1.7, bottom net, 20 ft out: every attempt from above](img/scoring_map/ea_speed17_bottom_paths.gif)
+
+![EA Special at 1.7, bottom net, 20 ft out, against Roy: four real attempts](img/scoring_map/ea_speed17_bottom_roy_clips.gif)
+![EA Special at 1.7, bottom net, 20 ft out, against Roy: every attempt from above](img/scoring_map/ea_speed17_bottom_roy_paths.gif)
+
+![EA Special at 1.7, bottom net, 23 ft out: four real attempts](img/scoring_map/ea_speed17_bottom_23ft_clips.gif)
+![EA Special at 1.7, bottom net, 23 ft out: every attempt from above](img/scoring_map/ea_speed17_bottom_23ft_paths.gif)
+
+**The finer search at 1.7 (plan "fine", 2026-10-26).** At the bottom net: released 17-21 ft out (52-64), 22-29 ft to
+either side (65-88), both hands. At the top net: a right-hander from his left, 19-24 ft out (56-72), 25-29 ft to the
+side. Shot Power 2-4, skating in at 45 degrees or at the goal, every aim, 48 moments x 2 seeds against each goalie (96
+plays a cell, so about 5 points either way). The best for each, by the worse of the two goalies:
+
+| Net | Best set-up at 1.7 | Hrudey | Roy |
+| --- | --- | --- | --- |
+| Bottom | a right-hander from his left, released 21 ft out, 24 ft to the side, at the goal, Power 2, Down-Right | 43% | 43% |
+| Bottom | the same, 27 ft to the side, Power 3 | 42% | 44% |
+| Bottom | a left-hander from his right, 21 ft out, 27 ft to the side, in at 45°, Power 2, Down-Left | 35% | 40% |
+| Top | a right-hander from his left, 20 ft out, 25 ft to the side, in at 45°, Power 2, Down-Right | 21% | 20% |
+
+The right-hander's best at the bottom net (aim Down-Right, best over Power and skating line, the worse goalie), by
+release depth across and side down:
+
+| Side / out | 17 ft | 19 ft | 20 ft | 21 ft |
+| --- | --- | --- | --- | --- |
+| 29 ft | 0% | 0% | 25% | 40% |
+| 27 ft | 0% | 19% | 40% | 42% |
+| 24 ft | 1% | 33% | 39% | 43% |
+| 22 ft | 4% | 8% | 39% | 16% |
+
+- **At 21 ft out the bottom net's EA Special is forgiving.** Every one of the 18 cells there from 24-29 ft to the side
+  (Power 2, 3 or 4, skating at the goal or in at 45 degrees) gave 28-43% against both goalies. At 20 ft it holds when
+  skating in at 45 degrees (21-40%) but skating at the goal mostly fails there. At 17 ft it is gone, and the earlier
+  search had 23 ft at 9%. **So the target is 20-21 ft out, a little wide of the faceoff dot, and the depth is what
+  matters.** Side, Shot Power and line forgive a lot.
+- **The aim is toward the near side (Down-Right for the right-hander).** Holding the far side gives nothing here. The
+  left-hander mirrors it (Down-Left): 35% at 21 ft from 24-29 ft to the side, a little below the right-hander.
+- **The top net has no such spot.** Its best cells are 15-26% and scattered (20 ft with Down-Right or Down held, 23-24
+  ft with Up held), each with weak neighbours, so a person can't aim for them. At 1.7 the top net's EA Special is
+  about half as good as the bottom net's at best.
+- **What comes next at 1.7, from the 21 ft spot:** a person's slop (plan "slop"), a speed sweep from 1.5 to 2.0 (how
+  much below full speed works), the goalie's ratings one at a time and the shooter's skating ratings. The left-hander
+  at the top net is still only known at 2.5 (below).
 
 **The left-hander at the top net (plan "lefttop", at 2.5, so provisional).** The refine grid at the top net mirrored for
 a left-hander from his right (plus the close spot on that side), against both goalies. His best: released 28 ft out,
 19 ft to the side, in at 45 degrees, Power 2, Up-Left: **54% / 30%** (Hrudey / Roy), against the right-hander's 34 / 20%
 at the same speed. It is on the grid's far edge too. The close spot for him (11 ft out, 27 ft to the side, Left held)
 gave 16 / 15%.
+
+**The left-hander at the top net (at 2.5), against the test goalie: 53% (63 of 120); against Roy: 27% (32 of 120).**
+
+![EA Special, the left-hander at the top net: four real attempts](img/scoring_map/ea_lefttop_clips.gif)
+![EA Special, the left-hander at the top net: every attempt from above](img/scoring_map/ea_lefttop_paths.gif)
+
+![EA Special, the left-hander at the top net, against Roy: four real attempts](img/scoring_map/ea_lefttop_roy_clips.gif)
+![EA Special, the left-hander at the top net, against Roy: every attempt from above](img/scoring_map/ea_lefttop_roy_paths.gif)
 
 ### EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)
 

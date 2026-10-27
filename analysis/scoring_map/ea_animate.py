@@ -95,6 +95,19 @@ CASES = [
     ("ea_lefttop_roy", "top", 58, 84, 7, 2, 4, "EA Special, the left-hander at the top net, against Roy", None,
      "rdiag2.5", ("Left-handed, released 28 ft out, 19 ft to his right, at 2.5,",
                   "in at 45 degrees, Up-Left held, Power 2."), (30, 20, 20, 30)),
+    # plan "fine" at 1.7 (2026-10-26): the bottom net's best, released 64 out (21 ft) and 80 to his left, skating at
+    # the goal, Down-Right held, Power 4; the left-hander's, 80 to his right, in at 45 degrees, Down-Left, Power 2; the
+    # top net's best, 60 out and 76 to his left, in at 45 degrees, Down-Right, Power 2
+    ("ea_fine_bottom", "bottom", -80, 64, 3, 4, 4, "EA Special at 1.7, bottom net, 21 ft out", None, "rgoal1.7",
+     ("Right-handed, released 21 ft out, 27 ft to his left, at 1.7,", "at the goal, Down-Right held, Power 4.")),
+    ("ea_fine_bottom_roy", "bottom", -80, 64, 3, 4, 4, "EA Special at 1.7, bottom net, 21 ft out, against Roy", None,
+     "rgoal1.7", ("Right-handed, released 21 ft out, 27 ft to his left, at 1.7,",
+                  "at the goal, Down-Right held, Power 4."), (30, 20, 20, 30)),
+    ("ea_fine_bottom_left", "bottom", 80, 64, 5, 2, 4, "EA Special at 1.7, bottom net, the left-hander", None,
+     "rdiag1.7", ("Left-handed, released 21 ft out, 27 ft to his right, at 1.7,",
+                  "in at 45 degrees, Down-Left held, Power 2.")),
+    ("ea_fine_top", "top", -76, 60, 3, 2, 4, "EA Special at 1.7, top net", None, "rdiag1.7",
+     ("Right-handed, released 20 ft out, 25 ft to his left, at 1.7,", "in at 45 degrees, Down-Right held, Power 2.")),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4
