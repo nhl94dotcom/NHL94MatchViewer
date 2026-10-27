@@ -11,7 +11,8 @@ x < 0, a left-hander from his right, as the Genesis's), and each of the nine aim
 the clock, the settle frames) x SEEDS release seeds. After the release (as ea_run.play): he skates on at the goal; once
 the goalie has touched the puck and it is loose he skates at it, and as soon as he has it taps A toward the near post
 (the side of the net he is on). Per aim: the first result (goal straight in, held, bobble, miss) and, for a bobble,
-the follow-up (goal, held, none, in off the goalie), the release speed and the mean release spot.
+the follow-up (goal, held, none, in off the goalie), the release speed and the mean release spot. The follow-up's
+aim from NHL94_EA_FOLLOW (near / center / far, as ea_run).
 Skating: SNES full speed is about 2.2 a frame at Speed 15 (cap (20 + Speed) x 261 / 4096, SNES_MECHANICS 3.1), and
 most skaters are at 15; the runs use 1.9, a little below it, as people take EA Specials.
 Plans: "test" (a few set-ups, to check the release spot and the follow-up), "explore" (both nets, 20-27 ft to either
@@ -39,6 +40,8 @@ FIRST, FOLLOW = 60, 90         # frames to the first result; frames more for the
 LEAD = {3: 6, 12: 12}          # frames of skating before the wind-up starts, by wind-up (from "test": released on
                                # the spot)
 KEYS = ("net", "x", "out", "shp", "move", "hold")
+FOLLOW_AIM = os.environ.get("NHL94_EA_FOLLOW") or "near"     # the follow-up's aim, as ea_run's: near / center / far
+FLIP = {"RIGHT": "LEFT", "LEFT": "RIGHT"}
 _h = {}
 
 
@@ -78,7 +81,8 @@ def play(h, sg):
             info["claim"], shot = f - touched, True
             for _ in range(3):
                 h.park()
-                e.run(1, hold=["A", "RIGHT" if sx > 0 else "LEFT"])
+                near = "RIGHT" if sx > 0 else "LEFT"
+                e.run(1, hold=["A"] + dict(near=[near], center=[], far=[FLIP[near]])[FOLLOW_AIM])
             continue
         if touched is None or shot:
             pad = H.DIRPAD[toward(-sx, sg * GOAL_Y - sy)]

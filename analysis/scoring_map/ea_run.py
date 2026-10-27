@@ -41,7 +41,8 @@ shooter's working Agility / Speed, NHL94_EA_SKATE: BEST at his own full speed an
 nearer / farther). At 1.7, from "fine"'s best (the bottom net forgiving 21 ft out, 64): "slop17" / "slopparts17" (SLOP17,
 as "slop" / "slopparts"); "speed" (the user, 2026-10-26: how far below full speed works: SPEED17 at 1.5-2.0 a frame,
 released 56-72 out); "lefttop17" ("lefttop" at 1.7, around the right-hander's best depth); "goalie17" / "skate17" (as
-"goalie" / "skate" from BEST17; "skate17" releases 4 nearer / farther).
+"goalie" / "skate" from BEST17; "skate17" releases 4 nearer / farther); "follow" (BEST17, every aim, run once for
+each follow-up aim, NHL94_EA_FOLLOW).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -93,6 +94,9 @@ SLOP17 = [("bottom", -80, 64, 4, 4, "rgoal1.7", 3), ("bottom", -72, 64, 2, 4, "r
 BEST17 = [("bottom", -80, 64, 4, 4, "rgoal", (2, 3, 4)), ("bottom", -80, 64, 4, 4, "rdiag", (2, 3, 4)),
           ("bottom", 80, 64, 2, 4, "rdiag", (4, 5, 6)), ("top", -76, 60, 2, 4, "rdiag", (2, 3, 4))]
 SPEED17 = BEST17
+# the follow-up's aim (the user, 2026-10-26: people aim it at the middle or the far post, the middle better):
+# "near" (Right / Left at the side he is on: every run before plan "follow"), "center" (nothing held), "far"
+FOLLOW_AIM = os.environ.get("NHL94_EA_FOLLOW") or "near"
 SKATE = os.environ.get("NHL94_EA_SKATE")       # "agl,spd": the shooter's working Agility and Speed (else the state's
 TOP_SPEED = {10: 1.75, 13: 1.85, 18: 2.0, 20: 2.05, 30: 2.35}   # 18 / 18); his full speed holding the d-pad, measured
 
@@ -124,6 +128,8 @@ def plan_jobs(plan="ea"):
         top = TOP_SPEED[int(SKATE.split(",")[1])] if SKATE else 2.0
         return [(n, x, o + d, p, a, m + f"{v:.2f}", aims, "exact") for n, x, o, p, a, m, aims in BEST17
                 for v in (top, top - 0.3) for d in (-4, 0, 4)]
+    if plan == "follow":               # BEST17 with every aim, for each NHL94_EA_FOLLOW
+        return [(n, x, o, p, a, m + "1.7") for n, x, o, p, a, m, _aims in BEST17]
     if plan == "lefttop17":
         return list(itertools.product(("top",), (65, 72, 80, 88), (56, 60, 64, 68, 72), (2, 3, 4), (4,),
                                       ("rgoal1.7", "rdiag1.7")))
@@ -207,7 +213,8 @@ def play(h, sg, at_goal=False):
             g0 = gy
         if e.w(PUCKC) == SHOOTER and touched is not None and not info["shot"]:
             info["claim"], info["shot"] = f - touched, True
-            aim = 2 if sx > 0 else 6                     # the near post: the side of the net he is on (screen)
+            near = 2 if sx > 0 else 6                    # the near post: the side of the net he is on (screen)
+            aim = dict(near=near, center=8, far=8 - near)[FOLLOW_AIM]
             for c in range(3):
                 park_except(h, (SHOOTER,))
                 e.run(1, hold=["C"] + DIRPAD[aim])
