@@ -417,6 +417,26 @@ release depth across and side down:
   much below full speed works), the goalie's ratings one at a time and the shooter's skating ratings. The left-hander
   at the top net is still only known at 2.5 (below).
 
+**The bottom net, 21 ft out and 27 ft to the side, skating at the goal, Power 4, Down-Right: 40% (48 of 120) against the
+test goalie, 33% (40 of 120) against Roy.**
+
+![EA Special at 1.7, bottom net, 21 ft out: four real attempts](img/scoring_map/ea_fine_bottom_clips.gif)
+![EA Special at 1.7, bottom net, 21 ft out: every attempt from above](img/scoring_map/ea_fine_bottom_paths.gif)
+
+![EA Special at 1.7, bottom net, 21 ft out, against Roy: four real attempts](img/scoring_map/ea_fine_bottom_roy_clips.gif)
+![EA Special at 1.7, bottom net, 21 ft out, against Roy: every attempt from above](img/scoring_map/ea_fine_bottom_roy_paths.gif)
+
+**The left-hander at the bottom net, mirrored, in at 45 degrees, Power 2, Down-Left: 35% (42 of 120).**
+
+![EA Special at 1.7, bottom net, the left-hander: four real attempts](img/scoring_map/ea_fine_bottom_left_clips.gif)
+![EA Special at 1.7, bottom net, the left-hander: every attempt from above](img/scoring_map/ea_fine_bottom_left_paths.gif)
+
+**The top net's best cell, 20 ft out and 25 ft to the side, Power 2, Down-Right: 12% (15 of 120)** against the test
+goalie in the GIF's own plays (21% in the search), which shows how loose the top net's best is.
+
+![EA Special at 1.7, top net: four real attempts](img/scoring_map/ea_fine_top_clips.gif)
+![EA Special at 1.7, top net: every attempt from above](img/scoring_map/ea_fine_top_paths.gif)
+
 **The left-hander at the top net (plan "lefttop", at 2.5, so provisional).** The refine grid at the top net mirrored for
 a left-hander from his right (plus the close spot on that side), against both goalies. His best: released 28 ft out,
 19 ft to the side, in at 45 degrees, Power 2, Up-Left: **54% / 30%** (Hrudey / Roy), against the right-hander's 34 / 20%
