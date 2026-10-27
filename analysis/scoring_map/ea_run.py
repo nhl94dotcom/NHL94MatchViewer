@@ -100,6 +100,9 @@ SPEED17 = BEST17
 # the follow-up's aim (the user, 2026-10-26: people aim it at the middle or the far post, the middle better):
 # "near" (Right / Left at the side he is on: every run before plan "follow"), "center" (nothing held), "far"
 FOLLOW_AIM = os.environ.get("NHL94_EA_FOLLOW") or "near"
+# backhand EA Specials (the user, 2026-10-27: much harder, and taken from much closer): the hand swapped, a left-hander
+# from his left, a right-hander from his right
+BACKHAND = bool(os.environ.get("NHL94_EA_BACKHAND"))
 SKATE = os.environ.get("NHL94_EA_SKATE")       # "agl,spd": the shooter's working Agility and Speed (else the state's
 TOP_SPEED = {10: 1.75, 13: 1.85, 18: 2.0, 20: 2.05, 30: 2.35}   # 18 / 18); his full speed holding the d-pad, measured
 
@@ -141,6 +144,13 @@ def plan_jobs(plan="ea"):
         v = os.environ.get("NHL94_EA_SPEED", "1.6")     # hasn't found): 13-37 ft to either side, 12-36 ft out
         return list(itertools.product(("top", "bottom"), (-112, -100, -85, -70, -55, -40, 40, 55, 70, 85, 100, 112),
                                       (36, 48, 60, 72, 84, 96, 108), (4,), (4,), ("rgoal" + v, "rdiag" + v)))
+    if plan == "backhand":             # from close in to the faceoff dots, both nets and sides, both hands (run once
+        v = os.environ.get("NHL94_EA_SPEED", "1.6")     # as is and once with NHL94_EA_BACKHAND=1). The game swings a
+        return list(itertools.product(("top", "bottom"), (-85, -70, -55, -40, -25, 25, 40, 55, 70, 85),  # backhand
+                                      (16, 28, 40, 52, 64, 76), (4,), (4,), ("rup" + v, "racross" + v)))
+        # by his facing against the direction to the goal (Findhittype), not his hand: skating at the goal or in at 45
+        # degrees he always takes a forehand; skating straight up the ice or across, one hand takes a backhand. Each
+        # aim's "backhand" counts the shots the game swung as backhands ($092E)
     if plan == "lefttop17":
         return list(itertools.product(("top",), (65, 72, 80, 88), (56, 60, 64, 68, 72), (2, 3, 4), (4,),
                                       ("rgoal1.7", "rdiag1.7")))
@@ -287,7 +297,7 @@ def job(args):
         if isinstance(move, str):                        # skating toward the middle: across, 45 degrees, at the goal
             kind = move.rstrip("0123456789.").lstrip("r")
             sx = 1 if x > 0 else -1                      # the side he is on (attacker's view)
-            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg * sx, 0), diag=(-sg * sx, sg))[kind]
+            dx, dy = dict(goal=(-sg * x, sg * out), across=(-sg * sx, 0), diag=(-sg * sx, sg), up=(0, sg))[kind]
             if ea:                                       # his skating line turned by the angle error
                 c, s_ = math.cos(math.radians(ea)), math.sin(math.radians(ea))
                 dx, dy = dx * c - dy * s_, dx * s_ + dy * c
@@ -300,8 +310,9 @@ def job(args):
             for off, val in zip((0x68, 0x69), map(int, SKATE.split(","))):
                 e.setb(rec(SHOOTER) + off, val)
         b, a = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)      # the hand (as deke_run.job): a left-hander on
-        e.setb(rec(SHOOTER) + 0x76, (b | 1) if x > 0 else (b & ~1))   # his right, a right-hander on his left
-        e.setb(rec(SHOOTER) + 4, (a & ~8) if x > 0 else (a | 8))
+        lefty = (x > 0) != BACKHAND                      # NHL94_EA_BACKHAND: the other hand, so the shot is a backhand
+        e.setb(rec(SHOOTER) + 0x76, (b | 1) if lefty else (b & ~1))   # his right, a right-hander on his left
+        e.setb(rec(SHOOTER) + 4, (a & ~8) if lefty else (a | 8))
         if isinstance(move, str):
             e.setb(rec(SHOOTER) + 0x55, toward(dx, dy))
             e.setw(rec(SHOOTER) + 0x28, round(dx * v * 4096) & 0xFFFF)
@@ -320,6 +331,7 @@ def job(args):
                 c["noshot"] += 1
                 continue
             e.unserialize(pre)
+            c["backhand"] = c.get("backhand", 0) + (e.w(rec(SHOOTER) + 0x58) == 0x092E)   # the game's own choice
             rel[0] += sg * e.sw(rec(SHOOTER))
             rel[1] += GOAL_Y - sg * e.sw(rec(SHOOTER) + 0x14)
             rel[2] += 1
