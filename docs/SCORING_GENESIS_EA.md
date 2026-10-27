@@ -333,8 +333,9 @@ degrees, 3 frames). Nine of the best set-ups, each with its best aim, 120 moment
 - **They are knife-edges.** Even the small errors (a foot, a frame) halve most of them, and the close spot is gone at
   medium. A person playing the 2.5 set-ups would get about 15-20% at the bottom net and 10-15% at the top.
 
-**The bottom net's 2.5 set-up with the small errors, against the test goalie: 24% (29 of 120 in the GIF's own plays).**
-Each play is off by up to a foot, 0.2 a frame, 5 degrees and a frame, so the release spots spread.
+**The bottom net's 2.5 set-up with the small errors, against the test goalie: 24% (29 of 120 in the GIF's own plays;
+15% in the table's run, which drew other errors).** Each play is off by up to a foot, 0.2 a frame, 5 degrees and a
+frame, so the release spots spread.
 
 ![EA Special at 2.5 with small errors: four real attempts](img/scoring_map/ea_slop_bottom_small_clips.gif)
 ![EA Special at 2.5 with small errors: every attempt from above](img/scoring_map/ea_slop_bottom_small_paths.gif)
@@ -344,7 +345,7 @@ carry over: exact, Hrudey / Roy, the bottom net's best (25 out, Power 3, Down-Le
 close spot from 52 / 48% to 10 / 15%, the top net's best from 34 / 20% to 31 / 6%. This shows the set-ups are tuned to
 the speed, not that the EA Special fails at real speed; so the search was run again at a real one.
 
-**The bottom net's 2.5 set-up at 2.0 a frame: 2% (3 of 120).** Same release spot, aim and Shot Power; only the
+**The bottom net's 2.5 set-up at 2.0 a frame: 2.5% (3 of 120).** Same release spot, aim and Shot Power; only the
 skating speed differs.
 
 ![EA Special, the 2.5 set-up at 2.0 a frame: four real attempts](img/scoring_map/ea_slop_bottom_2_0_clips.gif)
@@ -370,7 +371,7 @@ goalies:
   nine cells), and from 19 ft to the side it fails (1-25%). So the depth is most of the skill.
 - **Both nets' best were at the edge of the grid,** so a finer search followed (next).
 
-**The 20 ft set-up, against the test goalie: 35% (42 of 120); against Roy: 33% (39 of 120); 3 ft deeper: 0 of 120.**
+**The 20 ft set-up, against the test goalie: 35% (42 of 120); against Roy: 33% (39 of 120); released 3 ft farther out: 0 of 120.**
 
 ![EA Special at 1.7, bottom net, 20 ft out: four real attempts](img/scoring_map/ea_speed17_bottom_clips.gif)
 ![EA Special at 1.7, bottom net, 20 ft out: every attempt from above](img/scoring_map/ea_speed17_bottom_paths.gif)
@@ -378,12 +379,12 @@ goalies:
 ![EA Special at 1.7, bottom net, 20 ft out, against Roy: four real attempts](img/scoring_map/ea_speed17_bottom_roy_clips.gif)
 ![EA Special at 1.7, bottom net, 20 ft out, against Roy: every attempt from above](img/scoring_map/ea_speed17_bottom_roy_paths.gif)
 
-![EA Special at 1.7, bottom net, 23 ft out: four real attempts](img/scoring_map/ea_speed17_bottom_23ft_clips.gif)
+![EA Special at 1.7, bottom net, 23 ft out (3 ft farther): four real attempts](img/scoring_map/ea_speed17_bottom_23ft_clips.gif)
 ![EA Special at 1.7, bottom net, 23 ft out: every attempt from above](img/scoring_map/ea_speed17_bottom_23ft_paths.gif)
 
 **The finer search at 1.7 (plan "fine", 2026-10-26).** At the bottom net: released 17-21 ft out (52-64), 22-29 ft to
 either side (65-88), both hands. At the top net: a right-hander from his left, 19-24 ft out (56-72), 25-29 ft to the
-side. Shot Power 2-4, skating in at 45 degrees or at the goal, every aim, 48 moments x 2 seeds against each goalie (96
+side. Shot Power 2-4 (the top net 2-3), skating in at 45 degrees or at the goal, every aim, 48 moments x 2 seeds against each goalie (96
 plays a cell, so about 5 points either way). The best for each, by the worse of the two goalies:
 
 | Net | Best set-up at 1.7 | Hrudey | Roy |
@@ -406,16 +407,20 @@ release depth across and side down:
 - **At 21 ft out the bottom net's EA Special is forgiving.** Every one of the 18 cells there from 24-29 ft to the side
   (Power 2, 3 or 4, skating at the goal or in at 45 degrees) gave 28-43% against both goalies. At 20 ft it holds when
   skating in at 45 degrees (21-40%) but skating at the goal mostly fails there. At 17 ft it is gone, and the earlier
-  search had 23 ft at 9%. **So the target is 20-21 ft out, a little wide of the faceoff dot, and the depth is what
-  matters.** Side, Shot Power and line forgive a lot.
+  search had 23 ft at 9%. **So the target is 20-21 ft out (level with the faceoff dot, 21 ft out) and a little wider
+  than the dot (23 ft to the side), and the depth is what matters.** Side, Shot Power and line forgive a lot.
 - **The aim is toward the near side (Down-Right for the right-hander).** Holding the far side gives nothing here. The
   left-hander mirrors it (Down-Left): 35% at 21 ft from 24-29 ft to the side, a little below the right-hander.
-- **The top net has no such spot.** Its best cells are 15-26% and scattered (20 ft with Down-Right or Down held, 23-24
+- **The top net has no such spot.** Its best cells are 15-21% by the worse goalie (up to 26-29% against one) and scattered (20 ft with Down-Right or Down held, 23-24
   ft with Up held), each with weak neighbours, so a person can't aim for them. At 1.7 the top net's EA Special is
   about half as good as the bottom net's at best.
 - **What comes next at 1.7, from the 21 ft spot:** a person's slop (plan "slop"), a speed sweep from 1.5 to 2.0 (how
   much below full speed works), the goalie's ratings one at a time and the shooter's skating ratings. The left-hander
   at the top net is still only known at 2.5 (below).
+- **The bot's follow-up was always aimed at the near post** (as first described; every run so far). The user: people
+  aim it at the middle or the far post, the middle better. Plan "follow" (the follow-up's aim as a setting,
+  `NHL94_EA_FOLLOW`) and the fine search again with a middle and a far follow-up are running; the first shot's best aim
+  may move with it.
 
 **The bottom net, 21 ft out and 27 ft to the side, skating at the goal, Power 4, Down-Right: 40% (48 of 120) against the
 test goalie, 33% (40 of 120) against Roy.**
@@ -431,7 +436,7 @@ test goalie, 33% (40 of 120) against Roy.**
 ![EA Special at 1.7, bottom net, the left-hander: four real attempts](img/scoring_map/ea_fine_bottom_left_clips.gif)
 ![EA Special at 1.7, bottom net, the left-hander: every attempt from above](img/scoring_map/ea_fine_bottom_left_paths.gif)
 
-**The top net's best cell, 20 ft out and 25 ft to the side, Power 2, Down-Right: 12% (15 of 120)** against the test
+**The top net's best cell, 20 ft out and 25 ft to the side, Power 2, Down-Right: 12.5% (15 of 120)** against the test
 goalie in the GIF's own plays (21% in the search), which shows how loose the top net's best is.
 
 ![EA Special at 1.7, top net: four real attempts](img/scoring_map/ea_fine_top_clips.gif)
