@@ -13,6 +13,7 @@ EA Specials played in the real Genesis game with a bot following up, and the one
    - [The best depth at each net (plan "depth", 2026-10-25)](#the-best-depth-at-each-net-plan-depth-2026-10-25)
    - [The best set-up at each net (plan "refine", 2026-10-26)](#the-best-set-up-at-each-net-plan-refine-2026-10-26)
    - [Skating speed and a person's slop (plans "slop", "slopfull", "refine" at 1.7, "lefttop", 2026-10-26)](#skating-speed-and-a-persons-slop-plans-slop-slopfull-refine-at-17-lefttop-2026-10-26)
+   - [Why it works: what the goalie does (the user's 2v2 games, 2026-10-27)](#why-it-works-what-the-goalie-does-the-users-2v2-games-2026-10-27)
    - [EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)](#ea-specials-in-the-recorded-games-analysisea_realpy-2026-10-26)
 
 ## EA Specials (Genesis, 2026-10-24)
@@ -455,6 +456,31 @@ gave 16 / 15%.
 
 ![EA Special, the left-hander at the top net, against Roy: four real attempts](img/scoring_map/ea_lefttop_roy_clips.gif)
 ![EA Special, the left-hander at the top net, against Roy: every attempt from above](img/scoring_map/ea_lefttop_roy_paths.gif)
+
+### Why it works: what the goalie does (the user's 2v2 games, 2026-10-27)
+
+The user asked whether the goalie is really "pushed back" by the first shot, or is moving toward the far post because
+that is where the shot is going. Measured in the user's two 2v2 games (`2026-10-27_0733_EDM-HFD`,
+`2026-10-27_0744_HFD-EDM`: 70 forehand attempts, 22 scored on the follow-up), the goalie across (toward the far post)
+and out from his goal line, medians:
+
+| | At the release | At the save | At the follow-up |
+| --- | --- | --- | --- |
+| Goals (22): across | 15 toward the near post | 7 toward the near post | 4 past the middle, toward the far post |
+| Goals: out from his line | 17.5 | 18.2 | 17.2 |
+| Misses (48): across | 15 toward the near post | 11 toward the near post | 2 toward the far post |
+
+- **He is not pushed back:** his depth doesn't change.
+- **He slides toward the far post because the first shot is going there.** The computer goalie skates to the point
+  where a shot will cross his line once it is under 0.6 s away, and 0.2 s before it arrives commits to a save move at
+  a quarter of his speed (GENESIS_SHOOTING 5.3), so he can't stop or turn back.
+- **The puck catches him on his near side as he crosses** (a median 9 units to the near side of his centre), and a
+  rebound leaves straight out from his centre through where it touched (GENESIS_SHOOTING 5.2): **back toward the
+  shooter's side.** In all 22 goals the puck was on the shooter's side 0.25 s after the save (a median 21 units out
+  from the middle), while the goalie had slid another 8 units toward the far post.
+- **So the near post is open for the follow-up,** with the goalie past the middle chasing where the first shot was
+  going, not where the puck went. In the misses he moved a little less (16 units against 20). It is also why the
+  first shot is aimed at the far post: aimed at the near post he has no reason to cross.
 
 ### EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)
 
