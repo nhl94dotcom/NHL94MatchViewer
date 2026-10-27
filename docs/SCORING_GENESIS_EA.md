@@ -125,7 +125,7 @@ the ice. `ea_run.py` plan "angle": the dots run's 9 spots (18 / 23 / 28 ft to hi
 left-hander skating at 2.5 a frame straight across toward the middle, at 45 degrees (across and toward the goal
 line) or straight at the middle of the goal line, Shot Power 2 / 4 / 6, Shot Accuracy 4, all nine aims, 24 moments x
 2 seeds, both nets: 7,776 first shots per goalie. Four goalies: the test goalie (Hrudey) and the profiles of
-[the goalie section](SCORING_GENESIS.md#real-goalie-profiles-every-shot-against-retail-cdl-roy-and-belfour) (a retail starter, the CDL edit, Roy). The same bot plays on (after the
+[the goalie section](SCORING_GENESIS.md#real-goalie-profiles-every-shot-against-retail-cdl-roy-and-belfour) (a retail starter, the CDL edit, Roy: the save state's LA goalie given that goalie's working ratings, so the GIFs still show the LA goalie). The same bot plays on (after the
 shot it skates at the middle of the goal line, and at the loose puck once the goalie has touched it).
 
 | Goalie | Straight across | At 45 degrees | At the goal | Goalie dives after a bobble |

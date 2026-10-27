@@ -472,7 +472,9 @@ The same studies against four goalie profiles from the ROMs (working ratings, a 
 starter (roster Agility 4, Speed 4, Defensive Awareness 5, Puck Control 4: working 20 / 20 / 25 / 20); the same goalie
 with the CDL edit (+1 Agility, Defensive Awareness and Puck Control, as `CDL_Season_12.bin` has it: 25 / 20 / 30 / 25);
 Roy (6 / 4 / 4 / 6: 30 / 20 / 20 / 30) and Belfour (6 / 4 / 6 / 5: 30 / 20 / 30 / 25), the two the leagues leave
-unedited and rank above the rest. Hrudey, the test goalie, for comparison.
+unedited and rank above the rest. Hrudey, the test goalie, for comparison. A profile is the four working ratings
+written into the save state's goalie (harness `NHL94_GOALIE`) before every play, so the animations still show the LA
+goalie's sprite and colours: only his ratings change.
 
 | Goalie | Standing slapshot, shooter 4 / 4 (best aim, 18 spots) | Standing slapshot, shooter 27 / 27 (best aim, 70 middle spots; top / bottom net) | Skating far-post slapshot, 4 / 4 (best) | One-timers, receiver 4 / 4 | Dekes (best set-ups) | Floaters (best set-ups) |
 | --- | --- | --- | --- | --- | --- | --- |
