@@ -424,7 +424,14 @@ straight across about 1% (the bot reaches 7-10% of the bobbles, against 58-69%);
 after a bobble 7-8% of the time against Hrudey's 17-21%), so goalie quality matters far less than for slapshots. Released at the user's marked spots (plan "xspot": 22-25 ft to
 the side, 13-15 ft out): 1.6% over every aim (Roy 1.1%), but the bottom net, a right-hander from his left, skating at
 the goal at 2.5 a frame, Shot Power 2, no direction held: 55% over 120 moments (Roy 43%; the top net 18%), the bobble
-claimed at once (95%) with hardly a dive.
+claimed at once (95%) with hardly a dive. **These early runs' follow-up goals are not reliable:** until 2026-10-27 the
+bot's follow-up held its aim 3 frames and the wrist shot leaves on the 4th, so it went where the bot was skating.
+**With that fixed** (SCORING_GENESIS_EA "With the follow-up fixed" onward), skating in a little below full speed (1.5-1.9
+a frame; at 2.0 and over it fails): the top net's EA Special scores 65-75% for the bot from 23-24 ft out and 25-29 ft
+to the side, either hand, the first shot at the far side at middle height and the follow-up at the near post (the
+right-hander's against every league starter); the bottom net's best is 16-17 ft out and 29 ft to the side (about 60-70%, but which hand works
+depends on the goalie's Agility). Shot Power 3-5, and Shot Accuracy doubles it. Backhand EA Specials barely work (0-9%
+over all aims). Against people's real attempts the simulation is far too optimistic (the bot meets no defender).
 
 **The computer goalie's ratings** (2026-10-25, SCORING_GENESIS "The computer goalie's ratings"): the scoring map's test
 goalie is Hrudey with a cold -2 (working Agility 13, Speed 13, Puck Control 18, `aidef` 10). Setting Agility, Speed

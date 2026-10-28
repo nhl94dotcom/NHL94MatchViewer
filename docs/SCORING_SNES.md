@@ -12,6 +12,7 @@ SNES shots played in the real game (the retail ROM; the method: [SCORING_MAP](SC
 4. [Slapshots and the shooter's ratings](#slapshots-and-the-shooters-ratings)
 5. [The computer goalie's ratings](#the-computer-goalies-ratings)
 6. [SNES dekes in the game](#snes-dekes-in-the-game)
+7. [EA Specials on the SNES](#ea-specials-on-the-snes-snes_ea_runpy-2026-10-27)
 
 ## The goals that went in
 
@@ -278,3 +279,44 @@ every goalie.
 ## SNES dekes in the game
 
 The user's SNES dekes (the near-post cut and the deke from his own side) replayed in the game from the recording, both nets, both hands: [SNES_SHOOTING](SNES_SHOOTING.md) 4.10, with GIFs.
+
+## EA Specials on the SNES (`snes_ea_run.py`, 2026-10-27)
+
+The user: on the SNES the EA Special has been found not to be a thing, or a very rare one. The Genesis play (a wrist
+shot from the side meant to come off the goalie loose, then a quick follow-up inside the near post:
+[SCORING_GENESIS_EA](SCORING_GENESIS_EA.md)) played in the retail SNES ROM with the same kind of bot. The SNES hold
+rule runs the other way (SNES_SHOOTING 5.4): the goalie holds a puck slower than a random 8,192-17,000 in each
+direction, and a harder one bounces straight out from his centre. So the run tries harder shots too.
+
+**Plan "explore"** (with the follow-up's aim fixed, as on the Genesis; the four runs before the fix are superseded):
+both nets, released 13 / 21 / 29 ft out and 20 / 27 ft to either side (a right-hander from his left, a left-hander
+from his right), skating at the goal or in at 45 degrees at 1.9 a frame (full speed about 2.2), working Shot Power 5 /
+10 / 15 (of 15), a wrist shot (A tapped) or a 12-frame wind-up, every aim, 24 moments x 2 seeds, against the test
+goalie (8 / 8 / about 15 / 15) and Roy (15 / 10 / 10 / 15). The follow-up is aimed at the near post.
+
+- **Over the whole grid it is rare, as the user said:** 1-3% of attempts end in a goal at every Shot Power, for both
+  goalies. Wrist shots are held 73-80% of the time; the wind-up is held less (44-46% at Shot Power 10, 22-25% at 15)
+  and bobbled more, but at Shot Power 10-15 its follow-ups score less (0.5-1.6% of attempts against the wrist shot's
+  1.9-2.8%).
+- **One spot works in the simulation: 21 ft out and 27 ft to the side, a wrist shot, Shot Power 5-10, the first shot
+  low** (along the ice, at the middle or the far side). There the goalie leaves most first shots loose (80-100% at the top
+  net, 50-80% at the bottom) and the bot claims most of them:
+
+| Net | Set-up | Test goalie | Roy |
+| --- | --- | --- | --- |
+| Top | a left-hander from his right, in at 45°, Shot Power 10, Down-Left (low, the far side) | 72% (follow-up 57%) | 52% (35%) |
+| Top | the same, Down (low, the middle) | 57% (51%) | 38% (35%) |
+| Top | a right-hander from his left, at the goal, Shot Power 10, Down-Right (low, the far side) | 60% (31%) | 48% (27%) |
+| Bottom | a right-hander from his left, in at 45°, Shot Power 5, Down (low, the middle) | 67% (56%) | 40% (29%) |
+| Bottom | the same, Shot Power 10, Down-Left (low, the far side) | 62% (46%) | 42% (27%) |
+
+- **The rest of each rate is mostly the loose puck going in off the goalie** with no second shot (up to 29% of
+  attempts in the top net's right-hander row), and a few first shots straight in.
+- **The bottom net's left-hander is a straight-in shot,** not an EA Special: the same spot, Down-Right, 73% against the
+  test goalie and 35% against Roy, almost all the first shot.
+- **Elsewhere the best cells are 25-31%** by the worse goalie (13 ft and 29 ft out, or 20 ft to the side).
+- **Roy matters more here than in the other SNES studies,** 10-30 points less at the best spot.
+- **Limits:** the grid is coarse (three depths, two sides), so the spot's edges aren't known. On the Genesis the same
+  kind of simulation was far too optimistic against the user's real attempts (the bot has no defender and never
+  hesitates), and there is no SNES recording of EA Specials to check it against yet. A finer search around 21 ft out
+  and 27 ft to the side would come next.

@@ -4,6 +4,13 @@
 
 EA Specials played in the real Genesis game with a bot following up, and the ones in the recorded games (the method: [SCORING_MAP](SCORING_MAP.md)).
 
+**Read first (2026-10-27): the bot's follow-up ignored its aim until then.** It held the aim for 3 frames, but a wrist
+shot leaves the stick on the 4th, so every follow-up went wherever the bot was skating, never at the near post as
+described. The first shots, the bobbles and the claims are unaffected; the follow-up goals of every run before
+2026-10-27 are not. Fixed in `ea_run.py` (the aim held until the puck leaves). The results with the fix:
+[the search at 1.7 again](#with-the-follow-up-fixed-the-search-at-17-again-2026-10-27) and every section after it.
+The earlier sections are kept as they were run, with notes where the fix changed the answer.
+
 ## Contents
 
 - [EA Specials (Genesis, 2026-10-24)](#ea-specials-genesis-2026-10-24)
@@ -13,8 +20,10 @@ EA Specials played in the real Genesis game with a bot following up, and the one
    - [The best depth at each net (plan "depth", 2026-10-25)](#the-best-depth-at-each-net-plan-depth-2026-10-25)
    - [The best set-up at each net (plan "refine", 2026-10-26)](#the-best-set-up-at-each-net-plan-refine-2026-10-26)
    - [Skating speed and a person's slop (plans "slop", "slopfull", "refine" at 1.7, "lefttop", 2026-10-26)](#skating-speed-and-a-persons-slop-plans-slop-slopfull-refine-at-17-lefttop-2026-10-26)
+   - [With the follow-up fixed: the search at 1.7 again (2026-10-27)](#with-the-follow-up-fixed-the-search-at-17-again-2026-10-27)
    - [Why it works: what the goalie does (the user's 2v2 games, 2026-10-27)](#why-it-works-what-the-goalie-does-the-users-2v2-games-2026-10-27)
    - [The whole zone, and the user's set-ups, in the simulation (plans "wide" and "real2v2", 2026-10-27)](#the-whole-zone-and-the-users-set-ups-in-the-simulation-plans-wide-and-real2v2-2026-10-27)
+   - [Backhands (plan "backhand", 2026-10-27)](#backhands-plan-backhand-2026-10-27)
    - [Which goalies and which shooters (plans "goalie17" with the league's goalies and "shooter17", 2026-10-28)](#which-goalies-and-which-shooters-plans-goalie17-with-the-leagues-goalies-and-shooter17-2026-10-28)
    - [EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)](#ea-specials-in-the-recorded-games-analysisea_realpy-2026-10-26)
 
@@ -313,8 +322,10 @@ the paths view so the net is at the top.
 18) tops out at 2.0 holding the d-pad; a 10 / 10 skater at 1.75, 20 / 20 at 2.05, 30 / 30 at 2.35 (measured). And
 people don't take an EA Special at full speed: the user skates a little below it, tapping the d-pad rather than
 holding it, to be placed for the rebound rather than charging at the net. So the set-ups above are the best for a
-speed nobody plays at. This section is about what happens at real speeds: at 1.7 a frame the bottom net's EA Special
-still goes in about 40% of the time against both goalies, from a wide, forgiving spot 20-21 ft out (below).
+speed nobody plays at. This section is about what happens at real speeds. **Its 1.7 results predate the follow-up
+fix** (the note at the top): the bottom net's 40% from 20-21 ft out turned out to be first shots going straight in,
+not EA Specials, and with the follow-up aimed the top net is the forgiving one. The corrected results are in the next
+section.
 
 **How forgiving the 2.5 set-ups are (plan "slop").** A person can't release at the exact spot and frame. Each moment
 draws its own errors (uniform, either way) in the release spot, the skating speed and angle and the release frame:
@@ -354,7 +365,7 @@ skating speed differs.
 ![EA Special, the 2.5 set-up at 2.0 a frame: four real attempts](img/scoring_map/ea_slop_bottom_2_0_clips.gif)
 ![EA Special, the 2.5 set-up at 2.0 a frame: every attempt from above](img/scoring_map/ea_slop_bottom_2_0_paths.gif)
 
-**The search again at 1.7 a frame (plan "refine", NHL94_EA_SPEED=1.7):** the same grid (306 set-ups, 48 moments x 2
+**The search again at 1.7 a frame (plan "refine", NHL94_EA_SPEED=1.7; before the follow-up fix):** the same grid (306 set-ups, 48 moments x 2
 seeds against each goalie), a little below the test skater's full speed, as the user plays it. By the worse of the two
 goalies:
 
@@ -366,7 +377,7 @@ goalies:
 | Top | the same, 23 ft out, Up | 26% | 17% |
 
 - **The bottom net still does about twice the top,** as at 2.5, and the best aim there turns from the far side to the
-  near side.
+  near side. (With the fix: those bottom-net goals were first shots straight in at the near side.)
 - **The bottom net works at one depth only.** The right-hander's best at each release depth (the worse goalie): 15 ft
   out 5%, **20 ft 40%**, 23 ft 9%, 25 ft 5%; the left-hander's the same shape. At 20 ft, skating in at 45 degrees,
   it is steady: 29-40% against both goalies from 22-27 ft to the side at every Shot Power (one cell of nine, 22 ft
@@ -375,6 +386,8 @@ goalies:
 - **Both nets' best were at the edge of the grid,** so a finer search followed (next).
 
 **The 20 ft set-up, against the test goalie: 35% (42 of 120); against Roy: 33% (39 of 120); released 3 ft farther out: 0 of 120.**
+These GIFs and the ones below in this section were made before the fix: the bottom net's goals are first shots straight
+in (unaffected), and any follow-up shown was aimed by the skating direction.
 
 ![EA Special at 1.7, bottom net, 20 ft out: four real attempts](img/scoring_map/ea_speed17_bottom_clips.gif)
 ![EA Special at 1.7, bottom net, 20 ft out: every attempt from above](img/scoring_map/ea_speed17_bottom_paths.gif)
@@ -385,7 +398,8 @@ goalies:
 ![EA Special at 1.7, bottom net, 23 ft out (3 ft farther): four real attempts](img/scoring_map/ea_speed17_bottom_23ft_clips.gif)
 ![EA Special at 1.7, bottom net, 23 ft out: every attempt from above](img/scoring_map/ea_speed17_bottom_23ft_paths.gif)
 
-**The finer search at 1.7 (plan "fine", 2026-10-26).** At the bottom net: released 17-21 ft out (52-64), 22-29 ft to
+**The finer search at 1.7 (plan "fine", 2026-10-26; before the follow-up fix, run again with it in the next
+section).** At the bottom net: released 17-21 ft out (52-64), 22-29 ft to
 either side (65-88), both hands. At the top net: a right-hander from his left, 19-24 ft out (56-72), 25-29 ft to the
 side. Shot Power 2-4 (the top net 2-3), skating in at 45 degrees or at the goal, every aim, 48 moments x 2 seeds against each goalie (96
 plays a cell, so about 5 points either way). The best for each, by the worse of the two goalies:
@@ -407,23 +421,21 @@ release depth across and side down:
 | 24 ft | 1% | 33% | 39% | 43% |
 | 22 ft | 4% | 8% | 39% | 16% |
 
-- **At 21 ft out the bottom net's EA Special is forgiving.** Every one of the 18 cells there from 24-29 ft to the side
+- **At 21 ft out the bottom net's shot is forgiving,** but it isn't an EA Special: every goal at the 21 ft spot (65
+  of 192 plays) was the first shot going straight in, low inside the near post, and the follow-up scored none. Every
+  one of the 18 cells there from 24-29 ft to the side
   (Power 2, 3 or 4, skating at the goal or in at 45 degrees) gave 28-43% against both goalies. At 20 ft it holds when
   skating in at 45 degrees (21-40%) but skating at the goal mostly fails there. At 17 ft it is gone, and the earlier
-  search had 23 ft at 9%. **So the target is 20-21 ft out (level with the faceoff dot, 21 ft out) and a little wider
-  than the dot (23 ft to the side), and the depth is what matters.** Side, Shot Power and line forgive a lot.
-- **The aim is toward the near side (Down-Right for the right-hander).** Holding the far side gives nothing here. The
-  left-hander mirrors it (Down-Left): 35% at 21 ft from 24-29 ft to the side, a little below the right-hander.
-- **The top net has no such spot.** Its best cells are 15-21% by the worse goalie (up to 26-29% against one) and scattered (20 ft with Down-Right or Down held, 23-24
-  ft with Up held), each with weak neighbours, so a person can't aim for them. At 1.7 the top net's EA Special is
-  about half as good as the bottom net's at best.
-- **What comes next at 1.7, from the 21 ft spot:** a person's slop (plan "slop"), a speed sweep from 1.5 to 2.0 (how
-  much below full speed works), the goalie's ratings one at a time and the shooter's skating ratings. The left-hander
-  at the top net is still only known at 2.5 (below).
-- **The bot's follow-up was always aimed at the near post** (as first described; every run so far). The user: people
-  aim it at the middle or the far post, the middle better. Plan "follow" (the follow-up's aim as a setting,
-  `NHL94_EA_FOLLOW`) and the fine search again with a middle and a far follow-up are running; the first shot's best aim
-  may move with it.
+  search had 23 ft at 9%. So a wrist shot released 20-21 ft out, a little wider than the faceoff dot, goes in about
+  40% of the time; the depth is what matters. The fix doesn't change this: straight-in shots never reach the follow-up.
+- **The aim is toward the near side (Down-Right for the right-hander),** low. The left-hander mirrors it (Down-Left):
+  35% at 21 ft from 24-29 ft to the side, a little below the right-hander.
+- **The top net had no such spot** before the fix (15-21% by the worse goalie at scattered cells). With the follow-up
+  aimed, it is the most forgiving EA Special of all: 65-73% from 23-24 ft out (next section).
+- **The follow-up's aim** (the user: people aim it at the middle or the far post, the middle better). With the fix,
+  plan "follow" played the best set-ups with each: the near post scores, the middle and far post hardly do (top net
+  26% / 2% / 1% against the test goalie; bottom net 31% / 6% / 8%). The bot claims the rebound on its own side almost
+  every time (4 of 512 claims across the middle), so "near" is the post on the shooter's side.
 
 **The bottom net, 21 ft out and 27 ft to the side, skating at the goal, Power 4, Down-Right: 40% (48 of 120) against the
 test goalie, 33% (40 of 120) against Roy.**
@@ -445,7 +457,7 @@ goalie in the GIF's own plays (21% in the search), which shows how loose the top
 ![EA Special at 1.7, top net: four real attempts](img/scoring_map/ea_fine_top_clips.gif)
 ![EA Special at 1.7, top net: every attempt from above](img/scoring_map/ea_fine_top_paths.gif)
 
-**The left-hander at the top net (plan "lefttop", at 2.5, so provisional).** The refine grid at the top net mirrored for
+**The left-hander at the top net (plan "lefttop", at 2.5, before the fix; at 1.7 with the fix in the next section).** The refine grid at the top net mirrored for
 a left-hander from his right (plus the close spot on that side), against both goalies. His best: released 28 ft out,
 19 ft to the side, in at 45 degrees, Power 2, Up-Left: **54% / 30%** (Hrudey / Roy), against the right-hander's 34 / 20%
 at the same speed. It is on the grid's far edge too. The close spot for him (11 ft out, 27 ft to the side, Left held)
@@ -458,6 +470,106 @@ gave 16 / 15%.
 
 ![EA Special, the left-hander at the top net, against Roy: four real attempts](img/scoring_map/ea_lefttop_roy_clips.gif)
 ![EA Special, the left-hander at the top net, against Roy: every attempt from above](img/scoring_map/ea_lefttop_roy_paths.gif)
+
+### With the follow-up fixed: the search at 1.7 again (2026-10-27)
+
+The fine search and every 1.7 run after it, played again with the follow-up aimed at the near post (the bug: the note
+at the top). The test skater (working Agility / Speed 18 / 18, full speed 2.0 a frame), the test goalie and Roy, the
+same grids and moments as before. Rates are goals per attempt, the first shot and the follow-up together; "straight
+in" is the first shot alone.
+
+**The fine search** (plan "fine": the bottom net 17-21 ft out and 22-29 ft to either side, both hands; the top net, a
+right-hander from his left, 19-24 ft out and 25-29 ft to the side; Shot Power 2-4, at the goal or in at 45 degrees, every
+aim, 96 plays a cell against each goalie). The best, by the worse of the two goalies:
+
+| Net | Best set-up at 1.7 | Test goalie | Roy |
+| --- | --- | --- | --- |
+| Top | a right-hander from his left, released 23 ft out, 28 ft to the side, in at 45°, Power 3, first shot Right (middle height, the far side) | 73% | 74% |
+| Bottom | a left-hander from his right, released 17 ft out, 29 ft to the side, at the goal, Power 3, first shot Right (middle height, the far side) | 61% | 70% |
+| Bottom | the right-hander from his left, mirrored (Left held) | 66% | 38% |
+
+- **Now the top net is the forgiving one.** Every cell 23-24 ft out and 25-29 ft to the side gave 65-73% against the
+  worse goalie; 19-21 ft out, 29-40%. Nearly all of it (98% of the top net's goals) is the follow-up.
+- **At the bottom net the EA Special is at the grid's near edge,** 17 ft out and 29 ft to the side (the left-hander
+  61-70%; the right-hander's mirror is goalie-dependent, as the league's goalies show below). The 20-21 ft cells that
+  were 40% before are still 40-43%, but they are the first shot going straight in (a third of the bottom net's goals
+  over the grid). The grid stopped at 21 ft out; the whole-zone search below (2v2 ratings) found both nets best
+  24-32 ft out.
+- **The first shot goes to the far side at middle height** (the user's far post, then near post), and the follow-up at
+  the near post.
+
+The left-hander at the bottom net, by release depth across and side down (the best over Power, line and aim, the worse
+goalie; the share of it that was the first shot straight in, in brackets):
+
+| Side / out | 17 ft | 19 ft | 20 ft | 21 ft |
+| --- | --- | --- | --- | --- |
+| 29 ft | **61% (0)** | 35% (0) | 44% (0) | 40% (0) |
+| 27 ft | 33% (0) | 30% (0) | 33% (1) | 35% (37) |
+| 24 ft | 21% (0) | 30% (31) | 29% (30) | 35% (33) |
+| 22 ft | 5% (1) | 4% (0) | 19% (21) | 22% (24) |
+
+**A person's slop** (plan "slop", the errors as before: small = 1 ft, 0.2 a frame, 5 degrees, 1 frame; medium = 3 ft,
+0.5, 10 degrees, 2 frames; large = 5 ft, 1.0, 20 degrees, 3 frames). Each set-up's best aim, 120 moments, test goalie /
+Roy:
+
+| Set-up (out and side in ft) | exact | small | medium | large |
+| --- | --- | --- | --- | --- |
+| Top: right-hander, 23 out, 28 side, in at 45°, Power 3, Right | 69 / 66 | 62 / 58 | 49 / 47 | 33 / 28 |
+| Top: right-hander, 24 out, 27 side, at the goal, Power 3, Right | 74 / 74 | 72 / 77 | 52 / 49 | 42 / 36 |
+| Bottom: right-hander, 17 out, 29 side, at the goal, Power 3, Left | 61 / 34 | 58 / 34 | 40 / 31 | 30 / 30 |
+| Bottom: left-hander, 17 out, 29 side, at the goal, Power 3, Right | 59 / 66 | 49 / 54 | 37 / 36 | 23 / 25 |
+| Bottom: left-hander, 20 out, 29 side, in at 45°, Power 4, Right | 37 / 39 | 38 / 38 | 41 / 43 | 43 / 45 |
+| Bottom straight-in shot: right-hander, 21 out, 24 side, at the goal, Power 2, Down-Right | 36 / 36 | 30 / 25 | 17 / 14 | 8 / 6 |
+
+- **These are no longer knife-edges.** A foot and a frame off costs 0-10 points (the 2.5 set-ups lost half), the
+  medium errors about a third. The 20 ft left-hander's set-up doesn't care at all (37-45% at every level).
+- **Where you release matters most** (plan "slopparts", one kind of error at a time): at the top net's best, a medium
+  error in the release spot alone gives 51%, in the skating speed alone 48-54%, in the release frame 60-62%, in the
+  angle 65-70% (exact 66-69%). The straight-in shot needs the spot most: 12-13% with the medium spot error alone.
+
+**How fast to skate in** (plan "speed": 1.5 to 2.0 a frame, the release 1.3 or 2.7 ft nearer or farther; test goalie /
+Roy, best aim). The top net's best:
+
+| Speed / released | 20 ft | 21 ft | 23 ft | 24 ft | 25 ft |
+| --- | --- | --- | --- | --- | --- |
+| 1.5 | 39 / 42 | 41 / 38 | 58 / 58 | 75 / 75 | 74 / 72 |
+| 1.6 | 31 / 32 | 43 / 42 | 72 / 74 | 74 / 76 | 73 / 76 |
+| 1.7 | 32 / 31 | 38 / 36 | 69 / 67 | 64 / 66 | 67 / 68 |
+| 1.8 | 37 / 35 | 39 / 36 | 71 / 68 | 65 / 69 | 53 / 64 |
+| 1.9 | 30 / 33 | 36 / 35 | 61 / 62 | 60 / 55 | 59 / 65 |
+| 2.0 (full speed) | 32 / 26 | 30 / 27 | 27 / 23 | 21 / 20 | 31 / 18 |
+
+- **Anything from 1.5 to 1.9 works; full speed doesn't.** At the top net 23-25 ft out stays 53-76% up to 1.9 and
+  falls to 18-31% at 2.0. The bottom net's 17 ft set-ups behave the same way, with 16 ft as good or better (the
+  left-hander 51-69% / 61-72% at 1.5-1.7; at 1.8 and over his 17 ft falls to 22-32% and 16 ft holds 41-66%).
+- The right-hander's bottom set-up is goalie-dependent here too: from 20 ft Roy let in 71-82% at 1.5-1.9 and the test
+  goalie 25-32%.
+
+**The skater's own speed** (plan "skate17": working Agility / Speed 10 / 10, 13 / 13, 18 / 18, 20 / 20, 30 / 30, each at
+his full speed and 0.3 a frame below it). What matters is the speed in units a frame, not the ratings:
+
+- 0.3 below full speed (1.45-1.75 a frame for the first four), every skater scores as the test skater does: the top net
+  62-76% from 23-24 ft out, the bottom net 47-75% (the better of 16 and 17 ft out).
+- At full speed the slow skaters still do (10 / 10 at 1.75 and 13 / 13 at 1.85: the top net 61-71%), and the others
+  don't (18 / 18 and 20 / 20 at 2.0-2.05: 13-28%).
+- The fastest skater (30 / 30) fails at full speed (2.35) and still at 0.3 below it (2.05): the top net 16-29%. A fast
+  skater has to hold back well below full speed.
+
+**The left-hander at the top net** (plan "lefttop17": from his right, 19-24 ft out, 22-29 ft to the side, Power 2-4):
+the best, 24 ft out and 29 ft to the side, at the goal, Power 3 or 4, first shot Left (middle height, the far side):
+**74% / 73%**. Cells 23-24 ft out and 27-29 ft to the side gave 61-79%. So at 1.7 with the fix the left-hander is as
+good as the right-hander there (at 2.5 before the fix he had 54 / 30%).
+
+**The goalie's ratings one at a time** (plan "goalie17": each net's best set-up, from a 20 / 20 / 20 / 20 goalie,
+one rating at 10 or 30; the three aims around each best):
+
+- **The top net doesn't notice:** 64-70% for every goalie.
+- **Agility moves the bottom net's two set-ups in opposite directions:** the right-hander's (from his left) 29% at
+  Agility 20, 53% at 10, 33% at 30; the left-hander's 65%, 27%, 70%. Defensive Awareness 30 swaps them the same way
+  (65% and 33%).
+- **Defensive Awareness 10 kills the straight-in shot** (0%, against 36-39%): the goalie reacts later and is still
+  standing where it hits him.
+- Speed and Puck Control changed nothing.
 
 ### Why it works: what the goalie does (the user's 2v2 games, 2026-10-27)
 
@@ -545,10 +657,49 @@ the shooter's own spot:
 - Not yet checked: where the goalie stands at the release in the simulation against the user's games (15 units toward
   the near post at the release in the user's goals). The defender test (plan E) would show what a defender changes.
 
+### Backhands (plan "backhand", 2026-10-27)
+
+The user: backhand EA Specials are much harder, and taken from much closer. With the fixed follow-up, from close in to
+the faceoff dots (5-25 ft out, 8-28 ft to either side), both nets, the 2v2 ROM's skater (20 / 20, Shot Power and
+Accuracy 20) at 1.6 a frame, against Hartford's goalie and Roy, every aim. The game picks forehand or backhand by the
+skater's facing against the direction to the goal (`Findhittype`), not by the play: skating at the goal or in at 45
+degrees is always a forehand. So the backhand runs skate **straight up the ice** with the usual hand (a right-hander
+from his left), and **straight across** with the hand swapped (a left-hander from his left). Only cells where the game
+swung a backhand on at least 90% of the shots count. (The run file's backhand count is per moment while its totals
+count both seeds, so "48 of 96" there means every shot was a backhand.)
+
+- **Overall it barely works:** over every aim, 0-9% of attempts scored skating up the ice and 0-4% skating across,
+  though the goalie left 20-63% of them loose.
+- **The good bottom-net backhands are plain shots, not EA Specials.** Skating up the ice, 17-21 ft out and 18-23 ft to
+  either side (28 ft at 21 ft out), a low backhand at the far side went straight in 39-50% of the time against
+  Hartford's goalie and mostly 31-46% against Roy. The same spots at the top net gave less: on his left side a few
+  straight-in cells (30-38% against Hartford's goalie, 16-28% against Roy), on his right follow-ups (22-30%, Roy 8%).
+- **Real backhand EA Specials, with a quick follow-up** (the rebound claimed 13-43 frames after the save, under
+  three quarters of a second):
+  - skating up the ice, 25 ft out and 23 ft to the side (a left-hander from his right), nothing held: the top net
+    **48%** against Hartford's goalie and 24% against Roy, the bottom net 36% and 31%, all on the follow-up;
+  - skating across with the hand swapped, 21-25 ft out and 23-28 ft to his left: the top net 19-39% against Hartford's
+    goalie and 9-19% against Roy; the bottom net 13-17 ft out, 28 ft to his left, 19-24% against both.
+- **Close in (5-13 ft out) the goalie spills about a third to a half of the backhands, but the follow-up never scores.**
+  Traced frame by frame (about 90 plays):
+  - from about 5 ft out the rebound drops beside the near post, 1-5 ft behind the goal line. The shooter claims it
+    quickly (about 0.6 s), but a Genesis shot goes straight at the net, so from behind the line it runs along the goal
+    line into the goalie at the post and caroms away;
+  - from about 9 ft out and beyond, the save kicks the puck 30-40 ft to the side and the shooter reaches it about 2 s
+    later.
+- **Late second shots are not counted as EA Specials** (the user: a backhand EA Special is a quick fetch-the-rebound
+  and flip into the open net). The test window (2.5 s from the release) cuts some of the 2-second follow-ups off in
+  flight, so they show as "nothing". By then the goalie is set again, so a longer window would add ordinary shots at a
+  set goalie, not EA Specials, and it was left as it is. The quick cells above have claims well inside it.
+
+So in the game a backhand EA Special is much harder than the forehand one, as the user found: where the save sends
+the puck, not the release, is why. Close in the rebound ends where nothing can score; farther out it comes back too
+slowly to catch the goalie out of position, except from about 25 ft out.
+
 ### Which goalies and which shooters (plans "goalie17" with the league's goalies and "shooter17", 2026-10-28)
 
-Both from the best set-ups at 1.7 after the follow-up fix (`ea_run.py` BEST17, from the fine search run again with the
-follow-up's aim fixed; the 1.7 text above predates the fix): **the top net**, a right-hander from his left, released
+Both from the best set-ups at 1.7 after the follow-up fix (`ea_run.py` BEST17, from
+[the fine search run again with the fix](#with-the-follow-up-fixed-the-search-at-17-again-2026-10-27)): **the top net**, a right-hander from his left, released
 23 ft out and 28 ft to the side, in at 45 degrees, Power 3; **the bottom net**, released 17 ft out and 29 ft to the side
 skating at the goal, Power 3, a right-hander from his left and a left-hander from his right; and the bottom net's
 **close spot** (21 ft out, 24 ft to the side, Power 2). Each with its best aim and the two beside it, 120 moments, the
@@ -575,8 +726,10 @@ Speed, Defensive Awareness, Puck Control) written into the test goalie, base rat
   quality: against Roy the left-hander's works (70%) and the right-hander's doesn't (33%); against Fuhr the reverse.
   Only Belfour stops both (29% and 33%). A set-up this exact is a narrow window, and the goalie's Agility (his reach
   and how he moves) shifts which window is open. For a person, whose release varies, expect something between the two.
-- **Goalies with the same Agility gave identical results** (the plays are repeatable): Speed and Puck Control changed
-  nothing, and Defensive Awareness only mattered at 10 or below (his reaction time, `aidef`).
+- **Goalies with the same Agility and much the same Defensive Awareness gave identical results** (the plays are
+  repeatable): Speed and Puck Control changed nothing. Defensive Awareness (his reaction time, `aidef`) mattered at
+  the ends: 30 (Potvin, Joseph) swaps the bottom net's two set-ups as Agility does, and 10 or below moves them and
+  closes the close spot for an Agility-20 goalie.
 - **The close spot isn't an EA Special:** its goals are the first shot going straight in (about a third of attempts),
   not the rebound. Moog, Burke (Agility 20, Defensive Awareness 10) and Sidorkiewicz (Awareness 5), slower to react,
   are still standing where that shot hits him, and it fails (0-3%); Young (Agility 15, Awareness 10) isn't.
@@ -637,8 +790,9 @@ the Highlights.
   21, 24 and 37 ft out, at 87%, 92% and 65% of the shooter's full speed. Five attempts had a follow-up shot at all.
 - **People do skate in below full speed,** as the user said: a median of 78% of full speed (1.59 a frame). 10 attempts
   were under 70%, 8 at 70-90%, 7 at 90% or more. The search at 1.7 is about 85% for the test skater.
-- **Released a median of 22 ft out and 21 ft to the side** (16-37 ft out). The game's best at the bottom net, 20 ft out
-  and 27 ft to the side, is wider than people usually go.
+- **Released a median of 22 ft out and 21 ft to the side** (16-37 ft out). The game's best at the bottom net as then known, 20 ft out
+  and 27 ft to the side, is wider than people usually go (that spot later turned out to be a straight-in wrist shot,
+  and these spots are the puck's, about 6 ft nearer the middle than the shooter: see "The whole zone").
 - **Too few to test the simulation:** four bottom-net attempts came within 4 ft of 20 ft out, none of them near the
   1.7 set-up's speed and aim. The recordings show how people play it, not yet whether the bot's best works for them.
 

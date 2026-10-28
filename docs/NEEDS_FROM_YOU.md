@@ -47,13 +47,15 @@ record or check and what it will settle. Newest at the bottom of each section.
 8. ~~**SNES dekes and moves (the 2v2 ROM).**~~ Done (2026-10-25): the user's 2v2 game (`2026-10-25_1951_MTL-LA`) is
    traced and its 26 tries replayed in the game at both nets and by both hands (SNES_SHOOTING 4.10, with GIFs). A
    short game trying the cut going down the screen, released inside about 13 feet, would confirm it in play.
-9. **The EA Special at the bottom net (Genesis, optional).** In a practice game against the computer, going down the
-   screen at a little below full speed (tapping the d-pad, as you play it): a right-hander from his left, released
-   20-21 feet out from the goal line (level with the faceoff dot) and a little wider than the dot, holding Down and
-   toward your
-   own side, any Shot Power, then C again only once you have the puck. A dozen tries, and note the goalie. *Settles:*
-   whether a person gets the roughly 40% the game gave a bot at that speed against both a weak goalie and Roy
-   (SCORING_GENESIS_EA, "Skating speed and a person's slop", the finer search).
+9. ~~**The EA Special at the bottom net (Genesis)**~~ Answered (2026-10-27) by the user's two 2v2 games: 70 forehand
+   attempts, 19 scored by the shooter's own follow-up (15 of 40 at the top net, 4 of 30 at the bottom; most of the bottom net's
+   failures came after the shot: a defender claimed the rebound, or no shot followed). The 40% spot this item asked
+   about turned out to be a straight-in wrist shot, not an EA Special (the bot's follow-up was broken until then). The
+   simulation with the fix: SCORING_GENESIS_EA, "With the follow-up fixed" onward. Still open from it: the defender
+   test (plan E), which needs four design answers: where the defender starts, whether a person controls him (checking,
+   poking or both), his ratings, and one net or both. **Optional for the SNES:** a recording of you trying EA Specials
+   (21 ft out and 27 ft to the side, a low wrist shot, is the simulation's one good spot) would check SCORING_SNES's
+   EA section against real play.
 
 ## Things to note when they happen
 

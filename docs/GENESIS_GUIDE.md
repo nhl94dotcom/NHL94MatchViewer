@@ -328,28 +328,24 @@ The computer never holds a direction, so its wins go a random way.
 - **Rebounds go straight out from the goalie's centre through where the puck hit him.** A shot off his left pad comes
   off to his left. Point-blank shots at a goalie standing still rebound about 60% of the time; get a man to the side
   you're shooting at.
-- **The EA Special** (community name): a wrist shot from the side that the goalie bobbles and is pushed back on, then
-  a quick follow-up into the open side. It fits the rebound rule above. Played in the game itself with a simple bot
-  following up: aim the first shot **across**, at the far side (bobbled 60-80% of the time; aimed along the ice he
-  holds it). From about 13 feet to the side the play scored 7-12% of first shots at Shot Power 2-5 and about half that
-  at 6: the hardest shots are held more and the goalie dives at the loose puck less. It worked best about 40 feet out.
-  Skating in at 45 degrees or straight at the goal works about equally (3-4% for the bot, a little less against a
-  great goalie: he dives less, so use a medium Shot Power against him); skating straight across the bot almost
-  never gets back to the rebound. A person following up should do better than the bot. Released from level with the
-  faceoff dot and a little deeper (14 feet out), one version stands out: shooting down the screen, a right-hander from
-  his left, skating at the goal at full speed, Shot Power 2, no direction held. It scored about half the time even
-  against Roy (55% against a weak goalie, 43% against Roy): the bobble drops at his stick and he shoots again before
-  the goalie moves. The same play shooting up the screen scored 18%. A little farther out works as well down the
-  screen and is easier to find: a right-hander from his left, released about 25 feet out and 27 feet to the side
-  (a few feet farther out and wider than the faceoff dot, which is 21 feet out and 23 to the side), skating in at 45 degrees, Shot Power 3, holding Down and toward the far side: 42% against
-  a weak goalie, 54% against Roy. Up the screen the best was 20-24% (23 feet out, 24 to his left, holding Up). **But** all of these had the skater
-  faster than any skater can go (2.5 a frame; full speed is 1.75-2.35), and they are knife-edges: a foot or a frame
-  off halves them. At a little below full speed (1.7, the way people skate in to be placed for the rebound) the
-  bottom net's best is released 20-21 feet out (level with the faceoff dot) and a little wider than it (24-29 feet to
-  the side; the dot is at 23), holding Down
-  and toward your own side: about 40% against either goalie. Side, Shot Power and skating line hardly matter there;
-  the depth does (17 feet: nothing; 23 feet: 9%). Up the screen there's no such spot (15-21% at scattered set-ups)
-  (SCORING_GENESIS_EA, "Skating speed and a person's slop").
+- **The EA Special** (community name): a wrist shot from the side that the goalie bobbles, then a quick follow-up
+  into the open side. The goalie isn't pushed back: he slides toward the far post, where the first shot was going,
+  and the rebound comes back toward the shooter, so the near post is open. Played in the game itself with a simple bot
+  following up (SCORING_GENESIS_EA, "With the follow-up fixed" onward):
+  - **Aim the first shot at the far side, middle height** (Right for a right-hander from his left going up the screen),
+    then shoot the follow-up **at the near post**, the moment you have the puck. The middle and far post hardly score.
+  - **Release about 23-24 feet out and 25-29 feet to the side** (a little deeper and wider than the faceoff dot, which
+    is 21 out and 23 to the side). Going up the screen the bot scored about 70% from there (a right-hander against
+    every starter in the league; a left-hander as well against the two goalies tried), and a foot or a frame off costs
+    little. Down the screen the best was 16-17 feet out
+    and 29 to the side (about 60-70%), but which hand works there depends on the goalie.
+  - **Skate in below full speed.** 1.5-1.9 a frame works; at 2.0 and over it fails. Fast skaters (Speed 30) have to
+    hold back the most.
+  - **Middling shooters do best:** Shot Power 3-5 (6 is held more, 1-2 are too weak), and Shot Accuracy doubles it.
+  - **Backhand EA Specials barely work** (0-9%): close in the rebound drops behind the goal line, farther out it comes
+    back too slowly.
+  - A person against a person does far worse than the bot (it meets no defender and never hesitates): in the user's
+    2v2 games 15 of 40 at the top net and 4 of 30 at the bottom, where the defender often claimed the rebound first.
 - **Shoot when the goalie is moving, not when he's set.** In recorded games a goalie standing in his spot let in 1 shot
   of 31; one out of position by about 3 feet or more let in 22 of 59. A set goalie is hard to beat from anywhere, so
   make him move first: pass across, shoot off the rush, follow up rebounds.
