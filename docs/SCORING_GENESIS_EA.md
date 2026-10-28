@@ -167,7 +167,7 @@ one rating at 10 or 30; the three aims around each best):
 
 The user asked whether the goalie is really "pushed back" by the first shot, or is moving toward the far post because
 that is where the shot is going. Measured in the user's two 2v2 games (`2026-10-27_0733_EDM-HFD`,
-`2026-10-27_0744_HFD-EDM`: 70 forehand attempts, 22 scored on the follow-up), the goalie across (toward the far post)
+`2026-10-27_0744_HFD-EDM`: 70 forehand attempts, 22 scored on the follow-up: 19 by the shooter, 3 by a teammate), the goalie across (toward the far post)
 and out from his goal line, medians:
 
 | | At the release | At the save | At the follow-up |
