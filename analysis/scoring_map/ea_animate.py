@@ -274,7 +274,7 @@ def trail(d, pts, fill, width):
             d.line((a, b), fill=fill, width=width)
 
 
-def paths_gif(case, plays, path):
+def paths_gif(case, plays, path, legend=None):
     """Every play from above, lined up on the release, the net at the top (the bottom net's plays turned round)."""
     title, (g, n) = case[7], case[8]
     S, pad, head = 3.0, 14, 64
@@ -291,9 +291,10 @@ def paths_gif(case, plays, path):
         img = Image.new("RGB", (W, H), "white")
         d0 = ImageDraw.Draw(img)
         d0.text((pad, 6), title, fill="#1f2933", font=f1)
-        d0.text((pad, 26), f"Every play from above: {len(plays)} here, {tally(plays)}; over 120 moments {100 * g / n:.0f}%.",
-                fill="#52606d", font=f2)
-        d0.text((pad, 42), "Puck: orange when the play ends in a goal. Grey: shooter. Black: goalie, red while he dives.",
+        about = (f"Every play from above: {tally(plays)} ({100 * g / n:.0f}%)." if n == len(plays) else
+                 f"Every play from above: {len(plays)} here, {tally(plays)}; over 120 moments {100 * g / n:.0f}%.")
+        d0.text((pad, 26), about, fill="#52606d", font=f2)
+        d0.text((pad, 42), legend or "Puck: orange when the play ends in a goal. Grey: shooter. Black: goalie, red while he dives.",
                 fill="#52606d", font=f2)
         rink = Image.new("RGB", (W - 2 * pad, H - 20 - head), "#eef6fb")
         d = ImageDraw.Draw(rink)
