@@ -308,7 +308,7 @@ where the game can make one: the puck loose and inside his body box or his save 
   searches found their rebounds go farther and were seldom finished; they haven't been re-run with this save test.
 - **The walk-in** (the user, 2026-10-28, from the GIFs: the shooter takes back his own weak shot and puts it into the
   open net). Played out with the shooter carrying the retaken puck on at the middle of the goal line and shooting at
-  the near post once he is close (1,728 low shots, both nets and hands, 17 and 21 ft out, 27 ft to the side, Shot Power
+  the near post as he cuts across in front of the goalie (the carried puck turning within 24 of him) (1,728 low shots, both nets and hands, 17 and 21 ft out, 27 ft to the side, Shot Power
   5 / 8 / 11, test goalie): **28% of the retaken pucks went in** (top net 35% for the right-hander, 23% for the
   left-hander; bottom net 24% / 27%).
   - **The goalie doesn't go back:** he stays 14-16 units out from his goal line from the release to the shot.
@@ -323,6 +323,27 @@ where the game can make one: the puck loose and inside his body box or his save 
     within 25 of the middle, and starts a save move under 19 frames. A carrier skating at the middle of the goal line
     sets this off: the goalie slides toward the middle and is locked in the save while the shooter steps across to the
     near post.
+
+**Animated** (`snes_ea_animate.py`, the walk-in's two best set-ups: a right-hander from his left, released 17 ft out
+and 27 ft to the side, skating at the goal; each GIF's rate is its own 24 plays). In the goals the goalie is over on
+the far side, locked in his save, as the skater tucks the puck in at the near post.
+
+**Top net, Shot Power 11, Down-Right: 18 of 24 (16 walked in, 1 carried in, 1 off the goalie); against Roy 14 of 24.**
+
+![SNES walk-in, top net: four real attempts](img/scoring_map/sea_walkin_top_clips.gif)
+![SNES walk-in, top net: every attempt from above](img/scoring_map/sea_walkin_top_paths.gif)
+
+![SNES walk-in, top net, against Roy: four real attempts](img/scoring_map/sea_walkin_top_roy_clips.gif)
+![SNES walk-in, top net, against Roy: every attempt from above](img/scoring_map/sea_walkin_top_roy_paths.gif)
+
+**Bottom net, Shot Power 8, Down-Left: 18 of 24 (12 walked in, 4 carried in, 2 off the goalie); against Roy 17 of 24.**
+
+![SNES walk-in, bottom net: four real attempts](img/scoring_map/sea_walkin_bottom_clips.gif)
+![SNES walk-in, bottom net: every attempt from above](img/scoring_map/sea_walkin_bottom_paths.gif)
+
+![SNES walk-in, bottom net, against Roy: four real attempts](img/scoring_map/sea_walkin_bottom_roy_clips.gif)
+![SNES walk-in, bottom net, against Roy: every attempt from above](img/scoring_map/sea_walkin_bottom_roy_paths.gif)
+
 - **So in the game, the SNES EA Special is very rare, as the user said.** A full search with this save test (every
   spot, aim, Shot Power and the wind-up) hasn't been run yet, and there is no SNES recording of EA Specials to check
   against.
