@@ -1234,46 +1234,123 @@ def penalty_shot():
 # Toronto's away colours in NHL94_Classic (cd85e387), from the recorded 2026-10-16_1540_CHI-TOR.
 SNES_PALETTE = ['#94ffff', '#dedede', '#000000', '#0000e6', '#00004a', '#0000e6', '#0000e6', '#c59483', '#eeeeee',
                 '#eeeeee', '#0000e6', '#000052', '#0000e6', '#0000e6', '#9c7329', '#4a94b4']
-# Goalie frames facing down (top net) and their save areas from the ROM (xg_snes RomData.hot: hot x, y (up), radius,
-# top and bottom of the height band; a puck within the radius stops when bottom < height <= top, any height if bottom < 0).
-SNES_SAVE_FRAMES = [("Ready (standing)", 546, None), ("Glove", 547, (-8, -3, 6, 15, 7)), ("Stick", 606, (-8, -2, 8, 8, -2)),
-                    ("Pad stack", 581, (-15, -2, 8, 6, -4)), ("Butterfly", 732, (14, -2, 3, 8, 4)), ("Sprawl", 780, (-28, 5, 2, 5, 2))]
+# Goalie frames and their save areas from the ROM (xg_snes RomData.hot: hot x, y (up), radius, top and bottom of the
+# height band; a puck within the radius stops when bottom < height <= top, any height if bottom < 0), the same five save
+# moves (GoalieSaveList 0, 4, 2, 8, 6: the last frame of each) facing down (the top net) and up (the bottom net).
+SNES_SAVE_FRAMES = {
+    "top": [("Ready (standing)", 546, None), ("Glove", 547, (-8, -3, 6, 15, 7)), ("Stick", 606, (-8, -2, 8, 8, -2)),
+            ("Pad stack", 581, (-15, -2, 8, 6, -4)), ("Butterfly", 732, (14, -2, 3, 8, 4)), ("Sprawl", 780, (-28, 5, 2, 5, 2))],
+    "bottom": [("Ready (standing)", 534, None), ("Glove", 535, (6, -1, 6, 15, 7)), ("Stick", 598, (12, 8, 2, 5, 2)),
+               ("Pad stack", 575, (15, 2, 6, 7, -1)), ("Butterfly", 720, (-16, 2, 1, 5, 3)), ("Sprawl", 768, (25, -6, 3, 5, 0))]}
 
 
-def snes_saves():
+def snes_saves(net="top"):
     W = 900
+    top = net == "top"
+    face = "down" if top else "up"
     b = []
-    b.append(text(W / 2, 28, "SNES saves: a body box, plus an area for each save frame", 17, anchor="middle", weight="bold"))
-    b.append(text(W / 2, 48, "To scale, top net, the goalie facing down, with the game's own pictures (NHL94_Classic). Stopped: anything in the box, at any height,",
-                  12, SOFT, "middle"))
+    b.append(text(W / 2, 28, f"SNES saves, {net} net: a body box, plus an area for each save frame", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, f"To scale, the {net} net, the goalie facing {face}, with the game's own pictures (NHL94_Classic). "
+                  "Stopped: anything in the box, at any height,", 12, SOFT, "middle"))
     b.append(text(W / 2, 64, "or a puck inside the save frame's circle within its height band. Ratings don't change any of it.", 12, SOFT, "middle"))
     S = 4.2
-    for i, (title, frame, hot) in enumerate(SNES_SAVE_FRAMES):
-        cx, cy = 150 + (i % 3) * 300, 220 + (i // 3) * 240
-        b.append(text(cx, cy - 118, title, 13, INK, "middle", "bold"))
-        gl = cy - 22 * S
+    row = 240 if top else 290
+    for i, (title, frame, hot) in enumerate(SNES_SAVE_FRAMES[net]):
+        cx, cy = 150 + (i % 3) * 300, (220 if top else 235) + (i // 3) * row
+        b.append(text(cx, cy - 118 if top else cy - 132, title, 13, INK, "middle", "bold"))
+        gl = cy - 22 * S if top else cy + 22 * S
         b.append(line(cx - 30 * S, gl, cx + 30 * S, gl, RED, 2))
         for px in (-17, 17):
             b.append(circle(cx + px * S, gl, 3.5, INK, INK))
         b.extend(sprite(frame, cx, cy, S, opacity=0.6, libraries=("cd85e387",), palette=SNES_PALETTE))
         b.append(f"<rect x='{cx - 11 * S}' y='{cy - 10 * S}' width='{21 * S}' height='{21 * S}' fill='{BLUE}' fill-opacity='0.12' stroke='{BLUE}' stroke-width='2'/>")
         b.append(circle(cx, cy, 3, INK, INK))
+        ty = cy + 62 if top else gl + 22
         if hot:
-            hx, hy, r, top, bottom = hot
+            hx, hy, r, ht, hb = hot
             X, Y = cx + hx * S, cy - hy * S
-            b.append(circle(X, Y, r * S, GREEN, GREEN, 2, None, 0.3))
-            band = f"up to {top} high" if bottom < 0 else f"{bottom + 1}-{top} high"
-            b.append(text(cx, cy + 62, f"area: radius {r}, {band}", 11, GREEN, "middle", "bold"))
+            b.append(circle(X, Y, max(r, 0.5) * S, GREEN, GREEN, 2, None, 0.3))
+            band = f"up to {ht} high" if hb < 0 else f"{hb + 1}-{ht} high"
+            b.append(text(cx, ty, f"area: radius {r}, {band}", 11, GREEN, "middle", "bold"))
         else:
-            b.append(text(cx, cy + 62, "body box only", 11, BLUE, "middle", "bold"))
-    ly = 565
-    notes = [("Blue square: the body box (11 to his left and below, 10 to his right and above), at any height. It never changes.", BLUE),
+            b.append(text(cx, ty, "body box only", 11, BLUE, "middle", "bold"))
+    ly = 565 if top else 670
+    notes = [("Blue square: the body box (11 to his left and below, 10 to his right and above, on the screen), at any height. It never changes.", BLUE),
              ("Green: the save frame's area. It only exists while that frame shows, and only for pucks in its height band.", GREEN),
              ("The computer goalie picks a save move as a shot comes (high / low, near / far). A person's goalie makes one while A is held.", SOFT),
              ("So on the SNES a save move does make the goalie bigger, unlike the Genesis. A diving goalie lets pucks 5 or higher through.", SOFT)]
+    if not top:
+        notes.append(("Facing up, the same moves use other frames, so their areas sit elsewhere than at the top net (the stick save's is small and in front of him).", SOFT))
     for k, (s_, col) in enumerate(notes):
         b.append(text(40, ly + k * 18, s_, 12, col))
-    return svg(W, ly + len(notes) * 18 + 12, b, "SNES saves")
+    return svg(W, ly + len(notes) * 18 + 12, b, f"SNES saves, {net} net")
+
+
+# Genesis save frames from the ROM (goaliesave .saveanim; xg.GenesisRom.anim, the last frame of each move) and each
+# frame's stick hot point (HotList, x right and y up the screen, the goalie not drawn mirrored), facing down (the top
+# net) and up (the bottom net). The moves to his left are these mirrored.
+GENESIS_SAVE_FRAMES = {
+    "top": [("Ready (standing)", 0x1A3, (1, -6)), ("Blocker", 0x1A4, (-4, -1)), ("Glove", 0x1A5, (4, -5)),
+            ("Pad stack (to his right)", 0x1C6, (-10, 1)), ("Kick", 0x1DF, (-9, -5)), ("Butterfly", 0x1E0, (9, -2)),
+            ("Stick save (to his right)", 0x2B3, (-15, -7)), ("High shoulder (to his right)", 0x29A, (-10, 15))],
+    "bottom": [("Ready (standing)", 0x197, (0, 7)), ("Blocker", 0x198, (7, 4)), ("Glove", 0x199, (-6, 8)),
+               ("Pad stack (to his right)", 0x1C0, (7, 1)), ("Kick", 0x1D7, (7, 14)), ("Butterfly", 0x1D8, (-10, 3)),
+               ("Stick save (to his right)", 0x2A3, (9, 7)), ("High shoulder (to his right)", 0x292, (9, 14))]}
+
+
+def genesis_saves(net="top"):
+    """The Genesis goalie's save poses and what stops a puck in each (checkpuckcoll): the body circle (reach 12-15 by
+    Agility, 15 with a person in net, 18 in a pad stack with its centre moved 6 toward the stacked pads: d1 = -6 for
+    gstackr, negated for a goalie whose team shoots down and again for one drawn unmirrored), at height 15 or lower; the
+    stick's hot point: within 8 a low puck (5 or lower) is played, 8-14 nothing is tested that frame."""
+    W, S = 920, 3.4
+    top = net == "top"
+    face = "down" if top else "up"
+    b = []
+    b.append(text(W / 2, 28, f"Genesis saves, {net} net: the body circle and the stick, in each save pose", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, f"To scale, the goalie facing {face}, with the game's own pictures. The save frames move only the stick's spot "
+                  "(and the pad stack's body);", 12, SOFT, "middle"))
+    b.append(text(W / 2, 64, "the body circle is the same in every pose. The moves to his left are these mirrored.", 12, SOFT, "middle"))
+    for i, (title, frame, (hx, hy)) in enumerate(GENESIS_SAVE_FRAMES[net]):
+        cx, cy = 115 + (i % 4) * 230, (215 if top else 205) + (i // 4) * (250 if top else 270)
+        b.append(text(cx, cy - 112 if top else cy - 122, title, 13, INK, "middle", "bold"))
+        gl = cy - 18 * S if top else cy + 18 * S
+        b.append(line(cx - 30 * S, gl, cx + 30 * S, gl, RED, 2))
+        for px in (-20, 20):
+            b.append(circle(cx + px * S, gl, 3.5, INK, INK))
+        stack = title.startswith("Pad stack")
+        reach, shift = (18, 6 if hx > 0 else -6) if stack else (13, 0)
+        X, Y = cx + hx * S, cy - hy * S
+        ring = (f"<path fill='{ORANGE}' fill-opacity='0.35' fill-rule='evenodd' stroke='{ORANGE}' stroke-width='1.5' d='"
+                f"M{X - 14 * S},{Y} a{14 * S},{14 * S} 0 1,0 {28 * S},0 a{14 * S},{14 * S} 0 1,0 {-28 * S},0 z "
+                f"M{X - 8 * S},{Y} a{8 * S},{8 * S} 0 1,0 {16 * S},0 a{8 * S},{8 * S} 0 1,0 {-16 * S},0 z'/>")
+        b.append(circle(cx + shift * S, cy, reach * S, BLUE, BLUE, 2, None, 0.12))
+        if not stack:
+            b.append(circle(cx, cy, 15 * S, "none", BLUE, 1, "4 3"))
+        b.append(ring)
+        b.append(circle(X, Y, 8 * S, GREEN, GREEN, 1.5, None, 0.3))
+        b.extend(sprite(frame, cx, cy, S, opacity=0.6))
+        b.append(circle(cx, cy, 3, INK, INK))
+        b.append(circle(X, Y, 3, "#ffffff", INK, 1.5))
+        ty = cy + 104 if top else gl + 20
+        body = "body 18, moved 6 toward the pads" if stack else "body 13 (dashed: 15)"
+        b.append(text(cx, ty, body, 11, BLUE, "middle", "bold"))
+        side = "right" if hx > 0 else "left" if hx < 0 else "across"
+        updown = "up" if hy > 0 else "down"
+        b.append(text(cx, ty + 15, f"stick {abs(hx)} {side}, {abs(hy)} {updown} the screen", 11, GREEN, "middle", "bold"))
+    ly = 690 if top else 610
+    notes = [("Blue: the body. A puck 15 high or lower within his reach of his centre is stopped: 12-15 by Agility (13 drawn), 15 with a person in net (dashed),", BLUE),
+             ("12 against a one-timer, 18 in a pad stack (its centre moved 6 toward the stacked pads).", BLUE),
+             ("Green: the stick's hot point. A puck 5 high or lower within 8 of it is played: caught under 13,000, deflected faster.", GREEN),
+             ("Orange: 8-14 from the hot point nothing is tested that frame, not even the body: the blind ring (through the legs).", ORANGE),
+             ("The pose moves only the stick (and the pad stack's body); unlike the SNES, a save move doesn't make the goalie bigger.", SOFT)]
+    if top:
+        notes.append(("In the shoulder save the hot point is the glove's hold point, behind him at the top net: the shoulder-save bobble.", SOFT))
+    else:
+        notes.append(("At the bottom net the shoulder save's hold point is in front of him, so no shoulder-save bobble.", SOFT))
+    for k, (s_, col) in enumerate(notes):
+        b.append(text(30, ly + k * 18, s_, 12, col))
+    return svg(W, ly + len(notes) * 18 + 12, b, f"Genesis saves, {net} net")
 
 
 def snes_scatter():
@@ -1402,7 +1479,8 @@ def main():
              "empty_net.svg": empty_net(), "computer_defence.svg": defence_positions(),
              "snes_flip.svg": snes_flip(), "early_save.svg": early_save(), "open_net_one_timer.svg": open_net_one_timer(), "sightline.svg": sightline(),
              "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot(),
-             "snes_saves.svg": snes_saves(), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
+             "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
+             "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
              "snes_goalie_hold.svg": snes_goalie_hold()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")

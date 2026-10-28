@@ -447,6 +447,10 @@ scores 3-4% (19% against Hrudey), the skating far-post slapshot 9% (37%), floate
 
 ![The goalie's reach circles against the goal mouth](img/saves_reach.svg)
 
+![The Genesis goalie's body circle and stick in each save pose, top net](img/genesis_saves.svg)
+
+![The Genesis goalie's body circle and stick in each save pose, bottom net](img/genesis_saves_bottom.svg)
+
 The goalie stops a puck only if it physically reaches him:
 
 - **Body:** a puck at height 15 or lower within his **reach** of his centre is stopped.

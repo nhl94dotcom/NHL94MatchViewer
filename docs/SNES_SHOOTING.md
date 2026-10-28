@@ -396,7 +396,9 @@ find the best release depth and timing, and these plays against the SNES goalie 
 ### 5.1 Saves are geometry
 
 
-![The SNES goalie's body box and the save area of each save frame](img/snes_saves.svg)
+![The SNES goalie's body box and the save area of each save frame, top net](img/snes_saves.svg)
+
+![The SNES goalie's body box and the save area of each save frame, bottom net](img/snes_saves_bottom.svg)
 
 The goalie stops a puck only if it physically reaches him (`checkpuckcoll_ccx`), but the shape differs from the
 Genesis:
