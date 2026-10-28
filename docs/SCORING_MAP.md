@@ -14,7 +14,7 @@ This page has the overview, the method and the maps; the studies are in four mor
 1. [At a glance](#at-a-glance)
 2. [Building the Genesis simulator](#building-the-genesis-simulator)
 3. [Making every Genesis shot count exactly](#making-every-genesis-shot-count-exactly)
-4. [What went wrong and how it was fixed](#what-went-wrong-and-how-it-was-fixed)
+4. [How the results were checked](#how-the-results-were-checked)
 5. [Building the SNES simulator](#building-the-snes-simulator)
 6. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
 7. [The maps](#the-maps)
@@ -49,7 +49,7 @@ be a weak one: see the goalie section):
 | [Slapshots and the shooter's ratings](SCORING_GENESIS.md#slapshots-and-the-shooters-ratings) | Genesis: a threshold between Shot Power 3 and 4 (7% to 19% at the best aim over the spots). SNES: nothing below 4, the spots open only at 6 |
 | [Moving shooters](SCORING_GENESIS.md#moving-shooters-genesis-2026-10-24) | The far-post slapshot is a skating shot: across toward the stick side, released before the middle: 50-62% from 28-35 ft for a strong shooter (27 / 27), 44% on average at 4 / 4 |
 | [Dekes and floaters](SCORING_GENESIS_DEKES.md#dekes-and-floaters-genesis-2026-10-24) | The swing is the goal (0-1% without it): the best dekes 82-96% (the backhand deke too), floaters 50-65%, backhand floaters 41-51%. The timing suits one skating speed |
-| [EA Specials](SCORING_GENESIS_EA.md#ea-specials-genesis-2026-10-24) | A wrist shot from the side, the bot following up on the bobble (its follow-up's aim was broken until 2026-10-27; the corrected results replace the earlier ones). Skating in at 1.5-1.9 a frame (full speed fails): the top net 65-75% from 23-24 ft out and 25-29 ft to the side, either hand, the first shot at the far side, the follow-up at the near post (the right-hander's against every league starter), and forgiving of a person's slop; the bottom net 60-70% from 16-17 ft out, the working hand depending on the goalie. Shot Power 3-5, Accuracy doubles it; backhands barely work. Far better than people do in real games, where a defender claims the rebound. SNES: rare (1-3% over the grid), one spot 21 ft out and 27 ft to the side 40-70% ([SCORING_SNES](SCORING_SNES.md#ea-specials-on-the-snes-snes_ea_runpy-2026-10-27)) |
+| [EA Specials](SCORING_GENESIS_EA.md#ea-specials-genesis-2026-10-24) | A wrist shot from the side, the bot following up on the bobble. Skating in at 1.5-1.9 a frame (full speed fails): the top net 65-75% from 23-24 ft out and 25-29 ft to the side, either hand, the first shot at the far side, the follow-up at the near post (the right-hander's against every league starter), and forgiving of a person's slop; the bottom net 60-70% from 16-17 ft out, the working hand depending on the goalie. Shot Power 3-5, Accuracy doubles it; backhands barely work. Far better than people do in real games, where a defender claims the rebound. SNES: rare (1-3% over the grid), one spot 21 ft out and 27 ft to the side 40-70% ([SCORING_SNES](SCORING_SNES.md#ea-specials-on-the-snes-snes_ea_runpy-2026-10-27)) |
 | [The computer goalie's ratings](SCORING_GENESIS.md#the-computer-goalies-ratings-genesis-2026-10-25) | Goalie Agility stops the slapshot (far post from the middle 58% to 3% from Agility 13 to 20), Puck Control a little, Speed and Defensive Awareness not at all. Against Roy and Belfour slapshots score 3-7%, floaters 16-20%; one-timers (48-51%) and dekes (72-76%) hold up |
 
 ## Building the Genesis simulator
@@ -125,23 +125,10 @@ slapshot, all nine aims; shooter working Shot Power 20, Shot Accuracy 15; Los An
 13, Speed 13, Puck Control 18, and an `aidef` of 10, which is Defensive Awareness about 20: the game stores 15 - DfA /
 4). 30 processes, about 2 hours.
 
-## What went wrong and how it was fixed
+## How the results were checked
 
-Every problem below was caught by a check before the results were used; the final Genesis map matches natural shots
-(the game rolling its own dice from a random seed) within about one standard error at every spot tested.
-
-| Problem found | How it showed | Fix |
-| --- | --- | --- |
-| Two emulators in one process | No shots happened at all: the second emulator took over the first's input | One emulator per process, shared by both nets |
-| The hook moved code | Branches out of range when bytes were inserted | Made the hook size-neutral, inside a dead 164-byte block |
-| Shots stopped too early | Six top-net goals missed: the shoulder-save bobble scores 48-79 frames after the catch | Stop only after the goalie holds the puck 20 frames |
-| The seed kept after the release | 5.6% at one spot where natural shots scored 7.8% | Randomise the seed right after the launch |
-| Too few moments | Results swung with the shot's timing | 16 moments, then 120 |
-| Spots too close to the net | The goalie skated onto the puck; 65-100% "goals" from 28-48 units out | `validity.py`: the puck 24+ from his centre and in front of him |
-| Replayed recorded shots started in the wrong spot | Up to about 195 units off | Settle 80 frames, then correct the start twice from `doshot`'s own record |
-| Replays of recorded shots too sure of themselves | Worse shot-by-shot predictions than the xG model | Added the goalie's ratings, animation and a 2-4 unit position blur; the xG model still predicts recorded shots better |
-
-**The checks that passed:**
+The final Genesis map matches natural shots (the game rolling its own dice from a random seed) within about one
+standard error at every spot tested.
 
 | Check | Result |
 | --- | --- |

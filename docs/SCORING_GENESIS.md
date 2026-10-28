@@ -249,9 +249,7 @@ and `snes_map_run.py`), a set computer goalie. "Best aim" is the best of the nin
   19%; for the usual shooter (20 / 15) 17% / 14% / 12%. At the top net the far post is the shot from 28-41 ft (65%,
   69%, 31%) and Down from 48-55 ft (48-51%); at the bottom net Down from 35-55 ft (31-60%), the far post no more than
   18%. From his forehand side (left of the middle for a left-hander) Down is best (10%), the far post next (5%); from
-  his backhand side Down (21%), the near post hardly scores (1% or less). *Corrected 2026-10-25: this bullet said the
-  far post was the best aim from the middle, against 11% for Down; that Down figure had taken the wrong aim at the
-  bottom net.* Against a goalie with Agility 20 (roster 4) the far post closes (23% at 35 ft at the top net, near
+  his backhand side Down (21%), the near post hardly scores (1% or less). Against a goalie with Agility 20 (roster 4) the far post closes (23% at 35 ft at the top net, near
   nothing elsewhere) and Down holds best (bottom net 40-43% at 35-41 ft).
 - **SNES: the post on the shooter's side of the ice.** From his forehand side the far post (strong 5-6%, usual 3-4%),
   from his backhand side the near post (strong 6% high, usual 3%), from the middle almost nothing (2% or less). The
@@ -329,7 +327,7 @@ and both sides.
     middle from 85-105 out** (from 125 out, at the bottom net only: 64% with the wind-up begun 60 before the
     middle, 36% from 40 before; see the note below). Standing in the middle at those distances (84-104 out) the best
     aim scores 65-69% at the top net (the far post) but 21-45% at the bottom (Down), so the skating shot's edge is
-    at the bottom net (corrected 2026-10-25: this compared it with 21%, an average over farther spots). It
+    at the bottom net. It
     falls fast once he is past the middle (10-15% released 30 past, 0-4% beyond). The near post (behind him): 0-2%.
   - Crossing toward his backhand side the near post is ahead, and does worse: 34-36% released at the middle from 85
     out, 6-16% from 105, 0-34% from 125 (uneven between the nets).
@@ -392,12 +390,10 @@ four attempts in the game's own frames, then 24 attempts from above, turned so t
 
 ## The computer goalie's ratings (Genesis, 2026-10-25)
 
-**Correction (2026-10-25):** the levels in the first table set the goalie's Agility, Speed and Puck Control to
-10 / 20 / 30, but the third number went into the slot that holds `aidef`, not Defensive Awareness: the game stores
-15 - DfA / 4 there (7-15) and his reaction timer is a quarter of it. So "20" and "30" also gave him a slower
-reaction (5 and 7 frames) than any real goalie (1-3), and the test goalie's "10" is Defensive Awareness about 20.
-**Defensive Awareness turns out to make no difference to the slapshot** (one rating at a time, below), so that
-table stands for Agility, Speed and Puck Control moved together.
+The levels in the first table set the goalie's Agility, Speed and Puck Control to 10 / 20 / 30, and his reaction
+value `aidef` to the same number (the game stores 15 - DfA / 4 there, 7-15, and his reaction timer is a quarter of it,
+so "20" and "30" also make him slower to react than any real goalie). **Defensive Awareness makes no difference to the
+slapshot** (one rating at a time, below), so that table stands for Agility, Speed and Puck Control moved together.
 
 Every run above used one computer goalie, the test state's (Hrudey: working Agility 13, Speed 13, `aidef` 10, which is
 Defensive Awareness about 20, Puck Control 18; his save ratings are never used). Here the same shots against goalies with all four of those at 10,
@@ -484,7 +480,7 @@ goalie's sprite and colours: only his ratings change.
 | Roy (30 / 20 / 20 / 30) | **3%** | **6%** (7% / 5%) | **9%** | 51% | 72% | 20% |
 | Belfour (30 / 20 / 30 / 25) | **4%** | **7%** (9% / 5%) | **9%** | 48% | 76% | 16% |
 
-(The CDL slapshot from the middle was run with Defensive Awareness 25, before the profile was corrected; that rating
+(The CDL slapshot from the middle was run with Defensive Awareness 25 rather than the profile's; that rating
 makes no difference to slapshots. Dekes and floaters: goals per attempt, a puck carried in counted as a goal, 24
 moments x 4 seeds, both nets.)
 

@@ -288,7 +288,7 @@ shot from the side meant to come off the goalie loose, then a quick follow-up in
 rule runs the other way (SNES_SHOOTING 5.4): the goalie holds a puck slower than a random 8,192-17,000 in each
 direction, and a harder one bounces straight out from his centre. So the run tries harder shots too.
 
-**Plan "explore"** (with the follow-up's aim fixed, as on the Genesis; the four runs before the fix are superseded):
+**Plan "explore":**
 both nets, released 13 / 21 / 29 ft out and 20 / 27 ft to either side (a right-hander from his left, a left-hander
 from his right), skating at the goal or in at 45 degrees at 1.9 a frame (full speed about 2.2), working Shot Power 5 /
 10 / 15 (of 15), a wrist shot (A tapped) or a 12-frame wind-up, every aim, 24 moments x 2 seeds, against the test

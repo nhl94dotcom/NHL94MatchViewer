@@ -955,7 +955,7 @@ it's on their side, **but only while the puck is in the attacking zone**: anywhe
   - with it in their zone, 158 from centre (about 106 from the goal line, between the circles and the blue line);
   - with it behind their goal line, the goal line.
 
-  Every frame. (Corrected 2026-10-18: this said they followed the puck down to the goal line.)
+  Every frame.
 - **Centre:** the high slot when the puck is in his zone, otherwise halfway between it and the puck.
 - **The chaser:** "attack" (straight at the carrier, for 4 seconds) or "contain" (halfway between the carrier and a spot
   just in front of his own net), see 12.3.

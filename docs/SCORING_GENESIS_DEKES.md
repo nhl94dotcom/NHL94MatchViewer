@@ -184,9 +184,8 @@ From the user, after the animations: come in from a bit farther out to the side,
 and shoot with the stick straight up or a bit up and toward the swing's side. `deke_run.py deke2`: both hands, both
 swing directions, both nets; starting 30 / 45 / 60 to the side, the swing begun 50 / 60 / 72 from the goalie, C 10-22
 frames later, aimed to the side (as before), straight Up, or Up and toward the swing's side; 12 moments x 4 seeds.
-Rates below are out of 96 attempts (both nets). A puck the skater carried into the net himself counts as a goal: the
-first count missed those (found 2026-10-25, "By the shooter's skating and shot" below), and the grid was re-counted
-(run again with the fix, run "dekes2_c"); the shots-only figures are in brackets.
+Rates below are out of 96 attempts (both nets). A puck the skater carried into the net himself counts as a goal (run
+"dekes2_c"); the shots-only figures are in brackets.
 
 | Move | Before (the first grid) | Now | Best set-up |
 |---|---|---|---|
@@ -361,17 +360,11 @@ shot counts as a failure, a puck the skater carried into the net himself as a go
 - **The carried-in goal** (animated below): on the left-hander's backhand deke at the top net the fast skater took the
   puck into the net at all 24 moments, past a goalie already down. The game gives the goal: the puck crosses the line
   on his stick.
-- **A correction to the runs above:** until 2026-10-25 `deke_run.py` counted a puck gone before the shot as lost, even
-  when the skater had carried it in. The best set-ups had few (the test skater's "best" run: 8 carried, 9 lost of 480
-  moments; corrected over all of them 71%, against 72% counted per shot). The grids behind the earlier sections had
-  more lost attempts (the refined dekes 44% of their moments, the dekes 9-12%, the backhand dekes 12%), so some of
-  their set-ups may score more than reported. **Re-run with the fix (2026-10-25: the dekes, refined dekes, backhand
-dekes and backhand floaters, runs "dekes_c", "dekes2_c", "dekes3_c"):** the shots themselves came out identical, so
-only the carried-in goals are new. Every best set-up of the first deke grid, the backhand deke and the backhand
-floater stands (none carried it in). The refined dekes' swings to the right go up: the left-hander's from 67% to 83%,
-the right-hander's from 76% to 80% (the table above is updated). Over whole grids the rates rise 0-2 points for the
-first dekes, 0-6 for the backhand dekes and 4-9 for the refined dekes (the left-hander's swing to his left 22% to
-31%), which started closest to the goalie.
+- **Carried-in goals** (a puck the skater took into the net himself, counted as a goal; runs "dekes_c", "dekes2_c",
+  "dekes3_c"): no best set-up of the first deke grid, the backhand deke or the backhand floater carried it in, so
+  their rates are the shots'. Over whole grids carried-in goals add 0-2 points for the first dekes, 0-6 for the
+  backhand dekes and 4-9 for the refined dekes (the left-hander's swing to his left 22% to 31%), which start closest
+  to the goalie. The refined dekes' table above includes them.
 
 **Animated (`deke_animate.py`, the SKATE list):** the left-hander's backhand deke at the top net, by a skater of 20
 (96 of 96 in the run, shot in) and 30 (24 of 24 moments carried in, no shot).

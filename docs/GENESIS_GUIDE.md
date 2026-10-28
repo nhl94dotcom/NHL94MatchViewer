@@ -331,7 +331,7 @@ The computer never holds a direction, so its wins go a random way.
 - **The EA Special** (community name): a wrist shot from the side that the goalie bobbles, then a quick follow-up
   into the open side. The goalie isn't pushed back: he slides toward the far post, where the first shot was going,
   and the rebound comes back toward the shooter, so the near post is open. Played in the game itself with a simple bot
-  following up (SCORING_GENESIS_EA, "With the follow-up fixed" onward):
+  following up (SCORING_GENESIS_EA, "The best set-ups at 1.7 a frame" onward):
   - **Aim the first shot at the far side, middle height** (Right for a right-hander from his left going up the screen),
     then shoot the follow-up **at the near post**, the moment you have the puck. The middle and far post hardly score.
   - **Release about 23-24 feet out and 25-29 feet to the side** (a little deeper and wider than the faceoff dot, which

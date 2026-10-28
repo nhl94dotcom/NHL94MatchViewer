@@ -163,9 +163,9 @@ A high shot (up, up-left or up-right) from close in (the puck within 48 units of
 centre), **at a goalie in a pad stack or with no goalie on the ice** (pulled), gets its own lift (`prepshot` sets the
 flag, `puckvzadj` applies it; never for one-timers). It **replaces** the shot's height speed with one worked out from the
 time to the goal line, so the upward scatter is gone: from 30-48 out the puck reaches the line about 10-13 high, over a
-pad stack and just under the crossbar (13); from closer than about 25 it carries over the bar (15-24). **Code**. (Until
-2026-10-18 this section said "a goalie who is *not* in a pad stack", a misreading that chaos's forum post "How Shooting
-Works" has right: the branch after the two pad-stack compares falls into the top-shelf test on a match.)
+pad stack and just under the crossbar (13); from closer than about 25 it carries over the bar (15-24). **Code** (the
+branch after the two pad-stack compares falls into the top-shelf test on a match; chaos's forum post "How Shooting
+Works" has it the same way).
 
 ### 4.6 Delayed-penalty sniping
 
@@ -399,7 +399,7 @@ from 18 spots 104-144 out, every roster step 2-6 of Shot Power and Shot Accuracy
 and 4:** the best aim's chance over the spots 4-7% at power 2-3, 14-21% at 4, up to 35% at 6 / 6; Accuracy adds 7-11
 points once the power is there (power 4-6), 1-2 below it. From the middle (a 27 / 27 shooter): at the top net the far
 post from 28-41 ft (31-69%), Down from farther; at the bottom net Down (31-60% from 35-55 ft). Over both, Down 28%,
-the far post 21%. (Corrected 2026-10-25: this said the far post was best, against 11% for Down, a slip in the aims.)
+the far post 21%.
 
 **Moving shooters** (2026-10-24, SCORING_GENESIS "Moving shooters"; `mv_run.py`): a wrist shot skating across the crease
 scores 51-53% about 11 feet out aimed the way he skates, 0-1% aimed back. **The far-post slapshot is a skating shot:**
@@ -416,26 +416,19 @@ scores 82-96% at the best set-ups (the backhand deke too, shot once the puck is 
 backhand. The timing is tuned to the skater: a slow one (working Agility / Speed 10) scores 31-53%, a fast one (30)
 reaches the goalie before shooting and carries the puck in or loses it.
 
-**EA Specials** (2026-10-24 / 25, SCORING_GENESIS_EA "EA Specials"; `ea_run.py`, a bot playing the rebound): a first wrist
-shot aimed across is bobbled 60-80% of the time; from 13 feet to the side the play ends in a goal 7-12% of first
-shots at Shot Power 2-5, 4% at 6 (the hardest shots are held more and the goalie dives at the loose puck less).
-Skating as the play is really taken (plan "angle"): at 45 degrees or straight at the goal 3-4% at the best aim,
-straight across about 1% (the bot reaches 7-10% of the bobbles, against 58-69%); against Roy 3-3.5% (the goalie dives
-after a bobble 7-8% of the time against Hrudey's 17-21%), so goalie quality matters far less than for slapshots. Released at the user's marked spots (plan "xspot": 22-25 ft to
-the side, 13-15 ft out): 1.6% over every aim (Roy 1.1%), but the bottom net, a right-hander from his left, skating at
-the goal at 2.5 a frame, Shot Power 2, no direction held: 55% over 120 moments (Roy 43%; the top net 18%), the bobble
-claimed at once (95%) with hardly a dive. **These early runs' follow-up goals are not reliable:** until 2026-10-27 the
-bot's follow-up held its aim 3 frames and the wrist shot leaves on the 4th, so it went where the bot was skating.
-**With that fixed** (SCORING_GENESIS_EA "With the follow-up fixed" onward), skating in a little below full speed (1.5-1.9
-a frame; at 2.0 and over it fails): the top net's EA Special scores 65-75% for the bot from 23-24 ft out and 25-29 ft
-to the side, either hand, the first shot at the far side at middle height and the follow-up at the near post (the
-right-hander's against every league starter); the bottom net's best is 16-17 ft out and 29 ft to the side (about 60-70%, but which hand works
-depends on the goalie's Agility). Shot Power 3-5, and Shot Accuracy doubles it. Backhand EA Specials barely work (0-9%
-over all aims). Against people's real attempts the simulation is far too optimistic (the bot meets no defender).
+**EA Specials** (2026-10-24 to 28, SCORING_GENESIS_EA; `ea_run.py`, a bot playing the rebound): a first wrist shot
+aimed across, at the far side, is bobbled 60-80% of the time (aimed along the ice he holds it), the hardest shots are
+held more and the goalie dives at the loose puck less as Shot Power rises. Skating in a little below full speed
+(1.5-1.9 a frame; at 2.0 and over it fails): the top net's EA Special scores 65-75% for the bot from 23-24 ft out and
+25-29 ft to the side, either hand, the first shot at the far side at middle height and the follow-up at the near post
+(the right-hander's against every league starter); the bottom net's best is 16-17 ft out and 29 ft to the side (about
+60-70%, but which hand works depends on the goalie's Agility). Shot Power 3-5, and Shot Accuracy doubles it. Backhand
+EA Specials barely work (0-9% over all aims). Against people's real attempts the simulation is far too optimistic
+(the bot meets no defender).
 
 **The computer goalie's ratings** (2026-10-25, SCORING_GENESIS "The computer goalie's ratings"): the scoring map's test
 goalie is Hrudey with a cold -2 (working Agility 13, Speed 13, Puck Control 18, `aidef` 10). Setting Agility, Speed
-and Puck Control to 20 (and, by mistake, `aidef` to 20, which turned out not to matter), the standing slapshot's best
+and Puck Control to 20 (and `aidef` to 20, which doesn't matter for these shots), the standing slapshot's best
 chance falls from about 20% to 5% (the far post from the middle 57% to 3%) and the skating far-post slapshot from 41%
 to 15% (7% at 30); one-timers are unchanged (58-62%), dekes fall a little (71% to 63% at 30), floaters not at all.
 **One rating at a time, Agility does it** (his reach, 5.1): Agility 13 to 20 alone takes the standing slapshot's best
@@ -775,7 +768,7 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
   reach. The four slapshot goals from 100+ were all by a Shot Accuracy 27 shooter; far post and near post were mixed.
   The model doesn't show the far-post advantage players report. **Played in the game itself (4.10-4.11) it shows:**
   standing, from the middle, the far post is the best aim for a strong shooter at the top net from 28-41 ft (31-69%),
-  Down everywhere else (corrected 2026-10-25), and the far-post slapshot players describe is also a skating shot, across toward the stick side and released before the middle
+  Down everywhere else, and the far-post slapshot players describe is also a skating shot, across toward the stick side and released before the middle
   (50-62% from 28-35 feet for a 27 / 27 shooter). Both need Shot Power 4 or more on the roster (a working 20), and
   both fall a long way against better goalies. Over all the Genesis recordings, slapshots from 100-200 units out
   scored 5 times in 39 (13%), where the model's xG for them adds up to 4.5. On the SNES it's far harder:

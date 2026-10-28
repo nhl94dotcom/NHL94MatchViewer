@@ -778,8 +778,8 @@ are in bold.
 | Centre, the other team has it | x half the puck's; y his high slot (-128) with the puck in his zone, else half way between the puck and it | The same |
 | The chaser (nearest to the puck) | At each Offensive Awareness tick hands the chase to whoever is now nearest; charges the carrier for 240 frames on a roll by 20 - Checking, else contains half way between the puck and a point 20 out from his goal line; a loose puck: skates to it; **their goalie holding it: waits at the blue line** | The same, without the goalie case |
 
-So SNES defencemen join the rush and drop back by zone rather than all-or-nothing. (Until 2026-10-18 this said SNES
-wingers hold up where Genesis ones follow the puck down; both hold at -158.) What happens as the puck crosses a blue
+So SNES defencemen join the rush and drop back by zone rather than all-or-nothing. SNES and Genesis wingers both
+hold at -158. What happens as the puck crosses a blue
 line, and the "step out and come back in" move, are in GENESIS_MECHANICS 12.5; the SNES differs only in the numbers
 above. Recordings: 3 such carries in the SNES games, too few to say more.
 
