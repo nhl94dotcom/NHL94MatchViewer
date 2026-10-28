@@ -93,8 +93,10 @@ def toward(dx, dy):
     return round(math.degrees(math.atan2(dx, dy)) / 45) % 8
 
 
-def play(h, sg):
-    """From the release: see the module notes. Returns the first result and what happened after a bobble."""
+def play(h, sg, walkin=False):
+    """From the release: see the module notes. Returns the first result and what happened after a bobble. walkin: a
+    shot he takes back isn't the end: he carries it on at the middle of the goal line and shoots at the near post once
+    the carried puck turns or slows hard within 24 of the goalie (as he cuts in front of him) (the walk-in, SCORING_SNES; info['retaken'] the frame he took it back)."""
     e = h.e
     s, g, pk = H.o(H.SHOOTER), H.o(H.GOALIE), H.o(H.PUCK)
     s0 = e.w(H.SCORE_HOME)
@@ -106,7 +108,9 @@ def play(h, sg):
         gframe = e.w(FRAME + g)
         gx, gy = h.sw(H.XPOS + g), h.sw(H.YPOS + g)
         if e.w(H.PUCKC) == s and touched is None:          # he caught up with his own shot before the goalie
-            return "retaken", info                        # touched it: no save, so no EA Special
+            if not walkin:                                # touched it: no save, so no EA Special
+                return "retaken", info
+            info.setdefault("retaken", f)
         if e.w(H.PUCKC) == s and touched is not None and not shot:
             info["claim"], shot = f - touched, True
             near = "RIGHT" if sx > 0 else "LEFT"
@@ -133,11 +137,12 @@ def play(h, sg):
             return "bobble", info
         vx, vy = h.sw(H.XVEL + pk), h.sw(H.YVEL + pk)
         if touched is None:
-            if pv is not None and e.w(H.PUCKC) & 0x8000 and at_goalie(e, px - gx, py - gy, pz, gframe) and \
+            walk = walkin and "retaken" in info and e.w(H.PUCKC) == s and math.hypot(px - gx, py - gy) < 24
+            if pv is not None and (walk or e.w(H.PUCKC) & 0x8000 and at_goalie(e, px - gx, py - gy, pz, gframe)) and \
                     vx * pv[0] + vy * pv[1] < 0.5 * (pv[0] ** 2 + pv[1] ** 2):
                 touched = f                              # turned or slowed hard beside the goalie: a save
                 info["v"] = round(math.hypot(*pv))
-            elif sg * py > GOAL_Y + 12 or f >= FIRST:
+            elif sg * py > GOAL_Y + 12 or (f >= FIRST and "retaken" not in info):
                 return "miss", info
         elif shot and f - touched > FOLLOW:
             break

@@ -1,5 +1,5 @@
 """Animated SNES EA Specials (retail ROM): python snes_ea_animate.py OUT_DIR [N] [names]
-Each case in CASES is one set-up of snes_ea_run.py (its plan "fine"'s best cells), played the way that run plays it:
+Each case in CASES is one set-up of snes_ea_run.py (the walk-in's best cells), played the way that run plays it:
 skating in along the set line, the wrist shot released at the spot with the aim held, then snes_ea_run's own bot
 (play(): skate on, chase the loose puck once the goalie has touched it, tap A at the near post on claiming it). N
 plays (moments, each with its own release seed), the game's own frames from the skate-in to the end of the play. Two
@@ -25,25 +25,18 @@ from lowload import WORKERS, breathe
 # title, None (the rate: the filmed plays'), move (as snes_ea_run: "rgoal" / "rdiag" + speed), the caption's two
 # lines, the goalie's working ratings (None: the test goalie)
 ROY = (15, 10, 10, 15)
-# the fine search's best (2026-10-28): a right-hander from his left, 17 ft out, 27 ft to the side, skating at the goal,
-# Shot Power 8, the first shot low at the far side, at both nets; the top net's left-hander; and the bottom net's
-# left-hander, whose goals are mostly the first shot straight in
-RH_TOP = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Right held, Shot Power 8.")
-RH_BOTTOM = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Left held, Shot Power 8.")
+# the walk-in (2026-10-28, SCORING_SNES): a right-hander from his left, released 17 ft out, 27 ft to the side, skating
+# at the goal, a low wrist shot he catches up with, carries on at the goal mouth and shoots at the near post from close
+# in (snes_ea_run.play walkin); the cells that scored most in the measurement, top and bottom net, test goalie and Roy
+TOP = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Right held, Shot Power 11.")
+BOTTOM = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Left held, Shot Power 8.")
+WALK = "SNES walk-in: he takes back his own low shot and carries it at the net"
 CASES = [
-    ("sea_best_top", "top", -80, 52, 3, 8, 3, "SNES EA Special, top net: low at the far side, then the near post", None,
-     "rgoal1.9", RH_TOP, None),
-    ("sea_best_top_roy", "top", -80, 52, 3, 8, 3, "SNES EA Special, top net, against Roy", None, "rgoal1.9", RH_TOP, ROY),
-    ("sea_best_top_left", "top", 80, 58, 5, 11, 3, "SNES EA Special, top net, the left-hander", None, "rgoal1.9",
-     ("Left-handed, released 19 ft out, 27 ft to his right, at 1.9,", "skating at the goal, Down-Left held, Shot Power 11."),
-     None),
-    ("sea_best_bottom", "bottom", -80, 52, 5, 8, 3, "SNES EA Special, bottom net: low at the far side, then the near post",
-     None, "rgoal1.9", RH_BOTTOM, None),
-    ("sea_best_bottom_roy", "bottom", -80, 52, 5, 8, 3, "SNES EA Special, bottom net, against Roy", None, "rgoal1.9",
-     RH_BOTTOM, ROY),
-    ("sea_straight_bottom_left", "bottom", 80, 52, 3, 8, 3, "SNES, bottom net, the left-hander: mostly straight in", None,
-     "rgoal1.9", ("Left-handed, released 17 ft out, 27 ft to his right, at 1.9,",
-                  "skating at the goal, Down-Right held, Shot Power 8."), None),
+    ("sea_walkin_top", "top", -80, 52, 3, 11, 3, WALK + ", top net", None, "rgoal1.9", TOP, None, True),
+    ("sea_walkin_top_roy", "top", -80, 52, 3, 11, 3, WALK + ", top net, against Roy", None, "rgoal1.9", TOP, ROY, True),
+    ("sea_walkin_bottom", "bottom", -80, 52, 5, 8, 3, WALK + ", bottom net", None, "rgoal1.9", BOTTOM, None, True),
+    ("sea_walkin_bottom_roy", "bottom", -80, 52, 5, 8, 3, WALK + ", bottom net, against Roy", None, "rgoal1.9", BOTTOM,
+     ROY, True),
 ]
 LEGEND = "Puck: orange when the play ends in a goal. Grey: shooter. Black: goalie."
 
@@ -113,7 +106,7 @@ def play(case, n):
         film[1].pop()
         rel = len(film[0])
         h.fire(pre, aim, rnd.getrandbits(32))
-        r, info = A.play(h, sg)
+        r, info = A.play(h, sg, walkin=len(case) > 12 and case[12])
         for _ in range(12):
             h.park()
             e.run(1)
@@ -121,6 +114,11 @@ def play(case, n):
         film.clear()
         goal = r == "goal" or info["follow"] in ("goal", "in_off_goalie")
         label = {"goal": "GOAL straight in", "held": "HELD", "miss": "MISSED", "retaken": "took his own shot back"}.get(r)
+        if r == "goal" and info.get("retaken") is not None:
+            label = "GOAL: carried in"
+        if label is None and info.get("retaken") is not None:     # the walk-in
+            label = {"goal": "GOAL: walked in", "in_off_goalie": "GOAL: walked in, off the goalie",
+                     "held": "walked in, held"}.get(info["follow"], "walked in, no goal")
         if label is None:
             label = {"goal": "GOAL on the rebound", "in_off_goalie": "GOAL, in off the goalie",
                      "held": "bobbled, held after"}.get(info["follow"], "bobbled, no goal")
