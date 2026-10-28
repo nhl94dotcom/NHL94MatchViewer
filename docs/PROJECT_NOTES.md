@@ -18,8 +18,9 @@ playing. It waits for RetroArch with NHL '94, records each game from the opening
 only: $FFF7 = 0; pauses and instant replays are left out, timeline included), converts it as
 `<date>_<time>_<HOME>-<AWAY>`, and lists games at http://localhost:9494/helper.html (bound to this computer only;
 it also serves the viewer, so the browser's local-file restrictions do not apply there): Watch, Make game file /
-Game file, Delete, and a setting (off by default, saved in `helper_settings.json`) to make a shareable game file after
-every game. Recordings are gzipped (`fast.bin.gz`, about 23 KB per second of play; `full.bin.gz`, all of RAM every 10 s for research only - the converter does not use it: converting the CGY-BOS game without it gives an identical match; about 16 MB a game in all) and the ROM is copied
+Game file, Delete, and tick boxes with "Export N games to ZIP" (2026-10-27: `/api/game-set` runs
+`share_season.make_share` into `shared/NHL94 <matchups> <dates>` and its zip; the packaged helper makes the share's
+season data by running itself with `--season`; this replaced the old "game file after every game" setting). Recordings are gzipped (`fast.bin.gz`, about 23 KB per second of play; `full.bin.gz`, all of RAM every 10 s for research only - the converter does not use it: converting the CGY-BOS game without it gives an identical match; about 16 MB a game in all) and the ROM is copied
 out of the emulator into `roms/<fingerprint>.bin` for the converter, so no ROM folder is needed. The list is
 `matches/games.json`. Tested offline by feeding it `captures/explore1_menus` through a fake emulator (with a made-up
 final horn): it waited through the menus, started at the faceoff, marked the pause and replay, stopped 3 s after the

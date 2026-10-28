@@ -62,7 +62,7 @@ except Exception:
 
 # ---------------------------------------------------------------------------------------------------------- settings
 def load_settings():
-    settings = {"auto_game_file": False, "open_browser": True}
+    settings = {"open_browser": True}
     try:
         settings.update(json.loads(SETTINGS_FILE.read_text()))
     except (OSError, ValueError):
@@ -149,6 +149,13 @@ class Status:
                 line = f"{datetime.datetime.now():%H:%M:%S}  {detail or state}"
                 print(line, flush=True)
                 self.log = (self.log + [line])[-40:]
+
+    def note(self, line):
+        """A line in the activity log that leaves the state as it is (a game may be recording)."""
+        with self.lock:
+            line = f"{datetime.datetime.now():%H:%M:%S}  {line}"
+            print(line, flush=True)
+            self.log = (self.log + [line])[-40:]
 
     def snapshot(self):
         with self.lock:
@@ -269,7 +276,7 @@ class Recording:
 
 
 def convert(rec, why):
-    """Convert a finished recording (in the background), add it to the list, and make its game file if wanted."""
+    """Convert a finished recording (in the background) and add it to the list."""
     try:
         if rec.live_ms / 1000 < MIN_GAME_S and rec.view.score == (0, 0):
             shutil.rmtree(rec.folder, ignore_errors=True)
@@ -296,10 +303,6 @@ def convert(rec, why):
             (rec.folder / UNFINISHED).unlink()
         except OSError:
             pass
-        settings = load_settings()
-        if settings.get("auto_game_file"):
-            import share_game
-            share_game.make_game_file(rec.name)
         with index_lock:
             games = [g for g in load_index() if g["name"] != rec.name]
             games.append(game_entry(rec.name, rec.date))
@@ -460,7 +463,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self.send_json({"error": "bad request"}, 400)
         if url.path == "/api/settings":
             settings = load_settings()
-            settings.update({k: bool(v) for k, v in body.items() if k in ("auto_game_file", "open_browser")})
+            settings.update({k: bool(v) for k, v in body.items() if k in ("open_browser",)})
             save_settings(settings)
             return self.send_json(settings)
         if url.path == "/api/seasons":
@@ -486,6 +489,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         g["gameFile"] = path.name
                 save_index(games)
             return self.send_json({"file": "shared/" + path.name})
+        if url.path == "/api/game-set":
+            names = body.get("names")
+            if not isinstance(names, list) or not names or len(names) > 500 or not all(
+                    isinstance(n, str) and n and all(ch.isalnum() or ch in "_-" for ch in n) for n in names):
+                return self.send_json({"error": "bad request"}, 400)
+            missing = [n for n in names if not (ROOT / "matches" / f"{n}.js").exists()]
+            if missing:
+                return self.send_json({"error": "no such game: " + ", ".join(missing)}, 404)
+            import share_season
+            try:
+                with share_lock:
+                    archive = share_season.make_share(ROOT / "shared" / set_name(names), sorted(set(names)), ROOT)
+            except Exception as e:
+                traceback.print_exc()
+                return self.send_json({"error": f"could not make the ZIP: {e}"}, 500)
+            status.note(f"Exported {len(set(names))} game{'s' if len(set(names)) > 1 else ''} to shared/{archive.name}")
+            return self.send_json({"file": "shared/" + archive.name})
         if url.path == "/api/delete" and name:
             with index_lock:
                 save_index([g for g in load_index() if g["name"] != name])
@@ -500,6 +520,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             update_season()
             return self.send_json({"deleted": name})
         self.send_json({"error": "unknown"}, 404)
+
+
+share_lock = threading.Lock()
+
+
+def set_name(names):
+    """The folder (and zip) name for a set of games: the matchups and the dates, e.g. "NHL94 BUF-TOR 2026-10-27"."""
+    pairs, days = set(), sorted(n[:10] for n in names)
+    for n in names:
+        tail = n.rsplit("_", 1)[-1]
+        teams = tail.split("-")
+        pairs.add("-".join(sorted(teams)) if len(teams) == 2 and all(t.isalpha() for t in teams) else None)
+    pairs.discard(None)
+    games = f"{len(names)} games" if len(names) > 1 else "1 game"
+    who = ", ".join(sorted(pairs)) if pairs and len(pairs) <= 3 else games
+    when = days[0] if days[0] == days[-1] else f"{days[0]} to {days[-1]}"
+    label = f"NHL94 {who} {when}" + (f" ({games})" if who != games else "")
+    return "".join(ch for ch in label if ch.isalnum() or ch in " ,()-_")
 
 
 def convert_leftovers():
@@ -635,6 +673,9 @@ def start_broadcast():
 def main():
     if "--convert" in sys.argv:
         return convert_folder(sys.argv[sys.argv.index("--convert") + 1])
+    if "--season" in sys.argv:  # the packaged helper making a share's season data (share_season.season_command)
+        import season
+        return season.write_season_file()
     if "--export" in sys.argv:  # the packaged helper running the converter as its own process (the live broadcast)
         import export_match
         return export_match.main(sys.argv[sys.argv.index("--export") + 1:])

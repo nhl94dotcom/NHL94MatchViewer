@@ -22,8 +22,6 @@
   .status small { display: block; color: var(--muted); }
   .live { margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; }
   .live .score { font-size: 22px; font-weight: 700; }
-  .settings label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .settings small { color: var(--muted); display: block; margin-left: 30px; }
   input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
   table { width: 100%; border-collapse: collapse; }
   th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; padding: 0 8px 8px; }
@@ -32,6 +30,12 @@
   td.game b { font-variant-numeric: tabular-nums; margin: 0 6px; }
   td.game small { color: var(--muted); display: block; }
   td.actions { text-align: right; white-space: nowrap; }
+  th.pick, td.pick { width: 30px; padding-right: 0; }
+  .exportbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; }
+  .exportbar small { color: var(--muted); }
+  button.primary { background: var(--accent); color: var(--ink); border-color: var(--accent); font-weight: 600; margin-left: 0; }
+  button.primary:hover { background: #ffd95a; }
+  button:disabled { opacity: .5; cursor: default; }
   a.button, button { display: inline-block; background: var(--raised); color: var(--text); border: 1px solid #3a4450; border-radius: 6px; padding: 5px 11px;
     font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; margin-left: 4px; }
   a.button:hover, button:hover { background: #343d49; }
@@ -69,15 +73,14 @@
     <details><summary>Activity</summary><div class="log" id="log"></div></details>
   </section>
 
-  <section class="card settings">
-    <label><input type="checkbox" id="autoGameFile"> Make a shareable game file after every game</label>
-    <small>One page (about 5 MB) with the viewer and the game inside, to send to your opponent. You can also make one for any game below.</small>
-  </section>
-
   <section class="card">
     <div class="listhead"><h2>Games</h2><a class="button" href="season.html">Season stats</a></div>
+    <div class="exportbar">
+      <button class="primary" id="exportZip" disabled>Export to ZIP</button>
+      <small id="exportNote">Tick games to send them as one ZIP: the season page and the viewer with just those games (no recordings or ROMs). Your opponent unzips it and opens season.html. "Game file" sends one game as a single page.</small>
+    </div>
     <table>
-      <thead><tr><th>When</th><th>Game</th><th></th></tr></thead>
+      <thead><tr><th class="pick"><input type="checkbox" id="pickAll" title="Tick every game in the list"></th><th>When</th><th>Game</th><th></th></tr></thead>
       <tbody id="games"></tbody>
     </table>
     <details class="previews" id="previewBox" hidden><summary id="previewSum"></summary>
@@ -89,6 +92,8 @@
 const $ = id => document.getElementById(id);
 const STATES = { waiting: 'Waiting for RetroArch', ready: 'Ready', recording: 'Recording', converting: 'Saving the game', idle: 'Ready', starting: 'Starting' };
 let shownGames = '';
+const picked = new Set();  // the games ticked for the ZIP, kept across the list's redraws
+let listed = [];           // the games in the main list, for "tick all"
 
 function when(iso) {
   const d = new Date(iso);
@@ -126,9 +131,13 @@ function renderGames(games) {
   fillRows($('previews'), short);
   const body = $('games');
   body.textContent = '';
+  listed = games.map(g => g.name);
+  const all = new Set([...games, ...short].map(g => g.name));
+  for (const n of [...picked]) if (!all.has(n)) picked.delete(n);  // deleted games
+  showPicked();
   if (!games.length && !short.length) {
     const tr = body.insertRow(), td = tr.insertCell();
-    td.colSpan = 3; td.className = 'empty'; td.textContent = 'No games yet. Start a game in RetroArch and it will be recorded.';
+    td.colSpan = 4; td.className = 'empty'; td.textContent = 'No games yet. Start a game in RetroArch and it will be recorded.';
     return;
   }
   fillRows(body, games);
@@ -137,6 +146,11 @@ function fillRows(body, games) {
   body.textContent = '';
   for (const g of games) {
     const tr = body.insertRow();
+    const pick = tr.insertCell(); pick.className = 'pick';
+    const box = document.createElement('input');
+    box.type = 'checkbox'; box.checked = picked.has(g.name); box.title = 'Put this game in the ZIP';
+    box.onchange = () => { if (box.checked) picked.add(g.name); else picked.delete(g.name); showPicked(); };
+    pick.append(box);
     const w = tr.insertCell(); w.className = 'when'; w.textContent = when(g.date);
     const game = tr.insertCell(); game.className = 'game';
     const home = document.createElement('span'), away = document.createElement('span'), score = document.createElement('b'), info = document.createElement('small');
@@ -155,7 +169,7 @@ function fillRows(body, games) {
     // converted: handing out a file made earlier gave the user old pages without the newest stats.
     const make = document.createElement('button');
     make.textContent = 'Game file';
-    make.title = 'Make the shareable game file and download it';
+    make.title = 'This game alone as one page (the viewer with the game inside): make it and download it';
     make.onclick = async () => {
       make.disabled = true; make.textContent = 'Making…';
       const r = await fetch('/api/game-file?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } }).then(r => r.json()).catch(() => null);
@@ -169,11 +183,40 @@ function fillRows(body, games) {
     del.onclick = async () => {
       if (!confirm('Delete ' + (g.home || '') + ' ' + g.score.join('-') + ' ' + (g.away || '') + '? The recording, the replay and its game file go.')) return;
       await fetch('/api/delete?name=' + encodeURIComponent(g.name), { method: 'POST', headers: { 'X-NHL94': '1' } });
-      shownGames = ''; poll();
+      picked.delete(g.name); shownGames = ''; poll();
     };
     actions.append(del);
   }
 }
+
+function showPicked() {
+  const n = picked.size, btn = $('exportZip');
+  if (!btn.dataset.busy) {
+    btn.disabled = !n;
+    btn.textContent = n ? 'Export ' + n + ' game' + (n === 1 ? '' : 's') + ' to ZIP' : 'Export to ZIP';
+  }
+  const inList = listed.filter(name => picked.has(name)).length;
+  $('pickAll').checked = listed.length > 0 && inList === listed.length;
+  $('pickAll').indeterminate = inList > 0 && inList < listed.length;
+}
+$('pickAll').addEventListener('change', e => {
+  for (const name of listed) { if (e.target.checked) picked.add(name); else picked.delete(name); }
+  shownGames = ''; poll();
+});
+$('exportZip').addEventListener('click', async () => {
+  const btn = $('exportZip'), names = [...picked];
+  if (!names.length) return;
+  btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = 'Making the ZIP…';
+  const r = await fetch('/api/game-set', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-NHL94': '1' }, body: JSON.stringify({ names }) })
+    .then(r => r.json()).catch(() => null);
+  delete btn.dataset.busy;
+  showPicked();
+  if (r && r.file) {
+    const a = document.createElement('a');
+    a.href = r.file.split('/').map(encodeURIComponent).join('/') + '?' + Date.now(); a.download = r.file.split('/').pop(); a.click();
+    $('exportNote').textContent = 'Saved ' + r.file.split('/').pop() + ' (also in the shared folder beside your games). Send it to your opponent.';
+  } else alert('Could not make the ZIP' + (r && r.error ? ': ' + r.error : ' (is the helper still running?)'));
+});
 
 async function poll() {
   let s;
@@ -194,12 +237,8 @@ async function poll() {
     $('liveClock').textContent = (g.paused ? 'Paused · ' : '') + g.clock;
   }
   $('log').textContent = (s.log || []).join('\n');
-  $('autoGameFile').checked = !!s.settings.auto_game_file;
   renderGames(s.games || []);
 }
-$('autoGameFile').addEventListener('change', e => {
-  fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-NHL94': '1' }, body: JSON.stringify({ auto_game_file: e.target.checked }) });
-});
 poll();
 setInterval(poll, 1000);
 </script>

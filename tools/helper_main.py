@@ -23,13 +23,16 @@ def documents():
     return Path.home() / "Documents"
 
 
-if getattr(sys, "frozen", False):
+# The packaged helper also runs itself for work in another process: --export (the live broadcast's converter) and
+# --season (a share's season data, in the share's own folder): neither copies the pages or makes the folders.
+WORKER = any(flag in sys.argv for flag in ("--export", "--season"))
+if getattr(sys, "frozen", False) and not WORKER:
     home = Path(os.environ.get("NHL94_HOME") or documents() / "NHL94 Viewer")
     home.mkdir(parents=True, exist_ok=True)
     os.environ["NHL94_HOME"] = str(home)
     bundle = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
     for name in BUNDLED:
-        if (bundle / name).exists() and "--export" not in sys.argv:  # not for the live broadcast's conversions
+        if (bundle / name).exists():
             shutil.copy2(bundle / name, home / name)
     for folder in ("matches", "captures", "sprites", "roms", "shared"):
         (home / folder).mkdir(exist_ok=True)
