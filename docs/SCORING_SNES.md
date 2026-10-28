@@ -284,88 +284,28 @@ The user's SNES dekes (the near-post cut and the deke from his own side) replaye
 
 The user: on the SNES the EA Special has been found not to be a thing, or a very rare one. The Genesis play (a wrist
 shot from the side meant to come off the goalie loose, then a quick follow-up inside the near post:
-[SCORING_GENESIS_EA](SCORING_GENESIS_EA.md)) played in the retail SNES ROM with the same kind of bot. The SNES hold
-rule runs the other way (SNES_SHOOTING 5.4): the goalie holds a puck slower than a random 8,192-17,000 in each
-direction, and a harder one bounces straight out from his centre. So the run tries harder shots too.
+[SCORING_GENESIS_EA](SCORING_GENESIS_EA.md)) played in the retail SNES ROM with the same kind of bot: the shooter
+skates on at the goal after the shot, chases the puck once the goalie has touched it, and shoots at the near post as
+soon as he has it. The SNES hold rule runs the other way (SNES_SHOOTING 5.4): the goalie holds a puck slower than a
+random 8,192-17,000 in each direction, and a harder one bounces straight out from his centre. A save is counted only
+where the game can make one: the puck loose and inside his body box or his save frame's area as it turns or slows.
 
-**Plan "explore":**
-both nets, released 13 / 21 / 29 ft out and 20 / 27 ft to either side (a right-hander from his left, a left-hander
-from his right), skating at the goal or in at 45 degrees at 1.9 a frame (full speed about 2.2), working Shot Power 5 /
-10 / 15 (of 15), a wrist shot (A tapped) or a 12-frame wind-up, every aim, 24 moments x 2 seeds, against the test
-goalie (8 / 8 / about 15 / 15) and Roy (15 / 10 / 10 / 15). The follow-up is aimed at the near post.
+**What the first shot does** (released 17-21 ft out and 27 ft to the side by a right-hander from his left, skating at
+1.9 a frame, a wrist shot at Shot Power 8, every aim, 24 plays per aim against the test goalie):
 
-- **Over the whole grid it is rare, as the user said:** 1-3% of attempts end in a goal at every Shot Power, for both
-  goalies. Wrist shots are held 73-80% of the time; the wind-up is held less (44-46% at Shot Power 10, 22-25% at 15)
-  and bobbled more, but at Shot Power 10-15 its follow-ups score less (0.5-1.6% of attempts against the wrist shot's
-  1.9-2.8%).
-- **One spot works in the simulation: 21 ft out and 27 ft to the side, a wrist shot, Shot Power 5-10, the first shot
-  low** (along the ice, at the middle or the far side). There the goalie leaves most first shots loose (80-100% at the top
-  net, 50-80% at the bottom) and the bot claims most of them:
+| First shot | What happened |
+| --- | --- |
+| Low (along the ice) | The shooter caught up with his own shot before it reached the goalie in 63-67 of 72 (top net, bottom net); the rest held |
+| Middle | Held 18-22 of 24; loose 2-6, of which 1-2 scored on the follow-up |
+| High | Held 22-23 of 24; no goals |
 
-| Net | Set-up | Test goalie | Roy |
-| --- | --- | --- | --- |
-| Top | a left-hander from his right, in at 45°, Shot Power 10, Down-Left (low, the far side) | 72% (follow-up 57%) | 52% (35%) |
-| Top | the same, Down (low, the middle) | 57% (51%) | 38% (35%) |
-| Top | a right-hander from his left, at the goal, Shot Power 10, Down-Right (low, the far side) | 60% (31%) | 48% (27%) |
-| Bottom | a right-hander from his left, in at 45°, Shot Power 5, Down (low, the middle) | 67% (56%) | 40% (29%) |
-| Bottom | the same, Shot Power 10, Down-Left (low, the far side) | 62% (46%) | 42% (27%) |
-
-- **The rest of each rate is mostly the loose puck going in off the goalie** with no second shot (up to 29% of
-  attempts in the top net's right-hander row), and a few first shots straight in.
-- **The bottom net's left-hander is a straight-in shot,** not an EA Special: the same spot, Down-Right, 73% against the
-  test goalie and 35% against Roy, almost all the first shot.
-- **Elsewhere the best cells are 25-31%** by the worse goalie (13 ft and 29 ft out, or 20 ft to the side).
-- **Roy matters more here than at the fine search's best spot (below),** 10-30 points less.
-
-**Plan "fine" (2026-10-28):** around that spot, released 17 / 19 / 21 / 23 / 25 ft out and 23 / 27 / 30 ft to either
-side, Shot Power 5 / 8 / 11, a wrist shot, at the goal or in at 45 degrees, every aim, 24 moments x 2 seeds against
-each goalie. The best, by the worse of the two goalies (test goalie / Roy; the follow-up's share in brackets):
-
-| Net | Set-up | Test goalie | Roy |
-| --- | --- | --- | --- |
-| Top | a right-hander from his left, released 17 ft out, 27 ft to the side, at the goal, Shot Power 8, Down-Right (low, the far side) | **71%** (follow-up 62%) | **67%** (65%) |
-| Top | a left-hander from his right, 19 ft out, 27 ft to the side, at the goal, Shot Power 11, Down-Left (low, the far side) | 62% (54%) | 62% (40%) |
-| Bottom | a right-hander from his left, 17 ft out, 27 ft to the side, at the goal, Shot Power 8, Down-Left (low, the far side) | **81%** (50%) | **71%** (40%) |
-| Bottom | the same, 21 ft out, in at 45 degrees, Down (low, the middle) | 56% (46%) | 56% (44%) |
-| Bottom (straight in) | a left-hander from his right, 17 ft out, 27 ft to the side, at the goal, Shot Power 8, Down-Right | 88% (4%) | 81% (8%) |
-
-- **The SNES EA Special is a right-hander's play from his left, released 27 ft to the side, 17-21 ft out,** a wrist
-  shot low at the far side and the follow-up at the near post, at both nets. 27 ft to the side is the line: at 23 or
-  30 ft the follow-up rates fall to about 5-40%. 17 ft out gives the most goals at both nets.
-- **Shot Power 8-11, not 5:** a firmer wrist shot comes off the goalie more (the SNES goalie holds soft shots).
-- **Roy hardly matters here** (71% / 67% at the top net), unlike the explore's coarser spot.
-- **The bottom net's left-hander is a shot, not a rebound play:** 81-88% at the best cell, nearly all the first shot
-  going straight in, and his other good cells are the same.
-- **Limits:** on the Genesis the same kind of simulation was far too optimistic against the user's real attempts
-  (the bot has no defender and never hesitates), and there is no SNES recording of EA Specials to check it against
-  yet.
-
-**Animated** (`snes_ea_animate.py`, each GIF's rate its own 24 plays; the shooter stays on the ice and the run's bot
-plays on).
-
-**Top net, the right-hander: 17 of 24 (15 on the rebound); against Roy 11 of 24 (all on the rebound).**
-
-![SNES EA Special, top net: four real attempts](img/scoring_map/sea_best_top_clips.gif)
-![SNES EA Special, top net: every attempt from above](img/scoring_map/sea_best_top_paths.gif)
-
-![SNES EA Special, top net, against Roy: four real attempts](img/scoring_map/sea_best_top_roy_clips.gif)
-![SNES EA Special, top net, against Roy: every attempt from above](img/scoring_map/sea_best_top_roy_paths.gif)
-
-**Top net, the left-hander: 13 of 24 (10 on the rebound, 3 in off the goalie).**
-
-![SNES EA Special, top net, the left-hander: four real attempts](img/scoring_map/sea_best_top_left_clips.gif)
-![SNES EA Special, top net, the left-hander: every attempt from above](img/scoring_map/sea_best_top_left_paths.gif)
-
-**Bottom net, the right-hander: 19 of 24 (16 on the rebound); against Roy 19 of 24 (12 on the rebound, 7 straight
-in).**
-
-![SNES EA Special, bottom net: four real attempts](img/scoring_map/sea_best_bottom_clips.gif)
-![SNES EA Special, bottom net: every attempt from above](img/scoring_map/sea_best_bottom_paths.gif)
-
-![SNES EA Special, bottom net, against Roy: four real attempts](img/scoring_map/sea_best_bottom_roy_clips.gif)
-![SNES EA Special, bottom net, against Roy: every attempt from above](img/scoring_map/sea_best_bottom_roy_paths.gif)
-
-**Bottom net, the left-hander: 19 of 24, every one the first shot straight in.**
-
-![SNES, bottom net, the left-hander's straight-in shot: four real attempts](img/scoring_map/sea_straight_bottom_left_clips.gif)
-![SNES, bottom net, the left-hander's straight-in shot: every attempt from above](img/scoring_map/sea_straight_bottom_left_paths.gif)
+- **A low wrist shot is too slow to get away from the shooter.** It leaves the stick at about 2.4 units a frame, he
+  follows at 1.9, and his stick reaches it again 20-24 units short of the goalie. That is a carried puck, not a
+  rebound.
+- **Middle and high shots reach the goalie and are held,** as the SNES hold rule predicts for soft shots. The few
+  that come loose rarely end in a goal.
+- **Harder shots** (Shot Power 15, or a wind-up) bounce off more (held 22-46% instead of 73-80%), but the earlier
+  searches found their rebounds go farther and were seldom finished; they haven't been re-run with this save test.
+- **So in the game, the SNES EA Special is very rare, as the user said.** A full search with this save test (every
+  spot, aim, Shot Power and the wind-up) hasn't been run yet, and there is no SNES recording of EA Specials to check
+  against.

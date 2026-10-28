@@ -120,7 +120,7 @@ def play(case, n):
         frames, pts = film[0], film[1]
         film.clear()
         goal = r == "goal" or info["follow"] in ("goal", "in_off_goalie")
-        label = {"goal": "GOAL straight in", "held": "HELD", "miss": "MISSED"}.get(r)
+        label = {"goal": "GOAL straight in", "held": "HELD", "miss": "MISSED", "retaken": "took his own shot back"}.get(r)
         if label is None:
             label = {"goal": "GOAL on the rebound", "in_off_goalie": "GOAL, in off the goalie",
                      "held": "bobbled, held after"}.get(info["follow"], "bobbled, no goal")

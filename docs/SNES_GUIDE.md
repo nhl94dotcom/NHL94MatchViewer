@@ -432,10 +432,9 @@ went in within 12.6 units of a goalie's centre.
 - To score, put the puck **outside that box**: a corner, from inside the zone where shots can be exact.
 - **Hard shots come back out.** A shot at 17,000 or more almost never sticks to him (1 in 10 held in recorded games): it
   bounces straight out from where it hit him. Follow your hard shots in for the rebound. Soft shots he usually holds.
-- **The EA Special is rare on the SNES** (1-3% for a bot over the whole zone), with one exception in the game itself:
-  a right-hander from his left, released 17-21 feet out and 27 to the side, a wrist shot at Shot Power 8-11 aimed low
-  at the far side, then the near post. The bot scored about 70% at both nets, even against Roy (SCORING_SNES, "EA
-  Specials on the SNES"; not yet checked in a real game).
+- **The EA Special is very rare on the SNES.** Played in the game itself: a low wrist shot is so slow that the shooter
+  catches up with it before the goalie does, and middle or high wrist shots are held (SCORING_SNES, "EA Specials on the
+  SNES").
 
 ### 11.2 Playing goal yourself (X)
 

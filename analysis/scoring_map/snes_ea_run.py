@@ -11,7 +11,9 @@ x < 0, a left-hander from his right, as the Genesis's), and each of the nine aim
 the clock, the settle frames) x SEEDS release seeds. After the release (as ea_run.play): he skates on at the goal; once
 the goalie has touched the puck and it is loose he skates at it, and as soon as he has it taps A toward the near post
 (the side of the net he is on). Per aim: the first result (goal straight in, held, bobble, miss) and, for a bobble,
-the follow-up (goal, held, none, in off the goalie), the release speed and the mean release spot. The follow-up's
+the follow-up (goal, held, none, in off the goalie), the release speed and the mean release spot. A save is counted
+only while the puck is loose and where the game can stop it (at_goalie: his body box or his save frame's area); a slow shot the shooter catches up with and takes back before the goalie touches it is
+"retaken" (not an EA Special). The follow-up's
 aim from NHL94_EA_FOLLOW (near / center / far, as ea_run).
 Skating: SNES full speed is about 2.2 a frame at Speed 15 (cap (20 + Speed) x 261 / 4096, SNES_MECHANICS 3.1), and
 most skaters are at 15; the runs use 1.9, a little below it, as people take EA Specials.
@@ -27,11 +29,12 @@ import random
 import sys
 import time
 import zlib
+from pathlib import Path
 from multiprocessing import Pool
 
 import snes_harness as H
 from lowload import WORKERS, breathe, gentle
-from paths import RUNS, SNES_STATE_TOP, SNES_STATE_BOTTOM
+from paths import RUNS, SNES_ROM, SNES_STATE_TOP, SNES_STATE_BOTTOM
 
 MOMENTS = int(os.environ.get("NHL94_SEA_MOMENTS") or 24)
 SEEDS = 2
@@ -43,6 +46,26 @@ LEAD = {3: 6, 12: 12}          # frames of skating before the wind-up starts, by
 KEYS = ("net", "x", "out", "shp", "move", "hold")
 FOLLOW_AIM = os.environ.get("NHL94_EA_FOLLOW") or "near"     # the follow-up's aim, as ea_run's: near / center / far
 FLIP = {"RIGHT": "LEFT", "LEFT": "RIGHT"}
+FRAME = 0x0D97                 # the sprite frame (word array)
+REACH = 4                      # units of slack in the save test: the puck moves 2-3 a frame
+_rom = []
+
+
+def at_goalie(e, dx, dy, z, frame):
+    """Whether a puck dx, dy (screen, +y up) from the goalie's centre at height z is where the game can stop it
+    (checkpuckcoll_ccx): his body box (11 to his left and below, 10 to his right and above, any height) or his sprite
+    frame's save area (a circle around its hot point, within its height band; xg_snes.RomData.hot)."""
+    if -11 - REACH <= dx <= 10 + REACH and -11 - REACH <= dy <= 10 + REACH:
+        return True
+    if not _rom:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+        from xg_snes import RomData
+        _rom.append(RomData(SNES_ROM.read_bytes()))
+    hot = _rom[0].hot(frame)
+    if not hot:
+        return False
+    hx, hy, r, top, bottom = hot
+    return math.hypot(dx - hx, dy - hy) <= r + REACH and z <= top + 2 and (bottom < 0 or z > bottom - 2)
 _h = {}
 
 
@@ -79,8 +102,11 @@ def play(h, sg):
     for f in range(FIRST + FOLLOW):
         h.park()
         sx, sy = h.sw(H.XPOS + s), h.sw(H.YPOS + s)
-        px, py = h.sw(H.XPOS + pk), h.sw(H.YPOS + pk)
+        px, py, pz = h.sw(H.XPOS + pk), h.sw(H.YPOS + pk), h.sw(H.PUCKZ)
+        gframe = e.w(FRAME + g)
         gx, gy = h.sw(H.XPOS + g), h.sw(H.YPOS + g)
+        if e.w(H.PUCKC) == s and touched is None:          # he caught up with his own shot before the goalie
+            return "retaken", info                        # touched it: no save, so no EA Special
         if e.w(H.PUCKC) == s and touched is not None and not shot:
             info["claim"], shot = f - touched, True
             near = "RIGHT" if sx > 0 else "LEFT"
@@ -107,7 +133,7 @@ def play(h, sg):
             return "bobble", info
         vx, vy = h.sw(H.XVEL + pk), h.sw(H.YVEL + pk)
         if touched is None:
-            if pv is not None and math.hypot(px - gx, py - gy) < 24 and \
+            if pv is not None and e.w(H.PUCKC) & 0x8000 and at_goalie(e, px - gx, py - gy, pz, gframe) and \
                     vx * pv[0] + vy * pv[1] < 0.5 * (pv[0] ** 2 + pv[1] ** 2):
                 touched = f                              # turned or slowed hard beside the goalie: a save
                 info["v"] = round(math.hypot(*pv))
@@ -146,7 +172,7 @@ def job(args):
         base = e.serialize()
         skate = H.DIRPAD[toward(dx, dy)]
         for aim in range(9):
-            c = res.setdefault(str(aim), dict(n=0, goal=0, held=0, bobble=0, miss=0, noshot=0, speed=0, claimed=0,
+            c = res.setdefault(str(aim), dict(n=0, goal=0, held=0, bobble=0, miss=0, retaken=0, noshot=0, speed=0, claimed=0,
                                               follow_goal=0, follow_held=0, follow_none=0, follow_in_off_goalie=0))
             e.unserialize(base)
             pre = None
