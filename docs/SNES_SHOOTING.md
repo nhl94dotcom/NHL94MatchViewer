@@ -357,12 +357,13 @@ recorded path to within about 5 units, and the 11 Up-net cuts score 37% (the use
 ![SNES cut, Down net, right-hander: four real attempts](img/scoring_map/snes_cut_down_righty_clips.gif)
 ![SNES cut, Down net, right-hander: every attempt from above](img/scoring_map/snes_cut_down_righty_paths.gif)
 
-The user's own cut at P3 2:18 turned round to the Down net, by a right-hander: 88% in the run (21 of 24 here).
+The user's own cut at P3 2:18 turned round to the Down net, by a right-hander: 88% in the run (21 of 24 here; the GIFs
+leave the skater on the ice after the shot, where the run takes him off).
 
 ![SNES cut, Up net, left-hander: four real attempts](img/scoring_map/snes_cut_up_lefty_clips.gif)
 ![SNES cut, Up net, left-hander: every attempt from above](img/scoring_map/snes_cut_up_lefty_paths.gif)
 
-The same try as played, Up net, left-hander: 73% (16 of 24 here).
+The same try as played, Up net, left-hander: 73% (17 of 24 here).
 
 ![SNES cut released too far out: four real attempts](img/scoring_map/snes_cut_far_out_clips.gif)
 ![SNES cut released too far out: every attempt from above](img/scoring_map/snes_cut_far_out_paths.gif)
@@ -377,12 +378,12 @@ The try at P3 4:02, released about 62 out (21 ft): 3% (1 of 24 here).
 ![SNES deke from his left, Down net, left-hander: four real attempts](img/scoring_map/snes_deke_down_lefty_clips.gif)
 ![SNES deke from his left, Down net, left-hander: every attempt from above](img/scoring_map/snes_deke_down_lefty_paths.gif)
 
-The try at P2 3:40, as played: 67% (16 of 24 here).
+The try at P2 3:40, as played: 67% (14 of 24 here).
 
 ![SNES deke from his left, Up net, left-hander: four real attempts](img/scoring_map/snes_deke_up_lefty_clips.gif)
 ![SNES deke from his left, Up net, left-hander: every attempt from above](img/scoring_map/snes_deke_up_lefty_paths.gif)
 
-The try at P3 4:51, as played: 67% (14 of 24 here).
+The try at P3 4:51, as played: 67% (15 of 24 here).
 
 So both moves work at both nets and by either hand. For the cut: release inside about 13 ft, after the goalie has
 started sliding toward the middle. Next: tuned inputs from scratch (the "near" grid, with the recorded ratings) to

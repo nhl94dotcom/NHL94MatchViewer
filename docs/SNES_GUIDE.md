@@ -433,8 +433,9 @@ went in within 12.6 units of a goalie's centre.
 - **Hard shots come back out.** A shot at 17,000 or more almost never sticks to him (1 in 10 held in recorded games): it
   bounces straight out from where it hit him. Follow your hard shots in for the rebound. Soft shots he usually holds.
 - **The EA Special is rare on the SNES** (1-3% for a bot over the whole zone), with one exception in the game itself:
-  released 21 feet out and 27 to the side, a wrist shot at Shot Power 5-10 aimed low, the goalie leaves most of them
-  loose and the bot scored 40-70% on the follow-up (SCORING_SNES, "EA Specials on the SNES"; not yet checked in a real game).
+  a right-hander from his left, released 17-21 feet out and 27 to the side, a wrist shot at Shot Power 8-11 aimed low
+  at the far side, then the near post. The bot scored about 70% at both nets, even against Roy (SCORING_SNES, "EA
+  Specials on the SNES"; not yet checked in a real game).
 
 ### 11.2 Playing goal yourself (X)
 

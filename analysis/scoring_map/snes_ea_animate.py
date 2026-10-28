@@ -24,8 +24,27 @@ from lowload import WORKERS, breathe
 # name, net, x (attacker's view, + his right), out, aim, Shot Power (working 0-15), wind-up frames (3: a wrist shot),
 # title, None (the rate: the filmed plays'), move (as snes_ea_run: "rgoal" / "rdiag" + speed), the caption's two
 # lines, the goalie's working ratings (None: the test goalie)
-CASES = []
 ROY = (15, 10, 10, 15)
+# the fine search's best (2026-10-28): a right-hander from his left, 17 ft out, 27 ft to the side, skating at the goal,
+# Shot Power 8, the first shot low at the far side, at both nets; the top net's left-hander; and the bottom net's
+# left-hander, whose goals are mostly the first shot straight in
+RH_TOP = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Right held, Shot Power 8.")
+RH_BOTTOM = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Left held, Shot Power 8.")
+CASES = [
+    ("sea_best_top", "top", -80, 52, 3, 8, 3, "SNES EA Special, top net: low at the far side, then the near post", None,
+     "rgoal1.9", RH_TOP, None),
+    ("sea_best_top_roy", "top", -80, 52, 3, 8, 3, "SNES EA Special, top net, against Roy", None, "rgoal1.9", RH_TOP, ROY),
+    ("sea_best_top_left", "top", 80, 58, 5, 11, 3, "SNES EA Special, top net, the left-hander", None, "rgoal1.9",
+     ("Left-handed, released 19 ft out, 27 ft to his right, at 1.9,", "skating at the goal, Down-Left held, Shot Power 11."),
+     None),
+    ("sea_best_bottom", "bottom", -80, 52, 5, 8, 3, "SNES EA Special, bottom net: low at the far side, then the near post",
+     None, "rgoal1.9", RH_BOTTOM, None),
+    ("sea_best_bottom_roy", "bottom", -80, 52, 5, 8, 3, "SNES EA Special, bottom net, against Roy", None, "rgoal1.9",
+     RH_BOTTOM, ROY),
+    ("sea_straight_bottom_left", "bottom", 80, 52, 3, 8, 3, "SNES, bottom net, the left-hander: mostly straight in", None,
+     "rgoal1.9", ("Left-handed, released 17 ft out, 27 ft to his right, at 1.9,",
+                  "skating at the goal, Down-Right held, Shot Power 8."), None),
+]
 LEGEND = "Puck: orange when the play ends in a goal. Grey: shooter. Black: goalie."
 
 

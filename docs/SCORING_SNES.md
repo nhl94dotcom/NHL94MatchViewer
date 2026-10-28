@@ -315,8 +315,57 @@ goalie (8 / 8 / about 15 / 15) and Roy (15 / 10 / 10 / 15). The follow-up is aim
 - **The bottom net's left-hander is a straight-in shot,** not an EA Special: the same spot, Down-Right, 73% against the
   test goalie and 35% against Roy, almost all the first shot.
 - **Elsewhere the best cells are 25-31%** by the worse goalie (13 ft and 29 ft out, or 20 ft to the side).
-- **Roy matters more here than in the other SNES studies,** 10-30 points less at the best spot.
-- **Limits:** the grid is coarse (three depths, two sides), so the spot's edges aren't known. On the Genesis the same
-  kind of simulation was far too optimistic against the user's real attempts (the bot has no defender and never
-  hesitates), and there is no SNES recording of EA Specials to check it against yet. A finer search around 21 ft out
-  and 27 ft to the side would come next.
+- **Roy matters more here than at the fine search's best spot (below),** 10-30 points less.
+
+**Plan "fine" (2026-10-28):** around that spot, released 17 / 19 / 21 / 23 / 25 ft out and 23 / 27 / 30 ft to either
+side, Shot Power 5 / 8 / 11, a wrist shot, at the goal or in at 45 degrees, every aim, 24 moments x 2 seeds against
+each goalie. The best, by the worse of the two goalies (test goalie / Roy; the follow-up's share in brackets):
+
+| Net | Set-up | Test goalie | Roy |
+| --- | --- | --- | --- |
+| Top | a right-hander from his left, released 17 ft out, 27 ft to the side, at the goal, Shot Power 8, Down-Right (low, the far side) | **71%** (follow-up 62%) | **67%** (65%) |
+| Top | a left-hander from his right, 19 ft out, 27 ft to the side, at the goal, Shot Power 11, Down-Left (low, the far side) | 62% (54%) | 62% (40%) |
+| Bottom | a right-hander from his left, 17 ft out, 27 ft to the side, at the goal, Shot Power 8, Down-Left (low, the far side) | **81%** (50%) | **71%** (40%) |
+| Bottom | the same, 21 ft out, in at 45 degrees, Down (low, the middle) | 56% (46%) | 56% (44%) |
+| Bottom (straight in) | a left-hander from his right, 17 ft out, 27 ft to the side, at the goal, Shot Power 8, Down-Right | 88% (4%) | 81% (8%) |
+
+- **The SNES EA Special is a right-hander's play from his left, released 27 ft to the side, 17-21 ft out,** a wrist
+  shot low at the far side and the follow-up at the near post, at both nets. 27 ft to the side is the line: at 23 or
+  30 ft the follow-up rates fall to about 5-40%. 17 ft out gives the most goals at both nets.
+- **Shot Power 8-11, not 5:** a firmer wrist shot comes off the goalie more (the SNES goalie holds soft shots).
+- **Roy hardly matters here** (71% / 67% at the top net), unlike the explore's coarser spot.
+- **The bottom net's left-hander is a shot, not a rebound play:** 81-88% at the best cell, nearly all the first shot
+  going straight in, and his other good cells are the same.
+- **Limits:** on the Genesis the same kind of simulation was far too optimistic against the user's real attempts
+  (the bot has no defender and never hesitates), and there is no SNES recording of EA Specials to check it against
+  yet.
+
+**Animated** (`snes_ea_animate.py`, each GIF's rate its own 24 plays; the shooter stays on the ice and the run's bot
+plays on).
+
+**Top net, the right-hander: 17 of 24 (15 on the rebound); against Roy 11 of 24 (all on the rebound).**
+
+![SNES EA Special, top net: four real attempts](img/scoring_map/sea_best_top_clips.gif)
+![SNES EA Special, top net: every attempt from above](img/scoring_map/sea_best_top_paths.gif)
+
+![SNES EA Special, top net, against Roy: four real attempts](img/scoring_map/sea_best_top_roy_clips.gif)
+![SNES EA Special, top net, against Roy: every attempt from above](img/scoring_map/sea_best_top_roy_paths.gif)
+
+**Top net, the left-hander: 13 of 24 (10 on the rebound, 3 in off the goalie).**
+
+![SNES EA Special, top net, the left-hander: four real attempts](img/scoring_map/sea_best_top_left_clips.gif)
+![SNES EA Special, top net, the left-hander: every attempt from above](img/scoring_map/sea_best_top_left_paths.gif)
+
+**Bottom net, the right-hander: 19 of 24 (16 on the rebound); against Roy 19 of 24 (12 on the rebound, 7 straight
+in).**
+
+![SNES EA Special, bottom net: four real attempts](img/scoring_map/sea_best_bottom_clips.gif)
+![SNES EA Special, bottom net: every attempt from above](img/scoring_map/sea_best_bottom_paths.gif)
+
+![SNES EA Special, bottom net, against Roy: four real attempts](img/scoring_map/sea_best_bottom_roy_clips.gif)
+![SNES EA Special, bottom net, against Roy: every attempt from above](img/scoring_map/sea_best_bottom_roy_paths.gif)
+
+**Bottom net, the left-hander: 19 of 24, every one the first shot straight in.**
+
+![SNES, bottom net, the left-hander's straight-in shot: four real attempts](img/scoring_map/sea_straight_bottom_left_clips.gif)
+![SNES, bottom net, the left-hander's straight-in shot: every attempt from above](img/scoring_map/sea_straight_bottom_left_paths.gif)
