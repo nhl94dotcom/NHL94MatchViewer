@@ -171,7 +171,7 @@ def paths_gif(case, shots, path):
         return pad + (-x - x_lo) * S, head + (y_hi + y) * S
     f1, f2 = ImageFont.truetype(FONTB, 15), ImageFont.truetype(FONT, 12)
     before = max(s[4] for s in shots)
-    after = min(45, min(len(s[2]) - s[4] for s in shots))
+    after = min(120, max(len(s[2]) - s[4] for s in shots))     # to the longest play's end
     order = sorted(shots, key=lambda s: s[0] == "GOAL")
     frames = []
     for t in range(-before, after):

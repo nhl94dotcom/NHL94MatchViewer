@@ -2,7 +2,8 @@
 "replay" plays them. python snes_deke_animate.py OUT_DIR [N] [names]
 Each case is one try (period-clock key) at one net, by one hand, with one aim: N moments exactly as the run set them
 up (the same random draws), each shot fired with the first of the run's release seeds and played out, the game's own
-frames from 1.5 s before the shot to the result. The captions give the run's rate for that very set-up (24 moments x 4
+frames from 1.5 s before the shot to the result. The skater stays on the ice after the shot (the run parks him off it
+as the shot plays out), so the filmed plays can differ a little from the run's. The captions give the run's rate for that very set-up (24 moments x 4
 seeds, read from RUNS/sdeke/snes_deke_replay.jsonl), the clips goals in about that proportion.
 Two GIFs per case:
 - <name>_clips.gif: four attempts side by side, the whole screen, each labelled with what is happening;
@@ -99,13 +100,13 @@ def play(case, n):
             film[0].pop(), film[1].pop()                     # the release frame is played again by fire
             rel = len(film[0])
             h.fire(pre, D.screen_dir(last), seeds[0])
-            q, _f = h.decide()
+            q, _f = h.decide(keep_shooter=True)              # (the run parks him: he stays on the ice here)
             res = "GOAL" if q else "SAVE"
         else:
             rel = len(film[0])
             res = "GOAL" if out == "carried" else "LOST"
         for _ in range(12 if res == "GOAL" else 6):
-            h.park(keep_shooter=False)
+            h.park(keep_shooter=True)
             e.run(1)
         on[0] = False
         pts = film[1]
@@ -177,7 +178,7 @@ def paths_gif(case, shots, rate, path):
         return (x - x_lo) * S, (y_hi - y) * S
     f1, f2 = ImageFont.truetype(FONTB, 15), ImageFont.truetype(FONT, 12)
     before = min(90, min(s[3] for s in shots))
-    after = min(40, min(len(s[2]) - s[3] for s in shots))
+    after = min(120, max(len(s[2]) - s[3] for s in shots))     # to the longest play's end
     order = sorted(shots, key=lambda s: s[0] == "GOAL")
     frames = []
 

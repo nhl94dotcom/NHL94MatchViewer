@@ -103,15 +103,16 @@ class Harness:
         self.park()
         e.run(1, hold=DIRPAD[aim])
 
-    def decide(self, maxf=150):
+    def decide(self, maxf=150, keep_shooter=False):
         """Play out until decided: a goal (the score goes up); held by the goalie 20 frames; the puck moving away from
-        the goal 4 frames running; or 12+ beyond the goal line."""
+        the goal 4 frames running; or 12+ beyond the goal line. The shooter is parked off the ice as it plays out (so the
+        result is the shot's alone) unless keep_shooter (the GIFs: he stays where he shot)."""
         e = self.e
         s0 = e.w(SCORE_HOME)
         sign = 1 if self.top else -1
         away = held = 0
         for f in range(maxf):
-            self.park(keep_shooter=False)
+            self.park(keep_shooter=keep_shooter)
             e.run(1)
             if e.w(SCORE_HOME) != s0:
                 return 1, f
