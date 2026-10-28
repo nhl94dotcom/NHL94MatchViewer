@@ -44,6 +44,7 @@ FIRST, FOLLOW = 60, 90         # frames to the first result; frames more for the
 LEAD = {3: 6, 12: 12}          # frames of skating before the wind-up starts, by wind-up (from "test": released on
                                # the spot)
 KEYS = ("net", "x", "out", "shp", "move", "hold")
+WALKIN = bool(os.environ.get("NHL94_EA_WALKIN"))   # the walk-in: a retaken puck carried on (play walkin)
 FOLLOW_AIM = os.environ.get("NHL94_EA_FOLLOW") or "near"     # the follow-up's aim, as ea_run's: near / center / far
 FLIP = {"RIGHT": "LEFT", "LEFT": "RIGHT"}
 FRAME = 0x0D97                 # the sprite frame (word array)
@@ -76,6 +77,9 @@ def plan_jobs(plan):
     if plan == "explore":
         return list(itertools.product(("top", "bottom"), (-80, -60, 60, 80), (40, 64, 88), (5, 10, 15),
                                       ("rgoal1.9", "rdiag1.9"), (3, 12)))
+    if plan == "walkin":               # the walk-in (run with NHL94_EA_WALKIN=1): both nets and hands, the low aims
+        return list(itertools.product(("top", "bottom"), (-80, -70, 70, 80), (52, 64, 76), (5, 8, 11),
+                                      ("rgoal1.9",), (3,)))
     if plan == "fine":                 # around explore's one good spot (64 out, 80 to the side, a wrist shot, Shot Power
         return list(itertools.product(("top", "bottom"), (-90, -80, -70, 70, 80, 90), (52, 58, 64, 70, 76),  # 5-10)
                                       (5, 8, 11), ("rgoal1.9", "rdiag1.9"), (3,)))
@@ -201,12 +205,16 @@ def job(args):
             for _ in range(SEEDS):
                 h.fire(pre, aim, rnd.getrandbits(32))
                 c["speed"] += math.hypot(h.sw(H.XVEL + H.o(H.PUCK)), h.sw(H.YVEL + H.o(H.PUCK)))
-                r, info = play(h, sg)
+                r, info = play(h, sg, walkin=WALKIN)
                 c["n"] += 1
                 c[r] += 1
                 if r == "bobble":
                     c["claimed"] += info["claim"] is not None
                     c["follow_" + info["follow"]] += 1
+                if info.get("retaken") is not None:
+                    c["walked"] = c.get("walked", 0) + 1
+                    if r == "goal" or info["follow"] in ("goal", "in_off_goalie"):
+                        c["walk_goal"] = c.get("walk_goal", 0) + 1
             breathe()
     for c in res.values():
         if c["n"]:

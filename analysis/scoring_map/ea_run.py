@@ -149,6 +149,10 @@ def plan_jobs(plan="ea"):
         v = os.environ.get("NHL94_EA_SPEED", "1.6")     # hasn't found): 13-37 ft to either side, 12-36 ft out
         return list(itertools.product(("top", "bottom"), (-112, -100, -85, -70, -55, -40, 40, 55, 70, 85, 100, 112),
                                       (36, 48, 60, 72, 84, 96, 108), (4,), (4,), ("rgoal" + v, "rdiag" + v)))
+    if plan == "walkin":               # the walk-in (SCORING_SNES): a low wrist shot at the far side the shooter catches
+        v = os.environ.get("NHL94_EA_SPEED", "1.7")     # up with; both nets and hands, Shot Power 1-4 (weak shots
+        return list(itertools.product(("top", "bottom"), (-80, -70, 70, 80), (52, 64, 76), (1, 2, 3, 4), (4,),  # are
+                                      ("rgoal" + v,), ((3, 4, 5),)))                                            # slow)
     if plan == "backhand":             # from close in to the faceoff dots, both nets and sides, both hands (run once
         v = os.environ.get("NHL94_EA_SPEED", "1.6")     # as is and once with NHL94_EA_BACKHAND=1). The game swings a
         return list(itertools.product(("top", "bottom"), (-85, -70, -55, -40, -25, 25, 40, 55, 70, 85),  # backhand
@@ -237,6 +241,8 @@ def play(h, sg, at_goal=False):
         gx, gy = e.sw(rec(GOALIE)), e.sw(rec(GOALIE) + 0x14)
         if g0 is None:
             g0 = gy
+        if e.w(PUCKC) == SHOOTER and touched is None and "retaken" not in info:
+            info["retaken"] = f                          # he caught up with his own shot: carried on (the walk-in)
         if e.w(PUCKC) == SHOOTER and touched is not None and not info["shot"]:
             info["claim"], info["shot"] = f - touched, True
             info["claim_x"] = sg * sx                    # where he claims it (attacker's view: + his right)
@@ -358,6 +364,10 @@ def job(args):
                         c["claim_across"] = c.get("claim_across", 0) + (info["claim_x"] * x < 0)
                     c["claim_f"] += info["claim"] or 0
                     c["follow_" + info["follow"]] += 1
+                if "retaken" in info:                    # the walk-in: retaken, carried on, shot at the near post
+                    c["retaken"] = c.get("retaken", 0) + 1
+                    if r == "goal" or info["follow"] in ("goal", "in_off_goalie"):
+                        c["walk_goal"] = c.get("walk_goal", 0) + 1
                 breathe()
     for c in res.values():
         if c["n"]:
