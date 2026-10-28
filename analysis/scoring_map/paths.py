@@ -15,8 +15,12 @@ STATE_TOP = WORK / "live.state"                                   # period 1: ho
 STATE_BOTTOM = WORK / "live_p2.state"                             # period 2: the bottom net
 RUNS = WORK / "runs"
 
-# The SNES map (snes_*.py): the retail ROM (the disassembly's own copy; no test ROM needed) and Snes9x
-SNES_ROM = Path.home() / "NHL94_disasm" / "NHL94SNES" / "lst" / "nhl94snes.sfc"
+# The SNES map (snes_*.py): the retail ROM (no test ROM needed) and Snes9x. The disassembly stopped tracking its copy
+# (lst/nhl94snes.sfc, 2026-10-28): put one in the work folder (from the disassembly's history:
+# git show e1aab8d4^:lst/nhl94snes.sfc > WORK/nhl94snes.sfc); the old place is still tried
+SNES_ROM = WORK / "nhl94snes.sfc"
+if not SNES_ROM.exists():
+    SNES_ROM = Path.home() / "NHL94_disasm" / "NHL94SNES" / "lst" / "nhl94snes.sfc"
 SNES_CORE_SOURCE = RETROARCH / "cores" / "snes9x_libretro.dll"
 SNES_CORE = WORK / "core" / "snes9x_libretro.dll"
 SNES_STATE_TOP = WORK / "snes_top.state"

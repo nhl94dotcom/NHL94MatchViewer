@@ -306,6 +306,23 @@ where the game can make one: the puck loose and inside his body box or his save 
   that come loose rarely end in a goal.
 - **Harder shots** (Shot Power 15, or a wind-up) bounce off more (held 22-46% instead of 73-80%), but the earlier
   searches found their rebounds go farther and were seldom finished; they haven't been re-run with this save test.
+- **The walk-in** (the user, 2026-10-28, from the GIFs: the shooter takes back his own weak shot and puts it into the
+  open net). Played out with the shooter carrying the retaken puck on at the middle of the goal line and shooting at
+  the near post once he is close (1,728 low shots, both nets and hands, 17 and 21 ft out, 27 ft to the side, Shot Power
+  5 / 8 / 11, test goalie): **28% of the retaken pucks went in** (top net 35% for the right-hander, 23% for the
+  left-hander; bottom net 24% / 27%).
+  - **The goalie doesn't go back:** he stays 14-16 units out from his goal line from the release to the shot.
+  - **He goes across and locks into a save move.** When the shooter retakes the puck the goalie is on the shooter's
+    side, 11-17 units across (covering the near post). In the plays that scored he had moved to the middle (a median 1
+    across, some past it) and was in a save move at the shot (73% of goals, mostly the stick save, against 26% of the
+    misses); the shot came from 16-22 units out, after 20-40 frames of carrying. In the misses he was still on the near
+    side (4-10 across) and the shot came from 32-43 out.
+  - **Why: the computer goalie treats a puck carried at his net like a shot** (`assgoalie`, `pucknorm`; SNES_SHOOTING
+    5.3). Every 5 frames `pucknorm` works out where and when the puck will cross each goal line from its position and
+    velocity, carried or not, and the computer goalie moves to that crossing point once it is under 35 frames away and
+    within 25 of the middle, and starts a save move under 19 frames. A carrier skating at the middle of the goal line
+    sets this off: the goalie slides toward the middle and is locked in the save while the shooter steps across to the
+    near post.
 - **So in the game, the SNES EA Special is very rare, as the user said.** A full search with this save test (every
   spot, aim, Shot Power and the wind-up) hasn't been run yet, and there is no SNES recording of EA Specials to check
   against.

@@ -474,7 +474,9 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   frames of its motion ahead, a little at random) on an **ellipse 26 across and 20 out** in front of his net, or the
   puck itself once it is near his goal line. **Once the puck will cross his goal line within 24 of the middle in under
   35 frames** (worked out every 5 frames), he heads for that crossing point, and under 19 frames starts a save move
-  (5.2). He skates like a player (acceleration from Weight and Agility, + 8 for a goalie, his Agility taken away while a
+  (5.2). The crossing is worked out from the puck's velocity whether it is loose or carried (`pucknorm`), so **a carrier
+  skating straight at the goal mouth sets off a save move too**: the goalie slides toward the middle and locks while
+  the carrier steps to the near post (SCORING_SNES, "EA Specials on the SNES": the walk-in, 28% in the game). He skates like a player (acceleration from Weight and Agility, + 8 for a goalie, his Agility taken away while a
   pass is in the air; top speed from Speed), and a computer goalie with nowhere to go halves his speed each step.
   **He stops dead when an opposing carrier winds up a shot** while skating mostly up or down the ice.
 - **Confirmed:** emulating all this and driving it with the recorded puck, the goalie lands a median 0.8 units from the
