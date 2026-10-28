@@ -19,7 +19,9 @@ Skating: SNES full speed is about 2.2 a frame at Speed 15 (cap (20 + Speed) x 26
 most skaters are at 15; the runs use 1.9, a little below it, as people take EA Specials.
 Plans: "test" (a few set-ups, to check the release spot and the follow-up), "explore" (both nets, 20-27 ft to either
 side, 13-29 ft out, Shot Power 5 / 10 / 15, wrist shot or 12-frame wind-up, both moves), "fine" (around explore's
-one good spot: 17-25 ft out, 23-30 ft to either side, Shot Power 5 / 8 / 11, a wrist shot, both moves).
+one good spot: 17-25 ft out, 23-30 ft to either side, Shot Power 5 / 8 / 11, a wrist shot, both moves), "check" (the
+best cells of those two again, with other moments: NHL94_SEA_SALT), "walkin" (the walk-in, NHL94_EA_WALKIN=1: the
+low first shot from 17-25 ft out, 23-27 ft to either side, Shot Power 5 / 8 / 11), "checkwalk" (its best cells again).
 python snes_ea_run.py PLAN RUN [minutes]   -> paths.RUNS / RUN / snes_ea_<PLAN>.jsonl   (gentle mode, chunked)"""
 import itertools
 import json
@@ -37,6 +39,7 @@ from lowload import WORKERS, breathe, gentle
 from paths import RUNS, SNES_ROM, SNES_STATE_TOP, SNES_STATE_BOTTOM
 
 MOMENTS = int(os.environ.get("NHL94_SEA_MOMENTS") or 24)
+SALT = os.environ.get("NHL94_SEA_SALT")      # other moments than the search's (plan "check": fresh plays of its best)
 SEEDS = 2
 GOAL_Y = 264
 ATTR, FACING = 0x0E03, 0x1163
@@ -80,6 +83,15 @@ def plan_jobs(plan):
     if plan == "walkin":               # the walk-in (run with NHL94_EA_WALKIN=1): both nets and hands, the low aims
         return list(itertools.product(("top", "bottom"), (-80, -70, 70, 80), (52, 64, 76), (5, 8, 11),
                                       ("rgoal1.9",), (3,)))
+    if plan == "check":                # the best cells of explore and fine (by the worse goalie), to play again
+        return [("top", 90, 76, 11, "rdiag1.9", 3), ("top", -90, 64, 11, "rgoal1.9", 3),
+                ("top", -80, 58, 8, "rdiag1.9", 3), ("top", -80, 88, 15, "rdiag1.9", 3),
+                ("top", 60, 40, 10, "rgoal1.9", 12), ("bottom", 70, 52, 11, "rgoal1.9", 3),
+                ("bottom", -90, 58, 8, "rgoal1.9", 3), ("bottom", 90, 58, 11, "rgoal1.9", 3),
+                ("bottom", 80, 64, 15, "rdiag1.9", 3)]
+    if plan == "checkwalk":            # walkin's best cells again (NHL94_EA_WALKIN=1, NHL94_SEA_SALT)
+        return [("bottom", 80, 52, 8, "rgoal1.9", 3), ("bottom", -80, 52, 8, "rgoal1.9", 3),
+                ("top", -80, 52, 8, "rgoal1.9", 3), ("top", -80, 52, 11, "rgoal1.9", 3)]
     if plan == "fine":                 # around explore's one good spot (64 out, 80 to the side, a wrist shot, Shot Power
         return list(itertools.product(("top", "bottom"), (-90, -80, -70, 70, 80, 90), (52, 58, 64, 70, 76),  # 5-10)
                                       (5, 8, 11), ("rgoal1.9", "rdiag1.9"), (3,)))
@@ -160,7 +172,7 @@ def job(args):
     e = h.e
     sg = 1 if net == "top" else -1
     s = H.o(H.SHOOTER)
-    rnd = random.Random(zlib.crc32(json.dumps(args).encode()))
+    rnd = random.Random(zlib.crc32(json.dumps(list(args) + ([SALT] if SALT else [])).encode()))
     kind = move.rstrip("0123456789.").lstrip("r")
     v = float(move[len(move.rstrip("0123456789.")):])
     sx_ = 1 if x > 0 else -1

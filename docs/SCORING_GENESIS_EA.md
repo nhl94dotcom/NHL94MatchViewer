@@ -13,6 +13,7 @@ EA Specials played in the real Genesis game with a bot following up, and the one
    - [The whole zone, and the user's set-ups, in the simulation (plans "wide" and "real2v2", 2026-10-27)](#the-whole-zone-and-the-users-set-ups-in-the-simulation-plans-wide-and-real2v2-2026-10-27)
    - [Backhands (plan "backhand", 2026-10-27)](#backhands-plan-backhand-2026-10-27)
    - [Which goalies and which shooters (plans "goalie17" with the league's goalies and "shooter17", 2026-10-28)](#which-goalies-and-which-shooters-plans-goalie17-with-the-leagues-goalies-and-shooter17-2026-10-28)
+   - [The walk-in on the Genesis (plan "walkin", 2026-10-28)](#the-walk-in-on-the-genesis-plan-walkin-2026-10-28)
    - [EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)](#ea-specials-in-the-recorded-games-analysisea_realpy-2026-10-26)
 
 ## EA Specials (Genesis, 2026-10-24)
@@ -365,6 +366,25 @@ The top net (test goalie; Roy within a few points):
 
 ![EA Special, the best bottom-net set-up, the left-hander, against Roy: four real attempts](img/scoring_map/ea_best_bottom_left_roy_clips.gif)
 ![EA Special, the best bottom-net set-up, the left-hander, against Roy: every attempt from above](img/scoring_map/ea_best_bottom_left_roy_paths.gif)
+
+### The walk-in on the Genesis (plan "walkin", 2026-10-28)
+
+The SNES's best follow-up play ([SCORING_SNES](SCORING_SNES.md#ea-specials-on-the-snes-snes_ea_runpy-2026-10-27)): a
+weak low wrist shot at the far side that the shooter catches up with before it reaches the goalie, carried on at the
+middle of the goal line and shot at the near post as he cuts across in front of the goalie (the carried puck turning
+within 24 of him). Played the same way on the Genesis: both nets and hands, 17-25 ft out, 23-27 ft to the side, skating
+at the goal at 1.7 a frame, Shot Power 1-4, Shot Accuracy 4, the three low aims (13,824 plays against the test goalie).
+
+- **The shooter seldom catches his own shot:** 15% of the plays. Only a Shot Power 1 shot is slow enough to catch
+  often (31% at the top net, 67% at the bottom); at 2 it is 10-11%, and at 3-4 at most 2%.
+- **A retaken puck seldom scores: 6% of them** (1% of all the plays). The best set-up scored 10 of 48 (the top net, a
+  left-hander from his right, released 17 ft out and 27 ft to the side, Shot Power 1, Down held). No set-up reached a
+  quarter.
+- **Carrying the puck in without the first shot doesn't work either** (`carry_run.py`, as on the SNES): carried all
+  the way, the goalie takes it every time (576 of 576), and a near-post shot from 12-32 units out scores at most 18 of
+  576.
+
+So the walk-in is a SNES play; on the Genesis the EA Special itself is the one to use.
 
 ### EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)
 

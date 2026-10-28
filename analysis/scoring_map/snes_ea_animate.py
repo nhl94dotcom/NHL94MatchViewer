@@ -27,16 +27,21 @@ from lowload import WORKERS, breathe
 ROY = (15, 10, 10, 15)
 # the walk-in (2026-10-28, SCORING_SNES): a right-hander from his left, released 17 ft out, 27 ft to the side, skating
 # at the goal, a low wrist shot he catches up with, carries on at the goal mouth and shoots at the near post from close
-# in (snes_ea_run.play walkin); the cells that scored most in the measurement, top and bottom net, test goalie and Roy
+# in (snes_ea_run.play walkin); the cells that scored most in the measurement, top and bottom net, test goalie and Roy;
+# and the left-hander's best (bottom net, from his right), whose goals are mostly carried straight in
 TOP = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Right held, Shot Power 11.")
 BOTTOM = ("Right-handed, released 17 ft out, 27 ft to his left, at 1.9,", "skating at the goal, Down-Left held, Shot Power 8.")
-WALK = "SNES walk-in: he takes back his own low shot and carries it at the net"
+LEFTY = ("Left-handed, released 17 ft out, 27 ft to his right, at 1.9,", "skating at the goal, Down-Right held, Shot Power 8.")
+WALK = "SNES walk-in"   # (the title has room for about 60 characters)
 CASES = [
     ("sea_walkin_top", "top", -80, 52, 3, 11, 3, WALK + ", top net", None, "rgoal1.9", TOP, None, True),
     ("sea_walkin_top_roy", "top", -80, 52, 3, 11, 3, WALK + ", top net, against Roy", None, "rgoal1.9", TOP, ROY, True),
     ("sea_walkin_bottom", "bottom", -80, 52, 5, 8, 3, WALK + ", bottom net", None, "rgoal1.9", BOTTOM, None, True),
     ("sea_walkin_bottom_roy", "bottom", -80, 52, 5, 8, 3, WALK + ", bottom net, against Roy", None, "rgoal1.9", BOTTOM,
      ROY, True),
+    ("sea_walkin_bottom_lefty", "bottom", 80, 52, 3, 8, 3, WALK + ", bottom net", None, "rgoal1.9", LEFTY, None, True),
+    ("sea_walkin_bottom_lefty_roy", "bottom", 80, 52, 3, 8, 3, WALK + ", bottom net, against Roy", None, "rgoal1.9",
+     LEFTY, ROY, True),
 ]
 LEGEND = "Puck: orange when the play ends in a goal. Grey: shooter. Black: goalie."
 

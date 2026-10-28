@@ -432,9 +432,13 @@ went in within 12.6 units of a goalie's centre.
 - To score, put the puck **outside that box**: a corner, from inside the zone where shots can be exact.
 - **Hard shots come back out.** A shot at 17,000 or more almost never sticks to him (1 in 10 held in recorded games): it
   bounces straight out from where it hit him. Follow your hard shots in for the rebound. Soft shots he usually holds.
-- **The EA Special is very rare on the SNES.** Played in the game itself: a low wrist shot is so slow that the shooter
-  catches up with it before the goalie does, and middle or high wrist shots are held (SCORING_SNES, "EA Specials on the
-  SNES").
+- **The EA Special is rare on the SNES.** Played in the game itself, middle and high wrist shots are mostly held, and
+  the follow-up scores about 1 in 4 at its best set-ups (SCORING_SNES, "EA Specials on the SNES").
+- **The walk-in works instead.** Skating at the goal from 17 ft out and 27 ft to the side, a wrist shot at Shot Power
+  about 8, aimed low at the far side, is so slow that you catch up with it before it reaches the goalie. Keep carrying
+  it at the middle of the goal line: the goalie slides across after the shot and locks into a save, and you shoot at
+  the near post as you cut across, or carry it in. 75-85% at the best set-ups, against any goalie. Carrying the puck in
+  without the weak first shot doesn't work: the goalie stays on the near post and takes it.
 
 ### 11.2 Playing goal yourself (X)
 

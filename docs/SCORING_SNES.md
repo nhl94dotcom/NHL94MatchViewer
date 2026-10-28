@@ -304,31 +304,74 @@ where the game can make one: the puck loose and inside his body box or his save 
   rebound.
 - **Middle and high shots reach the goalie and are held,** as the SNES hold rule predicts for soft shots. The few
   that come loose rarely end in a goal.
-- **Harder shots** (Shot Power 15, or a wind-up) bounce off more (held 22-46% instead of 73-80%), but the earlier
-  searches found their rebounds go farther and were seldom finished; they haven't been re-run with this save test.
-- **The walk-in** (the user, 2026-10-28, from the GIFs: the shooter takes back his own weak shot and puts it into the
-  open net). Played out with the shooter carrying the retaken puck on at the middle of the goal line and shooting at
-  the near post as he cuts across in front of the goalie (the carried puck turning within 24 of him) (1,728 low shots, both nets and hands, 17 and 21 ft out, 27 ft to the side, Shot Power
-  5 / 8 / 11, test goalie): **28% of the retaken pucks went in** (top net 35% for the right-hander, 23% for the
-  left-hander; bottom net 24% / 27%).
-  - **The goalie doesn't go back:** he stays 14-16 units out from his goal line from the release to the shot.
+- **The whole search** (plans "explore" and "fine": both nets, either hand, 20-30 ft to the side, 13-29 ft out, Shot
+  Power 5-15, a wrist shot or a 12-frame wind-up, skating at the goal or in at 45 degrees, all nine aims; 5,832 set-ups
+  of 48 plays, each against the test goalie and Roy). Averaged over a net, a Shot Power and the wind-up, the goalie
+  holds 22-80% of the first shots and the follow-up scores in 0.2-2.8% of the plays. Harder shots come off him more (a
+  Shot Power 15 wind-up: 71-75% loose, against 4-6% for a Shot Power 5 wrist shot), and the shooter gets 71-88% of the
+  loose pucks back, but few of his near-post follow-ups go in.
+- **The best set-ups score about 1 in 4.** The search's best cells, played again with other moments (96 plays each,
+  test goalie / Roy; every goal from the follow-up):
+
+| Net | Shooter, release | Shot | Goals of 96 (test / Roy) |
+| --- | --- | --- | --- |
+| Top | Right-hander from his left, 27 ft to the side, 19 ft out, skating in at 45 degrees | Wrist shot, Shot Power 8, no aim | 22 / 28 |
+| Top | The same, 29 ft out | Wrist shot, Shot Power 15, no aim | 14 / 28 |
+| Top | Left-hander from his right, 30 ft to the side, 25 ft out, in at 45 degrees | Wrist shot, Shot Power 11, no aim | 14 / 18 |
+| Bottom | Left-hander from his right, 27 ft to the side, 21 ft out, in at 45 degrees | Wrist shot, Shot Power 15, Right | 26 / 25 |
+| Bottom | Left-hander from his right, 23 ft to the side, 17 ft out, skating at the goal | Wrist shot, Shot Power 11, Right | 18 / 21 |
+
+  So the SNES does have an EA Special, but at about a third of the Genesis's rate (65-75% at its best set-ups,
+  [SCORING_GENESIS_EA](SCORING_GENESIS_EA.md)), and only from a few spots. Roy is no harder to beat than the test goalie (every
+  SNES goalie has the same body box and save frames, SNES_SHOOTING 5.1).
+- **The walk-in** works far better (the user, 2026-10-28, from the GIFs: the shooter takes back his own weak shot and
+  puts it into the open net). Played out with the shooter carrying the retaken puck on at the middle of the goal line
+  and shooting at the near post as he cuts across in front of the goalie (the carried puck turning within 24 of him)
+  (plan "walkin": both nets and hands, 17-25 ft out, 23-27 ft to the side, Shot Power 5 / 8 / 11, the three low aims,
+  10,364 plays against the test goalie): **he takes back 62% of these shots, and 23% of those go in** (14% of all the
+  plays).
+  - **Shot Power 8 is best** (18% of the plays). At 5 he takes back nearly all of them, but only 13% of those score. At
+    11 he takes back fewer (29-40%), but 35-42% of those score. Released 17 ft out is best at both nets.
+  - **Aim at the far side.** Which diagonal that is depends on the net and the hand: Down-Right for the right-hander
+    at the top net and the left-hander at the bottom, Down-Left for the other two (20-41% of the plays). Down alone
+    scores a third to nearly as many; the near-side diagonal almost none (0-3%).
+  - **The best set-ups, played again with other moments** (96 plays each, test goalie / Roy, Shot Power 8, released
+    17 ft out and 27 ft to the side, skating at the goal):
+
+| Net | Shooter | Aim | Goals of 96 (test / Roy) |
+| --- | --- | --- | --- |
+| Bottom | Left-hander from his right | Down-Right | 85 / 83 (most carried straight into the net) |
+| Bottom | Right-hander from his left | Down-Left | 79 / 82 |
+| Top | Right-hander from his left | Down-Right | 74 / 53 (of 94 / 96) |
+| Top | The same, Shot Power 11 | Down-Right | 58 / 51 |
+
+  - **The goalie doesn't go back** (from an earlier walk-in run of 1,728 plays): he stays 14-16 units out from his
+    goal line from the release to the shot.
   - **He goes across and locks into a save move.** When the shooter retakes the puck the goalie is on the shooter's
     side, 11-17 units across (covering the near post). In the plays that scored he had moved to the middle (a median 1
     across, some past it) and was in a save move at the shot (73% of goals, mostly the stick save, against 26% of the
     misses); the shot came from 16-22 units out, after 20-40 frames of carrying. In the misses he was still on the near
     side (4-10 across) and the shot came from 32-43 out.
-  - **Why: the computer goalie treats a puck carried at his net like a shot** (`assgoalie`, `pucknorm`; SNES_SHOOTING
+  - **Why: the computer goalie reads a puck moving at his net as a shot** (`assgoalie`, `pucknorm`; SNES_SHOOTING
     5.3). Every 5 frames `pucknorm` works out where and when the puck will cross each goal line from its position and
-    velocity, carried or not, and the computer goalie moves to that crossing point once it is under 35 frames away and
-    within 25 of the middle, and starts a save move under 19 frames. A carrier skating at the middle of the goal line
-    sets this off: the goalie slides toward the middle and is locked in the save while the shooter steps across to the
-    near post.
+    velocity, carried or not. The computer goalie moves to that crossing point once it is under 35 frames away and
+    within 25 of the middle, and starts a save move under 19 frames. The weak shot at the far side does the work: it
+    draws him across toward its crossing point. The shooter catching up with it keeps the puck moving at the goal
+    mouth, so the goalie stays committed while the shooter steps across to the near post or carries it in.
+- **Carrying the puck in without the first shot doesn't work, on either system** (`carry_run.py`: both nets, either
+  hand, 17-25 ft out, 23-27 ft to the side, skating straight at the middle of the goal line, a wrist shot at the near
+  post from 12-32 units from the goalie, or none; 24 plays each, 4,032 plays per system). Carried all the way, the
+  goalie takes the puck every time (576 of 576 on each system). Shooting at the near post scores 0-3% at any distance
+  (at best 17 of 576 on the SNES, 18 on the Genesis). On the SNES the goalie stays on the shooter's side, 12-18 units
+  across, and starts a save move only as the puck nears him (at 77% of the shots from 12 units, 11% from 20, none
+  beyond 24). Without the weak shot, nothing draws him away from the near post.
 
-**Animated** (`snes_ea_animate.py`, the walk-in's two best set-ups: a right-hander from his left, released 17 ft out
-and 27 ft to the side, skating at the goal; each GIF's rate is its own 24 plays). In the goals the goalie is over on
-the far side, locked in his save, as the skater tucks the puck in at the near post.
+**Animated** (`snes_ea_animate.py`, the walk-in's best set-ups: released 17 ft out and 27 ft to the side, skating at the
+goal; each GIF's rate is its own 24 plays). In the goals the goalie is over on the far side, locked in his save, as the
+skater tucks the puck in at the near post or carries it in.
 
-**Top net, Shot Power 11, Down-Right: 18 of 24 (16 walked in, 1 carried in, 1 off the goalie); against Roy 14 of 24.**
+**Top net, right-hander from his left, Shot Power 11, Down-Right: 18 of 24 (16 walked in, 1 carried in, 1 off the
+goalie); against Roy 14 of 24.**
 
 ![SNES walk-in, top net: four real attempts](img/scoring_map/sea_walkin_top_clips.gif)
 ![SNES walk-in, top net: every attempt from above](img/scoring_map/sea_walkin_top_paths.gif)
@@ -336,7 +379,8 @@ the far side, locked in his save, as the skater tucks the puck in at the near po
 ![SNES walk-in, top net, against Roy: four real attempts](img/scoring_map/sea_walkin_top_roy_clips.gif)
 ![SNES walk-in, top net, against Roy: every attempt from above](img/scoring_map/sea_walkin_top_roy_paths.gif)
 
-**Bottom net, Shot Power 8, Down-Left: 18 of 24 (12 walked in, 4 carried in, 2 off the goalie); against Roy 17 of 24.**
+**Bottom net, right-hander from his left, Shot Power 8, Down-Left: 18 of 24 (12 walked in, 4 carried in, 2 off the
+goalie); against Roy 17 of 24.**
 
 ![SNES walk-in, bottom net: four real attempts](img/scoring_map/sea_walkin_bottom_clips.gif)
 ![SNES walk-in, bottom net: every attempt from above](img/scoring_map/sea_walkin_bottom_paths.gif)
@@ -344,6 +388,15 @@ the far side, locked in his save, as the skater tucks the puck in at the near po
 ![SNES walk-in, bottom net, against Roy: four real attempts](img/scoring_map/sea_walkin_bottom_roy_clips.gif)
 ![SNES walk-in, bottom net, against Roy: every attempt from above](img/scoring_map/sea_walkin_bottom_roy_paths.gif)
 
-- **So in the game, the SNES EA Special is very rare, as the user said.** A full search with this save test (every
-  spot, aim, Shot Power and the wind-up) hasn't been run yet, and there is no SNES recording of EA Specials to check
-  against.
+**Bottom net, left-hander from his right, Shot Power 8, Down-Right: 22 of 24 (20 carried in, 1 walked in, 1 off the
+goalie); against Roy 14 of 24 (13 carried in).**
+
+![SNES walk-in, bottom net, left-hander: four real attempts](img/scoring_map/sea_walkin_bottom_lefty_clips.gif)
+![SNES walk-in, bottom net, left-hander: every attempt from above](img/scoring_map/sea_walkin_bottom_lefty_paths.gif)
+
+![SNES walk-in, bottom net, left-hander, against Roy: four real attempts](img/scoring_map/sea_walkin_bottom_lefty_roy_clips.gif)
+![SNES walk-in, bottom net, left-hander, against Roy: every attempt from above](img/scoring_map/sea_walkin_bottom_lefty_roy_paths.gif)
+
+- **So the Genesis-style EA Special is rare on the SNES, as the user said:** about 1 in 4 at its best set-ups and a
+  few percent elsewhere. **The walk-in scores 75-85% at its best set-ups, against either goalie.** There is no SNES
+  recording of either play to check against.
