@@ -15,6 +15,7 @@ EA Specials played in the real Genesis game with a bot following up, and the one
    - [Skating speed and a person's slop (plans "slop", "slopfull", "refine" at 1.7, "lefttop", 2026-10-26)](#skating-speed-and-a-persons-slop-plans-slop-slopfull-refine-at-17-lefttop-2026-10-26)
    - [Why it works: what the goalie does (the user's 2v2 games, 2026-10-27)](#why-it-works-what-the-goalie-does-the-users-2v2-games-2026-10-27)
    - [The whole zone, and the user's set-ups, in the simulation (plans "wide" and "real2v2", 2026-10-27)](#the-whole-zone-and-the-users-set-ups-in-the-simulation-plans-wide-and-real2v2-2026-10-27)
+   - [Which goalies and which shooters (plans "goalie17" with the league's goalies and "shooter17", 2026-10-28)](#which-goalies-and-which-shooters-plans-goalie17-with-the-leagues-goalies-and-shooter17-2026-10-28)
    - [EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)](#ea-specials-in-the-recorded-games-analysisea_realpy-2026-10-26)
 
 ## EA Specials (Genesis, 2026-10-24)
@@ -544,6 +545,84 @@ the shooter's own spot:
 - Not yet checked: where the goalie stands at the release in the simulation against the user's games (15 units toward
   the near post at the release in the user's goals). The defender test (plan E) would show what a defender changes.
 
+### Which goalies and which shooters (plans "goalie17" with the league's goalies and "shooter17", 2026-10-28)
+
+Both from the best set-ups at 1.7 after the follow-up fix (`ea_run.py` BEST17, from the fine search run again with the
+follow-up's aim fixed; the 1.7 text above predates the fix): **the top net**, a right-hander from his left, released
+23 ft out and 28 ft to the side, in at 45 degrees, Power 3; **the bottom net**, released 17 ft out and 29 ft to the side
+skating at the goal, Power 3, a right-hander from his left and a left-hander from his right; and the bottom net's
+**close spot** (21 ft out, 24 ft to the side, Power 2). Each with its best aim and the two beside it, 120 moments, the
+follow-up at the near post. Rates are each set-up's best aim.
+
+**The league's goalies.** Every starter in the league ROM (`9438f5dd`), as working ratings (roster x 5: Agility,
+Speed, Defensive Awareness, Puck Control) written into the test goalie, base ratings (no hot or cold):
+
+| Goalies | Working ratings | Top net | Bottom, right-hander | Bottom, left-hander | Bottom close spot |
+| --- | --- | --- | --- | --- | --- |
+| Belfour | 30 / 20 / 30 / 25 | 66% | 29% | 33% | 37% |
+| Roy | 30 / 20 / 20 / 30 | 66% | 33% | **70%** | 37% |
+| Fuhr | 25 / 20 / 25 / 25 | 68% | **73%** | 32% | 36% |
+| Potvin, Joseph | 20 / 20 / 30 / 20 | 67% | 65% | 33% | 39% |
+| Hextall, McLean, Cheveldae, Soderstrom, Essensa, Barrasso, Ranford, Casey, Terreri | Agility 20, Defensive Awareness 15-25 | 70% | 29% | 65% | 37% |
+| Moog, Burke | 20 / 20 or 15 / 10 / 20 | 69% | 33% | 53-54% | **0%** |
+| Vernon, Vanbiesbrouck, Hrudey, Beaupre | Agility 15 | 65% | 54% | 37% | 36% |
+| Young | 15 / 15 / 10 / 15 | 69% | 43% | 39% | 35% |
+| Irbe, Healy, Hebert | Agility 10 | 65% | 53% | 27-28% | 36% |
+| Sidorkiewicz | 10 / 15 / 5 / 10 | 67% | 32% | 50% | 3% |
+
+- **The top net's set-up works on every goalie: 65-70%,** Belfour and Roy included.
+- **The bottom net's two set-ups trade places from goalie to goalie,** between about 30% and 70%, with no order by
+  quality: against Roy the left-hander's works (70%) and the right-hander's doesn't (33%); against Fuhr the reverse.
+  Only Belfour stops both (29% and 33%). A set-up this exact is a narrow window, and the goalie's Agility (his reach
+  and how he moves) shifts which window is open. For a person, whose release varies, expect something between the two.
+- **Goalies with the same Agility gave identical results** (the plays are repeatable): Speed and Puck Control changed
+  nothing, and Defensive Awareness only mattered at 10 or below (his reaction time, `aidef`).
+- **The close spot isn't an EA Special:** its goals are the first shot going straight in (about a third of attempts),
+  not the rebound. Moog, Burke (Agility 20, Defensive Awareness 10) and Sidorkiewicz (Awareness 5), slower to react,
+  are still standing where that shot hits him, and it fails (0-3%); Young (Agility 15, Awareness 10) isn't.
+
+**The shooter's Shot Power and Shot Accuracy** (roster 1-6, working 5-30), every pair, against the test goalie and Roy.
+The top net (test goalie; Roy within a few points):
+
+| Shot Power \ Accuracy | 1 | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8% | 10% | 10% | 8% | 8% | 9% |
+| 2 | 21% | 19% | 22% | 27% | 25% | 28% |
+| 3 | 38% | 53% | 65% | 67% | 80% | 84% |
+| 4 | 43% | 57% | 65% | 75% | 73% | 88% |
+| 5 | 36% | 55% | 60% | 72% | 76% | 89% |
+| 6 | 25% | 38% | 45% | 45% | 53% | 58% |
+
+- **Shot Power 3-5 is the range,** as the user said: Power 6 falls back (the hardest shots are held), and 1-2 are
+  worse still (too weak to push the goalie anywhere). At the bottom net the peak is Power 3, and 4-5 cost more there
+  (right-hander, test goalie, Accuracy 6: 72% at Power 3, 65% at 4, 51% at 5, 21% at 6).
+- **Shot Accuracy matters a lot:** at Power 3-5, Accuracy 6 scores about twice as often as Accuracy 1. Both the first
+  shot (bobbled the right way) and the follow-up (a short shot that goes exactly where aimed more often) depend on it.
+- **For the user's teams** (league ROM, roster Shot Power / Accuracy): Boston's best are Bourque 5 / 5 and Neely 4 / 5,
+  then Oates and Reid 3 / 4; the defencemen Sweeney, Wesley and Murphy (4 / 1) are poor at it. Edmonton's are Klima and
+  Simpson (4 / 5).
+- **The close spot doesn't care:** 18-45% whatever the Power, rising with Accuracy, a third of it straight in.
+
+**The best set-ups with the follow-up fixed, against the test goalie and Roy** (each GIF's rate is its own 24 plays):
+
+![EA Special, the best top-net set-up: four real attempts](img/scoring_map/ea_best_top_clips.gif)
+![EA Special, the best top-net set-up: every attempt from above](img/scoring_map/ea_best_top_paths.gif)
+
+![EA Special, the best top-net set-up, against Roy: four real attempts](img/scoring_map/ea_best_top_roy_clips.gif)
+![EA Special, the best top-net set-up, against Roy: every attempt from above](img/scoring_map/ea_best_top_roy_paths.gif)
+
+![EA Special, the best bottom-net set-up: four real attempts](img/scoring_map/ea_best_bottom_clips.gif)
+![EA Special, the best bottom-net set-up: every attempt from above](img/scoring_map/ea_best_bottom_paths.gif)
+
+![EA Special, the best bottom-net set-up, against Roy: four real attempts](img/scoring_map/ea_best_bottom_roy_clips.gif)
+![EA Special, the best bottom-net set-up, against Roy: every attempt from above](img/scoring_map/ea_best_bottom_roy_paths.gif)
+
+![EA Special, the best bottom-net set-up, the left-hander: four real attempts](img/scoring_map/ea_best_bottom_left_clips.gif)
+![EA Special, the best bottom-net set-up, the left-hander: every attempt from above](img/scoring_map/ea_best_bottom_left_paths.gif)
+
+![EA Special, the best bottom-net set-up, the left-hander, against Roy: four real attempts](img/scoring_map/ea_best_bottom_left_roy_clips.gif)
+![EA Special, the best bottom-net set-up, the left-hander, against Roy: every attempt from above](img/scoring_map/ea_best_bottom_left_roy_paths.gif)
+
 ### EA Specials in the recorded games (`analysis/ea_real.py`, 2026-10-26)
 
 The converter marks EA Special attempts (a person's forehand wrist shot from the side at a goalie in position, carried
@@ -562,3 +641,25 @@ the Highlights.
   and 27 ft to the side, is wider than people usually go.
 - **Too few to test the simulation:** four bottom-net attempts came within 4 ft of 20 ft out, none of them near the
   1.7 set-up's speed and aim. The recordings show how people play it, not yet whether the bot's best works for them.
+
+**The user's own EA Special goals** (`analysis/ea_real_gifs.py`, 2026-10-28): 22 of the attempts in the recordings
+(forehand and backhand, now 106 in 19 games) were finished by the shooter's own follow-up for the user's teams (Edmonton
+in the 2v2 games, Boston). One of each kind in turn (net, hand, forehand or backhand), eight in all, drawn by the viewer
+(headless Edge, frame by frame, real time). The spots are the puck's at the release, as the converter records
+them, about 6 ft nearer the middle than the shooter:
+
+![EDM, 2026-10-27 HFD-EDM, period 1 1:52: right-handed backhand, bottom net, 23 ft out, 14 ft to the side, follow-up 0.7 s later](img/scoring_map/ea_real_2026-10-27_0744_HFD-EDM_p1_152.gif)
+
+![EDM, 2026-10-27 EDM-HFD, period 2 0:31: left-handed forehand, bottom net, 27 ft out, 23 ft to the side, follow-up 1.7 s later](img/scoring_map/ea_real_2026-10-27_0733_EDM-HFD_p2_031.gif)
+
+![EDM, 2026-10-27 HFD-EDM, period 1 0:45: left-handed forehand, bottom net, 23 ft out, 21 ft to the side, follow-up 0.9 s later](img/scoring_map/ea_real_2026-10-27_0744_HFD-EDM_p1_045.gif)
+
+![EDM, 2026-10-27 EDM-HFD, period 2 3:07: right-handed forehand, bottom net, 25 ft out, 28 ft to the side, follow-up 0.8 s later](img/scoring_map/ea_real_2026-10-27_0733_EDM-HFD_p2_307.gif)
+
+![EDM, 2026-10-27 HFD-EDM, period 1 4:42: right-handed forehand, bottom net, 24 ft out, 19 ft to the side, follow-up 0.8 s later](img/scoring_map/ea_real_2026-10-27_0744_HFD-EDM_p1_442.gif)
+
+![EDM, 2026-10-27 EDM-HFD, period 1 3:47: left-handed forehand, top net, 27 ft out, 20 ft to the side, follow-up 0.8 s later](img/scoring_map/ea_real_2026-10-27_0733_EDM-HFD_p1_347.gif)
+
+![EDM, 2026-10-27 EDM-HFD, period 1 0:37: left-handed forehand, top net, 22 ft out, 20 ft to the side, follow-up 0.9 s later](img/scoring_map/ea_real_2026-10-27_0733_EDM-HFD_p1_037.gif)
+
+![BOS, 2026-10-16 BOS-PIT, period 3 4:26: right-handed forehand, top net, 21 ft out, 22 ft to the side, follow-up 0.8 s later](img/scoring_map/ea_real_2026-10-16_1314_BOS-PIT_p3_426.gif)
