@@ -44,7 +44,9 @@ released 56-72 out); "lefttop17" ("lefttop" at 1.7, around the right-hander's be
 "goalie" / "skate" from BEST17; "skate17" releases 4 nearer / farther); "follow" (BEST17, every aim, run once for
 each follow-up aim, NHL94_EA_FOLLOW); "real2v2" (the user's own set-ups from two 2v2 games, 2026-10-27) and "wide"
 (first shots from everywhere, 13-37 ft to the side, 12-36 ft out), both at NHL94_EA_SPEED (default 1.6, about 78% of
-a 20 / 20 skater's 2.05), run with the 2v2 ROM's ratings (NHL94_EA_SKATE=20,20; Hartford's goalie 20 / 20 / 30 / 20).
+a 20 / 20 skater's 2.05), run with the 2v2 ROM's ratings (NHL94_EA_SKATE=20,20; Hartford's goalie 20 / 20 / 30 / 20). "goalie17" again with the league ROM's starting goalies (NHL94_GOALIE, the user,
+2026-10-27: which goalies the play works on); "shooter17" (BEST17 with Shot Power and Shot Accuracy 1-6: which
+shooters are worth sending in).
 python ea_run.py RUN [minutes] [plan]   -> paths.RUNS / RUN / ea.jsonl (plan "ea") or ea_<plan>.jsonl"""
 import itertools
 import json
@@ -134,6 +136,9 @@ def plan_jobs(plan="ea"):
         top = TOP_SPEED[int(SKATE.split(",")[1])] if SKATE else 2.0
         return [(n, x, o + d, p, a, m + f"{v:.2f}", aims, "exact") for n, x, o, p, a, m, aims in BEST17
                 for v in (top, top - 0.3) for d in (-4, 0, 4)]
+    if plan == "shooter17":            # the user, 2026-10-27: which shooters are worth sending in: BEST17 with Shot
+        return [(n, x, o, p, a, m + "1.7", aims, "exact") for n, x, o, _p, _a, m, aims in BEST17   # Power and Shot
+                for p in range(1, 7) for a in range(1, 7)]                                        # Accuracy 1-6
     if plan == "follow":               # BEST17 with every aim, for each NHL94_EA_FOLLOW
         return [(n, x, o, p, a, m + "1.7") for n, x, o, p, a, m, _aims in BEST17]
     if plan == "real2v2":              # the user's own set-ups (two 2v2 games, 2026-10-27: released about 64-80 out,

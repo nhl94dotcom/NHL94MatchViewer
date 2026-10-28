@@ -108,6 +108,24 @@ CASES = [
                   "in at 45 degrees, Down-Left held, Power 2.")),
     ("ea_fine_top", "top", -76, 60, 3, 2, 4, "EA Special at 1.7, top net", None, "rdiag1.7",
      ("Right-handed, released 20 ft out, 25 ft to his left, at 1.7,", "in at 45 degrees, Down-Right held, Power 2.")),
+    # the best set-ups with the follow-up's aim fixed (SLOP17, 2026-10-27), each against the test goalie and Roy
+    ("ea_best_top", "top", -84, 68, 2, 3, 4, "EA Special, the best top-net set-up", None, "rdiag1.7",
+     ("Right-handed, released 23 ft out, 28 ft to his left, at 1.7,", "in at 45 degrees, Right held, Power 3.")),
+    ("ea_best_top_roy", "top", -84, 68, 2, 3, 4, "EA Special, the best top-net set-up, against Roy", None, "rdiag1.7",
+     ("Right-handed, released 23 ft out, 28 ft to his left, at 1.7,", "in at 45 degrees, Right held, Power 3."),
+     (30, 20, 20, 30)),
+    ("ea_best_bottom", "bottom", -88, 52, 6, 3, 4, "EA Special, the best bottom-net set-up", None, "rgoal1.7",
+     ("Right-handed, released 17 ft out, 29 ft to his left, at 1.7,", "skating at the goal, Left held, Power 3.")),
+    ("ea_best_bottom_roy", "bottom", -88, 52, 6, 3, 4, "EA Special, the best bottom-net set-up, against Roy", None,
+     "rgoal1.7", ("Right-handed, released 17 ft out, 29 ft to his left, at 1.7,",
+                  "skating at the goal, Left held, Power 3."), (30, 20, 20, 30)),
+    ("ea_best_bottom_left", "bottom", 88, 52, 2, 3, 4, "EA Special, the best bottom-net set-up, the left-hander", None,
+     "rgoal1.7", ("Left-handed, released 17 ft out, 29 ft to his right, at 1.7,",
+                  "skating at the goal, Right held, Power 3.")),
+    ("ea_best_bottom_left_roy", "bottom", 88, 52, 2, 3, 4,
+     "EA Special, the best bottom-net set-up, the left-hander, against Roy", None, "rgoal1.7",
+     ("Left-handed, released 17 ft out, 29 ft to his right, at 1.7,", "skating at the goal, Right held, Power 3."),
+     (30, 20, 20, 30)),
 ]
 COL = {"GOAL": "#ea580c", "OTHER": "#475569"}
 DIVE = 0x02F4

@@ -104,7 +104,7 @@ def attempts(m, kind="forehand"):
             across = 1 if fd in (1, 2, 3) else -1 if fd in (5, 6, 7) else 0
             fside = "middle" if across == 0 else "near" if across * follow["x"] > 0 else "far"
             fside += "-" + ("high" if fd in (7, 0, 1) else "low" if fd in (3, 4, 5) else "mid")
-        yield dict(game=m["name"], kind=kind, outcome=outcome(m, sh, follow), period=m["period"][f] + 1, clock=m["clock"][f], net="top" if top else "bottom",
+        yield dict(game=m["name"], f=f, team=sh["team"], kind=kind, outcome=outcome(m, sh, follow), period=m["period"][f] + 1, clock=m["clock"][f], net="top" if top else "bottom",
                    hand="right" if m["mirror"][f * K + k] == "1" else "left", out=round(GOAL_Y - abs(sh["y"])),
                    side=round(abs(sh["x"])), speed=round(speed, 2), agl=agl, spd=spd,
                    full=round(top_speed(spd), 2) if spd is not None else None, aim=AIMS[aim if aim is not None else 8],
