@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 14px; margin: 12px; }
+  p { margin: 0 0 12px; }
+  button { margin-top: 12px; padding: 6px 16px; }
+  #msg { margin-top: 12px; white-space: pre-wrap; }
+  .err { color: #b00020; }
+</style>
+</head>
+<body>
+<? if (mode === 'rom') { ?>
+<p>Choose the game's ROM (<b>nhl94.bin</b>, or your league's ROM). The Sheet reads the teams and players from it.</p>
+<? } else { ?>
+<p>Choose the save state you took on the final stats screen (in RetroArch's <b>states\Genesis Plus GX</b> folder).</p>
+<? } ?>
+<input type="file" id="file">
+<br><button id="go" onclick="send()">Submit</button>
+<div id="msg"></div>
+<script>
+  var mode = <?= mode ?>;
+  function show(text, err) {
+    var m = document.getElementById('msg');
+    m.textContent = text;
+    m.className = err ? 'err' : '';
+    document.getElementById('go').disabled = false;
+  }
+  function send() {
+    var f = document.getElementById('file').files[0];
+    if (!f) return show('Choose a file first.', true);
+    document.getElementById('go').disabled = true;
+    show('Reading ' + f.name + '…');
+    var reader = new FileReader();
+    reader.onload = function () {
+      var b64 = reader.result.split(',')[1];
+      var run = google.script.run
+        .withSuccessHandler(function (text) { show(text + (mode === 'state' ? '\n\nYou can close this window or upload another.' : '')); })
+        .withFailureHandler(function (e) { show(e.message || String(e), true); });
+      if (mode === 'rom') run.uploadRom(b64); else run.uploadState(b64, f.name);
+    };
+    reader.readAsDataURL(f);
+  }
+</script>
+</body>
+</html>
