@@ -694,18 +694,29 @@ function loadHeat(names) {
   }));
 }
 // The rink pictures and where game positions land on them (as in the viewer)
+// The picture from the viewer's rink_*.js (tools/embed_rink.py) when it is there, else the PNG: a shared season
+// (tools/share_season.py) carries only the scripts.
 const RINK_PICS = {
-  genesis: { src: 'rink_gens.png', cx: 450.4, cy: 777, ux: 2.459, uy: 2.079 },
-  snes: { src: 'rink_snes.png', cx: 449.2, cy: 776.2, ux: 2.451, uy: 2.076 },
+  genesis: { src: 'rink_gens.png', script: 'rink_gens.js', data: 'NHL94_RINK', cx: 450.4, cy: 777, ux: 2.459, uy: 2.079 },
+  snes: { src: 'rink_snes.png', script: 'rink_snes.js', data: 'NHL94_RINK_SNES', cx: 449.2, cy: 776.2, ux: 2.451, uy: 2.076 },
 };
 const rinkImages = {};
 function rinkImage(system) {
   if (!rinkImages[system]) {
+    const pic = RINK_PICS[system];
     rinkImages[system] = new Promise(resolve => {
+      const s = document.createElement('script');
+      s.src = pic.script;
+      s.onload = s.onerror = () => resolve();
+      document.head.append(s);
+    }).then(() => new Promise(resolve => {
       const img = new Image();
-      img.onload = () => resolve(img); img.onerror = () => resolve(null);
-      img.src = RINK_PICS[system].src;
-    });
+      let tried = false;
+      img.onload = () => resolve(img);
+      img.onerror = () => { if (!tried && window[pic.data]) { tried = true; img.src = pic.src; } else resolve(null); };
+      img.src = window[pic.data] || pic.src;
+      if (!window[pic.data]) tried = true;
+    }));
   }
   return rinkImages[system];
 }

@@ -1,5 +1,5 @@
 """Make a folder (and a zip of it) that lets someone without the helper see the season stats and watch the games: the
-season page and the viewer with only the games chosen, their sprites and sounds, and the rink pictures. No recordings
+season page and the viewer with only the games chosen, their sprites and sounds, and the rink of their system. No recordings
 and no ROMs go in. They unzip it anywhere and open season.html (the pages work from a folder: season.html reads
 matches/season.js, the viewer loads matches/<name>.js).
 
@@ -18,8 +18,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SOURCE = Path(os.environ["NHL94_HOME"]) if os.environ.get("NHL94_HOME") else HERE.parent
-PAGES = ["season.html", "viewer.html", "helper.html", "rink_gens.png", "rink_snes.png", "rink_gens.js", "rink_snes.js",
-         "rink_benches.js", "rink_benches_snes.js"]
+PAGES = ["season.html", "viewer.html", "helper.html"]
+# The rink of each system the games were played on: the picture as the viewer's script (tools/embed_rink.py; the season
+# page reads it too, so the PNG stays home) and the bench masks.
+RINK_FILES = {"genesis": ["rink_gens.js", "rink_benches.js"], "snes": ["rink_snes.js", "rink_benches_snes.js"]}
 
 
 def load_match_head(path):
@@ -56,6 +58,10 @@ def main():
         rom, system = load_match_head(SOURCE / "matches" / f"{name}.js")
         roms.add(rom)
         keys.add(f"{system}:{rom}")
+    for system in {key.split(":")[0] for key in keys}:
+        for page in RINK_FILES.get(system, RINK_FILES["genesis"]):
+            if (SOURCE / page).exists():
+                shutil.copy2(SOURCE / page, out / page)
     for folder in ("sprites", "sounds"):
         for rom in roms - {None}:
             src = SOURCE / folder / f"{rom}.js"
