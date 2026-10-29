@@ -14,7 +14,15 @@ The emulated goalie lands a median 1.1 units from where the recorded goalies wer
 computer goalies), and the one fitted number, GOALIE_SPREAD, stands for that error: the goalie's position is jittered
 by it. Over 191 unblocked Genesis shots in seven recordings this gives 39.4 expected goals against 34 scored (computer
 in net 28.6 / 23, a person 10.8 / 11) and a log loss of 0.30 against 0.46 for one rate for all shots. What it leaves
-out: the goalie's stick (a puck at height 5 or less near the blade), skaters in the way, the in-close top-shelf lift.
+out: skaters in the way, the in-close top-shelf lift.
+
+Checked against the game itself (2026-10-29, analysis/scoring_map/xg_calib.py: 33,808 shots the studies play, from
+the exact state at the release): right on dekes and EA first shots, a little high on shots with the goalie set, and
+far too low when the goalie is already in a save move (the game 24%, the model 15%). The goalie's stick (play_out's
+`stick`, the converter passes the ROM) helps both there and on the 886 recorded shots (log loss 0.2657 -> 0.2630), so
+recorded shots have it since. Starting a goalie already in a save move locked in it (add_expected_goals' `lock`)
+fixes the game's numbers but not the recordings' (0.2657 -> 0.2804: a recorded goalie's speed into a fresh pad stack is
+too rough), so it stays off (xg_stick_eval.py games compares them).
 
 Shots with a shooting animation only (shots and one-timers); pass shots and deflections have no xG.
 """
@@ -33,6 +41,8 @@ DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
 HOT_LIST = 0xA44C8   # stick hot points: x, y bytes per sprite frame (x negated when the frame is drawn mirrored, y negated)
 READY = 0x0002       # SPAgready
 SAVE_ANIM = [0x146, 0x178, 0x250, 0x2A2, 0x1EC, 0x21E, 0x148E, 0x14C0, 0x14F2, 0x1544]   # goaliesave .saveanim
+SAVE_LEN = dict(zip(SAVE_ANIM, (32, 32, 40, 40, 32, 32, 32, 32, 36, 36)))   # frames each runs (the ROM's scripts; any
+                                                                             # facing): his lock lasts as long
 
 
 class GenesisRom:
@@ -82,9 +92,12 @@ class Goalie:
     """The computer goalie's movement, frame by frame. Velocities in the game's words (units x 4096 a frame)."""
 
     def __init__(self, x, y, vx, vy, weight, agility, speed, aidef, rom=None, frame=None, facing=4, mirror=False,
-                 puck_control=10):
+                 puck_control=10, locked=0):
         """rom (GenesisRom), frame, facing, mirror: the stick model (play_out's `stick`): the frame he shows at the
-        release, the way he faces and whether he's drawn mirrored; his save move then runs its own frames."""
+        release, the way he faces and whether he's drawn mirrored; his save move then runs its own frames. locked: he
+        is already in a save move at the release (one of SAVE_ANIM): for that many frames more he is locked in it,
+        can't rethink or skate, only slide on (2026-10-29: xg_calib.py; a follow-up at a goalie still in his save was
+        scored too low)."""
         self.rom, self.frame0, self.facing, self.mirror = rom, frame, facing, mirror
         self.seq, self.t = None, 0
         self.puck_control, self.nopuck = puck_control, 0
@@ -94,7 +107,8 @@ class Goalie:
         self.vmax = (20 + n // 2) * 275 + (137 if n % 2 and n < 30 else 0)
         self.aidef = aidef
         self.d3, self.gl = (260, 264) if y > 0 else (-260, -264)
-        self.timer, self.dir, self.locked, self.k = 0, 8, False, 216
+        self.timer, self.dir, self.locked, self.k = 0, 8, locked > 0, 216
+        self.unlock = locked if locked > 0 else None   # frames left in a save move he was already in
 
     def randomise(self, rng):
         self.timer = rng.randrange((self.aidef >> 2) + 1) - 1   # where his rethink countdown stands
@@ -154,6 +168,10 @@ class Goalie:
     def step(self, px, py, pvx, pvy, pz=0, pvz=0):
         if self.seq:
             self.t += 1
+        if self.unlock is not None:
+            self.unlock -= 1
+            if self.unlock <= 0:
+                self.locked, self.unlock = False, None
         self.vx -= int(self.vx / 64)
         self.vy -= int(self.vy / 64)
         if not self.locked:
@@ -277,9 +295,18 @@ def _work(rows, f, k):
     return best[2:] if best else None
 
 
-def _velocity(m, f, k, back_ms=100):
-    """A player's movement in units a frame over the last back_ms."""
+def _velocity(m, f, k, back_ms=100, ahead=False):
+    """A player's movement in units a frame over the last back_ms (ahead: over the next back_ms)."""
     t, P = m['t'], m['pos']
+    if ahead:
+        j = f
+        while j + 1 < len(t) and t[j + 1] - t[f] <= back_ms:
+            j += 1
+        if j == f or t[j] == t[f]:
+            return 0.0, 0.0
+        frames = (t[j] - t[f]) / (1000 / 60)
+        return ((P[(j * 12 + k) * 2] - P[(f * 12 + k) * 2]) / frames,
+                (P[(j * 12 + k) * 2 + 1] - P[(f * 12 + k) * 2 + 1]) / frames)
     j = f
     while j > 0 and t[f] - t[j - 1] <= back_ms:
         j -= 1
@@ -292,10 +319,10 @@ def _velocity(m, f, k, back_ms=100):
 _CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
 
 
-def add_expected_goals(m, stick_rom=None, rebound=False):
+def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
     """Each shot and one-timer of a Genesis match gets `xg`, the chance it goes in by the game's rules (see above).
-    stick_rom: the ROM's bytes to model the goalie's stick (play_out's `stick`); rebound: play_out's `rebound`; both
-    off by default."""
+    stick_rom: the ROM's bytes to model the goalie's stick (play_out's `stick`); rebound: play_out's `rebound`; lock:
+    a goalie in a save move at the release starts locked in it (Goalie's `locked`)."""
     rom = GenesisRom(stick_rom) if stick_rom else None
     if m.get('system', 'genesis') != 'genesis' or not m.get('work'):
         return
@@ -328,13 +355,21 @@ def add_expected_goals(m, stick_rom=None, rebound=False):
             if sh['kind'] == 'one-timer':
                 reach = 12
             anim = m['anim'][(f * 12 + gk) * 4:(f * 12 + gk) * 4 + 4]
+            saving = 0
+            if lock and int(anim, 16) in SAVE_ANIM:              # frames left in the save move he is in
+                j = f
+                while j > 0 and m['anim'][((j - 1) * 12 + gk) * 4:((j - 1) * 12 + gk) * 4 + 4] == anim:
+                    j -= 1
+                saving = max(0, SAVE_LEN[int(anim, 16)] - round((m['t'][f] - m['t'][j]) / (1000 / 60)))
+                if saving:                                        # locked: his path can't answer the puck, so the
+                    vgx, vgy = _velocity(m, f, gk, ahead=True)    # next 100 ms show his speed (a fresh stack slides)
             if anim in PAD_STACK:
                 reach, shift = 18, PAD_STACK[anim]
             gfr = int(m['frame'][(f * 12 + gk) * 3:(f * 12 + gk) * 3 + 3], 16) if rom and 'frame' in m else None
             goalie = Goalie(gx, gy, vgx * 4096, vgy * 4096, *gw[:4], rom=rom, frame=gfr or None,
                             facing=int(m['facing'][f * 12 + gk]) if rom else 4,
                             mirror=bool(rom) and m.get('mirror', '')[f * 12 + gk:f * 12 + gk + 1] == '1',
-                            puck_control=gw[4] if len(gw) > 4 else 10)
+                            puck_control=gw[4] if len(gw) > 4 else 10, locked=saving)
             coming = (gx + 8 * vgx, gy + 8 * vgy)   # shotdiradj looks half his velocity's high byte ahead
         if sh['kind'] == 'one-timer' or not sh.get('human'):
             d = auto_aim(px, py, *coming, gl) if coming else 8
@@ -348,7 +383,7 @@ def add_expected_goals(m, stick_rom=None, rebound=False):
             perfect = 1.0                                         # ReadGoaliePulled: the delayed-penalty snipe
         pp = max(1.0, sh['speed'] / 68)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
-               (gx, gy, vgx, vgy, *gw[:5]) if goalie else None, bool(rom), rebound)
+               (gx, gy, vgx, vgy, *gw[:5], saving) if goalie else None, bool(rom), rebound)
         if key in _CACHE:
             sh['xg'] = _CACHE[key]
             continue

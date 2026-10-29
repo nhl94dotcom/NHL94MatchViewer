@@ -2077,7 +2077,8 @@ def analyse(match, system, cap, rom_path):
     add_tapestries(match)
     add_quirks(match)
     add_shot_aim(match, getattr(system, 'AIM_TABLE', None))
-    xg.add_expected_goals(match)
+    genesis_rom = rom_path and match.get("system", "genesis") == "genesis" and Path(rom_path).exists()
+    xg.add_expected_goals(match, stick_rom=Path(rom_path).read_bytes() if genesis_rom else None)  # with his stick
     if match.get("system") == "snes" and rom_path.exists():
         xg_snes.add_expected_goals(match, rom_path.read_bytes())
     for goal in match.get("goals", []):  # a goal scored with a pass shot says so, beside the game's own kinds

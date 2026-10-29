@@ -1,5 +1,6 @@
 """Do the goalie's stick and the rebound rule (xg.play_out's `stick`, `rebound`) make the Genesis xG model better?
-python xg_stick_eval.py [map|games|both]. Three versions compared: before, with the stick, with the stick and rebounds.
+python xg_stick_eval.py [map|games|both]. Versions compared: before, with the stick, with the stick and rebounds (and in
+games, 2026-10-29, the save-move lock: Goalie's `locked`).
 
 map: the model with and without the stick against the Genesis scoring map (the game itself, exact, a set goalie), in
      the middle of the ice (within 30 of the centre line) and for five aims (Up, Right, Down, Left, none), 100 shots
@@ -107,14 +108,13 @@ def eval_map(rom):
                       + "%; best aim " + " / ".join(f"{best(k):.1f}" for k in ks) + "%")
 
 
-GAME_VERSIONS = (("before, blur 4", False, False, 4.0), ("stick+rebound, blur 4", True, True, 4.0),
-                 ("stick+rebound, blur 2", True, True, 2.0), ("stick+rebound, blur 1", True, True, 1.0),
-                 ("stick+rebound, blur 0", True, True, 0.0))
+GAME_VERSIONS = (("before", False, False, 4.0, False), ("lock", False, False, 4.0, True),
+                 ("stick", True, False, 4.0, False), ("lock+stick", True, False, 4.0, True),
+                 ("lock+stick+rebound", True, True, 4.0, True))   # (name, stick, rebound, blur, the save-move lock)
 
 
 def eval_games(rom):
-    """GOALIE_SPREAD was fitted to the recordings before the stick was modelled, so the new model is tried at several
-    blurs."""
+    """The versions in GAME_VERSIONS (2026-10-29: with the save-move lock from xg_calib.py)."""
     seen, files = set(), []
     for d in (ROOT / "matches", Path.home() / "Documents" / "NHL94 Viewer" / "matches"):
         for f in sorted(d.glob("*.js")):
@@ -131,11 +131,11 @@ def eval_games(rom):
         if m.get("system", "genesis") != "genesis" or not m.get("work"):
             continue
         res = []
-        for name, stick, rebound, spread in GAME_VERSIONS:
+        for name, stick, rebound, spread, lock in GAME_VERSIONS:
             xg.GOALIE_SPREAD = spread
             mm = copy.deepcopy(m)
             xg._CACHE.clear()
-            xg.add_expected_goals(mm, stick_rom=rom if stick else None, rebound=rebound)
+            xg.add_expected_goals(mm, stick_rom=rom if stick else None, rebound=rebound, lock=lock)
             res.append(mm["shotList"])
             breathe()
         for shots in zip(*res):

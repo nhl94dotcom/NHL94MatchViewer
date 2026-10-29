@@ -167,6 +167,16 @@ the same chance. Getting there showed what matters on the SNES: with the goalie 
 model said 62 goals, carrying on at his speed 50; it's his reaction during the shot, and above all that **he keeps
 sliding through his save move**, that makes the saves.
 
+**Checked against the game itself** (2026-10-29, `analysis/scoring_map/xg_calib.py`): 9,617 shots the SNES studies
+play (standing shots, dekes, EA Specials, the walk-in), the model asked from the exact state at each release. Right on
+dekes (game 2.4%, model 2.3%) and standing shots, but too low on follow-ups close in (EA follow-ups 17.5% against 10.9%,
+the walk-in's near-post shot 24% against 14%). Most of the gap is shots taken while the goalie **can't touch the
+puck**: for 10 frames after the puck comes off him (`puckgoalie` sets his `nopuck`), `checkpuckcoll_ccx` skips him
+altogether, stick and body. On those 297 shots the game scored 23%, the model 8%. Giving the model that timer brings
+the total right (11.6% against 12.2%) but not the shot-by-shot fit, and the recordings don't keep the timer, so the
+model is unchanged for now. The bounce rule (5.4) and continuing a save move already under way were tried and change
+nothing.
+
 The viewer shows SNES xG on shots, cards, team stats, the season page and the xG map (one-timers there face goalies as
 they were at recorded one-timers, usually still moving across after the pass).
 

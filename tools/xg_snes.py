@@ -97,8 +97,9 @@ class RomData:
 class Goalie:
     """The SNES computer goalie, a game step at a time. Velocities in the game's words (units x 4096 a frame)."""
 
-    def __init__(self, data, x, y, vx, vy, facing, frame, weight, agility, speed, aidef):
+    def __init__(self, data, x, y, vx, vy, facing, frame, weight, agility, speed, aidef, puck_control=10):
         self.data = data
+        self.puck_control, self.nopuck = puck_control, 0
         self.x, self.y, self.vx, self.vy, self.facing, self.frame = x, y, vx, vy, facing, frame
         self.acc = 32 - (weight >> 3) + agility + (agility >> 1) + 8
         self.vmax = (20 + speed) * 261
@@ -200,8 +201,14 @@ class Goalie:
         self.y += frames * self.vy / 4096
 
 
-def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng):
-    """One shot as the SNES game plays it: 'goal', 'save', 'post', 'over' or 'wide'."""
+def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False):
+    """One shot as the SNES game plays it: 'goal', 'save', 'post', 'over' or 'wide'.
+
+    rebound (2026-10-29, xg_calib.py: close follow-ups scored half again as often in the game as in the model): a touch
+    of his body box isn't always a save (puckgoalie, SNES_SHOOTING 5.4): he holds the puck only if both its speed
+    components are under random((2 + Puck Control) x 512) + $2000; otherwise it bounces off, its velocity 256 x its
+    offset from his centre (the up-and-down part against the way he is moving), its height speed cleared, and he can't
+    touch it for 10 frames: it can go in off him."""
     dx, dy, z = tx - px, ty - py, tz
     d3 = max(1, approx_length(dx, dy))
     if not (d3 < 201 and rng.random() < perfect):
@@ -240,6 +247,11 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng):
         x, y, h = nx, ny, nh
         if G:
             G.step(x, y, vx, vy, h, vz, rng)
+            if G.nopuck > 0:                                  # just bounced off him: no touch for 10 frames
+                G.nopuck -= STEP
+                if abs(y) > 300 or abs(x) > 140:
+                    return "wide"
+                continue
             hot = G.data.hot(G.frame)
             if hot:
                 hx, hy, d2, top, bottom = hot
@@ -248,7 +260,18 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng):
                     return "save"
             bx, by = G.x - x, G.y - y
             if -11 <= bx <= 10 and -11 <= by <= 10:
-                return "save"
+                if not rebound:
+                    return "save"
+                limit = rng.randrange((2 + G.puck_control) << 9) + 0x2000
+                if abs(vx) < limit and abs(vy) < limit:
+                    return "save"                             # held
+                ox, oy = int(x - G.x), int(y - G.y)
+                if oy:
+                    oy += 1
+                if (G.vy >= 0) == (oy >= 0):
+                    oy = -oy                                  # up or down the ice against the way he is moving
+                vx, vy, vz = 256 * ox, 256 * oy, 0.0
+                G.nopuck = 10
         if abs(y) > 300 or abs(x) > 140:
             return "wide"
     return "wide"

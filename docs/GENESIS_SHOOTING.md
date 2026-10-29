@@ -274,16 +274,25 @@ in a recorded game (`tools/xg.py`, 400 times each):
    ratings; a person in net is moved the same way. His reach comes from his Agility, a person controlling him, a
    one-timer or a pad stack (5.1).
 5. **The result**: a goal when the puck's centre crosses within 20 of the middle under the crossbar (13.3), a save when
-   it passes within his reach at height 15 or less, else a post, over or wide.
+   it passes within his reach at height 15 or less, or reaches his stick's blade low (since 2026-10-29: the blade from
+   his sprite frame, and the blind ring beside it, 5.1, 5.5), else a post, over or wide.
 
 The only number fitted to the recordings is how far the emulated goalie may be off (4 units of random spread, the size
 of its measured error). **Checked** on 191 unblocked shots in seven recordings: 39.4 expected goals against 34 scored;
 computer goalies 28.6 / 23, people in net 10.8 / 11; the predicted mix of saves, wides and posts matches what happened.
 Shot by shot it ranks chances well: its log loss is 0.30, against 0.46 for giving every shot the same chance.
 
-What it leaves out: the goalie's stick (low pucks near the blade, 5.1), skaters in the way (blocked shots are left out of
-team totals), the in-close top-shelf lift (4.5), and anything a person does with the goalie beyond what the computer
-would. Pass shots and deflections have no xG.
+What it leaves out: skaters in the way (blocked shots are left out of team totals), the in-close top-shelf lift (4.5),
+and anything a person does with the goalie beyond what the computer would. Pass shots and deflections have no xG.
+
+**Checked against the game itself** (2026-10-29, `analysis/scoring_map/xg_calib.py`): 33,808 shots the studies play
+(standing shots from all over the zone, shots on the move, dekes, EA Specials), the model asked from the exact state at
+each release. It gets dekes (game 19.7%, model 18.7%) and EA first shots right, runs a little high when the goalie is
+set (6.7% against 10.3%), and far too low when the goalie is **already in a save move** at the shot (24% against 15%):
+it lets him rethink and skate, where the game holds him in his move. Adding his stick improved both these shots and the
+886 recorded ones (log loss 0.2657 to 0.2630), so recorded shots have had it since. Holding a goalie in his save move
+fixes the game's numbers (on those shots log loss 0.42 to 0.30) but made the recorded shots worse (0.2804), because a
+recorded goalie's speed going into a pad stack is too rough to follow him locked; it stays off for now.
 
 The viewer shows each shot's xG, a skater's xG, a goalie's xG against and goals saved above expected, and the teams'
 xG; the season page adds them up.
