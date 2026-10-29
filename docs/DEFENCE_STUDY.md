@@ -106,6 +106,38 @@ several habits at once, and some of the measures overlap with what they are comp
 allowed is partly the same thing as more chances against). The harness studies (DEFENCE_PLAN phases 2-3) test the
 same habits one at a time, and more games will firm these up.
 
+### Pressure or sit back, by system (`analysis/defence_posture.py`, 2026-10-29)
+
+The user's idea: winning is mostly about the slot, and on the Genesis it pays to be more proactive in your own end
+(slapshots and one-timers go in from farther out), on the SNES to sit back more (most goals come from close in). The
+recorded games with a person on each side (19 Genesis, 16 SNES): every visit (the other side's puck in a team's own
+end, until it leaves, the defenders have it or a whistle), the defending person's skater measured while the attackers
+had a carrier: how close he stayed (within 10 ft of the carrier) and how long he was in the slot.
+
+**Where goals come from does differ.** Games with a person on each side: the slot (within about 20 ft, no wider than
+50 from the middle) gave 41% of the Genesis goals and 61% of the SNES ones; mid-range 43% and 31%; farther out 17%
+and 8%. The side with more slot attempts won 11 of 15 decided Genesis games and 11 of 16 SNES ones; the side with more
+xG overall won 18 of 19 and 12 of 16. So the slot matters on both, and on the Genesis the mid-range nearly as much.
+
+**Posture: no difference shows yet.** Per visit (about 600 on each system; xG against a visit, 90% ranges from
+resampling games):
+
+| | Genesis | SNES |
+| --- | --- | --- |
+| Pressing (top third by time within 10 ft) minus sitting in the slot | -0.009 (-0.060 to +0.041) | +0.015 (-0.027 to +0.055) |
+| Closest third (mean distance to the carrier) minus farthest third | -0.013 (-0.062 to +0.032) | +0.027 (-0.019 to +0.074) |
+| Most time in the slot minus least | -0.007 (-0.047 to +0.037) | +0.001 (-0.035 to +0.037) |
+
+The signs lean the user's way (pressing a little better on the Genesis, a little worse on the SNES), but every range
+holds zero. On the SNES the mechanism shows: sitting in the slot let through fewer shots a visit (0.34 against 0.51
+when pressing), and fewer of them from the slot (49% against 61%); but goals a visit came out the same (16.0% and
+15.5%; 26 and 32 goals). On the Genesis the slot share of shots barely moved (32-34%).
+
+Cautions: only the skater the person controls is measured (not his teammates); the posture answers the play (a
+defender backs off a 2-on-1 and steps up to a lone carrier), so a difference can be the situation more than the
+choice; and 16-19 games show only big effects. A harness test (DEFENCE_PLAN) can set the posture and play the same
+attack against it.
+
 ## One defender against the deke and the floater (the harness, a pilot; 2026-10-25)
 
 DEFENCE_PLAN study 4, first pass. `analysis/scoring_map/def_run.py`: the 20 best deke and floater set-ups of the
