@@ -209,8 +209,8 @@ so speed ratings barely separate players: most of the ice skates at full speed.
 - Speed grows by 32 - Weight + 1.5 x Agility (working values) each frame you push. **Code**
 - No half-acceleration rule for a person's puck carrier was found (the Genesis has one).
 - **Goalies:** a person's goalie without the puck gets 2 x Agility + 8 more; a computer goalie (or one with the puck)
-  only + 8, and a computer goalie **loses his Agility again while a pass is in the air**, so he slides across slowly on
-  passes. A person's goalie inside his crease skates at three-quarters of his top speed. **Code**
+  only + 8, and a computer goalie **loses 1 x Agility of his 1.5 while a pass is in the air**, so he slides across
+  slowly on passes. A person's goalie inside his crease skates at three-quarters of his top speed. **Code**
 
 ### 3.3 No runaway speed
 
@@ -880,6 +880,8 @@ Ordered by how much the answer would matter in league play (penalties off).
   tie-break (9) is the likeliest cause, not measured (SHOOTING_STUDY, "The leagues' own results").
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
   the way a person does); it needs many more recorded games.
+- **The lane against a goalie who catches with the other hand** (SNES_SHOOTING 5.3, 4.8): the code mirrors his save
+  moves, so the half-the-time slapshot lane should move to the shooter's right. One harness run would show it.
 - **Instant whistles on a person goalie's catch** (5.4): mostly explained (2026-10-30): 12 of 16 were a delayed
   penalty against his own team, whistled when his catch gave his team the puck. 3 in 386 catches remain unexplained.
 - **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example (NEEDS_FROM_YOU).

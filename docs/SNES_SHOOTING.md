@@ -502,6 +502,24 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   him off the near post). He skates like a player (acceleration from Weight and Agility, + 8 for a goalie, his Agility taken away while a
   pass is in the air; top speed from Speed), and a computer goalie with nowhere to go halves his speed each step.
   **He stops dead when an opposing carrier winds up a shot** while skating mostly up or down the ice.
+- **What each of his ratings does** (2026-10-30, every read of each rating array in the code checked; none changes
+  his size, 5.1):
+  - **Agility:** acceleration (1.5 x Agility, less Weight / 8; a person's goalie 2 x Agility more; a computer goalie
+    1 x Agility less while a pass is in the air, `playeracc`), stopping (a computer goalie's friction is 112 + Agility
+    a step, `StopNA`), and doubled while he skates to a loose puck (`assgoalietopuck`).
+  - **Speed:** top speed (a person's goalie three-quarters of it in his crease).
+  - **Weight:** slower acceleration; how much he is moved when a skater runs into him (`checkplcoll`).
+  - **Defensive Awareness** (`aidef`): how often he rethinks (every aidef / 2 frames; aidef / 4 going for a loose
+    puck) and how long each pass delays him (6.1).
+  - **Puck Control** (the Shot Power slot): the hold limit (5.4).
+  - **The four glove and stick save ratings:** looked up in `puckgoalie` and overwritten before use: nothing. (One of
+    them sits in the Endurance slot, which only refills energy with line changes on.)
+  - **Passing:** none; a goalie's passes always use 7 (`dopass`). **Stick Handling:** none in a steal: a goalie always
+    steals, and nobody steals from him (`puckstick`).
+  - **His catching hand** (drawn mirrored, attribute $0800): the save move for a side is taken from the other side's
+    list (`assgoalie`), and the left and right save frames aren't mirror images, so a goalie who catches with the other
+    hand should have his gaps on the other side: **the lane of 4.8 (past the right-side saves of Montreal's goalie)
+    would be on the shooter's right against such a goalie.** From the code; not played in the game yet.
 - **Confirmed:** emulating all this and driving it with the recorded puck, the goalie lands a median 0.8 units from the
   recorded goalie when the puck arrives (100 shots at computer goalies; 78 within 3 units).
 - **His ratings, played in the game** (SCORING_SNES "SNES goalie profiles", 2026-10-26): from a backup to Roy, the
