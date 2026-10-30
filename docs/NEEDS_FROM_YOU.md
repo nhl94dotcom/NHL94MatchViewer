@@ -87,7 +87,7 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 1. ~~**Home record by home bonus.**~~ Done (2026-10-30, the user's databases): on both systems the home edge is the
    home bonus plus away penalty and nothing else (each pair of teams compared both ways); each point is worth about
-   twice as much on the SNES (SHOOTING_STUDY, "The leagues' own results").
+   twice as much on the SNES (LEAGUE_RESULTS).
 2. ~~**Shots on goal by period.**~~ Done: on the Genesis the team going up gets about 10% more shots counted; on the
    SNES no period difference.
 

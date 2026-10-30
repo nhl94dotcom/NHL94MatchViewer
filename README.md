@@ -49,7 +49,8 @@ penalties, faceoffs, the computer players and the bugs), two documents per syste
 [SNES](docs/SNES_MECHANICS.md) with [its](docs/SNES_SHOOTING.md). The player's versions (how to read the ratings
 screen, how to pick a lineup, what works on the ice): [Genesis guide](docs/GENESIS_GUIDE.md) and
 [SNES guide](docs/SNES_GUIDE.md). A study of the recorded games' shooting and goaltending, up and down the screen and
-home and away: [shooting study](docs/SHOOTING_STUDY.md). Shots played in the real game, headless, to map where a set
+home and away: [shooting study](docs/SHOOTING_STUDY.md). What the leagues' own results since 2013 show (home edge,
+power plays, goalies, ratings, win probability, skill and luck): [league results](docs/LEAGUE_RESULTS.md). Shots played in the real game, headless, to map where a set
 goalie can be beaten and show how each kind of goal goes in: [scoring maps](docs/SCORING_MAP.md) (with the Genesis shots, dekes and EA Specials and the SNES on pages of their own).
 The expected-goals models, and how to use them in your own work: [xG models](docs/XG_MODELS.md).
 

@@ -134,7 +134,7 @@ kill, and a weak team gains 2 on the power play and loses nothing shorthanded. S
 scale), but backwards. The NOSE4Web editor's "Power play and penalty kill fix" (its own, not one of smozoma's smozROM
 hacks, which don't touch this) swaps the two reads in place, so each half means what the data says; it is correct (15).
 
-**The comeback bonus is backwards** (**Confirmed**; too small to show in the leagues' results: SHOOTING_STUDY). The test that should switch it on for the last half of the third
+**The comeback bonus is backwards** (**Confirmed**; too small to show in the leagues' results: LEAGUE_RESULTS). The test that should switch it on for the last half of the third
 period is the wrong way round, so it is **on while more than half of the third period is left** (with 5-minute
 periods, before 2:30) **and off for the last half**. In overtime both teams have it throughout.
 
@@ -652,7 +652,7 @@ working Aggression read from the recording): penalties per share of skater time 
 says (few penalties, and the same players again and again).
 
 **The leagues' results show the wrap at the roster level too** (Classic leagues, the retail ratings): penalties per
-100 games 27, 33, 35 at roster 1-3, then **29 at 4** (per 100 checks 5.8, 6.7, 6.8, then 5.6): SHOOTING_STUDY, "Ratings,
+100 games 27, 33, 35 at roster 1-3, then **29 at 4** (per 100 checks 5.8, 6.7, 6.8, then 5.6): LEAGUE_RESULTS, "Ratings,
 game flow, skill and luck".
 
 The ranges come from the hot / cold value (-3 to +2); 1-5 were checked against the recordings (rating 5 read 10
@@ -1187,7 +1187,7 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
 ### 13.6 Home and away, up and down the screen: what differs
 
 **Home and away** (the leagues' results, 86,735 games: Home wins 50.5%; a team's home edge grows with its home bonus
-plus away penalty, +1.1 points of win rate at 0 to +3.6 at 3, so the bonus is most of it; Home's extra shots on goal
+plus away penalty, +1.1 points of win rate at 0 to +3.6 at 3, so the bonus is most of it: LEAGUE_RESULTS; Home's extra shots on goal
 are the screen direction, below: SHOOTING_STUDY, "The leagues' own results"):
 
 - **The hidden home / away bonus** (2.3): each team's ROM byte gives its home value to five working ratings at

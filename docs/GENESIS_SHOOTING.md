@@ -494,7 +494,7 @@ The goalie stops a puck only if it physically reaches him:
 - **Confirmed:**
 
 - **In the leagues' results** (559,049 shots in the Classic leagues, the retail goalies): save % rises with Agility,
-  64.8% at roster 3, 68.2% at 4, 69.7% at 5, 72.2% at 6 (SHOOTING_STUDY, "The leagues' own results").
+  64.8% at roster 3, 68.2% at 4, 69.7% at 5, 72.2% at 6 (LEAGUE_RESULTS, "Home and away, goalies and teams").
 - As the puck reached the goalie's line, saves passed a median 13 units from his centre (49 of 71 within 15); goals a
   median 24 (31 of 40 at 15 or more). 111 goals and saves.
 - 5 of the 9 goals that went in close to the goalie were one-timers (reach cut to 12).
