@@ -176,5 +176,5 @@ recorded goalie.
 - A person in net is moved as the computer would move him.
 - Pass shots and deflections get no xG.
 
-So: good for comparing teams and players over several games and for judging most single shots; quick rebound-style
-follow-ups are underrated on both systems.
+So: good for comparing teams and players over several games and for judging most single shots; some very quick
+follow-ups on the SNES are underrated.
