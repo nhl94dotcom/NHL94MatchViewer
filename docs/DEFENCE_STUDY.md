@@ -138,6 +138,60 @@ defender backs off a 2-on-1 and steps up to a lone carrier), so a difference can
 choice; and 16-19 games show only big effects. A harness test (DEFENCE_PLAN) can set the posture and play the same
 attack against it.
 
+### Pressure or sit back, played in the game (`posture_run.py`, `snes_posture_run.py`, 2026-10-30)
+
+The harness test the recordings called for. A person-controlled defender (the away left defenceman on pad 2, steered
+frame by frame by a script; his own ratings; penalties off, as in the league) against scripted rushes, the same rushes
+against each posture, on both systems, both nets, both shooter hands:
+
+- **Postures:** *none* (no defender); *sit* (hold the slot: the point 45 units from the puck along its line to the
+  net, never deeper than 30 out, shaded to the middle against a 2-on-1; no pokes); *sit, then press* (sit until the
+  carrier is within 10 ft, then press); *press* (skate at where the puck will be, poke once within reach); *press and
+  check* (the same, checking instead of poking). He starts 56 units in front of the carrier, skating back with him.
+- **Attacks:** a lone carrier from the blue line in three lanes, shooting from 70 out (*solo*); on the SNES the same
+  going on to about 30 out (*slot*); on the Genesis the best deke of the scoring map (*deke*: SCORING_GENESIS_DEKES);
+  a *2-on-1*, the carrier in a side lane passing across at 70 out to a teammate who one-times it. The carrier shoots,
+  or passes, at once when the defender is within 10 ft in front of him; the deke plays its move regardless.
+- 48 rushes a set-up, each shot played out with 4 random seeds: 2,880 rushes on the Genesis, 3,840 on the SNES.
+
+Goals a rush (90% ranges from resampling the rushes):
+
+| Attack | No defender | Sit | Sit, then press | Press | Press and check |
+| --- | --- | --- | --- | --- | --- |
+| Genesis deke | 0.90 (0.87-0.92) | 0.93 (0.91-0.95) | 0.93 | **0.39** (0.35-0.44) | **0.34** (0.29-0.39) |
+| Genesis 2-on-1 | 0.55 (0.51-0.59) | 0.14 (0.12-0.16) | 0.14 | **0.01** (0.01-0.02) | **0.03** (0.01-0.04) |
+| SNES 2-on-1 | 0.62 (0.59-0.66) | 0.49 (0.45-0.52) | 0.45 | **0.18** (0.15-0.21) | **0.20** (0.17-0.22) |
+| Lone carrier, either system | 0.00-0.02 | 0.00-0.02 | 0.00-0.02 | 0.00 | 0.00 |
+
+- **Pressing beat sitting back on both systems**, against every attack that scores. Against the Genesis deke sitting
+  in the slot did nothing at all (the deke goes round him and beats the goalie): pressing took the puck or spoiled the
+  move in more than half the rushes, in every set-up (0.16-0.55 a rush against 0.89-0.98 sitting). Against the 2-on-1
+  the pressing defender made the carrier pass early, under pressure, and the one-timer then came from a median 57 out
+  on the Genesis (about a 2% shot) instead of 23.
+- **Sitting does cut the 2-on-1, less.** On the Genesis the sitter picked off the pass in 61% of rushes; with the
+  right-handed teammate taking it on the right of the slot nothing got through, on the left a quarter did. On the SNES
+  sitting saved only a fifth of the goals (0.49 against 0.62), and in some set-ups none.
+- **Waiting to press is sitting.** Sitting until the carrier is within 10 ft, then pressing, came out the same as
+  sitting throughout: by then the move or the pass is made.
+- **The lone rush isn't the danger.** A plain wrist shot from the rush scores 0-2% whatever the defender does, on
+  both systems (on the SNES a shot at a set goalie from the slot almost never scores, SNES_SHOOTING 4.8). The SNES
+  carrier driving to the slot lost the puck before shooting 41% of the time with no defender at all.
+
+**So, against the user's idea** (proactive on the Genesis, sit back on the SNES): proactive wins on the Genesis by a
+wide margin, and on the SNES too, against the plays that score. **The caution:** the attackers are bots. They react to
+a close defender only by shooting or passing at once; a person would dodge, delay or cut inside, which a pressing
+defender over-commits to. The recordings (above) show no difference either way, and a pressing person lets more
+shots through on the SNES; so this says what each posture gives up against the standard plays, not against an
+opponent adjusting to it.
+
+The same rush against each posture, the game's own frames:
+
+![The Genesis deke against each defender](img/posture_gen_deke.gif)
+![The Genesis 2-on-1 against each defender](img/posture_gen_2on1.gif)
+![The SNES 2-on-1 against each defender](img/posture_snes_2on1.gif)
+
+Tables: `analysis/scoring_map/posture_report.py RUN`; GIFs: `posture_animate.py`.
+
 ## One defender against the deke and the floater (the harness, a pilot; 2026-10-25)
 
 DEFENCE_PLAN study 4, first pass. `analysis/scoring_map/def_run.py`: the 20 best deke and floater set-ups of the
