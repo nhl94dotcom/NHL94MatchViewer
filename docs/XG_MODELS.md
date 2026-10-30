@@ -174,7 +174,8 @@ recorded goalie.
   those frames); rare in real games.
 - Neither has skaters in the way (screens, deflections); blocked shots are left out of totals.
 - A person in net is moved as the computer would move him.
-- Pass shots and deflections get no xG.
+- Pass shots (a pass with nobody to take it, sent at the net) are played from the puck's recorded start, with the
+  game's random lift (`xg.launched`, `launch` in both `play_out`s); deflections and scrambles get no xG.
 
 So: good for comparing teams and players over several games and for judging most single shots; some very quick
 follow-ups on the SNES are underrated.

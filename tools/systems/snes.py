@@ -99,6 +99,10 @@ PAD_MAP = ((0x8000, 0x10), (0x0080, 0x20), (0x4000, 0x40), (0x1000, 0x80),
            (0x0800, 0x01), (0x0400, 0x02), (0x0200, 0x04), (0x0100, 0x08))
 SNES_BUTTONS = {"A": 0x0080, "B": 0x8000, "X": 0x0040, "Y": 0x4000, "L": 0x0020, "R": 0x0010, "Select": 0x2000, "Start": 0x1000}
 PAD_LABELS = {"A": "Y", "B": "B", "C": "A"}
+# The puck's spinning frames (SPApflip, frames94s: SPFpuck + 2-10 other than its two flat frames + 1 and + 5; SPFpuck is
+# sprite frame $18C), as the match file's puckFrame writes them: the flip (Y) starts the spin (puckflip), and so do
+# some bounces off a body or the boards.
+PUCK_SPIN = frozenset(f"{0x18C + d:03x}" for d in (2, 3, 4, 6, 7, 8, 9, 10))
 
 
 def genesis_pad(word):

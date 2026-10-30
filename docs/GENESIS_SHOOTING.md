@@ -283,7 +283,13 @@ computer goalies 28.6 / 23, people in net 10.8 / 11; the predicted mix of saves,
 Shot by shot it ranks chances well: its log loss is 0.30, against 0.46 for giving every shot the same chance.
 
 What it leaves out: skaters in the way (blocked shots are left out of team totals), the in-close top-shelf lift (4.5),
-and anything a person does with the goalie beyond what the computer would. Pass shots and deflections have no xG.
+and anything a person does with the goalie beyond what the computer would. **Pass shots** (2026-10-30) are played
+from the puck's recorded start over the next 50 ms (no aim, no scatter) with the pass's random lift (0-4,095, 6.1
+of the mechanics): on the 20 recorded Genesis pass shots whose ROM is at hand, 2.2 expected goals against 2 scored
+(log loss 0.43, against 0.33 for one rate: one empty-net pass shot off the post was a certain goal to the model).
+Without the ROM the goalie has no stick, so flat pass shots through its blind ring come out at 0 (3 of
+2026-10-19_0818_ANA-ATL's 4 pass-shot goals; the fourth 0.06). **Deflections** have no xG: played the same way from
+their recorded start, five of the six recorded Genesis goals off one came out at 0, the puck already at the goalie.
 
 **Checked against the game itself** (2026-10-29, `analysis/scoring_map/xg_calib.py`): 33,808 shots the studies play
 (standing shots from all over the zone, shots on the move, dekes, EA Specials), the model asked from the exact state at

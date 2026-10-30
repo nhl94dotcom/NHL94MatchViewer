@@ -330,6 +330,12 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **Inside the zone:** in front of the net.
 - Your skater **turns to face up the ice first**, so it comes out late if you were facing sideways.
 - **It strays a lot**, up to about 70 units along the ice and 20-55 across, less with better Pass Accuracy.
+- **Played in the game** (2026-10-30): every flip comes down about 1.6 seconds later, after rising about 9 ft. From
+  your own end or centre it **lands short of that deep spot**, around the top of the circles (35-50 ft inside the blue
+  line), and slides on into the corner. From inside the zone it lands just past the front of the net **on the far
+  side** of it, about 10 ft across. Good Pass Accuracy halves how far it strays sideways.
+- **A goalie's flip** goes to about centre ice. In the recorded games people flipped 18 times (10 of them goalies) and
+  got the puck back 9 times.
 
 ---
 

@@ -17,6 +17,10 @@ Checked against the five recorded SNES games: driven by the recorded puck, the e
 units from the recorded one when the puck arrives; over 175 unblocked shots the model gives 40.1 expected goals
 against 32 scored (computer in net 25.7 / 21, people 14.4 / 11; posts and misses as recorded), log loss 0.27 against
 0.48 for one rate for all shots. The one fitted number, GOALIE_SPREAD, stands for the emulated goalie's error.
+
+Pass shots (2026-10-30) have no aim or scatter: the puck leaves as the recording shows it over the next 50 ms
+(xg.launched, its direction jittered by the recording's rounding), with a fresh random lift each play-out (dopass with
+no target: vertical speed 0 to $FFF, SNES_MECHANICS 6.1). Deflections and kind 'other' have no xG.
 """
 import copy
 import random
@@ -201,29 +205,35 @@ class Goalie:
         self.y += frames * self.vy / 4096
 
 
-def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False):
+def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, launch=None):
     """One shot as the SNES game plays it: 'goal', 'save', 'post', 'over' or 'wide'.
 
     rebound (2026-10-29, xg_calib.py: close follow-ups scored half again as often in the game as in the model): a touch
     of his body box isn't always a save (puckgoalie, SNES_SHOOTING 5.4): he holds the puck only if both its speed
     components are under random((2 + Puck Control) x 512) + $2000; otherwise it bounces off, its velocity 256 x its
     offset from his centre (the up-and-down part against the way he is moving), its height speed cleared, and he can't
-    touch it for 10 frames: it can go in off him."""
-    dx, dy, z = tx - px, ty - py, tz
-    d3 = max(1, approx_length(dx, dy))
-    if not (d3 < 201 and rng.random() < perfect):
-        s = (((int(pp) >> 3) - sha + 16) * d3) >> 6
-        s = min(s >> 1 if d3 < 251 else s, 0x88)
-        if s > 0:
-            dx += rng.randrange(2 * s) - s
-        sy = min(s, 60)
-        ry = sy >> 1 if dy < 0 else sy
-        if ry > 0:
-            dy += rng.randrange(2 * ry) - ry
-        if sy >> 1 > 0:
-            z += rng.randrange(sy >> 1)
-    vx, vy = 2 * pp * 68 * dx / d3, 2 * pp * 68 * dy / d3
-    vz = min(0x1800, 2 * pp * 68 * z / d3 + (0xB33 * d3 / pp) / 2) if z else 0.0
+    touch it for 10 frames: it can go in off him.
+
+    launch: (vx, vy, vz), the puck's own start (a pass shot, a deflection): no aim, no scatter; ty then only says which
+    net."""
+    if launch:
+        vx, vy, vz = launch
+    else:
+        dx, dy, z = tx - px, ty - py, tz
+        d3 = max(1, approx_length(dx, dy))
+        if not (d3 < 201 and rng.random() < perfect):
+            s = (((int(pp) >> 3) - sha + 16) * d3) >> 6
+            s = min(s >> 1 if d3 < 251 else s, 0x88)
+            if s > 0:
+                dx += rng.randrange(2 * s) - s
+            sy = min(s, 60)
+            ry = sy >> 1 if dy < 0 else sy
+            if ry > 0:
+                dy += rng.randrange(2 * ry) - ry
+            if sy >> 1 > 0:
+                z += rng.randrange(sy >> 1)
+        vx, vy = 2 * pp * 68 * dx / d3, 2 * pp * 68 * dy / d3
+        vz = min(0x1800, 2 * pp * 68 * z / d3 + (0xB33 * d3 / pp) / 2) if z else 0.0
     G = None
     if goalie:
         G = copy.copy(goalie)
@@ -298,8 +308,9 @@ def touch_timer(m, f, gk, frames=10):
 
 
 def add_expected_goals(m, rom, notouch=False):
-    """Each shot and one-timer of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's frames). notouch:
-    the goalie's no-touch timer from the recording (touch_timer)."""
+    """Each shot, one-timer and pass shot of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's
+    frames). notouch: the goalie's no-touch timer from the recording (touch_timer)."""
+    from xg import aimed, launched
     if m.get("system") != "snes" or not m.get("work"):
         return
     data = RomData(rom)
@@ -317,9 +328,13 @@ def add_expected_goals(m, rom, notouch=False):
 
     T, P, role, roster = m["t"], m["pos"], m["role"], m["roster"]
     for sh in m.get("shotList", []):
-        if sh["kind"] not in ("shot", "one-timer") or sh["team"] not in (0, 1) or "aim" not in sh:
+        loose = sh["kind"] == "pass shot"
+        if sh["kind"] not in ("shot", "one-timer", "pass shot") or sh["team"] not in (0, 1)                 or "aim" not in sh and not loose:
             continue
         f, team = sh["f"], sh["team"]
+        launch = launched(m, f) if loose else None
+        if loose and launch is None:
+            continue
         own = next((k for k in range(team * 6, team * 6 + 6) if role[f * 12 + k] == "0"), None)
         if own is None:
             continue
@@ -345,16 +360,21 @@ def add_expected_goals(m, rom, notouch=False):
                             puck_control=gw[4] if len(gw) > 4 else 10)
             if notouch:
                 goalie.nopuck = touch_timer(m, f, gk)
-        tx, tz = AIM[sh["aim"]["d"]]
+        tx, tz = AIM[sh["aim"]["d"]] if not loose else AIM[8]
         pp = max(1.0, sh["speed"] / 136)
         perfect = (sha + 1) / (sha + 16)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, tx, ty, tz, pp, sha,
-               (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4], goalie.nopuck) if goalie else None)
+               (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4], goalie.nopuck) if goalie else None,
+               sh["kind"], launch)
         if key in _CACHE:
             sh["xg"] = _CACHE[key]
             continue
         rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
-        goals = sum(play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng) == "goal" for _ in range(N_SAMPLES))
+
+        def start():                                              # a pass shot's lift: random, 0-$FFF (dopass)
+            return aimed(launch, rng, rng.randrange(0x1000)) if launch else None
+        goals = sum(play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, launch=start()) == "goal"
+                    for _ in range(N_SAMPLES))
         sh["xg"] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 

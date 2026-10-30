@@ -1139,6 +1139,34 @@ def zone_of(y, forward):
     return 'att' if y * forward >= ZONE_LINE else 'def' if y * forward <= -ZONE_LINE else 'neu'
 
 
+FLIP_CLIMB = 5          # units the puck rises in its first FLIP_CLIMB_MS after the release, at least, for a flip
+FLIP_CLIMB_MS = 130
+
+
+def split_flips(m):
+    """The SNES flip (Y with the puck: assdumpin, a computer-run dump-in, SNES_MECHANICS 6.3) lets go of the puck through
+    the pass animation (dopass_swing), so find_passes finds it as a pass; the game doesn't count it as one. Returns
+    (the passes without the flips, the flips: find_passes' entries for them, its result telling who got the puck).
+    A flip: the puck shows the flip's spin (the system's PUCK_SPIN frames) within 0.25 s of the release and rises
+    FLIP_CLIMB or more in the first FLIP_CLIMB_MS (the flip launches it at puckvz $10E0-$14A0, 1.05-1.29 units a frame;
+    passes hop more slowly and keep the puck's flat frames). In the 17 SNES games of 2026-10-30 it found 18: 15 after a
+    person pressed Y with the puck (10 of them goalies; every such press but 3 at a dead puck, one flip pressed twice),
+    2 by the computer, and 1 that was a pass off the end boards behind the net (a bounce starts the same spin)."""
+    spin = getattr(systems.of_match(m), 'PUCK_SPIN', None)
+    passes = m.get('passes', [])
+    if not spin or not m.get('puckFrame'):
+        return passes, []
+    t, P, pf, N = m['t'], m['puck'], m['puckFrame'], len(m['t'])
+    kept, flips = [], []
+    for p in passes:
+        rel = p['f']
+        q = next((q for q in range(rel, N) if t[q] - t[rel] >= FLIP_CLIMB_MS), N - 1)
+        climb = P[3 * q + 2] - P[3 * rel - 1]
+        spun = any(pf[3 * j:3 * j + 3] in spin for j in range(rel, N) if t[j] - t[rel] <= 250)
+        (flips if spun and climb >= FLIP_CLIMB and P[3 * rel - 1] > -100 else kept).append(p)
+    return kept, flips
+
+
 def add_pass_shape(m):
     """Each pass's direction and zones, for the passing team (the user: who passes a lot in which zone, and how):
     - `dir`: the way the puck left the stick against the way the team attacks: 'forward' (within 30 degrees of
@@ -1814,7 +1842,7 @@ def add_play_context(m):
         p['human'] = controlled(p['called'], p['team'], p['idx']) if 'called' in p else controlled(p['f'], p['team'], p['idx'], 3000, 0)
     for sh in m.get('shotList', []):
         sh['human'] = controlled(sh['f'], sh['team'], sh['idx'], 300, 0)
-    for p in m.get('passes', []):
+    for p in m.get('passes', []) + m.get('flips', []):
         p['human'] = controlled(p['f'], p['team'], p['idx'], 300, 0)
 
     # Odd-man rushes, at the moment the puck crossed the blue line
@@ -2059,6 +2087,7 @@ def analyse(match, system, cap, rom_path):
         match["turnovers"] = find_turnovers(match)
         match["failedOneTimers"] = find_failed_one_timers(match)
         match["passes"] = find_passes(match)
+        match["passes"], match["flips"] = split_flips(match)
         match["faceoffs"] = find_faceoffs(match)
         match["icings"] = find_icings(match)
         match["zoneEntries"] = find_zone_entries(match)

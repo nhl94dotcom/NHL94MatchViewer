@@ -12,7 +12,8 @@ English and in detail are in `docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `doc
 the xG models' inputs, units and use outside the project in `docs/XG_MODELS.md`);
 studies in `docs/SHOOTING_STUDY.md` and the scoring maps (shots played in the real game): `docs/SCORING_MAP.md` (the
 overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`, `SCORING_SNES.md`; the plan for the defence studies in `docs/DEFENCE_PLAN.md`, their results in `docs/DEFENCE_STUDY.md`
-(`analysis/defence_games.py` for the recorded games, `analysis/scoring_map/def_run.py` for a defender in the harness); open questions for the user in
+(`analysis/defence_games.py` for the recorded games, `analysis/scoring_map/def_run.py` for a defender in the harness,
+`posture_run.py` / `snes_posture_run.py` for a person-controlled defender pressing or sitting back); open questions for the user in
 `docs/NEEDS_FROM_YOU.md`.
 
 ## Rules (from the user)
@@ -142,7 +143,8 @@ person-controlled records), and per record `pos`, `role`, `roster`, `anim`, `fra
 snapshots (STAT_FIELDS order); rosters, palettes, ROM settings, sprite library id (`rom`). Event lists from the
 analysis: `goals`, `shotList` (kind shot / one-timer / pass shot / other, result, counted, xg, aim, danger, origin,
 gctl ...), `passes`, `turnovers`, `hits`, `zoneEntries`, `faceoffs`, `penalties`, `bumps`, `bobbles`, `netsOff`,
-`runaways`, `habits` and more (each documented where it is made in export_match.py).
+`runaways`, `habits`, SNES `flips` (the Y dump-in, kept apart from the passes) and more (each documented where it is
+made in export_match.py).
 
 ## Notable findings to know
 
@@ -160,5 +162,4 @@ gctl ...), `passes`, `turnovers`, `hits`, `zoneEntries`, `faceoffs`, `penalties`
 
 - Settled, don't redo: SNES faceoffs (timing, SNES_MECHANICS 9), SNES pass speed (by distance, no rocket pass), SNES
   hooks / holds / pokes (7.3), upends (7.2), goalie poke / dive (5.3), puck physics (7.8), the crowd (both systems).
-- Open: SNES flip not yet seen in a recording; the open-questions sections of both mechanics docs; some studies need
-  more games. `2026-10-19_2115_LA-BUF`'s recording is cut off (gzip without its end) and won't convert.
+- Open: the open-questions sections of both mechanics docs; some studies need more games. `2026-10-19_2115_LA-BUF`'s recording is cut off (gzip without its end) and won't convert.

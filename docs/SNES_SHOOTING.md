@@ -177,6 +177,11 @@ the total right (11.6% against 12.2%) but not the shot-by-shot fit, and the reco
 model is unchanged for now. The bounce rule (5.4) and continuing a save move already under way were tried and change
 nothing.
 
+**Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
+with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 8 recorded SNES pass shots: 0.2 expected goals, none
+scored (one off the post, at 0.2). Deflections have no xG (played the same way, the one recorded SNES goal off one came
+out at 0).
+
 Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).
 
 The viewer shows SNES xG on shots, cards, team stats, the season page and the xG map (one-timers there face goalies as

@@ -310,8 +310,8 @@ after his pass, then shooters, centres at a faceoff and fallen players.
 
 ![Where the SNES flip goes](img/snes_flip.svg)
 
-Pressing Y hands your skater to the computer's dump-in routine (`assdumpin`, `DumpInTarget`). **Code**; no SNES flip in
-the recordings yet.
+Pressing Y hands your skater to the computer's dump-in routine (`assdumpin`, `DumpInTarget`). **Code, confirmed in the
+game and seen in the recordings** (below).
 
 - **Outside the attacking zone:** deep in the zone between the circle and the corner (80 from the middle, 180 toward the
   goal), **on whichever side of centre you're on**. Facing doesn't choose.
@@ -321,6 +321,16 @@ the recordings yet.
 - **It scatters by up to +/-(20-25 + 2 x (15 - Passing)) across and +/-(20-70) along** (the deeper targets 70), so
   **Passing is flip accuracy**.
 - A computer carrier inside the attacking zone shoots instead.
+- **Played in the game** (2026-10-30, `analysis/scoring_map/snes_flip_run.py`: 864 flips from six spots, Passing 4, 10
+  and 15, both nets, from a standing start facing up the ice): every flip leaves at once, peaks at about 27 units and
+  first comes down 1.6 s later (the speed cap of `assdumpin`, $60, keeps long flips short). From the carrier's own zone
+  (150 from centre) the median landing is 104-127 up the ice on his side (the target is 180), from centre 130-148;
+  then it slides on deep. From inside the zone (150 up, 40 across) it lands 226-237 up, **about 30 across on the far
+  side** (target 0, 215). Passing narrows the spread: across, 80 units of range at Passing 4, 40 at 15.
+- **Recorded** (`analysis/snes_flip_study.py`; the converter keeps them as `flips`, apart from the passes they go out
+  through): 18 flips in 17 SNES games, 16 by people (10 by goalies, whose flips came down near centre ice when they
+  defended the top net, 1-1.8 s on) and 2 by the computer (one of the people's is a rimmed pass behind the net, which a
+  boards bounce makes look the same). The flipping team had the puck next 9 times, the other team 9.
 
 ### 6.4 Steals
 
@@ -856,11 +866,30 @@ everything in this document applies to all of these ROMs.
 
 ## 16. Open questions and parts not read yet
 
-- **Instant whistles on a person goalie's catch** (5.4): about 1 catch in 16, cause not found.
-- **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example.
-- **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only.
-- **The expected-goals model** (4.7) predicts 40.1 goals where 32 were scored: within chance for 32 goals, but worth
-  checking as more games are recorded.
+Ordered by how much the answer would matter in league play (penalties off).
+
+**Would change how people play or how games are judged:**
+
+- **Pressing against a person who reacts.** Played in the game against scripted rushes, pressing beat sitting back on
+  the SNES too (the 2-on-1: 0.18 goals a rush against 0.49; DEFENCE_STUDY, "Pressure or sit back, played in the
+  game"), while the recorded games show no difference and a pressing person letting more shots through. The scripted
+  attacker doesn't dodge; more recorded games are the check.
+- **Instant whistles on a person goalie's catch** (5.4): about 1 catch in 16, cause not found. Each one is a faceoff in
+  his own end instead of a clear.
+- **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example (NEEDS_FROM_YOU).
+
+**Expected goals:**
+
+- **Close follow-ups** (SNES_SHOOTING 4.7): the goalie's 10-frame no-touch timer after the puck comes off him isn't
+  modelled; rare in real games (13 of 745 recorded shots). Deflections have no xG.
+- *Settled:* the total. Over 595 unblocked shots in the recorded games (2026-10-30) the model gives 144.9 expected
+  goals against 138 scored (log loss 0.40, against 0.54 for one rate for all shots): within chance.
+
+**Off in the league's settings:**
+
+- **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only (penalties on).
+
+*Settled 2026-10-30:* the flip (6.3), now played in the game and found in the recordings.
 
 ---
 

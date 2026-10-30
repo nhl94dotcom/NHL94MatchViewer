@@ -601,8 +601,10 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   (+/-80, 180 toward the goal he attacks) on his own side, inside it (0, 215), a goalie (0, 105) moved by his facing; a
   computer carrier inside the zone shoots instead (CompShoot). He turns first until he faces within 45 degrees of
   straight up the ice; the spot then gets random +/-(20-25 + 2 x (15 - Pas)) across and +/-(20-70) along (the deeper
-  targets 70), so Passing sets flip accuracy on the SNES. No SNES flip in the recordings yet (the lofted pucks there are
-  lifted shots).
+  targets 70), so Passing sets flip accuracy on the SNES. Recorded flips found 2026-10-30 (export_match.split_flips:
+  they leave through the pass animation, so find_passes had them as passes; the puck's SPApflip spin frames, sprite
+  $18C + 2-10 but not + 1 / + 5, plus a climb of 5 in 0.13 s pick them out): 18 in the 17 SNES games, 15 after a
+  person's Y press (10 by goalies), 2 by the computer, 1 a rimmed pass behind the net (a boards bounce spins it too).
 - Puck physics (Genesis): updateplayers each frame on the ice takes velocity >> 9 off the puck (and off a player with
   pfdoff; others >> 6): the puck keeps 0.889 of its speed a second, skaters 0.39; in the air (Zpos > 0) no friction at
   all; gravity 6 x 17 off Zvel a frame; on landing Zvel = -Zvel / 2 (half-height bounces, the puck-on-ice sound). Checked:

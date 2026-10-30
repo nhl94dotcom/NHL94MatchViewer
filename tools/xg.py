@@ -26,7 +26,11 @@ speed taken from the next 100 ms (add_expected_goals' `lock`): with the stick, l
 and on the game's own shots at a goalie in a save move 0.42 -> 0.30; on since (xg_stick_eval.py games compares them).
 Older match files without `locked` fall back to the save move's length less the time it has run.
 
-Shots with a shooting animation only (shots and one-timers); pass shots and deflections have no xG.
+Pass shots (2026-10-30) have no aim or scatter: the puck leaves as the recording shows it over the next 50 ms
+(`launch`; its direction jittered by the 0.1-unit rounding of the recorded positions), with a fresh random lift each
+play-out (dopass with no target: vertical speed 0 to 4,095, GENESIS_MECHANICS 6.1). Deflections (played the same way
+from their recorded start, five of the six recorded Genesis goals off one came out at 0) and shots of kind 'other' have
+no xG.
 """
 import bisect
 import copy
@@ -194,7 +198,7 @@ class Goalie:
         self.y += self.vy / 4096
 
 
-def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False, rebound=False):
+def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False, rebound=False, launch=None):
     """One shot as the game plays it: 'goal', 'save', 'post', 'over' or 'wide' ('stick' with `stick`).
 
     stick (2026-10-23, off until it is shown to predict the recordings better): the goalie's stick as checkpuckcoll
@@ -208,23 +212,29 @@ def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=F
     of that when he's standing (not in a save move) with the puck in close (within 44 across, 210-270 out); otherwise
     it bounces straight out from his centre through where it touched him at 256 x that offset a frame (slowly), its
     height speed cleared, and he can't touch it for 10 frames. A touch behind his centre so drifts into the net: the
-    other half of the through-the-legs goal (5.5)."""
+    other half of the through-the-legs goal (5.5).
+
+    launch: (vx, vy, vz) in velocity words, the puck's own start (a pass shot, a deflection): no aim, no scatter; the
+    target then only says which net."""
     (px, py, pz), (tx, ty, tz) = start, target
-    dx, dy, z = tx - px, ty - py, tz
-    d3 = max(1, int(math.hypot(dx, dy)))
-    if not (d3 <= 200 and rng.random() < perfect):            # doshot's scatter
-        s = ((int(pp) >> 4) - (sha >> 1) + 16) * d3 >> 6
-        s = min(s >> 1 if d3 <= 250 else s, 0x88)
-        if s > 0:
-            dx += rng.randrange(2 * s) - s
-            sy = min(s, 60)
-            ry = sy >> 1 if dy < 0 else sy                    # halved shooting down the screen
-            if ry > 0:
-                dy += rng.randrange(2 * ry) - ry
-            if sy >> 1 > 0:
-                z += rng.randrange(sy >> 1)                   # height only ever up
-    vx, vy = pp * 68 * dx / d3, pp * 68 * dy / d3
-    vz = min(0x1800, pp * 68 * z / d3 + d3 * 0xB33 / pp) if z else 0.0
+    if launch:
+        vx, vy, vz = launch
+    else:
+        dx, dy, z = tx - px, ty - py, tz
+        d3 = max(1, int(math.hypot(dx, dy)))
+        if not (d3 <= 200 and rng.random() < perfect):        # doshot's scatter
+            s = ((int(pp) >> 4) - (sha >> 1) + 16) * d3 >> 6
+            s = min(s >> 1 if d3 <= 250 else s, 0x88)
+            if s > 0:
+                dx += rng.randrange(2 * s) - s
+                sy = min(s, 60)
+                ry = sy >> 1 if dy < 0 else sy                # halved shooting down the screen
+                if ry > 0:
+                    dy += rng.randrange(2 * ry) - ry
+                if sy >> 1 > 0:
+                    z += rng.randrange(sy >> 1)               # height only ever up
+        vx, vy = pp * 68 * dx / d3, pp * 68 * dy / d3
+        vz = min(0x1800, pp * 68 * z / d3 + d3 * 0xB33 / pp) if z else 0.0
     G = None
     if goalie:
         G = copy.copy(goalie)
@@ -322,8 +332,29 @@ def _velocity(m, f, k, back_ms=100, ahead=False):
 _CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
 
 
+def launched(m, f, ms=50):
+    """The puck's velocity (x, y, height; velocity words) leaving sample f, from where it is ms later, and how
+    uncertain its direction is (radians: the match file's positions are rounded to 0.1), or None."""
+    t, P = m['t'], m['puck']
+    q = next((q for q in range(f + 1, len(t)) if t[q] - t[f] >= ms), None)
+    if q is None or P[3 * q + 2] < -100 or P[3 * f + 2] < -100:
+        return None
+    frames = (t[q] - t[f]) / (1000 / 60)
+    v = [(P[3 * q + i] - P[3 * f + i]) / frames * 4096 for i in range(3)]
+    moved = math.hypot(P[3 * q] - P[3 * f], P[3 * q + 1] - P[3 * f + 1])
+    return (*v, 0.1 / moved) if moved and math.hypot(v[0], v[1]) > 400 else None
+
+
+def aimed(launch, rng, lift):
+    """A play-out's start from launched(): its direction jittered by the recording's error, the lift given."""
+    vx, vy, _vz, sd = launch
+    a = rng.gauss(0, sd)
+    return vx * math.cos(a) - vy * math.sin(a), vx * math.sin(a) + vy * math.cos(a), lift
+
+
 def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
-    """Each shot and one-timer of a Genesis match gets `xg`, the chance it goes in by the game's rules (see above).
+    """Each shot, one-timer and pass shot of a Genesis match gets `xg`, the chance it goes in by the game's rules (see
+    above).
     stick_rom: the ROM's bytes to model the goalie's stick (play_out's `stick`); rebound: play_out's `rebound`; lock:
     a goalie in a save move at the release starts locked in it (Goalie's `locked`)."""
     rom = GenesisRom(stick_rom) if stick_rom else None
@@ -334,9 +365,12 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
         rows.setdefault(r[1], []).append(r)
     role, roster, P = m['role'], m['roster'], m['pos']
     for sh in m.get('shotList', []):
-        if sh['kind'] not in ('shot', 'one-timer') or sh['team'] not in (0, 1):
+        if sh['kind'] not in ('shot', 'one-timer', 'pass shot') or sh['team'] not in (0, 1):
             continue
         f, team = sh['f'], sh['team']
+        launch = launched(m, f) if sh['kind'] == 'pass shot' else None
+        if sh['kind'] == 'pass shot' and launch is None:
+            continue
         own = next((1 if P[(f * 12 + k) * 2 + 1] > 0 else -1 for k in range(team * 6, team * 6 + 6) if role[f * 12 + k] == '0'), None)
         if own is None:
             continue
@@ -380,7 +414,9 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
                             mirror=bool(rom) and m.get('mirror', '')[f * 12 + gk:f * 12 + gk + 1] == '1',
                             puck_control=gw[4] if len(gw) > 4 else 10, locked=saving)
             coming = (gx + 8 * vgx, gy + 8 * vgy)   # shotdiradj looks half his velocity's high byte ahead
-        if sh['kind'] == 'one-timer' or not sh.get('human'):
+        if launch:
+            d = 8
+        elif sh['kind'] == 'one-timer' or not sh.get('human'):
             d = auto_aim(px, py, *coming, gl) if coming else 8
         else:
             d = sh.get('aim', {}).get('d')
@@ -392,13 +428,16 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
             perfect = 1.0                                         # ReadGoaliePulled: the delayed-penalty snipe
         pp = max(1.0, sh['speed'] / 68)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
-               (gx, gy, vgx, vgy, *gw[:5], saving) if goalie else None, bool(rom), rebound)
+               (gx, gy, vgx, vgy, *gw[:5], saving) if goalie else None, bool(rom), rebound, sh['kind'], launch)
         if key in _CACHE:
             sh['xg'] = _CACHE[key]
             continue
         rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
+
+        def start():                                              # a pass shot's lift: random, 0-4,095 (dopass)
+            return aimed(launch, rng, rng.randrange(4096)) if launch else None
         goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng,
-                             stick=bool(rom), rebound=rebound) == 'goal' for _ in range(N_SAMPLES))
+                             stick=bool(rom), rebound=rebound, launch=start()) == 'goal' for _ in range(N_SAMPLES))
         sh['xg'] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 

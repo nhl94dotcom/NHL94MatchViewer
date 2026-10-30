@@ -2,7 +2,7 @@
 game's shots were replayed, each going in with the chance it had. Worked out exactly, not by random replays:
 
 - Every attempt that wasn't blocked counts with its expected goals (tools/xg.py, xg_snes.py). Attempts without one
-  get a typical chance (FALLBACK): pass shots and shots / one-timers from games without xG by their recorded rates;
+  get a typical chance (FALLBACK): shots, one-timers and pass shots from games without xG by their recorded rates;
   deflections and scrambles a flat 25% (the converter only finds those when the game counted them, so their recorded
   rate is mostly goals and would copy the result into the meter).
 - A team's shots within FLURRY_MS of its previous one form a flurry: one chance that scores if any shot in it does

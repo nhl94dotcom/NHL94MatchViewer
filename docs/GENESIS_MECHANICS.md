@@ -1335,14 +1335,32 @@ C-then-B check, and the weight bug for computer checkers too.
 
 ## 17. Open questions
 
-- **Saved shots the game didn't count:** explained for most (4.7: the goalie's stick, the clock, wide shots, screens);
-  about 15 counted saves look like stick deflections in the samples too, which the samples can't settle.
+Ordered by how much the answer would matter in league play (penalties and offsides off, line changes off).
+
+**Would change how people play or how games are judged:**
+
+- **Pressing against a person who reacts.** Played in the game against scripted rushes, pressing the carrier beats
+  sitting in the slot by a wide margin (DEFENCE_STUDY, "Pressure or sit back, played in the game"); the recorded games
+  show no difference yet. The scripted attacker doesn't dodge the way a person does, so more recorded games are the
+  check.
+- **Deflections in expected goals.** Deflections and scrambles have no xG (GENESIS_SHOOTING 4.9: played from the
+  recorded puck, five of the six recorded goals off one came out at 0). A model would need what the puck did at the
+  touch, not just after it.
+
+**Stats only (what the viewer counts):**
+
+- **Saved shots the game didn't count:** explained for most (4.7 of the shooting doc: the goalie's stick, the clock,
+  wide shots, screens); about 15 counted saves look like stick deflections in the samples too, which the samples can't
+  settle.
 - **15 bobbles** with no explanation yet: maybe the puck reaching the body before the stick.
-- **The penalty shot that ends immediately after the transition:** unexplained. The helper now records the
-  penalty-shot flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence
-  will show which ending fires.
-- **Code-only items worth confirming** when the situations come up: offsides; goalie interference; penalty odds by
-  situation; own goals off a carried puck; penalty-shot retakes.
+
+**Rare, or off in the league's settings** (code only until a recording shows one):
+
+- **The penalty shot that ends immediately after the transition:** unexplained. The helper records the penalty-shot
+  flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence will show which
+  ending fires.
+- Own goals off a carried puck.
+- With penalties or offsides on: offsides (11), goalie interference, penalty odds by situation, penalty-shot retakes.
 
 ---
 
