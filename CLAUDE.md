@@ -80,6 +80,9 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   sorts the maps' goals by how they went in; `goal_frames.py` / `goal_diagram.py` picture one (the game's own frames);
   `animate.py` makes GIFs of makes and misses at the worthwhile spots. Long runs use gentle mode (`lowload.py`: 2
   workers at idle priority, each resting as long as it works; the user's fan; about 30x slower than 30 workers).
+- The user's league result databases (every league game since 2013, both systems; real players' names, so never in
+  the repo): `%USERPROFILE%\NHL94_League_Data\All_Games_GENS.csv`, `All_Games_SNES.csv`. `analysis/league_home_study.py`
+  reads them and prints aggregates only; put only aggregates in the docs.
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
   `helper_snes_penalty_shots.py` ...): a recording played back as if RetroArch were running it; run one after changing
   the helper or a system's `View`. Also `check_matches.py`, `xg_parity.py`, `viewer_smoke.py`, `viewer_stat_sums.py`

@@ -163,8 +163,9 @@ What the games show so far:
   times the shots on goal per minute going up (0.86-1.17), which holds the league's 1.10 too.
 - **Away going up is still the weakest cell** (Genesis 3.0 shots on goal per 5:00 against 3.7-4.4 in the others; SNES
   0.8 goals per 5:00 against 1.3-1.5, Away's Up / Down goals 0.61, 0.36-1.02). That cell is almost all period 2, the
-  one period Away goes up, so it mixes direction with whatever is special about the middle period. Still the thing to
-  watch.
+  one period Away goes up, so it mixes direction with whatever is special about the middle period. The leagues'
+  games (above) show only a small direction effect on goals (on the Genesis the team going up scores about half a
+  point less of the goals, on the SNES about a point more), so the SNES dip here is mostly this sample.
 - **Played in the game itself, single shots do differ by net** ([SCORING_MAP](SCORING_MAP.md)): the Down slapshot
   from the middle scores about 21% at the top net against 14% at the bottom, the shoulder-save bobble happens only at
   the top net, and a deke swung to the shooter's right does much better going down. Other shots favour neither net or
