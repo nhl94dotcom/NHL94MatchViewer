@@ -28,7 +28,9 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 | The same player at home minus away (players with 20+ games each way) | shots +0.67 a game, win rate +1.0% (+/- 0.8) | shots +1.20 a game, win rate **+4.5%** (+/- 1.3) |
 | Home and screen direction separated (Home's share is h x u / (h x u + 1) going up in periods 1 and 3, h / (h + u) going down in period 2): shots on goal, home h / up u | 1.034 / **1.062** | **1.101** / 1.012 |
 | The same, goals | 1.019 / **0.970** | 1.040 / 1.024 |
-| Classic leagues (the retail rosters and home bonuses): a team's home win rate minus its own away win rate, by the team's home bonus + away penalty 0 / 2 / 3 | +1.1 / +2.7 / +3.6 points | +2.7 / +4.9 / +7.1 points |
+| Classic leagues (the retail rosters and home bonuses): a team's home win rate minus its own away win rate, by the team's home bonus + away penalty 0 / 2 / 3 (its opponents' bonuses still in it) | +1.1 / +2.7 / +3.6 points | +2.7 / +4.9 / +7.1 points |
+| Classic leagues, each pair of teams met both ways (strength cancels): home edge with no bonus at all / per point of home bonus or away penalty | -0.3 (+/- 1.6) / +0.5 (+/- 0.4) points | -1.2 (+/- 2.6) / **+0.9** (+/- 0.6) points |
+| Classic games with no bonus either side, home / away: goals, shots, pass completions, checks, faceoffs | 0.98, 1.04, 1.00, 1.01, 0.99 | **1.00**, 1.07, 1.00, 1.10, 1.07 |
 
 - **Genesis: the shot edge is the screen direction, and it's a counting effect.** Going up the screen a team gets
   6.2% more shots on goal counted but scores 3.0% fewer goals (goals per counted shot 30.5% going up, 33.6% going
@@ -37,14 +39,14 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
   (GENESIS_SHOOTING 4.7), since going down people push Down, a low shot. The SNES, whose count doesn't depend on a
   shot's height (SNES_SHOOTING 4.6), shows almost none of it (+1.2% shots, goals alike). It holds for 161 of the 213
   players with 50+ games, compared with themselves, and in every year from 2013 to 2026 (1.05-1.10).
-- **Home: the hidden home / away bonus, on both systems.** Comparing each team with itself, home against away (its
-  own strength cancels), the more its home bonus plus away penalty, the bigger its home edge. On the Genesis the
-  overall edge is small (50.5%); on the SNES it is bigger (52.3%; the same player wins 4.5 points more often at home,
-  and 147 of 156 players shoot more at home), because the same bonus is worth more on the SNES's 0-15 rating scale
-  than on the Genesis's 0-30. On the SNES even the teams with no bonus or penalty gain about 2.7 points (1.4 each
-  way): the home centre's faceoff tie-break (17 of 32 at equal timing, SNES_MECHANICS 9; Home won 7% more faceoffs
-  here, as that predicts) is the likeliest rest. (Only the Classic leagues' bonuses are known, from the retail tables;
-  SDL16, for one, gives nearly every team +1 / -1.)
+- **Home: the hidden home / away bonus, and nothing else, on both systems.** Adding up each pair of teams' home win
+  rates both ways (their strengths cancel), home ice with no bonus is worth nothing (Genesis -0.3, SNES -1.2 points,
+  both within chance), and each point of home bonus or away penalty is worth +0.5 points on the Genesis and +0.9 on
+  the SNES, whose 0-15 rating scale makes the same bonus count about twice as much. A typical Classic game has about
+  two points of it, which gives the 50.5% and 52.3% seen. In the 451 Classic SNES games with no bonus either side,
+  Home scored no more (1.00) and passed no better. (Only the Classic leagues' bonuses are known, from the retail
+  tables; SDL16, for one, gives nearly every team +1 / -1.) A small oddity left: in those games SNES Home still had
+  about 7% more shots and 10% more checks, with no goals from them.
 - **The 29 recorded Genesis games' home edge in attempts** (below: 1.22 times as many per minute) isn't in the
   leagues' results. It was the recorded games' players and sample, not the game.
 - **Goalie ratings** (`analysis/league_goalie_study.py`; the Classic leagues, so each goalie's retail ratings; 559,049
@@ -57,6 +59,37 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 - **Team ratings can't be checked this way:** a team's roster strength doesn't predict its league results (Genesis
   -0.11, SNES -0.46 against the top 12 skaters' Overall), as people pick or are given teams to balance a league, and
   Overall is a poor measure anyway.
+
+### Game-wide patterns (`analysis/league_patterns.py`)
+
+| | Genesis | SNES |
+| --- | --- | --- |
+| Goals / shots on goal a game, shooting % | 7.58 / 23.7, 32.0% | 8.85 / 23.6, 37.6% |
+| Power play: goals per power play; power plays a game | 30.4%; 2.54 | 40.6%; 2.22 |
+| Shorthanded goals per 100 power plays | 20.4 | 27.5 |
+| Breakaways: goals per breakaway; a game | 13.6%; 4.2 | 14.5%; 3.4 |
+| One-timers: goals per one-timer tried; a game; share of all goals | 30.9%; 8.7; 35% | 24.9%; 10.3; 29% |
+| Penalty shots scored | 33% (22,076) | 35% (11,118) |
+| Passes completed | 62.1% | 56.3% |
+| Goals by period, 1 / 2 / 3 / OT | 2.48 / 2.49 / 2.49 / 0.13 | 2.96 / **2.80** / 2.98 / 0.11 |
+| Games to overtime; ties | 13.4%; 0.4% | 12.1%; 0.7% |
+
+- **One-timers are a third of all Genesis goals** (35%; 29% on the SNES), at 31% per try, about the shooting
+  percentage of a shot that reaches the net; a breakaway scores only 14%.
+- **The power play tilts scoring less than it seems:** for every 100 power plays the shorthanded team scores 20
+  (Genesis) or 27 (SNES) goals against the power play's 30 or 41.
+- **No sign of the backwards comeback bonus** (+2 Offensive Awareness and Checking, +4 pass / shoot bias for a tied or
+  trailing team, on in the first half of the third period by a bug: GENESIS_MECHANICS 2.3): the trailing team's share
+  of goals is 44-46% in each half of the second and third periods alike (first half minus second half, third period
+  against second: -0.4 points on both systems, 182,000 and 93,000 goals). Offensive Awareness does nothing for the
+  skater a person controls, so a bonus this size was never going to show.
+- **The SNES second period has about 5% fewer goals** (2.80 against 2.96-2.98) on the same shots (7.80 against
+  7.72-7.73): goals per shot 35.9% against 38.3-38.6%, for both teams (Home 8% fewer than in periods 1 and 3, Away
+  3%). Each period has one team attacking each net, so it isn't a net, and the screen direction (+2.4% goals going
+  up) accounts for only part of Home's drop. The Genesis periods are equal. Cause unknown (SNES_MECHANICS 16). The
+  SNES harness's bottom-net runs were all played in period 2, so its top- / bottom-net differences may be partly this.
+- **The Genesis game has tightened over the years:** 8.1-8.7 goals a game and 34-36% shooting in 2013-2017, 7.3-7.6
+  and 31-32% since 2020, on the same 23-24 shots; the SNES stayed at 8.5-9.3 and 35-40%.
 
 ## Home / away and up / down, together (rerun 2026-10-30)
 

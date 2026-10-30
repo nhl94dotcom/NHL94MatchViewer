@@ -85,9 +85,9 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## Checks you could run on your box-score database
 
-1. ~~**Home record by home bonus.**~~ Done (2026-10-30, the user's databases): on both systems a team's home edge
-   grows with its home bonus plus away penalty (each team compared with itself); the SNES's is bigger, and a little of
-   it remains without any bonus (SHOOTING_STUDY, "The leagues' own results").
+1. ~~**Home record by home bonus.**~~ Done (2026-10-30, the user's databases): on both systems the home edge is the
+   home bonus plus away penalty and nothing else (each pair of teams compared both ways); each point is worth about
+   twice as much on the SNES (SHOOTING_STUDY, "The leagues' own results").
 2. ~~**Shots on goal by period.**~~ Done: on the Genesis the team going up gets about 10% more shots counted; on the
    SNES no period difference.
 

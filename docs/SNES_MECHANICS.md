@@ -874,10 +874,11 @@ Ordered by how much the answer would matter in league play (penalties off).
 
 **Would change how people play or how games are judged:**
 
-- **The rest of the SNES home edge.** In the leagues' 36,180 games Home wins 52.3%. Most of it is the home / away
-  bonus (2.3), worth more on the 0-15 scale than on the Genesis: a team's home edge grows with its bonus plus
-  penalty. But teams with neither still gain about 2.7 points between home and away; the home centre's faceoff
-  tie-break (9) is the likeliest cause, not measured (SHOOTING_STUDY, "The leagues' own results").
+- **The SNES second period.** In the leagues' 36,180 games both teams score about 5% fewer goals in period 2 on the
+  same shots (goals per shot 35.9% against 38.3-38.6%); the Genesis periods are equal. Not a net (each period has one
+  team at each) and only partly the screen direction. Something about the period or its set-up (each side's goalie
+  at the other end) is a guess; a recording or a harness test of the same shots in periods 1 and 2 would show it.
+  (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; SHOOTING_STUDY.)
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
   the way a person does); it needs many more recorded games.
 - **The lane against a goalie who catches with the other hand** (SNES_SHOOTING 5.3, 4.8): the code mirrors his save

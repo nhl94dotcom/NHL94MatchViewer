@@ -134,7 +134,7 @@ kill, and a weak team gains 2 on the power play and loses nothing shorthanded. S
 scale), but backwards. The NOSE4Web editor's "Power play and penalty kill fix" (its own, not one of smozoma's smozROM
 hacks, which don't touch this) swaps the two reads in place, so each half means what the data says; it is correct (15).
 
-**The comeback bonus is backwards** (**Confirmed**). The test that should switch it on for the last half of the third
+**The comeback bonus is backwards** (**Confirmed**; too small to show in the leagues' results: SHOOTING_STUDY). The test that should switch it on for the last half of the third
 period is the wrong way round, so it is **on while more than half of the third period is left** (with 5-minute
 periods, before 2:30) **and off for the last half**. In overtime both teams have it throughout.
 
