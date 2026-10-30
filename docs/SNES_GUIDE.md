@@ -418,8 +418,8 @@ Genesis).
 
 **A raised arm against your team ends the moment your team has the puck, your goalie included.** If one of your
 players has a penalty coming and your goalie catches the puck, play stops at once: a faceoff in your end and the
-penalty. Let the puck go by or knock it away instead of catching it if you'd rather play on (this was the "instant
-whistle on a catch" in the recordings: 12 of 16).
+penalty, as when any of your skaters takes it. That is the "instant whistle on a catch" seen in the recordings (12 of
+16).
 
 The SDL league ROMs use **1-minute minors**.
 
