@@ -2,8 +2,10 @@
 the puck more than most opponents; I wonder if my lateral or backwards passes within the attacking zone lead to more
 danger for me than they lead to scoring opportunities.") Both systems, every recorded game with a person on the side.
 
-"You" is the team of the controller on this machine (`padTeam`); the other people are your opponents in the same
-games. Only games with a person on each side (season summaries' `humans`), so both sides face people. The same
+"You": your team on each system, given as SYSTEM=ABBR (e.g. genesis=BOS): the games without it are left out. Without
+one, the team the season summaries call `you` (padTeam): right on the SNES (the team whose skater answers this
+controller's presses), but on the Genesis that is controller 1's team, always Home, so an Away game is the
+opponent's (VIEWER_NOTES "season's team"). The other people are your opponents in the same games. Only games with a person on each side (season summaries' `humans`), so both sides face people. The same
 measures for both.
 
 Each pass a person makes from the attacking zone (export_match's `dir` and `zone`), grouped by direction: ahead
@@ -20,7 +22,7 @@ attacking zone with a person on it (sampled once a second), so a pass type is ju
 there. How often each side passes: attacking-zone passes per minute of attacking-zone possession.
 A pass's window and the next pass's overlap (a chain of passes shares the shot at its end), the same way for every
 side, so the groups compare fairly, but the counts are not independent events: the 90% ranges come from resampling whole games.
-python analysis/pass_risk.py [WINDOW]"""
+python analysis/pass_risk.py [WINDOW] [genesis=ABBR] [snes=ABBR]"""
 import glob
 import json
 import random
@@ -35,7 +37,9 @@ from export_match import own_end, whistles, zone_of  # noqa: E402
 from match_report import DIRS  # noqa: E402
 from share_game import load_js_object  # noqa: E402
 
-WINDOW = float(sys.argv[1]) if len(sys.argv) > 1 else 10.0
+ARGS = [a for a in sys.argv[1:] if "=" not in a]
+TEAM = dict(a.split("=", 1) for a in sys.argv[1:] if "=" in a)
+WINDOW = float(ARGS[0]) if ARGS else 10.0
 BASE = "baseline"
 GROUP = {"forward": "ahead", "diagonal forward": "ahead", "sideways": "across", "diagonal back": "back",
          "backward": "back"}
@@ -115,9 +119,13 @@ def main():
         if s.get("you", -1) not in (0, 1) or not all(s.get("humans") or [False]):
             continue                                   # a person on each side only (the same games for both)
         m = json.loads(load_js_object(js))
-        g = Game(m)
         system = m.get("system", s.get("system"))
         you = s["you"]
+        if system in TEAM:
+            if TEAM[system] not in (m.get("abbr") or []):
+                continue
+            you = m["abbr"].index(TEAM[system])
+        g = Game(m)
         humans = s.get("humans") or [False, False]
         sides = {you: "you"}
         if humans[1 - you]:
