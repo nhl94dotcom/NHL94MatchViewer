@@ -255,8 +255,8 @@ None of it covers a person in net yet: those tests are to be designed with the u
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.
 - **Next, if wanted:** a moving-goalie map using goalie states from recorded games (about 2 hours a system); other
-  shooters; and testing whether adding the Genesis goalie's stick (the blind ring) improves the xG model on
-  recorded games.
+  shooters. (The Genesis goalie's stick, with the blind ring, is in the xG model for recorded games since 2026-10-29:
+  GENESIS_SHOOTING 4.9.)
 
 ## Rebuilding it yourself
 

@@ -285,8 +285,8 @@ Shot by shot it ranks chances well: its log loss is 0.30, against 0.46 for givin
 What it leaves out: skaters in the way (blocked shots are left out of team totals), the in-close top-shelf lift (4.5),
 and anything a person does with the goalie beyond what the computer would. **Pass shots** (2026-10-30) are played
 from the puck's recorded start over the next 50 ms (no aim, no scatter) with the pass's random lift (0-4,095, 6.1
-of the mechanics): on the 20 recorded Genesis pass shots whose ROM is at hand, 2.2 expected goals against 2 scored
-(log loss 0.43, against 0.33 for one rate: one empty-net pass shot off the post was a certain goal to the model).
+of the mechanics): on the 19 recorded Genesis pass shots whose ROM is at hand, 2.3 expected goals against 2 scored
+(log loss 0.42, against 0.34 for one rate: one empty-net pass shot off the post was a certain goal to the model).
 Without the ROM the goalie has no stick, so flat pass shots through its blind ring come out at 0 (3 of
 2026-10-19_0818_ANA-ATL's 4 pass-shot goals; the fourth 0.06). **Deflections** have no xG: played the same way from
 their recorded start, five of the six recorded Genesis goals off one came out at 0, the puck already at the goalie.
@@ -296,10 +296,10 @@ their recorded start, five of the six recorded Genesis goals off one came out at
 each release. It gets dekes (game 19.7%, model 18.7%) and EA first shots right, runs a little high when the goalie is
 set (6.7% against 10.3%), and far too low when the goalie is **already in a save move** at the shot (24% against 15%):
 it lets him rethink and skate, where the game holds him in his move. Adding his stick improved both these shots and the
-886 recorded ones (log loss 0.2657 to 0.2630), so recorded shots have it. And a goalie **locked in his save move**
+recorded ones (the 671 recorded shots, one-timers apart: log loss 0.2657 to 0.2630), so recorded shots have it. And a goalie **locked in his save move**
 (or pad stack) at the shot is now held in it for as long as the recording shows the lock (the game's pflags bit 5,
 kept in every match file), his speed taken from where he slides next: on the game's own shots at such a goalie log
-loss 0.42 to 0.30, on the recorded shots 0.2630 to 0.2612. Both are in every recorded shot's xG.
+loss 0.42 to 0.30, on the 671 recorded shots 0.2630 to 0.2612 (with the 215 one-timers, 886 in all, about 0.30). Both are in every recorded shot's xG.
 
 Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).
 
@@ -382,9 +382,10 @@ the blind ring; a body touch held or bounced off, by `puckgoalie`'s rule). With 
 (no position blur), the model matches the map's averages: slapshots 88-168 out averaged over five aims, 7.2% in the
 game and 7.2% in the model at the top net, 4.9% and 5.1% at the bottom (without them: 0.5%). Spot by spot it can't
 match: the ring is a few units wide and the puck moves about 5.6 units a frame, so a unit's difference in where the
-puck starts or where he stands decides whether it clips his body first. On recorded games it gains nothing (log loss
-0.3314 either way with the usual blur, worse with less): a recording doesn't place the goalie within a few units. So
-the viewer's xG for recorded shots is unchanged; the xG map's set goalie uses the stick and the rebound.
+puck starts or where he stands decides whether it clips his body first. On recorded games it gained nothing at first (log loss
+0.3314 either way with the usual blur, worse with less): a recording doesn't place the goalie within a few units. The
+xG map's set goalie used the stick and the rebound from then; recorded shots have had the stick since 2026-10-29,
+with the save-move lock (4.9).
 
 **Recorded shots replayed in the game** (135 aimed shots at computer goalies; the recorded spot, aim, speed and
 shooter, the goalie's position, speed and ratings): the expected total matches (20.5-22.5, with the goalie's recorded
@@ -801,8 +802,8 @@ What decides a slapshot from 100-200 units out (about 33-67 feet):
 **Code** (`checkgoal`, `puckgoalie`, `checkgoalp`); not seen in the recordings.
 
 1. A carried puck that enters the goal area is **taken off its carrier**. He can't touch it for 8 frames, and the puck is
-   loose. If he was defending that net, the puck bounces off the net like the boards: its speed into the net is
-   quartered and reversed. **This includes a goalie holding the puck.**
+   loose. **This includes a goalie holding the puck.** The net means to bounce it back out, but for a puck moving into
+   the mouth that bounce never fires (5.3, 13.3), so it slides on in.
 2. Goalies hold the puck at a hold point that in many frames is **behind his centre**, toward his goal line, up to
    13-15 units in the recordings. A goalie can be shoved back until his centre is about 11 units in front of the goal
    line (the net's shape for players).

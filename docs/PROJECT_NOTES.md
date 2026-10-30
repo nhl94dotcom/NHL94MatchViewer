@@ -24,7 +24,7 @@ season data by running itself with `--season`; this replaced the old "game file 
 out of the emulator into `roms/<fingerprint>.bin` for the converter, so no ROM folder is needed. The list is
 `matches/games.json`. Tested offline by feeding it `captures/explore1_menus` through a fake emulator (with a made-up
 final horn): it waited through the menus, started at the faceoff, marked the pause and replay, stopped 3 s after the
-horn, converted; not yet tested on a live game. Python modules: `tools/nhl94_memory.py` (reads the emulator, like the
+horn, converted; not yet tested on a live game (it has recorded every league game since). Python modules: `tools/nhl94_memory.py` (reads the emulator, like the
 PowerShell recorders), `tools/share_game.py` (the shareable file; also `python tools/share_game.py <match>`).
 The helper also writes what its window shows to `helper_log.txt` (appended per start, restarted past 2 MB), for
 testers to send back. The project is a git repository (branch main; recordings, matches, ROMs, sprites, build output
@@ -268,7 +268,8 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   after the final horn (per the user). Converts with `python tools/export_match.py captures/snes_2026-10-15_1755`
   (played on NHL94_Classic.smc, per the user; its capture.json was given the fingerprint afterwards. SNES
   recordings store `rom_crc32` = crc32 of the cartridge's first megabyte without copier header, from the
-  emulator's memory: assumes Snes9x keeps the ROM without the header, not yet checked live): positions, sprites, teams, controlled
+  emulator's memory: assumes Snes9x keeps the ROM without the header; live SNES games have since been matched to
+  their ROMs this way): positions, sprites, teams, controlled
   players and goals all show right (penalty shots: only shooter and goalie on the ice, the rest at (-240, 0)).
 - Goals: the scoring summary's count rises before the entry is written, so goal moments come from the count and the
   contents from the longest summary (the count goes to 0 back at the menus); penalty-shot goals from the psGoals
@@ -334,7 +335,7 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   the period to 4 and the clock back to the period length; View reports the clock as 0 then, so the helper's
   end-of-game test serves both systems. Tested by replaying snes_2026-10-15_1755 through the helper as a fake
   Snes9x at 6x speed: it waited, recorded TOR vs PIT, left out the replays, converted (6 goals, 3 penalties, shots
-  10/12, 53 hits, Classic found by fingerprint). Not yet tried live.
+  10/12, 53 hits, Classic found by fingerprint). Not yet tried live then; live SNES games have been recorded since.
 - Controllers: $0776 controller 1, $0778 controller 2 (its presses answered by Pittsburgh's skater 149 times to 75;
   controller 1 Toronto 210 to 100). Kept in the match file in the Genesis bit layout by what the buttons do (SNES B
   = Genesis B, A = C, Y/X = A, Start, D-pad), with `padLabels` {A: Y, B: B, C: A} so the viewer shows the SNES

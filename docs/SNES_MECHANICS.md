@@ -39,7 +39,7 @@ One line per chapter: the main finding, then the section with the evidence.
 4. **Goaltending**: a body box plus areas from each save frame; a person's held save button adds an area to one side; the computer goalie's hold rule; the net ignores a puck the goalie holds; posts are a 5-unit band. ([5](SNES_SHOOTING.md#5-goaltending))
 5. **Passing**: speed comes from the distance (so no rocket pass); the receiver is the nearest teammate in a 90-degree cone; the flip is a computer dump-in; a stick can't play the puck while its no-touch timer runs. ([6](#6-passing-the-flip-and-stickhandling))
 6. **Checking**: no weight bug and no CB trick (everyone uses the same formula); no same-pair rule, so a second hit after a wobble knocks him down. ([7](#7-checking-hooking-poking-and-collisions))
-7. **Penalties**: a person's penalty range overflows a byte (Aggression 12: every roll a penalty); no delayed-penalty immunity; anyone can be called for interference. ([8](#8-penalties))
+7. **Penalties**: a person's skater is called half as often as the computer's; cold (maxed) Aggression takes the penalties; no delayed-penalty immunity; anyone can be called for interference. ([8](#8-penalties))
 8. **Faceoffs**: pure timing, as on the Genesis; confirmed on 70 draws. ([9](#9-faceoffs))
 9. **Penalty shots**: a net knocked off during one gives a retake from the side dot; breakaways and injuries. ([10](#10-penalty-shots))
 10. **Offsides**: off in the leagues; when on, one-timers can be offside. ([11](#11-offsides))
@@ -78,8 +78,8 @@ The game has been disassembled by the community into source code that rebuilds `
 
 The NHL '94 Viewer's helper records the game's memory about 60 times a second while you play in RetroArch (the Snes9x
 core). That gives every player's position, speed, animation and *working* ratings, so the code's rules can be checked
-against real games. The checks here used four recorded SNES games (online, NHL94_Classic and SDL16) and several hundred
-save states. Numbers like "11 of 14" are counts from those.
+against real games. The first checks used four recorded SNES games (online, NHL94_Classic and SDL16) and several hundred save states;
+later ones more games, as each says. Numbers like "11 of 14" are counts from the games available at the time.
 
 Routine and variable names in `code style` are the disassembly's names. The rating arrays are `checking` ($1483),
 `aggress` ($1443, a skater's **Aggression**; `GGSleft` is its goalie name) and `fighting` ($1463). Copies of the
@@ -132,11 +132,11 @@ Added to working ratings when a player comes on the ice.
 | Home / away | per team, set in the ROM | Offensive and Defensive Awareness, Stickhandling, Shot Accuracy, Passing | Home team adds its home value, away team subtracts its away value (Shot Accuracy +1 / +2 at home, -1 away in the games checked). **Confirmed** |
 | Power play | team on the power play, per-team ROM value | Offensive Awareness, Stickhandling, Shot Accuracy, Passing | **Confirmed** |
 | Penalty kill | team killing a penalty | minus to the same | **Code** |
+| Comeback | team tied or trailing in the third period, both teams in overtime | +2 Offensive Awareness, +2 Checking, +4 pass/shoot bias | **Bugged**, see below |
 
 The power play and penalty kill halves of the team byte are read swapped, as on the Genesis (GENESIS_MECHANICS 2.3):
 the power play adds the half meant as the penalty-kill deficit, and the penalty kill takes off the half meant as the
 power-play bonus. The NOSE4Web editor's fix swaps them back on the SNES too. **Code**
-| Comeback | team tied or trailing in the third period, both teams in overtime | +2 Offensive Awareness, +2 Checking, +4 pass/shoot bias | **Bugged**, see below |
 
 **The comeback bonus is backwards** (**Confirmed**). The test that should switch it on for the last half of the third
 period is the wrong way round, so it is **on while more than half of the third period is left** (with 5-minute
@@ -155,7 +155,7 @@ Working values 0-15. Every place found where the code reads each rating:
 | **Defensive Awareness** | Reaction time of computer players in other jobs (a bigger effect than Offensive); delays a goalie's rethink after each pass |
 | **Shot Power** | Shot speed: (Shot Power x energy + 20) x wind-up. **No wind-up cut-off**: anyone can take a full slapshot. Goalies: Puck Control |
 | **Shot Accuracy** | The chance a shot goes exactly where aimed, and how far it scatters if not |
-| **Passing** | How steady a pass's speed is (6.1), the speed of a pass with no target (144 + 4 x Passing), **and the flip's accuracy** (6.3) |
+| **Passing** | How steady a pass's speed is (6.1) **and the flip's accuracy** (6.3) |
 | **Stickhandling** | Steals, catching passes, and wobbling instead of falling when hit (12+) |
 | **Checking** (array `checking`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.3) |
 | **Endurance** | Energy, which only matters with line changes on |
@@ -237,7 +237,8 @@ Genesis runaways.
 - **A pass to a teammate gets its speed from the distance** to where he will be (`dopass`): 64 (x 256 = 16,384) up to
   about 96 units (32 feet), two-thirds of the distance in between, 80 (20,480) from 120 units (40 feet) on. **Passing
   only makes it steadier**: a random +/-(16 - Passing) x 256 is added, about +/-4,000 for a poor passer, almost nothing
-  for a good one. A pass with no target leaves at 144 + 4 x Passing. **Code** Because the speed comes from the
+  for a good one. (`dopass` first sets the speed to 144 + 4 x Passing, but a targeted pass replaces it and a pass with no
+target never reads it.) **Code** Because the speed comes from the
   distance, the SNES has no "rocket pass": on the Genesis the speed comes from a meeting time rounded down to an eighth
   of a second, which can double it (GENESIS_MECHANICS 6.1).
 - **The direction** (`setpassmode`, `passmode`): pressing B sets it to the way the passer faces. If the d-pad is held
@@ -313,13 +314,14 @@ after his pass, then shooters, centres at a faceoff and fallen players.
 Pressing Y hands your skater to the computer's dump-in routine (`assdumpin`, `DumpInTarget`). **Code, confirmed in the
 game and seen in the recordings** (below).
 
-- **Outside the attacking zone:** deep in the zone between the circle and the corner (80 from the middle, 180 toward the
-  goal), **on whichever side of centre you're on**. Facing doesn't choose.
+- **Outside the attacking zone:** the outside of the attacking faceoff circle, a little above the dot (80 from the
+  middle, 180 toward the goal: 84 out from the goal line), **on whichever side of centre you're on**. Facing doesn't
+  choose.
 - **Inside the zone:** in front of the net.
 - **A goalie:** about the middle of the ice, moved by his facing.
 - He **first turns to face up the ice** (within 45 degrees), so it comes out late if he was facing sideways.
-- **It scatters by up to +/-(20-25 + 2 x (15 - Passing)) across and +/-(20-70) along** (the deeper targets 70), so
-  **Passing is flip accuracy**.
+- **It scatters by up to +/-(20-25 + 2 x (15 - Passing)) across and +/-(20-70 + 2 x (15 - Passing)) along** (the
+  slot target 20 and 20, the others 25 and 70: `assdumpin` `.6` / `.7`), so **Passing is flip accuracy**.
 - A computer carrier inside the attacking zone shoots instead.
 - **Played in the game** (2026-10-30, `analysis/scoring_map/snes_flip_run.py`: 864 flips from six spots, Passing 4, 10
   and 15, both nets, from a standing start facing up the ice): every flip leaves at once, peaks at about 27 units and
@@ -423,7 +425,7 @@ Different from the Genesis:
 - **The poke** (`SPAsweepchk`, $F208) takes the puck only through the stick-steal roll (6.4). Its body touching a
   skater within 45 degrees in front (`Bcheck`): **with penalties on, or poked by a computer skater, he always goes down**
   (a fall or a wobble), with a tripping roll; **a person's poke with penalties off** trips him only when randoma8(16 +
-  your Checking - his Stickhandling) is 12 or more.
+  your Checking - his Agility) is 12 or more.
 - **Recorded:** people poked 874 times, 403 from more than 30 away (out of reach); of the 471 in reach, 85 tripped someone
   and 141 won the puck. The computer poked 364 times, 340 out of reach.
 - **X** takes your goalie when the team's manual goalie option is on; a goalie you control pokes with X (`SPAgpoke`).
@@ -584,16 +586,13 @@ a person's skater.
 
 ![Penalty chance per check by working Aggression, Genesis and SNES](img/penalty_chances.svg)
 
-### 8.1 The penalty roll, and its overflow (`checkagr`)
+### 8.1 The penalty roll (`checkagr`)
 
 - Range = (20 - Aggression) x 16, using the working Aggression; a penalty when the roll comes in under the move's
   threshold.
-- Doubled for a person's player and halved near the puck, **but the doubling and halving act on one byte only and
-  wrap**. A person's ranges by working Aggression 0-15: 384, 352, 320, 288, 256, 224, 192, 160, 128, 96, 64, 32, **0**,
-  224, 192, 160.
-- **At working Aggression exactly 12, a person's skater has a range of 0: a penalty on every qualifying contact.** At
-  9-11, people are called more often than the computer would be. **Code** (people were at 12 only briefly in the
-  recordings).
+- **Doubled for a person's player** (so people are called half as often as the computer, as on the Genesis) and
+  **halved within 40 of the puck**. Both are 16-bit shifts and `randoma` takes ranges of 256 and more, so nothing
+  wraps: a person's range runs from 640 at working Aggression 0 down to 160 at 15. **Code**
 - **11 of 14 penalties in the recordings were by players at working Aggression 15**, the value the hot / cold bug gives
   every "cold" rating. **Cold players take the penalties.**
 
@@ -642,8 +641,8 @@ Every call is the roll of 8.1 (0 up to the range) against the move's threshold. 
 
 - **A poke or trip is about five times as likely to be called as a check or a hook** (5 roll values against 1).
 - At the same range a check is called 1 time in R: with the computer's range at working Aggression 7 (208, halved to 104
-  near the puck) that's about 1 check in 100 near the puck; a person's wrapped range can be far smaller (8.1).
-- **Recordings** (5 SNES games, 15 penalties): interference 4, roughing 3, cross-checking 2, holding 2, tripping 2,
+  near the puck) that's about 1 check in 100 near the puck; a person's is half as likely (8.1).
+- **Recordings** (5 SNES games, 15 penalties, 14 with a known code): interference 4, roughing 3, cross-checking 2, holding 2, tripping 2,
   slashing 1, one with code $30 (not read); 9 by a person's skater, 6 by the computer's. Too few to check the rates.
 
 ---
@@ -814,7 +813,7 @@ In the leagues' usual setting (line changes off) none of this happens.
 ## 13. Energy and the crowd
 
 - **With line changes Off, energy never drains**: skating and bursts cost nothing, **fatigue doesn't exist and
-  Endurance does nothing**. **Confirmed**: every skater stayed at full energy all game in all four recorded games.
+  Endurance does nothing**. **Confirmed**: every skater stayed at full energy all game in the four games first checked.
 - With line changes On, energy scales top speed (down to half) and shot power.
 - The crowd's excitement rises with shots, hits and goals (`CwdExciteLvl`); the meter is sqrt(excitement x 4) + 65 dB
   (`CurCrowdMeter` $19C2, at most 128). **The crowd has no effect on play**: the 110 dB flag (`CrowdLoud` $19C0) only
@@ -845,7 +844,7 @@ everything in this document applies to all of these ROMs.
 | Comeback bonus | On in the first half of the 3rd, off in the second |
 | Checking | No weight bug, no CB trick; heavier checkers do a bit better |
 | Repeated hits | No same-pair rule; a second hit within a second of a wobble always knocks him down |
-| Aggression | A person's skater at working 12: a penalty on every qualifying contact (**Code**); cold (maxed) players take most penalties |
+| Aggression | Cold (maxed) players take most penalties; a person's skater is called half as often as the computer's |
 | Interference | Anyone can be called; 40% for a maxed-Aggression player |
 | Delayed penalties | No immunity: both teams can be called at one whistle |
 | One-timers | Go where the d-pad points; goalie reach unchanged, but the computer goalie is slowed by passes; can be offside |
@@ -880,12 +879,9 @@ Ordered by how much the answer would matter in league play (penalties off).
 
 - **Close follow-ups** (SNES_SHOOTING 4.7): the goalie's 10-frame no-touch timer after the puck comes off him isn't
   modelled; rare in real games (13 of 745 recorded shots). Deflections have no xG.
-- *Settled:* the total. Over 595 unblocked shots in the recorded games (2026-10-30) the model gives 144.9 expected
-  goals against 138 scored (log loss 0.40, against 0.54 for one rate for all shots): within chance.
-
-**Off in the league's settings:**
-
-- **Aggression 12** (8.1): a person's skater penalised on every qualifying contact, from the code only (penalties on).
+- *Settled:* the total. Over the 741 unblocked shots and one-timers in the recorded games (both game folders,
+  2026-10-30) the model gives 185.8 expected goals against 174 scored (log loss 0.40, against 0.54 for one rate for
+  all): within chance.
 
 *Settled 2026-10-30:* the flip (6.3), now played in the game and found in the recordings.
 
@@ -899,7 +895,7 @@ Ordered by how much the answer would matter in league play (penalties off).
 ![The rink with its landmarks in game units and feet](img/rink_feet.svg)
 
 - **Position:** game units, as on the Genesis: the rink runs about -130 to +130 across and -300 to +300 along; goal
-  lines at +/-268, blue lines at +/-88. About 3 units per foot.
+  lines at +/-264 (the code's tests; the net object sits at +/-268), blue lines at +/-88. About 3 units per foot.
 - **Speed:** the game's velocity words; skaters top out around 9,000.
 
 Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
@@ -910,7 +906,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 | Landmark | Units | Feet |
 |---|---|---|
 | Rink length / width | about 600 / 260 | about 200 / 87 |
-| Centre of the rink to each goal line | 268 | about 89 |
+| Centre of the rink to each goal line | 264 (the net sits at 268) | about 88 |
 | Centre to each blue line | 88 | about 29 |
 | Blue line to goal line (the attacking zone) | 180 | 60 |
 | Goal line to where the goalie stands | about 20-25 | 7-8 |

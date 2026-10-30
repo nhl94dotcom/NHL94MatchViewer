@@ -423,11 +423,12 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   left the man up, roughing from one that knocked him down; Neely's roughing came with Jagr's injury.
   Other whistles (AddPenalty2): goalie holding the puck (temp5: $8C frames after he takes it, 5 when he takes it in a
   dive), a person's goalie past |Y| 170, puck out of play, goals, period end.
-- Penalties (SNES): checkagr R = (20 - Agr) x 16 (Agr = the working value in GGSleft $1443 for skaters: rating byte 7 low
-  nibble, hot / cold index 11), doubled for a person with asl.b and halved near the puck with lsr.b, both on the low byte
-  only, so they wrap: person ranges by Agr 0-15: 384 352 320 288 256 224 192 160 128 96 64 32 0 224 192 160, i.e. Agr 12
-  gives R = 0 and (callers penalise d0 < 1) a penalty at every roll; Agr 9-11 several times the computer's rate (not
-  confirmed: people were at 12 for a few dozen samples). SNES codes as in the SNES section. Recordings: 11 of 14 SNES
+- Penalties (SNES): checkagr R = (20 - Agr) x 16 (Agr = the working value in aggress $1443 for skaters: rating byte 7
+  low nibble, hot / cold index 11), doubled for a person (playerpad not negative) and halved within $29 of the puck. The
+  accumulator is 16-bit there (`lda.w #$0014` is a word immediate), so `asl.b d0` / `lsr.b d0` (".b" is the direct-page
+  operand, not the width) shift the whole word, and randoma takes ranges of 256 and up through Mul16U: nothing wraps.
+  A person's range is 640 at Agr 0 down to 160 at 15, half the computer's chance at every value (2026-10-30, read again
+  from the code). SNES codes as in the SNES section. Recordings: 11 of 14 SNES
   penalties by players at working Agr 15, the value the hot / cold bug gives every "cold" rating.
   SNES goalie interference (checkint): no person / computer test (the user: both are called; recordings: Ruuttu and
   Gill as computer skaters of person-played teams): the skater falls on impact as on the Genesis, then with the goalie's

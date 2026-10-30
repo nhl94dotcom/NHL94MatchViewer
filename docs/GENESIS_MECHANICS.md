@@ -70,9 +70,9 @@ The game has been disassembled by the community into source code that rebuilds t
 
 The NHL '94 Viewer's helper records the game's memory about 60 times a second while you play in RetroArch (the Genesis
 Plus GX core). That gives every player's position, speed, animation and *working* ratings, frame by frame, so the
-code's rules can be checked against real games. The checks here used eight recorded Genesis games and parts of games
-(online and single-player, the original ROM and a 30-team league ROM). Numbers like "48 of 102" are counts from those
-games.
+code's rules can be checked against real games. The first checks used eight recorded Genesis games and parts of games
+(online and single-player, the original ROM and a 30-team league ROM); later ones more games, as each says. Numbers
+like "48 of 102" are counts from the games available at the time.
 
 Routine names in `code style` are the disassembly's names, for anyone who wants to read the code.
 
@@ -1188,8 +1188,8 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
   53%). **Code**
 - **Home attacks up the screen in two of the three regulation periods** (1 and 3), so anything that favours going
   up (below) favours Home in regulation; Away goes up in period 2 and overtime.
-- **Online:** RetroArch's netplay host is player 1, and player 1 is Home on the Genesis; if the host plays with less
-  input delay or fewer rollback corrections, that favours Home. Not measured.
+- **Online:** Home is whoever takes player 1 in RetroArch, not the netplay host (the league's players pick player 1
+  or 2 whoever hosts), so any host advantage in input delay or rollback isn't part of the home edge.
 
 **Up and down the screen:**
 
@@ -1369,8 +1369,8 @@ Ordered by how much the answer would matter in league play (penalties and offsid
 
 ![The rink with its landmarks in game units and feet](img/rink_feet.svg)
 
-- **Position:** game units. The rink runs about -130 to +130 across and -300 to +300 along; goal lines at +/-268,
-  blue lines at about +/-88. About 3 units per foot.
+- **Position:** game units. The rink runs about -130 to +130 across and -300 to +300 along; goal lines at +/-264
+  (the code's zones, icing and shot tests; the net object sits at +/-268), blue lines at about +/-88. About 3 units per foot.
 - **Speed:** the game's velocity words; a position moves by speed / 4096 units a frame. A puck speed of 23,000 is about
   78 mph; skaters top out around 9,000.
 
@@ -1382,7 +1382,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 | Landmark | Units | Feet |
 |---|---|---|
 | Rink length / width | about 600 / 260 | about 200 / 87 |
-| Centre of the rink to each goal line | 268 | about 89 |
+| Centre of the rink to each goal line | 264 (the net sits at 268) | about 88 |
 | Centre to each blue line | 88 | about 29 |
 | Blue line to goal line (the attacking zone) | 180 | 60 |
 | Goal line to where the goalie stands | about 20-25 | 7-8 |

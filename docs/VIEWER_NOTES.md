@@ -985,4 +985,5 @@ deflections or pass shots, have no xG), STAT_HELP and Help. Season summaries VER
 those shots, xGA, goals against from those], skater `xg` [xG, G], goalie `xga` [xGA, GA] (keys absent without xG);
 season page Skaters xG and G-xG, Goalies xGA and GSAx, Advanced chances table xGF, xGA, xGF%, G-xG. season.html's team
 summing now adds numbers only (a null had turned an array into a string). Documented in GENESIS_SHOOTING.md 4.9 and 5.3
-(the goalie's movement) and GENESIS_GUIDE.md 12.3. Not yet: the SNES (its goalie is a different box).
+(the goalie's movement) and GENESIS_GUIDE.md 12.3. Not yet: the SNES (its goalie is a different box; added later,
+SNES_SHOOTING.md 4.7).

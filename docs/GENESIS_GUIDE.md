@@ -46,7 +46,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 | Landmark | Units | Feet |
 |---|---|---|
 | Rink length / width | about 600 / 260 | about 200 / 87 |
-| Centre of the rink to each goal line | 268 | about 89 |
+| Centre of the rink to each goal line | 264 (the net sits at 268) | about 88 |
 | Centre to each blue line | 88 | about 29 |
 | Blue line to goal line (the attacking zone) | 180 | 60 |
 | Goal line to where the goalie stands | about 20-25 | 7-8 |
@@ -562,7 +562,7 @@ With penalties on:
 - **Icing is always on**, even with penalties off: a clear from your own half that crosses the far goal line and is
   touched first by an opponent's skater. **Send clears down the middle**: a puck crossing the goal line within about
   15 feet of the middle is never icing. A shorthanded team can't ice, and a goalie's touch waves it off.
-- **The computer only pulls its goalie when two goals down** in the last minute, never when one down (a bug).
+- **The computer only pulls its goalie when exactly two goals down** in the last minute, never when one down (a bug).
 
 ---
 
@@ -598,8 +598,9 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 
 ### 12.2 Playing goal yourself
 
-- Stay in your area: **a goalie you control who skates more than about 33 feet out from his goal line** (past the
-  tops of the faceoff circles) is whistled.
+- Stay in your area: **a goalie you control who carries the puck more than about 31 feet out from his goal line**
+  (past the tops of the faceoff circles) is whistled. Without the puck the game keeps him within a few feet of his
+  crease.
 - He's whistled for holding the puck about 2.3 s after taking it; a puck taken in a dive is whistled at once.
 - **C makes a save move, not a bigger goalie.** He's the same size whatever he does: being in the way is what
   stops shots. C freezes him for over half a second at a quarter speed. Its uses: as a shot arrives in close, a save
@@ -621,7 +622,7 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 
 ### 12.3 The computer goalie
 
-- He stands in front of his net, about 6 feet out, facing where the puck is *about to be*, and re-squares several
+- He stands in front of his net, about 7 feet out, facing where the puck is *about to be*, and re-squares several
   times a second.
 - **When a shot is coming at the net**, he slides sideways to the spot where it will cross the goal line, starting
   about 0.6 s before it gets there.

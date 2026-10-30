@@ -9,8 +9,8 @@ record or check and what it will settle. Newest at the bottom of each section.
    an opponent standing still** (pass along the ice, short, so the puck slides by within a stick's length of him), and
    note the game's name. *Settles:* why about half the slow passes that pass within reach of a stick aren't taken,
    though the game's rule says they should be (GENESIS_MECHANICS.md 6.2).
-2. **A SNES flip** (Y with the puck, a few of them, in the neutral zone and in the attacking zone). *Settles:* where
-   the SNES flip lands; none has been recorded yet.
+2. ~~**A SNES flip.**~~ Done (2026-10-30): 18 flips were found in the recorded games, and 864 were played in the game
+   (SNES_MECHANICS 6.3).
 3. **Shots at an empty net** (either system). In a two-controller practice game, pull one team's goalie and take
    shots at the empty net from near (inside 60 feet) and far (beyond 70 feet), some holding Up, some Down, some
    nothing. *Settles:* the empty-net table in the mechanics docs (section 4.2), worked out from the code but not yet

@@ -697,15 +697,14 @@ def faceoff_directions():
 # ---------------------------------------------------------------------------------------------- 13. penalties by Aggression
 def penalty_chances():
     """Genesis checkagr: R = ((40 - Agr) / 2) x 13, x 2 for a person's checker; a check that leaves him up is a penalty
-    on randomd0(R) <= 4 (P = 5 / R). SNES: R = (20 - Agr) x 16, the person's doubling done on the low byte (wraps); a
-    check is a penalty on 0 (P = 1 / R; R = 0 every time). Away from the puck (near it, R halves)."""
+    on randomd0(R) <= 4 (P = 5 / R). SNES: R = (20 - Agr) x 16, x 2 for a person's checker (a 16-bit shift: no wrap); a check
+    is a penalty on 0 (P = 1 / R). Away from the puck (near it, R halves)."""
     W = 860
     b = []
     b.append(text(W / 2, 28, "Penalty chance per check, by working Aggression", 17, anchor="middle", weight="bold"))
     b.append(text(W / 2, 48, "Away from the puck (within 40 of it the chance doubles). Working Aggression is 0-15 on both systems.", 12, SOFT, "middle"))
-    snes_person = [384, 352, 320, 288, 256, 224, 192, 160, 128, 96, 64, 32, 0, 224, 192, 160]
     panels = [("Genesis: a check that leaves him standing", lambda a: 5 / (((40 - a) // 2) * 13), lambda a: 5 / (((40 - a) // 2) * 26), 4.0),
-              ("SNES: a check", lambda a: 1 / ((20 - a) * 16), lambda a: 1 / snes_person[a] if snes_person[a] else None, 4.0)]
+              ("SNES: a check", lambda a: 1 / ((20 - a) * 16), lambda a: 1 / ((20 - a) * 32), 4.0)]
     for p, (title, cpu, person, top) in enumerate(panels):
         L = 90 + p * 400
         R, T, B = L + 320, 100, 330
@@ -719,12 +718,8 @@ def penalty_chances():
             for k, (fn, col) in enumerate(((cpu, BLUE), (person, RED))):
                 v = fn(a)
                 x = X(a) - 7 + k * 7
-                if v is None:
-                    b.append(f"<rect x='{x}' y='{T}' width='6' height='{B - T}' fill='{RED}'/>")
-                    b.append(text(x + 3, T - 4, "every hit", 10, RED, "middle", "bold"))
-                else:
-                    h = B - Y(100 * v)
-                    b.append(f"<rect x='{x}' y='{B - h}' width='6' height='{h}' fill='{col}'/>")
+                h = B - Y(100 * v)
+                b.append(f"<rect x='{x}' y='{B - h}' width='6' height='{h}' fill='{col}'/>")
             if a % 3 == 0 or a == 15:
                 b.append(text(X(a), B + 15, str(a), 10, SOFT, "middle"))
         b.append(line(L, B, R, B, SOFT, 1))
@@ -735,7 +730,7 @@ def penalty_chances():
         b.append(text(110 + j * 220, ly, label, 12))
     notes = ["Genesis: a person's chance is half the computer's (the range is doubled), so the CB check (contact as the computer) doubles it.",
              "Genesis working Aggression wraps at 16: rating 1 plays as 2-7, 2 as 8-12, 3 as 12-15 (or 0), 4 as 1-6: rating 4 plays like rating 1.",
-             "SNES: doubling a person's range overflows a byte, so at 12 every check is a penalty and 9-11 are several times the computer's.",
+             "SNES: a person's range is doubled too, so a person's skater is called half as often as the computer's.",
              "SNES: a \"cold\" Aggression maxes at 15 (the hot / cold bug); 11 of the 14 recorded SNES penalties were by players at 15.",
              "Other moves have their own thresholds (Genesis: a knockdown 4 / 5, a hook or hold 7 / 5 of these; SNES: a poke trip 5 times these)."]
     for i, s in enumerate(notes):
@@ -920,7 +915,9 @@ def defence_positions():
 # ---------------------------------------------------------------------------------------------- 17. the SNES flip
 def snes_flip():
     """SNES assdumpin / DumpInTarget: outside the attacking zone (+/-80, 180) on the passer's side of centre (x sign, not
-    his facing); inside it (0, 215); a goalie (0, 105). Scatter +/-(20-25 + 2 x (15 - Pas)) across, +/-(20-70) along."""
+    his facing); inside it (0, 215); a goalie (0, 105). Scatter +/-(.6 + 2 x (15 - Pas)) across and +/-(.7 + the same)
+    along (assdumpin .t2x: .6 is 25, 20 for the slot target; .7 is 70, 20 for the slot). Grey: where flips first came down
+    when played in the game (snes_flip_run.py, 2026-10-30: the medians' range over Passing and spots)."""
     W, S = 860, 0.9
     ox, oy = 250, 80 + 300 * 0.9
     P = lambda x, y: (ox + x * S, oy - y * S)
@@ -941,12 +938,16 @@ def snes_flip():
         b.append(line(p0[0], p0[1], q0[0], q0[1], col, w))
     p0 = P(-20, 268)
     b.append(f"<rect x='{p0[0]}' y='{p0[1] - 13}' width='{40 * S}' height='13' fill='#ffffff' stroke='{INK}'/>")
-    # targets with their scatter: Passing 15 (solid) and 0 (dashed), along +/-70
-    for tx, ty, col in ((-80, 180, BLUE), (80, 180, GREEN), (0, 215, ORANGE)):
+    # where flips came down in the game (medians over Passing; the inside-zone flip from (40, 150) lands across)
+    for x0, x1, y0, y1 in ((-80, -60, 104, 148), (60, 80, 104, 145), (-35, -25, 226, 237)):
+        q = P(x0, y1)
+        b.append(f"<rect x='{q[0]:.1f}' y='{q[1]:.1f}' width='{(x1 - x0) * S:.1f}' height='{(y1 - y0) * S:.1f}' fill='{SOFT}' fill-opacity='0.45'/>")
+    # targets with their scatter: Passing 15 (solid) and 0 (dashed)
+    for tx, ty, col, sx, sy in ((-80, 180, BLUE, 25, 70), (80, 180, GREEN, 25, 70), (0, 215, ORANGE, 20, 20)):
         for pas, dash in ((15, None), (0, "5 4")):
-            hw = 25 + 2 * (15 - pas)
-            q = P(tx - hw, ty + 70)
-            b.append(f"<rect x='{q[0]:.1f}' y='{q[1]:.1f}' width='{2 * hw * S:.1f}' height='{140 * S:.1f}' fill='none' stroke='{col}' "
+            hw, hh = sx + 2 * (15 - pas), sy + 2 * (15 - pas)
+            q = P(tx - hw, ty + hh)
+            b.append(f"<rect x='{q[0]:.1f}' y='{q[1]:.1f}' width='{2 * hw * S:.1f}' height='{2 * hh * S:.1f}' fill='none' stroke='{col}' "
                      f"stroke-width='1.5'" + (f" stroke-dasharray='{dash}'" if dash else "") + "/>")
         c = P(tx, ty)
         b.append(circle(c[0], c[1], 6, col, INK, 1.5))
@@ -956,16 +957,16 @@ def snes_flip():
         b.append(f"<path d='M{s0[0]:.1f},{s0[1]:.1f} Q{(s0[0] + t0[0]) / 2:.1f},{min(s0[1], t0[1]) - 30:.1f} {t0[0]:.1f},{t0[1]:.1f}' "
                  f"fill='none' stroke='{col}' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#arr)'/>")
     nx = 520
-    notes = [("Left of centre, outside the zone", BLUE), ("deep on the left: 80 from the middle,", SOFT), ("180 up (between circle and corner).", SOFT), ("", SOFT),
+    notes = [("Left of centre, outside the zone", BLUE), ("aimed 80 from the middle, 180 up", SOFT), ("(the outside of the faceoff circle).", SOFT), ("", SOFT),
              ("Right of centre, outside the zone", GREEN), ("the same on the right.", SOFT), ("", SOFT),
              ("Inside the attacking zone", ORANGE), ("in front of the net (0, 215).", SOFT), ("", SOFT),
-             ("Scatter (Passing is the accuracy):", INK), ("solid box: Passing 15, +/-25 across;", SOFT), ("dashed: Passing 0, +/-55 across;", SOFT),
-             ("along the ice +/-20 to 70.", SOFT), ("", SOFT),
+             ("Scatter (Passing is the accuracy):", INK), ("solid box: Passing 15 (+/-25 across, +/-70 along);", SOFT), ("dashed: Passing 0 (+/-55, +/-100).", SOFT),
+             ("Grey: where they came down in the game,", SOFT), ("1.6 s on, short of the spot; then they slide on.", SOFT), ("", SOFT),
              ("He turns to face up the ice first,", SOFT), ("so a sideways skater flips late.", SOFT),
              ("A goalie flips to about centre ice.", SOFT)]
     for i, (s_, c) in enumerate(notes):
         b.append(text(nx, 100 + i * 17, s_, 12, c, weight="bold" if c != SOFT else "normal"))
-    b.append(text(60, oy + 90, "Circles: example passers. Dots: the spots. Not seen in a recording yet; from the NHL94SNES code (assdumpin, DumpInTarget).",
+    b.append(text(60, oy + 90, "Circles: example passers. Dots: the spots the code aims at (NHL94SNES assdumpin, DumpInTarget). Grey: played in the game (snes_flip_run.py).",
                   12, SOFT))
     return svg(W, oy + 110, b, "The SNES flip")
 

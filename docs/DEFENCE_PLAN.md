@@ -8,6 +8,9 @@ advice).
 
 Genesis first, as with the shooting studies; the SNES once the Genesis method works.
 
+**Status (2026-10-30):** phase 1 and pilots of study 4 were run; their write-up was withdrawn as not useful. Whether to
+press the carrier or sit back is left to the recorded games: scripted attackers don't dodge or delay as a person does.
+
 ## The common yardstick
 
 Every study ends in the same unit: **goals against per possession**, broken down as the chance a possession becomes a

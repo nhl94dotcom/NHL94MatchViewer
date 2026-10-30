@@ -33,7 +33,7 @@ The things about the SNES game that matter most, one line each; the number after
 5. **One-timers go where the d-pad points**; passes across slow the computer goalie. ([7](#7-one-timers))
 6. **Every goalie is the same size**: ratings don't change it. Holding the save button adds a stick, glove or pad area to one side. ([11](#11-goaltending))
 7. **No weight bug**: check anyone, and follow a wobble with a second hit. ([9](#9-checking))
-8. **Cold (maxed) players take the penalties**, and at Aggressiveness 12 a person's skater can be called on every hit. ([10.1](#101-cold-players-take-the-penalties), [10.2](#102-aggressiveness-12-a-possible-penalty-on-every-hit))
+8. **Cold (maxed) players take the penalties**: maxed Aggressiveness is the dirty one. ([10.1](#101-cold-players-take-the-penalties))
 9. **Both teams can be called at one whistle**: a raised arm against the other team doesn't protect you. ([10.5](#105-delayed-penalties))
 10. **Getting up fast**: press hook while down to cut a fall short (a glitch). ([10.3](#103-getting-up-fast-a-glitch))
 11. **A stick ignores the puck for a moment** after its player passes, shoots, swings a one-timer or loses it, which is why pucks go right through players. ([8.1](#81-passing))
@@ -56,7 +56,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 | Landmark | Units | Feet |
 |---|---|---|
 | Rink length / width | about 600 / 260 | about 200 / 87 |
-| Centre of the rink to each goal line | 268 | about 89 |
+| Centre of the rink to each goal line | 264 (the net sits at 268) | about 88 |
 | Centre to each blue line | 88 | about 29 |
 | Blue line to goal line (the attacking zone) | 180 | 60 |
 | Goal line to where the goalie stands | about 20-25 | 7-8 |
@@ -188,8 +188,7 @@ you take him, are played by the computer.
   Speed, Agility, Shot Accuracy and Stick Handling are worth more than a player's usual reputation.
 - **Forwards:** maxed or high Speed, Agility, Shot Accuracy; Stick Handling 12+ so contact makes him wobble, not fall.
 - **Defencemen:** Defensive Awareness matters for when the computer plays them (gap control, getting back).
-- **Penalties on:** be wary of **maxed Aggressiveness** on the players you'll control, and especially of
-  Aggressiveness reading **78-80 or 90-92** (10.2).
+- **Penalties on:** be wary of **maxed Aggressiveness** on the players you'll control (10.1).
 - **Goalie:** his ratings don't change how much net he covers. Defensive Awareness and Agility help a computer goalie
   react; if you'll play the goalie yourself, they matter less.
 - **Endurance doesn't matter** with line changes off, and speed bursts are free.
@@ -325,15 +324,17 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 **The SNES flip is a computer dump-in**, not a lob you place:
 
-- **Outside the attacking zone:** it goes deep, between the faceoff circle and the corner, **on whichever side of centre
-  you're on**. Which way you face doesn't choose the side.
+- **Outside the attacking zone:** it's aimed at the outside of the attacking faceoff circle (a little above the dot),
+  **on whichever side of centre you're on**. Which way you face doesn't choose the side.
 - **Inside the zone:** in front of the net.
 - Your skater **turns to face up the ice first**, so it comes out late if you were facing sideways.
-- **It strays a lot**, up to about 70 units along the ice and 20-55 across, less with better Pass Accuracy.
+- **It strays a lot**: the code allows up to about 23 ft along the ice and 8 ft across with perfect Pass Accuracy, up
+  to about 33 and 18 ft with the worst.
 - **Played in the game** (2026-10-30): every flip comes down about 1.6 seconds later, after rising about 9 ft. From
-  your own end or centre it **lands short of that deep spot**, around the top of the circles (35-50 ft inside the blue
-  line), and slides on into the corner. From inside the zone it lands just past the front of the net **on the far
-  side** of it, about 10 ft across. Good Pass Accuracy halves how far it strays sideways.
+  your own end or centre it **lands short of its spot**, 5-20 ft inside the blue line (40-53 ft out from the goal
+  line, above the circles), and slides on toward the corner. From inside the zone it lands about 10 ft out from the
+  goal line, **on the far side** of the net from you, about 10 ft across. Good Pass Accuracy halves how far it strays
+  sideways.
 - **A goalie's flip** goes to about centre ice. In the recorded games people flipped 18 times (10 of them goalies) and
   got the puck back 9 times.
 
@@ -391,11 +392,10 @@ Aggressiveness (below its band's middle on the screen) is the dirty one.
 penalties on), and a trip is called about five times as often as a check, a hook or a hold. And anything that stops a
 skater on a breakaway is a penalty shot.
 
-### 10.2 Aggressiveness 12: a possible penalty on every hit
+### 10.2 Your own player is called half as often
 
-Because of an overflow in the penalty roll, **a skater you control at working Aggressiveness 12 would be called on
-every qualifying contact**, and 9-11 more often than the computer. On the screen that's **78-80 (step 4) or 90-92 (step
-5)**. (From the code; people were at 12 only briefly in the recordings, so it hasn't been seen yet.)
+As on the Genesis, **a skater you control is called half as often** as a computer skater with the same Aggressiveness,
+and any skater twice as often within about 13 feet of the puck.
 
 ### 10.3 Getting up fast (a glitch)
 
@@ -542,8 +542,7 @@ time instead of 96%). That's why SNES games are so physical, and why the compute
 ## 15. Cheat sheet
 
 **Before the game:** check Edit Lines once the game starts. Below the band's middle = maxed. Want maxed Speed, Agility,
-Shot Accuracy and Stick Handling on the players you'll control; avoid maxed Aggressiveness (and 78-80 / 90-92) if
-penalties are on. The goalie's ratings don't change his size.
+Shot Accuracy and Stick Handling on the players you'll control; avoid maxed Aggressiveness if penalties are on. The goalie's ratings don't change his size.
 
 **On the ice:**
 

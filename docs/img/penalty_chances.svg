@@ -66,36 +66,35 @@
 <line x1='490.0' y1='100.0' x2='810.0' y2='100.0' stroke='#d9e2ec' stroke-width='1' />
 <text x='484.0' y='104.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>4%</text>
 <rect x='493.0' y='312.03125' width='6' height='17.96875' fill='#3b82c4'/>
-<rect x='500.0' y='315.0260416666667' width='6' height='14.973958333333314' fill='#c94040'/>
+<rect x='500.0' y='321.015625' width='6' height='8.984375' fill='#c94040'/>
 <text x='500.0' y='345.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>0</text>
 <rect x='513.0' y='311.0855263157895' width='6' height='18.91447368421052' fill='#3b82c4'/>
-<rect x='520.0' y='313.66477272727275' width='6' height='16.335227272727252' fill='#c94040'/>
+<rect x='520.0' y='320.54276315789474' width='6' height='9.45723684210526' fill='#c94040'/>
 <rect x='533.0' y='310.03472222222223' width='6' height='19.96527777777777' fill='#3b82c4'/>
-<rect x='540.0' y='312.03125' width='6' height='17.96875' fill='#c94040'/>
+<rect x='540.0' y='320.0173611111111' width='6' height='9.982638888888914' fill='#c94040'/>
 <rect x='553.0' y='308.8602941176471' width='6' height='21.139705882352928' fill='#3b82c4'/>
-<rect x='560.0' y='310.03472222222223' width='6' height='19.96527777777777' fill='#c94040'/>
+<rect x='560.0' y='319.43014705882354' width='6' height='10.569852941176464' fill='#c94040'/>
 <text x='560.0' y='345.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>3</text>
 <rect x='573.0' y='307.5390625' width='6' height='22.4609375' fill='#3b82c4'/>
-<rect x='580.0' y='307.5390625' width='6' height='22.4609375' fill='#c94040'/>
+<rect x='580.0' y='318.76953125' width='6' height='11.23046875' fill='#c94040'/>
 <rect x='593.0' y='306.0416666666667' width='6' height='23.958333333333314' fill='#3b82c4'/>
-<rect x='600.0' y='304.33035714285717' width='6' height='25.669642857142833' fill='#c94040'/>
+<rect x='600.0' y='318.0208333333333' width='6' height='11.979166666666686' fill='#c94040'/>
 <rect x='613.0' y='304.33035714285717' width='6' height='25.669642857142833' fill='#3b82c4'/>
-<rect x='620.0' y='300.0520833333333' width='6' height='29.947916666666686' fill='#c94040'/>
+<rect x='620.0' y='317.16517857142856' width='6' height='12.834821428571445' fill='#c94040'/>
 <text x='620.0' y='345.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>6</text>
 <rect x='633.0' y='302.3557692307692' width='6' height='27.644230769230774' fill='#3b82c4'/>
-<rect x='640.0' y='294.0625' width='6' height='35.9375' fill='#c94040'/>
+<rect x='640.0' y='316.17788461538464' width='6' height='13.822115384615358' fill='#c94040'/>
 <rect x='653.0' y='300.0520833333333' width='6' height='29.947916666666686' fill='#3b82c4'/>
-<rect x='660.0' y='285.078125' width='6' height='44.921875' fill='#c94040'/>
+<rect x='660.0' y='315.0260416666667' width='6' height='14.973958333333314' fill='#c94040'/>
 <rect x='673.0' y='297.32954545454544' width='6' height='32.67045454545456' fill='#3b82c4'/>
-<rect x='680.0' y='270.1041666666667' width='6' height='59.895833333333314' fill='#c94040'/>
+<rect x='680.0' y='313.66477272727275' width='6' height='16.335227272727252' fill='#c94040'/>
 <text x='680.0' y='345.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>9</text>
 <rect x='693.0' y='294.0625' width='6' height='35.9375' fill='#3b82c4'/>
-<rect x='700.0' y='240.15625' width='6' height='89.84375' fill='#c94040'/>
+<rect x='700.0' y='312.03125' width='6' height='17.96875' fill='#c94040'/>
 <rect x='713.0' y='290.06944444444446' width='6' height='39.93055555555554' fill='#3b82c4'/>
-<rect x='720.0' y='150.3125' width='6' height='179.6875' fill='#c94040'/>
+<rect x='720.0' y='310.03472222222223' width='6' height='19.96527777777777' fill='#c94040'/>
 <rect x='733.0' y='285.078125' width='6' height='44.921875' fill='#3b82c4'/>
-<rect x='740.0' y='100' width='6' height='230' fill='#c94040'/>
-<text x='743.0' y='96.0' font-size='10' fill='#c94040' text-anchor='middle' font-weight='bold'>every hit</text>
+<rect x='740.0' y='307.5390625' width='6' height='22.4609375' fill='#c94040'/>
 <text x='740.0' y='345.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>12</text>
 <rect x='753.0' y='278.6607142857143' width='6' height='51.33928571428572' fill='#3b82c4'/>
 <rect x='760.0' y='304.33035714285717' width='6' height='25.669642857142833' fill='#c94040'/>
@@ -112,7 +111,7 @@
 <text x='330.0' y='390.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>a person's skater</text>
 <text x='60.0' y='420.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis: a person's chance is half the computer's (the range is doubled), so the CB check (contact as the computer) doubles it.</text>
 <text x='60.0' y='438.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis working Aggression wraps at 16: rating 1 plays as 2-7, 2 as 8-12, 3 as 12-15 (or 0), 4 as 1-6: rating 4 plays like rating 1.</text>
-<text x='60.0' y='456.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: doubling a person's range overflows a byte, so at 12 every check is a penalty and 9-11 are several times the computer's.</text>
+<text x='60.0' y='456.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: a person's range is doubled too, so a person's skater is called half as often as the computer's.</text>
 <text x='60.0' y='474.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: a "cold" Aggression maxes at 15 (the hot / cold bug); 11 of the 14 recorded SNES penalties were by players at 15.</text>
 <text x='60.0' y='492.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Other moves have their own thresholds (Genesis: a knockdown 4 / 5, a hook or hold 7 / 5 of these; SNES: a poke trip 5 times these).</text>
 </svg>

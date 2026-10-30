@@ -12,14 +12,17 @@
 <line x1='133.0' y1='350.0' x2='367.0' y2='350.0' stroke='#c94040' stroke-width='2' />
 <line x1='133.0' y1='108.8' x2='367.0' y2='108.8' stroke='#c94040' stroke-width='1.5' />
 <rect x='232.0' y='95.79999999999998' width='36.0' height='13' fill='#ffffff' stroke='#1f2933'/>
+<rect x='178.0' y='216.8' width='18.0' height='39.6' fill='#52606d' fill-opacity='0.45'/>
+<rect x='304.0' y='219.5' width='18.0' height='36.9' fill='#52606d' fill-opacity='0.45'/>
+<rect x='218.5' y='136.7' width='9.0' height='9.9' fill='#52606d' fill-opacity='0.45'/>
 <rect x='155.5' y='125.0' width='45.0' height='126.0' fill='none' stroke='#3b82c4' stroke-width='1.5'/>
-<rect x='128.5' y='125.0' width='99.0' height='126.0' fill='none' stroke='#3b82c4' stroke-width='1.5' stroke-dasharray='5 4'/>
+<rect x='128.5' y='98.0' width='99.0' height='180.0' fill='none' stroke='#3b82c4' stroke-width='1.5' stroke-dasharray='5 4'/>
 <circle cx='178.0' cy='188.0' r='6.0' fill='#3b82c4' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
 <rect x='299.5' y='125.0' width='45.0' height='126.0' fill='none' stroke='#3f9d5c' stroke-width='1.5'/>
-<rect x='272.5' y='125.0' width='99.0' height='126.0' fill='none' stroke='#3f9d5c' stroke-width='1.5' stroke-dasharray='5 4'/>
+<rect x='272.5' y='98.0' width='99.0' height='180.0' fill='none' stroke='#3f9d5c' stroke-width='1.5' stroke-dasharray='5 4'/>
 <circle cx='322.0' cy='188.0' r='6.0' fill='#3f9d5c' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
-<rect x='227.5' y='93.5' width='45.0' height='126.0' fill='none' stroke='#e8833a' stroke-width='1.5'/>
-<rect x='200.5' y='93.5' width='99.0' height='126.0' fill='none' stroke='#e8833a' stroke-width='1.5' stroke-dasharray='5 4'/>
+<rect x='232.0' y='138.5' width='36.0' height='36.0' fill='none' stroke='#e8833a' stroke-width='1.5'/>
+<rect x='205.0' y='111.5' width='90.0' height='90.0' fill='none' stroke='#e8833a' stroke-width='1.5' stroke-dasharray='5 4'/>
 <circle cx='250.0' cy='156.5' r='6.0' fill='#e8833a' fill-opacity='1' stroke='#1f2933' stroke-width='1.5'/>
 <circle cx='223.0' cy='332.0' r='5.0' fill='#ffffff' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
 <path d='M223.0,332.0 Q200.5,158.0 178.0,188.0' fill='none' stroke='#3b82c4' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#arr)'/>
@@ -28,8 +31,8 @@
 <circle cx='304.0' cy='215.0' r='5.0' fill='#ffffff' fill-opacity='1' stroke='#e8833a' stroke-width='2'/>
 <path d='M304.0,215.0 Q277.0,126.5 250.0,156.5' fill='none' stroke='#e8833a' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#arr)'/>
 <text x='520.0' y='100.0' font-size='12' fill='#3b82c4' text-anchor='start' font-weight='bold'>Left of centre, outside the zone</text>
-<text x='520.0' y='117.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>deep on the left: 80 from the middle,</text>
-<text x='520.0' y='134.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>180 up (between circle and corner).</text>
+<text x='520.0' y='117.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>aimed 80 from the middle, 180 up</text>
+<text x='520.0' y='134.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>(the outside of the faceoff circle).</text>
 <text x='520.0' y='151.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'></text>
 <text x='520.0' y='168.0' font-size='12' fill='#3f9d5c' text-anchor='start' font-weight='bold'>Right of centre, outside the zone</text>
 <text x='520.0' y='185.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the same on the right.</text>
@@ -38,12 +41,13 @@
 <text x='520.0' y='236.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>in front of the net (0, 215).</text>
 <text x='520.0' y='253.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'></text>
 <text x='520.0' y='270.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>Scatter (Passing is the accuracy):</text>
-<text x='520.0' y='287.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>solid box: Passing 15, +/-25 across;</text>
-<text x='520.0' y='304.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>dashed: Passing 0, +/-55 across;</text>
-<text x='520.0' y='321.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>along the ice +/-20 to 70.</text>
-<text x='520.0' y='338.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'></text>
-<text x='520.0' y='355.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>He turns to face up the ice first,</text>
-<text x='520.0' y='372.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>so a sideways skater flips late.</text>
-<text x='520.0' y='389.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>A goalie flips to about centre ice.</text>
-<text x='60.0' y='440.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Circles: example passers. Dots: the spots. Not seen in a recording yet; from the NHL94SNES code (assdumpin, DumpInTarget).</text>
+<text x='520.0' y='287.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>solid box: Passing 15 (+/-25 across, +/-70 along);</text>
+<text x='520.0' y='304.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>dashed: Passing 0 (+/-55, +/-100).</text>
+<text x='520.0' y='321.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Grey: where they came down in the game,</text>
+<text x='520.0' y='338.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>1.6 s on, short of the spot; then they slide on.</text>
+<text x='520.0' y='355.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'></text>
+<text x='520.0' y='372.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>He turns to face up the ice first,</text>
+<text x='520.0' y='389.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>so a sideways skater flips late.</text>
+<text x='520.0' y='406.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>A goalie flips to about centre ice.</text>
+<text x='60.0' y='440.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Circles: example passers. Dots: the spots the code aims at (NHL94SNES assdumpin, DumpInTarget). Grey: played in the game (snes_flip_run.py).</text>
 </svg>

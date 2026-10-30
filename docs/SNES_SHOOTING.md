@@ -160,8 +160,10 @@ NHL '94 Viewer does it for every SNES shot and one-timer (`tools/xg_snes.py`, 40
    moved the same way. He stops the puck with his body box or his frame's stick / glove area (5.1).
 5. **The net**: a goal within 17 of the middle under 13 at y 259, a post to 22 (5.1).
 
-The one number fitted to the recordings is a 2-unit random spread for the emulated goalie's position. **Checked** on
-175 unblocked shots in five recorded SNES games: 40.1 expected goals against 32 scored (computer in net 25.7 / 21,
+The one number fitted to the recordings is a 2-unit random spread for the emulated goalie's position. **Now**
+(2026-10-30, every recorded SNES game, both game folders): 741 unblocked shots and one-timers, 185.8 expected goals
+against 174 scored, log loss 0.40 against 0.54 for one rate. **First checked** on 175 unblocked shots in five recorded
+SNES games: 40.1 expected goals against 32 scored (computer in net 25.7 / 21,
 people 14.4 / 11), the predicted posts and misses matching, and a log loss of 0.27 against 0.48 for giving every shot
 the same chance. Getting there showed what matters on the SNES: with the goalie frozen where he was at the release the
 model said 62 goals, carrying on at his speed 50; it's his reaction during the shot, and above all that **he keeps
@@ -178,8 +180,8 @@ model is unchanged for now. The bounce rule (5.4) and continuing a save move alr
 nothing.
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
-with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 8 recorded SNES pass shots: 0.2 expected goals, none
-scored (one off the post, at 0.2). Deflections have no xG (played the same way, the one recorded SNES goal off one came
+with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
+expected goals, 1 scored (at 0.95; one off the post at 0.2, one saved at 0.75). Deflections have no xG (played the same way, the one recorded SNES goal off one came
 out at 0).
 
 Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).

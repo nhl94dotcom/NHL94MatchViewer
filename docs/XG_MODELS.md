@@ -159,7 +159,7 @@ recorded goalie.
 
 - **Recorded games** (person against person and against the computer): log loss 0.26 on Genesis shots and 0.38 on
   SNES shots, against 0.48 and 0.54 for giving every shot the same chance; expected goals close to goals (886
-  Genesis shots and one-timers: 200.0 xG, 200 goals; 741 SNES ones: 185.8 xG, 174 goals).
+  Genesis shots and one-timers: 200.9 xG, 200 goals; 741 SNES ones: 185.8 xG, 174 goals).
 - **Against the game itself** (2026-10-29, `analysis/scoring_map/xg_calib.py`, the game's real outcome for 33,808
   Genesis and 9,617 SNES shots from the exact state): right on dekes, EA first shots, standing shots and (checked
   before, `ot_xg_check.py`) one-timers on both systems.
