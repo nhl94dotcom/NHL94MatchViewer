@@ -177,6 +177,8 @@ the total right (11.6% against 12.2%) but not the shot-by-shot fit, and the reco
 model is unchanged for now. The bounce rule (5.4) and continuing a save move already under way were tried and change
 nothing.
 
+Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).
+
 The viewer shows SNES xG on shots, cards, team stats, the season page and the xG map (one-timers there face goalies as
 they were at recorded one-timers, usually still moving across after the pass).
 

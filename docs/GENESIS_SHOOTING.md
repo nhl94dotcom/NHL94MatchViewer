@@ -294,6 +294,8 @@ it lets him rethink and skate, where the game holds him in his move. Adding his 
 fixes the game's numbers (on those shots log loss 0.42 to 0.30) but made the recorded shots worse (0.2804), because a
 recorded goalie's speed going into a pad stack is too rough to follow him locked; it stays off for now.
 
+Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).
+
 The viewer shows each shot's xG, a skater's xG, a goalie's xG against and goals saved above expected, and the teams'
 xG; the season page adds them up.
 

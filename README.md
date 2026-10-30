@@ -51,6 +51,7 @@ screen, how to pick a lineup, what works on the ice): [Genesis guide](docs/GENES
 [SNES guide](docs/SNES_GUIDE.md). A study of the recorded games' shooting and goaltending, up and down the screen and
 home and away: [shooting study](docs/SHOOTING_STUDY.md). Shots played in the real game, headless, to map where a set
 goalie can be beaten and show how each kind of goal goes in: [scoring maps](docs/SCORING_MAP.md) (with the Genesis shots, dekes and EA Specials and the SNES on pages of their own).
+The expected-goals models, and how to use them in your own work: [xG models](docs/XG_MODELS.md).
 
 `docs/PROJECT_NOTES.md` is the detailed record: how the game's memory is laid out, the ROM formats; `docs/VIEWER_NOTES.md`
 how each stat is worked out and how it was checked; `docs/STUDY_NOTES.md` the studies' working notes.

@@ -8,7 +8,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 `docs/PROJECT_NOTES.md` (the technical reference), `docs/VIEWER_NOTES.md` (the viewer, stats and broadcast) and
 `docs/STUDY_NOTES.md` (the studies' working notes): search them before re-deriving anything.** Game mechanics in plain
 English and in detail are in `docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `docs/GENESIS_MECHANICS.md`,
-`docs/SNES_MECHANICS.md` (sections 4-5, shooting and goaltending, in `docs/GENESIS_SHOOTING.md` / `docs/SNES_SHOOTING.md`);
+`docs/SNES_MECHANICS.md` (sections 4-5, shooting and goaltending, in `docs/GENESIS_SHOOTING.md` / `docs/SNES_SHOOTING.md`;
+the xG models' inputs, units and use outside the project in `docs/XG_MODELS.md`);
 studies in `docs/SHOOTING_STUDY.md` and the scoring maps (shots played in the real game): `docs/SCORING_MAP.md` (the
 overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`, `SCORING_SNES.md`; the plan for the defence studies in `docs/DEFENCE_PLAN.md`, their results in `docs/DEFENCE_STUDY.md`
 (`analysis/defence_games.py` for the recorded games, `analysis/scoring_map/def_run.py` for a defender in the harness); open questions for the user in
