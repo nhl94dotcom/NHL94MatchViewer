@@ -11,9 +11,7 @@ English and in detail are in `docs/GENESIS_GUIDE.md`, `docs/SNES_GUIDE.md`, `doc
 `docs/SNES_MECHANICS.md` (sections 4-5, shooting and goaltending, in `docs/GENESIS_SHOOTING.md` / `docs/SNES_SHOOTING.md`;
 the xG models' inputs, units and use outside the project in `docs/XG_MODELS.md`);
 studies in `docs/SHOOTING_STUDY.md` and the scoring maps (shots played in the real game): `docs/SCORING_MAP.md` (the
-overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`, `SCORING_SNES.md`; the plan for the defence studies in `docs/DEFENCE_PLAN.md`
-(`analysis/defence_games.py` for the recorded games, `analysis/scoring_map/def_run.py` for a defender in the harness,
-`posture_run.py` / `snes_posture_run.py` for a person-controlled defender pressing or sitting back); open questions for the user in
+overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`, `SCORING_SNES.md`; the plan for the defence studies in `docs/DEFENCE_PLAN.md`; open questions for the user in
 `docs/NEEDS_FROM_YOU.md`.
 
 ## Rules (from the user)

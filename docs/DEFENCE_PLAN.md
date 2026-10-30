@@ -75,9 +75,7 @@ results.
   the best positions.
 - **Order:** the deke first (it scores most), then the one-timer pass, then the slapshots, then the EA Special.
 - **Load:** like a deke grid per play: several hours each in gentle mode.
-- **Pilot (2026-10-25):** the deke and the floater against one defender standing or left to the computer
-  (`def_run.py`): the deke is stopped by a body on the carrier's path toward the middle.
-  Next: the floater on a grid that follows its line across, then the one-timer pass.
+- **Next:** the deke, then the floater on a grid that follows its line across, then the one-timer pass.
 
 ### 5. Blocking: does a skater in the lane stop a shot?
 

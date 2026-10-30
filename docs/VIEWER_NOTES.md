@@ -804,7 +804,7 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
 - **A skater put in place by writing his position has no body** until he moves under his own speed: the game finds
   player collisions through its y-sorted object list (OOlist / Ylist, collide94 `checkplcoll`), which it updates only
   as a player moves, so a placed skater with no speed stays where the list last had him and the others pass through
-  him. `def_run.py` gives a held defender a creep of 1/64 unit a frame toward the shooter, and then he blocks.
+  him. A held skater given a creep of 1/64 unit a frame toward the shooter blocks.
 - **A puck carried into the net counts as a goal**: deke_run counted any puck gone before the shot as lost; a fast
   skater (working Agility / Speed 30) carried it in at 78 of 120 such moments. Now counted (`carried`).
 - **The Genesis test skater is left-handed** by the bit the game reads (attribute +$04 bit 3 clear; +$76 bit 0 set).
