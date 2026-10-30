@@ -127,7 +127,7 @@ What's settled about the method:
   play: the stack only reaches down to $FEC2). The hook records doshot's inputs (seed, passspeed, passdir, puck, the
   goalies' SPA) and, when $E000 is set, replaces puckvx / vy / vz at .ex. emu.py is a ctypes libretro frontend for a
   copy of RetroArch's genesis_plus_gx core (about 4,500 frames a second; one core per process: a second Emu instance
-  takes over the DLL's callbacks, which silently broke the first run). RetroArch savestates are RASTATE containers
+  takes over the DLL's callbacks). RetroArch savestates are RASTATE containers
   (chunk "MEM ").
 - **doshot ported exactly** (shotport.py, 68000 integer rules incl. divs overflow leaving the register, the byte
   arithmetic in the scatter size, puckvzadj): the game's launch equals the port's on 129 of 129 shots, both nets, 7 with
@@ -142,8 +142,8 @@ What's settled about the method:
   unless his rethink happened to fall before; findpc (every 5 frames) and his rethink cycle set it. The map uses 120
   moments: clock 590-583 x 15 settle lengths.
 - **Fast stop**: decided when the goalie has held the puck 20 frames, or it has moved away from the goal 4 frames, or
-  it is 12 past the goal line; agrees with a 240-frame play-out on 1,475 of 1,475. (A first version stopped as soon as
-  he held it and missed the top net's shoulder-save bobble, 5.3: six goals at frames 48-79.)
+  it is 12 past the goal line; agrees with a 240-frame play-out on 1,475 of 1,475. (Not as soon as he holds it:
+  the top net's shoulder-save bobble, 5.3, lets six in at frames 48-79.)
 - **Harness limit near the net**: the shooter is held on his spot while the goalie sets, and within about 30 units of
   the net's centre the goalie's set spot is the puck itself, so he skates onto it and the shot starts inside his reach
   (65-100% "goals" from 28-48 out in the middle). validity.py keeps spots where the puck starts 20+ from the goalie's
@@ -251,14 +251,12 @@ aims x 4 seeds): Genesis early 896 strikes in 960, goal rate per job median 16.6
 1.7%; SNES early 867 in 959, median 5.0% over the aims (best aim median 26%), late median 2.7%. Moment-to-moment sd of
 a job's rate: Genesis early median 0.16 (max 0.33), so 32 moments give about +/-3 points; SNES (aims pooled) 0.05.
 Times in gentle mode: Genesis 30 jobs in 3.2 min, SNES in 15.5 min; CPU averaged 5% (peak 19%).
-**Late press fixed (2026-10-23):** "late" was timed by the puck's distance to the receiver's centre, which on slower
-passes came after his blade (10-13 in front of him) had already taken it, so the press took an ordinary shot (the pilot's
-Genesis late median of 1.7% was that). Now the pass is played once without a press to find the frame he'd take it, and
+**Timing the press (2026-10-23):** his blade is 10-13 in front of him, so on slower passes it takes the puck before
+the puck reaches his centre; the pass is played once without a press to find the frame he'd take it, and
 late = 2-10 frames before that; early = 2-5 frames after the release; both spread over the moments because the swing
 has narrow timing holes (a long pass across whiffed at every moment pressed 6 frames before the catch, struck at 4 and
-8). Genesis pilot again (otpilot2): early median 16.6%, late 16.2%; the pass reached the late press 876 / 960 (737
-before). Chunk 1 of the full study (Genesis top) ran with the old timing and is superseded. SNES pilot again: early median 4.9% over
-the aims (best aim 25.4%), late 4.3% (best 24.2%; was 2.7%); the pass reached the late press 860 / 960 (818 before),
+8). Genesis pilot (otpilot2): early median 16.6%, late 16.2%; the pass reached the late press 876 / 960. SNES pilot:
+early median 4.9% over the aims (best aim 25.4%), late 4.3% (best 24.2%); the pass reached the late press 860 / 960,
 a strike in 769 of those (early 866 / 959); 30 jobs in 15.2 min.
 **Genesis full run (2026-10-23, run otfull, two chunks: top 412 jobs in 47.9 min, bottom 412 in 42.7 min, gentle
 mode).** 42 receivers x 6-13 passers x 2 nets, early and late, 32 moments, 8 seeds a strike. The pass reached the
@@ -316,7 +314,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
 - Auto-aim (shotdiradj): one-timers and computer shooters ignore the stick: middle height on the side away from where
   the goalie is heading (passdir 2 / 6), high in the middle (0) when he is far off centre, 8 with no goalie.
   High shots from in close (|Y| >= 216, stick up / up-left / up-right) at a goalie IN a pad stack or with none on the
-  ice (pulled) get puckvzadj ("in-close top shelf"; corrected 2026-10-18 from chaos's forum post, topic 36095): it
+  ice (pulled) get puckvzadj ("in-close top shelf"; chaos's forum post, topic 36095, checked against the code): it
   replaces puckvz (no upward scatter), reaching the goal line ~10-13 high from 30-48 out, over the bar inside ~25; never
   one-timers. Same post, checked against the code: the scatter is halved at 250 or LESS (his post says more), Y halved
   when the aim's dy < 0 (bottom net from in front; top net from behind; not dy = 0), the perfect chance is (ShA + 1) /
@@ -693,7 +691,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   when not). Defence: defencemen (assdefd, at DfA ticks): depth 50 behind the deepest attacker (y + Yvel / 16), no deeper
   than 190-220, x +/- 65 on their side or 0 with the puck on the other side; wingers (asswingd, every frame): x +/- 100
   on their side or the puck's x when it is on their side, y the puck's y while it is beyond 78 toward the other end
-  (out of the zone if need be), 158 with it in their zone, the goal line with it behind (corrected 2026-10-18);
+  (out of the zone if need be), 158 with it in their zone, the goal line with it behind;
   centre (asscenterd, every frame): x half the puck's, y the own high slot (-128) with the puck in the zone, else half
   way between the puck and it; the chaser (assnearest): straight at the carrier (attack, 240 frames) or half way between
   the predicted puck and a point 20 out from his own goal line (contain). All but the defending centre and wingers steer
@@ -810,8 +808,8 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
 - SNES get-up glitch (press hook while down): doinput tests Y ($4000 -> holdplayer) before pfalock, and holdplayer
   refuses only during SPAburst, so SPAhook replaces the fall; the Genesis tests pflags bit 5 first. Confirmed: falls cut
   to 0.5-1.2 s by a Y press (TOR-CHI P2 3:05, CHI-TOR P2 2:36, CHI-CGY P3 0:11), next animation SPAhook $F864 /
-  SPAhook2 $F3D8. snes ACTIONS "hook" = {"f864"} now; SAVE_MOVES corrected from the disassembly's names (e246 stick,
-  e2aa pad stack, sprawls e862 / e7d0, butterfly e73e; three had been wrong), with "sprawl" / "butterfly" in the viewer.
+  SPAhook2 $F3D8. snes ACTIONS "hook" = {"f864"} now; SAVE_MOVES from the disassembly's names (e246 stick,
+  e2aa pad stack, sprawls e862 / e7d0, butterfly e73e), with "sprawl" / "butterfly" in the viewer.
 
 ## The user's five BOS-DAL games (2026-10-17)
 
@@ -954,5 +952,5 @@ showed were Y pressed to get up after being knocked down (the get-up glitch, SNE
 so the rule is clean. `find_habits` (export_match.py) now counts a hook starting the sample after a fall or upend
 (the system's HIT_OUTCOMES animations; a stumble is not a fall) as `getUps`, SNES only, and leaves it out of `hooks`;
 hook takeaways unchanged. Viewer: a "Get-ups (hook glitch)" row under Controller (SNES), with help; season page: a
-Get-ups/GP column when any game has one, HEAD_HELP for it and Hooks/GP (no longer "Genesis only"); season.py VERSION
+Get-ups/GP column when any game has one, HEAD_HELP for it and Hooks/GP (both systems); season.py VERSION
 25. All SNES recordings with a match file re-converted in both game folders: only `habits` changed.

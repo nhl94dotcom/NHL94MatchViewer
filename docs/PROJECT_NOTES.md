@@ -249,12 +249,11 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   arrows, stars, puck).
 - Sprite frame of an object: $0D97 (a word per object, as the Genesis record's +$06; every value a real frame in the
   first recording; the puck's entry 397 / 401 ...). Mirrored (right-handed): attribute $0E03 bit $0800 (exact).
-  At first the frame was looked up from SPA ($11A3, an address in bank $9D, the animation table $9DE0FC: 8 direction
-  pointers to (frame, time) lists) + SPAnum ($11C3, 4 bytes per pair) + facing; that turned right-handed skaters the
-  wrong way (the user saw it): the game looks up direction (8 - d) for them before mirroring, as the Genesis does.
-  Picture facing vs direction of travel for moving skaters: right-handed 54% within 45 degrees with the lookup, 78%
-  with $0D97 (left-handed 79%; the rest is skating backwards, turning, gliding). The lookup (`animation_frame`) is
-  kept for save-state stills.
+  The frame can also be looked up from SPA ($11A3, an address in bank $9D, the animation table $9DE0FC: 8 direction
+  pointers to (frame, time) lists) + SPAnum ($11C3, 4 bytes per pair) + facing, the game looking up direction (8 - d)
+  for right-handed skaters before mirroring, as the Genesis does; $0D97 gives it directly (picture facing within 45
+  degrees of the direction of travel for 78% of moving right-handers' samples, 79% of left-handers'; the rest is skating
+  backwards, turning, gliding). The lookup (`animation_frame`) is kept for save-state stills.
 - `snes.read_match` builds a match from samples of SNES RAM (positions, puck, control, roster, role, facing,
   animation, frame, mirror, clock, period, score, shots, rosters, palettes, anims, sprites); `snes.SaveStates` reads
   save states as samples and `tools/snes_preview.py <state>` makes a one-moment match (matches/snes_*.js) from one:
@@ -320,15 +319,13 @@ from the Genesis memory map doc. The user's old SNES save-state parser is `refer
   paused samples out and closes the timeline over them (`LivePlay`): 48 s fewer, no count changed.
 - First live SNES games with the helper (2026-10-16, the user's TOR vs CHI twice on NHL94_Classic, cd85e387, online
   against a league opponent; Home then Away): `2026-10-16_1528_TOR-CHI` (7-2) and `2026-10-16_1540_CHI-TOR` (5-3),
-  in Documents\NHL94 Viewer. Three problems, fixed: (1) the SNES Emulator lacked `pid` (the ROM-name step), so the
-  helper failed at attach; (2) at the menus the SNES roster bytes can all read 0, not $FF, so the helper took the
-  menus' default MTL vs LA for a game under way (`on_ice` now needs each team's places to hold different players,
-  and a recording is renamed after the teams that played when it closes); (3) the SNES shots-on-goal word flickered
-  2 -> 3 -> 2 -> 3 within 80 ms (twice in game 1), counting one shot twice: `steady_stats` in export_match.py smooths a
+  in Documents\NHL94 Viewer. What the SNES needs: at the menus its roster bytes can all read 0, not $FF, and look like
+  the menus' default MTL vs LA game under way (`on_ice` needs each team's places to hold different players, and a
+  recording is renamed after the teams that played when it closes); its shots-on-goal word can flicker 2 -> 3 -> 2 -> 3
+  within 80 ms (twice in game 1), which would count one shot twice: `steady_stats` in export_match.py smooths a
   count that changes back within FLICKER_MS 250 (team counts other than attack-zone time, each player's first five
   values, and the per-sample score and shots words; never ice time, energy or the penalty word, which really do flip
-  at line changes). Genesis recordings unchanged; the first SNES recording's counted passes went from 49 to the game's
-  48. Both new games then match the game exactly: shots on goal 15/10 and 16/5, checks 35/27 and 32/31, goals; the
+  at line changes). Both games match the game exactly: shots on goal 15/10 and 16/5, checks 35/27 and 32/31, goals; the
   power-play and shorthanded tags agree with the penalties. Roenick's goal in game 2 (P1 1:22) raised no shots-on-goal
   count, so it reads counted false, as the SNES penalty-shot goal did. No injury yet.
 - The helper records SNES games itself (2026-10-15): `snes.View` (period, clock, score, teams, on_ice from the roster
@@ -687,7 +684,7 @@ shots against equal the other team's shots, per-player checks sum to the team's 
 | +$CE + i | byte | Assists (goalies can have them) |
 | +$E8 + i | byte | Shots; for a goalie, shots against |
 | +$102 + i | byte | Penalty minutes in the original game; checks in ROMs with smozROM's bodycheck hack (ROM $12302 = 4E71 4E71 instead of D532 0000). The converter tells them apart |
-| +$11C + i | byte | In the original game: checks THROWN (its team sums equal the team's checks, +$10, and the player is mid-check when it rises; it was shown as "hits taken" until 2026-10-15). In ROMs with the bodycheck hack: hits taken (checks thrown are then at +$102). `find_hits` rebuilds both sides of every hit |
+| +$11C + i | byte | In the original game: checks THROWN (its team sums equal the team's checks, +$10, and the player is mid-check when it rises). In ROMs with the bodycheck hack: hits taken (checks thrown are then at +$102). `find_hits` rebuilds both sides of every hit |
 | +$136 + 2i | word | Ice time, game seconds |
 | +$343 + 2p / +$34B + 2p | byte | Goals / shots in period p (0-based) |
 | +$358 / +$35A | word | Breakaways tried / breakaway goals. The game counts a breakaway (and dings) when the puck carrier crosses the offensive blue line ahead of every defender (the user's description; Fedorov's two in `capture5_league30` fit it exactly). The viewer tags the moment the count goes up |
@@ -738,8 +735,8 @@ whenever a question can only be settled by the user; strike items off as they're
 
 Between periods the Genesis sometimes shows highlights of ANOTHER game (the user); during a long BOS-NYI intermission
 the recording held 26 s of a WSH-FLA game at 5-4 in P3 (team ids 24 / 8 instead of 1 / 13), which made the helper
-rename it WSH-FLA and, when the real game came back at P2 with a lower period, split it as a "new game". Fixed:
-nhl94_helper Recording.step: once live play is recorded, samples with other teams are not recorded or compared; they
+rename it WSH-FLA and, when the real game came back at P2 with a lower period, split it as a "new game". How the
+helper handles it: Recording.step: once live play is recorded, samples with other teams are not recorded or compared; they
 end the recording only as a new game's opening faceoff (P1, 0-0, clock >= 290); teams update only before the first
 sample. genesis MatchReader._sample: game_teams = the first on-ice sample's team ids; later samples with other teams
 are left out (only ANA-ATL's one misread sample and explore1_menus are affected elsewhere). Tested by feeding the two
@@ -787,7 +784,7 @@ since the rollback filter), the exe rebuilt, the Documents games re-converted, t
   end; out for the game never does. Found in `2026-10-16_1314_BOS-PIT` (the user's first .exe game, single player,
   copied here from Documents/NHL94 Viewer): Jagr hurt by Neely's shoulder check (also a penalty) at P3 4:01, $FD
   until the horn (527.9 s), then $FE with everyone - out for the period, as the user confirmed; the computer simply
-  did not send him back, so coming back on the ice says nothing (a first version that judged by that got it wrong).
+  did not send him back, so coming back on the ice says nothing.
   The moment and cause come from the injury animation (Genesis ACTIONS "injury": $1AF4 injury1, $145C injuryfall)
   in the 3 s before the code turned $FD, and the opponent's hit in the 1.5 s before. Also found: capture1's
   Desjardins, out through period 1 from before the recording began (`atStart`: shown on his card, not as a banner or
@@ -827,25 +824,24 @@ The PowerShell scripts were run with `Invoke-Expression (Get-Content -Raw <scrip
 ## Full review (2026-10-21)
 
 A review of everything so far, with checks that stay in tests/ (see CLAUDE.md, After changes). Every recording in both
-game folders re-converted identically to its match file before the fixes, and every match now passes
-tests/check_matches.py (goals, per-player goals, shots on goal, checks, faceoffs against the game's own counts; the
-pass count's known small gap is shown, not failed). Fixed:
-- SNES: the clock-stopped flag (which hides the puck) can flicker at a drop, which made duplicate faceoffs in three games
-  (2026-10-16_1528_TOR-CHI, 2026-10-19_2246_TOR-NYI, 2026-10-20_2138_CGY-TOR): `steady_puck`. The faceoff winner is
-  now the first faceoff-count rise up to the next stoppage or 6 s after the drop (a scramble took 7.8 s; a quick whistle
+game folders converts to its match file, and every match passes tests/check_matches.py (goals, per-player goals,
+shots on goal, checks, faceoffs against the game's own counts; the pass count's known small gap is shown, not failed).
+What it covers:
+- SNES: the clock-stopped flag (which hides the puck) can flicker at a drop (2026-10-16_1528_TOR-CHI,
+  2026-10-19_2246_TOR-NYI, 2026-10-20_2138_CGY-TOR): `steady_puck`, so a drop makes one faceoff. The faceoff winner is
+  the first faceoff-count rise up to the next stoppage or 6 s after the drop (a scramble took 7.8 s; a quick whistle
   had the count 2.4 s after the drop).
-- A check by a player whose position read $FF (mid line change; Tkachuk, 2026-10-18_2149_BOS-WPG) had no hit.
-- Passes are matched to the game's passes-tried count in time order (no total changed).
-- The helper flushes its recording every 2 s always (not only when broadcasting), marks each recording `unconverted`
-  until it is converted and converts any left so at the next start (the helper closed mid-game; tested with the exe);
-  the converter reads a cut-off gzip up to the cut; the new-game test no longer assumes 5-minute periods; a bad
-  Content-Length is refused; a game-file request for a missing game answers with an error the page shows.
+- A check by a player whose position reads $FF (mid line change; Tkachuk, 2026-10-18_2149_BOS-WPG) is a hit.
+- Passes are matched to the game's passes-tried count in time order.
+- The helper flushes its recording every 2 s, marks each recording `unconverted` until it is converted and converts
+  any left so at the next start (a helper closed mid-game); the converter reads a cut-off gzip up to the cut; the
+  new-game test doesn't assume 5-minute periods; a bad Content-Length is refused; a game-file request for a missing
+  game answers with an error the page shows.
 - Live broadcast: begin() waits for the last game's update loop; the viewer's deserve-to-win treats a live game as
   over only when the broadcast says final, and its cached clock lengths follow the growing match.
-- share_season.py no longer puts roms/names_scan.json in the share (it lists every ROM file's full path, the Windows
-  user name included); the two league shares in Documents were remade without it. It also refuses to delete an output
-  folder that is not empty and not an earlier share.
-- Season page: the PTS help (no point for an overtime loss) and five headings without help.
+- share_season.py leaves roms/names_scan.json out of the share (it lists every ROM file's full path, the Windows
+  user name included), and refuses to delete an output folder that is not empty and not an earlier share.
+- Season page: help on PTS (no point for an overtime loss) and every heading.
 - analysis/matchup_review.py read the summaries' high-danger and rebound lists crossed (not quoted in any answer);
   match_report.py: played periods only, blocked shots out of the score-state xG, Genesis-only sections say so on SNES
   games; bos_nyi_deep.py used a piece of the joined game; snes_runaway_study.py had no default recordings.

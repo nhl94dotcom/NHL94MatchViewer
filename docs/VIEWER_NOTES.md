@@ -197,7 +197,7 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   the P1 buzzer. None in any other recording. Shown: a banner (not for one that came with a goal), team stats
   "Nets knocked off (theirs / own)", the card, Help, season NET (team: theirs · own a game; skater). The viewer
   draws each net where the game has it (2026-10-16, the user agreed): `netsAt(f)` from match.nets. Overhead
-  rink: the nets are no longer baked into the rebuilt picture; `drawFlatNet` draws both every frame (in game units,
+  rink: the nets aren't baked into the rebuilt picture; `drawFlatNet` draws both every frame (in game units,
   between the ice and the players), so a loose net slides and its goal line shows empty. Rink picture: while a net is
   off, its painted net is covered from `netlessPicture` (built at load: the top net covered with the ice beside it,
   PAINTED_NETS.top [388, 150, 124, 70]; the bottom one, [385, 1285, 130, 75], with the netless top end mirrored about
@@ -295,9 +295,9 @@ Home's goalie: `ends` in the viewer), and the maps line up with the live play.
   Both teams (2026-10-16) is drawn as the difference: each spot in the colour of the team that spent more time
   there, by how much (97th percentile of the gaps, power 1.4, small gaps faded out), so neither team hides the other.
   The footer wraps onto a second row when it runs out of
-  room, and the seek bar keeps at least 140 px (with a map on it used to be squeezed away).
+  room, and the seek bar keeps at least 140 px, a map on it included.
 - Player card (2026-10-17, the user saw values run past the card's right edge): its two stat columns are
-  minmax(0, 1fr), so a long value can no longer widen the left column and push the right one out; a stat whose label
+  minmax(0, 1fr), so a long value can't widen the left column and push the right one out; a stat whose label
   and value pass 21 characters takes the whole width (`.stat.wide`, its value wrapping), and short stats fill the gaps
   around it (grid-auto-flow dense). Checked in headless Edge on skater and goalie cards of 2026-10-17_2246_DAL-BOS.
 
@@ -333,7 +333,7 @@ with puckz < 16; skater stick: puckz < 5, puckvz < $100, within 14 of GetHot, d^
 runs); body: circle 8 (d^2 <= $40), puckz >= 8 always, lower only when d^2 & $F == 0; FallDown at speed^2 >= $9000000
 and z >= 12, else SPAcatch. puckstick's limit is 10000 + (no shot flag: 700 x Stk) + 3000 when `position,x` is 0 or x
 is passReceiverPlayerNum, but x is the puck there (curobj), whose position word reads 0 (707 of 707 samples): every
-stick gets the 3000 (corrects "the intended receiver or a goalie" in the earlier bobble note), and a faster puck always
+stick gets the 3000, and a faster puck always
 deflects. Shots on goal as on the Genesis (puckgoalie / goalie puckglue call ChkShotStat; a2touchpuck clears $1000;
 after a goalie's stick deflection the body box test runs but the flag is gone). The goalie's hot-area height window
 (xg_snes RomData.hot): ready none, stick saves about 0-6, glove saves 7-15 (r6), one stick save facing down -2-8 r8
@@ -398,7 +398,7 @@ user) as a race at each team's regulation xG per game second; still level = tie.
 frame): shots so far, no OT: deserved to be ahead. Viewer: Advanced "Deserve to win" and "· a tie", a dotted line on
 the Game flow strip (home share = win + tie / 2, home up) and in its tooltip, Help. Season: summary team `dtw` [win,
 OT win, tie, OT loss] (VERSION 20), standings DESERVED (2 x win + tie) and +/- DESERVED. The user's leagues give no
-point for an overtime loss, so PTS is 2 x W + T too (it had counted 1 an OTL), and a game's two teams share 2 points. Recorded games:
+point for an overtime loss, so PTS is 2 x W + T too, and a game's two teams share 2 points. Recorded games:
 Dallas 5-2 Boston 65% / 34% (Dallas finished above its chances), Calgary 6-5 Boston OT 45 / 48, tie 7%; Boston 8 points
 against 8.6 deserved.
 
@@ -542,17 +542,16 @@ there first (the Python helper doesn't copy pages; the exe does).
 
 Review of the user's two live test games (2026-10-18_1934_BOS-PIT, 2026-10-18_2006_CHI-LA, both SNES on
 NHL94_Classic): shots on goal, goals, checks and faceoffs equal the game's; counted passes 45/50, 45/47, 62/65 (the
-known gap). Found and fixed:
-- SNES penalty shots were never recorded by the helper: snes.View.on_ice needs each team's on-ice roster places to
-  differ, and in a penalty shot the parked players (x = -240) can share one (research capture: 4297 in-game samples
-  skipped, both penalty shots). Parked objects are now left out of the test (433 skipped: pre-faceoff moments).
-  Replaying snes_2026-10-15_1755 through the helper (tests/helper_snes_penalty_shots.py) now records both penalty
-  shots. The puck shows during the shooter's run and hides after the shot (gmclock).
-- The two SNES "own goals" (Wesley in BOS-PIT, Steve Smith in CHI-CGY) were those unrecorded penalty-shot goals: a
-  defender holding the puck at the whistle before. add_own_goals skips penalty-shot goals and hidden-puck samples.
-- Posts: the puck coming out from behind the net past its side read as a post (|y| up to 272). Both readers now
-  want |y| <= 268 and the puck not behind the goal line (268) in the half second before: 43 -> 28 posts over all
-  recordings, every removal one of those; shots on goal still equal the game's everywhere.
+known gap). From them:
+- SNES penalty shots: snes.View.on_ice needs each team's on-ice roster places to differ, and in a penalty shot the
+  parked players (x = -240) can share one, so parked objects are left out of that test (433 samples: pre-faceoff
+  moments). Replaying snes_2026-10-15_1755 through the helper (tests/helper_snes_penalty_shots.py) records both
+  penalty shots. The puck shows during the shooter's run and hides after the shot (gmclock).
+- add_own_goals skips penalty-shot goals and hidden-puck samples (a defender holding the puck at the whistle before a
+  penalty shot would otherwise read as an own goal: Wesley in BOS-PIT, Steve Smith in CHI-CGY).
+- Posts: a puck coming out from behind the net past its side isn't a post: both readers want |y| <= 268 and the puck
+  not behind the goal line (268) in the half second before (28 posts over all recordings); shots on goal equal the
+  game's everywhere.
 - Goal heights projected above the crossbar (up to 13.9) are capped at 12.9.
 - SNES puck frame 406 (a net picture) in the puck's frame word: the viewer shows the puck at rest for any frame
   wider than 12.
@@ -601,7 +600,7 @@ game's Atlanta away palette; without a library the diagram draws without it: so 
 others); empty_net (MECHANICS 4.2 tables, both systems), computer_defence (assdefd / asswingd / asscenterd spots for
 three puck positions); in both guides' shooting lists and both mechanics 4.2, GENESIS_GUIDE 14, GENESIS_MECHANICS 12.2. Fifth set: the game's own goalie frames on saves_reach (gready
 facing down, 419) and shoulder_bobble (ghighl 667 facing down / 659 facing up; hold points from HotList (+10, +14) and
-(-9, +14), replacing the earlier (-10, +15) / (+9, +14)); snes_flip (DumpInTarget spots and Passing scatter) in SNES_GUIDE
+(-9, +14)); snes_flip (DumpInTarget spots and Passing scatter) in SNES_GUIDE
 8.2 and SNES_MECHANICS 6.3. Sixth set: early_save (the wind-up rule with gstackr frame 454, its body
 test 6 to the slide side, reach 18, the seconds-left bit-1 strip, recorded rates) in GENESIS_GUIDE 6 and GENESIS_SHOOTING
 5.6; open_net_one_timer (the sightline test and the high-middle aim under the bar, the 4.4 table) in GENESIS_GUIDE 7 and
@@ -851,7 +850,7 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
   (read with the system's read_teams, keyed system:crc32 as the converter computes it), so a season can pick a team
   that has not played yet. Without a season ("No season: browse all games") the page filters by ROM and a "My team"
   kept per ROM in the browser's storage (until chosen, the one team that played every game is guessed and said so).
-  The season's team is marked in every table. It no longer goes by controller 1 (the summary's `you`): on the Genesis player 1 is
+  The season's team is marked in every table. It doesn't go by controller 1 (the summary's `you`): on the Genesis player 1 is
   always Home and player 2 Away (the user), so an Away game is played on controller 2; on the SNES a screen before the
   game lets each player pick the side to control, and both may take the same team.
 - Season heat maps (the page's "Heat maps" tab): `season.heat_file` writes `matches/heat/<name>.js` per game (a folder
@@ -936,9 +935,8 @@ ways, any height; goalie stick / glove: GetHot / GetFrameHot from the sprite fra
 pucknorm (puckcross every 5 frames, like findpc), assgoalie (rethink every aidef >> 1 frames; target puck + vy/341 ...;
 ellipse 26 x 20; crossing within 35 frames -> its x, under 19 -> save move from GoalieSaveList, speed halved; StopNA
 halves a computer goalie's speed; save moves set pfalock, not pf2aip, so he keeps rethinking and skating through
-them: the fix that took the model from 46 to 37.7 expected goals), playeracc (32 - weight / 8 + 1.5 x legstr + 8; dir
-steps 6 / 4; vmax (20 + legspd) x 261), vtoa (diagonal when neither part is more than twice the other: VTOA_TABLE; the
-exact-angle version picked wrong save moves). The goalies' sprite flip bit $1000 was never set (so hot y is negated);
+them), playeracc (32 - weight / 8 + 1.5 x legstr + 8; dir
+steps 6 / 4; vmax (20 + legspd) x 261), vtoa (diagonal when neither part is more than twice the other: VTOA_TABLE). The goalies' sprite flip bit $1000 was never set (so hot y is negated);
 mirror never set for goalies. Checks: emulated goalie vs recorded at arrival median 0.8 units (100 computer-goalie
 shots); geometry with the recorded goalie path: posts 17.6 / 18; final 175 shots: 40.1 xG / 32 goals (264 aim; 35.6
 with 268, but log loss 0.27 vs 0.31), GOALIE_SPREAD 2 (0-6 tried). The map tables (ready and save frames, hot areas)
