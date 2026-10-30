@@ -1,6 +1,6 @@
 # Shooting and goaltending: up and down the screen, home and away
 
-A study of every shot and one-timer in the recorded games. The first section (home / away and up / down, rerun
+A study of every shot and one-timer in the recorded games, and (first section) of the leagues' own results. The first section (home / away and up / down, rerun
 2026-10-30) uses every recorded game: 29 Genesis and 22 SNES; the rest uses **13 Genesis games (387
 shots and one-timers) and 5 SNES games (189)**, recorded 2026-10-14 to 2026-10-17. Most were played by one person, often as Boston, so the samples are
 small and some splits are only a handful of shots. Treat differences of a few percentage points as noise. Rerun it as
@@ -9,6 +9,38 @@ more games come in: `python analysis/shot_table.py`, then `python analysis/shot_
 Terms: an **attempt** is any shot or one-timer (on goal, wide or blocked). **Uncounted stops** are shots that reached
 the goalie and were stopped but not counted as shots on goal. **xG** is expected goals from the game's own rules
 (GENESIS_SHOOTING.md 4.9, SNES_SHOOTING.md 4.7). **Up** means the shooting team was attacking up the screen.
+
+## The leagues' own results (2026-10-30)
+
+The user's league result databases (kept outside this repository; `analysis/league_home_study.py` reads them and
+prints aggregates only): **86,735 Genesis and 36,180 SNES games** from 2013 to 2026, simulated games left out. Each
+row has both sides' goals, shots on goal (the game's own count) and faceoff wins, by period. Ranges are 95%.
+
+| | Genesis | SNES |
+| --- | --- | --- |
+| Home wins (of decided games) | **50.5%** (+/- 0.3) | **52.3%** (+/- 0.5) |
+| Goals a game, home / away | 3.81 / 3.77 | 4.53 / 4.32 |
+| Shots on goal a game, home / away | 12.17 / 11.55 (1.05) | 12.37 / 11.20 (1.11) |
+| Faceoff wins, home / away | 0.98 | 1.07 |
+| Home's share of shots on goal, periods 1 / 2 / 3 | 52.3% / **49.3%** / 52.4% | 52.8% / 52.1% / 52.6% |
+| Home's share of goals, periods 1 / 2 / 3 | 49.6% / 51.2% / 49.9% | 51.6% / 50.4% / 51.6% |
+| The same player at home minus away (players with 20+ games each way) | shots +0.67 a game, win rate +1.0% (+/- 0.8) | shots +1.20 a game, win rate **+4.5%** (+/- 1.3) |
+| A team's home win rate minus its own away win rate: retail home bonus +2 / none / other teams | **+2.3 / +0.4** / +0.7 points | +4.9 / +3.9 / +5.0 points |
+
+- **Genesis: the shot edge is the screen direction, not home.** Home's share of shots on goal is 52.3% in periods 1
+  and 3, when it attacks up the screen, and 49.3% in period 2, when it attacks down: the team going up gets about 10%
+  more shots counted, whoever it is (GENESIS_SHOOTING 4.7: low shots going down are knocked away by the goalie's
+  stick uncounted). Goals lean the other way (the team going down scores a little more). The home edge in results
+  is small (50.5%), and the same player wins only about 1 point more often at home.
+- **Genesis: the home bonus works as coded.** Teams the retail ROM gives +2 at home win 2.3 points more often at
+  home than away; teams with no bonus 0.4. (League ROMs can edit the bonus, so this is the retail table's teams.)
+- **The 29 recorded Genesis games' home edge in attempts** (below: 1.22 times as many per minute) isn't in the
+  leagues' results: there Home's shots in period 2, going down, are below half. It was the recorded games' players and
+  sample, not the game.
+- **SNES: a real home edge, and not from the bonus or the direction.** Home wins 52.3%, the same player wins 4.5
+  points more often at home, and 147 of 156 players shoot more at home; Home's shot share is the same in every period,
+  and teams gain 4-5 points at home whatever their bonus. Part of it may be faceoffs (the home centre wins ties: 17 of
+  32 at equal timing, SNES_MECHANICS 9; Home won 7% more of them here). The rest is open.
 
 ## Home / away and up / down, together (rerun 2026-10-30)
 
@@ -114,7 +146,8 @@ games can't tell the two apart.
 What the games show so far:
 
 - **Up / Down: no effect on either system** (every ratio 0.93-1.07, every range holding 1.00).
-- **Home / Away on the Genesis: Home takes more shots.** 1.22 times the attempts per game minute (1.07-1.38) and
+- **Home / Away on the Genesis: Home took more shots in these games** (not in the leagues' 86,735 games: above).
+  1.22 times the attempts per game minute (1.07-1.38) and
   1.23 times the shots on goal (1.05-1.43); goals 1.32 (1.00-1.75), on the edge. With 19 games it was within chance.
   It holds in the 20 games with a person on each side (attempts 1.27, 1.04-1.58 resampling games; goals 1.23,
   0.83-1.88), so it isn't the computer teams. But most of those games are the same few players, so which person was

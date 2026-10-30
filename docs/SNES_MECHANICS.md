@@ -874,6 +874,9 @@ Ordered by how much the answer would matter in league play (penalties off).
 
 **Would change how people play or how games are judged:**
 
+- **The SNES home edge.** In the leagues' 36,180 games Home wins 52.3%, and the same player 4.5 points more often at
+  home, in every period and whatever the team's home bonus (SHOOTING_STUDY, "The leagues' own results"). The home
+  centre's faceoff edge (9) may be part of it; the rest isn't found.
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
   the way a person does); it needs many more recorded games.
 - **Instant whistles on a person goalie's catch** (5.4): mostly explained (2026-10-30): 12 of 16 were a delayed

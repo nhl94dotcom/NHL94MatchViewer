@@ -85,11 +85,11 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## Checks you could run on your box-score database
 
-1. **Home record by home bonus.** Teams with no home bonus in the ROM (CGY, DAL, DET, HFD, NYI, QUE, TB) against teams
-   with +2 (BOS, BUF, CHI, MTL, PHI, PIT, STL): if the bonus is behind the 51%, the first group should be at 50% at home
-   and the second a little higher.
-2. **Shots on goal by period.** Each side's shots on goal in periods 1 and 3 against period 2 (Home goes up in 1 and 3,
-   Away in 2): separates up / down from home / away.
+1. ~~**Home record by home bonus.**~~ Done (2026-10-30, the user's databases): on the Genesis the +2 teams gain 2.3
+   points at home, the no-bonus teams 0.4; on the SNES every group gains 4-5 (SHOOTING_STUDY, "The leagues' own
+   results").
+2. ~~**Shots on goal by period.**~~ Done: on the Genesis the team going up gets about 10% more shots counted; on the
+   SNES no period difference.
 
 ## Things to review in the replays (each a quick look)
 

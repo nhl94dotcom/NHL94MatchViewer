@@ -191,7 +191,9 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   the screen they aimed along the ice twice as often (25% of their shots against 12% going up) and high half as often
   (16% against 35%). With the rates above that costs a team going down about 6% of its shots on goal on shots
   reaching the goalie, which may explain much of the community's finding that the up direction has about 10% more
-  recorded shots on goal. (In these 13 games the middle-height shots went the other way, 16% uncounted going up
+  recorded shots on goal. **The leagues' 86,735 games confirm the direction effect:** Home's share of shots on goal
+  is 52.3% in periods 1 and 3 (going up) and 49.3% in period 2 (going down), while goals lean slightly the other way
+  (SHOOTING_STUDY, "The leagues' own results"). (In these 13 games the middle-height shots went the other way, 16% uncounted going up
   against 7% going down, unexplained, so the recordings alone don't show the 10%.)
 - **By direction, in the recordings:** of shots and one-timers that reached the goalie, 126 of 148 were counted going
   up (85%) and 143 of 157 going down (91%), the opposite of the leagues' 10% more going up, and with only 17 stick
