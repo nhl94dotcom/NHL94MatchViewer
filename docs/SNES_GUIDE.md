@@ -443,7 +443,7 @@ went in within 12.6 units of a goalie's centre.
 - **The walk-in works instead.** Skating at the goal from 17 ft out and 27 ft to the side, a wrist shot at Shot Power
   about 8, aimed low at the far side, is so slow that you catch up with it before it reaches the goalie. Keep carrying
   it at the middle of the goal line: the goalie slides across after the shot and locks into a save, and you shoot at
-  the near post as you cut across, or carry it in. 75-85% at the best set-ups, against any goalie. Carrying the puck in
+  the near post as you cut across, or carry it in. About 80-90% at the bottom net's best set-ups, against any goalie; at the top net about 80%, but only 55% against Roy. Carrying the puck in
   without the weak first shot doesn't work: the goalie stays on the near post and takes it.
 
 ### 11.2 Playing goal yourself (X)

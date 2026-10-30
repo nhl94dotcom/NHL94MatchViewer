@@ -172,7 +172,11 @@ recorded goalie.
   15%). A little high when he is set (the game 7%, the model 10%).
 - SNES: too low on close follow-ups in the 10 frames after the puck comes off the goalie (the game ignores him for
   those frames); rare in real games.
-- Neither has skaters in the way (screens, deflections); blocked shots are left out of totals.
+- Neither has skaters in the way (screens, deflections); blocked shots are left out of totals. A shot that bounces
+  off a skater in front and in is still a goal at the shot's own xG (one Genesis one-timer at 0.00 was going over the
+  bar until it hit a defender in the crease).
+- A shot that hits a post on the very frame it leaves the stick is recorded after the bounce, and the bounce is
+  played as the shot (one in the recordings, a post at 1.00).
 - A person in net is moved as the computer would move him.
 - Pass shots (a pass with nobody to take it, sent at the net) are played from the puck's recorded start, with the
   game's random lift (`xg.launched`, `launch` in both `play_out`s); deflections and scrambles get no xG.

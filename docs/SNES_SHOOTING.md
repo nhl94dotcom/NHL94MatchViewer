@@ -496,7 +496,7 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   (5.2). The crossing is worked out from the puck's velocity whether it is loose or carried (`pucknorm`), so **a carrier
   skating straight at the goal mouth sets off a save move too**: the goalie slides toward the middle and locks while
   the carrier steps to the near post (SCORING_SNES, "EA Specials on the SNES": the walk-in, a weak low shot at the far side the shooter catches up
-  with and carries on: 75-85% at its best set-ups in the game. A carrier alone, without that first shot, doesn't draw
+  with and carries on: 82-89% at the bottom net's best set-ups in the game, 55-79% at the top net. A carrier alone, without that first shot, doesn't draw
   him off the near post). He skates like a player (acceleration from Weight and Agility, + 8 for a goalie, his Agility taken away while a
   pass is in the air; top speed from Speed), and a computer goalie with nowhere to go halves his speed each step.
   **He stops dead when an opposing carrier winds up a shot** while skating mostly up or down the ice.

@@ -339,7 +339,7 @@ Animated (`deke_animate.py`, the FLOATERBH list; rates: that net's 48):
 
 The best set-up of each move and hand (`deke_run.py` plan "best": the refined dekes, the backhand deke, both
 floaters; both nets, 24 moments x 4 seeds), played by nine kinds of skater: working Agility and Speed 10, 20 or 30
-(`NHL94_DEKE_SKATE`; the test state's skater has 13 / 13, and the set-ups were tuned on him), crossed with Shot Power
+(`NHL94_DEKE_SKATE`; the test state's skater has 18 / 18, and the set-ups were tuned on him), crossed with Shot Power
 and Accuracy 10, 20 or 30 (roster steps 2, 4, 6), against the test goalie. Goals per attempt; a puck lost before the
 shot counts as a failure, a puck the skater carried into the net himself as a goal:
 
@@ -348,11 +348,11 @@ shot counts as a failure, a puck the skater carried into the net himself as a go
 | 10 (slow) | 31% | 45% | 53% |
 | 20 | 64% | 71% | 76% |
 | 30 (fast) | 57% | 59% | 61% |
-| Test skater (13) with 20 / 20 | | 71% | |
+| Test skater (18) with 20 / 20 | | 71% | |
 
 - **Skating counts most, and the timing is tuned to the skater.** The slow skater (10) keeps the puck every time but
   scores 31-53%: the swing starts at a fixed distance from the goalie, and he gets there too slowly for it to beat
-  him. Skaters of 13-20 score 64-76%. The fast skater (30) runs out of room: in a quarter of his attempts he reached
+  him. Skaters of 18-20 score 64-76%. The fast skater (30) runs out of room: in a quarter of his attempts he reached
   the goalie with the puck still on his stick and no shot taken. In 78 of those 120 he carried it into the net (a
   goal), in 42 he lost it. A fast skater needs the swing started farther out.
 - **The shot ratings add 15-22 points for a slow skater and 10-12 for the others** (10 to 30), mostly through the
@@ -386,7 +386,7 @@ tuned, and C pressed 6 frames earlier to 6 later (the backhand deke: the puck 6 
 by the slow (Agility / Speed 10) and the fast (30) skater, Shot Power / Accuracy 20 / 20, both nets, 12 moments x 4
 seeds a timing. A puck carried in counts as a goal.
 
-| Skater | As tuned (on the 13 / 13 skater) | One change for every move | Each move's own best timing |
+| Skater | As tuned (on the 18 / 18 skater) | One change for every move | Each move's own best timing |
 | --- | --- | --- | --- |
 | Agility / Speed 10 (slow) | 45% | **57%**: the swing begun 15 nearer | 70% |
 | Agility / Speed 30 (fast) | 59% | **71%**: the swing begun 15 farther out, C 3 frames later | 82% |
@@ -408,7 +408,7 @@ seeds a timing. A puck carried in counts as a goal.
 ![Backhand deke, Agility / Speed 10, as tuned: four real attempts](img/scoring_map/retime_slow_tuned_clips.gif)
 ![Backhand deke, Agility / Speed 10, as tuned: every attempt from above](img/scoring_map/retime_slow_tuned_paths.gif)
 
-**The same with the swing begun 15 nearer and C 3 earlier: 100% (48 of 48).**
+**The same with the swing begun 15 nearer and C with the puck 3 less across: 100% (48 of 48).**
 
 ![Backhand deke, Agility / Speed 10, the swing begun 15 nearer: four real attempts](img/scoring_map/retime_slow_nearer_clips.gif)
 ![Backhand deke, Agility / Speed 10, the swing begun 15 nearer: every attempt from above](img/scoring_map/retime_slow_nearer_paths.gif)

@@ -398,5 +398,5 @@ goalie); against Roy 14 of 24 (13 carried in).**
 ![SNES walk-in, bottom net, left-hander, against Roy: every attempt from above](img/scoring_map/sea_walkin_bottom_lefty_roy_paths.gif)
 
 - **So the Genesis-style EA Special is rare on the SNES, as the user said:** about 1 in 4 at its best set-ups and a
-  few percent elsewhere. **The walk-in scores 75-85% at its best set-ups, against either goalie.** There is no SNES
+  few percent elsewhere. **The walk-in scores 82-89% at the bottom net's best set-ups, against either goalie; at the top net 79%, and 55% against Roy.** There is no SNES
   recording of either play to check against.

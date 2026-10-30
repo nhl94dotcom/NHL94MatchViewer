@@ -158,9 +158,10 @@ each; `ot_xg_check.py`) the game's own rate, from 8 fresh seeds a strike, was se
 one-timer from the same state (the goalie's position, speed and ratings, the puck's spot and speed, auto-aim, reach
 12): the game 20.7% overall, the model 22.1%; correlation 0.83 strike by strike; log loss 0.290 against 0.510 for one
 rate for all. Pass across (receiver inside 18 feet): game 69%, model 67%; from the same side 24% and 24%. Without the
-position blur, or with the goalie's stick and rebound, it does no better (log loss 0.32), so the model stays as it is:
+position blur, or with the goalie's stick and rebound, it does no better (log loss 0.32), so the model stayed as it was:
 what decides a one-timer is where the goalie is when it is struck, and the model already reads that from the
-recording.
+recording. (Since 2026-10-29 recorded shots of every kind are played with the goalie's stick and his save-move lock,
+which helped the standing shots: GENESIS_SHOOTING 4.9.)
 
 ### Genesis: by Shot Power and Accuracy (2026-10-24)
 
