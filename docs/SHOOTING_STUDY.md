@@ -76,8 +76,22 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 
 - **One-timers are a third of all Genesis goals** (35%; 29% on the SNES), at 31% per try, about the shooting
   percentage of a shot that reaches the net; a breakaway scores only 14%.
-- **The power play tilts scoring less than it seems:** for every 100 power plays the shorthanded team scores 20
-  (Genesis) or 27 (SNES) goals against the power play's 30 or 41.
+- **A power play works mostly by stopping the shorthanded team** (the user's own study found the same;
+  `analysis/league_strength_study.py` rebuilds each regulation timeline from the penalty and goal lists, 86,098
+  Genesis and 36,108 SNES games; the goals' own strength tags agree with it 97-99%). Goals a team-minute against
+  5-on-5:
+
+  | | Whole man advantage | First 20 s after the call | After that |
+  | --- | --- | --- | --- |
+  | Genesis, power play (5-on-4) / shorthanded (4-on-5) | **+7% / -24%** | -15% / -52% | +15% / -14% |
+  | SNES, power play / shorthanded | **+10% / -23%** | -8% / -48% | +15% / -15% |
+  | Two men up / down (5-on-3 / 3-on-5), Genesis / SNES | +20% / -55%, +23% / -51% | | |
+
+  Over a whole power play the shorthanded team's scoring falls about three times as much as the power play's rises.
+  Most of that is the first 20 seconds after the call: the restart faceoff is in the penalized team's end and it
+  hardly scores, while the power play is held down by the restart too (4-on-4 is just as low then). After that the
+  two are about equal and opposite. (The databases list every minor as 120 s; 132 of 333 Genesis leagues and 9 of
+  181 SNES leagues play 1-minute minors, which the script finds from each league's own power-play goals.)
 - **No sign of the backwards comeback bonus** (+2 Offensive Awareness and Checking, +4 pass / shoot bias for a tied or
   trailing team, on in the first half of the third period by a bug: GENESIS_MECHANICS 2.3): the trailing team's share
   of goals is 44-46% in each half of the second and third periods alike (first half minus second half, third period
