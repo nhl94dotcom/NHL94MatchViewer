@@ -85,7 +85,14 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
   | --- | --- | --- | --- |
   | Genesis, power play (5-on-4) / shorthanded (4-on-5) | **+7% / -24%** | -15% / -52% | +15% / -14% |
   | SNES, power play / shorthanded | **+10% / -23%** | -8% / -48% | +15% / -15% |
-  | Two men up / down (5-on-3 / 3-on-5), Genesis / SNES | +20% / -55%, +23% / -51% | | |
+  | Genesis, 5-on-3 / 3-on-5 | **+20% / -55%** | -4% / -73% | +35% / -43% |
+  | SNES, 5-on-3 / 3-on-5 | **+23% / -51%** | 0% / -72% | +35% / -40% |
+  | Genesis, 4-on-3 / 3-on-4 (2,861 team-minutes) | -6% / -47% | -30% / -71% | +17% / -23% |
+  | SNES, 4-on-3 / 3-on-4 (1,166 team-minutes) | -16% / -36% | -47% / -63% | +10% / -13% |
+  | 4-on-4, Genesis / SNES | -18% / -15% | | |
+
+  4-on-3 is best set against 4-on-4: the man up scores about 15% more than at 4-on-4 on the Genesis and no more on
+  the SNES, the man down 35% and 25% less (few goals: about 700 and 300).
 
   Over a whole power play the shorthanded team's scoring falls about three times as much as the power play's rises.
   Most of that is the first 20 seconds after the call: the restart faceoff is in the penalized team's end and it

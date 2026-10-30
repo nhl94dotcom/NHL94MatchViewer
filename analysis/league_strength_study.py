@@ -121,7 +121,7 @@ def study(name, label):
                          (secs[(a, b, "first 20 s")] + secs[(a, b, "after")]) * 60
     base = rate((5, 5))
     print(f"  5-on-5: {base:.3f} goals a team-minute")
-    for a, b in ((5, 4), (4, 5), (4, 4), (5, 3), (3, 5)):
+    for a, b in ((5, 4), (4, 5), (5, 3), (3, 5), (4, 3), (3, 4), (4, 4), (3, 3)):
         st = (a, b)
         tg = tags[st]
         mine = tg["PP"] + tg["PP2"] if a > b else tg["SH"] + tg["SH2"] if a < b else tg["EV"]
