@@ -163,7 +163,7 @@ Goals a rush (90% ranges from resampling the rushes):
 | SNES 2-on-1 | 0.62 (0.59-0.66) | 0.49 (0.45-0.52) | 0.45 | **0.18** (0.15-0.21) | **0.20** (0.17-0.22) |
 | Lone carrier, either system | 0.00-0.02 | 0.00-0.02 | 0.00-0.02 | 0.00 | 0.00 |
 
-- **Pressing beat sitting back on both systems**, against every attack that scores. Against the Genesis deke sitting
+- **Against these scripted plays, pressing beat sitting back on both systems**, against every attack that scores. Against the Genesis deke sitting
   in the slot did nothing at all (the deke goes round him and beats the goalie): pressing took the puck or spoiled the
   move in more than half the rushes, in every set-up (0.16-0.55 a rush against 0.89-0.98 sitting). Against the 2-on-1
   the pressing defender made the carrier pass early, under pressure, and the one-timer then came from a median 57 out
@@ -177,12 +177,13 @@ Goals a rush (90% ranges from resampling the rushes):
   both systems (on the SNES a shot at a set goalie from the slot almost never scores, SNES_SHOOTING 4.8). The SNES
   carrier driving to the slot lost the puck before shooting 41% of the time with no defender at all.
 
-**So, against the user's idea** (proactive on the Genesis, sit back on the SNES): proactive wins on the Genesis by a
-wide margin, and on the SNES too, against the plays that score. **The caution:** the attackers are bots. They react to
-a close defender only by shooting or passing at once; a person would dodge, delay or cut inside, which a pressing
-defender over-commits to. The recordings (above) show no difference either way, and a pressing person lets more
-shots through on the SNES; so this says what each posture gives up against the standard plays, not against an
-opponent adjusting to it.
+**What this does and doesn't settle.** The attackers are scripts: their only answer to a close defender is to shoot or
+pass at once, the deke plays its move whatever he does, and the 2-on-1 pass comes as soon as he closes in. A person
+would dodge, delay, cut inside or hold the pass until he commits, which is exactly what a pressing defender is open to.
+So this shows only that sitting back doesn't stop the set plays and pressing breaks them up; it doesn't say which
+posture holds up against an opponent who adjusts. Scripting smarter attackers wouldn't settle that either (a person's
+reactions can't be scripted fairly), so **the question is left to the recorded games**: `analysis/defence_posture.py`
+(above), rerun as the league plays more (16-19 games show only big effects; so far no difference either way).
 
 The same rush against each posture, the game's own frames:
 

@@ -1339,10 +1339,10 @@ Ordered by how much the answer would matter in league play (penalties and offsid
 
 **Would change how people play or how games are judged:**
 
-- **Pressing against a person who reacts.** Played in the game against scripted rushes, pressing the carrier beats
-  sitting in the slot by a wide margin (DEFENCE_STUDY, "Pressure or sit back, played in the game"); the recorded games
-  show no difference yet. The scripted attacker doesn't dodge the way a person does, so more recorded games are the
-  check.
+- **Pressing or sitting back against a person.** Against scripted rushes pressing the carrier beats sitting in the
+  slot by a wide margin (DEFENCE_STUDY, "Pressure or sit back, played in the game"), but a script doesn't dodge or
+  delay the way a person does, and that can't be scripted fairly. Only recorded games can settle it
+  (`analysis/defence_posture.py`); so far they show no difference.
 - **Deflections in expected goals.** Deflections and scrambles have no xG (GENESIS_SHOOTING 4.9: played from the
   recorded puck, five of the six recorded goals off one came out at 0). A model would need what the puck did at the
   touch, not just after it.
