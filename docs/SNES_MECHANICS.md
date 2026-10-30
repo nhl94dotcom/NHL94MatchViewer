@@ -879,13 +879,14 @@ Ordered by how much the answer would matter in league play (penalties off).
   team at each) and only partly the screen direction. Something about the period or its set-up (each side's goalie
   at the other end) is a guess. Not the period number: the code reads it only for the records in periods 1-2, and
   the same standing shots with only the period number changed came out the same shot for shot (2026-10-30;
-  LEAGUE_RESULTS, "Game-wide patterns"). Left: something that goes with a team and a direction together (code that
-  uses the team where it means the direction), or play a standing shot doesn't reach.
-  (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; LEAGUE_RESULTS.)
+  LEAGUE_RESULTS, "Game-wide patterns"). Nor, on a first reading, code that uses a player's team where it means the
+  direction: the shot aim (`shotdiradj`), the goalie (`assgoalie`), faceoffs (`puckfaceoff2` recomputes each
+  pfgoal from the team and gmdir), energy and input all allow for it. Left: play a standing shot doesn't reach (rushes,
+  passes, one-timers) or the people.
+  (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; LEAGUE_RESULTS. The
+  4.8 lane against a goalie who catches with the other hand: it stays on the shooter's left, SNES_SHOOTING 5.3.)
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
   the way a person does); it needs many more recorded games.
-- **The lane against a goalie who catches with the other hand** (SNES_SHOOTING 5.3, 4.8): the code mirrors his save
-  moves, so the half-the-time slapshot lane should move to the shooter's right. One harness run would show it.
 - **Instant whistles on a person goalie's catch** (5.4): mostly explained (2026-10-30): 12 of 16 were a delayed
   penalty against his own team, whistled when his catch gave his team the puck. 3 in 386 catches remain unexplained.
 - **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example (NEEDS_FROM_YOU).

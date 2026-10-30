@@ -517,9 +517,16 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   - **Passing:** none; a goalie's passes always use 7 (`dopass`). **Stick Handling:** none in a steal: a goalie always
     steals, and nobody steals from him (`puckstick`).
   - **His catching hand** (drawn mirrored, attribute $0800): the save move for a side is taken from the other side's
-    list (`assgoalie`), and the left and right save frames aren't mirror images, so a goalie who catches with the other
-    hand should have his gaps on the other side: **the lane of 4.8 (past the right-side saves of Montreal's goalie)
-    would be on the shooter's right against such a goalie.** From the code; not played in the game yet.
+    list (`assgoalie`), and the left and right save frames aren't mirror images, so the code suggested that a goalie
+    who catches with the other hand would have the lane of 4.8 on the shooter's right. **Played in the game
+    (2026-10-30, `analysis/scoring_map/snes_period_hand_run.py`: Montreal's goalie with the bit flipped, 52,000
+    standing shots at both nets, the same draws): it doesn't move.** The lane stays on the shooter's left: slapshots
+    from 10 left of centre, 88-128 out, aimed at that side scored 33% at the top net and 29% at the bottom (17% and 31%
+    for the goalie as he is), the mirror spot 2-3% (1-2%). Flipping the shooter's hand instead changes nothing either
+    (13 and 10 of 32 at the lane spot, 0 at the mirror). What the flip does change is smaller: at the top net the
+    lane's goals move from Up-Left to Down-Left aims; at the bottom a few goals appear on the shooter's right 20-50 off
+    centre (up to 5 in 16 at a spot) and as many go from his left; slapshots overall 0.90% against 0.70% (top), 1.31%
+    against 1.14% (bottom). **So the lane is every goalie's, whichever hand he catches with, against every shooter.**
 - **Confirmed:** emulating all this and driving it with the recorded puck, the goalie lands a median 0.8 units from the
   recorded goalie when the puck arrives (100 shots at computer goalies; 78 within 3 units).
 - **His ratings, played in the game** (SCORING_SNES "SNES goalie profiles", 2026-10-26): from a backup to Roy, the

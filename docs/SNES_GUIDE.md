@@ -264,7 +264,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   aimed at that same side (attacking up the screen hold Left; attacking down, Right; high or low doesn't matter). About
   half go in: the shot goes just past his body on **his right**, and his save move on that side reaches out beyond the
   post, leaving a gap. The same shot from your right, aimed right, almost never scores. It's a narrow lane: a couple of
-  feet farther from the middle and it's gone. (Mechanics 4.8; not yet tried in a real game.)
+  feet farther from the middle and it's gone. It's there against every goalie, whichever hand he catches with, and
+  for left- and right-handed shooters alike. (Mechanics 4.8 and 5.3; not yet tried in a real game.)
 - **The near-post cut works at both nets, by either hand.** Skate in down one side, cut toward the middle, turn to
   face straight up the ice at about the post's line and shoot inside the near post once the goalie starts sliding
   toward the middle. **Shoot from within about 13 feet**: from farther out it rarely scores. Your own tries replayed in

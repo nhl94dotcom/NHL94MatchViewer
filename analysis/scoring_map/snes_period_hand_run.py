@@ -11,7 +11,8 @@
    the shooter kept his old facing, so those states weren't like the real ones; dropped.)
 2. The catching hand (SNES_SHOOTING 5.3): Montreal's goalie with his mirrored bit (attribute $0800, set by setplayer
    for a right-hander) flipped, as a goalie who catches with the other hand: p1top_hand, p2bottom_hand. The 4.8 lane
-   (past his right-side saves, the shooter's left) should move to the shooter's right.
+   (past his right-side saves, the shooter's left) should move to the shooter's right. Also p1top_shooter: the
+   shooter's handedness flipped instead (handed $14A3 and his attribute bit $0800).
 
 The shooter's working Shot Power and Shot Accuracy are 13 / 13, as in the map. Each condition: shooter spots
 x -60..60 (steps of 10), y 80..200 from centre ice (steps of 20), a wrist shot and a full slapshot at each of
@@ -32,12 +33,13 @@ XS = range(-60, 61, 10)
 YS = range(80, 201, 20)
 SHOTS = {"wrist": 3, "slap": 40}
 MIN_PUCK = 24
-GSP, ATTR = 0x1630, 0x0E03
+GSP, ATTR, HANDED = 0x1630, 0x0E03, 0x14A3
 SHP = SHA = 13                                 # the map's shooter (snes_map_run)
-# condition: (state, top net?, period number to set (None: as saved), flip the goalie's hand?)
-CONDS = {"p1top": (SNES_STATE_TOP, True, None, False), "p1top_as_p2": (SNES_STATE_TOP, True, 1, False),
-         "p2bottom": (SNES_STATE_BOTTOM, False, None, False), "p2bottom_as_p1": (SNES_STATE_BOTTOM, False, 0, False),
-         "p1top_hand": (SNES_STATE_TOP, True, None, True), "p2bottom_hand": (SNES_STATE_BOTTOM, False, None, True)}
+# condition: (state, top net?, period number to set (None: as saved), flip whose hand: "goalie", "shooter" or None)
+CONDS = {"p1top": (SNES_STATE_TOP, True, None, None), "p1top_as_p2": (SNES_STATE_TOP, True, 1, None),
+         "p2bottom": (SNES_STATE_BOTTOM, False, None, None), "p2bottom_as_p1": (SNES_STATE_BOTTOM, False, 0, None),
+         "p1top_hand": (SNES_STATE_TOP, True, None, "goalie"), "p2bottom_hand": (SNES_STATE_BOTTOM, False, None, "goalie"),
+         "p1top_shooter": (SNES_STATE_TOP, True, None, "shooter")}
 
 _h = {}
 
@@ -52,8 +54,12 @@ def make(cond, emu=None):
         e.setw(GSP, gsp)
     e.setw(H.SHOTSPD + H.o(H.SHOOTER), SHP)
     e.setw(H.SHOTACC + H.o(H.SHOOTER), SHA)
-    if hand:
+    if hand == "goalie":
         e.setw(ATTR + g, e.w(ATTR + g) ^ 0x0800)
+    if hand == "shooter":
+        s = H.o(H.SHOOTER)
+        e.setw(HANDED + s, e.w(HANDED + s) ^ 1)
+        e.setw(ATTR + s, e.w(ATTR + s) ^ 0x0800)
     h.base = e.serialize()
     return h
 
