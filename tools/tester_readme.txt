@@ -47,3 +47,21 @@ Please send:
 - Screenshots of anything that looked wrong, with the period and time on the clock.
 If a game went wrong, please also zip and send that game's folder from Documents\NHL94 Viewer\captures
 (about 15-20 MB per game).
+
+SHARING YOUR RECORDINGS FOR ANALYSIS
+Recordings help find bugs and study how the game plays. If you'd like to share them:
+- Each game is a folder in Documents\NHL94 Viewer\captures, named by date, time and teams
+  (for example 2026-10-23_1107_LA-BOS). Zip the folders of the games you want to share and send the zip to
+  whoever gave you the helper. A game is about 15-20 MB; zipping saves little, as the recordings are already
+  compressed.
+- The recordings are the valuable part: they hold the game's memory about 60 times a second. You can add the
+  matching files from Documents\NHL94 Viewer\matches (the converted games, one .js file per game) to save a
+  conversion, but they aren't needed.
+- Please don't send the "roms" folder: it holds copies of the game ROM, which can't be shared.
+- What's in a recording: the game itself (positions, the controllers' buttons, the game's stats, the team and player
+  names from the ROM). Nothing about you or your computer. helper_log.txt is different: it shows the helper's
+  messages, and file paths in it include your Windows user name.
+- It helps to say for each game which ROM or league it was, which teams the people played, and anything odd you
+  noticed (with the period and time on the clock).
+- "Export to ZIP" on the games page makes a different package: the season page and the viewer with the games you
+  tick, for friends to watch. It has no recordings, so it isn't the one for analysis.

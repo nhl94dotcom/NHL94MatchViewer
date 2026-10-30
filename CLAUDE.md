@@ -47,7 +47,9 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
 
 - Two game folders: the project (`captures/`, `matches/`, used when `tools/nhl94_helper.py` runs on its own: tests)
   and `Documents\NHL94 Viewer` (the real games: the exe's home, and every launcher .bat sets `NHL94_HOME` to it, as
-  any tool can). Recordings, matches, ROM copies,
+  any tool can). `tools\build_helper.bat nobroadcast` builds `dist\nobroadcast\` for people who won't broadcast: no
+  `live_broadcast` module, and the viewer's Help without its "Watching live" section (between `<!-- broadcast` markers
+  in viewer.html). Recordings, matches, ROM copies,
   sprites, sounds and build output are git-ignored.
 - `NHL94 Helper.bat` / `dist\NHL94 Helper.exe`: `tools/nhl94_helper.py` waits for RetroArch, records each game (live
   play only), converts it, serves http://localhost:9494/helper.html (games list, viewer, season page). Live broadcast:

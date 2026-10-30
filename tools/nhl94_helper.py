@@ -650,7 +650,11 @@ def exit_with_console():
 def start_broadcast():
     """--broadcast [CHANNEL] --bucket NAME: send each game live to s3://<bucket>/live/<channel>/ (live_broadcast.py)."""
     global broadcaster
-    import live_broadcast
+    try:
+        import live_broadcast
+    except ImportError:                                      # built without it (build_helper.bat nobroadcast)
+        print("Live broadcast isn't part of this build of the helper.", flush=True)
+        return
     i = sys.argv.index("--broadcast")
     channel = sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--") else "game"
     if "--bucket" not in sys.argv:
