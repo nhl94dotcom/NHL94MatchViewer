@@ -553,6 +553,8 @@ With penalties on:
   | 38-47, 81-98 | higher |
   | **47-62, 99** | **highest** (about 1.5 times the lowest) |
 
+  The leagues' results show it: players at 63-80 take fewer penalties than those at 47-62.
+
 - **Delayed penalties:** once the other team has a penalty coming, **your team can't be called** for checks, hooks,
   holds or trips until the whistle (only goalie interference and injury roughing still count). Play physically, and
   shoot (section 6).

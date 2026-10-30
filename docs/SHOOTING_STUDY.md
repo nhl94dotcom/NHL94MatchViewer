@@ -116,6 +116,72 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 - **The Genesis game has tightened over the years:** 8.1-8.7 goals a game and 34-36% shooting in 2013-2017, 7.3-7.6
   and 31-32% since 2020, on the same 23-24 shots; the SNES stayed at 8.5-9.3 and 35-40%.
 
+### Ratings, game flow, skill and luck (`analysis/league_player_study.py`, `analysis/league_flow_study.py`)
+
+**Penalties by roster Aggression** (Classic leagues, the retail ratings; players with 150+ games): the Genesis wrap
+shows. Penalties per 100 games at roster 0-5: 22, 27, 33, **35, 29**, 41 (per 100 checks 4.4, 5.8, 6.7, **6.8,
+5.6**, 6.6): rising to 3, then down at 4, which plays like a 1 (GENESIS_MECHANICS 8.2; few players at 0 and 5). The
+SNES has no wrap: 19, 22, 26, 26, 28, 28, 33 at 0-6, rising throughout, flattened by the "cold" maxing.
+
+**Which ratings make scorers** (within each team and position, all ratings fitted at once, so the team, its opponents
+and the people playing it cancel; about 95 Genesis and 90 SNES forwards; per roster step):
+
+| Forwards | Goals a game | Shots a game | Shooting % |
+| --- | --- | --- | --- |
+| Genesis | **Shot Power +0.29**, Speed +0.22, Shot Accuracy +0.15, Stick Handling +0.11, Agility +0.10, Weight -0.06 | Shot Power +0.69, Speed +0.51, Shot Accuracy +0.39, Stick Handling +0.32, Agility +0.27, Weight -0.19 | Shot Power +1.8 points, Speed +1.0, Shot Accuracy +0.7 |
+| SNES | Speed +0.18, Shot Power +0.16, Shot Accuracy +0.14, Agility +0.14, Stick Handling +0.14, Weight +0.08 | Speed +0.39, Agility +0.34, Stick Handling +0.33, Shot Power +0.29, Shot Accuracy +0.28, Weight +0.20 | Shot Power +1.8, Shot Accuracy +1.0 |
+
+Offensive Awareness, Checking and Pass Accuracy do next to nothing for a forward's scoring on either system (Offensive
+Awareness never touches the skater a person controls). Shot Power is the Genesis scorer's rating (its slapshot
+threshold, GENESIS_SHOOTING 4.3); on the SNES the ratings share it more evenly, and Weight helps a little instead of
+costing (it costs less acceleration there). These are what the ratings do as people use the players: a fast, strong
+shooter also gets the puck more.
+
+**Genesis checks a game** (the player's own checks thrown): forwards -0.57 a Weight step (lighter forwards check more),
++0.61 an Agility step, +0.66 a Checking step; defencemen +1.03 a Checking step, Weight +0.09. So a light, quick
+forward lands more checks, as acceleration gets him to his man: the user expected heavier players to log more
+(repeated tries), but the counter counts contacts, and a heavy forward reaches fewer.
+
+**Win probability** (every game whose goal list adds up to its score, overtime included; a tie counts half):
+
+| Lead after | 60 s | 300 s (1st period) | 600 s (2nd) | 750 s | 840 s | 870 s |
+| --- | --- | --- | --- | --- | --- | --- |
+| Genesis, 1 / 2 / 3 goals | 68 / 82 / 92% | 70 / 85 / 93% | 75 / 91 / 98% | 82 / 96 / 99% | 90 / 99 / 100% | 94 / 100 / 100% |
+| SNES, 1 / 2 / 3 goals | 67 / 80 / 93% | 69 / 84 / 92% | 74 / 89 / 97% | 80 / 95 / 99% | 89 / 99 / 100% | 94 / 100 / 100% |
+
+- **A plain model fits it:** both teams keep scoring at the league's rate, overtime a coin flip: within 1-4 points
+  everywhere (the real curves a little higher early, as the leader tends to be the better player). Goals in this game
+  behave like independent events.
+- **The 90% line** (the user's "coasting"): a 2-goal lead stays at 90% or more from 570 s on (Genesis) or 640 s (SNES),
+  a 3-goal lead from 70-90 s (4 and 5 goals from 130-210 s only because few games have them earlier).
+- **The players matter as much as the lead:** a 1-goal lead after two periods holds 75% of the time between players
+  rated within 100 of each other, 85% when the leader is rated 100+ higher, 57-59% when he is rated 100+ lower.
+
+**No momentum:** the team that just scored got the next goal 52.5% (Genesis) and 52.6% (SNES) of the time, against
+53.0% and 52.9% if each game's goals came in random order (571,000 and 284,000 goal pairs): if anything the team just
+scored on answers a shade more often.
+
+**No score effects:** the team leading after two periods gets 50.8 / 51.6 / 54.9% of the third-period shots with a
+1 / 2 / 3+ goal lead (Genesis; SNES 50.7 / 51.5 / 55.0%), just what a side with the same rating edge gets when the game
+is tied (51.1 / 52.0 / 53.9%; SNES 50.9 / 51.6 / 53.3%). Leaders don't sit back and trailers don't swarm; the high shot
+shares of periods 1-2 (54-65%) were partly why they led.
+
+**Skill and luck:** each player's odd and even games in a league season (3,622 Genesis and 1,565 SNES player-seasons
+with 10+ games each way) correlate 0.77-0.78 in win %, 0.84-0.86 in goal difference, 0.84-0.87 in shots and 0.78-0.80
+in shooting %: results in this game are mostly the player (and the team he plays). Save % is the most luck (0.67 /
+0.53), as the computer is in net.
+
+**Player ratings** (an Elo rating per person in date order, tuned on the next games: K 16 Genesis, 24 SNES): it
+predicts the next game with log loss 0.598 / 0.591 against 0.693 for a coin flip; regulars spread 185 / 210 points, so
+a one-standard-deviation edge wins 74% / 77%.
+
+**By year:** the Genesis shooting % fell from 33-36% (2013-2019) to 31-32% (2020 on) on the same shots, penalty
+minutes from about 6 a game to 3-5; one-timers, breakaways and checks stayed level. SNES pass completion jumped from
+52-57% to 63-65% in 2025-26 (new leagues or ROMs counting differently, most likely); the rest level.
+
+**Goals by second of the period:** the first 10 seconds give a third of the usual rate (the faceoff), the last 10
+seconds about 8% more than usual; the rest is flat.
+
 ## Home / away and up / down, together (rerun 2026-10-30)
 
 The user asked for the two split together: Home going up, Home going down, Away going up, Away going down. This

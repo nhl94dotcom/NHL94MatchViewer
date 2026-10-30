@@ -651,6 +651,10 @@ working Aggression read from the recording): penalties per share of skater time 
 0-4, 0.35 at 5-9 and 0.7 at 10-15, so the high working values do draw more calls, if more steeply than the roll alone
 says (few penalties, and the same players again and again).
 
+**The leagues' results show the wrap at the roster level too** (Classic leagues, the retail ratings): penalties per
+100 games 27, 33, 35 at roster 1-3, then **29 at 4** (per 100 checks 5.8, 6.7, 6.8, then 5.6): SHOOTING_STUDY, "Ratings,
+game flow, skill and luck".
+
 The ranges come from the hot / cold value (-3 to +2); 1-5 were checked against the recordings (rating 5 read 10
 there), 0 and 6 follow from the same formula. The last column is the average penalty chance against a working 0, for
 any fouling move. **A rating-4 player plays like a rating-1. Ratings 6 and 3 are the most penalty-prone**, though the
