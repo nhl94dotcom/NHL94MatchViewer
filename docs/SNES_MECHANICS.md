@@ -876,8 +876,8 @@ Ordered by how much the answer would matter in league play (penalties off).
 
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
   the way a person does); it needs many more recorded games.
-- **Instant whistles on a person goalie's catch** (5.4): about 1 catch in 16, cause not found. Each one is a faceoff in
-  his own end instead of a clear.
+- **Instant whistles on a person goalie's catch** (5.4): mostly explained (2026-10-30): 12 of 16 were a delayed
+  penalty against his own team, whistled when his catch gave his team the puck. 3 in 386 catches remain unexplained.
 - **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example (NEEDS_FROM_YOU).
 
 **Expected goals:**

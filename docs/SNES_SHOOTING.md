@@ -533,8 +533,15 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   the puck any farther out is whistled at once** (the Genesis line is 170 from centre). **Confirmed:** people's goalies
   never kept the puck longer than 2.34 s before a whistle or a pass (245 pickups), and all 6 dive catches were whistled
   at once. A computer goalie covers instead (5.3); his whistles came 0.6-3.3 s after he got the puck (11).
-- **Open:** about 15 times (of 245) a person's goalie got the whistle the instant he caught the puck, near his net,
-  with no dive, no penalty and no button held; no route for it has been found in the code yet.
+- **The whistle the instant a person's goalie catches the puck is mostly a delayed penalty** (2026-10-30,
+  `analysis/snes_goalie_whistle.py`: 386 catches by a person's goalie with the clock running in the SNES recordings,
+  16 whistled within 150 ms). A penalty with minutes waits in the penalty buffer (PenBuf $15DE, the referee's arm up)
+  until the offending team has the puck (`checkfornewpen`), and a goalie's catch gives it to his team. In 12 of the 16
+  a penalty against one of his own teammates was pending at the catch (roughing, cross-checking, tripping,
+  interference, holding), called seconds earlier, which is why it looked like no penalty; the hold count was still
+  at 140 when play stopped. One more was the end of the period. Still open: 3 whistles (`Stop4Pen`'s plain whistle on
+  the puck) with no penalty pending, two of them catches in a ready stance or pad stack near his net, one a dive catch
+  on his own goal line.
 
 ### 5.5 The save button for a person in net (A, held)
 
