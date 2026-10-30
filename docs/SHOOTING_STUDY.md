@@ -97,7 +97,11 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
   Over a whole power play the shorthanded team's scoring falls about three times as much as the power play's rises.
   Most of that is the first 20 seconds after the call: the restart faceoff is in the penalized team's end and it
   hardly scores, while the power play is held down by the restart too (4-on-4 is just as low then). After that the
-  two are about equal and opposite. (The databases list every minor as 120 s; 132 of 333 Genesis leagues and 9 of
+  two are about equal and opposite. That fits how goals come in this game (the user's reading): in the recorded games
+  81% of Genesis and 79% of SNES goals came off the rush (within 5 s of the zone entry), only 3-5% from a faceoff
+  play, and scoring in the 20 game-seconds after any faceoff was 16% (Genesis) and 26% (SNES) below the rest of play.
+  A penalty means a faceoff, usually in the penalized team's end: no rush for either side, and the shorthanded team
+  must get the puck out and back up the ice before it can rush. (The databases list every minor as 120 s; 132 of 333 Genesis leagues and 9 of
   181 SNES leagues play 1-minute minors, which the script finds from each league's own power-play goals.)
 - **No sign of the backwards comeback bonus** (+2 Offensive Awareness and Checking, +4 pass / shoot bias for a tied or
   trailing team, on in the first half of the third period by a bug: GENESIS_MECHANICS 2.3): the trailing team's share
