@@ -103,8 +103,14 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 - **The SNES second period has about 5% fewer goals** (2.80 against 2.96-2.98) on the same shots (7.80 against
   7.72-7.73): goals per shot 35.9% against 38.3-38.6%, for both teams (Home 8% fewer than in periods 1 and 3, Away
   3%). Each period has one team attacking each net, so it isn't a net, and the screen direction (+2.4% goals going
-  up) accounts for only part of Home's drop. The Genesis periods are equal. Cause unknown (SNES_MECHANICS 16). The
-  SNES harness's bottom-net runs were all played in period 2, so its top- / bottom-net differences may be partly this.
+  up) accounts for only part of Home's drop. The Genesis periods are equal. Cause unknown (SNES_MECHANICS 16). **Not
+  the period number** (2026-10-30): in periods 1-2 the code reads it only for the records, and the harness
+  (`analysis/scoring_map/snes_period_hand_run.py`) played the same 52,000 standing shots against the set computer
+  goalie with only the period number changed, period 1 as 2 at the top net and period 2 as 1 at the bottom: the same
+  result shot for shot (110 and 186 goals, none different). So the harness's bottom-net runs (period 2) aren't
+  affected by it either. What period 2 changes is the direction of play: each team attacks the other net. Something
+  that goes with a team and a direction together (code that uses the team where it should use the direction, or the
+  people), or something in play a standing shot doesn't reach, is left.
 - **The Genesis game has tightened over the years:** 8.1-8.7 goals a game and 34-36% shooting in 2013-2017, 7.3-7.6
   and 31-32% since 2020, on the same 23-24 shots; the SNES stayed at 8.5-9.3 and 35-40%.
 

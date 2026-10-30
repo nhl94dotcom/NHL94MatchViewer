@@ -877,8 +877,10 @@ Ordered by how much the answer would matter in league play (penalties off).
 - **The SNES second period.** In the leagues' 36,180 games both teams score about 5% fewer goals in period 2 on the
   same shots (goals per shot 35.9% against 38.3-38.6%); the Genesis periods are equal. Not a net (each period has one
   team at each) and only partly the screen direction. Something about the period or its set-up (each side's goalie
-  at the other end) is a guess; a recording or a harness test of the same shots in periods 1 and 2 would show it (LEAGUE_RESULTS, "Game-wide
-  patterns").
+  at the other end) is a guess. Not the period number: the code reads it only for the records in periods 1-2, and
+  the same standing shots with only the period number changed came out the same shot for shot (2026-10-30;
+  LEAGUE_RESULTS, "Game-wide patterns"). Left: something that goes with a team and a direction together (code that
+  uses the team where it means the direction), or play a standing shot doesn't reach.
   (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; LEAGUE_RESULTS.)
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
   the way a person does); it needs many more recorded games.
