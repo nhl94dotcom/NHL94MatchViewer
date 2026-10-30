@@ -246,7 +246,9 @@ None of it covers a person in net yet: those tests are to be designed with the u
 
 - **Not yet seen in real play.** Two practice tests are on the request list ([NEEDS_FROM_YOU](NEEDS_FROM_YOU.md)
   items 5 and 6): a dozen Down slapshots from the middle on the Genesis, and a dozen slapshots from the SNES left lane
-  against its mirror.
+  against its mirror. The recordings so far (2026-10-30) don't test them: the 10 Genesis Down slapshots by people from
+  the middle (no goals) were all taken on the rush, not standing at a set goalie, and the SNES lane saw 3 shots (1
+  goal).
 - **The goalie.** On the Genesis the goalie's Agility sets his reach (12-15) and decides most slapshots (above:
   real goalie profiles). On the SNES every goalie has the same body box and save frames, and the profiles barely matter
   (SNES goalie profiles, above), except that Roy closes the top net's best slapshot. The shooter's ratings are covered for both systems
