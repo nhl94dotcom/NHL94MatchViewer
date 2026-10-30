@@ -104,6 +104,8 @@ goals = sum(xg.play_out((px, py, pz), (tx, goal_line, tz), max(1.0, speed / 68),
 print("xG", goals / n)
 ```
 
+- **A goalie locked in an animation** (a save move or pad stack, pflags bit 5): `locked=<frames until the lock
+  clears>` in `Goalie`, and his velocity over the frames ahead if you have them (he can't react, only slide).
 - **With the goalie's stick** (recorded shots in this project have it): make `rom = xg.GenesisRom(open(ROM, "rb").read())`,
   give the goalie `rom=rom, frame=<his sprite frame>, facing=<his facing>, mirror=<drawn mirrored>`, and pass
   `stick=True` to `play_out`.
@@ -164,8 +166,10 @@ recorded goalie.
 
 **Known gaps**, all documented in the two shooting docs:
 
-- Genesis: far too low when the goalie is **already in a save move** at the shot (often a pad stack): the game 24%,
-  the model 15%; a little high when he is set (the game 7%, the model 10%).
+- Genesis: a goalie **already in a save move** at the shot (often a pad stack) must be held in it: pass
+  `locked=<frames left in his lock>` to `Goalie` (the game's pflags bit 5, +$62's low byte bit 5; this project's
+  converter does it from the recording). Without it the model is far too low on those shots (the game 24%, the model
+  15%). A little high when he is set (the game 7%, the model 10%).
 - SNES: too low on close follow-ups in the 10 frames after the puck comes off the goalie (the game ignores him for
   those frames); rare in real games.
 - Neither has skaters in the way (screens, deflections); blocked shots are left out of totals.

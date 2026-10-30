@@ -290,9 +290,10 @@ and anything a person does with the goalie beyond what the computer would. Pass 
 each release. It gets dekes (game 19.7%, model 18.7%) and EA first shots right, runs a little high when the goalie is
 set (6.7% against 10.3%), and far too low when the goalie is **already in a save move** at the shot (24% against 15%):
 it lets him rethink and skate, where the game holds him in his move. Adding his stick improved both these shots and the
-886 recorded ones (log loss 0.2657 to 0.2630), so recorded shots have had it since. Holding a goalie in his save move
-fixes the game's numbers (on those shots log loss 0.42 to 0.30) but made the recorded shots worse (0.2804), because a
-recorded goalie's speed going into a pad stack is too rough to follow him locked; it stays off for now.
+886 recorded ones (log loss 0.2657 to 0.2630), so recorded shots have it. And a goalie **locked in his save move**
+(or pad stack) at the shot is now held in it for as long as the recording shows the lock (the game's pflags bit 5,
+kept in every match file), his speed taken from where he slides next: on the game's own shots at such a goalie log
+loss 0.42 to 0.30, on the recorded shots 0.2630 to 0.2612. Both are in every recorded shot's xG.
 
 Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).
 

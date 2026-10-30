@@ -20,12 +20,15 @@ Checked against the game itself (2026-10-29, analysis/scoring_map/xg_calib.py: 3
 the exact state at the release): right on dekes and EA first shots, a little high on shots with the goalie set, and
 far too low when the goalie is already in a save move (the game 24%, the model 15%). The goalie's stick (play_out's
 `stick`, the converter passes the ROM) helps both there and on the 886 recorded shots (log loss 0.2657 -> 0.2630), so
-recorded shots have it since. Starting a goalie already in a save move locked in it (add_expected_goals' `lock`)
-fixes the game's numbers but not the recordings' (0.2657 -> 0.2804: a recorded goalie's speed into a fresh pad stack is
-too rough), so it stays off (xg_stick_eval.py games compares them).
+recorded shots have it since. A goalie locked in an animation at the release (a save move, a pad stack: pflags bit 5,
+which match files keep as `locked`, with the frame it clears) is held in it for the frames the recording shows, his
+speed taken from the next 100 ms (add_expected_goals' `lock`): with the stick, log loss 0.2612 on the recorded shots,
+and on the game's own shots at a goalie in a save move 0.42 -> 0.30; on since (xg_stick_eval.py games compares them).
+Older match files without `locked` fall back to the save move's length less the time it has run.
 
 Shots with a shooting animation only (shots and one-timers); pass shots and deflections have no xG.
 """
+import bisect
 import copy
 import math
 import random
@@ -356,7 +359,13 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
                 reach = 12
             anim = m['anim'][(f * 12 + gk) * 4:(f * 12 + gk) * 4 + 4]
             saving = 0
-            if lock and int(anim, 16) in SAVE_ANIM:              # frames left in the save move he is in
+            if lock and m.get('locked') is not None:            # the recording's own lock (pflags bit 5): locked
+                rows_l = m['locked']                             # now, until the frame it clears
+                at = bisect.bisect_right([r[0] for r in rows_l], f) - 1
+                if at >= 0 and rows_l[at][1] >> gk & 1:
+                    end = next((r[0] for r in rows_l[at + 1:] if not r[1] >> gk & 1), len(m['t']) - 1)
+                    saving = max(1, round((m['t'][end] - m['t'][f]) / (1000 / 60)))
+            elif lock and int(anim, 16) in SAVE_ANIM:            # older match files: frames left in the save move
                 j = f
                 while j > 0 and m['anim'][((j - 1) * 12 + gk) * 4:((j - 1) * 12 + gk) * 4 + 4] == anim:
                     j -= 1

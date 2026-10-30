@@ -411,6 +411,8 @@ class MatchReader:
         self.match["nets"] = []  # [frame, top net x, y, bottom net x, y] whenever either net moves
         self.match["aim"] = []  # [frame, aim direction 0-8] whenever it changes (AIM_DIR)
         self.match["fast"] = []  # [frame, record, speed / 100]: a person's skater moving fast with deceleration off (3.4)
+        self.match["locked"] = []  # [frame, mask of records locked in an animation (pflags bit 5, pfalock)] whenever it
+                                   # changes: a goalie's save move holds him until it runs out (tools/xg.py lock)
         self.match["work"] = []  # [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever they change (WORK)
         self.last_work = [None] * PLAYERS
         self.aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
@@ -509,9 +511,11 @@ class MatchReader:
         nets = [cap.fixed(i, BASE + SIZE * 12 + X), cap.fixed(i, BASE + SIZE * 12 + Y), cap.fixed(i, BASE + SIZE * 13 + X), cap.fixed(i, BASE + SIZE * 13 + Y)]
         if not self.match["nets"] or self.match["nets"][-1][1:] != nets:
             self.match["nets"].append([len(self.match["t"]) - 1] + nets)
-        mask = 0
+        mask = locked = 0
         for k in range(PLAYERS):
             rec = BASE + SIZE * k
+            if cap.byte(i, rec + FLAGS) & 0x20:
+                locked |= 1 << k
             self.match["pos"] += [cap.fixed(i, rec + X), cap.fixed(i, rec + Y)]
             self.facing.append(str(cap.byte(i, rec + FACING) & 7))
             self.roster.append(DIGITS[min(cap.byte(i, rec + ROSTER), 35)])
@@ -533,6 +537,8 @@ class MatchReader:
                 self.match["work"].append([len(self.match["t"]) - 1, k] + work)
                 self.last_work[k] = work
         self.match["ctrl"].append(mask)
+        if not self.match["locked"] or self.match["locked"][-1][1] != locked:
+            self.match["locked"].append([len(self.match["t"]) - 1, locked])
         vectors, counts = [], []
         for block in STAT_BLOCKS:
             vector = [cap.word(i, block + o) for o in TEAM_STATS]

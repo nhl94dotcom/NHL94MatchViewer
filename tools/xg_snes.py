@@ -280,8 +280,26 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False):
 _CACHE = {}  # every input of a shot's play-out -> its xg (the live broadcast re-analyses the game every few seconds)
 
 
-def add_expected_goals(m, rom):
-    """Each shot and one-timer of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's frames)."""
+def touch_timer(m, f, gk, frames=10):
+    """The goalie's no-touch timer at frame f, as near as a recording shows it: puckgoalie sets it to 10 when the puck
+    comes off his body (5.4), and checkpuckcoll_ccx then skips him, stick and body, until it runs out. The puck loose
+    inside his body box (within 11 each way) in the last `frames` frames: 10 less the frames since; else 0."""
+    T, P, own = m["t"], m["pos"], m["owner"]
+    j = f
+    while j > 0 and T[f] - T[j - 1] <= frames * 1000 / 60:
+        j -= 1
+        if own[j] == gk:
+            return 0                                       # he had it: a pass or a clear, not a bounce
+        dx = m["puck"][3 * j] - P[(j * 12 + gk) * 2]
+        dy = m["puck"][3 * j + 1] - P[(j * 12 + gk) * 2 + 1]
+        if own[j] < 0 and -11 <= dx <= 11 and -11 <= dy <= 11:
+            return max(0, frames - round((T[f] - T[j]) / (1000 / 60)))
+    return 0
+
+
+def add_expected_goals(m, rom, notouch=False):
+    """Each shot and one-timer of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's frames). notouch:
+    the goalie's no-touch timer from the recording (touch_timer)."""
     if m.get("system") != "snes" or not m.get("work"):
         return
     data = RomData(rom)
@@ -323,12 +341,15 @@ def add_expected_goals(m, rom):
             gvx = (gx - P[(j0 * 12 + gk) * 2]) / fr0 * 4096
             gvy = (gy - P[(j0 * 12 + gk) * 2 + 1]) / fr0 * 4096
             frame = int(m["frame"][(f * 12 + gk) * 3:(f * 12 + gk) * 3 + 3], 16)
-            goalie = Goalie(data, gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4])
+            goalie = Goalie(data, gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4],
+                            puck_control=gw[4] if len(gw) > 4 else 10)
+            if notouch:
+                goalie.nopuck = touch_timer(m, f, gk)
         tx, tz = AIM[sh["aim"]["d"]]
         pp = max(1.0, sh["speed"] / 136)
         perfect = (sha + 1) / (sha + 16)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, tx, ty, tz, pp, sha,
-               (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4]) if goalie else None)
+               (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4], goalie.nopuck) if goalie else None)
         if key in _CACHE:
             sh["xg"] = _CACHE[key]
             continue
