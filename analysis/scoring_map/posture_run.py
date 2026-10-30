@@ -1,6 +1,6 @@
-"""Press or sit back, played in the real game (Genesis test ROM; 2026-10-29; DEFENCE_STUDY "Pressure or sit back,
-played in the game"). The recorded games couldn't separate the two (analysis/defence_posture.py): defenders pick their
-posture to suit the play, and there are few games. Here the posture is fixed and the same rushes are played against
+"""Press or sit back, played in the real game (Genesis test ROM; 2026-10-29). The recorded games
+couldn't separate the two: defenders pick their posture to suit the play, and there are few games. The attackers are
+scripts that don't dodge or delay as a person would, so the results say only what each posture does to set plays. Here the posture is fixed and the same rushes are played against
 each one.
 
 The attack (pad 1, the home centre, record 2; the puck carrier's ratings the map's usual 20 / 15):

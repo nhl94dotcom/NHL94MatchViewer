@@ -870,11 +870,8 @@ Ordered by how much the answer would matter in league play (penalties off).
 
 **Would change how people play or how games are judged:**
 
-- **Pressing or sitting back against a person.** Against scripted rushes pressing beat sitting back on the SNES too
-  (the 2-on-1: 0.18 goals a rush against 0.49; DEFENCE_STUDY, "Pressure or sit back, played in the game"), but a
-  script doesn't dodge or delay the way a person does, and that can't be scripted fairly. Only recorded games can
-  settle it (`analysis/defence_posture.py`); so far they show no difference, with a pressing person letting more shots
-  through.
+- **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
+  the way a person does); it needs many more recorded games.
 - **Instant whistles on a person goalie's catch** (5.4): about 1 catch in 16, cause not found. Each one is a faceoff in
   his own end instead of a clear.
 - **Ghosting through a skater at ordinary speeds** (7.5b): the GIF case; needs a recorded example (NEEDS_FROM_YOU).

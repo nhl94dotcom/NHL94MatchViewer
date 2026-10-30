@@ -2,8 +2,7 @@
 
 The question behind every study here is the user's: **how do you win at NHL '94?** The shooting studies
 ([SCORING_MAP](SCORING_MAP.md)) answer half of it: which chances score and how to make them. This plan is the other half:
-how to stop them. It is a plan, not findings: the results go into [DEFENCE_STUDY](DEFENCE_STUDY.md) as they come in (phase 1,
-the recorded games, and phase 2's first pilot, 2026-10-25), and into the right doc for each kind of finding
+how to stop them. It is a plan, not findings: the results go into the right doc for each kind of finding
 (SCORING_MAP for plays run in the game, a new section of GENESIS_MECHANICS for mechanics, the guides for the practical
 advice).
 
@@ -77,7 +76,7 @@ results.
 - **Order:** the deke first (it scores most), then the one-timer pass, then the slapshots, then the EA Special.
 - **Load:** like a deke grid per play: several hours each in gentle mode.
 - **Pilot (2026-10-25):** the deke and the floater against one defender standing or left to the computer
-  (`def_run.py`; results in DEFENCE_STUDY): the deke is stopped by a body on the carrier's path toward the middle.
+  (`def_run.py`): the deke is stopped by a body on the carrier's path toward the middle.
   Next: the floater on a grid that follows its line across, then the one-timer pass.
 
 ### 5. Blocking: does a skater in the lane stop a shot?

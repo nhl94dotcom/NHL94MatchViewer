@@ -242,7 +242,7 @@ close to the goalie for a real shot.
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near). The studies
 since add skating shooters, one-timers, dekes, floaters and EA Specials, other goalies (Genesis) and, as a pilot, one
-defender (DEFENCE_STUDY). None of it covers a person in net yet: those tests are to be designed with the user.
+defender. None of it covers a person in net yet: those tests are to be designed with the user.
 
 - **Not yet seen in real play.** Two practice tests are on the request list ([NEEDS_FROM_YOU](NEEDS_FROM_YOU.md)
   items 5 and 6): a dozen Down slapshots from the middle on the Genesis, and a dozen slapshots from the SNES left lane
