@@ -630,7 +630,8 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - So what beats him is **time**: a quick, hard shot from close in, or a pass across that makes him slide again (a
   one-timer), leaves him short of the crossing point. A slow shot from far out gives him time to get there.
 - Point-blank shots at him while he's standing still mostly rebound.
-- **His Agility (reach) is what makes him good.** Played in the game itself (SCORING_MAP), a 4 / 4 shooter's best
+- **His Agility (reach) is what makes him good.** In the leagues' results goalies with Agility 47-62 on the screen
+  stop 65% of shots, at 99 (Roy, Belfour) 72%. Played in the game itself (SCORING_MAP), a 4 / 4 shooter's best
   standing slapshot scores 19% against Hrudey (a mid-pack starter played cold), 8% against a typical starter with
   Agility 4, and 3-4% against Roy or Belfour (6). One-timers (58% down to 48-51%) and dekes (85% down to 72-76%)
   hardly mind; floaters fade (51% down to 16-20%). **Against a good goalie, one-timers and dekes are the shots.**

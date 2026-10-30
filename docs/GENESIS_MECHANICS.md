@@ -1182,9 +1182,9 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
 
 ### 13.6 Home and away, up and down the screen: what differs
 
-**Home and away** (the leagues' results, 86,735 games: Home wins 50.5%; teams with the +2 home bonus win 2.3 points
-more often at home than away, teams with none 0.4; Home's 5% more shots on goal are the screen direction, below:
-SHOOTING_STUDY, "The leagues' own results"):
+**Home and away** (the leagues' results, 86,735 games: Home wins 50.5%; a team's home edge grows with its home bonus
+plus away penalty, +1.1 points of win rate at 0 to +3.6 at 3, so the bonus is most of it; Home's extra shots on goal
+are the screen direction, below: SHOOTING_STUDY, "The leagues' own results"):
 
 - **The hidden home / away bonus** (2.3): each team's ROM byte gives its home value to five working ratings at
   home (Offensive and Defensive Awareness, Stick Handling, Shot Accuracy, Passing) and takes its away value off them on

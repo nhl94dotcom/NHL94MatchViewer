@@ -13,8 +13,9 @@ the goalie and were stopped but not counted as shots on goal. **xG** is expected
 ## The leagues' own results (2026-10-30)
 
 The user's league result databases (kept outside this repository; `analysis/league_home_study.py` reads them and
-prints aggregates only): **86,735 Genesis and 36,180 SNES games** from 2013 to 2026, simulated games left out. Each
-row has both sides' goals, shots on goal (the game's own count) and faceoff wins, by period. Ranges are 95%.
+prints aggregates only; `analysis/league_goalie_study.py` the goalies): **86,735 Genesis and 36,180 SNES games** from
+2013 to 2026, simulated games left out. Each row has both sides' goals, shots on goal (the game's own count) and
+faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 
 | | Genesis | SNES |
 | --- | --- | --- |
@@ -25,22 +26,37 @@ row has both sides' goals, shots on goal (the game's own count) and faceoff wins
 | Home's share of shots on goal, periods 1 / 2 / 3 | 52.3% / **49.3%** / 52.4% | 52.8% / 52.1% / 52.6% |
 | Home's share of goals, periods 1 / 2 / 3 | 49.6% / 51.2% / 49.9% | 51.6% / 50.4% / 51.6% |
 | The same player at home minus away (players with 20+ games each way) | shots +0.67 a game, win rate +1.0% (+/- 0.8) | shots +1.20 a game, win rate **+4.5%** (+/- 1.3) |
-| A team's home win rate minus its own away win rate: retail home bonus +2 / none / other teams | **+2.3 / +0.4** / +0.7 points | +4.9 / +3.9 / +5.0 points |
+| Home and screen direction separated (Home's share is h x u / (h x u + 1) going up in periods 1 and 3, h / (h + u) going down in period 2): shots on goal, home h / up u | 1.034 / **1.062** | **1.101** / 1.012 |
+| The same, goals | 1.019 / **0.970** | 1.040 / 1.024 |
+| Classic leagues (the retail rosters and home bonuses): a team's home win rate minus its own away win rate, by the team's home bonus + away penalty 0 / 2 / 3 | +1.1 / +2.7 / +3.6 points | +2.7 / +4.9 / +7.1 points |
 
-- **Genesis: the shot edge is the screen direction, not home.** Home's share of shots on goal is 52.3% in periods 1
-  and 3, when it attacks up the screen, and 49.3% in period 2, when it attacks down: the team going up gets about 10%
-  more shots counted, whoever it is (GENESIS_SHOOTING 4.7: low shots going down are knocked away by the goalie's
-  stick uncounted). Goals lean the other way (the team going down scores a little more). The home edge in results
-  is small (50.5%), and the same player wins only about 1 point more often at home.
-- **Genesis: the home bonus works as coded.** Teams the retail ROM gives +2 at home win 2.3 points more often at
-  home than away; teams with no bonus 0.4. (League ROMs can edit the bonus, so this is the retail table's teams.)
+- **Genesis: the shot edge is the screen direction, and it's a counting effect.** Going up the screen a team gets
+  6.2% more shots on goal counted but scores 3.0% fewer goals (goals per counted shot 30.5% going up, 33.6% going
+  down). If people shot less going down they would also score less going down; they score more. So shots going down
+  are taken but not counted: the leading explanation is the goalie's stick knocking low shots away uncounted
+  (GENESIS_SHOOTING 4.7), since going down people push Down, a low shot. The SNES, whose count doesn't depend on a
+  shot's height (SNES_SHOOTING 4.6), shows almost none of it (+1.2% shots, goals alike). It holds for 161 of the 213
+  players with 50+ games, compared with themselves, and in every year from 2013 to 2026 (1.05-1.10).
+- **Home: the hidden home / away bonus, on both systems.** Comparing each team with itself, home against away (its
+  own strength cancels), the more its home bonus plus away penalty, the bigger its home edge. On the Genesis the
+  overall edge is small (50.5%); on the SNES it is bigger (52.3%; the same player wins 4.5 points more often at home,
+  and 147 of 156 players shoot more at home), because the same bonus is worth more on the SNES's 0-15 rating scale
+  than on the Genesis's 0-30. On the SNES even the teams with no bonus or penalty gain about 2.7 points (1.4 each
+  way): the home centre's faceoff tie-break (17 of 32 at equal timing, SNES_MECHANICS 9; Home won 7% more faceoffs
+  here, as that predicts) is the likeliest rest. (Only the Classic leagues' bonuses are known, from the retail tables;
+  SDL16, for one, gives nearly every team +1 / -1.)
 - **The 29 recorded Genesis games' home edge in attempts** (below: 1.22 times as many per minute) isn't in the
-  leagues' results: there Home's shots in period 2, going down, are below half. It was the recorded games' players and
-  sample, not the game.
-- **SNES: a real home edge, and not from the bonus or the direction.** Home wins 52.3%, the same player wins 4.5
-  points more often at home, and 147 of 156 players shoot more at home; Home's shot share is the same in every period,
-  and teams gain 4-5 points at home whatever their bonus. Part of it may be faceoffs (the home centre wins ties: 17 of
-  32 at equal timing, SNES_MECHANICS 9; Home won 7% more of them here). The rest is open.
+  leagues' results. It was the recorded games' players and sample, not the game.
+- **Goalie ratings** (`analysis/league_goalie_study.py`; the Classic leagues, so each goalie's retail ratings; 559,049
+  Genesis and 350,696 SNES shots against): **Genesis save % rises with the goalie's Agility**: 64.8% at roster 3,
+  68.2% at 4, 69.7% at 5, 72.2% at 6 (+2.2 points a step, correlation +0.93 over 29 goalies; Roy 72.4%, Belfour
+  72.0%), as his Agility is his reach (GENESIS_SHOOTING 5.1). **SNES save % doesn't: 62.3-63.5% at every Agility**
+  (correlation +0.24), as every SNES goalie is the same size (SNES_SHOOTING 5.1). The same goalies on the same teams
+  show nothing on the SNES, so the Genesis gradient isn't just good teams in front of them. (Puck Control tracks
+  Genesis save % too, +0.69, but the best goalies have both.)
+- **Team ratings can't be checked this way:** a team's roster strength doesn't predict its league results (Genesis
+  -0.11, SNES -0.46 against the top 12 skaters' Overall), as people pick or are given teams to balance a league, and
+  Overall is a poor measure anyway.
 
 ## Home / away and up / down, together (rerun 2026-10-30)
 

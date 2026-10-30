@@ -439,7 +439,7 @@ each way), at any height, plus areas for his stick and pads that move with his a
 went in within 12.6 units of a goalie's centre.
 
 - **His size never changes**: not with Agility, not when a person controls him, not in a pad stack, not against
-  one-timers.
+  one-timers. In the leagues' results every goalie, Roy to the weakest, stops 62-64% of shots.
 - **A diving goalie lets lifted pucks through** (height 5 or more): shoot high at a diving goalie.
 - To score, put the puck **outside that box**: a corner, from inside the zone where shots can be exact.
 - **Hard shots come back out.** A shot at 17,000 or more almost never sticks to him (1 in 10 held in recorded games): it

@@ -109,9 +109,62 @@ def study(path, label):
               f"home / away shots {shots:.3f}")
 
 
+# The home / away bonus of each team in the retail tables (Genesis nhl94.bin and SNES NHL94_Classic agree): (home
+# bonus, away penalty), the ROM team byte's high and low nibbles. The Classic leagues play these rosters.
+RETAIL_HOME_AWAY = {'ANH': (1, 3), 'BOS': (2, 1), 'BUF': (2, 1), 'CGY': (0, 0), 'CHI': (2, 1), 'DAL': (0, 0), 'DET': (0, 0),
+                    'EDM': (1, 2), 'FLA': (1, 3), 'HFD': (0, 0), 'LA': (1, 1), 'MTL': (2, 1), 'NJ': (1, 2), 'NYI': (0, 0),
+                    'NYR': (1, 1), 'OTW': (1, 3), 'OTT': (1, 3), 'PHI': (2, 2), 'PIT': (2, 1), 'QUE': (0, 0), 'SJ': (1, 2),
+                    'STL': (2, 1), 'TB': (0, 0), 'TOR': (1, 1), 'VAN': (1, 1), 'WSH': (1, 1), 'WPG': (1, 1)}
+
+
+def direction_and_bonus(path, label):
+    """Home and up-the-screen separated (Home's share of a stat is h*u / (h*u + 1) in periods 1 and 3, when it goes
+    up, and h / (h + u) in period 2), and in the Classic leagues each team's home minus away win rate by its own home
+    bonus + away penalty (its strength cancels)."""
+    tot = defaultdict(float)
+    team = defaultdict(lambda: {True: [0, 0], False: [0, 0]})
+    with open(path, encoding="utf-8", errors="replace", newline="") as fh:
+        for r in csv.DictReader(fh):
+            if r.get("sim") == "1":
+                continue
+            for k in ("Shots", "Goals"):
+                for side in ("Home", "Away"):
+                    for p in ("P1", "P2", "P3"):
+                        v = num(r[side + k + p])
+                        if v is not None:
+                            tot[(k, side, p)] += v
+            if "classic" not in r["League"].lower():
+                continue
+            h, a = r["HomeTeamAbbrev"].strip(), r["AwayTeamAbbrev"].strip()
+            hs, as_ = num(r["HomeScore"]), num(r["AwayScore"])
+            if None in (hs, as_) or hs == as_:
+                continue
+            for t, home, won in ((h, True, hs > as_), (a, False, as_ > hs)):
+                team[t][home][0] += won
+                team[t][home][1] += 1
+    print(f"\n{label}: home and up-the-screen separated")
+    for k in ("Shots", "Goals"):
+        up = (tot[(k, "Home", "P1")] + tot[(k, "Home", "P3")]) / (tot[(k, "Away", "P1")] + tot[(k, "Away", "P3")])
+        down = tot[(k, "Home", "P2")] / tot[(k, "Away", "P2")]
+        print(f"  {k}: home factor {math.sqrt(up * down):.3f}, up-the-screen factor {math.sqrt(up / down):.3f}")
+    groups = defaultdict(lambda: [0.0, 0.0, 0])
+    for t, v in team.items():
+        if t in RETAIL_HOME_AWAY and v[True][1] >= 100 and v[False][1] >= 100:
+            w = min(v[True][1], v[False][1])
+            g = groups[sum(RETAIL_HOME_AWAY[t])]
+            g[0] += w * (v[True][0] / v[True][1] - v[False][0] / v[False][1])
+            g[1] += w
+            g[2] += 1
+    print("  Classic leagues, a team's home minus away win rate by its home bonus + away penalty:")
+    for s, g in sorted(groups.items()):
+        print(f"    {s}: {g[2]} teams, {100 * g[0] / g[1]:+.1f} points")
+
+
 def main():
     study(DATA / "All_Games_GENS.csv", "GENESIS")
     study(DATA / "All_Games_SNES.csv", "SNES")
+    direction_and_bonus(DATA / "All_Games_GENS.csv", "GENESIS")
+    direction_and_bonus(DATA / "All_Games_SNES.csv", "SNES")
 
 
 if __name__ == "__main__":
