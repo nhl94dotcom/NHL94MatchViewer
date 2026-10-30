@@ -385,8 +385,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 ### 10.1 Cold players take the penalties
 
-**11 of 14 penalties in the recorded games were by players with maxed Aggressiveness**: on the SNES, maxed
-Aggressiveness (below its band's middle on the screen) is the dirty one.
+**31 of 52 penalties in the recorded games were by players with maxed Aggressiveness**, though skaters are maxed
+only 41% of the time: on the SNES, maxed Aggressiveness (below its band's middle on the screen) is the dirty one,
+called about twice as often.
 
 **Pokes are the risky move.** A poke check (B) that catches an opponent in front of you trips him every time (with
 penalties on), and a trip is called about five times as often as a check, a hook or a hold. And anything that stops a
@@ -408,7 +409,7 @@ count these as **Get-ups**, apart from real hooks.
 
 - **Anyone can be called**, including your computer-controlled teammates.
 - Crashing a goalie in his crease hard: called **40% of the time for a maxed-Aggressiveness player**, 15% at 7.
-- 4 of the 14 recorded penalties were interference. Stay out of the crease.
+- Interference is the commonest call in the recordings (18 of 52 penalties). Stay out of the crease.
 
 ### 10.5 Delayed penalties
 

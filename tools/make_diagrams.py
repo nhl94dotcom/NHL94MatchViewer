@@ -731,7 +731,7 @@ def penalty_chances():
     notes = ["Genesis: a person's chance is half the computer's (the range is doubled), so the CB check (contact as the computer) doubles it.",
              "Genesis working Aggression wraps at 16: rating 1 plays as 2-7, 2 as 8-12, 3 as 12-15 (or 0), 4 as 1-6: rating 4 plays like rating 1.",
              "SNES: a person's range is doubled too, so a person's skater is called half as often as the computer's.",
-             "SNES: a \"cold\" Aggression maxes at 15 (the hot / cold bug); 11 of the 14 recorded SNES penalties were by players at 15.",
+             "SNES: a \"cold\" Aggression maxes at 15 (the hot / cold bug); 31 of 52 recorded SNES penalties were by players at 15 (41% of skater time).",
              "Other moves have their own thresholds (Genesis: a knockdown 4 / 5, a hook or hold 7 / 5 of these; SNES: a poke trip 5 times these)."]
     for i, s in enumerate(notes):
         b.append(text(60, ly + 30 + i * 18, s, 12, SOFT))
@@ -1429,7 +1429,7 @@ def snes_hot_cold():
     b.append(text(L + 404, y + 11, "at or above the middle: plays normally", 12))
     notes = ["The black tick is the band's middle (hot / cold 0). Each rating has its own hot / cold byte, so read every number separately.",
              "About 46% of all ratings are maxed this way each game. Checked against the user's Edit Lines screenshots: all 99 numbers fit.",
-             "Maxed Aggression means more penalties (11 of 14 recorded); maxed Stick Handling means wobbling instead of falling."]
+             "Maxed Aggression means more penalties (31 of 52 recorded); maxed Stick Handling means wobbling instead of falling."]
     for i, s_ in enumerate(notes):
         b.append(text(40, y + 40 + i * 18, s_, 12, SOFT))
     return svg(W, y + 40 + len(notes) * 18 + 10, b, "SNES hot and cold")

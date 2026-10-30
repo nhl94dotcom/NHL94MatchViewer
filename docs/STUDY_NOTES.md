@@ -428,7 +428,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   accumulator is 16-bit there (`lda.w #$0014` is a word immediate), so `asl.b d0` / `lsr.b d0` (".b" is the direct-page
   operand, not the width) shift the whole word, and randoma takes ranges of 256 and up through Mul16U: nothing wraps.
   A person's range is 640 at Agr 0 down to 160 at 15, half the computer's chance at every value (2026-10-30, read again
-  from the code). SNES codes as in the SNES section. Recordings: 11 of 14 SNES
+  from the code). SNES codes as in the SNES section. Recordings (first 14; 31 of 52 by 2026-10-30, penalty_aggression.py): 11 of 14 SNES
   penalties by players at working Agr 15, the value the hot / cold bug gives every "cold" rating.
   SNES goalie interference (checkint): no person / computer test (the user: both are called; recordings: Ruuttu and
   Gill as computer skaters of person-played teams): the skater falls on impact as on the Genesis, then with the goalie's

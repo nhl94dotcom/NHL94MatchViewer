@@ -112,6 +112,6 @@
 <text x='60.0' y='420.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis: a person's chance is half the computer's (the range is doubled), so the CB check (contact as the computer) doubles it.</text>
 <text x='60.0' y='438.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Genesis working Aggression wraps at 16: rating 1 plays as 2-7, 2 as 8-12, 3 as 12-15 (or 0), 4 as 1-6: rating 4 plays like rating 1.</text>
 <text x='60.0' y='456.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: a person's range is doubled too, so a person's skater is called half as often as the computer's.</text>
-<text x='60.0' y='474.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: a "cold" Aggression maxes at 15 (the hot / cold bug); 11 of the 14 recorded SNES penalties were by players at 15.</text>
+<text x='60.0' y='474.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>SNES: a "cold" Aggression maxes at 15 (the hot / cold bug); 31 of 52 recorded SNES penalties were by players at 15 (41% of skater time).</text>
 <text x='60.0' y='492.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Other moves have their own thresholds (Genesis: a knockdown 4 / 5, a hook or hold 7 / 5 of these; SNES: a poke trip 5 times these).</text>
 </svg>

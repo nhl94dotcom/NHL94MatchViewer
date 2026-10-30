@@ -521,8 +521,9 @@ anywhere on the ice**.
 - **Upend (flip fall):** a checker with working Checking 20+ can upend a player facing a certain way. **Code**
 - **Injuries:** only **the puck carrier**, only when he **falls backward** (hit from the front), only while the clock
   runs, and only when he is **facing straight up or straight down the ice** (facing 0 or 4 of 8; `facedir & 3` = 0,
-  not a random 1 in 4). Then the roll succeeds more often the harder the hit (impact out of 160). **Confirmed:** all 5
-  recorded injuries were puck carriers facing straight down the ice; carriers face straight up or down about 40% of
+  not a random 1 in 4). Then the roll succeeds more often the harder the hit (impact out of 160). **Confirmed:** all 7
+  recorded injuries that can be traced (2026-10-30) were puck carriers facing straight up or down the ice (6 down, 1
+  up); carriers face straight up or down about 40% of
   the time. A carrier who skates straight up and down the ice and takes head-on hits gets hurt far more often than one
   who skates on diagonals. **An injury always gives the hitter a roughing minor** (with penalties on). **Whether the injured player
   is out for the period or the game depends on the checker's H/F (fighting) rating.** **Code**, with one confirmed case
@@ -645,6 +646,11 @@ samples):
 | 5 (81-98) | 6-11 | x 1.3 |
 | **6 (99)** | **11-14** | **x 1.5** |
 
+**Recorded** (`analysis/penalty_aggression.py`, 2026-10-30: 43 Genesis penalties in 15 games, the fouling player's
+working Aggression read from the recording): penalties per share of skater time rise with it, about 0.2 at working
+0-4, 0.35 at 5-9 and 0.7 at 10-15, so the high working values do draw more calls, if more steeply than the roll alone
+says (few penalties, and the same players again and again).
+
 The ranges come from the hot / cold value (-3 to +2); 1-5 were checked against the recordings (rating 5 read 10
 there), 0 and 6 follow from the same formula. The last column is the average penalty chance against a working 0, for
 any fouling move. **A rating-4 player plays like a rating-1. Ratings 6 and 3 are the most penalty-prone**, though the
@@ -657,7 +663,7 @@ whole spread is only about 1.5 to 1.
 - Once the hit is hard enough (the goalie's impact over 30): called 5 times in (40 - Aggression), about 12-20%; not
   doubled for people.
 - The skater who hits the goalie falls whether or not a penalty is called.
-- **Code**; no interference call has been recorded yet.
+- **Code**; one interference call has been recorded so far (on a computer-controlled skater).
 
 ### 8.4 Delayed penalties
 
@@ -1176,7 +1182,8 @@ What happens when a loose puck (a shot, a pass, a clearance) reaches a skater, f
 
 ### 13.6 Home and away, up and down the screen: what differs
 
-**Home and away** (the community's data: Home wins about 51%):
+**Home and away** (the community's data: Home wins about 51%; in the 29 recorded Genesis games Home took 1.22 times
+the attempts per minute, 1.07-1.38, though not a better share of goals per attempt: SHOOTING_STUDY):
 
 - **The hidden home / away bonus** (2.3): each team's ROM byte gives its home value to five working ratings at
   home (Offensive and Defensive Awareness, Stick Handling, Shot Accuracy, Passing) and takes its away value off them on

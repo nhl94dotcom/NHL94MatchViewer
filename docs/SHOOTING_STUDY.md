@@ -1,7 +1,7 @@
 # Shooting and goaltending: up and down the screen, home and away
 
-A study of every shot and one-timer in the recorded games. The first section (home / away and up / down, reworked
-2026-10-21) uses all 19 Genesis and 8 SNES games recorded through 2026-10-19; the rest uses **13 Genesis games (387
+A study of every shot and one-timer in the recorded games. The first section (home / away and up / down, rerun
+2026-10-30) uses every recorded game: 29 Genesis and 22 SNES; the rest uses **13 Genesis games (387
 shots and one-timers) and 5 SNES games (189)**, recorded 2026-10-14 to 2026-10-17. Most were played by one person, often as Boston, so the samples are
 small and some splits are only a handful of shots. Treat differences of a few percentage points as noise. Rerun it as
 more games come in: `python analysis/shot_table.py`, then `python analysis/shot_study.py` (from the project folder).
@@ -10,11 +10,11 @@ Terms: an **attempt** is any shot or one-timer (on goal, wide or blocked). **Unc
 the goalie and were stopped but not counted as shots on goal. **xG** is expected goals from the game's own rules
 (GENESIS_SHOOTING.md 4.9, SNES_SHOOTING.md 4.7). **Up** means the shooting team was attacking up the screen.
 
-## Home / away and up / down, together (reworked 2026-10-21)
+## Home / away and up / down, together (rerun 2026-10-30)
 
 The user asked for the two split together: Home going up, Home going down, Away going up, Away going down. This
-section uses **every game recorded through 2026-10-19: 19 Genesis games (570 shots and one-timers) and 8 SNES games
-(340)**; the sections after it still use the 13 Genesis and 5 SNES games of the first study.
+section uses **every game recorded through 2026-10-30: 29 Genesis games (972 shots and one-timers) and 22 SNES games
+(805)**; the sections after it still use the 13 Genesis and 5 SNES games of the first study.
 
 **Why game time matters here.** Home attacks up the screen in periods 1 and 3 and down in period 2 and overtime
 (checked in every recorded game), so Home spends about twice as long going up as down, and Away the reverse. Raw totals
@@ -24,69 +24,69 @@ had the controlled-skater marker in most samples: the computer teams are few and
 "all teams". Terms as above: *uncounted stops* are shots that reached the goalie and were stopped without being counted
 as shots on goal; *exact* means the shot left the stick exactly at its aim point (possible only within 200 units).
 
-**GENESIS, all teams** (19 games)
+**GENESIS, all teams** (29 games)
 
 | | Home, up | Home, down | Away, up | Away, down | All home | All away | All up | All down |
 |---|---|---|---|---|---|---|---|---|
-| Game time | 173 min | 110 min | 110 min | 173 min | 283 min | 283 min | 283 min | 283 min |
-| Attempts | 184 (5.3 per 5:00) | 116 (5.3 per 5:00) | 92 (4.2 per 5:00) | 178 (5.1 per 5:00) | 300 (5.3 per 5:00) | 270 (4.8 per 5:00) | 276 (4.9 per 5:00) | 294 (5.2 per 5:00) |
-| Shots on goal | 121 (3.5 per 5:00) | 78 (3.5 per 5:00) | 64 (2.9 per 5:00) | 129 (3.7 per 5:00) | 199 (3.5 per 5:00) | 193 (3.4 per 5:00) | 185 (3.3 per 5:00) | 207 (3.7 per 5:00) |
-| Goals | 35 (1.0 per 5:00) | 27 (1.2 per 5:00) | 18 (0.8 per 5:00) | 36 (1.0 per 5:00) | 62 (1.1 per 5:00) | 54 (1.0 per 5:00) | 53 (0.9 per 5:00) | 63 (1.1 per 5:00) |
-| Goals per attempt | 19.0% | 23.3% | 19.6% | 20.2% | 20.7% | 20.0% | 19.2% | 21.4% |
-| Goals per shot on goal | 28.9% | 34.6% | 28.1% | 27.9% | 31.2% | 28.0% | 28.6% | 30.4% |
-| xG per unblocked attempt | 0.23 | 0.22 | 0.21 | 0.22 | 0.23 | 0.22 | 0.22 | 0.22 |
-| Goals minus xG | -4.3 | +1.7 | -0.2 | +2.7 | -2.5 | +2.5 | -4.5 | +4.5 |
-| Uncounted stops | 17% | 7% | 10% | 8% | 13% | 9% | 15% | 8% |
-| A person's aims high / middle / ice | 39 / 51 / 10% | 8 / 66 / 26% | 35 / 51 / 14% | 20 / 58 / 22% | 26 / 57 / 17% | 26 / 55 / 19% | 38 / 51 / 11% | 13 / 62 / 24% |
-| A person's shots exact (within 200) | 51% of 70 | 42% of 52 | 56% of 25 | 61% of 33 | 48% of 122 | 59% of 58 | 53% of 95 | 49% of 85 |
+| Game time | 278 min | 160 min | 160 min | 278 min | 438 min | 438 min | 438 min | 438 min |
+| Attempts | 347 (6.2 per 5:00) | 187 (5.8 per 5:00) | 143 (4.5 per 5:00) | 295 (5.3 per 5:00) | 534 (6.1 per 5:00) | 438 (5.0 per 5:00) | 490 (5.6 per 5:00) | 482 (5.5 per 5:00) |
+| Shots on goal | 242 (4.4 per 5:00) | 131 (4.1 per 5:00) | 97 (3.0 per 5:00) | 207 (3.7 per 5:00) | 373 (4.3 per 5:00) | 304 (3.5 per 5:00) | 339 (3.9 per 5:00) | 338 (3.9 per 5:00) |
+| Goals | 72 (1.3 per 5:00) | 43 (1.3 per 5:00) | 30 (0.9 per 5:00) | 57 (1.0 per 5:00) | 115 (1.3 per 5:00) | 87 (1.0 per 5:00) | 102 (1.2 per 5:00) | 100 (1.1 per 5:00) |
+| Goals per attempt | 20.7% | 23.0% | 21.0% | 19.3% | 21.5% | 19.9% | 20.8% | 20.7% |
+| Goals per shot on goal | 29.8% | 32.8% | 30.9% | 27.5% | 30.8% | 28.6% | 30.1% | 29.6% |
+| xG per unblocked attempt | 0.23 | 0.23 | 0.23 | 0.22 | 0.23 | 0.22 | 0.23 | 0.22 |
+| Goals minus xG | -2.4 | +1.8 | -1.1 | +1.3 | -0.6 | +0.2 | -3.5 | +3.1 |
+| Uncounted stops | 13% | 6% | 9% | 8% | 11% | 8% | 12% | 7% |
+| A person's aims high / middle / ice | 26 / 64 / 10% | 8 / 70 / 21% | 37 / 54 / 9% | 13 / 68 / 19% | 19 / 66 / 14% | 21 / 63 / 15% | 29 / 61 / 10% | 11 / 69 / 20% |
+| A person's shots exact (within 200) | 54% of 138 | 44% of 84 | 54% of 50 | 55% of 86 | 50% of 222 | 54% of 136 | 54% of 188 | 49% of 170 |
 
-**GENESIS, teams a person played** (19 games)
-
-| | Home, up | Home, down | Away, up | Away, down | All home | All away | All up | All down |
-|---|---|---|---|---|---|---|---|---|
-| Game time | 155 min | 95 min | 80 min | 128 min | 250 min | 208 min | 235 min | 223 min |
-| Attempts | 170 (5.5 per 5:00) | 105 (5.5 per 5:00) | 67 (4.2 per 5:00) | 130 (5.1 per 5:00) | 275 (5.5 per 5:00) | 197 (4.7 per 5:00) | 237 (5.0 per 5:00) | 235 (5.3 per 5:00) |
-| Shots on goal | 112 (3.6 per 5:00) | 70 (3.7 per 5:00) | 45 (2.8 per 5:00) | 94 (3.7 per 5:00) | 182 (3.6 per 5:00) | 139 (3.3 per 5:00) | 157 (3.3 per 5:00) | 164 (3.7 per 5:00) |
-| Goals | 33 (1.1 per 5:00) | 23 (1.2 per 5:00) | 14 (0.9 per 5:00) | 33 (1.3 per 5:00) | 56 (1.1 per 5:00) | 47 (1.1 per 5:00) | 47 (1.0 per 5:00) | 56 (1.3 per 5:00) |
-| Goals per attempt | 19.4% | 21.9% | 20.9% | 25.4% | 20.4% | 23.9% | 19.8% | 23.8% |
-| Goals per shot on goal | 29.5% | 32.9% | 31.1% | 35.1% | 30.8% | 33.8% | 29.9% | 34.1% |
-| xG per unblocked attempt | 0.24 | 0.20 | 0.23 | 0.23 | 0.22 | 0.23 | 0.23 | 0.22 |
-| Goals minus xG | -4.3 | +1.9 | -0.3 | +7.3 | -2.4 | +6.9 | -4.6 | +9.1 |
-| Uncounted stops | 17% | 8% | 12% | 10% | 14% | 10% | 16% | 9% |
-| A person's aims high / middle / ice | 39 / 51 / 10% | 8 / 66 / 26% | 35 / 51 / 14% | 20 / 58 / 22% | 26 / 57 / 17% | 26 / 55 / 19% | 38 / 51 / 11% | 13 / 62 / 24% |
-| A person's shots exact (within 200) | 51% of 70 | 42% of 52 | 56% of 25 | 61% of 33 | 48% of 122 | 59% of 58 | 53% of 95 | 49% of 85 |
-
-**SNES, all teams** (8 games)
+**GENESIS, teams a person played** (29 games)
 
 | | Home, up | Home, down | Away, up | Away, down | All home | All away | All up | All down |
 |---|---|---|---|---|---|---|---|---|
-| Game time | 80 min | 40 min | 40 min | 80 min | 120 min | 120 min | 120 min | 120 min |
-| Attempts | 115 (7.2 per 5:00) | 57 (7.1 per 5:00) | 56 (7.0 per 5:00) | 112 (7.0 per 5:00) | 172 (7.2 per 5:00) | 168 (7.0 per 5:00) | 171 (7.1 per 5:00) | 169 (7.0 per 5:00) |
-| Shots on goal | 75 (4.7 per 5:00) | 39 (4.9 per 5:00) | 35 (4.4 per 5:00) | 73 (4.6 per 5:00) | 114 (4.8 per 5:00) | 108 (4.5 per 5:00) | 110 (4.6 per 5:00) | 112 (4.7 per 5:00) |
-| Goals | 26 (1.6 per 5:00) | 15 (1.9 per 5:00) | 6 (0.8 per 5:00) | 21 (1.3 per 5:00) | 41 (1.7 per 5:00) | 27 (1.1 per 5:00) | 32 (1.3 per 5:00) | 36 (1.5 per 5:00) |
-| Goals per attempt | 22.6% | 26.3% | 10.7% | 18.8% | 23.8% | 16.1% | 18.7% | 21.3% |
-| Goals per shot on goal | 34.7% | 38.5% | 17.1% | 28.8% | 36.0% | 25.0% | 29.1% | 32.1% |
-| xG per unblocked attempt | 0.27 | 0.20 | 0.15 | 0.22 | 0.25 | 0.20 | 0.23 | 0.21 |
-| Goals minus xG | -3.1 | +4.3 | -1.5 | -1.0 | +1.2 | -2.5 | -4.6 | +3.4 |
-| Uncounted stops | 18% | 11% | 17% | 17% | 16% | 17% | 17% | 15% |
-| A person's aims high / middle / ice | 69 / 27 / 3% | 8 / 88 / 4% | 44 / 48 / 8% | 2 / 84 / 14% | 51 / 45 / 4% | 17 / 71 / 12% | 62 / 33 / 5% | 4 / 86 / 10% |
-| A person's shots exact (within 200) | 41% of 29 | 47% of 15 | 58% of 12 | 56% of 25 | 43% of 44 | 57% of 37 | 46% of 41 | 52% of 40 |
+| Game time | 250 min | 140 min | 125 min | 228 min | 390 min | 353 min | 375 min | 368 min |
+| Attempts | 310 (6.2 per 5:00) | 170 (6.1 per 5:00) | 115 (4.6 per 5:00) | 239 (5.2 per 5:00) | 480 (6.2 per 5:00) | 354 (5.0 per 5:00) | 425 (5.7 per 5:00) | 409 (5.6 per 5:00) |
+| Shots on goal | 214 (4.3 per 5:00) | 117 (4.2 per 5:00) | 76 (3.0 per 5:00) | 166 (3.6 per 5:00) | 331 (4.2 per 5:00) | 242 (3.4 per 5:00) | 290 (3.9 per 5:00) | 283 (3.8 per 5:00) |
+| Goals | 69 (1.4 per 5:00) | 39 (1.4 per 5:00) | 26 (1.0 per 5:00) | 53 (1.2 per 5:00) | 108 (1.4 per 5:00) | 79 (1.1 per 5:00) | 95 (1.3 per 5:00) | 92 (1.2 per 5:00) |
+| Goals per attempt | 22.3% | 22.9% | 22.6% | 22.2% | 22.5% | 22.3% | 22.4% | 22.5% |
+| Goals per shot on goal | 32.2% | 33.3% | 34.2% | 31.9% | 32.6% | 32.6% | 32.8% | 32.5% |
+| xG per unblocked attempt | 0.24 | 0.23 | 0.25 | 0.23 | 0.24 | 0.24 | 0.25 | 0.23 |
+| Goals minus xG | -1.3 | +2.4 | -0.9 | +4.9 | +1.1 | +3.9 | -2.3 | +7.3 |
+| Uncounted stops | 13% | 6% | 11% | 10% | 11% | 10% | 13% | 8% |
+| A person's aims high / middle / ice | 26 / 64 / 10% | 8 / 70 / 21% | 37 / 54 / 9% | 13 / 68 / 19% | 19 / 66 / 14% | 21 / 63 / 15% | 29 / 61 / 10% | 11 / 69 / 20% |
+| A person's shots exact (within 200) | 54% of 138 | 44% of 84 | 54% of 50 | 55% of 86 | 50% of 222 | 54% of 136 | 54% of 188 | 49% of 170 |
 
-**SNES, teams a person played** (8 games)
+**SNES, all teams** (22 games)
 
 | | Home, up | Home, down | Away, up | Away, down | All home | All away | All up | All down |
 |---|---|---|---|---|---|---|---|---|
-| Game time | 60 min | 30 min | 25 min | 50 min | 90 min | 75 min | 85 min | 80 min |
-| Attempts | 90 (7.5 per 5:00) | 42 (7.0 per 5:00) | 33 (6.6 per 5:00) | 71 (7.1 per 5:00) | 132 (7.3 per 5:00) | 104 (6.9 per 5:00) | 123 (7.2 per 5:00) | 113 (7.1 per 5:00) |
-| Shots on goal | 63 (5.2 per 5:00) | 29 (4.8 per 5:00) | 21 (4.2 per 5:00) | 53 (5.3 per 5:00) | 92 (5.1 per 5:00) | 74 (4.9 per 5:00) | 84 (4.9 per 5:00) | 82 (5.1 per 5:00) |
-| Goals | 23 (1.9 per 5:00) | 14 (2.3 per 5:00) | 6 (1.2 per 5:00) | 16 (1.6 per 5:00) | 37 (2.1 per 5:00) | 22 (1.5 per 5:00) | 29 (1.7 per 5:00) | 30 (1.9 per 5:00) |
-| Goals per attempt | 25.6% | 33.3% | 18.2% | 22.5% | 28.0% | 21.2% | 23.6% | 26.5% |
-| Goals per shot on goal | 36.5% | 48.3% | 28.6% | 30.2% | 40.2% | 29.7% | 34.5% | 36.6% |
-| xG per unblocked attempt | 0.31 | 0.25 | 0.22 | 0.25 | 0.29 | 0.24 | 0.28 | 0.25 |
-| Goals minus xG | -3.5 | +3.9 | -1.1 | -0.2 | +0.4 | -1.4 | -4.7 | +3.7 |
-| Uncounted stops | 16% | 15% | 16% | 12% | 16% | 13% | 16% | 13% |
-| A person's aims high / middle / ice | 69 / 27 / 3% | 8 / 88 / 4% | 44 / 48 / 8% | 2 / 84 / 14% | 51 / 45 / 4% | 17 / 71 / 12% | 62 / 33 / 5% | 4 / 86 / 10% |
-| A person's shots exact (within 200) | 41% of 29 | 47% of 15 | 58% of 12 | 56% of 25 | 43% of 44 | 57% of 37 | 46% of 41 | 52% of 40 |
+| Game time | 219 min | 114 min | 114 min | 219 min | 334 min | 334 min | 334 min | 334 min |
+| Attempts | 267 (6.1 per 5:00) | 139 (6.1 per 5:00) | 138 (6.0 per 5:00) | 261 (5.9 per 5:00) | 406 (6.1 per 5:00) | 399 (6.0 per 5:00) | 405 (6.1 per 5:00) | 400 (6.0 per 5:00) |
+| Shots on goal | 176 (4.0 per 5:00) | 91 (4.0 per 5:00) | 93 (4.1 per 5:00) | 166 (3.8 per 5:00) | 267 (4.0 per 5:00) | 259 (3.9 per 5:00) | 269 (4.0 per 5:00) | 257 (3.9 per 5:00) |
+| Goals | 65 (1.5 per 5:00) | 30 (1.3 per 5:00) | 19 (0.8 per 5:00) | 60 (1.4 per 5:00) | 95 (1.4 per 5:00) | 79 (1.2 per 5:00) | 84 (1.3 per 5:00) | 90 (1.3 per 5:00) |
+| Goals per attempt | 24.3% | 21.6% | 13.8% | 23.0% | 23.4% | 19.8% | 20.7% | 22.5% |
+| Goals per shot on goal | 36.9% | 33.0% | 20.4% | 36.1% | 35.6% | 30.5% | 31.2% | 35.0% |
+| xG per unblocked attempt | 0.29 | 0.24 | 0.17 | 0.26 | 0.27 | 0.23 | 0.25 | 0.25 |
+| Goals minus xG | -6.3 | -0.3 | -2.9 | -2.3 | -6.6 | -5.2 | -9.2 | -2.7 |
+| Uncounted stops | 16% | 12% | 14% | 18% | 15% | 17% | 15% | 16% |
+| A person's aims high / middle / ice | 57 / 38 / 5% | 12 / 77 / 11% | 47 / 49 / 5% | 9 / 76 / 15% | 44 / 50 / 7% | 24 / 65 / 11% | 54 / 41 / 5% | 11 / 76 / 13% |
+| A person's shots exact (within 200) | 47% of 64 | 56% of 32 | 41% of 37 | 50% of 54 | 50% of 96 | 46% of 91 | 45% of 101 | 52% of 86 |
+
+**SNES, teams a person played** (22 games)
+
+| | Home, up | Home, down | Away, up | Away, down | All home | All away | All up | All down |
+|---|---|---|---|---|---|---|---|---|
+| Game time | 199 min | 104 min | 99 min | 189 min | 304 min | 289 min | 299 min | 294 min |
+| Attempts | 242 (6.1 per 5:00) | 124 (6.0 per 5:00) | 114 (5.7 per 5:00) | 219 (5.8 per 5:00) | 366 (6.0 per 5:00) | 333 (5.8 per 5:00) | 356 (6.0 per 5:00) | 343 (5.8 per 5:00) |
+| Shots on goal | 164 (4.1 per 5:00) | 81 (3.9 per 5:00) | 76 (3.8 per 5:00) | 139 (3.7 per 5:00) | 245 (4.0 per 5:00) | 215 (3.7 per 5:00) | 240 (4.0 per 5:00) | 220 (3.7 per 5:00) |
+| Goals | 62 (1.6 per 5:00) | 29 (1.4 per 5:00) | 19 (1.0 per 5:00) | 52 (1.4 per 5:00) | 91 (1.5 per 5:00) | 71 (1.2 per 5:00) | 81 (1.4 per 5:00) | 81 (1.4 per 5:00) |
+| Goals per attempt | 25.6% | 23.4% | 16.7% | 23.7% | 24.9% | 21.3% | 22.8% | 23.6% |
+| Goals per shot on goal | 37.8% | 35.8% | 25.0% | 37.4% | 37.1% | 33.0% | 33.8% | 36.8% |
+| xG per unblocked attempt | 0.31 | 0.26 | 0.20 | 0.27 | 0.29 | 0.25 | 0.27 | 0.27 |
+| Goals minus xG | -6.7 | -0.7 | -2.2 | -3.5 | -7.5 | -5.7 | -8.9 | -4.3 |
+| Uncounted stops | 15% | 14% | 15% | 18% | 15% | 17% | 15% | 16% |
+| A person's aims high / middle / ice | 57 / 38 / 5% | 12 / 77 / 11% | 47 / 49 / 5% | 9 / 76 / 15% | 44 / 50 / 7% | 24 / 65 / 11% | 54 / 41 / 5% | 11 / 76 / 13% |
+| A person's shots exact (within 200) | 47% of 64 | 56% of 32 | 41% of 37 | 50% of 54 | 50% of 96 | 46% of 91 | 45% of 101 | 52% of 86 |
 
 **Is any difference real?** The ratio of the two rates per game minute, with the range a difference this size could
 come from chance alone (95%). A ratio above 1 favours the first of the pair; a range that includes 1.00 means these
@@ -94,40 +94,44 @@ games can't tell the two apart.
 
 | Teams | Comparison | Attempts | Shots on goal | Goals |
 |---|---|---|---|---|
-| Genesis, all teams | Home / Away | 1.11 (0.94-1.31) | 1.03 (0.85-1.26) | 1.15 (0.80-1.65) |
-| Genesis, all teams | Up / Down | 0.94 (0.80-1.11) | 0.89 (0.73-1.09) | 0.84 (0.58-1.21) |
-| Genesis, all teams | Home: Up / Down | 1.01 (0.80-1.27) | 0.99 (0.74-1.31) | 0.82 (0.50-1.36) |
-| Genesis, all teams | Away: Up / Down | 0.81 (0.63-1.05) | 0.78 (0.58-1.05) | 0.79 (0.45-1.39) |
-| Genesis, teams a person played | Home / Away | 1.16 (0.97-1.39) | 1.09 (0.87-1.36) | 0.99 (0.67-1.46) |
-| Genesis, teams a person played | Up / Down | 0.96 (0.80-1.15) | 0.91 (0.73-1.13) | 0.80 (0.54-1.17) |
-| Genesis, teams a person played | Home: Up / Down | 0.99 (0.78-1.27) | 0.98 (0.73-1.32) | 0.88 (0.52-1.50) |
-| Genesis, teams a person played | Away: Up / Down | 0.82 (0.61-1.11) | 0.77 (0.54-1.09) | 0.68 (0.36-1.27) |
-| SNES, all teams | Home / Away | 1.02 (0.83-1.27) | 1.06 (0.81-1.37) | 1.52 (0.93-2.47) |
-| SNES, all teams | Up / Down | 1.01 (0.82-1.25) | 0.98 (0.75-1.28) | 0.89 (0.55-1.43) |
-| SNES, all teams | Home: Up / Down | 1.01 (0.73-1.39) | 0.96 (0.65-1.42) | 0.87 (0.46-1.64) |
-| SNES, all teams | Away: Up / Down | 1.00 (0.73-1.38) | 0.96 (0.64-1.43) | 0.57 (0.23-1.42) |
-| SNES, teams a person played | Home / Away | 1.06 (0.82-1.37) | 1.04 (0.76-1.41) | 1.40 (0.83-2.38) |
-| SNES, teams a person played | Up / Down | 1.02 (0.79-1.32) | 0.96 (0.71-1.31) | 0.91 (0.55-1.52) |
-| SNES, teams a person played | Home: Up / Down | 1.07 (0.74-1.55) | 1.09 (0.70-1.69) | 0.82 (0.42-1.60) |
-| SNES, teams a person played | Away: Up / Down | 0.93 (0.62-1.40) | 0.79 (0.48-1.31) | 0.75 (0.29-1.92) |
+| Genesis, all teams | Home / Away | 1.22 (1.07-1.38) | 1.23 (1.05-1.43) | 1.32 (1.00-1.75) |
+| Genesis, all teams | Up / Down | 1.02 (0.90-1.15) | 1.00 (0.86-1.17) | 1.02 (0.77-1.34) |
+| Genesis, all teams | Home: Up / Down | 1.07 (0.89-1.28) | 1.06 (0.86-1.31) | 0.96 (0.66-1.41) |
+| Genesis, all teams | Away: Up / Down | 0.84 (0.69-1.03) | 0.81 (0.64-1.04) | 0.91 (0.59-1.42) |
+| Genesis, teams a person played | Home / Away | 1.23 (1.07-1.41) | 1.24 (1.05-1.46) | 1.24 (0.93-1.65) |
+| Genesis, teams a person played | Up / Down | 1.02 (0.89-1.17) | 1.01 (0.85-1.18) | 1.01 (0.76-1.35) |
+| Genesis, teams a person played | Home: Up / Down | 1.02 (0.85-1.23) | 1.02 (0.82-1.28) | 0.99 (0.67-1.47) |
+| Genesis, teams a person played | Away: Up / Down | 0.88 (0.70-1.10) | 0.84 (0.64-1.10) | 0.89 (0.56-1.43) |
+| SNES, all teams | Home / Away | 1.02 (0.89-1.17) | 1.03 (0.87-1.22) | 1.20 (0.89-1.62) |
+| SNES, all teams | Up / Down | 1.01 (0.88-1.16) | 1.05 (0.88-1.24) | 0.93 (0.69-1.26) |
+| SNES, all teams | Home: Up / Down | 1.00 (0.81-1.23) | 1.01 (0.78-1.30) | 1.13 (0.73-1.74) |
+| SNES, all teams | Away: Up / Down | 1.02 (0.83-1.25) | 1.08 (0.84-1.39) | 0.61 (0.36-1.02) |
+| SNES, teams a person played | Home / Away | 1.04 (0.90-1.21) | 1.08 (0.90-1.30) | 1.22 (0.89-1.66) |
+| SNES, teams a person played | Up / Down | 1.02 (0.88-1.18) | 1.07 (0.89-1.29) | 0.98 (0.72-1.34) |
+| SNES, teams a person played | Home: Up / Down | 1.02 (0.82-1.27) | 1.06 (0.81-1.38) | 1.12 (0.72-1.74) |
+| SNES, teams a person played | Away: Up / Down | 0.99 (0.79-1.25) | 1.04 (0.79-1.38) | 0.70 (0.41-1.18) |
 
 What the games show so far:
 
-- **No clear effect of either Home / Away or Up / Down** on attempts, shots on goal or goals, on either system: every
-  range above includes 1.00. Differences of 10-20% are well inside what chance gives with 20-35 goals a cell.
+- **Up / Down: no effect on either system** (every ratio 0.93-1.07, every range holding 1.00).
+- **Home / Away on the Genesis: Home takes more shots.** 1.22 times the attempts per game minute (1.07-1.38) and
+  1.23 times the shots on goal (1.05-1.43); goals 1.32 (1.00-1.75), on the edge. With 19 games it was within chance.
+  It holds in the 20 games with a person on each side (attempts 1.27, 1.04-1.58 resampling games; goals 1.23,
+  0.83-1.88), so it isn't the computer teams. But most of those games are the same few players, so which person was
+  Home can't be told apart from the home edge itself; Home's goals per attempt are no better (21.5% against 19.9%).
+  The built-in reasons (below) are small. More games with other players would settle it.
+- **No Home / Away difference on the SNES** in attempts or shots on goal (1.02, 1.03); goals 1.20 (0.89-1.62), within
+  chance (the first 8 games gave 1.52).
 - **The direction changes how people aim, not how often they score.** Going up, people push the d-pad toward the net,
-  which aims high (Genesis 38% of a person's shots aimed high going up against 13% going down; SNES 62% against 4%).
-  Going down they aim along the ice or the middle. Goals per attempt end up about the same either way.
-- **More uncounted stops going up on the Genesis** (15% of shots that reached the goalie, against 8% going down), the
-  opposite of what the league's box scores suggest (about 10% more shots on goal going up). These games give 0.89
-  times the shots on goal per minute going up, but the range (0.73-1.09) includes the league's 1.10 too: about 100
-  whole games would be needed to see a 10% difference.
-- **Away going up was the weakest cell on both systems** (Genesis 2.9 shots on goal per 5:00 against 3.5-3.7 in the
-  other three cells; SNES 0.8 goals per 5:00). That cell is almost all period 2, the one period Away goes up, so it
-  mixes direction with whatever is special about the middle period (no third-period bonus, no score pressure). It's
-  the thing to watch as more games come in.
-- **Home on the SNES scored 1.52 times as often per minute** (range 0.93-2.47), the biggest gap here, but 41 goals
-  against 27 in 8 games is still within chance; its attempts and shots on goal were equal (1.02, 1.06).
+  which aims high (Genesis 29% of a person's shots aimed high going up against 11% going down; SNES 54% against
+  11%). Goals per attempt end up about the same either way.
+- **More uncounted stops going up on the Genesis** (12% of shots that reached the goalie, against 7% going down), the
+  opposite of what the league's box scores suggest (about 10% more shots on goal going up). These games give 1.00
+  times the shots on goal per minute going up (0.86-1.17), which holds the league's 1.10 too.
+- **Away going up is still the weakest cell** (Genesis 3.0 shots on goal per 5:00 against 3.7-4.4 in the others; SNES
+  0.8 goals per 5:00 against 1.3-1.5, Away's Up / Down goals 0.61, 0.36-1.02). That cell is almost all period 2, the
+  one period Away goes up, so it mixes direction with whatever is special about the middle period. Still the thing to
+  watch.
 - **Played in the game itself, single shots do differ by net** ([SCORING_MAP](SCORING_MAP.md)): the Down slapshot
   from the middle scores about 21% at the top net against 14% at the bottom, the shoulder-save bobble happens only at
   the top net, and a deke swung to the shooter's right does much better going down. Other shots favour neither net or

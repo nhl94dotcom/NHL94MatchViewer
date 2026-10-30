@@ -53,5 +53,5 @@
 <text x='564.0' y='325.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>at or above the middle: plays normally</text>
 <text x='40.0' y='354.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>The black tick is the band's middle (hot / cold 0). Each rating has its own hot / cold byte, so read every number separately.</text>
 <text x='40.0' y='372.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>About 46% of all ratings are maxed this way each game. Checked against the user's Edit Lines screenshots: all 99 numbers fit.</text>
-<text x='40.0' y='390.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Maxed Aggression means more penalties (11 of 14 recorded); maxed Stick Handling means wobbling instead of falling.</text>
+<text x='40.0' y='390.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Maxed Aggression means more penalties (31 of 52 recorded); maxed Stick Handling means wobbling instead of falling.</text>
 </svg>

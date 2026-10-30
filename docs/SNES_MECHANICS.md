@@ -593,21 +593,25 @@ a person's skater.
 - **Doubled for a person's player** (so people are called half as often as the computer, as on the Genesis) and
   **halved within 40 of the puck**. Both are 16-bit shifts and `randoma` takes ranges of 256 and more, so nothing
   wraps: a person's range runs from 640 at working Aggression 0 down to 160 at 15. **Code**
-- **11 of 14 penalties in the recordings were by players at working Aggression 15**, the value the hot / cold bug gives
-  every "cold" rating. **Cold players take the penalties.**
+- **Cold players take the penalties.** Over the recordings (`analysis/penalty_aggression.py`, 2026-10-30: 52 penalties
+  in 18 games, the fouling player's working Aggression read from the recording) 31 (60%) were by players at working
+  Aggression 15, the value the hot / cold bug gives every "cold" rating, while skaters spent 41% of their time at 15:
+  a maxed player is called about twice as often per minute on the ice, about what the roll says (1 in 5 at 15, 1 in
+  13 at a typical 7). (The first 14 penalties had 11 at 15.)
 
 Which move draws which penalty hasn't been mapped for the SNES. The penalties the game knows (its rule table): roughing,
 charging, slashing, cross-checking, hooking, tripping, penalty shot, interference, holding, fighting, instigator.
 
 ### 8.2 Goalie interference (`checkint`)
 
-- **Anyone can be called**, your computer-controlled teammates included. **Confirmed**: two of the four interference
-  calls in the recordings were on computer-controlled skaters of person-played teams.
+- **Anyone can be called**, your computer-controlled teammates included. **Confirmed**: two of the first four interference
+  calls in the recordings were on computer-controlled skaters of person-played teams; of all 18 now, 8 were on
+  computer-controlled skaters.
 - The goalie must be in his crease: within 40 of the middle, 228-259 from centre.
 - With the goalie's impact 31 or more, it's called 2 times in (20 - Aggression): 15% at Aggression 7, **40% at 15** (a
   "cold" player).
 - The skater falls whether or not a penalty is called.
-- 4 of the 14 penalties in the recordings were interference.
+- Interference is the commonest call in the recordings: 18 of 52 penalties.
 
 ### 8.3 Delayed penalties
 
@@ -642,8 +646,9 @@ Every call is the roll of 8.1 (0 up to the range) against the move's threshold. 
 - **A poke or trip is about five times as likely to be called as a check or a hook** (5 roll values against 1).
 - At the same range a check is called 1 time in R: with the computer's range at working Aggression 7 (208, halved to 104
   near the puck) that's about 1 check in 100 near the puck; a person's is half as likely (8.1).
-- **Recordings** (5 SNES games, 15 penalties, 14 with a known code): interference 4, roughing 3, cross-checking 2, holding 2, tripping 2,
-  slashing 1, one with code $30 (not read); 9 by a person's skater, 6 by the computer's. Too few to check the rates.
+- **Recordings** (2026-10-30, 18 SNES games, 52 penalties, named from each ROM's rule table): interference 18,
+  roughing 13, tripping 10, holding 4, cross-checking 4, slashing 1, hooking 1, charging 1; 34 by a person's skater,
+  18 by the computer's.
 
 ---
 
