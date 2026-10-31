@@ -22,7 +22,8 @@ swings out to the wing to come in on the line); 9 is 6 with a left-hander slowed
 1.3 a frame up the ice, one within 25) passing or wrist-shooting instead; 10 is 9 taking the puck around his own net (not into its back) and veering
 up and away from an opponent closing in ahead before the gate (fewer dekes: worse); 11 (the default) is 9 with only the
 way around his own net; 12 is 11 with a right-hander who comes up the right
-side deking there (mirrored, DEKE12R).
+side deking there (mirrored, DEKE12R); 13 is 11 (not 12) with the one-timer as people play
+it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -130,7 +131,10 @@ class Bot:
                     and math.hypot(pk["x"] - P[k]["x"], pk["y"] - P[k]["y"]) < 25 \
                     and math.hypot(pk["vx"], pk["vy"]) > 1.2:
                 self.struck = self.frame
-                self.log.append(dict(f=self.frame, ev="strike", by=k))
+                g = next((j for j in self.theirs if P[j]["pos"] == 0), self.theirs[-1])
+                sg = 1 if P[g]["y"] > 0 else -1
+                self.log.append(dict(f=self.frame, ev="strike", by=k, x=sg * P[k]["x"], y=sg * P[k]["y"],
+                                     gx=sg * P[g]["x"], gy=sg * P[g]["y"], v=round(math.hypot(pk["vx"], pk["vy"]), 2)))
         their_goalie = next((k for k in self.theirs if P[k]["pos"] == 0), self.theirs[-1])
         s = 1 if P[their_goalie]["y"] > 0 else -1           # the net we attack
         if owner == me and P[me]["pos"] == 0:
@@ -205,9 +209,9 @@ class Bot:
         # deke, DEKE12R: the deke runs' 57-66%, the game favouring swings to the shooter's own left); 11 always
         # crossed to the left and was checked on the way. A left-hander's swing to his right doesn't get the puck
         # across, so left-handers still cross
-        if self.version >= 12 and (ay < LANE[0] or self.phase in ("free", "shot")):
+        if self.version == 12 and (ay < LANE[0] or self.phase in ("free", "shot")):
             self.side = -1 if ax > 10 and hand == "R" else 1
-        mx = getattr(self, "side", 1) if self.version >= 12 else 1
+        mx = getattr(self, "side", 1) if self.version == 12 else 1
         ax = mx * ax
         deke = self.deke if mx > 0 else DEKE12R
         vxa = mx * s * m["vx"]                      # across speed toward the middle (left side's view)
@@ -245,7 +249,7 @@ class Bot:
             elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90):
                 self.phase, self.t = "slap", 0
                 self.note("slap start", ax=ax, ay=ay)
-            elif self.version >= 2 and ay > (150 if self.version >= 5 else 90) \
+            elif self.version >= 2 and ay > (100 if self.version >= 13 else 150 if self.version >= 5 else 90) \
                     and self.open_mate(P, me, s, g) is not None:
                 self.mate = self.open_mate(P, me, s, g)
                 self.phase, self.t, self.passer = "pass", 0, me
@@ -417,7 +421,14 @@ class Bot:
             if k == me or P[k]["pos"] == 0:
                 continue
             t = P[k]
-            if self.version >= 5:
+            if self.version >= 13:
+                # version 13: the recorded games' one-timers (GENESIS_GUIDE 7: a pass moving the puck 13-30 ft across
+                # scored nearly half; struck from inside about 33 ft): the receiver 15-100 out from the goal line
+                # within 70 of the middle, the pass 39-110 across
+                tax, tay = s * t["x"], s * t["y"]
+                if not (NET_Y - 100 < tay < NET_Y - 15 and abs(tax) < 70 and 39 < abs(tax - s * m["x"]) < 110):
+                    continue
+            elif self.version >= 5:
                 # the study's good one-timers: the receiver close in (within 95 of the goal mouth's middle, in front
                 # of the line) and the pass across (from the other side, or 50+ across)
                 tax, tay = s * t["x"], s * t["y"]

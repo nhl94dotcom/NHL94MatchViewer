@@ -61,3 +61,16 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   13 scored where 11 didn't, 10 the other way (+0.6 points +-1.0). **The people in those games, from the same entries
   against people defending: 15.5% scored within 6 s, 34% got a shot on goal.** The bot is well short of the league's
   players from the same spots, and against a softer defence.
+- **How the people scored from the same entries** (the match files' shots within 6 s): goals came fast (half within
+  1.9 s of the blue line). Wrist shots 30 goals from 136, nearly all from the middle of the slot (within 30 of the
+  middle: 40-80 units out 15 of 40, inside 40 out 10 of 22; many of them likely dekes, which the converter calls wrist
+  shots); one-timers 27 of 73 (37%), from the middle 40-120 out 17 of 35, and set up mostly by a sideways pass (17 of 37).
+- **Version 13: the one-timer as people play it** (the pass from 100 up the ice, to a receiver within 100 of the goal
+  line and 70 of the middle, moving 39-110 across; 11 otherwise). From the 472 entries (`scen2`): one-timers struck 83
+  times (version 11: 52), goals 50 against 47 (+0.6 points +-1.3: no difference). The bot's strikes scored 15 of 81
+  situations (18%), people's 37%. The strikes logged (`scen3`, position, the goalie's, the puck's speed): the passes
+  came mostly from the high slot and the points (70-130 out) to a receiver 50-100 out, the puck at 3.5-4.6 a frame
+  and 10-25 frames on its way, and at the strike the goalie was set in the middle of his net nearly every time. The
+  guide's finding is that a one-timer scores when the goalie is still sliding (a quick pass across); the bot's long,
+  slow passes let him set. Next: quicker passes across from lower down (the carrier low on one side, the receiver
+  across), and the close-in plays from the guide (the cross-crease, the slapshot wind-up that drops the goalie).

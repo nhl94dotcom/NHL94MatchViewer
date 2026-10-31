@@ -105,7 +105,10 @@ def play(e, base, s, seed, version):
         if f % 600 == 599:
             breathe()
     return dict(res=res, frames=f + 1, shots=e.w(SHOTS[0]) - sh0[0],
-                plays=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot")))
+                plays=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot")),
+                ev=dict(Counter(x["ev"] for x in bot.log)),
+                lost=[x["phase"] for x in bot.log if x["ev"] == "lost"],
+                strikes=[x for x in bot.log if x["ev"] in ("strike", "pass start")])
 
 
 def main():
@@ -114,6 +117,11 @@ def main():
     minutes = float(sys.argv[4]) if len(sys.argv) > 4 else 60
     gentle()
     sits = json.loads((WORK / "bot_situations.json").read_text())[:n]
+    only = os.environ.get("NHL94_SCEN_ONLY")            # "RUN/VERSION": only the situations where that run struck
+    if only:
+        r0, v0 = only.split("/")
+        keep = {json.loads(l)["i"] for l in open(RUNS / r0 / f"scen_{v0}.jsonl") if json.loads(l)["ev"].get("strike")}
+        sits = [s if i in keep else None for i, s in enumerate(sits)]
     out = RUNS / run
     out.mkdir(parents=True, exist_ok=True)
     e = Emu(RETAIL)
@@ -124,7 +132,7 @@ def main():
         done = {json.loads(l)["i"] for l in open(path)} if path.exists() else set()
         with open(path, "a") as fh:
             for i, s in enumerate(sits):
-                if i in done:
+                if i in done or s is None:
                     continue
                 if time.time() - t0 > minutes * 60:
                     print("time up")

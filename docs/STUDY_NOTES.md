@@ -1077,4 +1077,5 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   434 (420).
 - **Real situations from the recorded games (docs/BOT_PLAN.md phase 1).** 472 carried zone entries from 16 recorded
   Genesis games placed in the harness, the bot playing on 6 s: 10% scored (versions 6-12 all within a point), against
-  15.5% for the people in those games from the same entries. Details in BOT_PLAN "Status".
+  15.5% for the people in those games from the same entries. Details in BOT_PLAN "Status". Version 13 (the one-timer
+  widened to people's) struck more often but scored no more; its strikes met a set goalie (BOT_PLAN "Status").
