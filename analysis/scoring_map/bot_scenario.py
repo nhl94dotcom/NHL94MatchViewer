@@ -31,13 +31,24 @@ C1PLAYER = 0xC320                  # c1playernum (ram94.asm): the record pad 1 c
 SCORE, SHOTS = (0xC6DA, 0xCA3E), (0xC6CE, 0xCA32)
 
 
-def live_state(e):
-    p = WORK / "bot_live.state"
+LIVE_STATES = int(os.environ.get("NHL94_SCEN_STATES") or 4)
+
+
+def live_state(e, i=0):
+    """Saved moments of open play to place situations in: bot_live.state (i 0), bot_live1-3.state, each about 600
+    frames of play after the one before (2026-10-31: one saved moment coloured a whole bank, so situation n is placed
+    in moment n mod LIVE_STATES)."""
+    p = WORK / ("bot_live.state" if i == 0 else f"bot_live{i}.state")
     if p.exists():
         return p.read_bytes()
-    e.unserialize((WORK / "bot_start.state").read_bytes())
     bot = Bot(0)
-    for f in range(900):                         # past the faceoff (about 300 frames) into play
+    if i == 0:
+        e.unserialize((WORK / "bot_start.state").read_bytes())
+        lead = 900                               # past the faceoff (about 300 frames) into play
+    else:
+        e.unserialize(live_state(e, i - 1))
+        lead = 600
+    for f in range(lead):
         e.run(1, hold=bot.step(e))
     # then on until the clock is running (2026-10-31: with penalties on, the first live state was saved in the
     # stoppage after a call, the clock still and nothing counting: every situation timed out), no penalty or delayed
@@ -46,14 +57,46 @@ def live_state(e):
     for f in range(20000):
         e.run(1, hold=bot.step(e))
         clocks = (clocks + [e.w(0xC468)])[-150:]
-        pen = any(e.w(b + 0x66 + 2 * i) >> 8 != 0xFF for b in (0xC6CE, 0xCA32) for i in range(26)) or             any(e.b(b + 0x26) == 0xFF for b in (0xC6CE, 0xCA32))
+        pen = any(e.w(b + 0x66 + 2 * j) >> 8 != 0xFF for b in (0xC6CE, 0xCA32) for j in range(26)) or             any(e.b(b + 0x26) == 0xFF for b in (0xC6CE, 0xCA32))
         if len(clocks) == 150 and clocks[-1] < clocks[0] and e.b(0xFFF7) == 0 and not pen and e.w(PUCKC) < 12:
             break
     else:
         raise SystemExit("no running clock found")
-    assert e.b(0xFFF7) == 0 and e.w(0xC466) == 0
+    assert e.b(0xFFF7) == 0 and e.w(0xC466) == 0, (e.b(0xFFF7), e.w(0xC466))
     p.write_bytes(e.serialize())
     return p.read_bytes()
+
+
+AI_RESET = os.environ.get("NHL94_SCEN_AI_RESET", "1") != "0"
+ROLE_ASS = {"1": (2, 1), "2": (2, 1), "3": (3, 4), "4": (5, 6), "5": (3, 4)}   # position -> (on defence, on offence)
+# (asstab: 1 defence on offence, 2 defence on defence, 3 wing on defence, 4 wing on offence, 5 centre on defence,
+# 6 centre on offence; $E goalie, $10 puck carrier)
+
+
+def reset_ai(e, k, role, attacking, carrier):
+    """2026-10-31: a placed player kept the computer's state from the saved moment (assignment list, its working
+    values, impacts, animation lock, flags): the same 117 one-timer passes scored 30 from one live state and 13 from
+    another, the difference in record bytes $2E-$65. Now every placed player gets his position's assignment for his
+    side (the carrier the puck-carrier one first), a new-assignment flag, and those values cleared; the AI decides
+    afresh from the placed positions."""
+    r = rec(k)
+    for a in range(0x2E, 0x34):
+        e.setb(r + a, 0)                          # impact
+    ass = 0x0E if role == "0" else ROLE_ASS[role][1 if attacking else 0]
+    lst = ([0x10, ass] if carrier else [ass]) + [0] * 8
+    e.setw(r + 0x36, 0)
+    for i in range(8):
+        e.setb(r + 0x38 + i, lst[i])
+    for a in range(0x40, 0x4A):
+        e.setb(r + a, 0)                          # the assignment's working values
+    if role != "0":
+        e.setw(r + 0x58, 0x05D0)                  # a plain skating animation, from its start
+    e.setw(r + 0x5A, 0)
+    e.setw(r + 0x5C, 0)
+    e.setw(r + 0x5E, 0)                           # nopuck
+    e.setb(r + 0x62, (e.b(r + 0x62) & 0xC8) | 0x02)   # keep team, net, joystick; new assignment
+    e.setb(r + 0x63, 0)
+    e.setb(r + 0x64, 0)
 
 
 def place(e, base, s, seed):
@@ -86,6 +129,11 @@ def place(e, base, s, seed):
             e.setb(r + 0x55, face)
     carrier = slot[("them" if defend else "us", s["passer"] if "passer" in s else s["carrier"])]
     px, py = r_ * s["puck"][0], r_ * s["puck"][1]
+    if AI_RESET:
+        for k in range(12):
+            role = str(e.b(rec(k) + 0x35))
+            if role in "012345":
+                reset_ai(e, k, role, k // 6 == carrier // 6, k == carrier)
     mine = carrier
     if defend:                                   # pad 1 on our skater nearest the puck
         mine = min((k for k in range(6) if e.b(rec(k) + 0x35) != 0),
@@ -192,7 +240,7 @@ def main():
     out = RUNS / run
     out.mkdir(parents=True, exist_ok=True)
     e = Emu(RETAIL)
-    base = live_state(e)
+    bases = [live_state(e, j) for j in range(LIVE_STATES)]
     t0 = time.time()
     for v in versions:
         path = out / f"scen_{v}.jsonl"
@@ -205,7 +253,7 @@ def main():
                     print("time up")
                     return
                 seed = random.Random(i).getrandbits(32)
-                r = play(e, base, s, seed, v)
+                r = play(e, bases[i % LIVE_STATES], s, seed, v)
                 breathe()                        # rest after each situation (play's own rest, every 600 frames,
                                                  # never came: a situation is at most 360)
                 if r is None:
