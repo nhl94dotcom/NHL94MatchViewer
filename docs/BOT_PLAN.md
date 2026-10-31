@@ -200,3 +200,18 @@ a setting, a result that changes the plan).
   approved budget (about 4 hours, blocks 1-2) is used; next blocks need the user's go-ahead. What the blocks point to:
   the defence's numbers are tuned, so further gains need new behaviour (the attacking bot scores nearly all with quick
   wrist shots from the slot: covering the slot, not the carrier), and the one-timer drop with penalties on.
+- **The test setup corrected (2026-10-31).** People's one-timer passes scored 30-31 of 117 from the old live-play
+  state and 13 from the new one, whichever bot version (11 or 16), penalties on or off, the goalie's ratings or the
+  score. Copying halves of work RAM from one state into the other found it: the records' computer-AI bytes ($2E-$65:
+  the assignment and its list, its working values, impacts, animation lock, flags) carried over into every placed
+  situation. Now each placed player gets a clean state (his position's assignment for his side, the carrier the
+  puck-carrier one, those values cleared), which brought the two states to 20 and 31; and each bank is spread over
+  four saved moments of play (situation n in moment n mod 4). Earlier banks used one moment: comparisons between
+  versions on them stand, their absolute rates were partly that moment's. **New baselines, version 16:** zone entries
+  101 of 472 (21.4%), zone possessions 20 of 122, people's one-timer passes 24 of 117 (20.5%), the defence bank 61
+  against (version 21 also 61).
+- **Version 23, covering the slot** (in our end, the defender stands in the carrier's shooting lane `hold` out from our
+  net instead of chasing him, from when the carrier is within `zone` of our goal line; SLOT23): against 21's 61 on the
+  defence bank, zone 140 with hold 28 / 40 / 55 / 75: 68 / 55 / 62 / 62; hold 55 with zone 100 / 180: 63 / 67. Paired
+  against 21 the best, hold 40, is -1.3 points +-1.2: nothing kept. With the defence's numbers tuned and the slot not
+  helping, the one skater the bot controls has little say over goals against: the other four are the computer's.
