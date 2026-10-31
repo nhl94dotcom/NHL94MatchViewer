@@ -192,3 +192,11 @@ a setting, a result that changes the plan).
   struck), against 30 (26%) with penalties off: with penalties on the computer's defenders seem to break up passes
   and strikes more (to look into). So under league settings 21's CB check gains nothing in the banks or in games; 16
   stays the default and block 2 varies 21's defence (22).
+- **Block 2, the defence's numbers (version 22: one number of 21's changed at a time; the defence bank, the bot
+  attacking, league settings; 21: 49 against):** poke within 20 / 34: 61 / 52; burst within 30 / 60: 51 / 50; burst
+  every 15 / 45 frames: 49 / 49; the goal-side gap 8 / 24: 64 / 60; switch margin 30 / 80: 56 / 57. Paired against 21
+  none is better (from +0.0 to +3.2 points worse); the gap (+3.2 and +2.3 +-1.3), the poke at 20 (+2.5 +-1.2) and the
+  switch margin (+1.5 / +1.7) are clearly worse either way. **21's numbers are a local best; none kept.** The plan's
+  approved budget (about 4 hours, blocks 1-2) is used; next blocks need the user's go-ahead. What the blocks point to:
+  the defence's numbers are tuned, so further gains need new behaviour (the attacking bot scores nearly all with quick
+  wrist shots from the slot: covering the slot, not the carrier), and the one-timer drop with penalties on.
