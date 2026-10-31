@@ -30,7 +30,8 @@ middle with the goalie drawn 4+ toward the passer's side; 16 (the default) is 15
 with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
 less the narrower it was); 17 is 16 with, in close and off the middle, the slapshot wind-up that
 drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a carry that begins in the middle of the zone
-going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds.
+going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds; 20 is 16 (not 17-19) with the faceoff B-mash only just
+after a faceoff drop; 21 is 20 with the CB check.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -211,7 +212,7 @@ class Bot:
             elif self.phase == "shot" and self.t > 90:
                 self.phase = "free"
             self.t += 1
-            if self.version >= 19 and self.phase == "shot" and owner is None and pk["z"] >= 0:
+            if self.version == 19 and self.phase == "shot" and owner is None and pk["z"] >= 0:
                 # version 19: after our shot, at the loose puck (the rebound) a few frames ahead; B switches to a
                 # teammate much nearer it (16 fell back on the defence's faceoff rule: B mashed toward our net)
                 tx, ty = pk["x"] + 4 * pk["vx"], pk["y"] + 4 * pk["vy"]
@@ -248,7 +249,7 @@ class Bot:
         if self.phase in ("free", "shot"):
             self.phase, self.t = "carry", 0
             self.last, self.stuck = (m["x"], m["y"]), 0
-            self.straight = self.version >= 18 and 60 < ay < 170 and abs(ax) < 25
+            self.straight = self.version in (18, 19) and 60 < ay < 170 and abs(ax) < 25
             self.note("carry", ay=ay)
         self.t += 1
         # pressure: the nearest opponent skater ahead of him (toward the net)
@@ -523,8 +524,12 @@ class Bot:
         loose = owner is None
         still = abs(pk["vx"]) + abs(pk["vy"]) < 0.05
         if loose and pk["z"] < 0:                   # the puck held up for a faceoff (dropped about 300 frames on)
+            self.faceoff_f = self.frame
             return []
-        if loose and still and math.hypot(pk["x"] - m["x"], pk["y"] - m["y"]) < 30:
+        faceoff = self.version < 20 or self.frame - getattr(self, "faceoff_f", -999) < 60
+        if loose and still and faceoff and math.hypot(pk["x"] - m["x"], pk["y"] - m["y"]) < 30:
+            # version 20: only just after a faceoff drop (16 did it at any still puck near him, pressing back toward
+            # our net)
             # a faceoff (or a dead puck at his feet): mash B, the d-pad back toward our net
             self.b_down = not self.b_down
             return (["B"] if self.b_down else []) + pad(dir_to(0, -s))
@@ -548,6 +553,10 @@ class Bot:
                     out.append("B")
             elif dc < 45 and closing and self.frame % 30 == 0:
                 out.append("C")                     # burst into him
+                self.cb_at = self.frame + 4
+            if self.version >= 21 and getattr(self, "cb_at", -1) == self.frame:
+                return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
+                                                    # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
         nearest = min(dist_to_puck, key=dist_to_puck.get)
         if nearest != me and dist_to_puck[nearest] + 50 < dist_to_puck.get(me, 999) and "B" not in out \

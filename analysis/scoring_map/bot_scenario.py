@@ -23,6 +23,10 @@ from paths import RUNS, WORK
 
 RETAIL = WORK / "nhl94_retail.bin"
 FRAMES = int(os.environ.get("NHL94_SCEN_FRAMES") or 360)
+DEFEND = os.environ.get("NHL94_SCEN_DEFEND")   # the entries the other way round: the bot defends (2026-10-31); "bot":
+ATTACKER = int(os.environ.get("NHL94_SCEN_ATTACKER") or 16)   # the attackers played by the bot (this version) on pad 2
+C2PLAYER = 0xC322                  # c2playernum
+CONT_TEAMS = (0xC328, 0xC32A)      # cont1team, cont2team (1 Home, 2 Away)
 C1PLAYER = 0xC320                  # c1playernum (ram94.asm): the record pad 1 controls
 SCORE, SHOTS = (0xC6DA, 0xCA3E), (0xC6CE, 0xCA32)
 
@@ -47,9 +51,13 @@ def place(e, base, s, seed):
     slot = {}
     for k in range(12):
         slot[("us" if k < 6 else "them", str(e.b(rec(k) + 0x35)))] = k
+    defend = bool(DEFEND)                        # the attackers are the computer's (Away), going down at our net
+    r_ = -1 if defend else 1
     for side in ("us", "them"):
         for role, (x, y, vx, vy, face) in s[side].items():
-            k = slot.get((side, role))
+            x, y, vx, vy = r_ * x, r_ * y, r_ * vx, r_ * vy
+            face = (face + (4 if defend else 0)) % 8
+            k = slot.get(({"us": "them", "them": "us"}[side] if defend else side, role))
             if k is None:
                 return None
             r = rec(k)
@@ -64,16 +72,27 @@ def place(e, base, s, seed):
             e.setw(r + 0x2A, round(vy * 4096) & 0xFFFF)
             e.setw(r + 0x2C, 0)
             e.setb(r + 0x55, face)
-    carrier = slot[("us", s["passer"] if "passer" in s else s["carrier"])]
+    carrier = slot[("them" if defend else "us", s["passer"] if "passer" in s else s["carrier"])]
+    px, py = r_ * s["puck"][0], r_ * s["puck"][1]
+    mine = carrier
+    if defend:                                   # pad 1 on our skater nearest the puck
+        mine = min((k for k in range(6) if e.b(rec(k) + 0x35) != 0),
+                   key=lambda k: math.hypot(e.sw(rec(k)) - px, e.sw(rec(k) + 0x14) - py))
     for k in range(6):
         e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
-    e.setb(rec(carrier) + 0x62, e.b(rec(carrier) + 0x62) | 8)
-    e.setw(C1PLAYER, carrier)
+    e.setb(rec(mine) + 0x62, e.b(rec(mine) + 0x62) | 8)
+    e.setw(C1PLAYER, mine)
     pr = rec(14)
-    e.setw(pr, round(s["puck"][0]) & 0xFFFF)
-    e.setw(pr + 0x14, round(s["puck"][1]) & 0xFFFF)
+    e.setw(pr, round(px) & 0xFFFF)
+    e.setw(pr + 0x14, round(py) & 0xFFFF)
     e.setw(pr + 0x18, 0)
     e.setw(PUCKC, carrier)
+    if DEFEND == "bot":                          # the attackers on pad 2, driven by the bot (ATTACKER)
+        e.setw(CONT_TEAMS[1], 2)
+        for k in range(6, 12):
+            e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
+        e.setb(rec(carrier) + 0x62, e.b(rec(carrier) + 0x62) | 8)
+        e.setw(C2PLAYER, carrier)
     return carrier
 
 
@@ -86,6 +105,8 @@ def play(e, base, s, seed, version):
         bot.phase, bot.t, bot.passer, bot.mate = "pass", 0, slot[s["passer"]], slot[s["receiver"]]
     s0, sh0 = [e.w(a) for a in SCORE], [e.w(a) for a in SHOTS]
     res, theirs = "time", 0
+    if DEFEND:
+        return defend_play(e, bot, s0, sh0)
     for f in range(FRAMES):
         e.run(1, hold=bot.step(e))
         sc = [e.w(a) for a in SCORE]
@@ -113,6 +134,35 @@ def play(e, base, s, seed, version):
                 ev=dict(Counter(x["ev"] for x in bot.log)),
                 lost=[x["phase"] for x in bot.log if x["ev"] == "lost"],
                 strikes=[x for x in bot.log if x["ev"] in ("strike", "pass start")])
+
+
+def defend_play(e, bot, s0, sh0):
+    """NHL94_SCEN_DEFEND: the computer attacks our net from the entry; until a goal against, our team keeping the
+    puck 20 frames (won; our goalie holding it counts: "covered"), a stoppage, or FRAMES."""
+    res, ours = "time", 0
+    att = Bot(1, ATTACKER) if DEFEND == "bot" else None
+    for f in range(FRAMES):
+        e.run(1, hold=bot.step(e), hold2=att.step(e) if att else [])
+        if e.w(SCORE[1]) != s0[1]:
+            res = "against"
+            break
+        if e.b(0xFFF7) != 0:
+            res = "stoppage"
+            break
+        own = e.w(PUCKC)
+        ours = ours + 1 if own < 6 else 0
+        if ours >= 20:
+            res = "covered" if e.b(rec(own) + 0x35) == 0 else "won"
+            break
+        if f % 600 == 599:
+            breathe()
+    out = dict(res=res, frames=f + 1, shots_against=e.w(SHOTS[1]) - sh0[1],
+               ev=dict(Counter(x["ev"] for x in bot.log)))
+    if att:
+        shots = [x for x in att.log if x["ev"] in ("shot", "strike")]
+        out["att_plays"] = dict(Counter(x.get("kind", "one-timer") for x in shots))
+        out["att_last"] = (shots[-1].get("kind", "one-timer") if shots else None)
+    return out
 
 
 def main():
@@ -151,8 +201,8 @@ def main():
                 fh.flush()
         rows = [json.loads(l) for l in open(path)]
         c = Counter(r["res"] for r in rows)
-        print(f"version {v}: {len(rows)} situations, goals {c['goal']} ({100 * c['goal'] / len(rows):.1f}%), "
-              f"shots {sum(r['shots'] for r in rows)}, {dict(c)}", flush=True)
+        print(f"version {v}: {len(rows)} situations, goals {c['goal']} ({100 * c['goal'] / len(rows):.1f}%), against {c['against']}, "
+              f"shots {sum(r.get('shots', r.get('shots_against', 0)) for r in rows)}, {dict(c)}", flush=True)
 
 
 if __name__ == "__main__":
