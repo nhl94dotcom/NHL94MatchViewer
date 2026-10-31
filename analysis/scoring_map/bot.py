@@ -26,7 +26,9 @@ side deking there (mirrored, DEKE12R); 13 is 11 (not 12) with the one-timer as p
 it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across); 14 is 13 with people's
 limits on the pass (the passer within 120 of the goal line, the pass under 130 long, no defender within 20 of
 the receiver); 15 is 14 passing only to a receiver within 40 of the
-middle with the goalie drawn 4+ toward the passer's side.
+middle with the goalie drawn 4+ toward the passer's side; 16 is 15 without the slapshot under pressure and
+with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
+less the narrower it was).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -58,8 +60,12 @@ LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the i
 # shot aimed across (Right for him), the follow-up at the near post
 EA = {1: dict(R=(-84, 196), u=(0.7071, 0.7071)), -1: dict(R=(-88, 212), u=(0.8608, 0.5087))}
 EA_SPEED = 1.7
+# version 16: the close-in wrist shot's zone (within mid of the middle, past ay up the ice); env NHL94_WRIST16="mid,ay"
+WRIST16 = dict(mid=140, ay=170)                     # 140: no limit across (best: below)
 EA_TUNE = dict(wing=-110, turnL=80, turnR=105, look=20)   # version 8's approach (bot_ea_check.py "wing"; env
 import os as _os                                           # NHL94_EA_TUNE="wing,turnL,turnR,look")
+if _os.environ.get("NHL94_WRIST16"):
+    WRIST16 = dict(zip(("mid", "ay"), map(float, _os.environ["NHL94_WRIST16"].split(","))))
 if _os.environ.get("NHL94_EA_TUNE"):
     EA_TUNE = dict(zip(("wing", "turnL", "turnR", "look"), map(float, _os.environ["NHL94_EA_TUNE"].split(","))))
 
@@ -247,10 +253,14 @@ class Bot:
                 ea = self.ea_carry(m, s, ax, ay, hand, near, ahead)
                 if ea is not None:
                     return ea
-            if 200 < ay < NET_Y:                    # in close off the deke's line: a wrist shot away from the goalie
-                self.phase, self.t = "wrist", 0
+            if self.version >= 16 and WRIST16["ay"] < ay < NET_Y and abs(ax) >= WRIST16["mid"]:
+                # version 16: in close but off to the side (the bot's wrist shots from there: 7%): cut in toward the
+                # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
+                return pad(aview(dir_to(-ax, max(0, 215 - ay) + 5)))
+            if (WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y:
+                self.phase, self.t = "wrist", 0     # in close off the deke's line: a wrist shot away from the goalie
                 self.note("wrist start", ax=ax, ay=ay)
-            elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90):
+            elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90)                     and self.version < 16:          # version 16: no slapshot under pressure (about none went in)
                 self.phase, self.t = "slap", 0
                 self.note("slap start", ax=ax, ay=ay)
             elif self.version >= 2 and ay > (144 if self.version >= 14 else 100 if self.version >= 13 else 150 if self.version >= 5 else 90) \

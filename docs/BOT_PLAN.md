@@ -97,3 +97,11 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   its slapshots (125 in the run, about none in) and its wrist shots from the sides (7%), against people's wrist shots
   from the middle of the slot and one-timers. Next: no slapshot under pressure, the close-in wrist shot only from the
   middle (cut in to it), and the guide's close-in plays.
+- **Version 16: the bot's shots (from the 472 entries, +7.0 points).** No slapshot under pressure, and the close-in
+  wrist shot (away from the goalie) as soon as the carrier is 170 up the ice (94 out from the goal line), instead of
+  200. The zone tried (`bot.WRIST16`, within `mid` of the middle, cutting in to it from the sides, from `ay` up the
+  ice): mid 25 / 35 / 50 / 70 / no limit at 170: 58 / 64 / 74 / 78 / 80 goals; 50 at 145: 66; 70 at 195: 55. So
+  cutting in to the middle cost goals, and the gain is shooting sooner and not winding up under pressure. **16 against
+  11: 80 goals (16.9%) against 47, scored where 11 didn't 57, the other way 24: +7.0 points +-1.9**, past people's
+  15.5% from the same entries (people faced people; the bot the computer). Two numbers tuned on the same entries, so
+  whole games next to confirm it.
