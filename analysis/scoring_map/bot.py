@@ -31,7 +31,8 @@ with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutti
 less the narrower it was); 17 is 16 with, in close and off the middle, the slapshot wind-up that
 drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a carry that begins in the middle of the zone
 going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds; 20 is 16 (not 17-19) with the faceoff B-mash only just
-after a faceoff drop; 21 is 20 with the CB check.
+after a faceoff drop; 21 is 20 with the CB check; 22 is 21 with the defence's
+numbers from DEF22 (env NHL94_DEF).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -65,6 +66,13 @@ EA = {1: dict(R=(-84, 196), u=(0.7071, 0.7071)), -1: dict(R=(-88, 212), u=(0.860
 EA_SPEED = 1.7
 WRIST_AIM = __import__("os").environ.get("NHL94_WRIST_AIM") or "mid"   # the wrist shot's aim: mid (the far side, middle height:
 # best), low, high, near (the goalie's side), none (nothing held)
+# version 22: the defence's numbers (21's by default): poke within poke, burst within burst every `every` frames, the
+# goal-side spot gap in front of the carrier toward our net, switch (B) when a teammate is `switch` nearer; env
+# NHL94_DEF="poke,burst,every,gap,switch" (the long test plan's block 2)
+DEF22 = dict(poke=26, burst=45, every=30, gap=14, switch=50)
+if __import__("os").environ.get("NHL94_DEF"):
+    DEF22 = dict(zip(("poke", "burst", "every", "gap", "switch"),
+                     map(float, __import__("os").environ["NHL94_DEF"].split(","))))
 # version 17: the close-in wind-up (in close past ay up the ice, more than side off the middle, C held hold frames);
 # env NHL94_CLOSE17="ay,side,hold"
 CLOSE17 = dict(ay=200, side=20, hold=12)
@@ -543,15 +551,16 @@ class Bot:
             # his goal side: a spot between the carrier and our net, a little toward the net
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
-            tx, ty = c["x"] + 14 * dx / L + 6 * c["vx"], c["y"] + 14 * dy / L + 6 * c["vy"]
+            dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
+            tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             dist_to_puck = {k: math.hypot(P[k]["x"] - c["x"], P[k]["y"] - c["y"]) for k in self.mine if P[k]["pos"] != 0}
             dc = dist_to_puck.get(me, 999)
             closing = (c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"]) > 0
-            if dc < POKE:
+            if dc < dp["poke"]:
                 self.b_down = not self.b_down
                 if self.b_down:
                     out.append("B")
-            elif dc < 45 and closing and self.frame % 30 == 0:
+            elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
             if self.version >= 21 and getattr(self, "cb_at", -1) == self.frame:
@@ -559,7 +568,8 @@ class Bot:
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
         nearest = min(dist_to_puck, key=dist_to_puck.get)
-        if nearest != me and dist_to_puck[nearest] + 50 < dist_to_puck.get(me, 999) and "B" not in out \
+        margin = DEF22["switch"] if self.version >= 22 else 50
+        if nearest != me and dist_to_puck[nearest] + margin < dist_to_puck.get(me, 999) and "B" not in out \
                 and self.frame % 20 == 0:
             out.append("B")                         # tap: control switches to whoever the game picks
         return out + pad(d)
