@@ -48,9 +48,53 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
   (correlation +0.24), as every SNES goalie is the same size (SNES_SHOOTING 5.1). The same goalies on the same teams
   show nothing on the SNES, so the Genesis gradient isn't just good teams in front of them. (Puck Control tracks
   Genesis save % too, +0.69, but the best goalies have both.)
-- **Team ratings can't be checked this way:** a team's roster strength doesn't predict its league results (Genesis
-  -0.11, SNES -0.46 against the top 12 skaters' Overall), as people pick or are given teams to balance a league, and
-  Overall is a poor measure anyway.
+- **Team ratings can't be checked from raw records:** a team's roster strength doesn't predict its league results
+  (Genesis -0.11, SNES -0.46 against the top 12 skaters' Overall), as people pick or are given teams to balance a
+  league, and Overall is a poor measure anyway. With the people taken out, below, it can.
+
+## Teams with the people taken out (`analysis/league_team_study.py`)
+
+Every Classic game between two retail teams (23,292 Genesis games in 102 leagues, 15,088 SNES in 64) fitted at once:
+goal difference = the home person's strength - the away person's + the home team's - the away team's + a home edge,
+with a strength for each person in each league season and one for each NHL team over all seasons. The teams are told
+apart because people play different teams in different seasons. Teams with 300+ games; goals a game against an
+average team, and the same as win-rate points:
+
+| Genesis | Goals a game | Win rate | | SNES | Goals a game | Win rate |
+| --- | --- | --- | --- | --- | --- | --- |
+| Hartford | +0.78 | +12.0 | | New Jersey | +0.91 | +12.1 |
+| Detroit | +0.70 | +8.2 | | Edmonton | +0.70 | +9.9 |
+| Chicago | +0.67 | +8.1 | | St. Louis | +0.37 | +3.9 |
+| Winnipeg | +0.55 | +7.4 | | Washington | +0.28 | +2.0 |
+| Montreal | +0.48 | +7.0 | | NY Islanders | +0.14 | +4.8 |
+| Boston | +0.48 | +6.0 | | NY Rangers | +0.11 | +3.0 |
+| Buffalo | +0.45 | +5.2 | | Pittsburgh | +0.03 | +0.9 |
+| Washington | +0.35 | +5.5 | | Calgary | +0.03 | +0.2 |
+| Dallas | +0.28 | +3.5 | | Vancouver | -0.02 | +0.6 |
+| St. Louis | +0.24 | +2.4 | | Quebec | -0.08 | +1.3 |
+| Quebec | +0.23 | +4.4 | | Winnipeg | -0.10 | -0.8 |
+| Los Angeles | +0.22 | +2.8 | | Los Angeles | -0.15 | -1.9 |
+| Vancouver | +0.09 | +0.6 | | Philadelphia | -0.16 | -1.5 |
+| Philadelphia | +0.09 | +3.2 | | Chicago | -0.16 | +0.7 |
+| New Jersey | +0.02 | -1.2 | | Buffalo | -0.22 | -1.4 |
+| Calgary | -0.02 | -0.9 | | Boston | -0.31 | -5.3 |
+| Edmonton | -0.07 | -0.5 | | Toronto | -0.51 | -3.6 |
+| NY Rangers | -0.19 | -2.7 | | Montreal | -0.72 | -4.7 |
+| Toronto | -0.27 | -2.5 | | Detroit | -0.95 | -8.7 |
+| Pittsburgh | -0.53 | -7.9 | | | | |
+
+- **Take these as rough.** Each team's 90% range is about +/- 0.3-0.5 goals (+/- 1 for the rarer teams), and two
+  halves of the leagues fitted apart agree only at 0.48 (Genesis) and 0.34 (SNES), about 0.65 and 0.5 for the whole
+  set. The top and bottom few are clear; the middle is not ordered.
+- **Genesis: light, quick teams with a good goalie win.** Over the teams, strength goes with the skaters' Weight
+  (-0.63: lighter is better), the starting goalie's Agility (+0.43), Agility (+0.28), Speed (+0.19) and Shot Power
+  (+0.15); Overall only +0.18. This fits what the game rewards (lighter men accelerate faster, GENESIS_MECHANICS; the
+  goalie's Agility is his reach, GENESIS_SHOOTING 5.1). Pittsburgh, the best team on paper, is the weakest here.
+- **SNES: the order runs nearly against the ratings,** strength going with Weight (+0.57) and against Overall (-0.35),
+  Speed (-0.26) and goalie Agility (-0.30): New Jersey and Edmonton on top, Detroit and Montreal at the bottom. Weight
+  helps a little on the SNES (it costs less acceleration there), but nothing found in the code makes the strong teams
+  weak. Either the SNES Classic leagues don't play NHL94_Classic's ratings as they are, or something in how people
+  are given teams isn't caught by the fit (NEEDS_FROM_YOU).
 
 ## Game-wide patterns (`analysis/league_patterns.py`)
 
@@ -110,7 +154,13 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
   result shot for shot (110 and 186 goals, none different). So the harness's bottom-net runs (period 2) aren't
   affected by it either. What period 2 changes is the direction of play: each team attacks the other net. Something
   that goes with a team and a direction together (code that uses the team where it should use the direction, or the
-  people), or something in play a standing shot doesn't reach, is left.
+  people), or something in play a standing shot doesn't reach, is left. **In the recorded games** (22 SNES games,
+  `analysis/snes_period_study.py`) period 2 shows the same dip, as poorer chances rather than poorer finishing:
+  goals per shot on goal 35% / 26% / 38% in periods 1 / 2 / 3, but xG per attempt 0.24 / 0.18 / 0.26 too, so goals
+  against xG are about the same (0.98 / 0.94 / 0.91). Period 2's xG per attempt was lower in 16 of the 22 games (by
+  0.06 +/- 0.06). Attempts, shots on goal, rushes and one-timers per minute were the same as in period 1; completed
+  passes ran higher (46 against 38 per 5 minutes). Mostly one person's games, so a lead, not an answer: in period 2 the
+  same number of shots came from worse chances.
 - **The Genesis game has tightened over the years:** 8.1-8.7 goals a game and 34-36% shooting in 2013-2017, 7.3-7.6
   and 31-32% since 2020, on the same 23-24 shots; the SNES stayed at 8.5-9.3 and 35-40%.
 

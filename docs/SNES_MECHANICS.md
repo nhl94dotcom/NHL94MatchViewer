@@ -882,7 +882,9 @@ Ordered by how much the answer would matter in league play (penalties off).
   LEAGUE_RESULTS, "Game-wide patterns"). Nor, on a first reading, code that uses a player's team where it means the
   direction: the shot aim (`shotdiradj`), the goalie (`assgoalie`), faceoffs (`puckfaceoff2` recomputes each
   pfgoal from the team and gmdir), energy and input all allow for it. Left: play a standing shot doesn't reach (rushes,
-  passes, one-timers) or the people.
+  passes, one-timers) or the people. The 22 recorded SNES games show the dip as poorer chances (xG per attempt 0.18
+  against 0.24-0.26, lower in 16 of 22 games) with as many shots and rushes as in period 1: a lead to follow as more
+  games come in.
   (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; LEAGUE_RESULTS. The
   4.8 lane against a goalie who catches with the other hand: it stays on the shooter's left, SNES_SHOOTING 5.3.)
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay

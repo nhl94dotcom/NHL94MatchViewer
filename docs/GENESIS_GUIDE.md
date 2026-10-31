@@ -204,6 +204,11 @@ With line changes off (the usual online setting):
 - **Endurance doesn't matter** with line changes off: energy never drains, and speed bursts are free.
 - **Ignore Overall.**
 - Some teams get hidden bonuses at home or on the power play (2.3), set per team in the ROM.
+- **Which retail teams actually win** (the leagues' Classic games since 2013, each person's own strength taken out):
+  Hartford, Detroit, Chicago, Winnipeg, Montreal, Boston and Buffalo are worth about half a goal to three quarters of
+  a goal a game over an average team; Pittsburgh, the best team on paper, about half a goal under, with Toronto and
+  the Rangers also below average. The winners are light, quick teams with a good goalie, as the rest of this guide
+  would predict. The middle of the table isn't reliably ordered. (LEAGUE_RESULTS.)
 
 ---
 
