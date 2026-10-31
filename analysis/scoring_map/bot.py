@@ -13,9 +13,12 @@ in his own half he keeps going. In close (200+ up the ice) off the deke's line, 
 away from the goalie. After a shot he chases the rebound. Our goalie with the puck (manual goalies) passes it out.
 Versions (Bot(team, version)): 1 the above; 2 adds the one-timer (a teammate open in the slot with a clear lane: B
 toward him, C while the puck travels) and skips the deke when a defender is near its line (slapshot instead); 3 the
-one-timer with every deke; 4 (the default) 3 with the deke's entry steered onto the standing set-up's path (on the
+one-timer with every deke; 4 3 with the deke's entry steered onto the standing set-up's path (on the
 lane by the red line, 0.5 a frame across toward the middle at the gate, 0.77 at the swing: bot_deke_check.py found
-the deke needs it) and no slapshot under pressure before the gate.
+the deke needs it) and no slapshot under pressure before the gate; 5 real one-timers (C as the pass arrives); 6 (the
+default) the deke re-timed with everyone on the ice; 7-8 (work in progress, STUDY_NOTES "A scripted bot") the EA
+Special (EA) in place of the deke: skate its line, release at the EA runs' best spot, follow up at the near post (8
+swings out to the wing to come in on the line).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -38,6 +41,12 @@ DEKE6 = {"L": dict(D=60, lag=13), "R": dict(D=60, lag=16)}
 GATE = (-45, 140)
 SHOOT_ANIMS = (0x07FC, 0x092E)       # the shooting swing (genesis.py "shoot")
 LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the ice
+# version 7: the EA Special (SCORING_GENESIS_EA, ea_run.py BEST17): the release spot (a right-hander from his left;
+# mirrored for a left-hander) and the line he skates in on, per net (s: +1 the top net). Top: 23 ft out, 28 ft to the
+# side, in at 45 degrees; bottom: 17 ft out, 29 ft to the side, at the middle of the goal line. 1.7 a frame; the first
+# shot aimed across (Right for him), the follow-up at the near post
+EA = {1: dict(R=(-84, 196), u=(0.7071, 0.7071)), -1: dict(R=(-88, 212), u=(0.8608, 0.5087))}
+EA_SPEED = 1.7
 
 
 def rec(k):
@@ -123,6 +132,19 @@ class Bot:
             self.c_left -= 1                                # the one-timer's C, held 3 frames
             self.t += 1
             return ["C"] + pad(dir_to(0, s))
+        if self.phase in ("ea", "ea2") and owner is None and self.t > 1:
+            kind = "ea" if self.phase == "ea" else "ea follow"
+            self.note("shot", kind=kind)                    # the first shot (or the follow-up) has left
+            if kind == "ea":
+                self.phase = "eaf"
+        if self.phase == "eaf":                             # after the first shot: at the puck, the follow-up
+            self.t += 1
+            if owner == me:
+                self.phase, self.t = "ea2", 0
+            elif owner is not None or self.t > 70:
+                self.phase, self.t = "shot", 91
+            else:
+                return pad(dir_to(pk["x"] + 4 * pk["vx"] - P[me]["x"], pk["y"] + 4 * pk["vy"] - P[me]["y"]))
         if owner == me and self.phase == "shot" and self.t < 15:
             self.t += 1                                     # the shot hasn't left the stick yet
             return []
@@ -146,7 +168,7 @@ class Bot:
             return pad(d)
         else:
             if self.phase not in ("free", "shot"):
-                self.note("lost", phase=self.phase, carrier=owner)
+                self.note("lost", phase=self.phase, carrier=owner, t=self.t, ax=round(s * P[me]["x"]), ay=round(s * P[me]["y"]))
             elif self.phase == "shot" and self.t > 90:
                 self.phase = "free"
             self.t += 1
@@ -172,6 +194,13 @@ class Bot:
         # pressure: the nearest opponent skater ahead of him (toward the net)
         near = min((math.hypot(P[k]["x"] - m["x"], P[k]["y"] - m["y"]), k) for k in self.theirs if k != g)
         ahead = s * (P[near[1]]["y"] - m["y"]) > -5
+        if self.phase in ("ea", "ea2") and self.t > 15:
+            self.phase, self.t = "carry", 0         # it never left the stick
+        if self.phase == "ea2":                     # claimed the loose puck: at once at the near post
+            near = 2 if m["x"] > 0 else 6           # (screen: the side of the net he is on)
+            return (["C"] if self.t <= 3 else []) + pad(near)
+        if self.phase == "ea":                      # the first shot: C 3 frames, aimed across, held until it leaves
+            return (["C"] if self.t <= 3 else []) + pad(aview(self.ea_dir(2, hand)))
         if self.phase == "carry":
             moved = math.hypot(m["x"] - self.last[0], m["y"] - self.last[1]) if self.t % 30 == 0 else None
             if moved is not None:
@@ -180,6 +209,10 @@ class Bot:
             if self.stuck >= 2:                     # pinned (against the goalie or the boards): go sideways
                 self.stuck = 0 if self.t % 30 == 29 else self.stuck
                 return pad(aview(2 if ax < 0 else 6))
+            if self.version >= 7:
+                ea = self.ea_carry(m, s, ax, ay, hand, near, ahead)
+                if ea is not None:
+                    return ea
             if 200 < ay < NET_Y:                    # in close off the deke's line: a wrist shot away from the goalie
                 self.phase, self.t = "wrist", 0
                 self.note("wrist start", ax=ax, ay=ay)
@@ -221,7 +254,8 @@ class Bot:
             dg = math.hypot(m["x"] - gx, m["y"] - gy)
             if dg <= self.deke[hand]["D"]:
                 self.phase, self.t = "swing", 0
-                self.note("swing", dg=round(dg))
+                self.note("swing", dg=round(dg), ax=round(ax), ay=round(ay), vx=round(s * m["vx"], 2), vy=round(s * m["vy"], 2),
+                          near=round(near[0]))
             elif self.version >= 4:                 # the standing set-up's path: 0.5 across at the gate, 0.77 at
                 want = 0.5 + (ay - GATE[1]) * 0.0054  # the swing (holding up-right; slower to turn with the puck)
                 return pad(aview(1 if s * m["vx"] < want else 0))
@@ -255,6 +289,46 @@ class Bot:
             self.note("shot", kind="slap")
             return pad(aview(4))
         return []
+
+    def ea_dir(self, d, hand):
+        """A direction in the right-hander's EA view (attacker's view, from his left) for this skater's hand."""
+        return d if hand == "R" else (8 - d) % 8
+
+    def ea_carry(self, m, s, ax, ay, hand, near, ahead):
+        """Version 7: skate the EA Special's line and release on it; None to fall back on the other plays (past the
+        release spot, or pressured in the zone)."""
+        R, u = EA[s]["R"], EA[s]["u"]
+        mx = 1 if hand == "R" else -1               # his EA view: the right-hander's (x mirrored for a left-hander)
+        bx, by = mx * ax, ay
+        vx, vy = mx * s * m["vx"], s * m["vy"]
+        a = (bx - R[0]) * u[0] + (by - R[1]) * u[1]          # along the line (negative: before the release)
+        off = (by - R[1]) * u[0] - (bx - R[0]) * u[1]        # across it (positive: toward the middle and up)
+        dR = math.hypot(bx - R[0], by - R[1])
+        if a > 12 and by > R[1] - 20 or near[0] < PRESSURE and ahead and ay > 150:
+            return None
+        sp = math.hypot(vx, vy)
+        if a > -4 * sp - 2 and abs(off) < 16:
+            self.phase, self.t = "ea", 0            # C now: the puck leaves about 4 frames on, at the spot
+            self.note("ea start", ax=round(ax), ay=round(ay), off=round(off), v=round(sp, 2), hand=hand, s=s)
+            return ["C"] + pad(self.aview_s(s, self.ea_dir(2, hand)))
+        if a > -12 and abs(off) >= 16 and dR < 40:
+            return None                             # arrived off the line: the other plays
+        # pure pursuit: a point on the line 30 ahead of his projection on it (kept 14 inside the boards)
+        ta = a + 30
+        if self.version >= 8:                       # off the line: aim farther back along it, so he swings out to
+            ta = max(-70, a + 30 - 1.5 * abs(off))  # the wing and comes in on it (7 came in from the middle)
+        tx, ty = R[0] + ta * u[0], R[1] + ta * u[1]
+        tx = max(tx, -118)
+        if by < R[1] - 150:                         # far away: up the ice toward the line's start
+            tx, ty = max(R[0] - 60 * u[0], -118), by + 80
+        d = dir_to(tx - bx, ty - by)
+        if a > -60 and sp > EA_SPEED + 0.1 and self.t % 2:
+            return []                               # a little below full speed: coast every other frame
+        return pad(self.aview_s(s, self.ea_dir(d, "R") if hand == "R" else (8 - d) % 8))
+
+    @staticmethod
+    def aview_s(s, d):
+        return d if s > 0 else (d + 4) % 8
 
     def blocked(self, P, me, s, g, width=30):
         """An opponent skater within `width` of the line from him to the middle of the goal line, ahead of him."""

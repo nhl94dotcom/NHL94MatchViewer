@@ -1015,3 +1015,23 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
 - Still 32% for the deke against 96% re-timed in the check: pucks lost on the way in (drive 72, swing 40 in 20 games)
   and entries off the path. Next: the EA Special from the faceoff dot, one-timer set-ups (carry low on one side, pass
   across), then defence; then the RetroArch link (a virtual pad).
+- **What separates the dekes that score (version 6, 17 games logged, 232 swings: 63 goals, 136 misses, 33 lost in
+  the swing).** Space and speed at the swing: with an opponent within 25 of him 26 goals in 135 swings (21 lost), 25-40
+  away 26 in 70, 40+ away 11 in 27. Swings that missed came in slower up the ice (1.48 a frame against the goals'
+  1.71); across speed and spot barely differed (0.65 against 0.71 across; 0.6-0.8 across scored 50 of 160, below
+  0.4 2 of 23). Pucks lost in the deke's drive (64) spread from the gate to the swing; but most of the bot's lost
+  pucks (415) are in the plain carry, half of them in its own half. Not yet acted on (ideas: take the wrist shot or
+  pass when a defender is within 25 at the swing).
+- **The EA Special (versions 7-8, work in progress).** `bot.EA`: the EA runs' best set-ups (BEST17), a right-hander
+  from his left, a left-hander mirrored: the top net released 23 ft out and 28 ft to the side skating in at 45
+  degrees, the bottom net 17 ft out, 29 ft to the side, at the middle of the goal line; 1.7 a frame (coasting every
+  other frame above 1.8), the first shot aimed across, then at the loose puck and at once a wrist shot at the near
+  post. `bot_ea_check.py`, started on the top net's line 25 frames out at 1.7 (16 tries a hand, Shot Power 14 / 20):
+  others off the ice 13 + 12 of 32 / 8 + 11; everyone on 7 + 8 / 3 + 8, every goal the follow-up. With everyone on,
+  the follow-up claimed the puck 5-10 frames later; small changes swing the rates by 5 of 16 (one try at holding the
+  speed tighter: free 11 + 8, parked 6 + 12), so 16 tries a hand is too few to tune on. In games the bot seldom got
+  onto the line: version 7 pursued a point on it from wherever he was and came in from the middle, off the line
+  (about 5 EA Specials a game, the close-in wrist shot instead); version 8 aims farther back along the line the
+  farther off it he is, so he swings out to the wing, and reaches the release spot, but about 15 units (5 ft) inside
+  the line and scored 0 of 12 from the neutral zone in the check. Next: bring him onto the line from farther out (the
+  release spot matters most: SCORING_GENESIS_EA "A person's slop"), then games. The default stays version 6.

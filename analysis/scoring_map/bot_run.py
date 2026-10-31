@@ -3,7 +3,7 @@ bot_start.state (bot_states.py) with its own random seed; START is tapped throug
 game: the score, shots on goal, each goal (whose, the period and clock, and for the bot's the play it came from: a
 deke or slapshot released within 120 frames before, else "other"), and the bot's plays (deke starts, swings, shots,
 slapshots, pucks lost and where). Gentle mode, one process; resumable.
-NHL94_BOT_VERSION=1 for the first version. python bot_run.py RUN GAMES [minutes]   -> paths.RUNS / RUN / bot_games.jsonl"""
+NHL94_BOT_VERSION=1 for the first version; NHL94_BOT_LOG=1 keeps the bot's whole log (each game's "log"). python bot_run.py RUN GAMES [minutes]   -> paths.RUNS / RUN / bot_games.jsonl"""
 import json
 import os
 import sys
@@ -54,7 +54,7 @@ def play(e, start, seed, frames_out=None):
                 shot = next((ev for ev in reversed(bot.log) if ev["ev"] in ("shot", "strike")), None)
                 if shot and bot.frame - shot["f"] <= 120:
                     play_ = "one-timer" if shot["ev"] == "strike" else shot["kind"]
-            goals.append(dict(team=team, period=e.w(0xC466), clock=e.w(0xC468), play=play_))
+            goals.append(dict(team=team, period=e.w(0xC466), clock=e.w(0xC468), play=play_, f=bot.frame))
             last_score = score
         if f % 600 == 0:
             breathe()
@@ -65,7 +65,8 @@ def play(e, start, seed, frames_out=None):
     return dict(seed=seed, frames=f, score=list(last_score), shots=[e.w(SHOTS[0]), e.w(SHOTS[1])], goals=goals,
                 events=dict(ev), lost=dict(lost), shot_kinds=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot"),
                                                                   **{"one-timer": sum(x["ev"] == "strike" for x in bot.log)}),
-                deke_starts=[(x["ax"], x["ay"], x["v"], x["hand"]) for x in bot.log if x["ev"] == "deke start"])
+                deke_starts=[(x["ax"], x["ay"], x["v"], x["hand"]) for x in bot.log if x["ev"] == "deke start"],
+                **({"log": bot.log} if os.environ.get("NHL94_BOT_LOG") else {}))
 
 
 def main():
