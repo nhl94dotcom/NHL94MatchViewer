@@ -28,7 +28,8 @@ limits on the pass (the passer within 120 of the goal line, the pass under 130 l
 the receiver); 15 is 14 passing only to a receiver within 40 of the
 middle with the goalie drawn 4+ toward the passer's side; 16 (the default) is 15 without the slapshot under pressure and
 with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
-less the narrower it was).
+less the narrower it was); 17 is 16 with, in close and off the middle, the slapshot wind-up that
+drops the goalie, released at his own side (CLOSE17).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -60,10 +61,15 @@ LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the i
 # shot aimed across (Right for him), the follow-up at the near post
 EA = {1: dict(R=(-84, 196), u=(0.7071, 0.7071)), -1: dict(R=(-88, 212), u=(0.8608, 0.5087))}
 EA_SPEED = 1.7
+# version 17: the close-in wind-up (in close past ay up the ice, more than side off the middle, C held hold frames);
+# env NHL94_CLOSE17="ay,side,hold"
+CLOSE17 = dict(ay=200, side=20, hold=12)
 # version 16: the close-in wrist shot's zone (within mid of the middle, past ay up the ice); env NHL94_WRIST16="mid,ay"
 WRIST16 = dict(mid=140, ay=170)                     # 140: no limit across (best: below)
 EA_TUNE = dict(wing=-110, turnL=80, turnR=105, look=20)   # version 8's approach (bot_ea_check.py "wing"; env
 import os as _os                                           # NHL94_EA_TUNE="wing,turnL,turnR,look")
+if _os.environ.get("NHL94_CLOSE17"):
+    CLOSE17 = dict(zip(("ay", "side", "hold"), map(float, _os.environ["NHL94_CLOSE17"].split(","))))
 if _os.environ.get("NHL94_WRIST16"):
     WRIST16 = dict(zip(("mid", "ay"), map(float, _os.environ["NHL94_WRIST16"].split(","))))
 if _os.environ.get("NHL94_EA_TUNE"):
@@ -257,7 +263,12 @@ class Bot:
                 # version 16: in close but off to the side (the bot's wrist shots from there: 7%): cut in toward the
                 # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
                 return pad(aview(dir_to(-ax, max(0, 215 - ay) + 5)))
-            if (WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y:
+            if self.version >= 17 and CLOSE17["ay"] < ay < NET_Y - 10 and abs(ax) > CLOSE17["side"]:
+                # version 17: in close and off the middle, the slapshot wind-up that drops the computer goalie into
+                # a pad stack sliding to the middle (GENESIS_GUIDE 6: 37% when he dropped), released at his own side
+                self.phase, self.t = "close", 0
+                self.note("close start", ax=ax, ay=ay)
+            elif (WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y:
                 self.phase, self.t = "wrist", 0     # in close off the deke's line: a wrist shot away from the goalie
                 self.note("wrist start", ax=ax, ay=ay)
             elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90)                     and self.version < 16:          # version 16: no slapshot under pressure (about none went in)
@@ -346,6 +357,12 @@ class Bot:
                 return ["C"] + pad(aview(side))
             self.note("shot", kind="wrist")
             return pad(aview(side))
+        if self.phase == "close":
+            near_side = aview(2 if ax > 0 else 6)   # his own side of the net
+            if self.t < CLOSE17["hold"]:
+                return ["C"] + pad(near_side)
+            self.note("shot", kind="close")
+            return pad(near_side)
         if self.phase == "slap":
             if self.t < 20:
                 return ["C"] + pad(aview(4))        # wind up, Down held

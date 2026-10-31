@@ -110,3 +110,7 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   shot; no slapshots; one-timer passes fell to 1.6 a game (the wrist shot comes first). The check on situations it
   wasn't tuned on (kind "zone": 122 possessions already in the attacking zone, 0.5 s in, away from entries): 17 goals
   against version 11's 15 (+1.6 points +-3.1, too few to settle).
+- **Version 17: the close-in slapshot wind-up (GENESIS_GUIDE 6: the computer goalie drops early and slides to the
+  middle; recorded 37% when he dropped), worse.** In close (200+ up the ice) and more than 20 off the middle, C held 12
+  frames (or 8) and released at the carrier's own side: from the 472 entries 69 goals (8 frames: 75) against version
+  16's 80 (17 against 16: -2.3 points +-1.1). Version 16's quick wrist shot beats it; 16 stays the default.
