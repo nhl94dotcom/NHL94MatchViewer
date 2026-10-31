@@ -957,3 +957,44 @@ so the rule is clean. `find_habits` (export_match.py) now counts a hook starting
 hook takeaways unchanged. Viewer: a "Get-ups (hook glitch)" row under Controller (SNES), with help; season page: a
 Get-ups/GP column when any game has one, HEAD_HELP for it and Hooks/GP (both systems); season.py VERSION
 25. All SNES recordings with a match file re-converted in both game folders: only `habits` changed.
+
+## A scripted bot (Genesis, 2026-10-31)
+
+The user asked for an automated player that scores the ways they taught. `analysis/scoring_map/bot.py` reads the
+game's memory each frame (the Helper's addresses: skaters, puck, carrier, controlled skater, the goalie's spot) and
+returns the buttons to hold; `bot_run.py` plays whole games in the harness (the retail ROM, `bot_states.py`'s start:
+Regular Season, the bot as Montreal at home on pad 1 against Los Angeles and the computer, 5-minute periods, penalties
+and line changes off, manual goalies; about 30 s a game in gentle mode); `bot_report.py` sums a run, `bot_gif.py`
+makes GIFs of any game's plays (a game replays exactly from its seed), `bot_deke_check.py` plays the standing deke
+set-up with the bot's inputs. Run notes: the break between periods is a menu with play flagged live (FFF7 = 0) that
+waits for START; a faceoff waits about 300 frames with the puck held up (z -256); with manual goalies the pad drives
+our goalie when he has the puck (skated past the red line, a whistle), so the bot passes it out.
+
+The plays: the deke (deke_run's best set-ups), a wrist shot in close at the half of the net away from the goalie, the
+Down slapshot, and from version 2 the one-timer (a teammate open in the slot: B toward him, C while the puck
+travels). Defence is simple (chase from the goal side, burst-check, poke within 26, B to switch), the goalie the
+computer's. 20 games a version, the same seeds:
+
+| Version | Record | Goals a game | Shots on goal | Deke | One-timer | Close wrist | Slapshot |
+|---|---|---|---|---|---|---|---|
+| 1: deke, wrist, slapshot | 18-2 | 3.60 - 1.10 | 26.2 - 10.8 | 42 / 258 (16%) | - | 23 / 295 (8%) | 7 / 521 (1%) |
+| 2: + one-timer, deke only on a clear line | 17-3 | 3.00 - 0.90 | 25.4 - 10.9 | 9 / 60 (15%) | 14 / 97 (14%) | 28 / 306 (9%) | 9 / 621 (1%) |
+| 3: + one-timer, every deke | 18-2 | 3.40 - 1.05 | 26.0 - 11.8 | 38 / 260 (15%) | 9 / 84 (11%) | 18 / 308 (6%) | 3 / 398 (1%) |
+| 4: 3 with the deke's entry steered | **20-0** | **4.65** - 1.05 | 21.8 - 11.7 | 50 / 205 (**24%**) | 11 / 153 (7%) | 27 / 301 (9%) | 3 / 185 (2%) |
+
+(Goals per shot: a goal within 120 frames of the play's shot, per shot the bot took.)
+
+- **Why the deke scored 16% in play against 82-96% standing: the skater's speed coming in, not the defenders.** At
+  the swing, with an opponent within 40 it went in 6 of 29, with open ice 0 of 12 (3 games). `bot_deke_check.py`, the
+  standing set-up with the bot's own inputs in the retail ROM, everyone else away: entering at 0.5 across / 2.1 up the
+  ice (the runs' set-up) 27 of 32; 1.2 / 1.7 (diagonal, as the bot arrived) 11 of 32; 0.0 / 2.1 (straight up) 6 of 32.
+  With the puck the skater turns slowly (0.5 across at the gate, 0.77 at the swing holding up and right), so the
+  move needs that path. Version 4 lines up on a lane 55 to the left by the red line, builds the drift to it, starts
+  the deke only when entering the gate at 0.2-0.9 across: the deke 24% a shot and the bot's goals up a third. Still
+  far below standing: the timing is the standing runs', tuned to one speed, and defenders close in.
+- The same check with the other skaters left free (from the faceoff spots) gave left-handers 14 of 16 and
+  right-handers 0 of 16: not looked into yet.
+- Slapshots score 1-2% in play, as the maps say for a set goalie; the one-timer 7-14%, far below the maps' (the
+  pass and the receiver's spot aren't chosen yet).
+- Next: tune the deke's timing to the entry speed (deke_run's "retime" plan), the EA Special from the faceoff dot,
+  better one-timer passes, then defence; then the RetroArch link (a virtual pad).

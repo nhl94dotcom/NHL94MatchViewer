@@ -80,7 +80,7 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   the how-to (work files in `%USERPROFILE%\NHL94_scoring_map`). Its findings: GENESIS_SHOOTING 4.10. The SNES map
   (`snes_*.py`) runs the retail ROM in a copy of the Snes9x core with no hook: SNES_SHOOTING 4.8. `goal_types.py`
   sorts the maps' goals by how they went in; `goal_frames.py` / `goal_diagram.py` picture one (the game's own frames);
-  `animate.py` makes GIFs of makes and misses at the worthwhile spots. Long runs use gentle mode (`lowload.py`: 2
+  `animate.py` makes GIFs of makes and misses at the worthwhile spots. `bot.py` is a scripted Genesis player (the user's scoring moves); `bot_run.py` plays it in whole games against the computer (STUDY_NOTES "A scripted bot"). Long runs use gentle mode (`lowload.py`: 2
   workers at idle priority, each resting as long as it works; the user's fan; about 30x slower than 30 workers).
 - The user's league result databases (every league game since 2013, both systems; real players' names, so never in
   the repo): `%USERPROFILE%\NHL94_League_Data\All_Games_GENS.csv`, `All_Games_SNES.csv`. `analysis/league_home_study.py`
