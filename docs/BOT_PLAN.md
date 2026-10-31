@@ -74,3 +74,12 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   guide's finding is that a one-timer scores when the goalie is still sliding (a quick pass across); the bot's long,
   slow passes let him set. Next: quicker passes across from lower down (the carrier low on one side, the receiver
   across), and the close-in plays from the guide (the cross-crease, the slapshot wind-up that drops the goalie).
+- **The one-timer from people's own passes** (situation kind "pass": every one-timer in the recorded Genesis games, 117,
+  placed 2 samples before its pass with the passer holding the puck; the bot makes the pass with B toward the same
+  receiver, then its one-timer). A puck placed in flight doesn't work: the game starts a one-timer only for a pass it
+  made itself (`passReceiverPlayerNum`, the intended receiver; C pressed on the passer's pad while the receiver isn't
+  the pad's skater, logic94 `doinput`, assignment $23 `assonetimer`), so the first try struck 9 of 117. Made by the
+  bot: struck 85 of 117, scored 30 (25.6%); the people scored 45 (38%). Per strike the bot's 35% is about the people's
+  38% (and against the computer goalie their one-timers scored 45 of 127, 35%). C 14, 24 or 40 frames before the puck
+  arrives: 30, 30, 29 goals; 4 frames: 12 (too late). **So the strike is fine; the bot's 18% from entries is its
+  set-ups** (where and when it passes), plus the 32 of people's passes that the bot's B didn't turn into a strike.
