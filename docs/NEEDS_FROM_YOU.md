@@ -82,11 +82,9 @@ record or check and what it will settle. Newest at the bottom of each section.
    Fuhr +1 Agility only, Roy and Belfour nothing; the stick and glove ratings are unchanged.
 5. **Tests with a person in net** (Genesis): how a person's goalie reacts to the deke and the floater is to be
    designed with you before anything is run.
-6. **Which ROM the SNES Classic leagues play.** With the people taken out, the SNES Classic teams' strengths run
-   nearly against NHL94_Classic's ratings (New Jersey and Edmonton on top, Detroit and Montreal at the bottom;
-   LEAGUE_RESULTS, "Teams with the people taken out"), where the Genesis order follows its ratings. Do those leagues
-   play NHL94_Classic's rosters unchanged, or an edited ROM (balanced teams, a handicap)? And are teams handed out in
-   some way that would tilt it (the best people given the weakest teams)?
+6. ~~**Which ROM the SNES Classic leagues play.**~~ Settled (2026-10-30): the Classic drafts let the people thought
+   weaker pick first, which a fit with a strength per person per season mistook for team strength; one strength per
+   person over all seasons fixes it (LEAGUE_RESULTS, "Teams with the people taken out").
 
 ## Checks you could run on your box-score database
 

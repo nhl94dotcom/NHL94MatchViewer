@@ -56,46 +56,53 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 
 Every Classic game between two retail teams (23,292 Genesis games in 102 leagues, 15,088 SNES in 64) fitted at once:
 goal difference = the home person's strength - the away person's + the home team's - the away team's + a home edge,
-with a strength for each person in each league season and one for each NHL team over all seasons. The teams are told
-apart because people play different teams in different seasons. Teams with 300+ games; goals a game against an
-average team, and the same as win-rate points:
+**one strength per person over all their Classic seasons**. A team is judged by how the same people do with it
+against their other teams. Checked a second way, with each person's Elo rating at the start of the league season
+(over all their games on that system) instead: the two agree at 0.84 on the Genesis and 0.69 on the SNES.
 
-| Genesis | Goals a game | Win rate | | SNES | Goals a game | Win rate |
-| --- | --- | --- | --- | --- | --- | --- |
-| Hartford | +0.78 | +12.0 | | New Jersey | +0.91 | +12.1 |
-| Detroit | +0.70 | +8.2 | | Edmonton | +0.70 | +9.9 |
-| Chicago | +0.67 | +8.1 | | St. Louis | +0.37 | +3.9 |
-| Winnipeg | +0.55 | +7.4 | | Washington | +0.28 | +2.0 |
-| Montreal | +0.48 | +7.0 | | NY Islanders | +0.14 | +4.8 |
-| Boston | +0.48 | +6.0 | | NY Rangers | +0.11 | +3.0 |
-| Buffalo | +0.45 | +5.2 | | Pittsburgh | +0.03 | +0.9 |
-| Washington | +0.35 | +5.5 | | Calgary | +0.03 | +0.2 |
-| Dallas | +0.28 | +3.5 | | Vancouver | -0.02 | +0.6 |
-| St. Louis | +0.24 | +2.4 | | Quebec | -0.08 | +1.3 |
-| Quebec | +0.23 | +4.4 | | Winnipeg | -0.10 | -0.8 |
-| Los Angeles | +0.22 | +2.8 | | Los Angeles | -0.15 | -1.9 |
-| Vancouver | +0.09 | +0.6 | | Philadelphia | -0.16 | -1.5 |
-| Philadelphia | +0.09 | +3.2 | | Chicago | -0.16 | +0.7 |
-| New Jersey | +0.02 | -1.2 | | Buffalo | -0.22 | -1.4 |
-| Calgary | -0.02 | -0.9 | | Boston | -0.31 | -5.3 |
-| Edmonton | -0.07 | -0.5 | | Toronto | -0.51 | -3.6 |
-| NY Rangers | -0.19 | -2.7 | | Montreal | -0.72 | -4.7 |
-| Toronto | -0.27 | -2.5 | | Detroit | -0.95 | -8.7 |
-| Pittsburgh | -0.53 | -7.9 | | | | |
+(A first version gave each person a separate strength for each league season. In a season each person plays one
+team, so it couldn't tell the person from the team, and in the Classic drafts the people thought weaker pick first:
+it rated teams by who drafted them, the teams the stronger people are left with coming out on top. The SNES order
+looked upside down. Dropped.)
 
-- **Take these as rough.** Each team's 90% range is about +/- 0.3-0.5 goals (+/- 1 for the rarer teams), and two
-  halves of the leagues fitted apart agree only at 0.48 (Genesis) and 0.34 (SNES), about 0.65 and 0.5 for the whole
-  set. The top and bottom few are clear; the middle is not ordered.
-- **Genesis: light, quick teams with a good goalie win.** Over the teams, strength goes with the skaters' Weight
-  (-0.63: lighter is better), the starting goalie's Agility (+0.43), Agility (+0.28), Speed (+0.19) and Shot Power
-  (+0.15); Overall only +0.18. This fits what the game rewards (lighter men accelerate faster, GENESIS_MECHANICS; the
-  goalie's Agility is his reach, GENESIS_SHOOTING 5.1). Pittsburgh, the best team on paper, is the weakest here.
-- **SNES: the order runs nearly against the ratings,** strength going with Weight (+0.57) and against Overall (-0.35),
-  Speed (-0.26) and goalie Agility (-0.30): New Jersey and Edmonton on top, Detroit and Montreal at the bottom. Weight
-  helps a little on the SNES (it costs less acceleration there), but nothing found in the code makes the strong teams
-  weak. Either the SNES Classic leagues don't play NHL94_Classic's ratings as they are, or something in how people
-  are given teams isn't caught by the fit (NEEDS_FROM_YOU).
+Teams with 300+ games, against the average of those shown (games-weighted): goals a game, win-rate points, the Elo
+version's goals a game, games:
 
+| Genesis | Goals | Win rate | Elo way | Games | | SNES | Goals | Win rate | Elo way | Games |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Chicago | +0.77 | +9.5 | +0.56 | 3,969 | | Pittsburgh | +0.41 | +4.9 | +0.34 | 2,518 |
+| Detroit | +0.58 | +7.0 | +0.34 | 4,146 | | New Jersey | +0.32 | +5.3 | +0.49 | 760 |
+| Buffalo | +0.33 | +3.9 | +0.36 | 3,973 | | NY Rangers | +0.18 | +3.4 | +0.06 | 2,520 |
+| Montreal | +0.19 | +3.7 | +0.15 | 3,885 | | Boston | +0.16 | +1.8 | -0.10 | 2,506 |
+| Boston | +0.04 | +0.6 | +0.10 | 3,863 | | Los Angeles | +0.15 | +1.1 | -0.03 | 2,233 |
+| Vancouver | +0.01 | -0.7 | 0.00 | 3,909 | | Washington | +0.11 | -0.1 | -0.02 | 1,148 |
+| Winnipeg | -0.02 | -0.3 | -0.04 | 3,607 | | Montreal | +0.04 | +0.8 | -0.06 | 1,687 |
+| Dallas | -0.13 | -1.3 | -0.15 | 2,718 | | Chicago | +0.03 | +0.7 | -0.01 | 2,433 |
+| Los Angeles | -0.14 | -2.2 | -0.14 | 2,419 | | Vancouver | +0.03 | -0.2 | -0.08 | 2,100 |
+| Toronto | -0.26 | -2.9 | -0.47 | 1,619 | | Philadelphia | -0.01 | -2.5 | +0.31 | 663 |
+| Calgary | -0.39 | -5.2 | -0.28 | 3,058 | | Calgary | -0.02 | -1.5 | +0.14 | 1,973 |
+| Quebec | -0.40 | -4.5 | -0.31 | 2,117 | | St. Louis | -0.07 | -0.3 | -0.05 | 573 |
+| New Jersey | -0.45 | -6.9 | -0.75 | 349 | | Detroit | -0.17 | -0.9 | -0.25 | 2,321 |
+| Philadelphia | -0.47 | -4.7 | -0.15 | 1,075 | | Edmonton | -0.19 | -4.6 | -0.02 | 517 |
+| St. Louis | -0.56 | -7.3 | -0.39 | 1,049 | | Toronto | -0.23 | -2.0 | -0.16 | 757 |
+| Washington | -0.60 | -8.9 | +0.17 | 434 | | Winnipeg | -0.36 | -5.3 | -0.01 | 1,262 |
+| Edmonton | -0.64 | -8.4 | -0.51 | 695 | | Buffalo | -0.38 | -4.4 | -0.18 | 2,097 |
+| Hartford | -0.65 | -6.9 | -0.39 | 527 | | Quebec | -0.59 | -7.4 | -0.03 | 887 |
+| Pittsburgh | -0.78 | -11.2 | -0.48 | 1,197 | | NY Islanders | -0.78 | -8.1 | -0.45 | 317 |
+| NY Rangers | -0.86 | -11.4 | -0.61 | 1,350 | | | | | | |
+
+- **Genesis: solid.** Two halves of the leagues fitted apart agree at 0.84; each well-played team's 90% range is
+  about +/- 0.15-0.3 goals. **Chicago and Detroit are the teams to have**, then Buffalo and Montreal; the Rangers and
+  Pittsburgh (the best team on paper) the ones to avoid, about 1.5 goals a game below Chicago. Over the teams,
+  strength goes with **the starting goalie's Agility (+0.60)** and **light skaters (Weight -0.45)**, then Agility
+  (+0.24), Overall (+0.28), Speed and Checking (+0.16-0.17); Shot Power, Speed and goalie Agility together
+  account for half the spread (R^2 0.53). That is what the mechanics say: the goalie's Agility is his reach
+  (GENESIS_SHOOTING 5.1), and lighter men accelerate faster.
+- **SNES: rougher.** The halves agree at 0.46 and the two ways at 0.69; Pittsburgh and New Jersey lead in both, the
+  Islanders and Buffalo trail in both, the middle isn't ordered. Strength goes with **heavy skaters (Weight +0.64,
+  +0.75 the Elo way)** and Checking (+0.35), not with Speed or the goalie's Agility (every SNES goalie covers the same
+  net, SNES_SHOOTING 5.1). Weight costs less acceleration on the SNES ("Ratings, game flow, skill and luck", below).
+- The leagues sometimes leave the top teams out of the draft for fun (rare), which this doesn't allow for.
 ## Game-wide patterns (`analysis/league_patterns.py`)
 
 | | Genesis | SNES |

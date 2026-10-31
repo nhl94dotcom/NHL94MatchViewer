@@ -1,15 +1,22 @@
 """Which teams are strongest in the Classic leagues, with the people playing them taken out (2026-10-30). The user's
 databases outside the repository (%USERPROFILE%\\NHL94_League_Data), aggregates only (team names, no players).
 
-People pick or are given teams to balance a league, so a team's raw record says little. Here every Classic game
-(both teams retail ones, in leagues that play the retail rosters) is fitted at once:
-    home goals - away goals = home player's strength - away player's + home team's - away team's + home edge
-with a strength for each person in each league season (so improving players don't move the teams) and one for each
-NHL team over all seasons, by least squares (a small ridge on the people). The teams are told apart because people
-play different teams in different seasons. The same fit on the result (win 1, tie 1/2, loss 0) gives the win-rate
-version. The spread comes from refitting on leagues drawn at random with replacement (bootstrap, 100 draws); the
-reliability from fitting two random halves of the leagues apart and comparing (teams with MIN_GAMES+ games in each).
-Teams with under MIN_GAMES games aren't shown or used in the rating comparison.
+People pick or are given teams to balance a league (in the Classic drafts the people thought weaker pick first), so
+a team's raw record says little. Every Classic game (both teams retail ones, in leagues that play the retail
+rosters) is fitted at once, two ways:
+- "person": home goals - away goals = the home person's strength - the away person's + the home team's - the away
+  team's + home edge, one strength per person over all their Classic seasons, by least squares. A team is judged by
+  how the same people do with it against their other teams.
+- "elo": the same with each person's strength replaced by his Elo rating (league_flow_study's, over all his games on
+  that system, K 16 / 24) at the start of that league season, times one fitted factor; games between people with 30+
+  earlier games. The draft can't touch that rating, and it follows people who improve.
+(A first version gave each person a strength for each league season. In a season each person plays one team, so that
+couldn't tell the person from the team, and it rated teams by who drafted them: the teams the strong people are left
+with came out strongest. Dropped.)
+The same "person" fit on the result (win 1, tie 1/2, loss 0) gives the win-rate version. The spread comes from
+refitting on leagues drawn at random with replacement (bootstrap, 100 draws); the reliability from fitting two random
+halves of the leagues apart and comparing (teams with MIN_GAMES+ games in each). Teams with under MIN_GAMES games
+aren't shown or used in the rating comparison.
 
 Then the team strengths against the ROM's ratings (the retail Genesis ROM and NHL94_Classic): the starting
 goalie's Agility (the higher-rated goalie) and the top 12 skaters' mean Speed, Shot Power, Shot Accuracy, Agility,
@@ -25,6 +32,9 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 from systems import genesis, snes  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from league_flow_study import load, result  # noqa: E402
 
 DATA = Path.home() / "NHL94_League_Data"
 ROMS = [Path(__file__).resolve().parents[1] / "roms", Path.home() / "Documents" / "NHL94 Viewer" / "roms"]
@@ -59,25 +69,47 @@ def games(csv_name, retail):
     return [g for g in rows if g[0] in keep and g[3] in retail and g[4] in retail and g[3] != g[4]]
 
 
-def fit(rows, teams, y_of):
-    people = sorted({(g[0], g[1]) for g in rows} | {(g[0], g[2]) for g in rows})
+def pre_league_elo(csv_name, k):
+    """{(league, person): (rating at his first game of that league, games before it)}, over all games in date order."""
+    R = defaultdict(lambda: 1500.0)
+    seen = defaultdict(int)
+    out = {}
+    for g in load(csv_name):
+        for who in (g["hp"], g["ap"]):
+            out.setdefault((g["league"], who), (R[who], seen[who]))
+        p = 1 / (1 + 10 ** (-(R[g["hp"]] - R[g["ap"]]) / 400))
+        d = k * (result(g) - p)
+        R[g["hp"]] += d
+        R[g["ap"]] -= d
+        seen[g["hp"]] += 1
+        seen[g["ap"]] += 1
+    return out
+
+
+def fit(rows, teams, y_of, elo=None):
+    """Team strengths (mean 0) and the home edge; people as fixed strengths, or (elo given) by their pre-league Elo."""
+    people = [] if elo else sorted({g[1] for g in rows} | {g[2] for g in rows})
     pi = {p: i for i, p in enumerate(people)}
-    ti = {t: len(people) + i for i, t in enumerate(teams)}
-    n = len(people) + len(teams) + 1
+    off = len(people) + (1 if elo else 0)
+    ti = {t: off + i for i, t in enumerate(teams)}
+    n = off + len(teams) + 1
     X = np.zeros((len(rows), n))
     y = np.zeros(len(rows))
     for k, g in enumerate(rows):
-        X[k, pi[(g[0], g[1])]] += 1
-        X[k, pi[(g[0], g[2])]] -= 1
+        if elo:
+            X[k, 0] = (elo[(g[0], g[1])][0] - elo[(g[0], g[2])][0]) / 100
+        else:
+            X[k, pi[g[1]]] += 1
+            X[k, pi[g[2]]] -= 1
         X[k, ti[g[3]]] += 1
         X[k, ti[g[4]]] -= 1
         X[k, -1] = 1                                  # home edge
         y[k] = y_of(g)
     A = X.T @ X
-    A[np.arange(len(people)), np.arange(len(people))] += RIDGE
-    A[len(people):-1, len(people):-1] += 1e-6          # team effects: only differences are fixed
+    d = np.arange(n - 1)
+    A[d, d] += 1e-6                                   # people and teams: only differences are fixed
     beta = np.linalg.solve(A, X.T @ y)
-    t = beta[len(people):-1]
+    t = beta[off:-1]
     return t - t.mean(), beta[-1]
 
 
@@ -93,14 +125,19 @@ def ratings(teams_rom):
     return out
 
 
-def study(csv_name, label, teams_rom):
+def study(csv_name, label, teams_rom, k_elo):
     retail = {t["abbr"] for t in teams_rom} - {"ASE", "ASW"}
     rows = games(csv_name, retail)
+    elo = pre_league_elo(csv_name, k_elo)
+    rows_elo = [g for g in rows if elo.get((g[0], g[1]), (0, 0))[1] >= 30 and elo.get((g[0], g[2]), (0, 0))[1] >= 30]
+    teams_elo = sorted({g[3] for g in rows_elo} | {g[4] for g in rows_elo})
     teams = sorted({g[3] for g in rows} | {g[4] for g in rows})
     gd = lambda g: g[5] - g[6]
     res = lambda g: 1.0 if g[5] > g[6] else 0.0 if g[5] < g[6] else 0.5
     t_gd, home_gd = fit(rows, teams, gd)
     t_w, home_w = fit(rows, teams, res)
+    t_e, _ = fit(rows_elo, teams_elo, gd, elo)
+    t_e = dict(zip(teams_elo, t_e))
     leagues = sorted({g[0] for g in rows})
     by_league = defaultdict(list)
     for g in rows:
@@ -121,8 +158,8 @@ def study(csv_name, label, teams_rom):
         raw[g[4]][1] += 1
     print(f"\n{label}: {len(rows)} Classic games in {len(leagues)} leagues; home edge {home_gd:+.2f} goals, "
           f"{100 * (home_w - 0.5):+.1f} points of win rate")
-    print("  Team: strength in goals a game against an average team (90% range), the same as win-rate points, "
-          "raw win %, games")
+    print(f"  Team: strength in goals a game against an average team (90% range), the same as win-rate points, "
+          f"by pre-season Elo instead ({len(rows_elo)} games), raw win %, games")
     order = sorted(range(len(teams)), key=lambda i: -t_gd[i])
     for i in order:
         t = teams[i]
@@ -130,7 +167,7 @@ def study(csv_name, label, teams_rom):
             continue
         vals = sorted(b[t] for b in boot if t in b)
         lo, hi = vals[int(0.05 * len(vals))], vals[int(0.95 * len(vals)) - 1]
-        print(f"  {t:4} {t_gd[i]:+.2f} ({lo:+.2f} to {hi:+.2f})  {100 * t_w[i]:+5.1f}  "
+        print(f"  {t:4} {t_gd[i]:+.2f} ({lo:+.2f} to {hi:+.2f})  {100 * t_w[i]:+5.1f}  elo {t_e.get(t, float('nan')):+.2f}  "
               f"raw {100 * raw[t][0] / raw[t][1]:4.1f}%  {raw[t][1]:5}")
     rt = ratings(teams_rom)
     print("  Correlation of the team strength (goals) with the ROM's ratings, over the teams (games-weighted):")
@@ -155,18 +192,23 @@ def study(csv_name, label, teams_rom):
         common = [t for t in teams if na[t] >= MIN_GAMES and nb[t] >= MIN_GAMES]
         if len(common) >= 6:
             halves.append(np.corrcoef([da[t] for t in common], [db[t] for t in common])[0, 1])
+    common = [t for t in teams if raw[t][1] >= MIN_GAMES and t in t_e]
+    print(f"  The two ways agree (teams with {MIN_GAMES}+ games): correlation "
+          f"{np.corrcoef([t_gd[teams.index(t)] for t in common], [t_e[t] for t in common])[0, 1]:+.2f}")
     print(f"  Reliability: two halves of the leagues fitted apart agree with correlation {np.mean(halves):+.2f} "
           f"(mean of {len(halves)} splits)")
     teams = [t for t in teams if raw[t][1] >= MIN_GAMES]
     t_gd = [dict(zip(sorted({g[3] for g in rows} | {g[4] for g in rows}), t_gd))[t] for t in teams]
     w = np.array([raw[t][1] for t in teams], float)
+    print("  (person / elo)")
     for k in list(SKATER) + ["Overall", "Goalie Agility"]:
         x = np.array([rt[t][k] for t in teams])
-        y = np.array(t_gd)
-        xm, ym = np.average(x, weights=w), np.average(y, weights=w)
-        c = np.average((x - xm) * (y - ym), weights=w) / np.sqrt(np.average((x - xm) ** 2, weights=w) *
-                                                                  np.average((y - ym) ** 2, weights=w))
-        print(f"    {k:15} {c:+.2f}")
+        cs = []
+        for y in (np.array(t_gd), np.array([t_e.get(t, 0.0) for t in teams])):
+            xm, ym = np.average(x, weights=w), np.average(y, weights=w)
+            cs.append(np.average((x - xm) * (y - ym), weights=w) / np.sqrt(np.average((x - xm) ** 2, weights=w) *
+                                                                         np.average((y - ym) ** 2, weights=w)))
+        print(f"    {k:15} {cs[0]:+.2f} / {cs[1]:+.2f}")
     X = np.array([[rt[t]["Shot Power"], rt[t]["Speed"], rt[t]["Goalie Agility"], 1.0] for t in teams])
     sw = np.sqrt(w / w.mean())
     beta, *_ = np.linalg.lstsq(X * sw[:, None], np.array(t_gd) * sw, rcond=None)
@@ -178,8 +220,8 @@ def study(csv_name, label, teams_rom):
 
 
 def main():
-    study("All_Games_GENS.csv", "GENESIS", genesis.read_teams(rom("9438f5dd_a738ea1c.bin")))
-    study("All_Games_SNES.csv", "SNES", snes.read_teams(rom("cd85e387.smc")))
+    study("All_Games_GENS.csv", "GENESIS", genesis.read_teams(rom("9438f5dd_a738ea1c.bin")), 16)
+    study("All_Games_SNES.csv", "SNES", snes.read_teams(rom("cd85e387.smc")), 24)
 
 
 if __name__ == "__main__":
