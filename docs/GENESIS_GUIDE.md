@@ -322,6 +322,8 @@ The computer never holds a direction, so its wins go a random way.
   swing:** come in drifting gently toward the middle (about a quarter of your speed across); coming in on a steep
   diagonal or dead straight, the same swing scored a third or a fifth as often. With all ten skaters on the ice a
   right-hander's turn is a little slower, so tap C a touch later after the swing (about 0.27 s rather than 0.22).
+  **It needs your speed:** in the scripted bot's games, a left-hander slowed to about half speed by a defender on him
+  scored 1 deke in 43; a quick wrist shot or pass from there did better (6 in 38).
 - **Floaters:** skate up and across on the diagonal from your forehand side, about 12-17 feet out to the side, swing
   the puck back to the forehand about 30-35 feet from the goalie and hold C for 6-9 frames: it floats toward the far
   post, 50-65% at the best set-ups (on the backhand 41-51%, a narrow window).
