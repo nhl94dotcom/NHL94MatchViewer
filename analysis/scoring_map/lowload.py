@@ -20,7 +20,12 @@ def gentle():
     """Lower this process's priority to idle (Windows; elsewhere the lowest nice)."""
     if sys.platform == "win32":
         k = ctypes.windll.kernel32
-        k.SetPriorityClass(k.GetCurrentProcess(), IDLE)
+        k.GetCurrentProcess.restype = ctypes.c_void_p        # a pseudo-handle (-1): passed as a plain int it was
+        k.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]   # cut to 32 bits on 64-bit Python and the
+        k.GetPriorityClass.argtypes = [ctypes.c_void_p]      # call failed silently (found 2026-10-31: runs were at
+        k.SetPriorityClass(k.GetCurrentProcess(), IDLE)      # Normal priority, the fan loud)
+        if k.GetPriorityClass(k.GetCurrentProcess()) != IDLE:
+            print("gentle: could not lower the priority", file=sys.stderr)
     else:
         os.nice(19)
 

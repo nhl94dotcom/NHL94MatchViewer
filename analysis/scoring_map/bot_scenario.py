@@ -194,6 +194,8 @@ def main():
                     return
                 seed = random.Random(i).getrandbits(32)
                 r = play(e, base, s, seed, v)
+                breathe()                        # rest after each situation (play's own rest, every 600 frames,
+                                                 # never came: a situation is at most 360)
                 if r is None:
                     continue
                 r["i"] = i
