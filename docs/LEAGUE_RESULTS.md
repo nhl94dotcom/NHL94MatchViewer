@@ -103,6 +103,42 @@ version's goals a game, games:
   +0.75 the Elo way)** and Checking (+0.35), not with Speed or the goalie's Agility (every SNES goalie covers the same
   net, SNES_SHOOTING 5.1). Weight costs less acceleration on the SNES ("Ratings, game flow, skill and luck", below).
 - The leagues sometimes leave the top teams out of the draft for fun (rare), which this doesn't allow for.
+
+**Elo adjustments for the teams** (`analysis/league_team_elo.py`; the user's question: how far should a player's
+Elo move for the team he uses?). The same games fitted on the result in Elo's own units (P = 1 / (1 + 10^(-D / 400))
+with D = person - person + team - team + home edge, a tie counting half), one strength per person over all seasons,
+and again with each person's pre-season Elo in place of the fitted strengths (agreeing at 0.84 Genesis, 0.71 SNES).
+The suggestion is the mean of the two, rounded to 5: points to add to a player's rating when working out his
+expected result with that team (centred on the average team in use). Each is good to about +/- 25. Home ice is worth
++11 (Genesis) and +22 (SNES) points on the same scale.
+
+| Genesis | Elo points | | SNES | Elo points |
+| --- | --- | --- | --- | --- |
+| Chicago | +65 | | New Jersey | +50 |
+| Detroit | +45 | | Pittsburgh | +35 |
+| Buffalo | +30 | | NY Rangers | +20 |
+| Montreal | +30 | | Chicago | +5 |
+| Boston | +5 | | Los Angeles | +5 |
+| Winnipeg | +0 | | Boston | +0 |
+| Vancouver | -5 | | Montreal | +0 |
+| Dallas | -10 | | St. Louis | +0 |
+| Los Angeles | -20 | | Vancouver | -5 |
+| Philadelphia | -25 | | Calgary | -5 |
+| Toronto | -30 | | Philadelphia | -5 |
+| Quebec | -30 | | Washington | -10 |
+| Calgary | -35 | | Detroit | -10 |
+| Washington | -35 | | Toronto | -10 |
+| Hartford | -40 | | Edmonton | -20 |
+| St. Louis | -50 | | Buffalo | -25 |
+| Edmonton | -60 | | Winnipeg | -30 |
+| New Jersey | -75 | | Quebec | -30 |
+| NY Rangers | -75 | | NY Islanders | -50 |
+| Pittsburgh | -80 | |  |  |
+
+Left out for too few Classic games (under 300): Genesis NY Islanders, Tampa Bay, San Jose, Ottawa, Florida, Anaheim
+(all fitted well below average, -95 to -250, but on 20-250 games); SNES Hartford, Dallas, San Jose, Florida, Tampa
+Bay, Anaheim, Ottawa (-20 to -110 on 40-250 games). Where the two ways differ most (Genesis Washington -73 / +1 and
+New Jersey -54 / -100, SNES Quebec -58 / -2, Philadelphia -22 / +13, Boston +16 / -12), the team is the least sure.
 ## Game-wide patterns (`analysis/league_patterns.py`)
 
 | | Genesis | SNES |
