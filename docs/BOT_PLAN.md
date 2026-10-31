@@ -130,3 +130,12 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
 - **Version 19: chasing its own rebounds** (after a shot, at the loose puck a few frames ahead instead of the
   defence's rules, B switching to a teammate much nearer it): from the entries 90 goals against 18's 88 (+0.4 +-1.1).
   The opponents are nearer the rebounds to begin with.
+- **Defence, from the same entries turned round** (`bot_scenario.py` NHL94_SCEN_DEFEND: the entering team becomes the
+  Away team, attacking our net; results against / won / covered by our goalie / stoppage / time). The computer
+  attacking is too weak to test a defence: against version 16 it scored from 14 of the 472 (3%). **The bot against
+  itself** (NHL94_SCEN_DEFEND=bot: the attackers on pad 2, `cont2team` $C32A and `c2playernum` $C322, played by the bot,
+  version 16): 55 of 472 (11.7%) got past version 16's defence (the same attacker scores 16.9% against the computer's).
+  Version 20 (the faceoff rule's B-mash only just after a faceoff drop; 16 did it at any still puck near him): 55, no
+  change. **Version 21 (20 with the CB check: B tapped 4 frames into each burst, so the computer's checking formula
+  decides the hit, not the person's weight bug, GENESIS_GUIDE 9.2): 47; only 16 let in 13, only 21 let in 5 (-1.7
+  points +-0.9).** With penalties on the CB check doubles the penalty risk (the bot's games have penalties off).
