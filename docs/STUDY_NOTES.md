@@ -1035,3 +1035,20 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   farther off it he is, so he swings out to the wing, and reaches the release spot, but about 15 units (5 ft) inside
   the line and scored 0 of 12 from the neutral zone in the check. Next: bring him onto the line from farther out (the
   release spot matters most: SCORING_GENESIS_EA "A person's slop"), then games. The default stays version 6.
+- **Version 9: the slowed left-hander's bail-out (the default since 2026-10-31).** In version 6's 20 logged games
+  every swing under 1.3 a frame up the ice had a defender within 15-22 of him, who had slowed him from about 2.0; such
+  left-handers scored 1 in 43 (right-handers 5 in 18). Version 9 has a left-hander slowed under 1.3 with an opponent
+  within 25 at the swing pass to an open teammate close in, else take the wrist shot away from the goalie: 38 bail-outs,
+  6 goals. 20 games: 20-0, **6.15 goals a game to 0.70** (version 6: 5.50 - 0.95), the deke **43% a shot** (32%).
+  Version 6 run again with the log on gave the same games, so the logging changes nothing.
+- **Version 8's EA Special, its approach redone, in games: no better than the deke.** A carrier gains speed at half
+  rate, so from 2.0 straight up the turn onto a 45 degree line takes about 40 frames. A d-pad tapped every other frame
+  (version 7's way of skating a little below full speed) doesn't turn him at all, and holding Down-Right to slow down
+  brakes. Version 8 skates up the wing 110 to his side, and from 80 (left-handers) or 105 (right-handers) short of the
+  release spot presses the direction that moves his velocity toward 1.7 along the line, never back down the ice
+  (`bot.EA_TUNE`). `bot_ea_check.py` "wing", from the neutral zone up the wing (16 tries a hand, Shot Power 14): 29
+  of 32 with the others off the ice, 23 of 32 with everyone on; from four starting spots, everyone on, 34 of 64. Getting him
+  onto the line exactly (a stronger correction) didn't raise it at 8 tries a hand. In 20 games: 20-0, 5.50 goals a game to 0.90,
+  9.1 EA Specials a game, 32 goals from 182 (18% a try: the first shot 3 goals, the follow-up claimed 56 times and 29 goals,
+  52% when claimed), against version 9's deke at 43% a shot. Off the line the bot fell back on close-in wrist shots (30.7
+  a game). The bottom net's right-hander seldom got there (7 of 181 tries): the turn was tuned at the top net only.

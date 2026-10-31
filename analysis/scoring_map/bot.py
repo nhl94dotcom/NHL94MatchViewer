@@ -15,10 +15,11 @@ Versions (Bot(team, version)): 1 the above; 2 adds the one-timer (a teammate ope
 toward him, C while the puck travels) and skips the deke when a defender is near its line (slapshot instead); 3 the
 one-timer with every deke; 4 3 with the deke's entry steered onto the standing set-up's path (on the
 lane by the red line, 0.5 a frame across toward the middle at the gate, 0.77 at the swing: bot_deke_check.py found
-the deke needs it) and no slapshot under pressure before the gate; 5 real one-timers (C as the pass arrives); 6 (the
-default) the deke re-timed with everyone on the ice; 7-8 (work in progress, STUDY_NOTES "A scripted bot") the EA
+the deke needs it) and no slapshot under pressure before the gate; 5 real one-timers (C as the pass arrives); 6 the
+deke re-timed with everyone on the ice; 7-8 (work in progress, STUDY_NOTES "A scripted bot") the EA
 Special (EA) in place of the deke: skate its line, release at the EA runs' best spot, follow up at the near post (8
-swings out to the wing to come in on the line).
+swings out to the wing to come in on the line); 9 (the default) is 6 with a left-hander slowed by a defender at the swing (under
+1.3 a frame up the ice, one within 25) passing or wrist-shooting instead.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -47,6 +48,10 @@ LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the i
 # shot aimed across (Right for him), the follow-up at the near post
 EA = {1: dict(R=(-84, 196), u=(0.7071, 0.7071)), -1: dict(R=(-88, 212), u=(0.8608, 0.5087))}
 EA_SPEED = 1.7
+EA_TUNE = dict(wing=-110, turnL=80, turnR=105, look=20)   # version 8's approach (bot_ea_check.py "wing"; env
+import os as _os                                           # NHL94_EA_TUNE="wing,turnL,turnR,look")
+if _os.environ.get("NHL94_EA_TUNE"):
+    EA_TUNE = dict(zip(("wing", "turnL", "turnR", "look"), map(float, _os.environ["NHL94_EA_TUNE"].split(","))))
 
 
 def rec(k):
@@ -65,7 +70,7 @@ def dir_to(dx, dy):
 
 
 class Bot:
-    def __init__(self, team=0, version=6):
+    def __init__(self, team=0, version=9):
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE
@@ -75,7 +80,9 @@ class Bot:
                                                     # 4: 3 with the deke's entry steered to the standing set-up's
                                                     # path (bot4); 5: 4 with the one-timer only to a receiver
                                                     # close in, the pass across (bot5); 6: 5 with the deke
-                                                    # re-timed with everyone on the ice (bot6)
+                                                    # re-timed with everyone on the ice (bot6);
+                                                    # 7-8 the EA Special; 9 6 with the slowed
+                                                    # left-hander's bail-out (bot9)
         self.team = team                            # 0 Home (records 0-5), 1 Away (6-11)
         self.mine = range(6) if team == 0 else range(6, 12)
         self.theirs = range(6, 12) if team == 0 else range(6)
@@ -209,7 +216,7 @@ class Bot:
             if self.stuck >= 2:                     # pinned (against the goalie or the boards): go sideways
                 self.stuck = 0 if self.t % 30 == 29 else self.stuck
                 return pad(aview(2 if ax < 0 else 6))
-            if self.version >= 7:
+            if self.version in (7, 8):
                 ea = self.ea_carry(m, s, ax, ay, hand, near, ahead)
                 if ea is not None:
                     return ea
@@ -252,6 +259,17 @@ class Bot:
                 return pad(aview(d))
         if self.phase == "drive":
             dg = math.hypot(m["x"] - gx, m["y"] - gy)
+            if dg <= self.deke[hand]["D"] and self.version >= 9 and hand == "L" and s * m["vy"] < 1.3                     and near[0] < 25:
+                # version 9: a left-hander slowed by a defender on him (version 6: 1 goal in 43 such swings): pass to
+                # an open teammate close in, else the wrist shot away from the goalie
+                mate = self.open_mate(P, me, s, g)
+                if mate is not None:
+                    self.mate, self.phase, self.t, self.passer = mate, "pass", 0, me
+                    self.note("pass start", ax=ax, ay=ay, bail=True)
+                else:
+                    self.phase, self.t = "wrist", 0
+                    self.note("wrist start", ax=ax, ay=ay, bail=True)
+                return pad(aview(0))
             if dg <= self.deke[hand]["D"]:
                 self.phase, self.t = "swing", 0
                 self.note("swing", dg=round(dg), ax=round(ax), ay=round(ay), vx=round(s * m["vx"], 2), vy=round(s * m["vy"], 2),
@@ -315,15 +333,35 @@ class Bot:
             return None                             # arrived off the line: the other plays
         # pure pursuit: a point on the line 30 ahead of his projection on it (kept 14 inside the boards)
         ta = a + 30
-        if self.version >= 8:                       # off the line: aim farther back along it, so he swings out to
-            ta = max(-70, a + 30 - 1.5 * abs(off))  # the wing and comes in on it (7 came in from the middle)
         tx, ty = R[0] + ta * u[0], R[1] + ta * u[1]
         tx = max(tx, -118)
         if by < R[1] - 150:                         # far away: up the ice toward the line's start
             tx, ty = max(R[0] - 60 * u[0], -118), by + 80
+        if self.version >= 8:
+            # up the wing (EA_TUNE wing across) to EA_TUNE turn short of the release spot (up the ice), then the d-pad
+            # that pushes his velocity toward EA_SPEED along the line (a carrier gains speed at half rate, so the turn
+            # onto a 45 degree line takes about 40 frames), corrected toward the line
+            wing, turn = EA_TUNE["wing"], EA_TUNE["turn" + hand]
+            if by < R[1] - turn:
+                if bx > wing + 50 and by > R[1] - turn - 60:
+                    return None                     # too far inside to get out to the wing: the other plays
+                wx = max(-0.8, min(0.8, 0.03 * (wing - bx))) - vx     # onto the wing's line, damped
+                wy = EA_SPEED + 0.2 - vy
+            else:
+                k = EA_TUNE["look"] / 1000          # the correction toward the line, a frame per unit off it
+                wx = EA_SPEED * u[0] + k * off * u[1] - vx
+                wy = EA_SPEED * u[1] - k * off * u[0] - vy
+            if math.hypot(wx, wy) < 0.12:
+                return []
+            d = dir_to(wx, wy)                      # never back down the ice (a brake): glide to lose speed
+            d = {3: 2, 5: 6}.get(d, d)
+            if d == 4:
+                return []
+            return pad(self.aview_s(s, self.ea_dir(d, hand)))
         d = dir_to(tx - bx, ty - by)
-        if a > -60 and sp > EA_SPEED + 0.1 and self.t % 2:
-            return []                               # a little below full speed: coast every other frame
+        if a > -60 and sp > EA_SPEED + 0.1 and self.t % 2 and (self.version < 8 or d == dir_to(vx, vy)):
+            return []                               # a little below full speed: coast every other frame (8: only
+                                                    # when going his way: a tapped d-pad doesn't turn him)
         return pad(self.aview_s(s, self.ea_dir(d, "R") if hand == "R" else (8 - d) % 8))
 
     @staticmethod
