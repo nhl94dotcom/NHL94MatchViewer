@@ -21,7 +21,8 @@ Special (EA) in place of the deke: skate its line, release at the EA runs' best 
 swings out to the wing to come in on the line); 9 is 6 with a left-hander slowed by a defender at the swing (under
 1.3 a frame up the ice, one within 25) passing or wrist-shooting instead; 10 is 9 taking the puck around his own net (not into its back) and veering
 up and away from an opponent closing in ahead before the gate (fewer dekes: worse); 11 (the default) is 9 with only the
-way around his own net.
+way around his own net; 12 is 11 with a right-hander who comes up the right
+side deking there (mirrored, DEKE12R).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -41,6 +42,9 @@ DEKE = {"L": dict(D=60, lag=10), "R": dict(D=60, lag=13)}
 # version 6: re-timed with every skater on the ice (the runs' timings were found with the others taken off, and then a
 # right-hander turns faster): 24 tries each, left-handers 23 (lag 10: 20), right-handers 23 (lag 13: 1)
 DEKE6 = {"L": dict(D=60, lag=13), "R": dict(D=60, lag=16)}
+# version 12: the right-hander's deke on the right side, mirrored (swing up and right, C with Right): the deke runs'
+# swing at 85, C 13 frames on; with everyone on the ice 12 of 12 (bot_deke_check.py, NHL94_DEKE_SIDE=right)
+DEKE12R = {"R": dict(D=85, lag=13), "L": dict(D=85, lag=13)}
 GATE = (-45, 140)
 SHOOT_ANIMS = (0x07FC, 0x092E)       # the shooting swing (genesis.py "shoot")
 LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the ice
@@ -197,7 +201,17 @@ class Bot:
         ax, ay = s * m["x"], s * m["y"]
         gx, gy = P[g]["x"], P[g]["y"]
         hand = "L" if m["left"] else "R"
-        aview = lambda d: d if s > 0 else (d + 4) % 8    # attacker's-view direction -> screen
+        # version 12: a right-hander who comes up the right side dekes there, the set-up mirrored (his forehand
+        # deke, DEKE12R: the deke runs' 57-66%, the game favouring swings to the shooter's own left); 11 always
+        # crossed to the left and was checked on the way. A left-hander's swing to his right doesn't get the puck
+        # across, so left-handers still cross
+        if self.version >= 12 and (ay < LANE[0] or self.phase in ("free", "shot")):
+            self.side = -1 if ax > 10 and hand == "R" else 1
+        mx = getattr(self, "side", 1) if self.version >= 12 else 1
+        ax = mx * ax
+        deke = self.deke if mx > 0 else DEKE12R
+        vxa = mx * s * m["vx"]                      # across speed toward the middle (left side's view)
+        aview = lambda d: (d if mx > 0 else (8 - d) % 8) if s > 0 else ((d if mx > 0 else (8 - d) % 8) + 4) % 8
         if self.phase in ("free", "shot"):
             self.phase, self.t = "carry", 0
             self.last, self.stuck = (m["x"], m["y"]), 0
@@ -240,7 +254,7 @@ class Bot:
                     and self.version == 2 and self.blocked(P, me, s, g):
                 self.phase, self.t = "slap", 0     # a defender on the deke's line: the slapshot from the gate
                 self.note("slap start", ax=ax, ay=ay, blocked=True)
-            elif self.version >= 4 and GATE[1] - 15 < ay < GATE[1] + 35 and abs(ax - GATE[0]) < 16                     and 0.2 < s * m["vx"] < 0.9 and s * m["vy"] > 1.5:
+            elif self.version >= 4 and GATE[1] - 15 < ay < GATE[1] + 35 and abs(ax - GATE[0]) < 16                     and 0.2 < vxa < 0.9 and s * m["vy"] > 1.5:
                 self.phase, self.t = "drive", 0     # entering the gate as the standing set-up did
                 self.note("deke start", ax=ax, ay=ay, v=round(math.hypot(m["vx"], m["vy"]), 2), hand=hand)
             elif self.version < 4 and GATE[1] - 15 < ay < GATE[1] + 35 and abs(ax - GATE[0]) < 22                     and s * m["vy"] > 1.2:
@@ -265,7 +279,6 @@ class Bot:
                     # up the lane to the gate, building the drift toward the middle (0.5 a frame at the gate)
                     k = min(1.0, max(0.0, (ay - LANE[0]) / (GATE[1] - 15 - LANE[0])))
                     want = 0.5 * k + 0.03 * (LANE[1] + (GATE[0] - LANE[1]) * k - ax)
-                    vxa = s * m["vx"]
                     return pad(aview(1 if vxa < want - 0.12 else 7 if vxa > want + 0.12 else 0))
                 elif ay < GATE[1] - 60:             # far away: head up the ice toward the gate's lane
                     ty = ay + 80
@@ -273,7 +286,7 @@ class Bot:
                 return pad(aview(d))
         if self.phase == "drive":
             dg = math.hypot(m["x"] - gx, m["y"] - gy)
-            if dg <= self.deke[hand]["D"] and self.version >= 9 and hand == "L" and s * m["vy"] < 1.3                     and near[0] < 25:
+            if dg <= deke[hand]["D"] and self.version >= 9 and hand == "L" and s * m["vy"] < 1.3                     and near[0] < 25:
                 # version 9: a left-hander slowed by a defender on him (version 6: 1 goal in 43 such swings): pass to
                 # an open teammate close in, else the wrist shot away from the goalie
                 mate = self.open_mate(P, me, s, g)
@@ -284,17 +297,17 @@ class Bot:
                     self.phase, self.t = "wrist", 0
                     self.note("wrist start", ax=ax, ay=ay, bail=True)
                 return pad(aview(0))
-            if dg <= self.deke[hand]["D"]:
+            if dg <= deke[hand]["D"]:
                 self.phase, self.t = "swing", 0
-                self.note("swing", dg=round(dg), ax=round(ax), ay=round(ay), vx=round(s * m["vx"], 2), vy=round(s * m["vy"], 2),
+                self.note("swing", dg=round(dg), ax=round(ax), ay=round(ay), vx=round(vxa, 2), vy=round(s * m["vy"], 2),
                           near=round(near[0]))
             elif self.version >= 4:                 # the standing set-up's path: 0.5 across at the gate, 0.77 at
                 want = 0.5 + (ay - GATE[1]) * 0.0054  # the swing (holding up-right; slower to turn with the puck)
-                return pad(aview(1 if s * m["vx"] < want else 0))
+                return pad(aview(1 if vxa < want else 0))
             else:
                 return pad(aview(1))                # up and right at the net
         if self.phase == "swing":
-            lag = self.deke[hand]["lag"]
+            lag = deke[hand]["lag"]
             if self.t < lag:
                 return pad(aview(7))                # up and left
             if self.t < lag + 4:
@@ -310,7 +323,7 @@ class Bot:
             d = dir_to(mt["x"] - m["x"], mt["y"] - m["y"])
             return (["B"] if self.t < 3 else []) + pad(d)
         if self.phase == "wrist":
-            side = 2 if s * P[g]["x"] < 0 else 6   # the half of the net away from the goalie (attacker's view)
+            side = 2 if mx * s * P[g]["x"] < 0 else 6   # the half of the net away from the goalie (attacker's view)
             if self.t < 4:
                 return ["C"] + pad(aview(side))
             self.note("shot", kind="wrist")

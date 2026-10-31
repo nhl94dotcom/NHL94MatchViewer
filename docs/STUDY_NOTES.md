@@ -1064,3 +1064,14 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   the deke's lane, dekes fell from 18 to 11 a game, goals 4.90 a game (0.40 against). Version 11 keeps only the way
   around the net: own-end losses 111 (145), carry losses 420, **20-0, 6.20 goals a game to 0.65** (version 9 6.15 -
   0.70: the same within the games' spread), the deke 43% a shot. Version 11 is the default.
+- **Version 12: the deke on the right side too (no gain; 11 stays the default).** Version 11's attacking-zone
+  carry losses (167) sit on the lane by the gate, 100-175 up the ice. One replayed: a carrier who came up the right
+  passed the gate's line, swung back across to the left lane (200 frames) and was checked. In the standing check
+  (`bot_deke_check.py`, NHL94_DEKE_SIDE=right, everyone on the ice), the set-up mirrored: with the left side's timings
+  left-handers 3 of 24, right-handers 11 of 24; with each hand's own timing 11 and 11. The deke runs had found the game
+  favours swings to the shooter's own left and that a left-hander's swing to his right doesn't get the puck across.
+  The right-hander's forehand deke (their swing at 85, C 13 frames on) was 12 of 12; 78 / 13 11, 92 / 16 10; swung at
+  60-70, 0-7 of 12. Version 12 has right-handers coming up the right deke there (DEKE12R); left-handers still cross.
+  20 games: 20-0, 6.00 goals a game to 0.65 (version 11: 6.20). Right-handers started 169 dekes for 37 goals (version 11:
+  126 for 36), so the 43 extra on the right scored about 1; attacking-zone carry losses 152 (167), all carry losses
+  434 (420).

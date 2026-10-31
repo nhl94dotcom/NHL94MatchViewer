@@ -4,6 +4,7 @@ starts 45 to the attacker's left, 140 up the ice, moving (VX across, VY up the i
 Shot Accuracy 15, each hand, 16 moments (NHL94_DEKE_MOMENTS). Modes: "park" keeps every other skater away and takes the shooter off
 the ice once he has shot, as the deke runs did (harness.decide); "free" leaves everyone (the shooter coasts on);
 "shooter" takes only the shooter off after his shot; "brake" leaves everyone, the shooter holding Down after it.
+NHL94_DEKE_SIDE=right mirrors it onto the attacker's right (version 12).
 python bot_deke_check.py park|free|shooter|brake VX VY [version]
 Found: parked, entering at 0.5 / 2.1 (the runs' set-up) 27 of 32; 1.2 / 1.7 (diagonal, as the bot arrived in games)
 11 of 32; 0.0 / 2.1 (straight up) 6 of 32. With 48 tries a hand (version 4): park 38 / 48 (left / right),
@@ -18,6 +19,7 @@ from harness import Harness, rec, SHOOTER, PUCKC, SCORE_HOME
 from paths import WORK
 
 MOMENTS = int(os.environ.get("NHL94_DEKE_MOMENTS") or 16)
+SIDE = -1 if os.environ.get("NHL94_DEKE_SIDE") == "right" else 1   # "right": the set-up mirrored (version 12)
 
 
 def main():
@@ -30,18 +32,18 @@ def main():
     for hand in ("L", "R"):
         g = n = 0
         for p in range(MOMENTS):
-            h.setup(-45, 140, settle=80 + (p * 7) % 15, clock=290 - p)
+            h.setup(-45 * SIDE, 140, settle=80 + (p * 7) % 15, clock=290 - p)
             e.setb(rec(SHOOTER) + 0x6C, 20)
             e.setb(rec(SHOOTER) + 0x6D, 15)
             b0, a0 = e.b(rec(SHOOTER) + 0x76), e.b(rec(SHOOTER) + 4)
             e.setb(rec(SHOOTER) + 0x76, (b0 | 1) if hand == "L" else (b0 & ~1))
             e.setb(rec(SHOOTER) + 4, (a0 & ~8) if hand == "L" else (a0 | 8))
-            e.setb(rec(SHOOTER) + 0x55, 1)
-            e.setw(rec(SHOOTER) + 0x28, round(vx * 4096) & 0xFFFF)
+            e.setb(rec(SHOOTER) + 0x55, 1 if SIDE > 0 else 7)
+            e.setw(rec(SHOOTER) + 0x28, round(SIDE * vx * 4096) & 0xFFFF)
             e.setw(rec(SHOOTER) + 0x2A, round(vy * 4096) & 0xFFFF)
             e.setl(0xD066, random.Random(p).getrandbits(32))
             bot = Bot(0, version)
-            bot.phase, bot.t = "drive", 0
+            bot.phase, bot.t, bot.side = "drive", 0, SIDE
             s0, shot = e.w(SCORE_HOME), None
             for f in range(260):
                 if mode == "park":
