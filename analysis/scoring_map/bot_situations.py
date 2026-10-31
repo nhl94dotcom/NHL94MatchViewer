@@ -1,0 +1,92 @@
+"""Real game situations for the scripted bot (2026-10-31, docs/BOT_PLAN.md phase 1): moments from the user's recorded
+Genesis games (the match files in Documents\\NHL94 Viewer\\matches, or NHL94_HOME), each turned into the positions,
+speeds and facings of all 12 records and the puck, for bot_scenario.py to place in the harness and let the bot play
+on from. Kinds: "entry", every carried zone entry (the converter's zoneEntries, kind "carried"), at the sample the
+carrier crosses the blue line.
+
+Each situation is put in the bot's frame: the attacking team's records become Home (records 0-5 by position: 0 G,
+1 LD, 2 RD, 3 LW, 4 C, 5 RW), the other team's Away, and the rink is turned 180 degrees when the attackers were going
+down the ice, so that the attack is always up the ice (Home in period 1, as in bot_start.state). Speeds come from the
+positions over the samples around the moment (the match file samples about every 15 ms; units a game frame, 60 a
+second). Skips moments with a player missing (a penalty, a pulled goalie). Positions only, no names: the output stays
+in the work folder, not the repo.
+python bot_situations.py   -> paths.WORK / bot_situations.json"""
+import json
+import math
+import os
+import sys
+from pathlib import Path
+
+from paths import WORK
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+from share_game import load_js_object  # noqa: E402
+
+K = 12
+HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
+FRAME_MS = 1000 / 60
+
+
+def xy(m, f, k):
+    return m["pos"][(f * K + k) * 2], m["pos"][(f * K + k) * 2 + 1]
+
+
+def speed(m, f, k, span=4):
+    """Units a game frame over about span samples before f."""
+    a = max(0, f - span)
+    dt = (m["t"][f] - m["t"][a]) / FRAME_MS
+    if dt <= 0:
+        return 0.0, 0.0
+    (x0, y0), (x1, y1) = xy(m, a, k), xy(m, f, k)
+    return (x1 - x0) / dt, (y1 - y0) / dt
+
+
+def situation(m, f, team, kind, name):
+    roles = m["role"][f * K:(f + 1) * K]
+    owner = m["owner"][f]
+    if owner < 0 or not team * 6 <= owner < team * 6 + 6:
+        return None
+    up = (m["period"][f] % 2 == 0) == (team == 0)        # Home attacks up in periods 1 and 3 (0-based 0, 2)
+    r = 1 if up else -1                                  # 180 degrees when going down
+    out = {"kind": kind, "src": [name, f], "us": {}, "them": {}}
+    for k in range(K):
+        if roles[k] not in "012345":
+            continue
+        x, y = xy(m, f, k)
+        vx, vy = speed(m, f, k)
+        side = "us" if k // 6 == team else "them"
+        out[side][roles[k]] = [round(r * x, 1), round(r * y, 1), round(r * vx, 3), round(r * vy, 3),
+                               (int(m["facing"][f * K + k]) + (0 if up else 4)) % 8]
+        if k == owner:
+            out["carrier"] = roles[k]
+    if len(out["us"]) < 6 or len(out["them"]) < 6:
+        return None
+    px, py, pz = m["puck"][f * 3:f * 3 + 3]
+    out["puck"] = [round(r * px, 1), round(r * py, 1)]
+    return out
+
+
+def main():
+    rows = []
+    for p in sorted((HOME / "matches").glob("*.js")):
+        if p.name.endswith(".summary.json") or p.stem == "season":
+            continue
+        try:
+            m = json.loads(load_js_object(p))
+        except (ValueError, OSError):
+            continue
+        if m.get("system") != "genesis" or "pos" not in m:
+            continue
+        n0 = len(rows)
+        for z in m.get("zoneEntries", []):
+            if z.get("kind") == "carried":
+                s = situation(m, z["f"], z["team"], "entry", p.stem)
+                if s:
+                    rows.append(s)
+        print(p.stem, len(rows) - n0)
+    (WORK / "bot_situations.json").write_text(json.dumps(rows))
+    print(len(rows), "situations ->", WORK / "bot_situations.json")
+
+
+if __name__ == "__main__":
+    main()

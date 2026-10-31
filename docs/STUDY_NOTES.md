@@ -1075,3 +1075,6 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   20 games: 20-0, 6.00 goals a game to 0.65 (version 11: 6.20). Right-handers started 169 dekes for 37 goals (version 11:
   126 for 36), so the 43 extra on the right scored about 1; attacking-zone carry losses 152 (167), all carry losses
   434 (420).
+- **Real situations from the recorded games (docs/BOT_PLAN.md phase 1).** 472 carried zone entries from 16 recorded
+  Genesis games placed in the harness, the bot playing on 6 s: 10% scored (versions 6-12 all within a point), against
+  15.5% for the people in those games from the same entries. Details in BOT_PLAN "Status".
