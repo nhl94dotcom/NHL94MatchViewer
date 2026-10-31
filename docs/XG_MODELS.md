@@ -162,21 +162,33 @@ recorded goalie.
 The models from every spot of the attacking zone, for each kind of shot at a goalie who is set and still at his spot
 for the puck: slapshots, wrist shots and one-timers (the shot speeds are the recorded games' medians; the best of the
 nine aims, except the Genesis one-timer, which the game aims itself). A goalie who is moving, out of position or in a
-save move gives very different numbers: these are the floor that a set goalie allows. **A deke's shot is a wrist
-shot**, but the deke's swing first pulls the goalie into a save move, so the wrist-shot map shows only the deke's floor:
-the swing is what makes it score (the deke runs: [SCORING_GENESIS_DEKES](SCORING_GENESIS_DEKES.md)).
+save move gives very different numbers: these are the floor that a set goalie allows.
 
-![Genesis xG by shot spot: slapshots score 10-20% from a wide area out to about 45 feet, wrist shots only from the slot's middle and the doorstep, one-timers from a wide band out to about 40 feet](img/xg_map_genesis.svg)
+**Wrist shots and dekes share a panel.** A plain wrist shot at a set goalie almost never scores on either system, and
+in league play nearly every wrist shot that isn't at an empty or abandoned net is a deke: the swing first moves the
+goalie (on the Genesis into a pad stack sliding the wrong way), then the wrist shot goes in. A map that holds the
+goalie set can't show that, so the circles on the middle panels are the dekes **played in the game itself**, at about
+where the shot leaves the stick, coloured by how often they scored on the same scale: the Genesis deke runs' best
+set-ups ([SCORING_GENESIS_DEKES](SCORING_GENESIS_DEKES.md)) and the user's SNES dekes replayed
+([SNES_SHOOTING 4.10](SNES_SHOOTING.md#410-dekes-in-recorded-games)). Both were played with the shooter alone with
+the goalie; with every skater on the ice the Genesis deke's timing changes (SCORING_GENESIS_DEKES, the caveat). Given
+the real moment of a deke (where the goalie is, his slide and save move), the models themselves do get dekes right
+(below, "Against the game itself").
+
+![Genesis xG by shot spot: slapshots 10-20% from a wide area out to about 45 feet; plain wrist shots only from the slot's middle and the doorstep, dekes 46-85% and floaters 61-65%; one-timers from a wide band out to about 40 feet](img/xg_map_genesis.svg)
 
 - **Genesis:** a set goalie lets in a slapshot at the best aim 10-20% of the time from a wide area in the middle,
   out to about 45 ft (the game itself, played: 13% over the middle of the ice, [SCORING_GENESIS](SCORING_GENESIS.md#slapshots-and-the-shooters-ratings)).
-  A wrist shot needs the middle of the slot or the doorstep. A one-timer scores from a band out to about 40 ft and
-  across to the faceoff dots, because his reach drops to its minimum against it ([GENESIS_GUIDE 7](GENESIS_GUIDE.md#7-one-timers)).
-- **SNES:** a set SNES goalie stops nearly every standing wrist shot. Slapshots and one-timers (the d-pad aims them on
-  the SNES) find the game's gaps: the doorstep, the slot's middle about 20 ft out, and a lane from the left point
-  (the lane past his glove save, [SCORING_SNES](SCORING_SNES.md); the game itself: 3.8% for slapshots over the middle).
+  A plain wrist shot needs the middle of the slot or the doorstep; the deke from about 15 ft out scores 83-85% swung
+  to the shooter's left, 46-66% to his right, the floater 61-65%. A one-timer scores from a band out to about 40 ft
+  and across to the faceoff dots, because his reach drops to its minimum against it ([GENESIS_GUIDE 7](GENESIS_GUIDE.md#7-one-timers)).
+- **SNES:** a set SNES goalie stops nearly every plain wrist shot; the dekes go in from right on top of him: the
+  near-post cut 39-46%, the deke from the left 19-43% (released 8-13 ft out with the goalie sliding toward the middle,
+  47-88%; 16-25 ft out, 1-22%). Slapshots and one-timers (the d-pad aims them on the SNES) find the game's gaps: the
+  doorstep, the slot's middle about 20 ft out, and a lane from the left point (the lane past his glove save,
+  [SCORING_SNES](SCORING_SNES.md); the game itself: 3.8% for slapshots over the middle).
 
-![SNES xG by shot spot: wrist shots almost never beat a set goalie; slapshots and one-timers score at the doorstep, in the slot's middle and through a lane from the left point](img/xg_map_snes.svg)
+![SNES xG by shot spot: plain wrist shots almost never beat a set goalie, the near-post cut 39-46% and the deke from the left 19-43%; slapshots and one-timers score at the doorstep, in the slot's middle and through a lane from the left point](img/xg_map_snes.svg)
 
 ## How good they are
 

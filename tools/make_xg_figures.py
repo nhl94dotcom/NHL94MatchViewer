@@ -1,7 +1,8 @@
 """Figures for docs/XG_MODELS.md, drawn as SVG files in docs/img (2026-10-31):
 - xg_playout.svg: how each model plays a shot out (the steps it repeats, xG the share that go in);
-- xg_map_genesis.svg / xg_map_snes.svg: the models' xG from each spot of the attacking zone for a standard shot at a
-  set goalie (the shot speeds are the recorded games' medians; the goalie at his set spot for that puck, still);
+- xg_map_genesis.svg / xg_map_snes.svg: the models' xG from each spot of the attacking zone for a slapshot, a wrist
+  shot and a one-timer at a set goalie (the shot speeds are the recorded games' medians; the goalie at his set spot for
+  that puck, still), with the dekes played in the game itself drawn over the wrist shots (DEKES);
 - xg_calibration.svg: the models against the recorded games: shots grouped by their xG, the share that went in.
 The maps run the models themselves (tools/xg.py, tools/xg_snes.py; the SNES one needs the ROM: NHL94_SNES_ROM, or the
 scoring map's work copy); the calibration reads the match files (NHL94_HOME, default Documents\\NHL94 Viewer) and
@@ -92,7 +93,29 @@ def snes_map(data, kind):
     return res
 
 
-def rink_panel(ox, oy, S, res, title, sub, mouth, cid):
+# Dekes played in the game itself (not the model), drawn over the wrist-shot maps: (x across, out from the goal line,
+# the rate, the label, the label's side). Approximate release spots and the rates as documented: Genesis
+# SCORING_GENESIS_DEKES (the best set-ups, 96 tries each over both nets, the shooter alone with the goalie); SNES
+# SNES_SHOOTING 4.10 (the user's tries replayed in the game, the skater and goalie alone).
+DEKES = {
+    "genesis": [(-28, 42, 0.84, "deke 83-85%", "end"), (28, 42, 0.56, "deke 46-66%", "start"),
+                (-50, 56, 0.61, "floater 61%", "end"), (50, 56, 0.65, "floater 65%", "start")],
+    "snes": [(20, 30, 0.42, "cut 39-46%", "start"), (-25, 36, 0.31, "deke 19-43%", "end")],
+}
+
+
+def deke_marks(X, Y, marks):
+    b = []
+    for x, out, rate, label, side in marks:
+        b.append(circle(X(x), Y(out), 9, band(rate), "#ffffff", 2.5))
+        b.append(circle(X(x), Y(out), 11.5, "none", INK, 1))
+        dx = -16 if side == "end" else 16
+        b.append(f"<text x='{X(x) + dx:.1f}' y='{Y(out) + 4:.1f}' font-size='11' fill='{INK}' text-anchor='{side}' "
+                 f"font-weight='bold' stroke='#ffffff' stroke-width='3' paint-order='stroke'>{label}</text>")
+    return b
+
+
+def rink_panel(ox, oy, S, res, title, sub, mouth, cid, marks=None):
     """The attacking zone from the blue line (88) to the end boards (35 behind the goal line, corners of radius 46), the
     net at the top; cells coloured by xG, clipped to the boards."""
     X = lambda x: ox + (x + 128) * S
@@ -116,6 +139,8 @@ def rink_panel(ox, oy, S, res, title, sub, mouth, cid):
         b.append(circle(X(dx), Y(62), 30 * S, "none", RED, 1, None, 0.6))
     for feet in (10, 20, 30, 40, 50):                                           # distance marks
         b.append(text(X(128) + 6, Y(feet * 3) + 4, f"{feet} ft", 10, SOFT))
+    if marks:
+        b += deke_marks(X, Y, marks)
     return b
 
 
@@ -131,16 +156,18 @@ def maps():
     S = 1.3
     pw = 256 * S
     ph = (GL - 88 + 35) * S
-    W, H = int(3 * pw + 2 * 60 + 110), int(ph + 205)
+    W, H = int(3 * pw + 2 * 60 + 110), int(ph + 245)
     for sysn in ("genesis", "snes"):
         if sysn == "genesis":
             run = genesis_map
             panels = (("Slapshot", "21,486 off the stick, the best of the nine aims", "slap"),
-                      ("Wrist shot (and the deke's shot)", "12,000, the best of the nine aims", "wrist"),
+                      ("Wrist shot and deke", "squares: a plain wrist shot (12,000); circles: dekes", "wrist"),
                       ("One-timer", "20,280, aimed by the game; the goalie's reach 12", "one-timer"))
-            notes = ["Genesis model (tools/xg.py), Shot Accuracy 15; the goalie set and still at his spot for the puck (Weight 48, Agility 13, Speed 13,",
-                     "aidef 10). Speeds: the recorded games' medians. A deke's shot is a wrist shot, but the deke's swing first draws the goalie into a sliding",
-                     "pad stack: from a set goalie this map shows the plain wrist shot, the deke's floor. Squares 10 units (3.3 ft); 240 play-outs each."]
+            notes = ["Squares: the Genesis model (tools/xg.py), Shot Accuracy 15, the goalie set and still at his spot for the puck (Weight 48, Agility 13,",
+                     "Speed 13, aidef 10); the recorded games' median speeds; 10 units (3.3 ft), 240 play-outs each. Circles: dekes and floaters played in the game",
+                     "itself (SCORING_GENESIS_DEKES: the best set-ups, 96 tries each over both nets, the shooter alone with the goalie; left: swung to the left,",
+                     "right: swung to the right), at about where the shot is released, coloured by how often they scored.",
+                     "The swing draws the goalie into a sliding pad stack, which a set-goalie map can't show."]
             mouth = 20
         else:
             if not SNES_ROM.exists():
@@ -149,15 +176,18 @@ def maps():
             data = xs.RomData(SNES_ROM.read_bytes())
             run = lambda kind: snes_map(data, kind)
             panels = (("Slapshot", "21,752 off the stick, the best of the nine aims", "slap"),
-                      ("Wrist shot (and the deke's shot)", "12,349, the best of the nine aims", "wrist"),
+                      ("Wrist shot and deke", "squares: a plain wrist shot (12,349); circles: dekes", "wrist"),
                       ("One-timer", "23,455, the best of the nine aims (the d-pad aims it)", "one-timer"))
-            notes = ["SNES model (tools/xg_snes.py), Shot Accuracy 13; the goalie set and still at his spot for the puck (Weight 48, Agility 8, Speed 8,",
-                     "aidef 7). Speeds: the recorded games' medians. A deke's shot is a wrist shot, but the deke's swing first moves the goalie: from a set",
-                     "goalie this map shows the plain wrist shot, the deke's floor. Squares 10 units (3.3 ft); 240 play-outs each."]
+            notes = ["Squares: the SNES model (tools/xg_snes.py), Shot Accuracy 13, the goalie set and still at his spot for the puck (Weight 48, Agility 8,",
+                     "Speed 8, aidef 7); the recorded games' median speeds; 10 units (3.3 ft), 240 play-outs each. Circles: the user's near-post cut (right) and deke",
+                     "from his left replayed in the game itself (SNES_SHOOTING 4.10: the skater and goalie alone, both nets), at about where the shot is released,",
+                     "coloured by how often they scored.",
+                     "Released 8-13 ft out with the goalie sliding toward the middle they scored 47-88%, 16-25 ft out 1-22%: a set-goalie map can't show it."]
             mouth = 17
         body = []
         for i, (title, sub, kind) in enumerate(panels):
-            body += rink_panel(40 + i * (pw + 60), 60, S, run(kind), title, sub, mouth, f"rink{i}")
+            body += rink_panel(40 + i * (pw + 60), 60, S, run(kind), title, sub, mouth, f"rink{i}",
+                               DEKES[sysn] if kind == "wrist" else None)
         body += legend(40, ph + 95)
         for j, n in enumerate(notes):
             body.append(text(40, ph + 160 + j * 16, n, 11, SOFT))

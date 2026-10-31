@@ -1,6 +1,6 @@
-<svg xmlns='http://www.w3.org/2000/svg' width='1228' height='479' viewBox='0 0 1228 479' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<svg xmlns='http://www.w3.org/2000/svg' width='1228' height='519' viewBox='0 0 1228 519' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
 <title>SNES xG by shot spot</title>
-<rect width='1228' height='479' fill='#ffffff'/>
+<rect width='1228' height='519' fill='#ffffff'/>
 <text x='206.4' y='34.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Slapshot</text>
 <text x='206.4' y='51.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>21,752 off the stick, the best of the nine aims</text>
 <defs><clipPath id='rink0'><path d='M40.0,334.3 V119.8 A59.8,59.8 0 0 1 99.8,60.0 H313.0 A59.8,59.8 0 0 1 372.8,119.8 V334.3 Z'/></clipPath></defs>
@@ -452,8 +452,8 @@
 <text x='378.8' y='226.5' font-size='10' fill='#52606d' text-anchor='start' font-weight='normal'>30 ft</text>
 <text x='378.8' y='265.5' font-size='10' fill='#52606d' text-anchor='start' font-weight='normal'>40 ft</text>
 <text x='378.8' y='304.5' font-size='10' fill='#52606d' text-anchor='start' font-weight='normal'>50 ft</text>
-<text x='599.2' y='34.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Wrist shot (and the deke's shot)</text>
-<text x='599.2' y='51.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>12,349, the best of the nine aims</text>
+<text x='599.2' y='34.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>Wrist shot and deke</text>
+<text x='599.2' y='51.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>squares: a plain wrist shot (12,349); circles: dekes</text>
 <defs><clipPath id='rink1'><path d='M432.8,334.3 V119.8 A59.8,59.8 0 0 1 492.6,60.0 H705.8 A59.8,59.8 0 0 1 765.6,119.8 V334.3 Z'/></clipPath></defs>
 <path d='M432.8,334.3 V119.8 A59.8,59.8 0 0 1 492.6,60.0 H705.8 A59.8,59.8 0 0 1 765.6,119.8 V334.3 Z' fill='#f7fafc'/>
 <g clip-path='url(#rink1)'>
@@ -903,6 +903,12 @@
 <text x='771.6' y='226.5' font-size='10' fill='#52606d' text-anchor='start' font-weight='normal'>30 ft</text>
 <text x='771.6' y='265.5' font-size='10' fill='#52606d' text-anchor='start' font-weight='normal'>40 ft</text>
 <text x='771.6' y='304.5' font-size='10' fill='#52606d' text-anchor='start' font-weight='normal'>50 ft</text>
+<circle cx='625.2' cy='144.5' r='9.0' fill='#184f95' fill-opacity='1' stroke='#ffffff' stroke-width='2.5'/>
+<circle cx='625.2' cy='144.5' r='11.5' fill='none' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<text x='641.2' y='148.5' font-size='11' fill='#1f2933' text-anchor='start' font-weight='bold' stroke='#ffffff' stroke-width='3' paint-order='stroke'>cut 39-46%</text>
+<circle cx='566.7' cy='152.3' r='9.0' fill='#184f95' fill-opacity='1' stroke='#ffffff' stroke-width='2.5'/>
+<circle cx='566.7' cy='152.3' r='11.5' fill='none' fill-opacity='1' stroke='#1f2933' stroke-width='1'/>
+<text x='550.7' y='156.3' font-size='11' fill='#1f2933' text-anchor='end' font-weight='bold' stroke='#ffffff' stroke-width='3' paint-order='stroke'>deke 19-43%</text>
 <text x='992.0' y='34.0' font-size='15' fill='#1f2933' text-anchor='middle' font-weight='bold'>One-timer</text>
 <text x='992.0' y='51.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>23,455, the best of the nine aims (the d-pad aims it)</text>
 <defs><clipPath id='rink2'><path d='M825.6,334.3 V119.8 A59.8,59.8 0 0 1 885.4,60.0 H1098.6 A59.8,59.8 0 0 1 1158.4,119.8 V334.3 Z'/></clipPath></defs>
@@ -1369,7 +1375,9 @@
 <text x='445.0' y='405.3' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>30-45%</text>
 <rect x='484.0' y='377.3' width='70.0' height='14.0' fill='#0d366b' fill-opacity='1' stroke='none' stroke-width='0'/>
 <text x='519.0' y='405.3' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>45%+</text>
-<text x='40.0' y='434.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>SNES model (tools/xg_snes.py), Shot Accuracy 13; the goalie set and still at his spot for the puck (Weight 48, Agility 8, Speed 8,</text>
-<text x='40.0' y='450.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>aidef 7). Speeds: the recorded games' medians. A deke's shot is a wrist shot, but the deke's swing first moves the goalie: from a set</text>
-<text x='40.0' y='466.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>goalie this map shows the plain wrist shot, the deke's floor. Squares 10 units (3.3 ft); 240 play-outs each.</text>
+<text x='40.0' y='434.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Squares: the SNES model (tools/xg_snes.py), Shot Accuracy 13, the goalie set and still at his spot for the puck (Weight 48, Agility 8,</text>
+<text x='40.0' y='450.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Speed 8, aidef 7); the recorded games' median speeds; 10 units (3.3 ft), 240 play-outs each. Circles: the user's near-post cut (right) and deke</text>
+<text x='40.0' y='466.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>from his left replayed in the game itself (SNES_SHOOTING 4.10: the skater and goalie alone, both nets), at about where the shot is released,</text>
+<text x='40.0' y='482.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>coloured by how often they scored.</text>
+<text x='40.0' y='498.3' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Released 8-13 ft out with the goalie sliding toward the middle they scored 47-88%, 16-25 ft out 1-22%: a set-goalie map can't show it.</text>
 </svg>
