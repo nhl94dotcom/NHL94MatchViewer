@@ -6,7 +6,9 @@ carrier crosses the blue line; "pass", every one-timer in the games (the shot li
 samples before its pass left the stick (the passer still has the puck), with the passer and the receiver (who struck
 it) and whether it scored: the bot then makes that pass (B toward him) and the one-timer. (A puck placed in flight
 doesn't work: the game starts a one-timer only for a pass it made itself, passReceiverPlayerNum, with C pressed by
-the passer's pad; so the bot makes the pass.)
+the passer's pad; so the bot makes the pass.) "zone": possessions already in the attacking zone (not entries: a check on the
+others), the sample 0.5 s into each spell with the puck on one skater, if he is then 40-180 out from the goal line and
+no zone entry by his team falls within 2 s.
 
 Each situation is put in the bot's frame: the attacking team's records become Home (records 0-5 by position: 0 G,
 1 LD, 2 RD, 3 LW, 4 C, 5 RW), the other team's Away, and the rink is turned 180 degrees when the attackers were going
@@ -95,6 +97,26 @@ def main():
                 s = situation(m, z["f"], z["team"], "entry", p.stem)
                 if s:
                     rows.append(s)
+        entries = [m["t"][z["f"]] for z in m.get("zoneEntries", [])]
+        f, n = 0, len(m["t"])
+        while f < n:
+            o = m["owner"][f]
+            if o < 0 or m["role"][f * K + o] == "0":
+                f += 1
+                continue
+            g = f
+            while g + 1 < n and m["owner"][g + 1] == o:
+                g += 1
+            h = next((q for q in range(f, g + 1) if m["t"][q] - m["t"][f] >= 500), None)
+            if h is not None:
+                team = o // 6
+                up = (m["period"][h] % 2 == 0) == (team == 0)
+                out = 264 - (1 if up else -1) * xy(m, h, o)[1]
+                if 40 < out < 180 and not any(abs(t - m["t"][h]) < 2000 for t in entries):
+                    s = situation(m, h, team, "zone", p.stem)
+                    if s:
+                        rows.append(s)
+            f = g + 1
         for sh in m.get("shotList", []):
             if sh.get("kind") != "one-timer":
                 continue

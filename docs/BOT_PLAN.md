@@ -105,3 +105,8 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   11: 80 goals (16.9%) against 47, scored where 11 didn't 57, the other way 24: +7.0 points +-1.9**, past people's
   15.5% from the same entries (people faced people; the bot the computer). Two numbers tuned on the same entries, so
   whole games next to confirm it.
+- **Version 16 confirmed and made the default.** Whole games (20, the same seeds as before): 20-0, **8.50 goals a game
+  to 1.05** (version 11: 6.20 - 0.65; +2.3 a game +-0.7). 37.9 close-in wrist shots a game, 9% a shot; the deke 45% a
+  shot; no slapshots; one-timer passes fell to 1.6 a game (the wrist shot comes first). The check on situations it
+  wasn't tuned on (kind "zone": 122 possessions already in the attacking zone, 0.5 s in, away from entries): 17 goals
+  against version 11's 15 (+1.6 points +-3.1, too few to settle).

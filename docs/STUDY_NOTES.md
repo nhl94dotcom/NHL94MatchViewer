@@ -1079,3 +1079,5 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   Genesis games placed in the harness, the bot playing on 6 s: 10% scored (versions 6-12 all within a point), against
   15.5% for the people in those games from the same entries. Details in BOT_PLAN "Status". Version 13 (the one-timer
   widened to people's) struck more often but scored no more; its strikes met a set goalie (BOT_PLAN "Status").
+- **Version 16, the default (BOT_PLAN "Status"):** no slapshot under pressure and the close-in wrist shot from 170 up
+  the ice: from the entries 16.9% (version 11 10.0%, people 15.5%); whole games 8.50 goals a game to 1.05 (6.20).

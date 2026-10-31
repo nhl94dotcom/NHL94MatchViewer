@@ -26,7 +26,7 @@ side deking there (mirrored, DEKE12R); 13 is 11 (not 12) with the one-timer as p
 it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across); 14 is 13 with people's
 limits on the pass (the passer within 120 of the goal line, the pass under 130 long, no defender within 20 of
 the receiver); 15 is 14 passing only to a receiver within 40 of the
-middle with the goalie drawn 4+ toward the passer's side; 16 is 15 without the slapshot under pressure and
+middle with the goalie drawn 4+ toward the passer's side; 16 (the default) is 15 without the slapshot under pressure and
 with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
 less the narrower it was).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
@@ -86,7 +86,7 @@ def dir_to(dx, dy):
 
 
 class Bot:
-    def __init__(self, team=0, version=11):
+    def __init__(self, team=0, version=16):
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE

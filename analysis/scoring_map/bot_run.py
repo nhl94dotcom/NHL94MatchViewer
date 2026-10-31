@@ -19,7 +19,7 @@ RETAIL = WORK / "nhl94_retail.bin"
 SCORE = (0xC6DA, 0xCA3E)
 SHOTS = (0xC6CE, 0xCA32)
 MAX_FRAMES = 70000
-VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 11)     # bot.py's versions (runs bot1-bot11 ran 1-11)
+VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 16)     # bot.py's versions (runs bot1-bot16 ran 1-16)
 
 
 def play(e, start, seed, frames_out=None):
