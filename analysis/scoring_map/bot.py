@@ -32,7 +32,8 @@ less the narrower it was); 17 is 16 with, in close and off the middle, the slaps
 drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a carry that begins in the middle of the zone
 going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds; 20 is 16 (not 17-19) with the faceoff B-mash only just
 after a faceoff drop; 21 is 20 with the CB check; 22 is 21 with the defence's
-numbers from DEF22 (env NHL94_DEF).
+numbers from DEF22 (env NHL94_DEF); 23 is 22 covering the
+slot in our end (SLOT23).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -73,6 +74,11 @@ DEF22 = dict(poke=26, burst=45, every=30, gap=14, switch=50)
 if __import__("os").environ.get("NHL94_DEF"):
     DEF22 = dict(zip(("poke", "burst", "every", "gap", "switch"),
                      map(float, __import__("os").environ["NHL94_DEF"].split(","))))
+# version 23: covering the slot in our end (the carrier within `zone` of our goal line: stand `hold` out from our net
+# on the line to him); env NHL94_SLOT="zone,hold"
+SLOT23 = dict(zone=140, hold=55)
+if __import__("os").environ.get("NHL94_SLOT"):
+    SLOT23 = dict(zip(("zone", "hold"), map(float, __import__("os").environ["NHL94_SLOT"].split(","))))
 # version 17: the close-in wind-up (in close past ay up the ice, more than side off the middle, C held hold frames);
 # env NHL94_CLOSE17="ay,side,hold"
 CLOSE17 = dict(ay=200, side=20, hold=12)
@@ -553,6 +559,12 @@ class Bot:
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
+            out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
+            if self.version >= 23 and out_c < SLOT23["zone"] and L > SLOT23["hold"] + 15:
+                # version 23: in our end, stand in his shooting lane in the slot, `hold` out from our net on the
+                # line to him (the attacking bot scores nearly all with quick mid-height wrist shots, and a
+                # mid-height shot always hits a body: GENESIS_GUIDE 6), instead of chasing him
+                tx, ty = -dx / L * SLOT23["hold"], own_net_y - dy / L * SLOT23["hold"]
             dist_to_puck = {k: math.hypot(P[k]["x"] - c["x"], P[k]["y"] - c["y"]) for k in self.mine if P[k]["pos"] != 0}
             dc = dist_to_puck.get(me, 999)
             closing = (c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"]) > 0
