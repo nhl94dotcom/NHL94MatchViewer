@@ -124,3 +124,9 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   the ice) goes straight up to the wrist shot. The middle entries 15 of 84 (people 15); all 472: 88 goals (18.6%)
   against 16's 80 (+1.7 points +-0.8). The zone check (122): 16 against 16's 17 (it seldom applies there). Whole games
   next before it becomes the default.
+- **Version 18 in whole games: not confirmed.** 20 games: 7.65 goals a game to 0.95, against 16's 8.50 (-0.85 a game
+  +-0.65), though it led by 1.7 points from the entries. 16 stays the default; the middle-entry rule helps there and
+  may cost elsewhere in a game (a middle carry that isn't an entry).
+- **Version 19: chasing its own rebounds** (after a shot, at the loose puck a few frames ahead instead of the
+  defence's rules, B switching to a teammate much nearer it): from the entries 90 goals against 18's 88 (+0.4 +-1.1).
+  The opponents are nearer the rebounds to begin with.

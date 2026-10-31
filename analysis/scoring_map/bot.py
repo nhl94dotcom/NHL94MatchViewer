@@ -30,7 +30,7 @@ middle with the goalie drawn 4+ toward the passer's side; 16 (the default) is 15
 with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
 less the narrower it was); 17 is 16 with, in close and off the middle, the slapshot wind-up that
 drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a carry that begins in the middle of the zone
-going straight up the ice to the wrist shot.
+going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -211,6 +211,16 @@ class Bot:
             elif self.phase == "shot" and self.t > 90:
                 self.phase = "free"
             self.t += 1
+            if self.version >= 19 and self.phase == "shot" and owner is None and pk["z"] >= 0:
+                # version 19: after our shot, at the loose puck (the rebound) a few frames ahead; B switches to a
+                # teammate much nearer it (16 fell back on the defence's faceoff rule: B mashed toward our net)
+                tx, ty = pk["x"] + 4 * pk["vx"], pk["y"] + 4 * pk["vy"]
+                dist = {k: math.hypot(P[k]["x"] - tx, P[k]["y"] - ty) for k in self.mine if P[k]["pos"] != 0}
+                near_k = min(dist, key=dist.get)
+                out = pad(dir_to(tx - P[me]["x"], ty - P[me]["y"]))
+                if near_k != me and dist[near_k] + 30 < dist.get(me, 999) and self.frame % 10 == 0:
+                    out = ["B"] + out
+                return out
             out = self.defence(P, me, owner, s)
         return out
 
