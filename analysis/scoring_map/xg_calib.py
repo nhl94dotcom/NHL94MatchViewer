@@ -2,7 +2,9 @@
 models with the scoring findings). One-timers were checked before (ot_xg_check.py, ot_xg_check_snes.py); this does the
 rest, both systems: standing wrist shots and slapshots from anywhere in the zone, shots on the move (mv_run), dekes
 and floaters (deke_run, snes_deke_run), EA Specials' first shots and follow-ups (ea_run, snes_ea_run), and the SNES
-walk-in (snes_ea_run with NHL94_EA_WALKIN).
+walk-in (snes_ea_run with NHL94_EA_WALKIN). Category "replay" (SNES, 2026-10-31, the user: the models must be right
+on dekes, high-scoring plays): the user's 26 SNES dekes and near-post cuts replayed (snes_deke_run plan "replay"), every
+try at both nets by both hands, aimed as played; not in the default categories.
 
 A watcher wraps the emulator's run and unserialize, so the study modules' own job functions play as they always do:
 every frame it looks for a shot leaving the stick (Genesis: the test ROM's doshot counter going up while a home
@@ -40,7 +42,8 @@ SAMPLES = 200
 CATS = {"genesis": ("standing", "moving", "deke", "ea"), "snes": ("standing", "deke", "ea", "walkin")}
 ENV = {"ea": {"NHL94_EA_MOMENTS": "3", "NHL94_SEA_MOMENTS": "4", "NHL94_EA_FOLLOW": "near"},
        "walkin": {"NHL94_SEA_MOMENTS": "4", "NHL94_EA_WALKIN": "1", "NHL94_EA_FOLLOW": "near"},
-       "deke": {"NHL94_DEKE_MOMENTS": "4", "NHL94_SDEKE_MOMENTS": "6"}, "moving": {}, "standing": {}}
+       "deke": {"NHL94_DEKE_MOMENTS": "4", "NHL94_SDEKE_MOMENTS": "6"}, "moving": {}, "standing": {},
+       "replay": {"NHL94_SDEKE_MOMENTS": "6"}}
 _w = {}
 
 
@@ -115,6 +118,10 @@ class Watcher:
                 p["speed"] = max(p["speed"], math.hypot(*self.v(self.puck)))
             if p["n"] == 1:
                 p["aim"] = self.e.w(0xBEDC) if self.system == "genesis" else self.e.w(0x0D03) & 0xFF
+            if "cross" not in p:                    # where the puck really crossed the goal line (2026-10-31)
+                cx, cy = self.xy(self.puck)
+                if cy * p["gl"] > 0 and abs(cy) >= 264:
+                    p["cross"] = [cx, self.sw(0x0DF9) if self.system == "snes" else self.sw(self.G.rec(self.puck) + 0x18)]
             goal = self.e.w(self.score) != p["s0"]
             beyond = abs(self.xy(self.puck)[1]) > 276
             p["away"] = p["away"] + 1 if self.v(self.puck)[1] * p["gl"] < 0 else 0
@@ -140,7 +147,7 @@ class Watcher:
             if math.hypot(vx, vy) < 2000 or vy * gl <= 0 or abs(py) >= 264 or abs(px + (gl - py) * vx / vy) > 100:
                 return
         self.ord += 1
-        st = dict(tag=self.tag, ord=self.ord - 1, px=px, py=py, gl=gl, speed=math.hypot(vx, vy),
+        st = dict(tag=self.tag, ord=self.ord - 1, px=px, py=py, gl=gl, speed=math.hypot(vx, vy), v0=[vx, vy],
                   s0=self.e.w(self.score), n=0, aim=None, away=0)
         e = self.e
         gvx, gvy = self.v(self.goalie)
@@ -246,10 +253,11 @@ def standing_job(system, hs, args):
 
 
 MODULES = {("genesis", "moving"): "mv_run", ("genesis", "deke"): "deke_run", ("genesis", "ea"): "ea_run",
-           ("snes", "deke"): "snes_deke_run", ("snes", "ea"): "snes_ea_run", ("snes", "walkin"): "snes_ea_run"}
+           ("snes", "deke"): "snes_deke_run", ("snes", "ea"): "snes_ea_run", ("snes", "walkin"): "snes_ea_run",
+           ("snes", "replay"): "snes_deke_run"}
 PLANS = {("genesis", "moving"): ("cross", "diag", "slapx"), ("genesis", "deke"): ("best", "retime"),
          ("genesis", "ea"): ("fine", "wide"), ("snes", "deke"): ("near",), ("snes", "ea"): ("fine", "explore"),
-         ("snes", "walkin"): ("walkin",)}
+         ("snes", "walkin"): ("walkin",), ("snes", "replay"): ("replay",)}
 
 
 def _init(system, cat, out_path):
@@ -293,6 +301,8 @@ def jobs_for(system, cat, rnd):
             js += [list(j) for j in mod.plan_jobs(plan)]
         except SystemExit:
             pass
+    if cat == "replay":                             # the user's SNES dekes and cuts replayed (2026-10-31): every try,
+        return [j for j in js if j[-1] == "played"]  # both nets and hands, aimed as played
     rnd.shuffle(js)
     return js[:{"moving": 60, "deke": 40, "ea": 60, "walkin": 40}[cat]]
 
