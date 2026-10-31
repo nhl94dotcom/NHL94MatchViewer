@@ -185,3 +185,10 @@ a setting, a result that changes the plan).
 - A setup fault found on the way: with penalties on the first live-play state was saved in the stoppage after a
   call (the clock still), so every situation timed out; the state is now saved only with the clock running and no
   penalty standing, and block 1's banks were run again.
+- **Block 1, the banks under league settings** (versions 16 and 21): zone entries 83 goals of 472 (17.6%) for both
+  (with penalties off 16 had 80); zone possessions 17 of 122 for both; the defence bank (the bot attacking) 50 against
+  16 and 49 against 21 (-0.2 points +-0.6; with penalties off 55 and 47); the attacking bot's plays there: 465 wrist
+  shots, 29 dekes, 20 passes, 16 one-timers. People's one-timer passes made by the bot: 13 goals of 117 (11%; 88
+  struck), against 30 (26%) with penalties off: with penalties on the computer's defenders seem to break up passes
+  and strikes more (to look into). So under league settings 21's CB check gains nothing in the banks or in games; 16
+  stays the default and block 2 varies 21's defence (22).
