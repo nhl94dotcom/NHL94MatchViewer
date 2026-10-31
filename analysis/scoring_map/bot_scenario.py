@@ -39,6 +39,18 @@ def live_state(e):
     bot = Bot(0)
     for f in range(900):                         # past the faceoff (about 300 frames) into play
         e.run(1, hold=bot.step(e))
+    # then on until the clock is running (2026-10-31: with penalties on, the first live state was saved in the
+    # stoppage after a call, the clock still and nothing counting: every situation timed out), no penalty or delayed
+    # call standing, a skater with the puck
+    clocks = []
+    for f in range(20000):
+        e.run(1, hold=bot.step(e))
+        clocks = (clocks + [e.w(0xC468)])[-150:]
+        pen = any(e.w(b + 0x66 + 2 * i) >> 8 != 0xFF for b in (0xC6CE, 0xCA32) for i in range(26)) or             any(e.b(b + 0x26) == 0xFF for b in (0xC6CE, 0xCA32))
+        if len(clocks) == 150 and clocks[-1] < clocks[0] and e.b(0xFFF7) == 0 and not pen and e.w(PUCKC) < 12:
+            break
+    else:
+        raise SystemExit("no running clock found")
     assert e.b(0xFFF7) == 0 and e.w(0xC466) == 0
     p.write_bytes(e.serialize())
     return p.read_bytes()
