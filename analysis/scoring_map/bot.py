@@ -33,7 +33,9 @@ drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a c
 going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds; 20 is 16 (not 17-19) with the faceoff B-mash only just
 after a faceoff drop; 21 is 20 with the CB check; 22 is 21 with the defence's
 numbers from DEF22 (env NHL94_DEF); 23 is 22 covering the
-slot in our end (SLOT23).
+slot in our end (SLOT23); 24-26 are 22 (16's offence) with
+one offence change each: 24 the right-hander's deke on the right (12's), 25 no one-timer passes, 26 a looser deke
+entry.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -253,9 +255,9 @@ class Bot:
         # deke, DEKE12R: the deke runs' 57-66%, the game favouring swings to the shooter's own left); 11 always
         # crossed to the left and was checked on the way. A left-hander's swing to his right doesn't get the puck
         # across, so left-handers still cross
-        if self.version == 12 and (ay < LANE[0] or self.phase in ("free", "shot")):
+        if self.version in (12, 24) and (ay < LANE[0] or self.phase in ("free", "shot")):
             self.side = -1 if ax > 10 and hand == "R" else 1
-        mx = getattr(self, "side", 1) if self.version == 12 else 1
+        mx = getattr(self, "side", 1) if self.version in (12, 24) else 1
         ax = mx * ax
         deke = self.deke if mx > 0 else DEKE12R
         vxa = mx * s * m["vx"]                      # across speed toward the middle (left side's view)
@@ -312,7 +314,10 @@ class Bot:
                     and self.version == 2 and self.blocked(P, me, s, g):
                 self.phase, self.t = "slap", 0     # a defender on the deke's line: the slapshot from the gate
                 self.note("slap start", ax=ax, ay=ay, blocked=True)
-            elif self.version >= 4 and GATE[1] - 15 < ay < GATE[1] + 35 and abs(ax - GATE[0]) < 16                     and 0.2 < vxa < 0.9 and s * m["vy"] > 1.5:
+            elif self.version >= 4 and GATE[1] - 15 < ay < GATE[1] + 35 and (
+                    abs(ax - GATE[0]) < 16 and 0.2 < vxa < 0.9 and s * m["vy"] > 1.5 or
+                    self.version == 26 and abs(ax - GATE[0]) < 26 and 0.0 < vxa < 1.1 and s * m["vy"] > 1.2):
+                # (version 26: a looser entry, so the bot dekes more often)
                 self.phase, self.t = "drive", 0     # entering the gate as the standing set-up did
                 self.note("deke start", ax=ax, ay=ay, v=round(math.hypot(m["vx"], m["vy"]), 2), hand=hand)
             elif self.version < 4 and GATE[1] - 15 < ay < GATE[1] + 35 and abs(ax - GATE[0]) < 22                     and s * m["vy"] > 1.2:
@@ -490,6 +495,8 @@ class Bot:
     def open_mate(self, P, me, s, g):
         """A teammate in the slot (170-245 up the ice, within 60 of the middle) with no opponent within 30 of him
         and none within 15 of the passing lane; else None."""
+        if self.version == 25:
+            return None                             # version 25: no one-timer passes (what are they worth?)
         m = P[me]
         for k in self.mine:
             if k == me or P[k]["pos"] == 0:
@@ -560,7 +567,7 @@ class Bot:
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
-            if self.version >= 23 and out_c < SLOT23["zone"] and L > SLOT23["hold"] + 15:
+            if self.version == 23 and out_c < SLOT23["zone"] and L > SLOT23["hold"] + 15:
                 # version 23: in our end, stand in his shooting lane in the slot, `hold` out from our net on the
                 # line to him (the attacking bot scores nearly all with quick mid-height wrist shots, and a
                 # mid-height shot always hits a body: GENESIS_GUIDE 6), instead of chasing him
