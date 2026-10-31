@@ -20,7 +20,7 @@ deke re-timed with everyone on the ice; 7-8 (work in progress, STUDY_NOTES "A sc
 Special (EA) in place of the deke: skate its line, release at the EA runs' best spot, follow up at the near post (8
 swings out to the wing to come in on the line); 9 is 6 with a left-hander slowed by a defender at the swing (under
 1.3 a frame up the ice, one within 25) passing or wrist-shooting instead; 10 is 9 taking the puck around his own net (not into its back) and veering
-up and away from an opponent closing in ahead before the gate (fewer dekes: worse); 11 (the default) is 9 with only the
+up and away from an opponent closing in ahead before the gate (fewer dekes: worse); 11 is 9 with only the
 way around his own net; 12 is 11 with a right-hander who comes up the right
 side deking there (mirrored, DEKE12R); 13 is 11 (not 12) with the one-timer as people play
 it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across); 14 is 13 with people's
