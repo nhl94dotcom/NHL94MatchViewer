@@ -118,6 +118,11 @@ class Watcher:
                 p["speed"] = max(p["speed"], math.hypot(*self.v(self.puck)))
             if p["n"] == 1:
                 p["aim"] = self.e.w(0xBEDC) if self.system == "genesis" else self.e.w(0x0D03) & 0xFF
+            if p["n"] <= 24:                        # the goalie's path after the release (2026-10-31), with his
+                gx_, gy_ = self.xy(self.goalie)     # animation and the puck's spot
+                px_, py_ = self.xy(self.puck)
+                spa = self.e.w(self.S.SPA + self.S.o(self.goalie)) if self.system == "snes" else                     self.e.w(self.G.rec(self.goalie) + 0x58)
+                p.setdefault("gtrack", []).append([gx_, gy_, spa, px_, py_])
             if "cross" not in p:                    # where the puck really crossed the goal line (2026-10-31)
                 cx, cy = self.xy(self.puck)
                 if cy * p["gl"] > 0 and abs(cy) >= 264:

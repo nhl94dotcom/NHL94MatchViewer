@@ -179,6 +179,20 @@ the total right (11.6% against 12.2%) but not the shot-by-shot fit, and the reco
 model is unchanged for now. The bounce rule (5.4) and continuing a save move already under way were tried and change
 nothing.
 
+**The user's dekes and cuts against the model** (2026-10-31, `xg_calib.py` category "replay": the 26 tries of 4.10
+replayed at both nets by both hands, aimed as played, 2,477 shots with the exact state at each release): the game
+33.3%, the model 26.9% (log loss 0.40-0.44 against 0.64 for one rate); cuts 35.7% against 31.8%, **dekes 30.1% against
+20.3%**. The puck leaves along the model's line (launch direction within a degree, the same speed), so the gap is the
+goalie. On the dekes the game scored and the model gave under 15%, the frame's save area stops some in the model (6%
+to 15% without it) and the body box most; with the model's goalie frozen at the release they score 44%. Traced frame
+by frame (the game's goalie path recorded, the model's goalie driven by the same puck): **after a deke's release the
+game's goalie barely moves (within about 1 unit over 12 frames), the model's skates 2-4 units toward the puck's
+side**; the game's animation changes about 3 frames after the release. Tried and not kept: holding the model's goalie
+still once his save move starts fits the replays (33.1% against 33.4%, log loss 0.50 to 0.42) but overrates the
+recorded SNES shots (186.8 xG for 138 goals, against 144.9 now; log loss 0.398 to 0.440); letting him only glide in
+the save move: replays 30.9%, recorded 165.7 xG (0.410). So the lock isn't the whole story: next, what the computer
+goalie aims for on a close shot coming across him (assgoalie in the SNES disassembly) against the model's target.
+
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
 expected goals, 1 scored (at 0.95; one off the post at 0.2, one saved at 0.75). Deflections have no xG (played the same way, the one recorded SNES goal off one came
