@@ -42,7 +42,8 @@ N_SAMPLES = 400
 GOALIE_SPREAD = 4.0   # units: the emulated goalie's position error, fitted (log loss) over the recordings
 AIM = [(0, 12), (16, 12), (16, 6), (16, 0), (0, 0), (-16, 0), (-16, 6), (-16, 12), (0, 6)]  # doshot's shotsets (screen x, z)
 REACH = [12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15]  # .cbg, by (Agility + 2) / 2
-PAD_STACK = {"0250": -6, "02a2": 6}   # gstackr / gstackl: the body test moves 6 to one side
+PAD_STACK = {"0250": -6, "02a2": 6}
+HOLD_STACK = __import__("os").environ.get("NHL94_XG_HOLD_STACK", "1") == "1"   # a stacking goalie held in the stack   # gstackr / gstackl: the body test moves 6 to one side
 DIRTAB = [(0, 200), (141, 141), (200, 0), (141, -141), (0, -200), (-141, -141), (-200, 0), (-141, 141)]
 DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
 HOT_LIST = 0xA44C8   # stick hot points: x, y bytes per sprite frame (x negated when the frame is drawn mirrored, y negated)
@@ -406,6 +407,16 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
                 saving = max(0, SAVE_LEN[int(anim, 16)] - round((m['t'][f] - m['t'][j]) / (1000 / 60)))
                 if saving:                                        # locked: his path can't answer the puck, so the
                     vgx, vgy = _velocity(m, f, gk, ahead=True)    # next 100 ms show his speed (a fresh stack slides)
+            if lock and not saving and anim in PAD_STACK and HOLD_STACK:
+                # a pad stack doesn't set pflags bit 5, so the recording's lock misses it, yet he can't rethink or
+                # skate out of it, only slide on (2026-10-31, xg_calib.py: on the game's dekes with the goalie stacking
+                # at the release the game 61%, the model 36% letting him skate, 54% held in the stack; all dekes log
+                # loss 0.219 -> 0.127): held for the rest of the stack
+                j = f
+                while j > 0 and m['anim'][((j - 1) * 12 + gk) * 4:((j - 1) * 12 + gk) * 4 + 4] == anim:
+                    j -= 1
+                saving = max(1, SAVE_LEN[int(anim, 16)] - round((m['t'][f] - m['t'][j]) / (1000 / 60)))
+                vgx, vgy = _velocity(m, f, gk, ahead=True)
             if anim in PAD_STACK:
                 reach, shift = 18, PAD_STACK[anim]
             gfr = int(m['frame'][(f * 12 + gk) * 3:(f * 12 + gk) * 3 + 3], 16) if rom and 'frame' in m else None
