@@ -60,7 +60,7 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   sprites, sounds), `genesis_settings.py` (league ROM settings), `common.py`, `process.py`.
 - `viewer.html` (one page: rink, sprites, maps, team stats, cards, clips, highlights, game files, live mode, Help),
   `season.html` + `tools/season.py` (per-game summaries, `matches/season.js`), `helper.html`.
-- `tools/`: `xg.py`, `xg_snes.py`, `deserve.py`, `share_game.py` (self-contained game files), `share_season.py`,
+- `tools/`: `xg.py`, `xg_snes.py` (`make_xg_figures.py` draws XG_MODELS' figures), `deserve.py`, `share_game.py` (self-contained game files), `share_season.py`,
   `merge_recordings.py` (join a game the helper split), `make_diagrams.py` (docs/img SVGs), `romnames.py`,
   `extract_sprites.py`, `embed_rink.py`, `bench_mask.py`.
 - `analysis/`: one-off studies (each documents itself at the top): shot / one-timer / passing / pickup / goalie studies,
