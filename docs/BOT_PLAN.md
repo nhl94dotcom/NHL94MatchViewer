@@ -175,3 +175,13 @@ seed twice) and counts each side's penalties, penalty minutes and power plays.
 **Reports:** a short summary after each block (what was kept, by how much); the bot never stops waiting for a go-ahead
 inside the budget. **Stops** when the budget is used, the queue is done, or something needs the user (a league rule,
 a setting, a result that changes the plan).
+
+### The long test plan: results
+
+- **Block 1, whole games (league settings, the bot against itself):** version 21 against 16, 20 games, each seed
+  played twice with the sides swapped: 10 wins each, 6.65 goals a game each (difference 0 +-0.78), penalties 3.4 a
+  game against 3.25. The CB check's gain on the defence bank (-1.7 points, penalties off) doesn't show in whole
+  games, and it draws hardly more calls.
+- A setup fault found on the way: with penalties on the first live-play state was saved in the stoppage after a
+  call (the clock still), so every situation timed out; the state is now saved only with the clock running and no
+  penalty standing, and block 1's banks were run again.
