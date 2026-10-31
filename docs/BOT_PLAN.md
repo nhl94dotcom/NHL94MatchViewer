@@ -83,3 +83,17 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   38% (and against the computer goalie their one-timers scored 45 of 127, 35%). C 14, 24 or 40 frames before the puck
   arrives: 30, 30, 29 goals; 4 frames: 12 (too late). **So the strike is fine; the bot's 18% from entries is its
   set-ups** (where and when it passes), plus the 32 of people's passes that the bot's B didn't turn into a strike.
+- **Versions 14-15: the one-timer pass by people's numbers, no gain.** In people's 117 one-timer passes, passes 130+
+  long scored 7 of 36 (shorter 38 of 81); passers stayed within 120 of the goal line. Version 14 (13 with those limits
+  and no defender within 20 of the receiver): 49 goals from the 472 entries against version 11's 47 (+0.4 +-1.1).
+  Strikes from people's passes against the bot's own: the receiver nearer the middle (median 27 off it against 39)
+  and the goalie drawn farther over (median 9 against 5); who struck was the same (mostly the centre, each scoring less
+  from the bot's own passes). Version 15 (14 passing only to a receiver within 40 of the middle with the goalie drawn
+  4+ toward the passer): 50 (+0.6 +-1.1). The one-timer is too small a part of the bot's play to move its 10%.
+- **Where the gap to people is.** From the same entries people lost the puck *more* often (59% touched by an opponent
+  skater within 6 s, 16% held by the goalie; any touch counts there, 20 frames for the bot) and scored no sooner (the
+  bot's goals a median 2.2 s after the entry, people's 1.9 s). People got a shot on goal from 34% of the entries and
+  scored 15.5%; the bot shot about as often (224 shots on goal from 472) but scored 10%. **The gap is the bot's shots**:
+  its slapshots (125 in the run, about none in) and its wrist shots from the sides (7%), against people's wrist shots
+  from the middle of the slot and one-timers. Next: no slapshot under pressure, the close-in wrist shot only from the
+  middle (cut in to it), and the guide's close-in plays.

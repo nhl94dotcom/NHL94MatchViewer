@@ -23,7 +23,10 @@ swings out to the wing to come in on the line); 9 is 6 with a left-hander slowed
 up and away from an opponent closing in ahead before the gate (fewer dekes: worse); 11 (the default) is 9 with only the
 way around his own net; 12 is 11 with a right-hander who comes up the right
 side deking there (mirrored, DEKE12R); 13 is 11 (not 12) with the one-timer as people play
-it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across).
+it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across); 14 is 13 with people's
+limits on the pass (the passer within 120 of the goal line, the pass under 130 long, no defender within 20 of
+the receiver); 15 is 14 passing only to a receiver within 40 of the
+middle with the goalie drawn 4+ toward the passer's side.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -250,7 +253,7 @@ class Bot:
             elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90):
                 self.phase, self.t = "slap", 0
                 self.note("slap start", ax=ax, ay=ay)
-            elif self.version >= 2 and ay > (100 if self.version >= 13 else 150 if self.version >= 5 else 90) \
+            elif self.version >= 2 and ay > (144 if self.version >= 14 else 100 if self.version >= 13 else 150 if self.version >= 5 else 90) \
                     and self.open_mate(P, me, s, g) is not None:
                 self.mate = self.open_mate(P, me, s, g)
                 self.phase, self.t, self.passer = "pass", 0, me
@@ -429,6 +432,11 @@ class Bot:
                 tax, tay = s * t["x"], s * t["y"]
                 if not (NET_Y - 100 < tay < NET_Y - 15 and abs(tax) < 70 and 39 < abs(tax - s * m["x"]) < 110):
                     continue
+                if self.version >= 14 and math.hypot(t["x"] - m["x"], t["y"] - m["y"]) >= 130:
+                    continue                    # version 14: people's one-timer passes 130+ long scored 7 of 36
+                if self.version >= 15 and (abs(tax) >= 40 or not (P[g]["x"] * m["x"] > 0 and abs(P[g]["x"]) >= 4)):
+                    continue                    # version 15: the receiver near the middle, the goalie drawn over
+                                                # to the passer's side (people's one-timers that scored)
             elif self.version >= 5:
                 # the study's good one-timers: the receiver close in (within 95 of the goal mouth's middle, in front
                 # of the line) and the pass across (from the other side, or 50+ across)
@@ -439,7 +447,8 @@ class Bot:
                     continue
             elif not (170 < s * t["y"] < 245 and abs(t["x"]) < 60):
                 continue
-            if any(math.hypot(P[o]["x"] - t["x"], P[o]["y"] - t["y"]) < 30 for o in self.theirs if o != g):
+            if any(math.hypot(P[o]["x"] - t["x"], P[o]["y"] - t["y"]) < (20 if self.version >= 14 else 30)
+                   for o in self.theirs if o != g):
                 continue
             L = math.hypot(t["x"] - m["x"], t["y"] - m["y"]) or 1
             lane = False
