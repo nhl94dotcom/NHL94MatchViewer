@@ -11,7 +11,10 @@ rethinking every half his Defensive Awareness value (aidef / 2 frames), heading 
 ellipse 26 across and 20 out, or for where it will cross his goal line once it will within 35 frames (the crossing
 worked out every 5 frames, as pucknorm does); at a rethink with the crossing under 19 frames he starts a save move
 (GoalieSaveList, chosen by the puck's direction against his facing and its height; his speed halved) and keeps skating
-through it (a save move sets pfalock, not pf2aip). A person in net is moved the same way.
+but once in it he no longer steers: a save move sets pfalock, and updateplayers runs no assignment for a locked
+player, so he glides on his speed with friction (2026-10-31; the earlier model kept him skating through it). With
+nowhere to go a computer goalie loses ($70 + leg strength) of speed a frame per axis (StopNA). A person in net is moved
+the same way.
 
 Checked against the five recorded SNES games: driven by the recorded puck, the emulated goalie lands a median 0.8
 units from the recorded one when the puck arrives; over 175 unblocked shots the model gives 40.1 expected goals
@@ -28,6 +31,11 @@ import struct
 
 N_SAMPLES = 400
 GOALIE_SPREAD = 2.0
+# The goalie as the game moves him (2026-10-31, SNES_SHOOTING 4.7): gliding in a save move (pfalock: no assignment) and
+# the computer's StopNA friction. Right on the game's own shots (3,712 from xg_calib.py, the user's dekes 31% against
+# the game's 33%, the model before 27%) but 24% high on recorded shots at a computer goalie (175 xG for 138 goals),
+# where the older movement happens to fit (145); off until that is understood. NHL94_XG_SNES_GLIDE=1 turns it on.
+GLIDE_IN_SAVE = __import__("os").environ.get("NHL94_XG_SNES_GLIDE") == "1"
 STEP = 2   # frames a game step: the SNES game loop mostly runs every other frame
 AIM = [(0, 12), (15, 12), (15, 6), (15, 0), (0, 0), (-15, 0), (-15, 6), (-15, 12), (0, 6)]  # shotsets (screen x, z)
 SAVES = [0xE1E2, 0xE214, 0xE2AA, 0xE2FC, 0xE246, 0xE278, 0xE862, 0xE7D0, 0xE73E]       # GoalieSaveList
@@ -106,6 +114,7 @@ class Goalie:
         self.puck_control, self.nopuck = puck_control, 0
         self.x, self.y, self.vx, self.vy, self.facing, self.frame = x, y, vx, vy, facing, frame
         self.acc = 32 - (weight >> 3) + agility + (agility >> 1) + 8
+        self.legstr = agility                     # leg strength: the working Agility
         self.vmax = (20 + speed) * 261
         self.aidef = aidef
         self.d3, self.gl = (260, 264) if y > 0 else (-260, -264)
@@ -190,12 +199,26 @@ class Goalie:
                     self.frame = fr
                     break
                 t += dur
-        self.timer -= frames
-        if self.timer < 0:
-            self.timer = max(0, self.timer + (self.aidef >> 1))
-            self.think(px, py, pvx, pvy, pz, pvz, rng)
-        if self.dir == 8:
-            self.vx, self.vy = int(self.vx / 2), int(self.vy / 2)   # StopNA: a computer goalie halves his speed
+        if self.save is not None and GLIDE_IN_SAVE:
+            # in a save move his animation is locked (pfalock), and updateplayers runs no assignment for a locked
+            # player: no rethink, no push, he only glides (2026-10-31; the model kept him skating through it and he
+            # slid into the path of close dekes the game's goalie never reached). Off by default: see GLIDE_IN_SAVE
+            pass
+        else:
+            self.timer -= frames
+            if self.timer < 0:
+                self.timer = max(0, self.timer + (self.aidef >> 1))
+                self.think(px, py, pvx, pvy, pz, pvz, rng)
+        if self.save is not None and GLIDE_IN_SAVE:
+            pass
+        elif self.dir == 8 and not GLIDE_IN_SAVE:
+            self.vx, self.vy = int(self.vx / 2), int(self.vy / 2)   # the model's StopNA before 2026-10-31: halved
+        elif self.dir == 8:
+            # StopNA for a computer goalie: friction of ($70 + leg strength) x frames off each axis, down to 0 (a
+            # person in net halves his speed; before 2026-10-31 the model halved it for the computer too)
+            st = (0x70 + self.legstr) * frames
+            self.vx = 0 if abs(self.vx) <= st else self.vx - st * (1 if self.vx > 0 else -1)
+            self.vy = 0 if abs(self.vy) <= st else self.vy - st * (1 if self.vy > 0 else -1)
         else:
             sx, sy = DIRSTEP[self.dir]
             nvx, nvy = self.vx + sx * self.acc * frames, self.vy + sy * self.acc * frames

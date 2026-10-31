@@ -187,11 +187,27 @@ goalie. On the dekes the game scored and the model gave under 15%, the frame's s
 to 15% without it) and the body box most; with the model's goalie frozen at the release they score 44%. Traced frame
 by frame (the game's goalie path recorded, the model's goalie driven by the same puck): **after a deke's release the
 game's goalie barely moves (within about 1 unit over 12 frames), the model's skates 2-4 units toward the puck's
-side**; the game's animation changes about 3 frames after the release. Tried and not kept: holding the model's goalie
-still once his save move starts fits the replays (33.1% against 33.4%, log loss 0.50 to 0.42) but overrates the
-recorded SNES shots (186.8 xG for 138 goals, against 144.9 now; log loss 0.398 to 0.440); letting him only glide in
-the save move: replays 30.9%, recorded 165.7 xG (0.410). So the lock isn't the whole story: next, what the computer
-goalie aims for on a close shot coming across him (assgoalie in the SNES disassembly) against the model's target.
+side**; the game's animation changes about 3 frames after the release. **What the game does** (the SNES disassembly): a save move sets `pfalock`, and `updateplayers` runs no assignment for
+a locked player, so in a save move the computer goalie neither rethinks nor pushes: he glides on his speed with
+friction (the model's note that he "keeps skating through it" was wrong). Traced on the three shots above, the game's
+goalie stays within a unit from the moment his save move starts; the model's, already in his save move, skated on to
+the crossing. Also: with nowhere to go a computer goalie loses ($70 + leg strength) of speed a frame per axis
+(`StopNA`; only a person in net halves it, as the model did for both); while an opposing carrier is in a shot
+animation skating more up the ice than across, the computer goalie is stopped dead once (`goaliestopped`; before the
+release, so already in the state the model starts from); his facing turns at most a step every 6 ticks
+(`AdjustFacingDirection`). **The goalie moved as the game moves him** (gliding in a save move and the computer's
+StopNA, `xg_snes.GLIDE_IN_SAVE`), on the game's own shots (3,712: the replays, standing shots, EA Specials and the
+walk-in with their follow-ups, exact states): 7.8% against the game's 8.9% (the old movement 6.9%), log loss 0.159 to
+0.143; the user's dekes and cuts 31.4% against 32.6% (27.4%), log loss 0.436 to 0.377; standing shots unchanged (0.5%);
+the follow-ups still low (the no-touch timer above). **But on the recorded SNES shots it is 24% high**: 175 xG for 138
+goals (the old movement 145), all of it at a computer goalie (122.6 for 86; at a person in net 52.4 for 52), whatever
+the goalie spread (0-4). Two things found: when a person takes the goalie over within 20 frames of the shot (85 of the
+453 recorded shots at a computer goalie), 7 went in against 24.6 xG (19.1 old): the takeover is a real effect the
+model doesn't see; with the computer in net throughout, 79 goals against 97.9 (77.7 old). Driven by the recorded puck,
+the new movement follows the recorded goalie as closely as the old (1.62 units off over 16 frames against 1.64), and
+the goalie was in his ready stance at nearly all of these releases, so neither the path nor a save already under way
+explains it. Until it is understood the correction stays off by default (NHL94_XG_SNES_GLIDE=1 turns it on), so the
+viewer's numbers are unchanged.
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
