@@ -24,7 +24,9 @@ from paths import RUNS, WORK
 RETAIL = WORK / "nhl94_retail.bin"
 FRAMES = int(os.environ.get("NHL94_SCEN_FRAMES") or 360)
 DEFEND = os.environ.get("NHL94_SCEN_DEFEND")   # the entries the other way round: the bot defends (2026-10-31); "bot":
-ATTACKER = int(os.environ.get("NHL94_SCEN_ATTACKER") or 16)   # the attackers played by the bot (this version) on pad 2
+ATTACKER = int(os.environ.get("NHL94_SCEN_ATTACKER") or 16)
+DEFENDER = int(os.environ.get("NHL94_SCEN_DEFENDER") or 0)    # offence banks: the defence played by the bot (this
+                                                              # version) on pad 2 instead of the computer   # the attackers played by the bot (this version) on pad 2
 C2PLAYER = 0xC322                  # c2playernum
 CONT_TEAMS = (0xC328, 0xC32A)      # cont1team, cont2team (1 Home, 2 Away)
 C1PLAYER = 0xC320                  # c1playernum (ram94.asm): the record pad 1 controls
@@ -153,6 +155,14 @@ def place(e, base, s, seed):
             e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
         e.setb(rec(carrier) + 0x62, e.b(rec(carrier) + 0x62) | 8)
         e.setw(C2PLAYER, carrier)
+    if DEFENDER and not defend:                  # our attack against the bot defending on pad 2: its skater nearest
+        e.setw(CONT_TEAMS[1], 2)                 # the puck
+        near = min((k for k in range(6, 12) if e.b(rec(k) + 0x35) != 0),
+                   key=lambda k: math.hypot(e.sw(rec(k)) - px, e.sw(rec(k) + 0x14) - py))
+        for k in range(6, 12):
+            e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
+        e.setb(rec(near) + 0x62, e.b(rec(near) + 0x62) | 8)
+        e.setw(C2PLAYER, near)
     return carrier
 
 
@@ -167,8 +177,9 @@ def play(e, base, s, seed, version):
     res, theirs = "time", 0
     if DEFEND:
         return defend_play(e, bot, s0, sh0)
+    dfn = Bot(1, DEFENDER) if DEFENDER else None
     for f in range(FRAMES):
-        e.run(1, hold=bot.step(e))
+        e.run(1, hold=bot.step(e), hold2=dfn.step(e) if dfn else [])
         sc = [e.w(a) for a in SCORE]
         if sc[0] != s0[0]:
             res = "goal"
