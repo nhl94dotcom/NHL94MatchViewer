@@ -1,0 +1,40 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1004' height='300' viewBox='0 0 1004 300' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>How the xG models play a shot out</title>
+<rect width='1004' height='300' fill='#ffffff'/>
+<defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<text x='30.0' y='34.0' font-size='15' fill='#1f2933' text-anchor='start' font-weight='bold'>How each model scores one shot: the game's own rules, played out many times</text>
+<rect x='30' y='60' width='168' height='104' rx='8' fill='#eef5fc' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='42.0' y='84.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>1. The aim</text>
+<text x='42.0' y='106.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the stick's direction at</text>
+<text x='42.0' y='123.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the release: one of nine</text>
+<text x='42.0' y='140.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>points on the net</text>
+<line x1='201.0' y1='112.0' x2='221.0' y2='112.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='224' y='60' width='168' height='104' rx='8' fill='#eef5fc' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='236.0' y='84.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>2. The shot code</text>
+<text x='236.0' y='106.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>exact, with the chance</text>
+<text x='236.0' y='123.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>(ShA + 1) / (ShA + 16);</text>
+<text x='236.0' y='140.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>else the game's scatter</text>
+<line x1='395.0' y1='112.0' x2='415.0' y2='112.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='418' y='60' width='168' height='104' rx='8' fill='#eef5fc' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='430.0' y='84.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>3. The flight</text>
+<text x='430.0' y='106.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the puck under the</text>
+<text x='430.0' y='123.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>game's gravity, to</text>
+<text x='430.0' y='140.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the goal line</text>
+<line x1='589.0' y1='112.0' x2='609.0' y2='112.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='612' y='60' width='168' height='104' rx='8' fill='#eef5fc' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='624.0' y='84.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>4. The goalie</text>
+<text x='624.0' y='106.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>moves as the computer</text>
+<text x='624.0' y='123.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>goalie does: rethink</text>
+<text x='624.0' y='140.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>timer, look-ahead, save</text>
+<line x1='783.0' y1='112.0' x2='803.0' y2='112.0' stroke='#1f2933' stroke-width='1.5' marker-end='url(#arr)'/>
+<rect x='806' y='60' width='168' height='104' rx='8' fill='#eef5fc' stroke='#3b82c4' stroke-width='1.5'/>
+<text x='818.0' y='84.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>5. The save</text>
+<text x='818.0' y='106.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>his body (and stick or</text>
+<text x='818.0' y='123.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>glove) against the puck;</text>
+<text x='818.0' y='140.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the net, posts, crossbar</text>
+<path d='M890.0,164 V198 H114.0 V168' fill='none' stroke='#52606d' stroke-width='1.5' stroke-dasharray='5,4' marker-end='url(#arr)'/>
+<text x='502.0' y='190.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>repeat (400 times by default), each with its own random draws</text>
+<rect x='272.0' y='220' width='460' height='46' rx='8' fill='#ffffff' stroke='#1f2933' stroke-width='1.5'/>
+<text x='502.0' y='241.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>xG = the share of those play-outs that end in a goal</text>
+<text x='502.0' y='258.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>(the only number fitted to recorded games: how far off the goalie's spot may be)</text>
+</svg>

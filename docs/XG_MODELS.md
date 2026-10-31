@@ -19,6 +19,8 @@ times, and counts the goals:
 5. the game's save geometry (Genesis: a body circle of 12-15 units, his stick blade if the ROM is given; SNES: a body
    box plus the stick / glove area of the sprite frame he shows) and the game's net (goal mouth, posts, crossbar).
 
+![How each model scores one shot: the aim, the shot code, the flight, the goalie, the save, repeated; xG is the share of goals](img/xg_playout.svg)
+
 xG is the share of those play-outs that end in a goal. The only number fitted to recorded games is how far the
 emulated goalie's position may be off (4 units on the Genesis, 2 on the SNES: random spread, `GOALIE_SPREAD`).
 
@@ -155,11 +157,34 @@ need the same answer twice. Both modules keep the spread of the emulated goalie 
 your goalie state is exact (read from RAM on the release frame), since the spread stands for the error of reading a
 recorded goalie.
 
+## What they give
+
+The models from every spot of the attacking zone, for one standard shot at a goalie who is set and still at his spot
+for the puck (the shot speeds are the recorded games' medians; the best of the nine aims, except the Genesis
+one-timer, which the game aims itself). A goalie who is moving, out of position or in a save move gives very different
+numbers: these are the floor that a set goalie allows.
+
+![Genesis xG by shot spot: wrist shots score from the slot's middle and the doorstep; one-timers from a wide band out to about 35 feet](img/xg_map_genesis.svg)
+
+- **Genesis:** against a set goalie a wrist shot needs the middle of the slot or the doorstep; a one-timer scores
+  from a band out to about 35 ft and across to the faceoff dots, because his reach drops to its minimum against it
+  ([GENESIS_GUIDE 7](GENESIS_GUIDE.md#7-one-timers)).
+- **SNES:** a set SNES goalie stops nearly every standing wrist shot; the slapshot finds the game's gaps (the lane
+  past his glove save, [SCORING_SNES](SCORING_SNES.md)) and the doorstep.
+
+![SNES xG by shot spot: wrist shots almost never beat a set goalie; slapshots score through a few lanes and at the doorstep](img/xg_map_snes.svg)
+
 ## How good they are
 
 - **Recorded games** (person against person and against the computer): log loss 0.26 on Genesis shots and 0.38 on
   SNES shots, against 0.48 and 0.54 for giving every shot the same chance; expected goals close to goals (886
   Genesis shots and one-timers: 200.9 xG, 200 goals; 741 SNES ones: 185.8 xG, 174 goals).
+
+  ![The models against the recorded games: shots grouped by xG against the share that went in, Genesis and SNES](img/xg_calibration.svg)
+
+  The recorded games in the game folder on 2026-10-31 (684 Genesis shots: 144.7 xG, 155 goals; 595 SNES: 144.9 xG,
+  138 goals). The Genesis model follows the diagonal throughout. The SNES model is right up to about 30% and a little
+  high above it: shots it gives 35-55% went in 32% of the time (37 shots), those above 55% 69% (132).
 - **Against the game itself** (2026-10-29, `analysis/scoring_map/xg_calib.py`, the game's real outcome for 33,808
   Genesis and 9,617 SNES shots from the exact state): right on dekes, EA first shots, standing shots and (checked
   before, `ot_xg_check.py`) one-timers on both systems.
