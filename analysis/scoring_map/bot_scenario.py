@@ -6,7 +6,8 @@ plays on for up to FRAMES frames against the computer. Every version plays the s
 seed, so versions compare pair by pair.
 Per situation: the result (goal; held, the goalie keeping it 20 frames; lost, an opponent skater keeping it 20 frames;
 stoppage; time, none of these), shots on goal, the frames it took, the bot's plays (its log's shot kinds).
-python bot_scenario.py RUN VERSION[,VERSION...] [N] [minutes]   -> paths.RUNS / RUN / scen_<version>.jsonl"""
+NHL94_SCEN_KIND picks the kind ("entry", the default; "pass": a moment before people's one-timer passes, the
+bot making the pass and the strike). python bot_scenario.py RUN VERSION[,VERSION...] [N] [minutes]   -> paths.RUNS / RUN / scen_<version>.jsonl"""
 import json
 import math
 import os
@@ -63,16 +64,16 @@ def place(e, base, s, seed):
             e.setw(r + 0x2A, round(vy * 4096) & 0xFFFF)
             e.setw(r + 0x2C, 0)
             e.setb(r + 0x55, face)
-    carrier = slot[("us", s["carrier"])]
+    carrier = slot[("us", s["passer"] if "passer" in s else s["carrier"])]
     for k in range(6):
         e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
     e.setb(rec(carrier) + 0x62, e.b(rec(carrier) + 0x62) | 8)
     e.setw(C1PLAYER, carrier)
-    e.setw(PUCKC, carrier)
     pr = rec(14)
     e.setw(pr, round(s["puck"][0]) & 0xFFFF)
     e.setw(pr + 0x14, round(s["puck"][1]) & 0xFFFF)
     e.setw(pr + 0x18, 0)
+    e.setw(PUCKC, carrier)
     return carrier
 
 
@@ -80,6 +81,9 @@ def play(e, base, s, seed, version):
     if place(e, base, s, seed) is None:
         return None
     bot = Bot(0, version)
+    if s["kind"] == "pass":                       # the bot makes people's pass (B toward the receiver), then
+        slot = {str(e.b(rec(k) + 0x35)): k for k in range(6)}   # its one-timer
+        bot.phase, bot.t, bot.passer, bot.mate = "pass", 0, slot[s["passer"]], slot[s["receiver"]]
     s0, sh0 = [e.w(a) for a in SCORE], [e.w(a) for a in SHOTS]
     res, theirs = "time", 0
     for f in range(FRAMES):
@@ -116,7 +120,8 @@ def main():
     n = int(sys.argv[3]) if len(sys.argv) > 3 else 10 ** 9
     minutes = float(sys.argv[4]) if len(sys.argv) > 4 else 60
     gentle()
-    sits = json.loads((WORK / "bot_situations.json").read_text())[:n]
+    kind = os.environ.get("NHL94_SCEN_KIND") or "entry"
+    sits = [x for x in json.loads((WORK / "bot_situations.json").read_text()) if x["kind"] == kind][:n]
     only = os.environ.get("NHL94_SCEN_ONLY")            # "RUN/VERSION": only the situations where that run struck
     if only:
         r0, v0 = only.split("/")

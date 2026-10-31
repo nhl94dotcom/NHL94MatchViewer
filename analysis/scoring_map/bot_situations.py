@@ -2,7 +2,11 @@
 Genesis games (the match files in Documents\\NHL94 Viewer\\matches, or NHL94_HOME), each turned into the positions,
 speeds and facings of all 12 records and the puck, for bot_scenario.py to place in the harness and let the bot play
 on from. Kinds: "entry", every carried zone entry (the converter's zoneEntries, kind "carried"), at the sample the
-carrier crosses the blue line.
+carrier crosses the blue line; "pass", every one-timer in the games (the shot list's kind "one-timer"), PASS_LAG
+samples before its pass left the stick (the passer still has the puck), with the passer and the receiver (who struck
+it) and whether it scored: the bot then makes that pass (B toward him) and the one-timer. (A puck placed in flight
+doesn't work: the game starts a one-timer only for a pass it made itself, passReceiverPlayerNum, with C pressed by
+the passer's pad; so the bot makes the pass.)
 
 Each situation is put in the bot's frame: the attacking team's records become Home (records 0-5 by position: 0 G,
 1 LD, 2 RD, 3 LW, 4 C, 5 RW), the other team's Away, and the rink is turned 180 degrees when the attackers were going
@@ -41,9 +45,12 @@ def speed(m, f, k, span=4):
     return (x1 - x0) / dt, (y1 - y0) / dt
 
 
-def situation(m, f, team, kind, name):
+PASS_LAG = -2
+
+
+def situation(m, f, team, kind, name, owner=None):
     roles = m["role"][f * K:(f + 1) * K]
-    owner = m["owner"][f]
+    owner = m["owner"][f] if owner is None else owner
     if owner < 0 or not team * 6 <= owner < team * 6 + 6:
         return None
     up = (m["period"][f] % 2 == 0) == (team == 0)        # Home attacks up in periods 1 and 3 (0-based 0, 2)
@@ -63,6 +70,11 @@ def situation(m, f, team, kind, name):
         return None
     px, py, pz = m["puck"][f * 3:f * 3 + 3]
     out["puck"] = [round(r * px, 1), round(r * py, 1)]
+    if kind == "pass":
+        a = max(0, f - 2)
+        dt = (m["t"][f] - m["t"][a]) / FRAME_MS
+        qx, qy = m["puck"][a * 3:a * 3 + 2]
+        out["pv"] = [round(r * (px - qx) / dt, 3), round(r * (py - qy) / dt, 3)] if dt > 0 else [0, 0]
     return out
 
 
@@ -83,6 +95,26 @@ def main():
                 s = situation(m, z["f"], z["team"], "entry", p.stem)
                 if s:
                     rows.append(s)
+        for sh in m.get("shotList", []):
+            if sh.get("kind") != "one-timer":
+                continue
+            pa = max((q for q in m.get("passes", []) if q["team"] == sh["team"] and q["f"] <= sh["f"]
+                      and sh["f"] - q["f"] < 120), key=lambda q: q["f"], default=None)
+            if pa is None:
+                continue
+            f = max(0, pa["f"] + PASS_LAG)
+            passer = next((k for k in range(sh["team"] * 6, sh["team"] * 6 + 6)
+                           if int(m["roster"][pa["f"] * K + k], 36) == pa["idx"]), None)
+            striker = next((k for k in range(sh["team"] * 6, sh["team"] * 6 + 6)
+                            if int(m["roster"][sh["f"] * K + k], 36) == sh["idx"]), None)
+            if passer is None or striker is None:
+                continue
+            s = situation(m, f, sh["team"], "pass", p.stem, owner=passer)
+            if s:
+                s["receiver"] = m["role"][f * K + striker]
+                s["passer"], s["scored"] = s.pop("carrier"), sh["result"] == "goal"
+                s["gctl"] = sh.get("gctl")
+                rows.append(s)
         print(p.stem, len(rows) - n0)
     (WORK / "bot_situations.json").write_text(json.dumps(rows))
     print(len(rows), "situations ->", WORK / "bot_situations.json")

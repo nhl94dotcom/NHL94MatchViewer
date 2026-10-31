@@ -99,6 +99,7 @@ class Bot:
         self.frame = 0
         self.log = []                               # (frame, event, details)
         self.b_down = False
+        self.stuck, self.last = 0, (0, 0)            # set on each carry (a received pass can start one first)
 
     # --- reading
     def read(self, e):
