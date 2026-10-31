@@ -27,7 +27,10 @@ def main():
     if BUILD.exists():
         shutil.rmtree(BUILD)
     shutil.copytree(DISASM, BUILD, ignore=shutil.ignore_patterns(".git", "node_modules", "output", "Extracted"))
-    subprocess.run([sys.executable, str(HERE / "patch_rom.py"), str(BUILD / "src" / "input94.asm")], check=True)
+    subprocess.run([sys.executable, str(HERE / "patch_rom.py"), str(BUILD / "src" / "logic94.asm")], check=True)
+    retail = WORK / "nhl94_retail.bin"          # the disassembly's build now extracts its assets from the retail ROM
+    if retail.exists():                          # in its own folder (found by SHA-1): put our copy there
+        shutil.copy(retail, BUILD / "nhl94retail.bin")
     npm = shutil.which("npm") or "npm"
     subprocess.run([npm, "install", "--silent"], cwd=BUILD, check=True, shell=True)
     subprocess.run([npm, "run", "build:dev"], cwd=BUILD, check=True, shell=True)

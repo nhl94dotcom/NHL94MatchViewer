@@ -5,6 +5,7 @@ RAM $FFFFE000-$E02F (never used by the game: the gap between PALflag and the sta
   E000 w override flag; E002/4/6 w puckvx/vy/vz to use instead of the game's
   E010 w doshot count; E012 l seed at entry; E016 passspeed at entry; E018 passdir; E01A/C puckx/pucky
   E020/2/4 w the game's own puckvx/vy/vz; E026 final passspeed; E028 l seed at exit; E02E / E030 the SPA of records 11 / 5 (the goalies) at doshot"""
+import re
 import sys
 p = sys.argv[1]
 s = open(p, encoding="latin-1").read()
@@ -41,11 +42,12 @@ SMAPEXNO
 SMAPSKIP
 """
 s = s[:i] + block + s[j:]
-a = "doshot\t\t\t\t\t\t\t\t;stick is at puck so launch puck toward goal\n\tmovem.l\td0-d7/a0-a3,-(sp)\n"
-assert s.count(a) == 1
-s = s.replace(a, a + "\tbsr.w\tSMAPIN\n")
-b = ".ex\t\t\t\t\t\t\t\t\t;play the shot sound and return\n\tbsr.w\tsfx"
-assert s.count(b) == 1, s.count(b)
-s = s.replace(b, ".ex\t\t\t\t\t\t\t\t\t;play the shot sound and return\n\tbsr.w\tSMAPEX\n\tbsr.w\tsfx")
+# matched by pattern, not exact text (2026-10-31: the disassembly's comments, spacing and files change)
+a = re.compile(r"^doshot\b[^\n]*\n\tmovem\.l\td0-d7/a0-a3,-\(sp\)\n", re.M)
+assert len(a.findall(s)) == 1, len(a.findall(s))
+s = a.sub(lambda mt: mt.group(0) + "\tbsr.w\tSMAPIN\n", s)
+b = re.compile(r"^\.ex\b[^\n]*play the shot sound[^\n]*\n(?=\tbsr\.w\tsfx)", re.M)
+assert len(b.findall(s)) == 1, len(b.findall(s))
+s = b.sub(lambda mt: mt.group(0) + "\tbsr.w\tSMAPEX\n", s)
 open(p, "w", encoding="latin-1").write(s)
 print("patched", j - i, "source chars replaced")
