@@ -1051,4 +1051,16 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   onto the line exactly (a stronger correction) didn't raise it at 8 tries a hand. In 20 games: 20-0, 5.50 goals a game to 0.90,
   9.1 EA Specials a game, 32 goals from 182 (18% a try: the first shot 3 goals, the follow-up claimed 56 times and 29 goals,
   52% when claimed), against version 9's deke at 43% a shot. Off the line the bot fell back on close-in wrist shots (30.7
-  a game). The bottom net's right-hander seldom got there (7 of 181 tries): the turn was tuned at the top net only.
+  a game). The bottom net's right-hander seldom got there (7 of 181 tries): the turn was tuned at the top net only. Why the
+  follow-up was claimed so seldom (version 8 replayed for 5 games, the end of each follow-up logged, "ea end"):
+  after 39 first shots an opponent skater reached the loose puck first 22 times, the goalie held it 4 times, nothing
+  came within 70 frames 5 times, the bot claimed it 7 times. The standing test has no defenders by the net; in games
+  they are there. Idea not yet tried: the EA Special only when no defender is near the net, the deke otherwise.
+- **Pucks lost carrying (versions 10-11).** In version 9's games 481 pucks were lost in the plain carry: 145 in its
+  own end, 161 in the middle, 175 in the attacking zone. One replayed: in his own end the carrier steered straight up
+  the ice from behind his own net, skated into its back and bobbled the puck there over and over. In the middle he
+  carried in a straight line up his lane and was checked. Version 10 takes him around his own net first (out to 80
+  to the side) and veers up and away from an opponent within 30 ahead before the gate: carry losses 417, but he left
+  the deke's lane, dekes fell from 18 to 11 a game, goals 4.90 a game (0.40 against). Version 11 keeps only the way
+  around the net: own-end losses 111 (145), carry losses 420, **20-0, 6.20 goals a game to 0.65** (version 9 6.15 -
+  0.70: the same within the games' spread), the deke 43% a shot. Version 11 is the default.

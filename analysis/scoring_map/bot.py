@@ -18,8 +18,10 @@ lane by the red line, 0.5 a frame across toward the middle at the gate, 0.77 at 
 the deke needs it) and no slapshot under pressure before the gate; 5 real one-timers (C as the pass arrives); 6 the
 deke re-timed with everyone on the ice; 7-8 (work in progress, STUDY_NOTES "A scripted bot") the EA
 Special (EA) in place of the deke: skate its line, release at the EA runs' best spot, follow up at the near post (8
-swings out to the wing to come in on the line); 9 (the default) is 6 with a left-hander slowed by a defender at the swing (under
-1.3 a frame up the ice, one within 25) passing or wrist-shooting instead.
+swings out to the wing to come in on the line); 9 is 6 with a left-hander slowed by a defender at the swing (under
+1.3 a frame up the ice, one within 25) passing or wrist-shooting instead; 10 is 9 taking the puck around his own net (not into its back) and veering
+up and away from an opponent closing in ahead before the gate (fewer dekes: worse); 11 (the default) is 9 with only the
+way around his own net.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -70,7 +72,7 @@ def dir_to(dx, dy):
 
 
 class Bot:
-    def __init__(self, team=0, version=9):
+    def __init__(self, team=0, version=11):
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE
@@ -82,7 +84,8 @@ class Bot:
                                                     # close in, the pass across (bot5); 6: 5 with the deke
                                                     # re-timed with everyone on the ice (bot6);
                                                     # 7-8 the EA Special; 9 6 with the slowed
-                                                    # left-hander's bail-out (bot9)
+                                                    # left-hander's bail-out (bot9); 10-11 his own
+                                                    # net (bot10, bot11)
         self.team = team                            # 0 Home (records 0-5), 1 Away (6-11)
         self.mine = range(6) if team == 0 else range(6, 12)
         self.theirs = range(6, 12) if team == 0 else range(6)
@@ -149,6 +152,8 @@ class Bot:
             if owner == me:
                 self.phase, self.t = "ea2", 0
             elif owner is not None or self.t > 70:
+                self.log.append(dict(f=self.frame, ev="ea end", owner=owner, t=self.t,
+                                     goalie=owner is not None and P[owner]["pos"] == 0))
                 self.phase, self.t = "shot", 91
             else:
                 return pad(dir_to(pk["x"] + 4 * pk["vx"] - P[me]["x"], pk["y"] + 4 * pk["vy"] - P[me]["y"]))
@@ -245,6 +250,15 @@ class Bot:
                 tx, ty = GATE
                 if ay > GATE[1] - 15:               # past the gate's line or off it: swing back out to it
                     tx, ty = GATE[0] - 20, GATE[1] - 70
+                elif self.version == 10 and near[0] < 30 and ahead and ay < GATE[1] - 15 and not ay < -250:
+                    # version 10: an opponent closing in ahead before the gate: up the ice and away from him
+                    # (9 carried in a straight line up its lane and was checked there), off the boards
+                    oxa = s * (m["x"] - P[near[1]]["x"])
+                    side = 1 if (oxa > 0 or ax < -95) and ax < 95 else 7
+                    return pad(aview(side))
+                elif self.version >= 10 and ay < -250 and abs(ax) < 55:
+                    tx, ty = (-80 if ax <= 0 else 80), ay + 10   # version 10: behind (or at) his own net: around
+                                                    # it first (9 skated into its back and lost the puck there)
                 elif self.version >= 4 and ay < LANE[0]:
                     tx, ty = LANE[1], ay + 80       # far away: onto the lane, wide of the gate
                 elif self.version >= 4:
