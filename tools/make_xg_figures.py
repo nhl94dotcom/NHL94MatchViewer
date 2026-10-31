@@ -53,7 +53,7 @@ def genesis_set_spot(px, py):
 
 def genesis_map(kind):
     rng = random.Random(7)
-    speed = {"wrist": 12000, "one-timer": 20280}[kind]
+    speed = {"slap": 21486, "wrist": 12000, "one-timer": 20280}[kind]
     sha, ratings = 15, (48, 13, 13, 10)
     res = {}
     for x, out in cells():
@@ -74,7 +74,7 @@ def genesis_map(kind):
 
 def snes_map(data, kind):
     rng = random.Random(7)
-    speed, sha, ratings = {"wrist": 12349, "slap": 21752}[kind], 13, (48, 8, 8, 7)
+    speed, sha, ratings = {"slap": 21752, "wrist": 12349, "one-timer": 23455}[kind], 13, (48, 8, 8, 7)
     facing = 4
     frame = data.anim(0xE0FE, facing)[0][0]
     res = {}
@@ -128,32 +128,36 @@ def legend(x, y):
 
 
 def maps():
-    S = 1.55
+    S = 1.3
     pw = 256 * S
     ph = (GL - 88 + 35) * S
-    W, H = int(2 * pw + 150), int(ph + 200)
+    W, H = int(3 * pw + 2 * 60 + 110), int(ph + 205)
     for sysn in ("genesis", "snes"):
         if sysn == "genesis":
-            a, b2 = genesis_map("wrist"), genesis_map("one-timer")
-            panels = (("Wrist shot", "12,000 off the stick, the best of the nine aims", a),
-                      ("One-timer", "20,280, aimed by the game; the goalie's reach 12", b2))
-            notes = ["Genesis model (tools/xg.py), Shot Accuracy 15; the goalie set and still at his spot for the puck (Weight 48,",
-                     "Agility 13, Speed 13, aidef 10). Speeds: the recorded games' medians. Squares 10 units (3.3 ft); 240 play-outs each."]
+            run = genesis_map
+            panels = (("Slapshot", "21,486 off the stick, the best of the nine aims", "slap"),
+                      ("Wrist shot (and the deke's shot)", "12,000, the best of the nine aims", "wrist"),
+                      ("One-timer", "20,280, aimed by the game; the goalie's reach 12", "one-timer"))
+            notes = ["Genesis model (tools/xg.py), Shot Accuracy 15; the goalie set and still at his spot for the puck (Weight 48, Agility 13, Speed 13,",
+                     "aidef 10). Speeds: the recorded games' medians. A deke's shot is a wrist shot, but the deke's swing first draws the goalie into a sliding",
+                     "pad stack: from a set goalie this map shows the plain wrist shot, the deke's floor. Squares 10 units (3.3 ft); 240 play-outs each."]
             mouth = 20
         else:
             if not SNES_ROM.exists():
                 print("no SNES ROM:", SNES_ROM)
                 continue
             data = xs.RomData(SNES_ROM.read_bytes())
-            a, b2 = snes_map(data, "wrist"), snes_map(data, "slap")
-            panels = (("Wrist shot", "12,349 off the stick, the best of the nine aims", a),
-                      ("Slapshot", "21,752 off the stick, the best of the nine aims", b2))
-            notes = ["SNES model (tools/xg_snes.py), Shot Accuracy 13; the goalie set and still at his spot for the puck (Weight 48,",
-                     "Agility 8, Speed 8, aidef 7). Speeds: the recorded games' medians. Squares 10 units (3.3 ft); 240 play-outs each."]
+            run = lambda kind: snes_map(data, kind)
+            panels = (("Slapshot", "21,752 off the stick, the best of the nine aims", "slap"),
+                      ("Wrist shot (and the deke's shot)", "12,349, the best of the nine aims", "wrist"),
+                      ("One-timer", "23,455, the best of the nine aims (the d-pad aims it)", "one-timer"))
+            notes = ["SNES model (tools/xg_snes.py), Shot Accuracy 13; the goalie set and still at his spot for the puck (Weight 48, Agility 8, Speed 8,",
+                     "aidef 7). Speeds: the recorded games' medians. A deke's shot is a wrist shot, but the deke's swing first moves the goalie: from a set",
+                     "goalie this map shows the plain wrist shot, the deke's floor. Squares 10 units (3.3 ft); 240 play-outs each."]
             mouth = 17
         body = []
-        for i, (title, sub, res) in enumerate(panels):
-            body += rink_panel(40 + i * (pw + 70), 60, S, res, title, sub, mouth, f"rink{i}")
+        for i, (title, sub, kind) in enumerate(panels):
+            body += rink_panel(40 + i * (pw + 60), 60, S, run(kind), title, sub, mouth, f"rink{i}")
         body += legend(40, ph + 95)
         for j, n in enumerate(notes):
             body.append(text(40, ph + 160 + j * 16, n, 11, SOFT))

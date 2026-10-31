@@ -159,20 +159,24 @@ recorded goalie.
 
 ## What they give
 
-The models from every spot of the attacking zone, for one standard shot at a goalie who is set and still at his spot
-for the puck (the shot speeds are the recorded games' medians; the best of the nine aims, except the Genesis
-one-timer, which the game aims itself). A goalie who is moving, out of position or in a save move gives very different
-numbers: these are the floor that a set goalie allows.
+The models from every spot of the attacking zone, for each kind of shot at a goalie who is set and still at his spot
+for the puck: slapshots, wrist shots and one-timers (the shot speeds are the recorded games' medians; the best of the
+nine aims, except the Genesis one-timer, which the game aims itself). A goalie who is moving, out of position or in a
+save move gives very different numbers: these are the floor that a set goalie allows. **A deke's shot is a wrist
+shot**, but the deke's swing first pulls the goalie into a save move, so the wrist-shot map shows only the deke's floor:
+the swing is what makes it score (the deke runs: [SCORING_GENESIS_DEKES](SCORING_GENESIS_DEKES.md)).
 
-![Genesis xG by shot spot: wrist shots score from the slot's middle and the doorstep; one-timers from a wide band out to about 35 feet](img/xg_map_genesis.svg)
+![Genesis xG by shot spot: slapshots score 10-20% from a wide area out to about 45 feet, wrist shots only from the slot's middle and the doorstep, one-timers from a wide band out to about 40 feet](img/xg_map_genesis.svg)
 
-- **Genesis:** against a set goalie a wrist shot needs the middle of the slot or the doorstep; a one-timer scores
-  from a band out to about 35 ft and across to the faceoff dots, because his reach drops to its minimum against it
-  ([GENESIS_GUIDE 7](GENESIS_GUIDE.md#7-one-timers)).
-- **SNES:** a set SNES goalie stops nearly every standing wrist shot; the slapshot finds the game's gaps (the lane
-  past his glove save, [SCORING_SNES](SCORING_SNES.md)) and the doorstep.
+- **Genesis:** a set goalie lets in a slapshot at the best aim 10-20% of the time from a wide area in the middle,
+  out to about 45 ft (the game itself, played: 13% over the middle of the ice, [SCORING_GENESIS](SCORING_GENESIS.md#slapshots-and-the-shooters-ratings)).
+  A wrist shot needs the middle of the slot or the doorstep. A one-timer scores from a band out to about 40 ft and
+  across to the faceoff dots, because his reach drops to its minimum against it ([GENESIS_GUIDE 7](GENESIS_GUIDE.md#7-one-timers)).
+- **SNES:** a set SNES goalie stops nearly every standing wrist shot. Slapshots and one-timers (the d-pad aims them on
+  the SNES) find the game's gaps: the doorstep, the slot's middle about 20 ft out, and a lane from the left point
+  (the lane past his glove save, [SCORING_SNES](SCORING_SNES.md); the game itself: 3.8% for slapshots over the middle).
 
-![SNES xG by shot spot: wrist shots almost never beat a set goalie; slapshots score through a few lanes and at the doorstep](img/xg_map_snes.svg)
+![SNES xG by shot spot: wrist shots almost never beat a set goalie; slapshots and one-timers score at the doorstep, in the slot's middle and through a lane from the left point](img/xg_map_snes.svg)
 
 ## How good they are
 
