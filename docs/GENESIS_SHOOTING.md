@@ -302,7 +302,13 @@ it lets him rethink and skate, where the game holds him in his move. Adding his 
 recorded ones (the 671 recorded shots, one-timers apart: log loss 0.2657 to 0.2630), so recorded shots have it. And a goalie **locked in his save move**
 (or pad stack) at the shot is now held in it for as long as the recording shows the lock (the game's pflags bit 5,
 kept in every match file), his speed taken from where he slides next: on the game's own shots at such a goalie log
-loss 0.42 to 0.30, on the 671 recorded shots 0.2630 to 0.2612 (with the 215 one-timers, 886 in all, about 0.30). Both are in every recorded shot's xG.
+loss 0.42 to 0.30, on the 671 recorded shots 0.2630 to 0.2612 (with the 215 one-timers, 886 in all, about 0.30). Both are in every recorded shot's xG. **A pad stack isn't flagged** (2026-10-31): the stack doesn't set pflags bit 5, so a goalie already stacking at the
+release (the deke's slide, animation $0250 / $02A2) was let rethink and skate out of it. On the game's own deke shots
+(564, `xg_calib.py` category deke) with him stacking at the release (72) the game 61%, the model 36%; held in the stack
+for its remaining frames, 54%; all the dekes 19.7% against 15.8% -> 18.1%, log loss 0.219 -> 0.127. On the recorded
+shots it moves 29 of 684 (148.6 xG for 155 goals, before 144.7; log loss 0.314 -> 0.327, the shots that reached the
+net 0.331 -> 0.334: the difference is a few wide shots). So a stacking goalie is now held in the stack
+(`xg.HOLD_STACK`; NHL94_XG_HOLD_STACK=0 turns it off).
 
 Using the model in your own work (its inputs, units and an example): [XG_MODELS](XG_MODELS.md).
 
