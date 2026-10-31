@@ -198,7 +198,7 @@ the real moment of a deke (where the goalie is, his slide and save move), the mo
 
   ![The models against the recorded games: shots grouped by xG against the share that went in, Genesis and SNES](img/xg_calibration.svg)
 
-  The recorded games in the game folder on 2026-10-31 (684 Genesis shots: 144.7 xG, 155 goals; 595 SNES: 144.9 xG,
+  The recorded games in the game folder on 2026-10-31 (684 Genesis shots: 148.6 xG, 155 goals; 595 SNES: 144.9 xG,
   138 goals). The Genesis model follows the diagonal throughout. The SNES model is right up to about 30% and a little
   high above it: shots it gives 35-55% went in 32% of the time (37 shots), those above 55% 69% (132).
 - **Against the game itself** (2026-10-29, `analysis/scoring_map/xg_calib.py`, the game's real outcome for 33,808
