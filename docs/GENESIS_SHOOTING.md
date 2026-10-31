@@ -436,7 +436,8 @@ scores 82-96% at the best set-ups (the backhand deke too, shot once the puck is 
 0-1%. It baits the computer goalie's pad stack, which ignores the puck's side and slides toward the middle of the ice
 (`goaliesave`). Floaters (up and across, the puck swung back, C held 6-9 frames) 50-65% on the forehand, 41-51% on the
 backhand. The timing is tuned to the skater: a slow one (working Agility / Speed 10) scores 31-53%, a fast one (30)
-reaches the goalie before shooting and carries the puck in or loses it.
+reaches the goalie before shooting and carries the puck in or loses it. These timings were found with the other
+skaters off the ice; with them on it a right-hander needs C about 3 frames later (SCORING_GENESIS_DEKES, the caveat).
 
 **EA Specials** (2026-10-24 to 28, SCORING_GENESIS_EA; `ea_run.py`, a bot playing the rebound): a first wrist shot
 aimed across, at the far side, is bobbled 60-80% of the time (aimed along the ice he holds it), the hardest shots are

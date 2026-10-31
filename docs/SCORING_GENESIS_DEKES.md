@@ -26,6 +26,13 @@ hand was played (attribute bit 3, which the game reads; the first run set only +
 handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds per set-up, 4,320 set-ups a hand.
 "Still" is the control: the same shot at the same moment with no swing.
 
+> **Caveat (2026-10-31, the scripted bot; STUDY_NOTES "A scripted bot"):** these runs kept every other skater off
+> the ice. With them on it (still far from the play), a right-hander's facing turns more slowly in the swing, and the
+> best right-hander set-up (deke2, swing at 60, C 13 frames on) fell from 48 of 48 to 4 of 48 (`bot_deke_check.py`;
+> left-handers 38 against 40). Re-timed with everyone on the ice (24 tries each): right-handers C **16** frames on
+> 23 of 24 (13: 1, 19: 9); left-handers 13 frames 23 of 24 (10: 20, 16: 21). Why the others change the turn isn't
+> known. The timings below are the cleared-ice ones.
+
 - **The swing is the goal.** The same shots without it score 0-1% (deke and floater alike); with it, the best set-ups
   score 60-93%.
 - **Deke (straight in: Neely's 1-0s, his near-post 9-0):** come in about 30 off the middle on the side you will swing

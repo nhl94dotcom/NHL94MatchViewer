@@ -19,7 +19,7 @@ RETAIL = WORK / "nhl94_retail.bin"
 SCORE = (0xC6DA, 0xCA3E)
 SHOTS = (0xC6CE, 0xCA32)
 MAX_FRAMES = 70000
-VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 4)      # bot.py's versions (runs bot1-bot4 ran 1-4)
+VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 6)      # bot.py's versions (runs bot1-bot6 ran 1-6)
 
 
 def play(e, start, seed, frames_out=None):
@@ -51,9 +51,9 @@ def play(e, start, seed, frames_out=None):
             team = 0 if score[0] != last_score[0] else 1
             play_ = "other"
             if team == 0:
-                shot = next((ev for ev in reversed(bot.log) if ev["ev"] == "shot"), None)
+                shot = next((ev for ev in reversed(bot.log) if ev["ev"] in ("shot", "strike")), None)
                 if shot and bot.frame - shot["f"] <= 120:
-                    play_ = shot["kind"]
+                    play_ = "one-timer" if shot["ev"] == "strike" else shot["kind"]
             goals.append(dict(team=team, period=e.w(0xC466), clock=e.w(0xC468), play=play_))
             last_score = score
         if f % 600 == 0:
@@ -63,7 +63,8 @@ def play(e, start, seed, frames_out=None):
     ev = Counter(x["ev"] for x in bot.log)
     lost = Counter(x.get("phase") for x in bot.log if x["ev"] == "lost")
     return dict(seed=seed, frames=f, score=list(last_score), shots=[e.w(SHOTS[0]), e.w(SHOTS[1])], goals=goals,
-                events=dict(ev), lost=dict(lost), shot_kinds=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot")),
+                events=dict(ev), lost=dict(lost), shot_kinds=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot"),
+                                                                  **{"one-timer": sum(x["ev"] == "strike" for x in bot.log)}),
                 deke_starts=[(x["ax"], x["ay"], x["v"], x["hand"]) for x in bot.log if x["ev"] == "deke start"])
 
 

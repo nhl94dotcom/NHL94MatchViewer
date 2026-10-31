@@ -29,9 +29,10 @@ def main():
     print(f"plays started a game: deke {ev['deke start'] / n:.1f} (swung {ev['swing'] / n:.1f}), "
           f"slapshot {ev['slap start'] / n:.1f}, close-in wrist shot {ev['wrist start'] / n:.1f}")
     print(f"  passes for a one-timer {ev['pass start'] / n:.1f} a game (kept by the receiver {ev['pass kept'] / n:.1f})")
-    for k in ("deke", "one-timer", "wrist", "slap"):
+    for k in ("deke", "one-timer", "pass", "wrist", "slap"):
         print(f"  {k:9} shots {shots[k]:4}  goals {goals[k]:3}  ({100 * goals[k] / max(1, shots[k]):.0f}% a shot)")
-    print(f"  other goals {goals['other']}")
+    print(f"  other goals {goals['other']}  (one-timer: swings that struck the puck, from bot5; pass: the pass for one,"
+          f" goals = the pass going in or a deflection; before bot5 one-timer meant the pass)")
     print("pucks lost, by phase: " + ", ".join(f"{k} {v}" for k, v in lost.most_common()))
 
 

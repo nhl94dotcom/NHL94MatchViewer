@@ -13,6 +13,7 @@ from emu import Emu
 from lowload import gentle
 from paths import WORK
 
+SHOT_KIND = {"one-timer": "pass"}       # from bot5 the one-timer play's shot note is its pass
 START = {"deke": "deke start", "wrist": "wrist start", "slap": "slap start", "one-timer": "pass start"}
 
 
@@ -62,7 +63,7 @@ def main():
                 for x in bot.log[n0:]:
                     if x["ev"] == START[kind]:
                         cur = [x["f"], None, False]
-                    if x["ev"] == "shot" and cur and x.get("kind") == kind:
+                    if x["ev"] == "shot" and cur and x.get("kind") == SHOT_KIND.get(kind, kind):
                         cur[1] = x["f"]
                     if x["ev"] == "lost" and cur and cur[1] is None:
                         cur = None

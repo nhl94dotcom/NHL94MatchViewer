@@ -28,10 +28,15 @@ PUCK = 14
 PUCKC = 0xB7AA
 NET_Y = 264
 DIRS = ["UP", ["UP", "RIGHT"], "RIGHT", ["DOWN", "RIGHT"], "DOWN", ["DOWN", "LEFT"], "LEFT", ["UP", "LEFT"]]
+ARRIVE = 14            # version 5: the one-timer's C this many frames before the pass arrives
 PRESSURE = 24          # units (3 to a foot)
 POKE = 26
 DEKE = {"L": dict(D=60, lag=10), "R": dict(D=60, lag=13)}
+# version 6: re-timed with every skater on the ice (the runs' timings were found with the others taken off, and then a
+# right-hander turns faster): 24 tries each, left-handers 23 (lag 10: 20), right-handers 23 (lag 13: 1)
+DEKE6 = {"L": dict(D=60, lag=13), "R": dict(D=60, lag=16)}
 GATE = (-45, 140)
+SHOOT_ANIMS = (0x07FC, 0x092E)       # the shooting swing (genesis.py "shoot")
 LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the ice
 
 
@@ -51,12 +56,17 @@ def dir_to(dx, dy):
 
 
 class Bot:
-    def __init__(self, team=0, version=4):
+    def __init__(self, team=0, version=6):
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
+        self.struck = -999
+        self.deke = DEKE6 if version >= 6 else DEKE
+        self.swing_had = {}
         self.mate = None                            # 2: the deke only on a clear path, and the one-timer (bot2);
                                                     # 3: every deke, and the one-timer (bot3);
                                                     # 4: 3 with the deke's entry steered to the standing set-up's
-                                                    # path (bot4)
+                                                    # path (bot4); 5: 4 with the one-timer only to a receiver
+                                                    # close in, the pass across (bot5); 6: 5 with the deke
+                                                    # re-timed with everyone on the ice (bot6)
         self.team = team                            # 0 Home (records 0-5), 1 Away (6-11)
         self.mine = range(6) if team == 0 else range(6, 12)
         self.theirs = range(6, 12) if team == 0 else range(6)
@@ -72,7 +82,8 @@ class Bot:
         for k in list(range(12)) + [PUCK]:
             r = rec(k)
             P[k] = dict(x=e.sw(r), y=e.sw(r + 0x14), z=e.sw(r + 0x18), vx=e.sw(r + 0x28) / 4096, vy=e.sw(r + 0x2A) / 4096,
-                        pos=e.b(r + 0x35), flags=e.b(r + 0x62), face=e.b(r + 0x55) & 7, left=e.b(r + 0x76) & 1)
+                        pos=e.b(r + 0x35), flags=e.b(r + 0x62), face=e.b(r + 0x55) & 7, left=e.b(r + 0x76) & 1,
+                        anim=e.w(r + 0x58))
         own = e.w(PUCKC)
         return P, (own if own < 12 else None)
 
@@ -84,6 +95,19 @@ class Bot:
         me = next((k for k in self.mine if P[k]["flags"] & 8), None)
         if me is None:
             return []
+        # a one-timer struck: a teammate in a shooting swing he began without the puck, the puck hit away from him
+        pk = P[PUCK]
+        for k in self.mine:
+            swing = P[k]["anim"] in SHOOT_ANIMS
+            if swing and k not in self.swing_had:
+                self.swing_had[k] = owner == k              # the swing began: with the puck or without
+            elif not swing:
+                self.swing_had.pop(k, None)
+            if swing and not self.swing_had[k] and owner != k and self.frame - self.struck > 30 \
+                    and math.hypot(pk["x"] - P[k]["x"], pk["y"] - P[k]["y"]) < 25 \
+                    and math.hypot(pk["vx"], pk["vy"]) > 1.2:
+                self.struck = self.frame
+                self.log.append(dict(f=self.frame, ev="strike", by=k))
         their_goalie = next((k for k in self.theirs if P[k]["pos"] == 0), self.theirs[-1])
         s = 1 if P[their_goalie]["y"] > 0 else -1           # the net we attack
         if owner == me and P[me]["pos"] == 0:
@@ -95,17 +119,31 @@ class Bot:
             return (["B"] if 20 <= self.t < 23 else []) + pad(d)
         if self.phase == "goalie":
             self.phase, self.t = "free", 0
+        if self.phase == "shot" and getattr(self, "c_left", 0) > 0:
+            self.c_left -= 1                                # the one-timer's C, held 3 frames
+            self.t += 1
+            return ["C"] + pad(dir_to(0, s))
         if owner == me and self.phase == "shot" and self.t < 15:
             self.t += 1                                     # the shot hasn't left the stick yet
             return []
         if owner == me:
             out = self.offence(P, me, s, their_goalie)
-        elif self.phase == "pass" and self.t < 40 and owner is None:
-            self.t += 1                                     # the pass is on its way: C for the one-timer
-            if self.t == 8:
-                self.note("shot", kind="one-timer")
+        elif self.phase == "pass" and self.t < 70 and owner is None:
+            self.t += 1                                     # the pass is on its way
             d = dir_to(0, s)                                # the d-pad toward the net while it travels
-            return (["C"] if self.t < 12 else []) + pad(d)
+            if self.version < 5:                            # C at once (versions 2-4: the swing was over before
+                if self.t == 8:                             # the puck came: no one-timer ever struck)
+                    self.note("shot", kind="pass")
+                return (["C"] if self.t < 12 else []) + pad(d)
+            # C once the puck is about ARRIVE frames from the receiver (control passes to him as it leaves)
+            r = P[me] if me != self.passer else P[self.mate]
+            dx, dy = r["x"] - pk["x"], r["y"] - pk["y"]
+            dist = math.hypot(dx, dy) or 1
+            closing = ((pk["vx"] - r["vx"]) * dx + (pk["vy"] - r["vy"]) * dy) / dist
+            if dist < 24 or closing > 0.3 and dist / closing < ARRIVE:
+                self.note("shot", kind="pass")             # the pass for a one-timer (a "strike" if he swings)
+                self.c_left = 3
+            return pad(d)
         else:
             if self.phase not in ("free", "shot"):
                 self.note("lost", phase=self.phase, carrier=owner)
@@ -148,9 +186,10 @@ class Bot:
             elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90):
                 self.phase, self.t = "slap", 0
                 self.note("slap start", ax=ax, ay=ay)
-            elif self.version >= 2 and ay > 90 and self.open_mate(P, me, s, g) is not None:
+            elif self.version >= 2 and ay > (150 if self.version >= 5 else 90) \
+                    and self.open_mate(P, me, s, g) is not None:
                 self.mate = self.open_mate(P, me, s, g)
-                self.phase, self.t = "pass", 0
+                self.phase, self.t, self.passer = "pass", 0, me
                 self.note("pass start", ax=ax, ay=ay)
             elif GATE[1] - 15 < ay < GATE[1] + 35 and abs(ax - GATE[0]) < 22 and s * m["vy"] > 1.2 \
                     and self.version == 2 and self.blocked(P, me, s, g):
@@ -180,7 +219,7 @@ class Bot:
                 return pad(aview(d))
         if self.phase == "drive":
             dg = math.hypot(m["x"] - gx, m["y"] - gy)
-            if dg <= DEKE[hand]["D"]:
+            if dg <= self.deke[hand]["D"]:
                 self.phase, self.t = "swing", 0
                 self.note("swing", dg=round(dg))
             elif self.version >= 4:                 # the standing set-up's path: 0.5 across at the gate, 0.77 at
@@ -189,7 +228,7 @@ class Bot:
             else:
                 return pad(aview(1))                # up and right at the net
         if self.phase == "swing":
-            lag = DEKE[hand]["lag"]
+            lag = self.deke[hand]["lag"]
             if self.t < lag:
                 return pad(aview(7))                # up and left
             if self.t < lag + 4:
@@ -239,7 +278,15 @@ class Bot:
             if k == me or P[k]["pos"] == 0:
                 continue
             t = P[k]
-            if not (170 < s * t["y"] < 245 and abs(t["x"]) < 60):
+            if self.version >= 5:
+                # the study's good one-timers: the receiver close in (within 95 of the goal mouth's middle, in front
+                # of the line) and the pass across (from the other side, or 50+ across)
+                tax, tay = s * t["x"], s * t["y"]
+                if not (math.hypot(tax, NET_Y - tay) < 95 and tay < NET_Y - 4):
+                    continue
+                if not (tax * s * m["x"] < 0 or abs(tax - s * m["x"]) > 50):
+                    continue
+            elif not (170 < s * t["y"] < 245 and abs(t["x"]) < 60):
                 continue
             if any(math.hypot(P[o]["x"] - t["x"], P[o]["y"] - t["y"]) < 30 for o in self.theirs if o != g):
                 continue

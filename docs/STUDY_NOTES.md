@@ -980,9 +980,17 @@ computer's. 20 games a version, the same seeds:
 | 1: deke, wrist, slapshot | 18-2 | 3.60 - 1.10 | 26.2 - 10.8 | 42 / 258 (16%) | - | 23 / 295 (8%) | 7 / 521 (1%) |
 | 2: + one-timer, deke only on a clear line | 17-3 | 3.00 - 0.90 | 25.4 - 10.9 | 9 / 60 (15%) | 14 / 97 (14%) | 28 / 306 (9%) | 9 / 621 (1%) |
 | 3: + one-timer, every deke | 18-2 | 3.40 - 1.05 | 26.0 - 11.8 | 38 / 260 (15%) | 9 / 84 (11%) | 18 / 308 (6%) | 3 / 398 (1%) |
-| 4: 3 with the deke's entry steered | **20-0** | **4.65** - 1.05 | 21.8 - 11.7 | 50 / 205 (**24%**) | 11 / 153 (7%) | 27 / 301 (9%) | 3 / 185 (2%) |
+| 4: 3 with the deke's entry steered | 20-0 | 4.65 - 1.05 | 21.8 - 11.7 | 50 / 205 (24%) | 11 / 153 (7%) | 27 / 301 (9%) | 3 / 185 (2%) |
+| 5: 4, C pressed as the pass arrives, receiver close in | 20-0 | 4.95 - 0.70 | 21.6 - 10.0 | 53 / 198 (27%) | 7 / 46 (15%) | 31 / 354 (9%) | 5 / 207 (2%) |
+| 6: 5 with the deke re-timed (everyone on the ice) | **20-0** | **5.50** - 0.95 | 22.3 - 10.4 | 76 / 237 (**32%**) | 4 / 36 (11%) | 25 / 300 (8%) | 3 / 217 (1%) |
 
-(Goals per shot: a goal within 120 frames of the play's shot, per shot the bot took.)
+(Goals per shot: a goal within 120 frames of the play's shot, per shot the bot took. **The one-timer column of
+versions 2-4 counts passes, not one-timers** (the user, from the GIF: the "one-timer goal" was a pass that went in).
+From version 5 a one-timer is a teammate's shooting swing (animation $07FC / $092E) begun without the puck that
+strikes it (within 25, moving 1.2+ a frame); in versions 2-4 no pass ever got one: C went in as the pass left, and the
+receiver's swing was over before the puck came (the game times it only from about 0.9 s out, GENESIS_GUIDE 7).
+Version 5 presses C when the puck is 14 frames from him: 46 swings struck in 20 games, from 6.9 passes a game; the
+passes for one that went in themselves or off someone, 3 and 2 goals.)
 
 - **Why the deke scored 16% in play against 82-96% standing: the skater's speed coming in, not the defenders.** At
   the swing, with an opponent within 40 it went in 6 of 29, with open ice 0 of 12 (3 games). `bot_deke_check.py`, the
@@ -992,9 +1000,18 @@ computer's. 20 games a version, the same seeds:
   move needs that path. Version 4 lines up on a lane 55 to the left by the red line, builds the drift to it, starts
   the deke only when entering the gate at 0.2-0.9 across: the deke 24% a shot and the bot's goals up a third. Still
   far below standing: the timing is the standing runs', tuned to one speed, and defenders close in.
-- The same check with the other skaters left free (from the faceoff spots) gave left-handers 14 of 16 and
-  right-handers 0 of 16: not looked into yet.
-- Slapshots score 1-2% in play, as the maps say for a set goalie; the one-timer 7-14%, far below the maps' (the
-  pass and the receiver's spot aren't chosen yet).
-- Next: tune the deke's timing to the entry speed (deke_run's "retime" plan), the EA Special from the faceoff dot,
-  better one-timer passes, then defence; then the RetroArch link (a virtual pad).
+- **The deke runs' timings were found with every other skater off the ice, and that changes the right-hander's
+  turn.** `bot_deke_check.py`, 48 tries a hand at the runs' entry: others taken off (and the shooter after his shot,
+  as the runs did) left-handers 38, right-handers 48; everyone on the ice 40 and **4**. Frame by frame the two are the
+  same until the swing; then with the others away his facing turns to up-left and the puck crosses, with them on the
+  ice he keeps facing up, the puck stays in front and the goalie holds it. Taking only the shooter off after the shot
+  doesn't restore it, so it's the other skaters' presence, not his follow-through (why isn't known: they were far
+  from the play). Re-timed with everyone on (24 tries each, swing at 60): right-handers C 16 frames on 23 of 24 (13: 1,
+  19: 9; swing at 72 or 85 worse), left-handers 13 frames 23 of 24 (10: 20, 16: 21, 19: 13). Version 6 uses these:
+  the deke 32% a shot in games, the bot 5.5 goals a game. Caveat added to SCORING_GENESIS_DEKES, GENESIS_SHOOTING
+  and the guide.
+- Slapshots score 1-2% in play, as the maps say for a set goalie; real one-timers 11-15%, below the maps' (the bot
+  waits for a teammate to be open close in, and passes from wherever it is).
+- Still 32% for the deke against 96% re-timed in the check: pucks lost on the way in (drive 72, swing 40 in 20 games)
+  and entries off the path. Next: the EA Special from the faceoff dot, one-timer set-ups (carry low on one side, pass
+  across), then defence; then the RetroArch link (a virtual pad).
