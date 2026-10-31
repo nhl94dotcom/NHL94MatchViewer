@@ -213,6 +213,9 @@ the real moment of a deke (where the goalie is, his slide and save move), the mo
   15%). A little high when he is set (the game 7%, the model 10%).
 - SNES: too low on close follow-ups in the 10 frames after the puck comes off the goalie (the game ignores him for
   those frames); rare in real games.
+- SNES: too low on close dekes: on the user's replayed SNES dekes the game scored 30%, the model 20% (cuts 36%
+  against 32%); the model's goalie moves toward the puck's side after the release where the game's barely moves
+  (SNES_SHOOTING 4.7). Not yet fixed.
 - Neither has skaters in the way (screens, deflections); blocked shots are left out of totals. A shot that bounces
   off a skater in front and in is still a goal at the shot's own xG (one Genesis one-timer at 0.00 was going over the
   bar until it hit a defender in the crease).
