@@ -215,3 +215,9 @@ a setting, a result that changes the plan).
   defence bank, zone 140 with hold 28 / 40 / 55 / 75: 68 / 55 / 62 / 62; hold 55 with zone 100 / 180: 63 / 67. Paired
   against 21 the best, hold 40, is -1.3 points +-1.2: nothing kept. With the defence's numbers tuned and the slot not
   helping, the one skater the bot controls has little say over goals against: the other four are the computer's.
+- **Offence against the bot's defence** (`bot_scenario.py` NHL94_SCEN_DEFENDER=21: the 472 entries, the defence
+  played by version 21 on pad 2 instead of the computer, which let in 21%): version 16 76 goals (16.1%); the wrist shot
+  from 190 up the ice 80 (+0.8 +-1.7), from 150 67 (-1.9 +-1.8); version 11 68 (-1.7 +-1.7); **version 18, straight up
+  the middle, 68 (-1.7 +-0.7)**. Version 18 led against the computer's defence (+1.7) but lost in whole games (-0.85 a
+  game), and it loses here too: **this bank, the bot defending, is the better guide to whole games**; use it for offence
+  from now on. Version 16 stays the default.
