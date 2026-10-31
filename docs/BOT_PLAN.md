@@ -114,3 +114,13 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   middle; recorded 37% when he dropped), worse.** In close (200+ up the ice) and more than 20 off the middle, C held 12
   frames (or 8) and released at the carrier's own side: from the 472 entries 69 goals (8 frames: 75) against version
   16's 80 (17 against 16: -2.3 points +-1.1). Version 16's quick wrist shot beats it; 16 stays the default.
+- **Where version 16 still fails (the 472 entries).** Most entries end after a shot: an opponent took the rebound
+  (172) or the goalie held it (92); 581 wrist shots, 41 dekes. The wrist shot's aim (`bot.WRIST_AIM`, env
+  NHL94_WRIST_AIM): the far side at middle height (16's) 80 goals; high 46, low 37, nothing held 39, the goalie's
+  side 30. By where the carrier entered, the bot against people from the same entries: the left 42 of 192 (people
+  29), the right 31 of 196 (29), **the middle 7 of 84 (15)**: from the middle 16 swung out to the deke's lane across
+  the defenders.
+- **Version 18: straight up the middle.** A carry that begins in the middle of the zone (within 25 of it, 60-170 up
+  the ice) goes straight up to the wrist shot. The middle entries 15 of 84 (people 15); all 472: 88 goals (18.6%)
+  against 16's 80 (+1.7 points +-0.8). The zone check (122): 16 against 16's 17 (it seldom applies there). Whole games
+  next before it becomes the default.

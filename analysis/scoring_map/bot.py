@@ -29,7 +29,8 @@ the receiver); 15 is 14 passing only to a receiver within 40 of the
 middle with the goalie drawn 4+ toward the passer's side; 16 (the default) is 15 without the slapshot under pressure and
 with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
 less the narrower it was); 17 is 16 with, in close and off the middle, the slapshot wind-up that
-drops the goalie, released at his own side (CLOSE17).
+drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a carry that begins in the middle of the zone
+going straight up the ice to the wrist shot.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -61,6 +62,8 @@ LANE = (40, -55)        # version 4: on the lane (55 to the left) by 40 up the i
 # shot aimed across (Right for him), the follow-up at the near post
 EA = {1: dict(R=(-84, 196), u=(0.7071, 0.7071)), -1: dict(R=(-88, 212), u=(0.8608, 0.5087))}
 EA_SPEED = 1.7
+WRIST_AIM = __import__("os").environ.get("NHL94_WRIST_AIM") or "mid"   # the wrist shot's aim: mid (the far side, middle height:
+# best), low, high, near (the goalie's side), none (nothing held)
 # version 17: the close-in wind-up (in close past ay up the ice, more than side off the middle, C held hold frames);
 # env NHL94_CLOSE17="ay,side,hold"
 CLOSE17 = dict(ay=200, side=20, hold=12)
@@ -235,6 +238,7 @@ class Bot:
         if self.phase in ("free", "shot"):
             self.phase, self.t = "carry", 0
             self.last, self.stuck = (m["x"], m["y"]), 0
+            self.straight = self.version >= 18 and 60 < ay < 170 and abs(ax) < 25
             self.note("carry", ay=ay)
         self.t += 1
         # pressure: the nearest opponent skater ahead of him (toward the net)
@@ -263,7 +267,7 @@ class Bot:
                 # version 16: in close but off to the side (the bot's wrist shots from there: 7%): cut in toward the
                 # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
                 return pad(aview(dir_to(-ax, max(0, 215 - ay) + 5)))
-            if self.version >= 17 and CLOSE17["ay"] < ay < NET_Y - 10 and abs(ax) > CLOSE17["side"]:
+            if self.version == 17 and CLOSE17["ay"] < ay < NET_Y - 10 and abs(ax) > CLOSE17["side"]:
                 # version 17: in close and off the middle, the slapshot wind-up that drops the computer goalie into
                 # a pad stack sliding to the middle (GENESIS_GUIDE 6: 37% when he dropped), released at his own side
                 self.phase, self.t = "close", 0
@@ -304,6 +308,11 @@ class Bot:
                                                     # it first (9 skated into its back and lost the puck there)
                 elif self.version >= 4 and ay < LANE[0]:
                     tx, ty = LANE[1], ay + 80       # far away: onto the lane, wide of the gate
+                elif getattr(self, "straight", False) and ay < WRIST16["ay"] + 5:
+                    # version 18: a carry that began in the middle of the zone goes straight up the ice to the
+                    # wrist shot (16 swung him out to the deke's lane, across the defenders: 7 goals from 84 middle
+                    # entries, people 15)
+                    return pad(aview(0))
                 elif self.version >= 4:
                     # up the lane to the gate, building the drift toward the middle (0.5 a frame at the gate)
                     k = min(1.0, max(0.0, (ay - LANE[0]) / (GATE[1] - 15 - LANE[0])))
@@ -353,10 +362,19 @@ class Bot:
             return (["B"] if self.t < 3 else []) + pad(d)
         if self.phase == "wrist":
             side = 2 if mx * s * P[g]["x"] < 0 else 6   # the half of the net away from the goalie (attacker's view)
+            aim = aview(side)                       # screen: the aim's height is screen Up (high) / Down (low)
+            if WRIST_AIM == "low":
+                aim = 3 if aim == 2 else 5
+            elif WRIST_AIM == "high":
+                aim = 1 if aim == 2 else 7
+            elif WRIST_AIM == "near":
+                aim = 6 if aim == 2 else 2
+            if WRIST_AIM == "none":
+                return ["C"] if self.t < 4 else self.note("shot", kind="wrist") or []
             if self.t < 4:
-                return ["C"] + pad(aview(side))
+                return ["C"] + pad(aim)
             self.note("shot", kind="wrist")
-            return pad(aview(side))
+            return pad(aim)
         if self.phase == "close":
             near_side = aview(2 if ax > 0 else 6)   # his own side of the net
             if self.t < CLOSE17["hold"]:
