@@ -139,3 +139,39 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   change. **Version 21 (20 with the CB check: B tapped 4 frames into each burst, so the computer's checking formula
   decides the hit, not the person's weight bug, GENESIS_GUIDE 9.2): 47; only 16 let in 13, only 21 let in 5 (-1.7
   points +-0.9).** With penalties on the CB check doubles the penalty risk (the bot's games have penalties off).
+
+## The long test plan (2026-10-31; approved: about 4 hours, blocks 1-2)
+
+So the user doesn't have to approve each test version: a queue of experiments with fixed rules for keeping a change,
+run in gentle mode within an agreed total budget, reported block by block; it stops early only for a decision only
+the user can make.
+
+**League settings first** (the user, 2026-10-31: the Genesis leagues play Penalties "On, Except Off-sides", Line
+Changes Off, Goalies Manual Control). `bot_states.py` now builds bot_start.state with them (OptPen $D056 = 2, OptLine
+$D058 = 1, OptGoalie $D050 = 0, checked), 5-minute periods; every bank and game from here uses them (the earlier
+results above were with penalties off). Baselines again under them (versions 16 and 21). `bot_run.py`
+NHL94_BOT_VS="A,B" plays the bot against itself in whole games (B on pad 2, the sides swapped every other game, each
+seed twice) and counts each side's penalties, penalty minutes and power plays.
+
+**How a change is judged** (no approval needed per version):
+- The banks: offence (the 472 zone entries against the computer's defence, plus the 122 zone possessions), defence
+  (the 472 entries turned round, the bot attacking on pad 2), one-timers (people's 117 passes).
+- A change is **kept** if it beats the current best on its bank by 2 standard errors or more (paired, situation by
+  situation) and costs no other bank more than 1; then it must hold in **whole games, the bot against itself** (20
+  games new against current, 10 with each side at home): kept if the goal difference is in its favour.
+- Penalties counted in every run (minutes per game), since a move that draws calls costs power plays.
+- Every experiment written into this file's "Status" with its numbers, committed and pushed.
+
+**The queue** (in order; each block about 1-3 hours of gentle-mode running):
+1. Baselines under league settings: versions 16 and 21 on every bank; 21 against 16 in whole games.
+2. Defence: the poke's distance and timing, the burst's distance and how often, the goal-side spot (how far in front
+   of the carrier), when to switch (B) to a nearer teammate, one defender holding the slot; penalties drawn by each.
+3. Offence under the bot's defence (not just the computer's): the wrist-shot zone and the deke's gate re-tuned
+   against it; the one-timer pass; what to do with a defender on the carrier.
+4. Special teams: power play and penalty kill (5 on 4) as their own banks from the recorded games' penalties.
+5. Whole-game checks of the best version every block, and a final 40-game bot-against-itself match, newest against
+   version 16.
+
+**Reports:** a short summary after each block (what was kept, by how much); the bot never stops waiting for a go-ahead
+inside the budget. **Stops** when the budget is used, the queue is done, or something needs the user (a league rule,
+a setting, a result that changes the plan).
