@@ -247,6 +247,11 @@ a setting, a result that changes the plan).
   - Against the computer, 20 games each on the same seeds: 26 won all 20, 190-18 (penalties 69, the bot's own 45); 32
     won all 20, 172-20 (penalties 55, the bot's own 39); 32 minus 26 -1.00 a game +-0.73, not a real difference in
     games both win by nine. **Version 32 is the default** (2026-11-01): better against an opponent of its own level.
+  - Against 32 (30 games each, sides swapped), nothing kept: **33**, no poke closer than 16 (where the body touches
+    and trips): 18-12, +0.33 a game +-0.62, but **more** penalties (115 against 84; its skater's tripping calls 53
+    against 31): holding off close in doesn't stop the contact, and the later poke trips anyway. **34**, clearing the
+    puck up the ice when shorthanded in its own half with an opponent within 40 (about 280 clears): 12-18, -0.10
+    +-0.50; power plays against it scored 41 of 70 (59%), against 32 41 of 74 (55%): no better on the kill.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.
