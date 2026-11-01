@@ -78,6 +78,14 @@ WRIST_AIM = __import__("os").environ.get("NHL94_WRIST_AIM") or "mid"   # the wri
 # goal-side spot gap in front of the carrier toward our net, switch (B) when a teammate is `switch` nearer; env
 # NHL94_DEF="poke,burst,every,gap,switch" (the long test plan's block 2)
 DEF22 = dict(poke=26, burst=45, every=30, gap=14, switch=50)
+# version 33 (2026-11-01, penalties: tripping is the bot's most-called foul after roughing; a poke trips the carrier
+# whenever the poker's body touches him while facing him): 32 with no poke closer than `lo` (B only between lo and the
+# poke range, so the stick reaches without the body); env NHL94_POKE33="lo"
+POKE33 = float(__import__("os").environ.get("NHL94_POKE33") or 16)
+# version 34 (2026-11-01, special teams: power plays score 61%): 32 that clears the puck when shorthanded, in our own
+# half with an opponent within `press` (999: always), a shot up the ice with C held `hold` frames; env NHL94_PK34=
+# "press,hold"
+PK34 = dict(zip(("press", "hold"), map(float, (__import__("os").environ.get("NHL94_PK34") or "40,3").split(","))))
 if __import__("os").environ.get("NHL94_DEF"):
     DEF22 = dict(zip(("poke", "burst", "every", "gap", "switch"),
                      map(float, __import__("os").environ["NHL94_DEF"].split(","))))
@@ -261,6 +269,11 @@ class Bot:
             out = self.defence(P, me, owner, s)
         return out
 
+    def shorthanded(self, P):
+        """Fewer of our skaters on the ice than theirs (a player serving a penalty is off: position $FF)."""
+        n = lambda ks: sum(1 for k in ks if P[k]["pos"] not in (0, 0xFF))
+        return n(self.mine) < n(self.theirs)
+
     def note(self, what, **kw):
         self.log.append(dict(f=self.frame, ev=what, **kw))
         if what in ("lost", "shot"):
@@ -314,6 +327,10 @@ class Bot:
                 # version 16: in close but off to the side (the bot's wrist shots from there: 7%): cut in toward the
                 # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
                 return pad(aview(dir_to(-ax, max(0, 215 - ay) + 5)))
+            if self.version == 34 and ay < 0 and near[0] < PK34["press"] and self.shorthanded(P):
+                self.phase, self.t = "clear", 0     # version 34: shorthanded in our half: clear it up the ice
+                self.note("clear start", ax=ax, ay=ay)
+                return ["C"] + pad(aview(0))
             low_mate = self.low_mate(P, me, s, g, ax, ay) if self.version == 29 else None
             relief = self.relief_mate(P, me, s, g) if self.version == 30 and near[0] < RELIEF30["press"] and ahead                 and ay > RELIEF30["from"] else None
             self.relief = False
@@ -447,6 +464,11 @@ class Bot:
                 return ["C"] + pad(near_side)
             self.note("shot", kind="close")
             return pad(near_side)
+        if self.phase == "clear":
+            if self.t < PK34["hold"]:
+                return ["C"] + pad(aview(0))
+            self.note("shot", kind="clear")
+            return pad(aview(0))
         if self.phase == "slap":
             if self.t < 20:
                 return ["C"] + pad(aview(4))        # wind up, Down held
@@ -649,12 +671,12 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
-            if self.version in (31, 32):
+            if self.version in (31, 32, 33, 34):
                 # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
                 # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
                 # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
                 # charging, cross-checking)
-                dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)
+                dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)   # 33, 34: as 32
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
             if self.version == 23 and out_c < SLOT23["zone"] and L > SLOT23["hold"] + 15:
@@ -665,14 +687,16 @@ class Bot:
             dist_to_puck = {k: math.hypot(P[k]["x"] - c["x"], P[k]["y"] - c["y"]) for k in self.mine if P[k]["pos"] != 0}
             dc = dist_to_puck.get(me, 999)
             closing = (c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"]) > 0
-            if dc < dp["poke"]:
+            if self.version == 33 and dc < POKE33:
+                pass                                # version 33: too close, the body would touch: no poke
+            elif dc < dp["poke"]:
                 self.b_down = not self.b_down
                 if self.b_down:
                     out.append("B")
             elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and self.version != 32 and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version not in (32, 33, 34) and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
