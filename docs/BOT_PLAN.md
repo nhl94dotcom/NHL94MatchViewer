@@ -233,6 +233,17 @@ a setting, a result that changes the plan).
   stays the default (no worse, better against the computer in the entry bank). Special teams (the 80 games with
   power-play goals recorded): 7.5 penalties a game (14.9 PIM), 5.4 power plays, 241 power-play goals of 433 (56%), 23%
   of all goals (13.3 a game); 26 drew 283 power plays, 16 drew 259. Home won by 0.49 a game.
+- **Penalties** (2026-11-01; bot_run.py now logs each call: the rule, whether the skater was the bot's at the foul,
+  the pad). 24 games of 26 against itself, 184 calls: **the bot's own skater took 148 (80%)** (roughing 64, tripping
+  44, slashing 14, cross-checking 12, charging 8), the computer-run teammates 36. With the bot's pad: B alone 78, C
+  alone 30, both 26. Power plays scored 76 of 124 (61%): a bot penalty costs about 0.6 goals, nearly 2 a game.
+  ("The bot's skater": the one it controlled at any moment in the second before the foul; control switches, so a few
+  may be a teammate's.) Two versions in whole games against 26 (30 each, sides swapped):
+  - 31, no poke: **7-23, -2.13 a game +-0.65**: fewer penalties (90 against 114), but 866 shots against 589. The
+    poke is worth far more than its trips.
+  - **32, no body-check burst** (no C into the carrier, so no CB check): **20-10, +1.73 a game +-0.59**; penalties 94
+    against 125, power-play goals 53-34, and more at even strength too (169-136), shots 774-619. Checking costs the
+    bot more (penalties, and himself out of the play) than it wins.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.
