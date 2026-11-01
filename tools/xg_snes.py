@@ -47,6 +47,9 @@ SAVE_CHOICE = __import__("os").environ.get("NHL94_XG_SNES_SAVECHOICE") == "1"
 # (and pucknorm's crossing countdown not yet taken for the step). The model gave him the puck after its move: his save
 # move started with 18.3 frames left to the goal line, the game's 15.4 (one-timers from 120-200 out). Off by default
 STALE_PUCK = __import__("os").environ.get("NHL94_XG_SNES_STALE") == "1"
+# The step a save starts still pushes him toward the crossing (assgoalie .42 runs on into .43; 2026-11-01,
+# snes_glide_trace.py): only with GLIDE_IN_SAVE; SAVE_PUSH False is the gliding goalie before the find
+SAVE_PUSH = True
 STEP = 2   # frames a game step: the SNES game loop mostly runs every other frame
 AIM = [(0, 12), (15, 12), (15, 6), (15, 0), (0, 0), (-15, 0), (-15, 6), (-15, 12), (0, 6)]  # shotsets (screen x, z)
 SAVES = [0xE1E2, 0xE214, 0xE2AA, 0xE2FC, 0xE246, 0xE278, 0xE862, 0xE7D0, 0xE73E]       # GoalieSaveList
@@ -239,7 +242,8 @@ class Goalie:
                     self.frame = fr
                     break
                 t += dur
-        if self.save is not None and GLIDE_IN_SAVE:
+        locked = self.save is not None
+        if locked and GLIDE_IN_SAVE:
             # in a save move his animation is locked (pfalock), and updateplayers runs no assignment for a locked
             # player: no rethink, no push, he only glides (2026-10-31; the model kept him skating through it and he
             # slid into the path of close dekes the game's goalie never reached). Off by default: see GLIDE_IN_SAVE
@@ -249,8 +253,11 @@ class Goalie:
             if self.timer < 0:
                 self.timer = max(0, self.timer + (self.aidef >> 1))
                 self.think(px, py, pvx, pvy, pz, pvz, rng)
-        if self.save is not None and GLIDE_IN_SAVE:
-            pass
+        if (locked if SAVE_PUSH else self.save is not None) and GLIDE_IN_SAVE:
+            pass                                      # the step a save starts still pushes: assgoalie runs on from
+                                                      # .42 (start the save) into .43 (move to the target, the
+                                                      # crossing): halved, then pushed toward it (2026-11-01,
+                                                      # snes_glide_trace.py)
         elif self.dir == 8 and not GLIDE_IN_SAVE:
             self.vx, self.vy = int(self.vx / 2), int(self.vy / 2)   # the model's StopNA before 2026-10-31: halved
         elif self.dir == 8:

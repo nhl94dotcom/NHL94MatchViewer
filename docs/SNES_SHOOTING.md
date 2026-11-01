@@ -255,6 +255,21 @@ line against the game's 15.4. Behind `xg_snes.STALE_PUCK` (off): 120-200 out 20.
 11.3, game 3.2); 60-120 out (285) 35.1 -> 33.5 (27.2 -> 25.7, game 26.8; the old movement 19.8, 20.0 with the lag).
 So the lag is real but small, and the switch stays off. What is left is how the model's goalie moves between the
 pass and the save when the check builds him from the swing rather than steps him along the game's own puck.
+**Found: the push on the step a save starts** (2026-11-01, `snes_glide_trace.py`: each one-timer followed frame by
+frame in the game and in the model's own play-out from the same start, lined up by the puck). The game's goalie at a
+save's start halves his speed (assgoalie .t3x) and then, the same step, still pushes toward the crossing: the code
+runs on from starting the save (.42) into moving to the target (.43); only the next steps are locked. The gliding
+model halved and then only glided, so he kept his old momentum, at times away from the puck. With the push
+(`xg_snes.SAVE_PUSH`, part of the gliding goalie): one-timers from 120-200 out 20.5 -> 12.8 goals (the game 3.2; with
+the game's own goalie speed and no blur 7.4, and 4.6 with the puck a step late), 60-120 out 35.1 -> 28.0 (the game
+26.8). The game's own shots (`snes_glide_rescore.py`, the stored xg_calib shots, exact state): the user's dekes and
+cuts 33.3% in the game, the old movement 27.3% (log loss 0.470), gliding 34.4% (0.408), gliding with the push 31.4%
+(0.396); standing shots 0.2% / 0.2% / 0.6% / 0.3%; follow-ups unchanged (the no-touch timer). The recorded SNES shots
+(`snes_goalie_state.py`, 595, 138 goals): the old movement 144.9 (log loss 0.398), gliding with the push 160.9 (0.405;
+before the push 175); at a computer goalie 97.0 / 110.4 for 86. So the push is right and closes most of the gap in the
+game's own play, but on the recordings the gliding goalie is still 11% higher than the old movement and fits a little
+worse. The switch stays off; what is left is the long one-timers' goalie speed as the check estimates it, and the
+recordings' release moment and takeovers (above).
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
