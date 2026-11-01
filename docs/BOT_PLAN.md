@@ -227,7 +227,7 @@ a setting, a result that changes the plan).
   (the gate 26 wide instead of 16, 0-1.1 across instead of 0.2-0.9, 1.2 up the ice instead of 1.5): 88 (+2.5 +-0.9),
   75 dekes against 49.** 26 on the other banks: entries against the computer 117 against 101 (+3.4 +-1.2), zone
   possessions 19 against 20 (-0.8 +-1.4). Whole games, the bot against itself, 20 (each seed twice, sides swapped):
-  26 won 11-9, 6.7 goals a game against 6.4 (+0.3 +-1.0), penalties 3.55 against 4.0. **Version 26 is the default.** Extended to 100 games (2026-11-01, overnight): **50-50**, 663
+  26 won 11-9, 6.7 goals a game against 6.4 (+0.3 +-1.0), penalties 3.55 against 4.0. Version 26 became the default (later 32, below). Extended to 100 games (2026-11-01, overnight): **50-50**, 663
   goals against 666 (-0.03 a game +-0.41), shots 2,400 against 2,444. In whole games 26 is no better than 16: its
   gains in the situation banks (entries) don't show over a game, where the computer-run teammates decide most of it. It
   stays the default (no worse, better against the computer in the entry bank). Special teams (the 80 games with
@@ -244,6 +244,9 @@ a setting, a result that changes the plan).
   - **32, no body-check burst** (no C into the carrier, so no CB check): **20-10, +1.73 a game +-0.59**; penalties 94
     against 125, power-play goals 53-34, and more at even strength too (169-136), shots 774-619. Checking costs the
     bot more (penalties, and himself out of the play) than it wins.
+  - Against the computer, 20 games each on the same seeds: 26 won all 20, 190-18 (penalties 69, the bot's own 45); 32
+    won all 20, 172-20 (penalties 55, the bot's own 39); 32 minus 26 -1.00 a game +-0.73, not a real difference in
+    games both win by nine. **Version 32 is the default** (2026-11-01): better against an opponent of its own level.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.
