@@ -23,7 +23,7 @@ MAX_FRAMES = 70000
 VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 26)     # bot.py's versions (the default, 2026-10-31)
 
 
-STATS = (0xC6CE, 0xCA32)                       # team stat blocks: +$04 power plays, +$06 penalties, +$08 PIM
+STATS = (0xC6CE, 0xCA32)                       # team stat blocks: +$02 PP goals, +$04 power plays, +$06 penalties, +$08 PIM
 C2PLAYER, CONT2TEAM = 0xC322, 0xC32A             # pad 2's skater (c2playernum) and team (cont2team, 2 = Away)
 
 
@@ -78,7 +78,7 @@ def play(e, start, seed, frames_out=None, home=None, away=None):
     return dict(seed=seed, frames=f, score=list(last_score), shots=[e.w(SHOTS[0]), e.w(SHOTS[1])], goals=goals,
                 home=home or VERSION, away=away or "cpu",
                 penalties=[e.w(b + 6) for b in STATS], pim=[e.w(b + 8) for b in STATS],
-                power_plays=[e.w(b + 4) for b in STATS],
+                power_plays=[e.w(b + 4) for b in STATS], pp_goals=[e.w(b + 2) for b in STATS],
                 events=dict(ev), lost=dict(lost), shot_kinds=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot"),
                                                                   **{"one-timer": sum(x["ev"] == "strike" for x in bot.log)}),
                 deke_starts=[(x["ax"], x["ay"], x["v"], x["hand"]) for x in bot.log if x["ev"] == "deke start"],

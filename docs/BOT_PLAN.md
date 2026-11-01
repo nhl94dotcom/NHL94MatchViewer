@@ -231,3 +231,14 @@ a setting, a result that changes the plan).
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.
+- **More offence against the bot's defence, nothing kept** (all against 26's 88 of 472): 29, people's one-timer
+  set-up checked before the wrist shot (low on one side, within 90 of the goal line and 28+ off the middle, a pass
+  across to a teammate 25-110 out with no defender within 20 and a clear lane): 88 (+0.0 +-0.4), the same with the
+  carrier within 120 and 20 off the middle: 90 (+0.4 +-0.8). Such a pass came up only 30-48 times in 472 entries: the
+  receivers are the computer's teammates, seldom open across at the right moment, so the one-timer is limited by
+  where they skate, which the bot doesn't control. The deke's timing 3 frames earlier / later: 79 / 85 (-1.9 +-1.0 /
+  -0.6 +-1.0): 26's timing stands.
+- **Special teams:** bot-against-bot games have about 5.5 power plays a game (109 in 20); bot_run.py now records
+  power-play goals too ($02 in the team stat block). About 20 power-play goals in 20 games is too few to tune on;
+  placing 5-on-4 situations would need the game's penalty state faked, not yet done.
+- Testing stays on the retail ROMs (the user, 2026-10-31; for the SNES NHL94_Classic is also fine).

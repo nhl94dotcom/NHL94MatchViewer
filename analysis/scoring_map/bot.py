@@ -35,7 +35,8 @@ after a faceoff drop; 21 is 20 with the CB check; 22 is 21 with the defence's
 numbers from DEF22 (env NHL94_DEF); 23 is 22 covering the
 slot in our end (SLOT23); 24-26 are 22 (16's offence) with
 one offence change each: 24 the right-hander's deke on the right (12's), 25 no one-timer passes, 26 (the default) a looser
-deke entry; 27 is 26 looser still, 28 is 26 with 24's right-side deke.
+deke entry; 27 is 26 looser still, 28 is 26 with 24's right-side deke; 29 is 26 with people's
+one-timer set-up (low on one side, across: LOW29), checked before the wrist shot.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -55,6 +56,9 @@ DEKE = {"L": dict(D=60, lag=10), "R": dict(D=60, lag=13)}
 # version 6: re-timed with every skater on the ice (the runs' timings were found with the others taken off, and then a
 # right-hander turns faster): 24 tries each, left-handers 23 (lag 10: 20), right-handers 23 (lag 13: 1)
 DEKE6 = {"L": dict(D=60, lag=13), "R": dict(D=60, lag=16)}
+if __import__("os").environ.get("NHL94_DEKE_SHIFT"):           # test: "dD,dlag" added to DEKE6 (both hands)
+    _dd, _dl = map(int, __import__("os").environ["NHL94_DEKE_SHIFT"].split(","))
+    DEKE6 = {h: dict(D=v["D"] + _dd, lag=v["lag"] + _dl) for h, v in DEKE6.items()}
 # version 12: the right-hander's deke on the right side, mirrored (swing up and right, C with Right): the deke runs'
 # swing at 85, C 13 frames on; with everyone on the ice 12 of 12 (bot_deke_check.py, NHL94_DEKE_SIDE=right)
 DEKE12R = {"R": dict(D=85, lag=13), "L": dict(D=85, lag=13)}
@@ -83,6 +87,11 @@ if __import__("os").environ.get("NHL94_SLOT"):
     SLOT23 = dict(zip(("zone", "hold"), map(float, __import__("os").environ["NHL94_SLOT"].split(","))))
 # version 26's looser deke entry (half-width of the gate, across speed from / to, up-ice speed above); 27 looser still
 LOOSE = {False: (26, 0.0, 1.1, 1.2), True: (36, -0.2, 1.3, 1.0)}
+# version 29: the low one-timer set-up (the carrier within out of the goal line and side off the middle; the
+# receiver rmin-rmax out); env NHL94_LOW29="out,side,rmin,rmax"
+LOW29 = dict(out=90, side=28, rmin=25, rmax=110)
+if __import__("os").environ.get("NHL94_LOW29"):
+    LOW29 = dict(zip(("out", "side", "rmin", "rmax"), map(float, __import__("os").environ["NHL94_LOW29"].split(","))))
 # version 17: the close-in wind-up (in close past ay up the ice, more than side off the middle, C held hold frames);
 # env NHL94_CLOSE17="ay,side,hold"
 CLOSE17 = dict(ay=200, side=20, hold=12)
@@ -296,7 +305,14 @@ class Bot:
                 # version 16: in close but off to the side (the bot's wrist shots from there: 7%): cut in toward the
                 # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
                 return pad(aview(dir_to(-ax, max(0, 215 - ay) + 5)))
-            if self.version == 17 and CLOSE17["ay"] < ay < NET_Y - 10 and abs(ax) > CLOSE17["side"]:
+            low_mate = self.low_mate(P, me, s, g, ax, ay) if self.version >= 29 else None
+            if low_mate is not None:
+                # version 29: people's one-timer set-up, checked before the wrist shot (which otherwise always came
+                # first in close, so 16's passes only left from farther out): low on one side, a quick pass across
+                self.mate = low_mate
+                self.phase, self.t, self.passer = "pass", 0, me
+                self.note("pass start", ax=ax, ay=ay, low=True)
+            elif self.version == 17 and CLOSE17["ay"] < ay < NET_Y - 10 and abs(ax) > CLOSE17["side"]:
                 # version 17: in close and off the middle, the slapshot wind-up that drops the computer goalie into
                 # a pad stack sliding to the middle (GENESIS_GUIDE 6: 37% when he dropped), released at his own side
                 self.phase, self.t = "close", 0
@@ -495,6 +511,33 @@ class Bot:
             if 0 < along < L and abs(ox * (ny - m["y"]) - oy * (nx - m["x"])) / L < width:
                 return True
         return False
+
+    def low_mate(self, P, me, s, g, ax, ay):
+        """Version 29: the carrier low (within LOW29["out"] of the goal line) and off the middle (LOW29["side"]+): a
+        teammate across the middle (or near it), LOW29 "rmin"-"rmax" out, no opponent within 20 of him, none within 15
+        of the passing lane, the pass under 130 long; else None."""
+        out = NET_Y - ay
+        if not (out < LOW29["out"] and abs(ax) > LOW29["side"]):
+            return None
+        m = P[me]
+        for k in self.mine:
+            if k == me or P[k]["pos"] == 0:
+                continue
+            t = P[k]
+            tax, tay = s * t["x"], s * t["y"]
+            if not (LOW29["rmin"] < NET_Y - tay < LOW29["rmax"] and (tax * ax < 0 or abs(tax) < 12) and abs(tax) < 60):
+                continue
+            if math.hypot(t["x"] - m["x"], t["y"] - m["y"]) >= 130:
+                continue
+            if any(math.hypot(P[o]["x"] - t["x"], P[o]["y"] - t["y"]) < 20 for o in self.theirs if o != g):
+                continue
+            L = math.hypot(t["x"] - m["x"], t["y"] - m["y"]) or 1
+            if any(0 < ((P[o]["x"] - m["x"]) * (t["x"] - m["x"]) + (P[o]["y"] - m["y"]) * (t["y"] - m["y"])) / L < L
+                   and abs((P[o]["x"] - m["x"]) * (t["y"] - m["y"]) - (P[o]["y"] - m["y"]) * (t["x"] - m["x"])) / L < 15
+                   for o in self.theirs):
+                continue
+            return k
+        return None
 
     def open_mate(self, P, me, s, g):
         """A teammate in the slot (170-245 up the ice, within 60 of the middle) with no opponent within 30 of him
