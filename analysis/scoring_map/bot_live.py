@@ -7,8 +7,8 @@ match. Keys go only to RetroArch: whenever another window has the focus, or the 
 menu, a replay), every key is let go and the bot waits. Ctrl+C stops it and lets every key go.
 
 Setup (once, in RetroArch): Settings > Input > Port 2 Controls, bind the keypad (NumLock on or off, either works):
-Up keypad 8, Down keypad 2, Left keypad 4, Right keypad 6, and the Genesis buttons A keypad 7, B keypad 9, C keypad 3
-(Port 2's rows show the core's names; if yours show the RetroPad's, Genesis Plus GX's default is Y = A, B = B, A = C).
+Up keypad 8, Down keypad 5, Left keypad 4, Right keypad 6, and the Genesis buttons A keypad 7, B keypad 9, C keypad 0
+(clear of keypad 1-3, which the user plays A, B, C with on port 1, the d-pad on a gamepad; Port 2's rows show the core's names; if yours show the RetroPad's, Genesis Plus GX's default is Y = A, B = B, A = C).
 In the game's menus set controller 2 to the bot's team (the team setup screen), the other to yours.
 
 python bot_live.py watch       read only: print what the bot would press, every half second (no keys sent)
@@ -33,7 +33,7 @@ from bot import Bot  # noqa: E402
 FRAME_COUNTER, CONT2TEAM, PAD2 = 0xB03E, 0xC32A, 0xBEF1
 BLOCK = (0xB000, 0x900)                                 # the object records, the puck carrier ($B7AA), the counter
 # the keypad's scan codes (without the extended flag: the keypad, not the arrow keys)
-KEYS = {"UP": 0x48, "DOWN": 0x50, "LEFT": 0x4B, "RIGHT": 0x4D, "A": 0x47, "B": 0x49, "C": 0x51}
+KEYS = {"UP": 0x48, "DOWN": 0x4C, "LEFT": 0x4B, "RIGHT": 0x4D, "A": 0x47, "B": 0x49, "C": 0x52}
 BITS = {"UP": 0x01, "DOWN": 0x02, "LEFT": 0x04, "RIGHT": 0x08, "B": 0x10, "C": 0x20, "A": 0x40}   # $BEF1 (as $BEEF)
 
 user32 = ctypes.WinDLL("user32", use_last_error=True)
