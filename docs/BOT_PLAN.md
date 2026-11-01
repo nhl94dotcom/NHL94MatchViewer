@@ -260,6 +260,14 @@ a setting, a result that changes the plan).
     without the other. Not kept. **36**, the
     penalty kill holding the slot 40 out when the carrier is within 150 of our goal line: 9-21, -1.87 +-0.66, power
     plays against it 50 of 69 (72%): sitting back on the kill is worse than chasing.
+  - From the slot study (2026-11-01, `analysis/slot_defence.py`: 94% of one-timers went to a man open in the slot;
+    an empty slot with nobody home was the commonest danger), against 32, 30 games each, nothing kept: **37**, when a
+    teammate is nearer the carrier (by 10) in our end, cover an attacker standing open in our slot (10 from him
+    toward the carrier) instead of chasing: 15-15, -0.17 a game +-0.63 (goals 189-194, shots 690-706, penalties
+    107-102). **38**, with the carrier past us toward our net (20 nearer it than we are) and a teammate goal-side of
+    him (within 40 of his line to our net), B to switch to him: 16-14, +0.33 +-0.57 (goals 221-211, penalties
+    127-107, power-play goals against 64-48). What helps people (one man covering the open receiver) doesn't move
+    the bot's games: the computer-run teammates already hold the slot, and the bot's chaser is its best defender.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.
