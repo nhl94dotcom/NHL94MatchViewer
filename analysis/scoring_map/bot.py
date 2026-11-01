@@ -130,7 +130,7 @@ def dir_to(dx, dy):
 
 
 class Bot:
-    def __init__(self, team=0, version=26):
+    def __init__(self, team=0, version=32):
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE
