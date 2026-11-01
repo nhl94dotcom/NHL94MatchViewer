@@ -86,6 +86,13 @@ POKE33 = float(__import__("os").environ.get("NHL94_POKE33") or 16)
 # half with an opponent within `press` (999: always), a shot up the ice with C held `hold` frames; env NHL94_PK34=
 # "press,hold"
 PK34 = dict(zip(("press", "hold"), map(float, (__import__("os").environ.get("NHL94_PK34") or "40,3").split(","))))
+# version 35 (2026-11-01): 32 that pokes only when the carrier isn't closing on him faster than `close` a frame (a
+# poke trips whenever the bodies touch, and 33's later poke still tripped); env NHL94_POKE35="close"
+POKE35 = float(__import__("os").environ.get("NHL94_POKE35") or 0.4)
+# version 36 (2026-11-01): 32 on the penalty kill: shorthanded, with the carrier within `zone` of our goal line, he
+# holds the slot `hold` out from our net on the line to the carrier (23's cover, at even strength no gain) instead of
+# chasing; env NHL94_PK36="zone,hold"
+PK36 = dict(zip(("zone", "hold"), map(float, (__import__("os").environ.get("NHL94_PK36") or "150,40").split(","))))
 if __import__("os").environ.get("NHL94_DEF"):
     DEF22 = dict(zip(("poke", "burst", "every", "gap", "switch"),
                      map(float, __import__("os").environ["NHL94_DEF"].split(","))))
@@ -671,7 +678,7 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
-            if self.version in (31, 32, 33, 34):
+            if self.version in (31, 32, 33, 34, 35, 36):
                 # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
                 # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
                 # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
@@ -679,6 +686,8 @@ class Bot:
                 dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)   # 33, 34: as 32
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
+            if self.version == 36 and out_c < PK36["zone"] and L > PK36["hold"] + 15 and self.shorthanded(P):
+                tx, ty = -dx / L * PK36["hold"], own_net_y - dy / L * PK36["hold"]   # version 36: the slot
             if self.version == 23 and out_c < SLOT23["zone"] and L > SLOT23["hold"] + 15:
                 # version 23: in our end, stand in his shooting lane in the slot, `hold` out from our net on the
                 # line to him (the attacking bot scores nearly all with quick mid-height wrist shots, and a
@@ -687,7 +696,10 @@ class Bot:
             dist_to_puck = {k: math.hypot(P[k]["x"] - c["x"], P[k]["y"] - c["y"]) for k in self.mine if P[k]["pos"] != 0}
             dc = dist_to_puck.get(me, 999)
             closing = (c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"]) > 0
-            if self.version == 33 and dc < POKE33:
+            rate = ((c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"])) / max(1, math.hypot(c["x"] - m["x"], c["y"] - m["y"]))
+            if self.version == 35 and dc < dp["poke"] and rate > POKE35:
+                pass                                # version 35: closing on him fast: the bodies would meet
+            elif self.version == 33 and dc < POKE33:
                 pass                                # version 33: too close, the body would touch: no poke
             elif dc < dp["poke"]:
                 self.b_down = not self.b_down
@@ -696,7 +708,7 @@ class Bot:
             elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and self.version not in (32, 33, 34) and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36) and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
