@@ -239,6 +239,23 @@ the gliding goalie itself, not in the recordings. From range the model's save mo
 while he glides (no strike here began in a save move), where the game's goalie still gets there. The switch stays off;
 the old movement stays the model (a little low from 120 out, 43 against 67).
 
+**Looking for the gliding goalie's gap** (2026-11-01, all in `analysis/scoring_map/`, retail ROM, one-timers from the
+overnight check struck again): ruled out one by one. *The save choice*: the model's save move matched the game's on 132
+of 172 one-timers from range, 156 with the game's side rules (assgoalie .33, `xg_snes.SAVE_CHOICE`, off), and the rules
+change the goals little (`snes_save_choice.py`). *The save areas*: on the game's frames the model's test stops 103 of
+the 108 the game saved and 7 of the 37 it didn't (`snes_save_geometry.py`). *The puck's flight and the launch*: the
+model's flight matches the game's, and giving it the game's launch (`ot_xg_check_snes` `NHL94_OT_VARIANTS=launch`)
+leaves the gap. *The goalie on the game's puck path* (`snes_goalie_path.py`, 146 from 120-200 out): the gliding goalie
+stops 76% to the game's 68% (the old movement 57%), so stepped along the real puck he is if anything too strong.
+*The check's inputs* (`snes_glide_inputs.py`: his speed estimated from the swing or read from the game, his spot blurred
+or not): 286 one-timers from 120-200 out, the game 3.2 goals; the gliding goalie 20.5, with the real speed and no blur
+still 15.2. *The puck a step late*: in the game the puck (object 14) runs after every player, so the goalie's
+assignment reads the puck before this step's move; the model's save move started with 18.3 frames left to the goal
+line against the game's 15.4. Behind `xg_snes.STALE_PUCK` (off): 120-200 out 20.5 -> 16.6 (real speed, no blur 15.2 ->
+11.3, game 3.2); 60-120 out (285) 35.1 -> 33.5 (27.2 -> 25.7, game 26.8; the old movement 19.8, 20.0 with the lag).
+So the lag is real but small, and the switch stays off. What is left is how the model's goalie moves between the
+pass and the save when the check builds him from the swing rather than steps him along the game's own puck.
+
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
 expected goals, 1 scored (at 0.95; one off the post at 0.2, one saved at 0.75). Deflections have no xG (played the same way, the one recorded SNES goal off one came

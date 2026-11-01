@@ -221,6 +221,9 @@ the real moment of a deke (where the goalie is, his slide and save move), the mo
   expected goals against 527 scored (the old movement 481), all of it from 60 out and beyond. So the gliding goalie
   is right only close in; until a version is right at every range the switch stays off. The old movement is also a
   little low from 120 out on one-timers (43 against 67).
+  The save choice, the save areas, the puck's flight and the goalie seeing the puck a step late
+  (`STALE_PUCK`, off: 20.5 -> 16.6 goals against the game's 3.2 from 120-200 out) are ruled out as the main cause
+  (SNES_SHOOTING 4.7).
 - Neither has skaters in the way (screens, deflections); blocked shots are left out of totals. A shot that bounces
   off a skater in front and in is still a goal at the shot's own xG (one Genesis one-timer at 0.00 was going over the
   bar until it hit a defender in the crease).
