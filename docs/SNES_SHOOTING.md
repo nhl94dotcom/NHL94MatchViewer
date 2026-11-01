@@ -220,7 +220,11 @@ the puck loose with its recorded launch, 16 play-outs; the model from the same s
 shots one by one (log loss against the recorded results 0.719, the old model 0.717): several recorded goals close in
 never go in when replayed, because a recording has the goalie's spot and speed but not his inner state (his rethink
 timer, his target, a save already decided), which the replay has to make up by letting him set first. So placing
-recorded moments can't settle it either; the switch stays off.
+recorded moments can't settle it either; the switch stays off. Nor can the recordings' own memory, for now: every SNES sample keeps work
+RAM $0000-$3FFF (the goalie's timers, targets and flags among it), but written into a saved state of the retail game
+(`snes_ram_replay.py`) the whole block crashes the game on the next frame (its main-loop and system variables belong to
+another moment), and the gameplay range alone ($0700-$19FF) runs but not faithfully (the clock drops to 0, the puck
+barely moves). A faithful replay needs the emulator's whole state at the shot, which the recordings don't keep.
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
