@@ -37,6 +37,11 @@ GOALIE_SPREAD = 2.0
 # the game's 33%, the model before 27%) but 24% high on recorded shots at a computer goalie (175 xG for 138 goals),
 # where the older movement happens to fit (145); off until that is understood. NHL94_XG_SNES_GLIDE=1 turns it on.
 GLIDE_IN_SAVE = __import__("os").environ.get("NHL94_XG_SNES_GLIDE") == "1"
+# The save move chosen as assgoalie chooses it (2026-11-01, analysis/scoring_map/snes_save_choice.py: the model picked
+# the game's move for 132 of 172 one-timers from range; most misses at facing 3 or 7, where the game takes the side the
+# other way round): facing straight at the puck, a goalie facing 3 or 7 takes the right side when |dy| >= |dx|, one
+# facing 2 or 6 a random side, and a puck coming straight at him fast takes that side choice too. Off by default
+SAVE_CHOICE = __import__("os").environ.get("NHL94_XG_SNES_SAVECHOICE") == "1"
 STEP = 2   # frames a game step: the SNES game loop mostly runs every other frame
 AIM = [(0, 12), (15, 12), (15, 6), (15, 0), (0, 0), (-15, 0), (-15, 6), (-15, 12), (0, 6)]  # shotsets (screen x, z)
 SAVES = [0xE1E2, 0xE214, 0xE2AA, 0xE2FC, 0xE246, 0xE278, 0xE862, 0xE7D0, 0xE73E]       # GoalieSaveList
@@ -146,10 +151,28 @@ class Goalie:
         frames = (self.gl - py) * 4096 / pvy
         self.cross = [max(-136, min(136, px + frames * pvx / 4096)), frames]
 
-    def save_move(self, px, py, pvx, pvy, pz, pvz):
+    def save_move(self, px, py, pvx, pvy, pz, pvz, rng=None):
         tx, ty = px + int(pvx / 1024), py + int(pvy / 1024)
         d = vtoa(tx - self.x, ty - self.y)
         d3 = 0 if d == 8 else (d - self.facing) & 7
+        if SAVE_CHOICE:
+            def side():                                     # assgoalie .33: a side by his facing
+                dx, dy = tx - self.x, ty - self.y
+                if self.facing == 0:
+                    return 1 if dx >= 0 else 7
+                if self.facing == 4:
+                    return 7 if dx >= 0 else 1
+                if self.facing in (1, 5):
+                    return 1 if abs(dx) >= abs(dy) else 7
+                if self.facing in (3, 7):
+                    return 1 if abs(dy) >= abs(dx) else 7
+                return 1 if (rng.random() < 0.5 if rng else True) else 7
+            if d3 == 0:
+                d3 = side()
+            elif d3 == 4:
+                if -0x800 < pvy < 0x800:
+                    return 8
+                d3 = side()
         if d3 == 0:
             if self.facing in (0, 4):
                 d3 = 1 if (tx - self.x >= 0) == (self.facing == 0) else 7
@@ -189,7 +212,7 @@ class Goalie:
             if -25 < cx < 25:
                 if frames < 19 and abs(py) < 265 and self.save is None:
                     self.vx, self.vy = self.vx / 2, self.vy / 2
-                    self.save = self.data.anim(SAVES[self.save_move(px, py, pvx, pvy, pz, pvz)], self.facing)
+                    self.save = self.data.anim(SAVES[self.save_move(px, py, pvx, pvy, pz, pvz, rng)], self.facing)
                     self.save_t = 0
                 gx = cx if abs(py) < 252 else (24 if px >= 0 else -24)
         self.dir = vtoa(gx - (self.x + int(self.vx / 256)), gy - (self.y + int(self.vy / 256)), 5)

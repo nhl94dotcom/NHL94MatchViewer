@@ -32,6 +32,11 @@ from snes_goalie_state import internals as read_internals  # noqa: E402
 import time  # noqa: E402
 
 SEEDS, SAMPLES = 4, 200
+# the model variants asked: (glide in a save, the goalie's inner state, the game's save-side rules); env
+# NHL94_OT_VARIANTS="choice" for the save-choice test (2026-11-01: old / glide, each with and without the side rules)
+VARIANTS = ([(False, False, False), (True, False, False), (False, False, True), (True, False, True)]
+            if __import__("os").environ.get("NHL94_OT_VARIANTS") == "choice" else
+            [(False, False, False), (False, True, False), (True, False, False), (True, True, False)])
 FACING, FRAME = 0x1163, 0x0D97
 WORK = (0x12C3, 0x12E3, 0x1303, 0x1343)        # weight, agility, speed, aidef (systems/snes.py OBJ_WORK)
 
@@ -99,9 +104,9 @@ def main():
                         ty = 264 if net == "top" else -264
                         tx, tz = XS.AIM[aim]
                         models = {}
-                        for glide in (False, True):
-                            for use in (False, True):
-                                XS.GLIDE_IN_SAVE = glide
+                        for glide, use, choice in VARIANTS:
+                            if True:
+                                XS.GLIDE_IN_SAVE, XS.SAVE_CHOICE = glide, choice
                                 rng = random.Random(f"{net}{R}{P}{timing}{p}{aim}")
                                 goals = 0
                                 for _ in range(SAMPLES):
@@ -110,8 +115,8 @@ def main():
                                         G.set_internals(**state)
                                     goals += XS.play_out(px, py, tx, ty, tz, max(1.0, speed / 136), sha,
                                                          (sha + 1) / (sha + 16), G, rng) == "goal"
-                                models[("glide" if glide else "old") + ("_state" if use else "")] = goals / SAMPLES
-                        XS.GLIDE_IN_SAVE = False
+                                models[("glide" if glide else "old") + ("_state" if use else "") + ("_choice" if choice else "")] = goals / SAMPLES
+                        XS.GLIDE_IN_SAVE = XS.SAVE_CHOICE = False
                         breathe()
                         f.write(json.dumps({"net": net, "R": R, "P": P, "timing": timing, "p": p, "aim": aim,
                                             "puck": [px, py], "speed": round(speed), "goalie": [gx, gy, round(gvx), round(gvy)],
