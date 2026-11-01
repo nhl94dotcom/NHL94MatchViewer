@@ -224,7 +224,12 @@ recorded moments can't settle it either; the switch stays off. Nor can the recor
 RAM $0000-$3FFF (the goalie's timers, targets and flags among it), but written into a saved state of the retail game
 (`snes_ram_replay.py`) the whole block crashes the game on the next frame (its main-loop and system variables belong to
 another moment), and the gameplay range alone ($0700-$19FF) runs but not faithfully (the clock drops to 0, the puck
-barely moves). A faithful replay needs the emulator's whole state at the shot, which the recordings don't keep.
+barely moves). A faithful replay needs the emulator's whole state at the shot, which the recordings don't keep. **The goalie's inner state from the recordings, given to the model**
+(`snes_goalie_state.py`: his rethink timer, push direction, facing, a save move under way and how far it has run, the
+game's own crossing estimate, all read from each shot's sample; `xg_snes.add_expected_goals(internals=)`): at a computer
+goalie the old movement 97.0 xG -> 92.7 with his state, the gliding goalie 122.6 -> 124.0, against 86 goals. So his
+inner state doesn't explain it; what is left is the shot as the recording reads it (aim, speed, height) or the save
+areas of a moving goalie. The switch stays off.
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
