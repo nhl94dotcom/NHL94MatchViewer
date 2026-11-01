@@ -229,7 +229,15 @@ barely moves). A faithful replay needs the emulator's whole state at the shot, w
 game's own crossing estimate, all read from each shot's sample; `xg_snes.add_expected_goals(internals=)`): at a computer
 goalie the old movement 97.0 xG -> 92.7 with his state, the gliding goalie 122.6 -> 124.0, against 86 goals. So his
 inner state doesn't explain it; what is left is the shot as the recording reads it (aim, speed, height) or the save
-areas of a moving goalie. The switch stays off.
+areas of a moving goalie. The switch stays off. **The game's own one-timers** (2026-11-01, `ot_xg_check_snes.py 7 4`: 6,903 strikes from 118 of the
+one-timer study's set-ups, the goalie moving across after the pass, 4 seeds each, retail ROM): the game scored 526.8
+(its rate summed); the old movement 480.5 (log loss 0.152), with his inner state 457.3 (0.153); the gliding goalie
+866.8 (0.166), with his state 838.1 (0.163). By distance: within 60 all four are right (game 217.8, old 210.3, glide
+212.5); 60-120 game 242.5, old 227.5, glide 396.8; 120-200 game 66.5, old 42.7, glide 257.4. So the gliding goalie is
+right only close in (the dekes) and far too weak beyond, in the game's own play as in the recorded games: the gap is in
+the gliding goalie itself, not in the recordings. From range the model's save move starts too early or covers too little
+while he glides (no strike here began in a save move), where the game's goalie still gets there. The switch stays off;
+the old movement stays the model (a little low from 120 out, 43 against 67).
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9

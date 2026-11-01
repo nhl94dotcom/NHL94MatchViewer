@@ -217,7 +217,10 @@ the real moment of a deke (where the goalie is, his slide and save move), the mo
   against 32%); the model's goalie moves toward the puck's side after the release where the game's barely moves
   (SNES_SHOOTING 4.7). The cause is known (the game's goalie
   only glides in a save move) and the fix is in the model behind a switch (`GLIDE_IN_SAVE`, off): right on the game's
-  own shots, but 24% high on the recorded ones, not yet understood.
+  close-in shots, but far too weak from range: 24% high on the recorded shots and, on the game's own one-timers, 867
+  expected goals against 527 scored (the old movement 481), all of it from 60 out and beyond. So the gliding goalie
+  is right only close in; until a version is right at every range the switch stays off. The old movement is also a
+  little low from 120 out on one-timers (43 against 67).
 - Neither has skaters in the way (screens, deflections); blocked shots are left out of totals. A shot that bounces
   off a skater in front and in is still a goal at the shot's own xG (one Genesis one-timer at 0.00 was going over the
   bar until it hit a defender in the crease).
