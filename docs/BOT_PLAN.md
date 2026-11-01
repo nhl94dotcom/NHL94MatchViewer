@@ -288,3 +288,12 @@ a setting, a result that changes the plan).
   passes are picked off or the receiver loses it). Not kept. With this, the bot's own skater has been tuned about as
   far as rules for one skater go: the open levers are the computer-run teammates (where they skate) and playing in
   RetroArch against people.
+
+## Playing it in RetroArch (2026-11-01)
+
+`analysis/scoring_map/bot_live.py`: the bot on controller 2 of the user's RetroArch. It reads the game's memory as
+the helper does (read-only) and sends key presses for port 2's keys (the keypad, bound once in RetroArch; no driver),
+only while RetroArch has the focus and the game is in play; anything else lets every key go. `watch` prints what it
+would press without sending anything; `test` checks each key reaches controller 2 ($BEF1); `play [version]` plays.
+Checked offline: the bot driven through the runner's reader over a recorded game decides as in the harness. Its
+buttons reach the game a frame late (the harness had none).
