@@ -315,7 +315,7 @@ class Bot:
                 # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
                 return pad(aview(dir_to(-ax, max(0, 215 - ay) + 5)))
             low_mate = self.low_mate(P, me, s, g, ax, ay) if self.version == 29 else None
-            relief = self.relief_mate(P, me, s, g) if self.version >= 30 and near[0] < RELIEF30["press"] and ahead                 and ay > RELIEF30["from"] else None
+            relief = self.relief_mate(P, me, s, g) if self.version == 30 and near[0] < RELIEF30["press"] and ahead                 and ay > RELIEF30["from"] else None
             self.relief = False
             if relief is not None:
                 # version 30: a defender closing in ahead: pass to an open teammate (no one-timer; he carries on)
@@ -649,6 +649,12 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
+            if self.version in (31, 32):
+                # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
+                # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
+                # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
+                # charging, cross-checking)
+                dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
             if self.version == 23 and out_c < SLOT23["zone"] and L > SLOT23["hold"] + 15:
@@ -666,7 +672,7 @@ class Bot:
             elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version != 32 and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
