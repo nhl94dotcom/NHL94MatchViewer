@@ -270,6 +270,13 @@ before the push 175); at a computer goalie 97.0 / 110.4 for 86. So the push is r
 game's own play, but on the recordings the gliding goalie is still 11% higher than the old movement and fits a little
 worse. The switch stays off; what is left is the long one-timers' goalie speed as the check estimates it, and the
 recordings' release moment and takeovers (above).
+The full one-timer check again with the push (`ot_xg_check_snes.py 7 4`, run ot_push, the same 6,903 strikes): the
+game 526.8 goals; the old movement 480.5 (log loss 0.152); the gliding goalie with the push 676.2 (0.147; before the
+push 866.8, 0.166), with his inner state 646.7 (0.144). By distance, game / old / gliding with the push: within 60
+217.8 / 210.3 / 210.0; 60-120 242.5 / 227.5 / 325.1 (log loss 0.214 / 0.197); 120-200 66.5 / 42.7 / 141.1 (0.082 /
+0.085). So the push takes away more than half the gliding goalie's excess and he now fits the game's one-timers shot
+by shot better than the old movement, but his total is still 28% high (the old movement 9% low), all of it from 60 out
+and beyond. The switch stays off.
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
