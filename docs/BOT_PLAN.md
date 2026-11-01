@@ -228,3 +228,6 @@ a setting, a result that changes the plan).
   75 dekes against 49.** 26 on the other banks: entries against the computer 117 against 101 (+3.4 +-1.2), zone
   possessions 19 against 20 (-0.8 +-1.4). Whole games, the bot against itself, 20 (each seed twice, sides swapped):
   26 won 11-9, 6.7 goals a game against 6.4 (+0.3 +-1.0), penalties 3.55 against 4.0. **Version 26 is the default.**
+- Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
+  up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
+  what it can.

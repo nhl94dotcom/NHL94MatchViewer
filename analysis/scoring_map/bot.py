@@ -35,7 +35,7 @@ after a faceoff drop; 21 is 20 with the CB check; 22 is 21 with the defence's
 numbers from DEF22 (env NHL94_DEF); 23 is 22 covering the
 slot in our end (SLOT23); 24-26 are 22 (16's offence) with
 one offence change each: 24 the right-hander's deke on the right (12's), 25 no one-timer passes, 26 (the default) a looser
-deke entry.
+deke entry; 27 is 26 looser still, 28 is 26 with 24's right-side deke.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -81,6 +81,8 @@ if __import__("os").environ.get("NHL94_DEF"):
 SLOT23 = dict(zone=140, hold=55)
 if __import__("os").environ.get("NHL94_SLOT"):
     SLOT23 = dict(zip(("zone", "hold"), map(float, __import__("os").environ["NHL94_SLOT"].split(","))))
+# version 26's looser deke entry (half-width of the gate, across speed from / to, up-ice speed above); 27 looser still
+LOOSE = {False: (26, 0.0, 1.1, 1.2), True: (36, -0.2, 1.3, 1.0)}
 # version 17: the close-in wind-up (in close past ay up the ice, more than side off the middle, C held hold frames);
 # env NHL94_CLOSE17="ay,side,hold"
 CLOSE17 = dict(ay=200, side=20, hold=12)
@@ -255,9 +257,9 @@ class Bot:
         # deke, DEKE12R: the deke runs' 57-66%, the game favouring swings to the shooter's own left); 11 always
         # crossed to the left and was checked on the way. A left-hander's swing to his right doesn't get the puck
         # across, so left-handers still cross
-        if self.version in (12, 24) and (ay < LANE[0] or self.phase in ("free", "shot")):
+        if self.version in (12, 24, 28) and (ay < LANE[0] or self.phase in ("free", "shot")):
             self.side = -1 if ax > 10 and hand == "R" else 1
-        mx = getattr(self, "side", 1) if self.version in (12, 24) else 1
+        mx = getattr(self, "side", 1) if self.version in (12, 24, 28) else 1
         ax = mx * ax
         deke = self.deke if mx > 0 else DEKE12R
         vxa = mx * s * m["vx"]                      # across speed toward the middle (left side's view)
@@ -316,7 +318,9 @@ class Bot:
                 self.note("slap start", ax=ax, ay=ay, blocked=True)
             elif self.version >= 4 and GATE[1] - 15 < ay < GATE[1] + 35 and (
                     abs(ax - GATE[0]) < 16 and 0.2 < vxa < 0.9 and s * m["vy"] > 1.5 or
-                    self.version == 26 and abs(ax - GATE[0]) < 26 and 0.0 < vxa < 1.1 and s * m["vy"] > 1.2):
+                    self.version >= 26 and abs(ax - GATE[0]) < LOOSE[self.version == 27][0]
+                    and LOOSE[self.version == 27][1] < vxa < LOOSE[self.version == 27][2]
+                    and s * m["vy"] > LOOSE[self.version == 27][3]):
                 # (version 26: a looser entry, so the bot dekes more often)
                 self.phase, self.t = "drive", 0     # entering the gate as the standing set-up did
                 self.note("deke start", ax=ax, ay=ay, v=round(math.hypot(m["vx"], m["vy"]), 2), hand=hand)
