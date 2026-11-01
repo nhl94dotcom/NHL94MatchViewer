@@ -1081,3 +1081,18 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   widened to people's) struck more often but scored no more; its strikes met a set goalie (BOT_PLAN "Status").
 - **Version 16, the default (BOT_PLAN "Status"):** no slapshot under pressure and the close-in wrist shot from 170 up
   the ice: from the entries 16.9% (version 11 10.0%, people 15.5%); whole games 8.50 goals a game to 1.05 (6.20).
+
+## Keeping the other team out of the slot (Genesis, 2026-11-01)
+
+The user's hypothesis after the BOS-TOR games: the key on defence is keeping the other team, and above all the puck,
+out of your slot, more than standing in it yourself. `analysis/slot_defence.py --all` (23 recorded Genesis games):
+every quarter second with a team carrying the puck in the other's end (past the blue line; loose pucks not counted,
+about a minute a team a game), the state of the defending team's slot (within 35 of the middle and 100 of the goal
+line) and the attackers' shots in the next 3 s. The carrier in the slot: 0.21 xG, a goal 23% of the time (9% of the
+time); an attacker without the puck there, open 0.12 / 12% (15%), covered 0.12 / 13% (4%); nobody attacking in it and
+no defender 0.15 / 15% (36%, the most common dangerous state), one defender 0.10 / 10% (28%), two or more 0.10 / 9% (8%).
+One-timers: 80 from the slot to a receiver open at the pass (no defender skater within 20; 40 goals), 5 to a covered
+one; 96 / 7 from outside the slot. 94% of one-timers went to open receivers. So the hypothesis holds: the carrier in the
+slot is the worst, an open man there is what the one-timers come from, and one defender in an empty slot cuts the
+danger by a third while a second adds nothing. The match report has it as section 14 (`SD.measure`); the guide's game
+plan as GENESIS_GUIDE 17, with `docs/img/slot_defence.svg` (make_diagrams.py).

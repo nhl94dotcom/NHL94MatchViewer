@@ -30,6 +30,7 @@ The things about the Genesis game that matter most, one line each; the number af
 12. **Passes**: Passing sets speed, not accuracy; long passes rise over sticks; pass shots lift at random; a pass to a teammate skating toward you can come out twice as fast. ([8](#8-passing-and-the-flip))
 13. **A stick ignores the puck for a moment** after its player shoots, passes or loses it, which is why pucks go right through players. ([8](#8-passing-and-the-flip))
 14. **With line changes off, energy never drains**: Endurance and fatigue do nothing, and speed bursts are free. ([15](#15-myths-things-that-dont-matter))
+15. **On defence, keep the other team out of your slot**, above all the puck: with the carrier in your slot a goal came within 3 seconds 23% of the time, and nearly every one-timer went to a man left open. ([17](#17-game-plan-offence-and-defence))
 
 ---
 
@@ -93,6 +94,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 14. [Your computer teammates](#14-your-computer-teammates)
 15. [Myths: things that don't matter](#15-myths-things-that-dont-matter)
 16. [Cheat sheet](#16-cheat-sheet)
+17. [Game plan: offence and defence](#17-game-plan-offence-and-defence)
 
 ---
 
@@ -754,3 +756,78 @@ Puck Control. Ignore Overall, Endurance, and the goalie's glove and stick column
 9. Ref's arm up for the other team: you can't be called, and your shots go exactly where you aim.
 10. On a breakaway keep skating at the net; make sure no teammate is ahead of you at the blue line.
 11. Flip by facing, not the d-pad.
+
+---
+
+## 17. Game plan: offence and defence
+
+Everything above, put together as a plan (2026-11-01). It comes from the shots played in the game itself, the
+recorded league games (23 Genesis games for the slot numbers), and the scripted bot's test games. The shooting rates
+are against a set computer goalie in the game's own tests: against a person in net, read them as an order of which
+shots are best, not exact odds.
+
+### Offence
+
+1. **Pass across for a one-timer.** It's the best way to score: the game aims it, and the goalie, following the puck
+   across, is still off his line when the shot goes (86% scored with him 10 or more units off it, 25% with him
+   square). Across the slot with the receiver inside 18 feet: 63%; on the doorstep with the pass from 14-20 feet to
+   the side, close to automatic. In the recorded games, open one-timers from the slot scored half the time. ([7](#7-one-timers))
+2. **Don't shoot at a set goalie.** Pass first, or shoot while he's moving or off his line. ([6](#6-shooting))
+3. **The deke needs the swing.** Without it the same shot scores 0-1%; with it the best set-ups score 80-90%. Come in
+   about 30 units off the middle, swing about 72 units from the goalie, shoot a fraction of a second later, and swing
+   to your forehand or your own left. Swing too late and the goalie takes the puck. ([13](#13-breakaways-and-penalty-shots), [SCORING_GENESIS_DEKES](SCORING_GENESIS_DEKES.md))
+4. **From the middle, the slapshot with Down held** (30-55 feet out) goes under a goalie in the butterfly: 28% on
+   average for a strong shooter, more at the bottom net. It needs Shot Power (the slapshot jumps between 3 and 4). ([6](#6-shooting))
+5. **The far-post slapshot on the move**: skate across toward your stick side and release before the middle, 28-35
+   feet out: 50-62% for a strong shooter. ([SCORING_GENESIS](SCORING_GENESIS.md))
+6. **Floaters and the EA Special** work in tests (50-65% and 65-75% at their best set-ups; the EA Special at about
+   three-quarters speed, not full), but in real games a defender often gets to the rebound first. ([SCORING_GENESIS_EA](SCORING_GENESIS_EA.md))
+7. **Against Roy, Belfour and other high-Agility goalies**, slapshots almost stop working (3-7%); one-timers (about
+   half) and dekes (72-76%) hold up. ([12.3](#123-the-computer-goalie))
+8. **Get the puck to your best shooter**, and cut the long, low-value shots. Close shots go where they're aimed; long
+   ones scatter upward. ([6](#6-shooting))
+9. **Ref's arm up for the other team**: a free snipe. ([11](#11-penalties))
+10. **Don't force passes through the neutral zone**: picked-off passes there turn into rushes against you. ([8](#8-passing-and-the-flip))
+
+### Defence
+
+![The chance of a goal in the next 3 seconds, by who is in the defending team's slot](img/slot_defence.svg)
+
+11. **Keep the puck out of your slot above everything.** In the recorded games (the slot: within 35 units of the
+    middle and about 33 feet of the goal line), with the other team carrying the puck in your end:
+
+    | Who was in your slot | Share of the time | Expected goals in the next 3 s | A goal in the next 3 s |
+    |---|---|---|---|
+    | Their carrier | 9% | 0.21 | 23% |
+    | An attacker without the puck, open | 15% | 0.12 | 12% |
+    | An attacker without the puck, covered | 4% | 0.12 | 13% |
+    | Nobody attacking, and none of yours | 36% | 0.15 | 15% |
+    | Nobody attacking, one of yours | 28% | 0.10 | 10% |
+    | Nobody attacking, two or more of yours | 8% | 0.10 | 9% |
+
+12. **Never leave a man open in your slot when the carrier can pass.** 94% of one-timers went to a receiver with no
+    defender within 20 units (about 7 feet) when the pass left; covered men almost never got the pass.
+13. **Keep one defender in an empty slot.** That cut the danger by about a third; a second one added nothing, so if a
+    computer teammate already holds it, you're free to pressure the puck.
+14. **After a turnover, get goal-side first.** An empty slot with nobody home was the most common dangerous moment.
+    Rather than chase back with the skater caught up ice, press B without the puck and take a teammate who's already
+    between the puck and your net. ([10](#10-taking-the-puck-pokes-and-hooks))
+15. **Make the carrier go around the slot**: stay on his inside and give him the boards.
+16. **Don't lunge as the last man back**: a missed check there usually means a shot against.
+17. **Check with the weight bug in mind**: C into heavier men, CB against anyone your weight or lighter (it doubles the
+    penalty risk). In the bot's test games, dropping the reckless burst-and-check took a quarter fewer penalties and
+    won by 1.7 goals a game: a hint for people, not proof. ([9](#9-checking))
+18. **Keep the poke**, but only when you're right on the carrier (out of reach it does nothing; with penalties on, a
+    poke that bumps a carrier you're facing is tripping). A bot without it gave up far more shots. ([10](#10-taking-the-puck-pokes-and-hooks))
+19. **If the shot is coming anyway, be in its path**: saves are geometry, and a defender beside the shooter stops
+    nothing. ([12.1](#121-how-saves-work))
+
+### In goal
+
+20. **Steer the goalie into the puck's line**; C only freezes him in a save move. Take him for a one-timer coming or
+    a loose puck near the crease, and square up to stop the pass across. ([12.2](#122-playing-goal-yourself))
+
+### Everything else
+
+21. **Faceoffs**: mash B. **Speed bursts** are free with line changes off. **Special teams** decide close games: the
+    bot's power plays scored 61% of the time in its test games, mostly off its own skater's penalties.

@@ -21,6 +21,9 @@ sys.path.insert(0, "tools")
 from share_game import load_js_object  # noqa: E402
 
 K, ZONE, STEP_MS, AHEAD_MS = 12, 89, 250, 3000
+ORDER = ["the carrier in the slot", "an open attacker in the slot (no puck)",
+         "a covered attacker in the slot (no puck)", "nobody attacking in the slot, 0 defender(s) in it",
+         "nobody attacking in the slot, 1 defender(s) in it", "nobody attacking in the slot, 2+ defender(s) in it"]
 DIRS = [Path("matches"), Path(os.path.expanduser("~/Documents/NHL94 Viewer/matches"))]
 
 
@@ -30,6 +33,78 @@ def load(name):
             return json.loads(load_js_object(d / f"{name}.js"))
     raise FileNotFoundError(name)
 
+
+
+def measure(m, abbr, stats=None, ot=None):
+    """One Genesis game's slot states and one-timers, added to stats ((defending team's abbr, state) -> samples, shots,
+    xG, goals in the next 3 s) and ot ((shooting team's abbr, from the slot, receiver open) -> one-timers, goals, xG); both returned."""
+    stats = stats if stats is not None else defaultdict(lambda: [0, 0, 0.0, 0])
+    ot = ot if ot is not None else defaultdict(lambda: [0, 0, 0.0])
+    T, P, R, O = m["t"], m["pos"], m["role"], m["owner"]
+    shots = sorted((sh["f"], sh["team"], sh.get("xg") or 0.0, sh["result"] == "goal") for sh in m["shotList"]
+                   if sh["team"] in (0, 1))
+    for sh in m["shotList"]:
+        if sh["kind"] != "one-timer" or sh["team"] not in (0, 1):
+            continue
+        f, team = sh["f"], sh["team"]
+        ny = 264 if sh["y"] > 0 else -264
+        sl = abs(sh["x"]) <= 35 and abs(ny - sh["y"]) <= 100
+        f0 = f
+        while f0 > 0 and T[f] - T[f0] < 1500 and not (O[f0] is not None and 0 <= O[f0] < 12 and (O[f0] < 6) == (team == 0)):
+            f0 -= 1
+        k = min(range(team * 6, team * 6 + 6), key=lambda k: math.hypot(P[(f * K + k) * 2] - sh["x"], P[(f * K + k) * 2 + 1] - sh["y"]))
+        x0, y0 = P[(f0 * K + k) * 2], P[(f0 * K + k) * 2 + 1]
+        near = min((math.hypot(P[(f0 * K + j) * 2] - x0, P[(f0 * K + j) * 2 + 1] - y0)
+                    for j in range((1 - team) * 6, (1 - team) * 6 + 6) if R[f0 * K + j] not in ("0", "x")), default=99)
+        o_ = ot[(abbr[team], sl, near > 20)]
+        o_[0] += 1
+        o_[1] += sh["result"] == "goal"
+        o_[2] += sh.get("xg") or 0.0
+    last = -STEP_MS
+    for f in range(len(T)):
+        if T[f] - last < STEP_MS:
+            continue
+        o = O[f]
+        if o is None or o < 0 or o >= 12:
+            continue
+        a = 0 if o < 6 else 1
+        d = 1 - a
+        gk = next((k for k in range(d * 6, d * 6 + 6) if R[f * K + k] == "0"), None)
+        if gk is None:
+            continue
+        s = 1 if P[(f * K + gk) * 2 + 1] > 0 else -1       # the defending team's net: +Y or -Y
+        xy = lambda k: (P[(f * K + k) * 2], P[(f * K + k) * 2 + 1])
+        cx, cy = xy(o)
+        if s * cy < ZONE:
+            continue
+        last = T[f]
+        slot = lambda x, y: abs(x) <= 35 and 0 <= 264 - s * y <= 100
+        skaters = lambda team: [k for k in range(team * 6, team * 6 + 6) if R[f * K + k] not in ("0", "x")]
+        defs = [xy(k) for k in skaters(d)]
+        n_def = sum(slot(*p) for p in defs)
+        if slot(cx, cy):
+            state = "the carrier in the slot"
+        else:
+            state = "nobody attacking in the slot"
+            for k in skaters(a):
+                if k == o or not slot(*xy(k)):
+                    continue
+                x, y = xy(k)
+                covered = any(math.hypot(x - px, y - py) <= 20 for px, py in defs)
+                if not covered:
+                    state = "an open attacker in the slot (no puck)"
+                    break
+                state = "a covered attacker in the slot (no puck)"
+        if state == "nobody attacking in the slot":
+            state += f", {min(n_def, 2)}{'+' if n_def >= 2 else ''} defender(s) in it"
+        st = stats[(abbr[d], state)]
+        st[0] += 1
+        for sf, team, xg, goal in shots:
+            if team == a and f <= sf and T[sf] - T[f] <= AHEAD_MS:
+                st[1] += 1
+                st[2] += xg
+                st[3] += goal
+    return stats, ot
 
 
 def main():
@@ -45,7 +120,7 @@ def main():
                 continue
             games.append(p.stem)
     stats = defaultdict(lambda: [0, 0, 0.0, 0])          # (team defending, state) -> samples, shots, xG, goals
-    ot = defaultdict(lambda: [0, 0, 0.0])                 # (slot?, open?) -> one-timers, goals, xG
+    ot = defaultdict(lambda: [0, 0, 0.0])                 # (team, slot?, open?) -> one-timers, goals, xG
     used = []
     for g in games:
         try:
@@ -56,73 +131,8 @@ def main():
             continue
         used.append(g)
         abbr = [m.get("abbr", ["H", "A"])[0], m.get("abbr", ["H", "A"])[1]] if isinstance(m.get("abbr"), list) else g.split("_")[2].split("-")
-        T, P, R, O = m["t"], m["pos"], m["role"], m["owner"]
-        shots = sorted((sh["f"], sh["team"], sh.get("xg") or 0.0, sh["result"] == "goal") for sh in m["shotList"]
-                       if sh["team"] in (0, 1))
-        for sh in m["shotList"]:
-            if sh["kind"] != "one-timer" or sh["team"] not in (0, 1):
-                continue
-            f, team = sh["f"], sh["team"]
-            ny = 264 if sh["y"] > 0 else -264
-            sl = abs(sh["x"]) <= 35 and abs(ny - sh["y"]) <= 100
-            f0 = f
-            while f0 > 0 and T[f] - T[f0] < 1500 and not (O[f0] is not None and 0 <= O[f0] < 12 and (O[f0] < 6) == (team == 0)):
-                f0 -= 1
-            k = min(range(team * 6, team * 6 + 6), key=lambda k: math.hypot(P[(f * K + k) * 2] - sh["x"], P[(f * K + k) * 2 + 1] - sh["y"]))
-            x0, y0 = P[(f0 * K + k) * 2], P[(f0 * K + k) * 2 + 1]
-            near = min((math.hypot(P[(f0 * K + j) * 2] - x0, P[(f0 * K + j) * 2 + 1] - y0)
-                        for j in range((1 - team) * 6, (1 - team) * 6 + 6) if R[f0 * K + j] not in ("0", "x")), default=99)
-            o_ = ot[(sl, near > 20)]
-            o_[0] += 1
-            o_[1] += sh["result"] == "goal"
-            o_[2] += sh.get("xg") or 0.0
-        last = -STEP_MS
-        for f in range(len(T)):
-            if T[f] - last < STEP_MS:
-                continue
-            o = O[f]
-            if o is None or o < 0 or o >= 12:
-                continue
-            a = 0 if o < 6 else 1
-            d = 1 - a
-            gk = next((k for k in range(d * 6, d * 6 + 6) if R[f * K + k] == "0"), None)
-            if gk is None:
-                continue
-            s = 1 if P[(f * K + gk) * 2 + 1] > 0 else -1       # the defending team's net: +Y or -Y
-            xy = lambda k: (P[(f * K + k) * 2], P[(f * K + k) * 2 + 1])
-            cx, cy = xy(o)
-            if s * cy < ZONE:
-                continue
-            last = T[f]
-            slot = lambda x, y: abs(x) <= 35 and 0 <= 264 - s * y <= 100
-            skaters = lambda team: [k for k in range(team * 6, team * 6 + 6) if R[f * K + k] not in ("0", "x")]
-            defs = [xy(k) for k in skaters(d)]
-            n_def = sum(slot(*p) for p in defs)
-            if slot(cx, cy):
-                state = "the carrier in the slot"
-            else:
-                state = "nobody attacking in the slot"
-                for k in skaters(a):
-                    if k == o or not slot(*xy(k)):
-                        continue
-                    x, y = xy(k)
-                    covered = any(math.hypot(x - px, y - py) <= 20 for px, py in defs)
-                    if not covered:
-                        state = "an open attacker in the slot (no puck)"
-                        break
-                    state = "a covered attacker in the slot (no puck)"
-            if state == "nobody attacking in the slot":
-                state += f", {min(n_def, 2)}{'+' if n_def >= 2 else ''} defender(s) in it"
-            st = stats[(abbr[d], state)]
-            st[0] += 1
-            for sf, team, xg, goal in shots:
-                if team == a and f <= sf and T[sf] - T[f] <= AHEAD_MS:
-                    st[1] += 1
-                    st[2] += xg
-                    st[3] += goal
-    order = ["the carrier in the slot", "an open attacker in the slot (no puck)",
-             "a covered attacker in the slot (no puck)", "nobody attacking in the slot, 0 defender(s) in it",
-             "nobody attacking in the slot, 1 defender(s) in it", "nobody attacking in the slot, 2+ defender(s) in it"]
+        measure(m, abbr, stats, ot)
+    order = ORDER
     names = ", ".join(used) if len(used) <= 8 else f"{used[0]} ... {used[-1]}"
     print(f"Games ({len(used)}): {names}")
     print(f"Every {STEP_MS} ms with the puck in the defending team's end; outcome: the attackers' "
@@ -143,7 +153,7 @@ def main():
     print("One-timers, the receiver at the pass:")
     for sl in (True, False):
         for op in (True, False):
-            n, gl, xg = ot[(sl, op)]
+            n, gl, xg = (sum(v[i] for (t, a, b), v in ot.items() if (a, b) == (sl, op)) for i in range(3))
             if n:
                 print(f"  from {'the slot' if sl else 'outside the slot':16} receiver {'open' if op else 'covered':7}: {n:4} shots, "
                       f"{gl:3} goals ({100 * gl / n:.0f}%), xG {xg:.1f} ({xg / n:.2f} each)")

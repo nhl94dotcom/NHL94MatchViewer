@@ -16,6 +16,9 @@ from share_game import load_js_object  # noqa: E402
 from export_match import own_end  # noqa: E402
 import deserve as DES  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import slot_defence as SD  # noqa: E402
+
 K = 12
 DIRS = [Path("matches"), Path(os.path.expanduser("~/Documents/NHL94 Viewer/matches"))]
 DOWN = {"0dd8", "0d26", "145c", "11e6"}           # falls (and the stumble)
@@ -458,6 +461,38 @@ def report(name):
         for team in (0, 1):
             w(f"- **{ab[team]}**: penalties {sum(p['team'] == team for p in pens)}; power-play goals "
               f"{sum(1 for g in m['goals'] if g['team'] == team and 'PPG' in g.get('kinds', []))}.")
+        w("")
+
+    # 14. keeping the other team out of the slot (slot_defence.py)
+    if genesis and "owner" in m:
+        w("## 14. Keeping the other team out of the slot\n")
+        stats, ot = SD.measure(m, ab)
+        w("Every quarter second with the other team carrying the puck in this team's end (loose pucks not counted), who was in this team's slot (within 35 of "
+          "the middle and about 33 feet of the goal line). Over every recorded Genesis game, the chance of a goal in the "
+          "next 3 s was 23% with the carrier in the slot, about 12% with an attacker there without the puck, 15% with "
+          "the slot empty and no defender in it, 10% with one defender in it.\n")
+        w("| Defending | " + " | ".join(ab) + " |\n|---|---|---|")
+        tot = [sum(v[0] for (t, _), v in stats.items() if t == ab[team]) for team in (0, 1)]
+        secs = [n * SD.STEP_MS // 1000 for n in tot]
+        w("| Time with the other team carrying the puck in its end | " + " | ".join(f"{x // 60}:{x % 60:02d}" for x in secs) + " |")
+        for state in SD.ORDER:
+            cells = []
+            for team in (0, 1):
+                n, sh, xg, gl = stats.get((ab[team], state), [0, 0, 0.0, 0])
+                cells.append((f"{100 * n / tot[team]:.0f}%" + (f" ({xg / n:.2f} xG in 3 s)" if n >= 20 else ""))
+                             if tot[team] else "-")
+            w(f"| {state[0].upper() + state[1:]} | " + " | ".join(cells) + " |")
+        w("")
+        for team in (0, 1):
+            ots = {(sl, op): ot.get((ab[1 - team], sl, op), [0, 0, 0.0]) for sl in (True, False) for op in (True, False)}
+            n = sum(v[0] for v in ots.values())
+            if n:
+                w(f"- **{ab[team]}** gave up {n} one-timer{'s' if n != 1 else ''}: "
+                  + "; ".join(f"{v[0]} {'from the slot' if sl else 'from outside it'} to a receiver "
+                              f"{'open' if op else 'covered'} at the pass ({v[1]} goal{'s' if v[1] != 1 else ''})"
+                              for (sl, op), v in ots.items() if v[0]) + ".")
+            else:
+                w(f"- **{ab[team]}** gave up no one-timers.")
         w("")
     return "\n".join(L)
 
