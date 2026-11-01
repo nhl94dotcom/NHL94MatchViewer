@@ -207,7 +207,12 @@ model doesn't see; with the computer in net throughout, 79 goals against 97.9 (7
 the new movement follows the recorded goalie as closely as the old (1.62 units off over 16 frames against 1.64), and
 the goalie was in his ready stance at nearly all of these releases, so neither the path nor a save already under way
 explains it. Until it is understood the correction stays off by default (NHL94_XG_SNES_GLIDE=1 turns it on), so the
-viewer's numbers are unchanged.
+viewer's numbers are unchanged. Checked since: the recordings' goalie speed isn't it (taking it as zero
+makes the recorded total worse, 191 xG; the goalies there do skate across to their saves); nor is the league ROM (15 of
+the 17 recorded SNES games are on `cd85e387`, which differs from the retail ROM in 59 bytes, a call at $9E:9BCB into 56
+new bytes at $9E:FBD1 that add to per-player figures read by player number: a stat-keeping hook, not the goalie's
+play). So the recordings and the game disagree about the computer goalie after a release for reasons still to find
+(the release moment as the recording reads it, people's takeovers and switching).
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
