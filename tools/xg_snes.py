@@ -42,6 +42,11 @@ GLIDE_IN_SAVE = __import__("os").environ.get("NHL94_XG_SNES_GLIDE") == "1"
 # other way round): facing straight at the puck, a goalie facing 3 or 7 takes the right side when |dy| >= |dx|, one
 # facing 2 or 6 a random side, and a puck coming straight at him fast takes that side choice too. Off by default
 SAVE_CHOICE = __import__("os").environ.get("NHL94_XG_SNES_SAVECHOICE") == "1"
+# The goalie sees the puck a step late (2026-11-01, snes_goalie_path.py): the objects are run in order and the puck
+# ($1C, object 14) comes after every player, so a goalie's assignment reads where the puck was before this step's move
+# (and pucknorm's crossing countdown not yet taken for the step). The model gave him the puck after its move: his save
+# move started with 18.3 frames left to the goal line, the game's 15.4 (one-timers from 120-200 out). Off by default
+STALE_PUCK = __import__("os").environ.get("NHL94_XG_SNES_STALE") == "1"
 STEP = 2   # frames a game step: the SNES game loop mostly runs every other frame
 AIM = [(0, 12), (15, 12), (15, 6), (15, 0), (0, 0), (-15, 0), (-15, 6), (-15, 12), (0, 6)]  # shotsets (screen x, z)
 SAVES = [0xE1E2, 0xE214, 0xE2AA, 0xE2FC, 0xE246, 0xE278, 0xE862, 0xE7D0, 0xE73E]       # GoalieSaveList
@@ -299,6 +304,7 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, l
     x, y, h = px, py, 0.0
     front = 259 if ty > 0 else -259
     for _ in range(0, 300, STEP):
+        seen = (x, y, vx, vy, h, vz)                          # the puck as the goalie will see it (STALE_PUCK)
         nx, ny = x + STEP * vx / 4096, y + STEP * vy / 4096
         vz -= 96 * STEP
         nh = h + STEP * vz / 4096
@@ -314,7 +320,7 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, l
             return "post" if abs(cx) <= 22 else "wide"
         x, y, h = nx, ny, nh
         if G:
-            G.step(x, y, vx, vy, h, vz, rng)
+            G.step(*(seen if STALE_PUCK else (x, y, vx, vy, h, vz)), rng)
             if G.nopuck > 0:                                  # just bounced off him: no touch for 10 frames
                 G.nopuck -= STEP
                 if abs(y) > 300 or abs(x) > 140:

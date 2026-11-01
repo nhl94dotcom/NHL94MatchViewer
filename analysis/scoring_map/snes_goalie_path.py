@@ -6,7 +6,7 @@ by frame. The model's goalie (xg_snes.Goalie) starts from the game's state at th
 ratings and, with "state", his inner state from RAM) and is stepped along the game's own puck (each game step: the frames
 since the puck last moved), with and without gliding in a save. Per variant: how often the model's test (save area, then
 body box) stops the puck before the goal line, against how often the game stopped it; where the goalie is when the puck
-reaches his line, and when the save move starts.
+reaches his line, and when the save move starts (and how many frames the puck then has left to the goal line).
 python snes_goalie_path.py [lo] [hi] [n]   (default 120 200 150)"""
 import json
 import math
@@ -44,7 +44,7 @@ def main():
     ot = OneTimer("snes")
     s, e = ot.s, ot.e
     H, g = s.H, 2 * s.GOALIE
-    stops, off, start, game = defaultdict(list), defaultdict(list), defaultdict(list), Counter()
+    stops, off, start, game, left = defaultdict(list), defaultdict(list), defaultdict(list), Counter(), defaultdict(list)
     for r in rows[:n]:
         net, R, P = r["net"], r["R"], r["P"]
         rnd = random.Random(zlib.crc32(f"xgcheck-snes,{net},{R},{P}".encode()))
@@ -73,6 +73,9 @@ def main():
                          s.sw(H.PUCKVZ)))
             if gsave is None and e.w(PFALOCK + g) in XS.SAVES:
                 gsave = f
+                vyp = s.sw(H.YVEL + 2 * s.PUCK)
+                if vyp:
+                    left["game"].append((264 * sg - py) * 4096 / vyp)
             if garrive is None and (py - gy) * sg >= 0:
                 garrive = gx - px
             vy = s.sw(H.YVEL + 2 * s.PUCK) * sg
@@ -106,6 +109,8 @@ def main():
                         last = p
                         if msave is None and G.save is not None:
                             msave = f
+                            if p[4]:
+                                left[name].append((264 * sg - p[1]) * 4096 / p[4])
                         if arrive is None and (p[1] - G.y) * sg >= 0:
                             arrive = G.x - p[0]
                         if model_hit(data, G.x, G.y, G.frame, p[0], p[1], p[2]):
@@ -126,7 +131,8 @@ def main():
         print(f"  {name:12} |goalie x - puck x| when the puck reaches his line: median {st.median(v):.1f}, "
               f"within 11 {100 * sum(x <= 11 for x in v) / len(v):.0f}%")
     for name, v in start.items():
-        print(f"  {name:12} save move started: {len(v)} times, median frame {st.median(v)}")
+        print(f"  {name:12} save move started: {len(v)} times, median frame {st.median(v)}, frames left to the goal "
+              f"line then: median {st.median(left[name]):.1f}")
 
 
 if __name__ == "__main__":
