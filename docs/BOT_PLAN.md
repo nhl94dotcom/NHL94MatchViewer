@@ -221,3 +221,10 @@ a setting, a result that changes the plan).
   the middle, 68 (-1.7 +-0.7)**. Version 18 led against the computer's defence (+1.7) but lost in whole games (-0.85 a
   game), and it loses here too: **this bank, the bot defending, is the better guide to whole games**; use it for offence
   from now on. Version 16 stays the default.
+- **New offence behaviour against the bot's defence (versions 24-26, each one change on 16; 20-22's defence, which
+  is 16's in games).** Against 16's 76 goals of 472: 24, the right-hander's deke on the right side (12's): 80 (+0.8
+  +-0.7); 25, no one-timer passes: 76 (+0.0 +-0.7: the bot's one-timer passes add nothing); **26, a looser deke entry
+  (the gate 26 wide instead of 16, 0-1.1 across instead of 0.2-0.9, 1.2 up the ice instead of 1.5): 88 (+2.5 +-0.9),
+  75 dekes against 49.** 26 on the other banks: entries against the computer 117 against 101 (+3.4 +-1.2), zone
+  possessions 19 against 20 (-0.8 +-1.4). Whole games, the bot against itself, 20 (each seed twice, sides swapped):
+  26 won 11-9, 6.7 goals a game against 6.4 (+0.3 +-1.0), penalties 3.55 against 4.0. **Version 26 is the default.**

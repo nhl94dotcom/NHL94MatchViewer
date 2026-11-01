@@ -26,7 +26,7 @@ side deking there (mirrored, DEKE12R); 13 is 11 (not 12) with the one-timer as p
 it (the pass from 100 up the ice, to a receiver within 100 of the goal line and 70 of the middle, 39-110 across); 14 is 13 with people's
 limits on the pass (the passer within 120 of the goal line, the pass under 130 long, no defender within 20 of
 the receiver); 15 is 14 passing only to a receiver within 40 of the
-middle with the goalie drawn 4+ toward the passer's side; 16 (the default) is 15 without the slapshot under pressure and
+middle with the goalie drawn 4+ toward the passer's side; 16 is 15 without the slapshot under pressure and
 with the close-in wrist shot from 170 up the ice (WRIST16; a limit across, cutting in to the middle first, scored
 less the narrower it was); 17 is 16 with, in close and off the middle, the slapshot wind-up that
 drops the goalie, released at his own side (CLOSE17); 18 is 16 (not 17) with a carry that begins in the middle of the zone
@@ -34,8 +34,8 @@ going straight up the ice to the wrist shot; 19 is 18 chasing its own rebounds; 
 after a faceoff drop; 21 is 20 with the CB check; 22 is 21 with the defence's
 numbers from DEF22 (env NHL94_DEF); 23 is 22 covering the
 slot in our end (SLOT23); 24-26 are 22 (16's offence) with
-one offence change each: 24 the right-hander's deke on the right (12's), 25 no one-timer passes, 26 a looser deke
-entry.
+one offence change each: 24 the right-hander's deke on the right (12's), 25 no one-timer passes, 26 (the default) a looser
+deke entry.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -112,7 +112,7 @@ def dir_to(dx, dy):
 
 
 class Bot:
-    def __init__(self, team=0, version=16):
+    def __init__(self, team=0, version=26):
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE
