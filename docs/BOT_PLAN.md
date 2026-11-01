@@ -252,6 +252,11 @@ a setting, a result that changes the plan).
     against 31): holding off close in doesn't stop the contact, and the later poke trips anyway. **34**, clearing the
     puck up the ice when shorthanded in its own half with an opponent within 40 (about 280 clears): 12-18, -0.10
     +-0.50; power plays against it scored 41 of 70 (59%), against 32 41 of 74 (55%): no better on the kill.
+    **35**, a poke only when not closing on the carrier faster than 0.4 a frame: 13-17, -0.87 +-0.66; its penalties
+    halved (56 against 106, tripping 23 against 42) and its power-play edge was 41-27, but shots against rose to 851
+    from 638 and it lost 150-190 at even strength: the trade is close, so its threshold is being swept. **36**, the
+    penalty kill holding the slot 40 out when the carrier is within 150 of our goal line: 9-21, -1.87 +-0.66, power
+    plays against it 50 of 69 (72%): sitting back on the kill is worse than chasing.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.
