@@ -24,6 +24,8 @@ VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 26)     # bot.py's versions
 
 
 STATS = (0xC6CE, 0xCA32)                       # team stat blocks: +$02 PP goals, +$04 power plays, +$06 penalties, +$08 PIM
+DELAYED, PENALTY_LIST = 0x26, 0xC5DC              # stat-block byte $FF while the team has a delayed penalty
+                                                 # coming; the penalty summary (PROJECT_NOTES "Penalties")
 C2PLAYER, CONT2TEAM = 0xC322, 0xC32A             # pad 2's skater (c2playernum) and team (cont2team, 2 = Away)
 
 
@@ -40,6 +42,16 @@ def play(e, start, seed, frames_out=None, home=None, away=None):
         e.setb(0xB04A + k * 0x80 + 0x62, e.b(0xB04A + k * 0x80 + 0x62) | 8)
         e.setw(C2PLAYER, k)
     goals, last_score, f, quiet, still, clock = [], (0, 0), 0, 0, 0, None
+    # each penalty call (2026-11-01): who was called (the bot's own skater or a computer-run teammate) and what he
+    # and his pad were doing. A call is taken as it appears in the summary (after the whistle); the foul's moment is
+    # the fouled team's delayed flag going up when there was one, else the last 3 s before the call
+    calls, flag_at, ring, was_up, ticked = [], [None, None], [], [False, False], 0
+    R = lambda k: 0xB04A + k * 0x80
+
+    def snap(hold, hold2):
+        return dict(f=f, person=[bool(e.b(R(k) + 0x62) & 8) for k in range(12)], anim=[e.w(R(k) + 0x58) for k in range(12)],
+                    roster=[e.b(R(k) + 0x66) for k in range(12)], pads=(tuple(hold), tuple(hold2)),
+                    carrier=e.b(R(14) + 0x61) if e.b(R(14) + 0x60) == 0 else None)
     while f < MAX_FRAMES:
         f += 1
         c, per = e.w(0xC468), e.w(0xC466)
@@ -58,7 +70,35 @@ def play(e, start, seed, frames_out=None, home=None, away=None):
             still = 0
             continue
         hold = bot.step(e)
-        e.run(1, hold=hold, hold2=bot2.step(e) if bot2 else [])
+        hold2 = bot2.step(e) if bot2 else []
+        e.run(1, hold=hold, hold2=hold2)
+        ring = (ring + [snap(hold, hold2)])[-900:]
+        if still == 0:
+            ticked = f                                     # the clock last moved (an immediate whistle stops it)
+        for t, b in enumerate(STATS):
+            up = e.b(b + DELAYED) == 0xFF
+            if up and not was_up[t]:
+                flag_at[t] = ring[-60:]                     # team t was fouled: the second before
+            elif flag_at[t] is not None and f - flag_at[t][-1]["f"] > 1800:
+                flag_at[t] = None
+            was_up[t] = up
+        n = e.w(PENALTY_LIST) // 4
+        while len(calls) < min(n, 60):
+            at = PENALTY_LIST + 2 + 4 * len(calls)
+            code = e.b(at + 2)
+            team, idx = code >> 7, e.b(at + 3)
+            window, flagged = (flag_at[1 - team], True) if flag_at[1 - team] else (
+                [w for w in ring if ticked - 60 <= w["f"] <= ticked + 30] or ring[-60:], False)
+            flag_at[1 - team] = None
+            ks = [k for k in range(team * 6, team * 6 + 6) if window[-1]["roster"][k] == idx]
+            c = dict(team=team, code=code & 0x7F, idx=idx, f=f, flagged=flagged)
+            if ks:
+                k = ks[0]
+                c.update(rec=k, person=any(w["person"][k] for w in window),
+                         anims=sorted({w["anim"][k] for w in window}),
+                         pad=sorted({x for w in window if w["person"][k] for x in w["pads"][team]}),
+                         had_puck=any(w["carrier"] == k for w in window))
+            calls.append(c)
         score = (e.w(SCORE[0]), e.w(SCORE[1]))
         if score != last_score:
             team = 0 if score[0] != last_score[0] else 1
@@ -81,7 +121,7 @@ def play(e, start, seed, frames_out=None, home=None, away=None):
                 power_plays=[e.w(b + 4) for b in STATS], pp_goals=[e.w(b + 2) for b in STATS],
                 events=dict(ev), lost=dict(lost), shot_kinds=dict(Counter(x["kind"] for x in bot.log if x["ev"] == "shot"),
                                                                   **{"one-timer": sum(x["ev"] == "strike" for x in bot.log)}),
-                deke_starts=[(x["ax"], x["ay"], x["v"], x["hand"]) for x in bot.log if x["ev"] == "deke start"],
+                calls=calls, deke_starts=[(x["ax"], x["ay"], x["v"], x["hand"]) for x in bot.log if x["ev"] == "deke start"],
                 **({"log": bot.log} if os.environ.get("NHL94_BOT_LOG") else {}))
 
 
