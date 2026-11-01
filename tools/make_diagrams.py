@@ -1469,6 +1469,35 @@ def snes_goalie_hold():
     return svg(W, H, b, "SNES goalie hold")
 
 
+def slot_defence():
+    """Keeping the other team out of the slot (2026-11-01, analysis/slot_defence.py --all: 23 recorded Genesis games,
+    every quarter second with the other team carrying the puck in the defending team's end): the chance of a goal in
+    the next 3 s by who was in the slot (within 35 of the middle and 100 of the goal line), and the share of the time."""
+    rows = [("Their carrier", 22.8, 9), ("An attacker without the puck, open", 12.4, 15),
+            ("An attacker without the puck, covered", 13.4, 4), ("Nobody attacking, none of yours", 15.4, 36),
+            ("Nobody attacking, one of yours", 10.1, 28), ("Nobody attacking, two or more of yours", 9.3, 8)]
+    W, L, R, T, bh, gap = 820, 300, 720, 84, 26, 14
+    X = lambda v: L + (R - L) * v / 25
+    B = T + len(rows) * (bh + gap)
+    b = [text(W / 2, 28, "Keep them out of your slot (Genesis): who was in it, and the chance of a goal", 17,
+              anchor="middle", weight="bold"),
+         text(W / 2, 48, "With the other team carrying the puck in your end: a goal by them within the next 3 seconds. "
+              "23 recorded league games.", 12, SOFT, "middle")]
+    for v in range(0, 26, 5):
+        b.append(line(X(v), T - 8, X(v), B - gap + 4, GRID, 1))
+        b.append(text(X(v), B + 8, f"{v}%", 11, SOFT, "middle"))
+    for i, (name, rate, share) in enumerate(rows):
+        y = T + i * (bh + gap)
+        b.append(text(L - 10, y + bh / 2 + 4, name, 12, INK, "end"))
+        b.append(f"<rect x='{L}' y='{y}' width='{X(rate) - L:.1f}' height='{bh}' rx='4' fill='{BLUE}'/>")
+        b.append(text(X(rate) + 6, y + bh / 2 + 4, f"{rate:.0f}%", 12, INK, weight="bold"))
+        b.append(text(X(rate) + 40, y + bh / 2 + 4, f"({share}% of the time)", 11, SOFT))
+    b.append(text(24, B + 32, "The slot: within 35 units of the middle and about 33 feet of the goal line.", 12, SOFT))
+    b.append(text(24, B + 52, "The puck in your slot is the worst. One defender in an empty slot cuts the danger by a third;"
+                  " a second adds nothing.", 12, SOFT))
+    return svg(W, B + 66, b, "Keep them out of your slot")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -1482,7 +1511,7 @@ def main():
              "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot(),
              "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
              "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
-             "snes_goalie_hold.svg": snes_goalie_hold()}
+             "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)
