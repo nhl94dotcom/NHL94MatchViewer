@@ -26,6 +26,7 @@ Pass shots (2026-10-30) have no aim or scatter: the puck leaves as the recording
 no target: vertical speed 0 to $FFF, SNES_MECHANICS 6.1). Deflections and kind 'other' have no xG.
 """
 import copy
+import json
 import random
 import struct
 
@@ -121,8 +122,19 @@ class Goalie:
         self.timer, self.cross_timer, self.dir = 0, 0, 8
         self.cross, self.save, self.save_t = None, None, 0
 
+    def set_internals(self, timer, dir, facing, save_spa, save_elapsed, cross):
+        """His inner state at the release, from the game's RAM: the rethink timer (temp1), the direction he is
+        pushing (temp2b), his facing, a save move under way (pfalock's animation and the frames it has run) and the
+        puck's crossing as pucknorm last worked it out (puckcross: x, frames)."""
+        self.timer, self.dir, self.facing = timer, dir, facing & 7
+        self.fixed_timer = True
+        if save_spa:
+            self.save, self.save_t = self.data.anim(save_spa, self.facing), save_elapsed
+        self.cross = list(cross) if cross else None
+
     def randomise(self, rng):
-        self.timer = rng.randrange((self.aidef >> 1) + 1)
+        if not getattr(self, "fixed_timer", False):
+            self.timer = rng.randrange((self.aidef >> 1) + 1)
         self.cross_timer = rng.randrange(5)
         self.x += rng.gauss(0, GOALIE_SPREAD)
         self.y += rng.gauss(0, GOALIE_SPREAD)
@@ -330,9 +342,11 @@ def touch_timer(m, f, gk, frames=10):
     return 0
 
 
-def add_expected_goals(m, rom, notouch=False):
+def add_expected_goals(m, rom, notouch=False, internals=None):
     """Each shot, one-timer and pass shot of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's
-    frames). notouch: the goalie's no-touch timer from the recording (touch_timer)."""
+    frames). notouch: the goalie's no-touch timer from the recording (touch_timer). internals: {sample: the goalie's
+    inner state at that shot's release} (Goalie.set_internals; 2026-10-31, read from the recording's RAM by
+    analysis/scoring_map/snes_goalie_state.py), else he starts fresh."""
     from xg import aimed, launched
     if m.get("system") != "snes" or not m.get("work"):
         return
@@ -383,12 +397,14 @@ def add_expected_goals(m, rom, notouch=False):
                             puck_control=gw[4] if len(gw) > 4 else 10)
             if notouch:
                 goalie.nopuck = touch_timer(m, f, gk)
+            if internals and f in internals:
+                goalie.set_internals(**internals[f])
         tx, tz = AIM[sh["aim"]["d"]] if not loose else AIM[8]
         pp = max(1.0, sh["speed"] / 136)
         perfect = (sha + 1) / (sha + 16)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, tx, ty, tz, pp, sha,
                (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4], goalie.nopuck) if goalie else None,
-               sh["kind"], launch)
+               sh["kind"], launch, json.dumps(internals.get(f), sort_keys=True) if internals else None)
         if key in _CACHE:
             sh["xg"] = _CACHE[key]
             continue
