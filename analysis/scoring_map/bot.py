@@ -102,6 +102,12 @@ SLOT23 = dict(zone=140, hold=55)
 if __import__("os").environ.get("NHL94_SLOT"):
     SLOT23 = dict(zip(("zone", "hold"), map(float, __import__("os").environ["NHL94_SLOT"].split(","))))
 # version 26's looser deke entry (half-width of the gate, across speed from / to, up-ice speed above); 27 looser still
+# version 37: cover an open man in our slot when a teammate is nearer the carrier by `margin` and the carrier is
+# within `zone` of our goal line; stand `off` from him toward the carrier; env NHL94_COVER37="zone,margin,off"
+COVER37 = dict(zip(("zone", "margin", "off"), map(float, (__import__("os").environ.get("NHL94_COVER37") or "175,10,10").split(","))))
+# version 38: B to the goal-side teammate when we are `behind` farther from our net than the carrier and a teammate
+# is nearer our net within `line` of the carrier's line to it; env NHL94_GOAL38="behind,line"
+GOAL38 = dict(zip(("behind", "line"), map(float, (__import__("os").environ.get("NHL94_GOAL38") or "20,40").split(","))))
 LOOSE = {False: (26, 0.0, 1.1, 1.2), True: (36, -0.2, 1.3, 1.0)}
 # version 29: the low one-timer set-up (the carrier within out of the goal line and side off the middle; the
 # receiver rmin-rmax out); env NHL94_LOW29="out,side,rmin,rmax"
@@ -651,6 +657,23 @@ class Bot:
                 return k
         return None
 
+    def open_in_slot(self, P, owner, own_net_y):
+        """An attacker without the puck in our slot (within 35 of the middle, 100 of our goal line) with none of
+        our skaters within 20 (slot_defence.py's open man): the nearest our net, or None."""
+        best = None
+        for k in self.theirs:
+            a = P[k]
+            if k == owner or a["pos"] in (0, 0xFF):
+                continue
+            out = abs(own_net_y) - 4 - (1 if own_net_y > 0 else -1) * a["y"]
+            if abs(a["x"]) > 35 or not 0 <= out <= 100:
+                continue
+            if any(math.hypot(P[j]["x"] - a["x"], P[j]["y"] - a["y"]) <= 20 for j in self.mine if P[j]["pos"] not in (0, 0xFF)):
+                continue
+            if best is None or out < best[0]:
+                best = (out, k)
+        return best and best[1]
+
     def defence(self, P, me, owner, s):
         m, pk = P[me], P[PUCK]
         own_net_y = -s * 268
@@ -678,12 +701,12 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
-            if self.version in (31, 32, 33, 34, 35, 36):
+            if self.version in (31, 32, 33, 34, 35, 36, 37, 38):
                 # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
                 # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
                 # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
                 # charging, cross-checking)
-                dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)   # 33, 34: as 32
+                dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)   # 33-38: as 32
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
             if self.version == 36 and out_c < PK36["zone"] and L > PK36["hold"] + 15 and self.shorthanded(P):
@@ -695,6 +718,18 @@ class Bot:
                 tx, ty = -dx / L * SLOT23["hold"], own_net_y - dy / L * SLOT23["hold"]
             dist_to_puck = {k: math.hypot(P[k]["x"] - c["x"], P[k]["y"] - c["y"]) for k in self.mine if P[k]["pos"] != 0}
             dc = dist_to_puck.get(me, 999)
+            if self.version == 37 and out_c < COVER37["zone"] and min(dist_to_puck.values()) + COVER37["margin"] < dc:
+                # version 37 (2026-11-01, slot_defence.py: 94% of one-timers went to a man open in the slot): a
+                # teammate is on the carrier and an attacker without the puck stands open in our slot: cover him, on
+                # his side of the pass line, instead of chasing (no poke, no switch)
+                o = self.open_in_slot(P, owner, own_net_y)
+                if o is not None:
+                    a = P[o]
+                    ex, ey = c["x"] - a["x"], c["y"] - a["y"]
+                    el = math.hypot(ex, ey) or 1
+                    tx, ty = a["x"] + COVER37["off"] * ex / el, a["y"] + COVER37["off"] * ey / el
+                    self.covering = self.frame
+                    return pad(dir_to(tx - m["x"], ty - m["y"]))
             closing = (c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"]) > 0
             rate = ((c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"])) / max(1, math.hypot(c["x"] - m["x"], c["y"] - m["y"]))
             if self.version == 35 and dc < dp["poke"] and rate > POKE35:
@@ -708,12 +743,29 @@ class Bot:
             elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36) and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38) and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
         nearest = min(dist_to_puck, key=dist_to_puck.get)
         margin = DEF22["switch"] if self.version >= 22 else 50
+        if self.version == 38 and not loose and self.frame % 10 == 0 and "B" not in out:
+            # version 38 (2026-11-01, slot_defence.py: an empty slot with nobody home was the commonest danger): the
+            # carrier past us toward our net (we are farther from our net than he is) and a teammate goal-side of
+            # him (nearer our net, within GOAL38 of the line from him to it): B, so control goes to that teammate
+            # rather than chasing from behind
+            c = P[owner]
+            to_net = lambda q: math.hypot(q["x"], own_net_y - q["y"])
+            if to_net(m) > to_net(c) + GOAL38["behind"]:
+                for k in self.mine:
+                    q = P[k]
+                    if k == me or q["pos"] == 0 or to_net(q) >= to_net(c):
+                        continue
+                    dx, dy = -c["x"], own_net_y - c["y"]
+                    L = math.hypot(dx, dy) or 1
+                    side = abs((q["x"] - c["x"]) * dy - (q["y"] - c["y"]) * dx) / L
+                    if side < GOAL38["line"]:
+                        return ["B"] + pad(d)
         if nearest != me and dist_to_puck[nearest] + margin < dist_to_puck.get(me, 999) and "B" not in out \
                 and self.frame % 20 == 0:
             out.append("B")                         # tap: control switches to whoever the game picks
