@@ -254,7 +254,10 @@ a setting, a result that changes the plan).
     +-0.50; power plays against it scored 41 of 70 (59%), against 32 41 of 74 (55%): no better on the kill.
     **35**, a poke only when not closing on the carrier faster than 0.4 a frame: 13-17, -0.87 +-0.66; its penalties
     halved (56 against 106, tripping 23 against 42) and its power-play edge was 41-27, but shots against rose to 851
-    from 638 and it lost 150-190 at even strength: the trade is close, so its threshold is being swept. **36**, the
+    from 638 and it lost 150-190 at even strength. Its threshold swept (30 games each against 32): 0.8 a frame 9-20,
+    -1.57 +-0.73 (penalties 67-96); 1.2 13-17, -0.97 +-0.68 (penalties 88-118); shots against about 845 at every
+    setting. The head-on poke, the bot closing on the carrier, is both its trips and its steals: no setting keeps one
+    without the other. Not kept. **36**, the
     penalty kill holding the slot 40 out when the carrier is within 150 of our goal line: 9-21, -1.87 +-0.66, power
     plays against it 50 of 69 (72%): sitting back on the kill is worse than chasing.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
