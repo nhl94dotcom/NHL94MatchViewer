@@ -212,7 +212,15 @@ makes the recorded total worse, 191 xG; the goalies there do skate across to the
 the 17 recorded SNES games are on `cd85e387`, which differs from the retail ROM in 59 bytes, a call at $9E:9BCB into 56
 new bytes at $9E:FBD1 that add to per-player figures read by player number: a stat-keeping hook, not the goalie's
 play). So the recordings and the game disagree about the computer goalie after a release for reasons still to find
-(the release moment as the recording reads it, people's takeovers and switching).
+(the release moment as the recording reads it, people's takeovers and switching). **Replaying the recorded shots in the game**
+(`analysis/scoring_map/snes_rec_replay.py`, 2026-10-31: 424 recorded shots at a computer goalie, each placed in the
+retail game turned to the top net, the goalie where and how fast the recording has him after setting against the puck,
+the puck loose with its recorded launch, 16 play-outs; the model from the same state with the same launch): the game
+82.4 goals, the old movement 90.2, the gliding goalie 110.3, against 85 recorded. But the replay doesn't reproduce the
+shots one by one (log loss against the recorded results 0.719, the old model 0.717): several recorded goals close in
+never go in when replayed, because a recording has the goalie's spot and speed but not his inner state (his rethink
+timer, his target, a save already decided), which the replay has to make up by letting him set first. So placing
+recorded moments can't settle it either; the switch stays off.
 
 **Pass shots** (2026-10-30) get xG too: played from the puck's recorded start over the next 50 ms (no aim, no scatter)
 with the pass's random lift (0-$FFF, SNES_MECHANICS 6.1). The 13 recorded SNES pass shots (both game folders): 1.9
