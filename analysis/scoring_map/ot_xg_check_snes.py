@@ -34,9 +34,13 @@ import time  # noqa: E402
 SEEDS, SAMPLES = 4, 200
 # the model variants asked: (glide in a save, the goalie's inner state, the game's save-side rules); env
 # NHL94_OT_VARIANTS="choice" for the save-choice test (2026-11-01: old / glide, each with and without the side rules)
-VARIANTS = ([(False, False, False), (True, False, False), (False, False, True), (True, False, True)]
-            if __import__("os").environ.get("NHL94_OT_VARIANTS") == "choice" else
+_V = __import__("os").environ.get("NHL94_OT_VARIANTS")
+VARIANTS = ([(False, False, False), (True, False, False), (False, False, True), (True, False, True)] if _V == "choice" else
+            [(False, False, False), (True, False, False), (False, False, "launch"), (True, False, "launch")]
+            if _V == "launch" else
             [(False, False, False), (False, True, False), (True, False, False), (True, True, False)])
+# "launch" (2026-11-01, snes_goalie_path.py: on the game's own puck path the gliding goalie stops 76% of one-timers from
+# 120-200 out, the game 68%): the model also given the puck's launch as the game struck it (no aim, no scatter)
 FACING, FRAME = 0x1163, 0x0D97
 WORK = (0x12C3, 0x12E3, 0x1303, 0x1343)        # weight, agility, speed, aidef (systems/snes.py OBJ_WORK)
 
@@ -82,6 +86,7 @@ def main():
                             continue
                         ot.strike(pre, aim, rnd.getrandbits(32))
                         after = e.serialize()
+                        launch = (s.v(s.PUCK)[0], s.v(s.PUCK)[1], e.w(s.H.PUCKVZ) - (0x10000 if e.w(s.H.PUCKVZ) & 0x8000 else 0))
                         px, py = s.xy(s.PUCK)
                         gx, gy = s.xy(s.GOALIE)
                         n = max(1, frames)
@@ -106,7 +111,7 @@ def main():
                         models = {}
                         for glide, use, choice in VARIANTS:
                             if True:
-                                XS.GLIDE_IN_SAVE, XS.SAVE_CHOICE = glide, choice
+                                XS.GLIDE_IN_SAVE, XS.SAVE_CHOICE = glide, choice is True
                                 rng = random.Random(f"{net}{R}{P}{timing}{p}{aim}")
                                 goals = 0
                                 for _ in range(SAMPLES):
@@ -114,8 +119,9 @@ def main():
                                     if use:
                                         G.set_internals(**state)
                                     goals += XS.play_out(px, py, tx, ty, tz, max(1.0, speed / 136), sha,
-                                                         (sha + 1) / (sha + 16), G, rng) == "goal"
-                                models[("glide" if glide else "old") + ("_state" if use else "") + ("_choice" if choice else "")] = goals / SAMPLES
+                                                         (sha + 1) / (sha + 16), G, rng,
+                                                         launch=launch if choice == "launch" else None) == "goal"
+                                models[("glide" if glide else "old") + ("_state" if use else "") + ("_launch" if choice == "launch" else "_choice" if choice else "")] = goals / SAMPLES
                         XS.GLIDE_IN_SAVE = XS.SAVE_CHOICE = False
                         breathe()
                         f.write(json.dumps({"net": net, "R": R, "P": P, "timing": timing, "p": p, "aim": aim,
