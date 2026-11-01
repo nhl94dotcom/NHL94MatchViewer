@@ -242,3 +242,9 @@ a setting, a result that changes the plan).
   power-play goals too ($02 in the team stat block). About 20 power-play goals in 20 games is too few to tune on;
   placing 5-on-4 situations would need the game's penalty state faked, not yet done.
 - Testing stays on the retail ROMs (the user, 2026-10-31; for the SNES NHL94_Classic is also fine).
+- **Version 30, a relief pass** (a defender within 24 ahead: pass to the open teammate farthest up the ice, no
+  opponent within 30 of him, a clear lane, under 150 long; no one-timer, he carries on): against the bot's defence 78
+  goals against 26's 88 (-2.1 +-0.9), from 100 up the ice only 80 (-1.7 +-0.7); lost pucks 271 against 261 (the
+  passes are picked off or the receiver loses it). Not kept. With this, the bot's own skater has been tuned about as
+  far as rules for one skater go: the open levers are the computer-run teammates (where they skate) and playing in
+  RetroArch against people.
