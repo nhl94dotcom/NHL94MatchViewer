@@ -86,7 +86,7 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   workers at idle priority, each resting as long as it works; the user's fan; about 30x slower than 30 workers).
 - The user's league result databases (every league game since 2013, both systems; real players' names, so never in
   the repo): `%USERPROFILE%\NHL94_League_Data\All_Games_GENS.csv`, `All_Games_SNES.csv`. `analysis/league_home_study.py`
-  reads them and prints aggregates only; put only aggregates in the docs.
+  reads them and prints aggregates only; put only aggregates in the docs. `analysis/coach_rating.py` fits a strength per coach and writes its table with names to that folder only (LEAGUE_RESULTS).
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
   `helper_snes_penalty_shots.py` ...): a recording played back as if RetroArch were running it; run one after changing
   the helper or a system's `View`. Also `check_matches.py`, `xg_parity.py`, `viewer_smoke.py`, `viewer_stat_sums.py`
