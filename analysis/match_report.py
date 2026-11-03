@@ -1,7 +1,7 @@
 """The standard match report (2026-10-21, the user picked the sections): result and luck vs skill, the game's story,
 ratings as played (hot / cold), goaltending and how each person played the goalie, faceoff skill, shot timing,
 checking (C vs CB choice against the weight bug), pokes, rush defence, costly turnovers, who carried the team, score
-effects, special teams, post luck. Both teams measured the same way. Genesis games (the checking and faceoff sections use Genesis
+effects, special teams, post luck, what check attempts led to. Both teams measured the same way. Genesis games (the checking and faceoff sections use Genesis
 frames and the weight-bug rule).
 python analysis/match_report.py <match name> ...   (matches/ or Documents/NHL94 Viewer/matches) -> reports/<name>.md"""
 import json
@@ -18,6 +18,7 @@ import deserve as DES  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import slot_defence as SD  # noqa: E402
+import check_outcomes as CO  # noqa: E402
 
 K = 12
 DIRS = [Path("matches"), Path(os.path.expanduser("~/Documents/NHL94 Viewer/matches"))]
@@ -515,6 +516,15 @@ def report(name):
           f"{m['rosters'][sh['team']][sh['idx']]['name']}, xG {sh['xg']:.2f}, with the score "
           f"{ab[0]} {m['score'][2 * f]}-{m['score'][2 * f + 1]} {ab[1]}.")
     w("\nA post on a high-xG shot is mostly bad luck, though one shot's xG is rough. Pass shots have no xG.\n")
+
+    # check attempts and what followed (check_outcomes.py)
+    w("## 16. What each person's check attempts led to\n")
+    events, baseline, _ = CO.measure(m)
+    for team in (0, 1):
+        for line in CO.lines(m, events, baseline, team):
+            w(line)
+    w("Hit: the game counted a check. Failed: he reached a man and it did nothing. Whiff: he touched nobody. A goal after a miss "
+      "doesn't prove the miss caused it, and one game's counts are small.\n")
     return "\n".join(L)
 
 
