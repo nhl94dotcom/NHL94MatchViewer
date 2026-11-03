@@ -283,6 +283,20 @@ of victory (25% for each goal past the first, up to 100%): coasting time is most
 name. Putting the ratings in the 90% line makes it worse on both: the favourite reaches the line sooner, so the
 bonus goes mostly to expected wins, which the ratings had already counted.
 
+**A coach strength rating** (`analysis/coach_rating.py`, 2026-11-03; the table with people's names stays in the league data folder): every game at once by ridge
+regression, result value = home coach - away coach + home team - away team + home edge, team terms in Classic leagues only, recent games weighted (half-life 1.5
+years won). Result values: win or loss; goal difference capped at +-5; win or loss plus the winner's coasting share (capped at 100%); a blend. Log loss on later decided games between
+people with 30+ earlier games, refitted monthly from 2020:
+
+| | Elo, updated every game | Elo, frozen monthly | Win only | Margin | Coasting | Blend |
+| --- | --- | --- | --- | --- | --- | --- |
+| Genesis | 0.6030 | 0.6146 | 0.6065 | 0.6049 | 0.6059 | 0.6057 |
+| SNES | 0.5915 | 0.6044 | 0.5964 | 0.5924 | 0.5943 | 0.5931 |
+
+Like for like (frozen monthly) the fit beats Elo by about 0.01. Elo updated after every game still beats a monthly refit, except on Classic Genesis games with margin (0.6325 to 0.6337). Coasting beats win-only
+(by 0.0006 / 0.0022) and loses to capped margin (by 0.0010 / 0.0019), all clear of the paired spread (0.0001-0.0003) but small. Two random halves of the games fitted apart agree at 0.98 over coaches with 100+ games. The Genesis team
+terms agree with the team study above; the SNES ones less well (Quebec and Boston differ), as that study also found them weak. The table's give-or-take comes from the fit alone and is too narrow: it ignores form and the team terms' error.
+
 **By year:** the Genesis shooting % fell from 33-36% (2013-2019) to 31-32% (2020 on) on the same shots, penalty
 minutes from about 6 a game to 3-5; one-timers, breakaways and checks stayed level. SNES pass completion jumped from
 52-57% to 63-65% in 2025-26 (new leagues or ROMs counting differently, most likely); the rest level.
