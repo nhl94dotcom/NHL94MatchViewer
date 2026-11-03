@@ -692,7 +692,9 @@ whole spread is only about 1.5 to 1.
 ### 8.6 Other whistles
 
 Forced stoppages that aren't penalties: a goalie holding the puck, a person's goalie skating too far out, the puck out
-of play, goals, the end of a period, icing.
+of play, goals, the end of a period, icing. Also a loose puck that doesn't move at all for 120 updates of the puck's
+logic (`.resetstilltimer` in `logic94.asm`, penalty number 6, the same as out of play; any movement or a carrier restarts it).
+**Code**; not timed on the Genesis (SNES_MECHANICS 8.3 has a recorded case).
 
 ### 8.7 Icing
 

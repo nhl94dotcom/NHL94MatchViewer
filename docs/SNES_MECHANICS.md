@@ -625,6 +625,11 @@ charging, slashing, cross-checking, hooking, tripping, penalty shot, interferenc
 - **Icing** (`PuckIChk`, `a2touchpuck`): touch-up icing as on the Genesis (armed by a touch in your own half when not
   shorthanded, called when the other team's skater touches it first, waved off by your own skater or a goalie), but
   **any crossing of the far goal line counts**: there's no Genesis-style 44-unit window in the middle. **Code**
+- **The still-puck whistle** (`pucknorm`, timer `temp2b`, penalty number `PenOOP`): a loose puck that doesn't move at all for
+  120 game steps stops play, anywhere on the ice. Any movement, or anyone holding it, restarts the count. **Code**. At two
+  frames a step that's 4 seconds, and the one recorded case fits: `2026-11-02_2139_WPG-TOR` P1 2:47, Steen's check took the puck off
+  Cullen behind the top net and it stopped dead at (7, 279); the clock stopped 3.98 s later (10 clock seconds), and the faceoff was
+  at (70, 206). **Confirmed** (one case).
 
 ### 8.4 Penalty lengths
 
