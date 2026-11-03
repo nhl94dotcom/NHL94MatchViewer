@@ -296,6 +296,18 @@ people with 30+ earlier games, refitted monthly from 2020:
 Like for like (frozen monthly) the fit beats Elo by about 0.01. Elo updated after every game still beats a monthly refit, except on Classic Genesis games with margin (0.6325 to 0.6337). Coasting beats win-only
 (by 0.0006 / 0.0022) and loses to capped margin (by 0.0010 / 0.0019), all clear of the paired spread (0.0001-0.0003) but small. Two random halves of the games fitted apart agree at 0.98 over coaches with 100+ games. The Genesis team
 terms agree with the team study above; the SNES ones less well (Quebec and Boston differ), as that study also found them weak. The table's give-or-take comes from the fit alone and is too narrow: it ignores form and the team terms' error.
+"Average" in the tables is the mean of coaches with 100+ games (they average 56% on the Genesis and 65% on the SNES against the all-coach mean); only the zero point moves. Removing low-game coaches' games instead made predictions slightly worse, so every game stays in the fit.
+
+Each league group fitted alone (`coach_rating.py groups`, refitted monthly, each with its own best settings; team terms only in Classic, so in a draft league a coach's roster is part of his rating):
+
+| Leagues | Games | Elo, every game | Elo, frozen monthly | Win only | Margin | Coasting | Blend |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Genesis Classic | 23,054 | 0.6500 | 0.6642 | 0.6479 | 0.6466 | 0.6464 | 0.6463 |
+| SNES Classic | 15,135 | 0.6417 | 0.6581 | 0.6542 | 0.6502 | 0.6523 | 0.6510 |
+| Genesis Chaos | 11,711 | 0.6458 | 0.6647 | 0.6457 | 0.6440 | 0.6445 | 0.6440 |
+| SNES Draft | 7,918 | 0.6336 | 0.6531 | 0.6430 | 0.6422 | 0.6408 | 0.6394 |
+
+On the Genesis the fit is at least level with Elo updated every game (clearly better in Classic, 0.0036 +- 0.0018); on the SNES that Elo stays ahead (by 0.007-0.011). Coasting always beats win-only; against margin it's a tie except SNES Classic, where margin is ahead by 0.002.
 
 **By year:** the Genesis shooting % fell from 33-36% (2013-2019) to 31-32% (2020 on) on the same shots, penalty
 minutes from about 6 a game to 3-5; one-timers, breakaways and checks stayed level. SNES pass completion jumped from
