@@ -1082,6 +1082,21 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
 - **Version 16, the default (BOT_PLAN "Status"):** no slapshot under pressure and the close-in wrist shot from 170 up
   the ice: from the entries 16.9% (version 11 10.0%, people 15.5%); whole games 8.50 goals a game to 1.05 (6.20).
 
+## What check attempts lead to (both systems, 2026-11-03)
+
+The user: what does a failed or whiffed check cost, whoever else is back? `analysis/check_outcomes.py --all` (every recorded
+game): a person's burst while the other team has the puck with an opponent in reach ahead, as hit (the game counted a check),
+failed (reached a man, or the SNES check animation, nothing counted) or whiff (touched nobody); then the other team's shots and goals
+in 6 s while his team hasn't had the puck and no faceoff has come. Goal within 6 s: Genesis 967 attempts, hit 6.4%, failed
+12.9%, whiff 11.1%, no attempt 10.3% of moments; SNES 887, hit 3.5%, failed 12.2%, whiff 14.8%, no attempt 10.2%. In his own end:
+Genesis 4.1 / 18.1 / 17.0 / 15.7%, SNES 5.0 / 18.9 / 22.6 / 14.7%. The puck won: hits 57-65%, misses 24-30%. A miss by who else was goal-side:
+last man 20.5 / 23.8%, one teammate 10.9 / 18.3%, two or more 9.6 / 7.8% (Genesis / SNES), so on the SNES one teammate adds little.
+A miss from goal-side loses goal-side within 1 s 74 / 71% of the time; goal 13.5 / 12.6% when it does, 5.6 / 3.4% when it doesn't. The
+fair comparison for the decision, in his own end from goal-side with the carrier in reach: tried 12.7 / 12.4% goal, won the puck 50 / 59%;
+held off 13.1 / 13.0%. So a check tried there about breaks even on goals against: a hit saves about what a miss costs, and the attempt also wins
+the puck half the time or more. Neighbouring moments aren't independent, people choose when to try, and dodged and badly aimed misses aren't told apart.
+47 different goals on each system came within 6 s of a miss (bursts under 1 s before the shot not counted), about a quarter of the goals. In the match report: section 16.
+
 ## Keeping the other team out of the slot (Genesis, 2026-11-01)
 
 The user's hypothesis after the BOS-TOR games: the key on defence is keeping the other team, and above all the puck,
