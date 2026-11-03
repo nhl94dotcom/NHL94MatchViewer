@@ -203,7 +203,7 @@ def main():
             elif last >= 0:
                 r_ = int(RO[last * K + O[last]], 36)
                 nm = Rs[them][r_]["name"].split()[-1] if r_ < len(Rs[them]) else "?"
-                tv = next((e for e in m["turnovers"] if e["from"] == them and e["kind"] != "dump-in" and abs(T[e["f"]] - T[last]) <= 1500), None)
+                tv = next((e for e in m["turnovers"] if e["from"] == them and e["kind"] != "dump-in" and abs(T[e.get("lost", e["f"])] - T[last]) <= 300), None)
                 shot = any(z["team"] == them and abs(T[z["f"]] - T[last]) <= 700 for z in m["shotList"])
                 began = f"{tv['how'] if tv else 'his shot' if shot else 'the puck coming loose'}, {nm}, {(T[f] - T[last]) / 1000:.0f} s before"
             else:
