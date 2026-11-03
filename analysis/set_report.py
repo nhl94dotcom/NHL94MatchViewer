@@ -194,13 +194,18 @@ def main():
         for x_ in m["goals"]:
             f = x_["f"]
             s = max((s for s in m["shotList"] if s["team"] == x_["team"] and s["result"] == "goal" and s["f"] <= f + 3), key=lambda s: s["f"], default=None)
-            tv = max((e for e in m["turnovers"] if e["from"] == 1 - x_["team"] and e["f"] <= f and e["kind"] != "dump-in"), key=lambda e: e["f"], default=None)
             fo = max((q for q in fos if q <= f), default=-1)
-            if tv and tv["f"] > fo:
-                nm = Rs[1 - x_["team"]][tv["giver"]]["name"].split()[-1] if 0 <= tv.get("giver", -1) < len(Rs[1 - x_["team"]]) else "?"
-                began = f"{tv['how']}, {nm}, {(T[f] - T[tv['f']]) / 1000:.0f} s before"
-            elif fo >= 0:
+            # the last moment the other team had the puck: a turnover only exists if no shot lost it, so go by possession
+            them = 1 - x_["team"]
+            last = next((i for i in range(f, -1, -1) if O[i] is not None and 0 <= O[i] < 12 and (O[i] < 6) == (them == 0)), -1)
+            if fo > last:
                 began = f"faceoff, {(T[f] - T[fo]) / 1000:.0f} s before"
+            elif last >= 0:
+                r_ = int(RO[last * K + O[last]], 36)
+                nm = Rs[them][r_]["name"].split()[-1] if r_ < len(Rs[them]) else "?"
+                tv = next((e for e in m["turnovers"] if e["from"] == them and e["kind"] != "dump-in" and abs(T[e["f"]] - T[last]) <= 1500), None)
+                shot = any(z["team"] == them and abs(T[z["f"]] - T[last]) <= 700 for z in m["shotList"])
+                began = f"{tv['how'] if tv else 'his shot' if shot else 'the puck coming loose'}, {nm}, {(T[f] - T[last]) / 1000:.0f} s before"
             else:
                 began = "?"
             name = Rs[x_["team"]][x_["scorer"]]["name"].split()[-1] if isinstance(x_.get("scorer"), int) and x_["scorer"] < len(Rs[x_["team"]]) else "?"
