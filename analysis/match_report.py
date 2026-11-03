@@ -211,11 +211,18 @@ def report(name):
             if genesis:
                 cells.append(f"{r['name']}{' (G)' if r.get('g') else ''} {r.get('hc', 0):+d}")
             else:
-                cells.append(f"{r['name']}{' (G)' if r.get('g') else ''} {sum(1 for v in (r.get('hcs') or []) if v == 'max')} maxed")
+                vals = r.get("hcs") or [0] * 14
+                names = ((1, "Agl"), (2, "Spd")) if r.get("g") else ((2, "Spd"), (9, "ShA"), (6, "Chk"), (8, "Stk"))
+                up = [n for i_, n in names if vals[i_] == "max"]
+                cells.append(f"{r['name']}{' (G)' if r.get('g') else ''} {sum(1 for v in vals if v == 'max')} maxed"
+                             + (f" ({', '.join(up)})" if up else ""))
         hcs = [m["rosters"][team][i].get("hc", 0) for i in regs]
         w(f"- **{ab[team]}** (most-used, with hot/cold): {', '.join(cells)}." + (f" Average {sum(hcs) / max(1, len(hcs)):+.1f}." if genesis else ""))
-    w("\nA goalie's Agility sets his reach (12-15); -3 can cost about a unit of reach, +2 add one. For skaters it moves "
-      "Speed, Agility, Shot Accuracy and the rest together.\n")
+    if genesis:
+        w("\nA goalie's Agility sets his reach (12-15); -3 can cost about a unit of reach, +2 add one. For skaters it moves "
+          "Speed, Agility, Shot Accuracy and the rest together.\n")
+    else:
+        w("\nSpd Speed, ShA Shot Accuracy, Chk Checking, Stk Stick Handling, Agl Agility: those of the maxed ratings most worth knowing.\n")
 
     # 4. goaltending
     w("## 4. Goaltending, and how each person played his goalie\n")
@@ -263,24 +270,25 @@ def report(name):
           "you there more often. 'Won the puck first' is the game's own faceoff stat.\n")
 
     # 6. shot timing
-    w("## 6. Shot timing: at a set goalie or a moving one\n")
+    w("## 6. Where the goalie was at the release\n")
     for team in (0, 1):
-        sel = [s for s in shots if s["team"] == team and s.get("human") and s["kind"] in ("shot", "one-timer")]
-        cls = {"set": [], "moving": []}
-        for s in sel:
+        cls = {"under 2 ft": [], "2-5 ft": [], "5+ ft": []}
+        for s in shots:
+            if s["team"] != team:
+                continue
             f = s["f"]
             gk = G.goalie(f, 1 - team)
             if gk is None:
                 continue
             gx, gy = G.pos(f, gk)
-            px, py = G.pos(max(0, f - 6), gk)
-            speed = math.hypot(gx - px, gy - py) / max(1e-3, (t[f] - t[max(0, f - 6)]) / 1000)
             off = off_line(s["x"], s["y"], gx, gy, G.net_y(f, 1 - team))
-            cls["set" if off < 5 and speed < 40 else "moving"].append(s)
+            cls["under 2 ft" if off < 6 else "2-5 ft" if off < 15 else "5+ ft"].append(s)
         cells = [f"{k}: {len(v)} shots, {sum(s['result'] == 'goal' for s in v)} goals, xG {sum(s.get('xg') or 0 for s in v):.1f}" for k, v in cls.items()]
-        w(f"- **{ab[team]}**: {'; '.join(cells)}.")
-    w("\n'Set': the goalie square to the shot (within 5 of the line) and not moving. Shooting while he is moving or off his "
-      "line is the better decision.\n")
+        far = cls["5+ ft"]
+        w(f"- **{ab[team]}** shooting: {'; '.join(cells)}. Of the 5+ ft, a person had the goalie for "
+          f"{sum(s.get('gctl') == 'human' for s in far)} ({sum(s.get('gctl') == 'human' and s['result'] == 'goal' for s in far)} goals).")
+    w("\nThe goalie's distance from the line between the puck and the middle of his net. xG allows for it, so this isn't a separate reason "
+      "from the xG above.\n")
 
     # 7. checking: C vs CB against the weight bug
     w("## 7. Checking, and C vs CB skill\n")
@@ -391,7 +399,7 @@ def report(name):
     w("## 10. Turnovers that cost\n")
     for team in (0, 1):
         opp = 1 - team
-        tos = [g for g in m.get("turnovers", []) if g["from"] == team]
+        tos = [g for g in m.get("turnovers", []) if g["from"] == team and g["kind"] != "dump-in"]
         zone = Counter()
         costly = []
         for g in tos:
@@ -400,13 +408,16 @@ def report(name):
             zone[z] += 1
             nxt = [s for s in shots if s["team"] == opp and 0 <= t[s["f"]] - t[g["f"]] <= 5000]
             if nxt:
-                costly.append((g, z, any(s["result"] == "goal" for s in nxt)))
-        w(f"- **{ab[team]}**: {len(tos)} turnovers ({', '.join(f'{v} {k}' for k, v in zone.most_common())}); "
-          f"{len(costly)} gave up an attempt within 5 s, {sum(c[2] for c in costly)} a goal.")
+                costly.append((g, z, next((s["f"] for s in nxt if s["result"] == "goal"), None)))
+        hows = Counter(g["how"] for g in tos)
+        w(f"- **{ab[team]}**: {len(tos)} pucks lost ({', '.join(f'{v} {k}' for k, v in zone.most_common())}; "
+          f"{', '.join(f'{v} {k}' for k, v in hows.most_common())}); {len(costly)} gave up an attempt within 5 s, "
+          f"{len({c[2] for c in costly if c[2] is not None})} a goal.")
         for g, z, goal in costly:
-            if goal:
+            if goal is not None:
                 w(f"  - {G.clock_text(g['f'])}: {G.name_of(team, g['giver'])} ({g['how']}, {z}) -> goal against")
-    w("")
+    w("\nHit: the game counted a check on him, or he went down. Burst: an opponent's burst reached him with no check counted. "
+      "Pass picked off and lost the puck are his own; the rest were forced.\n")
 
     # 11. who carried the team
     w("## 11. Who carried the team\n")
@@ -468,7 +479,7 @@ def report(name):
         w("")
 
     # 14. keeping the other team out of the slot (slot_defence.py)
-    if genesis and "owner" in m:
+    if "owner" in m:
         w("## 14. Keeping the other team out of the slot\n")
         stats, ot = SD.measure(m, ab)
         w("Every quarter second with the other team carrying the puck in this team's end (loose pucks not counted), who was in this team's slot (within 35 of "
@@ -525,6 +536,16 @@ def report(name):
             w(line)
     w("Hit: the game counted a check. Failed: he reached a man and it did nothing. Whiff: he touched nobody. A goal after a miss "
       "doesn't prove the miss caused it, and one game's counts are small.\n")
+
+    w("## 17. Passing and the person's hands\n")
+    for team in (0, 1):
+        ps = [p for p in m.get("passes", []) if p["team"] == team]
+        got = sum(p["result"] in ("completed", "one-timer") for p in ps)
+        h = (m.get("habits") or [None, None])[team] or {}
+        w(f"- **{ab[team]}**: {got} of {len(ps)} passes reached a teammate ({pct(got, len(ps))}), {sum(p['result'] == 'intercepted' for p in ps)} picked off; "
+          f"{h.get('bursts', 0)} bursts, {h.get('pokes', 0)} pokes ({h.get('pokeTakeaways', 0)} won the puck), {h.get('goalieSeconds', 0)} s controlling the goalie.")
+    w("\nPasses here are the ones the recording tracks. The game's own 'completed' count only credits the intended receiver, so it reads lower "
+      "(the viewer's Passes row, season PASS%).\n")
     return "\n".join(L)
 
 
