@@ -920,6 +920,13 @@ away from the goal line, at least 1500 speed units, at most one per second. Cali
 sample. Across all captures it fires three times: that one, `capture5_league30` 4:47 of period 3, and
 `capture3_bos_la` 2:32 of period 2; the last two are unconfirmed. Posts sit at about (+/-20, +/-265).
 
+How often (2026-11-02, every finished game in the real-games folder): SNES 56 posts in 887 attempts (6.3%, 1.17 a team a
+game), Genesis 11 in 909 (1.2%, 0.25). The rule is the same on both. Looking for a Genesis undercount, the abrupt turns of
+the loose puck in the goal mouth, away from the goalie and not marked as posts, were listed (16); the eight checked by
+hand were goals or a puck not coming off a post, so no undercount was found and the gap looks real. Why is not settled.
+`match_report.py` section 15 gives each team's posts, the usual rate, the xG on them and any post on a chance of 0.3 xG or
+better with the score at the time.
+
 ## SNES expected goals and xG map (2026-10-17)
 
 `tools/xg_snes.py` (export_match calls it for SNES games with the ROM's bytes; snes.read_match now keeps `work`

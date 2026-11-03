@@ -68,7 +68,7 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`), and `match_report.py <match> ...`
   (a standard Genesis match report per game into `reports/<match>.md`, git-ignored: chances and luck, hot / cold,
   goaltending, faceoff timing, C vs CB checking against the weight bug, pokes, rush defence, leading / trailing,
-  keeping the other team out of the slot from `slot_defence.py`), and
+  keeping the other team out of the slot from `slot_defence.py`, post luck), and
   `play_by_play.py <match>` (each goal's build-up, big saves, posts, hits, injuries, rushes, the flow by minute: the raw
   material for a written match story; check every detail of a story against it, never add colour it doesn't show).
   `coach_report.py <TEAM> <TEAM> <match> ...` (how the two people played, their own skater only: decisions with the puck
