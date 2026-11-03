@@ -7,7 +7,8 @@ RESULT_MS:
 - hit: the game counted a check by him (knocked down or stayed up, as `find_hits` reads it);
 - failed: he reached a man (under CONTACT apart), or the SNES shows his check animation, and the game counted nothing: a check
   that lost its roll, or a burst that only shoved him. The man keeps skating;
-- whiff: he never touched anyone.
+- whiff: he got within NEAR (about 10 feet) of a man but never touched anyone.
+A burst that never gets within NEAR of an opponent isn't counted at all (the user: a burst is often just to reposition a defender).
 What follows, within AFTER_MS, as long as his team hasn't had the puck and there has been no faceoff: the other team's shot
 attempts, their xG, their goals. The skater goal-side of the puck (nearer his own net) at the burst, and BEHIND_MS later.
 Last man: no other skater of his was goal-side at the burst. The baseline: the same counts from moments when the other team
@@ -32,7 +33,7 @@ import systems  # noqa: E402
 from export_match import own_end  # noqa: E402
 import slot_defence as SD  # noqa: E402
 
-K, REACH, CONE, CONTACT, ZONE_LINE = 12, 70, 35, 18, 89
+K, REACH, CONE, CONTACT, NEAR, ZONE_LINE = 12, 70, 35, 18, 30, 89
 RESULT_MS, AFTER_MS, BEHIND_MS, BASE_STEP_MS, QUIET_MS, LATE_MS = 1000, 6000, 1000, 500, 1000, 1000
 RESULTS = ("hit", "failed", "whiff")
 ZONES = ("own", "neutral", "their")
@@ -102,16 +103,18 @@ def measure(m):
             e = own_end(m, f, team)
             if e is None:
                 continue
-            tried[team].append(f)
             who = roster(f, k)
             hit = next((h for h in m.get("hits", []) if h["team"] == team and h["by"] == who and 0 <= t[h["f"]] - t[f] <= RESULT_MS), None)
-            contact = thrown = False
+            thrown, closest = False, 10 ** 9
             q = f
             while q < N and t[q] - t[f] <= RESULT_MS:
                 thrown = thrown or (snes and an(q, k) in SNES_CHECKS)
-                contact = contact or any(math.dist(P(q, k), P(q, o)) < CONTACT for o in skaters(q, them))
+                closest = min([closest] + [math.dist(P(q, k), P(q, o)) for o in skaters(q, them)])
                 q += 1
-            result = "hit" if hit else "failed" if contact or thrown else "whiff"
+            if not (hit or thrown) and closest >= NEAR:
+                continue                                  # never got near anyone: a burst to reposition, not a check
+            tried[team].append(f)
+            result = "hit" if hit else "failed" if closest < CONTACT or thrown else "whiff"
             later = next((q for q in range(f, N) if t[q] - t[f] >= BEHIND_MS), N - 1)
             back = [o for o in skaters(f, team) if o != k and goal_side(f, o, e)]
             sh = after(f, team)
