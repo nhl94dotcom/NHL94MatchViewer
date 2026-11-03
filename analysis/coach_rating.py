@@ -20,7 +20,9 @@ games is used). Elo is scored on the same games, both live (updated after every 
 half-year points. Scored on all games and on Classic games.
 
 python analysis/coach_rating.py            the test and the private table
-python analysis/coach_rating.py monthly    the chosen settings refitted monthly, against Elo"""
+python analysis/coach_rating.py monthly    the chosen settings refitted monthly, against Elo
+python analysis/coach_rating.py groups     each of GROUPS fitted alone (Classic on each system, Chaos, SNES_Draft): coach_ratings_<system>_<group>.csv.
+                                           Team terms only for Classic; in a draft league a coach's roster is part of his rating."""
 import csv
 import math
 import sys
@@ -43,6 +45,10 @@ RIDGES = (2.0, 10.0, 40.0)
 SCOPES = ("all", "classic")
 MIN_TEAM_GAMES, MIN_SEEN, FIRST_YEAR = 100, 30, 2020
 ELO_K = {"GENESIS": 16, "SNES": 20}
+REF_GAMES = 100                                         # "average" in the table: the mean coach with this many games or more
+PREFIX = None                                           # only leagues whose name starts with this (lower case)
+GROUPS = (("All_Games_GENS.csv", "GENESIS", "classic"), ("All_Games_SNES.csv", "SNES", "classic"),
+          ("All_Games_GENS.csv", "GENESIS", "chaos"), ("All_Games_SNES.csv", "SNES", "snes_draft"))
 
 
 def day(text):
@@ -66,7 +72,8 @@ def team_columns(name):
 
 
 def prepare(name):
-    games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"])]
+    games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"])
+             and (PREFIX is None or g["league"].lower().startswith(PREFIX))]
     teams = team_columns(name)
     good = [g for g in games if g["goals"] is not None and g["hs"] - g["as"] == sum(1 if h else -1 for _, h in g["goals"])]
     tab = table(good)
@@ -252,7 +259,7 @@ def system(name, label, out_lines):
                         cnt["classic"] += int(c.sum())
                     x_prev = (x, won[idx])
                     breathe()
-                results[(ver, hl, ridge)] = {k: ll[k] / cnt[k] for k in ll}
+                results[(ver, hl, ridge)] = {k: ll[k] / cnt[k] if cnt[k] else float("nan") for k in ll}
                 done += 1
                 print(f"{label}: {done}/{total} after {time.time() - t0:.0f} s", flush=True)
     # the same test games for Elo: every fold after the first
@@ -278,6 +285,36 @@ def system(name, label, out_lines):
     for hl in HALF_LIVES:
         out_lines.append(f"| {'none' if hl is None else hl} | " + " | ".join(f"{results[(top, hl, r)]['all']:.4f}" for r in RIDGES) + " |")
     out_lines.append("")
+    if PREFIX:
+        # refitted monthly with each version's best settings, against Elo over these games alone
+        months = [f for f in (date(y, m, 1).toordinal() for y in range(FIRST_YEAR, 2027) for m in range(1, 13)) if f < days.max()]
+        live_m, frozen_m = elo_runs(games, ELO_K[label], months)
+        masks = [(a_, (days >= a_) & (days < b_) & rated) for a_, b_ in zip(months, months[1:] + [days.max() + 1])]
+        preds = {}
+        for ver in ("win", "margin", "coast", "blend"):
+            _, hl_, r_ = best[ver]
+            p_, hist = np.full(n, np.nan), []
+            for a_, test in masks:
+                w_ = np.ones(n) if hl_ is None else 0.5 ** ((a_ - days) / (365.25 * hl_))
+                b_, _ = D.fit(days < a_, w_, Y[ver], r_)
+                ids = np.nonzero(test)[0]
+                if not len(ids):
+                    continue
+                x = D.predict(b_, ids)
+                if hist:
+                    s = scale_for(np.concatenate([h[0] for h in hist[-6:]]), np.concatenate([h[1] for h in hist[-6:]]))
+                    p_[ids] = 1 / (1 + np.exp(-np.clip(s * x, -30, 30)))
+                hist.append((x, won[ids]))
+                breathe()
+            preds[ver] = p_
+        ids = np.nonzero(~np.isnan(preds["coast"]))[0]
+        loss = lambda p: -(won[ids] * np.log(np.clip(p, 1e-6, 1)) + (1 - won[ids]) * np.log(np.clip(1 - p, 1e-6, 1)))
+        L = {"Elo, updated every game": loss(live_m[ids]), "Elo, frozen monthly": loss(frozen_m[ids]), **{v: loss(p[ids]) for v, p in preds.items()}}
+        out_lines.append(f"Refitted monthly, {len(ids)} test games:\n\n| Rating | Log loss | Coast minus this |\n|---|---|---|")
+        for k, v in L.items():
+            d = L["coast"] - v
+            out_lines.append(f"| {k} | {v.mean():.4f} | {'' if k == 'coast' else f'{d.mean():+.4f} +- {d.std() / len(d) ** .5:.4f}'} |")
+        out_lines.append("")
     # the final fit, the coasting version as asked unless another clearly wins; written for both coast and the top version
     final_ver = "coast"
     _, hl, ridge = best[final_ver]
@@ -315,12 +352,18 @@ def system(name, label, out_lines):
                      f"Home edge {100 / (1 + math.exp(-home_x)):.1f}% for evenly matched coaches on a neutral team. {len(groups)} connected groups of coaches; the largest has {len(groups[0])}. "
                      f"Regulars' spread (sd): {float(np.std(beta[regulars]) * scale):.2f} on the win-chance scale, so a one-sd edge wins {100 / (1 + math.exp(-float(np.std(beta[regulars]) * scale))):.0f}%.\n")
     # the private table: win chance against an average coach, neutral teams and no home edge
+    # "average" is the average coach with REF_GAMES+ games (the user: those who've stuck around), each counted once. Only the zero point moves: every
+    # coach stays in the table, the gaps between coaches and the fit itself don't change.
+    reference = [i for p, i in D.people.items() if games_of[p] >= REF_GAMES]
+    zero, zero_career = float(np.mean(beta[reference])), float(np.mean(career[reference]))
+    out_lines.append(f"\"Average\" here: the mean of the {len(reference)} coaches with {REF_GAMES}+ games. On the old zero point (all coaches) they average {100 / (1 + math.exp(-zero * scale)):.1f}%.\n")
     rows = []
     for p, i in D.people.items():
         pct = lambda v: 100 / (1 + math.exp(-v * scale))
-        rows.append((pct(beta[i]), pct(beta[i] - se[i]), pct(beta[i] + se[i]), pct(career[i]), games_of[p], recent[p], date.fromordinal(last[p]).isoformat(), p, group_of[p]))
+        b_ = beta[i] - zero
+        rows.append((pct(b_), pct(b_ - se[i]), pct(b_ + se[i]), pct(career[i] - zero_career), games_of[p], recent[p], date.fromordinal(last[p]).isoformat(), p, group_of[p]))
     rows.sort(reverse=True)
-    path = DATA / f"coach_ratings_{label}.csv"
+    path = DATA / f"coach_ratings_{label}{'_' + PREFIX if PREFIX else ''}.csv"
     with open(path, "w", newline="", encoding="utf-8") as fh:
         wr = csv.writer(fh)
         wr.writerow(["coach", "win_chance_vs_average", "low", "high", "career", "games", "games_last_2_years", "last_played", "group"])
@@ -379,9 +422,19 @@ def monthly():
 
 
 def main():
+    global PREFIX
     gentle()
     if sys.argv[1:] == ["monthly"]:
         monthly()
+        return
+    if sys.argv[1:] == ["groups"]:
+        lines = ["# Coach strength rating: league groups, each fitted alone\n", "`analysis/coach_rating.py groups`. Aggregates only.\n"]
+        for name, label, prefix in GROUPS:
+            PREFIX = prefix
+            lines.append(f"\n# {label}, leagues starting \"{prefix}\"")
+            system(name, label, lines)
+        (DATA / "coach_rating_groups.md").write_text("\n".join(lines), encoding="utf-8")
+        print("\n".join(lines))
         return
     lines = ["# Coach strength rating: the test\n", "`analysis/coach_rating.py`. Aggregates only. Each coach's rating is in a file in the private league folder.\n"]
     for name, label in FILES:
