@@ -1054,18 +1054,23 @@ def find_zone_entries(m):
     return out
 
 
+BURST_CONTACT = 18  # a burster this close to the carrier has reached him
+
+
 def find_turnovers(m):
     """Changes of possession from one team to the other with no whistle between, and why. Possession is the
     game's own (puck +$60/+$61: who has the puck). A shot losing the puck is not a turnover (blocked, saved or
-    wide). Otherwise, if the other team poke-checked ($0B24), hooked ($1122) or body-checked ($0C5E, or the carrier
-    went down, $0DD8/$0D26) within half a second of the loss, it is a takeaway for that player; a carrier relieved of
+    wide). Otherwise, if the other team poke-checked ($0B24) or hooked ($1122) within half a second of the loss, or the game
+    counted a check on him within 0.8 s, or he went down ($0DD8/$0D26), it is a takeaway for that player ('hit' for the last two); an
+    opponent's burst that reached him with no check counted is 'burst'; a carrier relieved of
     the puck at once by an opponent on top of him is a takeaway too ('stolen'). Otherwise it is a giveaway by the
     player who lost it: a pass the other team picked off, or the puck simply lost. A pass the goalie collects is a
     dump-in, counted as neither (as the NHL counts them).
     Returns [{f (frame the other team has it), lost (frame it was lost), from (team that lost it), giver, taker, by
     (roster indices; by = who forced it, takeaways only), kind (giveaway, takeaway, dump-in), how, x, y}]."""
     act = actions(m)
-    causes = {**{w: 'poke check' for w in act['poke']}, **{w: 'hook' for w in act['hook']}, **{w: 'hit' for w in act['lunge']}}
+    causes = {**{w: 'poke check' for w in act['poke']}, **{w: 'hook' for w in act['hook']}}
+    hits = find_hits(m)
     t, P, own, A = m['t'], m['puck'], m['owner'], m['anim']
     N, K = len(t), 12
     anim = lambda i, k: A[(i * K + k) * 4:(i * K + k) * 4 + 4]
@@ -1104,15 +1109,30 @@ def find_turnovers(m):
                     cause = (causes[a], k); break
             if cause:
                 break
+        counted = None
+        if not cause:
+            # A check the game counted on him (2026-11-03: a burst nearby used to be enough to call it a hit; in a set of games
+            # that made one team's 50 hits on the carrier look like 52 pucks lost to hits, the other's 49 like 30).
+            giver = idx(lost, k1)
+            counted = next((h for h in hits if h['team'] == team(k2) and h['on'] == giver and abs(t[h['f']] - t[lost]) <= 800), None)
+            if counted:
+                cause = ('hit', next((k for k in rivals if idx(lost, k) == counted['by']), None))
         if not cause and any(anim(q, k1) in act['down'] for q in window):
             # He went down: the nearest opposing skater (a goalie only if no skater is there) hit him.
             near = sorted((k for k in rivals if m['role'][lost * K + k] != 'x'),
                           key=lambda k: (goalie(lost, k), math.hypot(pos(lost, k)[0] - pos(lost, k1)[0], pos(lost, k)[1] - pos(lost, k1)[1])))
             if near:
                 cause = ('hit', near[0])
+        if not cause:
+            # A burst that reached him with no check counted and no fall: the bump took the puck, or it came loose under pressure.
+            for q in window:
+                k = next((k for k in rivals if anim(q, k) in act['lunge'] and math.hypot(pos(q, k)[0] - pos(q, k1)[0], pos(q, k)[1] - pos(q, k1)[1]) < BURST_CONTACT), None)
+                if k is not None:
+                    cause = ('burst', k)
+                    break
         passed = any(anim(q, k1) in act['pass'] | act['goalie_pass'] for q in window if q <= lost + 2)
         if cause:
-            ev.update(kind='takeaway', how=cause[0], by=idx(lost, cause[1]))
+            ev.update(kind='takeaway', how=cause[0], by=counted['by'] if counted else idx(lost, cause[1]))
         elif passed and goalie(a2, k2):
             ev.update(kind='dump-in', how='to the goalie')
         elif passed:

@@ -268,9 +268,12 @@ def measure(m, team, M):
             target = any(math.hypot(*(d := (P(m, f, o)[0] - x, P(m, f, o)[1] - y))) < CHECK_REACH
                          and angle_to(fx, fy, *d) <= CHECK_CONE for o in skaters(m, f, opp))
             later = next((q for q in range(f, N) if t[q] - t[f] >= 1500), N - 1)
+            landed = any(0 <= t[h["f"]] - t[f] <= 700 for h in hits)
+            # a burst that never gets near anyone is repositioning, not a check (the user, 2026-11-03; check_outcomes.py)
+            target = target and (landed or any(math.dist(P(m, q, k), P(m, q, o)) < 30 for q in range(f, later)
+                                               for o in skaters(m, q, opp) if t[q] - t[f] <= 1000))
             if target:
                 c["b_check"] += 1
-                landed = any(0 <= t[h["f"]] - t[f] <= 700 for h in hits)
                 c["b_check_landed"] += landed
                 last_man = not any(goal_side(f, kk) for kk in skaters(m, f, team) if kk != k)
                 if last_man:

@@ -79,7 +79,7 @@ def check(r, from_start=True):
             zones = [num(v("Possession", f"· {z} zone") or "") for z in ("attacking", "neutral", "defensive")]
             if None not in zones and total is not None and abs(sum(zones) - total) > 1:
                 problems.append(("Possession", team, f"zones {zones} add to {sum(zones)}, not {total}"))
-        for label, sub in (("Giveaways", "· picked off / lost"), ("Takeaways", "· hit / poke / hook / steal"),
+        for label, sub in (("Giveaways", "· picked off / lost"), ("Takeaways", "· hit / poke / hook / burst / steal"),
                            ("Zone entries", "· carried / passed / dumped"), ("Tapestry goals", "· 2 / 3 / 4+ passes")):
             if v(label) and v(label, sub):
                 whole, split = num(v(label)), parts(v(label, sub))

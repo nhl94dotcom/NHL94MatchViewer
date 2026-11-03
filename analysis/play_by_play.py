@@ -216,8 +216,13 @@ def main(name):
     print(f"{m['team1']} (home, {G.ab[0]}) vs {m['team2']} (away, {G.ab[1]}): final {m['score'][-2]}-{m['score'][-1]}")
     for team in (0, 1):
         r = m["rosters"][team]
-        hc = ", ".join(f"{p['name']} {p.get('hc', 0):+d}" for p in r if p.get("hc") not in (None, 0))
-        print(f"  {G.ab[team]} hot / cold as played (non-zero): {hc or 'none'}")
+        if any(p.get("hcs") for p in r):            # SNES: a value per rating; a cold one is maxed
+            hc = ", ".join(f"{p['name']} {'+'.join(n for i, n in ((2, 'Spd'), (9, 'ShA'), (6, 'Chk'))  if p['hcs'][i] == 'max')}" for p in r
+                           if p.get("hcs") and not p.get("g") and any(p["hcs"][i] == "max" for i in (2, 9, 6)))
+            print(f"  {G.ab[team]} maxed as played: {hc or 'none'}")
+        else:
+            hc = ", ".join(f"{p['name']} {p.get('hc', 0):+d}" for p in r if p.get("hc") not in (None, 0))
+            print(f"  {G.ab[team]} hot / cold as played (non-zero): {hc or 'none'}")
     goalies = {team: {G.roster(i, k) for i in range(0, G.N, 50) for k in range(team * 6, team * 6 + 6) if G.role(i, k) == '0'} for team in (0, 1)}
     print("  goalies: " + "; ".join(f"{G.ab[t]} {', '.join(G.full(t, i) for i in goalies[t])}" for t in (0, 1)))
     who_human = [m.get("padTeam"), m.get("pad2Team")]
@@ -251,7 +256,7 @@ def main(name):
         if e.get("goalAfter") or (e.get("shotAfter") is not None and any(s["f"] == e["shotAfter"] and (s.get("xg") or 0) >= 0.25 for s in shots)):
             moments.append((e["f"], [f"TURNOVER {G.clock(e['f'])} {G.ab[e['from']]} {G.name(e['from'], e.get('giver'))} {e['kind']} ({e['how']}"
                                      f"{', by ' + G.name(1 - e['from'], e.get('by')) if e.get('by') is not None else ''}) "
-                                     f"{G.where(e['f'], 1 - e['from'], e['x'], e['y'])} -> {'GOAL' if e.get('goalAfter') else 'a good chance'}"]))
+                                     f"{G.where(e['f'], e['from'], e['x'], e['y'])} -> {'GOAL' if e.get('goalAfter') else 'a good chance'}"]))
     for p in m.get("penalties", []):
         moments.append((max(0, p["f"]), [f"PENALTY {G.clock(max(0, p['f']))} {G.ab[p['team']]} {G.full(p['team'], p['idx'])} code {p['code']}"]))
     for b in m.get("bobbles", []):

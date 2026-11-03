@@ -71,7 +71,8 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   keeping the other team out of the slot from `slot_defence.py`, post luck, what check attempts led to from `check_outcomes.py`), and
   `play_by_play.py <match>` (each goal's build-up, big saves, posts, hits, injuries, rushes, the flow by minute: the raw
   material for a written match story; check every detail of a story against it, never add colour it doesn't show).
-  `coach_report.py <TEAM> <TEAM> <match> ...` (how the two people played, their own skater only: decisions with the puck
+  `set_report.py <TEAM> <TEAM> <match> ...` (both systems: the numbers behind a written analysis of a set, `reports/set_*.md`; its docstring lists the rules a write-up keeps; `reports/<set>_writeup.md` are the analyses).
+  `coach_report.py <TEAM> <TEAM> <match> ...` (Genesis: how the two people played, their own skater only: decisions with the puck
   valued against the other options, shot selection, passing, bursts and pokes by purpose, defensive position and switch
   timing, goalie takeovers, using what the game rewards, who shoots, transition, pass risk; `reports/coach_<match>.md`;
   league tables from `coach_models.py`, cached in reports/), and `coach_predict.py` (which of those measures go with
