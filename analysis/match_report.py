@@ -1,7 +1,7 @@
 """The standard match report (2026-10-21, the user picked the sections): result and luck vs skill, the game's story,
 ratings as played (hot / cold), goaltending and how each person played the goalie, faceoff skill, shot timing,
 checking (C vs CB choice against the weight bug), pokes, rush defence, costly turnovers, who carried the team, score
-effects, special teams. Both teams measured the same way. Genesis games (the checking and faceoff sections use Genesis
+effects, special teams, post luck. Both teams measured the same way. Genesis games (the checking and faceoff sections use Genesis
 frames and the weight-bug rule).
 python analysis/match_report.py <match name> ...   (matches/ or Documents/NHL94 Viewer/matches) -> reports/<name>.md"""
 import json
@@ -94,6 +94,9 @@ class Game:
                 out[i] = prev - c
             per, prev = p, c
         return out
+
+
+POST_BIG_XG = 0.3  # a post on a chance at least this good is listed by name in the post luck section
 
 
 def off_line(px, py, gx, gy, ny):
@@ -494,6 +497,24 @@ def report(name):
             else:
                 w(f"- **{ab[team]}** gave up no one-timers.")
         w("")
+
+    # posts: the luck that goals against xG only shows mixed in with everything else
+    w("## 15. Post luck\n")
+    usual = "about 1% on the Genesis" if genesis else "about 6% on the SNES"
+    big = []
+    for team in (0, 1):
+        tried = [s for s in m["shotList"] if s["team"] == team]
+        hit = [s for s in tried if s["result"] == "post"]
+        w(f"- **{ab[team]}**: {len(hit)} of {len(tried)} attempts hit a post ({pct(len(hit), len(tried))}; usual: {usual}); "
+          f"xG on them {sum(s.get('xg') or 0 for s in hit):.1f}; goals {sum(s['result'] == 'goal' for s in tried)} on xG "
+          f"{sum(s.get('xg') or 0 for s in tried if s['result'] != 'blocked'):.1f}.")
+        big += [s for s in hit if (s.get("xg") or 0) >= POST_BIG_XG]
+    for sh in sorted(big, key=lambda s: s["f"]):
+        f = sh["f"]
+        w(f"  - P{m['period'][f] + 1} {m['clock'][f] // 60}:{m['clock'][f] % 60:02} {ab[sh['team']]} "
+          f"{m['rosters'][sh['team']][sh['idx']]['name']}, xG {sh['xg']:.2f}, with the score "
+          f"{ab[0]} {m['score'][2 * f]}-{m['score'][2 * f + 1]} {ab[1]}.")
+    w("\nA post on a high-xG shot is mostly bad luck, though one shot's xG is rough. Pass shots have no xG.\n")
     return "\n".join(L)
 
 
