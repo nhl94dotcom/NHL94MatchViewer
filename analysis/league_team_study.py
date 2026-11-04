@@ -53,7 +53,7 @@ def games(csv_name, retail):
     rows = []
     with open(DATA / csv_name, encoding="utf-8", errors="replace", newline="") as fh:
         for r in csv.DictReader(fh):
-            if r.get("sim") == "1" or "classic" not in r["League"].lower():
+            if r.get("sim") == "1" or not r["League"].lower().startswith(("classic_spring", "classic_summer", "classic_fall")):
                 continue
             try:
                 hs, as_ = int(r["HomeScore"]), int(r["AwayScore"])

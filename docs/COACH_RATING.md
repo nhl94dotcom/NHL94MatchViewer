@@ -2,7 +2,8 @@
 
 This document explains how the league coach ratings are made, how they were tested and what they can't tell you. The code is
 `analysis/coach_rating.py`. The tables with players' names stay in the private league data folder, so this document has
-aggregates only. Results use league games through 2026-11-03.
+aggregates only. Results use league games through 2026-11-03. Every Classic team has its own entry in [TEAM_GUIDE_GENESIS.md](TEAM_GUIDE_GENESIS.md) and
+[TEAM_GUIDE_SNES.md](TEAM_GUIDE_SNES.md).
 
 ## The short version
 
@@ -203,39 +204,38 @@ Team strengths don't come from ROM ratings or roster data. They're fitted from t
 The calculation separates coach from team because the same people play on different teams. If many coaches do better with a team than
 they do elsewhere, that goes to the team. If one coach does well on everything, that goes to the coach.
 
-The values below are points of win chance above or below 50 for a team against a neutral team, with even coaches and no home edge. The
-zero is the plain mean of the fitted teams. "Sides" counts each time a team appeared in a game. The values fade with age like everything else, so they reflect
-recent play more than old play.
+The values below are points of win chance above or below 50 for a team against the average team as used in these leagues, weighted by appearances, with
+even coaches and no home edge. "Now" fades old games like the coach ratings, and "all years" counts every game the same. "Sides" counts each time a team appeared in a game.
 
-| Genesis Classic | Value | Sides | | SNES Classic | Value | Sides |
-| --- | --- | --- | --- | --- | --- | --- |
-| CHI | +11.0 | 3,955 | | NJ | +7.1 | 734 |
-| DET | +9.4 | 4,124 | | PIT | +5.3 | 2,522 |
-| BUF | +7.2 | 3,962 | | NYR | +3.9 | 2,533 |
-| MTL | +5.5 | 3,859 | | VAN | +2.2 | 2,105 |
-| BOS | +4.4 | 3,812 | | CHI | +1.8 | 2,433 |
-| VAN | +2.5 | 3,879 | | LA | +1.7 | 2,239 |
-| DAL | +2.2 | 2,675 | | CGY | +1.6 | 1,976 |
-| WPG | +2.0 | 3,541 | | WSH | +1.5 | 1,128 |
-| HFD | +1.2 | 452 | | MTL | +1.0 | 1,700 |
-| CGY | +1.1 | 3,025 | | TOR | +0.7 | 771 |
-| TOR | +0.3 | 1,574 | | BOS | +0.4 | 2,513 |
-| LA | −1.0 | 2,379 | | STL | +0.3 | 553 |
-| PHI | −2.0 | 1,045 | | EDM | +0.3 | 497 |
-| QUE | −2.1 | 2,050 | | WPG | −0.1 | 1,279 |
-| NJ | −2.6 | 310 | | DET | −0.2 | 2,327 |
-| NYI | −2.9 | 210 | | PHI | −1.2 | 643 |
-| EDM | −3.1 | 651 | | QUE | −1.9 | 895 |
-| PIT | −4.9 | 1,137 | | HFD | −2.3 | 228 |
-| WSH | −5.6 | 357 | | BUF | −2.4 | 2,103 |
-| TB | −6.4 | 206 | | NYI | −4.8 | 295 |
-| STL | −7.2 | 984 | | SJ | −6.5 | 153 |
-| NYR | −9.1 | 1,307 | | DAL | −8.2 | 182 |
+| Genesis Classic | Now | All years | Sides | | SNES Classic | Now | All years | Sides |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| CHI | +8.1 | +8.8 | 3,955 | | NJ | +5.9 | +4.5 | 734 |
+| DET | +6.4 | +6.7 | 4,124 | | PIT | +4.0 | +4.3 | 2,522 |
+| BUF | +4.2 | +4.1 | 3,962 | | NYR | +2.7 | +2.5 | 2,533 |
+| MTL | +2.5 | +2.9 | 3,859 | | VAN | +0.9 | +0.3 | 2,105 |
+| BOS | +1.4 | +1.0 | 3,812 | | CHI | +0.5 | +1.1 | 2,433 |
+| VAN | −0.5 | −0.7 | 3,879 | | LA | +0.4 | +1.4 | 2,239 |
+| DAL | −0.8 | −1.2 | 2,675 | | CGY | +0.4 | −0.2 | 1,976 |
+| WPG | −1.0 | +0.1 | 3,541 | | WSH | +0.3 | +0.3 | 1,128 |
+| HFD | −1.8 | −6.5 | 452 | | MTL | −0.3 | +0.5 | 1,700 |
+| CGY | −1.9 | −4.8 | 3,025 | | TOR | −0.6 | −1.4 | 771 |
+| TOR | −2.7 | −2.6 | 1,574 | | BOS | −0.8 | +1.5 | 2,513 |
+| LA | −4.0 | −2.2 | 2,379 | | STL | −0.9 | +0.0 | 553 |
+| PHI | −5.0 | −4.9 | 1,045 | | EDM | −0.9 | −2.0 | 497 |
+| QUE | −5.1 | −4.6 | 2,050 | | WPG | −1.3 | −3.6 | 1,279 |
+| NJ | −5.5 | −5.6 | 310 | | DET | −1.5 | −1.5 | 2,327 |
+| NYI | −5.9 | −10.7 | 210 | | PHI | −2.5 | −1.1 | 643 |
+| EDM | −6.1 | −6.8 | 651 | | QUE | −3.2 | −6.3 | 895 |
+| PIT | −7.9 | −10.0 | 1,137 | | HFD | −3.5 | −2.7 | 228 |
+| WSH | −8.6 | −7.4 | 357 | | BUF | −3.6 | −4.1 | 2,103 |
+| TB | −9.4 | −13.1 | 206 | | NYI | −6.0 | −9.6 | 295 |
+| STL | −10.1 | −7.5 | 984 | | SJ | −7.7 | −11.8 | 153 |
+| NYR | −12.0 | −10.9 | 1,307 | | DAL | −9.3 | −5.5 | 182 |
 
 **How far to trust them.**
 - **Genesis values are steady; SNES values depend more on the settings.** Across the nine half-life and pull settings, teams' order holds on the
-  Genesis (0.97 between pull settings 2 and 10) much better than on the SNES (0.72). Rarely played SNES teams move most: San Jose ranges from −10.4 to +6.2 and
-  Boston from −5.7 to +3.1. Read the SNES column for broad groups only.
+  Genesis (0.97 between pull settings 2 and 10) much better than on the SNES (0.72). Rarely played SNES teams move most: San Jose's value changes by about 17 points across them, and
+  Boston's by about 9. Read the SNES columns for broad groups only.
 - **Some labels get no term.** Genesis Classic has one label under 100 sides (ANH, 20), and SNES Classic has four (OTW 40, ANH 46, TB 65, FLA 74).
 - **The assumption is one roster per abbreviation.** If a Classic league used a changed roster, its team value would blur the two.
 
@@ -250,7 +250,7 @@ This asks which teams suit high-level players, which suit low-level players, and
   `-A1`, `-A-E` and `-AB` count as A. Leagues with no level in their name are fitted but not compared.
 
 **The fit.** It's the rating's equation with one team term per team and level, using all Classic games with equal weights, so these values reflect all
-years and differ somewhat from section 9. Each level's values are centred on its average team, so a value says how much better that level does with this
+years. Each level's values are centred on its average team, so a value says how much better that level does with this
 team than with its other teams, after the coach terms have taken out who was using it. Spreads come from resampling whole leagues.
 
 **How repeatable it is.** Half the leagues were fitted against the other half, 40 times:
@@ -266,8 +266,9 @@ team than with its other teams, after the coach terms have taken out who was usi
 but the team order within a level is itself weak. The tables below are a guide to test against, not settled fact.
 
 **How each team was read.**
-- **Good or poor at both:** at least +1.5 or at most −1.5 in all four values shown.
-- **Better for one level, likely:** the gap has the same sign all three ways, and is at least 1.5 spreads in two of them.
+- **Good or poor:** +1.5 or better, or −1.5 or worse, in both of that level's values shown (coach and league name).
+- **Slightly good or poor:** at least +1 or at most −1 in all four. **About average:** all four within 3.
+- **Likely:** the gap has the same sign all three ways, and is at least 1.5 spreads in two of them.
 - **Leaning:** the same sign all three ways, and at least 1 spread in two of them.
 
 With 44 teams tested, a few of these will be luck. Values in parentheses have under 150 sides at that level.
@@ -276,55 +277,55 @@ With 44 teams tested, a few of these will be luck. Values in parentheses have un
 
 | Team | High coaches | Low coaches | Top league | Other leagues | Reading |
 | --- | --- | --- | --- | --- | --- |
-| CHI | +9.7 | +9.2 | +9.0 | +8.8 | Good at both |
-| DET | +7.4 | +7.2 | +7.8 | +6.2 | Good at both |
-| BUF | +3.8 | +4.0 | +4.3 | +4.0 | Good at both |
-| MTL | +4.7 | +1.5 | +3.1 | +2.9 | Good at both |
-| BOS | +4.6 | −3.0 | +3.4 | +0.1 | Better for high, likely |
-| VAN | +1.2 | −2.2 | −0.3 | −0.9 | About average, leaning high |
-| WPG | +1.3 | +1.5 | +0.7 | −0.1 | About average |
-| DAL | +0.9 | −1.5 | +0.7 | −2.2 | About average |
-| LA | +0.3 | −2.8 | −1.2 | −2.6 | About average |
-| TOR | −3.3 | −7.7 | −3.6 | −2.0 | Poor at both |
-| CGY | −6.7 | −5.3 | −5.3 | −4.5 | Poor at both |
-| QUE | −4.3 | −9.0 | −3.1 | −5.2 | Poor at both, leaning high |
-| PHI | −4.1 | −6.6 | −3.5 | −6.1 | Poor at both |
-| STL | −2.6 | −10.3 | −5.5 | −8.7 | Poor at both |
-| WSH | (−9.5) | (−4.5) | (−11.3) | −5.1 | Poor at both |
-| NJ | −6.1 | (−3.6) | −6.7 | −5.6 | Poor at both |
-| PIT | −6.0 | −11.9 | −11.9 | −9.6 | Poor at both |
-| NYR | −11.6 | −9.3 | −10.7 | −11.1 | Poor at both |
-| NYI | (−15.4) | (−5.6) | (−4.5) | (−15.1) | Poor at both, few games |
-| EDM | −8.6 | −0.2 | −10.3 | −4.1 | Poor at high, leaning low |
-| TB | (−18.5) | (−0.9) | (−20.7) | −10.5 | Poor at high, leaning low, few games |
-| HFD | −12.5 | none | −13.0 | −1.7 | Poor at high, few low-level games |
+| CHI | +9.7 | +9.2 | +9.0 | +8.8 | Good at both levels |
+| DET | +7.4 | +7.2 | +7.8 | +6.2 | Good at both levels |
+| BUF | +3.8 | +4.0 | +4.3 | +4.0 | Good at both levels |
+| MTL | +4.7 | +1.5 | +3.1 | +2.9 | Good at both levels |
+| BOS | +4.6 | −3.0 | +3.4 | +0.1 | Good for high-level players; the gap is likely real |
+| WPG | +1.3 | +1.5 | +0.7 | −0.1 | About average at both levels |
+| VAN | +1.2 | −2.2 | −0.3 | −0.9 | About average at both levels; leaning toward high-level players |
+| DAL | +0.9 | −1.5 | +0.7 | −2.2 | About average at both levels |
+| LA | +0.3 | −2.8 | −1.2 | −2.6 | About average at both levels |
+| TOR | −3.3 | −7.7 | −3.6 | −2.0 | Poor at both levels |
+| QUE | −4.3 | −9.0 | −3.1 | −5.2 | Poor at both levels; leaning toward high-level players |
+| CGY | −6.7 | −5.3 | −5.3 | −4.5 | Poor at both levels |
+| PHI | −4.1 | −6.6 | −3.5 | −6.1 | Poor at both levels |
+| NJ | −6.1 | (−3.6) | −6.7 | −5.6 | Poor at both levels |
+| HFD | −12.5 | none | −13.0 | −1.7 | Poor at both levels |
+| EDM | −8.6 | −0.2 | −10.3 | −4.1 | Poor for high-level players; leaning toward low-level players |
+| WSH | (−9.5) | (−4.5) | (−11.3) | −5.1 | Poor at both levels; few games |
+| STL | −2.6 | −10.3 | −5.5 | −8.7 | Poor at both levels |
+| PIT | −6.0 | −11.9 | −11.9 | −9.6 | Poor at both levels |
+| NYI | (−15.4) | (−5.6) | (−4.5) | (−15.1) | Poor at both levels; few games |
+| NYR | −11.6 | −9.3 | −10.7 | −11.1 | Poor at both levels |
+| TB | (−18.5) | (−0.9) | (−20.7) | −10.5 | Poor for high-level players; leaning toward low-level players; few games |
 
 **SNES Classic**
 
 | Team | High coaches | Low coaches | Top league | Other leagues | Reading |
 | --- | --- | --- | --- | --- | --- |
-| PIT | +4.3 | +2.2 | +5.7 | +3.1 | Good at both |
-| NYR | +1.8 | +1.2 | +2.5 | +2.4 | Slightly good at both |
-| LA | +1.8 | +1.7 | +1.4 | +1.9 | Slightly good at both |
-| VAN | +2.2 | −0.6 | +0.5 | +0.3 | About average |
-| CHI | +1.6 | −0.1 | +2.0 | −0.4 | About average |
-| CGY | +0.7 | +1.7 | −1.7 | −0.7 | About average |
-| DET | −0.8 | −2.9 | −1.6 | −0.8 | About average |
-| HFD | −1.4 | (−0.2) | −0.5 | (−1.7) | About average, few games |
-| BOS | +4.3 | +1.2 | +4.5 | −1.1 | Better for high, likely |
-| QUE | −3.3 | (−17.1) | +1.1 | −16.1 | Better for high, likely; poor at low |
-| WSH | −0.1 | +2.5 | −2.5 | +5.2 | Better for low, likely |
-| NJ | +3.7 | +9.4 | −0.5 | +8.2 | Good at low; unclear at high |
-| MTL | −0.7 | +1.0 | −1.3 | +2.6 | Leaning low |
-| PHI | −5.1 | +3.9 | −3.8 | +2.0 | Leaning low |
-| EDM | −1.4 | (+5.5) | −2.2 | (+7.0) | Leaning low, few low-level games |
+| NJ | +3.7 | +9.4 | −0.5 | +8.2 | Good for low-level players |
+| PIT | +4.3 | +2.2 | +5.7 | +3.1 | Good at both levels |
+| NYR | +1.8 | +1.2 | +2.5 | +2.4 | Slightly good at both levels |
+| BOS | +4.3 | +1.2 | +4.5 | −1.1 | Good for high-level players; the gap is likely real |
+| LA | +1.8 | +1.7 | +1.4 | +1.9 | Slightly good at both levels |
+| CHI | +1.6 | −0.1 | +2.0 | −0.4 | About average at both levels |
+| MTL | −0.7 | +1.0 | −1.3 | +2.6 | About average at both levels; leaning toward low-level players |
+| VAN | +2.2 | −0.6 | +0.5 | +0.3 | About average at both levels |
+| WSH | −0.1 | +2.5 | −2.5 | +5.2 | Good for low-level players; the gap is likely real |
 | STL | −0.1 | +0.7 | (−5.1) | +2.9 | Unclear |
+| CGY | +0.7 | +1.7 | −1.7 | −0.7 | About average at both levels |
+| PHI | −5.1 | +3.9 | −3.8 | +2.0 | Poor for high-level players; good for low-level players; the gap leans that way |
 | TOR | −1.4 | −3.5 | −6.7 | +1.6 | Unclear |
-| WPG | −3.7 | −2.5 | −3.2 | −3.8 | Poor at both |
-| BUF | −1.4 | −5.8 | −3.4 | −4.8 | Mostly poor |
-| NYI | −8.7 | none | (−10.1) | (−6.3) | Poor, few low-level games |
-| SJ | (−14.0) | none | none | −11.3 | Poor, few games |
-| DAL | (−7.1) | (−20.5) | (−5.7) | −5.5 | Poor, few games |
+| DET | −0.8 | −2.9 | −1.6 | −0.8 | About average at both levels |
+| EDM | −1.4 | (+5.5) | −2.2 | (+7.0) | Good for low-level players; the gap leans that way; few games |
+| HFD | −1.4 | (−0.2) | −0.5 | (−1.7) | About average at both levels; few games |
+| WPG | −3.7 | −2.5 | −3.2 | −3.8 | Poor at both levels |
+| BUF | −1.4 | −5.8 | −3.4 | −4.8 | Slightly poor at both levels |
+| DAL | (−7.1) | (−20.5) | (−5.7) | −5.5 | Poor at both levels; few games |
+| QUE | −3.3 | (−17.1) | +1.1 | −16.1 | Poor for low-level players; likely better for high-level players |
+| NYI | −8.7 | none | (−10.1) | (−6.3) | Poor at both levels; few games |
+| SJ | (−14.0) | none | none | −11.3 | Poor at both levels; few games |
 
 **What stands out.** The Genesis has a clear group of teams that work for everyone, led by Chicago and Detroit. On the SNES, Quebec has the largest
 gap: about even in top leagues, far below average in lower ones. Most of these values only show results, not why. A team's use also isn't random, since players choose
@@ -427,7 +428,9 @@ will be later, because people really do change. These small groups make the figu
 python analysis/coach_rating.py            the all-leagues test and tables
 python analysis/coach_rating.py groups     each league group fitted alone
 python analysis/coach_team_levels.py       Classic teams by level of player (needs the groups run first)
+python analysis/classic_team_guide.py      the two team guides (needs both runs above)
 ```
 
 Results go to `%USERPROFILE%\NHL94_League_Data`: `coach_ratings_<system>.csv`, `coach_ratings_<system>_<group>.csv`,
-`coach_rating_test.md` and `coach_rating_groups.md`. The team study writes `reports/classic_team_levels.md`. Findings in aggregate are in `docs/LEAGUE_RESULTS.md`.
+`coach_rating_test.md` and `coach_rating_groups.md`. The team study writes `reports/classic_team_levels.md`, and the guides are `docs/TEAM_GUIDE_GENESIS.md` and `docs/TEAM_GUIDE_SNES.md`.
+Findings in aggregate are in `docs/LEAGUE_RESULTS.md`.

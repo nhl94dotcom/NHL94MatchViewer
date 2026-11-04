@@ -24,124 +24,116 @@ faceoff wins, by period, and each player's and goalie's line. Ranges are 95%.
 | The same player at home minus away (players with 20+ games each way) | shots +0.67 a game, win rate +1.0% (+/- 0.8) | shots +1.20 a game, win rate **+4.5%** (+/- 1.3) |
 | Home and screen direction separated (Home's share is h x u / (h x u + 1) going up in periods 1 and 3, h / (h + u) going down in period 2): shots on goal, home h / up u | 1.034 / **1.062** | **1.101** / 1.012 |
 | The same, goals | 1.019 / **0.970** | 1.040 / 1.024 |
-| Classic leagues (the retail rosters and home bonuses): a team's home win rate minus its own away win rate, by the team's home bonus + away penalty 0 / 2 / 3 (its opponents' bonuses still in it) | +1.1 / +2.7 / +3.6 points | +2.7 / +4.9 / +7.1 points |
-| Classic leagues, each pair of teams met both ways (strength cancels): home edge with no bonus at all / per point of home bonus or away penalty | -0.3 (+/- 1.6) / +0.5 (+/- 0.4) points | -1.2 (+/- 2.6) / **+0.9** (+/- 0.6) points |
-| Classic games with no bonus either side, home / away: goals, shots, pass completions, checks, faceoffs | 0.98, 1.04, 1.00, 1.01, 0.99 | **1.00**, 1.07, 1.00, 1.10, 1.07 |
+| Classic leagues (the retail rosters and home bonuses): a team's home win rate minus its own away win rate, by the team's home bonus + away penalty 0 / 2 / 3 (its opponents' bonuses still in it) | +1.0 / +2.8 / +3.8 points | +2.9 / +5.1 / +7.1 points |
+| Classic leagues, each pair of teams met both ways (strength cancels, `analysis/league_home_pairs.py`): home edge with no bonus at all / per point of a game's home bonus + away penalty | -0.8 (+/- 1.6) / +1.2 (+/- 0.8) points | -0.4 (+/- 2.3) / +1.6 (+/- 1.0) points |
+| Classic games with no bonus either side, home / away: goals, shots, pass completions, checks, faceoffs | 0.98, 1.04, 1.01, 1.01, 0.99 | **1.01**, 1.07, 1.00, 1.10, 1.07 |
 
 - **Genesis: the shot edge is the screen direction, and it's a counting effect** (going up the screen a team gets
   6.2% more shots on goal counted but scores 3.0% fewer goals; the SNES almost none): SHOOTING_STUDY, "The leagues'
   own results".
-- **Home: the hidden home / away bonus, and nothing else, on both systems.** Adding up each pair of teams' home win
-  rates both ways (their strengths cancel), home ice with no bonus is worth nothing (Genesis -0.3, SNES -1.2 points,
-  both within chance), and each point of home bonus or away penalty is worth +0.5 points on the Genesis and +0.9 on
-  the SNES, whose 0-15 rating scale makes the same bonus count about twice as much. A typical Classic game has about
-  two points of it, which gives the 50.5% and 52.3% seen. In the 451 Classic SNES games with no bonus either side,
-  Home scored no more (1.00) and passed no better. (Only the Classic leagues' bonuses are known, from the retail
+- **Home: no sign of home ice beyond the hidden home / away bonus, on either system.** Adding up each pair of teams' home win
+  rates both ways (their strengths cancel), home ice with no bonus is worth nothing (Genesis -0.8, SNES -0.4 points,
+  both within chance). A point of a game's home bonus + away penalty comes out at about +1.2 points on the Genesis and +1.6 on
+  the SNES, each about one and a half spreads from zero, so the size is rough. In the 440 Classic SNES games with no bonus either side,
+  Home scored about the same (1.01) and passed no better. (Only the Classic leagues' bonuses are known, from the retail
   tables; SDL16, for one, gives nearly every team +1 / -1.) A small oddity left: in those games SNES Home still had
   about 7% more shots and 10% more checks, with no goals from them.
 - **The 29 recorded Genesis games' home edge in attempts** (below: 1.22 times as many per minute) isn't in the
   leagues' results. It was the recorded games' players and sample, not the game.
-- **Goalie ratings** (`analysis/league_goalie_study.py`; the Classic leagues, so each goalie's retail ratings; 559,049
-  Genesis and 350,696 SNES shots against): **Genesis save % rises with the goalie's Agility**: 64.8% at roster 3,
-  68.2% at 4, 69.7% at 5, 72.2% at 6 (+2.2 points a step, correlation +0.93 over 29 goalies; Roy 72.4%, Belfour
-  72.0%), as Agility is a Genesis goalie's reach (GENESIS_SHOOTING 5.1). **SNES save % doesn't: 62.3-63.5% at every Agility**
-  (correlation +0.24), as every SNES goalie is the same size (SNES_SHOOTING 5.1). The same goalies on the same teams
+- **Goalie ratings** (`analysis/league_goalie_study.py`; the Classic leagues, so each goalie's retail ratings; 540,310
+  Genesis and 349,184 SNES shots against): **Genesis save % rises with the goalie's Agility**: 64.7% at roster 3,
+  68.3% at 4, 69.6% at 5, 72.2% at 6 (+2.25 points a step, correlation +0.93 over 26 goalies), as Agility is a Genesis goalie's reach (GENESIS_SHOOTING 5.1). **SNES save % doesn't: 62.3-63.5% at every Agility**
+  (correlation +0.23), as every SNES goalie is the same size (SNES_SHOOTING 5.1). The same goalies on the same teams
   show nothing on the SNES, so the Genesis gradient isn't just good teams in front of them. (Puck Control tracks
   Genesis save % too, +0.69, but the best goalies have both.)
 - **Team ratings can't be checked from raw records:** a team's roster strength doesn't predict its league results
-  (Genesis -0.11, SNES -0.46 against the top 12 skaters' Overall), as people pick or are given teams to balance a
+  (Genesis +0.04, SNES -0.43 against the top 12 skaters' Overall), as people pick or are given teams to balance a
   league, and Overall is a poor measure anyway. With the people taken out, below, it can.
 
 ## Teams with the people taken out (`analysis/league_team_study.py`)
 
-Every Classic game between two retail teams (23,292 Genesis games in 102 leagues, 15,088 SNES in 64) fitted at once:
+Every Classic game (22,757 Genesis games in 97 leagues, 15,017 SNES in 63) fitted at once:
 goal difference = the home person's strength - the away person's + the home team's - the away team's + a home edge,
 **one strength per person over all their Classic seasons**. A team is judged by how the same people do with it
 against their other teams. Checked a second way, with each person's Elo rating at the start of the league season
-(over all their games on that system) instead: the two agree at 0.84 on the Genesis and 0.69 on the SNES.
-
-(A first version gave each person a separate strength for each league season. In a season each person plays one
-team, so it couldn't tell the person from the team, and in the Classic drafts the people thought weaker pick first:
-it rated teams by who drafted them, the teams the stronger people are left with coming out on top. The SNES order
-looked upside down. Dropped.)
+(over all their games on that system) instead: the two agree at 0.78 on the Genesis and 0.57 on the SNES.
 
 Teams with 300+ games, against the average of those shown (games-weighted): goals a game, win-rate points, the Elo
 version's goals a game, games:
 
 | Genesis | Goals | Win rate | Elo way | Games | | SNES | Goals | Win rate | Elo way | Games |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Chicago | +0.77 | +9.5 | +0.56 | 3,969 | | Pittsburgh | +0.41 | +4.9 | +0.34 | 2,518 |
-| Detroit | +0.58 | +7.0 | +0.34 | 4,146 | | New Jersey | +0.32 | +5.3 | +0.49 | 760 |
-| Buffalo | +0.33 | +3.9 | +0.36 | 3,973 | | NY Rangers | +0.18 | +3.4 | +0.06 | 2,520 |
-| Montreal | +0.19 | +3.7 | +0.15 | 3,885 | | Boston | +0.16 | +1.8 | -0.10 | 2,506 |
-| Boston | +0.04 | +0.6 | +0.10 | 3,863 | | Los Angeles | +0.15 | +1.1 | -0.03 | 2,233 |
-| Vancouver | +0.01 | -0.7 | 0.00 | 3,909 | | Washington | +0.11 | -0.1 | -0.02 | 1,148 |
-| Winnipeg | -0.02 | -0.3 | -0.04 | 3,607 | | Montreal | +0.04 | +0.8 | -0.06 | 1,687 |
-| Dallas | -0.13 | -1.3 | -0.15 | 2,718 | | Chicago | +0.03 | +0.7 | -0.01 | 2,433 |
-| Los Angeles | -0.14 | -2.2 | -0.14 | 2,419 | | Vancouver | +0.03 | -0.2 | -0.08 | 2,100 |
-| Toronto | -0.26 | -2.9 | -0.47 | 1,619 | | Philadelphia | -0.01 | -2.5 | +0.31 | 663 |
-| Calgary | -0.39 | -5.2 | -0.28 | 3,058 | | Calgary | -0.02 | -1.5 | +0.14 | 1,973 |
-| Quebec | -0.40 | -4.5 | -0.31 | 2,117 | | St. Louis | -0.07 | -0.3 | -0.05 | 573 |
-| New Jersey | -0.45 | -6.9 | -0.75 | 349 | | Detroit | -0.17 | -0.9 | -0.25 | 2,321 |
-| Philadelphia | -0.47 | -4.7 | -0.15 | 1,075 | | Edmonton | -0.19 | -4.6 | -0.02 | 517 |
-| St. Louis | -0.56 | -7.3 | -0.39 | 1,049 | | Toronto | -0.23 | -2.0 | -0.16 | 757 |
-| Washington | -0.60 | -8.9 | +0.17 | 434 | | Winnipeg | -0.36 | -5.3 | -0.01 | 1,262 |
-| Edmonton | -0.64 | -8.4 | -0.51 | 695 | | Buffalo | -0.38 | -4.4 | -0.18 | 2,097 |
-| Hartford | -0.65 | -6.9 | -0.39 | 527 | | Quebec | -0.59 | -7.4 | -0.03 | 887 |
-| Pittsburgh | -0.78 | -11.2 | -0.48 | 1,197 | | NY Islanders | -0.78 | -8.1 | -0.45 | 317 |
-| NY Rangers | -0.86 | -11.4 | -0.61 | 1,350 | | | | | | |
+| Chicago | +0.76 | +9.5 | +0.55 | 3,955 | | Pittsburgh | +0.40 | +5.0 | +0.32 | 2,522 |
+| Detroit | +0.57 | +7.0 | +0.33 | 4,124 | | New Jersey | +0.32 | +5.6 | +0.51 | 734 |
+| Buffalo | +0.33 | +3.8 | +0.34 | 3,962 | | NY Rangers | +0.15 | +3.1 | +0.06 | 2,533 |
+| Montreal | +0.17 | +3.5 | +0.14 | 3,859 | | Boston | +0.14 | +1.7 | -0.09 | 2,513 |
+| Boston | +0.02 | +0.4 | +0.09 | 3,812 | | Los Angeles | +0.14 | +1.1 | -0.03 | 2,239 |
+| Vancouver | 0.00 | -0.7 | -0.01 | 3,879 | | Washington | +0.13 | +0.2 | -0.02 | 1,128 |
+| Winnipeg | -0.02 | -0.3 | -0.05 | 3,541 | | Chicago | +0.03 | +0.6 | -0.01 | 2,433 |
+| Dallas | -0.13 | -1.3 | -0.14 | 2,675 | | Vancouver | 0.00 | -0.3 | -0.07 | 2,105 |
+| Los Angeles | -0.16 | -2.5 | -0.16 | 2,379 | | Montreal | 0.00 | +0.6 | -0.10 | 1,700 |
+| Toronto | -0.24 | -2.5 | -0.46 | 1,574 | | Calgary | -0.03 | -1.4 | +0.14 | 1,976 |
+| New Jersey | -0.29 | -6.8 | -0.62 | 310 | | Philadelphia | -0.06 | -3.1 | +0.29 | 643 |
+| Calgary | -0.40 | -5.2 | -0.30 | 3,025 | | St. Louis | -0.11 | -0.3 | -0.04 | 553 |
+| Quebec | -0.40 | -4.7 | -0.32 | 2,050 | | Edmonton | -0.13 | -4.4 | +0.01 | 497 |
+| Philadelphia | -0.50 | -5.1 | -0.18 | 1,045 | | Detroit | -0.18 | -0.9 | -0.25 | 2,327 |
+| Washington | -0.55 | -9.5 | +0.43 | 357 | | Toronto | -0.24 | -2.4 | -0.10 | 771 |
+| St. Louis | -0.60 | -7.7 | -0.45 | 984 | | Winnipeg | -0.34 | -5.1 | +0.02 | 1,279 |
+| Edmonton | -0.62 | -8.1 | -0.49 | 651 | | Buffalo | -0.38 | -4.3 | -0.17 | 2,103 |
+| Hartford | -0.66 | -7.8 | -0.40 | 452 | | Quebec | -0.59 | -7.2 | -0.08 | 895 |
+| Pittsburgh | -0.80 | -11.4 | -0.46 | 1,137 | | | | | | |
+| NY Rangers | -0.89 | -11.9 | -0.64 | 1,307 | | | | | | |
 
-- **Genesis: solid.** Two halves of the leagues fitted apart agree at 0.84; each well-played team's 90% range is
+- **Genesis: solid.** Two halves of the leagues fitted apart agree at 0.85; each well-played team's 90% range is
   about +/- 0.15-0.3 goals. **Chicago and Detroit are the teams to have**, then Buffalo and Montreal; the Rangers and
-  Pittsburgh (the best team on paper) the ones to avoid, about 1.5 goals a game below Chicago. Over the teams,
-  strength goes with **the starting goalie's Agility (+0.60)** and **light skaters (Weight -0.45)**, then Agility
-  (+0.24), Overall (+0.28), Speed and Checking (+0.16-0.17); Shot Power, Speed and goalie Agility together
+  Pittsburgh (the best team on paper) the ones to avoid, about 1.6 goals a game below Chicago. Over the teams,
+  strength goes with **the starting goalie's Agility (+0.60)** and **light skaters (Weight -0.43)**, then Agility
+  (+0.22), Overall (+0.27), Speed and Checking (+0.15-0.17); Shot Power, Speed and goalie Agility together
   account for half the spread (R^2 0.53). That is what the mechanics say: the goalie's Agility is his reach
   (GENESIS_SHOOTING 5.1), and lighter men accelerate faster.
-- **SNES: rougher.** The halves agree at 0.46 and the two ways at 0.69; Pittsburgh and New Jersey lead in both, the
-  Islanders and Buffalo trail in both, the middle isn't ordered. Strength goes with **heavy skaters (Weight +0.64,
-  +0.75 the Elo way)** and Checking (+0.35), not with Speed or the goalie's Agility (every SNES goalie covers the same
+- **SNES: rougher.** The halves agree at 0.47 and the two ways at 0.57; Pittsburgh and New Jersey lead in both,
+  the middle isn't ordered. Strength goes with **heavy skaters (Weight +0.71,
+  +0.80 the Elo way)** and Checking (+0.32), not with Speed or the goalie's Agility (every SNES goalie covers the same
   net, SNES_SHOOTING 5.1). Weight costs less acceleration on the SNES ("Ratings, game flow, skill and luck", below).
-  The user's point: `setplayer` copies Weight straight from the roster, with no hot / cold (the 12 ratings that do take it are maxed about 46% of the
-  time), so a roster's weight is the one edge that plays in full every game. That fits New Jersey, the heaviest roster (top 12 skaters 8.58 against a
-  mean of 7.43) but only 15th of 26 on Overall, at the top of the team table. It explains why weight shows through, not why heavy is good.
+  `setplayer` copies Weight straight from the roster, with no hot / cold (the 12 ratings that do take it are maxed about 46% of the
+  time), so a roster's weight is the one edge that plays in full every game. That explains why weight shows through, not why heavy is good.
 - The leagues sometimes leave the top teams out of the draft for fun (rare), which this doesn't allow for.
 
 **Elo adjustments for the teams** (`analysis/league_team_elo.py`; the user's question: how far should a player's
 Elo move for the team he uses?). The same games fitted on the result in Elo's own units (P = 1 / (1 + 10^(-D / 400))
 with D = person - person + team - team + home edge, a tie counting half), one strength per person over all seasons,
-and again with each person's pre-season Elo in place of the fitted strengths (agreeing at 0.84 Genesis, 0.71 SNES).
+and again with each person's pre-season Elo in place of the fitted strengths (agreeing at 0.81 Genesis, 0.67 SNES).
 The suggestion is the mean of the two, rounded to 5: points to add to a player's rating when working out his
 expected result with that team (centred on the average team in use). Each is good to about +/- 25. Home ice is worth
-+11 (Genesis) and +22 (SNES) points on the same scale.
++11 (Genesis) and +23 (SNES) points on the same scale.
 
 | Genesis | Elo points | | SNES | Elo points |
 | --- | --- | --- | --- | --- |
 | Chicago | +65 | | New Jersey | +50 |
 | Detroit | +45 | | Pittsburgh | +35 |
 | Buffalo | +30 | | NY Rangers | +20 |
-| Montreal | +30 | | Chicago | +5 |
-| Boston | +5 | | Los Angeles | +5 |
-| Winnipeg | +0 | | Boston | +0 |
-| Vancouver | -5 | | Montreal | +0 |
-| Dallas | -10 | | St. Louis | +0 |
-| Los Angeles | -20 | | Vancouver | -5 |
-| Philadelphia | -25 | | Calgary | -5 |
-| Toronto | -30 | | Philadelphia | -5 |
-| Quebec | -30 | | Washington | -10 |
-| Calgary | -35 | | Detroit | -10 |
-| Washington | -35 | | Toronto | -10 |
-| Hartford | -40 | | Edmonton | -20 |
-| St. Louis | -50 | | Buffalo | -25 |
-| Edmonton | -60 | | Winnipeg | -30 |
-| New Jersey | -75 | | Quebec | -30 |
-| NY Rangers | -75 | | NY Islanders | -50 |
-| Pittsburgh | -80 | |  |  |
+| Montreal | +25 | | Boston | +0 |
+| Boston | +5 | | Los Angeles | +0 |
+| Winnipeg | +0 | | St. Louis | +0 |
+| Vancouver | -5 | | Chicago | +0 |
+| Dallas | -10 | | Montreal | +0 |
+| Los Angeles | -20 | | Washington | -5 |
+| Philadelphia | -25 | | Vancouver | -5 |
+| Toronto | -30 | | Calgary | -5 |
+| Quebec | -30 | | Detroit | -10 |
+| Calgary | -35 | | Toronto | -10 |
+| Washington | -40 | | Philadelphia | -10 |
+| Hartford | -45 | | Edmonton | -20 |
+| St. Louis | -55 | | Buffalo | -25 |
+| Edmonton | -60 | | Winnipeg | -25 |
+| Pittsburgh | -75 | | Quebec | -35 |
+| New Jersey | -80 | |  |  |
+| NY Rangers | -80 | |  |  |
 
-Left out for too few Classic games (under 300): Genesis NY Islanders, Tampa Bay, San Jose, Ottawa, Florida, Anaheim
-(all fitted well below average, -95 to -250, but on 20-250 games); SNES Hartford, Dallas, San Jose, Florida, Tampa
-Bay, Anaheim, Ottawa (-20 to -110 on 40-250 games). Where the two ways differ most (Genesis Washington -73 / +1 and
-New Jersey -54 / -100, SNES Quebec -58 / -2, Philadelphia -22 / +13, Boston +16 / -12), the team is the least sure.
+Left out for too few Classic games (under 300): Genesis NY Islanders, Tampa Bay, Anaheim
+(fitted well below average, -93 to -162, on 20-210 games; Florida, Ottawa and San Jose go unused); SNES NY Islanders, Hartford, Dallas, San Jose, Tampa
+Bay, Anaheim, Ottawa (-30 to -95 on 40-295 games) and Florida (+26 on 74). Where the two ways differ most (Genesis Washington -81 / +5 and
+New Jersey -53 / -104, SNES Quebec -57 / -9, Philadelphia -27 / +11, Boston +15 / -11), the team is the least sure.
 ## Game-wide patterns (`analysis/league_patterns.py`)
 
 | | Genesis | SNES |
@@ -213,17 +205,17 @@ New Jersey -54 / -100, SNES Quebec -58 / -2, Philadelphia -22 / +13, Boston +16 
 ## Ratings, game flow, skill and luck (`analysis/league_player_study.py`, `analysis/league_flow_study.py`)
 
 **Penalties by roster Aggression** (Classic leagues, the retail ratings; players with 150+ games): the Genesis wrap
-shows. Penalties per 100 games at roster 0-5: 22, 27, 33, **35, 29**, 41 (per 100 checks 4.4, 5.8, 6.7, **6.8,
+shows. Penalties per 100 games at roster 0-5: 23, 27, 33, **35, 29**, 41 (per 100 checks 4.4, 5.9, 6.7, **6.8,
 5.6**, 6.6): rising to 3, then down at 4, which plays like a 1 (GENESIS_MECHANICS 8.2; few players at 0 and 5). The
-SNES has no wrap: 19, 22, 26, 26, 28, 28, 33 at 0-6, rising throughout, flattened by the "cold" maxing.
+SNES has no wrap: 19, 22, 26, 26, 28, 28, 32 at 0-6, rising throughout, flattened by the "cold" maxing.
 
 **Which ratings make scorers** (within each team and position, all ratings fitted at once, so the team, its opponents
-and the people playing it cancel; about 95 Genesis and 90 SNES forwards; per roster step):
+and the people playing it cancel; 88 Genesis and 90 SNES forwards; per roster step):
 
 | Forwards | Goals a game | Shots a game | Shooting % |
 | --- | --- | --- | --- |
-| Genesis | **Shot Power +0.29**, Speed +0.22, Shot Accuracy +0.15, Stick Handling +0.11, Agility +0.10, Weight -0.06 | Shot Power +0.69, Speed +0.51, Shot Accuracy +0.39, Stick Handling +0.32, Agility +0.27, Weight -0.19 | Shot Power +1.8 points, Speed +1.0, Shot Accuracy +0.7 |
-| SNES | Speed +0.18, Shot Power +0.16, Shot Accuracy +0.14, Agility +0.14, Stick Handling +0.14, Weight +0.08 | Speed +0.39, Agility +0.34, Stick Handling +0.33, Shot Power +0.29, Shot Accuracy +0.28, Weight +0.20 | Shot Power +1.8, Shot Accuracy +1.0 |
+| Genesis | **Shot Power +0.29**, Speed +0.22, Shot Accuracy +0.15, Stick Handling +0.10, Agility +0.09, Weight -0.06 | Shot Power +0.67, Speed +0.52, Shot Accuracy +0.38, Stick Handling +0.32, Agility +0.24, Weight -0.19 | Shot Power +1.9 points, Speed +0.9, Shot Accuracy +0.7 |
+| SNES | Speed +0.18, Shot Power +0.16, Shot Accuracy +0.14, Agility +0.14, Stick Handling +0.14, Weight +0.08 | Speed +0.39, Agility +0.35, Stick Handling +0.33, Shot Power +0.30, Shot Accuracy +0.27, Weight +0.20 | Shot Power +1.8, Shot Accuracy +1.0 |
 
 Offensive Awareness, Checking and Pass Accuracy do next to nothing for a forward's scoring on either system (Offensive
 Awareness never touches the skater a person controls). Shot Power is the Genesis scorer's rating (its slapshot
@@ -231,8 +223,8 @@ threshold, GENESIS_SHOOTING 4.3); on the SNES the ratings share it more evenly, 
 costing (it costs less acceleration there). These are what the ratings do as people use the players: a fast, strong
 shooter also gets the puck more.
 
-**Genesis checks a game** (the player's own checks thrown): forwards -0.57 a Weight step (lighter forwards check more),
-+0.61 an Agility step, +0.66 a Checking step; defencemen +1.03 a Checking step, Weight +0.09. So a light, quick
+**Genesis checks a game** (the player's own checks thrown): forwards -0.56 a Weight step (lighter forwards check more),
++0.59 an Agility step, +0.66 a Checking step; defencemen +1.04 a Checking step, Weight +0.08. So a light, quick
 forward lands more checks, as acceleration gets a skater to the man: the user expected heavier players to log more
 (repeated tries), but the counter counts contacts, and a heavy forward reaches fewer.
 
@@ -312,7 +304,7 @@ Each league group fitted alone (`coach_rating.py groups`, refitted monthly, ever
 
 On the Genesis the fit is at least level with Elo updated every game (clearly better in Classic, 0.0039 +- 0.0018); on the SNES that Elo stays ahead (by 0.006-0.007). Coasting always beats win-only; against margin it's a tie on the Genesis, and margin is ahead on the SNES by 0.002.
 
-**Classic teams by level of player** (`analysis/coach_team_levels.py`; every team's table in COACH_RATING section 10): measured by each coach's strength, each league's strength, and each season's top league against its others. Most differences between levels don't repeat across halves of the leagues. On the Genesis, Chicago, Detroit, Buffalo and Montreal are good at every level; Boston is likely better for high-level players. On the SNES, Pittsburgh is good at both levels; Boston and Quebec are likely better for high-level players, Quebec by the widest gap, and Washington for low-level players.
+**Classic teams by level of player** (`analysis/coach_team_levels.py`; every team's table in COACH_RATING section 10, and a full entry per team in TEAM_GUIDE_GENESIS and TEAM_GUIDE_SNES): measured by each coach's strength, each league's strength, and each season's top league against its others. Most differences between levels don't repeat across halves of the leagues. On the Genesis, Chicago, Detroit, Buffalo and Montreal are good at every level; Boston is likely better for high-level players. On the SNES, Pittsburgh is good at both levels; Boston and Quebec are likely better for high-level players, Quebec by the widest gap, and Washington for low-level players.
 
 **By year:** the Genesis shooting % fell from 33-36% (2013-2019) to 31-32% (2020 on) on the same shots, penalty
 minutes from about 6 a game to 3-5; one-timers, breakaways and checks stayed level. SNES pass completion jumped from

@@ -133,7 +133,7 @@ def direction_and_bonus(path, label):
                         v = num(r[side + k + p])
                         if v is not None:
                             tot[(k, side, p)] += v
-            if "classic" not in r["League"].lower():
+            if not r["League"].lower().startswith(("classic_spring", "classic_summer", "classic_fall")):
                 continue
             h, a = r["HomeTeamAbbrev"].strip(), r["AwayTeamAbbrev"].strip()
             hs, as_ = num(r["HomeScore"]), num(r["AwayScore"])
