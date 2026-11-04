@@ -24,7 +24,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Elo can run high or low for a while.** If a coach's Elo is well above how they then play, the team they're using looks worse than it is. If it's well below, the team looks better. A fitted strength reflects the coach's whole Classic career, so it's less affected by this.
 
-- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look worse on the Elo adjustment than on strength, and a team usually used by underdogs can look better.
+- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look a little worse on the Elo adjustment than on strength, and a team usually used by underdogs a little better. In simulated seasons this effect was usually small and varied a lot.
 
 - **Rarely used teams rest on a few seasons.** One or two unusual seasons, or one coach, can move their numbers a lot, and more on the Elo adjustment than on strength.
 
@@ -34,7 +34,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **A record alone doesn't say how good a team is.** Better coaches may have used it, or worse ones. A strong team can have a modest record if weaker coaches tend to use it, and a weak team can have a good record if stronger coaches do. That's what the Expected column is for.
 
-- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.
+- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. In simulated seasons where every team played the same at every level, gaps of up to about 6 points still appeared by chance. On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.
 
 **The "All teams" table**
 
@@ -120,7 +120,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Player** and **Pos:** the skater, as a forward (F) or defenceman (D).
 
-- **Goals**, **Assists**, **Points** and **Checks:** the skater's figures per team game.
+- **Goals**, **Assists** and **Points:** the skater's figures per team game.
 
 - **Overall**, **Weight**, **Speed**, **Shot Power** and **Shot Acc:** the skater's roster ratings from the ROM.
 
@@ -136,6 +136,10 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 
 ## All teams
+
+![SNES Classic teams on a line by Elo adjustment, zoomed in](img/elo_teams_snes_zoom.svg)
+
+![SNES Classic teams on the same scale as the Genesis guide](img/elo_teams_snes.svg)
 
 | # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -221,14 +225,14 @@ Hidden bonus: +1 at home, −2 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Stephane Richer | F | 1.43 | 0.84 | 2.27 | 1.14 | 72 | 9 | 4 | 5 | 3 |
-| Claude Lemieux | F | 0.83 | 0.70 | 1.54 | 0.91 | 68 | 11 | 4 | 4 | 2 |
-| Scott Stevens | D | 0.51 | 0.75 | 1.27 | 1.28 | 76 | 11 | 4 | 4 | 2 |
-| Vachslav Fetisov | D | 0.28 | 0.70 | 0.98 | 1.34 | 61 | 11 | 2 | 4 | 1 |
-| Alexnder Semak | F | 0.47 | 0.49 | 0.95 | 0.52 | 73 | 6 | 3 | 3 | 4 |
-| Valeri Zelepukin | F | 0.47 | 0.44 | 0.91 | 0.29 | 68 | 6 | 4 | 3 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Stephane Richer | F | 1.43 | 0.84 | 2.27 | 72 | 9 | 4 | 5 | 3 |
+| Claude Lemieux | F | 0.83 | 0.70 | 1.54 | 68 | 11 | 4 | 4 | 2 |
+| Scott Stevens | D | 0.51 | 0.75 | 1.27 | 76 | 11 | 4 | 4 | 2 |
+| Vachslav Fetisov | D | 0.28 | 0.70 | 0.98 | 61 | 11 | 2 | 4 | 1 |
+| Alexnder Semak | F | 0.47 | 0.49 | 0.95 | 73 | 6 | 3 | 3 | 4 |
+| Valeri Zelepukin | F | 0.47 | 0.44 | 0.91 | 68 | 6 | 4 | 3 | 3 |
 
 **Goalies**
 
@@ -294,14 +298,14 @@ Hidden bonus: +2 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mario Lemieux | F | 2.03 | 0.78 | 2.82 | 1.42 | 100 | 10 | 4 | 4 | 6 |
-| Jaromir Jagr | F | 0.87 | 0.84 | 1.71 | 0.96 | 80 | 10 | 4 | 3 | 3 |
-| Kevin Stevens | F | 0.77 | 0.84 | 1.61 | 0.87 | 77 | 11 | 4 | 3 | 4 |
-| Larry Murphy | D | 0.24 | 0.73 | 0.97 | 1.07 | 74 | 10 | 3 | 4 | 2 |
-| Ulf Samuelsson | D | 0.22 | 0.69 | 0.92 | 1.22 | 68 | 8 | 4 | 3 | 0 |
-| Ron Francis | F | 0.15 | 0.13 | 0.28 | 0.19 | 75 | 9 | 3 | 4 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mario Lemieux | F | 2.03 | 0.78 | 2.82 | 100 | 10 | 4 | 4 | 6 |
+| Jaromir Jagr | F | 0.87 | 0.84 | 1.71 | 80 | 10 | 4 | 3 | 3 |
+| Kevin Stevens | F | 0.77 | 0.84 | 1.61 | 77 | 11 | 4 | 3 | 4 |
+| Larry Murphy | D | 0.24 | 0.73 | 0.97 | 74 | 10 | 3 | 4 | 2 |
+| Ulf Samuelsson | D | 0.22 | 0.69 | 0.92 | 68 | 8 | 4 | 3 | 0 |
+| Ron Francis | F | 0.15 | 0.13 | 0.28 | 75 | 9 | 3 | 4 | 3 |
 
 **Goalies**
 
@@ -367,14 +371,14 @@ Hidden bonus: +1 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mark Messier | F | 1.32 | 0.98 | 2.31 | 1.37 | 85 | 10 | 4 | 3 | 3 |
-| Mike Gartner | F | 1.26 | 0.88 | 2.14 | 0.90 | 85 | 7 | 5 | 5 | 3 |
-| Esa Tikkanen | F | 1.19 | 0.89 | 2.08 | 1.19 | 80 | 9 | 5 | 4 | 2 |
-| James Patrick | D | 0.27 | 0.77 | 1.04 | 1.22 | 71 | 9 | 4 | 4 | 1 |
-| Brian Leetch | D | 0.13 | 0.43 | 0.56 | 0.58 | 76 | 6 | 3 | 4 | 1 |
-| Kevin Lowe | D | 0.07 | 0.32 | 0.39 | 0.39 | 62 | 8 | 3 | 3 | 1 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mark Messier | F | 1.32 | 0.98 | 2.31 | 85 | 10 | 4 | 3 | 3 |
+| Mike Gartner | F | 1.26 | 0.88 | 2.14 | 85 | 7 | 5 | 5 | 3 |
+| Esa Tikkanen | F | 1.19 | 0.89 | 2.08 | 80 | 9 | 5 | 4 | 2 |
+| James Patrick | D | 0.27 | 0.77 | 1.04 | 71 | 9 | 4 | 4 | 1 |
+| Brian Leetch | D | 0.13 | 0.43 | 0.56 | 76 | 6 | 3 | 4 | 1 |
+| Kevin Lowe | D | 0.07 | 0.32 | 0.39 | 62 | 8 | 3 | 3 | 1 |
 
 **Goalies**
 
@@ -439,14 +443,14 @@ Hidden bonus: +1 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pavel Bure | F | 1.62 | 0.86 | 2.48 | 0.89 | 90 | 5 | 6 | 4 | 4 |
-| Trevor Linden | F | 1.28 | 0.83 | 2.11 | 1.12 | 78 | 9 | 4 | 4 | 4 |
-| Geoff Courtnall | F | 0.63 | 0.60 | 1.24 | 0.50 | 73 | 7 | 5 | 3 | 3 |
-| Cliff Ronning | F | 0.46 | 0.39 | 0.85 | 0.38 | 76 | 5 | 5 | 2 | 3 |
-| Jyrki Lumme | D | 0.15 | 0.63 | 0.78 | 1.02 | 64 | 7 | 3 | 2 | 1 |
-| Doug Lidster | D | 0.16 | 0.59 | 0.75 | 1.13 | 60 | 9 | 3 | 3 | 1 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pavel Bure | F | 1.62 | 0.86 | 2.48 | 90 | 5 | 6 | 4 | 4 |
+| Trevor Linden | F | 1.28 | 0.83 | 2.11 | 78 | 9 | 4 | 4 | 4 |
+| Geoff Courtnall | F | 0.63 | 0.60 | 1.24 | 73 | 7 | 5 | 3 | 3 |
+| Cliff Ronning | F | 0.46 | 0.39 | 0.85 | 76 | 5 | 5 | 2 | 3 |
+| Jyrki Lumme | D | 0.15 | 0.63 | 0.78 | 64 | 7 | 3 | 2 | 1 |
+| Doug Lidster | D | 0.16 | 0.59 | 0.75 | 60 | 9 | 3 | 3 | 1 |
 
 **Goalies**
 
@@ -512,14 +516,14 @@ Hidden bonus: +2 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Jeremy Roenick | F | 1.68 | 0.79 | 2.46 | 1.02 | 89 | 4 | 5 | 5 | 5 |
-| Steve Larmer | F | 1.04 | 0.84 | 1.87 | 1.03 | 86 | 7 | 4 | 4 | 4 |
-| Christan Ruuttu | F | 0.74 | 0.77 | 1.51 | 0.76 | 72 | 8 | 4 | 3 | 2 |
-| Steve Smith | D | 0.29 | 0.78 | 1.07 | 1.38 | 72 | 11 | 4 | 4 | 1 |
-| Chris Chelios | D | 0.31 | 0.69 | 1.00 | 1.18 | 84 | 7 | 4 | 5 | 1 |
-| Joe Murphy | F | 0.11 | 0.09 | 0.19 | 0.11 | 71 | 7 | 4 | 4 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Jeremy Roenick | F | 1.68 | 0.79 | 2.46 | 89 | 4 | 5 | 5 | 5 |
+| Steve Larmer | F | 1.04 | 0.84 | 1.87 | 86 | 7 | 4 | 4 | 4 |
+| Christan Ruuttu | F | 0.74 | 0.77 | 1.51 | 72 | 8 | 4 | 3 | 2 |
+| Steve Smith | D | 0.29 | 0.78 | 1.07 | 72 | 11 | 4 | 4 | 1 |
+| Chris Chelios | D | 0.31 | 0.69 | 1.00 | 84 | 7 | 4 | 5 | 1 |
+| Joe Murphy | F | 0.11 | 0.09 | 0.19 | 71 | 7 | 4 | 4 | 3 |
 
 **Goalies**
 
@@ -585,14 +589,14 @@ Hidden bonus: +1 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Tomas Sandstrom | F | 1.41 | 0.90 | 2.31 | 1.36 | 80 | 9 | 4 | 5 | 5 |
-| Jimmy Carson | F | 1.10 | 0.80 | 1.91 | 0.86 | 76 | 9 | 4 | 4 | 5 |
-| Luc Robitaille | F | 0.91 | 0.78 | 1.69 | 0.78 | 85 | 7 | 4 | 4 | 6 |
-| Rob Blake | D | 0.30 | 0.81 | 1.11 | 1.41 | 72 | 11 | 4 | 4 | 1 |
-| Marty McSorley | D | 0.16 | 0.58 | 0.74 | 1.11 | 61 | 12 | 3 | 3 | 2 |
-| Wayne Gretzky | F | 0.36 | 0.31 | 0.67 | 0.24 | 87 | 4 | 4 | 2 | 2 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Tomas Sandstrom | F | 1.41 | 0.90 | 2.31 | 80 | 9 | 4 | 5 | 5 |
+| Jimmy Carson | F | 1.10 | 0.80 | 1.91 | 76 | 9 | 4 | 4 | 5 |
+| Luc Robitaille | F | 0.91 | 0.78 | 1.69 | 85 | 7 | 4 | 4 | 6 |
+| Rob Blake | D | 0.30 | 0.81 | 1.11 | 72 | 11 | 4 | 4 | 1 |
+| Marty McSorley | D | 0.16 | 0.58 | 0.74 | 61 | 12 | 3 | 3 | 2 |
+| Wayne Gretzky | F | 0.36 | 0.31 | 0.67 | 87 | 4 | 4 | 2 | 2 |
 
 **Goalies**
 
@@ -658,14 +662,14 @@ Hidden bonus: +0 at home, −0 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Gary Roberts | F | 1.29 | 0.86 | 2.15 | 1.42 | 85 | 7 | 4 | 4 | 5 |
-| Joe Nieuwendyk | F | 1.02 | 0.70 | 1.72 | 0.92 | 74 | 8 | 4 | 4 | 4 |
-| Theoren Fleury | F | 0.95 | 0.73 | 1.68 | 0.80 | 86 | 3 | 5 | 4 | 3 |
-| Gary Suter | D | 0.34 | 0.72 | 1.06 | 1.43 | 81 | 7 | 4 | 4 | 2 |
-| Al MacInnis | D | 0.34 | 0.70 | 1.04 | 1.41 | 73 | 8 | 4 | 6 | 1 |
-| Joel Otto | F | 0.22 | 0.18 | 0.40 | 0.36 | 71 | 11 | 3 | 2 | 4 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Gary Roberts | F | 1.29 | 0.86 | 2.15 | 85 | 7 | 4 | 4 | 5 |
+| Joe Nieuwendyk | F | 1.02 | 0.70 | 1.72 | 74 | 8 | 4 | 4 | 4 |
+| Theoren Fleury | F | 0.95 | 0.73 | 1.68 | 86 | 3 | 5 | 4 | 3 |
+| Gary Suter | D | 0.34 | 0.72 | 1.06 | 81 | 7 | 4 | 4 | 2 |
+| Al MacInnis | D | 0.34 | 0.70 | 1.04 | 73 | 8 | 4 | 6 | 1 |
+| Joel Otto | F | 0.22 | 0.18 | 0.40 | 71 | 11 | 3 | 2 | 4 |
 
 **Goalies**
 
@@ -731,14 +735,14 @@ Hidden bonus: +1 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mike Ridley | F | 1.19 | 1.01 | 2.19 | 1.16 | 73 | 9 | 4 | 3 | 4 |
-| Peter Bondra | F | 1.15 | 0.88 | 2.03 | 0.86 | 78 | 6 | 6 | 3 | 4 |
-| Dimitri Khristich | F | 1.01 | 0.77 | 1.78 | 0.45 | 75 | 7 | 3 | 4 | 6 |
-| Al Iafrate | D | 0.50 | 0.75 | 1.26 | 1.40 | 78 | 11 | 4 | 6 | 2 |
-| Kevin Hatcher | D | 0.31 | 0.77 | 1.09 | 1.13 | 72 | 12 | 3 | 5 | 2 |
-| Kelly Miller | F | 0.28 | 0.21 | 0.49 | 0.38 | 67 | 8 | 4 | 3 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mike Ridley | F | 1.19 | 1.01 | 2.19 | 73 | 9 | 4 | 3 | 4 |
+| Peter Bondra | F | 1.15 | 0.88 | 2.03 | 78 | 6 | 6 | 3 | 4 |
+| Dimitri Khristich | F | 1.01 | 0.77 | 1.78 | 75 | 7 | 3 | 4 | 6 |
+| Al Iafrate | D | 0.50 | 0.75 | 1.26 | 78 | 11 | 4 | 6 | 2 |
+| Kevin Hatcher | D | 0.31 | 0.77 | 1.09 | 72 | 12 | 3 | 5 | 2 |
+| Kelly Miller | F | 0.28 | 0.21 | 0.49 | 67 | 8 | 4 | 3 | 3 |
 
 **Goalies**
 
@@ -804,14 +808,14 @@ Hidden bonus: +2 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Kirk Muller | F | 1.47 | 0.83 | 2.30 | 1.71 | 80 | 9 | 4 | 4 | 4 |
-| Brian Bellows | F | 0.82 | 0.66 | 1.49 | 0.96 | 74 | 8 | 4 | 4 | 4 |
-| Vincent Damphousse | F | 0.55 | 0.44 | 0.99 | 0.48 | 74 | 6 | 4 | 3 | 3 |
-| Eric Desjardins | D | 0.24 | 0.71 | 0.95 | 1.50 | 68 | 9 | 3 | 3 | 2 |
-| Matt Schneider | D | 0.20 | 0.68 | 0.88 | 1.18 | 66 | 7 | 4 | 3 | 2 |
-| Stephan Lebeau | F | 0.44 | 0.31 | 0.75 | 0.21 | 74 | 5 | 4 | 3 | 5 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Kirk Muller | F | 1.47 | 0.83 | 2.30 | 80 | 9 | 4 | 4 | 4 |
+| Brian Bellows | F | 0.82 | 0.66 | 1.49 | 74 | 8 | 4 | 4 | 4 |
+| Vincent Damphousse | F | 0.55 | 0.44 | 0.99 | 74 | 6 | 4 | 3 | 3 |
+| Eric Desjardins | D | 0.24 | 0.71 | 0.95 | 68 | 9 | 3 | 3 | 2 |
+| Matt Schneider | D | 0.20 | 0.68 | 0.88 | 66 | 7 | 4 | 3 | 2 |
+| Stephan Lebeau | F | 0.44 | 0.31 | 0.75 | 74 | 5 | 4 | 3 | 5 |
 
 **Goalies**
 
@@ -877,14 +881,14 @@ Hidden bonus: +1 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Doug Gilmour | F | 1.42 | 0.89 | 2.31 | 1.03 | 89 | 4 | 4 | 4 | 4 |
-| Dave Andreychuk | F | 0.71 | 0.56 | 1.27 | 0.70 | 72 | 11 | 3 | 4 | 4 |
-| Nikolai Borshevsky | F | 0.60 | 0.55 | 1.15 | 0.49 | 71 | 6 | 4 | 3 | 4 |
-| Dave Ellett | D | 0.35 | 0.68 | 1.03 | 1.17 | 72 | 9 | 4 | 5 | 1 |
-| Wendel Clark | F | 0.39 | 0.37 | 0.76 | 0.24 | 69 | 8 | 3 | 5 | 3 |
-| Jamie Macoun | D | 0.18 | 0.48 | 0.66 | 0.44 | 60 | 8 | 3 | 4 | 1 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Doug Gilmour | F | 1.42 | 0.89 | 2.31 | 89 | 4 | 4 | 4 | 4 |
+| Dave Andreychuk | F | 0.71 | 0.56 | 1.27 | 72 | 11 | 3 | 4 | 4 |
+| Nikolai Borshevsky | F | 0.60 | 0.55 | 1.15 | 71 | 6 | 4 | 3 | 4 |
+| Dave Ellett | D | 0.35 | 0.68 | 1.03 | 72 | 9 | 4 | 5 | 1 |
+| Wendel Clark | F | 0.39 | 0.37 | 0.76 | 69 | 8 | 3 | 5 | 3 |
+| Jamie Macoun | D | 0.18 | 0.48 | 0.66 | 60 | 8 | 3 | 4 | 1 |
 
 **Goalies**
 
@@ -950,14 +954,14 @@ Hidden bonus: +2 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Cam Neely | F | 1.36 | 0.75 | 2.11 | 1.19 | 86 | 10 | 4 | 4 | 5 |
-| Adam Oates | F | 1.02 | 0.88 | 1.90 | 0.89 | 93 | 7 | 4 | 3 | 4 |
-| Vladimir Ruzicka | F | 0.57 | 0.52 | 1.09 | 0.52 | 67 | 10 | 4 | 4 | 3 |
-| Ray Bourque | D | 0.45 | 0.62 | 1.06 | 1.24 | 99 | 10 | 4 | 5 | 5 |
-| Joe Juneau | F | 0.37 | 0.36 | 0.73 | 0.32 | 72 | 5 | 4 | 4 | 3 |
-| Glen Wesley | D | 0.15 | 0.45 | 0.60 | 0.55 | 71 | 8 | 4 | 4 | 1 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Cam Neely | F | 1.36 | 0.75 | 2.11 | 86 | 10 | 4 | 4 | 5 |
+| Adam Oates | F | 1.02 | 0.88 | 1.90 | 93 | 7 | 4 | 3 | 4 |
+| Vladimir Ruzicka | F | 0.57 | 0.52 | 1.09 | 67 | 10 | 4 | 4 | 3 |
+| Ray Bourque | D | 0.45 | 0.62 | 1.06 | 99 | 10 | 4 | 5 | 5 |
+| Joe Juneau | F | 0.37 | 0.36 | 0.73 | 72 | 5 | 4 | 4 | 3 |
+| Glen Wesley | D | 0.15 | 0.45 | 0.60 | 71 | 8 | 4 | 4 | 1 |
 
 **Goalies**
 
@@ -1023,14 +1027,14 @@ Hidden bonus: +2 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Brett Hull | F | 1.93 | 0.80 | 2.73 | 2.27 | 81 | 9 | 4 | 6 | 3 |
-| Brendan Shanahan | F | 1.00 | 1.05 | 2.05 | 1.34 | 76 | 10 | 3 | 4 | 5 |
-| Craig Janney | F | 0.66 | 0.81 | 1.47 | 1.01 | 75 | 7 | 3 | 3 | 4 |
-| Jeff Brown | D | 0.24 | 0.75 | 0.99 | 1.96 | 71 | 9 | 3 | 5 | 3 |
-| Garth Butcher | D | 0.17 | 0.77 | 0.94 | 2.15 | 55 | 9 | 3 | 2 | 1 |
-| Nelson Emerson | F | 0.20 | 0.18 | 0.38 | 0.16 | 70 | 4 | 4 | 3 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Brett Hull | F | 1.93 | 0.80 | 2.73 | 81 | 9 | 4 | 6 | 3 |
+| Brendan Shanahan | F | 1.00 | 1.05 | 2.05 | 76 | 10 | 3 | 4 | 5 |
+| Craig Janney | F | 0.66 | 0.81 | 1.47 | 75 | 7 | 3 | 3 | 4 |
+| Jeff Brown | D | 0.24 | 0.75 | 0.99 | 71 | 9 | 3 | 5 | 3 |
+| Garth Butcher | D | 0.17 | 0.77 | 0.94 | 55 | 9 | 3 | 2 | 1 |
+| Nelson Emerson | F | 0.20 | 0.18 | 0.38 | 70 | 4 | 4 | 3 | 3 |
 
 **Goalies**
 
@@ -1095,14 +1099,14 @@ Hidden bonus: +1 at home, −2 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Petr Klima | F | 1.57 | 0.83 | 2.40 | 1.32 | 76 | 7 | 5 | 4 | 5 |
-| Craig Simpson | F | 1.19 | 0.94 | 2.12 | 1.27 | 69 | 8 | 3 | 4 | 5 |
-| Shayne Corson | F | 0.80 | 1.02 | 1.82 | 1.34 | 71 | 9 | 4 | 3 | 2 |
-| Dave Manson | D | 0.37 | 0.82 | 1.19 | 2.06 | 74 | 9 | 4 | 5 | 1 |
-| Igor Kravchuk | D | 0.27 | 0.79 | 1.06 | 1.85 | 66 | 9 | 3 | 3 | 2 |
-| Doug Weight | F | 0.04 | 0.07 | 0.11 | 0.09 | 65 | 6 | 3 | 3 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Petr Klima | F | 1.57 | 0.83 | 2.40 | 76 | 7 | 5 | 4 | 5 |
+| Craig Simpson | F | 1.19 | 0.94 | 2.12 | 69 | 8 | 3 | 4 | 5 |
+| Shayne Corson | F | 0.80 | 1.02 | 1.82 | 71 | 9 | 4 | 3 | 2 |
+| Dave Manson | D | 0.37 | 0.82 | 1.19 | 74 | 9 | 4 | 5 | 1 |
+| Igor Kravchuk | D | 0.27 | 0.79 | 1.06 | 66 | 9 | 3 | 3 | 2 |
+| Doug Weight | F | 0.04 | 0.07 | 0.11 | 65 | 6 | 3 | 3 | 3 |
 
 **Goalies**
 
@@ -1167,14 +1171,14 @@ Hidden bonus: +1 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Teemu Selanne | F | 1.78 | 0.72 | 2.50 | 1.30 | 90 | 6 | 6 | 4 | 5 |
-| Alexei Zhamnov | F | 0.85 | 0.79 | 1.64 | 0.87 | 78 | 7 | 3 | 3 | 4 |
-| Thomas Steen | F | 0.64 | 0.69 | 1.33 | 0.75 | 73 | 8 | 3 | 3 | 4 |
-| Phil Housley | D | 0.42 | 0.68 | 1.10 | 1.04 | 84 | 6 | 5 | 3 | 2 |
-| Teppo Numminen | D | 0.20 | 0.55 | 0.74 | 0.63 | 68 | 7 | 3 | 3 | 2 |
-| Evgeny Davydov | F | 0.20 | 0.19 | 0.39 | 0.19 | 64 | 6 | 4 | 4 | 4 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Teemu Selanne | F | 1.78 | 0.72 | 2.50 | 90 | 6 | 6 | 4 | 5 |
+| Alexei Zhamnov | F | 0.85 | 0.79 | 1.64 | 78 | 7 | 3 | 3 | 4 |
+| Thomas Steen | F | 0.64 | 0.69 | 1.33 | 73 | 8 | 3 | 3 | 4 |
+| Phil Housley | D | 0.42 | 0.68 | 1.10 | 84 | 6 | 5 | 3 | 2 |
+| Teppo Numminen | D | 0.20 | 0.55 | 0.74 | 68 | 7 | 3 | 3 | 2 |
+| Evgeny Davydov | F | 0.20 | 0.19 | 0.39 | 64 | 6 | 4 | 4 | 4 |
 
 **Goalies**
 
@@ -1240,14 +1244,14 @@ Hidden bonus: +0 at home, −0 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Steve Yzerman | F | 1.48 | 0.88 | 2.36 | 1.03 | 95 | 6 | 5 | 4 | 5 |
-| Sergei Fedorov | F | 1.02 | 0.83 | 1.86 | 0.85 | 84 | 7 | 4 | 4 | 4 |
-| Dino Ciccarelli | F | 0.86 | 0.73 | 1.59 | 0.60 | 80 | 5 | 4 | 5 | 5 |
-| Paul Coffey | D | 0.37 | 0.70 | 1.06 | 0.99 | 83 | 9 | 5 | 4 | 1 |
-| Steve Chiasson | D | 0.13 | 0.54 | 0.67 | 0.64 | 68 | 9 | 3 | 4 | 1 |
-| Nicklas Lidstrom | D | 0.05 | 0.14 | 0.18 | 0.25 | 66 | 5 | 3 | 4 | 1 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Steve Yzerman | F | 1.48 | 0.88 | 2.36 | 95 | 6 | 5 | 4 | 5 |
+| Sergei Fedorov | F | 1.02 | 0.83 | 1.86 | 84 | 7 | 4 | 4 | 4 |
+| Dino Ciccarelli | F | 0.86 | 0.73 | 1.59 | 80 | 5 | 4 | 5 | 5 |
+| Paul Coffey | D | 0.37 | 0.70 | 1.06 | 83 | 9 | 5 | 4 | 1 |
+| Steve Chiasson | D | 0.13 | 0.54 | 0.67 | 68 | 9 | 3 | 4 | 1 |
+| Nicklas Lidstrom | D | 0.05 | 0.14 | 0.18 | 66 | 5 | 3 | 4 | 1 |
 
 **Goalies**
 
@@ -1313,14 +1317,14 @@ Hidden bonus: +2 at home, −2 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Eric Lindros | F | 1.92 | 0.79 | 2.71 | 3.80 | 84 | 12 | 3 | 4 | 6 |
-| Mark Recchi | F | 1.04 | 0.89 | 1.93 | 1.69 | 83 | 6 | 4 | 4 | 5 |
-| Rod BrindAmour | F | 0.69 | 0.65 | 1.34 | 1.49 | 75 | 9 | 3 | 4 | 4 |
-| Dimitri Yushkevich | D | 0.18 | 0.73 | 0.91 | 2.09 | 59 | 7 | 3 | 3 | 1 |
-| Pelle Eklund | F | 0.33 | 0.35 | 0.68 | 0.38 | 75 | 5 | 4 | 3 | 3 |
-| Greg Hawgood | D | 0.06 | 0.35 | 0.41 | 0.95 | 58 | 7 | 3 | 3 | 2 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Eric Lindros | F | 1.92 | 0.79 | 2.71 | 84 | 12 | 3 | 4 | 6 |
+| Mark Recchi | F | 1.04 | 0.89 | 1.93 | 83 | 6 | 4 | 4 | 5 |
+| Rod BrindAmour | F | 0.69 | 0.65 | 1.34 | 75 | 9 | 3 | 4 | 4 |
+| Dimitri Yushkevich | D | 0.18 | 0.73 | 0.91 | 59 | 7 | 3 | 3 | 1 |
+| Pelle Eklund | F | 0.33 | 0.35 | 0.68 | 75 | 5 | 4 | 3 | 3 |
+| Greg Hawgood | D | 0.06 | 0.35 | 0.41 | 58 | 7 | 3 | 3 | 2 |
 
 **Goalies**
 
@@ -1386,14 +1390,14 @@ Hidden bonus: +0 at home, −0 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mats Sundin | F | 1.55 | 1.01 | 2.56 | 1.27 | 79 | 7 | 4 | 4 | 5 |
-| Joe Sakic | F | 1.13 | 0.89 | 2.02 | 1.06 | 83 | 6 | 4 | 4 | 5 |
-| Steve Duchesne | D | 0.32 | 0.80 | 1.12 | 1.46 | 72 | 8 | 4 | 4 | 2 |
-| Owen Nolan | F | 0.66 | 0.43 | 1.09 | 0.38 | 71 | 8 | 4 | 4 | 4 |
-| Curtis Leschyshyn | D | 0.18 | 0.59 | 0.77 | 1.36 | 62 | 9 | 4 | 2 | 3 |
-| Valeri Kamensky | F | 0.36 | 0.29 | 0.65 | 0.47 | 73 | 8 | 4 | 5 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mats Sundin | F | 1.55 | 1.01 | 2.56 | 79 | 7 | 4 | 4 | 5 |
+| Joe Sakic | F | 1.13 | 0.89 | 2.02 | 83 | 6 | 4 | 4 | 5 |
+| Steve Duchesne | D | 0.32 | 0.80 | 1.12 | 72 | 8 | 4 | 4 | 2 |
+| Owen Nolan | F | 0.66 | 0.43 | 1.09 | 71 | 8 | 4 | 4 | 4 |
+| Curtis Leschyshyn | D | 0.18 | 0.59 | 0.77 | 62 | 9 | 4 | 2 | 3 |
+| Valeri Kamensky | F | 0.36 | 0.29 | 0.65 | 73 | 8 | 4 | 5 | 3 |
 
 **Goalies**
 
@@ -1458,14 +1462,14 @@ Hidden bonus: +0 at home, −0 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pat Verbeek | F | 1.61 | 0.93 | 2.54 | 2.63 | 74 | 7 | 4 | 4 | 4 |
-| Geoff Sanderson | F | 1.30 | 1.16 | 2.46 | 1.71 | 73 | 6 | 4 | 4 | 4 |
-| Zarley Zalapski | D | 0.52 | 0.86 | 1.38 | 3.71 | 80 | 10 | 4 | 4 | 2 |
-| Eric Weinrich | D | 0.36 | 0.85 | 1.21 | 3.54 | 64 | 10 | 4 | 3 | 2 |
-| Patrick Poulin | F | 0.37 | 0.36 | 0.72 | 1.42 | 58 | 10 | 3 | 3 | 3 |
-| Andrew Cassels | F | 0.31 | 0.26 | 0.57 | 0.23 | 65 | 7 | 3 | 2 | 4 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pat Verbeek | F | 1.61 | 0.93 | 2.54 | 74 | 7 | 4 | 4 | 4 |
+| Geoff Sanderson | F | 1.30 | 1.16 | 2.46 | 73 | 6 | 4 | 4 | 4 |
+| Zarley Zalapski | D | 0.52 | 0.86 | 1.38 | 80 | 10 | 4 | 4 | 2 |
+| Eric Weinrich | D | 0.36 | 0.85 | 1.21 | 64 | 10 | 4 | 3 | 2 |
+| Patrick Poulin | F | 0.37 | 0.36 | 0.72 | 58 | 10 | 3 | 3 | 3 |
+| Andrew Cassels | F | 0.31 | 0.26 | 0.57 | 65 | 7 | 3 | 2 | 4 |
 
 **Goalies**
 
@@ -1531,14 +1535,14 @@ Hidden bonus: +2 at home, −1 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Alexnder Mogilny | F | 2.06 | 0.78 | 2.84 | 1.28 | 96 | 7 | 6 | 4 | 5 |
-| Pat LaFontaine | F | 1.01 | 0.89 | 1.89 | 0.80 | 91 | 5 | 4 | 3 | 4 |
-| Dale Hawerchuk | F | 0.72 | 0.86 | 1.58 | 0.69 | 74 | 6 | 4 | 3 | 1 |
-| Petr Svoboda | D | 0.21 | 0.57 | 0.77 | 0.68 | 65 | 5 | 4 | 3 | 0 |
-| Richard Smehlik | D | 0.16 | 0.57 | 0.73 | 0.93 | 60 | 10 | 3 | 3 | 1 |
-| Doug Bodger | D | 0.10 | 0.42 | 0.52 | 0.52 | 53 | 10 | 3 | 2 | 1 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Alexnder Mogilny | F | 2.06 | 0.78 | 2.84 | 96 | 7 | 6 | 4 | 5 |
+| Pat LaFontaine | F | 1.01 | 0.89 | 1.89 | 91 | 5 | 4 | 3 | 4 |
+| Dale Hawerchuk | F | 0.72 | 0.86 | 1.58 | 74 | 6 | 4 | 3 | 1 |
+| Petr Svoboda | D | 0.21 | 0.57 | 0.77 | 65 | 5 | 4 | 3 | 0 |
+| Richard Smehlik | D | 0.16 | 0.57 | 0.73 | 60 | 10 | 3 | 3 | 1 |
+| Doug Bodger | D | 0.10 | 0.42 | 0.52 | 53 | 10 | 3 | 2 | 1 |
 
 **Goalies**
 
@@ -1603,14 +1607,14 @@ Hidden bonus: +0 at home, −0 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pierre Turgeon | F | 1.71 | 1.00 | 2.71 | 3.41 | 82 | 9 | 4 | 4 | 5 |
-| Benoit Hogue | F | 1.31 | 0.99 | 2.29 | 2.22 | 78 | 7 | 5 | 3 | 5 |
-| Derek King | F | 0.56 | 0.59 | 1.15 | 1.42 | 64 | 9 | 2 | 4 | 5 |
-| Vladimir Malakhov | D | 0.23 | 0.85 | 1.08 | 2.72 | 63 | 10 | 3 | 4 | 2 |
-| Uwe Krupp | D | 0.12 | 0.35 | 0.46 | 2.02 | 53 | 14 | 2 | 3 | 2 |
-| Steve Thomas | F | 0.16 | 0.24 | 0.40 | 0.19 | 72 | 6 | 4 | 3 | 3 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pierre Turgeon | F | 1.71 | 1.00 | 2.71 | 82 | 9 | 4 | 4 | 5 |
+| Benoit Hogue | F | 1.31 | 0.99 | 2.29 | 78 | 7 | 5 | 3 | 5 |
+| Derek King | F | 0.56 | 0.59 | 1.15 | 64 | 9 | 2 | 4 | 5 |
+| Vladimir Malakhov | D | 0.23 | 0.85 | 1.08 | 63 | 10 | 3 | 4 | 2 |
+| Uwe Krupp | D | 0.12 | 0.35 | 0.46 | 53 | 14 | 2 | 3 | 2 |
+| Steve Thomas | F | 0.16 | 0.24 | 0.40 | 72 | 6 | 4 | 3 | 3 |
 
 **Goalies**
 
@@ -1672,14 +1676,14 @@ Hidden bonus: +1 at home, −2 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pat Falloon | F | 1.73 | 0.91 | 2.63 | 0.39 | 61 | 7 | 4 | 3 | 2 |
-| Johan Garpenlov | F | 0.89 | 0.66 | 1.55 | 0.37 | 55 | 6 | 3 | 2 | 3 |
-| Doug Wilson | D | 0.42 | 0.78 | 1.20 | 0.44 | 65 | 7 | 3 | 6 | 1 |
-| Sandis Ozolinsh | D | 0.28 | 0.67 | 0.95 | 0.33 | 59 | 7 | 3 | 3 | 2 |
-| Perry Berezan | F | 0.59 | 0.34 | 0.93 | 0.16 | 53 | 7 | 4 | 2 | 2 |
-| Kelly Kisio | F | 0.29 | 0.37 | 0.65 | 0.17 | 63 | 6 | 2 | 3 | 4 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pat Falloon | F | 1.73 | 0.91 | 2.63 | 61 | 7 | 4 | 3 | 2 |
+| Johan Garpenlov | F | 0.89 | 0.66 | 1.55 | 55 | 6 | 3 | 2 | 3 |
+| Doug Wilson | D | 0.42 | 0.78 | 1.20 | 65 | 7 | 3 | 6 | 1 |
+| Sandis Ozolinsh | D | 0.28 | 0.67 | 0.95 | 59 | 7 | 3 | 3 | 2 |
+| Perry Berezan | F | 0.59 | 0.34 | 0.93 | 53 | 7 | 4 | 2 | 2 |
+| Kelly Kisio | F | 0.29 | 0.37 | 0.65 | 63 | 6 | 2 | 3 | 4 |
 
 **Goalies**
 
@@ -1745,14 +1749,14 @@ Hidden bonus: +0 at home, −0 away.
 
 **Leading skaters** (per team game)
 
-| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mike Modano | F | 1.98 | 0.80 | 2.77 | 2.75 | 82 | 7 | 5 | 5 | 2 |
-| Russ Courtnall | F | 0.82 | 0.37 | 1.19 | 0.85 | 73 | 6 | 6 | 4 | 3 |
-| Dave Gagner | F | 0.51 | 0.58 | 1.09 | 1.29 | 75 | 6 | 4 | 3 | 4 |
-| Mark Tinordi | D | 0.14 | 0.88 | 1.02 | 2.85 | 65 | 9 | 3 | 4 | 3 |
-| Tommy Sjodin | D | 0.16 | 0.52 | 0.68 | 2.27 | 57 | 6 | 3 | 4 | 1 |
-| Ulf Dahlen | F | 0.34 | 0.30 | 0.64 | 1.10 | 70 | 8 | 4 | 3 | 4 |
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mike Modano | F | 1.98 | 0.80 | 2.77 | 82 | 7 | 5 | 5 | 2 |
+| Russ Courtnall | F | 0.82 | 0.37 | 1.19 | 73 | 6 | 6 | 4 | 3 |
+| Dave Gagner | F | 0.51 | 0.58 | 1.09 | 75 | 6 | 4 | 3 | 4 |
+| Mark Tinordi | D | 0.14 | 0.88 | 1.02 | 65 | 9 | 3 | 4 | 3 |
+| Tommy Sjodin | D | 0.16 | 0.52 | 0.68 | 57 | 6 | 3 | 4 | 1 |
+| Ulf Dahlen | F | 0.34 | 0.30 | 0.64 | 70 | 8 | 4 | 3 | 4 |
 
 **Goalies**
 

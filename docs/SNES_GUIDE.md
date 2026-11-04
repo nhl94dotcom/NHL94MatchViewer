@@ -193,8 +193,8 @@ you take him, are played by the computer.
   react; if you'll play the goalie yourself, they matter less.
 - **Endurance doesn't matter** with line changes off, and speed bursts are free.
 - **Which retail teams actually win** (the leagues' Classic games since 2013, the same people compared on different
-  teams): **Pittsburgh** (+0.4 goals a game over the average team) and **New Jersey** (+0.3) lead; the **Islanders**
-  (-0.8), Quebec, Buffalo and Winnipeg trail. Heavier teams do better; the goalie hardly matters. Rougher than the
+  teams): **Pittsburgh** (+0.4 goals a game over the average team) and **New Jersey** (+0.3) lead; **Quebec**
+  (-0.6), Buffalo and Winnipeg trail among the well-used teams. Heavier teams do better; the goalie hardly matters. Rougher than the
   Genesis table: the middle isn't ordered. (LEAGUE_RESULTS.)
 
 ---

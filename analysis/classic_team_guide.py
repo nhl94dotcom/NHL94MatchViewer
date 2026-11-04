@@ -305,12 +305,12 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "Use strength to judge how good a team is, and the Elo adjustment inside an Elo rating.\n",
            "- **Each number uses a different yardstick for the coach.** Every team value is what's left after taking out who was coaching. Strength uses one fitted strength for each coach. The Elo adjustment uses each coach's Elo at the start of that league. A different yardstick leaves a different remainder, even with the same record.\n",
            "- **Elo can run high or low for a while.** If a coach's Elo is well above how they then play, the team they're using looks worse than it is. If it's well below, the team looks better. A fitted strength reflects the coach's whole Classic career, so it's less affected by this.\n",
-           "- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look worse on the Elo adjustment than on strength, and a team usually used by underdogs can look better.\n",
+           "- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look a little worse on the Elo adjustment than on strength, and a team usually used by underdogs a little better. In simulated seasons this effect was usually small and varied a lot.\n",
            "- **Rarely used teams rest on a few seasons.** One or two unusual seasons, or one coach, can move their numbers a lot, and more on the Elo adjustment than on strength.\n",
            "- **Each number counts different results.** Strength counts how early wins were safe as well as who won. The Elo adjustment's fit counts only who won, and it leaves out games where a coach has under 30 earlier games.\n",
            "- **Strength now and strength over all years cover different games.** A team can look better or worse lately because of who has used it recently, or because the leagues have changed, so a gap between the two doesn't prove the team itself changed. Rosters in these leagues stay the same.\n",
            "- **A record alone doesn't say how good a team is.** Better coaches may have used it, or worse ones. A strong team can have a modest record if weaker coaches tend to use it, and a weak team can have a good record if stronger coaches do. That's what the Expected column is for.\n",
-           "- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. "
+           "- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. In simulated seasons where every team played the same at every level, gaps of up to about 6 points still appeared by chance. "
            + ("The overall team order is sturdier.\n" if tab == "GENESIS" else "On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.\n"),
            "**The \"All teams\" table**\n",
            "- **#:** the team's rank by strength now.\n",
@@ -360,7 +360,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "- **Hidden bonus (line under the table):** what the ROM adds to some of the team's ratings at home and takes away on the road.\n",
            "**The \"Leading skaters\" table** (the team's top 6 by points; all figures are per team game, whether or not the skater played in it)\n",
            "- **Player** and **Pos:** the skater, as a forward (F) or defenceman (D).\n",
-           "- **Goals**, **Assists**, **Points** and **Checks:** the skater's figures per team game.\n",
+           ("- **Goals**, **Assists**, **Points** and **Checks:** the skater's figures per team game.\n" if tab == "GENESIS" else "- **Goals**, **Assists** and **Points:** the skater's figures per team game.\n"),
            "- **Overall**, **Weight**, **Speed**, **Shot Power** and **Shot Acc:** the skater's roster ratings from the ROM.\n",
            "**The \"Goalies\" table** (the team's two goalies who faced the most shots)\n",
            "- **Goalie:** the goalie.\n",
@@ -368,6 +368,8 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "- **Save %:** the share of those shots the goalie stopped.\n",
            "- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.\n",
            "\n## All teams\n",
+           ("![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)\n" if tab == "GENESIS" else
+            "![SNES Classic teams on a line by Elo adjustment, zoomed in](img/elo_teams_snes_zoom.svg)\n\n![SNES Classic teams on the same scale as the Genesis guide](img/elo_teams_snes.svg)\n"),
            "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]
@@ -414,11 +416,13 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
                 out.append(f"\nHidden bonus: +{ha[0]} at home, −{ha[1]} away.")
         roster = {p["name"].lower(): p for p in rom_t[t]["players"]} if t in rom_t else {}
         top = sorted(scorers[t].items(), key=lambda kv: -kv[1][2])[:6]
-        out.append("\n**Leading skaters** (per team game)\n\n| Player | Pos | Goals | Assists | Points | Checks | Overall | Weight | Speed | Shot Power | Shot Acc |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+        # only Genesis rows give each player's checks throughout; most SNES rows have no such field, and that slot holds penalty minutes
+        genesis = tab == "GENESIS"
+        out.append("\n**Leading skaters** (per team game)\n\n| Player | Pos | Goals | Assists | Points |" + (" Checks |" if genesis else "") + " Overall | Weight | Speed | Shot Power | Shot Acc |\n| --- | --- | --- | --- | --- |" + (" --- |" if genesis else "") + " --- | --- | --- | --- | --- |")
         for nm, q in top:
             p = roster.get(nm.lower())
             rate = f"{p['ovr']} | {p['a'][0]} | {p['a'][2]} | {p['a'][5]} | {p['a'][9]}" if p else " | | | | "
-            out.append(f"| {nm} | {q[5]} | {q[0] / s['sides']:.2f} | {q[1] / s['sides']:.2f} | {q[2] / s['sides']:.2f} | {q[4] / s['sides']:.2f} | {rate} |")
+            out.append(f"| {nm} | {q[5]} | {q[0] / s['sides']:.2f} | {q[1] / s['sides']:.2f} | {q[2] / s['sides']:.2f} |" + (f" {q[4] / s['sides']:.2f} |" if genesis else "") + f" {rate} |")
         gl = sorted(goalies[t].items(), key=lambda kv: -kv[1][1])[:2]
         out.append("\n**Goalies**\n\n| Goalie | Shots faced | Save % | Agility | Puck Control |\n| --- | --- | --- | --- | --- |")
         for nm, (ga, sa) in gl:

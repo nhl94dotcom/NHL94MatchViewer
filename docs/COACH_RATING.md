@@ -271,6 +271,10 @@ Rarely used teams are pulled toward the average team, as in section 5, by the se
 | NJ | −89 ± 33 | −30 | | VAN | −18 ± 12 | −1 |
 | TB* | −102 ± 37 | −58 | | NYI* | −29 ± 10 | −18 |
 
+![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)
+
+![SNES Classic teams on the same scale](img/elo_teams_snes.svg)
+
 **Whether they help.** Each year's adjustments were fitted on earlier years only, then used inside the running Elo to predict that year's Classic games (log loss, lower is better; 13,724 Genesis and 9,427 SNES games):
 
 | Share of the adjustment used | None | 25% | 50% | 75% | 100% |
@@ -281,6 +285,14 @@ Rarely used teams are pulled toward the average team, as in section 5, by the se
 On the Genesis they clearly help, most at full size (by 0.0041 ± 0.0007). On the SNES they help very little (0.0004 ± 0.0003), so they describe past results more than they improve ratings. The pull setting was chosen on these same years, which flatters these results slightly.
 
 Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +17 on the SNES.
+
+**Simulated seasons with known answers.** On the real schedule and team use, with made-up coach strengths and team values:
+- **The methods recover the truth.** Team values correlate with the true ones at 0.92-0.97, whichever method is used.
+- **The 0.6 comes from the Elo itself.** Rating gaps came out worth 0.6-0.7 of face value even though simulated coaches never change, so it's mostly K 20 noise rather than something about these leagues.
+- **The pull shrinks values.** With teams truly spread by about 60 Elo points, the fit recovers about 0.9 of that spread at the Genesis setting and about 0.55 at the SNES setting, so the SNES table would understate real differences of that size.
+- **Noise sets a floor.** With no true difference between teams, values still typically came out 7-11 points from zero.
+- **Teams used by favorites** tended to come out a little low, but the effect was usually small (often 0.2 of an Elo point per point of gap) and varied a lot between simulations.
+- **Levels.** With teams truly the same at every level, gaps between high and low levels typically came out at about 2.5 points, and up to about 6.
 
 ## 10. Classic teams by level of player
 
