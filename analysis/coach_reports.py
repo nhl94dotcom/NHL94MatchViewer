@@ -88,9 +88,12 @@ def notes(me):
     """Fixed rules. Each states what the numbers show, never why a coach played as they did."""
     n = []
     gap = me["rating"] - me["career"]
-    if abs(gap) >= 3:
+    away = me["days_away"] >= 365
+    if abs(gap) >= 3 and away:
+        n.append(f"**Time away affects the Rating.** It's {abs(gap):.1f} points {'above' if gap > 0 else 'below'} the Career number, where every game counts the same. As games get older they count for less, so the Rating drifts toward the middle.")
+    elif abs(gap) >= 3:
         n.append(f"**Recent form {'lifts' if gap > 0 else 'lowers'} the Rating.** Recent games count more, and the Rating is {abs(gap):.1f} points {'above' if gap > 0 else 'below'} the Career number, where every game counts the same.")
-    if me["last_year"] and abs(me["last_year"][1] - me["rating"]) >= 5:
+    if me["last_year"] and abs(me["last_year"][1] - me["rating"]) >= 5 and not away:
         y_, v = me["last_year"]
         n.append(f"**The latest year doesn't match the Rating.** Their {y_} results alone rate {v:.1f}, against a Rating of {me['rating']:.1f}. The Rating moves slowly, so it may still be catching up.")
     if me["win_rank"] - me["rank"] >= 15:
@@ -109,7 +112,7 @@ def notes(me):
     if me["top5"] >= 50:
         n.append(f"**A small group of opponents matters a lot.** The five opponents who count most hold {me['top5']:.0f}% of the Rating's weight.")
     if me["days_away"] >= 365:
-        n.append(f"**They haven't played lately.** Their last game was {me['last']}, so their games now count for less and the Rating is less certain.")
+        n.append(f"**They haven't played lately.** Their last game was {me['last']}, so the Rating is less certain.")
     if me["range"] >= 8:
         n.append(f"**The Rating is uncertain.** Its range is {me['range']:.1f} points wide.")
     return n
@@ -361,7 +364,7 @@ def build(name, label, title, at, wanted):
         if solid:
             even = next((t for t in solid if t[1] / (t[1] + t[2]) >= 0.5), None)
             if even:
-                text.append(f"Over the last 3 years, the toughest opponents they've had a winning record against are those rated {even[0]} ({share(even[1], even[2])}).")
+                text.append(f"Over the last 3 years, the toughest opponents they've had a winning record against are those rated {even[0].lower()} ({share(even[1], even[2])}).")
             else:
                 text.append("Over the last 3 years, they haven't had a winning record against any level with 30+ games.")
             moved = [(100 * t[1] / (t[1] + t[2]) - 100 * t[3] / (t[3] + t[4]), t[0]) for t in solid if t[3] + t[4] >= 30]
@@ -374,7 +377,7 @@ def build(name, label, title, at, wanted):
                     text.append("They've done worse against every level compared with earlier years.")
                 else:
                     best_d = max(moved)
-                    text.append(f"Compared with earlier years, the biggest change is {best_d[0]:+.1f} points against opponents rated {best_d[1]}." if abs(best_d[0]) >= 3 else "Their results by level are about the same as in earlier years.")
+                    text.append(f"Compared with earlier years, the biggest change is {best_d[0]:+.1f} points against opponents rated {best_d[1].lower()}." if abs(best_d[0]) >= 3 else "Their results by level are about the same as in earlier years.")
         if text:
             out += [" ".join(text), ""]
         out += ["| Opponent's Rating now | Last 3 years | Win % | Earlier | Win % | Share of weight, last 3 years |", "| --- | --- | --- | --- | --- | --- |"]
@@ -400,7 +403,7 @@ def build(name, label, title, at, wanted):
             if cl:
                 part.append(f"{np.average([x['scale_rating'] for x in common if x['classic']], weights=[size(x) for x in common if x['classic']]):.1f} in Classic")
             tough = max(common, key=lambda x: x["scale_rating"])
-            out += [f"A league strength of 50 means its coaches are about as good as an average coach. By games played, {name}'s leagues average {mean_s:.1f}: {' and '.join(part)}. These use all-leagues ratings so they can be compared, so the Classic numbers differ from those in the Classic section. Their toughest was `{tough['league']}`, at {tough['scale_rating']:.1f}.", ""]
+            out += [f"A league strength of 50 means its coaches are about as good as an average coach. By games played, {name}'s leagues average {mean_s:.1f}" + (f": {' and '.join(part)}. These use all-leagues ratings so they can be compared, so the Classic numbers differ from those in the Classic section" if cl and ot else "") + f". Their toughest was `{tough['league']}`, at {tough['scale_rating']:.1f}.", ""]
         out += ["**Every league, newest first**", "", f"| League | First game | Team | {RP} | League strength, one scale |", f"| --- | --- | --- | {RP_LINE} | --- |"]
         for lg in sorted(set(lg_of), key=lambda x: league_info.get(x, {}).get("start", 0), reverse=True):
             m = lg_of == lg
