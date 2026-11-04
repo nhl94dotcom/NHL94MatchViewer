@@ -109,7 +109,7 @@ Each coach staying one fixed strength over all years barely affects the team val
 
 Players against their ratings are in `docs/PLAYER_GUIDE_GENESIS.md` and `docs/PLAYER_GUIDE_SNES.md` (`analysis/classic_player_guide.py`): among teammates at the same position, what a skater does beyond their ratings repeats across random halves of the leagues at 0.63 on the Genesis and 0.66 on the SNES. Teams against estimated demand and their roster ratings are in `docs/DRAFT_GUIDE_CLASSIC.md` (`analysis/classic_draft_guide.py`).
 
-How strong each league-season's coaches were is in `docs/LEAGUE_RATINGS.md` (`analysis/league_ratings.py`). On the one scale, an average coach wins about 33% in a Genesis Classic -A league, 50% in a -B and 63% in a -C, and about 36%, 56% and 67% on the SNES.
+How strong each league-season's coaches were is in `docs/LEAGUE_RATINGS.md` (`analysis/league_ratings.py`). On the one scale, the coaches of a Genesis Classic -A league would beat an average coach about 67% of the time, those of a -B about 50% and those of a -C about 37%, and about 64%, 44% and 33% on the SNES.
 
 ## Game-wide patterns (`analysis/league_patterns.py`)
 
