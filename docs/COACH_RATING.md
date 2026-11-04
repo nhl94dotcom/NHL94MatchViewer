@@ -298,6 +298,17 @@ The league's settings are close to the best. K 12 is ahead by 0.0021 ± 0.0003 o
 
 **Glicko** (`analysis/league_glicko.py`). Glicko adds an uncertainty to each rating, so a new coach's rating moves fast and a settled one's moves little. Played over the same games, with its settings chosen on 2016-2019 and tested from 2020, it predicts better than the league's Elo: on Classic games between established coaches 0.6330 against 0.6377 on the Genesis and 0.6211 against 0.6251 on the SNES, and most of all for coaches with under 30 earlier games (0.5783 against 0.5925, 0.5079 against 0.5439). It would change how the ratings feel, though: a veteran's rating moves about 5-7 points a game instead of 9, a new coach's can move several hundred in one game, and the middle of the scale sinks. The league keeps its Elo.
 
+**Is the league Elo fair between levels?** (`analysis/league_elo_levels.py`.) Coaches mostly play inside their level, so a rating earned at `-C` might not mean what one earned at `-A` does. Three tests on Classic leagues:
+
+| Test | Genesis | SNES |
+| --- | --- | --- |
+| A rating gap's worth, levels A / B / C / D and below, ratings as they stood | 0.81 / 0.79 / 0.87 / 0.88 | 0.79 / 0.90 / 0.93 / 0.99 |
+| Elo against what the coach Rating suggests, mostly A / B / C / D and below, points | +13 / +6 / −23 / +7 (± 13-21) | +20 / −25 / +19 / one coach (± 17-19) |
+| Win % beyond Elo in the league after moving up, against coaches who stayed, with the rating gap to the field and the league before held still | −6.0 ± 1.1 points (168 moves) | −4.6 ± 1.4 points (102 moves) |
+| The same after moving down | +2.2 ± 1.1 points (147 moves) | +1.1 ± 1.4 points (95 moves) |
+
+The first two show no steady pattern by level, so lower levels' ratings aren't generally inflated. Coaches who move up do fall short in that league, by about 30-40 Elo points' worth, and that isn't explained by their rating gap or by how they did in the league before. The tests can't say why: a tougher level may take some adjusting to, or ratings earned before a move may run a little high. Elo corrects it as those games are played.
+
 **A team's Elo value and its fixed-strength value can differ on the same games.** On the 228 Genesis Washington games in the Elo fit, Elo gives −14 and fixed strengths −42, so the yardstick accounts for most of the gap and the left-out games for little (−48 with them). Separate coach strengths by era don't close it: they lower Washington's strength a little.
 
 **Coaches change, and team values barely care** (`analysis/team_strength_checks.py`). The team fit uses one strength per coach over all years, though coaches with 100+ games in two straight eras typically moved about 9-10 points of win chance between them. Refitting with a separate strength for each coach in each era moves the team values very little:
@@ -527,6 +538,8 @@ python analysis/coach_history.py           each coach's Rating on past dates, pr
 python analysis/league_ratings.py          docs/LEAGUE_RATINGS.md, how strong each league-season's coaches were (needs the history)
 python analysis/coach_reports.py           a detailed private report per coach (needs the league ratings), never in the repository
 python analysis/league_elo_k.py            K and the coasting bonus tested
+python analysis/league_elo_levels.py       whether the league's Elo is fair between levels
+python analysis/league_glicko.py           Glicko against the league's Elo
 python analysis/team_strength_checks.py    coach eras and the pull on teams tested
 ```
 
