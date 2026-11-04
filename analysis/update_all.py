@@ -6,7 +6,7 @@ The team Elo adjustments are refitted and printed as dicts for the league's Elo 
 python analysis/update_all.py                everything
 python analysis/update_all.py --list         the steps
 python analysis/update_all.py --from NAME    from that step on, after a failure
-python analysis/update_all.py --tests        also the slower tests of the method (K and the bonus, coach eras and the pull)"""
+python analysis/update_all.py --tests        also the slower tests of the method (K and the bonus, coach eras and the pull, fairness between levels, Glicko)"""
 import json
 import subprocess
 import sys
@@ -33,7 +33,9 @@ STEPS = (("ratings", "the all-leagues coach ratings", ["analysis/coach_rating.py
          ("coach_reports", "the coach reports, private", ["analysis/coach_reports.py"]),
          ("checks", "checks on all of it", ["tests/check_league_outputs.py"]))
 SLOW = (("k_test", "K and the coasting bonus tested", ["analysis/league_elo_k.py"]),
-        ("strength_test", "coach eras and the pull on teams tested", ["analysis/team_strength_checks.py"]))
+        ("strength_test", "coach eras and the pull on teams tested", ["analysis/team_strength_checks.py"]),
+        ("level_test", "whether the league's Elo is fair between levels", ["analysis/league_elo_levels.py"]),
+        ("glicko_test", "Glicko against the league's Elo", ["analysis/league_glicko.py"]))
 ORDER = ("CHI", "MTL", "WPG", "DET", "EDM", "TOR", "DAL", "BOS", "PHI", "QUE", "VAN", "LA", "BUF", "PIT", "CGY", "WSH", "NYI", "HFD", "TB", "NYR", "STL", "SJ", "NJ", "ANH", "OTW", "FLA")
 
 
