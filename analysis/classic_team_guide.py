@@ -369,7 +369,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.\n",
            "\n## All teams\n",
            ("![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)\n" if tab == "GENESIS" else
-            "![SNES Classic teams on a line by Elo adjustment, zoomed in](img/elo_teams_snes_zoom.svg)\n\n![SNES Classic teams on the same scale as the Genesis guide](img/elo_teams_snes.svg)\n"),
+            "![SNES Classic teams on a line by Elo adjustment](img/elo_teams_snes_zoom.svg)\n\nThis scale is about 3 times wider than the one in the Genesis guide, as the SNES teams are much closer together.\n"),
            "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]

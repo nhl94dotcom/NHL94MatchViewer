@@ -137,9 +137,9 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 ## All teams
 
-![SNES Classic teams on a line by Elo adjustment, zoomed in](img/elo_teams_snes_zoom.svg)
+![SNES Classic teams on a line by Elo adjustment](img/elo_teams_snes_zoom.svg)
 
-![SNES Classic teams on the same scale as the Genesis guide](img/elo_teams_snes.svg)
+This scale is about 3 times wider than the one in the Genesis guide, as the SNES teams are much closer together.
 
 | # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
