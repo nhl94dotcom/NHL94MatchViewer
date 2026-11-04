@@ -143,6 +143,13 @@ def build(name, label, title, at, wanted):
     career_log = {p: float((beta_all[D.people[p]] - zero_all) * scale) for p in per}
     career_val = {p: G.pct(v) for p, v in career_log.items()}
     every = D.predict(beta_all, np.arange(n))
+    # an average team: the team terms' mean, weighted by use, as in the team guides
+    team_use = Counter()
+    for i, g in enumerate(games):
+        if D.cols[i, 2] != D.home:
+            team_use[g["ht"]] += 1
+            team_use[g["at"]] += 1
+    team_mean = sum(beta_all[D.teams[t]] * c for t, c in team_use.items()) / max(1, sum(team_use.values()))
     ratings, classic = G.table(label), G.table(label, "_classic")
     order = sorted((p for p in regulars if p in ratings), key=lambda p: -float(ratings[p]["win_chance_vs_average"]))
     classic_big = sorted((p for p, r in classic.items() if int(r["games"]) >= MIN_GAMES), key=lambda p: -float(classic[p]["win_chance_vs_average"]))
@@ -233,7 +240,7 @@ def build(name, label, title, at, wanted):
                 pred = 0.0
                 for k in np.nonzero(m & ok)[0]:
                     i, s_ = me[k]
-                    own = beta_all[D.teams[tm]] if tm in D.teams and D.cols[i, 2] != D.home else 0.0
+                    own = beta_all[D.teams[tm]] - team_mean if tm in D.teams and D.cols[i, 2] != D.home else 0.0
                     pred += 1 / (1 + math.exp(-((every[i] * s_ - own) * scale)))
                 team_rows.append((100 * tw / (tw + tl) - 100 * pred / (tw + tl), tm, tw, tl, tt, 100 * pred / (tw + tl), m))
             team_rows.sort(key=lambda x: -x[0])
@@ -412,7 +419,7 @@ def build(name, label, title, at, wanted):
                 "- **Career:** the same, with every game counting equally.",
                 "- **Classic rating:** the same as Rating, from Classic games alone, with team strength taken out. It comes from a separate calculation, so it can't be compared directly with Rating.",
                 "- **Regular season and Playoffs:** the record in each, as the league's records mark them. Other columns count both.",
-                "- **Predicted with an average team:** the win % you'd expect from the coach's strength, the opposing coach and team, and home ice. **Above** is the actual win % minus that. It shows the team's own strength as well as this coach's fit with it, and with few games it's mostly chance.",
+                "- **Predicted with an average team:** the win % you'd expect in those same games if the coach had used an average team in place of this one, from the coach's strength, the opposing coach and team, and home ice. An average team is the average of the teams people actually use. **Above** is the actual win % minus that. It shows the team's own strength as well as this coach's fit with it, and with few games it's mostly chance.",
                 "- **Strength in a year:** one number from that year's wins and losses, given the opponents, teams and home ice, pulled lightly toward the coach's career strength.",
                 "- **Opponents:** how good the opposing coaches are, where 50 is an average coach. In Classic and the year table it's their career strength; in league families and by level it's their Rating now.",
                 "- **Share of Rating's weight:** how much those games count toward the Rating, given that recent games count more.",
