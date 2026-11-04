@@ -9,7 +9,7 @@ import csv
 import math
 import re
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import date
 from pathlib import Path
 
@@ -66,6 +66,13 @@ def build(name, label, title, at, ridge, scale):
     won = np.array([1.0 if g["hs"] > g["as"] else 0.0 for g in games])
     decided = np.array([g["hs"] != g["as"] for g in games])
     every = D.predict(beta, np.arange(n))
+    # an average team: the team terms' mean, weighted by use, as in the team guides
+    team_use = Counter()
+    for i, g in enumerate(games):
+        if D.cols[i, 2] != D.home:
+            team_use[g["ht"]] += 1
+            team_use[g["at"]] += 1
+    team_mean = sum(beta[D.teams[t]] * c for t, c in team_use.items()) / max(1, sum(team_use.values()))
     per = defaultdict(list)
     for i, g in enumerate(games):
         per[g["hp"]].append((i, 1.0))
@@ -89,7 +96,7 @@ def build(name, label, title, at, ridge, scale):
            "- **Opponents:** the mean career strength of the people faced, on the same scale: 50 is an average coach. Higher means tougher competition.",
            "- **Top league share:** the share of Classic games played in the top league of that season, where the league name shows one.",
            f"- **Year by year:** Strength is one number from that year's wins and losses, given the opponents, teams and home ice, and pulled lightly toward the coach's career strength, so a year with few games moves less. Years with under {MIN_YEAR} games show no strength.",
-           f"- **Best and worst Classic teams:** teams with {MIN_TEAM}+ games. Predicted is the win % the coach's strength, the opponent's coach and team, and home ice predict with an average team, and Above is the win % minus that. It shows the team's own strength as well as this coach's fit with it, and with few games it's mostly chance.", "",
+           f"- **Best and worst Classic teams:** teams with {MIN_TEAM}+ games. Predicted is the win % the coach's strength, the opponent's coach and team, and home ice predict with an average team in use, and Above is the win % minus that. It shows the team's own strength as well as this coach's fit with it, and with few games it's mostly chance.", "",
            "Strength here uses one number per coach over all years, with the year-by-year table showing the change. It says how a coach has done, not how they would do in another league.", "",
            "**Coaches:** " + " · ".join(f"[{p}](#{i + 1}-{re.sub(r'[^a-z0-9 _-]', '', p.lower()).replace(' ', '-')})" for i, p in enumerate(order)), ""]
     for rank, p in enumerate(order, 1):
@@ -145,7 +152,7 @@ def build(name, label, title, at, ridge, scale):
                 t[2] += 1
                 continue
             t[0 if win else 1] += 1
-            own = beta[D.teams[team]] if team in D.teams and D.cols[i, 2] != D.home else 0.0
+            own = beta[D.teams[team]] - team_mean if team in D.teams and D.cols[i, 2] != D.home else 0.0
             t[3] += 1 / (1 + math.exp(-((every[i] * s - own) * scale)))
         rows = []
         for team, (tw, tl, tt, pred) in by_team.items():
