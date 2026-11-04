@@ -4,8 +4,8 @@
 Every game is one equation, solved over all games at once with ridge regression:
     result value = home coach - away coach + home team - away team + home edge
 so beating a strong coach counts for more, and a coach and a team are told apart by the same people on other teams. Team terms only in
-leagues whose name starts with Classic and whose labels are all retail teams (the same abbreviation means the same roster); elsewhere rosters differ
-by league, and no term is fitted (a name with Classic later in it, such as a Modern Classic league, doesn't count).
+the Classic leagues (names starting Classic_Spring, Classic_Summer or Classic_Fall: retail rosters, the same abbreviation means the same team); elsewhere
+rosters differ by league, and no term is fitted.
 Result values tried (a win is positive for the winner, a tie 0, all scaled to the same spread):
 - win: win or loss only;
 - margin: goal difference capped at +-5;
@@ -48,10 +48,10 @@ SCOPES = ("all", "classic")
 MIN_TEAM_GAMES, MIN_SEEN, FIRST_YEAR = 100, 30, 2020
 ELO_K = {"GENESIS": 16, "SNES": 20}
 REF_GAMES = 100                                         # "average" in the table: the mean coach with this many games or more
-RETAIL = {"ANH", "BOS", "BUF", "CGY", "CHI", "DAL", "DET", "EDM", "FLA", "HFD", "LA", "MTL", "NJ", "NYI", "NYR", "OTW", "PHI", "PIT", "QUE", "SJ", "STL",
-          "TB", "TOR", "VAN", "WPG", "WSH"}            # the ROM's teams; a Classic league with any other label plays other rosters, so it gets no team terms
+CLASSIC = ("classic_spring", "classic_summer", "classic_fall")     # what makes a Classic league (lower case)
+GROUP_STARTS = {"classic": CLASSIC, "chaos": ("chaos",), "snes_draft": ("snes_draft",)}
 PERIOD, MIN_LEAGUE_GAMES = 300, 20                      # seconds in the usual period; games a league needs before its period length is read from its goals
-PREFIX = None                                           # only leagues whose name starts with this (lower case)
+PREFIX = None                                           # only this group's leagues (a key of GROUP_STARTS)
 GROUPS = (("All_Games_GENS.csv", "GENESIS", "classic"), ("All_Games_SNES.csv", "SNES", "classic"),
           ("All_Games_GENS.csv", "GENESIS", "chaos"), ("All_Games_SNES.csv", "SNES", "snes_draft"))
 
@@ -65,20 +65,11 @@ def day(text):
         return None
 
 
-def aliases():
-    """{old name: current name} for people who changed names, from the private coach_aliases.csv (the user confirms each; names never in the repo)."""
-    path = DATA / "coach_aliases.csv"
-    if not path.exists():
-        return {}
-    with open(path, encoding="utf-8", newline="") as fh:
-        return {r["old_name"].strip().lower(): r["current_name"].strip().lower() for r in csv.DictReader(fh)}
-
-
 def read_extra(name):
-    """What load() doesn't keep: {(date, league, players, score): (home abbr, away abbr, goals as (period, second, home))}, each league's games and
-    longest regulation goal second, and the Classic leagues with a label that isn't a retail team."""
+    """What load() doesn't keep: {(date, league, players, score): (home abbr, away abbr, goals as (period, second, home))}, and the period length of each
+    league that doesn't play the usual one, from its longest regulation goal."""
     csv.field_size_limit(10 ** 9)
-    out, league_games, longest, not_retail = {}, defaultdict(int), defaultdict(int), set()
+    out, league_games, longest = {}, defaultdict(int), defaultdict(int)
     with open(DATA / name, encoding="utf-8", errors="replace", newline="") as fh:
         for r in csv.DictReader(fh):
             key = (r["DateTime"], r["League"], r["HomePlayer"].strip().lower(), r["AwayPlayer"].strip().lower(), r["HomeScore"], r["AwayScore"])
@@ -93,24 +84,18 @@ def read_extra(name):
             if r.get("sim") != "1":
                 league_games[r["League"]] += 1
                 longest[r["League"]] = max([longest[r["League"]]] + [s for p, s, _ in goals or [] if p <= 3])
-            if r["League"].lower().startswith("classic") and not {ht, at} <= RETAIL:
-                not_retail.add(r["League"])
     lengths = {lg: 60 * math.ceil(longest[lg] / 60) for lg, c in league_games.items() if c >= MIN_LEAGUE_GAMES and longest[lg]}
-    return out, {lg: v for lg, v in lengths.items() if v != PERIOD}, not_retail
+    return out, {lg: v for lg, v in lengths.items() if v != PERIOD}
 
 
 def prepare(name):
-    games = [g for g in load(name) if g["hp"] and g["ap"] and day(g["date"]) and (PREFIX is None or g["league"].lower().startswith(PREFIX))]
+    games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"])
+             and (PREFIX is None or g["league"].lower().startswith(GROUP_STARTS[PREFIX]))]
     # Rows with the same score, shots and goal list stay in (about 0.3%): per the user, usually a second game played when no save state was taken after
     # the first, so an earlier save state with the right winner was used again.
-    extra, lengths, not_retail = read_extra(name)
-    same = aliases()
-    for g in games:                                     # the look-up below still needs the names as filed
-        g["hp_filed"], g["ap_filed"] = g["hp"], g["ap"]
-        g["hp"], g["ap"] = same.get(g["hp"], g["hp"]), same.get(g["ap"], g["ap"])
-    games = [g for g in games if g["hp"] != g["ap"]]
+    extra, lengths = read_extra(name)
     for g in games:
-        g["key"] = (g["date"], g["league"], g["hp_filed"], g["ap_filed"], f"{g['hs']:g}", f"{g['as']:g}")
+        g["key"] = (g["date"], g["league"], g["hp"], g["ap"], f"{g['hs']:g}", f"{g['as']:g}")
         goals = extra.get(g["key"], ("", "", None))[2]
         if g["league"] in lengths and goals is not None:    # another period length: time as a share of the period, so 3:00 of 6:00 counts as 2:30 of 5:00
             g["goals"] = sorted(((p - 1) * PERIOD + s * PERIOD / lengths[g["league"]] if p <= 3 else (p - 1) * PERIOD + s, h) for p, s, h in goals)
@@ -119,7 +104,7 @@ def prepare(name):
     no_goals = 0
     for g in games:
         g["day"] = day(g["date"])
-        g["classic"] = g["league"].lower().startswith("classic") and g["league"] not in not_retail
+        g["classic"] = g["league"].lower().startswith(CLASSIC)
         g["ht"], g["at"] = extra.get(g["key"], ("", "", None))[:2]
         margin = abs(g["hs"] - g["as"])
         if g["goals"] is not None and g["hs"] - g["as"] == sum(1 if h else -1 for _, h in g["goals"]):
@@ -323,7 +308,7 @@ def system(name, label, out_lines):
     for hl in HALF_LIVES:
         out_lines.append(f"| {'none' if hl is None else hl} | " + " | ".join(f"{results[(top, hl, r)]['all']:.4f}" for r in RIDGES) + " |")
     out_lines.append("")
-    # refitted monthly, every version on the settings the table uses (each on its own best made versions look apart when only the pull differed), against Elo
+    # refitted monthly, every version on the settings the table uses, against Elo
     months = [f for f in (date(y, m, 1).toordinal() for y in range(FIRST_YEAR, 2027) for m in range(1, 13)) if f < days.max()]
     live_m, frozen_m = elo_runs(games, ELO_K[label], months)
     masks = [(a_, (days >= a_) & (days < b_) & rated) for a_, b_ in zip(months, months[1:] + [days.max() + 1])]
