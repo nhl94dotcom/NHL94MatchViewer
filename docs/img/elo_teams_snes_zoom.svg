@@ -108,5 +108,5 @@
 <circle cx="327.5" cy="221.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
 <circle cx="369.4" cy="221.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
 <circle cx="354.6" cy="221.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
-<text x="34" y="427" font-size="14" fill="#52514e">Filled: 300+ Classic games. Hollow: 100-299 games, so rougher. Teams under 100 games aren't shown. Zoomed in: this scale is about 3 times wider than the shared one.</text>
+<text x="34" y="427" font-size="14" fill="#52514e">Filled: 300+ Classic games. Hollow: 100-299 games, so rougher. Teams under 100 games aren't shown. This scale is about 3 times wider than the Genesis one.</text>
 </svg>
