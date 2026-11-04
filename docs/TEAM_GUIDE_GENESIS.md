@@ -24,7 +24,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Elo can run high or low for a while.** If a coach's Elo is well above how they then play, the team they're using looks worse than it is. If it's well below, the team looks better. A fitted strength reflects the coach's whole Classic career, so it's less affected by this.
 
-- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look worse on the Elo adjustment than on strength, and a team usually used by underdogs can look better.
+- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look a little worse on the Elo adjustment than on strength, and a team usually used by underdogs a little better. In simulated seasons this effect was usually small and varied a lot.
 
 - **Rarely used teams rest on a few seasons.** One or two unusual seasons, or one coach, can move their numbers a lot, and more on the Elo adjustment than on strength.
 
@@ -34,7 +34,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **A record alone doesn't say how good a team is.** Better coaches may have used it, or worse ones. A strong team can have a modest record if weaker coaches tend to use it, and a weak team can have a good record if stronger coaches do. That's what the Expected column is for.
 
-- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. The overall team order is sturdier.
+- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. In simulated seasons where every team played the same at every level, gaps of up to about 6 points still appeared by chance. The overall team order is sturdier.
 
 **The "All teams" table**
 
@@ -136,6 +136,8 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 
 ## All teams
+
+![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)
 
 | # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

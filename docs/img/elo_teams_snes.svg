@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="587" viewBox="0 0 1400 587" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1400" height="587" fill="#fcfcfb"/>
+<text x="34" y="38" font-size="25" font-weight="700" fill="#0b0b0b">SNES Classic: Elo adjustment by team</text>
+<text x="34" y="66" font-size="16" fill="#52514e">Points added to a coach's Elo for using the team. +50 is about a 57% win chance against an even coach on the average team.</text>
+<line x1="126.9" x2="126.9" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="126.9" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">−100</text>
+<line x1="281.8" x2="281.8" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="281.8" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">−75</text>
+<line x1="436.7" x2="436.7" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="436.7" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">−50</text>
+<line x1="591.6" x2="591.6" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="591.6" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">−25</text>
+<line x1="746.5" x2="746.5" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="746.5" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">0</text>
+<line x1="901.3" x2="901.3" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="901.3" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">+25</text>
+<line x1="1056.2" x2="1056.2" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="1056.2" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">+50</text>
+<line x1="1211.1" x2="1211.1" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="1211.1" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">+75</text>
+<line x1="1366.0" x2="1366.0" y1="95.6" y2="491.6" stroke="#dcdcd8" stroke-width="1"/>
+<text x="1366.0" y="513.6" font-size="15" text-anchor="middle" fill="#52514e">+100</text>
+<text x="746.5" y="531.6" font-size="13" text-anchor="middle" fill="#52514e">average team</text>
+<line x1="34.0" x2="1366.0" y1="293.6" y2="293.6" stroke="#0b0b0b" stroke-width="2"/>
+<line x1="675.9" x2="675.9" y1="293.6" y2="113.6" stroke="#52514e" stroke-width="1"/>
+<line x1="692.8" x2="692.8" y1="293.6" y2="473.6" stroke="#52514e" stroke-width="1"/>
+<line x1="771.3" x2="771.3" y1="293.6" y2="149.6" stroke="#52514e" stroke-width="1"/>
+<line x1="797.6" x2="797.6" y1="293.6" y2="437.6" stroke="#52514e" stroke-width="1"/>
+<line x1="673.2" x2="673.2" y1="293.6" y2="437.6" stroke="#52514e" stroke-width="1"/>
+<line x1="669.8" x2="669.8" y1="293.6" y2="149.6" stroke="#52514e" stroke-width="1"/>
+<line x1="660.7" x2="660.7" y1="293.6" y2="401.6" stroke="#52514e" stroke-width="1"/>
+<line x1="769.0" x2="769.0" y1="293.6" y2="401.6" stroke="#52514e" stroke-width="1"/>
+<line x1="768.6" x2="768.6" y1="293.6" y2="185.6" stroke="#52514e" stroke-width="1"/>
+<line x1="646.6" x2="646.6" y1="293.6" y2="185.6" stroke="#52514e" stroke-width="1"/>
+<line x1="633.9" x2="633.9" y1="293.6" y2="221.6" stroke="#52514e" stroke-width="1"/>
+<line x1="722.7" x2="722.7" y1="293.6" y2="221.6" stroke="#52514e" stroke-width="1"/>
+<line x1="739.5" x2="739.5" y1="293.6" y2="365.6" stroke="#52514e" stroke-width="1"/>
+<line x1="641.4" x2="641.4" y1="293.6" y2="365.6" stroke="#52514e" stroke-width="1"/>
+<line x1="765.1" x2="765.1" y1="293.6" y2="257.6" stroke="#52514e" stroke-width="1"/>
+<line x1="805.8" x2="805.8" y1="293.6" y2="329.6" stroke="#52514e" stroke-width="1"/>
+<line x1="847.5" x2="847.5" y1="293.6" y2="257.6" stroke="#52514e" stroke-width="1"/>
+<line x1="568.0" x2="568.0" y1="293.6" y2="257.6" stroke="#52514e" stroke-width="1"/>
+<line x1="964.2" x2="964.2" y1="293.6" y2="257.6" stroke="#52514e" stroke-width="1"/>
+<line x1="659.9" x2="659.9" y1="293.6" y2="257.6" stroke="#52514e" stroke-width="1"/>
+<line x1="720.2" x2="720.2" y1="293.6" y2="329.6" stroke="#52514e" stroke-width="1"/>
+<line x1="632.0" x2="632.0" y1="293.6" y2="329.6" stroke="#52514e" stroke-width="1"/>
+<rect x="739.1" y="136.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="771.3" y="155.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">BOS +4</text>
+<rect x="597.0" y="208.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="633.9" y="227.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">BUF −18</text>
+<rect x="732.9" y="244.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="765.1" y="263.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">CGY +3</text>
+<rect x="765.4" y="424.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="797.6" y="443.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">CHI +8</text>
+<rect x="623.8" y="388.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="660.7" y="407.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="400">DAL −14</text>
+<rect x="736.8" y="388.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="769.0" y="407.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">DET +4</text>
+<rect x="639.0" y="100.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="675.9" y="119.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">EDM −11</text>
+<rect x="636.3" y="424.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="673.2" y="443.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="400">HFD −12</text>
+<rect x="695.2" y="208.6" width="55.0" height="26" rx="4" fill="#fcfcfb"/>
+<text x="722.7" y="227.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">LA −4</text>
+<rect x="768.9" y="316.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="805.8" y="335.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">MTL +10</text>
+<rect x="815.3" y="244.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="847.5" y="263.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">NJ +16</text>
+<rect x="531.1" y="244.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="568.0" y="263.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="400">NYI −29</text>
+<rect x="736.4" y="172.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="768.6" y="191.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">NYR +4</text>
+<rect x="707.3" y="352.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="739.5" y="371.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">PHI −1</text>
+<rect x="927.3" y="244.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="964.2" y="263.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">PIT +35</text>
+<rect x="623.0" y="244.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="659.9" y="263.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">QUE −14</text>
+<rect x="637.6" y="136.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="669.8" y="155.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="400">SJ −12</text>
+<rect x="688.0" y="316.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="720.2" y="335.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">STL −4</text>
+<rect x="660.6" y="460.6" width="64.4" height="26" rx="4" fill="#fcfcfb"/>
+<text x="692.8" y="479.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">TOR −9</text>
+<rect x="595.1" y="316.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="632.0" y="335.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">VAN −18</text>
+<rect x="609.7" y="172.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="646.6" y="191.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">WPG −16</text>
+<rect x="604.5" y="352.6" width="73.8" height="26" rx="4" fill="#fcfcfb"/>
+<text x="641.4" y="371.6" font-size="16.5" text-anchor="middle" fill="#0b0b0b" font-weight="600">WSH −17</text>
+<circle cx="771.3" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="633.9" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="765.1" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="797.6" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="660.7" cy="293.6" r="7.5" fill="#fcfcfb" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="769.0" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="675.9" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="673.2" cy="293.6" r="7.5" fill="#fcfcfb" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="722.7" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="805.8" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="847.5" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="568.0" cy="293.6" r="7.5" fill="#fcfcfb" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="768.6" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="739.5" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="964.2" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="659.9" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="669.8" cy="293.6" r="7.5" fill="#fcfcfb" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="720.2" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="692.8" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="632.0" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="646.6" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<circle cx="641.4" cy="293.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
+<text x="34" y="571" font-size="14" fill="#52514e">Filled: 300+ Classic games. Hollow: 100-299 games, so rougher. Teams under 100 games aren't shown. Both systems use the same scale.</text>
+</svg>
