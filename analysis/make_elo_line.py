@@ -81,7 +81,7 @@ def main():
     data = json.loads((ROOT / "reports" / "classic_team_elo.json").read_text(encoding="utf-8"))
     for label, name in NAMES.items():
         draw(label, data[label], name)
-    draw("SNES", data["SNES"], "elo_teams_snes_zoom", -35, 40, 10, "This scale is about 3 times wider than the Genesis one.")
+    draw("SNES", data["SNES"], "elo_teams_snes_zoom", -85, 60, 20, "This scale is about 1.5 times wider than the Genesis one.")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ time alone, with no 1-goal lead counting, as a share of the third period: 100% f
 A team's adjustment is fitted on Classic games between coaches with 30+ earlier games, using each coach's Elo at the start of that league:
     P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))
 so a value can be added to a rating as it stands, and a coach's strength can change over time. As the table is part of that Elo, the fit and the Elo are run in turn until they settle. A tie counts
-half. Rarely used teams are pulled toward the average team, by the setting that best predicts later years. Zero is the average team as used, weighted by appearances. Spreads come from resampling whole leagues. Checked by predicting each later
+half. Rarely used teams are pulled toward the average team, by a setting tested on later years. Zero is the average team as used, weighted by appearances. Spreads come from resampling whole leagues. Checked by predicting each later
 year's games from earlier years' adjustments, against one fixed strength per coach, and against an Elo with no table.
 python analysis/league_team_elo.py     prints the tables and writes reports/classic_team_elo.json (git-ignored; classic_team_guide.py reads it)"""
 import json
@@ -27,7 +27,8 @@ from lowload import breathe, gentle  # noqa: E402
 SCALE = 400 / math.log(10)                  # Elo points per unit of the logit
 K, HOME, START = 20, 7, 1500.0
 MIN_SEEN, MIN_SHOWN = 30, 100
-RIDGES, RIDGE_PERSON = (2.0, 10.0, 25.0, 50.0, 100.0, 200.0, 400.0), 0.5    # the pull on a team toward the average team, tested; a coach's, in the fixed-strength fit
+RIDGES, RIDGE_PERSON = (2.0, 10.0, 25.0, 50.0, 100.0, 200.0, 400.0), 0.5    # the pull settings tested on a team toward the average team; a coach's pull, in the fixed-strength fit
+PULL = 50.0                                 # used on both systems: best on the Genesis; on the SNES, 50 to 400 can't be told apart (0.6317-0.6319), and more than 50 flattens rarely used teams
 DRAWS, FEEDBACK = 200, 4
 SYSTEMS = (("All_Games_GENS.csv", "Genesis"), ("All_Games_SNES.csv", "SNES"))
 
@@ -169,8 +170,8 @@ def study(name, label):
     for r in RIDGES:
         pulls[r] = float(elo_with_tables(games, yearly_tables(rows_plain, plain, teams, used, np.full(len(teams), r)), 1.0).mean())
         breathe()
-    pull = min(pulls, key=pulls.get)
-    print(f"\n{label}: pull setting against later years: " + ", ".join(f"{r:g}: {v:.4f}" for r, v in pulls.items()) + f"; chosen {pull:g}", flush=True)
+    pull = PULL
+    print(f"\n{label}: pull setting against later years: " + ", ".join(f"{r:g}: {v:.4f}" for r, v in pulls.items()) + f"; used {pull:g}", flush=True)
     ridge = np.full(len(teams), pull)
     # the league's Elo has its team table in the expected score, so fit, run the Elo with the table, and fit again until it settles
     X0, y0, o0 = design(rated(games, plain), plain, teams)

@@ -91,7 +91,7 @@ def main():
     missing = {label: [t for t, v in data[label]["teams"].items() if v["games"] >= MIN_SHOWN and t not in logos] for label in TITLES}
     print("teams with no logo:", missing)
     draw("Genesis", data["Genesis"], logos, "elo_teams_genesis_logos", LOW, HIGH, 25, "")
-    draw("SNES", data["SNES"], logos, "elo_teams_snes_logos", -35, 40, 10, "This scale is about 3 times wider than the Genesis one.")
+    draw("SNES", data["SNES"], logos, "elo_teams_snes_logos", -85, 60, 20, "This scale is about 1.5 times wider than the Genesis one.")
 
 
 if __name__ == "__main__":

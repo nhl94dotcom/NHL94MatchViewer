@@ -52,7 +52,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.
 
-- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by the amount that best predicted later years. A * marks under 300 games, so treat it as rough. Tested on later years, using these inside the running Elo predicts clearly better than leaving them out.
+- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games, so treat it as rough. Tested on later years, using these inside the running Elo predicts clearly better than leaving them out.
 
 - **Record:** all wins and losses with this team, plus ties when there are any.
 

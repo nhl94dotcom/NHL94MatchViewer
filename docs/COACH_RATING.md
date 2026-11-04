@@ -244,32 +244,32 @@ K 20, +7 for the home side and each team's own adjustment in the expected score,
 games), the fit is `P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))`, so a value can be added to a rating as it stands. As the table is part of that Elo, the fit and the Elo are run in turn until they settle, which takes a few passes. Zero is the average team in use. Values
 from one fixed strength per coach are shown beside them. An asterisk marks under 300 games.
 
-Rarely used teams are pulled toward the average team, as in section 5, by the setting that best predicted later years: 50 on the Genesis and 200 on the SNES. Each ± comes from resampling whole leagues around that pulled value, so it understates the uncertainty of a rarely used team.
+Rarely used teams are pulled toward the average team, as in section 5, with a pull setting of 50 on both systems. That was the best setting on the Genesis. On the SNES, settings from 50 to 400 predicted later years about equally (0.6317-0.6319), and more than 50 flattens rarely used teams without evidence. Each ± comes from resampling whole leagues around that pulled value, so it understates the uncertainty of a rarely used team.
 
 | Genesis Classic | Elo adjustment | Fixed strength | | SNES Classic | Elo adjustment | Fixed strength |
 | --- | --- | --- | --- | --- | --- | --- |
-| CHI | +83 ± 11 | +67 | | PIT | +35 ± 9 | +25 |
-| DET | +39 ± 10 | +50 | | NJ | +16 ± 9 | +16 |
-| BUF | +38 ± 10 | +26 | | MTL | +10 ± 14 | 0 |
-| MTL | +32 ± 11 | +26 | | CHI | +8 ± 10 | +1 |
-| VAN | +6 ± 10 | −6 | | BOS | +4 ± 11 | +9 |
-| BOS | +6 ± 13 | +5 | | DET | +4 ± 9 | −7 |
-| WPG | −8 ± 11 | 0 | | NYR | +4 ± 11 | +17 |
-| WSH | −17 ± 25 | −48 | | CGY | +3 ± 9 | −7 |
-| LA | −20 ± 16 | −21 | | PHI | −1 ± 13 | −11 |
-| PHI | −22 ± 18 | −33 | | LA | −4 ± 10 | +3 |
-| CGY | −32 ± 12 | −40 | | STL | −4 ± 10 | −1 |
-| DAL | −34 ± 11 | −10 | | TOR | −9 ± 7 | −7 |
-| TOR | −40 ± 19 | −23 | | EDM | −11 ± 10 | −9 |
-| QUE | −43 ± 13 | −33 | | HFD* | −12 ± 4 | −7 |
-| HFD | −50 ± 16 | −41 | | SJ* | −12 ± 9 | −10 |
-| NYI* | −59 ± 14 | −50 | | DAL* | −14 ± 6 | −10 |
-| STL | −59 ± 21 | −47 | | QUE | −14 ± 11 | −25 |
-| EDM | −64 ± 23 | −49 | | WPG | −16 ± 9 | −20 |
-| PIT | −70 ± 14 | −73 | | WSH | −17 ± 10 | +2 |
-| NYR | −74 ± 17 | −80 | | BUF | −18 ± 9 | −21 |
-| NJ | −89 ± 33 | −30 | | VAN | −18 ± 12 | −1 |
-| TB* | −102 ± 37 | −58 | | NYI* | −29 ± 10 | −18 |
+| CHI | +83 ± 11 | +67 | | PIT | +48 ± 13 | +35 |
+| DET | +39 ± 10 | +50 | | NJ | +33 ± 16 | +31 |
+| BUF | +38 ± 10 | +26 | | MTL | +17 ± 22 | +2 |
+| MTL | +32 ± 11 | +26 | | CHI | +13 ± 13 | +3 |
+| VAN | +6 ± 10 | −6 | | BOS | +8 ± 15 | +14 |
+| BOS | +6 ± 13 | +5 | | DET | +7 ± 13 | −8 |
+| WPG | −8 ± 11 | 0 | | NYR | +6 ± 14 | +23 |
+| WSH | −17 ± 25 | −48 | | CGY | +6 ± 13 | −8 |
+| LA | −20 ± 16 | −21 | | PHI | +1 ± 25 | −19 |
+| PHI | −22 ± 18 | −33 | | LA | −4 ± 13 | +5 |
+| CGY | −32 ± 12 | −40 | | STL | −7 ± 21 | +1 |
+| DAL | −34 ± 11 | −10 | | TOR | −17 ± 16 | −13 |
+| TOR | −40 ± 19 | −23 | | EDM | −23 ± 21 | −19 |
+| QUE | −43 ± 13 | −33 | | VAN | −24 ± 17 | −1 |
+| HFD | −50 ± 16 | −41 | | BUF | −24 ± 13 | −28 |
+| NYI* | −59 ± 14 | −50 | | WPG | −25 ± 14 | −30 |
+| STL | −59 ± 21 | −47 | | QUE | −26 ± 22 | −43 |
+| EDM | −64 ± 23 | −49 | | HFD* | −26 ± 9 | −15 |
+| PIT | −70 ± 14 | −73 | | WSH | −28 ± 16 | +4 |
+| NYR | −74 ± 17 | −80 | | SJ* | −35 ± 25 | −28 |
+| NJ | −89 ± 33 | −30 | | DAL* | −40 ± 18 | −25 |
+| TB* | −102 ± 37 | −58 | | NYI* | −71 ± 22 | −41 |
 
 ![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)
 
@@ -280,16 +280,16 @@ Rarely used teams are pulled toward the average team, as in section 5, by the se
 | Share of the adjustment used | None | 25% | 50% | 75% | 100% |
 | --- | --- | --- | --- | --- | --- |
 | Genesis | 0.6516 | 0.6500 | 0.6487 | 0.6479 | 0.6475 |
-| SNES | 0.6321 | 0.6320 | 0.6318 | 0.6317 | 0.6317 |
+| SNES | 0.6321 | 0.6319 | 0.6317 | 0.6317 | 0.6319 |
 
-On the Genesis they clearly help, most at full size (by 0.0041 ± 0.0007). On the SNES they help very little (0.0004 ± 0.0003), so they describe past results more than they improve ratings. The pull setting was chosen on these same years, which flatters these results slightly.
+On the Genesis they clearly help, most at full size (by 0.0041 ± 0.0007). On the SNES they make no clear difference (0.0003 ± 0.0005 at full size), so they describe past results more than they improve ratings. The pull setting was chosen on these same years, which flatters these results slightly.
 
-Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +17 on the SNES.
+Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +16 on the SNES.
 
 **Simulated seasons with known answers.** On the real schedule and team use, with made-up coach strengths and team values:
 - **The methods recover the truth.** Team values correlate with the true ones at 0.92-0.97, whichever method is used.
 - **The 0.6 comes from the Elo itself.** Rating gaps came out worth 0.6-0.7 of face value even though simulated coaches never change, so it's mostly K 20 noise rather than something about these leagues.
-- **The pull shrinks values.** With teams truly spread by about 60 Elo points, the fit recovers about 0.9 of that spread at the Genesis setting and about 0.55 at the SNES setting, so the SNES table would understate real differences of that size.
+- **The pull shrinks values.** With teams truly spread by about 60 Elo points, a pull setting of 50 recovered about 0.7-0.9 of that spread on the Genesis schedule and about 0.8 on the SNES schedule, in a smaller test. A setting of 200 kept only about 0.55 on the SNES, which is one reason it isn't used.
 - **Noise sets a floor.** With no true difference between teams, values still typically came out 7-11 points from zero.
 - **Teams used by favorites** tended to come out a little low, but the effect was usually small (often 0.2 of an Elo point per point of gap) and varied a lot between simulations.
 - **Levels.** With teams truly the same at every level, gaps between high and low levels typically came out at about 2.5 points, and up to about 6.
