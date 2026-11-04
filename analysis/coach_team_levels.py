@@ -13,7 +13,8 @@ team as that level used it, so a value says how much better a level does with th
 was using it. Values are in points of win chance, through the table's conversion factor.
 
 Spreads come from resampling whole leagues, and halves of the leagues fitted apart show how repeatable the high-minus-low gaps are.
-python analysis/coach_team_levels.py     prints the tables and writes reports/classic_team_levels.md (git-ignored)"""
+python analysis/coach_team_levels.py     prints the tables and writes reports/classic_team_levels.md and .json (git-ignored; classic_team_guide.py reads the .json)"""
+import json
 import re
 import sys
 from collections import defaultdict
@@ -179,7 +180,11 @@ def study(games, D, y, ridge, scale, side_level, title, lines):
         rows.append((-(d if d is not None else -99), f"| {t} | {cells[0]} | {cells[1]} | {cells[2]} | {ds} | {' / '.join(sides)} | {' / '.join(pct)} |"))
     lines += [r for _, r in sorted(rows)]
     lines.append("")
-    return {t: gap(point, t) for t in both}, {k: v for k, v in point.items()}
+    detail = {}
+    for t in M.teams:
+        levels = {str(k): [float(point[(t, k)]), se(lambda r: r[(t, k)]), M.sides[(t, k)]] for k in range(3) if (t, k) in point}
+        detail[t] = {"levels": levels, "gap": [float(gap(point, t)), se(lambda r: gap(r, t))] if t in both else None}
+    return {t: gap(point, t) for t in both}, {k: v for k, v in point.items()}, detail
 
 
 def main():
@@ -187,6 +192,7 @@ def main():
     conv = factors()
     C.PREFIX = "classic"
     lines = ["# Classic teams by level of player\n", "`analysis/coach_team_levels.py`. Aggregates only.\n"]
+    saved = {}
     for name, label, at, ridge in TABLES:
         games, _ = C.prepare(name)
         D = C.Design(games)
@@ -210,11 +216,12 @@ def main():
             who = [p for p, v in coach_level.items() if v == k]
             lgs = [lg for lg, v in league_level.items() if v == k]
             lines.append(f"{name_}: {len(who)} coaches; {len(lgs)} leagues.")
-        a, pa = study(games, D, y, ridge, scale, lambda g, home: coach_level[g["hp"] if home else g["ap"]], f"{label}, by the coach's level", lines)
-        b, pb = study(games, D, y, ridge, scale, lambda g, home: league_level[g["league"]], f"{label}, by the league's level", lines)
+        a, pa, da = study(games, D, y, ridge, scale, lambda g, home: coach_level[g["hp"] if home else g["ap"]], f"{label}, by the coach's level", lines)
+        b, pb, db = study(games, D, y, ridge, scale, lambda g, home: league_level[g["league"]], f"{label}, by the league's level", lines)
         named = top_leagues(players)
         lines.append(f"\nBy name: {sum(v == 0 for v in named.values())} top leagues, {sum(v == 2 for v in named.values())} others, {sum(v == 1 for v in named.values())} with no level (their games are in Mid). Top: {', '.join(sorted(lg for lg, v in named.items() if v == 0))}.")
-        study(games, D, y, ridge, scale, lambda g, home: named[g["league"]], f"{label}, the season's top league (High) against its other leagues (Low)", lines)
+        _, _, dn = study(games, D, y, ridge, scale, lambda g, home: named[g["league"]], f"{label}, the season's top league (High) against its other leagues (Low)", lines)
+        saved[label] = {t: {"coach": da[t], "strength": db[t], "name": dn[t]} for t in da}
         common = sorted(set(a) & set(b))
         same = [k for k in pa if k in pb]
         lines.append(f"The two ways agree: high-minus-low gaps {np.corrcoef([a[t] for t in common], [b[t] for t in common])[0, 1]:+.2f}; all values {np.corrcoef([pa[k] for k in same], [pb[k] for k in same])[0, 1]:+.2f}.\n")
@@ -225,6 +232,7 @@ def main():
     text = "\n".join(lines) + "\n"
     out = Path(__file__).resolve().parents[1] / "reports" / "classic_team_levels.md"
     out.write_text(text, encoding="utf-8")
+    out.with_suffix(".json").write_text(json.dumps(saved), encoding="utf-8")
     print(text)
 
 

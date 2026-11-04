@@ -33,7 +33,7 @@ def study(csv_name, label, ratings):
     csv.field_size_limit(10 ** 9)
     with open(DATA / csv_name, encoding="utf-8", errors="replace", newline="") as fh:
         for r in csv.DictReader(fh):
-            if r.get("sim") == "1" or "classic" not in r["League"].lower():
+            if r.get("sim") == "1" or not r["League"].lower().startswith(("classic_spring", "classic_summer", "classic_fall")):
                 continue
             for col in ("HomeGoalies", "AwayGoalies"):
                 try:
