@@ -74,7 +74,7 @@ def rank(rows, key, reverse=True):
 
 
 def signed(v, d=1):
-    return f"{v:+.{d}f}".replace("-", "−")
+    return f"{0:.{d}f}" if round(v, d) == 0 else f"{v:+.{d}f}".replace("-", "−")
 
 
 def section(label, csv_name, guide, player_guide, players):
@@ -183,7 +183,7 @@ def main():
            "**What to keep in mind**", "",
            "- **Results show what happened, not why.** A team can look better than its demand because a few coaches did well with it.",
            "- **Cheap teams rest on fewer games,** so their values are less certain, and the pull toward average makes them look less extreme than their records.",
-           "- **SNES team values repeat far less well than Genesis ones.** Random halves of the leagues agree at 0.73 on the Genesis and 0.35 on the SNES, so SNES calls are softer.",
+           "- **SNES team values repeat far less well than Genesis ones.** Random halves of the leagues agree at 0.77 on the Genesis and 0.38 on the SNES, so SNES calls are softer.",
            "- **Skaters come with their team.** Classic teams are drafted whole, so the skater lists help you to judge a team and to choose lines, not to pick a player alone. \"Above expected\" compares teammates, so it says who people get the most from, not that a skater has a hidden rating.",
            "- **Goalies depend on who plays in front of them.** Save % isn't adjusted for shot quality.", ""]
     for label, csv_name, guide, player_guide in SYSTEMS:

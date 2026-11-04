@@ -2,7 +2,7 @@
 
 Every retail team in the SNES Classic leagues (names starting `Classic_Spring`, `Classic_Summer` or `Classic_Fall`): 15,017 games in 63 leagues, through 2026-11-03. No coach is named. The method is in [COACH_RATING.md](COACH_RATING.md).
 
-**Jump to a team:** [New Jersey](#1-new-jersey-nj) · [Pittsburgh](#2-pittsburgh-pit) · [NY Rangers](#3-ny-rangers-nyr) · [Vancouver](#4-vancouver-van) · [Chicago](#5-chicago-chi) · [Los Angeles](#6-los-angeles-la) · [Calgary](#7-calgary-cgy) · [Washington](#8-washington-wsh) · [Montreal](#9-montreal-mtl) · [Toronto](#10-toronto-tor) · [Boston](#11-boston-bos) · [St. Louis](#12-st-louis-stl) · [Edmonton](#13-edmonton-edm) · [Winnipeg](#14-winnipeg-wpg) · [Detroit](#15-detroit-det) · [Philadelphia](#16-philadelphia-phi) · [Quebec](#17-quebec-que) · [Hartford](#18-hartford-hfd) · [Buffalo](#19-buffalo-buf) · [NY Islanders](#20-ny-islanders-nyi) · [San Jose](#21-san-jose-sj) · [Dallas](#22-dallas-dal)
+**Jump to a team:** [New Jersey](#1-new-jersey-nj) · [Pittsburgh](#2-pittsburgh-pit) · [NY Rangers](#3-ny-rangers-nyr) · [Vancouver](#4-vancouver-van) · [Chicago](#5-chicago-chi) · [Los Angeles](#6-los-angeles-la) · [Calgary](#7-calgary-cgy) · [Washington](#8-washington-wsh) · [Montreal](#9-montreal-mtl) · [Toronto](#10-toronto-tor) · [Edmonton](#11-edmonton-edm) · [St. Louis](#12-st-louis-stl) · [Boston](#13-boston-bos) · [Winnipeg](#14-winnipeg-wpg) · [Detroit](#15-detroit-det) · [Philadelphia](#16-philadelphia-phi) · [Hartford](#17-hartford-hfd) · [Quebec](#18-quebec-que) · [Buffalo](#19-buffalo-buf) · [San Jose](#20-san-jose-sj) · [NY Islanders](#21-ny-islanders-nyi) · [Dallas](#22-dallas-dal)
 
 ## How to read this guide
 
@@ -143,34 +143,34 @@ This scale is about 1.5 times wider than the one in the Genesis guide, as the SN
 
 | # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | [New Jersey (NJ)](#1-new-jersey-nj) | Good | Low-level | Weak | +5.9 | +4.5 | +35 | 444-287-3 | 60.7% | 56.1% |
-| 2 | [Pittsburgh (PIT)](#2-pittsburgh-pit) | Good | Both alike | — | +4.0 | +4.3 | +43 | 1,310-1,195-17 | 52.3% | 46.7% |
-| 3 | [NY Rangers (NYR)](#3-ny-rangers-nyr) | Good | Both alike | — | +2.7 | +2.5 | +11 | 1,347-1,171-15 | 53.5% | 50.3% |
-| 4 | [Vancouver (VAN)](#4-vancouver-van) | Average | Both alike | — | +0.9 | +0.3 | −18 | 1,081-1,013-11 | 51.6% | 51.4% |
-| 5 | [Chicago (CHI)](#5-chicago-chi) | Average | Both alike | — | +0.5 | +1.1 | +6 | 1,218-1,195-20 | 50.5% | 49.7% |
-| 6 | [Los Angeles (LA)](#6-los-angeles-la) | Average | Both alike | — | +0.4 | +1.4 | 0 | 1,103-1,127-9 | 49.5% | 48.3% |
-| 7 | [Calgary (CGY)](#7-calgary-cgy) | Average | Both alike | — | +0.4 | −0.2 | +2 | 967-992-17 | 49.4% | 50.0% |
+| 1 | [New Jersey (NJ)](#1-new-jersey-nj) | Good | Low-level | Leaning | +4.6 | +4.0 | +35 | 444-287-3 | 60.7% | 56.2% |
+| 2 | [Pittsburgh (PIT)](#2-pittsburgh-pit) | Good | Both alike | — | +3.6 | +4.1 | +43 | 1,310-1,195-17 | 52.3% | 46.8% |
+| 3 | [NY Rangers (NYR)](#3-ny-rangers-nyr) | Good | Both alike | — | +2.5 | +2.4 | +11 | 1,347-1,171-15 | 53.5% | 50.3% |
+| 4 | [Vancouver (VAN)](#4-vancouver-van) | Average | Both alike | — | +0.8 | +0.2 | −18 | 1,081-1,013-11 | 51.6% | 51.4% |
+| 5 | [Chicago (CHI)](#5-chicago-chi) | Average | Both alike | — | +0.5 | +1.0 | +6 | 1,218-1,195-20 | 50.5% | 49.7% |
+| 6 | [Los Angeles (LA)](#6-los-angeles-la) | Average | Both alike | — | +0.4 | +1.3 | 0 | 1,103-1,127-9 | 49.5% | 48.3% |
+| 7 | [Calgary (CGY)](#7-calgary-cgy) | Average | Both alike | — | +0.3 | −0.3 | +2 | 967-992-17 | 49.4% | 50.0% |
 | 8 | [Washington (WSH)](#8-washington-wsh) | Average | Low-level | Likely | +0.3 | +0.3 | −25 | 593-524-11 | 53.1% | 52.8% |
-| 9 | [Montreal (MTL)](#9-montreal-mtl) | Average | Low-level | Leaning | −0.3 | +0.5 | +9 | 775-910-15 | 46.0% | 45.2% |
-| 10 | [Toronto (TOR)](#10-toronto-tor) | Average | Unclear | — | −0.6 | −1.4 | −12 | 373-395-3 | 48.6% | 50.4% |
-| 11 | [Boston (BOS)](#11-boston-bos) | Average | High-level | Likely | −0.8 | +1.5 | +4 | 1,142-1,348-23 | 45.9% | 43.7% |
-| 12 | [St. Louis (STL)](#12-st-louis-stl) | Average | Unclear | — | −0.9 | 0.0 | −7 | 296-252-5 | 54.0% | 53.4% |
-| 13 | [Edmonton (EDM)](#13-edmonton-edm) | Average | Low-level | Leaning, few games | −0.9 | −2.0 | −19 | 284-207-6 | 57.8% | 61.2% |
-| 14 | [Winnipeg (WPG)](#14-winnipeg-wpg) | Average | Both alike | — | −1.3 | −3.6 | −21 | 624-647-8 | 49.1% | 54.1% |
-| 15 | [Detroit (DET)](#15-detroit-det) | Average | Both alike | — | −1.5 | −1.5 | +1 | 972-1,340-15 | 42.0% | 42.3% |
-| 16 | [Philadelphia (PHI)](#16-philadelphia-phi) | Poor | Low-level | Leaning | −2.5 | −1.1 | +3 | 309-332-2 | 48.2% | 50.8% |
-| 17 | [Quebec (QUE)](#17-quebec-que) | Poor | High-level | Likely | −3.2 | −6.3 | −20 | 458-428-9 | 51.7% | 59.2% |
-| 18 | [Hartford (HFD)](#18-hartford-hfd) | Poor | Both alike | Few games | −3.5 | −2.7 | −20* | 129-98-1 | 56.8% | 62.0% |
-| 19 | [Buffalo (BUF)](#19-buffalo-buf) | Poor | Both alike | — | −3.6 | −4.1 | −21 | 1,034-1,059-10 | 49.4% | 53.9% |
-| 20 | [NY Islanders (NYI)](#20-ny-islanders-nyi) | Poor | Unclear | Few games | −6.0 | −9.6 | −53* | 153-140-2 | 52.2% | 62.7% |
-| 21 | [San Jose (SJ)](#21-san-jose-sj) | Poor | Unclear | Few games | −7.7 | −11.8 | −24* | 96-55-2 | 63.6% | 74.5% |
-| 22 | [Dallas (DAL)](#22-dallas-dal) | Poor | Unclear | Few games | −9.3 | −5.5 | −35* | 87-94-1 | 48.1% | 54.9% |
+| 9 | [Montreal (MTL)](#9-montreal-mtl) | Average | Low-level | Leaning | −0.4 | +0.4 | +9 | 775-910-15 | 46.0% | 45.3% |
+| 10 | [Toronto (TOR)](#10-toronto-tor) | Average | Unclear | — | −0.5 | −1.4 | −12 | 373-395-3 | 48.6% | 50.4% |
+| 11 | [Edmonton (EDM)](#11-edmonton-edm) | Average | Low-level | Leaning, few games | −0.9 | −1.8 | −19 | 284-207-6 | 57.8% | 61.2% |
+| 12 | [St. Louis (STL)](#12-st-louis-stl) | Average | Unclear | — | −0.9 | −0.1 | −7 | 296-252-5 | 54.0% | 53.4% |
+| 13 | [Boston (BOS)](#13-boston-bos) | Average | High-level | Likely | −0.9 | +1.4 | +4 | 1,142-1,348-23 | 45.9% | 43.7% |
+| 14 | [Winnipeg (WPG)](#14-winnipeg-wpg) | Average | Both alike | — | −1.3 | −3.5 | −21 | 624-647-8 | 49.1% | 54.1% |
+| 15 | [Detroit (DET)](#15-detroit-det) | Average | Both alike | — | −1.5 | −1.5 | +1 | 972-1,340-15 | 42.0% | 42.4% |
+| 16 | [Philadelphia (PHI)](#16-philadelphia-phi) | Poor | Low-level | Leaning | −2.1 | −1.1 | +3 | 309-332-2 | 48.2% | 50.7% |
+| 17 | [Hartford (HFD)](#17-hartford-hfd) | Poor | Both alike | Few games | −2.2 | −2.3 | −20* | 129-98-1 | 56.8% | 61.8% |
+| 18 | [Quebec (QUE)](#18-quebec-que) | Poor | High-level | Likely | −2.7 | −5.8 | −20 | 458-428-9 | 51.7% | 59.0% |
+| 19 | [Buffalo (BUF)](#19-buffalo-buf) | Poor | Both alike | — | −3.4 | −4.0 | −21 | 1,034-1,059-10 | 49.4% | 53.9% |
+| 20 | [San Jose (SJ)](#20-san-jose-sj) | Poor | Unclear | Few games | −3.8 | −8.3 | −24* | 96-55-2 | 63.6% | 73.7% |
+| 21 | [NY Islanders (NYI)](#21-ny-islanders-nyi) | Poor | Unclear | Few games | −4.6 | −8.1 | −53* | 153-140-2 | 52.2% | 62.5% |
+| 22 | [Dallas (DAL)](#22-dallas-dal) | Poor | Unclear | Few games | −5.8 | −4.3 | −35* | 87-94-1 | 48.1% | 54.4% |
 
 Too few games for a full entry: Florida (FLA) 47-26-1; Tampa Bay (TB) 28-35-2; Anaheim (ANH) 24-22; Ottawa (OTW) 19-21.
 
 ## 1. New Jersey (NJ)
 
-**Overall: Good. Best for: Low-level (weak).** Strength +5.9 ± 2.9 now (1st of 22), +4.5 ± 2.3 over all years (1st).
+**Overall: Good. Best for: Low-level (leaning).** Strength +4.6 ± 2.2 now (1st of 22), +4.0 ± 2.1 over all years (2nd).
 
 **Elo adjustment:** +35 ± 14 points (2nd of 22), from 597 of 734 games. Against an even coach on the average team, on neutral ice, that's a 55% win chance. With one fixed strength per coach instead of Elo, it's +31.
 
@@ -180,27 +180,27 @@ Used in 16 of 63 leagues (5 of them a season's top league), by 13 coaches, 734 g
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +3.7 ± 3.1 | +9.4 ± 5.5 | −5.7 ± 6.1 |
-| By league strength | +3.1 ± 3.7 | +8.8 ± 4.5 | −5.6 ± 5.7 |
-| Top league against others | −0.5 ± 3.5 | +8.2 ± 4.3 | −8.7 ± 5.3 |
+| By coach | +2.7 ± 2.2 | +7.3 ± 3.4 | −4.6 ± 4.0 |
+| By league strength | +2.5 ± 2.6 | +6.9 ± 3.1 | −4.4 ± 4.0 |
+| Top league against others | −0.6 ± 2.4 | +6.7 ± 3.1 | −7.2 ± 3.8 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 444-287-3 | 60.7% | 56.1% | +4.7 ± 1.8 |
-| Regular season | 371-233-3 | 61.4% | 57.0% | +4.4 ± 2.0 |
-| Playoffs | 73-54 | 57.5% | 51.6% | +5.9 ± 4.4 |
-| Home | 248-120-1 | 67.4% | 59.1% | +8.3 ± 2.6 |
-| Away | 196-167-2 | 54.0% | 53.0% | +1.0 ± 2.6 |
-| 2013-2019 | 133-85 | 61.0% | 55.9% | +5.1 ± 3.4 |
-| 2020-2022 | 108-74 | 59.3% | 60.3% | −1.0 ± 3.7 |
-| 2023-2026 | 203-128-3 | 61.3% | 53.8% | +7.5 ± 2.7 |
+| All games | 444-287-3 | 60.7% | 56.2% | +4.6 ± 1.8 |
+| Regular season | 371-233-3 | 61.4% | 57.1% | +4.3 ± 2.0 |
+| Playoffs | 73-54 | 57.5% | 51.7% | +5.7 ± 4.4 |
+| Home | 248-120-1 | 67.4% | 59.2% | +8.2 ± 2.6 |
+| Away | 196-167-2 | 54.0% | 53.1% | +0.9 ± 2.6 |
+| 2013-2019 | 133-85 | 61.0% | 56.1% | +5.0 ± 3.4 |
+| 2020-2022 | 108-74 | 59.3% | 60.4% | −1.0 ± 3.7 |
+| 2023-2026 | 203-128-3 | 61.3% | 54.0% | +7.4 ± 2.7 |
 | High coach | 172-102-1 | 62.8% | 60.1% | +2.7 ± 3.0 |
-| Mid coach | 118-66 | 64.1% | 61.1% | +3.1 ± 3.7 |
-| Low coach | 154-119-2 | 56.4% | 48.7% | +7.7 ± 3.0 |
-| Top league | 139-98-1 | 58.6% | 58.6% | +0.1 ± 3.2 |
-| Other leagues | 242-163-2 | 59.8% | 53.1% | +6.7 ± 2.5 |
+| Mid coach | 118-66 | 64.1% | 61.3% | +2.9 ± 3.7 |
+| Low coach | 154-119-2 | 56.4% | 48.9% | +7.5 ± 3.0 |
+| Top league | 139-98-1 | 58.6% | 58.6% | 0.0 ± 3.2 |
+| Other leagues | 242-163-2 | 59.8% | 53.3% | +6.5 ± 2.5 |
 
 **Per game**
 
@@ -243,7 +243,7 @@ Hidden bonus: +1 at home, −2 away.
 
 ## 2. Pittsburgh (PIT)
 
-**Overall: Good. Best for: Both alike.** Strength +4.0 ± 1.5 now (2nd of 22), +4.3 ± 1.2 over all years (2nd).
+**Overall: Good. Best for: Both alike.** Strength +3.6 ± 1.4 now (2nd of 22), +4.1 ± 1.2 over all years (1st).
 
 **Elo adjustment:** +43 ± 12 points (1st of 22), from 1,773 of 2,522 games. Against an even coach on the average team, on neutral ice, that's a 56% win chance. With one fixed strength per coach instead of Elo, it's +35.
 
@@ -253,27 +253,27 @@ Used in 60 of 63 leagues (19 of them a season's top league), by 51 coaches, 2,52
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +4.3 ± 3.4 | +2.2 ± 2.2 | +2.1 ± 3.8 |
-| By league strength | +6.3 ± 2.0 | +4.0 ± 2.0 | +2.3 ± 2.7 |
-| Top league against others | +5.7 ± 2.1 | +3.1 ± 1.5 | +2.6 ± 2.6 |
+| By coach | +3.4 ± 2.8 | +1.8 ± 1.9 | +1.6 ± 3.2 |
+| By league strength | +5.7 ± 1.8 | +3.8 ± 1.7 | +1.9 ± 2.4 |
+| Top league against others | +5.2 ± 1.9 | +3.0 ± 1.4 | +2.2 ± 2.3 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 1,310-1,195-17 | 52.3% | 46.7% | +5.6 ± 1.0 |
-| Regular season | 1,169-1,021-17 | 53.4% | 47.2% | +6.2 ± 1.1 |
-| Playoffs | 141-174 | 44.8% | 43.3% | +1.4 ± 2.8 |
-| Home | 691-562-9 | 55.1% | 49.7% | +5.5 ± 1.4 |
-| Away | 619-633-8 | 49.4% | 43.8% | +5.7 ± 1.4 |
+| All games | 1,310-1,195-17 | 52.3% | 46.8% | +5.5 ± 1.0 |
+| Regular season | 1,169-1,021-17 | 53.4% | 47.3% | +6.1 ± 1.1 |
+| Playoffs | 141-174 | 44.8% | 43.5% | +1.3 ± 2.8 |
+| Home | 691-562-9 | 55.1% | 49.8% | +5.4 ± 1.4 |
+| Away | 619-633-8 | 49.4% | 43.8% | +5.6 ± 1.4 |
 | 2013-2019 | 326-271-4 | 54.6% | 47.3% | +7.3 ± 2.0 |
-| 2020-2022 | 532-480-7 | 52.6% | 47.6% | +4.9 ± 1.6 |
-| 2023-2026 | 452-444-6 | 50.4% | 45.3% | +5.2 ± 1.7 |
+| 2020-2022 | 532-480-7 | 52.6% | 47.7% | +4.9 ± 1.6 |
+| 2023-2026 | 452-444-6 | 50.4% | 45.4% | +5.0 ± 1.7 |
 | High coach | 213-188-5 | 53.1% | 47.9% | +5.2 ± 2.5 |
-| Mid coach | 725-574-6 | 55.8% | 48.7% | +7.1 ± 1.4 |
-| Low coach | 372-433-6 | 46.2% | 43.0% | +3.2 ± 1.8 |
-| Top league | 408-417-6 | 49.5% | 42.2% | +7.2 ± 1.7 |
-| Other leagues | 782-684-9 | 53.3% | 49.0% | +4.3 ± 1.3 |
+| Mid coach | 725-574-6 | 55.8% | 48.8% | +7.1 ± 1.4 |
+| Low coach | 372-433-6 | 46.2% | 43.1% | +3.1 ± 1.8 |
+| Top league | 408-417-6 | 49.5% | 42.3% | +7.1 ± 1.7 |
+| Other leagues | 782-684-9 | 53.3% | 49.1% | +4.2 ± 1.3 |
 
 **Per game**
 
@@ -316,7 +316,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 3. NY Rangers (NYR)
 
-**Overall: Good. Best for: Both alike.** Strength +2.7 ± 1.3 now (3rd of 22), +2.5 ± 1.3 over all years (3rd).
+**Overall: Good. Best for: Both alike.** Strength +2.5 ± 1.2 now (3rd of 22), +2.4 ± 1.2 over all years (3rd).
 
 **Elo adjustment:** +11 ± 11 points (3rd of 22), from 2,018 of 2,533 games. Against an even coach on the average team, on neutral ice, that's a 52% win chance. With one fixed strength per coach instead of Elo, it's +23.
 
@@ -326,9 +326,9 @@ Used in 56 of 63 leagues (18 of them a season's top league), by 37 coaches, 2,53
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +1.8 ± 2.1 | +1.2 ± 2.2 | +0.6 ± 3.1 |
-| By league strength | +2.7 ± 2.0 | +0.6 ± 2.6 | +2.1 ± 3.3 |
-| Top league against others | +2.5 ± 1.9 | +2.4 ± 2.0 | +0.2 ± 2.8 |
+| By coach | +1.6 ± 1.9 | +1.3 ± 1.9 | +0.3 ± 2.8 |
+| By league strength | +2.5 ± 1.8 | +0.7 ± 2.2 | +1.8 ± 2.9 |
+| Top league against others | +2.2 ± 1.8 | +2.3 ± 1.9 | −0.1 ± 2.5 |
 
 **Record**
 
@@ -337,16 +337,16 @@ Used in 56 of 63 leagues (18 of them a season's top league), by 37 coaches, 2,53
 | All games | 1,347-1,171-15 | 53.5% | 50.3% | +3.2 ± 1.0 |
 | Regular season | 1,134-985-15 | 53.5% | 50.5% | +3.0 ± 1.1 |
 | Playoffs | 213-186 | 53.4% | 49.1% | +4.3 ± 2.5 |
-| Home | 704-558-5 | 55.8% | 53.1% | +2.7 ± 1.4 |
+| Home | 704-558-5 | 55.8% | 53.1% | +2.6 ± 1.4 |
 | Away | 643-613-10 | 51.2% | 47.4% | +3.8 ± 1.4 |
-| 2013-2019 | 302-271-3 | 52.7% | 52.0% | +0.7 ± 2.1 |
-| 2020-2022 | 656-471-7 | 58.2% | 52.4% | +5.8 ± 1.5 |
-| 2023-2026 | 389-429-5 | 47.6% | 46.1% | +1.4 ± 1.7 |
+| 2013-2019 | 302-271-3 | 52.7% | 51.9% | +0.8 ± 2.1 |
+| 2020-2022 | 656-471-7 | 58.2% | 52.5% | +5.8 ± 1.5 |
+| 2023-2026 | 389-429-5 | 47.6% | 46.2% | +1.4 ± 1.7 |
 | High coach | 543-340-4 | 61.5% | 60.4% | +1.1 ± 1.7 |
-| Mid coach | 392-286-4 | 57.8% | 52.4% | +5.4 ± 1.9 |
-| Low coach | 412-545-7 | 43.1% | 39.4% | +3.6 ± 1.6 |
-| Top league | 448-384-3 | 53.8% | 51.0% | +2.8 ± 1.7 |
-| Other leagues | 744-671-10 | 52.6% | 49.1% | +3.5 ± 1.3 |
+| Mid coach | 392-286-4 | 57.8% | 52.5% | +5.4 ± 1.9 |
+| Low coach | 412-545-7 | 43.1% | 39.5% | +3.6 ± 1.6 |
+| Top league | 448-384-3 | 53.8% | 51.1% | +2.7 ± 1.7 |
+| Other leagues | 744-671-10 | 52.6% | 49.2% | +3.4 ± 1.3 |
 
 **Per game**
 
@@ -388,7 +388,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 4. Vancouver (VAN)
 
-**Overall: Average. Best for: Both alike.** Strength +0.9 ± 1.4 now (4th of 22), +0.3 ± 1.3 over all years (8th).
+**Overall: Average. Best for: Both alike.** Strength +0.8 ± 1.3 now (4th of 22), +0.2 ± 1.2 over all years (9th).
 
 **Elo adjustment:** −18 ± 14 points (13th of 22), from 1,684 of 2,105 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −1.
 
@@ -398,27 +398,27 @@ Used in 47 of 63 leagues (16 of them a season's top league), by 29 coaches, 2,10
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +2.2 ± 2.5 | −0.6 ± 2.4 | +2.8 ± 3.5 |
-| By league strength | +1.3 ± 2.6 | +0.3 ± 2.6 | +1.0 ± 3.8 |
-| Top league against others | +0.5 ± 2.2 | +0.3 ± 1.6 | +0.2 ± 2.8 |
+| By coach | +2.0 ± 2.2 | −0.9 ± 2.1 | +2.8 ± 3.1 |
+| By league strength | +1.1 ± 2.4 | 0.0 ± 2.2 | +1.1 ± 3.4 |
+| Top league against others | +0.5 ± 2.0 | +0.2 ± 1.5 | +0.3 ± 2.6 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 1,081-1,013-11 | 51.6% | 51.4% | +0.3 ± 1.1 |
-| Regular season | 904-848-11 | 51.6% | 51.7% | −0.1 ± 1.2 |
-| Playoffs | 177-165 | 51.8% | 49.4% | +2.4 ± 2.7 |
-| Home | 579-473-3 | 55.0% | 54.3% | +0.7 ± 1.5 |
-| Away | 502-540-8 | 48.2% | 48.3% | −0.2 ± 1.5 |
-| 2013-2019 | 219-229-3 | 48.9% | 51.3% | −2.4 ± 2.4 |
-| 2020-2022 | 429-400-4 | 51.7% | 49.8% | +1.9 ± 1.7 |
+| All games | 1,081-1,013-11 | 51.6% | 51.4% | +0.2 ± 1.1 |
+| Regular season | 904-848-11 | 51.6% | 51.8% | −0.2 ± 1.2 |
+| Playoffs | 177-165 | 51.8% | 49.5% | +2.3 ± 2.7 |
+| Home | 579-473-3 | 55.0% | 54.4% | +0.7 ± 1.5 |
+| Away | 502-540-8 | 48.2% | 48.4% | −0.2 ± 1.5 |
+| 2013-2019 | 219-229-3 | 48.9% | 51.3% | −2.5 ± 2.4 |
+| 2020-2022 | 429-400-4 | 51.7% | 49.9% | +1.8 ± 1.7 |
 | 2023-2026 | 433-384-4 | 53.0% | 52.9% | +0.1 ± 1.7 |
 | High coach | 454-291-3 | 60.9% | 60.3% | +0.6 ± 1.8 |
-| Mid coach | 298-266-4 | 52.8% | 52.6% | +0.3 ± 2.1 |
-| Low coach | 329-456-4 | 41.9% | 42.0% | 0.0 ± 1.8 |
+| Mid coach | 298-266-4 | 52.8% | 52.6% | +0.2 ± 2.1 |
+| Low coach | 329-456-4 | 41.9% | 42.0% | −0.1 ± 1.8 |
 | Top league | 380-333-6 | 53.3% | 52.9% | +0.4 ± 1.9 |
-| Other leagues | 589-574-4 | 50.6% | 50.3% | +0.3 ± 1.5 |
+| Other leagues | 589-574-4 | 50.6% | 50.4% | +0.3 ± 1.5 |
 
 **Per game**
 
@@ -461,7 +461,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 5. Chicago (CHI)
 
-**Overall: Average. Best for: Both alike.** Strength +0.5 ± 1.4 now (5th of 22), +1.1 ± 1.2 over all years (6th).
+**Overall: Average. Best for: Both alike.** Strength +0.5 ± 1.3 now (5th of 22), +1.0 ± 1.1 over all years (6th).
 
 **Elo adjustment:** +6 ± 12 points (5th of 22), from 1,707 of 2,433 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +3.
 
@@ -471,9 +471,9 @@ Used in 58 of 63 leagues (18 of them a season's top league), by 52 coaches, 2,43
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +1.6 ± 2.2 | −0.1 ± 3.0 | +1.7 ± 3.8 |
-| By league strength | +1.6 ± 2.1 | +0.6 ± 3.2 | +1.1 ± 3.9 |
-| Top league against others | +2.0 ± 1.7 | −0.4 ± 1.9 | +2.4 ± 2.7 |
+| By coach | +1.4 ± 1.9 | +0.5 ± 2.6 | +0.9 ± 3.3 |
+| By league strength | +1.4 ± 1.8 | +0.8 ± 2.9 | +0.6 ± 3.4 |
+| Top league against others | +1.7 ± 1.5 | −0.4 ± 1.8 | +2.0 ± 2.5 |
 
 **Record**
 
@@ -481,17 +481,17 @@ Used in 58 of 63 leagues (18 of them a season's top league), by 52 coaches, 2,43
 | --- | --- | --- | --- | --- |
 | All games | 1,218-1,195-20 | 50.5% | 49.7% | +0.8 ± 1.0 |
 | Regular season | 1,056-1,034-20 | 50.5% | 49.7% | +0.8 ± 1.1 |
-| Playoffs | 162-161 | 50.2% | 49.4% | +0.7 ± 2.8 |
+| Playoffs | 162-161 | 50.2% | 49.3% | +0.8 ± 2.8 |
 | Home | 646-563-8 | 53.4% | 52.7% | +0.7 ± 1.4 |
 | Away | 572-632-12 | 47.5% | 46.6% | +0.9 ± 1.4 |
 | 2013-2019 | 294-294-5 | 50.0% | 48.5% | +1.5 ± 2.1 |
-| 2020-2022 | 513-470-6 | 52.2% | 51.2% | +1.0 ± 1.6 |
-| 2023-2026 | 411-431-9 | 48.8% | 48.7% | +0.1 ± 1.7 |
+| 2020-2022 | 513-470-6 | 52.2% | 51.2% | +0.9 ± 1.6 |
+| 2023-2026 | 411-431-9 | 48.8% | 48.6% | +0.2 ± 1.7 |
 | High coach | 423-288-8 | 59.5% | 59.3% | +0.2 ± 1.9 |
-| Mid coach | 462-436-8 | 51.4% | 50.6% | +0.9 ± 1.7 |
+| Mid coach | 462-436-8 | 51.4% | 50.6% | +0.8 ± 1.7 |
 | Low coach | 333-471-4 | 41.4% | 40.1% | +1.3 ± 1.8 |
-| Top league | 365-388-11 | 48.5% | 47.2% | +1.2 ± 1.8 |
-| Other leagues | 734-692-7 | 51.5% | 51.5% | −0.1 ± 1.3 |
+| Top league | 365-388-11 | 48.5% | 47.3% | +1.2 ± 1.8 |
+| Other leagues | 734-692-7 | 51.5% | 51.5% | 0.0 ± 1.3 |
 
 **Per game**
 
@@ -534,7 +534,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 6. Los Angeles (LA)
 
-**Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.2 now (6th of 22), +1.4 ± 1.2 over all years (5th).
+**Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.1 now (6th of 22), +1.3 ± 1.2 over all years (5th).
 
 **Elo adjustment:** 0 ± 11 points (10th of 22), from 1,776 of 2,239 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's +5.
 
@@ -544,27 +544,27 @@ Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,23
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +1.8 ± 1.8 | +1.7 ± 2.6 | +0.1 ± 2.8 |
-| By league strength | +0.4 ± 1.9 | +1.3 ± 2.3 | −0.9 ± 3.1 |
-| Top league against others | +1.4 ± 1.9 | +1.9 ± 1.6 | −0.5 ± 2.4 |
+| By coach | +1.5 ± 1.5 | +1.2 ± 2.2 | +0.3 ± 2.4 |
+| By league strength | +0.2 ± 1.7 | +1.0 ± 2.1 | −0.8 ± 2.7 |
+| Top league against others | +1.2 ± 1.7 | +1.7 ± 1.5 | −0.5 ± 2.2 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 1,103-1,127-9 | 49.5% | 48.3% | +1.2 ± 1.1 |
-| Regular season | 966-977-9 | 49.7% | 48.5% | +1.3 ± 1.1 |
+| All games | 1,103-1,127-9 | 49.5% | 48.3% | +1.1 ± 1.1 |
+| Regular season | 966-977-9 | 49.7% | 48.5% | +1.2 ± 1.1 |
 | Playoffs | 137-150 | 47.7% | 47.1% | +0.6 ± 3.0 |
-| Home | 568-546-3 | 51.0% | 51.1% | −0.2 ± 1.5 |
-| Away | 535-581-6 | 47.9% | 45.4% | +2.5 ± 1.5 |
-| 2013-2019 | 197-264-1 | 42.7% | 40.6% | +2.2 ± 2.3 |
-| 2020-2022 | 554-429-4 | 56.4% | 51.5% | +4.8 ± 1.6 |
-| 2023-2026 | 352-434-4 | 44.8% | 48.7% | −4.0 ± 1.8 |
-| High coach | 348-260-3 | 57.2% | 57.2% | 0.0 ± 2.0 |
+| Home | 568-546-3 | 51.0% | 51.2% | −0.2 ± 1.5 |
+| Away | 535-581-6 | 47.9% | 45.5% | +2.5 ± 1.5 |
+| 2013-2019 | 197-264-1 | 42.7% | 40.7% | +2.1 ± 2.3 |
+| 2020-2022 | 554-429-4 | 56.4% | 51.6% | +4.8 ± 1.6 |
+| 2023-2026 | 352-434-4 | 44.8% | 48.8% | −4.0 ± 1.8 |
+| High coach | 348-260-3 | 57.2% | 57.3% | 0.0 ± 2.0 |
 | Mid coach | 512-463-5 | 52.5% | 51.1% | +1.4 ± 1.6 |
-| Low coach | 243-404-1 | 37.6% | 35.7% | +1.9 ± 2.0 |
-| Top league | 389-428-3 | 47.6% | 46.5% | +1.1 ± 1.7 |
-| Other leagues | 644-605-5 | 51.6% | 50.2% | +1.3 ± 1.4 |
+| Low coach | 243-404-1 | 37.6% | 35.8% | +1.8 ± 2.0 |
+| Top league | 389-428-3 | 47.6% | 46.6% | +1.0 ± 1.7 |
+| Other leagues | 644-605-5 | 51.6% | 50.3% | +1.3 ± 1.4 |
 
 **Per game**
 
@@ -607,7 +607,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 7. Calgary (CGY)
 
-**Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.9 now (7th of 22), −0.2 ± 1.5 over all years (11th).
+**Overall: Average. Best for: Both alike.** Strength +0.3 ± 1.7 now (7th of 22), −0.3 ± 1.5 over all years (11th).
 
 **Elo adjustment:** +2 ± 12 points (8th of 22), from 1,477 of 1,976 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's −8.
 
@@ -617,9 +617,9 @@ Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,97
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +0.7 ± 2.4 | +1.7 ± 3.3 | −1.0 ± 4.1 |
-| By league strength | −2.6 ± 2.3 | −4.0 ± 2.9 | +1.4 ± 3.6 |
-| Top league against others | −1.7 ± 2.5 | −0.7 ± 2.3 | −1.0 ± 3.6 |
+| By coach | +0.6 ± 2.0 | +1.4 ± 2.9 | −0.8 ± 3.5 |
+| By league strength | −2.5 ± 1.7 | −3.8 ± 2.5 | +1.3 ± 3.0 |
+| Top league against others | −1.6 ± 2.0 | −0.7 ± 2.2 | −0.9 ± 3.1 |
 
 **Record**
 
@@ -627,15 +627,15 @@ Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,97
 | --- | --- | --- | --- | --- |
 | All games | 967-992-17 | 49.4% | 50.0% | −0.6 ± 1.1 |
 | Regular season | 841-832-17 | 50.3% | 50.3% | 0.0 ± 1.2 |
-| Playoffs | 126-160 | 44.1% | 48.1% | −4.0 ± 3.0 |
-| Home | 505-471-9 | 51.7% | 53.3% | −1.5 ± 1.6 |
+| Playoffs | 126-160 | 44.1% | 48.1% | −4.1 ± 3.0 |
+| Home | 505-471-9 | 51.7% | 53.3% | −1.6 ± 1.6 |
 | Away | 462-521-8 | 47.0% | 46.7% | +0.3 ± 1.6 |
 | 2013-2019 | 204-293-2 | 41.0% | 40.6% | +0.4 ± 2.2 |
-| 2020-2022 | 382-377-8 | 50.3% | 52.9% | −2.6 ± 1.8 |
+| 2020-2022 | 382-377-8 | 50.3% | 53.0% | −2.6 ± 1.8 |
 | 2023-2026 | 381-322-7 | 54.2% | 53.4% | +0.8 ± 1.9 |
 | High coach | 247-154-2 | 61.6% | 63.9% | −2.3 ± 2.5 |
-| Mid coach | 391-442-8 | 46.9% | 48.5% | −1.6 ± 1.7 |
-| Low coach | 329-396-7 | 45.4% | 43.9% | +1.5 ± 1.9 |
+| Mid coach | 391-442-8 | 46.9% | 48.6% | −1.6 ± 1.7 |
+| Low coach | 329-396-7 | 45.4% | 43.9% | +1.4 ± 1.9 |
 | Top league | 228-291-2 | 43.9% | 44.1% | −0.2 ± 2.2 |
 | Other leagues | 648-583-15 | 52.6% | 53.7% | −1.1 ± 1.4 |
 
@@ -680,7 +680,7 @@ Hidden bonus: none.
 
 ## 8. Washington (WSH)
 
-**Overall: Average. Best for: Low-level (likely).** Strength +0.3 ± 1.7 now (8th of 22), +0.3 ± 1.5 over all years (9th).
+**Overall: Average. Best for: Low-level (likely).** Strength +0.3 ± 1.5 now (8th of 22), +0.3 ± 1.4 over all years (8th).
 
 **Elo adjustment:** −25 ± 14 points (20th of 22), from 990 of 1,128 games. Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's +4.
 
@@ -690,27 +690,27 @@ Used in 26 of 63 leagues (12 of them a season's top league), by 22 coaches, 1,12
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −0.1 ± 1.5 | +2.5 ± 3.6 | −2.6 ± 3.8 |
-| By league strength | −2.6 ± 1.2 | +5.6 ± 3.8 | −8.2 ± 4.0 |
-| Top league against others | −2.5 ± 1.3 | +5.2 ± 3.8 | −7.8 ± 4.2 |
+| By coach | −0.1 ± 1.3 | +2.1 ± 2.8 | −2.2 ± 3.0 |
+| By league strength | −2.5 ± 1.1 | +4.5 ± 3.0 | −7.0 ± 3.2 |
+| Top league against others | −2.4 ± 1.1 | +4.3 ± 2.9 | −6.8 ± 3.2 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 593-524-11 | 53.1% | 52.8% | +0.2 ± 1.5 |
+| All games | 593-524-11 | 53.1% | 52.8% | +0.3 ± 1.5 |
 | Regular season | 490-431-11 | 53.2% | 52.8% | +0.4 ± 1.6 |
-| Playoffs | 103-93 | 52.6% | 53.1% | −0.6 ± 3.6 |
-| Home | 310-249-8 | 55.5% | 55.9% | −0.4 ± 2.1 |
+| Playoffs | 103-93 | 52.6% | 53.0% | −0.5 ± 3.6 |
+| Home | 310-249-8 | 55.5% | 55.8% | −0.4 ± 2.1 |
 | Away | 283-275-3 | 50.7% | 49.8% | +0.9 ± 2.1 |
-| 2013-2019 | 199-156-4 | 56.1% | 53.2% | +2.9 ± 2.7 |
-| 2020-2022 | 223-260-2 | 46.2% | 48.5% | −2.4 ± 2.3 |
-| 2023-2026 | 171-108-5 | 61.3% | 59.9% | +1.4 ± 3.0 |
+| 2013-2019 | 199-156-4 | 56.1% | 53.1% | +2.9 ± 2.7 |
+| 2020-2022 | 223-260-2 | 46.2% | 48.6% | −2.4 ± 2.3 |
+| 2023-2026 | 171-108-5 | 61.3% | 59.7% | +1.6 ± 3.0 |
 | High coach | 399-266-5 | 60.0% | 60.9% | −0.9 ± 1.9 |
-| Mid coach | 66-79-3 | 45.5% | 42.1% | +3.4 ± 4.2 |
-| Low coach | 128-179-3 | 41.7% | 40.4% | +1.3 ± 2.9 |
-| Top league | 279-271-4 | 50.7% | 53.5% | −2.7 ± 2.1 |
-| Other leagues | 170-161-4 | 51.4% | 47.3% | +4.0 ± 2.7 |
+| Mid coach | 66-79-3 | 45.5% | 41.9% | +3.6 ± 4.2 |
+| Low coach | 128-179-3 | 41.7% | 40.5% | +1.2 ± 2.9 |
+| Top league | 279-271-4 | 50.7% | 53.5% | −2.8 ± 2.1 |
+| Other leagues | 170-161-4 | 51.4% | 47.3% | +4.1 ± 2.7 |
 
 **Per game**
 
@@ -753,7 +753,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 9. Montreal (MTL)
 
-**Overall: Average. Best for: Low-level (leaning).** Strength −0.3 ± 1.9 now (9th of 22), +0.5 ± 1.4 over all years (7th).
+**Overall: Average. Best for: Low-level (leaning).** Strength −0.4 ± 1.6 now (9th of 22), +0.4 ± 1.3 over all years (7th).
 
 **Elo adjustment:** +9 ± 18 points (4th of 22), from 1,162 of 1,700 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +2.
 
@@ -763,27 +763,27 @@ Used in 41 of 63 leagues (14 of them a season's top league), by 36 coaches, 1,70
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −0.7 ± 2.8 | +1.0 ± 2.6 | −1.7 ± 4.1 |
-| By league strength | −3.8 ± 1.8 | +3.7 ± 3.2 | −7.6 ± 3.6 |
-| Top league against others | −1.3 ± 2.2 | +2.6 ± 2.1 | −3.9 ± 3.1 |
+| By coach | −0.6 ± 2.3 | +0.7 ± 2.2 | −1.3 ± 3.2 |
+| By league strength | −3.5 ± 1.6 | +3.1 ± 2.5 | −6.6 ± 3.0 |
+| Top league against others | −1.1 ± 1.9 | +2.3 ± 1.9 | −3.5 ± 2.7 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 775-910-15 | 46.0% | 45.2% | +0.8 ± 1.2 |
-| Regular season | 676-790-15 | 46.1% | 44.6% | +1.5 ± 1.3 |
+| All games | 775-910-15 | 46.0% | 45.3% | +0.7 ± 1.2 |
+| Regular season | 676-790-15 | 46.1% | 44.7% | +1.4 ± 1.3 |
 | Playoffs | 99-120 | 45.2% | 49.2% | −4.0 ± 3.4 |
 | Home | 423-418-10 | 50.3% | 48.0% | +2.3 ± 1.7 |
 | Away | 352-492-5 | 41.7% | 42.5% | −0.8 ± 1.7 |
 | 2013-2019 | 216-312-3 | 40.9% | 41.7% | −0.8 ± 2.2 |
-| 2020-2022 | 294-304-6 | 49.2% | 46.7% | +2.5 ± 2.0 |
-| 2023-2026 | 265-294-6 | 47.4% | 47.0% | +0.4 ± 2.1 |
-| High coach | 238-173-5 | 57.9% | 60.3% | −2.4 ± 2.5 |
-| Mid coach | 285-346-4 | 45.2% | 42.9% | +2.3 ± 2.0 |
-| Low coach | 252-391-6 | 39.2% | 37.9% | +1.3 ± 2.0 |
+| 2020-2022 | 294-304-6 | 49.2% | 46.8% | +2.4 ± 2.0 |
+| 2023-2026 | 265-294-6 | 47.4% | 47.1% | +0.4 ± 2.1 |
+| High coach | 238-173-5 | 57.9% | 60.2% | −2.3 ± 2.5 |
+| Mid coach | 285-346-4 | 45.2% | 43.0% | +2.2 ± 2.0 |
+| Low coach | 252-391-6 | 39.2% | 38.0% | +1.2 ± 2.0 |
 | Top league | 256-318-9 | 44.6% | 45.2% | −0.6 ± 2.1 |
-| Other leagues | 467-446-6 | 51.2% | 48.6% | +2.5 ± 1.7 |
+| Other leagues | 467-446-6 | 51.2% | 48.7% | +2.5 ± 1.7 |
 
 **Per game**
 
@@ -826,7 +826,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 10. Toronto (TOR)
 
-**Overall: Average. Best for: Unclear.** Strength −0.6 ± 3.6 now (10th of 22), −1.4 ± 2.8 over all years (13th).
+**Overall: Average. Best for: Unclear.** Strength −0.5 ± 2.5 now (10th of 22), −1.4 ± 2.5 over all years (13th).
 
 **Elo adjustment:** −12 ± 17 points (12th of 22), from 380 of 771 games. Against an even coach on the average team, on neutral ice, that's a 48% win chance. With one fixed strength per coach instead of Elo, it's −13.
 
@@ -836,9 +836,9 @@ Used in 19 of 63 leagues (7 of them a season's top league), by 19 coaches, 771 g
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −1.4 ± 4.4 | −3.5 ± 5.3 | +2.1 ± 7.3 |
-| By league strength | −3.9 ± 5.6 | +4.6 ± 6.4 | −8.6 ± 8.4 |
-| Top league against others | −6.7 ± 3.3 | +1.6 ± 4.5 | −8.2 ± 5.8 |
+| By coach | −1.3 ± 3.3 | −3.2 ± 3.7 | +1.9 ± 5.2 |
+| By league strength | −3.2 ± 3.1 | +3.3 ± 4.2 | −6.5 ± 5.1 |
+| Top league against others | −5.6 ± 2.3 | +1.1 ± 3.3 | −6.7 ± 4.1 |
 
 **Record**
 
@@ -846,15 +846,15 @@ Used in 19 of 63 leagues (7 of them a season's top league), by 19 coaches, 771 g
 | --- | --- | --- | --- | --- |
 | All games | 373-395-3 | 48.6% | 50.4% | −1.8 ± 1.8 |
 | Regular season | 326-350-3 | 48.2% | 50.1% | −1.9 ± 1.9 |
-| Playoffs | 47-45 | 51.1% | 52.2% | −1.1 ± 5.2 |
-| Home | 197-188-3 | 51.2% | 53.1% | −2.0 ± 2.5 |
+| Playoffs | 47-45 | 51.1% | 52.3% | −1.2 ± 5.2 |
+| Home | 197-188-3 | 51.2% | 53.2% | −2.0 ± 2.5 |
 | Away | 176-207 | 46.0% | 47.6% | −1.7 ± 2.6 |
-| 2013-2019 | 135-132-2 | 50.6% | 53.1% | −2.6 ± 3.1 |
-| 2020-2022 | 160-194-1 | 45.2% | 45.5% | −0.3 ± 2.7 |
-| 2023-2026 | 78-69 | 53.1% | 57.2% | −4.1 ± 4.1 |
-| High coach | 182-136-1 | 57.2% | 58.8% | −1.5 ± 2.8 |
-| Mid coach | 104-61 | 63.0% | 61.3% | +1.7 ± 3.9 |
-| Low coach | 87-198-2 | 30.5% | 34.7% | −4.2 ± 3.0 |
+| 2013-2019 | 135-132-2 | 50.6% | 53.2% | −2.6 ± 3.1 |
+| 2020-2022 | 160-194-1 | 45.2% | 45.6% | −0.4 ± 2.7 |
+| 2023-2026 | 78-69 | 53.1% | 57.0% | −4.0 ± 4.1 |
+| High coach | 182-136-1 | 57.2% | 58.7% | −1.5 ± 2.8 |
+| Mid coach | 104-61 | 63.0% | 61.4% | +1.6 ± 3.9 |
+| Low coach | 87-198-2 | 30.5% | 34.8% | −4.2 ± 3.0 |
 | Top league | 124-171-2 | 42.0% | 47.3% | −5.3 ± 2.9 |
 | Other leagues | 191-185-1 | 50.8% | 51.5% | −0.7 ± 2.6 |
 
@@ -897,9 +897,153 @@ Hidden bonus: +1 at home, −1 away.
 | Felix Potvin | 9,047 | 64.9 | 4 | 4 |
 | Daren Puppa | 99 | 66.7 | 3 | 2 |
 
-## 11. Boston (BOS)
+## 11. Edmonton (EDM)
 
-**Overall: Average. Best for: High-level (likely).** Strength −0.8 ± 1.8 now (11th of 22), +1.5 ± 1.6 over all years (4th).
+**Overall: Average. Best for: Low-level (leaning, few games).** Strength −0.9 ± 2.4 now (11th of 22), −1.8 ± 2.2 over all years (15th).
+
+**Elo adjustment:** −19 ± 22 points (14th of 22), from 416 of 497 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −19.
+
+Used in 11 of 63 leagues (9 of them a season's top league), by 7 coaches, 497 games, most recently 2026-11-01.
+
+**By level of player**
+
+| | High level | Low level | High minus low |
+| --- | --- | --- | --- |
+| By coach | −1.2 ± 2.5 | +3.7 ± 1.9* | −4.9 ± 3.0 |
+| By league strength | −2.3 ± 2.4 | +2.7 ± 2.3* | −4.9 ± 3.4 |
+| Top league against others | −1.9 ± 2.3 | +2.9 ± 2.4* | −4.8 ± 3.3 |
+
+**Record**
+
+| | Record | Win % | Expected | Against expected |
+| --- | --- | --- | --- | --- |
+| All games | 284-207-6 | 57.8% | 61.2% | −3.3 ± 2.3 |
+| Regular season | 233-169-6 | 58.0% | 61.6% | −3.6 ± 2.5 |
+| Playoffs | 51-38 | 57.3% | 59.3% | −2.0 ± 5.3 |
+| Home | 157-89-2 | 63.8% | 64.0% | −0.2 ± 3.2 |
+| Away | 127-118-4 | 51.8% | 58.3% | −6.5 ± 3.2 |
+| 2013-2019 | 139-54-3 | 72.0% | 76.0% | −4.0 ± 3.6 |
+| 2020-2022 | 33-24 | 57.9% | 54.0% | +3.9 ± 6.6 |
+| 2023-2026 | 112-129-3 | 46.5% | 51.0% | −4.5 ± 3.2 |
+| High coach | 245-130-5 | 65.3% | 68.2% | −2.9 ± 2.6 |
+| Mid coach | 10-29-1 | 25.6% | 42.6% | −17.0 ± 8.0 |
+| Low coach | 29-48 | 37.7% | 36.1% | +1.5 ± 5.7 |
+| Top league | 228-166-3 | 57.9% | 61.4% | −3.5 ± 2.5 |
+| Other leagues | 26-20 | 56.5% | 51.3% | +5.2 ± 7.4 |
+
+**Per game**
+
+| Stat | Value | Rank | | Stat | Value | Rank |
+| --- | --- | --- | --- | --- | --- | --- |
+| Goals for | 4.35 | 14th | | One-timer goals | 1.38 | 3rd |
+| Goals against | 3.67 | 2nd | | Breakaway goals | 0.19 | 22nd |
+| Shots for | 10.9 | 21st | | Checks | 26.5 | 13th |
+| Shots against | 10.4 | 1st | | Penalty minutes | 2.6 | 6th |
+| Shooting % | 40.0 | 3rd | | Faceoffs won % | 49.6 | 19th |
+| Save % | 64.8 | 4th | | Attack zone time, seconds | 316 | 7th |
+| Power play % | 42.8 | 11th | | Pass completion % | 58.6 | 2nd |
+| Penalty kill % | 61.5 | 5th | |  | |  |
+
+**Ratings**
+
+| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 63.8 (19th) | 7.7 (6th) | 3.4 (13th) | 3.5 (13th) | 3.1 (15th) | 2.5 (22nd) | 2.9 (7th) | 4.0 (6th) |
+
+Hidden bonus: +1 at home, −2 away.
+
+**Leading skaters** (per team game)
+
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Petr Klima | F | 1.57 | 0.83 | 2.40 | 76 | 7 | 5 | 4 | 5 |
+| Craig Simpson | F | 1.19 | 0.94 | 2.12 | 69 | 8 | 3 | 4 | 5 |
+| Shayne Corson | F | 0.80 | 1.02 | 1.82 | 71 | 9 | 4 | 3 | 2 |
+| Dave Manson | D | 0.37 | 0.82 | 1.19 | 74 | 9 | 4 | 5 | 1 |
+| Igor Kravchuk | D | 0.27 | 0.79 | 1.06 | 66 | 9 | 3 | 3 | 2 |
+| Doug Weight | F | 0.04 | 0.07 | 0.11 | 65 | 6 | 3 | 3 | 3 |
+
+**Goalies**
+
+| Goalie | Shots faced | Save % | Agility | Puck Control |
+| --- | --- | --- | --- | --- |
+| Bill Ranford | 5,189 | 64.9 | 4 | 4 |
+
+## 12. St. Louis (STL)
+
+**Overall: Average. Best for: Unclear.** Strength −0.9 ± 2.3 now (12th of 22), −0.1 ± 2.2 over all years (10th).
+
+**Elo adjustment:** −7 ± 18 points (11th of 22), from 453 of 553 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +1.
+
+Used in 13 of 63 leagues (3 of them a season's top league), by 13 coaches, 553 games, most recently 2026-05-22.
+
+**By level of player**
+
+| | High level | Low level | High minus low |
+| --- | --- | --- | --- |
+| By coach | −0.3 ± 2.8 | +0.7 ± 3.2 | −0.9 ± 4.2 |
+| By league strength | −1.0 ± 3.4 | +1.0 ± 2.9 | −2.0 ± 4.3 |
+| Top league against others | −3.7 ± 2.6* | +1.9 ± 2.7 | −5.6 ± 3.5 |
+
+**Record**
+
+| | Record | Win % | Expected | Against expected |
+| --- | --- | --- | --- | --- |
+| All games | 296-252-5 | 54.0% | 53.4% | +0.6 ± 2.1 |
+| Regular season | 256-206-5 | 55.4% | 54.0% | +1.4 ± 2.3 |
+| Playoffs | 40-46 | 46.5% | 50.2% | −3.7 ± 5.4 |
+| Home | 157-118-2 | 57.1% | 56.7% | +0.4 ± 3.0 |
+| Away | 139-134-3 | 50.9% | 50.1% | +0.8 ± 3.0 |
+| 2013-2019 | 142-113-3 | 55.7% | 52.9% | +2.8 ± 3.1 |
+| 2020-2022 | 22-29 | 43.1% | 41.7% | +1.5 ± 7.0 |
+| 2023-2026 | 132-110-2 | 54.5% | 56.4% | −1.9 ± 3.2 |
+| High coach | 166-122-5 | 57.6% | 59.1% | −1.5 ± 2.9 |
+| Mid coach | 33-12 | 73.3% | 69.2% | +4.1 ± 7.5 |
+| Low coach | 97-118 | 45.1% | 42.5% | +2.6 ± 3.4 |
+| Top league | 69-73-2 | 48.6% | 56.4% | −7.8 ± 4.2 |
+| Other leagues | 125-111 | 53.0% | 48.5% | +4.4 ± 3.3 |
+
+**Per game**
+
+| Stat | Value | Rank | | Stat | Value | Rank |
+| --- | --- | --- | --- | --- | --- | --- |
+| Goals for | 4.31 | 16th | | One-timer goals | 1.46 | 1st |
+| Goals against | 4.02 | 4th | | Breakaway goals | 0.20 | 20th |
+| Shots for | 11.2 | 18th | | Checks | 27.6 | 7th |
+| Shots against | 11.4 | 9th | | Penalty minutes | 2.5 | 4th |
+| Shooting % | 38.6 | 9th | | Faceoffs won % | 49.7 | 15th |
+| Save % | 64.7 | 5th | | Attack zone time, seconds | 316 | 6th |
+| Power play % | 38.7 | 20th | | Pass completion % | 57.7 | 3rd |
+| Penalty kill % | 57.9 | 15th | |  | |  |
+
+**Ratings**
+
+| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 63.8 (20th) | 7.1 (17th) | 3.2 (20th) | 3.2 (21st) | 2.8 (22nd) | 2.9 (12th) | 2.7 (17th) | 4.0 (12th) |
+
+Hidden bonus: +2 at home, −1 away.
+
+**Leading skaters** (per team game)
+
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Brett Hull | F | 1.93 | 0.80 | 2.73 | 81 | 9 | 4 | 6 | 3 |
+| Brendan Shanahan | F | 1.00 | 1.05 | 2.05 | 76 | 10 | 3 | 4 | 5 |
+| Craig Janney | F | 0.66 | 0.81 | 1.47 | 75 | 7 | 3 | 3 | 4 |
+| Jeff Brown | D | 0.24 | 0.75 | 0.99 | 71 | 9 | 3 | 5 | 3 |
+| Garth Butcher | D | 0.17 | 0.77 | 0.94 | 55 | 9 | 3 | 2 | 1 |
+| Nelson Emerson | F | 0.20 | 0.18 | 0.38 | 70 | 4 | 4 | 3 | 3 |
+
+**Goalies**
+
+| Goalie | Shots faced | Save % | Agility | Puck Control |
+| --- | --- | --- | --- | --- |
+| Curtis Joseph | 6,292 | 64.9 | 4 | 4 |
+
+## 13. Boston (BOS)
+
+**Overall: Average. Best for: High-level (likely).** Strength −0.9 ± 1.7 now (13th of 22), +1.4 ± 1.6 over all years (4th).
 
 **Elo adjustment:** +4 ± 15 points (6th of 22), from 1,681 of 2,513 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +14.
 
@@ -909,9 +1053,9 @@ Used in 61 of 63 leagues (19 of them a season's top league), by 48 coaches, 2,51
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | +4.3 ± 1.9 | +1.2 ± 2.3 | +3.1 ± 3.0 |
-| By league strength | +4.3 ± 1.9 | −1.9 ± 2.1 | +6.2 ± 2.8 |
-| Top league against others | +4.5 ± 2.2 | −1.1 ± 2.4 | +5.7 ± 3.1 |
+| By coach | +3.7 ± 1.6 | +0.7 ± 1.8 | +3.0 ± 2.4 |
+| By league strength | +3.8 ± 1.7 | −1.8 ± 1.8 | +5.6 ± 2.4 |
+| Top league against others | +4.0 ± 2.0 | −1.1 ± 2.2 | +5.1 ± 2.8 |
 
 **Record**
 
@@ -920,15 +1064,15 @@ Used in 61 of 63 leagues (19 of them a season's top league), by 48 coaches, 2,51
 | All games | 1,142-1,348-23 | 45.9% | 43.7% | +2.2 ± 1.0 |
 | Regular season | 984-1,193-23 | 45.2% | 43.7% | +1.5 ± 1.1 |
 | Playoffs | 158-155 | 50.5% | 43.6% | +6.9 ± 2.8 |
-| Home | 610-638-10 | 48.9% | 46.9% | +2.0 ± 1.4 |
+| Home | 610-638-10 | 48.9% | 47.0% | +1.9 ± 1.4 |
 | Away | 532-710-13 | 42.8% | 40.4% | +2.4 ± 1.4 |
 | 2013-2019 | 400-261-7 | 60.5% | 54.8% | +5.7 ± 1.9 |
 | 2020-2022 | 386-581-12 | 39.9% | 40.5% | −0.6 ± 1.6 |
 | 2023-2026 | 356-506-4 | 41.3% | 38.7% | +2.6 ± 1.7 |
-| High coach | 417-294-9 | 58.6% | 54.3% | +4.4 ± 1.9 |
-| Mid coach | 465-484-7 | 49.0% | 47.3% | +1.7 ± 1.6 |
+| High coach | 417-294-9 | 58.6% | 54.3% | +4.3 ± 1.9 |
+| Mid coach | 465-484-7 | 49.0% | 47.2% | +1.8 ± 1.6 |
 | Low coach | 260-570-7 | 31.3% | 30.5% | +0.8 ± 1.7 |
-| Top league | 450-406-8 | 52.6% | 47.4% | +5.2 ± 1.7 |
+| Top league | 450-406-8 | 52.6% | 47.5% | +5.1 ± 1.7 |
 | Other leagues | 570-850-12 | 40.1% | 39.7% | +0.5 ± 1.3 |
 
 **Per game**
@@ -970,153 +1114,9 @@ Hidden bonus: +2 at home, −1 away.
 | Andy Moog | 24,325 | 62.6 | 4 | 4 |
 | John Blue | 4,620 | 60.8 | 3 | 3 |
 
-## 12. St. Louis (STL)
-
-**Overall: Average. Best for: Unclear.** Strength −0.9 ± 3.2 now (12th of 22), 0.0 ± 2.6 over all years (10th).
-
-**Elo adjustment:** −7 ± 18 points (11th of 22), from 453 of 553 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +1.
-
-Used in 13 of 63 leagues (3 of them a season's top league), by 13 coaches, 553 games, most recently 2026-05-22.
-
-**By level of player**
-
-| | High level | Low level | High minus low |
-| --- | --- | --- | --- |
-| By coach | −0.1 ± 3.6 | +0.7 ± 5.0 | −0.8 ± 6.2 |
-| By league strength | −1.4 ± 5.1 | +1.8 ± 4.5 | −3.2 ± 6.4 |
-| Top league against others | −5.1 ± 4.3* | +2.9 ± 4.0 | −8.1 ± 5.6 |
-
-**Record**
-
-| | Record | Win % | Expected | Against expected |
-| --- | --- | --- | --- | --- |
-| All games | 296-252-5 | 54.0% | 53.4% | +0.6 ± 2.1 |
-| Regular season | 256-206-5 | 55.4% | 54.0% | +1.4 ± 2.3 |
-| Playoffs | 40-46 | 46.5% | 50.2% | −3.6 ± 5.4 |
-| Home | 157-118-2 | 57.1% | 56.6% | +0.5 ± 3.0 |
-| Away | 139-134-3 | 50.9% | 50.2% | +0.8 ± 3.0 |
-| 2013-2019 | 142-113-3 | 55.7% | 52.9% | +2.8 ± 3.1 |
-| 2020-2022 | 22-29 | 43.1% | 41.7% | +1.5 ± 7.0 |
-| 2023-2026 | 132-110-2 | 54.5% | 56.4% | −1.9 ± 3.2 |
-| High coach | 166-122-5 | 57.6% | 59.2% | −1.6 ± 2.9 |
-| Mid coach | 33-12 | 73.3% | 69.1% | +4.2 ± 7.5 |
-| Low coach | 97-118 | 45.1% | 42.4% | +2.8 ± 3.4 |
-| Top league | 69-73-2 | 48.6% | 56.7% | −8.1 ± 4.2 |
-| Other leagues | 125-111 | 53.0% | 48.4% | +4.6 ± 3.3 |
-
-**Per game**
-
-| Stat | Value | Rank | | Stat | Value | Rank |
-| --- | --- | --- | --- | --- | --- | --- |
-| Goals for | 4.31 | 16th | | One-timer goals | 1.46 | 1st |
-| Goals against | 4.02 | 4th | | Breakaway goals | 0.20 | 20th |
-| Shots for | 11.2 | 18th | | Checks | 27.6 | 7th |
-| Shots against | 11.4 | 9th | | Penalty minutes | 2.5 | 4th |
-| Shooting % | 38.6 | 9th | | Faceoffs won % | 49.7 | 15th |
-| Save % | 64.7 | 5th | | Attack zone time, seconds | 316 | 6th |
-| Power play % | 38.7 | 20th | | Pass completion % | 57.7 | 3rd |
-| Penalty kill % | 57.9 | 15th | |  | |  |
-
-**Ratings**
-
-| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 63.8 (20th) | 7.1 (17th) | 3.2 (20th) | 3.2 (21st) | 2.8 (22nd) | 2.9 (12th) | 2.7 (17th) | 4.0 (12th) |
-
-Hidden bonus: +2 at home, −1 away.
-
-**Leading skaters** (per team game)
-
-| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Brett Hull | F | 1.93 | 0.80 | 2.73 | 81 | 9 | 4 | 6 | 3 |
-| Brendan Shanahan | F | 1.00 | 1.05 | 2.05 | 76 | 10 | 3 | 4 | 5 |
-| Craig Janney | F | 0.66 | 0.81 | 1.47 | 75 | 7 | 3 | 3 | 4 |
-| Jeff Brown | D | 0.24 | 0.75 | 0.99 | 71 | 9 | 3 | 5 | 3 |
-| Garth Butcher | D | 0.17 | 0.77 | 0.94 | 55 | 9 | 3 | 2 | 1 |
-| Nelson Emerson | F | 0.20 | 0.18 | 0.38 | 70 | 4 | 4 | 3 | 3 |
-
-**Goalies**
-
-| Goalie | Shots faced | Save % | Agility | Puck Control |
-| --- | --- | --- | --- | --- |
-| Curtis Joseph | 6,292 | 64.9 | 4 | 4 |
-
-## 13. Edmonton (EDM)
-
-**Overall: Average. Best for: Low-level (leaning, few games).** Strength −0.9 ± 3.3 now (13th of 22), −2.0 ± 2.6 over all years (15th).
-
-**Elo adjustment:** −19 ± 22 points (14th of 22), from 416 of 497 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −19.
-
-Used in 11 of 63 leagues (9 of them a season's top league), by 7 coaches, 497 games, most recently 2026-11-01.
-
-**By level of player**
-
-| | High level | Low level | High minus low |
-| --- | --- | --- | --- |
-| By coach | −1.4 ± 3.3 | +5.5 ± 4.0* | −6.9 ± 5.1 |
-| By league strength | −2.5 ± 3.6 | +6.3 ± 6.5* | −8.8 ± 7.6 |
-| Top league against others | −2.2 ± 3.2 | +7.0 ± 6.0* | −9.2 ± 6.9 |
-
-**Record**
-
-| | Record | Win % | Expected | Against expected |
-| --- | --- | --- | --- | --- |
-| All games | 284-207-6 | 57.8% | 61.2% | −3.4 ± 2.3 |
-| Regular season | 233-169-6 | 58.0% | 61.6% | −3.6 ± 2.5 |
-| Playoffs | 51-38 | 57.3% | 59.3% | −2.0 ± 5.3 |
-| Home | 157-89-2 | 63.8% | 64.0% | −0.2 ± 3.2 |
-| Away | 127-118-4 | 51.8% | 58.4% | −6.5 ± 3.2 |
-| 2013-2019 | 139-54-3 | 72.0% | 76.0% | −4.0 ± 3.6 |
-| 2020-2022 | 33-24 | 57.9% | 54.0% | +3.9 ± 6.6 |
-| 2023-2026 | 112-129-3 | 46.5% | 51.0% | −4.6 ± 3.2 |
-| High coach | 245-130-5 | 65.3% | 68.3% | −2.9 ± 2.6 |
-| Mid coach | 10-29-1 | 25.6% | 42.6% | −17.0 ± 8.0 |
-| Low coach | 29-48 | 37.7% | 36.1% | +1.5 ± 5.7 |
-| Top league | 228-166-3 | 57.9% | 61.4% | −3.6 ± 2.5 |
-| Other leagues | 26-20 | 56.5% | 51.3% | +5.3 ± 7.4 |
-
-**Per game**
-
-| Stat | Value | Rank | | Stat | Value | Rank |
-| --- | --- | --- | --- | --- | --- | --- |
-| Goals for | 4.35 | 14th | | One-timer goals | 1.38 | 3rd |
-| Goals against | 3.67 | 2nd | | Breakaway goals | 0.19 | 22nd |
-| Shots for | 10.9 | 21st | | Checks | 26.5 | 13th |
-| Shots against | 10.4 | 1st | | Penalty minutes | 2.6 | 6th |
-| Shooting % | 40.0 | 3rd | | Faceoffs won % | 49.6 | 19th |
-| Save % | 64.8 | 4th | | Attack zone time, seconds | 316 | 7th |
-| Power play % | 42.8 | 11th | | Pass completion % | 58.6 | 2nd |
-| Penalty kill % | 61.5 | 5th | |  | |  |
-
-**Ratings**
-
-| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 63.8 (19th) | 7.7 (6th) | 3.4 (13th) | 3.5 (13th) | 3.1 (15th) | 2.5 (22nd) | 2.9 (7th) | 4.0 (6th) |
-
-Hidden bonus: +1 at home, −2 away.
-
-**Leading skaters** (per team game)
-
-| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Petr Klima | F | 1.57 | 0.83 | 2.40 | 76 | 7 | 5 | 4 | 5 |
-| Craig Simpson | F | 1.19 | 0.94 | 2.12 | 69 | 8 | 3 | 4 | 5 |
-| Shayne Corson | F | 0.80 | 1.02 | 1.82 | 71 | 9 | 4 | 3 | 2 |
-| Dave Manson | D | 0.37 | 0.82 | 1.19 | 74 | 9 | 4 | 5 | 1 |
-| Igor Kravchuk | D | 0.27 | 0.79 | 1.06 | 66 | 9 | 3 | 3 | 2 |
-| Doug Weight | F | 0.04 | 0.07 | 0.11 | 65 | 6 | 3 | 3 | 3 |
-
-**Goalies**
-
-| Goalie | Shots faced | Save % | Agility | Puck Control |
-| --- | --- | --- | --- | --- |
-| Bill Ranford | 5,189 | 64.9 | 4 | 4 |
-
 ## 14. Winnipeg (WPG)
 
-**Overall: Average. Best for: Both alike.** Strength −1.3 ± 1.8 now (14th of 22), −3.6 ± 1.6 over all years (17th).
+**Overall: Average. Best for: Both alike.** Strength −1.3 ± 1.6 now (14th of 22), −3.5 ± 1.5 over all years (17th).
 
 **Elo adjustment:** −21 ± 13 points (18th of 22), from 864 of 1,279 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −30.
 
@@ -1126,9 +1126,9 @@ Used in 30 of 63 leagues (12 of them a season's top league), by 24 coaches, 1,27
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −3.7 ± 2.5 | −2.5 ± 4.0 | −1.2 ± 5.0 |
-| By league strength | −0.6 ± 1.7 | −3.2 ± 4.1 | +2.6 ± 4.6 |
-| Top league against others | −3.2 ± 2.6 | −3.8 ± 2.6 | +0.7 ± 3.8 |
+| By coach | −3.5 ± 2.2 | −1.8 ± 2.9 | −1.7 ± 3.8 |
+| By league strength | −0.5 ± 1.4 | −2.5 ± 2.9 | +2.0 ± 3.4 |
+| Top league against others | −2.9 ± 2.2 | −3.4 ± 2.1 | +0.5 ± 3.2 |
 
 **Record**
 
@@ -1136,15 +1136,15 @@ Used in 30 of 63 leagues (12 of them a season's top league), by 24 coaches, 1,27
 | --- | --- | --- | --- | --- |
 | All games | 624-647-8 | 49.1% | 54.1% | −5.0 ± 1.4 |
 | Regular season | 543-551-8 | 49.6% | 54.6% | −5.0 ± 1.5 |
-| Playoffs | 81-96 | 45.8% | 50.9% | −5.1 ± 3.8 |
+| Playoffs | 81-96 | 45.8% | 51.0% | −5.2 ± 3.8 |
 | Home | 331-299-6 | 52.5% | 57.3% | −4.7 ± 2.0 |
 | Away | 293-348-2 | 45.7% | 51.0% | −5.3 ± 2.0 |
 | 2013-2019 | 161-186-1 | 46.4% | 53.4% | −7.0 ± 2.7 |
 | 2020-2022 | 263-293-3 | 47.3% | 54.4% | −7.1 ± 2.1 |
 | 2023-2026 | 200-168-4 | 54.3% | 54.4% | −0.1 ± 2.6 |
 | High coach | 300-269-2 | 52.7% | 59.0% | −6.3 ± 2.1 |
-| Mid coach | 213-184-3 | 53.7% | 57.9% | −4.3 ± 2.5 |
-| Low coach | 111-194-3 | 36.4% | 40.1% | −3.7 ± 2.9 |
+| Mid coach | 213-184-3 | 53.7% | 58.0% | −4.4 ± 2.5 |
+| Low coach | 111-194-3 | 36.4% | 40.0% | −3.6 ± 2.9 |
 | Top league | 267-253-3 | 51.3% | 55.4% | −4.0 ± 2.2 |
 | Other leagues | 264-284-4 | 48.2% | 52.6% | −4.5 ± 2.1 |
 
@@ -1189,7 +1189,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 15. Detroit (DET)
 
-**Overall: Average. Best for: Both alike.** Strength −1.5 ± 1.8 now (15th of 22), −1.5 ± 1.6 over all years (14th).
+**Overall: Average. Best for: Both alike.** Strength −1.5 ± 1.6 now (15th of 22), −1.5 ± 1.6 over all years (14th).
 
 **Elo adjustment:** +1 ± 12 points (9th of 22), from 1,695 of 2,327 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's −8.
 
@@ -1199,26 +1199,26 @@ Used in 59 of 63 leagues (18 of them a season's top league), by 45 coaches, 2,32
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −0.8 ± 2.5 | −2.9 ± 3.3 | +2.1 ± 4.0 |
-| By league strength | −1.3 ± 1.7 | −1.1 ± 3.4 | −0.1 ± 3.8 |
-| Top league against others | −1.6 ± 1.6 | −0.8 ± 2.6 | −0.9 ± 3.0 |
+| By coach | −1.1 ± 2.1 | −3.0 ± 2.9 | +1.8 ± 3.5 |
+| By league strength | −1.5 ± 1.5 | −1.0 ± 2.9 | −0.5 ± 3.2 |
+| Top league against others | −1.6 ± 1.4 | −0.7 ± 2.4 | −1.0 ± 2.7 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 972-1,340-15 | 42.0% | 42.3% | −0.3 ± 1.0 |
-| Regular season | 881-1,255-15 | 41.2% | 41.5% | −0.2 ± 1.1 |
-| Playoffs | 91-85 | 51.7% | 52.7% | −1.0 ± 3.8 |
+| All games | 972-1,340-15 | 42.0% | 42.4% | −0.3 ± 1.0 |
+| Regular season | 881-1,255-15 | 41.2% | 41.5% | −0.3 ± 1.1 |
+| Playoffs | 91-85 | 51.7% | 52.6% | −0.9 ± 3.8 |
 | Home | 494-660-10 | 42.8% | 45.1% | −2.3 ± 1.5 |
 | Away | 478-680-5 | 41.3% | 39.6% | +1.7 ± 1.5 |
-| 2013-2019 | 205-347-3 | 37.1% | 39.8% | −2.7 ± 2.1 |
-| 2020-2022 | 434-528-5 | 45.1% | 46.0% | −0.9 ± 1.6 |
+| 2013-2019 | 205-347-3 | 37.1% | 39.9% | −2.7 ± 2.1 |
+| 2020-2022 | 434-528-5 | 45.1% | 46.1% | −1.0 ± 1.6 |
 | 2023-2026 | 333-465-7 | 41.7% | 39.6% | +2.1 ± 1.8 |
-| High coach | 250-184-4 | 57.6% | 58.8% | −1.2 ± 2.4 |
-| Mid coach | 373-531-6 | 41.3% | 39.8% | +1.5 ± 1.7 |
-| Low coach | 349-625-5 | 35.8% | 37.4% | −1.5 ± 1.6 |
-| Top league | 291-447-4 | 39.4% | 39.8% | −0.4 ± 1.8 |
+| High coach | 250-184-4 | 57.6% | 58.9% | −1.3 ± 2.4 |
+| Mid coach | 373-531-6 | 41.3% | 39.8% | +1.4 ± 1.7 |
+| Low coach | 349-625-5 | 35.8% | 37.3% | −1.5 ± 1.6 |
+| Top league | 291-447-4 | 39.4% | 39.9% | −0.4 ± 1.8 |
 | Other leagues | 618-766-9 | 44.7% | 44.5% | +0.2 ± 1.3 |
 
 **Per game**
@@ -1262,7 +1262,7 @@ Hidden bonus: none.
 
 ## 16. Philadelphia (PHI)
 
-**Overall: Poor. Best for: Low-level (leaning).** Strength −2.5 ± 2.8 now (16th of 22), −1.1 ± 2.5 over all years (12th).
+**Overall: Poor. Best for: Low-level (leaning).** Strength −2.1 ± 2.2 now (16th of 22), −1.1 ± 2.2 over all years (12th).
 
 **Elo adjustment:** +3 ± 21 points (7th of 22), from 462 of 643 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's −19.
 
@@ -1272,27 +1272,27 @@ Used in 15 of 63 leagues (6 of them a season's top league), by 14 coaches, 643 g
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −5.1 ± 3.4 | +3.9 ± 7.8 | −9.1 ± 8.4 |
-| By league strength | −4.0 ± 2.8 | +2.6 ± 5.6 | −6.5 ± 6.5 |
-| Top league against others | −3.8 ± 2.9 | +2.0 ± 5.1 | −5.7 ± 5.6 |
+| By coach | −4.3 ± 2.3 | +3.2 ± 3.9 | −7.6 ± 4.4 |
+| By league strength | −3.4 ± 2.1 | +1.7 ± 3.5 | −5.2 ± 4.2 |
+| Top league against others | −3.3 ± 2.1 | +1.5 ± 3.4 | −4.9 ± 4.0 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 309-332-2 | 48.2% | 50.8% | −2.6 ± 2.0 |
-| Regular season | 265-284-2 | 48.3% | 50.3% | −2.0 ± 2.1 |
-| Playoffs | 44-48 | 47.8% | 53.8% | −5.9 ± 5.2 |
-| Home | 165-155 | 51.6% | 53.6% | −2.0 ± 2.8 |
-| Away | 144-177-2 | 44.9% | 48.0% | −3.1 ± 2.8 |
-| 2013-2019 | 49-69-2 | 41.5% | 40.0% | +1.5 ± 4.6 |
-| 2020-2022 | 94-92 | 50.5% | 52.5% | −1.9 ± 3.7 |
-| 2023-2026 | 166-171 | 49.3% | 53.6% | −4.4 ± 2.7 |
-| High coach | 104-110 | 48.6% | 57.9% | −9.3 ± 3.4 |
-| Mid coach | 149-101-1 | 59.6% | 58.5% | +1.1 ± 3.2 |
-| Low coach | 56-121-1 | 31.6% | 31.4% | +0.3 ± 3.8 |
-| Top league | 125-133 | 48.4% | 55.5% | −7.0 ± 3.1 |
-| Other leagues | 157-155-1 | 50.3% | 49.8% | +0.6 ± 2.8 |
+| All games | 309-332-2 | 48.2% | 50.7% | −2.5 ± 2.0 |
+| Regular season | 265-284-2 | 48.3% | 50.2% | −1.9 ± 2.1 |
+| Playoffs | 44-48 | 47.8% | 53.7% | −5.8 ± 5.2 |
+| Home | 165-155 | 51.6% | 53.5% | −2.0 ± 2.8 |
+| Away | 144-177-2 | 44.9% | 47.9% | −3.1 ± 2.8 |
+| 2013-2019 | 49-69-2 | 41.5% | 39.9% | +1.7 ± 4.6 |
+| 2020-2022 | 94-92 | 50.5% | 52.4% | −1.8 ± 3.7 |
+| 2023-2026 | 166-171 | 49.3% | 53.6% | −4.3 ± 2.7 |
+| High coach | 104-110 | 48.6% | 57.8% | −9.2 ± 3.4 |
+| Mid coach | 149-101-1 | 59.6% | 58.4% | +1.2 ± 3.2 |
+| Low coach | 56-121-1 | 31.6% | 31.3% | +0.3 ± 3.8 |
+| Top league | 125-133 | 48.4% | 55.4% | −7.0 ± 3.1 |
+| Other leagues | 157-155-1 | 50.3% | 49.6% | +0.7 ± 2.8 |
 
 **Per game**
 
@@ -1333,82 +1333,9 @@ Hidden bonus: +2 at home, −2 away.
 | Tommy Soderstrom | 7,679 | 62.6 | 4 | 4 |
 | Dominic Roussel | 32 | 68.8 | 3 | 3 |
 
-## 17. Quebec (QUE)
+## 17. Hartford (HFD)
 
-**Overall: Poor. Best for: High-level (likely).** Strength −3.2 ± 3.0 now (17th of 22), −6.3 ± 2.4 over all years (20th).
-
-**Elo adjustment:** −20 ± 20 points (15th of 22), from 525 of 895 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −43.
-
-Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 895 games, most recently 2026-11-03.
-
-**By level of player**
-
-| | High level | Low level | High minus low |
-| --- | --- | --- | --- |
-| By coach | −3.3 ± 2.8 | −17.1 ± 13.0* | +13.8 ± 13.3 |
-| By league strength | −0.7 ± 3.2 | −22.2 ± 4.9* | +21.5 ± 6.3 |
-| Top league against others | +1.1 ± 2.8 | −16.1 ± 3.4 | +17.3 ± 4.7 |
-
-**Record**
-
-| | Record | Win % | Expected | Against expected |
-| --- | --- | --- | --- | --- |
-| All games | 458-428-9 | 51.7% | 59.2% | −7.5 ± 1.7 |
-| Regular season | 387-354-9 | 52.2% | 60.0% | −7.8 ± 1.8 |
-| Playoffs | 71-74 | 49.0% | 54.6% | −5.7 ± 4.2 |
-| Home | 229-216-5 | 51.5% | 61.7% | −10.3 ± 2.4 |
-| Away | 229-212-4 | 51.9% | 56.6% | −4.6 ± 2.4 |
-| 2013-2019 | 236-213-5 | 52.6% | 60.1% | −7.6 ± 2.4 |
-| 2020-2022 | 102-126-3 | 44.7% | 59.5% | −14.8 ± 3.3 |
-| 2023-2026 | 120-89-1 | 57.4% | 56.7% | +0.7 ± 3.5 |
-| High coach | 364-236-6 | 60.7% | 65.6% | −4.9 ± 2.0 |
-| Mid coach | 81-131-2 | 38.2% | 50.3% | −12.1 ± 3.4 |
-| Low coach | 13-61-1 | 17.6% | 32.5% | −15.0 ± 5.8 |
-| Top league | 226-173-4 | 56.6% | 56.5% | +0.1 ± 2.5 |
-| Other leagues | 139-174-2 | 44.4% | 60.2% | −15.8 ± 2.8 |
-
-**Per game**
-
-| Stat | Value | Rank | | Stat | Value | Rank |
-| --- | --- | --- | --- | --- | --- | --- |
-| Goals for | 4.54 | 6th | | One-timer goals | 1.28 | 9th |
-| Goals against | 4.42 | 13th | | Breakaway goals | 0.24 | 11th |
-| Shots for | 11.9 | 8th | | Checks | 25.3 | 19th |
-| Shots against | 11.9 | 13th | | Penalty minutes | 2.6 | 10th |
-| Shooting % | 38.1 | 13th | | Faceoffs won % | 51.1 | 4th |
-| Save % | 62.8 | 11th | | Attack zone time, seconds | 311 | 13th |
-| Power play % | 46.2 | 2nd | | Pass completion % | 56.2 | 10th |
-| Penalty kill % | 57.8 | 16th | |  | |  |
-
-**Ratings**
-
-| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 68.1 (10th) | 6.8 (25th) | 3.7 (8th) | 3.5 (15th) | 3.5 (5th) | 3.3 (1st) | 2.3 (24th) | 4.0 (11th) |
-
-Hidden bonus: none.
-
-**Leading skaters** (per team game)
-
-| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mats Sundin | F | 1.55 | 1.01 | 2.56 | 79 | 7 | 4 | 4 | 5 |
-| Joe Sakic | F | 1.13 | 0.89 | 2.02 | 83 | 6 | 4 | 4 | 5 |
-| Steve Duchesne | D | 0.32 | 0.80 | 1.12 | 72 | 8 | 4 | 4 | 2 |
-| Owen Nolan | F | 0.66 | 0.43 | 1.09 | 71 | 8 | 4 | 4 | 4 |
-| Curtis Leschyshyn | D | 0.18 | 0.59 | 0.77 | 62 | 9 | 4 | 2 | 3 |
-| Valeri Kamensky | F | 0.36 | 0.29 | 0.65 | 73 | 8 | 4 | 5 | 3 |
-
-**Goalies**
-
-| Goalie | Shots faced | Save % | Agility | Puck Control |
-| --- | --- | --- | --- | --- |
-| Ron Hextall | 8,502 | 63.7 | 4 | 4 |
-| Stephane Fiset | 2,054 | 59.3 | 3 | 2 |
-
-## 18. Hartford (HFD)
-
-**Overall: Poor. Best for: Both alike (few games).** Strength −3.5 ± 3.4 now (18th of 22), −2.7 ± 2.9 over all years (16th).
+**Overall: Poor. Best for: Both alike (few games).** Strength −2.2 ± 1.8 now (17th of 22), −2.3 ± 2.0 over all years (16th).
 
 **Elo adjustment:** −20* ± 9 points (16th of 22), from 210 of 228 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −15.
 
@@ -1418,26 +1345,26 @@ Used in 5 of 63 leagues (3 of them a season's top league), by 5 coaches, 228 gam
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −1.4 ± 5.1 | −0.2 ± 6.8* | −1.1 ± 8.8 |
-| By league strength | −3.9 ± 2.7* | −1.9 ± 3.7* | −2.0 ± 4.6 |
-| Top league against others | −0.5 ± 4.9 | −1.7 ± 3.3* | +1.2 ± 6.5 |
+| By coach | −1.2 ± 2.1 | +0.8 ± 1.4* | −2.0 ± 2.6 |
+| By league strength | −2.2 ± 1.7* | −1.3 ± 1.2* | −0.9 ± 2.1 |
+| Top league against others | −0.3 ± 2.1 | −1.3 ± 1.2* | +0.9 ± 2.5 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 129-98-1 | 56.8% | 62.0% | −5.2 ± 3.3 |
-| Regular season | 103-77-1 | 57.2% | 61.8% | −4.6 ± 3.7 |
-| Playoffs | 26-21 | 55.3% | 62.9% | −7.5 ± 7.3 |
-| Home | 70-43-1 | 61.9% | 65.0% | −3.1 ± 4.7 |
-| Away | 59-55 | 51.8% | 59.0% | −7.3 ± 4.7 |
-| 2013-2019 | 72-54-1 | 57.1% | 61.4% | −4.2 ± 4.5 |
-| 2023-2026 | 57-44 | 56.4% | 62.8% | −6.4 ± 5.0 |
-| High coach | 97-52-1 | 65.1% | 69.5% | −4.4 ± 4.1 |
-| Mid coach | 12-22 | 35.3% | 44.6% | −9.3 ± 8.6 |
-| Low coach | 20-24 | 45.5% | 50.0% | −4.6 ± 7.5 |
-| Top league | 97-52-1 | 65.1% | 69.5% | −4.4 ± 4.1 |
-| Other leagues | 20-24 | 45.5% | 50.0% | −4.6 ± 7.5 |
+| All games | 129-98-1 | 56.8% | 61.8% | −5.0 ± 3.3 |
+| Regular season | 103-77-1 | 57.2% | 61.6% | −4.4 ± 3.7 |
+| Playoffs | 26-21 | 55.3% | 62.5% | −7.2 ± 7.3 |
+| Home | 70-43-1 | 61.9% | 64.8% | −2.9 ± 4.7 |
+| Away | 59-55 | 51.8% | 58.8% | −7.0 ± 4.7 |
+| 2013-2019 | 72-54-1 | 57.1% | 61.2% | −4.1 ± 4.5 |
+| 2023-2026 | 57-44 | 56.4% | 62.5% | −6.1 ± 5.0 |
+| High coach | 97-52-1 | 65.1% | 69.2% | −4.1 ± 4.1 |
+| Mid coach | 12-22 | 35.3% | 44.7% | −9.4 ± 8.6 |
+| Low coach | 20-24 | 45.5% | 49.9% | −4.4 ± 7.5 |
+| Top league | 97-52-1 | 65.1% | 69.2% | −4.1 ± 4.1 |
+| Other leagues | 20-24 | 45.5% | 49.9% | −4.4 ± 7.5 |
 
 **Per game**
 
@@ -1478,9 +1405,82 @@ Hidden bonus: none.
 | Sean Burke | 2,330 | 61.7 | 4 | 4 |
 | Mario Gosselin | 61 | 52.5 | 2 | 2 |
 
+## 18. Quebec (QUE)
+
+**Overall: Poor. Best for: High-level (likely).** Strength −2.7 ± 2.2 now (18th of 22), −5.8 ± 2.2 over all years (20th).
+
+**Elo adjustment:** −20 ± 20 points (15th of 22), from 525 of 895 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −43.
+
+Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 895 games, most recently 2026-11-03.
+
+**By level of player**
+
+| | High level | Low level | High minus low |
+| --- | --- | --- | --- |
+| By coach | −3.1 ± 2.3 | −7.6 ± 5.4* | +4.5 ± 5.9 |
+| By league strength | −0.7 ± 2.6 | −14.6 ± 4.8* | +13.9 ± 5.7 |
+| Top league against others | +1.1 ± 2.2 | −13.5 ± 2.6 | +14.6 ± 3.7 |
+
+**Record**
+
+| | Record | Win % | Expected | Against expected |
+| --- | --- | --- | --- | --- |
+| All games | 458-428-9 | 51.7% | 59.0% | −7.3 ± 1.7 |
+| Regular season | 387-354-9 | 52.2% | 59.9% | −7.7 ± 1.8 |
+| Playoffs | 71-74 | 49.0% | 54.5% | −5.5 ± 4.2 |
+| Home | 229-216-5 | 51.5% | 61.6% | −10.1 ± 2.4 |
+| Away | 229-212-4 | 51.9% | 56.4% | −4.5 ± 2.4 |
+| 2013-2019 | 236-213-5 | 52.6% | 59.9% | −7.3 ± 2.4 |
+| 2020-2022 | 102-126-3 | 44.7% | 59.4% | −14.7 ± 3.3 |
+| 2023-2026 | 120-89-1 | 57.4% | 56.6% | +0.8 ± 3.5 |
+| High coach | 364-236-6 | 60.7% | 65.4% | −4.8 ± 2.0 |
+| Mid coach | 81-131-2 | 38.2% | 50.0% | −11.8 ± 3.4 |
+| Low coach | 13-61-1 | 17.6% | 32.4% | −14.9 ± 5.8 |
+| Top league | 226-173-4 | 56.6% | 56.5% | +0.2 ± 2.5 |
+| Other leagues | 139-174-2 | 44.4% | 60.0% | −15.6 ± 2.8 |
+
+**Per game**
+
+| Stat | Value | Rank | | Stat | Value | Rank |
+| --- | --- | --- | --- | --- | --- | --- |
+| Goals for | 4.54 | 6th | | One-timer goals | 1.28 | 9th |
+| Goals against | 4.42 | 13th | | Breakaway goals | 0.24 | 11th |
+| Shots for | 11.9 | 8th | | Checks | 25.3 | 19th |
+| Shots against | 11.9 | 13th | | Penalty minutes | 2.6 | 10th |
+| Shooting % | 38.1 | 13th | | Faceoffs won % | 51.1 | 4th |
+| Save % | 62.8 | 11th | | Attack zone time, seconds | 311 | 13th |
+| Power play % | 46.2 | 2nd | | Pass completion % | 56.2 | 10th |
+| Penalty kill % | 57.8 | 16th | |  | |  |
+
+**Ratings**
+
+| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 68.1 (10th) | 6.8 (25th) | 3.7 (8th) | 3.5 (15th) | 3.5 (5th) | 3.3 (1st) | 2.3 (24th) | 4.0 (11th) |
+
+Hidden bonus: none.
+
+**Leading skaters** (per team game)
+
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mats Sundin | F | 1.55 | 1.01 | 2.56 | 79 | 7 | 4 | 4 | 5 |
+| Joe Sakic | F | 1.13 | 0.89 | 2.02 | 83 | 6 | 4 | 4 | 5 |
+| Steve Duchesne | D | 0.32 | 0.80 | 1.12 | 72 | 8 | 4 | 4 | 2 |
+| Owen Nolan | F | 0.66 | 0.43 | 1.09 | 71 | 8 | 4 | 4 | 4 |
+| Curtis Leschyshyn | D | 0.18 | 0.59 | 0.77 | 62 | 9 | 4 | 2 | 3 |
+| Valeri Kamensky | F | 0.36 | 0.29 | 0.65 | 73 | 8 | 4 | 5 | 3 |
+
+**Goalies**
+
+| Goalie | Shots faced | Save % | Agility | Puck Control |
+| --- | --- | --- | --- | --- |
+| Ron Hextall | 8,502 | 63.7 | 4 | 4 |
+| Stephane Fiset | 2,054 | 59.3 | 3 | 2 |
+
 ## 19. Buffalo (BUF)
 
-**Overall: Poor. Best for: Both alike.** Strength −3.6 ± 1.8 now (19th of 22), −4.1 ± 1.5 over all years (18th).
+**Overall: Poor. Best for: Both alike.** Strength −3.4 ± 1.6 now (19th of 22), −4.0 ± 1.4 over all years (18th).
 
 **Elo adjustment:** −21 ± 12 points (17th of 22), from 1,515 of 2,103 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −28.
 
@@ -1490,9 +1490,9 @@ Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,10
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −1.4 ± 2.1 | −5.8 ± 2.9 | +4.4 ± 3.4 |
-| By league strength | −3.4 ± 2.5 | −5.4 ± 3.3 | +2.0 ± 4.2 |
-| Top league against others | −3.4 ± 2.2 | −4.8 ± 2.4 | +1.4 ± 3.0 |
+| By coach | −1.1 ± 2.0 | −5.2 ± 2.4 | +4.1 ± 3.0 |
+| By league strength | −3.1 ± 2.2 | −5.1 ± 2.8 | +2.0 ± 3.6 |
+| Top league against others | −3.2 ± 2.0 | −4.5 ± 2.1 | +1.4 ± 2.7 |
 
 **Record**
 
@@ -1500,12 +1500,12 @@ Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,10
 | --- | --- | --- | --- | --- |
 | All games | 1,034-1,059-10 | 49.4% | 53.9% | −4.5 ± 1.1 |
 | Regular season | 869-917-10 | 48.7% | 53.9% | −5.3 ± 1.2 |
-| Playoffs | 165-142 | 53.7% | 53.7% | 0.0 ± 2.9 |
+| Playoffs | 165-142 | 53.7% | 53.7% | +0.1 ± 2.9 |
 | Home | 552-492-4 | 52.9% | 56.9% | −4.1 ± 1.5 |
 | Away | 482-567-6 | 45.9% | 50.9% | −4.9 ± 1.5 |
-| 2013-2019 | 290-307-3 | 48.6% | 53.5% | −5.0 ± 2.0 |
+| 2013-2019 | 290-307-3 | 48.6% | 53.5% | −4.9 ± 2.0 |
 | 2020-2022 | 411-468-6 | 46.8% | 51.2% | −4.4 ± 1.7 |
-| 2023-2026 | 333-284-1 | 54.0% | 58.2% | −4.2 ± 2.0 |
+| 2023-2026 | 333-284-1 | 54.0% | 58.1% | −4.1 ± 2.0 |
 | High coach | 535-358-1 | 59.9% | 62.4% | −2.5 ± 1.7 |
 | Mid coach | 203-262-3 | 43.7% | 51.4% | −7.8 ± 2.3 |
 | Low coach | 296-439-6 | 40.3% | 45.1% | −4.9 ± 1.8 |
@@ -1551,80 +1551,9 @@ Hidden bonus: +2 at home, −1 away.
 | Grant Fuhr | 25,107 | 63.3 | 5 | 5 |
 | Dominik Hasek | 531 | 58.6 | 3 | 2 |
 
-## 20. NY Islanders (NYI)
+## 20. San Jose (SJ)
 
-**Overall: Poor. Best for: Unclear (few games).** Strength −6.0 ± 2.7 now (20th of 22), −9.6 ± 2.2 over all years (21st).
-
-**Elo adjustment:** −53* ± 17 points (22nd of 22), from 266 of 295 games. Against an even coach on the average team, on neutral ice, that's a 42% win chance. With one fixed strength per coach instead of Elo, it's −41.
-
-Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 295 games, most recently 2026-10-31.
-
-**By level of player**
-
-| | High level | Low level | High minus low |
-| --- | --- | --- | --- |
-| By coach | −8.7 ± 2.7 | too few | too few |
-| By league strength | −9.9 ± 4.4 | −11.2 ± 4.6* | +1.4 ± 6.4 |
-| Top league against others | −10.1 ± 2.7* | −6.3 ± 4.7* | −3.9 ± 5.3 |
-
-**Record**
-
-| | Record | Win % | Expected | Against expected |
-| --- | --- | --- | --- | --- |
-| All games | 153-140-2 | 52.2% | 62.7% | −10.5 ± 2.9 |
-| Regular season | 124-121-2 | 50.6% | 62.5% | −11.9 ± 3.2 |
-| Playoffs | 29-19 | 60.4% | 63.9% | −3.5 ± 7.2 |
-| Home | 80-65-1 | 55.2% | 65.3% | −10.2 ± 4.2 |
-| Away | 73-75-1 | 49.3% | 60.2% | −10.9 ± 4.1 |
-| 2013-2019 | 27-61-1 | 30.7% | 37.4% | −6.7 ± 5.3 |
-| 2023-2026 | 126-79-1 | 61.5% | 73.6% | −12.1 ± 3.5 |
-| High coach | 118-88-1 | 57.3% | 69.4% | −12.1 ± 3.5 |
-| Mid coach | 28-36-1 | 43.8% | 55.5% | −11.8 ± 6.2 |
-| Low coach | 7-16 | 30.4% | 23.0% | +7.4 ± 10.4 |
-| Top league | 60-48-1 | 55.6% | 69.8% | −14.2 ± 4.8 |
-| Other leagues | 73-47 | 60.8% | 67.4% | −6.5 ± 4.6 |
-
-**Per game**
-
-| Stat | Value | Rank | | Stat | Value | Rank |
-| --- | --- | --- | --- | --- | --- | --- |
-| Goals for | 4.53 | 7th | | One-timer goals | 1.36 | 5th |
-| Goals against | 4.44 | 15th | | Breakaway goals | 0.20 | 19th |
-| Shots for | 11.1 | 19th | | Checks | 27.0 | 10th |
-| Shots against | 11.3 | 8th | | Penalty minutes | 2.2 | 2nd |
-| Shooting % | 40.8 | 2nd | | Faceoffs won % | 49.9 | 12th |
-| Save % | 60.6 | 22nd | | Attack zone time, seconds | 313 | 10th |
-| Power play % | 45.1 | 4th | | Pass completion % | 62.3 | 1st |
-| Penalty kill % | 61.6 | 4th | |  | |  |
-
-**Ratings**
-
-| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 64.6 (17th) | 7.5 (10th) | 3.2 (17th) | 3.4 (17th) | 3.2 (13th) | 2.8 (13th) | 2.4 (22nd) | 2.0 (25th) |
-
-Hidden bonus: none.
-
-**Leading skaters** (per team game)
-
-| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pierre Turgeon | F | 1.71 | 1.00 | 2.71 | 82 | 9 | 4 | 4 | 5 |
-| Benoit Hogue | F | 1.31 | 0.99 | 2.29 | 78 | 7 | 5 | 3 | 5 |
-| Derek King | F | 0.56 | 0.59 | 1.15 | 64 | 9 | 2 | 4 | 5 |
-| Vladimir Malakhov | D | 0.23 | 0.85 | 1.08 | 63 | 10 | 3 | 4 | 2 |
-| Uwe Krupp | D | 0.12 | 0.35 | 0.46 | 53 | 14 | 2 | 3 | 2 |
-| Steve Thomas | F | 0.16 | 0.24 | 0.40 | 72 | 6 | 4 | 3 | 3 |
-
-**Goalies**
-
-| Goalie | Shots faced | Save % | Agility | Puck Control |
-| --- | --- | --- | --- | --- |
-| Glenn Healy | 3,321 | 60.6 | 2 | 2 |
-
-## 21. San Jose (SJ)
-
-**Overall: Poor. Best for: Unclear (few games).** Strength −7.7 ± 4.5 now (21st of 22), −11.8 ± 6.3 over all years (22nd).
+**Overall: Poor. Best for: Unclear (few games).** Strength −3.8 ± 1.9 now (20th of 22), −8.3 ± 4.0 over all years (22nd).
 
 **Elo adjustment:** −24* ± 21 points (19th of 22), from 106 of 153 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −28.
 
@@ -1634,24 +1563,24 @@ Used in 4 of 63 leagues (0 of them a season's top league), by 3 coaches, 153 gam
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −14.0 ± 6.1* | too few | too few |
-| By league strength | too few | −6.9 ± 5.0* | too few |
-| Top league against others | too few | −11.3 ± 6.0 | too few |
+| By coach | −7.5 ± 4.3* | too few | too few |
+| By league strength | too few | −3.7 ± 2.6* | too few |
+| Top league against others | too few | −7.5 ± 3.8 | too few |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 96-55-2 | 63.6% | 74.5% | −10.9 ± 4.1 |
-| Regular season | 76-40-2 | 65.5% | 77.2% | −11.6 ± 4.6 |
-| Playoffs | 20-15 | 57.1% | 65.5% | −8.4 ± 8.5 |
-| Home | 54-20-2 | 73.0% | 76.8% | −3.8 ± 5.8 |
-| Away | 42-35 | 54.5% | 72.3% | −17.7 ± 5.7 |
-| 2013-2019 | 58-44-2 | 56.9% | 69.9% | −13.0 ± 5.0 |
-| 2023-2026 | 38-11 | 77.6% | 84.0% | −6.5 ± 7.1 |
-| High coach | 47-32-1 | 59.5% | 74.2% | −14.7 ± 5.6 |
-| Mid coach | 49-23-1 | 68.1% | 74.8% | −6.7 ± 5.9 |
-| Other leagues | 96-55-2 | 63.6% | 74.5% | −10.9 ± 4.1 |
+| All games | 96-55-2 | 63.6% | 73.7% | −10.1 ± 4.1 |
+| Regular season | 76-40-2 | 65.5% | 76.4% | −10.9 ± 4.6 |
+| Playoffs | 20-15 | 57.1% | 64.7% | −7.5 ± 8.5 |
+| Home | 54-20-2 | 73.0% | 76.0% | −3.0 ± 5.8 |
+| Away | 42-35 | 54.5% | 71.4% | −16.9 ± 5.7 |
+| 2013-2019 | 58-44-2 | 56.9% | 68.9% | −12.1 ± 5.0 |
+| 2023-2026 | 38-11 | 77.6% | 83.5% | −6.0 ± 7.1 |
+| High coach | 47-32-1 | 59.5% | 73.5% | −14.0 ± 5.6 |
+| Mid coach | 49-23-1 | 68.1% | 73.9% | −5.8 ± 5.9 |
+| Other leagues | 96-55-2 | 63.6% | 73.7% | −10.1 ± 4.1 |
 
 **Per game**
 
@@ -1692,9 +1621,80 @@ Hidden bonus: +1 at home, −2 away.
 | Arturs Irbe | 1,594 | 66.6 | 2 | 3 |
 | Jeff Hackett | 9 | 55.6 | 2 | 2 |
 
+## 21. NY Islanders (NYI)
+
+**Overall: Poor. Best for: Unclear (few games).** Strength −4.6 ± 1.8 now (21st of 22), −8.1 ± 1.8 over all years (21st).
+
+**Elo adjustment:** −53* ± 17 points (22nd of 22), from 266 of 295 games. Against an even coach on the average team, on neutral ice, that's a 42% win chance. With one fixed strength per coach instead of Elo, it's −41.
+
+Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 295 games, most recently 2026-10-31.
+
+**By level of player**
+
+| | High level | Low level | High minus low |
+| --- | --- | --- | --- |
+| By coach | −7.2 ± 2.0 | too few | too few |
+| By league strength | −6.8 ± 2.9 | −5.9 ± 3.0* | −0.9 ± 4.3 |
+| Top league against others | −7.0 ± 2.0* | −4.3 ± 2.9* | −2.7 ± 3.5 |
+
+**Record**
+
+| | Record | Win % | Expected | Against expected |
+| --- | --- | --- | --- | --- |
+| All games | 153-140-2 | 52.2% | 62.5% | −10.3 ± 2.9 |
+| Regular season | 124-121-2 | 50.6% | 62.3% | −11.6 ± 3.2 |
+| Playoffs | 29-19 | 60.4% | 63.6% | −3.2 ± 7.2 |
+| Home | 80-65-1 | 55.2% | 65.1% | −9.9 ± 4.2 |
+| Away | 73-75-1 | 49.3% | 59.9% | −10.6 ± 4.1 |
+| 2013-2019 | 27-61-1 | 30.7% | 37.0% | −6.3 ± 5.3 |
+| 2023-2026 | 126-79-1 | 61.5% | 73.4% | −12.0 ± 3.5 |
+| High coach | 118-88-1 | 57.3% | 69.1% | −11.8 ± 3.5 |
+| Mid coach | 28-36-1 | 43.8% | 55.4% | −11.7 ± 6.2 |
+| Low coach | 7-16 | 30.4% | 22.5% | +7.9 ± 10.4 |
+| Top league | 60-48-1 | 55.6% | 69.5% | −14.0 ± 4.8 |
+| Other leagues | 73-47 | 60.8% | 67.2% | −6.3 ± 4.6 |
+
+**Per game**
+
+| Stat | Value | Rank | | Stat | Value | Rank |
+| --- | --- | --- | --- | --- | --- | --- |
+| Goals for | 4.53 | 7th | | One-timer goals | 1.36 | 5th |
+| Goals against | 4.44 | 15th | | Breakaway goals | 0.20 | 19th |
+| Shots for | 11.1 | 19th | | Checks | 27.0 | 10th |
+| Shots against | 11.3 | 8th | | Penalty minutes | 2.2 | 2nd |
+| Shooting % | 40.8 | 2nd | | Faceoffs won % | 49.9 | 12th |
+| Save % | 60.6 | 22nd | | Attack zone time, seconds | 313 | 10th |
+| Power play % | 45.1 | 4th | | Pass completion % | 62.3 | 1st |
+| Penalty kill % | 61.6 | 4th | |  | |  |
+
+**Ratings**
+
+| Overall | Weight | Speed | Agility | Shot Power | Shot Accuracy | Checking | Goalie Agility |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 64.6 (17th) | 7.5 (10th) | 3.2 (17th) | 3.4 (17th) | 3.2 (13th) | 2.8 (13th) | 2.4 (22nd) | 2.0 (25th) |
+
+Hidden bonus: none.
+
+**Leading skaters** (per team game)
+
+| Player | Pos | Goals | Assists | Points | Overall | Weight | Speed | Shot Power | Shot Acc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pierre Turgeon | F | 1.71 | 1.00 | 2.71 | 82 | 9 | 4 | 4 | 5 |
+| Benoit Hogue | F | 1.31 | 0.99 | 2.29 | 78 | 7 | 5 | 3 | 5 |
+| Derek King | F | 0.56 | 0.59 | 1.15 | 64 | 9 | 2 | 4 | 5 |
+| Vladimir Malakhov | D | 0.23 | 0.85 | 1.08 | 63 | 10 | 3 | 4 | 2 |
+| Uwe Krupp | D | 0.12 | 0.35 | 0.46 | 53 | 14 | 2 | 3 | 2 |
+| Steve Thomas | F | 0.16 | 0.24 | 0.40 | 72 | 6 | 4 | 3 | 3 |
+
+**Goalies**
+
+| Goalie | Shots faced | Save % | Agility | Puck Control |
+| --- | --- | --- | --- | --- |
+| Glenn Healy | 3,321 | 60.6 | 2 | 2 |
+
 ## 22. Dallas (DAL)
 
-**Overall: Poor. Best for: Unclear (few games).** Strength −9.3 ± 6.2 now (22nd of 22), −5.5 ± 5.7 over all years (19th).
+**Overall: Poor. Best for: Unclear (few games).** Strength −5.8 ± 2.9 now (22nd of 22), −4.3 ± 2.9 over all years (19th).
 
 **Elo adjustment:** −35* ± 17 points (21st of 22), from 80 of 182 games. Against an even coach on the average team, on neutral ice, that's a 45% win chance. With one fixed strength per coach instead of Elo, it's −25.
 
@@ -1704,27 +1704,27 @@ Used in 5 of 63 leagues (1 of them a season's top league), by 6 coaches, 182 gam
 
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
-| By coach | −7.1 ± 6.8* | −20.5 ± 13.1* | +13.4 ± 14.8 |
-| By league strength | −4.5 ± 8.8* | too few | too few |
-| Top league against others | −5.7 ± 9.4* | −5.5 ± 6.4 | −0.2 ± 11.5 |
+| By coach | −3.1 ± 1.3* | −6.7 ± 4.6* | +3.7 ± 4.9 |
+| By league strength | −2.0 ± 1.3* | too few | too few |
+| Top league against others | −2.4 ± 1.6* | −4.0 ± 3.1 | +1.6 ± 3.5 |
 
 **Record**
 
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
-| All games | 87-94-1 | 48.1% | 54.9% | −6.9 ± 3.7 |
-| Regular season | 82-83-1 | 49.7% | 55.5% | −5.8 ± 3.9 |
-| Playoffs | 5-11 | 31.2% | 49.1% | −17.9 ± 12.5 |
-| Home | 46-42-1 | 52.3% | 58.1% | −5.9 ± 5.3 |
-| Away | 41-52 | 44.1% | 51.9% | −7.8 ± 5.2 |
-| 2013-2019 | 35-23 | 60.3% | 67.3% | −6.9 ± 6.6 |
-| 2020-2022 | 24-20 | 54.5% | 61.5% | −6.9 ± 7.5 |
-| 2023-2026 | 28-51-1 | 35.4% | 42.2% | −6.8 ± 5.6 |
-| High coach | 20-10 | 66.7% | 75.0% | −8.3 ± 9.1 |
-| Mid coach | 63-54-1 | 53.8% | 56.5% | −2.6 ± 4.6 |
-| Low coach | 4-30 | 11.8% | 31.8% | −20.0 ± 8.6 |
-| Top league | 20-10 | 66.7% | 75.0% | −8.3 ± 9.1 |
-| Other leagues | 67-84-1 | 44.4% | 50.9% | −6.6 ± 4.1 |
+| All games | 87-94-1 | 48.1% | 54.4% | −6.4 ± 3.7 |
+| Regular season | 82-83-1 | 49.7% | 55.0% | −5.3 ± 3.9 |
+| Playoffs | 5-11 | 31.2% | 48.3% | −17.0 ± 12.5 |
+| Home | 46-42-1 | 52.3% | 57.7% | −5.4 ± 5.3 |
+| Away | 41-52 | 44.1% | 51.4% | −7.3 ± 5.2 |
+| 2013-2019 | 35-23 | 60.3% | 66.4% | −6.0 ± 6.6 |
+| 2020-2022 | 24-20 | 54.5% | 61.2% | −6.7 ± 7.5 |
+| 2023-2026 | 28-51-1 | 35.4% | 41.9% | −6.4 ± 5.6 |
+| High coach | 20-10 | 66.7% | 74.6% | −7.9 ± 9.1 |
+| Mid coach | 63-54-1 | 53.8% | 55.8% | −2.0 ± 4.6 |
+| Low coach | 4-30 | 11.8% | 31.9% | −20.2 ± 8.6 |
+| Top league | 20-10 | 66.7% | 74.6% | −7.9 ± 9.1 |
+| Other leagues | 67-84-1 | 44.4% | 50.4% | −6.1 ± 4.1 |
 
 **Per game**
 

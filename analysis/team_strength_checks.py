@@ -83,9 +83,9 @@ def main():
             used[g["ht"]] += 1
             used[g["at"]] += 1
         rng = np.random.default_rng(94)
-        base = team_values(D, fit(D, np.ones(n, dtype=bool), np.ones(n), y, ridge, ridge), used, scale)
+        base = team_values(D, fit(D, np.ones(n, dtype=bool), np.ones(n), y, ridge, C.TEAM_PULL), used, scale)
         big = [t for t in sorted(D.teams) if used[t] >= 300]
-        rep0 = repeatable(D, games, y, used, scale, ridge, ridge, rng)
+        rep0 = repeatable(D, games, y, used, scale, ridge, C.TEAM_PULL, rng)
         print(f"\n{label}: {n} games; one strength per coach, halves of the leagues repeat at {rep0:+.2f}", flush=True)
         res = {"one": base, "one_repeat": rep0}
         for era_name, cuts in ERAS.items():
@@ -94,8 +94,8 @@ def main():
                 e = sum(date.fromordinal(g["day"]).year >= c for c in cuts)
                 copies.append({**g, "hp": f"{g['hp']}|{e}", "ap": f"{g['ap']}|{e}"})
             De = C.Design(copies)
-            vals = team_values(De, fit(De, np.ones(n, dtype=bool), np.ones(n), y, ridge, ridge), used, scale)
-            rep = repeatable(De, copies, y, used, scale, ridge, ridge, rng)
+            vals = team_values(De, fit(De, np.ones(n, dtype=bool), np.ones(n), y, ridge, C.TEAM_PULL), used, scale)
+            rep = repeatable(De, copies, y, used, scale, ridge, C.TEAM_PULL, rng)
             moved = sorted(((abs(vals[t] - base[t]), t) for t in big), reverse=True)[:5]
             print(f"  {era_name}: coach-era terms {len(De.people)}; team values against one strength {np.corrcoef([vals[t] for t in big], [base[t] for t in big])[0, 1]:+.3f}, typical move {np.mean([abs(vals[t] - base[t]) for t in big]):.1f} points; repeat {rep:+.2f}; largest " + ", ".join(f"{t} {base[t]:+.1f} to {vals[t]:+.1f}" for _, t in moved), flush=True)
             res[era_name] = {"values": vals, "repeat": rep}
@@ -106,7 +106,7 @@ def main():
             e = sum(date.fromordinal(g["day"]).year >= c for c in cuts)
             copies.append({**g, "hp": f"{g['hp']}|{e}", "ap": f"{g['ap']}|{e}"})
         De = C.Design(copies)
-        be = fit(De, np.ones(n, dtype=bool), np.ones(n), y, ridge, ridge)
+        be = fit(De, np.ones(n, dtype=bool), np.ones(n), y, ridge, C.TEAM_PULL)
         counts = Counter()
         for g in copies:
             counts[g["hp"]] += 1

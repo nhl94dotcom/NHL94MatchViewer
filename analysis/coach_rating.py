@@ -49,6 +49,7 @@ MIN_TEAM_GAMES, MIN_SEEN, FIRST_YEAR = 100, 30, 2020
 ELO_K = {"GENESIS": 16, "SNES": 20}
 REF_GAMES = 100                                         # "average" in the table: the mean coach with this many games or more
 CLASSIC = ("classic_spring", "classic_summer", "classic_fall")     # what makes a Classic league (lower case)
+TEAM_PULL = 50.0                                        # the pull on team terms: the team Elo adjustments' setting. Tested in team_strength_checks.py: no worse on the Genesis, a little better on the SNES
 OUTLIERS = {"SNES_3v3_Pond_Hockey_League", "SNES_3v3_Pond_Hockey_League-A", "SNES_3v3_Pond_Hockey_League-B", "Two_Teams_and_Zero_Friends_GENS_S1", "Two_Teams_and_Zero_Friends_SNES_S1"}   # not the same game: the league's Elo leaves them out too
 GROUP_STARTS = {"classic": CLASSIC, "chaos": ("chaos",), "snes_draft": ("snes_draft",)}
 PERIOD, MIN_LEAGUE_GAMES = 300, 20                      # seconds in the usual period; games a league needs before its period length is read from its goals
@@ -163,6 +164,8 @@ class Design:
             for j in range(5):
                 np.add.at(A, (cols[:, i], cols[:, j]), w * vals[:, i] * vals[:, j])
         pen = np.full(self.size, ridge)
+        for i in self.teams.values():
+            pen[i] = TEAM_PULL
         pen[self.home] = 1e-6
         A[np.diag_indices(self.size)] += pen
         return np.linalg.solve(A, b), A

@@ -1,6 +1,6 @@
 """Trial graphics of the Elo adjustments as shaded areas that show how sure each value is (2026-11-04, the user). Each team's shading is a normal curve around its value, with the spread from
 resampling whole leagues (reports/classic_team_elo.json). Two forms: fading bands, a row per team; and bell curves, all on one line, each of the same area, so an uncertain team is low and wide.
-The logos are copyrighted game art, so these go to Documents\\NHL94 Viewer\\team_graphics and never into the repository.
+The versions with logos, which are copyrighted game art, go to Documents\\NHL94 Viewer\\team_graphics and never into the repository; the plain bands go to docs/img for the team guides.
 python analysis/make_elo_bands.py"""
 import json
 import math
@@ -33,9 +33,9 @@ def logo_tag(logo, cx, cy, box_w=BOX_W, box_h=BOX_H):
     return f'<image x="{cx - w * s / 2:.1f}" y="{cy - h * s / 2:.1f}" width="{w * s:.1f}" height="{h * s:.1f}" href="{uri}" style="image-rendering:pixelated"/>'
 
 
-def write(name, svg, width, height):
-    OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / f"{name}.svg"
+def write(name, svg, width, height, folder=OUT):
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"{name}.svg"
     path.write_text("\n".join(svg), encoding="utf-8")
     edge = shutil.which("msedge") or r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
     out = path.with_suffix(".png")
@@ -50,7 +50,7 @@ def head(width, height, label, sub):
             f'<text x="{MARGIN}" y="66" font-size="16" fill="{MUTED}">{sub}</text>']
 
 
-def bands(label, data, logos):
+def bands(label, data, logos, name=None, folder=OUT):
     teams = teams_of(data)
     order = sorted(teams, key=lambda t: -teams[t]["adj"])
     top = 96
@@ -78,12 +78,13 @@ def bands(label, data, logos):
         left, right = x(v - 2.5 * se), x(v + 2.5 * se)
         s.append(f'<rect x="{left:.1f}" y="{cy - 15:.1f}" width="{right - left:.1f}" height="30" rx="4" fill="url(#g{i})"/>')
         s.append(f'<rect x="{x(v) - 1.5:.1f}" y="{cy - 19:.1f}" width="3" height="38" rx="1.5" fill="{INK}"/>')
-        s.append(logo_tag(logos[t], MARGIN + 34, cy))
+        if logos:
+            s.append(logo_tag(logos[t], MARGIN + 34, cy))
         rough = "*" if teams[t]["fit_games"] < ROUGH else ""
-        s.append(f'<text x="{MARGIN + 76}" y="{cy + 6:.1f}" font-size="17" font-weight="600" fill="{INK}">{minus(f"{t}{rough} {v:+.0f}")}</text>')
+        s.append(f'<text x="{MARGIN + (76 if logos else 0)}" y="{cy + 6:.1f}" font-size="17" font-weight="600" fill="{INK}">{minus(f"{t}{rough} {v:+.0f}")}</text>')
     s.append(f'<text x="{MARGIN}" y="{height - 16}" font-size="14" fill="{MUTED}">{NOTE}</text>')
     s.append("</svg>")
-    write(f"elo_bands_{label.lower()}", s, WIDTH, height)
+    write(name or f"elo_bands_{label.lower()}", s, WIDTH, height, folder)
 
 
 def bells(label, data, logos):
@@ -143,6 +144,7 @@ def main():
     snes = {t: ("data:image/png;base64," + base64.b64encode(snes_logos.png_bytes(w, h, pix)).decode(), w, h) for t, (w, h, pix) in snes_logos.logos(L.rom("cd85e387.smc")).items()}
     for label, logos in (("Genesis", genesis), ("SNES", snes)):
         bands(label, data[label], logos)
+        bands(label, data[label], None, f"elo_bands_{label.lower()}", ROOT / "docs" / "img")
         bells(label, data[label], logos)
 
 
