@@ -286,6 +286,39 @@ On the Genesis they clearly help, most at full size (by 0.0041 ± 0.0007). On th
 
 Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +16 on the SNES.
 
+**K and the coasting bonus** (`analysis/league_elo_k.py`). The league Elo with each setting predicting the next game, on decided games from 2020 between coaches with 30+ earlier games, with the team table in the expected score (log loss; a lower K is best on both systems):
+
+| Setting | Genesis, all games | Genesis, rating gap worth | SNES, all games | SNES, rating gap worth |
+| --- | --- | --- | --- | --- |
+| K 20, full bonus with no cap | 0.6110 | 0.72 | 0.5947 | 0.76 |
+| K 10, full bonus with no cap | 0.6028 | 0.82 | 0.5893 | 0.87 |
+| K 12, half bonus | 0.6010 | 0.88 | 0.5885 | 0.94 |
+| K 10, half bonus | 0.6007 | 0.90 | 0.5892 | 0.97 |
+| K 14, half bonus | 0.6017 | 0.85 | 0.5884 | 0.91 |
+| K 14 (Genesis) or K 20 (SNES), no bonus | 0.6009 | 0.99 | 0.5899 | 0.99 |
+
+The team table was fitted on these years with K 20, which flatters K 20 a little, so the gains are if anything understated. A half bonus beats no bonus clearly on the SNES and by very little on the Genesis.
+
+**Coaches change, and team values barely care** (`analysis/team_strength_checks.py`). The team fit uses one strength per coach over all years, though coaches with 100+ games in two straight eras typically moved about 9-10 points of win chance between them. Refitting with a separate strength for each coach in each era moves the team values very little:
+
+| Coach strength | Genesis: against one strength | Genesis: typical move | Genesis: halves of the leagues agree | SNES: against one strength | SNES: typical move | SNES: halves of the leagues agree |
+| --- | --- | --- | --- | --- | --- | --- |
+| One for all years | | | 0.73 | | | 0.35 |
+| 3 eras | 0.988 | 0.7 points | 0.72 | 0.940 | 0.7 points | 0.29 |
+| 4 eras | 0.984 | 0.8 points | 0.71 | 0.935 | 0.7 points | 0.33 |
+| 6 eras | 0.980 | 0.9 points | 0.68 | 0.812 | 1.1 points | 0.13 |
+
+Team values are as repeatable with one strength as with eras, and more repeatable than with six, where each coach has fewer games. So one strength per coach stays. The largest moves with 3 or 4 eras were New Jersey on the Genesis (-5.6 to about -8.9) and Philadelphia on the SNES (-1.1 to about -4.1). SNES team values repeat far less well than Genesis ones under any setting.
+
+**A stronger pull on the team terms alone**, predicting later games from 2020 (log loss; the rest of the fit unchanged):
+
+| Pull on teams | 2 | 5 | 10 | 25 | 50 | 100 | 200 | 400 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Genesis | 0.6640 | 0.6639 | 0.6639 | 0.6637 | 0.6637 | 0.6639 | 0.6645 | 0.6653 |
+| SNES | 0.6697 | 0.6694 | 0.6691 | 0.6683 | 0.6675 | 0.6667 | 0.6659 | 0.6655 |
+
+On the Genesis the choice hardly matters until the pull is very strong, with 25-50 best. On the SNES each step up predicts a little better all the way to 400, so team terms add little to predicting SNES games once coaches are known.
+
 **Simulated seasons with known answers.** On the real schedule and team use, with made-up coach strengths and team values:
 - **The methods recover the truth.** Team values correlate with the true ones at 0.92-0.97, whichever method is used.
 - **The 0.6 comes from the Elo itself.** Rating gaps came out worth 0.6-0.7 of face value even though simulated coaches never change, so it's mostly K 20 noise rather than something about these leagues.
@@ -485,8 +518,13 @@ python analysis/coach_rating.py groups     each league group fitted alone
 python analysis/coach_team_levels.py       Classic teams by level of player (needs the groups run first)
 python analysis/league_team_elo.py         team Elo adjustments on the league's Elo
 python analysis/classic_team_guide.py      the two team guides (needs all the runs above)
+python analysis/classic_player_guide.py    the two player guides
+python analysis/classic_draft_guide.py     the Classic draft guide (needs the team and player guides)
+python analysis/coach_guide.py             a private page per coach (needs the ratings), never in the repository
+python analysis/league_elo_k.py            K and the coasting bonus tested
+python analysis/team_strength_checks.py    coach eras and the pull on teams tested
 ```
 
 Results go to `%USERPROFILE%\NHL94_League_Data`: `coach_ratings_<system>.csv`, `coach_ratings_<system>_<group>.csv`,
-`coach_rating_test.md` and `coach_rating_groups.md`. The team study writes `reports/classic_team_levels.md`, and the guides are `docs/TEAM_GUIDE_GENESIS.md` and `docs/TEAM_GUIDE_SNES.md`.
+`coach_rating_test.md` and `coach_rating_groups.md`. The team study writes `reports/classic_team_levels.md`, and the guides are `docs/TEAM_GUIDE_GENESIS.md`, `docs/TEAM_GUIDE_SNES.md`, `docs/PLAYER_GUIDE_GENESIS.md`, `docs/PLAYER_GUIDE_SNES.md` and `docs/DRAFT_GUIDE_CLASSIC.md`. The coach pages go to `%USERPROFILE%\NHL94_League_Data\coach_guides`.
 Findings in aggregate are in `docs/LEAGUE_RESULTS.md`.
