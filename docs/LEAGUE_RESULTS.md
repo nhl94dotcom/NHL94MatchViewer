@@ -102,6 +102,9 @@ version's goals a game, games:
   Islanders and Buffalo trail in both, the middle isn't ordered. Strength goes with **heavy skaters (Weight +0.64,
   +0.75 the Elo way)** and Checking (+0.35), not with Speed or the goalie's Agility (every SNES goalie covers the same
   net, SNES_SHOOTING 5.1). Weight costs less acceleration on the SNES ("Ratings, game flow, skill and luck", below).
+  The user's point: `setplayer` copies Weight straight from the roster, with no hot / cold (the 12 ratings that do take it are maxed about 46% of the
+  time), so a roster's weight is the one edge that plays in full every game. That fits New Jersey, the heaviest roster (top 12 skaters 8.58 against a
+  mean of 7.43) but only 15th of 26 on Overall, at the top of the team table. It explains why weight shows through, not why heavy is good.
 - The leagues sometimes leave the top teams out of the draft for fun (rare), which this doesn't allow for.
 
 **Elo adjustments for the teams** (`analysis/league_team_elo.py`; the user's question: how far should a player's
