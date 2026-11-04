@@ -368,7 +368,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "- **Save %:** the share of those shots the goalie stopped.\n",
            "- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.\n",
            "\n## All teams\n",
-           (f"![{'Genesis' if tab == 'GENESIS' else 'SNES'} Classic teams by Elo adjustment, with shading for how sure each value is](img/elo_bands_{tab.lower()}.svg)\n\nEach band is darkest at the team's value and fades out to show how far it could be off. The two guides share one scale.\n")
+           (f"![{'Genesis' if tab == 'GENESIS' else 'SNES'} Classic teams by Elo adjustment, with shading for how sure each value is](img/elo_bands_{tab.lower()}.svg)\n\nEach band is darkest at the team's value and fades out to show how far it could be off. The two guides share one scale.\n"),
            "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]

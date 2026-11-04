@@ -326,7 +326,7 @@ On the Genesis the choice hardly matters until the pull is very strong, with 25-
 - **The pull shrinks values.** With teams truly spread by about 60 Elo points, a pull setting of 50 recovered about 0.7-0.9 of that spread on the Genesis schedule and about 0.8 on the SNES schedule, in a smaller test. A setting of 200 kept only about 0.55 on the SNES, which is one reason it isn't used.
 - **Noise sets a floor.** With no true difference between teams, values still typically came out 7-11 points from zero.
 - **Teams used by favorites** tended to come out a little low, but the effect was usually small (often 0.2 of an Elo point per point of gap) and varied a lot between simulations.
-- **Levels.** With teams truly the same at every level, gaps between high and low levels typically came out at about 2.5 points, and up to about 6.
+- **Levels.** With teams truly the same at every level, gaps between high and low levels typically came out at 2-3 points, and up to about 8, among teams with 300+ games.
 
 ## 10. Classic teams by level of player
 
