@@ -14,6 +14,26 @@ Every retail team in the Genesis Classic leagues (names starting `Classic_Spring
 
 - **Results show what happened, not why.** Players choose or are given teams, and rarely used teams rest on few coaches.
 
+- **± understates the uncertainty for rarely used teams.** Their values are pulled toward average, and ± is measured around the pulled value. A team with few games or few coaches is less certain than its ± suggests.
+
+**Why the numbers for a team can disagree**
+
+Two teams can have similar strengths but different Elo adjustments, or a team can have a good record and a poor strength. Usually that's not an error. Where the numbers agree, the method doesn't matter. Where they differ, the team is less certain. Use strength to judge how good a team is, and the Elo adjustment inside an Elo rating.
+
+- **Each number uses a different yardstick for the coach.** Every team value is what's left after taking out who was coaching. Strength uses one fitted strength for each coach. The Elo adjustment uses each coach's Elo at the start of that league. A different yardstick leaves a different remainder, even with the same record.
+
+- **Elo can run high or low for a while.** If a coach's Elo is well above how they then play, the team they're using looks worse than it is. If it's well below, the team looks better. A fitted strength reflects the coach's whole Classic career, so it's less affected by this.
+
+- **Favorites tend to fall short of what Elo predicts.** A rating gap in Classic games is only worth about 0.6 of its face value. A team usually used by Elo favorites can therefore look worse on the Elo adjustment than on strength, and a team usually used by underdogs can look better.
+
+- **Rarely used teams rest on a few seasons.** One or two unusual seasons, or one coach, can move their numbers a lot, and more on the Elo adjustment than on strength.
+
+- **Each number counts different results.** Strength counts how early wins were safe as well as who won. The Elo adjustment's fit counts only who won, and it leaves out games where a coach has under 30 earlier games.
+
+- **Strength now and strength over all years cover different games.** A team can look better or worse lately because of who has used it recently, or because the leagues have changed, so a gap between the two doesn't prove the team itself changed. Rosters in these leagues stay the same.
+
+- **A record alone doesn't say how good a team is.** Better coaches may have used it, or worse ones. A strong team can have a modest record if weaker coaches tend to use it, and a weak team can have a good record if stronger coaches do. That's what the Expected column is for.
+
 - **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. The overall team order is sturdier.
 
 **The "All teams" table**
