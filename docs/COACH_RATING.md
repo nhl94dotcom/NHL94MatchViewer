@@ -242,7 +242,7 @@ even coaches and no home edge. "Strength now" fades old games like the coach rat
 **Elo adjustments** (`analysis/league_team_elo.py`) say how many points to add to a coach's Elo for using a team. They're fitted on the league's own Elo: every game on the system in date order, a 1500 start,
 K 20, +7 for the home side and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus, which can go over 100% if coasting starts before the third period. Using each coach's Elo at the start of the league (30+ earlier
 games), the fit is `P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))`, so a value can be added to a rating as it stands. As the table is part of that Elo, the fit and the Elo are run in turn until they settle, which takes a few passes. Zero is the average team in use. Values
-from one fixed strength per coach are shown beside them. An asterisk marks under 300 games.
+from one fixed strength per coach are shown beside them. An asterisk marks under 300 games in the Elo fit, which leaves out games where either coach had under 30 earlier games when the league began.
 
 Rarely used teams are pulled toward the average team, as in section 5, with a pull setting of 50 on both systems. That was the best setting on the Genesis. On the SNES, settings from 50 to 400 predicted later years about equally (0.6317-0.6319), and more than 50 flattens rarely used teams without evidence. Each ± comes from resampling whole leagues around that pulled value, so it understates the uncertainty of a rarely used team.
 
@@ -298,6 +298,10 @@ Two more things show up. Rating gaps are worth about 0.6 of their face value at 
 | K 14 (Genesis) or K 20 (SNES), no bonus | 0.6009 | 0.99 | 0.5899 | 0.99 |
 
 The team table was fitted on these years with K 20, which flatters K 20 a little, so the gains are if anything understated. A half bonus beats no bonus clearly on the SNES and by very little on the Genesis.
+
+Refitting the team table at K 12 with half the bonus brings it a little closer to the fixed-strength values (typical distance 14.6 to 11.5 points on the Genesis, 12.8 to 9.4 on the SNES), and the largest moves are about 17-19 points. It doesn't settle every disagreement. Genesis Washington stays at about −18 against −48 with fixed strengths.
+
+**A team's Elo value and its fixed-strength value can differ on the same games.** On the 228 Genesis Washington games in the Elo fit, Elo gives −17 and fixed strengths −42, so the yardstick accounts for most of the gap and the left-out games for little (−48 with them). Separate coach strengths by era don't close it: they lower Washington's strength a little.
 
 **Coaches change, and team values barely care** (`analysis/team_strength_checks.py`). The team fit uses one strength per coach over all years, though coaches with 100+ games in two straight eras typically moved about 9-10 points of win chance between them. Refitting with a separate strength for each coach in each era moves the team values very little:
 

@@ -248,7 +248,11 @@ def study(name, label):
     for i in sorted(range(len(teams)), key=lambda i: -point[i]):
         t = teams[i]
         print(f"  {t:4} {point[i]:+6.0f}  {se[i]:4.0f}  {fixed[i]:+6.0f}  {before[i]:+6.0f}  {used[t]:5}")
-    return {"teams": {t: {"adj": float(point[i]), "se": float(se[i]), "fixed": float(fixed[i]), "before": float(before[i]), "games": used[t]} for i, t in enumerate(teams)},
+    in_fit = defaultdict(int)
+    for g in rows:
+        in_fit[g["ht"]] += 1
+        in_fit[g["at"]] += 1
+    return {"teams": {t: {"adj": float(point[i]), "se": float(se[i]), "fixed": float(fixed[i]), "before": float(before[i]), "games": used[t], "fit_games": in_fit[t]} for i, t in enumerate(teams)},
             "pull": pull, "pulls": {str(k): v for k, v in pulls.items()}, "extra_home": float(extra), "weight": float(weight), "games": len(rows), "test_games": len(d), "none": float(b.mean()), "with": float(a.mean()), "diff": float(d.mean()), "diff_se": float(d.std() / len(d) ** .5),
             "live_none": float(lb.mean()), "live_with": float(la.mean()), "live_diff": float(ld.mean()), "live_diff_se": float(ld.std() / len(ld) ** .5),
             "inside_none": float(base.mean()), "inside_games": len(base), "inside": inside}

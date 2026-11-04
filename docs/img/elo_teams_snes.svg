@@ -110,5 +110,5 @@
 <circle cx="598.6" cy="257.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
 <circle cx="594.0" cy="257.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
 <circle cx="575.8" cy="257.6" r="7.5" fill="#2a78d6" stroke="#2a78d6" stroke-width="2.5"/>
-<text x="34" y="499" font-size="14" fill="#52514e">Filled: 300+ Classic games. Hollow: 100-299 games, so rougher. Teams under 100 games aren't shown. Both systems use the same scale.</text>
+<text x="34" y="499" font-size="14" fill="#52514e">Filled: 300+ games in the fit. Hollow: under 300, so rougher. Teams under 100 Classic games aren't shown. Both systems use the same scale.</text>
 </svg>

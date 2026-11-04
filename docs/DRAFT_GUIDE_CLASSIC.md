@@ -58,11 +58,11 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 | Los Angeles (LA) | −4.0 | −20 | Poor | Unclear | 4.9% | 50.6% | 9 | 12 | −3 | 75 | 10 | −2 |
 | Philadelphia (PHI) | −5.0 | −22 | Poor | Both alike | 2.8% | 54.5% | 14 | 13 | +1 | 69 | 17 | +4 |
 | Quebec (QUE) | −5.1 | −43 | Poor | High-level | 4.0% | 55.4% | 15 | 14 | +1 | 72 | 11 | −3 |
-| New Jersey (NJ) | −5.5 | −89 | Poor | Both alike | 0.9% | 53.1% | 16 | 15 | +1 | 69 | 18 | +3 |
+| New Jersey (NJ) | −5.5 | −89* | Poor | Both alike | 0.9% | 53.1% | 16 | 15 | +1 | 69 | 18 | +3 |
 | NY Islanders (NYI) | −5.9 | −59* | Poor | Unclear | 0.9% | 56.6% | 21 | 16 | +5 | 66 | 21 | +5 |
 | Edmonton (EDM) | −6.1 | −64 | Poor | Low-level | 1.2% | 56.1% | 19 | 17 | +2 | 69 | 18 | +1 |
 | Pittsburgh (PIT) | −7.9 | −70 | Poor | Unclear | 2.3% | 51.2% | 12 | 18 | −6 | 78 | 5 | −13 |
-| Washington (WSH) | −8.6 | −17 | Poor | Unclear | 0.6% | 54.2% | 18 | 19 | −1 | 69 | 16 | −3 |
+| Washington (WSH) | −8.6 | −17* | Poor | Unclear | 0.6% | 54.2% | 18 | 19 | −1 | 69 | 16 | −3 |
 | Tampa Bay (TB) | −9.4 | −102* | Poor | Low-level | 0.6% | 62.2% | 22 | 20 | +2 | 56 | 22 | +2 |
 | St. Louis (STL) | −10.1 | −59 | Poor | Unclear | 2.0% | 55.3% | 17 | 21 | −4 | 72 | 13 | −8 |
 | NY Rangers (NYR) | −12.0 | −74 | Poor | Both alike | 2.6% | 53.7% | 13 | 22 | −9 | 76 | 7 | −15 |
