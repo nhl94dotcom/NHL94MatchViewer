@@ -32,6 +32,8 @@ Every retail team in the Genesis Classic leagues (names starting `Classic_Spring
 
 - **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.
 
+- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home, and the winner's gain and loser's loss raised by the coasting bonus. A * marks under 300 games, so treat it as rough. Tested on later years, using these inside the running Elo predicts better than leaving them out.
+
 - **Record:** all wins and losses with this team, plus ties when there are any.
 
 - **Win %:** wins as a share of wins and losses, without ties or any adjustment for who was coaching.
@@ -115,36 +117,38 @@ Every retail team in the Genesis Classic leagues (names starting `Classic_Spring
 
 ## All teams
 
-| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Record | Win % | Expected |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | [Chicago (CHI)](#1-chicago-chi) | Good | Both alike | — | +8.1 | +8.8 | 2,119-1,831-5 | 53.6% | 43.8% |
-| 2 | [Detroit (DET)](#2-detroit-det) | Good | Both alike | — | +6.4 | +6.7 | 2,244-1,873-7 | 54.5% | 47.2% |
-| 3 | [Buffalo (BUF)](#3-buffalo-buf) | Good | Both alike | — | +4.2 | +4.1 | 2,033-1,927-2 | 51.3% | 47.0% |
-| 4 | [Montreal (MTL)](#4-montreal-mtl) | Good | Both alike | — | +2.5 | +2.9 | 2,016-1,837-6 | 52.3% | 48.3% |
-| 5 | [Boston (BOS)](#5-boston-bos) | Average | High-level | Likely | +1.4 | +1.0 | 1,969-1,841-2 | 51.7% | 50.8% |
-| 6 | [Vancouver (VAN)](#6-vancouver-van) | Average | High-level | Leaning | −0.5 | −0.7 | 1,832-2,043-4 | 47.3% | 47.7% |
-| 7 | [Dallas (DAL)](#7-dallas-dal) | Average | Both alike | — | −0.8 | −1.2 | 1,397-1,274-4 | 52.3% | 53.7% |
-| 8 | [Winnipeg (WPG)](#8-winnipeg-wpg) | Average | Both alike | — | −1.0 | +0.1 | 1,806-1,734-1 | 51.0% | 50.9% |
-| 9 | [Hartford (HFD)](#9-hartford-hfd) | Poor | Unclear | — | −1.8 | −6.5 | 262-190 | 58.0% | 66.3% |
-| 10 | [Calgary (CGY)](#10-calgary-cgy) | Poor | Both alike | — | −1.9 | −4.8 | 1,396-1,628-1 | 46.2% | 51.4% |
-| 11 | [Toronto (TOR)](#11-toronto-tor) | Poor | Both alike | — | −2.7 | −2.6 | 693-879-2 | 44.1% | 46.6% |
-| 12 | [Los Angeles (LA)](#12-los-angeles-la) | Poor | Unclear | — | −4.0 | −2.2 | 1,138-1,241 | 47.8% | 50.6% |
-| 13 | [Philadelphia (PHI)](#13-philadelphia-phi) | Poor | Both alike | — | −5.0 | −4.9 | 507-533-5 | 48.8% | 54.5% |
-| 14 | [Quebec (QUE)](#14-quebec-que) | Poor | High-level | Leaning | −5.1 | −4.6 | 1,034-1,014-2 | 50.5% | 55.4% |
-| 15 | [New Jersey (NJ)](#15-new-jersey-nj) | Poor | Both alike | — | −5.5 | −5.6 | 144-165-1 | 46.6% | 53.1% |
-| 16 | [NY Islanders (NYI)](#16-ny-islanders-nyi) | Poor | Unclear | Few games | −5.9 | −10.7 | 95-115 | 45.2% | 56.6% |
-| 17 | [Edmonton (EDM)](#17-edmonton-edm) | Poor | Low-level | Leaning | −6.1 | −6.8 | 314-337 | 48.2% | 56.1% |
-| 18 | [Pittsburgh (PIT)](#18-pittsburgh-pit) | Poor | Unclear | — | −7.9 | −10.0 | 458-674-5 | 40.5% | 51.2% |
-| 19 | [Washington (WSH)](#19-washington-wsh) | Poor | Unclear | Few games | −8.6 | −7.4 | 160-197 | 44.8% | 54.2% |
-| 20 | [Tampa Bay (TB)](#20-tampa-bay-tb) | Poor | Low-level | Leaning, few games | −9.4 | −13.1 | 98-108 | 47.6% | 62.2% |
-| 21 | [St. Louis (STL)](#21-st-louis-stl) | Poor | Unclear | — | −10.1 | −7.5 | 471-512-1 | 47.9% | 55.3% |
-| 22 | [NY Rangers (NYR)](#22-ny-rangers-nyr) | Poor | Both alike | — | −12.0 | −10.9 | 546-761 | 41.8% | 53.7% |
+| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [Chicago (CHI)](#1-chicago-chi) | Good | Both alike | — | +8.1 | +8.8 | +88 | 2,119-1,831-5 | 53.6% | 43.8% |
+| 2 | [Detroit (DET)](#2-detroit-det) | Good | Both alike | — | +6.4 | +6.7 | +42 | 2,244-1,873-7 | 54.5% | 47.2% |
+| 3 | [Buffalo (BUF)](#3-buffalo-buf) | Good | Both alike | — | +4.2 | +4.1 | +43 | 2,033-1,927-2 | 51.3% | 47.0% |
+| 4 | [Montreal (MTL)](#4-montreal-mtl) | Good | Both alike | — | +2.5 | +2.9 | +38 | 2,016-1,837-6 | 52.3% | 48.3% |
+| 5 | [Boston (BOS)](#5-boston-bos) | Average | High-level | Likely | +1.4 | +1.0 | +10 | 1,969-1,841-2 | 51.7% | 50.8% |
+| 6 | [Vancouver (VAN)](#6-vancouver-van) | Average | High-level | Leaning | −0.5 | −0.7 | +9 | 1,832-2,043-4 | 47.3% | 47.7% |
+| 7 | [Dallas (DAL)](#7-dallas-dal) | Average | Both alike | — | −0.8 | −1.2 | −35 | 1,397-1,274-4 | 52.3% | 53.7% |
+| 8 | [Winnipeg (WPG)](#8-winnipeg-wpg) | Average | Both alike | — | −1.0 | +0.1 | −4 | 1,806-1,734-1 | 51.0% | 50.9% |
+| 9 | [Hartford (HFD)](#9-hartford-hfd) | Poor | Unclear | — | −1.8 | −6.5 | −64 | 262-190 | 58.0% | 66.3% |
+| 10 | [Calgary (CGY)](#10-calgary-cgy) | Poor | Both alike | — | −1.9 | −4.8 | −29 | 1,396-1,628-1 | 46.2% | 51.4% |
+| 11 | [Toronto (TOR)](#11-toronto-tor) | Poor | Both alike | — | −2.7 | −2.6 | −41 | 693-879-2 | 44.1% | 46.6% |
+| 12 | [Los Angeles (LA)](#12-los-angeles-la) | Poor | Unclear | — | −4.0 | −2.2 | −26 | 1,138-1,241 | 47.8% | 50.6% |
+| 13 | [Philadelphia (PHI)](#13-philadelphia-phi) | Poor | Both alike | — | −5.0 | −4.9 | −21 | 507-533-5 | 48.8% | 54.5% |
+| 14 | [Quebec (QUE)](#14-quebec-que) | Poor | High-level | Leaning | −5.1 | −4.6 | −44 | 1,034-1,014-2 | 50.5% | 55.4% |
+| 15 | [New Jersey (NJ)](#15-new-jersey-nj) | Poor | Both alike | — | −5.5 | −5.6 | −138 | 144-165-1 | 46.6% | 53.1% |
+| 16 | [NY Islanders (NYI)](#16-ny-islanders-nyi) | Poor | Unclear | Few games | −5.9 | −10.7 | −127* | 95-115 | 45.2% | 56.6% |
+| 17 | [Edmonton (EDM)](#17-edmonton-edm) | Poor | Low-level | Leaning | −6.1 | −6.8 | −78 | 314-337 | 48.2% | 56.1% |
+| 18 | [Pittsburgh (PIT)](#18-pittsburgh-pit) | Poor | Unclear | — | −7.9 | −10.0 | −96 | 458-674-5 | 40.5% | 51.2% |
+| 19 | [Washington (WSH)](#19-washington-wsh) | Poor | Unclear | Few games | −8.6 | −7.4 | −7 | 160-197 | 44.8% | 54.2% |
+| 20 | [Tampa Bay (TB)](#20-tampa-bay-tb) | Poor | Low-level | Leaning, few games | −9.4 | −13.1 | −219* | 98-108 | 47.6% | 62.2% |
+| 21 | [St. Louis (STL)](#21-st-louis-stl) | Poor | Unclear | — | −10.1 | −7.5 | −65 | 471-512-1 | 47.9% | 55.3% |
+| 22 | [NY Rangers (NYR)](#22-ny-rangers-nyr) | Poor | Both alike | — | −12.0 | −10.9 | −82 | 546-761 | 41.8% | 53.7% |
 
 Too few games for a full entry: Anaheim (ANH) 1-19.
 
 ## 1. Chicago (CHI)
 
 **Overall: Good. Best for: Both alike.** Strength +8.1 ± 1.2 now (1st of 22), +8.8 ± 1.0 over all years (1st).
+
+**Elo adjustment:** +88 ± 12 points (1st of 22). Against an even coach on the average team, on neutral ice, that's a 62% win chance. With one fixed strength per coach instead of Elo, it's +76.
 
 Used in 91 of 97 leagues (24 of them a season's top league), by 71 coaches, 3,955 games, most recently 2026-11-03.
 
@@ -217,6 +221,8 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Good. Best for: Both alike.** Strength +6.4 ± 1.5 now (2nd of 22), +6.7 ± 1.1 over all years (2nd).
 
+**Elo adjustment:** +42 ± 11 points (3rd of 22). Against an even coach on the average team, on neutral ice, that's a 56% win chance. With one fixed strength per coach instead of Elo, it's +56.
+
 Used in 93 of 97 leagues (25 of them a season's top league), by 75 coaches, 4,124 games, most recently 2026-11-03.
 
 **By level of player**
@@ -287,6 +293,8 @@ Hidden bonus: +0 at home, −0 away.
 ## 3. Buffalo (BUF)
 
 **Overall: Good. Best for: Both alike.** Strength +4.2 ± 1.1 now (3rd of 22), +4.1 ± 0.9 over all years (3rd).
+
+**Elo adjustment:** +43 ± 11 points (2nd of 22). Against an even coach on the average team, on neutral ice, that's a 56% win chance. With one fixed strength per coach instead of Elo, it's +32.
 
 Used in 92 of 97 leagues (25 of them a season's top league), by 69 coaches, 3,962 games, most recently 2026-11-03.
 
@@ -359,6 +367,8 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Good. Best for: Both alike.** Strength +2.5 ± 1.2 now (4th of 22), +2.9 ± 0.9 over all years (4th).
 
+**Elo adjustment:** +38 ± 12 points (4th of 22). Against an even coach on the average team, on neutral ice, that's a 55% win chance. With one fixed strength per coach instead of Elo, it's +31.
+
 Used in 87 of 97 leagues (22 of them a season's top league), by 69 coaches, 3,859 games, most recently 2026-11-03.
 
 **By level of player**
@@ -429,6 +439,8 @@ Hidden bonus: +2 at home, −1 away.
 ## 5. Boston (BOS)
 
 **Overall: Average. Best for: High-level (likely).** Strength +1.4 ± 1.9 now (5th of 22), +1.0 ± 1.2 over all years (5th).
+
+**Elo adjustment:** +10 ± 14 points (5th of 22). Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +7.
 
 Used in 88 of 97 leagues (23 of them a season's top league), by 66 coaches, 3,812 games, most recently 2026-11-03.
 
@@ -501,6 +513,8 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Average. Best for: High-level (leaning).** Strength −0.5 ± 1.3 now (6th of 22), −0.7 ± 1.2 over all years (7th).
 
+**Elo adjustment:** +9 ± 11 points (6th of 22). Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's −3.
+
 Used in 89 of 97 leagues (23 of them a season's top league), by 69 coaches, 3,879 games, most recently 2026-11-03.
 
 **By level of player**
@@ -571,6 +585,8 @@ Hidden bonus: +1 at home, −1 away.
 ## 7. Dallas (DAL)
 
 **Overall: Average. Best for: Both alike.** Strength −0.8 ± 1.6 now (7th of 22), −1.2 ± 1.3 over all years (8th).
+
+**Elo adjustment:** −35 ± 13 points (12th of 22). Against an even coach on the average team, on neutral ice, that's a 45% win chance. With one fixed strength per coach instead of Elo, it's −9.
 
 Used in 61 of 97 leagues (19 of them a season's top league), by 46 coaches, 2,675 games, most recently 2026-11-01.
 
@@ -643,6 +659,8 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Average. Best for: Both alike.** Strength −1.0 ± 1.4 now (8th of 22), +0.1 ± 0.9 over all years (6th).
 
+**Elo adjustment:** −4 ± 12 points (7th of 22). Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +2.
+
 Used in 83 of 97 leagues (25 of them a season's top league), by 60 coaches, 3,541 games, most recently 2026-11-03.
 
 **By level of player**
@@ -714,6 +732,8 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Poor. Best for: Unclear.** Strength −1.8 ± 6.2 now (9th of 22), −6.5 ± 4.8 over all years (15th).
 
+**Elo adjustment:** −64 ± 25 points (15th of 22). Against an even coach on the average team, on neutral ice, that's a 41% win chance. With one fixed strength per coach instead of Elo, it's −59.
+
 Used in 10 of 97 leagues (4 of them a season's top league), by 9 coaches, 452 games, most recently 2026-05-22.
 
 **By level of player**
@@ -783,6 +803,8 @@ Hidden bonus: +0 at home, −0 away.
 ## 10. Calgary (CGY)
 
 **Overall: Poor. Best for: Both alike.** Strength −1.9 ± 1.6 now (10th of 22), −4.8 ± 1.3 over all years (12th).
+
+**Elo adjustment:** −29 ± 13 points (11th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −41.
 
 Used in 76 of 97 leagues (22 of them a season's top league), by 65 coaches, 3,025 games, most recently 2026-11-03.
 
@@ -855,6 +877,8 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Poor. Best for: Both alike.** Strength −2.7 ± 2.4 now (11th of 22), −2.6 ± 1.5 over all years (10th).
 
+**Elo adjustment:** −41 ± 23 points (13th of 22). Against an even coach on the average team, on neutral ice, that's a 44% win chance. With one fixed strength per coach instead of Elo, it's −24.
+
 Used in 38 of 97 leagues (12 of them a season's top league), by 35 coaches, 1,574 games, most recently 2026-11-01.
 
 **By level of player**
@@ -925,6 +949,8 @@ Hidden bonus: +1 at home, −1 away.
 ## 12. Los Angeles (LA)
 
 **Overall: Poor. Best for: Unclear.** Strength −4.0 ± 1.5 now (12th of 22), −2.2 ± 1.4 over all years (9th).
+
+**Elo adjustment:** −26 ± 20 points (10th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −21.
 
 Used in 57 of 97 leagues (22 of them a season's top league), by 51 coaches, 2,379 games, most recently 2026-11-03.
 
@@ -997,6 +1023,8 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Poor. Best for: Both alike.** Strength −5.0 ± 1.9 now (13th of 22), −4.9 ± 1.8 over all years (13th).
 
+**Elo adjustment:** −21 ± 25 points (9th of 22). Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −40.
+
 Used in 25 of 97 leagues (9 of them a season's top league), by 25 coaches, 1,045 games, most recently 2026-11-03.
 
 **By level of player**
@@ -1067,6 +1095,8 @@ Hidden bonus: +2 at home, −2 away.
 ## 14. Quebec (QUE)
 
 **Overall: Poor. Best for: High-level (leaning).** Strength −5.1 ± 2.4 now (14th of 22), −4.6 ± 1.5 over all years (11th).
+
+**Elo adjustment:** −44 ± 16 points (14th of 22). Against an even coach on the average team, on neutral ice, that's a 44% win chance. With one fixed strength per coach instead of Elo, it's −36.
 
 Used in 48 of 97 leagues (10 of them a season's top league), by 41 coaches, 2,050 games, most recently 2026-11-01.
 
@@ -1139,6 +1169,8 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Poor. Best for: Both alike.** Strength −5.5 ± 4.7 now (15th of 22), −5.6 ± 2.5 over all years (14th).
 
+**Elo adjustment:** −138 ± 59 points (21st of 22). Against an even coach on the average team, on neutral ice, that's a 31% win chance. With one fixed strength per coach instead of Elo, it's −52.
+
 Used in 7 of 97 leagues (3 of them a season's top league), by 6 coaches, 310 games, most recently 2026-11-01.
 
 **By level of player**
@@ -1210,6 +1242,8 @@ Hidden bonus: +1 at home, −2 away.
 
 **Overall: Poor. Best for: Unclear (few games).** Strength −5.9 ± 3.0 now (16th of 22), −10.7 ± 5.7 over all years (20th).
 
+**Elo adjustment:** −127* ± 16 points (20th of 22). Against an even coach on the average team, on neutral ice, that's a 32% win chance. With one fixed strength per coach instead of Elo, it's −92.
+
 Used in 5 of 97 leagues (2 of them a season's top league), by 6 coaches, 210 games, most recently 2026-05-09.
 
 **By level of player**
@@ -1279,6 +1313,8 @@ Hidden bonus: +0 at home, −0 away.
 ## 17. Edmonton (EDM)
 
 **Overall: Poor. Best for: Low-level (leaning).** Strength −6.1 ± 4.4 now (17th of 22), −6.8 ± 2.8 over all years (16th).
+
+**Elo adjustment:** −78 ± 36 points (17th of 22). Against an even coach on the average team, on neutral ice, that's a 39% win chance. With one fixed strength per coach instead of Elo, it's −65.
 
 Used in 16 of 97 leagues (6 of them a season's top league), by 18 coaches, 651 games, most recently 2026-05-16.
 
@@ -1351,6 +1387,8 @@ Hidden bonus: +1 at home, −2 away.
 
 **Overall: Poor. Best for: Unclear.** Strength −7.9 ± 4.0 now (18th of 22), −10.0 ± 2.6 over all years (19th).
 
+**Elo adjustment:** −96 ± 21 points (19th of 22). Against an even coach on the average team, on neutral ice, that's a 37% win chance. With one fixed strength per coach instead of Elo, it's −95.
+
 Used in 28 of 97 leagues (4 of them a season's top league), by 31 coaches, 1,137 games, most recently 2026-10-31.
 
 **By level of player**
@@ -1421,6 +1459,8 @@ Hidden bonus: +2 at home, −1 away.
 ## 19. Washington (WSH)
 
 **Overall: Poor. Best for: Unclear (few games).** Strength −8.6 ± 5.0 now (19th of 22), −7.4 ± 3.4 over all years (17th).
+
+**Elo adjustment:** −7 ± 57 points (8th of 22). Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's −80.
 
 Used in 8 of 97 leagues (2 of them a season's top league), by 9 coaches, 357 games, most recently 2025-05-23.
 
@@ -1493,6 +1533,8 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Poor. Best for: Low-level (leaning, few games).** Strength −9.4 ± 4.7 now (20th of 22), −13.1 ± 4.3 over all years (22nd).
 
+**Elo adjustment:** −219* ± 81 points (22nd of 22). Against an even coach on the average team, on neutral ice, that's a 22% win chance. With one fixed strength per coach instead of Elo, it's −106.
+
 Used in 5 of 97 leagues (1 of them a season's top league), by 5 coaches, 206 games, most recently 2025-05-18.
 
 **By level of player**
@@ -1562,6 +1604,8 @@ Hidden bonus: +0 at home, −0 away.
 ## 21. St. Louis (STL)
 
 **Overall: Poor. Best for: Unclear.** Strength −10.1 ± 4.1 now (21st of 22), −7.5 ± 2.0 over all years (18th).
+
+**Elo adjustment:** −65 ± 31 points (16th of 22). Against an even coach on the average team, on neutral ice, that's a 41% win chance. With one fixed strength per coach instead of Elo, it's −58.
 
 Used in 23 of 97 leagues (7 of them a season's top league), by 19 coaches, 984 games, most recently 2026-11-03.
 
@@ -1633,6 +1677,8 @@ Hidden bonus: +2 at home, −1 away.
 ## 22. NY Rangers (NYR)
 
 **Overall: Poor. Best for: Both alike.** Strength −12.0 ± 3.3 now (22nd of 22), −10.9 ± 2.5 over all years (21st).
+
+**Elo adjustment:** −82 ± 21 points (18th of 22). Against an even coach on the average team, on neutral ice, that's a 38% win chance. With one fixed strength per coach instead of Elo, it's −95.
 
 Used in 32 of 97 leagues (14 of them a season's top league), by 32 coaches, 1,307 games, most recently 2026-11-02.
 
