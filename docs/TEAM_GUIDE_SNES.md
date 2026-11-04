@@ -52,7 +52,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.
 
-- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games, so treat it as rough. Tested on later years, using these inside the running Elo predicts about the same as leaving them out, so they describe past results more than they improve ratings.
+- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games in that fit, so treat it as rough. Tested on later years, using these inside the running Elo predicts about the same as leaving them out, so they describe past results more than they improve ratings.
 
 - **Record:** all wins and losses with this team, plus ties when there are any.
 
@@ -172,7 +172,7 @@ Too few games for a full entry: Florida (FLA) 47-26-1; Tampa Bay (TB) 28-35-2; A
 
 **Overall: Good. Best for: Low-level (weak).** Strength +5.9 ± 2.9 now (1st of 22), +4.5 ± 2.3 over all years (1st).
 
-**Elo adjustment:** +33 ± 16 points (2nd of 22). Against an even coach on the average team, on neutral ice, that's a 55% win chance. With one fixed strength per coach instead of Elo, it's +31.
+**Elo adjustment:** +33 ± 16 points (2nd of 22), from 597 of 734 games. Against an even coach on the average team, on neutral ice, that's a 55% win chance. With one fixed strength per coach instead of Elo, it's +31.
 
 Used in 16 of 63 leagues (5 of them a season's top league), by 13 coaches, 734 games, most recently 2026-10-28.
 
@@ -245,7 +245,7 @@ Hidden bonus: +1 at home, −2 away.
 
 **Overall: Good. Best for: Both alike.** Strength +4.0 ± 1.5 now (2nd of 22), +4.3 ± 1.2 over all years (2nd).
 
-**Elo adjustment:** +48 ± 13 points (1st of 22). Against an even coach on the average team, on neutral ice, that's a 57% win chance. With one fixed strength per coach instead of Elo, it's +35.
+**Elo adjustment:** +48 ± 13 points (1st of 22), from 1,773 of 2,522 games. Against an even coach on the average team, on neutral ice, that's a 57% win chance. With one fixed strength per coach instead of Elo, it's +35.
 
 Used in 60 of 63 leagues (19 of them a season's top league), by 51 coaches, 2,522 games, most recently 2026-11-03.
 
@@ -318,7 +318,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Good. Best for: Both alike.** Strength +2.7 ± 1.3 now (3rd of 22), +2.5 ± 1.3 over all years (3rd).
 
-**Elo adjustment:** +6 ± 14 points (7th of 22). Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +23.
+**Elo adjustment:** +6 ± 14 points (7th of 22), from 2,018 of 2,533 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +23.
 
 Used in 56 of 63 leagues (18 of them a season's top league), by 37 coaches, 2,533 games, most recently 2026-11-03.
 
@@ -390,7 +390,7 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Average. Best for: Both alike.** Strength +0.9 ± 1.4 now (4th of 22), +0.3 ± 1.3 over all years (8th).
 
-**Elo adjustment:** −24 ± 17 points (14th of 22). Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −1.
+**Elo adjustment:** −24 ± 17 points (14th of 22), from 1,684 of 2,105 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −1.
 
 Used in 47 of 63 leagues (16 of them a season's top league), by 29 coaches, 2,105 games, most recently 2026-11-01.
 
@@ -463,7 +463,7 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Average. Best for: Both alike.** Strength +0.5 ± 1.4 now (5th of 22), +1.1 ± 1.2 over all years (6th).
 
-**Elo adjustment:** +13 ± 13 points (4th of 22). Against an even coach on the average team, on neutral ice, that's a 52% win chance. With one fixed strength per coach instead of Elo, it's +3.
+**Elo adjustment:** +13 ± 13 points (4th of 22), from 1,707 of 2,433 games. Against an even coach on the average team, on neutral ice, that's a 52% win chance. With one fixed strength per coach instead of Elo, it's +3.
 
 Used in 58 of 63 leagues (18 of them a season's top league), by 52 coaches, 2,433 games, most recently 2026-10-28.
 
@@ -536,7 +536,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.2 now (6th of 22), +1.4 ± 1.2 over all years (5th).
 
-**Elo adjustment:** −4 ± 13 points (10th of 22). Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +5.
+**Elo adjustment:** −4 ± 13 points (10th of 22), from 1,776 of 2,239 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +5.
 
 Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,239 games, most recently 2026-11-01.
 
@@ -609,7 +609,7 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.9 now (7th of 22), −0.2 ± 1.5 over all years (11th).
 
-**Elo adjustment:** +6 ± 13 points (8th of 22). Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's −8.
+**Elo adjustment:** +6 ± 13 points (8th of 22), from 1,477 of 1,976 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's −8.
 
 Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,976 games, most recently 2026-11-03.
 
@@ -682,7 +682,7 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Average. Best for: Low-level (likely).** Strength +0.3 ± 1.7 now (8th of 22), +0.3 ± 1.5 over all years (9th).
 
-**Elo adjustment:** −28 ± 16 points (19th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's +4.
+**Elo adjustment:** −28 ± 16 points (19th of 22), from 990 of 1,128 games. Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's +4.
 
 Used in 26 of 63 leagues (12 of them a season's top league), by 22 coaches, 1,128 games, most recently 2026-10-15.
 
@@ -755,7 +755,7 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Average. Best for: Low-level (leaning).** Strength −0.3 ± 1.9 now (9th of 22), +0.5 ± 1.4 over all years (7th).
 
-**Elo adjustment:** +17 ± 22 points (3rd of 22). Against an even coach on the average team, on neutral ice, that's a 52% win chance. With one fixed strength per coach instead of Elo, it's +2.
+**Elo adjustment:** +17 ± 22 points (3rd of 22), from 1,162 of 1,700 games. Against an even coach on the average team, on neutral ice, that's a 52% win chance. With one fixed strength per coach instead of Elo, it's +2.
 
 Used in 41 of 63 leagues (14 of them a season's top league), by 36 coaches, 1,700 games, most recently 2026-11-03.
 
@@ -828,7 +828,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Average. Best for: Unclear.** Strength −0.6 ± 3.6 now (10th of 22), −1.4 ± 2.8 over all years (13th).
 
-**Elo adjustment:** −17 ± 16 points (12th of 22). Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −13.
+**Elo adjustment:** −17 ± 16 points (12th of 22), from 380 of 771 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −13.
 
 Used in 19 of 63 leagues (7 of them a season's top league), by 19 coaches, 771 games, most recently 2026-11-02.
 
@@ -901,7 +901,7 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Average. Best for: High-level (likely).** Strength −0.8 ± 1.8 now (11th of 22), +1.5 ± 1.6 over all years (4th).
 
-**Elo adjustment:** +8 ± 15 points (5th of 22). Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +14.
+**Elo adjustment:** +8 ± 15 points (5th of 22), from 1,681 of 2,513 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's +14.
 
 Used in 61 of 63 leagues (19 of them a season's top league), by 48 coaches, 2,513 games, most recently 2026-11-03.
 
@@ -974,7 +974,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Average. Best for: Unclear.** Strength −0.9 ± 3.2 now (12th of 22), +0.0 ± 2.6 over all years (10th).
 
-**Elo adjustment:** −7 ± 21 points (11th of 22). Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +1.
+**Elo adjustment:** −7 ± 21 points (11th of 22), from 453 of 553 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +1.
 
 Used in 13 of 63 leagues (3 of them a season's top league), by 13 coaches, 553 games, most recently 2026-05-22.
 
@@ -1046,7 +1046,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Average. Best for: Low-level (leaning, few games).** Strength −0.9 ± 3.3 now (13th of 22), −2.0 ± 2.6 over all years (15th).
 
-**Elo adjustment:** −23 ± 21 points (13th of 22). Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −19.
+**Elo adjustment:** −23 ± 21 points (13th of 22), from 416 of 497 games. Against an even coach on the average team, on neutral ice, that's a 47% win chance. With one fixed strength per coach instead of Elo, it's −19.
 
 Used in 11 of 63 leagues (9 of them a season's top league), by 7 coaches, 497 games, most recently 2026-11-01.
 
@@ -1118,7 +1118,7 @@ Hidden bonus: +1 at home, −2 away.
 
 **Overall: Average. Best for: Both alike.** Strength −1.3 ± 1.8 now (14th of 22), −3.6 ± 1.6 over all years (17th).
 
-**Elo adjustment:** −25 ± 14 points (16th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −30.
+**Elo adjustment:** −25 ± 14 points (16th of 22), from 864 of 1,279 games. Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −30.
 
 Used in 30 of 63 leagues (12 of them a season's top league), by 24 coaches, 1,279 games, most recently 2026-11-03.
 
@@ -1191,7 +1191,7 @@ Hidden bonus: +1 at home, −1 away.
 
 **Overall: Average. Best for: Both alike.** Strength −1.5 ± 1.8 now (15th of 22), −1.5 ± 1.6 over all years (14th).
 
-**Elo adjustment:** +7 ± 13 points (6th of 22). Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's −8.
+**Elo adjustment:** +7 ± 13 points (6th of 22), from 1,695 of 2,327 games. Against an even coach on the average team, on neutral ice, that's a 51% win chance. With one fixed strength per coach instead of Elo, it's −8.
 
 Used in 59 of 63 leagues (18 of them a season's top league), by 45 coaches, 2,327 games, most recently 2026-11-03.
 
@@ -1264,7 +1264,7 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Poor. Best for: Low-level (leaning).** Strength −2.5 ± 2.8 now (16th of 22), −1.1 ± 2.5 over all years (12th).
 
-**Elo adjustment:** +1 ± 25 points (9th of 22). Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's −19.
+**Elo adjustment:** +1 ± 25 points (9th of 22), from 462 of 643 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's −19.
 
 Used in 15 of 63 leagues (6 of them a season's top league), by 14 coaches, 643 games, most recently 2025-11-20.
 
@@ -1337,7 +1337,7 @@ Hidden bonus: +2 at home, −2 away.
 
 **Overall: Poor. Best for: High-level (likely).** Strength −3.2 ± 3.0 now (17th of 22), −6.3 ± 2.4 over all years (20th).
 
-**Elo adjustment:** −26 ± 22 points (17th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −43.
+**Elo adjustment:** −26 ± 22 points (17th of 22), from 525 of 895 games. Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −43.
 
 Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 895 games, most recently 2026-11-03.
 
@@ -1410,7 +1410,7 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Poor. Best for: Both alike (few games).** Strength −3.5 ± 3.4 now (18th of 22), −2.7 ± 2.9 over all years (16th).
 
-**Elo adjustment:** −26* ± 9 points (18th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −15.
+**Elo adjustment:** −26* ± 9 points (18th of 22), from 210 of 228 games. Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −15.
 
 Used in 5 of 63 leagues (3 of them a season's top league), by 5 coaches, 228 games, most recently 2025-06-04.
 
@@ -1482,7 +1482,7 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Poor. Best for: Both alike.** Strength −3.6 ± 1.8 now (19th of 22), −4.1 ± 1.5 over all years (18th).
 
-**Elo adjustment:** −24 ± 13 points (15th of 22). Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −28.
+**Elo adjustment:** −24 ± 13 points (15th of 22), from 1,515 of 2,103 games. Against an even coach on the average team, on neutral ice, that's a 46% win chance. With one fixed strength per coach instead of Elo, it's −28.
 
 Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,103 games, most recently 2026-11-01.
 
@@ -1555,7 +1555,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Poor. Best for: Unclear (few games).** Strength −6.0 ± 2.7 now (20th of 22), −9.6 ± 2.2 over all years (21st).
 
-**Elo adjustment:** −71* ± 22 points (22nd of 22). Against an even coach on the average team, on neutral ice, that's a 40% win chance. With one fixed strength per coach instead of Elo, it's −41.
+**Elo adjustment:** −71* ± 22 points (22nd of 22), from 266 of 295 games. Against an even coach on the average team, on neutral ice, that's a 40% win chance. With one fixed strength per coach instead of Elo, it's −41.
 
 Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 295 games, most recently 2026-10-31.
 
@@ -1626,7 +1626,7 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Poor. Best for: Unclear (few games).** Strength −7.7 ± 4.5 now (21st of 22), −11.8 ± 6.3 over all years (22nd).
 
-**Elo adjustment:** −35* ± 25 points (20th of 22). Against an even coach on the average team, on neutral ice, that's a 45% win chance. With one fixed strength per coach instead of Elo, it's −28.
+**Elo adjustment:** −35* ± 25 points (20th of 22), from 106 of 153 games. Against an even coach on the average team, on neutral ice, that's a 45% win chance. With one fixed strength per coach instead of Elo, it's −28.
 
 Used in 4 of 63 leagues (0 of them a season's top league), by 3 coaches, 153 games, most recently 2026-05-26.
 
@@ -1696,7 +1696,7 @@ Hidden bonus: +1 at home, −2 away.
 
 **Overall: Poor. Best for: Unclear (few games).** Strength −9.3 ± 6.2 now (22nd of 22), −5.5 ± 5.7 over all years (19th).
 
-**Elo adjustment:** −40* ± 18 points (21st of 22). Against an even coach on the average team, on neutral ice, that's a 44% win chance. With one fixed strength per coach instead of Elo, it's −25.
+**Elo adjustment:** −40* ± 18 points (21st of 22), from 80 of 182 games. Against an even coach on the average team, on neutral ice, that's a 44% win chance. With one fixed strength per coach instead of Elo, it's −25.
 
 Used in 5 of 63 leagues (1 of them a season's top league), by 6 coaches, 182 games, most recently 2026-11-01.
 

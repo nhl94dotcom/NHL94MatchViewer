@@ -48,7 +48,7 @@ def anchor(rank, city_name, abbr):
 
 
 def elo_text(e):
-    return sign(e["adj"], 0) + ("*" if e["games"] < MIN_ELO else "")
+    return sign(e["adj"], 0) + ("*" if e["fit_games"] < MIN_ELO else "")
 
 
 def overall(value):
@@ -322,7 +322,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "the gap is at least 3 points each way, and the team is good for only that level. \"Few games\" means at least two values rest on under 150 appearances. A dash means no call to rate.\n",
            f"- **Strength now:** how much the team adds, in points, with recent games counting more. A game's weight halves every {hl:g} years, so a game from 3 years ago counts {'a quarter' if hl == 1.5 else 'half' if hl == 3 else f'{0.5 ** (3 / hl):.2f} times'} as much as one played today. It's the better guide to how a team has done lately.\n",
            "- **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.\n",
-           "- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games, so treat it as rough. "
+           "- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games in that fit, so treat it as rough. "
            + ("Tested on later years, using these inside the running Elo predicts clearly better than leaving them out.\n" if tab == "GENESIS" else
               "Tested on later years, using these inside the running Elo predicts about the same as leaving them out, so they describe past results more than they improve ratings.\n"),
            "- **Record:** all wins and losses with this team, plus ties when there are any.\n",
@@ -384,7 +384,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
         best, sure = best_for(lv)
         out.append(f"**Overall: {overall(now_v[t][0])}. Best for: {best}" + ("" if sure == "—" else f" ({sure.lower()})") + f".** Strength {sign(now_v[t][0])} ± {now_v[t][1]:.1f} now ({nth(rank_now.index(t) + 1)} of {len(full)}), {sign(all_v[t][0])} ± {all_v[t][1]:.1f} over all years ({nth(rank_all.index(t) + 1)}).\n")
         e = elo[t]
-        out.append(f"**Elo adjustment:** {elo_text(e)} ± {e['se']:.0f} points ({nth(rank_elo.index(t) + 1)} of {len(full)}). Against an even coach on the average team, on neutral ice, that's a {100 / (1 + 10 ** (-e['adj'] / 400)):.0f}% win chance. With one fixed strength per coach instead of Elo, it's {sign(e['fixed'], 0)}.\n")
+        out.append(f"**Elo adjustment:** {elo_text(e)} ± {e['se']:.0f} points ({nth(rank_elo.index(t) + 1)} of {len(full)}), from {e['fit_games']:,} of {e['games']:,} games. Against an even coach on the average team, on neutral ice, that's a {100 / (1 + 10 ** (-e['adj'] / 400)):.0f}% win chance. With one fixed strength per coach instead of Elo, it's {sign(e['fixed'], 0)}.\n")
         out.append(f"Used in {len(u['leagues'])} of {len(total_leagues)} leagues ({len(u['top'])} of them a season's top league), by {len(u['coaches'])} coaches, {int(s['sides']):,} games, most recently {C.date.fromordinal(u['last']).isoformat()}.\n")
         out.append("**By level of player**\n\n| | High level | Low level | High minus low |\n| --- | --- | --- | --- |")
         for lab, key in (("By coach", "coach"), ("By league strength", "strength"), ("Top league against others", "name")):

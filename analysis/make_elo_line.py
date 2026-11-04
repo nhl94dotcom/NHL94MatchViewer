@@ -59,15 +59,15 @@ def draw(label, data, name, low=LOW, high=HIGH, step=25, foot="Both systems use 
         s.append(f'<line x1="{x(v):.1f}" x2="{x(v):.1f}" y1="{mid:.1f}" y2="{ly:.1f}" stroke="{MUTED}" stroke-width="1"/>')
     for t, v in values.items():
         ly = mid - levels[t] * ROW
-        rough = teams[t]["games"] < ROUGH
+        rough = teams[t]["fit_games"] < ROUGH
         text = minus(f"{t} {v:+.0f}")
         w = 9.4 * len(text) + 8
         s.append(f'<rect x="{x(v) - w / 2:.1f}" y="{ly - 13:.1f}" width="{w:.1f}" height="26" rx="4" fill="{SURFACE}"/>')
         s.append(f'<text x="{x(v):.1f}" y="{ly + 6:.1f}" font-size="16.5" text-anchor="middle" fill="{INK}" font-weight="{400 if rough else 600}">{text}</text>')
     for t, v in values.items():
-        rough = teams[t]["games"] < ROUGH
+        rough = teams[t]["fit_games"] < ROUGH
         s.append(f'<circle cx="{x(v):.1f}" cy="{mid:.1f}" r="7.5" fill="{SURFACE if rough else MARK}" stroke="{MARK}" stroke-width="2.5"/>')
-    s.append(f'<text x="{MARGIN}" y="{height - 16}" font-size="14" fill="{MUTED}">Filled: 300+ Classic games. Hollow: 100-299 games, so rougher. Teams under 100 games aren\'t shown. {foot}</text>')
+    s.append(f'<text x="{MARGIN}" y="{height - 16}" font-size="14" fill="{MUTED}">Filled: 300+ games in the fit. Hollow: under 300, so rougher. Teams under 100 Classic games aren\'t shown. {foot}</text>')
     s.append("</svg>")
     path = ROOT / "docs" / "img" / f"{name}.svg"
     path.write_text("\n".join(s), encoding="utf-8")

@@ -69,12 +69,12 @@ def draw(label, data, logos, name, low, high, step, foot, scale=SCALE):
         s.append(f'<rect x="{x(v) - CELL / 2 + 2:.1f}" y="{cy - 42:.1f}" width="{CELL - 4}" height="84" rx="5" fill="{SURFACE}"/>')
         uri, w, h = logos[t]
         s.append(f'<image x="{x(v) - w * scale / 2:.1f}" y="{cy - 12 - h * scale / 2:.1f}" width="{w * scale}" height="{h * scale}" href="{uri}" style="image-rendering:pixelated"/>')
-        rough = teams[t]["games"] < ROUGH
+        rough = teams[t]["fit_games"] < ROUGH
         s.append(f'<text x="{x(v):.1f}" y="{cy + 38:.1f}" font-size="15.5" text-anchor="middle" fill="{INK}" font-weight="{400 if rough else 600}">{minus(f"{t} {v:+.0f}")}</text>')
     for t, v in values.items():
-        rough = teams[t]["games"] < ROUGH
+        rough = teams[t]["fit_games"] < ROUGH
         s.append(f'<circle cx="{x(v):.1f}" cy="{mid:.1f}" r="7.5" fill="{SURFACE if rough else MARK}" stroke="{MARK}" stroke-width="2.5"/>')
-    s.append(f'<text x="{MARGIN}" y="{height - 16}" font-size="14" fill="{MUTED}">Filled: 300+ Classic games. Hollow: 100-299 games, so rougher. Teams under 100 games aren\'t shown. {foot}</text>')
+    s.append(f'<text x="{MARGIN}" y="{height - 16}" font-size="14" fill="{MUTED}">Filled: 300+ games in the fit. Hollow: under 300, so rougher. Teams under 100 Classic games aren\'t shown. {foot}</text>')
     s.append("</svg>")
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / f"{name}.svg"
