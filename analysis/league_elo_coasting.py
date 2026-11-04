@@ -72,7 +72,7 @@ def table(games):
 
 def coasting(g, chance):
     """The winner's coasting share (0 if none): chance(lead_for_winner, t, game) gives the winner's chance."""
-    if g["hs"] == g["as"] or any(t >= 900 for t, _ in g["goals"]):
+    if abs(g["hs"] - g["as"]) < 2 or any(t >= 900 for t, _ in g["goals"]):      # a goal in the last 10 s isn't seen below, so test the final margin here
         return 0.0
     home_won = g["hs"] > g["as"]
     start = None
@@ -84,7 +84,7 @@ def coasting(g, chance):
         elif not ok:
             start = None
     share = 0.0 if start is None else (900 - start) / 300
-    return max(0.1, share) if abs(g["hs"] - g["as"]) >= 2 else share
+    return max(0.1, share)
 
 
 def run(games, k, bonus):

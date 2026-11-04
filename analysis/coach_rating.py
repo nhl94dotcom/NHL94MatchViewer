@@ -60,6 +60,15 @@ def day(text):
         return None
 
 
+def aliases():
+    """{old name: current name} for people who changed names, from the private coach_aliases.csv (the user confirms each; names never in the repo)."""
+    path = DATA / "coach_aliases.csv"
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8", newline="") as fh:
+        return {r["old_name"].strip().lower(): r["current_name"].strip().lower() for r in csv.DictReader(fh)}
+
+
 def team_columns(name):
     """{(file order index in load()'s sort): (home abbr, away abbr)} by league, date and players: load() doesn't keep the teams, so read them again."""
     csv.field_size_limit(10 ** 9)
@@ -74,14 +83,20 @@ def team_columns(name):
 def prepare(name):
     games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"])
              and (PREFIX is None or g["league"].lower().startswith(PREFIX))]
+    # Rows with the same score, shots and goal list stay in (about 0.3%): per the user, usually a second game played when no save state was taken after
+    # the first, so an earlier save state with the right winner was used again.
     teams = team_columns(name)
+    same = aliases()
+    for g in games:                                     # the team look-up below still needs the names as filed
+        g["hp_filed"], g["ap_filed"] = g["hp"], g["ap"]
+        g["hp"], g["ap"] = same.get(g["hp"], g["hp"]), same.get(g["ap"], g["ap"])
     good = [g for g in games if g["goals"] is not None and g["hs"] - g["as"] == sum(1 if h else -1 for _, h in g["goals"])]
     tab = table(good)
     no_goals = 0
     for g in games:
         g["day"] = day(g["date"])
         g["classic"] = "classic" in g["league"].lower()
-        key = (g["date"], g["league"], g["hp"], g["ap"], f"{g['hs']:g}", f"{g['as']:g}")
+        key = (g["date"], g["league"], g["hp_filed"], g["ap_filed"], f"{g['hs']:g}", f"{g['as']:g}")
         g["ht"], g["at"] = teams.get(key, ("", ""))
         margin = abs(g["hs"] - g["as"])
         if g["goals"] is not None and g["hs"] - g["as"] == sum(1 if h else -1 for _, h in g["goals"]):
@@ -286,13 +301,13 @@ def system(name, label, out_lines):
         out_lines.append(f"| {'none' if hl is None else hl} | " + " | ".join(f"{results[(top, hl, r)]['all']:.4f}" for r in RIDGES) + " |")
     out_lines.append("")
     if PREFIX:
-        # refitted monthly with each version's best settings, against Elo over these games alone
+        # refitted monthly, every version on the settings the table uses (each on its own best made SNES versions look apart when only the pull differed), against Elo
         months = [f for f in (date(y, m, 1).toordinal() for y in range(FIRST_YEAR, 2027) for m in range(1, 13)) if f < days.max()]
         live_m, frozen_m = elo_runs(games, ELO_K[label], months)
         masks = [(a_, (days >= a_) & (days < b_) & rated) for a_, b_ in zip(months, months[1:] + [days.max() + 1])]
         preds = {}
         for ver in ("win", "margin", "coast", "blend"):
-            _, hl_, r_ = best[ver]
+            _, hl_, r_ = best["coast"]
             p_, hist = np.full(n, np.nan), []
             for a_, test in masks:
                 w_ = np.ones(n) if hl_ is None else 0.5 ** ((a_ - days) / (365.25 * hl_))
@@ -329,7 +344,21 @@ def system(name, label, out_lines):
     cov = np.linalg.inv(A)
     se = np.sqrt(np.maximum(np.diag(cov) * sigma2, 0))
     idx_all = np.nonzero(decided)[0]
-    scale = scale_for(D.predict(beta, idx_all), won[idx_all])
+    in_sample_scale = scale_for(D.predict(beta, idx_all), won[idx_all])
+    # the conversion to a win chance: what fitted games not yet seen, in the last 3 years. A factor fitted on the same games the strengths came from
+    # overstates (SNES Classic: predictions of 84% won 75% of later games). Used for the career column too, so the two columns stay on one scale.
+    xs, ws = [], []
+    for a_, test in fold_masks:
+        ids = np.nonzero(test)[0]
+        if a_ < now - 1096 or not len(ids):
+            continue
+        w_ = np.ones(n) if hl is None else 0.5 ** ((a_ - days) / (365.25 * hl))
+        b_, _ = D.fit(days < a_, w_, y, ridge)
+        xs.append(D.predict(b_, ids))
+        ws.append(won[ids])
+        breathe()
+    scale = scale_for(np.concatenate(xs), np.concatenate(ws))
+    out_lines.append(f"Conversion factor {scale:.3f} from {sum(map(len, xs))} later games in the last 3 years ({in_sample_scale:.3f} if fitted on the same games as the strengths).\n")
     # stability: two halves of the games, fitted apart
     rng = np.random.default_rng(94)
     half = rng.random(n) < 0.5
