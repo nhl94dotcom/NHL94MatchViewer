@@ -99,41 +99,12 @@ version's goals a game, games:
   time), so a roster's weight is the one edge that plays in full every game. That explains why weight shows through, not why heavy is good.
 - The leagues sometimes leave the top teams out of the draft for fun (rare), which this doesn't allow for.
 
-**Elo adjustments for the teams** (`analysis/league_team_elo.py`; the user's question: how far should a player's
-Elo move for the team he uses?). The same games fitted on the result in Elo's own units (P = 1 / (1 + 10^(-D / 400))
-with D = person - person + team - team + home edge, a tie counting half), one strength per person over all seasons,
-and again with each person's pre-season Elo in place of the fitted strengths (agreeing at 0.81 Genesis, 0.67 SNES).
-The suggestion is the mean of the two, rounded to 5: points to add to a player's rating when working out his
-expected result with that team (centred on the average team in use). Each is good to about +/- 25. Home ice is worth
-+11 (Genesis) and +23 (SNES) points on the same scale.
+**Elo adjustments for the teams** (`analysis/league_team_elo.py`; the full table and method are in COACH_RATING section 9): points to add to a coach's Elo for using a team, fitted on the league's own Elo
+(every game in date order, a 1500 start, K 20, +7 for home, the winner's gain and loser's loss raised by the coasting bonus). Genesis: Chicago +88, Buffalo +43, Detroit +42, Montreal +38, down to the
+Rangers -82 and Pittsburgh -96 among well-used teams. SNES: Pittsburgh +57, New Jersey +46, with most others within 30 of zero. Each year's adjustments, fitted on earlier years and used inside the running Elo,
+predict Genesis Classic games better (0.6516 to 0.6479 at 75% of full size, 0.6482 at full size), but not SNES ones (0.6321 with none, 0.6319 at a quarter, 0.6337 at full size). This Elo's rating gaps are
+worth about 0.6 of their face value at the start of a league.
 
-| Genesis | Elo points | | SNES | Elo points |
-| --- | --- | --- | --- | --- |
-| Chicago | +65 | | New Jersey | +50 |
-| Detroit | +45 | | Pittsburgh | +35 |
-| Buffalo | +30 | | NY Rangers | +20 |
-| Montreal | +25 | | Boston | +0 |
-| Boston | +5 | | Los Angeles | +0 |
-| Winnipeg | +0 | | St. Louis | +0 |
-| Vancouver | -5 | | Chicago | +0 |
-| Dallas | -10 | | Montreal | +0 |
-| Los Angeles | -20 | | Washington | -5 |
-| Philadelphia | -25 | | Vancouver | -5 |
-| Toronto | -30 | | Calgary | -5 |
-| Quebec | -30 | | Detroit | -10 |
-| Calgary | -35 | | Toronto | -10 |
-| Washington | -40 | | Philadelphia | -10 |
-| Hartford | -45 | | Edmonton | -20 |
-| St. Louis | -55 | | Buffalo | -25 |
-| Edmonton | -60 | | Winnipeg | -25 |
-| Pittsburgh | -75 | | Quebec | -35 |
-| New Jersey | -80 | |  |  |
-| NY Rangers | -80 | |  |  |
-
-Left out for too few Classic games (under 300): Genesis NY Islanders, Tampa Bay, Anaheim
-(fitted well below average, -93 to -162, on 20-210 games; Florida, Ottawa and San Jose go unused); SNES NY Islanders, Hartford, Dallas, San Jose, Tampa
-Bay, Anaheim, Ottawa (-30 to -95 on 40-295 games) and Florida (+26 on 74). Where the two ways differ most (Genesis Washington -81 / +5 and
-New Jersey -53 / -104, SNES Quebec -57 / -9, Philadelphia -27 / +11, Boston +15 / -11), the team is the least sure.
 ## Game-wide patterns (`analysis/league_patterns.py`)
 
 | | Genesis | SNES |

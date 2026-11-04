@@ -1,6 +1,6 @@
 """The team guides: docs/TEAM_GUIDE_GENESIS.md and docs/TEAM_GUIDE_SNES.md, every retail team in the Classic leagues (2026-11-04, the user, to hand out).
 Aggregates only; no coach is named. Run coach_rating.py groups and coach_team_levels.py first: the conversion factors and settings come from the former,
-the values by level of player from the latter (reports/classic_team_levels.json).
+the values by level of player from the latter (reports/classic_team_levels.json), and the Elo adjustments from league_team_elo.py (reports/classic_team_elo.json).
 
 For each team: strength now (recent games count more, as in the coach table) and over all years, both from the rating's equation with spreads from
 resampling whole leagues; how it does by level of player; its record against what its coaches, home ice and the other team predict, by era and level; team
@@ -28,7 +28,7 @@ from lowload import breathe, gentle  # noqa: E402
 ROOT = HERE.parent
 SYSTEMS = (("All_Games_GENS.csv", "Genesis", "GENESIS", 0, "9438f5dd_a738ea1c.bin", "TEAM_GUIDE_GENESIS.md"),
            ("All_Games_SNES.csv", "SNES", "SNES", 1, "cd85e387.smc", "TEAM_GUIDE_SNES.md"))
-MIN_FULL, MIN_LEVEL, DRAWS = 100, 150, 200
+MIN_FULL, MIN_LEVEL, MIN_ELO, DRAWS = 100, 150, 300, 200
 GOOD, ALIKE, WEAK = 1.5, 5.0, 3.0                       # points: strength for Good or Poor; the largest gap for Both alike; the smallest for a Weak call
 ERAS = (("2013-2019", 2013, 2019), ("2020-2022", 2020, 2022), ("2023-2026", 2023, 2026))
 LENSES = ("coach", "strength", "name")
@@ -45,6 +45,10 @@ def sign(v, d=1):
 def anchor(rank, city_name, abbr):
     """GitHub's link target for a team's heading, "## 1. St. Louis (STL)": lower case, punctuation gone, spaces as hyphens."""
     return re.sub(r"[^a-z0-9 -]", "", f"{rank}. {city_name} ({abbr})".lower()).replace(" ", "-")
+
+
+def elo_text(e):
+    return sign(e["adj"], 0) + ("*" if e["games"] < MIN_ELO else "")
 
 
 def overall(value):
@@ -119,7 +123,7 @@ class Tally:
         return f"| {label} | {rec} | {100 * self.w / m:.1f}% | {100 * self.exp / m:.1f}% | {sign(100 * (self.w - self.exp) / m)} ± {50 / m ** 0.5:.1f} |"
 
 
-def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readings):
+def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, readings):
     C.PREFIX = "classic"
     games, _ = C.prepare(name)
     D = C.Design(games)
@@ -272,6 +276,7 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
     full.sort(key=lambda t: -now_v[t][0])
     rank_now = sorted(full, key=lambda t: -now_v[t][0])
     rank_all = sorted(full, key=lambda t: -all_v[t][0])
+    rank_elo = sorted(full, key=lambda t: -elo[t]["adj"])
     frac = lambda a, b: a / b if b else 0
     STATS = (("Goals for", lambda s: s["gf"] / s["sides"], "{:.2f}", 1), ("Goals against", lambda s: s["ga"] / s["sides"], "{:.2f}", -1),
              ("Shots for", lambda s: s["sf"] / s["sides"], "{:.1f}", 1), ("Shots against", lambda s: s["sa"] / s["sides"], "{:.1f}", -1),
@@ -306,6 +311,9 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
            "the gap is at least 3 points each way, and the team is good for only that level. \"Few games\" means at least two values rest on under 150 appearances. A dash means no call to rate.\n",
            f"- **Strength now:** how much the team adds, in points, with recent games counting more. A game's weight halves every {hl:g} years, so a game from 3 years ago counts {'a quarter' if hl == 1.5 else 'half' if hl == 3 else f'{0.5 ** (3 / hl):.2f} times'} as much as one played today. It's the better guide to how a team has done lately.\n",
            "- **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.\n",
+           "- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home, and the winner's gain and loser's loss raised by the coasting bonus. A * marks under 300 games, so treat it as rough. "
+           + ("Tested on later years, using these inside the running Elo predicts better than leaving them out.\n" if tab == "GENESIS" else
+              "Tested on later years, using these inside the running Elo predicts no better than leaving them out, and at full size slightly worse, so they describe past results more than they improve ratings.\n"),
            "- **Record:** all wins and losses with this team, plus ties when there are any.\n",
            "- **Win %:** wins as a share of wins and losses, without ties or any adjustment for who was coaching.\n",
            "- **Expected:** the win % that the team's coaches, home ice and the other team predict if this team were the average team in use. A record above expected is what the team itself added.\n",
@@ -349,11 +357,11 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
            "- **Save %:** the share of those shots the goalie stopped.\n",
            "- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.\n",
            "\n## All teams\n",
-           "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+           "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]
         best, sure = best_for(levels[t])
-        out.append(f"| {i} | [{city[t]} ({t})](#{anchor(i, city[t], t)}) | {overall(now_v[t][0])} | {best} | {sure} | {sign(now_v[t][0])} | {sign(all_v[t][0])} | {a.w:,}-{a.l:,}" + (f"-{a.t}" if a.t else "") + f" | {100 * a.w / a.n():.1f}% | {100 * a.exp / a.n():.1f}% |")
+        out.append(f"| {i} | [{city[t]} ({t})](#{anchor(i, city[t], t)}) | {overall(now_v[t][0])} | {best} | {sure} | {sign(now_v[t][0])} | {sign(all_v[t][0])} | {elo_text(elo[t])} | {a.w:,}-{a.l:,}" + (f"-{a.t}" if a.t else "") + f" | {100 * a.w / a.n():.1f}% | {100 * a.exp / a.n():.1f}% |")
     rest = sorted((t for t in S if t not in full), key=lambda t: -S[t]["sides"])
     if rest:
         out.append("\nToo few games for a full entry: " + "; ".join(f"{city[t]} ({t}) {rec[t]['all'].w}-{rec[t]['all'].l}" + (f"-{rec[t]['all'].t}" if rec[t]['all'].t else "") for t in rest) + ".")
@@ -362,6 +370,8 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
         out.append(f"\n## {i}. {city[t]} ({t})\n")
         best, sure = best_for(lv)
         out.append(f"**Overall: {overall(now_v[t][0])}. Best for: {best}" + ("" if sure == "—" else f" ({sure.lower()})") + f".** Strength {sign(now_v[t][0])} ± {now_v[t][1]:.1f} now ({nth(rank_now.index(t) + 1)} of {len(full)}), {sign(all_v[t][0])} ± {all_v[t][1]:.1f} over all years ({nth(rank_all.index(t) + 1)}).\n")
+        e = elo[t]
+        out.append(f"**Elo adjustment:** {elo_text(e)} ± {e['se']:.0f} points ({nth(rank_elo.index(t) + 1)} of {len(full)}). Against an even coach on the average team, on neutral ice, that's a {100 / (1 + 10 ** (-e['adj'] / 400)):.0f}% win chance. With one fixed strength per coach instead of Elo, it's {sign(e['fixed'], 0)}.\n")
         out.append(f"Used in {len(u['leagues'])} of {len(total_leagues)} leagues ({len(u['top'])} of them a season's top league), by {len(u['coaches'])} coaches, {int(s['sides']):,} games, most recently {C.date.fromordinal(u['last']).isoformat()}.\n")
         out.append("**By level of player**\n\n| | High level | Low level | High minus low |\n| --- | --- | --- | --- |")
         for lab, key in (("By coach", "coach"), ("By league strength", "strength"), ("Top league against others", "name")):
@@ -422,9 +432,10 @@ def main():
     conv = [float(x) for x in re.findall(r"Conversion factor ([\d.]+)", text)]
     fits = re.findall(r"Final fit: coast, half-life ([\d.]+), ridge ([\d.]+)", text)
     levels = json.loads((ROOT / "reports" / "classic_team_levels.json").read_text(encoding="utf-8"))
+    elo = json.loads((ROOT / "reports" / "classic_team_elo.json").read_text(encoding="utf-8"))
     readings = []
     for name, label, tab, at, romfile, outfile in SYSTEMS:
-        build(name, label, tab, at, romfile, outfile, levels[label], conv[at], (float(fits[at][0]), float(fits[at][1])), readings)
+        build(name, label, tab, at, romfile, outfile, levels[label], elo[label]["teams"], conv[at], (float(fits[at][0]), float(fits[at][1])), readings)
     (ROOT / "reports" / "classic_team_readings.md").write_text("\n".join(readings) + "\n", encoding="utf-8")
 
 
