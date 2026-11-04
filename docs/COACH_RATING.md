@@ -135,7 +135,7 @@ A brand-new coach therefore starts well below 50. Coaches with 1-9 games bear th
   keep 28%. So retired players drift toward the middle in the main column but not in `career`. This is slow in SNES Classic, where the
   half-life is 3 years: a coach who stopped in 2016 still ranks 4th among coaches with 100+ games.
 
-The home edge has no pull. Team terms have the same pull as coaches.
+The home edge has no pull. Team terms have a stronger pull than coaches, a setting of 50, the same as the team Elo adjustments in section 9, so a rarely used team can't come out extreme on a few seasons. Section 11 has the test.
 
 ## 6. Recent games count more
 
@@ -165,17 +165,17 @@ really came out. A factor fitted on the same games as the strengths would be too
 
 | Predicted, about | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- | --- |
-| 55% | 55% | 54% | 57% | 56% | 55% | 58% |
-| 65% | 64% | 64% | 64% | 62% | 66% | 63% |
+| 55% | 55% | 54% | 57% | 55% | 55% | 58% |
+| 65% | 64% | 64% | 64% | 63% | 66% | 63% |
 | 75% | 74% | 74% | 74% | 78% | 74% | 72% |
-| 85% | 87% | 87% | 83% | 82% | 79% | 88% |
+| 85% | 87% | 87% | 82% | 83% | 79% | 88% |
 
 The factor was set on these games, so the overall level is bound to match. The agreement across the bands is the real check. The top band is small in
 the league groups (112-231 games), so those are rough. The factors in use are:
 
 | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- |
-| 2.064 | 1.974 | 1.719 | 1.615 | 1.678 | 1.626 |
+| 2.071 | 1.976 | 1.783 | 1.612 | 1.678 | 1.626 |
 
 The factor affects percentages only. It can't change the order of coaches in a table.
 
@@ -209,33 +209,31 @@ even coaches and no home edge. "Strength now" fades old games like the coach rat
 
 | Genesis Classic | Strength now | Strength, all years | Sides | | SNES Classic | Strength now | Strength, all years | Sides |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| CHI | +8.1 | +8.8 | 3,955 | | NJ | +5.9 | +4.5 | 734 |
-| DET | +6.4 | +6.7 | 4,124 | | PIT | +4.0 | +4.3 | 2,522 |
-| BUF | +4.2 | +4.1 | 3,962 | | NYR | +2.7 | +2.5 | 2,533 |
-| MTL | +2.5 | +2.9 | 3,859 | | VAN | +0.9 | +0.3 | 2,105 |
-| BOS | +1.4 | +1.0 | 3,812 | | CHI | +0.5 | +1.1 | 2,433 |
-| VAN | −0.5 | −0.7 | 3,879 | | LA | +0.4 | +1.4 | 2,239 |
-| DAL | −0.8 | −1.2 | 2,675 | | CGY | +0.4 | −0.2 | 1,976 |
-| WPG | −1.0 | +0.1 | 3,541 | | WSH | +0.3 | +0.3 | 1,128 |
-| HFD | −1.8 | −6.5 | 452 | | MTL | −0.3 | +0.5 | 1,700 |
-| CGY | −1.9 | −4.8 | 3,025 | | TOR | −0.6 | −1.4 | 771 |
-| TOR | −2.7 | −2.6 | 1,574 | | BOS | −0.8 | +1.5 | 2,513 |
-| LA | −4.0 | −2.2 | 2,379 | | STL | −0.9 | +0.0 | 553 |
-| PHI | −5.0 | −4.9 | 1,045 | | EDM | −0.9 | −2.0 | 497 |
-| QUE | −5.1 | −4.6 | 2,050 | | WPG | −1.3 | −3.6 | 1,279 |
-| NJ | −5.5 | −5.6 | 310 | | DET | −1.5 | −1.5 | 2,327 |
-| NYI | −5.9 | −10.7 | 210 | | PHI | −2.5 | −1.1 | 643 |
-| EDM | −6.1 | −6.8 | 651 | | QUE | −3.2 | −6.3 | 895 |
-| PIT | −7.9 | −10.0 | 1,137 | | HFD | −3.5 | −2.7 | 228 |
-| WSH | −8.6 | −7.4 | 357 | | BUF | −3.6 | −4.1 | 2,103 |
-| TB | −9.4 | −13.1 | 206 | | NYI | −6.0 | −9.6 | 295 |
-| STL | −10.1 | −7.5 | 984 | | SJ | −7.7 | −11.8 | 153 |
-| NYR | −12.0 | −10.9 | 1,307 | | DAL | −9.3 | −5.5 | 182 |
+| CHI | +7.6 | +8.9 | 3,955 | | NJ | +4.6 | +4.0 | 734 |
+| DET | +5.8 | +6.8 | 4,124 | | PIT | +3.6 | +4.1 | 2,522 |
+| BUF | +3.7 | +4.1 | 3,962 | | NYR | +2.5 | +2.4 | 2,533 |
+| MTL | +2.1 | +2.9 | 3,859 | | VAN | +0.8 | +0.2 | 2,105 |
+| BOS | +1.4 | +1.0 | 3,812 | | CHI | +0.5 | +1.0 | 2,433 |
+| VAN | −0.8 | −0.8 | 3,879 | | LA | +0.4 | +1.3 | 2,239 |
+| DAL | −1.1 | −1.3 | 2,675 | | CGY | +0.3 | −0.3 | 1,976 |
+| WPG | −1.3 | +0.1 | 3,541 | | WSH | +0.3 | +0.3 | 1,128 |
+| HFD | −1.8 | −6.2 | 452 | | MTL | −0.4 | +0.4 | 1,700 |
+| CGY | −2.1 | −5.0 | 3,025 | | TOR | −0.5 | −1.4 | 771 |
+| TOR | −2.6 | −2.7 | 1,574 | | EDM | −0.9 | −1.8 | 497 |
+| NJ | −3.8 | −5.1 | 310 | | STL | −0.9 | −0.1 | 553 |
+| LA | −4.0 | −2.3 | 2,379 | | BOS | −0.9 | +1.4 | 2,513 |
+| PHI | −4.2 | −4.9 | 1,045 | | WPG | −1.3 | −3.5 | 1,279 |
+| NYI | −4.3 | −9.4 | 210 | | DET | −1.5 | −1.5 | 2,327 |
+| EDM | −4.6 | −6.6 | 651 | | PHI | −2.1 | −1.1 | 643 |
+| QUE | −4.7 | −4.7 | 2,050 | | HFD | −2.2 | −2.3 | 228 |
+| WSH | −5.0 | −6.9 | 357 | | QUE | −2.7 | −5.8 | 895 |
+| TB | −5.7 | −11.3 | 206 | | BUF | −3.4 | −4.0 | 2,103 |
+| PIT | −6.3 | −9.8 | 1,137 | | SJ | −3.8 | −8.3 | 153 |
+| STL | −8.2 | −7.4 | 984 | | NYI | −4.6 | −8.1 | 295 |
+| NYR | −10.4 | −10.9 | 1,307 | | DAL | −5.8 | −4.3 | 182 |
 
 **How far to trust them.**
-- **Genesis values are steady; SNES values depend more on the settings.** Across the nine half-life and pull settings, teams' order holds on the
-  Genesis (0.97 between pull settings 2 and 10) much better than on the SNES (0.72). Rarely played SNES teams move most: San Jose's value changes by about 17 points across them, and
-  Boston's by about 9. Read the SNES columns for broad groups only.
+- **Genesis values are steadier than SNES ones.** Two random halves of the leagues, fitted apart, agree at 0.77 on the Genesis and 0.38 on the SNES. Read the SNES columns for broad groups only.
 - **Some labels get no term.** Genesis Classic has one label under 100 sides (ANH, 20), and SNES Classic has four (OTW 40, ANH 46, TB 65, FLA 74).
 - **The assumption is one roster per abbreviation.** If a Classic league used a changed roster, its team value would blur the two.
 
@@ -298,18 +296,20 @@ Two more things show up. Rating gaps are worth about 0.7 of their face value at 
 
 The league's settings are close to the best. K 12 is ahead by 0.0021 ± 0.0003 on the Genesis and K 16 by 0.0006 ± 0.0002 on the SNES. The bonus helps on the SNES and makes little difference on the Genesis. The league keeps K 20 because people like larger changes in their ratings, which costs very little. Rating gaps are worth more here, measured game by game, than at the start of a league, because a rating can go out of date during a league.
 
+**Glicko** (`analysis/league_glicko.py`). Glicko adds an uncertainty to each rating, so a new coach's rating moves fast and a settled one's moves little. Played over the same games, with its settings chosen on 2016-2019 and tested from 2020, it predicts better than the league's Elo: on Classic games between established coaches 0.6330 against 0.6377 on the Genesis and 0.6211 against 0.6251 on the SNES, and most of all for coaches with under 30 earlier games (0.5783 against 0.5925, 0.5079 against 0.5439). It would change how the ratings feel, though: a veteran's rating moves about 5-7 points a game instead of 9, a new coach's can move several hundred in one game, and the middle of the scale sinks. The league keeps its Elo.
+
 **A team's Elo value and its fixed-strength value can differ on the same games.** On the 228 Genesis Washington games in the Elo fit, Elo gives −14 and fixed strengths −42, so the yardstick accounts for most of the gap and the left-out games for little (−48 with them). Separate coach strengths by era don't close it: they lower Washington's strength a little.
 
 **Coaches change, and team values barely care** (`analysis/team_strength_checks.py`). The team fit uses one strength per coach over all years, though coaches with 100+ games in two straight eras typically moved about 9-10 points of win chance between them. Refitting with a separate strength for each coach in each era moves the team values very little:
 
 | Coach strength | Genesis: against one strength | Genesis: typical move | Genesis: halves of the leagues agree | SNES: against one strength | SNES: typical move | SNES: halves of the leagues agree |
 | --- | --- | --- | --- | --- | --- | --- |
-| One for all years | | | 0.73 | | | 0.35 |
-| 3 eras | 0.988 | 0.7 points | 0.72 | 0.940 | 0.7 points | 0.29 |
-| 4 eras | 0.984 | 0.8 points | 0.71 | 0.935 | 0.7 points | 0.33 |
-| 6 eras | 0.980 | 0.9 points | 0.68 | 0.812 | 1.1 points | 0.13 |
+| One for all years | | | 0.77 | | | 0.38 |
+| 3 eras | 0.990 | 0.6 points | 0.78 | 0.945 | 0.7 points | 0.31 |
+| 4 eras | 0.986 | 0.7 points | 0.77 | 0.940 | 0.7 points | 0.36 |
+| 6 eras | 0.981 | 0.9 points | 0.75 | 0.823 | 1.0 points | 0.17 |
 
-Team values are as repeatable with one strength as with eras, and more repeatable than with six, where each coach has fewer games. So one strength per coach stays. The largest moves with 3 or 4 eras were New Jersey on the Genesis (-5.6 to about -8.9) and Philadelphia on the SNES (-1.1 to about -4.1). SNES team values repeat far less well than Genesis ones under any setting.
+Team values are about as repeatable with one strength as with three or four eras, and more repeatable than with six, where each coach has fewer games. So one strength per coach stays. The largest moves with 3 or 4 eras were New Jersey on the Genesis (-5.1 to about -7.6) and Philadelphia on the SNES (-1.1 to about -3.7). SNES team values repeat far less well than Genesis ones under any setting.
 
 **A stronger pull on the team terms alone**, predicting later games from 2020 (log loss; the rest of the fit unchanged):
 
@@ -318,7 +318,7 @@ Team values are as repeatable with one strength as with eras, and more repeatabl
 | Genesis | 0.6640 | 0.6639 | 0.6639 | 0.6637 | 0.6637 | 0.6639 | 0.6645 | 0.6653 |
 | SNES | 0.6697 | 0.6694 | 0.6691 | 0.6683 | 0.6675 | 0.6667 | 0.6659 | 0.6655 |
 
-On the Genesis the choice hardly matters until the pull is very strong, with 25-50 best. On the SNES each step up predicts a little better all the way to 400, so team terms add little to predicting SNES games once coaches are known.
+On the Genesis the choice hardly matters until the pull is very strong, with 25-50 best. On the SNES each step up predicts a little better all the way to 400, so team terms add little to predicting SNES games once coaches are known. Team strengths use 50 on both systems, like the Elo adjustments. A pull that strong also makes a rarely used team's value milder than its results, which is why such a team's strength and Elo adjustment read as rough.
 
 **Simulated seasons with known answers.** On the real schedule and team use, with made-up coach strengths and team values:
 - **The methods recover the truth.** Team values correlate with the true ones at 0.92-0.97, whichever method is used.
@@ -346,10 +346,10 @@ team than with its other teams, after the coach terms have taken out who was usi
 
 | Correlation between the halves | Genesis: coach / strength / name | SNES: coach / strength / name |
 | --- | --- | --- |
-| Team values at the high level | +0.70 / +0.44 / +0.43 | +0.09 / +0.19 / +0.23 |
-| Team values at the low level | +0.19 / +0.37 / +0.48 | +0.07 / +0.40 / +0.37 |
-| High-minus-low gaps | +0.35 / −0.16 / −0.20 | −0.07 / +0.25 / +0.29 |
-| High against low, all games | +0.57 / +0.74 / +0.76 | +0.62 / +0.27 / +0.14 |
+| Team values at the high level | +0.70 / +0.51 / +0.51 | +0.04 / +0.23 / +0.26 |
+| Team values at the low level | +0.44 / +0.58 / +0.63 | −0.07 / +0.25 / +0.39 |
+| High-minus-low gaps | +0.34 / +0.00 / −0.22 | −0.16 / +0.15 / +0.33 |
+| High against low, all games | +0.53 / +0.74 / +0.81 | +0.48 / +0.25 / +0.09 |
 
 **So most apparent differences between levels aren't repeatable.** On the Genesis, high and low levels mostly agree on which teams are good. On the SNES, levels agree less,
 but the team order within a level is itself weak. The tables below are a guide to test against, not settled fact.
@@ -366,55 +366,55 @@ With 44 teams tested, a few of these will be luck. A team can be Poor overall an
 
 | Team | High coaches | Low coaches | Top league | Other leagues | Overall | Best for | Confidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| CHI | +9.7 | +9.2 | +9.0 | +8.8 | Good | Both alike | — |
-| DET | +7.4 | +7.2 | +7.8 | +6.2 | Good | Both alike | — |
-| BUF | +3.8 | +4.0 | +4.3 | +4.0 | Good | Both alike | — |
-| MTL | +4.7 | +1.5 | +3.1 | +2.9 | Good | Both alike | — |
-| BOS | +4.6 | −3.0 | +3.4 | +0.1 | Average | High-level | Likely |
-| VAN | +1.2 | −2.2 | −0.3 | −0.9 | Average | High-level | Leaning |
-| DAL | +0.9 | −1.5 | +0.7 | −2.2 | Average | Both alike | — |
-| WPG | +1.3 | +1.5 | +0.7 | −0.1 | Average | Both alike | — |
-| HFD | −12.5 | none | −13.0 | −1.7 | Poor | Unclear | — |
-| CGY | −6.7 | −5.3 | −5.3 | −4.5 | Poor | Both alike | — |
-| TOR | −3.3 | −7.7 | −3.6 | −2.0 | Poor | Both alike | — |
-| LA | +0.3 | −2.8 | −1.2 | −2.6 | Poor | Unclear | — |
-| PHI | −4.1 | −6.6 | −3.5 | −6.1 | Poor | Both alike | — |
-| QUE | −4.3 | −9.0 | −3.1 | −5.2 | Poor | High-level | Leaning |
-| NJ | −6.1 | (−3.6) | −6.7 | −5.6 | Poor | Both alike | — |
-| NYI | (−15.4) | (−5.6) | (−4.5) | (−15.1) | Poor | Unclear | Few games |
-| EDM | −8.6 | −0.2 | −10.3 | −4.1 | Poor | Low-level | Leaning |
-| PIT | −6.0 | −11.9 | −11.9 | −9.6 | Poor | Unclear | — |
-| WSH | (−9.5) | (−4.5) | (−11.3) | −5.1 | Poor | Unclear | Few games |
-| TB | (−18.5) | (−0.9) | (−20.7) | −10.5 | Poor | Low-level | Leaning, few games |
-| STL | −2.6 | −10.3 | −5.5 | −8.7 | Poor | Unclear | — |
-| NYR | −11.6 | −9.3 | −10.7 | −11.1 | Poor | Both alike | — |
+| CHI | +8.8 | +8.6 | +8.4 | +8.8 | Good | Both alike | — |
+| DET | +7.1 | +6.6 | +7.2 | +6.3 | Good | Both alike | — |
+| BUF | +3.5 | +3.5 | +3.9 | +3.9 | Good | Both alike | — |
+| MTL | +4.4 | +1.3 | +2.7 | +2.8 | Good | Both alike | — |
+| BOS | +4.4 | −2.6 | +3.1 | 0.0 | Average | High-level | Likely |
+| VAN | +1.0 | −2.5 | −0.6 | −1.0 | Average | High-level | Leaning |
+| DAL | +0.9 | −1.8 | +0.6 | −2.3 | Average | Both alike | — |
+| WPG | +1.1 | +1.4 | +0.3 | −0.1 | Average | Both alike | — |
+| HFD | −10.8 | none | −10.5 | −1.7 | Poor | Unclear | — |
+| CGY | −6.8 | −5.3 | −5.5 | −4.6 | Poor | Both alike | — |
+| TOR | −3.5 | −7.3 | −3.5 | −2.1 | Poor | Both alike | — |
+| NJ | −5.2 | (−1.2) | −4.6 | −4.7 | Poor | Both alike | — |
+| LA | +0.3 | −3.1 | −1.3 | −2.8 | Poor | Unclear | — |
+| PHI | −3.6 | −5.5 | −2.9 | −5.9 | Poor | Both alike | — |
+| NYI | (−12.0) | (−1.1) | (−3.4) | (−11.8) | Poor | Unclear | Few games |
+| EDM | −8.0 | +0.4 | −8.9 | −4.1 | Poor | Low-level | Leaning |
+| QUE | −4.2 | −8.7 | −2.7 | −5.3 | Poor | High-level | Leaning |
+| WSH | (−8.0) | (−2.4) | (−8.0) | −4.7 | Poor | Unclear | Few games |
+| TB | (−13.9) | (0.0) | (−11.4) | −8.9 | Poor | Unclear | Few games |
+| PIT | −5.4 | −9.8 | −9.2 | −9.2 | Poor | Both alike | — |
+| STL | −2.5 | −8.1 | −4.7 | −8.4 | Poor | Unclear | — |
+| NYR | −11.4 | −7.4 | −10.2 | −10.6 | Poor | Both alike | — |
 
 **SNES Classic**
 
 | Team | High coaches | Low coaches | Top league | Other leagues | Overall | Best for | Confidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| NJ | +3.7 | +9.4 | −0.5 | +8.2 | Good | Low-level | Weak |
-| PIT | +4.3 | +2.2 | +5.7 | +3.1 | Good | Both alike | — |
-| NYR | +1.8 | +1.2 | +2.5 | +2.4 | Good | Both alike | — |
-| VAN | +2.2 | −0.6 | +0.5 | +0.3 | Average | Both alike | — |
-| CHI | +1.6 | −0.1 | +2.0 | −0.4 | Average | Both alike | — |
-| LA | +1.8 | +1.7 | +1.4 | +1.9 | Average | Both alike | — |
-| CGY | +0.7 | +1.7 | −1.7 | −0.7 | Average | Both alike | — |
-| WSH | −0.1 | +2.5 | −2.5 | +5.2 | Average | Low-level | Likely |
-| MTL | −0.7 | +1.0 | −1.3 | +2.6 | Average | Low-level | Leaning |
-| TOR | −1.4 | −3.5 | −6.7 | +1.6 | Average | Unclear | — |
-| BOS | +4.3 | +1.2 | +4.5 | −1.1 | Average | High-level | Likely |
-| STL | −0.1 | +0.7 | (−5.1) | +2.9 | Average | Unclear | — |
-| EDM | −1.4 | (+5.5) | −2.2 | (+7.0) | Average | Low-level | Leaning, few games |
-| WPG | −3.7 | −2.5 | −3.2 | −3.8 | Average | Both alike | — |
-| DET | −0.8 | −2.9 | −1.6 | −0.8 | Average | Both alike | — |
-| PHI | −5.1 | +3.9 | −3.8 | +2.0 | Poor | Low-level | Leaning |
-| QUE | −3.3 | (−17.1) | +1.1 | −16.1 | Poor | High-level | Likely |
-| HFD | −1.4 | (−0.2) | −0.5 | (−1.7) | Poor | Both alike | Few games |
-| BUF | −1.4 | −5.8 | −3.4 | −4.8 | Poor | Both alike | — |
-| NYI | −8.7 | none | (−10.1) | (−6.3) | Poor | Unclear | Few games |
-| SJ | (−14.0) | none | none | −11.3 | Poor | Unclear | Few games |
-| DAL | (−7.1) | (−20.5) | (−5.7) | −5.5 | Poor | Unclear | Few games |
+| NJ | +2.7 | +7.3 | −0.6 | +6.7 | Good | Low-level | Leaning |
+| PIT | +3.4 | +1.8 | +5.2 | +3.0 | Good | Both alike | — |
+| NYR | +1.6 | +1.3 | +2.2 | +2.3 | Good | Both alike | — |
+| VAN | +2.0 | −0.9 | +0.5 | +0.2 | Average | Both alike | — |
+| CHI | +1.4 | +0.5 | +1.7 | −0.4 | Average | Both alike | — |
+| LA | +1.5 | +1.2 | +1.2 | +1.7 | Average | Both alike | — |
+| CGY | +0.6 | +1.4 | −1.6 | −0.7 | Average | Both alike | — |
+| WSH | −0.1 | +2.1 | −2.4 | +4.3 | Average | Low-level | Likely |
+| MTL | −0.6 | +0.7 | −1.1 | +2.3 | Average | Low-level | Leaning |
+| TOR | −1.3 | −3.2 | −5.6 | +1.1 | Average | Unclear | — |
+| EDM | −1.2 | (+3.7) | −1.9 | (+2.9) | Average | Low-level | Leaning, few games |
+| STL | −0.3 | +0.7 | (−3.7) | +1.9 | Average | Unclear | — |
+| BOS | +3.7 | +0.7 | +4.0 | −1.1 | Average | High-level | Likely |
+| WPG | −3.5 | −1.8 | −2.9 | −3.4 | Average | Both alike | — |
+| DET | −1.1 | −3.0 | −1.6 | −0.7 | Average | Both alike | — |
+| PHI | −4.3 | +3.2 | −3.3 | +1.5 | Poor | Low-level | Leaning |
+| HFD | −1.2 | (+0.8) | −0.3 | (−1.3) | Poor | Both alike | Few games |
+| QUE | −3.1 | (−7.6) | +1.1 | −13.5 | Poor | High-level | Likely |
+| BUF | −1.1 | −5.2 | −3.2 | −4.5 | Poor | Both alike | — |
+| SJ | (−7.5) | none | none | −7.5 | Poor | Unclear | Few games |
+| NYI | −7.2 | none | (−7.0) | (−4.3) | Poor | Unclear | Few games |
+| DAL | (−3.1) | (−6.7) | (−2.4) | −4.0 | Poor | Unclear | Few games |
 
 **What stands out.** The Genesis has a clear group of teams that work for everyone, led by Chicago and Detroit. On the SNES, Quebec has the largest
 gap: about even in top leagues, far below average in lower ones. Most of these values only show results, not why. A team's use also isn't random, since players choose
@@ -440,8 +440,8 @@ Results with monthly refits, in each league group alone, with all versions on th
 
 | Table | Test games | Elo, every game | Elo, frozen monthly | Win only | Capped goal diff | Win + coasting (used) | Blend |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Genesis Classic | 12,695 | 0.6517 | 0.6666 | 0.6493 | 0.6481 | 0.6478 | 0.6477 |
-| SNES Classic | 8,718 | 0.6409 | 0.6580 | 0.6490 | 0.6447 | 0.6468 | 0.6454 |
+| Genesis Classic | 12,695 | 0.6517 | 0.6666 | 0.6494 | 0.6483 | 0.6480 | 0.6479 |
+| SNES Classic | 8,718 | 0.6409 | 0.6580 | 0.6479 | 0.6437 | 0.6457 | 0.6444 |
 | Genesis Chaos | 9,258 | 0.6458 | 0.6647 | 0.6457 | 0.6440 | 0.6445 | 0.6441 |
 | SNES Draft | 6,325 | 0.6342 | 0.6534 | 0.6434 | 0.6387 | 0.6411 | 0.6398 |
 
@@ -454,8 +454,8 @@ And in the all-leagues tables:
 
 What this shows:
 
-- **Against Elo updated every game:** the rating is better in Genesis Classic (by 0.0039 ± 0.0018), level in Genesis Chaos, and
-  behind in SNES Classic (0.0058 ± 0.0025), SNES Draft (0.0069 ± 0.0028) and both all-leagues tables (0.0027 and 0.0020).
+- **Against Elo updated every game:** the rating is better in Genesis Classic (by 0.0037 ± 0.0018), level in Genesis Chaos, and
+  behind in SNES Classic (0.0047 ± 0.0025), SNES Draft (0.0069 ± 0.0028) and both all-leagues tables (0.0027 and 0.0020).
 - **Against Elo frozen monthly,** the like-for-like comparison, the rating is better in every table.
 - **Coasting against win-only:** coasting is better in every table, by small amounts that clear the test's noise.
 - **Coasting against capped goal difference:** tied on the Genesis, in all three tables. Goal difference is ahead on the SNES (0.0020 ± 0.0005 in SNES
@@ -466,9 +466,9 @@ What this shows:
 
 | Check | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- | --- |
-| Two random halves of the games, fitted apart: correlation over coaches with 100+ games | 0.98 | 0.98 | 0.94 | 0.96 | 0.96 | 0.97 |
+| Two random halves of the games, fitted apart: correlation over coaches with 100+ games | 0.98 | 0.98 | 0.93 | 0.96 | 0.96 | 0.97 |
 | A coach one standard deviation above another (among 100+ coaches) wins | 69% | 70% | 65% | 65% | 67% | 68% |
-| Home wins between even coaches on neutral teams | 50.5% | 52.5% | 50.8% | 52.5% | 48.8% | 51.8% |
+| Home wins between even coaches on neutral teams | 50.5% | 52.5% | 50.9% | 52.5% | 48.8% | 51.8% |
 
 Dropping low-game coaches' games was also tested. Removing coaches under 100 games made predictions worse
 (Genesis 0.6210 to 0.6251, SNES 0.6242 to 0.6267) and left the top 20 unchanged, so every game stays in the fit.

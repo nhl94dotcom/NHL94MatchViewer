@@ -102,6 +102,8 @@ class Model:
             for j in range(5):
                 np.add.at(A, (self.cols[:, i], self.cols[:, j]), w * self.vals[:, i] * self.vals[:, j])
         pen = np.full(self.size, float(ridge))
+        for i in self.index.values():
+            pen[i] = C.TEAM_PULL
         pen[self.home] = 1e-6
         A[np.diag_indices(self.size)] += pen
         return np.linalg.solve(A, b)
