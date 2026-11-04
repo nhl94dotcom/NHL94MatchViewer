@@ -47,7 +47,7 @@ The winner gets a positive score and the loser the same score as a negative. A t
 
 `score = 1 + coasting bonus`, where the bonus can't go above 1.
 
-**The coasting bonus** is the final unbroken stretch of regulation in which the eventual winner was safe, as a share of a third
+**The coasting bonus** (this rating's own measure; the league's Elo in section 9 has a different one) is the final unbroken stretch of regulation in which the eventual winner was safe, as a share of a third
 period's length. "Safe" means a lead of 2 or more goals and a 90%+ chance of winning given only that lead and the time left. That
 chance is taken from how such positions turned out in the same table's games. The check runs every 10 seconds of game time.
 
@@ -240,68 +240,65 @@ even coaches and no home edge. "Strength now" fades old games like the coach rat
 - **The assumption is one roster per abbreviation.** If a Classic league used a changed roster, its team value would blur the two.
 
 **Elo adjustments** (`analysis/league_team_elo.py`) say how many points to add to a coach's Elo for using a team. They're fitted on the league's own Elo: every game on the system in date order, a 1500 start,
-K 20, +7 for the home side and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus, which can go over 100% if coasting starts before the third period. Using each coach's Elo at the start of the league (30+ earlier
+K 20, +7 for the home side and each team's own adjustment in the expected score, and the winner's gain and loser's loss multiplied by a coasting multiplier. That's 1 for a win by 0 or 1 goals. For a win by 2 or more it's the larger of 1.1 and `1 + coasting seconds / 600`, so ×1.5 from the second-period buzzer. Coasting is the final unbroken stretch in which the winner's lead stays above a line that falls with time: 5 goals before 5:00, 4 to 10:00, 3 to 12:30, then 2. This Elo leaves out a few outlier leagues, and it uses team adjustments in leagues starting `Classic`, `New_Players`, `GENS_Summer_League_Tournament`, `LFG` or `SNES_Summer_League_26`; the fit itself uses only the Classic leagues. Using each coach's Elo at the start of the league (30+ earlier
 games), the fit is `P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))`, so a value can be added to a rating as it stands. As the table is part of that Elo, the fit and the Elo are run in turn until they settle, which takes a few passes. Zero is the average team in use. Values
 from one fixed strength per coach are shown beside them. An asterisk marks under 300 games in the Elo fit, which leaves out games where either coach had under 30 earlier games when the league began.
 
-Rarely used teams are pulled toward the average team, as in section 5, with a pull setting of 50 on both systems. That was the best setting on the Genesis. On the SNES, settings from 50 to 400 predicted later years about equally (0.6317-0.6319), and more than 50 flattens rarely used teams without evidence. Each ± comes from resampling whole leagues around that pulled value, so it understates the uncertainty of a rarely used team.
+Rarely used teams are pulled toward the average team, as in section 5, with a pull setting of 50 on both systems. That was the best setting on the Genesis. On the SNES, settings from 50 to 400 predicted later years about equally (0.6268-0.6270), and more than 50 flattens rarely used teams without evidence. Each ± comes from resampling whole leagues around that pulled value, so it understates the uncertainty of a rarely used team.
 
 | Genesis Classic | Elo adjustment | Fixed strength | | SNES Classic | Elo adjustment | Fixed strength |
 | --- | --- | --- | --- | --- | --- | --- |
-| CHI | +83 ± 11 | +67 | | PIT | +48 ± 13 | +35 |
-| DET | +39 ± 10 | +50 | | NJ | +33 ± 16 | +31 |
-| BUF | +38 ± 10 | +26 | | MTL | +17 ± 22 | +2 |
-| MTL | +32 ± 11 | +26 | | CHI | +13 ± 13 | +3 |
-| VAN | +6 ± 10 | −6 | | BOS | +8 ± 15 | +14 |
-| BOS | +6 ± 13 | +5 | | DET | +7 ± 13 | −8 |
-| WPG | −8 ± 11 | 0 | | NYR | +6 ± 14 | +23 |
-| WSH | −17 ± 25 | −48 | | CGY | +6 ± 13 | −8 |
-| LA | −20 ± 16 | −21 | | PHI | +1 ± 25 | −19 |
-| PHI | −22 ± 18 | −33 | | LA | −4 ± 13 | +5 |
-| CGY | −32 ± 12 | −40 | | STL | −7 ± 21 | +1 |
-| DAL | −34 ± 11 | −10 | | TOR | −17 ± 16 | −13 |
-| TOR | −40 ± 19 | −23 | | EDM | −23 ± 21 | −19 |
-| QUE | −43 ± 13 | −33 | | VAN | −24 ± 17 | −1 |
-| HFD | −50 ± 16 | −41 | | BUF | −24 ± 13 | −28 |
-| NYI* | −59 ± 14 | −50 | | WPG | −25 ± 14 | −30 |
-| STL | −59 ± 21 | −47 | | QUE | −26 ± 22 | −43 |
-| EDM | −64 ± 23 | −49 | | HFD* | −26 ± 9 | −15 |
-| PIT | −70 ± 14 | −73 | | WSH | −28 ± 16 | +4 |
-| NYR | −74 ± 17 | −80 | | SJ* | −35 ± 25 | −28 |
-| NJ | −89 ± 33 | −30 | | DAL* | −40 ± 18 | −25 |
-| TB* | −102 ± 37 | −58 | | NYI* | −71 ± 22 | −41 |
+| CHI | +72 ± 10 | +67 | | PIT | +43 ± 12 | +35 |
+| DET | +35 ± 9 | +50 | | NJ | +35 ± 14 | +31 |
+| BUF | +33 ± 9 | +26 | | NYR | +11 ± 11 | +23 |
+| MTL | +29 ± 9 | +26 | | MTL | +9 ± 18 | +2 |
+| BOS | +7 ± 12 | +5 | | CHI | +6 ± 12 | +3 |
+| VAN | +1 ± 9 | −6 | | BOS | +4 ± 15 | +14 |
+| WPG | −6 ± 10 | −0 | | PHI | +3 ± 21 | −19 |
+| WSH* | −14 ± 21 | −48 | | CGY | +2 ± 12 | −8 |
+| LA | −19 ± 15 | −21 | | DET | +1 ± 12 | −8 |
+| PHI | −20 ± 15 | −33 | | LA | −0 ± 11 | +5 |
+| DAL | −24 ± 10 | −10 | | STL | −7 ± 18 | +1 |
+| CGY | −34 ± 11 | −40 | | TOR | −12 ± 17 | −13 |
+| QUE | −36 ± 12 | −33 | | VAN | −18 ± 14 | −1 |
+| TOR | −39 ± 18 | −23 | | EDM | −19 ± 22 | −19 |
+| HFD | −44 ± 17 | −41 | | QUE | −20 ± 20 | −43 |
+| NYI* | −50 ± 13 | −50 | | HFD* | −20 ± 9 | −15 |
+| STL | −53 ± 19 | −47 | | BUF | −21 ± 12 | −28 |
+| PIT | −53 ± 11 | −73 | | WPG | −21 ± 13 | −30 |
+| EDM | −55 ± 21 | −49 | | SJ* | −24 ± 21 | −28 |
+| NYR | −67 ± 16 | −80 | | WSH | −25 ± 14 | +4 |
+| NJ* | −83 ± 33 | −30 | | DAL* | −35 ± 17 | −25 |
+| TB* | −91 ± 31 | −58 | | NYI* | −53 ± 17 | −41 |
 
 ![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)
 
 ![SNES Classic teams on the same scale](img/elo_teams_snes.svg)
 
-**Whether they help.** Each year's adjustments were fitted on earlier years only, then used inside the running Elo to predict that year's Classic games (log loss, lower is better; 13,724 Genesis and 9,427 SNES games):
+**Whether they help.** Each year's adjustments were fitted on earlier years only, then used inside the running Elo to predict that year's Classic games (log loss, lower is better; 13,728 Genesis and 9,416 SNES games):
 
 | Share of the adjustment used | None | 25% | 50% | 75% | 100% |
 | --- | --- | --- | --- | --- | --- |
-| Genesis | 0.6516 | 0.6500 | 0.6487 | 0.6479 | 0.6475 |
-| SNES | 0.6321 | 0.6319 | 0.6317 | 0.6317 | 0.6319 |
+| Genesis | 0.6434 | 0.6418 | 0.6407 | 0.6399 | 0.6396 |
+| SNES | 0.6273 | 0.6270 | 0.6269 | 0.6269 | 0.6270 |
 
-On the Genesis they clearly help, most at full size (by 0.0041 ± 0.0007). On the SNES they make no clear difference (0.0003 ± 0.0005 at full size), so they describe past results more than they improve ratings. The pull setting was chosen on these same years, which flatters these results slightly.
+On the Genesis they clearly help, most at full size (by 0.0038 ± 0.0007). On the SNES they make no clear difference (0.0003 ± 0.0005 at full size), so they describe past results more than they improve ratings. The pull setting was chosen on these same years, which flatters these results slightly.
 
-Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +16 on the SNES.
+Two more things show up. Rating gaps are worth about 0.7 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +4 points on the Genesis and +15 on the SNES.
 
-**K and the coasting bonus** (`analysis/league_elo_k.py`). The league Elo with each setting predicting the next game, on decided games from 2020 between coaches with 30+ earlier games, with the team table in the expected score (log loss; a lower K is best on both systems):
+**K and the coasting bonus** (`analysis/league_elo_k.py`). The league Elo with each setting predicting the next game, on decided games from 2020 between coaches with 30+ earlier games, with the team table in the expected score (log loss):
 
 | Setting | Genesis, all games | Genesis, rating gap worth | SNES, all games | SNES, rating gap worth |
 | --- | --- | --- | --- | --- |
-| K 20, full bonus with no cap | 0.6110 | 0.72 | 0.5947 | 0.76 |
-| K 10, full bonus with no cap | 0.6028 | 0.82 | 0.5893 | 0.87 |
-| K 12, half bonus | 0.6010 | 0.88 | 0.5885 | 0.94 |
-| K 10, half bonus | 0.6007 | 0.90 | 0.5892 | 0.97 |
-| K 14, half bonus | 0.6017 | 0.85 | 0.5884 | 0.91 |
-| K 14 (Genesis) or K 20 (SNES), no bonus | 0.6009 | 0.99 | 0.5899 | 0.99 |
+| K 20, the league's bonus | 0.6022 | 0.85 | 0.5904 | 0.89 |
+| K 16, the league's bonus | 0.6008 | 0.89 | 0.5898 | 0.94 |
+| K 12, the league's bonus | 0.6002 | 0.93 | 0.5904 | 0.99 |
+| K 20, half the bonus | 0.6016 | 0.89 | 0.5904 | 0.94 |
+| K 20, no bonus | 0.6016 | 0.93 | 0.5913 | 0.99 |
 
-The team table was fitted on these years with K 20, which flatters K 20 a little, so the gains are if anything understated. A half bonus beats no bonus clearly on the SNES and by very little on the Genesis.
+The league's settings are close to the best. K 12 is ahead by 0.0021 ± 0.0003 on the Genesis and K 16 by 0.0006 ± 0.0002 on the SNES. The bonus helps on the SNES and makes little difference on the Genesis. The league keeps K 20 because people like larger changes in their ratings, which costs very little. Rating gaps are worth more here, measured game by game, than at the start of a league, because a rating can go out of date during a league.
 
-Refitting the team table at K 12 with half the bonus brings it a little closer to the fixed-strength values (typical distance 14.6 to 11.5 points on the Genesis, 12.8 to 9.4 on the SNES), and the largest moves are about 17-19 points. It doesn't settle every disagreement. Genesis Washington stays at about −18 against −48 with fixed strengths.
-
-**A team's Elo value and its fixed-strength value can differ on the same games.** On the 228 Genesis Washington games in the Elo fit, Elo gives −17 and fixed strengths −42, so the yardstick accounts for most of the gap and the left-out games for little (−48 with them). Separate coach strengths by era don't close it: they lower Washington's strength a little.
+**A team's Elo value and its fixed-strength value can differ on the same games.** On the 228 Genesis Washington games in the Elo fit, Elo gives −14 and fixed strengths −42, so the yardstick accounts for most of the gap and the left-out games for little (−48 with them). Separate coach strengths by era don't close it: they lower Washington's strength a little.
 
 **Coaches change, and team values barely care** (`analysis/team_strength_checks.py`). The team fit uses one strength per coach over all years, though coaches with 100+ games in two straight eras typically moved about 9-10 points of win chance between them. Refitting with a separate strength for each coach in each era moves the team values very little:
 
@@ -325,7 +322,7 @@ On the Genesis the choice hardly matters until the pull is very strong, with 25-
 
 **Simulated seasons with known answers.** On the real schedule and team use, with made-up coach strengths and team values:
 - **The methods recover the truth.** Team values correlate with the true ones at 0.92-0.97, whichever method is used.
-- **The 0.6 comes from the Elo itself.** Rating gaps came out worth 0.6-0.7 of face value even though simulated coaches never change, so it's mostly K 20 noise rather than something about these leagues.
+- **Much of the gap's shortfall comes from the Elo itself.** At the start of a league, rating gaps came out worth 0.6-0.7 of face value even though simulated coaches never change, so it's mostly K 20 noise rather than something about these leagues.
 - **The pull shrinks values.** With teams truly spread by about 60 Elo points, a pull setting of 50 recovered about 0.7-0.9 of that spread on the Genesis schedule and about 0.8 on the SNES schedule, in a smaller test. A setting of 200 kept only about 0.55 on the SNES, which is one reason it isn't used.
 - **Noise sets a floor.** With no true difference between teams, values still typically came out 7-11 points from zero.
 - **Teams used by favorites** tended to come out a little low, but the effect was usually small (often 0.2 of an Elo point per point of gap) and varied a lot between simulations.

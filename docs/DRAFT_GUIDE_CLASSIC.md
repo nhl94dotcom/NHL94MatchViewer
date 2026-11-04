@@ -44,32 +44,32 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 
 | Team | Strength now | Elo adj. | Overall | Best for | Used lately | Expected | Demand place | Strength place | Stronger than demand by | Lineup Ovr | Ovr place | Stronger than Ovr by |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Chicago (CHI) | +8.1 | +83 | Good | Both alike | 9.0% | 43.8% | 1 | 1 | +0 | 83 | 1 | +0 |
-| Detroit (DET) | +6.4 | +39 | Good | Both alike | 9.3% | 47.2% | 1 | 2 | −1 | 80 | 3 | +1 |
-| Buffalo (BUF) | +4.2 | +38 | Good | Both alike | 8.9% | 47.0% | 5 | 3 | +2 | 78 | 4 | +1 |
-| Montreal (MTL) | +2.5 | +32 | Good | Both alike | 9.2% | 48.3% | 3 | 4 | −1 | 75 | 9 | +5 |
-| Boston (BOS) | +1.4 | +6 | Average | High-level | 8.9% | 50.8% | 6 | 5 | +1 | 80 | 2 | −3 |
-| Vancouver (VAN) | −0.5 | +6 | Average | High-level | 9.1% | 47.7% | 3 | 6 | −3 | 72 | 12 | +6 |
-| Dallas (DAL) | −0.8 | −34 | Average | Both alike | 5.3% | 53.7% | 11 | 7 | +4 | 68 | 20 | +13 |
-| Winnipeg (WPG) | −1.0 | −8 | Average | Both alike | 7.6% | 50.9% | 7 | 8 | −1 | 76 | 8 | +0 |
-| Hartford (HFD) | −1.8 | −50 | Poor | Unclear | 1.3% | 66.3% | 20 | 9 | +11 | 70 | 15 | +6 |
-| Calgary (CGY) | −1.9 | −32 | Poor | Both alike | 6.4% | 51.4% | 10 | 10 | +0 | 77 | 6 | −4 |
-| Toronto (TOR) | −2.7 | −40 | Poor | Both alike | 2.4% | 46.6% | 7 | 11 | −4 | 71 | 14 | +3 |
-| Los Angeles (LA) | −4.0 | −20 | Poor | Unclear | 4.9% | 50.6% | 9 | 12 | −3 | 75 | 10 | −2 |
-| Philadelphia (PHI) | −5.0 | −22 | Poor | Both alike | 2.8% | 54.5% | 14 | 13 | +1 | 69 | 17 | +4 |
-| Quebec (QUE) | −5.1 | −43 | Poor | High-level | 4.0% | 55.4% | 15 | 14 | +1 | 72 | 11 | −3 |
-| New Jersey (NJ) | −5.5 | −89* | Poor | Both alike | 0.9% | 53.1% | 16 | 15 | +1 | 69 | 18 | +3 |
-| NY Islanders (NYI) | −5.9 | −59* | Poor | Unclear | 0.9% | 56.6% | 21 | 16 | +5 | 66 | 21 | +5 |
-| Edmonton (EDM) | −6.1 | −64 | Poor | Low-level | 1.2% | 56.1% | 19 | 17 | +2 | 69 | 18 | +1 |
-| Pittsburgh (PIT) | −7.9 | −70 | Poor | Unclear | 2.3% | 51.2% | 12 | 18 | −6 | 78 | 5 | −13 |
-| Washington (WSH) | −8.6 | −17* | Poor | Unclear | 0.6% | 54.2% | 18 | 19 | −1 | 69 | 16 | −3 |
-| Tampa Bay (TB) | −9.4 | −102* | Poor | Low-level | 0.6% | 62.2% | 22 | 20 | +2 | 56 | 22 | +2 |
-| St. Louis (STL) | −10.1 | −59 | Poor | Unclear | 2.0% | 55.3% | 17 | 21 | −4 | 72 | 13 | −8 |
-| NY Rangers (NYR) | −12.0 | −74 | Poor | Both alike | 2.6% | 53.7% | 13 | 22 | −9 | 76 | 7 | −15 |
+| Chicago (CHI) | +8.1 | +72 | Good | Both alike | 9.0% | 43.8% | 1 | 1 | +0 | 83 | 1 | +0 |
+| Detroit (DET) | +6.4 | +35 | Good | Both alike | 9.3% | 47.2% | 1 | 2 | −1 | 80 | 3 | +1 |
+| Buffalo (BUF) | +4.2 | +33 | Good | Both alike | 8.9% | 47.0% | 5 | 3 | +2 | 78 | 4 | +1 |
+| Montreal (MTL) | +2.5 | +29 | Good | Both alike | 9.2% | 48.3% | 3 | 4 | −1 | 75 | 9 | +5 |
+| Boston (BOS) | +1.4 | +7 | Average | High-level | 8.9% | 50.8% | 6 | 5 | +1 | 80 | 2 | −3 |
+| Vancouver (VAN) | −0.5 | +1 | Average | High-level | 9.1% | 47.7% | 3 | 6 | −3 | 72 | 12 | +6 |
+| Dallas (DAL) | −0.8 | −24 | Average | Both alike | 5.3% | 53.7% | 11 | 7 | +4 | 68 | 20 | +13 |
+| Winnipeg (WPG) | −1.0 | −6 | Average | Both alike | 7.6% | 50.9% | 7 | 8 | −1 | 76 | 8 | +0 |
+| Hartford (HFD) | −1.8 | −44 | Poor | Unclear | 1.3% | 66.3% | 20 | 9 | +11 | 70 | 15 | +6 |
+| Calgary (CGY) | −1.9 | −34 | Poor | Both alike | 6.4% | 51.4% | 10 | 10 | +0 | 77 | 6 | −4 |
+| Toronto (TOR) | −2.7 | −39 | Poor | Both alike | 2.4% | 46.6% | 7 | 11 | −4 | 71 | 14 | +3 |
+| Los Angeles (LA) | −4.0 | −19 | Poor | Unclear | 4.9% | 50.6% | 9 | 12 | −3 | 75 | 10 | −2 |
+| Philadelphia (PHI) | −5.0 | −20 | Poor | Both alike | 2.8% | 54.5% | 14 | 13 | +1 | 69 | 17 | +4 |
+| Quebec (QUE) | −5.1 | −36 | Poor | High-level | 4.0% | 55.4% | 15 | 14 | +1 | 72 | 11 | −3 |
+| New Jersey (NJ) | −5.5 | −83* | Poor | Both alike | 0.9% | 53.1% | 16 | 15 | +1 | 69 | 18 | +3 |
+| NY Islanders (NYI) | −5.9 | −50* | Poor | Unclear | 0.9% | 56.6% | 21 | 16 | +5 | 66 | 21 | +5 |
+| Edmonton (EDM) | −6.1 | −55 | Poor | Low-level | 1.2% | 56.1% | 19 | 17 | +2 | 69 | 18 | +1 |
+| Pittsburgh (PIT) | −7.9 | −53 | Poor | Unclear | 2.3% | 51.2% | 12 | 18 | −6 | 78 | 5 | −13 |
+| Washington (WSH) | −8.6 | −14* | Poor | Unclear | 0.6% | 54.2% | 18 | 19 | −1 | 69 | 16 | −3 |
+| Tampa Bay (TB) | −9.4 | −91* | Poor | Low-level | 0.6% | 62.2% | 22 | 20 | +2 | 56 | 22 | +2 |
+| St. Louis (STL) | −10.1 | −53 | Poor | Unclear | 2.0% | 55.3% | 17 | 21 | −4 | 72 | 13 | −8 |
+| NY Rangers (NYR) | −12.0 | −67 | Poor | Both alike | 2.6% | 53.7% | 13 | 22 | −9 | 76 | 7 | −15 |
 
 ### Teams that give more than their demand
 
-- **Dallas:** strength place 7, demand place 11. Strength place 7, Elo place 12, so treat with care.
+- **Dallas:** strength place 7, demand place 11. Strength and Elo agree.
 
 ### Cheap, and better than demand, but still below the average team
 
@@ -81,7 +81,7 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 - **NY Rangers:** demand place 13, strength place 22. Strength and Elo agree.
 - **Pittsburgh:** demand place 12, strength place 18. Strength and Elo agree.
 - **Toronto:** demand place 7, strength place 11. Strength and Elo agree.
-- **St. Louis:** demand place 17, strength place 21. Strength place 21, Elo place 16, so treat with care.
+- **St. Louis:** demand place 17, strength place 21. Strength and Elo agree.
 
 ### Against the roster ratings
 
@@ -143,42 +143,42 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 
 | Team | Strength now | Elo adj. | Overall | Best for | Used lately | Expected | Demand place | Strength place | Stronger than demand by | Lineup Ovr | Ovr place | Stronger than Ovr by |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| New Jersey (NJ) | +5.9 | +33 | Good | Low-level | 2.8% | 56.1% | 16 | 1 | +15 | 68 | 20 | +19 |
-| Pittsburgh (PIT) | +4.0 | +48 | Good | Both alike | 8.6% | 46.7% | 2 | 2 | +0 | 79 | 4 | +2 |
-| NY Rangers (NYR) | +2.7 | +6 | Good | Both alike | 7.6% | 50.3% | 6 | 3 | +3 | 76 | 8 | +5 |
-| Vancouver (VAN) | +0.9 | −24 | Average | Both alike | 7.5% | 51.4% | 9 | 4 | +5 | 72 | 14 | +10 |
-| Chicago (CHI) | +0.5 | +13 | Average | Both alike | 8.2% | 49.7% | 4 | 5 | −1 | 84 | 1 | −4 |
-| Los Angeles (LA) | +0.4 | −4 | Average | Both alike | 7.3% | 48.3% | 5 | 6 | −1 | 72 | 15 | +9 |
-| Calgary (CGY) | +0.4 | +6 | Average | Both alike | 6.5% | 50.0% | 8 | 6 | +2 | 77 | 7 | +1 |
-| Washington (WSH) | +0.3 | −28 | Average | Low-level | 3.1% | 52.8% | 11 | 8 | +3 | 71 | 16 | +8 |
-| Montreal (MTL) | −0.3 | +17 | Average | Low-level | 6.1% | 45.2% | 6 | 9 | −3 | 76 | 9 | +0 |
-| Toronto (TOR) | −0.6 | −17 | Average | Unclear | 1.4% | 50.4% | 14 | 10 | +4 | 74 | 11 | +1 |
-| Boston (BOS) | −0.8 | +8 | Average | High-level | 8.4% | 43.7% | 1 | 11 | −10 | 79 | 3 | −8 |
+| New Jersey (NJ) | +5.9 | +35 | Good | Low-level | 2.8% | 56.1% | 16 | 1 | +15 | 68 | 20 | +19 |
+| Pittsburgh (PIT) | +4.0 | +43 | Good | Both alike | 8.6% | 46.7% | 2 | 2 | +0 | 79 | 4 | +2 |
+| NY Rangers (NYR) | +2.7 | +11 | Good | Both alike | 7.6% | 50.3% | 6 | 3 | +3 | 76 | 8 | +5 |
+| Vancouver (VAN) | +0.9 | −18 | Average | Both alike | 7.5% | 51.4% | 9 | 4 | +5 | 72 | 14 | +10 |
+| Chicago (CHI) | +0.5 | +6 | Average | Both alike | 8.2% | 49.7% | 4 | 5 | −1 | 84 | 1 | −4 |
+| Los Angeles (LA) | +0.4 | −0 | Average | Both alike | 7.3% | 48.3% | 5 | 6 | −1 | 72 | 15 | +9 |
+| Calgary (CGY) | +0.4 | +2 | Average | Both alike | 6.5% | 50.0% | 8 | 6 | +2 | 77 | 7 | +1 |
+| Washington (WSH) | +0.3 | −25 | Average | Low-level | 3.1% | 52.8% | 11 | 8 | +3 | 71 | 16 | +8 |
+| Montreal (MTL) | −0.3 | +9 | Average | Low-level | 6.1% | 45.2% | 6 | 9 | −3 | 76 | 9 | +0 |
+| Toronto (TOR) | −0.6 | −12 | Average | Unclear | 1.4% | 50.4% | 14 | 10 | +4 | 74 | 11 | +1 |
+| Boston (BOS) | −0.8 | +4 | Average | High-level | 8.4% | 43.7% | 1 | 11 | −10 | 79 | 3 | −8 |
 | St. Louis (STL) | −0.9 | −7 | Average | Unclear | 2.6% | 53.4% | 14 | 12 | +2 | 72 | 12 | +0 |
-| Edmonton (EDM) | −0.9 | −23 | Average | Low-level | 2.2% | 61.2% | 18 | 12 | +6 | 70 | 18 | +6 |
-| Winnipeg (WPG) | −1.3 | −25 | Average | Both alike | 3.5% | 54.1% | 13 | 14 | −1 | 78 | 6 | −8 |
-| Detroit (DET) | −1.5 | +7 | Average | Both alike | 7.2% | 42.3% | 3 | 15 | −12 | 80 | 2 | −13 |
-| Philadelphia (PHI) | −2.5 | +1 | Poor | Low-level | 3.0% | 50.8% | 10 | 16 | −6 | 75 | 10 | −6 |
-| Quebec (QUE) | −3.2 | −26 | Poor | High-level | 2.6% | 59.2% | 17 | 17 | +0 | 72 | 12 | −5 |
-| Hartford (HFD) | −3.5 | −26* | Poor | Both alike | 1.2% | 62.0% | 21 | 18 | +3 | 70 | 17 | −1 |
-| Buffalo (BUF) | −3.6 | −24 | Poor | Both alike | 4.9% | 53.9% | 11 | 19 | −8 | 78 | 5 | −14 |
-| NY Islanders (NYI) | −6.0 | −71* | Poor | Unclear | 2.5% | 62.7% | 20 | 20 | +0 | 67 | 21 | +1 |
-| San Jose (SJ) | −7.7 | −35* | Poor | Unclear | 0.6% | 74.5% | 22 | 21 | +1 | 57 | 22 | +1 |
-| Dallas (DAL) | −9.3 | −40* | Poor | Unclear | 1.0% | 54.9% | 18 | 22 | −4 | 69 | 19 | −3 |
+| Edmonton (EDM) | −0.9 | −19 | Average | Low-level | 2.2% | 61.2% | 18 | 12 | +6 | 70 | 18 | +6 |
+| Winnipeg (WPG) | −1.3 | −21 | Average | Both alike | 3.5% | 54.1% | 13 | 14 | −1 | 78 | 6 | −8 |
+| Detroit (DET) | −1.5 | +1 | Average | Both alike | 7.2% | 42.3% | 3 | 15 | −12 | 80 | 2 | −13 |
+| Philadelphia (PHI) | −2.5 | +3 | Poor | Low-level | 3.0% | 50.8% | 10 | 16 | −6 | 75 | 10 | −6 |
+| Quebec (QUE) | −3.2 | −20 | Poor | High-level | 2.6% | 59.2% | 17 | 17 | +0 | 72 | 12 | −5 |
+| Hartford (HFD) | −3.5 | −20* | Poor | Both alike | 1.2% | 62.0% | 21 | 18 | +3 | 70 | 17 | −1 |
+| Buffalo (BUF) | −3.6 | −21 | Poor | Both alike | 4.9% | 53.9% | 11 | 19 | −8 | 78 | 5 | −14 |
+| NY Islanders (NYI) | −6.0 | −53* | Poor | Unclear | 2.5% | 62.7% | 20 | 20 | +0 | 67 | 21 | +1 |
+| San Jose (SJ) | −7.7 | −24* | Poor | Unclear | 0.6% | 74.5% | 22 | 21 | +1 | 57 | 22 | +1 |
+| Dallas (DAL) | −9.3 | −35* | Poor | Unclear | 1.0% | 54.9% | 18 | 22 | −4 | 69 | 19 | −3 |
 
 ### Teams that give more than their demand
 
 - **New Jersey:** strength place 1, demand place 16. Strength and Elo agree; low-level coaches get more from it (weak).
 - **Edmonton:** strength place 12, demand place 18. Strength and Elo agree; low-level coaches get more from it (leaning, few games).
-- **Vancouver:** strength place 4, demand place 9. Strength place 4, Elo place 14, so treat with care.
+- **Vancouver:** strength place 4, demand place 9. Strength place 4, Elo place 13, so treat with care.
 - **Toronto:** strength place 10, demand place 14. Strength and Elo agree.
 
 ### Teams in more demand than their results
 
-- **Detroit:** demand place 3, strength place 15. Strength place 15, Elo place 6, so treat with care.
-- **Boston:** demand place 1, strength place 11. Strength place 11, Elo place 5, so treat with care; high-level coaches get more from it (likely).
-- **Buffalo:** demand place 11, strength place 19. Strength place 19, Elo place 14, so treat with care.
-- **Philadelphia:** demand place 10, strength place 16. Strength place 16, Elo place 9, so treat with care; low-level coaches get more from it (leaning).
+- **Detroit:** demand place 3, strength place 15. Strength place 15, Elo place 9, so treat with care.
+- **Boston:** demand place 1, strength place 11. Strength place 11, Elo place 6, so treat with care; high-level coaches get more from it (likely).
+- **Buffalo:** demand place 11, strength place 19. Strength and Elo agree.
+- **Philadelphia:** demand place 10, strength place 16. Strength place 16, Elo place 7, so treat with care; low-level coaches get more from it (leaning).
 - **Dallas:** demand place 18, strength place 22. Elo rests on few games, so treat with care.
 
 ### Against the roster ratings

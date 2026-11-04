@@ -68,7 +68,6 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## Questions only you or your league can answer
 
-- **Your league Elo:** a CSV of coach and rating for each system, or your Elo code, to check that this project's copy of your method matches yours.
 - **The pull on team strengths:** should the team terms in strength get a stronger pull of 50, matching the Elo adjustments? It would make rarely used teams less extreme and change the guides' numbers and labels.
 - **Team bonuses in the strength fit:** should strengths use each team's real home and away bonuses? Otherwise they stay inside each team's value.
 - **Draft order:** the result files have no draft positions, so the draft guide estimates demand. Are past Classic draft orders available anywhere?
