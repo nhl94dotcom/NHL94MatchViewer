@@ -1,7 +1,7 @@
 """Does a "coasting" bonus make Elo ratings better? (2026-10-30; the user's own ratings give the winner a bonus for
-coasting.) The user's databases outside the repository (%USERPROFILE%\\NHL94_League_Data), aggregates only.
+coasting, by the rule in league_team_elo.py. This one, by win chance, is the coach rating's.) The user's databases outside the repository (%USERPROFILE%\\NHL94_League_Data), aggregates only.
 
-Coasting, the user's rule: the final unbroken stretch of the game in which the eventual winner's chance of winning
+Coasting: the final unbroken stretch of the game in which the eventual winner's chance of winning
 is 90% or more (a 1-goal lead never counts), as a share of the third period's length: more than 100% if it starts in
 an earlier period (40% of the way into the second: 160%; all of the second and third: 200%), at least 10% for any win
 by 2 or more goals (a 1-goal win gets none, so overtime gets none). A version capped at 100% is run beside it.

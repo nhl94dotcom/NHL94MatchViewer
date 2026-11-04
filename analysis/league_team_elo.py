@@ -1,15 +1,18 @@
 """Elo adjustments for the Classic teams: how many points a coach's Elo should go up or down for the team used (the user's question). Aggregates only.
 
-The Elo is the league's own method: every game on the system in date order, a start of 1500, K 20, +7 points for the home side and each team's adjustment (Classic games) in the expected score, and the
-winner's gain and the loser's loss both multiplied by (1 + coasting bonus). The bonus is the final unbroken stretch of regulation at a 90%+ chance of winning on lead and
-time alone, with no 1-goal lead counting, as a share of the third period: 100% from the P2 buzzer, more from earlier, 10% at least. The chances come from the system's own games.
+The Elo is the league's own method, as the user's code runs it: every game on the system in date and time order except the few outlier leagues, a start of 1500, K 20, +7 points for the home side and each
+team's adjustment in the expected score (leagues starting with one of TEAM_LEAGUES), and the winner's gain and the loser's loss both multiplied by the coasting multiplier. A win by 0 or 1 goals has none. For
+a win by 2+ it's max(1.1, 1 + coasting seconds / 600), so ×1.5 from the second-period buzzer. Coasting is the final unbroken stretch in which the winner's lead stays above a line that falls with time:
+5 goals before 5:00, 4 to 10:00, 3 to 12:30, 2 to 14:45 (BREAKS), counted from the goal that took the lead past it. Period lengths aren't converted, as in the league's Elo.
 
-A team's adjustment is fitted on Classic games between coaches with 30+ earlier games, using each coach's Elo at the start of that league:
+A team's adjustment is fitted on Classic games (names starting Classic_Spring, Classic_Summer or Classic_Fall, simulated games left out) between coaches with 30+ earlier games, using each coach's Elo at the start of that league:
     P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))
 so a value can be added to a rating as it stands, and a coach's strength can change over time. As the table is part of that Elo, the fit and the Elo are run in turn until they settle. A tie counts
 half. Rarely used teams are pulled toward the average team, by a setting tested on later years. Zero is the average team as used, weighted by appearances. Spreads come from resampling whole leagues. Checked by predicting each later
 year's games from earlier years' adjustments, against one fixed strength per coach, and against an Elo with no table.
 python analysis/league_team_elo.py     prints the tables and writes reports/classic_team_elo.json (git-ignored; classic_team_guide.py reads it)"""
+import ast
+import csv
 import json
 import math
 import sys
@@ -28,13 +31,63 @@ SCALE = 400 / math.log(10)                  # Elo points per unit of the logit
 K, HOME, START = 20, 7, 1500.0
 MIN_SEEN, MIN_SHOWN = 30, 100
 RIDGES, RIDGE_PERSON = (2.0, 10.0, 25.0, 50.0, 100.0, 200.0, 400.0), 0.5    # the pull settings tested on a team toward the average team; a coach's pull, in the fixed-strength fit
-PULL = 50.0                                 # used on both systems: best on the Genesis; on the SNES, 50 to 400 can't be told apart (0.6317-0.6319), and more than 50 flattens rarely used teams
+PULL = 50.0                                 # used on both systems: best on the Genesis; on the SNES, 50 to 400 can't be told apart (0.6268-0.6270), and more than 50 flattens rarely used teams
 DRAWS, FEEDBACK = 200, 4
 SYSTEMS = (("All_Games_GENS.csv", "Genesis"), ("All_Games_SNES.csv", "SNES"))
+BREAKS = ((300, 5), (600, 4), (750, 3), (885, 2))    # (seconds into the game, lead to pass from then on until the next line); after 14:45 still 2
+TEAM_LEAGUES = ("Classic", "New_Players", "GENS_Summer_League_Tournament", "LFG", "SNES_Summer_League_26")
+OUTLIERS = {"SNES_3v3_Pond_Hockey_League", "SNES_3v3_Pond_Hockey_League-A", "SNES_3v3_Pond_Hockey_League-B", "Two_Teams_and_Zero_Friends_GENS_S1", "Two_Teams_and_Zero_Friends_SNES_S1"}
+
+
+def coasting_seconds(goals):
+    """The seconds the winner coasted. goals: (+1 home or -1 away, seconds into the game), in order."""
+    margin = sum(side for side, _ in goals)
+    if abs(margin) <= 1:
+        return 0
+    events, j = [], 0
+    for side, t in goals:
+        while j < len(BREAKS) and t > BREAKS[j][0]:
+            events.append((0, BREAKS[j][1], BREAKS[j][0]))
+            j += 1
+        events.append((side, None, t))
+    events += [(0, lead, t) for t, lead in BREAKS[j:]]
+    line = 2
+    for side, lead, t in reversed(events):
+        if side:
+            margin -= side
+        else:
+            line = lead
+        if abs(margin) <= line:
+            return 900 - t
+    return 900
+
+
+def multiplier(seconds):
+    return 1.0 if seconds == 0 else max(1.1, 1 + seconds / 600)
+
+
+def load_games(name):
+    """Every game the league's Elo counts, in date and time order. g["coast"] is the multiplier less 1; g["classic"] marks the games the fit uses, g["wide"] those with team adjustments in the Elo."""
+    csv.field_size_limit(10 ** 9)
+    games = []
+    with open(C.DATA / name, encoding="utf-8", errors="replace", newline="") as fh:
+        for r in csv.DictReader(fh):
+            league = r["League"]
+            if league in OUTLIERS:
+                continue
+            found = [(side, (int(e[0]) - 1) * 300 + int(e[1]), int(e[0]), int(e[1])) for col, side in (("HomeGoals", 1), ("AwayGoals", -1)) for e in (ast.literal_eval(r[col]) if r[col] else [])]
+            found.sort(key=lambda e: (e[2], e[3]))
+            date_part, _, time_part = r["DateTime"].partition(" ")
+            when = tuple(int(x) for x in date_part.split("-")) + tuple(int(x) for x in time_part.split(":") if x)
+            games.append({"when": when, "day": date(*when[:3]).toordinal(), "league": league, "hp": r["HomePlayer"], "ap": r["AwayPlayer"], "ht": r["HomeTeamAbbrev"], "at": r["AwayTeamAbbrev"],
+                          "hs": int(float(r["HomeScore"])), "as": int(float(r["AwayScore"])), "coast": multiplier(coasting_seconds([(e[0], e[1]) for e in found])) - 1,
+                          "classic": league.lower().startswith(C.CLASSIC) and r.get("sim") != "1", "wide": league.startswith(TEAM_LEAGUES)})
+    games.sort(key=lambda g: g["when"])
+    return games
 
 
 def run_elo(games, table=None):
-    """{(league, person): (rating at the first game of that league, games before it)}, and each game's Classic flag. table: team adjustments for the expected score in Classic games."""
+    """{(league, person): (rating at the first game of that league, games before it)}. table: team adjustments for the expected score, in the leagues that have them."""
     R = defaultdict(lambda: START)
     seen = defaultdict(int)
     pre = {}
@@ -44,7 +97,7 @@ def run_elo(games, table=None):
         gap = R[g["hp"]] - R[g["ap"]] + HOME
         if not table:
             g["live"] = gap
-        if table and g["classic"]:
+        if table and g["wide"]:
             gap += table.get(g["ht"], 0) - table.get(g["at"], 0)
         p = 1 / (1 + 10 ** (-gap / 400))
         s = 1.0 if g["hs"] > g["as"] else 0.0 if g["hs"] < g["as"] else 0.5
@@ -65,12 +118,12 @@ def elo_with_tables(games, tables, share):
     for g in games:
         year = date.fromordinal(g["day"]).year
         gap = R[g["hp"]] - R[g["ap"]] + HOME
-        table = tables.get(year) if g["classic"] else None
+        table = tables.get(year) if g["wide"] else None
         if table:
             gap += share * (table.get(g["ht"], 0) - table.get(g["at"], 0))
         p = 1 / (1 + 10 ** (-gap / 400))
         s = 1.0 if g["hs"] > g["as"] else 0.0 if g["hs"] < g["as"] else 0.5
-        if table and s != 0.5 and g["ht"] != g["at"] and seen[g["hp"]] >= MIN_SEEN and seen[g["ap"]] >= MIN_SEEN:
+        if table and g["classic"] and s != 0.5 and g["ht"] != g["at"] and seen[g["hp"]] >= MIN_SEEN and seen[g["ap"]] >= MIN_SEEN:
             q = min(max(p, 1e-6), 1 - 1e-6)
             out.append(-(s * math.log(q) + (1 - s) * math.log(1 - q)))
         d = K * (1 + g["coast"]) * (s - p)
@@ -155,8 +208,7 @@ def fixed_strength(rows, teams, used, pull):
 
 
 def study(name, label):
-    C.PREFIX = None
-    games, _ = C.prepare(name)
+    games = load_games(name)
     plain = run_elo(games)
     classic = [g for g in games if g["classic"] and g["ht"] != g["at"]]
     used = defaultdict(int)
