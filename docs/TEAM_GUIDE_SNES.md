@@ -6,30 +6,116 @@ Every retail team in the SNES Classic leagues (names starting `Classic_Spring`, 
 
 ## How to read this guide
 
-- **Strength** is points of win chance above or below 50 against the average team as used in these leagues, with even coaches and no home edge, with who was coaching taken out. "Now" counts recent games more; "all years" counts every game the same. ± is one spread, from resampling whole leagues.
+**The basics**
 
-- **Expected** is what the team's coaches, home ice and the other team predict if this team were the average team in use. A record above expected is what the team itself added.
+- **Points:** strength values are points of win chance above or below 50, against the average team as used in these leagues, with even coaches and no home edge. +5 means about a 55% chance.
 
-- **By level of player** says how much better that level does with this team than with its other teams, using all years. Level is measured three ways: each coach's career strength (high and low are about a third of appearances each), each league's coach strength, and each season's top league (the one with the most As) against its others. A * marks under 150 appearances.
+- **± (spread):** about how far a value could be off by chance, from resampling whole leagues or, in the Record table, from the number of games. A value within one spread of zero can't be told from zero.
 
-- **Overall** goes by strength now: Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.
-
-- **Best for** says which level of player gets more from the team compared with their other teams. It can be High-level, Low-level, Both alike (no gap over 5 points) or Unclear (the measures disagree or there are too few games). A team can be Poor overall and still best for one level: that level just loses less with it.
-
-- **Confidence** applies to a High-level or Low-level call. Likely: all three measures agree on direction, and the gap is at least 1.5 spreads in two. Leaning: the same, at 1 spread. Weak: they agree on direction, the gap is at least 3 points each way, and the team is good for only that level. "Few games" means at least two values rest on under 150 appearances.
+- **Results show what happened, not why.** Players choose or are given teams, and rarely used teams rest on few coaches.
 
 - **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.
 
-- **Ranks** run 1st = best (for goals against, shots against and penalty minutes, 1st is fewest; for checks, the most). They compare the teams in this guide.
+**The "All teams" table**
 
-- **Ratings** are the ROM's, as rosters: the top 12 skaters' mean and the higher-rated goalie. The SNES hot / cold bug maxes about 46% of ratings each game, but never Weight, so ratings other than Weight count for less than they look.
+- **#:** the team's rank by strength now.
 
-- **Results show what happened, not why.** Players choose or are given teams, and rarely used teams rest on few coaches.
+- **Team:** the team and its abbreviation. Click a name to go to its entry.
+
+- **Overall:** from strength now. Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.
+
+- **Best for:** which level of player gets more from this team than from their other teams. High-level or Low-level means one does, Both alike means no gap of over 5 points, and Unclear means the measures disagree or there are too few games. A team can be Poor overall and still best for one level: that level just loses less with it.
+
+- **Confidence:** how sure the Best for call is. Likely: all three measures of level agree on direction, and the gap is at least 1.5 spreads in two. Leaning: the same, at 1 spread. Weak: they agree on direction, the gap is at least 3 points each way, and the team is good for only that level. "Few games" means at least two values rest on under 150 appearances. A dash means no call to rate.
+
+- **Strength now:** how much the team adds, in points, with recent games counting more. A game's weight halves every 3 years, so a game from 3 years ago counts half as much as one played today. It's the better guide to how a team has done lately.
+
+- **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.
+
+- **Record:** all wins and losses with this team, plus ties when there are any.
+
+- **Win %:** wins as a share of wins and losses, without ties or any adjustment for who was coaching.
+
+- **Expected:** the win % that the team's coaches, home ice and the other team predict if this team were the average team in use. A record above expected is what the team itself added.
+
+**The "By level of player" table** (all years; each value says how much better that level does with this team than with its other teams, after taking out who was using it)
+
+- **High level** and **Low level:** the value for each level. A * marks under 150 appearances.
+
+- **High minus low:** the gap between the two. Positive means the team does more for high-level players.
+
+- **By coach (row):** level is each coach's career strength. High and low are the top and bottom groups, with about a third of the appearances each.
+
+- **By league strength (row):** level is the strength of the league's coaches, cut the same way.
+
+- **Top league against others (row):** high is each season's top league, the one with the most As, and low is the same season's other leagues.
+
+**The "Record" table** (one row for each kind of game: all games, regular season, playoffs, home, away, three eras, each coach level, and top league or other leagues)
+
+- **Record**, **Win %** and **Expected:** as in the "All teams" table.
+
+- **Against expected:** win % minus expected, in points, with its spread. Positive means the team did better than its coaches and opponents predict.
+
+**The "Per game" table** (averages over the team's games)
+
+- **Stat** and **Value:** what's measured, explained below, and the team's figure. Percentages are over all its games, not an average of each game's.
+
+- **Rank:** its place among the teams in this guide. 1st is best: the fewest for goals against, shots against and penalty minutes, and the most for checks.
+
+- **Goals for** and **Goals against:** goals scored and allowed.
+
+- **Shots for** and **Shots against:** shots on goal taken and allowed.
+
+- **Shooting %:** goals for as a share of shots for.
+
+- **Save %:** the share of shots against that didn't score.
+
+- **Power play %:** power play goals as a share of power plays.
+
+- **Penalty kill %:** the share of the other team's power plays that didn't score.
+
+- **One-timer goals** and **Breakaway goals:** goals of each kind, as the game counts them.
+
+- **Checks:** checks thrown, as the game counts them.
+
+- **Penalty minutes:** the team's penalty minutes.
+
+- **Faceoffs won %:** the team's share of faceoffs.
+
+- **Attack zone time, seconds:** time spent in the attacking zone.
+
+- **Pass completion %:** completed passes as a share of passes tried, as the game counts them. The game only credits a pass caught by the intended receiver.
+
+**The "Ratings" table** (from the ROM; the number in parentheses is the rank among all 26 NHL teams, with 1st the highest, so the heaviest for Weight)
+
+- **Overall**, **Weight**, **Speed**, **Agility**, **Shot Power**, **Shot Accuracy** and **Checking:** the mean roster rating of the team's top 12 skaters by overall. The SNES hot / cold bug maxes about 46% of ratings each game, but never Weight, so ratings other than Weight count for less than they look.
+
+- **Goalie Agility:** the roster Agility of the team's higher-rated goalie. On the SNES every goalie covers the same net, so it matters less than on the Genesis.
+
+- **Hidden bonus (line under the table):** what the ROM adds to some of the team's ratings at home and takes away on the road.
+
+**The "Leading skaters" table** (the team's top 6 by points; all figures are per team game, whether or not the skater played in it)
+
+- **Player** and **Pos:** the skater, as a forward (F) or defenceman (D).
+
+- **Goals**, **Assists**, **Points** and **Checks:** the skater's figures per team game.
+
+- **Overall**, **Weight**, **Speed**, **Shot Power** and **Shot Acc:** the skater's roster ratings from the ROM.
+
+**The "Goalies" table** (the team's two goalies who faced the most shots)
+
+- **Goalie:** the goalie.
+
+- **Shots faced:** all shots the goalie faced in these games.
+
+- **Save %:** the share of those shots the goalie stopped.
+
+- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.
 
 
 ## All teams
 
-| # | Team | Overall | Best for | Confidence | Now | All years | Record | Win % | Expected |
+| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Record | Win % | Expected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | [New Jersey (NJ)](#1-new-jersey-nj) | Good | Low-level | Weak | +5.9 | +4.5 | 444-287-3 | 60.7% | 56.1% |
 | 2 | [Pittsburgh (PIT)](#2-pittsburgh-pit) | Good | Both alike | — | +4.0 | +4.3 | 1,310-1,195-17 | 52.3% | 46.7% |

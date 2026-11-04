@@ -290,24 +290,66 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
            "No coach is named. The method is in [COACH_RATING.md](COACH_RATING.md).\n",
            "**Jump to a team:** " + " · ".join(f"[{city[t]}](#{anchor(i, city[t], t)})" for i, t in enumerate(full, 1)) + "\n",
            "## How to read this guide\n",
-           "- **Strength** is points of win chance above or below 50 against the average team as used in these leagues, with even coaches and no home edge, with who was coaching taken out. "
-           "\"Now\" counts recent games more; \"all years\" counts every game the same. ± is one spread, from resampling whole leagues.\n",
-           "- **Expected** is what the team's coaches, home ice and the other team predict if this team were the average team in use. A record above expected is what the team itself added.\n",
-           "- **By level of player** says how much better that level does with this team than with its other teams, using all years. Level is measured three ways: each coach's career strength (high and low are about a third of appearances each), "
-           "each league's coach strength, and each season's top league (the one with the most As) against its others. A * marks under 150 appearances.\n",
-           "- **Overall** goes by strength now: Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.\n",
-           "- **Best for** says which level of player gets more from the team compared with their other teams. It can be High-level, Low-level, Both alike (no gap over 5 points) or Unclear (the measures disagree or there are too few games). "
-           "A team can be Poor overall and still best for one level: that level just loses less with it.\n",
-           "- **Confidence** applies to a High-level or Low-level call. Likely: all three measures agree on direction, and the gap is at least 1.5 spreads in two. Leaning: the same, at 1 spread. Weak: they agree on direction, "
-           "the gap is at least 3 points each way, and the team is good for only that level. \"Few games\" means at least two values rest on under 150 appearances.\n",
+           "**The basics**\n",
+           "- **Points:** strength values are points of win chance above or below 50, against the average team as used in these leagues, with even coaches and no home edge. +5 means about a 55% chance.\n",
+           "- **± (spread):** about how far a value could be off by chance, from resampling whole leagues or, in the Record table, from the number of games. A value within one spread of zero can't be told from zero.\n",
+           "- **Results show what happened, not why.** Players choose or are given teams, and rarely used teams rest on few coaches.\n",
            "- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. "
            + ("The overall team order is sturdier.\n" if tab == "GENESIS" else "On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.\n"),
-           "- **Ranks** run 1st = best (for goals against, shots against and penalty minutes, 1st is fewest; for checks, the most). They compare the teams in this guide.\n",
-           "- **Ratings** are the ROM's, as rosters: the top 12 skaters' mean and the higher-rated goalie. "
+           "**The \"All teams\" table**\n",
+           "- **#:** the team's rank by strength now.\n",
+           "- **Team:** the team and its abbreviation. Click a name to go to its entry.\n",
+           "- **Overall:** from strength now. Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.\n",
+           "- **Best for:** which level of player gets more from this team than from their other teams. High-level or Low-level means one does, Both alike means no gap of over 5 points, and Unclear means the measures disagree or there are too few games. "
+           "A team can be Poor overall and still best for one level: that level just loses less with it.\n",
+           "- **Confidence:** how sure the Best for call is. Likely: all three measures of level agree on direction, and the gap is at least 1.5 spreads in two. Leaning: the same, at 1 spread. Weak: they agree on direction, "
+           "the gap is at least 3 points each way, and the team is good for only that level. \"Few games\" means at least two values rest on under 150 appearances. A dash means no call to rate.\n",
+           f"- **Strength now:** how much the team adds, in points, with recent games counting more. A game's weight halves every {hl:g} years, so a game from 3 years ago counts {'a quarter' if hl == 1.5 else 'half' if hl == 3 else f'{0.5 ** (3 / hl):.2f} times'} as much as one played today. It's the better guide to how a team has done lately.\n",
+           "- **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.\n",
+           "- **Record:** all wins and losses with this team, plus ties when there are any.\n",
+           "- **Win %:** wins as a share of wins and losses, without ties or any adjustment for who was coaching.\n",
+           "- **Expected:** the win % that the team's coaches, home ice and the other team predict if this team were the average team in use. A record above expected is what the team itself added.\n",
+           "**The \"By level of player\" table** (all years; each value says how much better that level does with this team than with its other teams, after taking out who was using it)\n",
+           "- **High level** and **Low level:** the value for each level. A * marks under 150 appearances.\n",
+           "- **High minus low:** the gap between the two. Positive means the team does more for high-level players.\n",
+           "- **By coach (row):** level is each coach's career strength. High and low are the top and bottom groups, with about a third of the appearances each.\n",
+           "- **By league strength (row):** level is the strength of the league's coaches, cut the same way.\n",
+           "- **Top league against others (row):** high is each season's top league, the one with the most As, and low is the same season's other leagues.\n",
+           "**The \"Record\" table** (one row for each kind of game: all games, regular season, playoffs, home, away, three eras, each coach level, and top league or other leagues)\n",
+           "- **Record**, **Win %** and **Expected:** as in the \"All teams\" table.\n",
+           "- **Against expected:** win % minus expected, in points, with its spread. Positive means the team did better than its coaches and opponents predict.\n",
+           "**The \"Per game\" table** (averages over the team's games)\n",
+           "- **Stat** and **Value:** what's measured, explained below, and the team's figure. Percentages are over all its games, not an average of each game's.\n",
+           "- **Rank:** its place among the teams in this guide. 1st is best: the fewest for goals against, shots against and penalty minutes, and the most for checks.\n",
+           "- **Goals for** and **Goals against:** goals scored and allowed.\n",
+           "- **Shots for** and **Shots against:** shots on goal taken and allowed.\n",
+           "- **Shooting %:** goals for as a share of shots for.\n",
+           "- **Save %:** the share of shots against that didn't score.\n",
+           "- **Power play %:** power play goals as a share of power plays.\n",
+           "- **Penalty kill %:** the share of the other team's power plays that didn't score.\n",
+           "- **One-timer goals** and **Breakaway goals:** goals of each kind, as the game counts them.\n",
+           "- **Checks:** checks thrown, as the game counts them.\n",
+           "- **Penalty minutes:** the team's penalty minutes.\n",
+           "- **Faceoffs won %:** the team's share of faceoffs.\n",
+           "- **Attack zone time, seconds:** time spent in the attacking zone.\n",
+           "- **Pass completion %:** completed passes as a share of passes tried, as the game counts them. The game only credits a pass caught by the intended receiver.\n",
+           "**The \"Ratings\" table** (from the ROM; the number in parentheses is the rank among all 26 NHL teams, with 1st the highest, so the heaviest for Weight)\n",
+           "- **Overall**, **Weight**, **Speed**, **Agility**, **Shot Power**, **Shot Accuracy** and **Checking:** the mean roster rating of the team's top 12 skaters by overall. "
            + ("Hot and cold values change them a little in play.\n" if tab == "GENESIS" else "The SNES hot / cold bug maxes about 46% of ratings each game, but never Weight, so ratings other than Weight count for less than they look.\n"),
-           "- **Results show what happened, not why.** Players choose or are given teams, and rarely used teams rest on few coaches.\n",
+           "- **Goalie Agility:** the roster Agility of the team's higher-rated goalie. "
+           + ("On the Genesis it sets the goalie's reach.\n" if tab == "GENESIS" else "On the SNES every goalie covers the same net, so it matters less than on the Genesis.\n"),
+           "- **Hidden bonus (line under the table):** what the ROM adds to some of the team's ratings at home and takes away on the road.\n",
+           "**The \"Leading skaters\" table** (the team's top 6 by points; all figures are per team game, whether or not the skater played in it)\n",
+           "- **Player** and **Pos:** the skater, as a forward (F) or defenceman (D).\n",
+           "- **Goals**, **Assists**, **Points** and **Checks:** the skater's figures per team game.\n",
+           "- **Overall**, **Weight**, **Speed**, **Shot Power** and **Shot Acc:** the skater's roster ratings from the ROM.\n",
+           "**The \"Goalies\" table** (the team's two goalies who faced the most shots)\n",
+           "- **Goalie:** the goalie.\n",
+           "- **Shots faced:** all shots the goalie faced in these games.\n",
+           "- **Save %:** the share of those shots the goalie stopped.\n",
+           "- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.\n",
            "\n## All teams\n",
-           "| # | Team | Overall | Best for | Confidence | Now | All years | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+           "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]
         best, sure = best_for(levels[t])
