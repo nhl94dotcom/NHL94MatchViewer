@@ -103,7 +103,11 @@ version's goals a game, games:
 (every game in date order, a 1500 start, K 20, +7 for home and the team adjustments in the expected score, the winner's gain and loser's loss raised by the coasting bonus). Rarely used teams are pulled toward the average team, with one tested setting on both systems. Genesis: Chicago +83, Detroit +39, Buffalo +38, Montreal +32, down to the
 Rangers -74 and Pittsburgh -70 among well-used teams. SNES: Pittsburgh +48, New Jersey +33, down to Dallas -40 and the Islanders -71 among rarely used teams. Each year's adjustments, fitted on earlier years and used inside the running Elo,
 predict Genesis Classic games clearly better (0.6516 to 0.6475), and make no clear difference on the SNES (0.6321 to 0.6319). This Elo's rating gaps are
-worth about 0.6 of their face value at the start of a league.
+worth about 0.6 of their face value at the start of a league. A lower K predicts the next game clearly better (`analysis/league_elo_k.py`): K 20 with the full bonus 0.6110 Genesis and 0.5947 SNES, against 0.6010 and 0.5885 at K 12 with half the bonus.
+
+Each coach staying one fixed strength over all years barely affects the team values (`analysis/team_strength_checks.py`): a separate strength per era correlates at 0.98-0.99 with them on the Genesis and 0.94 on the SNES with 3 or 4 eras, though coaches typically move 9-10 points of win chance between eras. Team values repeat across random halves of the leagues at 0.73 on the Genesis and 0.35 on the SNES. A stronger pull on the team terms makes little difference to predicting Genesis games and helps a little on the SNES, all the way to the strongest setting tried, so team terms add little to predicting SNES games once coaches are known.
+
+Players against their ratings are in `docs/PLAYER_GUIDE_GENESIS.md` and `docs/PLAYER_GUIDE_SNES.md` (`analysis/classic_player_guide.py`): among teammates at the same position, what a skater does beyond their ratings repeats across random halves of the leagues at 0.63 on the Genesis and 0.66 on the SNES. Teams against estimated demand and their roster ratings are in `docs/DRAFT_GUIDE_CLASSIC.md` (`analysis/classic_draft_guide.py`).
 
 ## Game-wide patterns (`analysis/league_patterns.py`)
 

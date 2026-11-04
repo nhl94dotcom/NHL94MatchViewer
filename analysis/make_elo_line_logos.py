@@ -1,5 +1,5 @@
-"""The Elo number lines (make_elo_line.py) with team logos, for pasting. The logos are the centre-ice ones from the player's own Genesis ROM, used on both systems' lines as the SNES reader has
-none. They are copyrighted game art, so the pictures go to Documents\\NHL94 Viewer\\team_graphics and never into the repository, like the sprites.
+"""The Elo number lines (make_elo_line.py) with team logos, for pasting. The logos come from the player's own ROMs: the centre-ice ones on the Genesis, the team logo sprites on the SNES
+(snes_logos.py). They are copyrighted game art, so the pictures go to Documents\\NHL94 Viewer\\team_graphics and never into the repository, like the sprites.
 python analysis/make_elo_line_logos.py"""
 import base64
 import json
@@ -13,6 +13,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import league_team_study as L  # noqa: E402
+import snes_logos  # noqa: E402
 from make_elo_line import FONT, GRID, HIGH, INK, LOW, MARGIN, MARK, MIN_SHOWN, MUTED, ROOT, ROUGH, SURFACE, TITLES, WIDTH, minus, place  # noqa: E402
 
 OUT = Path.home() / "Documents" / "NHL94 Viewer" / "team_graphics"
@@ -41,7 +42,7 @@ def png(logo, palette):
     return "data:image/png;base64," + base64.b64encode(blob).decode(), x1 - x0, y1 - y0
 
 
-def draw(label, data, logos, name, low, high, step, foot):
+def draw(label, data, logos, name, low, high, step, foot, scale=SCALE):
     teams = {t: v for t, v in data["teams"].items() if v["games"] >= MIN_SHOWN}
     values = {t: v["adj"] for t, v in teams.items()}
     plot = WIDTH - 2 * MARGIN
@@ -67,7 +68,7 @@ def draw(label, data, logos, name, low, high, step, foot):
         cy = mid - levels[t] * ROW
         s.append(f'<rect x="{x(v) - CELL / 2 + 2:.1f}" y="{cy - 42:.1f}" width="{CELL - 4}" height="84" rx="5" fill="{SURFACE}"/>')
         uri, w, h = logos[t]
-        s.append(f'<image x="{x(v) - w * SCALE / 2:.1f}" y="{cy - 12 - h * SCALE / 2:.1f}" width="{w * SCALE}" height="{h * SCALE}" href="{uri}" style="image-rendering:pixelated"/>')
+        s.append(f'<image x="{x(v) - w * scale / 2:.1f}" y="{cy - 12 - h * scale / 2:.1f}" width="{w * scale}" height="{h * scale}" href="{uri}" style="image-rendering:pixelated"/>')
         rough = teams[t]["games"] < ROUGH
         s.append(f'<text x="{x(v):.1f}" y="{cy + 38:.1f}" font-size="15.5" text-anchor="middle" fill="{INK}" font-weight="{400 if rough else 600}">{minus(f"{t} {v:+.0f}")}</text>')
     for t, v in values.items():
@@ -91,7 +92,9 @@ def main():
     missing = {label: [t for t, v in data[label]["teams"].items() if v["games"] >= MIN_SHOWN and t not in logos] for label in TITLES}
     print("teams with no logo:", missing)
     draw("Genesis", data["Genesis"], logos, "elo_teams_genesis_logos", LOW, HIGH, 25, "")
-    draw("SNES", data["SNES"], logos, "elo_teams_snes_logos", -85, 60, 20, "This scale is about 1.5 times wider than the Genesis one.")
+    snes = {t: ("data:image/png;base64," + base64.b64encode(snes_logos.png_bytes(w, h, pix)).decode(), w, h) for t, (w, h, pix) in snes_logos.logos(L.rom("cd85e387.smc")).items()}
+    print("SNES teams with no logo:", [t for t, v in data["SNES"]["teams"].items() if v["games"] >= MIN_SHOWN and t not in snes])
+    draw("SNES", data["SNES"], snes, "elo_teams_snes_logos", -85, 60, 20, "This scale is about 1.5 times wider than the Genesis one.", scale=1.5)
 
 
 if __name__ == "__main__":
