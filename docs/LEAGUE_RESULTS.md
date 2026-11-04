@@ -274,40 +274,40 @@ two players' ratings in it. Each version's K tuned; log loss on the next games:
 
 | | Plain Elo | Coasting bonus | Capped at 100% | Ratings in the 90% line | A goal-margin bonus instead |
 | --- | --- | --- | --- | --- | --- |
-| Genesis | 0.5982 (K 16) | 0.5990 (K 8) | 0.5982 (K 10) | 0.6024 (K 7) | 0.5978 (K 10) |
-| SNES | 0.5907 (K 20) | 0.5898 (K 10) | 0.5893 (K 12) | 0.5932 (K 10) | 0.5891 (K 14) |
+| Genesis | 0.5980 (K 16) | 0.5989 (K 8) | 0.5980 (K 10) | 0.6023 (K 7) | 0.5977 (K 10) |
+| SNES | 0.5907 (K 20) | 0.5899 (K 10) | 0.5893 (K 12) | 0.5932 (K 10) | 0.5891 (K 14) |
 
-The winner coasts in 63% (Genesis) and 66% (SNES) of games, for a mean bonus of 1.1 when they do. The bonus does
+The winner coasts in 62% (Genesis) and 65% (SNES) of games, for a mean bonus of 1.1 when they do. The bonus does
 nothing for the Genesis ratings and helps the SNES ones a little (0.001), no more than a plain bonus for the margin
 of victory (25% for each goal past the first, up to 100%): coasting time is mostly the margin by another
 name. Putting the ratings in the 90% line makes it worse on both: the favourite reaches the line sooner, so the
 bonus goes mostly to expected wins, which the ratings had already counted.
 
-**A coach strength rating** (`analysis/coach_rating.py`, 2026-11-03; the table with people's names stays in the league data folder): every game at once by ridge
+**A coach strength rating** (`analysis/coach_rating.py`, 2026-11-03; the full method is in `docs/COACH_RATING.md`; the table with people's names stays in the league data folder): every game at once by ridge
 regression, result value = home coach - away coach + home team - away team + home edge, team terms in Classic leagues only, recent games weighted (half-life 1.5
 years won). Result values: win or loss; goal difference capped at +-5; win or loss plus the winner's coasting share (capped at 100%); a blend. Log loss on later decided games between
 people with 30+ earlier games, refitted monthly from 2020:
 
 | | Elo, updated every game | Elo, frozen monthly | Win only | Margin | Coasting | Blend |
 | --- | --- | --- | --- | --- | --- | --- |
-| Genesis | 0.6030 | 0.6146 | 0.6065 | 0.6049 | 0.6059 | 0.6057 |
-| SNES | 0.5915 | 0.6044 | 0.5964 | 0.5924 | 0.5943 | 0.5931 |
+| Genesis | 0.6029 | 0.6145 | 0.6064 | 0.6048 | 0.6057 | 0.6056 |
+| SNES | 0.5914 | 0.6044 | 0.5962 | 0.5921 | 0.5939 | 0.5928 |
 
-Like for like (frozen monthly) the fit beats Elo by about 0.01. Elo updated after every game still beats a monthly refit, except on Classic Genesis games with margin (0.6325 to 0.6337). Coasting beats win-only
-(by 0.0006 / 0.0022) and loses to capped margin (by 0.0010 / 0.0019), all clear of the paired spread (0.0001-0.0003) but small. Two random halves of the games fitted apart agree at 0.98 over coaches with 100+ games. The Genesis team
+Like for like (frozen monthly) the fit beats Elo by about 0.01. Elo updated after every game still beats a monthly refit, except on Classic Genesis games with margin (0.6324 to 0.6337). Coasting beats win-only
+(by 0.0006 / 0.0022) and loses to capped margin (by 0.0009 / 0.0018), all clear of the paired spread (0.0001-0.0003) but small. Two random halves of the games fitted apart agree at 0.98 over coaches with 100+ games. The Genesis team
 terms agree with the team study above; the SNES ones less well (Quebec and Boston differ), as that study also found them weak. The table's give-or-take comes from the fit alone and is too narrow: it ignores form and the team terms' error.
-"Average" in the tables is the mean of coaches with 100+ games (they average 56% on the Genesis and 65% on the SNES against the all-coach mean); only the zero point moves. Removing low-game coaches' games instead made predictions slightly worse, so every game stays in the fit.
+"Average" in the tables is the mean of coaches with 100+ games (they average 55% on the Genesis and 64% on the SNES against the all-coach mean); only the zero point moves. The win chance's conversion factor comes from later games, as one fitted on the same games overstated chances (COACH_RATING section 7). Removing low-game coaches' games instead made predictions slightly worse, so every game stays in the fit.
 
-Each league group fitted alone (`coach_rating.py groups`, refitted monthly, each with its own best settings; team terms only in Classic, so in a draft league a coach's roster is part of his rating):
+Each league group fitted alone (`coach_rating.py groups`, refitted monthly, every version on the settings of that group's table; team terms only in Classic, so in a draft league a coach's roster is part of their rating):
 
 | Leagues | Games | Elo, every game | Elo, frozen monthly | Win only | Margin | Coasting | Blend |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Genesis Classic | 23,054 | 0.6500 | 0.6642 | 0.6479 | 0.6466 | 0.6464 | 0.6463 |
-| SNES Classic | 15,135 | 0.6417 | 0.6581 | 0.6542 | 0.6502 | 0.6523 | 0.6510 |
-| Genesis Chaos | 11,711 | 0.6458 | 0.6647 | 0.6457 | 0.6440 | 0.6445 | 0.6440 |
-| SNES Draft | 7,918 | 0.6336 | 0.6531 | 0.6430 | 0.6422 | 0.6408 | 0.6394 |
+| Genesis Classic | 23,054 | 0.6501 | 0.6643 | 0.6478 | 0.6466 | 0.6463 | 0.6461 |
+| SNES Classic | 15,135 | 0.6409 | 0.6575 | 0.6490 | 0.6448 | 0.6468 | 0.6455 |
+| Genesis Chaos | 11,711 | 0.6458 | 0.6647 | 0.6457 | 0.6440 | 0.6445 | 0.6441 |
+| SNES Draft | 7,918 | 0.6342 | 0.6534 | 0.6434 | 0.6387 | 0.6411 | 0.6398 |
 
-On the Genesis the fit is at least level with Elo updated every game (clearly better in Classic, 0.0036 +- 0.0018); on the SNES that Elo stays ahead (by 0.007-0.011). Coasting always beats win-only; against margin it's a tie except SNES Classic, where margin is ahead by 0.002.
+On the Genesis the fit is at least level with Elo updated every game (clearly better in Classic, 0.0038 +- 0.0018); on the SNES that Elo stays ahead (by 0.006-0.007). Coasting always beats win-only; against margin it's a tie on the Genesis, and margin is ahead on the SNES by 0.002.
 
 **By year:** the Genesis shooting % fell from 33-36% (2013-2019) to 31-32% (2020 on) on the same shots, penalty
 minutes from about 6 a game to 3-5; one-timers, breakaways and checks stayed level. SNES pass completion jumped from
