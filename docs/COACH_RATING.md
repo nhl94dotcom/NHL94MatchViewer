@@ -34,8 +34,8 @@ There are six tables, each fitted entirely on its own games:
 
 | Table | Which leagues | Games | Coaches | With 100+ games |
 | --- | --- | --- | --- | --- |
-| Genesis, all leagues | all | 86,985 | 326 | 173 |
-| SNES, all leagues | all | 36,243 | 224 | 96 |
+| Genesis, all leagues | all but five outlier leagues | 86,804 | 326 | 172 |
+| SNES, all leagues | all but five outlier leagues | 35,811 | 223 | 95 |
 | Genesis Classic | Classic leagues | 22,757 | 281 | 120 |
 | SNES Classic | Classic leagues | 15,017 | 182 | 75 |
 | Genesis Chaos | name starts with "Chaos" | 11,711 | 106 | 62 |
@@ -175,7 +175,7 @@ the league groups (112-231 games), so those are rough. The factors in use are:
 
 | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- |
-| 2.059 | 1.990 | 1.719 | 1.615 | 1.678 | 1.626 |
+| 2.064 | 1.974 | 1.719 | 1.615 | 1.678 | 1.626 |
 
 The factor affects percentages only. It can't change the order of coaches in a table.
 
@@ -449,17 +449,17 @@ And in the all-leagues tables:
 
 | Table | Test games | Elo, every game | Elo, frozen monthly | Win only | Capped goal diff | Win + coasting (used) | Blend |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Genesis, all | 63,636 | 0.6029 | 0.6145 | 0.6063 | 0.6056 | 0.6056 | 0.6055 |
-| SNES, all | 26,767 | 0.5915 | 0.6045 | 0.5960 | 0.5920 | 0.5938 | 0.5926 |
+| Genesis, all | 63,459 | 0.6030 | 0.6146 | 0.6063 | 0.6057 | 0.6057 | 0.6056 |
+| SNES, all | 26,355 | 0.5929 | 0.6062 | 0.5970 | 0.5932 | 0.5949 | 0.5938 |
 
 What this shows:
 
 - **Against Elo updated every game:** the rating is better in Genesis Classic (by 0.0039 ± 0.0018), level in Genesis Chaos, and
-  behind in SNES Classic (0.0058 ± 0.0025), SNES Draft (0.0069 ± 0.0028) and both all-leagues tables (0.0027 and 0.0023).
+  behind in SNES Classic (0.0058 ± 0.0025), SNES Draft (0.0069 ± 0.0028) and both all-leagues tables (0.0027 and 0.0020).
 - **Against Elo frozen monthly,** the like-for-like comparison, the rating is better in every table.
 - **Coasting against win-only:** coasting is better in every table, by small amounts that clear the test's noise.
 - **Coasting against capped goal difference:** tied on the Genesis, in all three tables. Goal difference is ahead on the SNES (0.0020 ± 0.0005 in SNES
-  Classic, 0.0024 ± 0.0005 in SNES Draft, 0.0018 ± 0.0003 in all leagues). The tables use coasting because it's the rule
+  Classic, 0.0024 ± 0.0005 in SNES Draft, 0.0017 ± 0.0003 in all leagues). The tables use coasting because it's the rule
   that was asked for, not because it won. The blend is about as good as either.
 
 **Other checks**
@@ -468,7 +468,7 @@ What this shows:
 | --- | --- | --- | --- | --- | --- | --- |
 | Two random halves of the games, fitted apart: correlation over coaches with 100+ games | 0.98 | 0.98 | 0.94 | 0.96 | 0.96 | 0.97 |
 | A coach one standard deviation above another (among 100+ coaches) wins | 69% | 70% | 65% | 65% | 67% | 68% |
-| Home wins between even coaches on neutral teams | 50.5% | 52.4% | 50.8% | 52.5% | 48.8% | 51.8% |
+| Home wins between even coaches on neutral teams | 50.5% | 52.5% | 50.8% | 52.5% | 48.8% | 51.8% |
 
 Dropping low-game coaches' games was also tested. Removing coaches under 100 games made predictions worse
 (Genesis 0.6210 to 0.6251, SNES 0.6242 to 0.6267) and left the top 20 unchanged, so every game stays in the fit.
@@ -522,6 +522,8 @@ python analysis/classic_team_guide.py      the two team guides (needs all the ru
 python analysis/classic_player_guide.py    the two player guides
 python analysis/classic_draft_guide.py     the Classic draft guide (needs the team and player guides)
 python analysis/coach_guide.py             a private page per coach (needs the ratings), never in the repository
+python analysis/coach_history.py           each coach's Rating on past dates, private, never in the repository
+python analysis/league_ratings.py          docs/LEAGUE_RATINGS.md, how strong each league-season's coaches were (needs the history)
 python analysis/league_elo_k.py            K and the coasting bonus tested
 python analysis/team_strength_checks.py    coach eras and the pull on teams tested
 ```

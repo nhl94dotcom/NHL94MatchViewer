@@ -49,6 +49,7 @@ MIN_TEAM_GAMES, MIN_SEEN, FIRST_YEAR = 100, 30, 2020
 ELO_K = {"GENESIS": 16, "SNES": 20}
 REF_GAMES = 100                                         # "average" in the table: the mean coach with this many games or more
 CLASSIC = ("classic_spring", "classic_summer", "classic_fall")     # what makes a Classic league (lower case)
+OUTLIERS = {"SNES_3v3_Pond_Hockey_League", "SNES_3v3_Pond_Hockey_League-A", "SNES_3v3_Pond_Hockey_League-B", "Two_Teams_and_Zero_Friends_GENS_S1", "Two_Teams_and_Zero_Friends_SNES_S1"}   # not the same game: the league's Elo leaves them out too
 GROUP_STARTS = {"classic": CLASSIC, "chaos": ("chaos",), "snes_draft": ("snes_draft",)}
 PERIOD, MIN_LEAGUE_GAMES = 300, 20                      # seconds in the usual period; games a league needs before its period length is read from its goals
 PREFIX = None                                           # only this group's leagues (a key of GROUP_STARTS)
@@ -89,7 +90,7 @@ def read_extra(name):
 
 
 def prepare(name):
-    games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"])
+    games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"]) and g["league"] not in OUTLIERS
              and (PREFIX is None or g["league"].lower().startswith(GROUP_STARTS[PREFIX]))]
     # Rows with the same score, shots and goal list stay in (about 0.3%): per the user, usually a second game played when no save state was taken after
     # the first, so an earlier save state with the right winner was used again.

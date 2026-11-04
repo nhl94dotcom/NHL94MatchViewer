@@ -36,7 +36,7 @@ DRAWS, FEEDBACK = 200, 4
 SYSTEMS = (("All_Games_GENS.csv", "Genesis"), ("All_Games_SNES.csv", "SNES"))
 BREAKS = ((300, 5), (600, 4), (750, 3), (885, 2))    # (seconds into the game, lead to pass from then on until the next line); after 14:45 still 2
 TEAM_LEAGUES = ("Classic", "New_Players", "GENS_Summer_League_Tournament", "LFG", "SNES_Summer_League_26")
-OUTLIERS = {"SNES_3v3_Pond_Hockey_League", "SNES_3v3_Pond_Hockey_League-A", "SNES_3v3_Pond_Hockey_League-B", "Two_Teams_and_Zero_Friends_GENS_S1", "Two_Teams_and_Zero_Friends_SNES_S1"}
+OUTLIERS = C.OUTLIERS
 
 
 def coasting_seconds(goals):
