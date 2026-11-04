@@ -3,6 +3,7 @@ can be compared, and the SNES has a zoomed version too. Reads reports/classic_te
 elo_teams_snes_zoom as .svg, plus a .png of each for pasting, through headless Edge.
 python analysis/make_elo_line.py"""
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -33,7 +34,7 @@ def place(values, width):
 
 
 def minus(text):
-    return text.replace("-", "−")
+    return re.sub(r"[-+]0$", "0", text).replace("-", "−")
 
 
 def draw(label, data, name, low=LOW, high=HIGH, step=25, foot="Both systems use the same scale."):

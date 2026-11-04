@@ -292,7 +292,7 @@ Used in 93 of 97 leagues (25 of them a season's top league), by 75 coaches, 4,12
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 71.3 (4th) | 7.0 (21st) | 3.6 (9th) | 4.2 (3rd) | 3.7 (2nd) | 2.9 (11th) | 2.6 (18th) | 4.0 (5th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -398,7 +398,7 @@ Used in 87 of 97 leagues (22 of them a season's top league), by 69 coaches, 3,85
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +4.7 ± 1.8 | +1.5 ± 1.4 | +3.1 ± 2.3 |
-| By league strength | +2.9 ± 1.7 | +2.9 ± 1.7 | +0.0 ± 2.6 |
+| By league strength | +2.9 ± 1.7 | +2.9 ± 1.7 | 0.0 ± 2.6 |
 | Top league against others | +3.1 ± 2.0 | +2.9 ± 1.1 | +0.3 ± 2.4 |
 
 **Record**
@@ -628,7 +628,7 @@ Used in 61 of 97 leagues (19 of them a season's top league), by 46 coaches, 2,67
 | Regular season | 1,194-1,091-4 | 52.3% | 53.8% | −1.6 ± 1.0 |
 | Playoffs | 203-183 | 52.6% | 52.8% | −0.3 ± 2.5 |
 | Home | 701-642-2 | 52.2% | 55.0% | −2.8 ± 1.4 |
-| Away | 696-632-2 | 52.4% | 52.4% | +0.0 ± 1.4 |
+| Away | 696-632-2 | 52.4% | 52.4% | 0.0 ± 1.4 |
 | 2013-2019 | 446-388-1 | 53.5% | 52.7% | +0.8 ± 1.7 |
 | 2020-2022 | 387-390-1 | 49.8% | 53.5% | −3.7 ± 1.8 |
 | 2023-2026 | 564-496-2 | 53.2% | 54.6% | −1.4 ± 1.5 |
@@ -657,7 +657,7 @@ Used in 61 of 97 leagues (19 of them a season's top league), by 46 coaches, 2,67
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 64.7 (16th) | 7.0 (20th) | 3.8 (5th) | 3.8 (9th) | 3.3 (9th) | 2.6 (19th) | 2.7 (15th) | 4.0 (4th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -681,7 +681,7 @@ Hidden bonus: +0 at home, −0 away.
 
 **Overall: Average. Best for: Both alike.** Strength −1.0 ± 1.4 now (8th of 22), +0.1 ± 0.9 over all years (6th).
 
-**Elo adjustment:** −6 ± 10 points (7th of 22), from 2,687 of 3,541 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's −0.
+**Elo adjustment:** −6 ± 10 points (7th of 22), from 2,687 of 3,541 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's 0.
 
 Used in 83 of 97 leagues (25 of them a season's top league), by 60 coaches, 3,541 games, most recently 2026-11-03.
 
@@ -802,7 +802,7 @@ Used in 10 of 97 leagues (4 of them a season's top league), by 9 coaches, 452 ga
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 64.0 (19th) | 7.4 (11th) | 3.3 (14th) | 3.5 (15th) | 3.2 (13th) | 2.8 (16th) | 2.8 (13th) | 4.0 (7th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -875,7 +875,7 @@ Used in 76 of 97 leagues (22 of them a season's top league), by 65 coaches, 3,02
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 71.8 (2nd) | 7.6 (9th) | 3.7 (7th) | 4.1 (4th) | 3.5 (4th) | 3.0 (6th) | 3.2 (5th) | 3.0 (17th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1167,7 +1167,7 @@ Used in 48 of 97 leagues (10 of them a season's top league), by 41 coaches, 2,05
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 68.1 (10th) | 6.8 (25th) | 3.7 (8th) | 3.5 (17th) | 3.5 (6th) | 3.3 (2nd) | 2.3 (24th) | 4.0 (11th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1312,7 +1312,7 @@ Used in 5 of 97 leagues (2 of them a season's top league), by 6 coaches, 210 gam
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 64.6 (17th) | 7.5 (10th) | 3.2 (17th) | 3.4 (18th) | 3.2 (14th) | 2.8 (13th) | 2.4 (22nd) | 2.0 (25th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1604,7 +1604,7 @@ Used in 5 of 97 leagues (1 of them a season's top league), by 5 coaches, 206 gam
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 54.5 (22nd) | 7.1 (19th) | 2.9 (22nd) | 2.7 (25th) | 2.3 (25th) | 2.8 (17th) | 2.3 (26th) | 3.0 (22nd) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 

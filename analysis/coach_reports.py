@@ -107,7 +107,7 @@ def notes(me):
     if me["non_classic_weight"] >= 50:
         n.append(f"**The Rating can't separate coach from roster outside Classic.** It allows for team strength only in Classic. {me['non_classic_weight']:.0f}% of the weight comes from other leagues, where a strong roster counts as the coach's own strength.")
     if me["top5"] >= 50:
-        n.append(f"**A small group of opponents matters a lot.** Their five most frequent recent opponents hold {me['top5']:.0f}% of the Rating's weight.")
+        n.append(f"**A small group of opponents matters a lot.** The five opponents who count most hold {me['top5']:.0f}% of the Rating's weight.")
     if me["days_away"] >= 365:
         n.append(f"**They haven't played lately.** Their last game was {me['last']}, so their games now count for less and the Rating is less certain.")
     if me["range"] >= 8:
@@ -218,7 +218,7 @@ def build(name, label, title, at, wanted):
             opp_c = float(opp_career[is_classic].mean())
             text = [f"In Classic, {name} has won {share(cw, cl_)} of their games, against {all_pct:.1f}% across all leagues, and their Classic opponents have averaged {opp_c:.1f}."]
             if c:
-                text.append(f"Their Classic rating of {c['win_chance_vs_average']}% ranks {rank_c}.")
+                text.append(f"Their Classic rating of {c['win_chance_vs_average']}% ranks {rank_c}." if p in classic_big else f"Their Classic rating is {c['win_chance_vs_average']}%, unranked because they have under 100 Classic games.")
             if rw + rl >= 30 and ew + el >= 30:
                 now_pct, then_pct = 100 * rw / (rw + rl), 100 * ew / (ew + el)
                 text.append(f"Over the last 3 years they've won {now_pct:.1f}%, " + ("about the same as" if abs(now_pct - then_pct) < 3 else "up from" if now_pct > then_pct else "down from") + f" {then_pct:.1f}% earlier.")
@@ -230,7 +230,7 @@ def build(name, label, title, at, wanted):
                 text.append(f"They've played only {pw + pl} Classic playoff games, too few to read much into.")
             out += [" ".join(text), ""]
             out += [f"| Classic rating | Rank | {RP} | Last 3 years | Opponents | Share of Rating's weight |", f"| --- | --- | {RP_LINE} | --- | --- | --- |",
-                    (f"| {c['win_chance_vs_average']}% (range {c['low']}-{c['high']}) | {rank_c} | " if c else "| — | — | ") + " | ".join(rp_cells(is_classic)) + f" | {rec(rw, rl) if rw + rl else '—'} ({share(rw, rl)}) | {opp_c:.1f} | {classic_weight:.0f}% |", ""]
+                    (f"| {c['win_chance_vs_average']}% (range {c['low']}-{c['high']}) | {rank_c} | " if c else "| — | — | ") + " | ".join(rp_cells(is_classic)) + f" | {rec(rw, rl) + ' (' + share(rw, rl) + ')' if rw + rl else '—'} | {opp_c:.1f} | {classic_weight:.0f}% |", ""]
             team_rows = []
             for tm in sorted(set(team_of[is_classic])):
                 m = is_classic & (team_of == tm)
@@ -390,16 +390,17 @@ def build(name, label, title, at, wanted):
         known = [league_info[lg] for lg in set(lg_of) if lg in league_info and not league_info[lg]["small"]]
         if known:
             size = lambda inf: int((lg_of == inf["league"]).sum())
-            mean_s = float(np.average([x["scale_rating"] for x in known], weights=[size(x) for x in known]))
+            common = [LR.on_all_leagues(x) for x in known]
+            mean_s = float(np.average([x["scale_rating"] for x in common], weights=[size(x) for x in common]))
             cl = [x for x in known if x["classic"]]
             ot = [x for x in known if not x["classic"]]
             part = []
             if ot:
-                part.append(f"{np.average([x['scale_rating'] for x in ot], weights=[size(x) for x in ot]):.1f} outside Classic")
+                part.append(f"{np.average([x['scale_rating'] for x in common if not x['classic']], weights=[size(x) for x in common if not x['classic']]):.1f} outside Classic")
             if cl:
-                part.append(f"{np.average([x['scale_rating'] for x in cl], weights=[size(x) for x in cl]):.1f} in Classic")
-            tough = max(known, key=lambda x: x["scale_rating"])
-            out += [f"A league strength of 50 means its coaches are about as good as an average coach. By games played, {name}'s leagues average {mean_s:.1f}: {' and '.join(part)}. Classic and other leagues use different ratings, so those two can't be compared directly. Their toughest was `{tough['league']}`, at {tough['scale_rating']:.1f}.", ""]
+                part.append(f"{np.average([x['scale_rating'] for x in common if x['classic']], weights=[size(x) for x in common if x['classic']]):.1f} in Classic")
+            tough = max(common, key=lambda x: x["scale_rating"])
+            out += [f"A league strength of 50 means its coaches are about as good as an average coach. By games played, {name}'s leagues average {mean_s:.1f}: {' and '.join(part)}. These use all-leagues ratings so they can be compared, so the Classic numbers differ from those in the Classic section. Their toughest was `{tough['league']}`, at {tough['scale_rating']:.1f}.", ""]
         out += ["**Every league, newest first**", "", f"| League | First game | Team | {RP} | League strength, one scale |", f"| --- | --- | --- | {RP_LINE} | --- |"]
         for lg in sorted(set(lg_of), key=lambda x: league_info.get(x, {}).get("start", 0), reverse=True):
             m = lg_of == lg
