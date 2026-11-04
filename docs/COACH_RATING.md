@@ -2,7 +2,7 @@
 
 This document explains how the league coach ratings are made, how they were tested and what they can't tell you. The code is
 `analysis/coach_rating.py`. The tables with players' names stay in the private league data folder, so this document has
-aggregates only. Results are as of the league data update of 2026-11-04, with games through 2026-11-03.
+aggregates only. Results use league games through 2026-11-03.
 
 ## The short version
 
@@ -20,10 +20,9 @@ A rating is a coach's estimated chance of beating an average coach, with neutral
 The source is the league result databases: every league game since 2013 on both systems.
 
 A game is used if it has a home and away score, two different named players and a valid date. Games marked as simulated are
-skipped. Regular-season and playoff games count the same.
+skipped. Regular-season and playoff games count the same. Names are compared in lower case.
 
-- **Names.** Names are compared in lower case. People confirmed to have changed names are merged through a private list
-  (`coach_aliases.csv` in the league data folder). Someone who changed names and isn't on that list still counts as two coaches.
+- **Classic leagues.** A Classic league's name starts with `Classic_Spring`, `Classic_Summer` or `Classic_Fall`. These play the retail rosters.
 - **Repeated results.** About 0.3% of rows repeat another row's league, players, score, shots and goal list. These stay in. They're
   usually a real second game, played when no save state was taken after the first, so an earlier save state with the right winner was used again.
 - **Period lengths.** Nearly all leagues play 5-minute periods. A league's length is read from its longest regulation goal, and goal times in the
@@ -36,8 +35,8 @@ There are six tables, each fitted entirely on its own games:
 | --- | --- | --- | --- | --- |
 | Genesis, all leagues | all | 86,985 | 326 | 173 |
 | SNES, all leagues | all | 36,243 | 224 | 96 |
-| Genesis Classic | name starts with "Classic" | 23,092 | 281 | 121 |
-| SNES Classic | name starts with "Classic" | 15,151 | 182 | 75 |
+| Genesis Classic | Classic leagues | 22,757 | 281 | 120 |
+| SNES Classic | Classic leagues | 15,017 | 182 | 75 |
 | Genesis Chaos | name starts with "Chaos" | 11,711 | 106 | 62 |
 | SNES Draft | name starts with "SNES_Draft" | 7,918 | 65 | 37 |
 
@@ -71,13 +70,11 @@ across the tables. The examples below use round numbers before that step, for si
 `game score = home coach − away coach + home team − away team + home edge`
 
 The score is from the home side's view. The coaches and teams are unknown numbers (their strengths), and the home edge is one more
-unknown shared by the whole table. Genesis Classic has 23,092 equations and 304 unknowns: 281 coaches, 22 teams and the home edge.
+unknown shared by the whole table. Genesis Classic has 22,757 equations and 304 unknowns: 281 coaches, 22 teams and the home edge.
 
-**Team terms apply only to Classic leagues with retail rosters.** That means a league name starting with "Classic" and only retail team labels,
-so one Genesis league with other labels (`Classic_Dynasty_S1`) counts as Classic for the group but has no team terms. A name with
-"Classic" later in it, such as a Modern Classic league, isn't treated as Classic. In those leagues the same abbreviation is taken to mean the same roster. Elsewhere
-rosters differ, so no team term is fitted and a coach's drafting and roster become part of their rating. A team needs 100+
-appearances to get a term. A game involving a team below that, or two sides on the same team, has no team terms at all.
+**Team terms apply only to Classic leagues,** where the same abbreviation means the same roster. Elsewhere rosters differ, so no team term is fitted
+and a coach's drafting and roster become part of their rating. A team needs 100+ appearances to get a term. A game involving a team below that, or two
+sides on the same team, has no team terms at all.
 
 ## 4. Solving them together
 
@@ -101,7 +98,8 @@ expected moves a rating.
 
 ## 5. The pull toward the middle
 
-The second part of the total charges a cost for every strength away from zero. A rating has to reduce the misses by more than it
+A small sample mixes skill with luck. An even coach wins 70%+ of 10 games by luck alone 17% of the time, but 70%+ of 100 games only 0.004% of the time.
+So the second part of the total charges a cost for every strength away from zero. A rating has to reduce the misses by more than it
 costs, so large ratings need evidence.
 
 **The easiest way to picture it is as imaginary tied games.** A pull setting of 2 is roughly like giving every coach 2 extra tied
@@ -143,7 +141,7 @@ The home edge has no pull. Team terms have the same pull as coaches.
 Each game's weight halves with every half-life of age: at a half-life of 1.5 years, a game counts 1/2 after 1.5 years, 1/4 after 3
 and 1/16 after 6. Age is measured from the last game in that table, so Chaos, which last played in April 2026, is measured from then.
 
-The half-life and pull setting were chosen by testing (section 10), not by judgment:
+The half-life and pull setting were chosen by testing (section 11), not by judgment:
 
 | Table | Half-life | Pull setting |
 | --- | --- | --- |
@@ -162,22 +160,21 @@ Strengths are on an arbitrary scale, so one factor converts them to a chance:
 
 **The factor comes from later games.** Every half year in the last 3 years of the table, the fit uses only earlier games to
 predict the next half year's decided games between coaches with 30+ earlier games. The factor is whatever best matches how those games
-really came out. A factor fitted on the same games as the strengths came out too large and overstated chances: in SNES Classic, predictions of about 84% won about 75%
-of later games. With the factor from later games, those same games look like this:
+really came out. A factor fitted on the same games as the strengths would be too large and would overstate chances. Those later games look like this:
 
 | Predicted, about | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- | --- |
-| 55% | 55% | 55% | 57% | 54% | 55% | 58% |
-| 65% | 64% | 63% | 63% | 63% | 66% | 63% |
-| 75% | 74% | 74% | 74% | 79% | 74% | 72% |
-| 85% | 87% | 87% | 84% | 82% | 79% | 88% |
+| 55% | 55% | 54% | 57% | 56% | 55% | 58% |
+| 65% | 64% | 64% | 64% | 62% | 66% | 63% |
+| 75% | 74% | 74% | 74% | 78% | 74% | 72% |
+| 85% | 87% | 87% | 83% | 82% | 79% | 88% |
 
 The factor was set on these games, so the overall level is bound to match. The agreement across the bands is the real check. The top band is small in
-the league groups (110-276 games), so those are rough. The factors in use are:
+the league groups (112-231 games), so those are rough. The factors in use are:
 
 | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- |
-| 2.058 | 1.981 | 1.746 | 1.610 | 1.678 | 1.626 |
+| 2.059 | 1.990 | 1.719 | 1.615 | 1.678 | 1.626 |
 
 The factor affects percentages only. It can't change the order of coaches in a table.
 
@@ -212,39 +209,128 @@ recent play more than old play.
 
 | Genesis Classic | Value | Sides | | SNES Classic | Value | Sides |
 | --- | --- | --- | --- | --- | --- | --- |
-| CHI | +10.9 | 3,955 | | NJ | +6.7 | 760 |
-| DET | +9.4 | 4,124 | | PIT | +5.1 | 2,522 |
-| BUF | +7.2 | 3,962 | | NYR | +3.8 | 2,533 |
-| MTL | +5.5 | 3,859 | | VAN | +2.1 | 2,105 |
-| BOS | +4.5 | 3,812 | | CHI | +1.7 | 2,433 |
-| VAN | +2.6 | 3,879 | | LA | +1.6 | 2,239 |
+| CHI | +11.0 | 3,955 | | NJ | +7.1 | 734 |
+| DET | +9.4 | 4,124 | | PIT | +5.3 | 2,522 |
+| BUF | +7.2 | 3,962 | | NYR | +3.9 | 2,533 |
+| MTL | +5.5 | 3,859 | | VAN | +2.2 | 2,105 |
+| BOS | +4.4 | 3,812 | | CHI | +1.8 | 2,433 |
+| VAN | +2.5 | 3,879 | | LA | +1.7 | 2,239 |
 | DAL | +2.2 | 2,675 | | CGY | +1.6 | 1,976 |
-| WPG | +2.1 | 3,541 | | WSH | +1.2 | 1,148 |
-| HFD | +1.2 | 477 | | MTL | +0.9 | 1,700 |
-| CGY | +0.8 | 3,025 | | TOR | +0.6 | 771 |
-| TOR | +0.4 | 1,574 | | BOS | +0.4 | 2,513 |
-| LA | −0.9 | 2,379 | | STL | +0.3 | 573 |
-| PHI | −1.9 | 1,067 | | EDM | +0.3 | 521 |
-| QUE | −2.3 | 2,050 | | WPG | −0.2 | 1,279 |
-| NJ | −2.8 | 334 | | DET | −0.3 | 2,327 |
-| EDM | −2.8 | 669 | | PHI | −0.9 | 663 |
-| NYI | −3.0 | 225 | | QUE | −2.0 | 895 |
-| WSH | −4.2 | 380 | | HFD | −2.1 | 254 |
-| PIT | −5.5 | 1,153 | | BUF | −2.5 | 2,103 |
-| TB | −6.9 | 225 | | NYI | −4.2 | 319 |
-| STL | −7.6 | 1,004 | | SJ | −6.6 | 175 |
-| NYR | −9.1 | 1,307 | | DAL | −7.4 | 204 |
+| WPG | +2.0 | 3,541 | | WSH | +1.5 | 1,128 |
+| HFD | +1.2 | 452 | | MTL | +1.0 | 1,700 |
+| CGY | +1.1 | 3,025 | | TOR | +0.7 | 771 |
+| TOR | +0.3 | 1,574 | | BOS | +0.4 | 2,513 |
+| LA | −1.0 | 2,379 | | STL | +0.3 | 553 |
+| PHI | −2.0 | 1,045 | | EDM | +0.3 | 497 |
+| QUE | −2.1 | 2,050 | | WPG | −0.1 | 1,279 |
+| NJ | −2.6 | 310 | | DET | −0.2 | 2,327 |
+| NYI | −2.9 | 210 | | PHI | −1.2 | 643 |
+| EDM | −3.1 | 651 | | QUE | −1.9 | 895 |
+| PIT | −4.9 | 1,137 | | HFD | −2.3 | 228 |
+| WSH | −5.6 | 357 | | BUF | −2.4 | 2,103 |
+| TB | −6.4 | 206 | | NYI | −4.8 | 295 |
+| STL | −7.2 | 984 | | SJ | −6.5 | 153 |
+| NYR | −9.1 | 1,307 | | DAL | −8.2 | 182 |
 
 **How far to trust them.**
-- **SNES values depend on the settings, especially for rarely played teams.** Changing the SNES Classic pull setting from 10 to 2, with the
-  small data fixes, moved San Jose from +5.8 to −6.5, and Detroit from −5.0 to −0.3. Read that column for broad groups only.
-- **Some labels get no term.** Genesis Classic has 4 retail labels under 100 sides (ANH, FLA, OTW, SJ; 20-28 each), and SNES Classic has 4 (OTW,
-  ANH, TB, FLA; 40-96 each).
-- **New Jersey on the SNES** holds up better than most of that column. It stays between +5.6 and +7.1 across settings and is the heaviest roster, and
-  SNES Weight is the one playing rating the hot / cold bug doesn't touch (`LEAGUE_RESULTS`).
+- **Genesis values are steady; SNES values depend more on the settings.** Across the nine half-life and pull settings, teams' order holds on the
+  Genesis (0.97 between pull settings 2 and 10) much better than on the SNES (0.72). Rarely played SNES teams move most: San Jose ranges from −10.4 to +6.2 and
+  Boston from −5.7 to +3.1. Read the SNES column for broad groups only.
+- **Some labels get no term.** Genesis Classic has one label under 100 sides (ANH, 20), and SNES Classic has four (OTW 40, ANH 46, TB 65, FLA 74).
 - **The assumption is one roster per abbreviation.** If a Classic league used a changed roster, its team value would blur the two.
 
-## 10. How it was tested
+## 10. Classic teams by level of player
+
+This asks which teams suit high-level players, which suit low-level players, and which suit both (`analysis/coach_team_levels.py`).
+
+**Measuring level.** League letters aren't comparable across seasons, so level is measured three ways:
+- **By coach:** each coach's career strength in that system's Classic leagues, cut into three levels with about a third of the team appearances each.
+- **By league strength:** each league's mean coach strength, cut the same way, so a coach's level can change between leagues.
+- **By name:** each season's top league against the same season's other leagues. The top league has the most As: `-AAA` beats `-AA` beats `-A`, and
+  `-A1`, `-A-E` and `-AB` count as A. Leagues with no level in their name are fitted but not compared.
+
+**The fit.** It's the rating's equation with one team term per team and level, using all Classic games with equal weights, so these values reflect all
+years and differ somewhat from section 9. Each level's values are centred on its average team, so a value says how much better that level does with this
+team than with its other teams, after the coach terms have taken out who was using it. Spreads come from resampling whole leagues.
+
+**How repeatable it is.** Half the leagues were fitted against the other half, 40 times:
+
+| Correlation between the halves | Genesis: coach / strength / name | SNES: coach / strength / name |
+| --- | --- | --- |
+| Team values at the high level | +0.70 / +0.44 / +0.43 | +0.09 / +0.19 / +0.23 |
+| Team values at the low level | +0.19 / +0.37 / +0.48 | +0.07 / +0.40 / +0.37 |
+| High-minus-low gaps | +0.35 / −0.16 / −0.20 | −0.07 / +0.25 / +0.29 |
+| High against low, all games | +0.57 / +0.74 / +0.76 | +0.62 / +0.27 / +0.14 |
+
+**So most apparent differences between levels aren't repeatable.** On the Genesis, high and low levels mostly agree on which teams are good. On the SNES, levels agree less,
+but the team order within a level is itself weak. The tables below are a guide to test against, not settled fact.
+
+**How each team was read.**
+- **Good or poor at both:** at least +1.5 or at most −1.5 in all four values shown.
+- **Better for one level, likely:** the gap has the same sign all three ways, and is at least 1.5 spreads in two of them.
+- **Leaning:** the same sign all three ways, and at least 1 spread in two of them.
+
+With 44 teams tested, a few of these will be luck. Values in parentheses have under 150 sides at that level.
+
+**Genesis Classic**
+
+| Team | High coaches | Low coaches | Top league | Other leagues | Reading |
+| --- | --- | --- | --- | --- | --- |
+| CHI | +9.7 | +9.2 | +9.0 | +8.8 | Good at both |
+| DET | +7.4 | +7.2 | +7.8 | +6.2 | Good at both |
+| BUF | +3.8 | +4.0 | +4.3 | +4.0 | Good at both |
+| MTL | +4.7 | +1.5 | +3.1 | +2.9 | Good at both |
+| BOS | +4.6 | −3.0 | +3.4 | +0.1 | Better for high, likely |
+| VAN | +1.2 | −2.2 | −0.3 | −0.9 | About average, leaning high |
+| WPG | +1.3 | +1.5 | +0.7 | −0.1 | About average |
+| DAL | +0.9 | −1.5 | +0.7 | −2.2 | About average |
+| LA | +0.3 | −2.8 | −1.2 | −2.6 | About average |
+| TOR | −3.3 | −7.7 | −3.6 | −2.0 | Poor at both |
+| CGY | −6.7 | −5.3 | −5.3 | −4.5 | Poor at both |
+| QUE | −4.3 | −9.0 | −3.1 | −5.2 | Poor at both, leaning high |
+| PHI | −4.1 | −6.6 | −3.5 | −6.1 | Poor at both |
+| STL | −2.6 | −10.3 | −5.5 | −8.7 | Poor at both |
+| WSH | (−9.5) | (−4.5) | (−11.3) | −5.1 | Poor at both |
+| NJ | −6.1 | (−3.6) | −6.7 | −5.6 | Poor at both |
+| PIT | −6.0 | −11.9 | −11.9 | −9.6 | Poor at both |
+| NYR | −11.6 | −9.3 | −10.7 | −11.1 | Poor at both |
+| NYI | (−15.4) | (−5.6) | (−4.5) | (−15.1) | Poor at both, few games |
+| EDM | −8.6 | −0.2 | −10.3 | −4.1 | Poor at high, leaning low |
+| TB | (−18.5) | (−0.9) | (−20.7) | −10.5 | Poor at high, leaning low, few games |
+| HFD | −12.5 | none | −13.0 | −1.7 | Poor at high, few low-level games |
+
+**SNES Classic**
+
+| Team | High coaches | Low coaches | Top league | Other leagues | Reading |
+| --- | --- | --- | --- | --- | --- |
+| PIT | +4.3 | +2.2 | +5.7 | +3.1 | Good at both |
+| NYR | +1.8 | +1.2 | +2.5 | +2.4 | Slightly good at both |
+| LA | +1.8 | +1.7 | +1.4 | +1.9 | Slightly good at both |
+| VAN | +2.2 | −0.6 | +0.5 | +0.3 | About average |
+| CHI | +1.6 | −0.1 | +2.0 | −0.4 | About average |
+| CGY | +0.7 | +1.7 | −1.7 | −0.7 | About average |
+| DET | −0.8 | −2.9 | −1.6 | −0.8 | About average |
+| HFD | −1.4 | (−0.2) | −0.5 | (−1.7) | About average, few games |
+| BOS | +4.3 | +1.2 | +4.5 | −1.1 | Better for high, likely |
+| QUE | −3.3 | (−17.1) | +1.1 | −16.1 | Better for high, likely; poor at low |
+| WSH | −0.1 | +2.5 | −2.5 | +5.2 | Better for low, likely |
+| NJ | +3.7 | +9.4 | −0.5 | +8.2 | Good at low; unclear at high |
+| MTL | −0.7 | +1.0 | −1.3 | +2.6 | Leaning low |
+| PHI | −5.1 | +3.9 | −3.8 | +2.0 | Leaning low |
+| EDM | −1.4 | (+5.5) | −2.2 | (+7.0) | Leaning low, few low-level games |
+| STL | −0.1 | +0.7 | (−5.1) | +2.9 | Unclear |
+| TOR | −1.4 | −3.5 | −6.7 | +1.6 | Unclear |
+| WPG | −3.7 | −2.5 | −3.2 | −3.8 | Poor at both |
+| BUF | −1.4 | −5.8 | −3.4 | −4.8 | Mostly poor |
+| NYI | −8.7 | none | (−10.1) | (−6.3) | Poor, few low-level games |
+| SJ | (−14.0) | none | none | −11.3 | Poor, few games |
+| DAL | (−7.1) | (−20.5) | (−5.7) | −5.5 | Poor, few games |
+
+**What stands out.** The Genesis has a clear group of teams that work for everyone, led by Chicago and Detroit. On the SNES, Quebec has the largest
+gap: about even in top leagues, far below average in lower ones. Most of these values only show results, not why. A team's use also isn't random, since players choose
+teams and league play can leave out some of them.
+
+## 11. How it was tested
 
 Settings and versions were judged by predicting the future:
 
@@ -264,8 +350,8 @@ Results with monthly refits, in each league group alone, with all versions on th
 
 | Table | Test games | Elo, every game | Elo, frozen monthly | Win only | Capped goal diff | Win + coasting (used) | Blend |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Genesis Classic | 13,030 | 0.6500 | 0.6642 | 0.6477 | 0.6465 | 0.6462 | 0.6461 |
-| SNES Classic | 8,850 | 0.6409 | 0.6576 | 0.6490 | 0.6448 | 0.6468 | 0.6455 |
+| Genesis Classic | 12,695 | 0.6517 | 0.6666 | 0.6493 | 0.6481 | 0.6478 | 0.6477 |
+| SNES Classic | 8,718 | 0.6409 | 0.6580 | 0.6490 | 0.6447 | 0.6468 | 0.6454 |
 | Genesis Chaos | 9,258 | 0.6458 | 0.6647 | 0.6457 | 0.6440 | 0.6445 | 0.6441 |
 | SNES Draft | 6,325 | 0.6342 | 0.6534 | 0.6434 | 0.6387 | 0.6411 | 0.6398 |
 
@@ -273,16 +359,16 @@ And in the all-leagues tables:
 
 | Table | Test games | Elo, every game | Elo, frozen monthly | Win only | Capped goal diff | Win + coasting (used) | Blend |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Genesis, all | 63,636 | 0.6029 | 0.6145 | 0.6062 | 0.6056 | 0.6056 | 0.6055 |
-| SNES, all | 26,767 | 0.5915 | 0.6045 | 0.5962 | 0.5921 | 0.5939 | 0.5928 |
+| Genesis, all | 63,636 | 0.6029 | 0.6145 | 0.6063 | 0.6056 | 0.6056 | 0.6055 |
+| SNES, all | 26,767 | 0.5915 | 0.6045 | 0.5960 | 0.5920 | 0.5938 | 0.5926 |
 
 What this shows:
 
-- **Against Elo updated every game:** the rating is better in Genesis Classic (by 0.0038 ± 0.0018), level in Genesis Chaos, and
-  behind in SNES Classic (0.0059 ± 0.0025), SNES Draft (0.0069 ± 0.0028) and both all-leagues tables (0.0027 and 0.0025).
+- **Against Elo updated every game:** the rating is better in Genesis Classic (by 0.0039 ± 0.0018), level in Genesis Chaos, and
+  behind in SNES Classic (0.0058 ± 0.0025), SNES Draft (0.0069 ± 0.0028) and both all-leagues tables (0.0027 and 0.0023).
 - **Against Elo frozen monthly,** the like-for-like comparison, the rating is better in every table.
 - **Coasting against win-only:** coasting is better in every table, by small amounts that clear the test's noise.
-- **Coasting against capped goal difference:** tied on the Genesis, in all three tables. Goal difference is ahead on the SNES (0.0019 ± 0.0005 in SNES
+- **Coasting against capped goal difference:** tied on the Genesis, in all three tables. Goal difference is ahead on the SNES (0.0020 ± 0.0005 in SNES
   Classic, 0.0024 ± 0.0005 in SNES Draft, 0.0018 ± 0.0003 in all leagues). The tables use coasting because it's the rule
   that was asked for, not because it won. The blend is about as good as either.
 
@@ -290,43 +376,43 @@ What this shows:
 
 | Check | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- | --- |
-| Two random halves of the games, fitted apart: correlation over coaches with 100+ games | 0.98 | 0.98 | 0.94 | 0.95 | 0.96 | 0.97 |
+| Two random halves of the games, fitted apart: correlation over coaches with 100+ games | 0.98 | 0.98 | 0.94 | 0.96 | 0.96 | 0.97 |
 | A coach one standard deviation above another (among 100+ coaches) wins | 69% | 70% | 65% | 65% | 67% | 68% |
 | Home wins between even coaches on neutral teams | 50.5% | 52.4% | 50.8% | 52.5% | 48.8% | 51.8% |
 
 Dropping low-game coaches' games was also tested. Removing coaches under 100 games made predictions worse
-(Genesis 0.6210 to 0.6251, SNES 0.6244 to 0.6269) and left the top 20 unchanged, so every game stays in the fit.
+(Genesis 0.6210 to 0.6251, SNES 0.6242 to 0.6267) and left the top 20 unchanged, so every game stays in the fit.
 
 **The width of `low` and `high`.** Each table was split at 18 months ago, for coaches with 50+ games on both sides (21-56 coaches a table). The
 ranges fit luck but not change:
 
 | Check: how far ratings differ, against what the ranges expect | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- | --- |
-| Random halves of the later games | 0.92 | 0.66 | 0.92 | 0.69 | 0.81 | 0.83 |
-| Earlier games against later games | 1.77 | 1.21 | 1.14 | 2.01 | 1.25 | 1.36 |
+| Random halves of the later games | 0.92 | 0.66 | 0.96 | 0.79 | 0.81 | 0.83 |
+| Earlier games against later games | 1.77 | 1.20 | 1.07 | 2.03 | 1.25 | 1.36 |
 
-So a range describes how sure the rating is about a coach's recent level, slightly generously. It's about one and a half times too narrow, sometimes
-twice, as a guide to where a coach will be later, because people really do change. These small groups make the figures rough.
+So a range describes how sure the rating is about a coach's recent level, slightly generously. It's up to twice too narrow as a guide to where a coach
+will be later, because people really do change. These small groups make the figures rough.
 
 **How much one day moves the ratings.** Twelve real days from the past year in each table, fitted with and without the day's games, for active regulars:
 
 | | Genesis, all | SNES, all | Genesis Classic | SNES Classic | Genesis Chaos | SNES Draft |
 | --- | --- | --- | --- | --- | --- | --- |
 | Games on a typical playing day | 32 | 11 | 20 | 10 | 15 | 8 |
-| Typical move for someone who played, in rating points | 0.10 | 0.11 | 0.41 | 0.26 | 0.23 | 0.36 |
-| Largest move seen | 0.99 | 0.88 | 1.74 | 1.55 | 1.19 | 1.00 |
-| Typical move for someone who didn't play | 0.01 | 0.01 | 0.03 | 0.03 | 0.01 | 0.04 |
-| Days the top 10 stayed in the same order | 12 | 12 | 8 | 12 | 12 | 10 |
+| Typical move for someone who played, in rating points | 0.10 | 0.11 | 0.45 | 0.26 | 0.23 | 0.36 |
+| Largest move seen | 0.99 | 0.87 | 1.81 | 1.48 | 1.19 | 1.00 |
+| Typical move for someone who didn't play | 0.01 | 0.01 | 0.04 | 0.03 | 0.01 | 0.04 |
+| Days the top 10 stayed in the same order | 12 | 12 | 9 | 11 | 12 | 10 |
 
-## 11. What the ratings can't tell you
+## 12. What the ratings can't tell you
 
 - **The main column isn't an all-time ranking.** It leans toward recent form. Use `career` for all-time, and note that it's an average, not a peak.
 - **Eras are hard to compare.** Players from different years are linked only through shared opponents. If the whole league improved,
-  the model can't see it, so old players with few games can rate high against an old, possibly weaker field. In SNES Classic the two highest
-  `career` ratings belong to coaches with 142-160 games who stopped by 2016.
+  the model can't see it, so old players with few games can rate high against an old, possibly weaker field. The highest `career` rating in SNES Classic
+  belongs to a coach with 142 games who stopped in 2015.
 - **Numbers can't be compared across tables.** Each has its own games and average. Compare ranks instead.
 - **Chaos and SNES Draft ratings include the roster.** They measure drafting plus playing, and one rating can't separate the two.
-- **The ranges leave out change.** `low` and `high` fit game-to-game luck but not changes in form (section 10). Don't treat gaps of 1-2 points as real.
+- **The ranges leave out change.** `low` and `high` fit game-to-game luck but not changes in form (section 11). Don't treat gaps of 1-2 points as real.
 - **Small samples can run hot.** Among many coaches with about 100 games, those who reach a top list are more likely to have been lucky, so
   low-game ratings at the top are a little inflated.
 - **The test isn't completely independent.** Settings were chosen on the same years used for the test, Elo's K was also tuned earlier on
@@ -335,12 +421,13 @@ twice, as a guide to where a coach will be later, because people really do chang
 - **The 50 is not a typical active player.** It's the mean of 100+ game coaches, including retired ones, and active regulars mostly play each
   other. So a record near .500 among active regulars can earn a rating well above 50.
 
-## 12. Running it
+## 13. Running it
 
 ```
 python analysis/coach_rating.py            the all-leagues test and tables
 python analysis/coach_rating.py groups     each league group fitted alone
+python analysis/coach_team_levels.py       Classic teams by level of player (needs the groups run first)
 ```
 
 Results go to `%USERPROFILE%\NHL94_League_Data`: `coach_ratings_<system>.csv`, `coach_ratings_<system>_<group>.csv`,
-`coach_rating_test.md` and `coach_rating_groups.md`. Findings in aggregate are in `docs/LEAGUE_RESULTS.md`.
+`coach_rating_test.md` and `coach_rating_groups.md`. The team study writes `reports/classic_team_levels.md`. Findings in aggregate are in `docs/LEAGUE_RESULTS.md`.
