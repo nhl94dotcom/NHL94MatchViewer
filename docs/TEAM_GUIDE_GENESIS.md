@@ -34,7 +34,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **A record alone doesn't say how good a team is.** Better coaches may have used it, or worse ones. A strong team can have a modest record if weaker coaches tend to use it, and a weak team can have a good record if stronger coaches do. That's what the Expected column is for.
 
-- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. In simulated seasons where every team played the same at every level, gaps of up to about 6 points still appeared by chance. The overall team order is sturdier.
+- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. In simulated seasons where every team played the same at every level, gaps of up to about 8 points still appeared by chance. The overall team order is sturdier.
 
 **The "All teams" table**
 
@@ -137,7 +137,9 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 ## All teams
 
-![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)
+![Genesis Classic teams by Elo adjustment, with shading for how sure each value is](img/elo_bands_genesis.svg)
+
+Each band is darkest at the team's value and fades out to show how far it could be off. The two guides share one scale.
 
 | # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
