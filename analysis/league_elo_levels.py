@@ -147,6 +147,51 @@ def moves(rows):
     return res
 
 
+def after_moves(rows):
+    """Do movers catch up? Win % beyond Elo in the first, second and third leagues at a new level, against coaches who've stayed longer, with the rating gap and the league before held still.
+    A coach counts in the later rows only while they stay at the new level, so those who went back are left out of them; how many went back is printed."""
+    print("  2b. After a move, league by league at the new level:")
+    data = seasons(rows)
+    points = []
+    went_back = Counter()
+    for who, v in data.items():
+        phase = None
+        for a_, b_ in zip(v, v[1:]):
+            if b_[0] - a_[0] > 1100:
+                phase = None
+                continue
+            step = b_[2] - a_[2]
+            if step < 0:
+                if phase and phase[0] == "down" and phase[1] == 1:
+                    went_back["down, then back up"] += 1
+                phase = ("up", 1)
+            elif step > 0:
+                if phase and phase[0] == "up" and phase[1] == 1:
+                    went_back["up, then back down"] += 1
+                phase = ("down", 1)
+            elif phase:
+                phase = (phase[0], phase[1] + 1)
+            label_ = "stayed" if not phase or phase[1] > 3 else f"{phase[0]} {phase[1]}"
+            points.append((label_, 100 * (b_[4] - b_[5]) / b_[3], 100 * (a_[4] - a_[5]) / a_[3], b_[6], b_[3]))
+    names = ("up 1", "up 2", "up 3", "down 1", "down 2", "down 3")
+    y = np.array([q[1] for q in points])
+    X = np.column_stack([np.ones(len(points))] + [[q[0] == n for q in points] for n in names] + [[q[3] / 100 for q in points], [q[2] for q in points]])
+    w = np.array([q[4] for q in points], float)
+    sw = np.sqrt(w / w.mean())
+    beta = np.linalg.lstsq(X * sw[:, None], y * sw, rcond=None)[0]
+    resid = (y - X @ beta) * sw
+    bread = np.linalg.inv((X * sw[:, None]).T @ (X * sw[:, None]))
+    meat = (X * sw[:, None] * resid[:, None]).T @ (X * sw[:, None] * resid[:, None])
+    se = np.sqrt(np.diag(bread @ meat @ bread))
+    res = {}
+    counts = Counter(q[0] for q in points)
+    for i, n in enumerate(names, 1):
+        res[n] = {"n": counts[n], "effect": float(beta[i]), "se": float(se[i])}
+        print(f"     {n}: {counts[n]} coach-seasons; {beta[i]:+.2f} +- {se[i]:.2f} points against coaches settled at their level", flush=True)
+    print(f"     Went straight back: {dict(went_back)}; settled coaches {counts['stayed']}")
+    return {"phases": res, "went_back": dict(went_back)}
+
+
 def against_rating(rows, R, seen, label):
     print("  3. Elo against the coach Rating, active coaches with 100+ games, by the level they've mostly played at over the last 3 years:")
     with open(C.DATA / f"coach_ratings_{label}.csv", encoding="utf-8") as fh:
@@ -186,7 +231,7 @@ def main():
         table = {t: v["adj"] for t, v in tables[title]["teams"].items()}
         rows, R, seen = run(games, table)
         print(f"\n{title}: {len(rows)} Classic games")
-        saved[title] = {"levels": by_level(rows), "moves": moves(rows), "rating": against_rating(rows, R, seen, label)}
+        saved[title] = {"levels": by_level(rows), "moves": moves(rows), "after": after_moves(rows), "rating": against_rating(rows, R, seen, label)}
         breathe()
     (Path(__file__).resolve().parents[1] / "reports" / "league_elo_levels.json").write_text(json.dumps(saved), encoding="utf-8")
 
