@@ -549,7 +549,7 @@ Genesis:
 - **A diving goalie lets pucks at height 5 or more through.**
 - The glove and stick save ratings are looked up and then overwritten: unused.
 - **Confirmed:** no goal passed within 12.6 units of the goalie's centre (26 goals); saves a median 12.9. And in the
-  leagues' results (350,696 shots in the Classic leagues, the retail goalies) save % is 62.3-63.5% at every Agility
+  leagues' results (349,184 shots in the Classic leagues, the retail goalies) save % is 62.3-63.5% at every Agility
   from roster 2 to 6, where on the Genesis it climbs from 65% to 72% (LEAGUE_RESULTS, "Home and away, goalies and teams").
 
 
