@@ -2,6 +2,8 @@
 
 Every retail team in the SNES Classic leagues (names starting `Classic_Spring`, `Classic_Summer` or `Classic_Fall`): 15,017 games in 63 leagues, through 2026-11-03. No coach is named. The method is in [COACH_RATING.md](COACH_RATING.md).
 
+**Jump to a team:** [New Jersey](#1-new-jersey-nj) · [Pittsburgh](#2-pittsburgh-pit) · [NY Rangers](#3-ny-rangers-nyr) · [Vancouver](#4-vancouver-van) · [Chicago](#5-chicago-chi) · [Los Angeles](#6-los-angeles-la) · [Calgary](#7-calgary-cgy) · [Washington](#8-washington-wsh) · [Montreal](#9-montreal-mtl) · [Toronto](#10-toronto-tor) · [Boston](#11-boston-bos) · [St. Louis](#12-st-louis-stl) · [Edmonton](#13-edmonton-edm) · [Winnipeg](#14-winnipeg-wpg) · [Detroit](#15-detroit-det) · [Philadelphia](#16-philadelphia-phi) · [Quebec](#17-quebec-que) · [Hartford](#18-hartford-hfd) · [Buffalo](#19-buffalo-buf) · [NY Islanders](#20-ny-islanders-nyi) · [San Jose](#21-san-jose-sj) · [Dallas](#22-dallas-dal)
+
 ## How to read this guide
 
 - **Strength** is points of win chance above or below 50 against the average team as used in these leagues, with even coaches and no home edge, with who was coaching taken out. "Now" counts recent games more; "all years" counts every game the same. ± is one spread, from resampling whole leagues.
@@ -10,7 +12,11 @@ Every retail team in the SNES Classic leagues (names starting `Classic_Spring`, 
 
 - **By level of player** says how much better that level does with this team than with its other teams, using all years. Level is measured three ways: each coach's career strength (high and low are about a third of appearances each), each league's coach strength, and each season's top league (the one with the most As) against its others. A * marks under 150 appearances.
 
-- **Readings** go by rule, from the coach and top-league rows. Good or poor means +1.5 or better, or −1.5 or worse, in both rows for that level. "Slightly" means +1 or −1 in all of them, and "about average" means all within 3. "Likely" and "leaning" need the gap to point the same way all three ways, at 1.5 or 1 spreads in two of them.
+- **Overall** goes by strength now: Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.
+
+- **Best for** says which level of player gets more from the team compared with their other teams. It can be High-level, Low-level, Both alike (no gap over 5 points) or Unclear (the measures disagree or there are too few games). A team can be Poor overall and still best for one level: that level just loses less with it.
+
+- **Confidence** applies to a High-level or Low-level call. Likely: all three measures agree on direction, and the gap is at least 1.5 spreads in two. Leaning: the same, at 1 spread. Weak: they agree on direction, the gap is at least 3 points each way, and the team is good for only that level. "Few games" means at least two values rest on under 150 appearances.
 
 - **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.
 
@@ -23,36 +29,36 @@ Every retail team in the SNES Classic leagues (names starting `Classic_Spring`, 
 
 ## All teams
 
-| # | Team | Now | All years | Record | Win % | Expected | Reading |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | New Jersey (NJ) | +5.9 | +4.5 | 444-287-3 | 60.7% | 56.1% | Good for low-level players |
-| 2 | Pittsburgh (PIT) | +4.0 | +4.3 | 1,310-1,195-17 | 52.3% | 46.7% | Good at both levels |
-| 3 | NY Rangers (NYR) | +2.7 | +2.5 | 1,347-1,171-15 | 53.5% | 50.3% | Slightly good at both levels |
-| 4 | Vancouver (VAN) | +0.9 | +0.3 | 1,081-1,013-11 | 51.6% | 51.4% | About average at both levels |
-| 5 | Chicago (CHI) | +0.5 | +1.1 | 1,218-1,195-20 | 50.5% | 49.7% | About average at both levels |
-| 6 | Los Angeles (LA) | +0.4 | +1.4 | 1,103-1,127-9 | 49.5% | 48.3% | Slightly good at both levels |
-| 7 | Calgary (CGY) | +0.4 | −0.2 | 967-992-17 | 49.4% | 50.0% | About average at both levels |
-| 8 | Washington (WSH) | +0.3 | +0.3 | 593-524-11 | 53.1% | 52.8% | Good for low-level players; the gap is likely real |
-| 9 | Montreal (MTL) | −0.3 | +0.5 | 775-910-15 | 46.0% | 45.2% | About average at both levels; leaning toward low-level players |
-| 10 | Toronto (TOR) | −0.6 | −1.4 | 373-395-3 | 48.6% | 50.4% | Unclear |
-| 11 | Boston (BOS) | −0.8 | +1.5 | 1,142-1,348-23 | 45.9% | 43.7% | Good for high-level players; the gap is likely real |
-| 12 | St. Louis (STL) | −0.9 | +0.0 | 296-252-5 | 54.0% | 53.4% | Unclear |
-| 13 | Edmonton (EDM) | −0.9 | −2.0 | 284-207-6 | 57.8% | 61.2% | Good for low-level players; the gap leans that way; few games |
-| 14 | Winnipeg (WPG) | −1.3 | −3.6 | 624-647-8 | 49.1% | 54.1% | Poor at both levels |
-| 15 | Detroit (DET) | −1.5 | −1.5 | 972-1,340-15 | 42.0% | 42.3% | About average at both levels |
-| 16 | Philadelphia (PHI) | −2.5 | −1.1 | 309-332-2 | 48.2% | 50.8% | Poor for high-level players; good for low-level players; the gap leans that way |
-| 17 | Quebec (QUE) | −3.2 | −6.3 | 458-428-9 | 51.7% | 59.2% | Poor for low-level players; likely better for high-level players |
-| 18 | Hartford (HFD) | −3.5 | −2.7 | 129-98-1 | 56.8% | 62.0% | About average at both levels; few games |
-| 19 | Buffalo (BUF) | −3.6 | −4.1 | 1,034-1,059-10 | 49.4% | 53.9% | Slightly poor at both levels |
-| 20 | NY Islanders (NYI) | −6.0 | −9.6 | 153-140-2 | 52.2% | 62.7% | Poor at both levels; few games |
-| 21 | San Jose (SJ) | −7.7 | −11.8 | 96-55-2 | 63.6% | 74.5% | Poor at both levels; few games |
-| 22 | Dallas (DAL) | −9.3 | −5.5 | 87-94-1 | 48.1% | 54.9% | Poor at both levels; few games |
+| # | Team | Overall | Best for | Confidence | Now | All years | Record | Win % | Expected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [New Jersey (NJ)](#1-new-jersey-nj) | Good | Low-level | Weak | +5.9 | +4.5 | 444-287-3 | 60.7% | 56.1% |
+| 2 | [Pittsburgh (PIT)](#2-pittsburgh-pit) | Good | Both alike | — | +4.0 | +4.3 | 1,310-1,195-17 | 52.3% | 46.7% |
+| 3 | [NY Rangers (NYR)](#3-ny-rangers-nyr) | Good | Both alike | — | +2.7 | +2.5 | 1,347-1,171-15 | 53.5% | 50.3% |
+| 4 | [Vancouver (VAN)](#4-vancouver-van) | Average | Both alike | — | +0.9 | +0.3 | 1,081-1,013-11 | 51.6% | 51.4% |
+| 5 | [Chicago (CHI)](#5-chicago-chi) | Average | Both alike | — | +0.5 | +1.1 | 1,218-1,195-20 | 50.5% | 49.7% |
+| 6 | [Los Angeles (LA)](#6-los-angeles-la) | Average | Both alike | — | +0.4 | +1.4 | 1,103-1,127-9 | 49.5% | 48.3% |
+| 7 | [Calgary (CGY)](#7-calgary-cgy) | Average | Both alike | — | +0.4 | −0.2 | 967-992-17 | 49.4% | 50.0% |
+| 8 | [Washington (WSH)](#8-washington-wsh) | Average | Low-level | Likely | +0.3 | +0.3 | 593-524-11 | 53.1% | 52.8% |
+| 9 | [Montreal (MTL)](#9-montreal-mtl) | Average | Low-level | Leaning | −0.3 | +0.5 | 775-910-15 | 46.0% | 45.2% |
+| 10 | [Toronto (TOR)](#10-toronto-tor) | Average | Unclear | — | −0.6 | −1.4 | 373-395-3 | 48.6% | 50.4% |
+| 11 | [Boston (BOS)](#11-boston-bos) | Average | High-level | Likely | −0.8 | +1.5 | 1,142-1,348-23 | 45.9% | 43.7% |
+| 12 | [St. Louis (STL)](#12-st-louis-stl) | Average | Unclear | — | −0.9 | +0.0 | 296-252-5 | 54.0% | 53.4% |
+| 13 | [Edmonton (EDM)](#13-edmonton-edm) | Average | Low-level | Leaning, few games | −0.9 | −2.0 | 284-207-6 | 57.8% | 61.2% |
+| 14 | [Winnipeg (WPG)](#14-winnipeg-wpg) | Average | Both alike | — | −1.3 | −3.6 | 624-647-8 | 49.1% | 54.1% |
+| 15 | [Detroit (DET)](#15-detroit-det) | Average | Both alike | — | −1.5 | −1.5 | 972-1,340-15 | 42.0% | 42.3% |
+| 16 | [Philadelphia (PHI)](#16-philadelphia-phi) | Poor | Low-level | Leaning | −2.5 | −1.1 | 309-332-2 | 48.2% | 50.8% |
+| 17 | [Quebec (QUE)](#17-quebec-que) | Poor | High-level | Likely | −3.2 | −6.3 | 458-428-9 | 51.7% | 59.2% |
+| 18 | [Hartford (HFD)](#18-hartford-hfd) | Poor | Both alike | Few games | −3.5 | −2.7 | 129-98-1 | 56.8% | 62.0% |
+| 19 | [Buffalo (BUF)](#19-buffalo-buf) | Poor | Both alike | — | −3.6 | −4.1 | 1,034-1,059-10 | 49.4% | 53.9% |
+| 20 | [NY Islanders (NYI)](#20-ny-islanders-nyi) | Poor | Unclear | Few games | −6.0 | −9.6 | 153-140-2 | 52.2% | 62.7% |
+| 21 | [San Jose (SJ)](#21-san-jose-sj) | Poor | Unclear | Few games | −7.7 | −11.8 | 96-55-2 | 63.6% | 74.5% |
+| 22 | [Dallas (DAL)](#22-dallas-dal) | Poor | Unclear | Few games | −9.3 | −5.5 | 87-94-1 | 48.1% | 54.9% |
 
 Too few games for a full entry: Florida (FLA) 47-26-1; Tampa Bay (TB) 28-35-2; Anaheim (ANH) 24-22; Ottawa (OTW) 19-21.
 
 ## 1. New Jersey (NJ)
 
-**Good for low-level players.** Strength +5.9 ± 2.9 now (1st of 22), +4.5 ± 2.3 over all years (1st).
+**Overall: Good. Best for: Low-level (weak).** Strength +5.9 ± 2.9 now (1st of 22), +4.5 ± 2.3 over all years (1st).
 
 Used in 16 of 63 leagues (5 of them a season's top league), by 13 coaches, 734 games, most recently 2026-10-28.
 
@@ -82,7 +88,7 @@ Used in 16 of 63 leagues (5 of them a season's top league), by 13 coaches, 734 g
 | Top league | 139-98-1 | 58.6% | 58.6% | +0.1 ± 3.2 |
 | Other leagues | 242-163-2 | 59.8% | 53.1% | +6.7 ± 2.5 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -123,7 +129,7 @@ Hidden bonus: +1 at home, −2 away.
 
 ## 2. Pittsburgh (PIT)
 
-**Good at both levels.** Strength +4.0 ± 1.5 now (2nd of 22), +4.3 ± 1.2 over all years (2nd).
+**Overall: Good. Best for: Both alike.** Strength +4.0 ± 1.5 now (2nd of 22), +4.3 ± 1.2 over all years (2nd).
 
 Used in 60 of 63 leagues (19 of them a season's top league), by 51 coaches, 2,522 games, most recently 2026-11-03.
 
@@ -153,7 +159,7 @@ Used in 60 of 63 leagues (19 of them a season's top league), by 51 coaches, 2,52
 | Top league | 408-417-6 | 49.5% | 42.2% | +7.2 ± 1.7 |
 | Other leagues | 782-684-9 | 53.3% | 49.0% | +4.3 ± 1.3 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -194,7 +200,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 3. NY Rangers (NYR)
 
-**Slightly good at both levels.** Strength +2.7 ± 1.3 now (3rd of 22), +2.5 ± 1.3 over all years (3rd).
+**Overall: Good. Best for: Both alike.** Strength +2.7 ± 1.3 now (3rd of 22), +2.5 ± 1.3 over all years (3rd).
 
 Used in 56 of 63 leagues (18 of them a season's top league), by 37 coaches, 2,533 games, most recently 2026-11-03.
 
@@ -224,7 +230,7 @@ Used in 56 of 63 leagues (18 of them a season's top league), by 37 coaches, 2,53
 | Top league | 448-384-3 | 53.8% | 51.0% | +2.8 ± 1.7 |
 | Other leagues | 744-671-10 | 52.6% | 49.1% | +3.5 ± 1.3 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -264,7 +270,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 4. Vancouver (VAN)
 
-**About average at both levels.** Strength +0.9 ± 1.4 now (4th of 22), +0.3 ± 1.3 over all years (8th).
+**Overall: Average. Best for: Both alike.** Strength +0.9 ± 1.4 now (4th of 22), +0.3 ± 1.3 over all years (8th).
 
 Used in 47 of 63 leagues (16 of them a season's top league), by 29 coaches, 2,105 games, most recently 2026-11-01.
 
@@ -294,7 +300,7 @@ Used in 47 of 63 leagues (16 of them a season's top league), by 29 coaches, 2,10
 | Top league | 380-333-6 | 53.3% | 52.9% | +0.4 ± 1.9 |
 | Other leagues | 589-574-4 | 50.6% | 50.3% | +0.3 ± 1.5 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -335,7 +341,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 5. Chicago (CHI)
 
-**About average at both levels.** Strength +0.5 ± 1.4 now (5th of 22), +1.1 ± 1.2 over all years (6th).
+**Overall: Average. Best for: Both alike.** Strength +0.5 ± 1.4 now (5th of 22), +1.1 ± 1.2 over all years (6th).
 
 Used in 58 of 63 leagues (18 of them a season's top league), by 52 coaches, 2,433 games, most recently 2026-10-28.
 
@@ -365,7 +371,7 @@ Used in 58 of 63 leagues (18 of them a season's top league), by 52 coaches, 2,43
 | Top league | 365-388-11 | 48.5% | 47.2% | +1.2 ± 1.8 |
 | Other leagues | 734-692-7 | 51.5% | 51.5% | −0.1 ± 1.3 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -406,7 +412,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 6. Los Angeles (LA)
 
-**Slightly good at both levels.** Strength +0.4 ± 1.2 now (6th of 22), +1.4 ± 1.2 over all years (5th).
+**Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.2 now (6th of 22), +1.4 ± 1.2 over all years (5th).
 
 Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,239 games, most recently 2026-11-01.
 
@@ -436,7 +442,7 @@ Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,23
 | Top league | 389-428-3 | 47.6% | 46.5% | +1.1 ± 1.7 |
 | Other leagues | 644-605-5 | 51.6% | 50.2% | +1.3 ± 1.4 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -477,7 +483,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 7. Calgary (CGY)
 
-**About average at both levels.** Strength +0.4 ± 1.9 now (7th of 22), −0.2 ± 1.5 over all years (11th).
+**Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.9 now (7th of 22), −0.2 ± 1.5 over all years (11th).
 
 Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,976 games, most recently 2026-11-03.
 
@@ -507,7 +513,7 @@ Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,97
 | Top league | 228-291-2 | 43.9% | 44.1% | −0.2 ± 2.2 |
 | Other leagues | 648-583-15 | 52.6% | 53.7% | −1.1 ± 1.4 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -548,7 +554,7 @@ Hidden bonus: +0 at home, −0 away.
 
 ## 8. Washington (WSH)
 
-**Good for low-level players; the gap is likely real.** Strength +0.3 ± 1.7 now (8th of 22), +0.3 ± 1.5 over all years (9th).
+**Overall: Average. Best for: Low-level (likely).** Strength +0.3 ± 1.7 now (8th of 22), +0.3 ± 1.5 over all years (9th).
 
 Used in 26 of 63 leagues (12 of them a season's top league), by 22 coaches, 1,128 games, most recently 2026-10-15.
 
@@ -578,7 +584,7 @@ Used in 26 of 63 leagues (12 of them a season's top league), by 22 coaches, 1,12
 | Top league | 279-271-4 | 50.7% | 53.5% | −2.7 ± 2.1 |
 | Other leagues | 170-161-4 | 51.4% | 47.3% | +4.0 ± 2.7 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -619,7 +625,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 9. Montreal (MTL)
 
-**About average at both levels; leaning toward low-level players.** Strength −0.3 ± 1.9 now (9th of 22), +0.5 ± 1.4 over all years (7th).
+**Overall: Average. Best for: Low-level (leaning).** Strength −0.3 ± 1.9 now (9th of 22), +0.5 ± 1.4 over all years (7th).
 
 Used in 41 of 63 leagues (14 of them a season's top league), by 36 coaches, 1,700 games, most recently 2026-11-03.
 
@@ -649,7 +655,7 @@ Used in 41 of 63 leagues (14 of them a season's top league), by 36 coaches, 1,70
 | Top league | 256-318-9 | 44.6% | 45.2% | −0.6 ± 2.1 |
 | Other leagues | 467-446-6 | 51.2% | 48.6% | +2.5 ± 1.7 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -690,7 +696,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 10. Toronto (TOR)
 
-**Unclear.** Strength −0.6 ± 3.6 now (10th of 22), −1.4 ± 2.8 over all years (13th).
+**Overall: Average. Best for: Unclear.** Strength −0.6 ± 3.6 now (10th of 22), −1.4 ± 2.8 over all years (13th).
 
 Used in 19 of 63 leagues (7 of them a season's top league), by 19 coaches, 771 games, most recently 2026-11-02.
 
@@ -720,7 +726,7 @@ Used in 19 of 63 leagues (7 of them a season's top league), by 19 coaches, 771 g
 | Top league | 124-171-2 | 42.0% | 47.3% | −5.3 ± 2.9 |
 | Other leagues | 191-185-1 | 50.8% | 51.5% | −0.7 ± 2.6 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -761,7 +767,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 11. Boston (BOS)
 
-**Good for high-level players; the gap is likely real.** Strength −0.8 ± 1.8 now (11th of 22), +1.5 ± 1.6 over all years (4th).
+**Overall: Average. Best for: High-level (likely).** Strength −0.8 ± 1.8 now (11th of 22), +1.5 ± 1.6 over all years (4th).
 
 Used in 61 of 63 leagues (19 of them a season's top league), by 48 coaches, 2,513 games, most recently 2026-11-03.
 
@@ -791,7 +797,7 @@ Used in 61 of 63 leagues (19 of them a season's top league), by 48 coaches, 2,51
 | Top league | 450-406-8 | 52.6% | 47.4% | +5.2 ± 1.7 |
 | Other leagues | 570-850-12 | 40.1% | 39.7% | +0.5 ± 1.3 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -832,7 +838,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 12. St. Louis (STL)
 
-**Unclear.** Strength −0.9 ± 3.2 now (12th of 22), +0.0 ± 2.6 over all years (10th).
+**Overall: Average. Best for: Unclear.** Strength −0.9 ± 3.2 now (12th of 22), +0.0 ± 2.6 over all years (10th).
 
 Used in 13 of 63 leagues (3 of them a season's top league), by 13 coaches, 553 games, most recently 2026-05-22.
 
@@ -862,7 +868,7 @@ Used in 13 of 63 leagues (3 of them a season's top league), by 13 coaches, 553 g
 | Top league | 69-73-2 | 48.6% | 56.7% | −8.1 ± 4.2 |
 | Other leagues | 125-111 | 53.0% | 48.4% | +4.6 ± 3.3 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -902,7 +908,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 13. Edmonton (EDM)
 
-**Good for low-level players; the gap leans that way; few games.** Strength −0.9 ± 3.3 now (13th of 22), −2.0 ± 2.6 over all years (15th).
+**Overall: Average. Best for: Low-level (leaning, few games).** Strength −0.9 ± 3.3 now (13th of 22), −2.0 ± 2.6 over all years (15th).
 
 Used in 11 of 63 leagues (9 of them a season's top league), by 7 coaches, 497 games, most recently 2026-11-01.
 
@@ -932,7 +938,7 @@ Used in 11 of 63 leagues (9 of them a season's top league), by 7 coaches, 497 ga
 | Top league | 228-166-3 | 57.9% | 61.4% | −3.6 ± 2.5 |
 | Other leagues | 26-20 | 56.5% | 51.3% | +5.3 ± 7.4 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -972,7 +978,7 @@ Hidden bonus: +1 at home, −2 away.
 
 ## 14. Winnipeg (WPG)
 
-**Poor at both levels.** Strength −1.3 ± 1.8 now (14th of 22), −3.6 ± 1.6 over all years (17th).
+**Overall: Average. Best for: Both alike.** Strength −1.3 ± 1.8 now (14th of 22), −3.6 ± 1.6 over all years (17th).
 
 Used in 30 of 63 leagues (12 of them a season's top league), by 24 coaches, 1,279 games, most recently 2026-11-03.
 
@@ -1002,7 +1008,7 @@ Used in 30 of 63 leagues (12 of them a season's top league), by 24 coaches, 1,27
 | Top league | 267-253-3 | 51.3% | 55.4% | −4.0 ± 2.2 |
 | Other leagues | 264-284-4 | 48.2% | 52.6% | −4.5 ± 2.1 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1043,7 +1049,7 @@ Hidden bonus: +1 at home, −1 away.
 
 ## 15. Detroit (DET)
 
-**About average at both levels.** Strength −1.5 ± 1.8 now (15th of 22), −1.5 ± 1.6 over all years (14th).
+**Overall: Average. Best for: Both alike.** Strength −1.5 ± 1.8 now (15th of 22), −1.5 ± 1.6 over all years (14th).
 
 Used in 59 of 63 leagues (18 of them a season's top league), by 45 coaches, 2,327 games, most recently 2026-11-03.
 
@@ -1073,7 +1079,7 @@ Used in 59 of 63 leagues (18 of them a season's top league), by 45 coaches, 2,32
 | Top league | 291-447-4 | 39.4% | 39.8% | −0.4 ± 1.8 |
 | Other leagues | 618-766-9 | 44.7% | 44.5% | +0.2 ± 1.3 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1114,7 +1120,7 @@ Hidden bonus: +0 at home, −0 away.
 
 ## 16. Philadelphia (PHI)
 
-**Poor for high-level players; good for low-level players; the gap leans that way.** Strength −2.5 ± 2.8 now (16th of 22), −1.1 ± 2.5 over all years (12th).
+**Overall: Poor. Best for: Low-level (leaning).** Strength −2.5 ± 2.8 now (16th of 22), −1.1 ± 2.5 over all years (12th).
 
 Used in 15 of 63 leagues (6 of them a season's top league), by 14 coaches, 643 games, most recently 2025-11-20.
 
@@ -1144,7 +1150,7 @@ Used in 15 of 63 leagues (6 of them a season's top league), by 14 coaches, 643 g
 | Top league | 125-133 | 48.4% | 55.5% | −7.0 ± 3.1 |
 | Other leagues | 157-155-1 | 50.3% | 49.8% | +0.6 ± 2.8 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1185,7 +1191,7 @@ Hidden bonus: +2 at home, −2 away.
 
 ## 17. Quebec (QUE)
 
-**Poor for low-level players; likely better for high-level players.** Strength −3.2 ± 3.0 now (17th of 22), −6.3 ± 2.4 over all years (20th).
+**Overall: Poor. Best for: High-level (likely).** Strength −3.2 ± 3.0 now (17th of 22), −6.3 ± 2.4 over all years (20th).
 
 Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 895 games, most recently 2026-11-03.
 
@@ -1215,7 +1221,7 @@ Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 895 g
 | Top league | 226-173-4 | 56.6% | 56.5% | +0.1 ± 2.5 |
 | Other leagues | 139-174-2 | 44.4% | 60.2% | −15.8 ± 2.8 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1256,7 +1262,7 @@ Hidden bonus: +0 at home, −0 away.
 
 ## 18. Hartford (HFD)
 
-**About average at both levels; few games.** Strength −3.5 ± 3.4 now (18th of 22), −2.7 ± 2.9 over all years (16th).
+**Overall: Poor. Best for: Both alike (few games).** Strength −3.5 ± 3.4 now (18th of 22), −2.7 ± 2.9 over all years (16th).
 
 Used in 5 of 63 leagues (3 of them a season's top league), by 5 coaches, 228 games, most recently 2025-06-04.
 
@@ -1285,7 +1291,7 @@ Used in 5 of 63 leagues (3 of them a season's top league), by 5 coaches, 228 gam
 | Top league | 97-52-1 | 65.1% | 69.5% | −4.4 ± 4.1 |
 | Other leagues | 20-24 | 45.5% | 50.0% | −4.6 ± 7.5 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1326,7 +1332,7 @@ Hidden bonus: +0 at home, −0 away.
 
 ## 19. Buffalo (BUF)
 
-**Slightly poor at both levels.** Strength −3.6 ± 1.8 now (19th of 22), −4.1 ± 1.5 over all years (18th).
+**Overall: Poor. Best for: Both alike.** Strength −3.6 ± 1.8 now (19th of 22), −4.1 ± 1.5 over all years (18th).
 
 Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,103 games, most recently 2026-11-01.
 
@@ -1356,7 +1362,7 @@ Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,10
 | Top league | 358-347-1 | 50.8% | 55.0% | −4.2 ± 1.9 |
 | Other leagues | 555-601-7 | 48.0% | 52.8% | −4.8 ± 1.5 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1397,7 +1403,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 20. NY Islanders (NYI)
 
-**Poor at both levels; few games.** Strength −6.0 ± 2.7 now (20th of 22), −9.6 ± 2.2 over all years (21st).
+**Overall: Poor. Best for: Unclear (few games).** Strength −6.0 ± 2.7 now (20th of 22), −9.6 ± 2.2 over all years (21st).
 
 Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 295 games, most recently 2026-10-31.
 
@@ -1426,7 +1432,7 @@ Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 295 gam
 | Top league | 60-48-1 | 55.6% | 69.8% | −14.2 ± 4.8 |
 | Other leagues | 73-47 | 60.8% | 67.4% | −6.5 ± 4.6 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1466,7 +1472,7 @@ Hidden bonus: +0 at home, −0 away.
 
 ## 21. San Jose (SJ)
 
-**Poor at both levels; few games.** Strength −7.7 ± 4.5 now (21st of 22), −11.8 ± 6.3 over all years (22nd).
+**Overall: Poor. Best for: Unclear (few games).** Strength −7.7 ± 4.5 now (21st of 22), −11.8 ± 6.3 over all years (22nd).
 
 Used in 4 of 63 leagues (0 of them a season's top league), by 3 coaches, 153 games, most recently 2026-05-26.
 
@@ -1493,7 +1499,7 @@ Used in 4 of 63 leagues (0 of them a season's top league), by 3 coaches, 153 gam
 | Mid coach | 49-23-1 | 68.1% | 74.8% | −6.7 ± 5.9 |
 | Other leagues | 96-55-2 | 63.6% | 74.5% | −10.9 ± 4.1 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1534,7 +1540,7 @@ Hidden bonus: +1 at home, −2 away.
 
 ## 22. Dallas (DAL)
 
-**Poor at both levels; few games.** Strength −9.3 ± 6.2 now (22nd of 22), −5.5 ± 5.7 over all years (19th).
+**Overall: Poor. Best for: Unclear (few games).** Strength −9.3 ± 6.2 now (22nd of 22), −5.5 ± 5.7 over all years (19th).
 
 Used in 5 of 63 leagues (1 of them a season's top league), by 6 coaches, 182 games, most recently 2026-11-01.
 
@@ -1564,7 +1570,7 @@ Used in 5 of 63 leagues (1 of them a season's top league), by 6 coaches, 182 gam
 | Top league | 20-10 | 66.7% | 75.0% | −8.3 ± 9.1 |
 | Other leagues | 67-84-1 | 44.4% | 50.9% | −6.6 ± 4.1 |
 
-**A game**
+**Per game**
 
 | Stat | Value | Rank | | Stat | Value | Rank |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -29,6 +29,7 @@ ROOT = HERE.parent
 SYSTEMS = (("All_Games_GENS.csv", "Genesis", "GENESIS", 0, "9438f5dd_a738ea1c.bin", "TEAM_GUIDE_GENESIS.md"),
            ("All_Games_SNES.csv", "SNES", "SNES", 1, "cd85e387.smc", "TEAM_GUIDE_SNES.md"))
 MIN_FULL, MIN_LEVEL, DRAWS = 100, 150, 200
+GOOD, ALIKE, WEAK = 1.5, 5.0, 3.0                       # points: strength for Good or Poor; the largest gap for Both alike; the smallest for a Weak call
 ERAS = (("2013-2019", 2013, 2019), ("2020-2022", 2020, 2022), ("2023-2026", 2023, 2026))
 LENSES = ("coach", "strength", "name")
 
@@ -41,40 +42,39 @@ def sign(v, d=1):
     return f"{v:+.{d}f}".replace("-", "−")
 
 
-def reading(lv):
-    """The plain reading of a team from its level values (see COACH_RATING section 10)."""
-    H, Lo, T, R = (lv["coach"]["levels"].get("0"), lv["coach"]["levels"].get("2"), lv["name"]["levels"].get("0"), lv["name"]["levels"].get("2"))
-    vals = [x[0] for x in (H, Lo, T, R) if x]
-    high = [x[0] for x in (H, T) if x]
-    low = [x[0] for x in (Lo, R) if x]
-    state = lambda v: "good" if v and min(v) >= 1.5 else "poor" if v and max(v) <= -1.5 else None
-    sh, sl = state(high), state(low)
-    if sh and sh == sl:
-        text = f"{sh.capitalize()} at both levels"
-    elif vals and min(vals) >= 1:
-        text = "Slightly good at both levels"
-    elif vals and max(vals) <= -1:
-        text = "Slightly poor at both levels"
-    elif vals and max(abs(v) for v in vals) <= 3:
-        text = "About average at both levels"
-    elif sh or sl:
-        parts = [f"{sh} for high-level players" if sh else None, f"{sl} for low-level players" if sl else None]
-        text = "; ".join(p for p in parts if p)
-        text = text[0].upper() + text[1:]
-    else:
-        text = "Unclear"
+def anchor(rank, city_name, abbr):
+    """GitHub's link target for a team's heading, "## 1. St. Louis (STL)": lower case, punctuation gone, spaces as hyphens."""
+    return re.sub(r"[^a-z0-9 -]", "", f"{rank}. {city_name} ({abbr})".lower()).replace(" ", "-")
+
+
+def overall(value):
+    """Good, Average or Poor, from the team's strength now."""
+    return "Good" if value >= GOOD else "Poor" if value <= -GOOD else "Average"
+
+
+def best_for(lv):
+    """(Best for, Confidence): which level of player gets more from the team, from the three ways of measuring level (see COACH_RATING section 10)."""
     gaps = [lv[k].get("gap") for k in LENSES]
-    if all(gaps):
-        signs = {np.sign(g[0]) for g in gaps}
-        if len(signs) == 1:
-            side = "high" if signs == {1.0} else "low"
-            z = [abs(g[0]) / g[1] if g[1] else 0 for g in gaps]
-            if sum(x >= 1.5 for x in z) >= 2:
-                text += "; the gap is likely real" if f"ood for {side}-level" in text else f"; likely better for {side}-level players"
-            elif sum(x >= 1 for x in z) >= 2:
-                text += "; the gap leans that way" if f"ood for {side}-level" in text else f"; leaning toward {side}-level players"
+    known = [g for g in gaps if g]
+    best, sure = "Unclear", "—"
+    state = lambda v: "good" if v and min(v) >= GOOD else None
+    if len(known) == len(LENSES) and len({np.sign(g[0]) for g in known}) == 1:
+        side = "High-level" if known[0][0] > 0 else "Low-level"
+        z = [abs(g[0]) / g[1] if g[1] else 0 for g in known]
+        high = state([x[0] for x in (lv["coach"]["levels"].get("0"), lv["name"]["levels"].get("0")) if x])
+        low = state([x[0] for x in (lv["coach"]["levels"].get("2"), lv["name"]["levels"].get("2")) if x])
+        if sum(x >= 1.5 for x in z) >= 2:
+            best, sure = side, "Likely"
+        elif sum(x >= 1 for x in z) >= 2:
+            best, sure = side, "Leaning"
+        elif bool(high) != bool(low) and (side == "High-level") == bool(high) and min(abs(g[0]) for g in known) >= WEAK:
+            best, sure = side, "Weak"
+    if best == "Unclear" and len(known) == len(LENSES) and max(abs(g[0]) for g in known) <= ALIKE:
+        best = "Both alike"
     few = sum(1 for k, level in (("coach", "0"), ("coach", "2"), ("name", "0"), ("name", "2")) if lv[k]["levels"].get(level, [0, 0, 0])[2] < MIN_LEVEL)
-    return text + ("; few games" if few >= 2 else "")
+    if few >= 2:
+        sure = "Few games" if sure == "—" else f"{sure}, few games"
+    return best, sure
 
 
 def cell(x):
@@ -288,14 +288,18 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
     out = [f"# {system_name} Classic team guide\n",
            f"Every retail team in the {system_name} Classic leagues (names starting `Classic_Spring`, `Classic_Summer` or `Classic_Fall`): {n:,} games in {len(total_leagues)} leagues, through {last}. "
            "No coach is named. The method is in [COACH_RATING.md](COACH_RATING.md).\n",
+           "**Jump to a team:** " + " · ".join(f"[{city[t]}](#{anchor(i, city[t], t)})" for i, t in enumerate(full, 1)) + "\n",
            "## How to read this guide\n",
            "- **Strength** is points of win chance above or below 50 against the average team as used in these leagues, with even coaches and no home edge, with who was coaching taken out. "
            "\"Now\" counts recent games more; \"all years\" counts every game the same. ± is one spread, from resampling whole leagues.\n",
            "- **Expected** is what the team's coaches, home ice and the other team predict if this team were the average team in use. A record above expected is what the team itself added.\n",
            "- **By level of player** says how much better that level does with this team than with its other teams, using all years. Level is measured three ways: each coach's career strength (high and low are about a third of appearances each), "
            "each league's coach strength, and each season's top league (the one with the most As) against its others. A * marks under 150 appearances.\n",
-           "- **Readings** go by rule, from the coach and top-league rows. Good or poor means +1.5 or better, or −1.5 or worse, in both rows for that level. \"Slightly\" means +1 or −1 in all of them, and \"about average\" means all within 3. "
-           "\"Likely\" and \"leaning\" need the gap to point the same way all three ways, at 1.5 or 1 spreads in two of them.\n",
+           "- **Overall** goes by strength now: Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.\n",
+           "- **Best for** says which level of player gets more from the team compared with their other teams. It can be High-level, Low-level, Both alike (no gap over 5 points) or Unclear (the measures disagree or there are too few games). "
+           "A team can be Poor overall and still best for one level: that level just loses less with it.\n",
+           "- **Confidence** applies to a High-level or Low-level call. Likely: all three measures agree on direction, and the gap is at least 1.5 spreads in two. Leaning: the same, at 1 spread. Weak: they agree on direction, "
+           "the gap is at least 3 points each way, and the team is good for only that level. \"Few games\" means at least two values rest on under 150 appearances.\n",
            "- **Most differences between levels don't repeat well** when half the leagues are compared with the other half, so treat them as ideas to test. "
            + ("The overall team order is sturdier.\n" if tab == "GENESIS" else "On the SNES, the team order itself depends more on the method than on the Genesis, so read small gaps as ties.\n"),
            "- **Ranks** run 1st = best (for goals against, shots against and penalty minutes, 1st is fewest; for checks, the most). They compare the teams in this guide.\n",
@@ -303,17 +307,19 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
            + ("Hot and cold values change them a little in play.\n" if tab == "GENESIS" else "The SNES hot / cold bug maxes about 46% of ratings each game, but never Weight, so ratings other than Weight count for less than they look.\n"),
            "- **Results show what happened, not why.** Players choose or are given teams, and rarely used teams rest on few coaches.\n",
            "\n## All teams\n",
-           "| # | Team | Now | All years | Record | Win % | Expected | Reading |\n| --- | --- | --- | --- | --- | --- | --- | --- |"]
+           "| # | Team | Overall | Best for | Confidence | Now | All years | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]
-        out.append(f"| {i} | {city[t]} ({t}) | {sign(now_v[t][0])} | {sign(all_v[t][0])} | {a.w:,}-{a.l:,}" + (f"-{a.t}" if a.t else "") + f" | {100 * a.w / a.n():.1f}% | {100 * a.exp / a.n():.1f}% | {reading(levels[t])} |")
+        best, sure = best_for(levels[t])
+        out.append(f"| {i} | [{city[t]} ({t})](#{anchor(i, city[t], t)}) | {overall(now_v[t][0])} | {best} | {sure} | {sign(now_v[t][0])} | {sign(all_v[t][0])} | {a.w:,}-{a.l:,}" + (f"-{a.t}" if a.t else "") + f" | {100 * a.w / a.n():.1f}% | {100 * a.exp / a.n():.1f}% |")
     rest = sorted((t for t in S if t not in full), key=lambda t: -S[t]["sides"])
     if rest:
         out.append("\nToo few games for a full entry: " + "; ".join(f"{city[t]} ({t}) {rec[t]['all'].w}-{rec[t]['all'].l}" + (f"-{rec[t]['all'].t}" if rec[t]['all'].t else "") for t in rest) + ".")
     for i, t in enumerate(full, 1):
         s, a, lv, u = S[t], rec[t]["all"], levels[t], used[t]
         out.append(f"\n## {i}. {city[t]} ({t})\n")
-        out.append(f"**{reading(lv)}.** Strength {sign(now_v[t][0])} ± {now_v[t][1]:.1f} now ({nth(rank_now.index(t) + 1)} of {len(full)}), {sign(all_v[t][0])} ± {all_v[t][1]:.1f} over all years ({nth(rank_all.index(t) + 1)}).\n")
+        best, sure = best_for(lv)
+        out.append(f"**Overall: {overall(now_v[t][0])}. Best for: {best}" + ("" if sure == "—" else f" ({sure.lower()})") + f".** Strength {sign(now_v[t][0])} ± {now_v[t][1]:.1f} now ({nth(rank_now.index(t) + 1)} of {len(full)}), {sign(all_v[t][0])} ± {all_v[t][1]:.1f} over all years ({nth(rank_all.index(t) + 1)}).\n")
         out.append(f"Used in {len(u['leagues'])} of {len(total_leagues)} leagues ({len(u['top'])} of them a season's top league), by {len(u['coaches'])} coaches, {int(s['sides']):,} games, most recently {C.date.fromordinal(u['last']).isoformat()}.\n")
         out.append("**By level of player**\n\n| | High level | Low level | High minus low |\n| --- | --- | --- | --- |")
         for lab, key in (("By coach", "coach"), ("By league strength", "strength"), ("Top league against others", "name")):
@@ -325,7 +331,7 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
         for lab in ("Regular season", "Playoffs", "Home", "Away", *[e[0] for e in ERAS], "High coach", "Mid coach", "Low coach", "Top league", "Other leagues"):
             if rec[t][lab].n():
                 out.append(rec[t][lab].row(lab))
-        out.append("\n**A game**\n\n| Stat | Value | Rank | | Stat | Value | Rank |\n| --- | --- | --- | --- | --- | --- | --- |")
+        out.append("\n**Per game**\n\n| Stat | Value | Rank | | Stat | Value | Rank |\n| --- | --- | --- | --- | --- | --- | --- |")
         half = (len(STATS) + 1) // 2
         for j in range(half):
             lab, f, fmt, _ = STATS[j]
@@ -360,10 +366,11 @@ def build(name, label, tab, at, romfile, outfile, levels, conv, settings, readin
     readings.append(f"\n**{system_name} Classic, section 9**\n\n| Team | Now | All years | Sides |\n| --- | --- | --- | --- |")
     for t in full:
         readings.append(f"| {t} | {sign(now_v[t][0])} ± {now_v[t][1]:.1f} | {sign(all_v[t][0])} ± {all_v[t][1]:.1f} | {int(S[t]['sides']):,} |")
-    readings.append(f"\n**{system_name} Classic**\n\n| Team | High coaches | Low coaches | Top league | Other leagues | Reading |\n| --- | --- | --- | --- | --- | --- |")
-    for t in sorted(full, key=lambda t: -all_v[t][0]):
+    readings.append(f"\n**{system_name} Classic**\n\n| Team | High coaches | Low coaches | Top league | Other leagues | Overall | Best for | Confidence |\n| --- | --- | --- | --- | --- | --- | --- | --- |")
+    for t in full:
         lv = levels[t]
-        readings.append(f"| {t} | {bare(lv['coach']['levels'].get('0'))} | {bare(lv['coach']['levels'].get('2'))} | {bare(lv['name']['levels'].get('0'))} | {bare(lv['name']['levels'].get('2'))} | {reading(lv)} |")
+        best, sure = best_for(lv)
+        readings.append(f"| {t} | {bare(lv['coach']['levels'].get('0'))} | {bare(lv['coach']['levels'].get('2'))} | {bare(lv['name']['levels'].get('0'))} | {bare(lv['name']['levels'].get('2'))} | {overall(now_v[t][0])} | {best} | {sure} |")
     print(f"{label}: {len(full)} full entries, {len(rest)} short; {outfile}", flush=True)
 
 
