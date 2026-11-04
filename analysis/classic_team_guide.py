@@ -39,7 +39,7 @@ def nth(n):
 
 
 def sign(v, d=1):
-    return f"{v:+.{d}f}".replace("-", "−")
+    return f"{0:.{d}f}" if round(v, d) == 0 else f"{v:+.{d}f}".replace("-", "−")
 
 
 def anchor(rank, city_name, abbr):
@@ -413,7 +413,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
             out.append("| " + " | ".join(f"{ratings[t][k]:.1f} ({nth(rank_rom[k].index(t) + 1)})" for k in order) + " |")
             ha = RETAIL_HOME_AWAY.get(t)
             if ha:
-                out.append(f"\nHidden bonus: +{ha[0]} at home, −{ha[1]} away.")
+                out.append(f"\nHidden bonus: +{ha[0]} at home, −{ha[1]} away." if ha[0] or ha[1] else "\nHidden bonus: none.")
         roster = {p["name"].lower(): p for p in rom_t[t]["players"]} if t in rom_t else {}
         top = sorted(scorers[t].items(), key=lambda kv: -kv[1][2])[:6]
         # only Genesis rows give each player's checks throughout; most SNES rows have no such field, and that slot holds penalty minutes

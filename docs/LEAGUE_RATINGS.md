@@ -10,7 +10,7 @@ How strong the coaches in each league-season were, on both systems, from every l
 - **At the start:** each coach's Rating as of the league's first day, from earlier games only, so the league's own results don't count. Compare leagues from about the same time with this. The average coach moves with the years, so it isn't a fair way to compare 2016 with 2026.
 - **One scale:** each coach's strength over all their years, with every game counting equally. Its baseline doesn't move, so use this to compare across years. It uses hindsight: a coach is judged partly by what they did later.
 - **Top 3 and Bottom 3:** the mean Rating at the start of the league's three strongest and three weakest coaches, so you can see whether a league is top-heavy. Both are win chances against an average coach.
-- **Classic leagues use Classic ratings,** which take team strength out. **All-leagues** columns show the same two numbers from all leagues' ratings.
+- **Classic leagues use Classic ratings,** which take team strength out, so a Classic number can't be compared with another league's. The **All-leagues** columns show a Classic league on the ratings other leagues use. The lists across all leagues use those too.
 - **Coaches:** those with 5+ games in the league, each counted once, including playoff games. Fill-ins and early drop-outs are left out.
 - **†:** 25% or more of the league's coaches had under 30 earlier games (in Classic games, for a Classic league), so its rating at the start is rough. The earliest leagues all show this.
 - **‡:** a very small league, with under 4 coaches or under 20 games, such as a championship series between two divisions' winners. It's listed but left out of every ranking and average.
@@ -69,23 +69,25 @@ Each league's level comes from its name, as a season's divisions run from the mo
 
 ### Genesis: the toughest leagues, on one scale
 
+Every league here uses all-leagues ratings, Classic included, so they can be compared.
+
 | League | First game | Coaches | Games | Strength, at the start | Strength, one scale | Top 3 | Bottom 3 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `Blitz_'94_Season_8-A` | 2014-04-23 | 5 | 33 | 70.5 | 84.1 | 75.2 | 65.8 |
+| `Classic_Spring2024_GENS-A` | 2024-03-31 | 9 | 190 | 80.1 | 82.9 | 87.4 | 71.1 |
+| `Classic_Spring2016_GENS-A` | 2016-04-20 | 11 | 233 | 72.7 | 82.4 | 83.2 | 58.9 |
+| `Classic_Fall2021_GENS-AA` | 2021-10-13 | 5 | 113 | 73.5 | 82.2 | 80.5 | 65.7 |
 | `Et_Tu_Brute_Season_1-A` | 2017-04-25 | 6 | 36 | 71.4 | 81.1 | 81.7 | 61.0 |
+| `Classic_Spring2022_GENS-A` | 2022-03-29 | 10 | 223 | 74.1 | 80.5 | 85.8 | 61.0 |
+| `Classic_Fall2022_GENS-A` | 2022-09-30 | 9 | 205 | 75.0 | 80.0 | 85.7 | 64.6 |
 | `Chaos_Draft_League_Season_12-A` | 2026-02-08 | 12 | 291 | 78.7 | 79.9 | 87.7 | 66.7 |
 | `Et_Tu_Brute_Season_4_GENS-A` | 2020-06-24 | 7 | 39 | 69.3 | 79.8 | 77.1 | 61.3 |
 | `Blitz_'94_Season_10-A` | 2015-03-24 | 12 | 269 | 57.8 | 79.3 | 78.6 | 40.5 |
+| `Classic_Fall2016_GENS-A` | 2016-10-10 | 14 | 244 | 67.4 | 78.9 | 84.3 | 46.4 |
 | `Chaos_Draft_League_Season_3-A` | 2021-08-01 | 12 | 296 | 71.1 | 78.4 | 85.1 | 55.5 |
 | `Chaos_Draft_League_Season_11-A` | 2025-07-14 | 13 | 353 | 77.1 | 78.3 | 86.7 | 66.3 |
 | `Chaos_Draft_League_Season_4-A` | 2022-01-16 | 12 | 301 | 71.4 | 78.1 | 85.5 | 57.7 |
 | `Gauntlet_Season_1` | 2023-12-12 | 9 | 182 | 76.7 | 78.1 | 84.5 | 68.7 |
-| `Blitz_'94_Season_11-A` | 2015-07-19 | 12 | 290 | 60.5 | 77.8 | 81.5 | 43.6 |
-| `Chaos_Draft_League_Season_1-A` | 2021-01-11 | 13 | 305 | 66.9 | 77.6 | 84.8 | 49.6 |
-| `Chaos_Draft_League_Season_9-A` | 2024-07-01 | 13 | 339 | 76.0 | 77.3 | 87.6 | 64.1 |
-| `Chaos_Draft_League_Season_8-A` | 2024-02-19 | 13 | 350 | 75.2 | 77.2 | 87.1 | 62.4 |
-| `Chaos_Draft_League_Season_2-A` | 2021-03-22 | 16 | 387 | 66.9 | 76.9 | 84.5 | 51.1 |
-| `Don't_Puck_With_Me_S2-A` | 2022-03-11 | 10 | 196 | 69.7 | 76.7 | 83.2 | 56.9 |
 
 ### Genesis Classic: the toughest leagues, on one scale
 
@@ -109,7 +111,7 @@ Each league's level comes from its name, as a season's divisions run from the mo
 
 ### Genesis: league families
 
-Families with 3+ leagues, toughest first. The name is what's left of a league's name without its season and level, so a few may be split or joined wrongly.
+Families with 3+ leagues, toughest first, all on all-leagues ratings, so they can be compared. The name is what's left of a league's name without its season and level, so a few may be split or joined wrongly.
 
 | Family | Leagues | First | Last | Strength, one scale |
 | --- | --- | --- | --- | --- |
@@ -130,12 +132,12 @@ Families with 3+ leagues, toughest first. The name is what's left of a league's 
 | `GENS_Summer_League_Tournament` | 7 | 2025 | 2025 | 55.5 |
 | `Genesis_Salary_Cap` | 10 | 2020 | 2025 | 54.2 |
 | `INDIO_Dynasty_League` | 12 | 2022 | 2023 | 54.1 |
+| `Classic` | 94 | 2013 | 2026 | 54.0 |
 | `Velocity_League` | 12 | 2015 | 2020 | 53.1 |
 | `94_Premier_League` | 3 | 2024 | 2026 | 52.6 |
 | `GENS_Franchise` | 14 | 2024 | 2026 | 52.2 |
 | `Random_Draft_League` | 3 | 2025 | 2026 | 51.3 |
 | `CDL_Dynasty` | 5 | 2025 | 2026 | 50.2 |
-| `Classic` | 94 | 2013 | 2026 | 49.3 |
 | `LFG_Reboot` | 12 | 2026 | 2026 | 38.1 |
 
 ### Genesis: every Classic league
@@ -552,6 +554,8 @@ Each league's level comes from its name, as a season's divisions run from the mo
 
 ### SNES: the toughest leagues, on one scale
 
+Every league here uses all-leagues ratings, Classic included, so they can be compared.
+
 | League | First game | Coaches | Games | Strength, at the start | Strength, one scale | Top 3 | Bottom 3 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `SNES_Dynasty_League_S5-A` | 2024-03-27 | 4 | 22 | 80.5 | 82.0 | 81.7 | 79.8 |
@@ -561,14 +565,14 @@ Each league's level comes from its name, as a season's divisions run from the mo
 | `Battle_Royale_Round_4` | 2022-10-10 | 6 | 28 | 79.4 | 81.3 | 81.4 | 77.5 |
 | `SNES_Dynasty_League_S2-A` | 2023-08-09 | 6 | 22 | 78.9 | 81.1 | 81.2 | 76.6 |
 | `SNES_Dynasty_League_S6-A` | 2024-07-18 | 4 | 20 | 78.5 | 80.7 | 80.4 | 76.9 |
+| `Classic_Spring2024_SNES-A` | 2024-04-01 | 7 | 165 | 77.2 | 78.6 | 81.7 | 71.5 |
 | `All_Time_Roster_Salary_Cap_S1` | 2022-09-15 | 4 | 20 | 76.6 | 78.5 | 81.1 | 74.7 |
 | `SNES_Champions_League_2` | 2024-11-04 | 7 | 34 | 77.1 | 78.5 | 82.1 | 71.9 |
+| `Classic_Spring2022_SNES-A` | 2022-03-28 | 9 | 210 | 75.4 | 78.3 | 80.2 | 69.0 |
 | `SNES_Draft_League_Season_9-A` | 2022-06-04 | 9 | 242 | 75.6 | 78.3 | 80.5 | 69.1 |
+| `Classic_Spring2023_SNES-A` | 2023-03-26 | 10 | 225 | 75.0 | 78.0 | 81.5 | 66.5 |
 | `SNES_Dynasty_League_S9-A` | 2025-06-22 | 4 | 20 | 77.9 | 77.7 | 80.9 | 75.6 |
-| `SNES_Draft_League_Season_15-A` | 2025-12-13 | 8 | 200 | 78.2 | 76.7 | 84.9 | 69.8 |
-| `SNES_Draft_League_Season_10-A` | 2022-12-13 | 12 | 299 | 73.2 | 76.6 | 80.9 | 61.4 |
-| `All_Time_Roster_Draft_S1_SNES-A` | 2022-12-28 | 6 | 30 | 74.4 | 76.0 | 80.8 | 67.9 |
-| `All_Time_Roster_Salary_Cap_S1-A` | 2022-08-02 | 6 | 89 | 73.7 | 76.0 | 81.0 | 66.3 |
+| `Classic_Fall2022_SNES-A` | 2022-09-30 | 10 | 212 | 75.1 | 77.5 | 81.4 | 65.3 |
 
 ### SNES Classic: the toughest leagues, on one scale
 
@@ -592,7 +596,7 @@ Each league's level comes from its name, as a season's divisions run from the mo
 
 ### SNES: league families
 
-Families with 3+ leagues, toughest first. The name is what's left of a league's name without its season and level, so a few may be split or joined wrongly.
+Families with 3+ leagues, toughest first, all on all-leagues ratings, so they can be compared. The name is what's left of a league's name without its season and level, so a few may be split or joined wrongly.
 
 | Family | Leagues | First | Last | Strength, one scale |
 | --- | --- | --- | --- | --- |
@@ -602,9 +606,9 @@ Families with 3+ leagues, toughest first. The name is what's left of a league's 
 | `All_Time_Roster_Draft` | 3 | 2022 | 2022 | 57.1 |
 | `SNES_Draft` | 27 | 2015 | 2026 | 57.1 |
 | `SNES_Puck_Dynasty` | 9 | 2013 | 2017 | 57.1 |
+| `Classic` | 63 | 2013 | 2026 | 54.0 |
 | `SNES_All_Time_Rosters` | 3 | 2022 | 2022 | 53.2 |
 | `SNES_NHL` | 3 | 2020 | 2024 | 49.9 |
-| `Classic` | 63 | 2013 | 2026 | 49.7 |
 | `SNES_Current_Roster_Line_Change_League` | 3 | 2023 | 2024 | 48.8 |
 | `SNES_World_Cup` | 3 | 2025 | 2026 | 47.8 |
 | `SNES_Summer_League` | 5 | 2026 | 2026 | 41.9 |

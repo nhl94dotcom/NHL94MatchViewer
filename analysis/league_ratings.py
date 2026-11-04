@@ -106,6 +106,9 @@ def build_system(name, label, at, sets):
         if classic:
             other = [now_all[p][0] for p in field if p in now_all]
             row["start_all"] = float(np.mean(rating(other))) if other else None
+            order_all = sorted(other, reverse=True)
+            row["top3_all"] = float(np.mean(rating(order_all[:3]))) if other else None
+            row["bottom3_all"] = float(np.mean(rating(order_all[-3:]))) if other else None
             row["scale_all"] = float(np.mean(rating([scale_all[p] for p in field if p in scale_all])))
         row["small"] = row["field"] < SMALL_FIELD or row["games"] < SMALL_GAMES
         rows.append(row)
@@ -126,6 +129,13 @@ def league_row(r, extra=False):
     if extra:
         cells += [fmt(r.get("start_all")), fmt(r.get("scale_all"))]
     return "| " + " | ".join(cells) + " |"
+
+
+def on_all_leagues(r):
+    """The row as all-leagues ratings see it, so Classic and other leagues can be compared."""
+    if not r["classic"]:
+        return r
+    return {**r, "start_rating": r.get("start_all"), "scale_rating": r["scale_all"], "top3": r.get("top3_all"), "bottom3": r.get("bottom3_all")}
 
 
 def league_head(extra=False):
@@ -170,14 +180,14 @@ def section(title, rows):
         have = [r for r in g if r["start_rating"] is not None]
         out.append(f"| {y} | {len(g)} | {np.mean([r['scale_rating'] for r in g]):.1f} | {fmt(float(np.mean([r['start_rating'] for r in have])) if have else None)} | {fmt(float(np.mean([r['top3'] for r in have])) if have else None)} |")
     out.append("")
-    tough = sorted(rows, key=lambda r: -r["scale_rating"])
-    out += [f"### {title}: the toughest leagues, on one scale", "", league_head()] + [league_row(r) for r in tough[:LIST_TOP]] + [""]
+    tough = sorted((on_all_leagues(r) for r in rows), key=lambda r: -r["scale_rating"])
+    out += [f"### {title}: the toughest leagues, on one scale", "", "Every league here uses all-leagues ratings, Classic included, so they can be compared.", "", league_head()] + [league_row(r) for r in tough[:LIST_TOP]] + [""]
     tough_c = sorted(classic, key=lambda r: -r["scale_rating"])
     out += [f"### {title} Classic: the toughest leagues, on one scale", "", league_head(True)] + [league_row(r, True) for r in tough_c[:LIST_TOP]] + [""]
     fams = defaultdict(list)
     for r in rows:
-        fams[r["family"]].append(r)
-    out += [f"### {title}: league families", "", f"Families with {MIN_FAMILY}+ leagues, toughest first. The name is what's left of a league's name without its season and level, so a few may be split or joined wrongly.", "",
+        fams[r["family"]].append(on_all_leagues(r))
+    out += [f"### {title}: league families", "", f"Families with {MIN_FAMILY}+ leagues, toughest first, all on all-leagues ratings, so they can be compared. The name is what's left of a league's name without its season and level, so a few may be split or joined wrongly.", "",
             "| Family | Leagues | First | Last | Strength, one scale |", "| --- | --- | --- | --- | --- |"]
     for fam, g in sorted(((f, g) for f, g in fams.items() if len(g) >= MIN_FAMILY), key=lambda kv: -np.mean([r["scale_rating"] for r in kv[1]])):
         out.append(f"| `{fam}` | {len(g)} | {date.fromordinal(min(r['start'] for r in g)).year} | {date.fromordinal(max(r['start'] for r in g)).year} | {np.mean([r['scale_rating'] for r in g]):.1f} |")
@@ -200,7 +210,7 @@ def main():
            "- **At the start:** each coach's Rating as of the league's first day, from earlier games only, so the league's own results don't count. Compare leagues from about the same time with this. The average coach moves with the years, so it isn't a fair way to compare 2016 with 2026.",
            "- **One scale:** each coach's strength over all their years, with every game counting equally. Its baseline doesn't move, so use this to compare across years. It uses hindsight: a coach is judged partly by what they did later.",
            "- **Top 3 and Bottom 3:** the mean Rating at the start of the league's three strongest and three weakest coaches, so you can see whether a league is top-heavy. Both are win chances against an average coach.",
-           "- **Classic leagues use Classic ratings,** which take team strength out. **All-leagues** columns show the same two numbers from all leagues' ratings.",
+           "- **Classic leagues use Classic ratings,** which take team strength out, so a Classic number can't be compared with another league's. The **All-leagues** columns show a Classic league on the ratings other leagues use. The lists across all leagues use those too.",
            f"- **Coaches:** those with {MIN_GAMES}+ games in the league, each counted once, including playoff games. Fill-ins and early drop-outs are left out.",
            f"- **†:** {int(ROUGH_SHARE * 100)}% or more of the league's coaches had under {NEW_GAMES} earlier games (in Classic games, for a Classic league), so its rating at the start is rough. The earliest leagues all show this.",
            f"- **‡:** a very small league, with under {SMALL_FIELD} coaches or under {SMALL_GAMES} games, such as a championship series between two divisions' winners. It's listed but left out of every ranking and average.",

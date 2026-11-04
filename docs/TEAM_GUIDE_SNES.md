@@ -148,13 +148,13 @@ This scale is about 1.5 times wider than the one in the Genesis guide, as the SN
 | 3 | [NY Rangers (NYR)](#3-ny-rangers-nyr) | Good | Both alike | — | +2.7 | +2.5 | +11 | 1,347-1,171-15 | 53.5% | 50.3% |
 | 4 | [Vancouver (VAN)](#4-vancouver-van) | Average | Both alike | — | +0.9 | +0.3 | −18 | 1,081-1,013-11 | 51.6% | 51.4% |
 | 5 | [Chicago (CHI)](#5-chicago-chi) | Average | Both alike | — | +0.5 | +1.1 | +6 | 1,218-1,195-20 | 50.5% | 49.7% |
-| 6 | [Los Angeles (LA)](#6-los-angeles-la) | Average | Both alike | — | +0.4 | +1.4 | −0 | 1,103-1,127-9 | 49.5% | 48.3% |
+| 6 | [Los Angeles (LA)](#6-los-angeles-la) | Average | Both alike | — | +0.4 | +1.4 | 0 | 1,103-1,127-9 | 49.5% | 48.3% |
 | 7 | [Calgary (CGY)](#7-calgary-cgy) | Average | Both alike | — | +0.4 | −0.2 | +2 | 967-992-17 | 49.4% | 50.0% |
 | 8 | [Washington (WSH)](#8-washington-wsh) | Average | Low-level | Likely | +0.3 | +0.3 | −25 | 593-524-11 | 53.1% | 52.8% |
 | 9 | [Montreal (MTL)](#9-montreal-mtl) | Average | Low-level | Leaning | −0.3 | +0.5 | +9 | 775-910-15 | 46.0% | 45.2% |
 | 10 | [Toronto (TOR)](#10-toronto-tor) | Average | Unclear | — | −0.6 | −1.4 | −12 | 373-395-3 | 48.6% | 50.4% |
 | 11 | [Boston (BOS)](#11-boston-bos) | Average | High-level | Likely | −0.8 | +1.5 | +4 | 1,142-1,348-23 | 45.9% | 43.7% |
-| 12 | [St. Louis (STL)](#12-st-louis-stl) | Average | Unclear | — | −0.9 | +0.0 | −7 | 296-252-5 | 54.0% | 53.4% |
+| 12 | [St. Louis (STL)](#12-st-louis-stl) | Average | Unclear | — | −0.9 | 0.0 | −7 | 296-252-5 | 54.0% | 53.4% |
 | 13 | [Edmonton (EDM)](#13-edmonton-edm) | Average | Low-level | Leaning, few games | −0.9 | −2.0 | −19 | 284-207-6 | 57.8% | 61.2% |
 | 14 | [Winnipeg (WPG)](#14-winnipeg-wpg) | Average | Both alike | — | −1.3 | −3.6 | −21 | 624-647-8 | 49.1% | 54.1% |
 | 15 | [Detroit (DET)](#15-detroit-det) | Average | Both alike | — | −1.5 | −1.5 | +1 | 972-1,340-15 | 42.0% | 42.3% |
@@ -416,7 +416,7 @@ Used in 47 of 63 leagues (16 of them a season's top league), by 29 coaches, 2,10
 | 2023-2026 | 433-384-4 | 53.0% | 52.9% | +0.1 ± 1.7 |
 | High coach | 454-291-3 | 60.9% | 60.3% | +0.6 ± 1.8 |
 | Mid coach | 298-266-4 | 52.8% | 52.6% | +0.3 ± 2.1 |
-| Low coach | 329-456-4 | 41.9% | 42.0% | −0.0 ± 1.8 |
+| Low coach | 329-456-4 | 41.9% | 42.0% | 0.0 ± 1.8 |
 | Top league | 380-333-6 | 53.3% | 52.9% | +0.4 ± 1.9 |
 | Other leagues | 589-574-4 | 50.6% | 50.3% | +0.3 ± 1.5 |
 
@@ -536,7 +536,7 @@ Hidden bonus: +2 at home, −1 away.
 
 **Overall: Average. Best for: Both alike.** Strength +0.4 ± 1.2 now (6th of 22), +1.4 ± 1.2 over all years (5th).
 
-**Elo adjustment:** −0 ± 11 points (10th of 22), from 1,776 of 2,239 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's +5.
+**Elo adjustment:** 0 ± 11 points (10th of 22), from 1,776 of 2,239 games. Against an even coach on the average team, on neutral ice, that's a 50% win chance. With one fixed strength per coach instead of Elo, it's +5.
 
 Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,239 games, most recently 2026-11-01.
 
@@ -560,7 +560,7 @@ Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,23
 | 2013-2019 | 197-264-1 | 42.7% | 40.6% | +2.2 ± 2.3 |
 | 2020-2022 | 554-429-4 | 56.4% | 51.5% | +4.8 ± 1.6 |
 | 2023-2026 | 352-434-4 | 44.8% | 48.7% | −4.0 ± 1.8 |
-| High coach | 348-260-3 | 57.2% | 57.2% | +0.0 ± 2.0 |
+| High coach | 348-260-3 | 57.2% | 57.2% | 0.0 ± 2.0 |
 | Mid coach | 512-463-5 | 52.5% | 51.1% | +1.4 ± 1.6 |
 | Low coach | 243-404-1 | 37.6% | 35.7% | +1.9 ± 2.0 |
 | Top league | 389-428-3 | 47.6% | 46.5% | +1.1 ± 1.7 |
@@ -626,7 +626,7 @@ Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,97
 | | Record | Win % | Expected | Against expected |
 | --- | --- | --- | --- | --- |
 | All games | 967-992-17 | 49.4% | 50.0% | −0.6 ± 1.1 |
-| Regular season | 841-832-17 | 50.3% | 50.3% | −0.0 ± 1.2 |
+| Regular season | 841-832-17 | 50.3% | 50.3% | 0.0 ± 1.2 |
 | Playoffs | 126-160 | 44.1% | 48.1% | −4.0 ± 3.0 |
 | Home | 505-471-9 | 51.7% | 53.3% | −1.5 ± 1.6 |
 | Away | 462-521-8 | 47.0% | 46.7% | +0.3 ± 1.6 |
@@ -658,7 +658,7 @@ Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,97
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 71.4 (3rd) | 7.5 (8th) | 3.8 (1st) | 4.0 (4th) | 3.5 (4th) | 3.0 (7th) | 3.0 (5th) | 3.0 (17th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -972,7 +972,7 @@ Hidden bonus: +2 at home, −1 away.
 
 ## 12. St. Louis (STL)
 
-**Overall: Average. Best for: Unclear.** Strength −0.9 ± 3.2 now (12th of 22), +0.0 ± 2.6 over all years (10th).
+**Overall: Average. Best for: Unclear.** Strength −0.9 ± 3.2 now (12th of 22), 0.0 ± 2.6 over all years (10th).
 
 **Elo adjustment:** −7 ± 18 points (11th of 22), from 453 of 553 games. Against an even coach on the average team, on neutral ice, that's a 49% win chance. With one fixed strength per coach instead of Elo, it's +1.
 
@@ -1240,7 +1240,7 @@ Used in 59 of 63 leagues (18 of them a season's top league), by 45 coaches, 2,32
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 71.3 (4th) | 7.0 (20th) | 3.6 (9th) | 4.2 (2nd) | 3.7 (1st) | 2.9 (11th) | 2.6 (19th) | 4.0 (5th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1386,7 +1386,7 @@ Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 895 g
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 68.1 (10th) | 6.8 (25th) | 3.7 (8th) | 3.5 (15th) | 3.5 (5th) | 3.3 (1st) | 2.3 (24th) | 4.0 (11th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1458,7 +1458,7 @@ Used in 5 of 63 leagues (3 of them a season's top league), by 5 coaches, 228 gam
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 62.6 (21st) | 7.4 (12th) | 3.3 (14th) | 3.4 (16th) | 3.1 (16th) | 2.6 (19th) | 2.8 (13th) | 4.0 (7th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1500,7 +1500,7 @@ Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,10
 | --- | --- | --- | --- | --- |
 | All games | 1,034-1,059-10 | 49.4% | 53.9% | −4.5 ± 1.1 |
 | Regular season | 869-917-10 | 48.7% | 53.9% | −5.3 ± 1.2 |
-| Playoffs | 165-142 | 53.7% | 53.7% | +0.0 ± 2.9 |
+| Playoffs | 165-142 | 53.7% | 53.7% | 0.0 ± 2.9 |
 | Home | 552-492-4 | 52.9% | 56.9% | −4.1 ± 1.5 |
 | Away | 482-567-6 | 45.9% | 50.9% | −4.9 ± 1.5 |
 | 2013-2019 | 290-307-3 | 48.6% | 53.5% | −5.0 ± 2.0 |
@@ -1603,7 +1603,7 @@ Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 295 gam
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 64.6 (17th) | 7.5 (10th) | 3.2 (17th) | 3.4 (17th) | 3.2 (13th) | 2.8 (13th) | 2.4 (22nd) | 2.0 (25th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 
@@ -1745,7 +1745,7 @@ Used in 5 of 63 leagues (1 of them a season's top league), by 6 coaches, 182 gam
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 64.7 (16th) | 7.0 (19th) | 3.8 (6th) | 3.8 (9th) | 3.3 (9th) | 2.6 (18th) | 2.7 (16th) | 4.0 (4th) |
 
-Hidden bonus: +0 at home, −0 away.
+Hidden bonus: none.
 
 **Leading skaters** (per team game)
 

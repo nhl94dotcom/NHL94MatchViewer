@@ -514,6 +514,7 @@ will be later, because people really do change. These small groups make the figu
 ## 13. Running it
 
 ```
+python analysis/update_all.py              all of the below, in order, then the checks
 python analysis/coach_rating.py            the all-leagues test and tables
 python analysis/coach_rating.py groups     each league group fitted alone
 python analysis/coach_team_levels.py       Classic teams by level of player (needs the groups run first)
@@ -524,6 +525,7 @@ python analysis/classic_draft_guide.py     the Classic draft guide (needs the te
 python analysis/coach_guide.py             a private page per coach (needs the ratings), never in the repository
 python analysis/coach_history.py           each coach's Rating on past dates, private, never in the repository
 python analysis/league_ratings.py          docs/LEAGUE_RATINGS.md, how strong each league-season's coaches were (needs the history)
+python analysis/coach_reports.py           a detailed private report per coach (needs the league ratings), never in the repository
 python analysis/league_elo_k.py            K and the coasting bonus tested
 python analysis/team_strength_checks.py    coach eras and the pull on teams tested
 ```

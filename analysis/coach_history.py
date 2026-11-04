@@ -4,7 +4,8 @@ before its first game, for league_ratings.py. Names real people, so everything g
 A date's fit is the published fit (coach_rating.py) with only earlier games, and recent games counting more from that date: all leagues, except the outliers, and separately Classic only. "Average" is the mean
 of coaches with 100+ games by then, or, early on, the 20 with the most games. Values stay on the published scale (the conversion factor from the final fit).
 python analysis/coach_history.py test           time a sample of dates, write nothing
-python analysis/coach_history.py [hours]        run (default 1 hour), then stop; run again to go on"""
+python analysis/coach_history.py [hours]        run (default 1 hour), then stop; run again to go on
+python analysis/coach_history.py fresh          start again and do every date, as after new settings or edited games"""
 import json
 import re
 import sys
@@ -78,7 +79,8 @@ def main():
     gentle()
     sets = settings()
     test = sys.argv[1:] == ["test"]
-    hours = float(sys.argv[1]) if sys.argv[1:] and not test else 1.0
+    fresh = sys.argv[1:] == ["fresh"]
+    hours = float(sys.argv[1]) if sys.argv[1:] and not test and not fresh else 1.0
     OUT.mkdir(exist_ok=True)
     stop = time.time() + hours * 3600
     for name, label, at in SYSTEMS:
@@ -88,7 +90,7 @@ def main():
             days, first = targets(fit)
             print(f"{label} {scope}: {len(fit.games)} games, {len(fit.names)} coaches, {len(first)} leagues, {len(days)} dates; loaded in {time.time() - t0:.0f} s", flush=True)
             path = OUT / f"{label}_{scope}.json"
-            done = json.loads(path.read_text(encoding="utf-8")) if path.exists() and not test else {}
+            done = json.loads(path.read_text(encoding="utf-8")) if path.exists() and not test and not fresh else {}
             todo = [d for d in days if str(d) not in done]
             if test:
                 sample = todo[-3:] + todo[len(todo) // 2 - 1: len(todo) // 2 + 1]
