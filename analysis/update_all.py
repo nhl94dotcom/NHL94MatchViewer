@@ -24,7 +24,7 @@ STEPS = (("ratings", "the all-leagues coach ratings", ["analysis/coach_rating.py
          ("team_guides", "the team guides", ["analysis/classic_team_guide.py"]),
          ("graphics", "the Elo number lines", ["analysis/make_elo_line.py"]),
          ("logos", "the same with logos, outside the repository", ["analysis/make_elo_line_logos.py"]),
-         ("bands", "the shaded Elo graphics, outside the repository", ["analysis/make_elo_bands.py"]),
+         ("bands", "the shaded Elo graphics: plain ones for the guides, logo ones outside the repository", ["analysis/make_elo_bands.py"]),
          ("player_guides", "the player guides", ["analysis/classic_player_guide.py"]),
          ("draft_guide", "the draft guide", ["analysis/classic_draft_guide.py"]),
          ("history", "each coach's Rating on past dates, private", ["analysis/coach_history.py", "fresh"]),
