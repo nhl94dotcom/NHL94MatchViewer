@@ -205,9 +205,9 @@ The calculation separates coach from team because the same people play on differ
 they do elsewhere, that goes to the team. If one coach does well on everything, that goes to the coach.
 
 The values below are points of win chance above or below 50 for a team against the average team as used in these leagues, weighted by appearances, with
-even coaches and no home edge. "Now" fades old games like the coach ratings, and "all years" counts every game the same. "Sides" counts each time a team appeared in a game.
+even coaches and no home edge. "Strength now" fades old games like the coach ratings, and "Strength, all years" counts every game the same. "Sides" counts each time a team appeared in a game.
 
-| Genesis Classic | Now | All years | Sides | | SNES Classic | Now | All years | Sides |
+| Genesis Classic | Strength now | Strength, all years | Sides | | SNES Classic | Strength now | Strength, all years | Sides |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | CHI | +8.1 | +8.8 | 3,955 | | NJ | +5.9 | +4.5 | 734 |
 | DET | +6.4 | +6.7 | 4,124 | | PIT | +4.0 | +4.3 | 2,522 |
