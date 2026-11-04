@@ -100,9 +100,9 @@ version's goals a game, games:
 - The leagues sometimes leave the top teams out of the draft for fun (rare), which this doesn't allow for.
 
 **Elo adjustments for the teams** (`analysis/league_team_elo.py`; the full table and method are in COACH_RATING section 9): points to add to a coach's Elo for using a team, fitted on the league's own Elo
-(every game in date order, a 1500 start, K 20, +7 for home, the winner's gain and loser's loss raised by the coasting bonus). Genesis: Chicago +88, Buffalo +43, Detroit +42, Montreal +38, down to the
-Rangers -82 and Pittsburgh -96 among well-used teams. SNES: Pittsburgh +57, New Jersey +46, with most others within 30 of zero. Each year's adjustments, fitted on earlier years and used inside the running Elo,
-predict Genesis Classic games better (0.6516 to 0.6479 at 75% of full size, 0.6482 at full size), but not SNES ones (0.6321 with none, 0.6319 at a quarter, 0.6337 at full size). This Elo's rating gaps are
+(every game in date order, a 1500 start, K 20, +7 for home and the team adjustments in the expected score, the winner's gain and loser's loss raised by the coasting bonus). Rarely used teams are pulled toward the average team, by the setting that best predicted later years. Genesis: Chicago +83, Detroit +39, Buffalo +38, Montreal +32, down to the
+Rangers -74 and Pittsburgh -70 among well-used teams. SNES: Pittsburgh +35, New Jersey +16, with the rest within 30 of zero. Each year's adjustments, fitted on earlier years and used inside the running Elo,
+predict Genesis Classic games clearly better (0.6516 to 0.6475), and SNES ones only a very little better (0.6321 to 0.6317). This Elo's rating gaps are
 worth about 0.6 of their face value at the start of a league.
 
 ## Game-wide patterns (`analysis/league_patterns.py`)

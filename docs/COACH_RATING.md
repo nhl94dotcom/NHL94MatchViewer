@@ -240,45 +240,47 @@ even coaches and no home edge. "Strength now" fades old games like the coach rat
 - **The assumption is one roster per abbreviation.** If a Classic league used a changed roster, its team value would blur the two.
 
 **Elo adjustments** (`analysis/league_team_elo.py`) say how many points to add to a coach's Elo for using a team. They're fitted on the league's own Elo: every game on the system in date order, a 1500 start,
-K 20, +7 for the home side in the expected score, and the winner's gain and loser's loss raised by the coasting bonus, which can go over 100% if coasting starts before the third period. Using each coach's Elo at the start of the league (30+ earlier
-games), the fit is `P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))`, so a value can be added to a rating as it stands. Zero is the average team in use, and ± comes from resampling whole leagues. Values
-from one fixed strength per coach are shown beside them, and feeding the adjustments back into the Elo changes them by about 4 points. An asterisk marks under 300 games.
+K 20, +7 for the home side and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus, which can go over 100% if coasting starts before the third period. Using each coach's Elo at the start of the league (30+ earlier
+games), the fit is `P(home wins) = 1 / (1 + 10^(-(home Elo - away Elo + 7 + home team - away team) / 400))`, so a value can be added to a rating as it stands. As the table is part of that Elo, the fit and the Elo are run in turn until they settle, which takes a few passes. Zero is the average team in use. Values
+from one fixed strength per coach are shown beside them. An asterisk marks under 300 games.
+
+Rarely used teams are pulled toward the average team, as in section 5, by the setting that best predicted later years: 50 on the Genesis and 200 on the SNES. Each ± comes from resampling whole leagues around that pulled value, so it understates the uncertainty of a rarely used team.
 
 | Genesis Classic | Elo adjustment | Fixed strength | | SNES Classic | Elo adjustment | Fixed strength |
 | --- | --- | --- | --- | --- | --- | --- |
-| CHI | +88 ± 12 | +76 | | PIT | +57 ± 14 | +41 |
-| BUF | +43 ± 11 | +32 | | NJ | +46 ± 22 | +47 |
-| DET | +42 ± 11 | +56 | | MTL | +19 ± 26 | +4 |
-| MTL | +38 ± 12 | +31 | | CHI | +15 ± 15 | +4 |
-| BOS | +10 ± 14 | +7 | | BOS | +11 ± 16 | +17 |
-| VAN | +9 ± 11 | −3 | | NYR | +10 ± 16 | +27 |
-| WPG | −4 ± 12 | +2 | | DET | +9 ± 15 | −7 |
-| WSH | −7 ± 57 | −80 | | CGY | +7 ± 15 | −8 |
-| PHI | −21 ± 25 | −40 | | PHI | +3 ± 37 | −25 |
-| LA | −26 ± 20 | −21 | | LA | 0 ± 15 | +8 |
-| CGY | −29 ± 13 | −41 | | STL | −5 ± 34 | +5 |
-| DAL | −35 ± 13 | −9 | | TOR | −17 ± 27 | −16 |
-| TOR | −41 ± 23 | −24 | | BUF | −25 ± 16 | −30 |
-| QUE | −44 ± 16 | −36 | | VAN | −25 ± 19 | 0 |
-| HFD | −64 ± 25 | −59 | | WSH | −26 ± 19 | +6 |
-| STL | −65 ± 31 | −58 | | EDM | −27 ± 34 | −28 |
-| EDM | −78 ± 36 | −65 | | WPG | −29 ± 19 | −35 |
-| NYR | −82 ± 21 | −95 | | QUE | −33 ± 31 | −55 |
-| PIT | −96 ± 21 | −95 | | HFD* | −53 ± 14 | −28 |
-| NYI* | −127 ± 16 | −92 | | SJ* | −102 ± 61 | −82 |
-| NJ | −138 ± 59 | −52 | | DAL* | −116 ± 67 | −55 |
-| TB* | −219 ± 81 | −106 | | NYI* | −138 ± 34 | −74 |
+| CHI | +83 ± 11 | +67 | | PIT | +35 ± 9 | +25 |
+| DET | +39 ± 10 | +50 | | NJ | +16 ± 9 | +16 |
+| BUF | +38 ± 10 | +26 | | MTL | +10 ± 14 | 0 |
+| MTL | +32 ± 11 | +26 | | CHI | +8 ± 10 | +1 |
+| VAN | +6 ± 10 | −6 | | BOS | +4 ± 11 | +9 |
+| BOS | +6 ± 13 | +5 | | DET | +4 ± 9 | −7 |
+| WPG | −8 ± 11 | 0 | | NYR | +4 ± 11 | +17 |
+| WSH | −17 ± 25 | −48 | | CGY | +3 ± 9 | −7 |
+| LA | −20 ± 16 | −21 | | PHI | −1 ± 13 | −11 |
+| PHI | −22 ± 18 | −33 | | LA | −4 ± 10 | +3 |
+| CGY | −32 ± 12 | −40 | | STL | −4 ± 10 | −1 |
+| DAL | −34 ± 11 | −10 | | TOR | −9 ± 7 | −7 |
+| TOR | −40 ± 19 | −23 | | EDM | −11 ± 10 | −9 |
+| QUE | −43 ± 13 | −33 | | HFD* | −12 ± 4 | −7 |
+| HFD | −50 ± 16 | −41 | | SJ* | −12 ± 9 | −10 |
+| NYI* | −59 ± 14 | −50 | | DAL* | −14 ± 6 | −10 |
+| STL | −59 ± 21 | −47 | | QUE | −14 ± 11 | −25 |
+| EDM | −64 ± 23 | −49 | | WPG | −16 ± 9 | −20 |
+| PIT | −70 ± 14 | −73 | | WSH | −17 ± 10 | +2 |
+| NYR | −74 ± 17 | −80 | | BUF | −18 ± 9 | −21 |
+| NJ | −89 ± 33 | −30 | | VAN | −18 ± 12 | −1 |
+| TB* | −102 ± 37 | −58 | | NYI* | −29 ± 10 | −18 |
 
 **Whether they help.** Each year's adjustments were fitted on earlier years only, then used inside the running Elo to predict that year's Classic games (log loss, lower is better; 13,724 Genesis and 9,427 SNES games):
 
 | Share of the adjustment used | None | 25% | 50% | 75% | 100% |
 | --- | --- | --- | --- | --- | --- |
-| Genesis | 0.6516 | 0.6496 | 0.6484 | 0.6479 | 0.6482 |
-| SNES | 0.6321 | 0.6319 | 0.6320 | 0.6326 | 0.6337 |
+| Genesis | 0.6516 | 0.6500 | 0.6487 | 0.6479 | 0.6475 |
+| SNES | 0.6321 | 0.6320 | 0.6318 | 0.6317 | 0.6317 |
 
-On the Genesis they clearly help (by 0.0037 ± 0.0007 at 75%, 0.0034 ± 0.0010 at full size). On the SNES they don't: the best is about a quarter, which is level with none, and full size is a little worse (0.0015 ± 0.0009). So on the SNES they describe past results more than they improve ratings.
+On the Genesis they clearly help, most at full size (by 0.0041 ± 0.0007). On the SNES they help very little (0.0004 ± 0.0003), so they describe past results more than they improve ratings. The pull setting was chosen on these same years, which flatters these results slightly.
 
-Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league (0.59 Genesis, 0.61 SNES), so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +16 on the SNES.
+Two more things show up. Rating gaps are worth about 0.6 of their face value at the start of a league on both systems, so this Elo overstates gaps between coaches in Classic games. And a home edge remains after the +7: +5 points on the Genesis and +17 on the SNES.
 
 ## 10. Classic teams by level of player
 
