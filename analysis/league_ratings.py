@@ -63,6 +63,13 @@ def season_of(lg):
     return (int(m.group(2)), {"spring": 0, "summer": 1, "fall": 2}[m.group(1).lower()], f"{m.group(1).capitalize()} {m.group(2)}") if m else None
 
 
+def group_key(r):
+    """Family, then level (most As first; none first of all), then oldest first."""
+    level = r["level"] if r["classic"] else (m.group(1).upper() if (m := re.search(r"[-_]([A-Za-z]{1,3}\d?(?:-[A-Za-z])?)$", r["league"])) and re.fullmatch(r"(?i)a+|[b-h]|a[12]|b[12]|ab|cd|[a-c]-[a-z]", m.group(1)) else None)
+    rank = (0, 0, "") if level is None else (1, -len(re.match(r"A*", level).group(0)), level)
+    return (r["family"].lower(), *rank, r["start"], r["league"])
+
+
 def build_system(name, label, at, sets):
     fit_all = H.Fit(name, "all", at, sets)
     fit_cl = H.Fit(name, "classic", at, sets)
@@ -175,9 +182,9 @@ def section(title, rows):
     for fam, g in sorted(((f, g) for f, g in fams.items() if len(g) >= MIN_FAMILY), key=lambda kv: -np.mean([r["scale_rating"] for r in kv[1]])):
         out.append(f"| `{fam}` | {len(g)} | {date.fromordinal(min(r['start'] for r in g)).year} | {date.fromordinal(max(r['start'] for r in g)).year} | {np.mean([r['scale_rating'] for r in g]):.1f} |")
     out.append("")
-    out += [f"### {title}: every Classic league", "", league_head(True)] + [league_row(r, True) for r in reversed([r for r in every if r["classic"]])] + [""]
+    out += [f"### {title}: every Classic league", "", "By level, then oldest first.", "", league_head(True)] + [league_row(r, True) for r in sorted((r for r in every if r["classic"]), key=group_key)] + [""]
     others = [r for r in every if not r["classic"]]
-    out += [f"### {title}: every other league", "", league_head()] + [league_row(r) for r in reversed(others)] + [""]
+    out += [f"### {title}: every other league", "", "By league family, then level, then oldest first.", "", league_head()] + [league_row(r) for r in sorted(others, key=group_key)] + [""]
     return out
 
 
