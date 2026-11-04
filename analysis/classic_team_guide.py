@@ -322,7 +322,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "the gap is at least 3 points each way, and the team is good for only that level. \"Few games\" means at least two values rest on under 150 appearances. A dash means no call to rate.\n",
            f"- **Strength now:** how much the team adds, in points, with recent games counting more. A game's weight halves every {hl:g} years, so a game from 3 years ago counts {'a quarter' if hl == 1.5 else 'half' if hl == 3 else f'{0.5 ** (3 / hl):.2f} times'} as much as one played today. It's the better guide to how a team has done lately.\n",
            "- **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.\n",
-           "- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by the amount that best predicted later years. A * marks under 300 games, so treat it as rough. "
+           "- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games, so treat it as rough. "
            + ("Tested on later years, using these inside the running Elo predicts clearly better than leaving them out.\n" if tab == "GENESIS" else
               "Tested on later years, using these inside the running Elo predicts about the same as leaving them out, so they describe past results more than they improve ratings.\n"),
            "- **Record:** all wins and losses with this team, plus ties when there are any.\n",
@@ -369,7 +369,7 @@ def build(name, label, tab, at, romfile, outfile, levels, elo, conv, settings, r
            "- **Agility** and **Puck Control:** the goalie's roster ratings from the ROM.\n",
            "\n## All teams\n",
            ("![Genesis Classic teams on a line by Elo adjustment](img/elo_teams_genesis.svg)\n" if tab == "GENESIS" else
-            "![SNES Classic teams on a line by Elo adjustment](img/elo_teams_snes_zoom.svg)\n\nThis scale is about 3 times wider than the one in the Genesis guide, as the SNES teams are much closer together.\n"),
+            "![SNES Classic teams on a line by Elo adjustment](img/elo_teams_snes_zoom.svg)\n\nThis scale is about 1.5 times wider than the one in the Genesis guide, as the SNES teams are closer together.\n"),
            "| # | Team | Overall | Best for | Confidence | Strength now | Strength, all years | Elo adjustment | Record | Win % | Expected |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for i, t in enumerate(full, 1):
         a = rec[t]["all"]
