@@ -73,7 +73,7 @@ At each worthwhile spot, 120 shots were played (one at each of the 120 moments, 
 
 The shooter stays on the ice after the release (the map moves him away). The Genesis rates are the map's (all 120
 moments; keeping the shooter changes nothing there). The SNES rates come from 480 shots over all 120 moments with the
-shooter on the ice, since on the SNES that changes the result (the frame timing above). With all ten skaters on the ice in real line-ups the top lane is about 45-47% and the bottom about 20% (SNES_SHOOTING 4.8).
+shooter on the ice, since on the SNES that changes the result (the frame timing above). With all ten skaters on the ice in real line-ups the top lane is about 45% and the bottom about 20%, if no defender stands beside the net in the shot's path (SNES_SHOOTING 4.8).
 
 ### SNES: the lane (top net 54%, bottom 20%)
 

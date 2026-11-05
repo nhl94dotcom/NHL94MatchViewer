@@ -174,7 +174,7 @@ banks $7E-$7F in natural little-endian order), `snes_make_states.py`, `snes_harn
   release (map: parked at -64, +/-230) the puck's stand-still frames shifted from frame 5 on and a lane shot that had
   skipped past the goalie's box edge (-234 to -245, goalie at y -238) was checked at -240 and saved. 480 shots each,
   parked / kept: top lane 53.6 / 53.8%, bottom lane 26.5 / 20.4%, mirror 1.7 / 0.8%. Genesis unchanged (51 / 52 of
-  120). Any SNES study should keep the realistic set of skaters on the ice (or test the sensitivity). Tested 2026-11-04 (`snes_lane_timing.py`, run lane_timing, about 18 minutes in gentle mode): SNES_SHOOTING 4.8.
+  120). Any SNES study should keep the realistic set of skaters on the ice (or test the sensitivity). Tested 2026-11-04 (`snes_lane_timing.py`, run lane_timing2, about 18 minutes in gentle mode; run lane_timing cleared skaters from the wrong path): SNES_SHOOTING 4.8.
   **SNES screen position**: the rink never scrolls sideways (the net's middle is column 128) and the screen follows the
   rink layer's scroll (07DC, a ring buffer; goal-line row = 422 - 07DC at the bottom net in one test), not Vpos (0D37),
   which ran up to 9 pixels off it; the first SNES animations jerked because their crop followed Vpos and the scroll-lock

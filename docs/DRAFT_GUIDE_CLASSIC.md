@@ -73,7 +73,7 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 
 ### Low demand, better than that suggests, but still below the average team
 
-- **Hartford:** strength −1.8, place 9; demand place 20. Strength place 9, Elo place 15, so treat with care.
+- **Hartford:** strength −1.8, place 9; demand place 20. Elo place 15, so treat with care.
 - **NY Islanders:** strength −4.3, place 15; demand place 21. Elo rests on few games, so treat with care.
 - **New Jersey:** strength −3.8, place 12; demand place 16. Elo rests on few games, so treat with care.
 
@@ -172,8 +172,8 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 
 - **New Jersey:** strength place 1, demand place 16. Strength and Elo agree; low-level coaches get more from it (leaning).
 - **Edmonton:** strength place 11, demand place 18. Strength and Elo agree; low-level coaches get more from it (leaning, few games).
-- **Vancouver:** strength place 4, demand place 9. Strength place 4, Elo place 13, so treat with care.
-- **Washington:** strength place 7, demand place 11. Strength place 7, Elo place 20, so treat with care; low-level coaches get more from it (likely).
+- **Vancouver:** strength place 4, demand place 9. Elo place 13, so treat with care.
+- **Washington:** strength place 7, demand place 11. Elo place 20, so treat with care; low-level coaches get more from it (likely).
 - **Toronto:** strength place 10, demand place 14. Strength and Elo agree.
 
 ### Low demand, better than that suggests, but still below the average team
@@ -182,10 +182,10 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 
 ### Teams in more demand than their results
 
-- **Detroit:** demand place 3, strength place 15. Strength place 15, Elo place 9, so treat with care.
-- **Boston:** demand place 1, strength place 11. Strength place 11, Elo place 6, so treat with care; high-level coaches get more from it (likely).
+- **Detroit:** demand place 3, strength place 15. Elo place 9, so treat with care.
+- **Boston:** demand place 1, strength place 11. Elo place 6, so treat with care; high-level coaches get more from it (likely).
 - **Buffalo:** demand place 11, strength place 19. Strength and Elo agree.
-- **Philadelphia:** demand place 10, strength place 16. Strength place 16, Elo place 7, so treat with care; low-level coaches get more from it (leaning).
+- **Philadelphia:** demand place 10, strength place 16. Elo place 7, so treat with care; low-level coaches get more from it (leaning).
 - **Dallas:** demand place 18, strength place 22. Elo rests on few games, so treat with care.
 
 ### Against the roster ratings

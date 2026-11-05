@@ -117,7 +117,7 @@ def section(label, csv_name, guide, player_guide, players):
         if r["agree"]:
             bits.append("Strength and Elo agree")
         else:
-            bits.append(f"Strength place {strength[a]}, Elo place {elo[a]}, so treat with care" if not r["few"] else "Elo rests on few games, so treat with care")
+            bits.append(f"Elo place {elo[a]}, so treat with care" if not r["few"] else "Elo rests on few games, so treat with care")
         if r["best"] in ("High-level", "Low-level"):
             bits.append(f"{r['best'].lower()} coaches get more from it ({r['sure'].lower()})")
         return "; ".join(bits)
