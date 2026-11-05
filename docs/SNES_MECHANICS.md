@@ -875,7 +875,7 @@ everything in this document applies to all of these ROMs.
 
 ## 16. Open questions and parts not read yet
 
-Ordered by how much the answer would matter in league play (penalties off).
+Ordered by how much the answer would matter in league play (usually penalties on).
 
 **Would change how people play or how games are judged:**
 
