@@ -3,8 +3,8 @@ goalie's body box, so the frames it stands still on can decide goal or save. The
 a full slapshot, the same 120 moments as the map, four conditions:
 - parked: every skater parked, the shooter too once the shot is away (the map);
 - kept: the same with the shooter left where he shot;
-- held: the other skaters where they really stood at a person's slapshot in a recorded SNES game (read only; turned to this net, and moved aside if within CLEAR of the shot's path or the
-  shooter so none can touch the puck), held still until the shot is decided;
+- held: the other skaters where they really stood at a person's slapshot in a recorded SNES game (read only; turned to this net, and moved aside if within CLEAR of the shot's paths, to the net's middle and wide of the goalie on the aimed side,
+  so none stands in the puck's way), held still until the shot is decided;
 - live: the same, but let go at the release, so the game's computer plays them. A skater may now really get in the way.
 Each shot also records the frames the puck stood still on in its first STILL_WINDOW frames, the direct measure of the timing.
 python snes_lane_timing.py RUN [minutes]   -> paths.RUNS / RUN / lane_timing.jsonl   (gentle, resumable: a finished job is skipped)
@@ -29,6 +29,7 @@ MOMENTS, SEEDS, LAYOUTS, K = 120, 4, 24, 12
 SLAP_HOLD = 40
 MIN_PUCK = 24
 CLEAR = 30
+AIM_WIDE = 30                     # a lane shot passes this far to the aimed side of the net's middle
 GOAL_Y = 238
 RINK_X = 110
 STILL_WINDOW = 40
@@ -84,15 +85,16 @@ def seg_distance(px, py, x0, y0, x1, y1):
     return math.hypot(px - x0 - t * dx, py - y0 - t * dy)
 
 
-def clear_of_shot(x, y, sx, sy, sg):
-    """Move a skater sideways until he's CLEAR of the shot's path and of the shooter."""
-    goal = (0, sg * GOAL_Y)
-    side = 1 if x >= (sx + goal[0]) / 2 else -1
-    while seg_distance(x, y, sx, sy, *goal) < CLEAR and abs(x) < RINK_X:
+def clear_of_shot(x, y, sx, sy, sg, aim_x):
+    """Move a skater sideways until he's CLEAR of the shot's paths and of the shooter: the path to the net's middle, and to AIM_WIDE to the aimed side at the goal line, where a lane shot really goes."""
+    ends = ((0, sg * GOAL_Y), (aim_x, sg * GOAL_Y))
+    near = lambda u: min(seg_distance(u, y, sx, sy, *end) for end in ends)
+    side = 1 if x >= (sx + aim_x / 2) / 2 else -1
+    while near(x) < CLEAR and abs(x) < RINK_X:
         x += side * 4
-    if seg_distance(x, y, sx, sy, *goal) < CLEAR:          # at the boards: the other way
+    if near(x) < CLEAR:                                    # at the boards: the other way
         side = -side
-        while seg_distance(x, y, sx, sy, *goal) < CLEAR:
+        while near(x) < CLEAR:
             x += side * 4
     return x, y
 
@@ -158,14 +160,14 @@ def init():
         _h[net] = h
 
 
-def place(h, lay, x, y, sg):
+def place(h, lay, x, y, sg, aim):
     """A real layout at this spot, for this net: object -> x, y."""
     place_at = {}
     mates = [k for k in range(6) if k not in (H.SHOOTER, h.goalie)]
     others = [k for k in range(6, 12) if k != H.GOALIE]
     place_at[h.goalie] = (sg * lay["goalie"][0], sg * lay["goalie"][1])
     for k, (a, b) in list(zip(mates, lay["mates"])) + list(zip(others, lay["others"])):
-        place_at[k] = clear_of_shot(sg * a, sg * b, x, sg * y, sg)
+        place_at[k] = clear_of_shot(sg * a, sg * b, x, sg * y, sg, AIM_WIDE if aim in (1, 2, 3) else -AIM_WIDE)
     return place_at
 
 
@@ -175,7 +177,7 @@ def job(args):
     sg = 1 if net == "top" else -1
     h.mode = mode
     h.released = False
-    h.layout = place(h, lay, x, y, sg) if lay else None
+    h.layout = place(h, lay, x, y, sg, aim) if lay else None
     rnd = random.Random(zlib.crc32(f"{name},{part}".encode()))       # the same moments in every condition
     goals = shots = still = seen = 0
     per = []

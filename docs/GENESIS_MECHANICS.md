@@ -1349,7 +1349,7 @@ C-then-B check, and the weight bug for computer checkers too.
 
 ## 17. Open questions
 
-Ordered by how much the answer would matter in league play (penalties and offsides off, line changes off).
+Ordered by how much the answer would matter in league play (penalties on except offsides, line changes off).
 
 **Would change how people play or how games are judged:**
 
@@ -1366,13 +1366,14 @@ Ordered by how much the answer would matter in league play (penalties and offsid
   settle.
 - **15 bobbles** with no explanation yet: maybe the puck reaching the body before the stick.
 
-**Rare, or off in the league's settings** (code only until a recording shows one):
+**Rare in the recordings, or off in the league's settings** (code only until a recording shows one):
 
 - **The penalty shot that ends immediately after the transition:** unexplained. The helper records the penalty-shot
   flags ($C2EA-$C3E8, $D406-$D454; checked on a recorded penalty shot), so the next recorded occurrence will show which
   ending fires.
 - Own goals off a carried puck.
-- With penalties or offsides on: offsides (11), goalie interference, penalty odds by situation, penalty-shot retakes.
+- Offsides (11), which the league's settings leave off.
+- Goalie interference, penalty odds by situation and penalty-shot retakes. These can happen in league games, but the 23 recorded games hold only 51 penalties.
 
 ---
 

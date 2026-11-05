@@ -315,15 +315,15 @@ where he shot, instead of moved away as the map does with every skater) shifted 
 and the result with them: over 480 shots each, 53.8% at the top-net lane spot (53.6% with him moved), 20.4% at the
 bottom-net one (26.5%), 0.8% at the mirror spot (1.7%). The Genesis moves the puck every frame and didn't change.
 
-**With ten skaters on the ice** (`analysis/scoring_map/snes_lane_timing.py`): the other skaters placed where they really stood at 24 people's slapshots in the recorded games (14 games), moved aside if within 30 of the shot's path, 120 shots a line-up over the same 120 moments. The puck stands still on more frames (36-41% with them held still, against 22-31% with them parked), and the lane survives at a somewhat lower rate at the top net:
+**With ten skaters on the ice** (`analysis/scoring_map/snes_lane_timing.py`): the other skaters placed where they really stood at 24 people's slapshots in the recorded games (14 games), moved aside if within 30 of the shot's paths (to the net's middle, and 30 wide of it on the aimed side, where a lane shot goes), 120 shots a line-up over the same 120 moments. The puck stands still on more frames (37-41% with them held still, against 22-31% with them parked), and the lane survives at a somewhat lower rate at the top net:
 
 | Spot | All parked | Shooter left on | Line-ups, held still | Line-ups, let go at the release |
 | --- | --- | --- | --- | --- |
-| Top-net lane | 55.9% | 56.3% | 47.0% ± 1.5 | 45.0% ± 2.3 |
-| Bottom-net lane | 26.2% | 20.2% | 20.8% ± 1.1 | 20.9% ± 1.8 |
-| Mirror spot | 1.5% | 1.3% | 0.9% ± 0.2 | 1.1% ± 0.2 |
+| Top-net lane | 55.9% | 56.3% | 46.3% ± 1.4 | 45.2% ± 1.3 |
+| Bottom-net lane | 26.2% | 20.2% | 20.1% ± 1.1 | 22.1% ± 1.3 |
+| Mirror spot | 1.5% | 1.3% | 0.7% ± 0.2 | 1.0% ± 0.2 |
 
-The ± is from the differences between line-ups. Single line-ups, held still, ran from 32% to 62% at the top net and 13% to 33% at the bottom, more than 120 shots' chance alone gives. Let go, two line-ups fell to 0-2% at one or both lanes, though both were ordinary when held still; those shots weren't traced, and a skater reaching the puck's path is the likely reason. So use about 45-47% for the top lane and about 20% for the bottom one in a real game, with the shooter standing still and the goalie set. How often a person can set that up is still for the practice test in NEEDS_FROM_YOU (item 6).
+The ± is from the differences between line-ups. Single line-ups, held still, ran from 32% to 62% at the top net and 13% to 33% at the bottom, more than 120 shots' chance alone gives. More still frames go with fewer goals at the bottom lane (correlation −0.70 across line-ups, held still), but not at the top one (−0.02). A first run cleared skaters only from the path to the net's middle; a defender standing beside the net in the lane's path then took or deflected the puck, and with skaters let go two line-ups fell to 0-2%. So the lane needs that spot beside the net clear. In a real game, with the shooter standing still, the goalie set and that spot clear, use about 45% for the top lane and about 20% for the bottom one. How often a person can set that up is still for the practice test in NEEDS_FROM_YOU (item 6).
 
 ![The chance a shot scores against a set SNES computer goalie, best aim, by spot](img/snes_scoring_map.svg)
 

@@ -889,7 +889,9 @@ Ordered by how much the answer would matter in league play (penalties off).
   pfgoal from the team and gmdir), energy and input all allow for it. Left: play a standing shot doesn't reach (rushes,
   passes, one-timers) or the people. The 22 recorded SNES games show the dip as poorer chances (xG per attempt 0.18
   against 0.24-0.26, lower in 16 of 22 games) with as many shots and rushes as in period 1: a lead to follow as more
-  games come in.
+  games come in. Now 25 games, counting unblocked shots and one-timers: xG per attempt 0.20 against 0.26 and 0.28 in
+  periods 1 and 3, goals per attempt 0.18 against 0.24 and 0.25, lower than the other two's average in 17 of 25 games.
+  The goals' dip is far larger than the leagues' 5%, on only about 280 attempts a period, so most of its size may be chance.
   (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; LEAGUE_RESULTS. The
   4.8 lane against a goalie who catches with the other hand: it stays on the shooter's left, SNES_SHOOTING 5.3.)
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay
