@@ -28,6 +28,7 @@ STEPS = (("ratings", "the all-leagues coach ratings", ["analysis/coach_rating.py
          ("player_guides", "the player guides", ["analysis/classic_player_guide.py"]),
          ("draft_guide", "the draft guide", ["analysis/classic_draft_guide.py"]),
          ("history", "each coach's Rating on past dates, private", ["analysis/coach_history.py", "fresh"]),
+         ("movers", "whose Ratings have risen and fallen, private", ["analysis/coach_movers.py"]),
          ("league_ratings", "the league ratings", ["analysis/league_ratings.py"]),
          ("coach_guides", "the coach pages, private", ["analysis/coach_guide.py"]),
          ("coach_reports", "the coach reports, private", ["analysis/coach_reports.py"]),

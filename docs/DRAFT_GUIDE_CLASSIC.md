@@ -11,13 +11,13 @@ The result files hold no draft order, so **demand here is an estimate**. It aver
 - **How much a team has been used lately.** A team nobody takes wasn't wanted.
 - **How early it seems to go.** In the Classic drafts the people thought weaker pick first, so a team that goes early tends to end up with weaker coaches, which shows as a low Expected.
 
-A team's real draft position could say this better. Treat any call here as a place to start, not a verdict.
+Treat any call here as a place to start, not a verdict.
 
 **The columns**
 
 - **Strength now:** how much the team adds, in points of win chance, with recent games counting more. From the team guide.
 - **Elo adj.:** points to add to a coach's Elo for using this team. From the team guide. An asterisk marks one resting on few games.
-- **Overall:** from strength now. Good is +1.5 or better, Poor is −1.5 or worse.
+- **Overall:** from strength now. Good is +1.5 or better, Poor is −1.5 or worse. Zero is the average team as used, and the strong teams are used most, so most teams fall below it.
 - **Best for:** which level of player gets more from this team. From the team guide, where the confidence is given.
 - **Used lately:** the team's share of all appearances in the last three years.
 - **Expected:** the win % the team's coaches, home ice and opponents predict if it were the average team, over all years. Low means it has tended to go to weaker coaches.
@@ -28,13 +28,13 @@ A team's real draft position could say this better. Treat any call here as a pla
 - **Ovr place:** its place by Lineup Ovr.
 - **Stronger than Ovr by:** Ovr place minus Strength place. Plus means it has done better than its ratings look.
 
-A team is called out when a gap is 4 or more places. A place isn't a fixed distance: near the middle of the table, teams can be a point or less apart.
+A team is called out when a gap is 4 or more places. A place isn't a fixed distance: near the middle of the table, teams can be a point or less apart. "Strength and Elo agree" means the team's places by strength and by Elo adjustment are within 4 of each other.
 
 **What to keep in mind**
 
 - **Results show what happened, not why.** A team can look better than its demand because a few coaches did well with it.
-- **Cheap teams rest on fewer games,** so their values are less certain, and the pull toward average makes them look less extreme than their records.
-- **SNES team values repeat far less well than Genesis ones.** Random halves of the leagues agree at 0.77 on the Genesis and 0.38 on the SNES, so SNES calls are softer.
+- **Teams in low demand rest on fewer games,** so their values are less certain. Values for rarely used teams are also pulled toward average, to keep a few games from swinging them, so they look less extreme than their records.
+- **SNES team values repeat far less well than Genesis ones.** Random halves of the leagues agree at 0.77 on the Genesis and 0.38 on the SNES, where 1 is perfect agreement and 0 none, so SNES calls are softer.
 - **Skaters come with their team.** Classic teams are drafted whole, so the skater lists help you to judge a team and to choose lines, not to pick a player alone. "Above expected" compares teammates, so it says who people get the most from, not that a skater has a hidden rating.
 - **Goalies depend on who plays in front of them.** Save % isn't adjusted for shot quality.
 
@@ -71,7 +71,7 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 
 - **Dallas:** strength place 7, demand place 11. Strength and Elo agree.
 
-### Cheap, and better than demand, but still below the average team
+### Low demand, better than that suggests, but still below the average team
 
 - **Hartford:** strength −1.8, place 9; demand place 20. Strength place 9, Elo place 15, so treat with care.
 - **NY Islanders:** strength −4.3, place 15; demand place 21. Elo rests on few games, so treat with care.
@@ -176,7 +176,7 @@ Recent use counts 2023-11-04 to 2026-11-03. Details on each team are in [TEAM_GU
 - **Washington:** strength place 7, demand place 11. Strength place 7, Elo place 20, so treat with care; low-level coaches get more from it (likely).
 - **Toronto:** strength place 10, demand place 14. Strength and Elo agree.
 
-### Cheap, and better than demand, but still below the average team
+### Low demand, better than that suggests, but still below the average team
 
 - **Hartford:** strength −2.2, place 17; demand place 21. Elo rests on few games, so treat with care.
 

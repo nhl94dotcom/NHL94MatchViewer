@@ -228,7 +228,7 @@ def goalie_row(r, rosters, with_team):
 
 def build(csv_name, label, mod, romfile, outfile, has_toi, rng):
     teams = mod.read_teams(rom(romfile))
-    names = {t["abbr"]: t["name"] for t in teams}
+    names = {t["abbr"]: t["name"] for t in teams} | {"NYI": "NY Islanders", "NYR": "NY Rangers"}   # both are "New York" in the ROM
     rosters = {(t["abbr"], p["name"].lower()): p for t in teams for p in t["players"]}
     skaters, goalies, position, team_games, games, lost = read(csv_name, rosters, has_toi)
     stats = totals(skaters, team_games, has_toi)
@@ -259,19 +259,19 @@ def build(csv_name, label, mod, romfile, outfile, has_toi, rng):
             "- **Ovr:** the overall rating in the game's roster.", "",
             "- **Wgt, Agl, Spd, ShP, ShA, ChkR:** roster Weight, Agility, Speed, Shot Power, Shot Accuracy and Checking, each on the roster's own scale, before hot and cold.", "",
             "- **Expected P:** the points per game the skater's ratings suggest, given their teammates at the same position. All teams share one value for each rating step.", "",
-            "- **P vs expected:** actual points per game minus Expected P. Comparing teammates takes out the team, its opponents and the coaches using it. **clear** means more than two standard errors from zero. — means it can't be compared: no regular teammate at that position.", "",
+            "- **P vs expected:** actual points per game minus Expected P. Comparing teammates takes out the team, its opponents and the coaches using it. **clear** means further from zero than chance would usually give (more than two standard errors). — means it can't be compared: no regular teammate at that position.", "",
             "- **Shots against, Goals against, Save %:** for goalies, over all their Classic games.", "",
             "- **Usual for that Agl:** the save % that is usual for a goalie with that roster Agility, from a straight line through the goalies with 400+ shots against.", "",
-            "- **Vs usual:** Save % minus that, in points. **clear** means more than two standard errors from zero, counting shots as independent.", ""]
+            "- **Vs usual:** Save % minus that, in points. **clear** means further from zero than chance would usually give (more than two standard errors), counting shots as independent.", ""]
     n_check = sum(1 for k in compared)
     out += ["## What these numbers can and can't say", "",
             f"- **What a skater did isn't only the skater.** People choose who to pass to and shoot with, so \"above expected\" often means people have found that skater useful. It isn't a hidden rating, and it doesn't say the same skater would do it for everyone.",
-            f"- **How repeatable it is.** Random halves of the leagues, fitted apart, agree at {raw:.2f} on points per game and {against:.2f} on points per game against expected (skaters with {MIN_FIT}+ games in each half).",
+            f"- **How repeatable it is.** Random halves of the leagues, fitted apart, agree at {raw:.2f} on points per game and {against:.2f} on points per game against expected, where 1 is perfect agreement and 0 none (skaters with {MIN_FIT}+ games in each half).",
             f"- **Chance.** {len(clear)} of {n_check} compared skaters are marked clear. About {max(1, round(0.05 * n_check))} would be by chance alone even if ratings explained everything.",
             "- **Line-mates matter.** A skater who shares a line with a star gets more assists. Comparing with teammates doesn't remove that.",
             "- **Goalies depend on who plays in front of them.** Save % isn't adjusted for shot quality, so a goalie behind a team that gives up good chances looks worse than they are.",
             "- **Raw rates reflect the team.** The lists of top scorers aren't adjusted for who used the team. Only the \"vs expected\" numbers take that out.", ""]
-    out += ["## What the ratings are worth", "", "Points per game for one roster step of each rating, among teammates, with the other ratings held still. **Bold** is more than two standard errors from zero.", ""]
+    out += ["## What the ratings are worth", "", "Points per game for one roster step of each rating, among teammates, with the other ratings held still. **Bold** is further from zero than chance would usually give (more than two standard errors).", ""]
     head = list(steps["F"])
     out += ["| Position | " + " | ".join(head) + " |", "| --- | " + " | ".join("---" for _ in head) + " |"]
     for pos, name in (("F", "Forwards"), ("D", "Defencemen")):

@@ -42,7 +42,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Team:** the team and its abbreviation. Click a name to go to its entry.
 
-- **Overall:** from strength now. Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between.
+- **Overall:** from strength now. Good is +1.5 or better, Poor is −1.5 or worse, and Average is in between. Zero is the average team as used, and the strong teams are used most, so most teams fall below it.
 
 - **Best for:** which level of player gets more from this team than from their other teams. High-level or Low-level means one does, Both alike means no gap of over 5 points, and Unclear means the measures disagree or there are too few games. A team can be Poor overall and still best for one level: that level just loses less with it.
 
@@ -52,7 +52,7 @@ Two teams can have similar strengths but different Elo adjustments, or a team ca
 
 - **Strength, all years:** the same, with every game counting equally. It rests on more games, so it's steadier.
 
-- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, a 1500 start, K 20, +7 for home and each team's own adjustment in the expected score, and the winner's gain and loser's loss raised by the coasting bonus. Rarely used teams are pulled toward zero, by an amount tested on later years. A * marks under 300 games in that fit, so treat it as rough. Tested on later years, using these inside the running Elo predicts clearly better than leaving them out.
+- **Elo adjustment:** points to add to a coach's Elo for using this team, against the average team in use. It's fitted on the league Elo: every game in order, from a 1500 start, with the expected score counting +7 for home and each team's own adjustment. A game moves a rating by up to 20 points (K 20), and more when a win is by two or more goals, the more so the longer the winner held a safe lead (the coasting bonus). Rarely used teams are pulled toward zero, to keep a few games from swinging them, by an amount tested on later years. A team's entry says how many of its games the fit uses, as games where a coach had under 30 earlier games are left out, and what the same fit gives with one fixed strength per coach instead of Elo. A * marks under 300 games in that fit, so treat it as rough. Tested on later years, using these inside the running Elo predicts clearly better than leaving them out.
 
 - **Record:** all wins and losses with this team, plus ties when there are any.
 
