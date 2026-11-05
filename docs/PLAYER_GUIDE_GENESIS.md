@@ -2,7 +2,7 @@
 
 Every retail skater and goalie in the Genesis Classic leagues (names starting `Classic_Spring`, `Classic_Summer` or `Classic_Fall`): 22,757 games in 97 leagues. No coach is named. Teams themselves are in [TEAM_GUIDE_GENESIS.md](TEAM_GUIDE_GENESIS.md).
 
-**Jump to a team:** [Boston](#boston) · [Buffalo](#buffalo) · [Calgary](#calgary) · [Chicago](#chicago) · [Dallas](#dallas) · [Detroit](#detroit) · [Edmonton](#edmonton) · [Hartford](#hartford) · [Los Angeles](#los-angeles) · [Montreal](#montreal) · [New Jersey](#new-jersey) · [New York](#new-york) · [New York](#new-york) · [Philadelphia](#philadelphia) · [Pittsburgh](#pittsburgh) · [Quebec](#quebec) · [St. Louis](#st-louis) · [Tampa Bay](#tampa-bay) · [Toronto](#toronto) · [Vancouver](#vancouver) · [Washington](#washington) · [Winnipeg](#winnipeg)
+**Jump to a team:** [Boston](#boston) · [Buffalo](#buffalo) · [Calgary](#calgary) · [Chicago](#chicago) · [Dallas](#dallas) · [Detroit](#detroit) · [Edmonton](#edmonton) · [Hartford](#hartford) · [Los Angeles](#los-angeles) · [Montreal](#montreal) · [NY Islanders](#ny-islanders) · [NY Rangers](#ny-rangers) · [New Jersey](#new-jersey) · [Philadelphia](#philadelphia) · [Pittsburgh](#pittsburgh) · [Quebec](#quebec) · [St. Louis](#st-louis) · [Tampa Bay](#tampa-bay) · [Toronto](#toronto) · [Vancouver](#vancouver) · [Washington](#washington) · [Winnipeg](#winnipeg)
 
 ## How to read this guide
 
@@ -22,18 +22,18 @@ Every retail skater and goalie in the Genesis Classic leagues (names starting `C
 
 - **Expected P:** the points per game the skater's ratings suggest, given their teammates at the same position. All teams share one value for each rating step.
 
-- **P vs expected:** actual points per game minus Expected P. Comparing teammates takes out the team, its opponents and the coaches using it. **clear** means more than two standard errors from zero. — means it can't be compared: no regular teammate at that position.
+- **P vs expected:** actual points per game minus Expected P. Comparing teammates takes out the team, its opponents and the coaches using it. **clear** means further from zero than chance would usually give (more than two standard errors). — means it can't be compared: no regular teammate at that position.
 
 - **Shots against, Goals against, Save %:** for goalies, over all their Classic games.
 
 - **Usual for that Agl:** the save % that is usual for a goalie with that roster Agility, from a straight line through the goalies with 400+ shots against.
 
-- **Vs usual:** Save % minus that, in points. **clear** means more than two standard errors from zero, counting shots as independent.
+- **Vs usual:** Save % minus that, in points. **clear** means further from zero than chance would usually give (more than two standard errors), counting shots as independent.
 
 ## What these numbers can and can't say
 
 - **What a skater did isn't only the skater.** People choose who to pass to and shoot with, so "above expected" often means people have found that skater useful. It isn't a hidden rating, and it doesn't say the same skater would do it for everyone.
-- **How repeatable it is.** Random halves of the leagues, fitted apart, agree at 0.97 on points per game and 0.63 on points per game against expected (skaters with 150+ games in each half).
+- **How repeatable it is.** Random halves of the leagues, fitted apart, agree at 0.97 on points per game and 0.63 on points per game against expected, where 1 is perfect agreement and 0 none (skaters with 150+ games in each half).
 - **Chance.** 64 of 202 compared skaters are marked clear. About 10 would be by chance alone even if ratings explained everything.
 - **Line-mates matter.** A skater who shares a line with a star gets more assists. Comparing with teammates doesn't remove that.
 - **Goalies depend on who plays in front of them.** Save % isn't adjusted for shot quality, so a goalie behind a team that gives up good chances looks worse than they are.
@@ -41,7 +41,7 @@ Every retail skater and goalie in the Genesis Classic leagues (names starting `C
 
 ## What the ratings are worth
 
-Points per game for one roster step of each rating, among teammates, with the other ratings held still. **Bold** is more than two standard errors from zero.
+Points per game for one roster step of each rating, among teammates, with the other ratings held still. **Bold** is further from zero than chance would usually give (more than two standard errors).
 
 | Position | Weight | Agility | Speed | Off. Aware | Shot Power | Checking | Stick Hand | Shot Acc | Pass Acc |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -399,26 +399,7 @@ MTL: 3,857 appearances.
 | Patrick Roy | 3851 | 45893 | 12691 | 72.3 | 6 | 94 | 72.4 | −0.0 |
 | Andre Racicot | 21 | 110 | 43 | 60.9 | 2 | 46 | 63.4 | −2.5 |
 
-### New Jersey
-
-NJ: 310 appearances.
-
-| Skater | Pos | Games | G | A | P | SOG | Chk | PIM | Ovr | Wgt | Agl | Spd | ShP | ShA | ChkR | Expected P | P vs expected |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Stephane Richer | F | 264 | 1.62 | 0.78 | **2.40** | 4.31 | 4.76 | 0.49 | 72 | 9 | 4 | 4 | 5 | 3 | 2 | 2.31 | +0.09 |
-| Alexnder Semak | F | 283 | 1.14 | 1.02 | **2.16** | 3.53 | 5.04 | 0.54 | 73 | 6 | 4 | 3 | 3 | 4 | 3 | 2.07 | +0.09 |
-| Valeri Zelepukin | F | 216 | 0.98 | 1.11 | **2.09** | 2.75 | 3.47 | 0.41 | 68 | 6 | 4 | 4 | 3 | 3 | 1 | 2.09 | −0.00 |
-| Claude Lemieux | F | 101 | 0.66 | 0.68 | **1.35** | 1.94 | 3.59 | 0.18 | 68 | 11 | 4 | 4 | 4 | 2 | 3 | 1.83 | −0.49 **clear** |
-| Alexei Kasatonov | D | 146 | 0.09 | 0.76 | **0.85** | 0.37 | 7.66 | 0.82 | 62 | 11 | 4 | 3 | 4 | 1 | 4 | 0.71 | +0.14 |
-| Vachslav Fetisov | D | 81 | 0.16 | 0.58 | **0.74** | 0.52 | 8.86 | 0.59 | 61 | 11 | 4 | 2 | 4 | 1 | 4 | 0.68 | +0.06 |
-| Scott Stevens | D | 306 | 0.13 | 0.59 | **0.73** | 0.57 | 8.91 | 0.95 | 76 | 11 | 4 | 4 | 4 | 2 | 5 | 0.77 | −0.04 |
-| Bruce Driver | D | 80 | 0.07 | 0.42 | **0.50** | 0.55 | 4.28 | 0.70 | 60 | 6 | 3 | 3 | 2 | 2 | 3 | 0.66 | −0.16 |
-
-| Goalie | Games | Shots against | Goals against | Save % | Agl | Ovr | Usual for that Agl | Vs usual |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Chris Terreri | 310 | 3657 | 1108 | 69.7 | 4 | 61 | 67.9 | +1.8 **clear** |
-
-### New York
+### NY Islanders
 
 NYI: 210 appearances.
 
@@ -436,7 +417,7 @@ NYI: 210 appearances.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Glenn Healy | 206 | 2706 | 880 | 67.5 | 2 | 47 | 63.4 | +4.1 **clear** |
 
-### New York
+### NY Rangers
 
 NYR: 1,301 appearances.
 
@@ -458,6 +439,25 @@ NYR: 1,301 appearances.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | John Vanbiesbrk | 1146 | 13148 | 4824 | 63.3 | 3 | 62 | 65.6 | −2.3 **clear** |
 | Mike Richter | 244 | 2430 | 831 | 65.8 | 3 | 60 | 65.6 | +0.2 |
+
+### New Jersey
+
+NJ: 310 appearances.
+
+| Skater | Pos | Games | G | A | P | SOG | Chk | PIM | Ovr | Wgt | Agl | Spd | ShP | ShA | ChkR | Expected P | P vs expected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Stephane Richer | F | 264 | 1.62 | 0.78 | **2.40** | 4.31 | 4.76 | 0.49 | 72 | 9 | 4 | 4 | 5 | 3 | 2 | 2.31 | +0.09 |
+| Alexnder Semak | F | 283 | 1.14 | 1.02 | **2.16** | 3.53 | 5.04 | 0.54 | 73 | 6 | 4 | 3 | 3 | 4 | 3 | 2.07 | +0.09 |
+| Valeri Zelepukin | F | 216 | 0.98 | 1.11 | **2.09** | 2.75 | 3.47 | 0.41 | 68 | 6 | 4 | 4 | 3 | 3 | 1 | 2.09 | −0.00 |
+| Claude Lemieux | F | 101 | 0.66 | 0.68 | **1.35** | 1.94 | 3.59 | 0.18 | 68 | 11 | 4 | 4 | 4 | 2 | 3 | 1.83 | −0.49 **clear** |
+| Alexei Kasatonov | D | 146 | 0.09 | 0.76 | **0.85** | 0.37 | 7.66 | 0.82 | 62 | 11 | 4 | 3 | 4 | 1 | 4 | 0.71 | +0.14 |
+| Vachslav Fetisov | D | 81 | 0.16 | 0.58 | **0.74** | 0.52 | 8.86 | 0.59 | 61 | 11 | 4 | 2 | 4 | 1 | 4 | 0.68 | +0.06 |
+| Scott Stevens | D | 306 | 0.13 | 0.59 | **0.73** | 0.57 | 8.91 | 0.95 | 76 | 11 | 4 | 4 | 4 | 2 | 5 | 0.77 | −0.04 |
+| Bruce Driver | D | 80 | 0.07 | 0.42 | **0.50** | 0.55 | 4.28 | 0.70 | 60 | 6 | 3 | 3 | 2 | 2 | 3 | 0.66 | −0.16 |
+
+| Goalie | Games | Shots against | Goals against | Save % | Agl | Ovr | Usual for that Agl | Vs usual |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Chris Terreri | 310 | 3657 | 1108 | 69.7 | 4 | 61 | 67.9 | +1.8 **clear** |
 
 ### Philadelphia
 

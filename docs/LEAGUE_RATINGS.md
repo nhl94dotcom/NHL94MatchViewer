@@ -6,7 +6,7 @@ How strong the coaches in each league-season were, on both systems, from every l
 
 ## How to read this
 
-- **Strength:** how often this league's coaches would beat an average coach, with neutral teams and no home edge: the mean Rating of its coaches. **Higher means a tougher league, in every column.** An average coach is the mean of coaches with 100+ games, and scores 50.
+- **Strength:** how often this league's coaches would beat an average coach, with neutral teams and no home edge: the mean Rating of its coaches, a coach's Rating being that win chance for them alone. **Higher means a tougher league, in every column.** An average coach is the mean of coaches with 100+ games, and scores 50.
 - **At the start:** each coach's Rating as of the league's first day, from earlier games only, so the league's own results don't count. Compare leagues from about the same time with this. The average coach moves with the years, so it isn't a fair way to compare 2016 with 2026.
 - **One scale:** each coach's strength over all their years, with every game counting equally. Its baseline doesn't move, so use this to compare across years. It uses hindsight: a coach is judged partly by what they did later.
 - **Top 3 and Bottom 3:** the mean Rating at the start of the league's three strongest and three weakest coaches, so you can see whether a league is top-heavy. Both are win chances against an average coach.

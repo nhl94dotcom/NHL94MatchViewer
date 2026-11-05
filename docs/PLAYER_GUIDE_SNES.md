@@ -2,7 +2,7 @@
 
 Every retail skater and goalie in the SNES Classic leagues (names starting `Classic_Spring`, `Classic_Summer` or `Classic_Fall`): 15,017 games in 63 leagues. No coach is named. Teams themselves are in [TEAM_GUIDE_SNES.md](TEAM_GUIDE_SNES.md).
 
-**Jump to a team:** [Boston](#boston) · [Buffalo](#buffalo) · [Calgary](#calgary) · [Chicago](#chicago) · [Dallas](#dallas) · [Detroit](#detroit) · [Edmonton](#edmonton) · [Florida](#florida) · [Hartford](#hartford) · [Los Angeles](#los-angeles) · [Montreal](#montreal) · [New Jersey](#new-jersey) · [New York](#new-york) · [New York](#new-york) · [Philadelphia](#philadelphia) · [Pittsburgh](#pittsburgh) · [Quebec](#quebec) · [San Jose](#san-jose) · [St. Louis](#st-louis) · [Tampa Bay](#tampa-bay) · [Toronto](#toronto) · [Vancouver](#vancouver) · [Washington](#washington) · [Winnipeg](#winnipeg)
+**Jump to a team:** [Boston](#boston) · [Buffalo](#buffalo) · [Calgary](#calgary) · [Chicago](#chicago) · [Dallas](#dallas) · [Detroit](#detroit) · [Edmonton](#edmonton) · [Florida](#florida) · [Hartford](#hartford) · [Los Angeles](#los-angeles) · [Montreal](#montreal) · [NY Islanders](#ny-islanders) · [NY Rangers](#ny-rangers) · [New Jersey](#new-jersey) · [Philadelphia](#philadelphia) · [Pittsburgh](#pittsburgh) · [Quebec](#quebec) · [San Jose](#san-jose) · [St. Louis](#st-louis) · [Tampa Bay](#tampa-bay) · [Toronto](#toronto) · [Vancouver](#vancouver) · [Washington](#washington) · [Winnipeg](#winnipeg)
 
 ## How to read this guide
 
@@ -20,18 +20,18 @@ Every retail skater and goalie in the SNES Classic leagues (names starting `Clas
 
 - **Expected P:** the points per game the skater's ratings suggest, given their teammates at the same position. All teams share one value for each rating step.
 
-- **P vs expected:** actual points per game minus Expected P. Comparing teammates takes out the team, its opponents and the coaches using it. **clear** means more than two standard errors from zero. — means it can't be compared: no regular teammate at that position.
+- **P vs expected:** actual points per game minus Expected P. Comparing teammates takes out the team, its opponents and the coaches using it. **clear** means further from zero than chance would usually give (more than two standard errors). — means it can't be compared: no regular teammate at that position.
 
 - **Shots against, Goals against, Save %:** for goalies, over all their Classic games.
 
 - **Usual for that Agl:** the save % that is usual for a goalie with that roster Agility, from a straight line through the goalies with 400+ shots against.
 
-- **Vs usual:** Save % minus that, in points. **clear** means more than two standard errors from zero, counting shots as independent.
+- **Vs usual:** Save % minus that, in points. **clear** means further from zero than chance would usually give (more than two standard errors), counting shots as independent.
 
 ## What these numbers can and can't say
 
 - **What a skater did isn't only the skater.** People choose who to pass to and shoot with, so "above expected" often means people have found that skater useful. It isn't a hidden rating, and it doesn't say the same skater would do it for everyone.
-- **How repeatable it is.** Random halves of the leagues, fitted apart, agree at 0.94 on points per game and 0.66 on points per game against expected (skaters with 150+ games in each half).
+- **How repeatable it is.** Random halves of the leagues, fitted apart, agree at 0.94 on points per game and 0.66 on points per game against expected, where 1 is perfect agreement and 0 none (skaters with 150+ games in each half).
 - **Chance.** 52 of 112 compared skaters are marked clear. About 6 would be by chance alone even if ratings explained everything.
 - **Line-mates matter.** A skater who shares a line with a star gets more assists. Comparing with teammates doesn't remove that.
 - **Goalies depend on who plays in front of them.** Save % isn't adjusted for shot quality, so a goalie behind a team that gives up good chances looks worse than they are.
@@ -39,7 +39,7 @@ Every retail skater and goalie in the SNES Classic leagues (names starting `Clas
 
 ## What the ratings are worth
 
-Points per game for one roster step of each rating, among teammates, with the other ratings held still. **Bold** is more than two standard errors from zero.
+Points per game for one roster step of each rating, among teammates, with the other ratings held still. **Bold** is further from zero than chance would usually give (more than two standard errors).
 
 | Position | Weight | Agility | Speed | Off. Aware | Shot Power | Checking | Stick Hand | Shot Acc | Pass Acc |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -354,6 +354,37 @@ MTL: 1,700 appearances.
 | Patrick Roy | 1691 | 20317 | 7693 | 62.1 | 6 | 94 | 63.5 | −1.4 **clear** |
 | Andre Racicot | 29 | 215 | 66 | 69.3 | 2 | 46 | 62.3 | +7.0 **clear** |
 
+### NY Islanders
+
+NYI: 295 appearances.
+
+| Skater | Pos | Games | G | A | P | SOG | PIM | Ovr | Wgt | Agl | Spd | ShP | ShA | ChkR | Expected P | P vs expected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Pierre Turgeon | F | 295 | 1.71 | 1.00 | **2.71** | 3.75 | 0.50 | 82 | 9 | 4 | 4 | 4 | 5 | 3 | 2.82 | −0.11 |
+| Benoit Hogue | F | 295 | 1.31 | 0.99 | **2.29** | 3.18 | 0.58 | 78 | 7 | 4 | 5 | 3 | 5 | 2 | 2.11 | +0.18 |
+| Derek King | F | 295 | 0.56 | 0.59 | **1.15** | 1.32 | 0.14 | 64 | 9 | 3 | 2 | 4 | 5 | 1 | 1.23 | −0.08 |
+| Vladimir Malakhov | D | 295 | 0.23 | 0.85 | **1.08** | 0.66 | 0.31 | 63 | 10 | 3 | 3 | 4 | 2 | 3 | — | — |
+
+| Goalie | Games | Shots against | Goals against | Save % | Agl | Ovr | Usual for that Agl | Vs usual |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Glenn Healy | 295 | 3321 | 1308 | 60.6 | 2 | 47 | 62.3 | −1.7 |
+
+### NY Rangers
+
+NYR: 2,533 appearances.
+
+| Skater | Pos | Games | G | A | P | SOG | PIM | Ovr | Wgt | Agl | Spd | ShP | ShA | ChkR | Expected P | P vs expected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mark Messier | F | 2533 | 1.32 | 0.98 | **2.31** | 3.61 | 0.60 | 85 | 10 | 5 | 4 | 3 | 3 | 5 | 2.21 | +0.10 **clear** |
+| Mike Gartner | F | 2533 | 1.26 | 0.88 | **2.14** | 3.41 | 0.57 | 85 | 7 | 5 | 5 | 5 | 3 | 2 | 2.23 | −0.09 **clear** |
+| Esa Tikkanen | F | 2533 | 1.19 | 0.89 | **2.08** | 3.15 | 0.58 | 80 | 9 | 5 | 5 | 4 | 2 | 5 | 2.09 | −0.01 |
+| James Patrick | D | 2533 | 0.27 | 0.77 | **1.04** | 0.91 | 0.48 | 71 | 9 | 4 | 4 | 4 | 1 | 4 | 0.97 | +0.06 **clear** |
+| Brian Leetch | D | 2533 | 0.13 | 0.43 | **0.56** | 0.45 | 0.25 | 76 | 6 | 6 | 3 | 4 | 1 | 2 | 0.62 | −0.06 **clear** |
+
+| Goalie | Games | Shots against | Goals against | Save % | Agl | Ovr | Usual for that Agl | Vs usual |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mike Richter | 2533 | 28086 | 10573 | 62.4 | 3 | 60 | 62.6 | −0.2 |
+
 ### New Jersey
 
 NJ: 734 appearances.
@@ -370,37 +401,6 @@ NJ: 734 appearances.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Chris Terreri | 703 | 7542 | 2564 | 66.0 | 4 | 61 | 62.9 | +3.1 **clear** |
 | Craig Billington | 34 | 351 | 130 | 63.0 | 3 | 42 | 62.6 | +0.4 |
-
-### New York
-
-NYI: 295 appearances.
-
-| Skater | Pos | Games | G | A | P | SOG | PIM | Ovr | Wgt | Agl | Spd | ShP | ShA | ChkR | Expected P | P vs expected |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Pierre Turgeon | F | 295 | 1.71 | 1.00 | **2.71** | 3.75 | 0.50 | 82 | 9 | 4 | 4 | 4 | 5 | 3 | 2.82 | −0.11 |
-| Benoit Hogue | F | 295 | 1.31 | 0.99 | **2.29** | 3.18 | 0.58 | 78 | 7 | 4 | 5 | 3 | 5 | 2 | 2.11 | +0.18 |
-| Derek King | F | 295 | 0.56 | 0.59 | **1.15** | 1.32 | 0.14 | 64 | 9 | 3 | 2 | 4 | 5 | 1 | 1.23 | −0.08 |
-| Vladimir Malakhov | D | 295 | 0.23 | 0.85 | **1.08** | 0.66 | 0.31 | 63 | 10 | 3 | 3 | 4 | 2 | 3 | — | — |
-
-| Goalie | Games | Shots against | Goals against | Save % | Agl | Ovr | Usual for that Agl | Vs usual |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Glenn Healy | 295 | 3321 | 1308 | 60.6 | 2 | 47 | 62.3 | −1.7 |
-
-### New York
-
-NYR: 2,533 appearances.
-
-| Skater | Pos | Games | G | A | P | SOG | PIM | Ovr | Wgt | Agl | Spd | ShP | ShA | ChkR | Expected P | P vs expected |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mark Messier | F | 2533 | 1.32 | 0.98 | **2.31** | 3.61 | 0.60 | 85 | 10 | 5 | 4 | 3 | 3 | 5 | 2.21 | +0.10 **clear** |
-| Mike Gartner | F | 2533 | 1.26 | 0.88 | **2.14** | 3.41 | 0.57 | 85 | 7 | 5 | 5 | 5 | 3 | 2 | 2.23 | −0.09 **clear** |
-| Esa Tikkanen | F | 2533 | 1.19 | 0.89 | **2.08** | 3.15 | 0.58 | 80 | 9 | 5 | 5 | 4 | 2 | 5 | 2.09 | −0.01 |
-| James Patrick | D | 2533 | 0.27 | 0.77 | **1.04** | 0.91 | 0.48 | 71 | 9 | 4 | 4 | 4 | 1 | 4 | 0.97 | +0.06 **clear** |
-| Brian Leetch | D | 2533 | 0.13 | 0.43 | **0.56** | 0.45 | 0.25 | 76 | 6 | 6 | 3 | 4 | 1 | 2 | 0.62 | −0.06 **clear** |
-
-| Goalie | Games | Shots against | Goals against | Save % | Agl | Ovr | Usual for that Agl | Vs usual |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mike Richter | 2533 | 28086 | 10573 | 62.4 | 3 | 60 | 62.6 | −0.2 |
 
 ### Philadelphia
 

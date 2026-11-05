@@ -38,8 +38,7 @@ record or check and what it will settle. Newest at the bottom of each section.
    puck a stride to your own left of the middle (2-5 feet), 25-40 feet out, let the goalie settle, and take a dozen
    full slapshots aimed at that side (attacking up the screen: Left; attacking down: Right). Then a dozen from a stride
    to your right, aimed at your right. *Settles:* SNES_SHOOTING 4.8, which plays these in the game itself and says
-   about half the first kind go in and almost none of the second. This matters more than it looked: the SNES lane's
-   rate depends on the game's frame timing, which changes with who is on the ice (SNES_SHOOTING 4.8).
+   a little under half of the first kind go in at the top net (about 20% at the bottom) and almost none of the second, with real line-ups on the ice (SNES_SHOOTING 4.8).
 7. **One-timers from a pass across and from the same side (Genesis).** In a practice game, a dozen one-timers by a
    teammate within about 18 feet of the goal line from a pass across the net's centre line, then a dozen from a pass
    from his own side, the goalie settled first. *Settles:* the one-timer study (SCORING_GENESIS, "One-timers", Genesis),
