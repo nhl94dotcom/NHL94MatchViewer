@@ -265,8 +265,9 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **Against a set computer goalie, one spot works: a stride to your own left of centre.** Played out in the game
   itself, a goalie who has set himself stops almost every shot from a standing shooter, from anywhere (under 1% on
   average). The exception: stand 2-5 feet to **your left** of the middle, 25-40 feet out, and take a full slapshot
-  aimed at that same side (attacking up the screen hold Left; attacking down, Right; high or low doesn't matter). About
-  half go in: the shot goes just past his body on **his right**, and his save move on that side reaches out beyond the
+  aimed at that same side (attacking up the screen hold Left; attacking down, Right; high or low doesn't matter). With
+  real line-ups on the ice, about 45% go in at the top net and about 20% at the bottom, as long as no defender stands
+  beside the net in the shot's path: the shot goes just past his body on **his right**, and his save move on that side reaches out beyond the
   post, leaving a gap. The same shot from your right, aimed right, almost never scores. It's a narrow lane: a couple of
   feet farther from the middle and it's gone. It's there against every goalie, whichever hand he catches with, and
   for left- and right-handed shooters alike. (Mechanics 4.8 and 5.3; not yet tried in a real game.)
