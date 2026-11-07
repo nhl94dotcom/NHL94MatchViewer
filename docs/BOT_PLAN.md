@@ -247,7 +247,7 @@ a setting, a result that changes the plan).
   - Against the computer, 20 games each on the same seeds: 26 won all 20, 190-18 (penalties 69, the bot's own 45); 32
     won all 20, 172-20 (penalties 55, the bot's own 39); 32 minus 26 -1.00 a game +-0.73, not a real difference in
     games both win by nine. **Version 32 is the default** (2026-11-01): better against an opponent of its own level.
-  - **The queue's final match (2026-11-04, run bot_final_32v16):** 32 against 16, 40 games, each seed played twice with the sides swapped: 27-13, 7.30 goals a game to 6.25, +1.05 a game +-0.52.
+  - **The queue's final match (run bot_final_32v16, 2026-11-04 and 07):** 32 against 16, 80 games, each seed played twice with the sides swapped: 55-23 with 2 ties, 7.30 goals a game to 5.71, +1.59 a game +-0.38 (+-0.74 for 95%).
   - Against 32 (30 games each, sides swapped), nothing kept: **33**, no poke closer than 16 (where the body touches
     and trips): 18-12, +0.33 a game +-0.62, but **more** penalties (115 against 84; its skater's tripping calls 53
     against 31): holding off close in doesn't stop the contact, and the later poke trips anyway. **34**, clearing the
