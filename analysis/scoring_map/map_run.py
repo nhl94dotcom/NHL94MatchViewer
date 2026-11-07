@@ -36,6 +36,13 @@ if __import__("os").environ.get("NHL94_SMAP_SUBSET") == "slapmid":
 # user: what Shot Power and Shot Accuracy do to each kind of shot)
 if __import__("os").environ.get("NHL94_SMAP_SUBSET") == "slapcore":
     jobs = [j for j in jobs if j[1] == 20 and j[2] in (-40, 0, 40) and j[3] in (120, 140, 160)]
+# coarse: every other spot (x -100..100, y 100..240, steps of 20), for the "as in games" goalie (2026-11-07: 352 jobs,
+# about 8 hours in gentle mode at budget 200, against 34 for the full grid)
+if __import__("os").environ.get("NHL94_SMAP_SUBSET") == "coarse":
+    jobs = [j for j in jobs if j[2] % 20 == 0 and abs(j[2]) <= 100 and j[3] % 20 == 0]
+# NHL94_SMAP_MINUTES: stop starting jobs after this long (a chunk; restart with the same arguments to carry on)
+MINUTES = float(__import__("os").environ.get("NHL94_SMAP_MINUTES") or 1e9)
+T_START = time.time()
 done = set()
 try:
     for line in open(out):
@@ -85,6 +92,9 @@ with open(out, "a") as fo:
     for j, (net, hold, x, y) in enumerate(jobs):
         if j % workers != worker or (net, hold, x, y) in done:
             continue
+        if time.time() - T_START > MINUTES * 60:
+            print("time up", flush=True)
+            break
         t0 = time.time()
         h = harness[net]
         yy = y if net == "top" else -y

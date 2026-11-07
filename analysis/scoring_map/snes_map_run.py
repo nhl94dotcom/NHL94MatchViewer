@@ -6,7 +6,13 @@ clock, the frames he has to settle) times `seeds` release seeds (the shot's draw
 working Shot Power and Shot Accuracy default to 13 / 13, the median of the recorded SNES shots. Validity as validity.py:
 at the release the puck at least 24 from the goalie's centre and in front of him, the shooter 16 or more from him.
 Defaults: all 120 moments (every clock x settle pair) x 4 seeds; run snes1 used 16 x 24, too few moments (the rate
-swings about 0.27 from moment to moment: PROJECT_NOTES). Gentle mode (lowload.py)."""
+swings about 0.27 from moment to moment: PROJECT_NOTES). Gentle mode (lowload.py).
+
+NHL94_SNES_GOALIES=<file> (xg_snes.goalie_states' output; 2026-11-07): the goalie "as in games", as map_run.py does on
+the Genesis: before each release seed he is moved off his spot as a recorded computer goalie was at a shot's release,
+relative to his set spot, and given that goalie's speed (as if at the top net; mirrored for the bottom). Validity is
+judged with him set, so the cells are the set-goalie map's. NHL94_SMAP_SUBSET=coarse: every other spot (x -100..100,
+y 100..240, steps of 20). NHL94_SMAP_MINUTES: stop after this long (a chunk; run again to carry on)."""
 import json
 import os
 import random
@@ -25,6 +31,7 @@ SUBSET = os.environ.get("NHL94_SMAP_SUBSET")   # slapmid: slapshots only (set he
 if SUBSET in ("slapmid", "slapcore"):
     SHOTS = {"slap": 40}
 MIN_PUCK = 24
+GOALIES = json.load(open(os.environ["NHL94_SNES_GOALIES"]))["cpu"] if os.environ.get("NHL94_SNES_GOALIES") else None
 
 _h = {}
 
@@ -73,7 +80,15 @@ def job(args):
                     continue
                 c["valid"] += 1
                 for _ in range(seeds):
-                    h.fire(pre, aim, rnd.getrandbits(32))
+                    shot_from = pre
+                    if GOALIES:
+                        dx, dy, vx, vy = (sg * v for v in GOALIES[rnd.randrange(len(GOALIES))])
+                        e.unserialize(pre)
+                        h.put(H.GOALIE, round(gx + dx), round(gy + dy))
+                        e.setw(H.XVEL + g, round(vx * 4096) & 0xFFFF)
+                        e.setw(H.YVEL + g, round(vy * 4096) & 0xFFFF)
+                        shot_from = e.serialize()
+                    h.fire(shot_from, aim, rnd.getrandbits(32))
                     r, _f = h.decide()
                     c["n"] += 1
                     breathe()
@@ -91,14 +106,23 @@ def main():
         jobs =[j for j in jobs if abs(j[1]) <= 60 and j[1] % 20 == 0 and 100 <= j[2] <= 180 and j[2] % 20 == 0]
     if SUBSET == "slapcore":                                # 9 spots in the middle, for many shooters
         jobs = [j for j in jobs if j[1] in (-40, 0, 40) and j[2] in (120, 140, 160)]
+    if SUBSET == "coarse":                                  # every other spot
+        jobs = [j for j in jobs if j[1] % 20 == 0 and abs(j[1]) <= 100 and j[2] % 20 == 0 and 100 <= j[2] <= 240]
     path = RUNS / run / "snes_map.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    res = json.load(open(path)) if path.exists() else {"meta": dict(phases=phases, seeds=seeds, shp=shp, sha=sha)}
+    res = json.load(open(path)) if path.exists() else {"meta": dict(phases=phases, seeds=seeds, shp=shp, sha=sha,
+                                                                    goalies="games" if GOALIES else "set")}
     jobs = [j for j in jobs if f"{j[0]},{j[1]},{j[2]}" not in res]       # resumable: saved after every spot
     with Pool(workers, initializer=_init, initargs=(shp, sha)) as pool:
+        t0 = __import__("time").time()
+        minutes = float(os.environ.get("NHL94_SMAP_MINUTES") or 1e9)
         for i, (k, v) in enumerate(pool.imap_unordered(job, jobs)):
             res[k] = v
             json.dump(res, open(path, "w"))
+            if __import__("time").time() - t0 > minutes * 60:
+                print("time up", flush=True)
+                pool.terminate()
+                break
             if i % 10 == 0:
                 print(i, "of", len(jobs), flush=True)
     print("done")
