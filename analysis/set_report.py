@@ -31,9 +31,7 @@ _cp_cache = {}
 
 
 def CP_EVENTS(m):
-    """check_pass.py's events for a Genesis match (none on the SNES), computed once per match."""
-    if m.get("system", "genesis") != "genesis":
-        return []
+    """check_pass.py's events for a match (both systems), computed once per match."""
     key = m.get("name") or id(m)
     if key not in _cp_cache:
         _cp_cache[key] = CPASS.measure(m)
@@ -271,7 +269,7 @@ def main():
             ("Slapshots", "sl", 0), ("Slapshot goals", "slG", 0), ("Posts", "posts", 0), ("xG on posts", "postX", 1),
             ("Pucks lost", "lost", 0), ("Goal against within 12.5 game s of one", "lostGoals", 0), ("... from his own mistake", "lostGoalsOwn", 0),
             ("Passes tracked", "passT", 0), ("Reached a teammate", "passOk", 0), ("Picked off", "passPick", 0),
-            ("Passes out of a check (Genesis)", "cpN", 0), ("... reached a teammate", "cpOk", 0), ("... picked off", "cpPick", 0), ("Caught: B a moment too late", "cpLate", 0), ("Faceoffs won", "fow", 0), ("Faceoffs", "fo", 0),
+            ("Passes out of a check", "cpN", 0), ("... reached a teammate", "cpOk", 0), ("... picked off", "cpPick", 0), ("Caught: B a moment too late", "cpLate", 0), ("Faceoffs won", "fow", 0), ("Faceoffs", "fo", 0),
             ("Checks (game's count)", "chk", 0), ("By the person", "pChk", 0), ("Hits taken on the carrier", "hitOn", 0), ("Knocked down", "hitDown", 0), ("Penalty minutes", "pim", 0),
             ("Bursts", "bursts", 0), ("Pokes", "pokes", 0), ("Poke takeaways", "pokeT", 0), ("Get-ups", "getUps", 0), ("Goalie control (game s)", "gSec", 0),
             ("Shots faced, person in net", "gk_person_n", 0), ("Goals", "gk_person_g", 0), ("xG", "gk_person_x", 1), ("Shots faced, computer in net", "gk_cpu_n", 0), ("Goals", "gk_cpu_g", 0), ("xG", "gk_cpu_x", 1),

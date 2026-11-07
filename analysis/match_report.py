@@ -546,14 +546,14 @@ def report(name):
         h = (m.get("habits") or [None, None])[team] or {}
         w(f"- **{ab[team]}**: {got} of {len(ps)} passes reached a teammate ({pct(got, len(ps))}), {sum(p['result'] == 'intercepted' for p in ps)} picked off; "
           f"{h.get('bursts', 0)} bursts, {h.get('pokes', 0)} pokes ({h.get('pokeTakeaways', 0)} won the puck), {h.get('goalieSeconds', 0)} game s controlling the goalie.")
-    if genesis:
+    if True:
         cp = CPASS.measure(m)
         for team in (0, 1):
             es = [e for e in cp if e["team"] == team]
             if not es:
                 continue
             n = sum(e["out"].startswith("passed") for e in es)
-            w(f"- **{ab[team]}**, passing out of a check (check_pass.py): {len(es)} bursts at the person's carrier; passed before contact {n} "
+            w(f"- **{ab[team]}**, passing out of a check (check_pass.py): {len(es)} bursts at the person's carrier; passed out of it {n} "
               f"({sum(e['out'] == CPASS.OUTCOMES[0] for e in es)} reached a teammate, {sum(e['out'] == CPASS.OUTCOMES[1] for e in es)} picked off by the checker, "
               f"{sum(e['out'] == CPASS.OUTCOMES[2] for e in es)} by another opponent); B a moment too late {sum(e['out'] in CPASS.OUTCOMES[5:7] for e in es)}.")
     w("\nPasses here are the ones the recording tracks. The game's own 'completed' count only credits the intended receiver, so it reads lower "

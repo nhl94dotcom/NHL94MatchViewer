@@ -1121,13 +1121,21 @@ plan as GENESIS_GUIDE 17, with `docs/img/slot_defence.svg` (make_diagrams.py).
 
 The user's play: draw a check, then pass just before it lands. The data comes from two scripts.
 
+**What counts as a pass out of a check:** a pass that left before contact, or one that left after the bodies met while the puck was still his. The game's own pass count confirms these after-contact passes are real passes, not pucks knocked loose: it counted 94% of them on the Genesis and 98% on the SNES, as many as before contact. So once B starts the pass with the puck on his stick, it gets away. "B a moment too late" is a press that came just after the puck was already gone (under 0.2 s real).
+
 **In the recordings** (`analysis/check_pass.py --all`, 38 Genesis games, 1,186 bursts at a person's carrier):
 - The carrier passed before contact 300 times, and 209 reached a teammate.
 - By how long (real time) the pass left before contact:
   - under 0.10 s: 60% reached a teammate, 11% were picked off by the checker;
   - 0.10-0.25 s: 78% reached a teammate;
   - 0.25-0.50 s: 13 of 13 did.
+- Passes that left just after contact, still his: 56, of which 68% reached a teammate.
 - The recordings can't separate the timing from the situation.
+
+**SNES recordings** (33 games, 1,487 bursts at a person's carrier; the SNES's B starts the pass 3-4 samples after the press, and the puck leaves about 30 ms later):
+- 344 passes out of a check, 280 reached a teammate (81%).
+- By lead before contact, the share reaching a teammate barely changes: under 0.10 s 80% (the checker picked off 7%), 0.10-0.25 s 80% (20 passes), after contact 83% (127).
+- B a moment too late: 46 (3%).
 
 **In the game** (`analysis/scoring_map/check_pass_timing.py`, run cpt1, 2 chunks in gentle mode, 12,548 trials):
 - **Set-up:** the 641 usable moments from those recordings were placed in the retail ROM 15 frames before the recorded burst. The checker was on pad 2, steering at the carrier and bursting at the recorded moment. The carrier was on pad 1, skating on and pressing B toward the receiver at offsets from -6 to +24 frames from the burst, or not at all. The receiver was the person's real target, or else the most open teammate. Two seeds were used.
