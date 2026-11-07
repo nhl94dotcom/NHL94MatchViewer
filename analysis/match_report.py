@@ -545,7 +545,7 @@ def report(name):
         got = sum(p["result"] in ("completed", "one-timer") for p in ps)
         h = (m.get("habits") or [None, None])[team] or {}
         w(f"- **{ab[team]}**: {got} of {len(ps)} passes reached a teammate ({pct(got, len(ps))}), {sum(p['result'] == 'intercepted' for p in ps)} picked off; "
-          f"{h.get('bursts', 0)} bursts, {h.get('pokes', 0)} pokes ({h.get('pokeTakeaways', 0)} won the puck), {GT.gs(h.get('goalieSeconds', 0)):.0f} game s controlling the goalie.")
+          f"{h.get('bursts', 0)} bursts, {h.get('pokes', 0)} pokes ({h.get('pokeTakeaways', 0)} won the puck), {h.get('goalieSeconds', 0)} game s controlling the goalie.")
     if genesis:
         cp = CPASS.measure(m)
         for team in (0, 1):

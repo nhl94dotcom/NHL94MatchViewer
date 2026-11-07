@@ -117,7 +117,7 @@ def main():
             x["az"], x["paz"] = tt["attackZone"], tt["possZones"][0]
             x["fow"], x["fo"], x["pim"], x["chk"] = tt["fow"], tt["fo"], tt["pim"], tt["checks"]
             x["pChk"] = tt["persHits"][0]
-            x["bursts"], x["pokes"], x["pokeT"], x["gSec"] = hb.get("bursts", 0), hb.get("pokes", 0), hb.get("pokeTakeaways", 0), GT.gs(hb.get("goalieSeconds", 0))
+            x["bursts"], x["pokes"], x["pokeT"], x["gSec"] = hb.get("bursts", 0), hb.get("pokes", 0), hb.get("pokeTakeaways", 0), hb.get("goalieSeconds", 0)  # already game seconds (clock ticks)
             x["getUps"] = hb.get("getUps", 0)
             # passing out of a check (check_pass.py, Genesis): passes that got away before contact, and late B
             cp = [e for e in CP_EVENTS(m) if e["team"] == t]

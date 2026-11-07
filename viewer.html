@@ -504,7 +504,7 @@ marker for what it was; click it to jump there.</p>
 
 <section id="h-high"><h2>Highlights, clips and game files</h2>
 <dl>
-  <dt>Highlights</dt><dd>The game's three stars, and its highlights (goals, big saves, posts, big hits, EA Special attempts, breakaways that came to a shot), each from 5 seconds before to 2 after. Click one to watch it, Play all to see them in turn, or Save as video.</dd>
+  <dt>Highlights</dt><dd>The game's three stars, and its highlights (goals, big saves, posts, big hits, EA Special attempts, breakaways that came to a shot), each from 5 s before to 2 s after, in real time. Click one to watch it, Play all to see them in turn, or Save as video.</dd>
   <dt>Clip</dt><dd>Saves any stretch (up to a minute; or pick a goal) as a video or an animated GIF, at normal or half speed, as the ice looks now (angle, zoom, follow, map).</dd>
   <dt>Save game file</dt><dd>One page with this game, the viewer, the rink, sprites and sounds inside (about 5 MB). It opens in any browser, phones included, by itself: send it to your opponent.</dd>
 </dl>
@@ -528,7 +528,7 @@ games between your team and one opponent, for the stats of one set; the Games ta
 
 <section id="h-glossary"><h2>Glossary of stats</h2>
 <p>Tip: point at any stat in the team stats or on a player's card, or at a column heading on the season page, for a short explanation of it.</p>
-<p>Times are game-clock time (the clock you see in the game, which runs about 2.5 times as fast as real time and stops at whistles) everywhere except skating speed and distance and the controller's presses a minute, which use real time.</p>
+<p>Times are game-clock time (the clock you see in the game: one game second is 0.4 s of real time, and the clock stops at whistles) everywhere except split-second timings, marked (real), skating speed and distance, the controller's presses a minute, and the replay itself (clips, highlights and the time bar), which use real time.</p>
 <h3>Basics</h3>
 <dl>
   <dt>G, A, PTS</dt><dd>Goals, assists, points (goals + assists), as the game credits them.</dd>
@@ -547,12 +547,12 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Shot attempt (iCF)</dt><dd>Every shot, whether on goal, wide or blocked.</dd>
   <dt>Wide, blocked</dt><dd>A miss; blocked when an opposing skater (not the goalie) got it or it changed course off one.</dd>
   <dt>Saved, not counted</dt><dd>The goalie stopped it but the game did not count a shot on goal.</dd>
-  <dt>Wrist shot, slapshot</dt><dd>Told apart by how long the shot was wound up (0.8 seconds or more is a slapshot).</dd>
+  <dt>Wrist shot, slapshot</dt><dd>Told apart by how long the shot was wound up (0.8 s (real) or more is a slapshot).</dd>
   <dt>One-timer</dt><dd>A shot straight off a pass, without stopping the puck. A <b>failed one-timer</b> is a swing at a pass that never arrived.</dd>
   <dt>Pass shot</dt><dd>A pass (the B button) used as a shot.</dd>
   <dt>Deflection, scramble</dt><dd>A counted shot with no shooting motion: a redirect beside the net, or a scramble.</dd>
   <dt>High danger (HD)</dt><dd>An attempt from the slot: within about 20 ft of the net and not wide of it. A third of these go in, against about one in seven elsewhere.</dd>
-  <dt>Rebound</dt><dd>An attempt by the same team within 3 seconds of a save that gave them the puck back.</dd>
+  <dt>Rebound</dt><dd>An attempt by the same team within 7.5 game seconds of a save that gave them the puck back.</dd>
   <dt>Wraparound</dt><dd>A shot from beside the post just after carrying the puck behind the net.</dd>
   <dt>Post</dt><dd>Off the post (the game counts it as a shot on goal).</dd>
 </dl>
@@ -561,11 +561,11 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Possession</dt><dd>Game seconds each team controlled the puck. A loose puck counts for the team that had it if they get it back, otherwise as <b>transition</b>. Split by zone: attacking, neutral, defensive.</dd>
   <dt>Attack zone</dt><dd>The game's own count: time the puck spent in that team's attacking zone, whoever had it.</dd>
   <dt>Zone entry</dt><dd>The puck crossing the blue line into the attacking zone: carried, passed, or dumped in; and whether a shot attempt came of it before it left the zone.</dd>
-  <dt>Off the rush, sustained, off a faceoff</dt><dd>Where an attempt came from: within 5 seconds of the zone entry (rush), later in that stay in the zone (sustained pressure), or from a faceoff in that zone.</dd>
+  <dt>Off the rush, sustained, off a faceoff</dt><dd>Where an attempt came from: within 12.5 game seconds of the zone entry (rush), later in that stay in the zone (sustained pressure), or from a faceoff in that zone.</dd>
   <dt>Odd-man rush</dt><dd>A carried or passed zone entry with more attackers than defenders back (at least two attackers): 2-on-1, 3-on-2 ...</dd>
   <dt>Breakaway</dt><dd>As the game counts it: the carrier crossing the blue line ahead of every defender.</dd>
   <dt>Giveaway, takeaway</dt><dd>The puck changing teams without a whistle: a takeaway when the other team forced it (poke check, hook, check, a burst that reached him, or stolen), otherwise a giveaway (a pass picked off, the puck lost).</dd>
-  <dt>Costly giveaway, turnovers &rarr; shot against</dt><dd>Giveaways (turnovers) the other team turned into a shot attempt within 5 seconds.</dd>
+  <dt>Costly giveaway, turnovers &rarr; shot against</dt><dd>Giveaways (turnovers) the other team turned into a shot attempt within 12.5 game seconds.</dd>
   <dt>Shot assist, attempts off a pass</dt><dd>A pass that led straight to a teammate's shot attempt.</dd>
   <dt>Passing network</dt><dd>Completed passes between each pair of teammates, and the shot attempts off them.</dd>
   <dt>Passes, pass %</dt><dd>Passes the game counted and completed (one-timer passes count as completed).</dd>
@@ -583,14 +583,14 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Where a goal went in</dt><dd>Each goal in the scoring summary and its banner has a small picture of the net, seen from the shooter's side, with the spot where the puck crossed the goal line (posts at the sides, the crossbar at the top). (Older SNES recordings converted before the puck's height was found show a dashed line across the net instead.)</dd>
   <dt>Where a shot was aimed</dt><dd>Both games aim every shot at one of nine points in the net, picked by the direction the stick is held as you shoot, by screen direction: up, up-left or up-right aims high; left, right or no direction middle height; down-left, down or down-right along the ice; left and right are the screen's sides (so shooting down the screen, the stick's left is the shooter's right). The game then scatters the shot at random (more for hard shots, weak shooters and long range). Shot tooltips say where each was aimed; on a goal's net picture the blue ring is the aim and the yellow dot where it went in; the card and the season page count where each player aims.</dd>
   <dt>Screen sides</dt><dd>Left and right on the screen, split by which way a team was going (Home attacks up the screen in periods 1 and 3, Away in period 2 and overtime), for anyone who favours one side of the screen whichever way he goes: where the puck was while the team carried it, how much each winger and defenceman carried it (going up the left winger is on the screen's left, going down on its right), where shots came from and where they were aimed. In the team stats' "Screen sides" group, and across games on the season page's Play style tab.</dd>
-  <dt>Deserve to win</dt><dd>MoneyPuck's Deserve to Win meter for NHL '94: how often each team would win if the game's shots were replayed, each going in with the chance it had (its xG; deflections a typical chance), a team's shots within 3 seconds counted as one chance, and a tie settled in sudden-death overtime (10 minutes on the Genesis, 5 on the SNES). In the team stats, as a dotted line on the Game flow strip (the home team's deserved share up), and on the season page as deserved points beside the real ones (2 a win, 1 a tie, none for an overtime loss). Before the end of a game it says who deserved to be ahead so far. Not a prediction: a team can deserve to win and lose.</dd>
+  <dt>Deserve to win</dt><dd>MoneyPuck's Deserve to Win meter for NHL '94: how often each team would win if the game's shots were replayed, each going in with the chance it had (its xG; deflections a typical chance), a team's shots within 7.5 game seconds counted as one chance, and a tie settled in sudden-death overtime (10 minutes on the Genesis, 5 on the SNES). In the team stats, as a dotted line on the Game flow strip (the home team's deserved share up), and on the season page as deserved points beside the real ones (2 a win, 1 a tie, none for an overtime loss). Before the end of a game it says who deserved to be ahead so far. Not a prediction: a team can deserve to win and lose.</dd>
   <dt>Shot aim</dt><dd>Where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net, high, middle or along the ice, and left, middle or right (one-timers and computer shooters are aimed by the game). The team stats split goals and attempts by height; in the recorded games shots aimed along the ice almost never went in.</dd>
   <dt>Saves: held / rebound / cleared</dt><dd>What became of each save a team's goalies made: held by the goalie (or play stopped), a rebound the shooting team got to first, or cleared by the goalie's own team.</dd>
   <dt>Shot speed</dt><dd>How hard a shot left the stick, in mph at the same scale as skating speeds: the puck's speed from the game's own speed words, which match its movement at about 0.015 game units a second per speed unit. In shot tooltips, on the card (average and hardest) and on the season page.</dd>
-  <dt>Checks that pay off, goal off a check</dt><dd>A check after which the checking team had the puck within 2 seconds (before the other team got it back); then a shot attempt within 5 seconds of that; or a goal within 8 seconds of the check, when the check was on the puck carrier and the other team never had the puck between: that goal is tagged "off a check".</dd>
+  <dt>Checks that pay off, goal off a check</dt><dd>A check after which the checking team had the puck within 5 game seconds (before the other team got it back); then a shot attempt within 12.5 game seconds of that; or a goal within 20 game seconds of the check, when the check was on the puck carrier and the other team never had the puck between: that goal is tagged "off a check".</dd>
   <dt>Own goal</dt><dd>A goal a defending skater put in his own net: he had the puck last, carrying it, and skated it into the net's front, which knocks it off his stick and lets it slide over the line. The game credits the goal to the scoring team's last player to touch the puck, and the viewer keeps that credit, with an "own goal" tag naming the player who put it in.</dd>
   <dt>Both assists to one player</dt><dd>Rarely, the game gives one player both assists on a goal. It's a bug in the game: when a player one-times the puck twice in a row (the rebound coming straight back onto his stick), the game lists him twice among the last players to touch it. The viewer shows the game's credit and notes it.</dd>
-  <dt>Goalie giveaway</dt><dd>A goal straight off a goalie's bad pass: his pass was picked off and the other team scored within 6 seconds, directly or with up to two passes, without his team getting the puck back. The goal is tagged "goalie giveaway"; it shows on the goalie's card and the season page.</dd>
+  <dt>Goalie giveaway</dt><dd>A goal straight off a goalie's bad pass: his pass was picked off and the other team scored within 15 game seconds, directly or with up to two passes, without his team getting the puck back. The goal is tagged "goalie giveaway"; it shows on the goalie's card and the season page.</dd>
   <dt>Net knocked off</dt><dd>A skater (or goalie) bumped a net off its spot and play stopped. An attacker knocking the other team's net off gets the faceoff moved out to a dot just outside that zone; a defender knocking his own off keeps it in the zone. The faceoff that follows tells which it was; whoever was nearest the net on that side gets the credit. Shown as a banner, in the team stats (theirs / own), on the card and on the season page. Much more common on the SNES.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
@@ -632,8 +632,8 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 <section id="h-terms"><h2>Community terms</h2>
 <dl>
   <dt>Quirky events</dt><dd>A team-stats group (Genesis games) counting four oddities of the game's code: <b>through-the-legs goals</b> (a flat puck slides through a goalie in the butterfly or a kick save, because those moves take his stick out of the puck's way and nothing else touches it), <b>shoulder-save bobble goals</b> (the top net's goalie catches the puck in a shoulder save, it is dragged behind him to the net and knocked in), <b>rocket passes</b> (a short pass to a teammate skating toward the passer that comes out up to twice as fast, from the game rounding the pass's travel time down) and <b>runaway skaters</b> (a person's skater whose speed bursts keep adding up after taking over a pass or falling into the boards). Goals get a tag, and rocket passes and runaways show on the ice.</dd>
-  <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 seconds (real time, flight and a short carry included), the last pass went to the scorer within 3 seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). A goalie's pass out of his zone counts as one of the passes. The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too. A <b>missed tapestry</b> is the same chain of passes ending in a shot that does not score (saved, wide, blocked or off the post); it is counted in the team stats and named in the shot's tooltip on the shot map.</dd>
-  <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 2 seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 2 seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near. Each attempt's shot line gives where it was released (feet out from the goal line and to the side) and how fast the shooter was skating, as a share of his full speed; attempts that didn't score are in the Highlights. In the game itself (the scoring map) the play worked best released about 20 ft out and 27 ft to the side, a little below full speed.</dd>
+  <dt>Tapestry</dt><dd>A goal at the end of two or more quick passes: each pass reached the player who made the next one within 6 game seconds (flight and a short carry included), the last pass went to the scorer within 7.5 game seconds of the goal, and the other team never had the puck along the way (a bobble the receiver gathers himself is fine). A goalie's pass out of his zone counts as one of the passes. The more passes, the finer: <b>tapestry</b> (2 passes), <b>fine tapestry</b> (3), <b>masterpiece</b> (4 or more). The goal's tag shows the kind and the number of passes, and the banner and scoring summary name the chain from the first passer to the scorer. Most end in a one-timer, which gets its own tag too. A <b>missed tapestry</b> is the same chain of passes ending in a shot that does not score (saved, wide, blocked or off the post); it is counted in the team stats and named in the shot's tooltip on the shot map.</dd>
+  <dt>EA Special</dt><dd>Named after the player known as EA who invented it (not Electronic Arts). Genesis only: a person's skater flips a forehand wrist shot from his forehand side, close in and off to the side, at a goalie in position; the goalie bobbles it and is pushed back, and the shooter or a teammate puts the rebound in within 5 game seconds. An <b>EA Special attempt</b> is the flip itself, whatever came of it (saved, blocked, wide; not a goal straight from the shot), after carrying the puck (not in a scramble), by a skater coming in from the side (not skating back toward his own end or drifting out toward the boards); it counts as an EA Special when his team scores within 5 game seconds without a defender having had the puck. The goalie often dives after it, as if to cover a puck he is nowhere near. Each attempt's shot line gives where it was released (feet out from the goal line and to the side) and how fast the shooter was skating, as a share of his full speed; attempts that didn't score are in the Highlights. In the game itself (the scoring map) the play worked best released about 20 ft out and 27 ft to the side, a little below full speed.</dd>
   <dt>Pass shot</dt><dd>Using the pass button to shoot: the puck goes off quickly with no target. The game does not count it as a shot on goal unless it scores.</dd>
 </dl>
 </section>
@@ -647,7 +647,7 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 <dl>
   <dt>The games page will not open (localhost)</dt><dd>The helper is not running: start it and leave its window open, then reload.</dd>
   <dt>Windows warns about the helper</dt><dd>It is an unsigned program that reads RetroArch's memory (read only). Choose "More info", then "Run anyway".</dd>
-  <dt>A game is missing</dt><dd>The helper has to be running at the opening faceoff and until the horn. A recording under 45 seconds of play at 0-0 is thrown away.</dd>
+  <dt>A game is missing</dt><dd>The helper has to be running at the opening faceoff and until the horn. A recording under 45 s of real time (about 110 game seconds) of play at 0-0 is thrown away.</dd>
   <dt>A game is not in the season</dt><dd>Seasons count whole games only (from the opening faceoff to the horn) on the season's ROM between its dates; check the Games tab and "Whole games only".</dd>
   <dt>Numbers differ from the game's stats screen</dt><dd>Goals, assists, shots on goal and checks are the game's own; attempts, possession and the rest are worked out from the replay.</dd>
 </dl>
@@ -1950,7 +1950,7 @@ function drawOverlay(f) {
       const k = m.owner[i];
       if (k < 0 || !counts(k < 6 ? 0 : 1, rosterIndex(i, k)) || !heatCounts(i, k < 6 ? 0 : 1)) continue;
       add(k < 6 ? 0 : 1, m.puck[3 * i], m.puck[3 * i + 1], dt, i);
-      h.seconds[k < 6 ? 0 : 1] += dt / 1000;
+      h.seconds[k < 6 ? 0 : 1] += dt / 400;  // game seconds (24 frames, 0.4 s real)
       continue;
     }
     const seen = [false, false];
@@ -1960,7 +1960,7 @@ function drawOverlay(f) {
       add(team, m.pos[(i * PLAYERS + k) * 2], m.pos[(i * PLAYERS + k) * 2 + 1], dt, i);
       seen[team] = true;
     }
-    for (const team of [0, 1]) if (seen[team]) h.seconds[team] += dt / 1000;
+    for (const team of [0, 1]) if (seen[team]) h.seconds[team] += dt / 400;
   }
   if (h.upTo !== f || !h.image) { h.upTo = f; h.image = heatImage(h.cells, colours); }
   ctx.save();
@@ -3157,7 +3157,7 @@ function fillCard(card, p, position, live) {
       if (live.puckMs !== undefined) {
         addStat(grid, 'With the puck', secondsText(live.puckMs));
         addStat(grid, 'Giveaways', live.giveaways);
-        if (live.costly !== undefined && live.hd !== undefined) addStat(grid, 'Costly giveaways', live.costly);  // the other team shot within 5 s
+        if (live.costly !== undefined && live.hd !== undefined) addStat(grid, 'Costly giveaways', live.costly);  // the other team shot within 12.5 game s
         addStat(grid, 'Takeaways', live.takeaways);
         if (live.failedOneTimers !== undefined) addStat(grid, 'Failed one-timers', live.failedOneTimers);
         if (live.passes) {
@@ -3301,10 +3301,10 @@ const STAT_HELP = {
   'xG against': 'Expected goals of the shots he faced that were not blocked: how many an average goalie in his place would have let in, by the game’s rules.',
   'Saved above exp.': 'Goals saved above expected: his xG against less the goals those shots scored. Above 0 is better than the game’s odds.',
   'High-danger goals / attempts': 'Attempts from the slot: within 60 units of the net (about 20 ft) and no wider than 50 from the middle. In the recordings a third of them score, against 14% of the rest.',
-  'Rebound goals / attempts': 'Attempts by the team within 3 s of a save of its own shot, after getting the puck back.',
-  'EA Specials (goals / attempts)': 'EA Specials (Genesis): a person\u2019s forehand wrist shot from the side, carried in, at a goalie in position, to make him bobble it; the goal counts when the team scores off the rebound within 2 s. See Help for the full rule.',
-  'Attempts off a pass': 'Shot attempts that came straight off a teammate\u2019s pass (within 4 s, the other team never having the puck between): the passer gets a shot assist.',
-  'Turnovers \u2192 shot against': 'Giveaways the other team turned into a shot attempt within 5 s (in brackets, how many became goals).',
+  'Rebound goals / attempts': 'Attempts by the team within 7.5 game s of a save of its own shot, after getting the puck back.',
+  'EA Specials (goals / attempts)': 'EA Specials (Genesis): a person\u2019s forehand wrist shot from the side, carried in, at a goalie in position, to make him bobble it; the goal counts when the team scores off the rebound within 5 game s. See Help for the full rule.',
+  'Attempts off a pass': 'Shot attempts that came straight off a teammate\u2019s pass (within 10 game s, the other team never having the puck between): the passer gets a shot assist.',
+  'Turnovers \u2192 shot against': 'Giveaways the other team turned into a shot attempt within 12.5 game s (in brackets, how many became goals).',
   // ---- puck control
   'Possession': 'Game time the team controlled the puck. Each second of the game clock goes to the team with the puck on a stick; a loose puck goes to the team that had it if it gets it back, to Transition if the other team gets it.',
   'Puck on screen left / right': 'Of the team\u2019s time with the puck on a stick: the puck on the screen\u2019s left half or its right half. The rows below split it by which way the team was going (Home goes up in periods 1 and 3, Away in 2 and OT): a side the person favours whichever way he goes shows in both.',
@@ -3312,10 +3312,10 @@ const STAT_HELP = {
   'Carried by LD / RD': 'The left and right defenceman\u2019s shares of the team\u2019s carrying time. Going up the screen the left defenceman is on the screen\u2019s left; going down, on its right.',
   'Shots from L / M / R (G / att)': 'Goals / attempts from the screen\u2019s left, the middle (within the posts\u2019 width) and the screen\u2019s right.',
   'Aimed at L / M / R (G / att)': 'Goals / shots aimed at the screen\u2019s left, middle and right (the stick at the release). Going up, the screen\u2019s left is the shooter\u2019s left; going down, his right.',
-  'Deserve to win': 'The Deserve to Win meter (after MoneyPuck\u2019s): how often each team would win if the game\u2019s shots were replayed, each going in with its chance (its xG; deflections a typical chance). A team\u2019s shots within 3 seconds count as one chance; a tie goes to sudden-death overtime (10 minutes on the Genesis, 5 on the SNES) at each team\u2019s regulation rate. Before the end, who deserved to be ahead on the shots so far.',
+  'Deserve to win': 'The Deserve to Win meter (after MoneyPuck\u2019s): how often each team would win if the game\u2019s shots were replayed, each going in with its chance (its xG; deflections a typical chance). A team\u2019s shots within 7.5 game seconds count as one chance; a tie goes to sudden-death overtime (10 minutes on the Genesis, 5 on the SNES) at each team\u2019s regulation rate. Before the end, who deserved to be ahead on the shots so far.',
   'Deserve to win|· a tie': 'How often the replays end level (a tie after overtime; before the end, level so far).',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
-  'Tapestry goals': 'Goals at the end of two or more quick passes: each pass reached the player who made the next one within 2.5 s (a short carry is fine), the last went to the scorer within 3 s of the goal, and the other team never had the puck. Tapestry 2 passes, fine tapestry 3, masterpiece 4 or more.',
+  'Tapestry goals': 'Goals at the end of two or more quick passes: each pass reached the player who made the next one within 6 game s (a short carry is fine), the last went to the scorer within 7.5 game s of the goal, and the other team never had the puck. Tapestry 2 passes, fine tapestry 3, masterpiece 4 or more.',
   'Through-the-legs goals': 'Goals that slid through the goalie: a flat puck (height 5 or under) passed within 7 units of his centre in the second before the goal while he was in the butterfly or a kick save. Those moves put his stick out to the side, and a low puck 8-14 units from the stick touches neither stick nor body that frame, so it slides through and in. A quirk of the Genesis game.',
   'Shoulder-save bobble goals': 'Goals scored after the defending goalie caught the puck in a shoulder save and nobody else touched it: the top net\'s shoulder save holds the puck behind him, it is dragged to the front of the net, the net knocks it off his stick and it slides in. A quirk of the Genesis game.',
   'Rocket passes': 'Passes that left the stick faster than 26,000 (about 88 mph; ordinary passes are 13,000-23,000). The game times a pass to meet the receiver and rounds that time down, so a short pass to a teammate skating toward the passer can come out up to twice as fast. A quirk of the Genesis game.',
@@ -3323,8 +3323,8 @@ const STAT_HELP = {
   'Missed tapestries': 'Shot attempts at the end of two or more quick passes (the same chain as a tapestry) that did not score: saved, wide, blocked or off the post. Tapestry goals over tapestry goals plus missed tapestries is how often the team finished them.',
   'Tapestry goals|\u00b7 2 / 3 / 4+ passes': 'Tapestry goals by the number of passes: tapestries (2), fine tapestries (3), masterpieces (4 or more).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
-  'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s.',
-  'Slapshots (G / att)': 'Goals and attempts from slapshots: shots wound up for 0.8 s or more.',
+  'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s (real).',
+  'Slapshots (G / att)': 'Goals and attempts from slapshots: shots wound up for 0.8 s (real) or more.',
   'Aimed shots (G / att)': 'Goals and attempts by where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net (high, middle or along the ice; left, middle or right). One-timers are aimed by the game.',
   'Aimed shots (G / att)|· high': 'Shots aimed at the top of the net (up held at the release, any side).',
   'Aimed shots (G / att)|· middle': 'Shots aimed at mid-height (left or right held at the release, or nothing).',
@@ -3370,11 +3370,11 @@ const STAT_HELP = {
   'Nets knocked off (theirs / own)': 'Times the team\u2019s skaters knocked a net off its spot: the other team\u2019s (an attacker: the faceoff comes out to a dot just outside that zone) / their own (a defender, the goalie included: the faceoff stays in the zone).',
   'Nets knocked off': 'Times he knocked a net off its spot (either net).',
   'Body checks|· on the puck carrier': 'Checks landed on the player who had the puck (in the half second before).',
-  'Body checks|· \u2192 puck / shot / goal': 'Checks after which the team had the puck within 2 s (before the other team got it back) / took a shot attempt within 5 s of getting it / scored within 8 s (that last one only for checks on the puck carrier, the other team never touching the puck).',
+  'Body checks|· \u2192 puck / shot / goal': 'Checks after which the team had the puck within 5 game s (before the other team got it back) / took a shot attempt within 12.5 game s of getting it / scored within 20 game s (that last one only for checks on the puck carrier, the other team never touching the puck).',
   'Aimed high / middle / ice': 'Where his shots were aimed: the stick picks one of nine points in the net (up = high, down = along the ice, left and right the screen\u2019s sides) and the game adds some random scatter. Counts of high / middle / along the ice, then his left / middle / right as he faces the net.',
   'Shot speed': 'His shots\u2019 speed in mph (average and hardest), from the puck\u2019s speed at the skating scale. Slapshots usually come out at 70-95.',
-  'Checks \u2192 puck / shot / goal': 'His checks after which his team had the puck within 2 s / took a shot within 5 s of that / scored within 8 s (a check on the carrier).',
-  'Giveaways \u2192 goals': 'His passes the other team picked off and scored from within 6 s, with at most two passes of their own.',
+  'Checks \u2192 puck / shot / goal': 'His checks after which his team had the puck within 5 game s / took a shot within 12.5 game s of that / scored within 20 game s (a check on the carrier).',
+  'Giveaways \u2192 goals': 'His passes the other team picked off and scored from within 15 game s, with at most two passes of their own.',
   'Pucks lost on a goalie': 'Times a carrier skated into a goalie (either team\u2019s) and the puck came loose.',
   'Distance skated': 'How far the team\u2019s skaters went in all, from their positions (real-rink scale; speeds use real time).',
   'Power play': 'Power-play goals / power plays, as the game counts them.',
@@ -3382,8 +3382,8 @@ const STAT_HELP = {
   'Penalties': 'Penalties called on the team.',
   'Penalty minutes': 'Penalty minutes, from the ROM\u2019s rule table.',
   // ---- how chances were made
-  'Off the rush (G / attempts)': 'Attempts within 5 s of the team carrying, passing or dumping the puck into the attacking zone (the puck still there).',
-  'Sustained pressure': 'Attempts later in a stay in the attacking zone (more than 5 s after getting in).',
+  'Off the rush (G / attempts)': 'Attempts within 12.5 game s of the team carrying, passing or dumping the puck into the attacking zone (the puck still there).',
+  'Sustained pressure': 'Attempts later in a stay in the attacking zone (more than 12.5 game s after getting in).',
   'Off a faceoff': 'Attempts off a faceoff in the attacking zone, with no whistle between.',
   'Odd-man rushes': 'Carried or passed entries with more attackers than defenders back (at least two attackers): 2-on-1, 3-on-2 and so on.',
   'Wraparounds (G / attempts)': 'Shots from beside the post just after carrying the puck behind the goal line.',
@@ -3430,9 +3430,9 @@ const STAT_HELP = {
   'card|Posts': 'His shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'card|Zone entries': 'Times he took the puck into the attacking zone (carried, or passed in by him).',
   'High-danger att.': 'His shot attempts from the slot (within 60 units of the net, no wider than 50 from the middle).',
-  'Shot assists': 'His passes that a teammate shot straight off (within 4 s).',
-  'Rebounds': 'His attempts within 3 s of a save of his team\u2019s shot.',
-  'Costly giveaways': 'His giveaways the other team turned into a shot attempt within 5 s.',
+  'Shot assists': 'His passes that a teammate shot straight off (within 10 game s).',
+  'Rebounds': 'His attempts within 7.5 game s of a save of his team\u2019s shot.',
+  'Costly giveaways': 'His giveaways the other team turned into a shot attempt within 12.5 game s.',
   'card|Failed one-timers': 'Times he swung at a pass for a one-timer and missed the puck.',
   'Intercepted': 'His passes the other team picked off.',
   'card|Passes': 'His passes: completed (to a teammate or into a one-timer) / all his passes, including ones with no target.',
@@ -4370,7 +4370,7 @@ function fillRomSettings() {
       : 'This game\u2019s ROM settings could not be read (not a ROM of the original game or the 30-team ROM built on it, or a game converted before they were read).';
     return;
   }
-  const secs = f => (f / 60).toFixed(2).replace(/\.?0+$/, '') + ' s';
+  const secs = f => (f / 24).toFixed(1).replace(/\.0$/, '') + ' game s (' + (f / 60).toFixed(2).replace(/\.?0+$/, '') + ' s real)';
   const add = (term, words) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = term; dd.textContent = words; list.append(dt, dd); };
   const orig = (value, original, text) => text + (value === original ? ' (as the original game)' : ' (changed from the original game)');
   if (r.ratingScale) add('Rating scale', orig(r.ratingScale, '0-6', 'Ratings run ' + r.ratingScale.replace('-', ' to ')) + '.');
