@@ -446,6 +446,16 @@ The computer never holds a direction, so its wins go a random way.
 - **The rocket pass (a bug):** pass to a teammate skating **toward** you from about 50-70 units (17-23 feet) away and the game can
   send the puck at twice the normal speed (it rounds the time they'll meet down to the nearest eighth of a second).
   One or two a game. It can catch a receiver off guard or bounce off his stick.
+- **Passing out of a check: pass as the checker starts his burst, not at the last instant.**
+  - **What the game showed:** the same 641 real situations from the recorded games were played over with only the
+    moment you press B changed. The pass reached a teammate 64% of the time when B came 0.1 s (real) before the
+    checker's burst, 61% at the burst, 55% at 0.15 s after it, and 50% at 0.4 s after.
+  - **Why:** a pass that leaves in the last 0.1 s (real) before the hit lands is picked off by the checker himself 16% of
+    the time, against 5% for one that leaves 0.1-0.25 s before.
+  - **Don't go too early either:** a pass 0.5 s (real) or more before the hit reached a teammate only about a quarter
+    of the time, because the receiver isn't ready for it.
+  - **The recorded games agree:** 60% got through under 0.1 s before contact, against about 80% at 0.1-0.5 s.
+  - STUDY_NOTES "Passing out of a check" has the details.
 - **Bobbles:** a pass faster than the receiver can handle (it depends on his Stick Handling) bounces off his stick.
 - **Why the puck sometimes goes right through a stick:** after a player shoots or passes, his stick ignores the puck
   for about a quarter of a second (real); after losing a steal, about half a second; after a puck bounces off him, 8

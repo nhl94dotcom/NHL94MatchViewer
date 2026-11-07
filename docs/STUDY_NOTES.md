@@ -1116,3 +1116,37 @@ one; 96 / 7 from outside the slot. 94% of one-timers went to open receivers. So 
 slot is the worst, an open man there is what the one-timers come from, and one defender in an empty slot cuts the
 danger by a third while a second adds nothing. The match report has it as section 14 (`SD.measure`); the guide's game
 plan as GENESIS_GUIDE 17, with `docs/img/slot_defence.svg` (make_diagrams.py).
+
+## Passing out of a check (Genesis, 2026-11-06 / 07)
+
+The user's play: draw a check, then pass just before it lands. The data comes from two scripts.
+
+**In the recordings** (`analysis/check_pass.py --all`, 38 Genesis games, 1,186 bursts at a person's carrier):
+- The carrier passed before contact 300 times, and 209 reached a teammate.
+- By how long (real time) the pass left before contact:
+  - under 0.10 s: 60% reached a teammate, 11% were picked off by the checker;
+  - 0.10-0.25 s: 78% reached a teammate;
+  - 0.25-0.50 s: 13 of 13 did.
+- The recordings can't separate the timing from the situation.
+
+**In the game** (`analysis/scoring_map/check_pass_timing.py`, run cpt1, 2 chunks in gentle mode, 12,548 trials):
+- **Set-up:** the 641 usable moments from those recordings were placed in the retail ROM 15 frames before the recorded burst. The checker was on pad 2, steering at the carrier and bursting at the recorded moment. The carrier was on pad 1, skating on and pressing B toward the receiver at offsets from -6 to +24 frames from the burst, or not at all. The receiver was the person's real target, or else the most open teammate. Two seeds were used.
+- **Reached a teammate, by offset, same situation and seed (1,253 pairs):**
+
+  | B, frames from the burst | -6 | 0 | 3 | 6 | 9 | 12 | 15 | 18 | 24 |
+  |---|---|---|---|---|---|---|---|---|---|
+  | Reached a teammate | 64% | 61% | 59% | 57% | 55% | 53% | 53% | 51% | 50% |
+
+  Each 6 frames (0.1 s real) of delay costs about 2-3 points.
+- **By lead before the landed check (the game counting it):**
+
+  | Lead (real) | Teammate | Picked off by the checker | Passes |
+  |---|---|---|---|
+  | under 0.10 s | 54% | 16% | 532 |
+  | 0.10-0.25 s | 65% | 5% | 378 |
+  | 0.25-0.50 s | 58% | 1% | 117 |
+  | 0.50 s or more | 24% | 4% (46% reached nobody) | 80 |
+
+- **No pass:** the carrier was caught 22% of the time. The scripted checker landed his check in only about a quarter of the trials, fewer than a person's checks land, so not passing looks safer here than it is against a person.
+- **Caveats:** the checker steers simply, and the carrier skates straight on.
+- **Conclusion:** the timing itself matters. The last-instant pass is the one the checker picks off. Pressing B as he starts his burst, about 0.1-0.25 s (real) before the hit, is best.
