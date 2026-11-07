@@ -36,6 +36,8 @@ CONT1TEAM, PADSIDE, PLAYERPAD, C1PLAYER, TEAMPADS, PFLAGS = 0x1C84, 0x19F6, 0x19
 TMSHOTS, TMSCORE, GSP = 0x177A, 0x178E, 0x1630
 SEG = 9000                                     # 2.5 minutes of real time, 6.25 game minutes
 CONDS = {"p1": ("top", None), "p3": ("top", 2), "p2": ("bottom", None), "p2_as_p1": ("bottom", 0)}
+# NHL94_CVC_ONLY=p1,p2: play only these conditions (after the first chunk the two checks matched: 2026-11-07)
+ONLY = set((__import__("os").environ.get("NHL94_CVC_ONLY") or ",".join(CONDS)).split(","))
 
 
 def computer_only(e):
@@ -92,7 +94,7 @@ def main():
         while time.time() - t0 < minutes * 60:
             seed = random.Random(i).getrandbits(32)
             for c, (st, gsp) in CONDS.items():
-                if i in done[c]:
+                if c not in ONLY or i in done[c]:
                     continue
                 r = segment(e, bases[st], gsp, seed)
                 r.update(cond=c, i=i)
