@@ -634,7 +634,8 @@ charging, slashing, cross-checking, hooking, tripping, penalty shot, interferenc
   120 game steps stops play, anywhere on the ice. Any movement, or anyone holding it, restarts the count. **Code**. At two
   frames a step that's 4 s of real time (10 game seconds), and the one recorded case fits: `2026-11-02_2139_WPG-TOR` P1 2:47, Steen's check took the puck off
   Cullen behind the top net and it stopped dead at (7, 279); the clock stopped 10 game seconds (3.98 s real) later, and the faceoff was
-  at (70, 206). **Confirmed** (one case).
+  at (70, 206). **Confirmed** (one case). It's rare: in all 33 recorded SNES games (checked 2026-11-07) that is the only
+  loose puck that sat still for 6 game seconds (2.5 s real) or more with the clock running.
 
 ### 8.4 Penalty lengths
 
