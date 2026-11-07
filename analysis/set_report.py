@@ -24,6 +24,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from share_game import load_js_object  # noqa: E402
 import check_outcomes as CO  # noqa: E402
 import slot_defence as SD  # noqa: E402
+import check_pass as CPASS  # noqa: E402
+
+_cp_cache = {}
+
+
+def CP_EVENTS(m):
+    """check_pass.py's events for a Genesis match (none on the SNES), computed once per match."""
+    if m.get("system", "genesis") != "genesis":
+        return []
+    key = m.get("name") or id(m)
+    if key not in _cp_cache:
+        _cp_cache[key] = CPASS.measure(m)
+    return _cp_cache[key]
 
 K = 12
 HOW = ("pass picked off", "lost the puck", "hit", "burst", "poke check", "hook", "stolen")
@@ -105,6 +118,12 @@ def main():
             x["pChk"] = tt["persHits"][0]
             x["bursts"], x["pokes"], x["pokeT"], x["gSec"] = hb.get("bursts", 0), hb.get("pokes", 0), hb.get("pokeTakeaways", 0), hb.get("goalieSeconds", 0)
             x["getUps"] = hb.get("getUps", 0)
+            # passing out of a check (check_pass.py, Genesis): passes that got away before contact, and late B
+            cp = [e for e in CP_EVENTS(m) if e["team"] == t]
+            x["cpN"] = sum(e["out"].startswith("passed") for e in cp)
+            x["cpOk"] = sum(e["out"] == CPASS.OUTCOMES[0] for e in cp)
+            x["cpPick"] = sum(e["out"] in CPASS.OUTCOMES[1:3] for e in cp)
+            x["cpLate"] = sum(e["out"] in CPASS.OUTCOMES[5:7] for e in cp)
             E = [e for e in m["zoneEntries"] if e["team"] == t]
             x["entries"] = len(E)
             ce = [e for e in E if e["kind"] != "dumped"]
@@ -249,7 +268,8 @@ def main():
             ("Odd-man rushes", "odd", 0), ("Goals off them", "oddG", 0), ("Wrist shots", "wr", 0), ("Wrist goals", "wrG", 0), ("One-timers", "ot", 0), ("One-timer goals", "otG", 0), ("One-timers from outside the slot", "otOut", 0), ("Goals from those", "otOutG", 0),
             ("Slapshots", "sl", 0), ("Slapshot goals", "slG", 0), ("Posts", "posts", 0), ("xG on posts", "postX", 1),
             ("Pucks lost", "lost", 0), ("Goal against within 5 s of one", "lostGoals", 0), ("... from his own mistake", "lostGoalsOwn", 0),
-            ("Passes tracked", "passT", 0), ("Reached a teammate", "passOk", 0), ("Picked off", "passPick", 0), ("Faceoffs won", "fow", 0), ("Faceoffs", "fo", 0),
+            ("Passes tracked", "passT", 0), ("Reached a teammate", "passOk", 0), ("Picked off", "passPick", 0),
+            ("Passes out of a check (Genesis)", "cpN", 0), ("... reached a teammate", "cpOk", 0), ("... picked off", "cpPick", 0), ("Caught: B a moment too late", "cpLate", 0), ("Faceoffs won", "fow", 0), ("Faceoffs", "fo", 0),
             ("Checks (game's count)", "chk", 0), ("By the person", "pChk", 0), ("Hits taken on the carrier", "hitOn", 0), ("Knocked down", "hitDown", 0), ("Penalty minutes", "pim", 0),
             ("Bursts", "bursts", 0), ("Pokes", "pokes", 0), ("Poke takeaways", "pokeT", 0), ("Get-ups", "getUps", 0), ("Goalie control (s)", "gSec", 0),
             ("Shots faced, person in net", "gk_person_n", 0), ("Goals", "gk_person_g", 0), ("xG", "gk_person_x", 1), ("Shots faced, computer in net", "gk_cpu_n", 0), ("Goals", "gk_cpu_g", 0), ("xG", "gk_cpu_x", 1),
