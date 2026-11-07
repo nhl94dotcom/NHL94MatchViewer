@@ -7,7 +7,7 @@ goal for the attackers, a whistle, or the puck back out of the zone). Then:
 - the rate over time: of the stays still going at 0, 5, 10 ... s, the share with a goal in the next 5 s, and attempts in
   those 5 s (the chance per moment of staying in the zone);
 - how often attempts come: attempts per 5 s of zone time in a stay's first 5 s and after;
-- attempts off the rush (within 5 s of the entry) against sustained pressure (later in the stay): goals per attempt and
+- attempts off the rush (within 12.5 game s of the entry) against sustained pressure (later in the stay): goals per attempt and
   xG per attempt (the viewer's "Off the rush" and "Sustained pressure" rows, as rates).
 Then the same by possession (the user's request: only the time the attackers really had the puck in the zone): a
 possession starts when a team has the puck in its attacking zone (|Y| past BLUE at the end it attacks) - carried or
@@ -179,7 +179,7 @@ def report(name, out, lines):
     lines += ["", f"**How often attempts come**: {5 * out['early_att'] / max(1, out['early_s']):.2f} attempts per 5 s of zone "
               f"time in a stay's first 5 s, {5 * out['late_att'] / max(1, out['late_s']):.2f} after that.", ""]
     lines += ["", "**Per attempt**", "", "| | Attempts | Goals per attempt | xG per attempt |", "|---|---|---|---|"]
-    for o, label in (("rush", "Off the rush (within 5 s of the entry)"), ("zone", "Sustained pressure (later in the stay)")):
+    for o, label in (("rush", "Off the rush (within 12.5 game s of the entry)"), ("zone", "Sustained pressure (later in the stay)")):
         n = out["att_" + o]
         if n:
             xg = f"{out['xg_' + o] / out['xgn_' + o]:.3f}" if out["xgn_" + o] else "-"

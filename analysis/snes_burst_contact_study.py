@@ -3,7 +3,7 @@
 ($F342, 24 frames = 0.4 s, drawn as an ordinary skating frame); after that a contact is only checkplcoll's bounce
 (speeds shared by weight along the line between them), so a burster still moving fast shoves the other player along
 with no check, no fall and no animation, and a carrier keeps the puck. Each burst's first contact with an opponent
-skater (under 16 apart) within 1.5 s, classified by the burster's animation then and the outcome.
+skater (under 16 apart) within 3.75 game s, classified by the burster's animation then and the outcome.
 python analysis/snes_burst_contact_study.py"""
 import json
 import math

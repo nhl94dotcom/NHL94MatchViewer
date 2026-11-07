@@ -117,7 +117,7 @@ def fmt(v):
 def main():
     for system in ("genesis", "snes"):
         moves, plain = study(system)
-        print(f"== {system}: {len(moves)} carries out of the attacking zone and back in within {REENTRY_MS // 1000} s; "
+        print(f"== {system}: {len(moves)} carries out of the attacking zone and back in within {REENTRY_MS / 400:g} game s; "
               f"{len(plain)} entries from the neutral zone with no such exit")
         rows = defaultdict(list)
         for mv in moves:
@@ -138,8 +138,8 @@ def main():
         for lab, L in (("step out and back in", moves), ("ordinary carried entry", plain)):
             oc = [outcome(x["m"], x["team"], x["entry"]) for x in L]
             if oc:
-                print(f"  {lab:24} shot attempt within 4 s {sum(a for a, _ in oc)}/{len(oc)} ({100 * sum(a for a, _ in oc) / len(oc):.0f}%),"
-                      f" goal within 6 s {sum(b for _, b in oc)}")
+                print(f"  {lab:24} shot attempt within 10 game s {sum(a for a, _ in oc)}/{len(oc)} ({100 * sum(a for a, _ in oc) / len(oc):.0f}%),"
+                      f" goal within 15 game s {sum(b for _, b in oc)}")
         for mv in moves[:40]:
             m = mv["m"]
             out_ms = m["t"][mv["entry"]] - m["t"][mv["exit"]]

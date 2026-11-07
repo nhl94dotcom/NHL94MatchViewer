@@ -124,7 +124,7 @@ for w, name, outcome in GAMES:
         else:
             dperson = "defending person controlled the goalie"
         ent = max((e for e in m.get("zoneEntries", []) if e["team"] == team and e["f"] <= fs and t[fs] - t[e["f"]] < 8000), key=lambda e: e["f"], default=None)
-        etxt = f"entry {ent['kind']} {(t[fs] - t[ent['f']]) / 1000:.1f}s before, odd {ent.get('odd')}" if ent else "no entry within 8 s"
+        etxt = f"entry {ent['kind']} {(t[fs] - t[ent['f']]) / 400:.1f} game s before, odd {ent.get('odd')}" if ent else "no entry within 20 game s"
         print(f"  GOAL {ab[team]} P{g['period'] + 1} {g['clock'] // 60}:{g['clock'] % 60:02d} {sh['kind']}: {len(att)} attackers deep vs {len(back)} defenders goal-side; {etxt}; {dperson}; goalie {sh.get('gctl')}")
 
 print("\n######## One-timers (A)")
