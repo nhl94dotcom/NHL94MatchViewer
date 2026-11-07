@@ -10,6 +10,9 @@ Playing the SNES version? It differs in important ways: see the [SNES player's g
 Buttons: **A** hook / hold (the flip with the puck), **B** pass / poke / switch player, **C** shoot / speed burst and
 check.
 
+Times are game seconds, as the game clock counts them: 1 game second is 0.4 s of real time. Split-second timings, like
+when to press a button, are real seconds, marked (real).
+
 Distances are in the game's units, about **3 to a foot**: see [Distances and speeds](#distances-and-speeds).
 
 ## tl;dr
@@ -30,7 +33,7 @@ The things about the Genesis game that matter most, one line each; the number af
 12. **Passes**: Passing sets speed, not accuracy; long passes rise over sticks; pass shots lift at random; a pass to a teammate skating toward you can come out twice as fast. ([8](#8-passing-and-the-flip))
 13. **A stick ignores the puck for a moment** after its player shoots, passes or loses it, which is why pucks go right through players. ([8](#8-passing-and-the-flip))
 14. **With line changes off, energy never drains**: Endurance and fatigue do nothing, and speed bursts are free. ([15](#15-myths-things-that-dont-matter))
-15. **On defence, keep the other team out of your slot**, above all the puck: with the carrier in your slot a goal came within 3 seconds 23% of the time, and nearly every one-timer went to a man left open. ([17](#17-game-plan-offence-and-defence))
+15. **On defence, keep the other team out of your slot**, above all the puck: with the carrier in your slot a goal came within 7.5 game seconds 23% of the time, and nearly every one-timer went to a man left open. ([17](#17-game-plan-offence-and-defence))
 
 ---
 
@@ -221,7 +224,7 @@ With line changes off (the usual online setting):
 
 ![The faceoff swing over time and the win chances](img/faceoff_timing.svg)
 
-1. **Mash B as fast as you can** from when the faceoff box appears until the drop (3-5 seconds, random). Each press
+1. **Mash B as fast as you can** from when the faceoff box appears until the drop (3-5 s of real time, random; the clock is stopped). Each press
    swings the stick once; what counts is how far into the swing you are at the drop. Fast mashing keeps you in the
    swing; holding B does nothing.
 2. **Hold the d-pad toward the teammate you want the puck to reach**, the whole time. If you win, the puck goes that
@@ -295,7 +298,7 @@ The computer never holds a direction, so its wins go a random way.
     instead.
 - **Wind up close in and the computer goalie drops early.** Within about 20 feet of the goal line, the moment you
   start a slapshot the computer goalie often drops into a pad stack and slides toward the middle, away from your side
-  of the net. He's stuck there for 0.7 s. (It depends on the clock, so only about half the time.) Keep gliding and
+  of the net. He's stuck there for 0.7 s (real). (It depends on the clock, so only about half the time.) Keep gliding and
   shoot to your side of the net. Recorded: 37% of such shots scored when he dropped early, 12% when he waited.
 - **Cross-crease:** skate straight across the front of the net, close in, at full speed. Within 10 feet of the goal
   line the goalie trails the play by about 6 feet, more than his reach. A slapshot wind-up there often freezes him too
@@ -323,7 +326,7 @@ The computer never holds a direction, so its wins go a random way.
   little earlier (about 28 feet from the goalie) than swings to your left. **The approach matters as much as the
   swing:** come in drifting gently toward the middle (about a quarter of your speed across); coming in on a steep
   diagonal or dead straight, the same swing scored a third or a fifth as often. With all ten skaters on the ice a
-  right-hander's turn is a little slower, so tap C a touch later after the swing (about 0.27 s rather than 0.22).
+  right-hander's turn is a little slower, so tap C a touch later after the swing (about 0.27 s (real) rather than 0.22).
   **It needs your speed:** in the scripted bot's games, a left-hander slowed to about half speed by a defender on him
   scored 1 deke in 43; a quick wrist shot or pass from there did better (6 in 38).
 - **Floaters:** skate up and across on the diagonal from your forehand side, about 12-17 feet out to the side, swing
@@ -386,7 +389,7 @@ The computer never holds a direction, so its wins go a random way.
 - **How:** pass with B to a teammate, then **press C while the pass is on its way**. (Or, already controlling the
   receiver, press C as the puck comes to him.)
 - **Only in your attacking half**; in your own half C is a speed burst.
-- **The game times the swing for you.** Press C up to about 0.9 s before the puck arrives; earlier and the swing ends
+- **The game times the swing for you.** Press C up to about 0.9 s (real) before the puck arrives; earlier and the swing ends
   before the puck gets there. Pressing late is fine, even as the puck arrives.
 - **You can't aim it**: the game aims one-timers itself. It looks along a sightline from the puck through the
   goalie, carried on past him toward the net:
@@ -445,8 +448,8 @@ The computer never holds a direction, so its wins go a random way.
   One or two a game. It can catch a receiver off guard or bounce off his stick.
 - **Bobbles:** a pass faster than the receiver can handle (it depends on his Stick Handling) bounces off his stick.
 - **Why the puck sometimes goes right through a stick:** after a player shoots or passes, his stick ignores the puck
-  for about a quarter of a second; after losing a steal, about half a second; after a puck bounces off him, 8 frames;
-  after a fall, 2 seconds. A puck that is in the air (above stick height) or still rising also goes by.
+  for about a quarter of a second (real); after losing a steal, about half a second; after a puck bounces off him, 8
+  frames; after a fall, 5 game seconds (2 s of real time). A puck that is in the air (above stick height) or still rising also goes by.
 - **A stick held out in front can miss a puck right on it.** The game only checks a player's stick when his body is
   within about 22 units of the puck up or down the screen. Skating up or down the ice with the stick out ahead, the
   blade can touch the puck before the game checks it; it's taken a moment later as he closes in. A stick held out to
@@ -528,7 +531,7 @@ viewer's Help, "This game's ROM", says whether yours does).
 
 - **Any stick touching the carrier's puck can steal it**, a roll each frame they touch; better Stick Handling on
   either side shifts the odds.
-- **B without the puck: poke or switch?** One rule decides: when you **let go** of B (a tap, under about 0.3 s), the
+- **B without the puck: poke or switch?** One rule decides: when you **let go** of B (a tap, under about 0.3 s (real)), the
   game picks whichever of your skaters is **nearest to where the puck will be a moment later**. If that's the one you
   control, he pokes; if it's a teammate, control switches to him. So to poke you must be your team's nearest skater to the
   puck's path, not just close to the carrier. While your skater is busy (mid-check, falling, shooting) B switches at once
@@ -615,7 +618,7 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - Stay in your area: **a goalie you control who carries the puck more than about 31 feet out from his goal line**
   (past the tops of the faceoff circles) is whistled. Without the puck the game keeps him within a few feet of his
   crease.
-- He's whistled for holding the puck about 2.3 s after taking it; a puck taken in a dive is whistled at once.
+- He's whistled for holding the puck about 6 game seconds (2.3 s of real time) after taking it; a puck taken in a dive is whistled at once.
 - **C makes a save move, not a bigger goalie.** He's the same size whatever he does: being in the way is what
   stops shots. C freezes him for over half a second at a quarter speed. Its uses: as a shot arrives in close, a save
   move holds the puck instead of giving up a rebound; and pressed before the shot, it's a pad stack (reach 18), which
@@ -639,8 +642,8 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 - He stands in front of his net, about 7 feet out, facing where the puck is *about to be*, and re-squares several
   times a second.
 - **When a shot is coming at the net**, he slides sideways to the spot where it will cross the goal line, starting
-  about 0.6 s before it gets there.
-- **0.2 s before it arrives he commits to a save move and stops sliding.**
+  about 0.6 s (real) before it gets there.
+- **0.2 s (real) before it arrives he commits to a save move and stops sliding.**
 - So what beats him is **time**: a quick, hard shot from close in, or a pass across that makes him slide again (a
   one-timer), leaves him short of the crossing point. A slow shot from far out gives him time to get there.
 - Point-blank shots at him while he's standing still mostly rebound.
@@ -670,7 +673,7 @@ which goalie is stealing games.
   **penalty shot**, though with the wrong name (a slashing call is announced as roughing, and so on). Holding and
   interference give no penalty shot.
 - **Penalty shots:** the shot ends when the goalie gets the puck, after you shoot and someone touches the loose puck
-  (or about 1.7 s after the shot), or when its clock runs out. **Losing the puck without shooting doesn't end it** unless
+  (or about 4 game seconds, 1.7 s of real time, after the shot), or when its clock runs out. **Losing the puck without shooting doesn't end it** unless
   the goalie gets it: go back and get it.
 
 ---
@@ -682,7 +685,7 @@ which goalie is stealing games.
 
 ![Where computer skaters go on defence, by the puck's zone](img/computer_defence.svg)
 
-- **Awareness is reaction time** for computer players: 0.25 s at the bottom, 0.12 s at the top. It decides how fast
+- **Awareness is reaction time** for computer players: 0.25 s (real) at the bottom, 0.12 s at the top. It decides how fast
   they react to turnovers, loose pucks and rushes. **It never affects the player you control.**
 - **Defensive Awareness** gives your defencemen their **gap control**: they set themselves 50 units (about 17 feet)
   behind the deepest attacker and update that only at their reaction ticks. Low-rated defencemen get beaten on rushes.
@@ -702,7 +705,7 @@ which goalie is stealing games.
   | centre | The high slot, about 45 feet out | Halfway between the puck and the high slot | Halfway |
   | defencemen | About 17 feet behind the deepest attacker, whatever the zone | | |
 
-  - Forwards with the puck, and all defencemen, notice a zone change only at their awareness ticks (0.12-0.25 s).
+  - Forwards with the puck, and all defencemen, notice a zone change only at their awareness ticks (0.12-0.25 s, real).
     Defending forwards notice at once.
   - The goalie parks in the middle of his crease while the puck is in the other half.
   - The middle between the blue line and the high slot is often open when the centre is the one chasing the puck.
@@ -791,12 +794,12 @@ shots are best, not exact odds.
 
 ### Defence
 
-![The chance of a goal in the next 3 seconds, by who is in the defending team's slot](img/slot_defence.svg)
+![The chance of a goal in the next 7.5 game seconds, by who is in the defending team's slot](img/slot_defence.svg)
 
 11. **Keep the puck out of your slot above everything.** In the recorded games (the slot: within 35 units of the
     middle and about 33 feet of the goal line), with the other team carrying the puck in your end:
 
-    | Who was in your slot | Share of the time | Expected goals in the next 3 s | A goal in the next 3 s |
+    | Who was in your slot | Share of the time | Expected goals in the next 7.5 game s | A goal in the next 7.5 game s |
     |---|---|---|---|
     | Their carrier | 9% | 0.21 | 23% |
     | An attacker without the puck, open | 15% | 0.12 | 12% |

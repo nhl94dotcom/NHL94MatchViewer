@@ -19,6 +19,10 @@ Buttons are the Genesis pad's: **A** (hook / hold, the flip with the puck), **B*
 
 *Sections 4 (Shooting) and 5 (Goaltending) are in [GENESIS_SHOOTING.md](GENESIS_SHOOTING.md). The section numbers are shared, so a reference such as 5.3 is there.*
 
+Times of a second or more are given in game seconds, as the game clock counts them (1 game second = 24 frames = 0.4 s
+of real time; the clock stops at whistles), with the real time in brackets where it helps. Shorter timings, frames and
+milliseconds are real time, and so are rates per second (speeds, energy).
+
 ## In brief
 
 One line per chapter: the main finding, then the section with the evidence.
@@ -225,7 +229,7 @@ can take him past it and friction brings him back.
 (The match viewer counts runaways, through-the-legs goals (5.5), shoulder-save bobble goals (5.3) and rocket passes (6.1)
 in the team stats' "Quirky Events". The SNES has the same switch but clears it reliably: SNES_MECHANICS 3.3.)
 
-Now and then a person's skater bursts and shoots off far past top speed, sliding out of control for a second or two
+Now and then a person's skater bursts and shoots off far past top speed, sliding out of control for 2.5-5 game seconds (a second or two)
 (the user: usually racing back on defence; switching to another skater is the usual way out).
 
 - **The flag:** each skater has a "deceleration off" bit (`pfdoff`, `pflags` bit 0). With it set, friction takes 1/512
@@ -241,7 +245,7 @@ Now and then a person's skater bursts and shoots off far past top speed, sliding
   never clears it when he gets up. Either way a person's skater keeps puck-like friction until he touches the puck or the
   computer gives him a job (which it does once you switch away from him).
 - **Confirmed** (the BOS-DAL and BOS-WPG games): the two runaways, 2026-10-18_2158 BOS-WPG P3 about 1:24 (knocked into
-  the boards 3.6 s before; bursts at 8,300 -> 14,600, then 13,700 -> 20,079; he slid about 160 units, 53 feet, before
+  the boards 9 game s (3.6 s real) before; bursts at 8,300 -> 14,600, then 13,700 -> 20,079; he slid about 160 units, 53 feet, before
   stopping) and 2026-10-18_2149 BOS-WPG P2 about 0:22 (taken over while a pass was coming; three bursts, 19,413). The flag
   was set 765 times in all (690 pass receptions, 65 boards or bench falls, 10 others); a person skated with it on for over
   half a second 44 times, and it ran away only when he also burst twice or more.
@@ -516,7 +520,7 @@ anywhere on the ice**.
 ### 7.4 Wobbles, upends and injuries
 
 - **Wobble (stumble):** instead of falling, a hit player only wobbles if his working **Stickhandling is 24+**, the
-  impact is under a random 16-31, and he hasn't wobbled in the last second. The wobble lets go of the puck for an
+  impact is under a random 16-31, and he hasn't wobbled in the last 2.5 game seconds (1 s real). The wobble lets go of the puck for an
   instant; he usually picks it straight back up.
 - **Upend (flip fall):** a checker with working Checking 20+ can upend a player facing a certain way. **Code**
 - **Injuries:** only **the puck carrier**, only when he **falls backward** (hit from the front), only while the clock
@@ -597,7 +601,7 @@ on its own, not with C.
 it, a **1-in-32** test passes (the video counter's low bits), **the puck is within 40 units** of the net up or down the
 ice, and he's moving faster than **8,192** across or along the ice (no burst needed). The net takes a quarter of his
 speed, he stops, and play is whistled. The SNES does it four times as readily (SNES_MECHANICS 7.7). Recorded: once in
-191 minutes of Genesis play (2026-10-21_1054_BOS-NYI, a skater going into the net as a goal went in).
+478 game minutes (191 minutes of real time) of Genesis play (2026-10-21_1054_BOS-NYI, a skater going into the net as a goal went in).
 
 ---
 
@@ -729,10 +733,10 @@ The disassembly's comment on `.set` ("puck within the crease width: icing goes o
   nothing after the first press.
 - At the drop, the home centre wins when a roll of 0-32 is at least 16 - home + away. Equal timing gives the home
   centre 17 in 33 (52%); a full sweep against a centre in his wind-up wins every time.
-- **The drop comes at a random moment 3-5 seconds** after the faceoff box appears. The referee's drop animation changes
+- **The drop comes at a random moment 3-5 s of real time** (the clock is stopped) after the faceoff box appears. The referee's drop animation changes
   only 17 frames (0.28 s) before the drop, too late to react to for a full sweep.
 
-**Confirmed:** home won 42 rolls where the timing model predicted 44.4; people mash B 7-11 times in the last 1.5 s and
+**Confirmed:** home won 42 rolls where the timing model predicted 44.4; people mash B 7-11 times in the last 1.5 s (real) and
 were on the full sweep 23% of the time, mid-swing 47%, standing 26%, as the swing and mashing gaps predict.
 
 ### 9.2 Where the puck goes
@@ -775,12 +779,12 @@ not the draw winner. **Confirmed:** it agreed with the roll winner only 52 times
 - After the "ding", **it lasts as long as he keeps the puck and keeps skating toward the net**. Stopping, turning back,
   passing or losing the puck ends it; **a defender catching up does not**. So fouls on him use the breakaway rules
   (8.5) all the way in.
-- **Confirmed:** every counted breakaway goal came 1.3-2.1 s after its breakaway.
+- **Confirmed:** every counted breakaway goal came 3-5 game s (1.3-2.1 s real) after its breakaway.
 
 ### 10.2 How a penalty shot ends
 
 - the goalie gets the puck;
-- **once the shooter has shot or passed:** anyone touching the loose puck ends it; otherwise it ends about 1.7 s after
+- **once the shooter has shot or passed:** anyone touching the loose puck ends it; otherwise it ends about 4 game s (1.7 s real) after
   the shot;
 - the penalty-shot clock runs out;
 - the goalie's hold timer runs out;
@@ -806,7 +810,7 @@ normally the out-of-play whistle and a faceoff follow, and **only the faceoff pu
 puck is flipped out after the award whistle, the clock is already stopped (no out-of-play call), and **a penalty shot
 never goes through a puck drop**, so the puck enters the shot still in no-collision mode. Picking it up and shooting
 work normally (a separate player-and-puck check), but **the net and boards are skipped**: the shot floats out of the
-rink, and the shot ends about 1.7 s later. The goalie's own check doesn't look at that mode, so he could still block
+rink, and the shot ends about 4 game s (1.7 s real) later. The goalie's own check doesn't look at that mode, so he could still block
 it if it reached him.
 
 **Penalty shot that ends at once.** Not explained yet: every "end" flag is cleared when the shot is set up, and the
@@ -864,7 +868,7 @@ offsides on.
     box). Only the short-handed team has such a player, which is why it is always the penalty-killing side.
   - **ROMs that dress fewer than six** (a 2v2 ROM: records 3-5 of each team, position $FFFF, parked at -240, 0, also
     not unavailable) have such players all game, so it can happen at even strength there: `2026-10-27_0733_EDM-HFD`,
-    P2 1:16 to 0:57, 7.3 s on record 5 (the last of the three empty slots wins the tie), until EDM's other skater
+    P2 1:16 to 0:57, 18 game s (7.3 s real) on record 5 (the last of the three empty slots wins the tie), until EDM's other skater
     picked up the loose puck.
   - **Avoiding it:** a short-handed goalie shouldn't pass toward the left of centre ice unless a teammate is clearly
     nearer in that direction. A ROM fix would be for the receiver search to skip players who aren't on the ice
@@ -969,7 +973,7 @@ it's on their side, **but only while the puck is in the attacking zone**: anywhe
 
   Every frame.
 - **Centre:** the high slot when the puck is in his zone, otherwise halfway between it and the puck.
-- **The chaser:** "attack" (straight at the carrier, for 4 seconds) or "contain" (halfway between the carrier and a spot
+- **The chaser:** "attack" (straight at the carrier, for 10 game seconds, 4 s real) or "contain" (halfway between the carrier and a spot
   just in front of his own net), see 12.3.
 
 The middle of the ice between the blue line and the high slot is often left open when the computer centre is the one
@@ -986,7 +990,7 @@ chasing.
   4 games) and 9% with them on (10,520, 14 games), after a median 45 ms against 60 ms. The direction the code says, but
   milder than "half as often": only the chasing and defending jobs look for a check at all, and when they do the roll
   comes up within a few frames either way.
-- **The chaser's mode:** a roll on (40 - Checking) switches him into **attack** for 4 seconds; high-Checking players
+- **The chaser's mode:** a roll on (40 - Checking) switches him into **attack** for 10 game seconds (4 s real); high-Checking players
   attack the carrier far more often. More often on his team's power play, much less on the penalty kill, never for a
   defenceman already within 20 of the puck. With the opposing carrier in the slot he gets **+6 Speed** and his Checking
   counts double for the check decision. **Code**
@@ -1069,14 +1073,14 @@ Zones are measured along the ice from centre, in each team's own direction: blue
 
 - **A quick step-out doesn't move the defencemen.** Your computer forwards are still deep, and the defencemen keep
   marking them. It does pull the defending wingers and centre up with the puck.
-- **Held long enough for your forwards to leave** (about a second or more), the defencemen follow your forwards up. Turn
+- **Held long enough for your forwards to leave** (about 2.5 game seconds, a second of real time, or more), the defencemen follow your forwards up. Turn
   back in at speed and you meet two defencemen who are high, re-reading only every few frames, with your teammates still
   behind you: **a set defence turned into a rush.**
-- **Recordings:** 17 Genesis carries went out of the attacking zone and back in within 4 s, the other team never
-  touching the puck. In 16 the puck was out under 1.2 s; your deepest teammate stayed in the zone; and the nearest
+- **Recordings:** 17 Genesis carries went out of the attacking zone and back in within 10 game s (4 s real), the other team never
+  touching the puck. In 16 the puck was out under 3 game s (1.2 s real); your deepest teammate stayed in the zone; and the nearest
   defender stayed where he was (a median 63 units from his goal line, against 149 at ordinary carried entries). In
-  the longest (BOS-DAL 2219, P1 3:59, 1.8 s, 58 units outside the line), your forwards went out to 212 and the
-  defencemen came up from 42 and 103 to 100 and 162. After coming back in, 8 of the 17 led to a shot attempt within 4 s
+  the longest (BOS-DAL 2219, P1 3:59, 4.5 game s, 58 units outside the line), your forwards went out to 212 and the
+  defencemen came up from 42 and 103 to 100 and 162. After coming back in, 8 of the 17 led to a shot attempt within 10 game s
   (ordinary carried entries: 53%), and 3 to a goal. Too few long ones to measure the payoff.
 
 **Offsides on or off.**
@@ -1105,7 +1109,7 @@ All **Confirmed** where numbers are given.
 
 ### 13.1 Sliding and flying
 
-- **On the ice the puck keeps 89% of its speed per second** (it loses 1/512 a frame). Measured: 89.3% (314 clean
+- **On the ice the puck keeps 89% of its speed per second of real time** (it loses 1/512 a frame). Measured: 89.3% (314 clean
   stretches).
 - **In the air there's no friction at all.** Measured: 100.0% (306 stretches). Flips and lifted clears carry until they
   land.
@@ -1229,10 +1233,10 @@ are the screen direction, below: SHOOTING_STUDY, "The leagues' own results"):
   recorded (three); with line changes on, energy fell to about a third.
 - With line changes On, energy drains while skating and with each burst, recovers on the bench, and lowers shot power
   and stickhandling.
-- Amounts (energy runs 0-4096): on the ice a skater loses 33 at a time, every 2-3 seconds (the code tests the video
+- Amounts (energy runs 0-4096): on the ice a skater loses 33 at a time, every 5-7.5 game seconds (2-3 s real; the code tests the video
   chip's beam position, about 1 frame in 128); **while he is above 3/4 his Endurance gives back half its working
   value** (up to 15), so Endurance only slows the first quarter of the drain. Each speed burst costs 204. On the bench
-  he gains 9 a second. **Confirmed** in a game with line changes on: steps of -33 and -20 to -26 on the ice, -204 at
+  he gains 9 a second of real time. **Confirmed** in a game with line changes on: steps of -33 and -20 to -26 on the ice, -204 at
   bursts, +9 on the bench.
 - "Auto" line changes: energy drains, but every use of it reads full energy.
 
@@ -1250,7 +1254,7 @@ change. **Code**
   teams reacts a frame faster: each awareness timer (`temp1`, reloaded from Offensive or Defensive Awareness) restarts
   one frame shorter (sflags7 bit 6, set or cleared every frame in `updateplayers`). A person's poke check with penalties
   off also trips a little more often with it on (Bcheck: 2 off the roll), but that part is on always (sflags8 bit 1).
-- **Recorded** (analysis/crowd_study.py, the 17 games since the flags were recorded, 141 minutes): no arena had a
+- **Recorded** (analysis/crowd_study.py, the 17 games since the flags were recorded, 353 game minutes, 141 of real time): no arena had a
   saved record, so the bar was always 80 dB; the meter sat at a median 81-93 dB and **the flag was on 73% of live play**
   (371 spells), off mostly in quiet stretches after faceoffs. In practice the computer's quicker reactions are the
   normal state, and a quiet building slows them slightly. Both teams alike, so it favours neither.
@@ -1278,7 +1282,7 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 | Goalie hold whistle | 140 frames (2.33 s) | longer, shorter, or never |
 | A person's goalie, without the puck | kept within 36 to each side and 231 from centre | wider |
 | A person's goalie whistle line | 170 from centre (reachable only with the puck) | moved |
-| Energy (line changes on) | on the ice -33 every 2-3 s (Endurance gives back up to 15 while above 3/4), -204 a burst; +9 a second on the bench | other amounts, or unlimited stamina |
+| Energy (line changes on) | on the ice -33 every 5-7.5 game s (Endurance gives back up to 15 while above 3/4), -204 a burst; +9 a real second on the bench | other amounts, or unlimited stamina |
 | Speed burst | 32 when fresh, less when tired | one fixed push for everyone |
 | Stopping and reversing | sheds 150 speed a frame | faster or slower |
 | Clock | 2.5x real time | real time |
@@ -1296,7 +1300,7 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 | `nhl94.bin` and its playoff / 1-on-1 versions | original (bug) | none |
 | CDL, IDL, DPWM, RGDL league ROMs (40+) | original in play, **shown as played** in Edit Lines | goalie range 40 / 224 (wider), checks per player, second assist, plus-minus, fuller three stars |
 | WJ2025 | **fixed: one value per rating** | **everyone checks with base 240** (no C-then-B check; weight bug for all), goalie range 40 / 224 |
-| Plablegs04, 2on2 | **off** | 2on2: goalie hold 3 s, fixed speed burst 24 |
+| Plablegs04, 2on2 | **off** | 2on2: goalie hold 7.5 game s (3 s real), fixed speed burst 24 |
 | QDL Season 1 | original | second assist, plus-minus |
 
 **None of them fixes the weight bug, all use the 0-6 rating scale, and all use the original clock.** So the weight

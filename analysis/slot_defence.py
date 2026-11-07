@@ -1,12 +1,12 @@
 """Keeping the other team out of the slot (2026-11-01, the user's hypothesis: the key on defence is keeping the other
 team, and above all the puck, out of your slot, more than having your own skaters stand in it). Genesis games named on
-the command line. Every quarter second while a team has the puck in the other's end (past the blue line, Y +-89), the
+the command line. Every quarter second (real time) while a team has the puck in the other's end (past the blue line, Y +-89), the
 state is classed: the carrier in the slot; else an attacker without the puck in the slot with no defender within 20
 (an open one-timer target); else an attacker in the slot but covered; else nobody attacking in the slot. Also counted:
-the defenders standing in the slot. The outcome: the attacking team's shots in the next 3 s (blocked ones too), their
+the defenders standing in the slot. The outcome: the attacking team's shots in the next 7.5 game s (3 s of real time; blocked ones too), their
 xG and goals. Per state and per defending team, and how much of each team's defending time was in each state.
 Also each one-timer: from the slot or not, and whether its receiver was open (no defender skater within 20) when the
-pass left (the last sample his team had the puck, up to 1.5 s back).
+pass left (the last sample his team had the puck, up to 3.75 game s back).
 The slot: within 35 of the middle and 100 (about 33 feet) of the goal line.
 python analysis/slot_defence.py <match> ...   (matches/ or Documents/NHL94 Viewer/matches)
 python analysis/slot_defence.py --all          (every Genesis game in Documents/NHL94 Viewer/matches)"""
@@ -136,18 +136,18 @@ def main():
     names = ", ".join(used) if len(used) <= 8 else f"{used[0]} ... {used[-1]}"
     print(f"Games ({len(used)}): {names}")
     print(f"Every {STEP_MS} ms with the puck in the defending team's end; outcome: the attackers' "
-          f"shots in the next {AHEAD_MS // 1000} s (overlapping windows: a shot counts at every sample before it)\n")
+          f"shots in the next {AHEAD_MS / 400:g} game s (overlapping windows: a shot counts at every sample before it)\n")
     teams = sorted({k[0] for k in stats}) if len(used) <= 8 else []
     for team in teams + ["both"]:
         rows = {st: [sum(v[i] for (t, s_), v in stats.items() if s_ == st and (team == "both" or t == team))
                      for i in range(4)] for st in order}
         total = sum(r[0] for r in rows.values())
-        print(f"{'all teams' if team == 'both' else team} defending ({total * STEP_MS / 1000:.0f} s with the puck in its end):")
-        print(f"  {'state':52} {'time':>6} {'share':>6} {'shots in 3 s':>12} {'xG in 3 s':>9} {'a goal in 3 s':>13}")
+        print(f"{'all teams' if team == 'both' else team} defending ({total * STEP_MS / 400:.0f} game s with the puck in its end):")
+        print(f"  {'state':52} {'time':>6} {'share':>6} {'shots in 7.5 gs':>16} {'xG in 7.5 gs':>12} {'goal in 7.5 gs':>14}")
         for st in order:
             n, sh, xg, gl = rows[st]
             if n:
-                print(f"  {st:52} {n * STEP_MS / 1000:5.0f}s {100 * n / total:5.0f}% {sh / n:12.2f} {xg / n:9.3f} {100 * gl / n:12.1f}%")
+                print(f"  {st:52} {n * STEP_MS / 400:5.0f}gs {100 * n / total:5.0f}% {sh / n:12.2f} {xg / n:9.3f} {100 * gl / n:12.1f}%")
         print()
 
     print("One-timers, the receiver at the pass:")

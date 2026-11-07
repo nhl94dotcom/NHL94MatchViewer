@@ -9,6 +9,10 @@ there is no live view yet.
 
 Split on 2026-10-26: the viewer, stats and broadcast features are in [VIEWER_NOTES.md](VIEWER_NOTES.md); the studies' working notes (game mechanics from the disassemblies, the scoring map's run notes, the user's games) in [STUDY_NOTES.md](STUDY_NOTES.md). This file keeps the technical reference: workflow, memory, sprites, ROM data, stats blocks, the SNES version, files and open questions.
 
+Timings here describe the code and the match files, so they are real time (the sampling clock, constants in ms,
+frames at 60 a second). The reports, write-ups and player docs give durations of a second or more in game seconds
+instead: 1 game second = 24 frames = 0.4 s of real time, so a real window of 5 s is 12.5 game s (tools/gametime.py).
+
 ## Workflow
 
 The easy way: double-click `NHL94 Helper.bat` (runs `python tools/nhl94_helper.py` with `NHL94_HOME` set to

@@ -29,6 +29,10 @@ speeds in feet and mph are in [Units](#units) in the appendix.
 
 *Sections 4 (Shooting) and 5 (Goaltending) are in [SNES_SHOOTING.md](SNES_SHOOTING.md). The section numbers are shared, so a reference such as 5.3 is there.*
 
+Times of a second or more are given in game seconds, as the game clock counts them (1 game second = 24 frames = 0.4 s
+of real time; the clock stops at whistles), with the real time in brackets where it helps. Shorter timings, frames and
+milliseconds are real time, and so are rates per second (speeds).
+
 ## In brief
 
 One line per chapter: the main finding, then the section with the evidence.
@@ -224,7 +228,7 @@ and it is cleared when his wait for the pass ends (`asspassrec` .6: anyone has t
 faceoffs (`resetplstuff`). `FallDown` never sets it, so the Genesis's boards-fall route doesn't exist. **Code**
 
 **Confirmed** (analysis/snes_runaway_study.py; 15 SNES games as of 2026-10-21, eight at first): 1,683 stretches with
-the switch on, a median 0.3 s, 90% under 0.6 s, the longest 2.9 s; the fastest skater with it on went 11,553, for 0.6 s
+the switch on, a median 0.3 s, 90% under 0.6 s, the longest 7 game s (2.9 s real); the fastest skater with it on went 11,553, for 0.6 s
 (a person's, 2026-10-19_2246_TOR-NYI; before that 10,156; top speed is about 9,000), against 19,400-20,100 in the
 Genesis runaways.
 
@@ -325,13 +329,13 @@ game and seen in the recordings** (below).
 - A computer carrier inside the attacking zone shoots instead.
 - **Played in the game** (2026-10-30, `analysis/scoring_map/snes_flip_run.py`: 864 flips from six spots, Passing 4, 10
   and 15, both nets, from a standing start facing up the ice): every flip leaves at once, peaks at about 27 units and
-  first comes down 1.6 s later (the speed cap of `assdumpin`, $60, keeps long flips short). From the carrier's own zone
+  first comes down 4 game s (1.6 s real) later (the speed cap of `assdumpin`, $60, keeps long flips short). From the carrier's own zone
   (150 from centre) the median landing is 104-127 up the ice on his side (the target is 180), from centre 130-148;
   then it slides on deep. From inside the zone (150 up, 40 across) it lands 226-237 up, **about 30 across on the far
   side** (target 0, 215). Passing narrows the spread: across, 80 units of range at Passing 4, 40 at 15.
 - **Recorded** (`analysis/snes_flip_study.py`; the converter keeps them as `flips`, apart from the passes they go out
   through): 18 flips in 17 SNES games, 16 by people (10 by goalies, whose flips came down near centre ice when they
-  defended the top net, 1-1.8 s on) and 2 by the computer (one of the people's is a rimmed pass behind the net, which a
+  defended the top net, 2.5-4.5 game s on) and 2 by the computer (one of the people's is a rimmed pass behind the net, which a
   boards bounce makes look the same). The flipping team had the puck next 9 times, the other team 9.
 
 ### 6.4 Steals
@@ -367,7 +371,7 @@ game and seen in the recordings** (below).
 
 - **Wobble (stumble)** instead of a fall: needs working **Stickhandling 12+** (of 15), which the hot / cold bug gives
   every "cold" player, and an impact under a random 10-25. **The wobble keeps the puck.**
-- **A second contact within a second of a wobble is always a fall**: no second wobble is allowed, and the wobble
+- **A second contact within 2.5 game seconds (1 s real) of a wobble is always a fall**: no second wobble is allowed, and the wobble
   animation is shorter than the wait. **Confirmed** (CHI-TOR P3 4:18: Roenick wobbled, then fell 0.9 s later).
 - There is **no "same checker, same target" rule**: you can knock the same man down again straight away (the Genesis
   ignores it).
@@ -413,15 +417,15 @@ Different from the Genesis:
   or a penalty shot if he was on a breakaway.
 - **Recorded** (15 games): 594 hooks started (58 by people, 536 by the computer), 107 caught someone; 344 holds (37 /
   307), 136 caught someone: the hold, used face to face, connects far more often. On the carrier: hooks 27 (he kept the
-  puck 1.5 s in 14, the hooking team got it in 12; his speed 56 -> 48 units/s), holds 46 (23 kept, 18 won; 73 -> 47).
+  puck 4 game s, 1.5 s real, in 14, the hooking team got it in 12; his speed 56 -> 48 units/s), holds 46 (23 kept, 18 won; 73 -> 47).
 - **The get-up glitch** (known in the community: a knocked-down player gets up at once if his person presses the hook
   button). The SNES input code checks the hook button **before** the animation lock that holds a falling player down,
   and `holdplayer` refuses only during a speed burst, so the hook animation replaces the fall and he is back up. The
   Genesis checks the lock first, so it can't happen there. **Confirmed**: three times in the recordings a person pressed
-  Y while down and was up and hooking 0.5-1.2 s later, where falls otherwise last 2.3 s. In the recordings a get-up
+  Y while down and was up and hooking 0.5-1.2 s later, where falls otherwise last 6 game s (2.3 s real). In the recordings a get-up
   shows as a hook starting the very sample after a fall or upend (a real hook never follows one that closely); the
   converter counts these apart as `getUps` and leaves them out of `hooks` (2026-10-25). In the user's 4-game TOR-NYI
-  set (2026-10-25) one person used it 30 times (their skater down 1.35 s a fall on average), the other never (2.2 s).
+  set (2026-10-25) one person used it 30 times (their skater down 3.4 game s a fall on average), the other never (5.5 game s).
 - **The poke** (`SPAsweepchk`, $F208) takes the puck only through the stick-steal roll (6.4). Its body touching a
   skater within 45 degrees in front (`Bcheck`): **with penalties on, or poked by a computer skater, he always goes down**
   (a fall or a wobble), with a tripping roll; **a person's poke with penalties off** trips him only when randoma8(16 +
@@ -525,13 +529,14 @@ each other, and then neither can knock the other over.
   knock him down, and then glides along with him, overlapping, until one of them changes speed or direction. Against the
   boards both stop dead and stay overlapped. Further bursts don't help: there is no closing speed to make an impact.
 - **Recorded:** 2026-10-19_2256_TOR-NYI OT: Turgeon (computer) burst into Gilmour (a person) skating down the left side
-  and into the corner; the two spent 2.3 s 2-5 units apart behind the New York net; Gilmour came out with the puck and
-  scored 1.8 s after they parted. 2026-10-19_2316_NYI-TOR OT: Ellett (computer) burst into King (a person) twice down
+  and into the corner; the two spent 6 game s (2.3 s real) 2-5 units apart behind the New York net; Gilmour came out with the puck and
+  scored 4.5 game s (1.8 s real) after they parted. 2026-10-19_2316_NYI-TOR OT: Ellett (computer) burst into King (a person) twice down
   the right wing, each time starting a shoulder check that didn't land, and skated stride for stride 11-14 apart into
   the corner; King passed out and Turgeon one-timed the winner 0.6 s later.
 - **How often** (analysis/tangle_study.py, every recorded game, 2026-10-21): a carrier and a defender within 14 units for
-  0.7 s or more 45 times in 137 minutes of SNES play (about 20 an hour), once in 191 minutes of Genesis play. The defender
-  had tried a check in 16 of the 45; the carrier's team got a shot within 5 s in 15, a goal in 3. A carrier and a
+  0.7 s or more 45 times in 343 game minutes of SNES play (137 minutes of real time; about 8 per 60 game minutes), once in
+  478 game minutes of Genesis play. The defender
+  had tried a check in 16 of the 45; the carrier's team got a shot within 12.5 game s in 15, a goal in 3. A carrier and a
   defender within 14 units: 3,076 samples on the SNES, 38% of them moving exactly alike; 147 on the Genesis, 2% alike.
 - **Why the Genesis differs:** its collision (`checkcx`) drops a contact only when the two are moving apart, so players
   touching at matching speeds still add at least 5 impact a frame and run the check test; and its knockdown test uses the
@@ -550,15 +555,15 @@ a frame he's touching it:
 
 The net takes 3/16 of his speed, he stops dead, and play is whistled (the faceoff goes to a dot just outside the zone
 when an attacker did it, in the zone when a defender did). **The Genesis rule (GENESIS_MECHANICS 7.7) is four times
-less likely per frame, needs the puck within 40, and no burst.** Recorded: 7 nets off in 137 minutes of SNES play (6 of
+less likely per frame, needs the puck within 40, and no burst.** Recorded: 7 nets off in 343 game minutes of SNES play (6 of
 them in one game, 2026-10-16_2018_PHI-VAN, against the computer), each time a person's skater in a burst just before;
-1 in 191 minutes of Genesis play.
+1 in 478 game minutes of Genesis play.
 
 **Stuck on the net** (the user: a skater who goes diagonally into the front or back of the net stays there, and every
 burst can knock it off; not on the Genesis). The bounce off the net is the same code in both games (`wallcoll`: the
 speed into the net cut to a quarter, at least 1,000 back out, the speed along it kept), and the recordings show skaters
-pinned against the back or sides of a net for a second or more on both: 4.1 an hour barely moving on the Genesis, 1.3
-on the SNES (analysis/net_stuck_study.py and the check in this section's history). What differs is the knock: on the
+pinned against the back or sides of a net for 2.5 game seconds (a second of real time) or more on both: 1.6 per 60 game
+minutes barely moving on the Genesis, 0.5 on the SNES (analysis/net_stuck_study.py and the check in this section's history). What differs is the knock: on the
 SNES every burst from there rolls the 1-in-8 chance on each frame while the puck is anywhere within 128 units, and a
 burst (about 7,000 at full energy) on top of the push into the net reaches the 8,192 it needs; on the Genesis the puck
 must be within 40, right at the net, and the chance is 1 in 32 a frame. Of the 7 SNES nets knocked off in the
@@ -627,8 +632,8 @@ charging, slashing, cross-checking, hooking, tripping, penalty shot, interferenc
   **any crossing of the far goal line counts**: there's no Genesis-style 44-unit window in the middle. **Code**
 - **The still-puck whistle** (`pucknorm`, timer `temp2b`, penalty number `PenOOP`): a loose puck that doesn't move at all for
   120 game steps stops play, anywhere on the ice. Any movement, or anyone holding it, restarts the count. **Code**. At two
-  frames a step that's 4 seconds, and the one recorded case fits: `2026-11-02_2139_WPG-TOR` P1 2:47, Steen's check took the puck off
-  Cullen behind the top net and it stopped dead at (7, 279); the clock stopped 3.98 s later (10 clock seconds), and the faceoff was
+  frames a step that's 4 s of real time (10 game seconds), and the one recorded case fits: `2026-11-02_2139_WPG-TOR` P1 2:47, Steen's check took the puck off
+  Cullen behind the top net and it stopped dead at (7, 279); the clock stopped 10 game seconds (3.98 s real) later, and the faceoff was
   at (70, 206). **Confirmed** (one case).
 
 ### 8.4 Penalty lengths
@@ -702,7 +707,7 @@ So: **mash B, and hold the d-pad toward the teammate you want it to reach** (bac
 
 - **anyone takes the puck who didn't already have it**, including the shooter picking up a puck he lost;
 - the loose puck moves back away from the net for 48 frames (0.8 s);
-- the penalty-shot timer runs out (1,000 frames, about 17 s);
+- the penalty-shot timer runs out (1,000 frames, about 17 s of real time);
 - **the loose puck hits the boards** (whistle) or leaves the rink;
 - a goal, or the end of the period.
 
@@ -777,7 +782,7 @@ does. **Code** Differences found (2026-10-21):
 - **"Close to the net" is a square, not a circle:** the 16-times-likelier shot within 100 units of the goal-line
   centre uses a 200 x 200 square there; the distance-squared test that should trim it to a circle (`cmp #$2711`) is
   followed by no branch, so it does nothing. The square's corners in front of the goal line (100-141 units out, toward
-  the boards) get the close-in odds. Not seen in the recordings (computer carriers spent only 5 s there).
+  the boards) get the close-in odds. Not seen in the recordings (computer carriers spent only 12.5 game s there).
 - **No shot from behind the goal line or from his own half.**
 
 ### 12.4 Positioning and line changes
@@ -853,7 +858,7 @@ everything in this document applies to all of these ROMs.
 | Ratings screen | Below the band's middle = maxed in play |
 | Comeback bonus | On in the first half of the 3rd, off in the second |
 | Checking | No weight bug, no CB trick; heavier checkers do a bit better |
-| Repeated hits | No same-pair rule; a second hit within a second of a wobble always knocks him down |
+| Repeated hits | No same-pair rule; a second hit within 2.5 game seconds (1 s real) of a wobble always knocks him down |
 | Aggression | Cold (maxed) players take most penalties; a person's skater is called half as often as the computer's |
 | Interference | Anyone can be called; 40% for a maxed-Aggression player |
 | Delayed penalties | No immunity: both teams can be called at one whistle |

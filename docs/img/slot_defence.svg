@@ -2,7 +2,7 @@
 <title>Keep them out of your slot</title>
 <rect width='820' height='390' fill='#ffffff'/>
 <text x='410.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>Keep them out of your slot (Genesis): who was in it, and the chance of a goal</text>
-<text x='410.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>With the other team carrying the puck in your end: a goal by them within the next 3 seconds. 23 recorded league games.</text>
+<text x='410.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>With the other team carrying the puck in your end: a goal by them within the next 7.5 game seconds (3 s of real time). 23 recorded league games.</text>
 <line x1='300.0' y1='76.0' x2='300.0' y2='314.0' stroke='#d9e2ec' stroke-width='1' />
 <text x='300.0' y='332.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>0%</text>
 <line x1='384.0' y1='76.0' x2='384.0' y2='314.0' stroke='#d9e2ec' stroke-width='1' />

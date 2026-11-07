@@ -26,6 +26,9 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
 - League rules: no point for an overtime loss; overtime is 10 minutes on the Genesis, 5 on the SNES.
 - The user pushes to GitHub themselves; check `git status -sb` before mentioning unpushed commits.
 - Keep this file, the docs and `docs/NEEDS_FROM_YOU.md` up to date; add questions only the user can settle to the last.
+- Durations in reports, write-ups and docs are game seconds (the game clock: 1 game second = 24 frames = 0.4 s of real
+  time, both systems; `tools/gametime.py`). Windows keep their real length and are labelled in game seconds (5 s real =
+  12.5 game s). Split-second timings (button presses, a pass's lead, air time, reactions) stay real seconds, marked (real).
 
 ## After changes
 

@@ -2,8 +2,8 @@
 <title>One-timers</title>
 <rect width='860' height='604' fill='#ffffff'/>
 <text x='430.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>One-timers: when to press, and what makes them go in</text>
-<text x='430.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Press shoot while the pass is on its way; the game times the downswing itself and waits up to 0.8 s at full wind-up.</text>
-<text x='60.0' y='82.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>Time from the press (recorded)</text>
+<text x='430.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Press shoot while the pass is on its way; the game times the downswing itself and waits up to 0.8 s (real) at full wind-up.</text>
+<text x='60.0' y='82.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>Time from the press (recorded, real time)</text>
 <line x1='170.0' y1='90.0' x2='170.0' y2='240.0' stroke='#d9e2ec' stroke-width='1' />
 <text x='170.0' y='256.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>0.0 s</text>
 <line x1='233.0' y1='90.0' x2='233.0' y2='240.0' stroke='#d9e2ec' stroke-width='1' />
@@ -41,7 +41,7 @@
 <text x='160.0' y='218.0' font-size='12' fill='#1f2933' text-anchor='end' font-weight='normal'>SNES: failed swing over</text>
 <line x1='462.9' y1='201.0' x2='462.9' y2='227.0' stroke='#c94040' stroke-width='3' />
 <text x='467.9' y='218.0' font-size='11' fill='#1f2933' text-anchor='start' font-weight='normal'>median 465 ms (range not kept)</text>
-<text x='60.0' y='280.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>So: press no more than about 0.9 s (Genesis) or 0.6 s (SNES) before the puck reaches him; pressing as it arrives strikes at once.</text>
+<text x='60.0' y='280.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>So: press no more than about 0.9 s (Genesis) or 0.6 s (SNES), real time, before the puck reaches him; pressing as it arrives strikes at once.</text>
 <text x='60.0' y='320.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>What made Genesis one-timers score (91 recorded)</text>
 <text x='60.0' y='346.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='normal'>Goalie off the puck's line at the strike</text>
 <rect x='70' y='490.2' width='46' height='19.8' fill='#3b82c4' fill-opacity='0.8'/>
@@ -85,6 +85,6 @@
 <text x='753.0' y='525.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>100+</text>
 <text x='753.0' y='539.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>39 shots</text>
 <line x1='580.0' y1='510.0' x2='800.0' y2='510.0' stroke='#52606d' stroke-width='1' />
-<text x='60.0' y='568.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Quick passes (under 0.5 s in the air) that move the puck 40-90 across catch the computer goalie off his line; long cross-ice</text>
+<text x='60.0' y='568.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Quick passes (under 0.5 s real in the air) that move the puck 40-90 across catch the computer goalie off his line; long cross-ice</text>
 <text x='60.0' y='584.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>passes give him time to slide over. On the SNES (55 recorded) only distance showed: 8 of 25 from 60-100 units, none from elsewhere.</text>
 </svg>

@@ -353,7 +353,7 @@
 <line x1='550.0' y1='330.0' x2='610.0' y2='330.0' stroke='#1f2933' stroke-width='2' />
 <text x='546.0' y='334.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>ice</text>
 <text x='40.0' y='490.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Catching: a stick takes a loose puck slower than 13,000 + 350 x Stick Handling (13,000 flat while a shot's flag stands); faster, it deflects.</text>
-<text x='40.0' y='508.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Its own no-touch timer also blinds a stick: 16 frames after shooting or passing, 8 after a bounce off him, 2 s after a fall.</text>
+<text x='40.0' y='508.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Its own no-touch timer also blinds a stick: 16 frames after shooting or passing, 8 after a bounce off him, 5 game s (2 s real) after a fall.</text>
 <text x='40.0' y='526.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Recorded (fast loose pucks within 8 of a skater): at 0-5 high 82% went straight through; at 6-8, 94%; above 16, all.</text>
 <text x='40.0' y='544.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Skating with the puck his blade is 24-28 ahead, so a puck he loses can sit on his stick untouched. The SNES searches 40, so it doesn't happen there.</text>
 </svg>

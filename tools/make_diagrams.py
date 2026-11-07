@@ -307,7 +307,7 @@ def faceoffs():
     frames = 66
     b = [ARROW]
     b.append(text(W / 2, 28, "Faceoffs (Genesis): it's where your swing is at the drop", 17, anchor="middle", weight="bold"))
-    b.append(text(W / 2, 48, "Each new B press swings the stick once (18 frames, 0.3 s). Holding B does nothing. Ratings play no part.",
+    b.append(text(W / 2, 48, "Each new B press swings the stick once (18 frames, 0.3 s real). Holding B does nothing. Ratings play no part.",
                   12, SOFT, "middle"))
     colours = {0: "#e4e7eb", 8: "#9cc3e6", 16: GREEN}
     for f in range(0, frames + 1, 6):
@@ -335,7 +335,7 @@ def faceoffs():
         b.append(f"<rect x='{x}' y='{ly}' width='22' height='14' fill='{colours[state]}'/>")
         b.append(text(x + 28, ly + 12, label, 12))
     ty = ly + 44
-    b.append(text(60, ty, "At the drop (3-5 s after the box appears, at random), the game compares the two centres' values:", 13, INK, weight="bold"))
+    b.append(text(60, ty, "At the drop (3-5 s real after the box appears, at random), the game compares the two centres' values:", 13, INK, weight="bold"))
     b.append(text(60, ty + 20, "Home wins with chance (17 + home - away) / 33, so the home team has a 17-in-33 edge at equal timing.", 13, INK))
     tab = [("home \\ away", "0", "8", "16")] + [(str(a),) + tuple(f"{round(100 * (17 + a - o) / 33)}%" for o in (0, 8, 16)) for a in (0, 8, 16)]
     for i, row in enumerate(tab):
@@ -482,7 +482,7 @@ def rocket_pass():
     notes = [("Where it bites:", INK), ("a meeting just over an eighth", SOFT), ("of a second away (28-55 units)", SOFT),
              ("is timed as one eighth, so the", SOFT), ("pass goes up to twice as fast.", SOFT), ("", SOFT),
              ("That's a receiver skating", SOFT), ("toward you from about 50-70", SOFT), ("units (17-23 ft) away.", SOFT), ("", SOFT),
-             ("Longer passes are off by less", SOFT), ("(at most 1/8 s of 2, 3, 4 ...).", SOFT), ("", SOFT),
+             ("Longer passes are off by less", SOFT), ("(at most 1/8 s, real, of 2, 3, 4 ...).", SOFT), ("", SOFT),
              ("Recorded: 24 of 718 person", SOFT), ("passes over 25,000.", SOFT)]
     for i, (s, c) in enumerate(notes):
         b.append(text(lx, T + 4 + i * 17, s, 12, c, weight="bold" if c == INK else "normal"))
@@ -609,12 +609,12 @@ def one_timers():
     W = 860
     b = []
     b.append(text(W / 2, 28, "One-timers: when to press, and what makes them go in", 17, anchor="middle", weight="bold"))
-    b.append(text(W / 2, 48, "Press shoot while the pass is on its way; the game times the downswing itself and waits up to 0.8 s at full wind-up.",
+    b.append(text(W / 2, 48, "Press shoot while the pass is on its way; the game times the downswing itself and waits up to 0.8 s (real) at full wind-up.",
                   12, SOFT, "middle"))
     L, R = 170, 800
     X = lambda ms: L + (R - L) * ms / 1000
     T = 90
-    b.append(text(60, T - 8, "Time from the press (recorded)", 13, INK, weight="bold"))
+    b.append(text(60, T - 8, "Time from the press (recorded, real time)", 13, INK, weight="bold"))
     for ms in range(0, 1001, 100):
         b.append(line(X(ms), T, X(ms), T + 150, GRID, 1))
         b.append(text(X(ms), T + 166, f"{ms / 1000:.1f} s", 10, SOFT, "middle"))
@@ -627,7 +627,7 @@ def one_timers():
             b.append(f"<rect x='{X(a)}' y='{y}' width='{X(z) - X(a)}' height='20' rx='4' fill='{col}' fill-opacity='0.3' stroke='{col}'/>")
         b.append(line(X(med), y - 3, X(med), y + 23, col, 3))
         b.append(text(X(med) + 5, y + 14, f"median {med} ms" if a is not None else f"median {med} ms (range not kept)", 11, INK))
-    b.append(text(60, T + 190, "So: press no more than about 0.9 s (Genesis) or 0.6 s (SNES) before the puck reaches him; pressing as it arrives strikes at once.",
+    b.append(text(60, T + 190, "So: press no more than about 0.9 s (Genesis) or 0.6 s (SNES), real time, before the puck reaches him; pressing as it arrives strikes at once.",
                   12, SOFT))
     # what makes them score
     T2 = T + 230
@@ -648,7 +648,7 @@ def one_timers():
             b.append(text(x + 23, base + 15, lab, 11, SOFT, "middle"))
             b.append(text(x + 23, base + 29, f"{n} shots", 10, SOFT, "middle"))
         b.append(line(gx, base, gx + 220, base, SOFT, 1))
-    b.append(text(60, T2 + 248, "Quick passes (under 0.5 s in the air) that move the puck 40-90 across catch the computer goalie off his line; long cross-ice",
+    b.append(text(60, T2 + 248, "Quick passes (under 0.5 s real in the air) that move the puck 40-90 across catch the computer goalie off his line; long cross-ice",
                   12, SOFT))
     b.append(text(60, T2 + 264, "passes give him time to slide over. On the SNES (55 recorded) only distance showed: 8 of 25 from 60-100 units, none from elsewhere.",
                   12, SOFT))
@@ -961,7 +961,7 @@ def snes_flip():
              ("Right of centre, outside the zone", GREEN), ("the same on the right.", SOFT), ("", SOFT),
              ("Inside the attacking zone", ORANGE), ("in front of the net (0, 215).", SOFT), ("", SOFT),
              ("Scatter (Passing is the accuracy):", INK), ("solid box: Passing 15 (+/-25 across, +/-70 along);", SOFT), ("dashed: Passing 0 (+/-55, +/-100).", SOFT),
-             ("Grey: where they came down in the game,", SOFT), ("1.6 s on, short of the spot; then they slide on.", SOFT), ("", SOFT),
+             ("Grey: where they came down in the game,", SOFT), ("4 game s (1.6 s real) on, short of the spot; then they slide on.", SOFT), ("", SOFT),
              ("He turns to face up the ice first,", SOFT), ("so a sideways skater flips late.", SOFT),
              ("A goalie flips to about centre ice.", SOFT)]
     for i, (s_, c) in enumerate(notes):
@@ -1022,7 +1022,7 @@ def early_save():
              ("(37%)", RED), ("waited: 8 in 65 (12%)", SOFT), ("", SOFT),
              ("22 of 23 pad stacks slid to", SOFT), ("the middle; all 11 early-save", SOFT), ("goals went in on the", SOFT),
              ("shooter's side.", SOFT), ("", SOFT),
-             ("He's locked 0.72 s: keep", INK), ("gliding and shoot to your", INK), ("own side of the net.", INK)]
+             ("He's locked 0.72 s (real): keep", INK), ("gliding and shoot to your", INK), ("own side of the net.", INK)]
     for i, (s_, col) in enumerate(notes):
         b.append(text(nx, 100 + i * 17, s_, 12, col, weight="bold" if col != SOFT else "normal"))
     return svg(W, cy + 60, b, "Early save")
@@ -1180,7 +1180,7 @@ def puck_meets_skater():
     b.append(line(hx - 10, base, hx + 50, base, INK, 2))
     b.append(text(hx - 14, base + 4, "ice", 10, SOFT, "end"))
     notes = ["Catching: a stick takes a loose puck slower than 13,000 + 350 x Stick Handling (13,000 flat while a shot's flag stands); faster, it deflects.",
-             "Its own no-touch timer also blinds a stick: 16 frames after shooting or passing, 8 after a bounce off him, 2 s after a fall.",
+             "Its own no-touch timer also blinds a stick: 16 frames after shooting or passing, 8 after a bounce off him, 5 game s (2 s real) after a fall.",
              "Recorded (fast loose pucks within 8 of a skater): at 0-5 high 82% went straight through; at 6-8, 94%; above 16, all.",
              "Skating with the puck his blade is 24-28 ahead, so a puck he loses can sit on his stick untouched. The SNES searches 40, so it doesn't happen there."]
     for i, s_ in enumerate(notes):
@@ -1472,7 +1472,7 @@ def snes_goalie_hold():
 def slot_defence():
     """Keeping the other team out of the slot (2026-11-01, analysis/slot_defence.py --all: 23 recorded Genesis games,
     every quarter second with the other team carrying the puck in the defending team's end): the chance of a goal in
-    the next 3 s by who was in the slot (within 35 of the middle and 100 of the goal line), and the share of the time."""
+    the next 7.5 game s (3 s of real time) by who was in the slot (within 35 of the middle and 100 of the goal line), and the share of the time."""
     rows = [("Their carrier", 22.8, 9), ("An attacker without the puck, open", 12.4, 15),
             ("An attacker without the puck, covered", 13.4, 4), ("Nobody attacking, none of yours", 15.4, 36),
             ("Nobody attacking, one of yours", 10.1, 28), ("Nobody attacking, two or more of yours", 9.3, 8)]
@@ -1481,7 +1481,7 @@ def slot_defence():
     B = T + len(rows) * (bh + gap)
     b = [text(W / 2, 28, "Keep them out of your slot (Genesis): who was in it, and the chance of a goal", 17,
               anchor="middle", weight="bold"),
-         text(W / 2, 48, "With the other team carrying the puck in your end: a goal by them within the next 3 seconds. "
+         text(W / 2, 48, "With the other team carrying the puck in your end: a goal by them within the next 7.5 game seconds (3 s of real time). "
               "23 recorded league games.", 12, SOFT, "middle")]
     for v in range(0, 26, 5):
         b.append(line(X(v), T - 8, X(v), B - gap + 4, GRID, 1))

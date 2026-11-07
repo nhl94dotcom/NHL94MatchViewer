@@ -15,6 +15,7 @@ sys.path.insert(0, "tools")
 from share_game import load_js_object  # noqa: E402
 from export_match import own_end  # noqa: E402
 import deserve as DES  # noqa: E402
+import gametime as GT  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import slot_defence as SD  # noqa: E402
@@ -121,7 +122,7 @@ def report(name):
     genesis = m.get("system", "genesis") == "genesis"  # sections 5, 7, 8 and the controller numbers read Genesis animations
     w(f"# {ab[0]} {final[0]} - {final[1]} {ab[1]}  ({name})\n")
     w(f"{m['team1']} at home, {m['team2']} away. Played on {m.get('rom')}; penalties: "
-      f"{'none called' if not m.get('penalties') else len(m['penalties'])}.\n")
+      f"{'none called' if not m.get('penalties') else len(m['penalties'])}. {GT.NOTE}\n")
 
     # 1. result and luck vs skill
     w("## 1. Result, chances and luck\n")
@@ -339,7 +340,7 @@ def report(name):
               f"CB {cnt['CB']} (down {cnt['CB_down']}); bursts that met nobody {cnt['miss']}. Right choice for the weights "
               f"{cnt['right']} times (down {cnt['right_down']}, {pct(cnt['right_down'], cnt['right'])}), wrong {cnt['wrong']} times "
               f"(down {cnt['wrong_down']}, {pct(cnt['wrong_down'], cnt['wrong'])}). Knockdowns by computer skaters on their own: {cpu}; by the person's skater "
-              f"{pers} (a burst lasts under 0.1 s, so some fall between samples and are not in the counts above).")
+              f"{pers} (a burst lasts under 0.1 s (real), so some fall between samples and are not in the counts above).")
         w("")
 
     # 8. pokes (this ROM's B-check hack: a poke that bumps the carrier trips him, as with penalties on)
@@ -412,7 +413,7 @@ def report(name):
                 costly.append((g, z, next((s["f"] for s in nxt if s["result"] == "goal"), None)))
         hows = Counter(g["how"] for g in tos)
         w(f"- **{ab[team]}**: {len(tos)} pucks lost ({', '.join(f'{v} {k}' for k, v in zone.most_common())}; "
-          f"{', '.join(f'{v} {k}' for k, v in hows.most_common())}); {len(costly)} gave up an attempt within 5 s, "
+          f"{', '.join(f'{v} {k}' for k, v in hows.most_common())}); {len(costly)} gave up an attempt within 12.5 game s, "
           f"{len({c[2] for c in costly if c[2] is not None})} a goal.")
         for g, z, goal in costly:
             if goal is not None:
@@ -483,19 +484,19 @@ def report(name):
     if "owner" in m:
         w("## 14. Keeping the other team out of the slot\n")
         stats, ot = SD.measure(m, ab)
-        w("Every quarter second with the other team carrying the puck in this team's end (loose pucks not counted), who was in this team's slot (within 35 of "
+        w("Every 0.25 s (real) with the other team carrying the puck in this team's end (loose pucks not counted), who was in this team's slot (within 35 of "
           "the middle and about 33 feet of the goal line). Over every recorded Genesis game, the chance of a goal in the "
-          "next 3 s was 23% with the carrier in the slot, about 12% with an attacker there without the puck, 15% with "
+          "next 7.5 game s was 23% with the carrier in the slot, about 12% with an attacker there without the puck, 15% with "
           "the slot empty and no defender in it, 10% with one defender in it.\n")
         w("| Defending | " + " | ".join(ab) + " |\n|---|---|---|")
         tot = [sum(v[0] for (t, _), v in stats.items() if t == ab[team]) for team in (0, 1)]
-        secs = [n * SD.STEP_MS // 1000 for n in tot]
+        secs = [round(GT.gsec(n * SD.STEP_MS)) for n in tot]
         w("| Time with the other team carrying the puck in its end | " + " | ".join(f"{x // 60}:{x % 60:02d}" for x in secs) + " |")
         for state in SD.ORDER:
             cells = []
             for team in (0, 1):
                 n, sh, xg, gl = stats.get((ab[team], state), [0, 0, 0.0, 0])
-                cells.append((f"{100 * n / tot[team]:.0f}%" + (f" ({xg / n:.2f} xG in 3 s)" if n >= 20 else ""))
+                cells.append((f"{100 * n / tot[team]:.0f}%" + (f" ({xg / n:.2f} xG in 7.5 game s)" if n >= 20 else ""))
                              if tot[team] else "-")
             w(f"| {state[0].upper() + state[1:]} | " + " | ".join(cells) + " |")
         w("")
@@ -544,7 +545,7 @@ def report(name):
         got = sum(p["result"] in ("completed", "one-timer") for p in ps)
         h = (m.get("habits") or [None, None])[team] or {}
         w(f"- **{ab[team]}**: {got} of {len(ps)} passes reached a teammate ({pct(got, len(ps))}), {sum(p['result'] == 'intercepted' for p in ps)} picked off; "
-          f"{h.get('bursts', 0)} bursts, {h.get('pokes', 0)} pokes ({h.get('pokeTakeaways', 0)} won the puck), {h.get('goalieSeconds', 0)} s controlling the goalie.")
+          f"{h.get('bursts', 0)} bursts, {h.get('pokes', 0)} pokes ({h.get('pokeTakeaways', 0)} won the puck), {GT.gs(h.get('goalieSeconds', 0)):.0f} game s controlling the goalie.")
     if genesis:
         cp = CPASS.measure(m)
         for team in (0, 1):

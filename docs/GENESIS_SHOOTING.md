@@ -2,6 +2,10 @@
 
 Sections 4 and 5 of [GENESIS_MECHANICS.md](GENESIS_MECHANICS.md), which has the rest (ratings, skating, passing, checking, penalties, the computer players, puck physics ...) and explains how the findings are marked (**Confirmed**, **Code**). The section numbers are shared, so a reference such as 7.2 is there.
 
+Times of a second or more are given in game seconds, as the game clock counts them (1 game second = 24 frames = 0.4 s
+of real time; the clock stops at whistles), with the real time in brackets where it helps. Shorter timings, frames and
+milliseconds are real time, and so are rates per second (speeds).
+
 ## Contents
 
 - [ 4.1 The nine aim points](#41-the-nine-aim-points)
@@ -584,7 +588,7 @@ a puck its own team carries into its net is only held back one frame and goes in
 
 ### 5.4 Goalie whistles
 
-- Holding the puck: about 2.3 s (140 frames) after he takes it; 5 frames if he took it in a dive.
+- Holding the puck: about 6 game s (2.3 s real, 140 frames) after he takes it; 5 frames if he took it in a dive.
 - A goalie a person controls who comes nearer centre ice than 170 units (past the tops of the faceoff circles) is
   whistled; without the puck he can't skate out that far anyway (a person's goalie is kept within 36 of the middle and
   231 from centre). League ROMs can change all three numbers (section 15).
@@ -769,7 +773,7 @@ while the goalie is still catching up.** Why it works on the Genesis:
 - **Why it doesn't always work:** the clock rule (half the time there's no early save move), his rethink rate (high
   Defensive Awareness re-aims every frame), how close in the carrier comes, and a person in net (who isn't moved by any
   of this).
-- **Recordings:** 12 carries that crossed the middle within 90 of the goal line in under 2 s; 9 shots, 3 goals.
+- **Recordings:** 12 carries that crossed the middle within 90 of the goal line in under 5 game s; 9 shots, 3 goals.
 
 ### 5.8 Long slapshots
 

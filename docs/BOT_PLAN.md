@@ -54,15 +54,15 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
 
 - Phase 1 started 2026-10-31: 472 carried zone entries from 16 recorded Genesis games (the 2v2 games have none).
   The carrier is given pad 1 through `c1playernum` ($C320, found by watching it follow the controlled record) and his
-  pflags joystick bit. Played on for 6 seconds against the computer from a live-play state (MTL v LA, so the recorded
+  pflags joystick bit. Played on for 15 game seconds (6 s real) against the computer from a live-play state (MTL v LA, so the recorded
   players' ratings aren't carried over), the first run (`scen1`): versions 11, 6, 9 and 12 scored 10.0%, 10.2%, 10.0%,
-  10.6% (+-1.4) of the entries; 46% lost to a skater, 22% held by the goalie, 22% nothing within 6 s. Versions 6, 9
-  and 11 differ in one situation of 472 (their changes seldom come up in an entry's first 6 seconds); 12 against 11:
+  10.6% (+-1.4) of the entries; 46% lost to a skater, 22% held by the goalie, 22% nothing within 15 game s. Versions 6, 9
+  and 11 differ in one situation of 472 (their changes seldom come up in an entry's first 15 game seconds); 12 against 11:
   13 scored where 11 didn't, 10 the other way (+0.6 points +-1.0). **The people in those games, from the same entries
-  against people defending: 15.5% scored within 6 s, 34% got a shot on goal.** The bot is well short of the league's
+  against people defending: 15.5% scored within 15 game s, 34% got a shot on goal.** The bot is well short of the league's
   players from the same spots, and against a softer defence.
-- **How the people scored from the same entries** (the match files' shots within 6 s): goals came fast (half within
-  1.9 s of the blue line). Wrist shots 30 goals from 136, nearly all from the middle of the slot (within 30 of the
+- **How the people scored from the same entries** (the match files' shots within 15 game s): goals came fast (half within
+  4.75 game s of the blue line). Wrist shots 30 goals from 136, nearly all from the middle of the slot (within 30 of the
   middle: 40-80 units out 15 of 40, inside 40 out 10 of 22; many of them likely dekes, which the converter calls wrist
   shots); one-timers 27 of 73 (37%), from the middle 40-120 out 17 of 35, and set up mostly by a sideways pass (17 of 37).
 - **Version 13: the one-timer as people play it** (the pass from 100 up the ice, to a receiver within 100 of the goal
@@ -91,8 +91,8 @@ Along the way: GIFs of each new play, and each guide tip checked in play.
   from the bot's own passes). Version 15 (14 passing only to a receiver within 40 of the middle with the goalie drawn
   4+ toward the passer): 50 (+0.6 +-1.1). The one-timer is too small a part of the bot's play to move its 10%.
 - **Where the gap to people is.** From the same entries people lost the puck *more* often (59% touched by an opponent
-  skater within 6 s, 16% held by the goalie; any touch counts there, 20 frames for the bot) and scored no sooner (the
-  bot's goals a median 2.2 s after the entry, people's 1.9 s). People got a shot on goal from 34% of the entries and
+  skater within 15 game s, 16% held by the goalie; any touch counts there, 20 frames for the bot) and scored no sooner (the
+  bot's goals a median 5.5 game s after the entry, people's 4.75). People got a shot on goal from 34% of the entries and
   scored 15.5%; the bot shot about as often (224 shots on goal from 472) but scored 10%. **The gap is the bot's shots**:
   its slapshots (125 in the run, about none in) and its wrist shots from the sides (7%), against people's wrist shots
   from the middle of the slot and one-timers. Next: no slapshot under pressure, the close-in wrist shot only from the

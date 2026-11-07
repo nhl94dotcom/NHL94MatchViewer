@@ -32,6 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import systems  # noqa: E402
 from export_match import own_end  # noqa: E402
 import slot_defence as SD  # noqa: E402
+import gametime as GT  # noqa: E402
 
 K, REACH, CONE, CONTACT, NEAR, ZONE_LINE = 12, 70, 35, 18, 30, 89
 RESULT_MS, AFTER_MS, BEHIND_MS, BASE_STEP_MS, QUIET_MS, LATE_MS = 1000, 6000, 1000, 500, 1000, 1000
@@ -165,7 +166,7 @@ def lines(m, events, baseline, team):
     ab, Rs, T, PD, CL = m["abbr"], m["rosters"], m["t"], m["period"], m["clock"]
     mine = [e for e in events if e["team"] == team]
     L = [f"**{ab[team]}**: {len(mine)} check attempts.", "",
-         "| Result | Attempts | Won the puck | Goal-side before / 1 s after | Shots against in 6 s | xG | Goals |",
+         "| Result | Attempts | Won the puck | Goal-side before / 2.5 game s after | Shots against in 15 game s | xG | Goals |",
          "|---|---|---|---|---|---|---|"]
     for r in rows(mine):
         L.append(f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} / {r[4]} | {r[5]} | {r[6]:.1f} | {r[7]} |")
@@ -176,15 +177,15 @@ def lines(m, events, baseline, team):
     L.append("")
     missed = {e["goal_f"] for e in mine if e["goal"] and e["result"] != "hit" and not e["late"]}
     if missed:
-        L.extend([f"Goals within 6 s of a miss (not counting bursts under 1 s before the shot): {len(missed)}.", ""])
+        L.extend([f"Goals within 15 game s of a miss (not counting bursts under 2.5 game s before the shot): {len(missed)}.", ""])
     for e in sorted((e for e in mine if e["goal"] and e["result"] != "hit"), key=lambda e: e["f"]):
         f, s = e["f"], e["goal"]
         L.append(f"- P{PD[f] + 1} {CL[f] // 60}:{CL[f] % 60:02}: {Rs[team][e['by']]['name']} {'whiffed on' if e['result'] == 'whiff' else 'failed to knock off'} "
                  f"{Rs[1 - team][e['on']]['name']}{' (the carrier)' if e['carrier'] else ''} "
                  f"{ {'own': 'in his own end', 'neutral': 'in the neutral zone', 'their': 'in the other end'}[e['zone']] }; "
                  f"{'last man back' if e['last'] else str(e['back']) + ' teammate' + ('s' if e['back'] != 1 else '') + ' goal-side'}; "
-                 f"{'goal-side' if e['side0'] else 'not goal-side'} before, {'goal-side' if e['side1'] else 'not goal-side'} 1 s after; "
-                 f"{Rs[1 - team][s['idx']]['name']} scored {(T[s['f']] - T[f]) / 1000:.1f} s later (xG {s.get('xg') or 0:.2f})"
+                 f"{'goal-side' if e['side0'] else 'not goal-side'} before, {'goal-side' if e['side1'] else 'not goal-side'} 2.5 game s after; "
+                 f"{Rs[1 - team][s['idx']]['name']} scored {GT.gsec(T[s['f']] - T[f]):.1f} game s later (xG {s.get('xg') or 0:.2f})"
                  f"{'; too late to have cost anything' if e['late'] else ''}.")
     L.append("")
     return L
@@ -192,7 +193,7 @@ def lines(m, events, baseline, team):
 
 def combined(all_events, all_base, all_hold, label):
     print(f"\n{label}: {len(all_events)} check attempts")
-    print(f"  {'':9}{'n':>6}{'won puck':>10}{'side before':>13}{'side 1 s after':>16}{'shots/att':>11}{'xG/att':>8}{'goal rate':>11}")
+    print(f"  {'':9}{'n':>6}{'won puck':>10}{'side before':>13}{'side 2.5 gs after':>18}{'shots/att':>11}{'xG/att':>8}{'goal rate':>11}")
     for zone_name, sel in [("all", lambda e: True)] + [(z, lambda e, z=z: e["zone"] == z) for z in ZONES]:
         v = [e for e in all_events if sel(e)]
         print(f" {zone_name}:")
@@ -210,7 +211,7 @@ def combined(all_events, all_base, all_hold, label):
             print(f"   {z:8} tried {len(v):4}: shots {sum(e['shots'] for e in v) / len(v):.2f} xG {sum(e['xg'] for e in v) / len(v):.2f} goal {100 * sum(bool(e['goal']) for e in v) / len(v):4.1f}% "
                   f"(hit {sum(e['result'] == 'hit' for e in v)}, won the puck {100 * sum(e['won'] for e in v) / len(v):.0f}%); held off {n:5} moments: shots {sh / n:.2f} xG {xg / n:.2f} goal {100 * gl / n:4.1f}%")
     miss = [e for e in all_events if e["result"] != "hit"]
-    print(f"  different goals within 6 s of a miss, not counting bursts under 1 s before the shot: {len({(e.get('game'), e['goal_f']) for e in miss if e['goal'] and not e['late']})}")
+    print(f"  different goals within 15 game s of a miss, not counting bursts under 2.5 game s before the shot: {len({(e.get('game'), e['goal_f']) for e in miss if e['goal'] and not e['late']})}")
     print("  a miss, by who else was back:")
     for lab, sel in (("last man", lambda e: e["last"]), ("1 teammate goal-side", lambda e: e["back"] == 1), ("2+", lambda e: e["back"] >= 2)):
         v = [e for e in miss if sel(e)]
@@ -220,7 +221,7 @@ def combined(all_events, all_base, all_hold, label):
     v = [e for e in miss if e["side0"]]
     if v:
         lost = [e for e in v if not e["side1"]]
-        print(f"   {len(v)} attempts; beaten (not goal-side 1 s later) {len(lost)} ({100 * len(lost) / len(v):.0f}%): goal {100 * sum(bool(e['goal']) for e in lost) / max(1, len(lost)):.1f}%; "
+        print(f"   {len(v)} attempts; beaten (not goal-side 2.5 game s later) {len(lost)} ({100 * len(lost) / len(v):.0f}%): goal {100 * sum(bool(e['goal']) for e in lost) / max(1, len(lost)):.1f}%; "
               f"still goal-side: goal {100 * sum(bool(e['goal']) for e in v if e['side1']) / max(1, len(v) - len(lost)):.1f}%")
 
 
