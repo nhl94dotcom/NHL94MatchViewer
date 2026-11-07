@@ -269,6 +269,14 @@ a setting, a result that changes the plan).
     him (within 40 of his line to our net), B to switch to him: 16-14, +0.33 +-0.57 (goals 221-211, penalties
     127-107, power-play goals against 64-48). What helps people (one man covering the open receiver) doesn't move
     the bot's games: the computer-run teammates already hold the slot, and the bot's chaser is its best defender.
+- **Passing out of a check** (2026-11-07, version 39: 32 with check_pass_timing.py's finding, a pass to an open
+  teammate, relief_mate, as soon as an opponent skater bursting at the carrier is due in 6-16 frames; CHECK39), against
+  32, 30 games each, sides swapped, nothing kept: closing at 1.2+ a frame (any defender coming in fast; about 46 such
+  passes a game): **13-17, -0.90 a game +-0.70** (goals 152-179, penalties 103-62); only a real burst, 2.0+:
+  **15-15, +0.07 +-0.66** (185-183, penalties 111-87); the same only before the attacking blue line: **12-18,
+  -0.70 +-0.54** (182-203, shots 668-775). The timing helps a person who has a teammate open, but the bot's receivers
+  are where the computer skates them, and a pass to whoever is open gives up the carry, the deke and the shot that the
+  bot's offence is built on.
 - Further, against the bot's defence and 26's 88: 27, the deke entry looser still (36 wide, -0.2 to 1.3 across, 1.0
   up the ice): 92 (+0.8 +-0.9); 28, 26 with 24's right-side deke: 89 (+0.2 +-0.8). Neither kept: the entry has given
   what it can.

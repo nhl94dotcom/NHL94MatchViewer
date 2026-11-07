@@ -37,7 +37,9 @@ slot in our end (SLOT23); 24-26 are 22 (16's offence) with
 one offence change each: 24 the right-hander's deke on the right (12's), 25 no one-timer passes, 26 (the default) a looser
 deke entry; 27 is 26 looser still, 28 is 26 with 24's right-side deke; 29 is 26 with people's
 one-timer set-up (low on one side, across: LOW29), checked before the wrist shot; 30 is 26 with a relief pass to an open
-teammate when a defender closes in ahead (RELIEF30).
+teammate when a defender closes in ahead (RELIEF30). 39 is 32 passing out of a check (2026-11-07, CHECK39): when an
+opponent skater is bursting at him and due to reach him in 6-16 frames, a pass to an open teammate (relief_mate) at
+once, as check_pass_timing.py found best (B as the burst begins, the pass away 0.10-0.25 s real before contact).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -117,6 +119,12 @@ if __import__("os").environ.get("NHL94_LOW29"):
 # version 30: the relief pass (an opponent within press ahead, the carrier past `from` up the ice; the receiver with no
 # opponent within open, the pass under len); env NHL94_RELIEF30="press,from,open,len"
 RELIEF30 = dict(press=24, **{"from": -300}, open=30, len=150)
+# version 39: passing out of a check: an opponent skater within `dist`, closing on the carrier at `closing`+ a frame,
+# due in `tmin`-`tmax` frames; not in close (up the ice under `ay`, where the bot shoots); env NHL94_CHECK39
+CHECK39 = dict(dist=70, closing=1.2, tmin=6, tmax=16, ay=170)
+if __import__("os").environ.get("NHL94_CHECK39"):
+    CHECK39 = dict(zip(("dist", "closing", "tmin", "tmax", "ay"),
+                       map(float, __import__("os").environ["NHL94_CHECK39"].split(","))))
 if __import__("os").environ.get("NHL94_RELIEF30"):
     RELIEF30 = dict(zip(("press", "from", "open", "len"),
                         map(float, __import__("os").environ["NHL94_RELIEF30"].split(","))))
@@ -346,12 +354,14 @@ class Bot:
                 return ["C"] + pad(aview(0))
             low_mate = self.low_mate(P, me, s, g, ax, ay) if self.version == 29 else None
             relief = self.relief_mate(P, me, s, g) if self.version == 30 and near[0] < RELIEF30["press"] and ahead                 and ay > RELIEF30["from"] else None
+            if self.version == 39 and ay < CHECK39["ay"] and self.checker_due(P, me, g):
+                relief = self.relief_mate(P, me, s, g)
             self.relief = False
             if relief is not None:
                 # version 30: a defender closing in ahead: pass to an open teammate (no one-timer; he carries on)
                 self.mate, self.relief = relief, True
                 self.phase, self.t, self.passer = "pass", 0, me
-                self.note("pass start", ax=ax, ay=ay, relief=True)
+                self.note("pass start", ax=ax, ay=ay, relief=True, check=self.version == 39)
             elif low_mate is not None:
                 # version 29: people's one-timer set-up, checked before the wrist shot (which otherwise always came
                 # first in close, so 16's passes only left from farther out): low on one side, a quick pass across
@@ -563,6 +573,21 @@ class Bot:
                 return True
         return False
 
+    def checker_due(self, P, me, g):
+        """Version 39: an opponent skater bursting at the carrier, due to reach him in CHECK39's window."""
+        m = P[me]
+        for o in self.theirs:
+            if o == g or P[o]["pos"] in (0, 0xFF):
+                continue
+            dx, dy = m["x"] - P[o]["x"], m["y"] - P[o]["y"]
+            d = math.hypot(dx, dy) or 1
+            if d > CHECK39["dist"]:
+                continue
+            closing = ((P[o]["vx"] - m["vx"]) * dx + (P[o]["vy"] - m["vy"]) * dy) / d
+            if closing >= CHECK39["closing"] and CHECK39["tmin"] <= (d - 18) / closing <= CHECK39["tmax"]:
+                return True
+        return False
+
     def relief_mate(self, P, me, s, g):
         """Version 30: an open teammate for a relief pass: no opponent within RELIEF30["open"] of him, none within 15
         of the lane, the pass under RELIEF30["len"], him no more than 30 back down the ice; the one farthest up."""
@@ -701,7 +726,7 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
-            if self.version in (31, 32, 33, 34, 35, 36, 37, 38):
+            if self.version in (31, 32, 33, 34, 35, 36, 37, 38, 39):
                 # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
                 # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
                 # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
@@ -743,7 +768,7 @@ class Bot:
             elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38) and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38, 39) and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])
