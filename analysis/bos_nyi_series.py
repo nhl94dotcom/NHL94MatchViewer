@@ -68,7 +68,7 @@ def measure(m, team):
     after = [p for p in cross if any(0 <= t[s["f"]] - t[p["f"]] <= 2000 for s in shots)]
     goals_after = [p for p in cross if any(0 <= t[s["f"]] - t[p["f"]] <= 2000 and s["result"] == "goal" for s in shots)]
     out["cross-ice passes in the attacking zone"] = len(cross)
-    out["· with an attempt within 2 s / a goal"] = f"{len(after)} / {len(goals_after)}"
+    out["· with an attempt within 5 game s / a goal"] = f"{len(after)} / {len(goals_after)}"
     # C shot locations
     def dist(s):
         e = own_end(m, s["f"], opp)

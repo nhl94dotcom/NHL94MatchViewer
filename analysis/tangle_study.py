@@ -3,7 +3,7 @@ overlapped and the defender couldn't knock him over; SNES_MECHANICS 7.6). Every 
 once: stretches of live play (puck in play) where two opposing skaters stay within NEAR units (bodies normally stop about
 16 apart) for at least MIN_MS. For each: how close, how long, whether one of them had the puck, whether the other was in a
 burst / check animation during it (a check that didn't land), who controlled each (a person or the computer), and what
-came of it within 5 s: the carrier's team kept the puck, took a shot, scored; or a knockdown on either.
+came of it within 12.5 game s: the carrier's team kept the puck, took a shot, scored; or a knockdown on either.
 python analysis/tangle_study.py"""
 import json
 import math
@@ -99,18 +99,18 @@ def main():
         ev = [e for e in allev if e["system"] == system]
         car = [e for e in ev if e["carrier"]]
         deep = [e for e in car if e["min"] < DEEP]
-        print(f"\n== {system}: {len(ev)} stretches of {NEAR}- for {MIN_MS} ms+ in {minutes[system]:.0f} min of recording "
-              f"({len(ev) / max(1, minutes[system]) * 60:.1f} an hour); with the puck carrier {len(car)}, of those under {DEEP}: {len(deep)}")
+        print(f"\n== {system}: {len(ev)} stretches of {NEAR}- for {MIN_MS} ms+ (real) in {2.5 * minutes[system]:.0f} game min "
+              f"({len(ev) / max(1, 2.5 * minutes[system]) * 60:.1f} per 60 game min); with the puck carrier {len(car)}, of those under {DEEP}: {len(deep)}")
         if not car:
             continue
         f = lambda key, sel: f"{sum(1 for e in sel if e.get(key))}/{len(sel)}"
-        print(f"   carrier: kept the puck {f('kept', car)}, shot within 5 s {f('shot', car)}, goal {f('goal', car)}, knocked down {f('knocked', car)}")
+        print(f"   carrier: kept the puck {f('kept', car)}, shot within 12.5 game s {f('shot', car)}, goal {f('goal', car)}, knocked down {f('knocked', car)}")
         print(f"   the defender tried a check meanwhile {f('check_tried', car)}; carrier a person {f('carrier_person', car)}; defender a person {f('defender_person', car)}")
         tried = [e for e in car if e["check_tried"]]
         print(f"   when the defender tried a check: knocked down {f('knocked', tried)}, carrier's team shot {f('shot', tried)}, goal {f('goal', tried)}")
         long_ = sorted(car, key=lambda e: -e["ms"])[:8]
         for e in long_:
-            print(f"   {e['game']} f{e['f']}: {e['ms'] / 1000:.1f} s, closest {e['min']:.1f}, {e['zone']}, check tried {e['check_tried']}, "
+            print(f"   {e['game']} f{e['f']}: {e['ms'] / 400:.1f} game s, closest {e['min']:.1f}, {e['zone']}, check tried {e['check_tried']}, "
                   f"kept {e['kept']}, shot {e['shot']}, goal {e['goal']}, carrier {'person' if e['carrier_person'] else 'cpu'}, defender {'person' if e['defender_person'] else 'cpu'}")
 
 

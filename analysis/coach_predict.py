@@ -39,7 +39,7 @@ MEASURES = [  # (label, rate from a Counter) - each a decision or a habit, not t
     ("his skater in position (share of time defending)", lambda c: r(c["pos_n_in"], c["pos_n_in"] + c["pos_n_off"] + c["pos_n_up"])),
     ("his skater caught up ice (share of time defending)", lambda c: r(c["pos_n_up"], c["pos_n_in"] + c["pos_n_off"] + c["pos_n_up"])),
     ("switches that took him out of position (share)", lambda c: r(c["sw_bad"], c["sw"])),
-    ("back in position within 2 s of a turnover", lambda c: r(c["tr_back_quick"], c["tr_back_n"])),
+    ("back in position within 5 game s of a turnover", lambda c: r(c["tr_back_quick"], c["tr_back_n"])),
     ("shots by the best shooter on the ice (share)", lambda c: r(c["ws_top"], c["ws"])),
     ("goalie takeovers", lambda c: c["gt"]),
 ]

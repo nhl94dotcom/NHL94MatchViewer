@@ -53,7 +53,7 @@ def main():
         runs.extend(on.values())
     print(len(runs), "stretches with the flag on")
     long_ = [r for r in runs if r[3] - r[2] > 2000]
-    print("on for more than 2 s:", len(long_))
+    print("on for more than 5 game s (2 s real):", len(long_))
     for person in (True, False):
         d = sorted(r[3] - r[2] for r in runs if r[5] == person)
         if d:

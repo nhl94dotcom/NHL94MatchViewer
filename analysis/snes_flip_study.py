@@ -1,7 +1,7 @@
 """SNES flips (Y with the puck: a computer-run dump-in, SNES_MECHANICS 6.3) in the recorded games and in the harness
 (2026-10-30). Recorded: every match file's `flips` (export_match.split_flips): who flipped (goalie or skater, person
 or computer), from where, the target the code picks for that spot (DumpInTarget), where the puck first came down
-after its peak, and who had it next (own team, the other team, or nobody within 3 s). Harness:
+after its peak, and who had it next (own team, the other team, or nobody within 7.5 game s). Harness:
 analysis/scoring_map/snes_flip_run.py's results (where flips from set spots came down, by Passing), if given.
 python analysis/snes_flip_study.py [HARNESS_JSONL]"""
 import glob

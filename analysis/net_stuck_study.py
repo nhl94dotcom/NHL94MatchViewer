@@ -61,13 +61,13 @@ def main():
                             "person": bool(m["ctrl"][s] >> k & 1), "side": "front" if abs(m["pos"][(s * K + k) * 2 + 1]) < abs(net_at(s)[2 * which + 1]) else "back"})
     for system in ("genesis", "snes"):
         ev = [e for e in out if e["system"] == system]
-        print(f"\n== {system}: {len(ev)} skaters held at a net for {MIN_MS / 1000:.0f} s+ in {minutes[system]:.0f} min ({60 * len(ev) / max(1, minutes[system]):.1f} an hour)")
+        print(f"\n== {system}: {len(ev)} skaters held at a net for {MIN_MS / 400:.1f} game s+ in {2.5 * minutes[system]:.0f} game min ({60 * len(ev) / max(1, 2.5 * minutes[system]):.1f} per 60 game min hour)")
         if not ev:
             continue
         print(f"   a person's {sum(e['person'] for e in ev)}; front {sum(e['side'] == 'front' for e in ev)}, back {sum(e['side'] == 'back' for e in ev)}; "
               f"with bursts {sum(1 for e in ev if e['bursts'])} ({sum(e['bursts'] for e in ev)} bursts); net knocked off {sum(e['off'] for e in ev)}")
         for e in sorted(ev, key=lambda e: -e["ms"])[:10]:
-            print(f"   {e['game']} f{e['f']}: {e['ms'] / 1000:.1f} s, moved {e['moved']:.0f}, {e['side']}, bursts {e['bursts']}, net off {e['off']}, {'person' if e['person'] else 'cpu'}")
+            print(f"   {e['game']} f{e['f']}: {e['ms'] / 400:.1f} game s, moved {e['moved']:.0f}, {e['side']}, bursts {e['bursts']}, net off {e['off']}, {'person' if e['person'] else 'cpu'}")
 
 
 if __name__ == "__main__":

@@ -167,7 +167,7 @@ def main():
     print("B without the puck (the other team's puck or a loose one): predicted -> what happened")
     for sense in ("puck up-ice preferred", "puck down-ice preferred"):
         part = {k[1:]: n for k, n in rule.items() if k[0] == sense}
-        print(f"  (presses within 0.5 s of another, left out: {rule[('mashed',)]})") if sense.startswith("puck up") else None
+        print(f"  (presses within 0.5 s (real) of another, left out: {rule[('mashed',)]})") if sense.startswith("puck up") else None
         ok = sum(n for (p, o), n in part.items() if p == o)
         print(f"  {sense}: agree {ok} of {sum(part.values())} ({100 * ok / max(1, sum(part.values())):.0f}%)")
         for (p, o), n in sorted(part.items(), key=lambda kv: -kv[1]):
