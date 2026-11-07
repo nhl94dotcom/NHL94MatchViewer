@@ -2,6 +2,10 @@
 
 Sections 4 and 5 of [SNES_MECHANICS.md](SNES_MECHANICS.md), which has the rest (ratings, skating, passing, checking, penalties, the computer players, puck physics ...) and explains how the findings are marked (**Confirmed**, **Code**). The section numbers are shared, so a reference such as 7.2 is there.
 
+Times of a second or more are given in game seconds, as the game clock counts them (1 game second = 24 frames = 0.4 s
+of real time; the clock stops at whistles), with the real time in brackets where it helps. Shorter timings, frames and
+milliseconds are real time, and so are rates per second (speeds).
+
 ## Contents
 
 - [ 4.1 The nine aim points](#41-the-nine-aim-points)
@@ -454,7 +458,7 @@ a wrist shot goes into it. Seldom seen on the Genesis.
 So the cut needs the goalie to come off the near post and a release inside about 11 ft.
 
 **The tries replayed in the real game** (`analysis/scoring_map/snes_deke_run.py`, plan "replay", 2026-10-25). Each of
-the 26 tries (15 cuts, 11 dekes from the left) was replayed from 1.5 s before the shot: the skater where he was, at
+the 26 tries (15 cuts, 11 dekes from the left) was replayed from 4 game s (1.5 s real) before the shot: the skater where he was, at
 his speed and facing, with his own working ratings and the LA goalie's, then the user's recorded d-pad and A frame by
 frame. Each was played at its own net and turned round at the other, by a left- and a right-hander, with the aim as
 played or, from the A press, high or middle at the near post: 24 game moments each, every shot with 4 release seeds,
@@ -582,12 +586,12 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   and he loses his Agility while a pass is in flight. **Code**
 - **Attacking moves** (`assgoalie`), every goalie alike (no rating enters):
   - a **poke check** (`SPAgpoke`, $E528) at an opponent carrying the puck within 35 units, in front of the goal line, on
-    a random roll each time he thinks (1 in 25.6), then 4 seconds before he can poke again;
+    a random roll each time he thinks (1 in 25.6), then 10 game seconds (4 s real) before he can poke again;
   - a **dive** (`SPAgdive`, $E4B6) at a **loose** puck within 45 in front of the goal line with an attacker within 60
-    of it, on a 1-in-32 roll, then 6 seconds before the next. The dive is tested only at one moment: a counter set to 4
+    of it, on a 1-in-32 roll, then 15 game seconds (6 s real) before the next. The dive is tested only at one moment: a counter set to 4
     when the puck touches him (`puckgoalie`) counts down while the puck is on his half and stops at -1, and the dive
     is only possible when it reads 0. So **the computer's dive is a rebound dive, with one 1-in-32 chance per save**.
-  - **Recorded** (15 games, 137 minutes): computer goalies poked 18 times and never dived (229 saves; about 90 left a
+  - **Recorded** (15 games, 343 game minutes): computer goalies poked 18 times and never dived (229 saves; about 90 left a
     loose rebound near him with an attacker close, so 2 or 3 dives at most would be expected). People's goalies dived 14
     times.
 - **A goalie you control** (`assgoalie`, when he's yours): **X pokes** (toward the d-pad direction, or at the puck with
@@ -661,12 +665,12 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
 - **Confirmed** (102 SNES saves, the faster speed component just before the save): 17,000 or more, held at once 4 of 41
   (10%); 8,192-17,000, 28 of 45 (62%), the random range at work; under 8,192, 10 of 16 (the rule says all; the sampled
   speeds and the "held at once" test are rough).
-- **The hold whistle** (`puckglue`, `assgoalie`): taking the puck starts a count of **140 frames (2.33 s)**, as on the
+- **The hold whistle** (`puckglue`, `assgoalie`): taking the puck starts a count of **140 frames (2.33 s real, about 6 game s)**, as on the
   Genesis, or **5 frames when he catches it in a dive** (a dive catch is a whistle at once). For a goalie a person
   controls, the count runs down only while he stays within about 62 units of his goal line (y beyond +/-187); **holding
   the puck any farther out is whistled at once** (the Genesis line is 170 from centre). **Confirmed:** people's goalies
-  never kept the puck longer than 2.34 s before a whistle or a pass (245 pickups), and all 6 dive catches were whistled
-  at once. A computer goalie covers instead (5.3); his whistles came 0.6-3.3 s after he got the puck (11).
+  never kept the puck longer than 6 game s (2.34 s real) before a whistle or a pass (245 pickups), and all 6 dive catches were whistled
+  at once. A computer goalie covers instead (5.3); his whistles came 1.5-8 game s (0.6-3.3 s real) after he got the puck (11).
 - **The whistle the instant a person's goalie catches the puck is mostly a delayed penalty** (2026-10-30,
   `analysis/snes_goalie_whistle.py`: 386 catches by a person's goalie with the clock running in the SNES recordings,
   16 whistled within 150 ms). A penalty with minutes waits in the penalty buffer (PenBuf $15DE, the referee's arm up)

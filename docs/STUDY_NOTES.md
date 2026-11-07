@@ -2,6 +2,10 @@
 
 The working notes of the studies: the game mechanics read from the disassemblies, the scoring map's runs, and what the user's games showed. Moved out of [PROJECT_NOTES.md](PROJECT_NOTES.md) on 2026-10-26. The findings themselves, in order, are in [GENESIS_MECHANICS.md](GENESIS_MECHANICS.md), [SNES_MECHANICS.md](SNES_MECHANICS.md), their *_SHOOTING.md parts and the SCORING_*.md pages.
 
+Durations: game seconds (1 game second = 24 frames = 0.4 s of real time) for anything a second or longer, from
+2026-11-06; shorter timings, frames, milliseconds and constants named _MS are real time. Entries before that date may
+still give real seconds where not converted.
+
 ## Passing study (2026-10-18)
 
 analysis/stick_spot.py, analysis/passing_study.py. GetHot (checks94.asm): HotList[frame] x, y bytes; x negated when the
@@ -39,7 +43,7 @@ add_own_goals): the last pass (completed or one-timer) to the scorer within TAPE
 earlier pass completed to the next passer, released within TAPESTRY_GAP_MS 2.5 s (real time) of the next; the other team
 never had the puck; not penalty shots or own goals. A goalie's pass counts as one of the passes (the user, 2026-10-18). Goal `tapestry` {n, chain: roster indices first passer .. scorer}
 and kind 'tapestry' (2), 'fine tapestry' (3), 'masterpiece' (4+), beside 'one-timer'. Recordings: about 1 goal in 5;
-capture1 P1 3:18 is 8 passes (Montreal, 10 s, five players, a one-timer). Viewer: tag "fine tapestry · 3 passes"
+capture1 P1 3:18 is 8 passes (Montreal, 25 game s, five players, a one-timer). Viewer: tag "fine tapestry · 3 passes"
 (goalKindText), the chain in goalNotes (A -> B -> C), team stats Shooting "Tapestry goals" and "· 2 / 3 / 4+ passes",
 STAT_HELP, Help. Season VERSION 22: team tap / tapA (Team stats TAP), skater tapG / tapIn (Skaters TAP: scored · passed in).
 Missed tapestries (the user): the same chain ending in a shot attempt that did not score: the shot gets `tapestry`
@@ -388,9 +392,9 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   The swing (updateanim; durations in frames): a NEW B press (doinput d1 = new buttons) starts SPAfaceoff unless one is in
   progress: 2 frames wind-up (0), 10 middle (8), 6 sweep (16), then it ends (not a looping animation) and the centre goes
   back to his stance (0) until the next press; holding B does nothing more. The drop comes randomd0(120) + 180 frames
-  (3-5 s) after the faceoff box appears (at least 270 with some arena animations); the box's drop picture changes 17 and
+  (3-5 s of real time; the clock is stopped) after the faceoff box appears (at least 270 with some arena animations); the box's drop picture changes 17 and
   9 frames before it (updatefaceoff), too late to react to for the sweep. The person's faceoffs (110, six Genesis games):
-  7-11 B presses in the last 1.5 s; state at the drop 16 / 8 / 0 = 23% / 47% / 26%, as mashing predicts (an 18-frame
+  7-11 B presses in the last 1.5 s (real); state at the drop 16 / 8 / 0 = 23% / 47% / 26%, as mashing predicts (an 18-frame
   swing plus a few frames' gap). P(roll) = (17 + yours - theirs) / 33 is linear, so only the average state counts: the
   shorter the gaps between swings (faster mashing), the better: 9.8 with none, 7.9 with the recordings' 4 frames.
 - Penalties (Genesis), all from the code; every penalty goes through AddPenalty (ignored while the clock is stopped,
@@ -503,7 +507,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   does not end it, and fouls on him meanwhile use checkagr's breakaway roll and PenShotChk. doshot sets gmode2 bit 4 on
   a breakaway shot and clears it at every other shot; a goal while it is set counts as a breakaway goal (+$35A), so only
   a goal with no shot between (pass shot, deflection) after a missed breakaway shot would be miscounted. Recordings:
-  every counted breakaway goal came 1.3-2.1 s after its breakaway.
+  every counted breakaway goal came 3-5 game s (1.3-2.1 s real) after its breakaway.
 - Computer line changes and clears (Genesis): chk4lc, from the computer carrier at his OfA ticks (asspuckc), with line
   changes On (not Auto: sflags7 bit 4): puck in the attacking half short of the blue line (0-88), a 1 in 4 roll, the
   line's average energy (AvgCline) at most $C00 (75%) -> CompLine, setpersonel, then CompShoot (dump it in to change).
@@ -826,7 +830,7 @@ Five Genesis games (Documents/NHL94 Viewer, 2026-10-17_2219 ... 2257, nhl94.bin,
 - Converter fixes from that game (every other recording unchanged): shooter_at looks first at the stat snapshots
   either side of the shots-on-goal rise (the wide window held Broten's two shots and the goal, so the second strike
   had no shooter); `latest` skips a shot when an opposing skater took the puck and the shooting team won it back
-  before the goal (Courtnall's P1 3:52 shorthanded goal had gone to his pass shot 3 s earlier, which a Boston skater
+  before the goal (Courtnall's P1 3:52 shorthanded goal had gone to his pass shot 7.5 game s earlier, which a Boston skater
   picked up; now his one-timer from Gagner's pass); scorer_touch prefers his shooting swing over the latest touch.
 - An own goal by a skater (2246 P2 1:58): Neely took Courtnall's shot and carried it into his own net; the net's
   front took it off his stick (checkgoal, as in the shoulder-save bobble) and it crossed the line loose. The game
@@ -929,7 +933,7 @@ helper), game 1 (`analysis/video/`: video_lines.py, video_pilot.py; PyAV and num
   the lines' rows, and a lone blue line told apart by the frame's row profile of red and blue against the rink's) 94-98%
   within 10 pixels of the recorded camera; the play's zone from the camera agrees with the puck's 83-87%.
   `video_game.py` puts them together: the games in a video (teams and final score right for all three), each team's
-  attacking-zone time (video 132 / 212, 233 / 100, 165 / 190 s against the puck's 125 / 210, 221 / 107, 136 / 198), zone
+  attacking-zone time (video 132 / 212, 233 / 100, 165 / 190 s of real time against the puck's 125 / 210, 221 / 107, 136 / 198), zone
   entries (with hysteresis; 22 / 26, 27 / 19, 22 / 23 against 29 / 33, 26 / 19, 23 / 25) and rush goals (all equal).
   Every third frame gives the same: 200 s for the 29-minute video in gentle mode. `video_archive.py` runs a folder in
   chunks (work files, the font and the rink picture in `%USERPROFILE%\NHL94_video`). The user's archive: 66 Genesis
@@ -940,7 +944,7 @@ helper), game 1 (`analysis/video/`: video_lines.py, video_pilot.py; PyAV and num
   CGY, DET, MTL, WPG, DAL, PIT, PHI, BUF, CHI, NYI, VAN, HFD, QUE, NYR and league-ROM teams HEL, LVW, NIU, MNS).
 - **What goes with winning** (`video_wins.py`, 182 whole games: 7-14 minutes of video, not tied): the team with more
   attacking-zone time won 79% (zone share 55 / 45; correlation with the goal difference +0.71), more entries 70%
-  (+0.51); 38 winners had less zone time but finished better. 84% of the timed goals came within 6.5 s of the play
+  (+0.51); 38 winners had less zone time but finished better. 84% of the timed goals came within 16 game s (6.5 s real) of the play
   entering the zone (the rule counts any re-entry as a rush, so this is an upper bound on rush goals). Scoring first
   won 73%, leading after 1 period 80%, after 2 periods 91%; down 1 after two, 13 of 54 came back; down 2 or more, 2 of
   107. Home won 55%. Goals by period 414 / 482 / 523. Zone time partly follows the score (a trailing team presses),
@@ -1076,7 +1080,7 @@ passes for one that went in themselves or off someone, 3 and 2 goals.)
   126 for 36), so the 43 extra on the right scored about 1; attacking-zone carry losses 152 (167), all carry losses
   434 (420).
 - **Real situations from the recorded games (docs/BOT_PLAN.md phase 1).** 472 carried zone entries from 16 recorded
-  Genesis games placed in the harness, the bot playing on 6 s: 10% scored (versions 6-12 all within a point), against
+  Genesis games placed in the harness, the bot playing on 15 game s: 10% scored (versions 6-12 all within a point), against
   15.5% for the people in those games from the same entries. Details in BOT_PLAN "Status". Version 13 (the one-timer
   widened to people's) struck more often but scored no more; its strikes met a set goalie (BOT_PLAN "Status").
 - **Version 16, the default (BOT_PLAN "Status"):** no slapshot under pressure and the close-in wrist shot from 170 up
@@ -1088,23 +1092,23 @@ The user: what does a failed or whiffed check cost, whoever else is back? `analy
 game): a person's burst while the other team has the puck with an opponent in reach ahead, as hit (the game counted a check),
 failed (reached a man, or the SNES check animation, nothing counted) or whiff (within 30 of a man, touched nobody); a burst that never gets
 within 30 (about 10 feet) is repositioning and isn't counted (the user; 98 Genesis and 59 SNES bursts, about 30% of the whiffs). Then the other
-team's shots and goals in 6 s while his team hasn't had the puck and no faceoff has come. Goal within 6 s: Genesis 869 attempts, hit 6.4%, failed
+team's shots and goals in 15 game s while his team hasn't had the puck and no faceoff has come. Goal within 15 game s: Genesis 869 attempts, hit 6.4%, failed
 12.9%, whiff 10.6%, no attempt 10.3% of moments; SNES 828, hit 3.5%, failed 12.2%, whiff 14.6%, no attempt 10.3%. In his own end:
 Genesis 4.1 / 18.1 / 16.0 / 15.6%, SNES 5.0 / 18.9 / 23.9 / 14.7%. The puck won: hits 57-65%, misses 24-31%. A miss by who else was goal-side:
 last man 21.4 / 23.0%, one teammate 9.6 / 18.2%, two or more 10.0 / 7.7% (Genesis / SNES), so on the SNES one teammate adds little.
-A miss from goal-side loses goal-side within 1 s 75 / 71% of the time; goal 13.1 / 12.6% when it does, 5.1 / 3.6% when it doesn't. The
+A miss from goal-side loses goal-side within 2.5 game s 75 / 71% of the time; goal 13.1 / 12.6% when it does, 5.1 / 3.6% when it doesn't. The
 fair comparison for the decision, in his own end from goal-side with the carrier in reach: tried 12.3 / 12.4% goal, won the puck 51 / 58%;
 held off 13.2 / 12.9%. So a check tried there about breaks even on goals against: a hit saves about what a miss costs, and the attempt also wins
 the puck half the time or more. Neighbouring moments aren't independent, people choose when to try, and dodged and badly aimed misses aren't told apart.
-41 Genesis and 44 SNES goals came within 6 s of a miss (bursts under 1 s before the shot not counted), about a fifth to a quarter of the goals. In the match report: section 16.
+41 Genesis and 44 SNES goals came within 15 game s of a miss (bursts under 2.5 game s before the shot not counted), about a fifth to a quarter of the goals. In the match report: section 16.
 
 ## Keeping the other team out of the slot (Genesis, 2026-11-01)
 
 The user's hypothesis after the BOS-TOR games: the key on defence is keeping the other team, and above all the puck,
 out of your slot, more than standing in it yourself. `analysis/slot_defence.py --all` (23 recorded Genesis games):
 every quarter second with a team carrying the puck in the other's end (past the blue line; loose pucks not counted,
-about a minute a team a game), the state of the defending team's slot (within 35 of the middle and 100 of the goal
-line) and the attackers' shots in the next 3 s. The carrier in the slot: 0.21 xG, a goal 23% of the time (9% of the
+about 2.5 game minutes a team a game), the state of the defending team's slot (within 35 of the middle and 100 of the goal
+line) and the attackers' shots in the next 7.5 game s. The carrier in the slot: 0.21 xG, a goal 23% of the time (9% of the
 time); an attacker without the puck there, open 0.12 / 12% (15%), covered 0.12 / 13% (4%); nobody attacking in it and
 no defender 0.15 / 15% (36%, the most common dangerous state), one defender 0.10 / 10% (28%), two or more 0.10 / 9% (8%).
 One-timers: 80 from the slot to a receiver open at the pass (no defender skater within 20; 40 goals), 5 to a covered

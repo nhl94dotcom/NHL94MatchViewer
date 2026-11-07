@@ -164,7 +164,7 @@ def main():
                 add(C[(system, sides[tm], BASE)], mine, lost, theirs)
                 G[(system, sides[tm], BASE)][name][0] += 1
                 G[(system, sides[tm], BASE)][name][1] += mine[1] - theirs[1]
-    print(f"Window {WINDOW:g} s. Games:")
+    print(f"Window {WINDOW * 2.5:g} game s ({WINDOW:g} s of real time). Games:")
     for row in listed:
         print("  ", row)
     for system in ("genesis", "snes"):
@@ -172,8 +172,8 @@ def main():
         for side in ("you", "people"):
             if not poss[(system, side)]:
                 continue
-            print(f"  {side}: {npass[(system, side)]} attacking-zone passes in {poss[(system, side)] / 60:.1f} min with "
-                  f"the puck there = {npass[(system, side)] / (poss[(system, side)] / 60):.1f} a minute")
+            print(f"  {side}: {npass[(system, side)]} attacking-zone passes in {poss[(system, side)] * 2.5 / 60:.1f} game minutes with "
+                  f"the puck there = {npass[(system, side)] / (poss[(system, side)] * 2.5 / 60):.1f} a game minute")
         print(f"  {'side':7} {'group':11} {'n':>5} {'xG for':>7} {'ended':>6} {'lost on pass':>12} {'xG against':>10} "
               f"{'net':>7}   net - baseline (90% range, games resampled)")
         for side in ("you", "people"):

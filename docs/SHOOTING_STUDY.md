@@ -332,7 +332,7 @@ if anything slightly worse.
 
 # Part 3: one-timers
 
-`python analysis/one_timer_study.py`. Each one-timer with the pass that set it up (the team's last pass in the 2.5 s
+`python analysis/one_timer_study.py`. Each one-timer with the pass that set it up (the team's last pass in the 6 game s (2.5 s real)
 before), the goalie's position when the pass left and at the strike, and the result. 91 Genesis and 55 SNES one-timers.
 
 | Genesis | One-timers | Scored | xG a shot |
@@ -342,8 +342,8 @@ before), the goalie's position when the pass left and at the strike, and the res
 | Pass moved the puck 0-40 units across | 32 | 6 (19%) | 24% |
 | 40-90 across | 34 | 16 (47%) | 45% |
 | 90+ across | 25 | 5 (20%) | 16% |
-| Pass in the air under 0.5 s | 66 | 22 (33%) | 37% |
-| 0.5-0.9 s | 20 | 5 (25%) | 12% |
+| Pass in the air under 0.5 s (real) | 66 | 22 (33%) | 37% |
+| 0.5-0.9 s (real) | 20 | 5 (25%) | 12% |
 | Goalie slid under 15 across during the pass | 63 | 22 (35%) | 35% |
 | Goalie slid 15-40 | 25 | 5 (20%) | 21% |
 | Goalie 0-4 off the puck's line at the strike | 28 | 3 (11%) | 11% |

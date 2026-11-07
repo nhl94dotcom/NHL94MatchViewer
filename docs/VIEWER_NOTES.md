@@ -2,6 +2,10 @@
 
 The development notes for what the viewer, the season page and the live broadcast show and how each is worked out, moved out of [PROJECT_NOTES.md](PROJECT_NOTES.md) on 2026-10-26 (the memory layout, workflow and files are there; the studies in [STUDY_NOTES.md](STUDY_NOTES.md)).
 
+Timings here describe the code and the match files, so they are real time (the sampling clock, constants in ms,
+frames at 60 a second). The reports, write-ups and player docs give durations of a second or more in game seconds
+instead: 1 game second = 24 frames = 0.4 s of real time, so a real window of 5 s is 12.5 game s (tools/gametime.py).
+
 ## Goals and the viewer's layout
 
 - The converter builds `goals` from the stat snapshots: when a team's goal count rises, the skater whose goals rose

@@ -5,16 +5,16 @@ judging (everyone throws the puck at the net then) unless they were a decent cha
 - Decisions with the puck: at each of the person's passes and shots in the attacking zone (within 180 of the goal line),
   the options he had, valued the same way: shoot (the xG model from that spot at the goalie as he was, the game's own
   aim, a wrist shot), pass to each teammate (the league's completion rate for that length and gap to the nearest
-  opponent, times how often a completed pass received where the teammate stands led to a goal within 5 s), keep it
-  (how often possession where he is led to a goal within 5 s). League tables from every recorded Genesis game
+  opponent, times how often a completed pass received where the teammate stands led to a goal within 12.5 game s), keep it
+  (how often possession where he is led to a goal within 12.5 game s). League tables from every recorded Genesis game
   (coach_models.py). Did he pick the
   best option, and how much did he leave on the table.
 - Shot selection: the person's shots, their xG, at a goalie off the shot line or a set one.
 - Passing: completed and picked off by zone; passes that set up a shot; passes across the slot (the one-timer study).
 - Bursts (C without the puck) by what they were for: a check attempt (an opponent within reach ahead of him), a
   recovery (caught up ice, bursting back toward his net), positioning (toward the middle with no one to hit). Check
-  attempts: landed or not; recoveries and positioning: did they get him goal-side within 1.5 s. Risky checks: a check
-  attempt as the last skater goal-side of the puck, missed, and a shot against within 4 s.
+  attempts: landed or not; recoveries and positioning: did they get him goal-side within 3.75 game s. Risky checks: a check
+  attempt as the last skater goal-side of the puck, missed, and a shot against within 10 game s.
 - Pokes by what they were for: a steal (within reach of the carrier), the passing lane (out of reach and aimed away from
   the carrier, or beside a pass by the other team), wasted (out of reach, aimed at the carrier).
 - Defensive position: while the other team has the puck in his end, his skater in position (goal-side and within 25 of
@@ -25,14 +25,14 @@ judging (everyone throws the puck at the net then) unless they were a decent cha
   and CB otherwise (the weight bug), each person's count.
 - Who shoots: the shooter's working Shot Accuracy (hot / cold included) against the best on the ice for his team then.
 - Transition: after his team lost the puck outside the other team's end, how soon his skater was in position
-  (goal-side and on the puck-net line) and how often a shot against came within 5 s; after his team won it, how often a shot came within 5 s.
+  (goal-side and on the puck-net line) and how often a shot against came within 12.5 game s; after his team won it, how often a shot came within 12.5 game s.
 - Pass risk: each of his passes' chance of getting through (the league table: length and gap to the nearest opponent),
   expected against actual completions, and the risky ones (under 50%) by zone.
 - The goalie when the person took him, by the reason (the user's list): an opposing breakaway (their carrier in our half
   with none of our skaters nearer our net), a one-timer coming (their pass in the air toward our end), a carrier driving
   at the net (within 130, closing), the puck fired down the ice (theirs last, moving fast toward our end, 100+ out), a
   loose puck near the net (within 100), a carrier behind or beside the net (within 45, or behind the goal line); then
-  whether a shot followed within 3 s, goals, xG, and whether his team had the puck next. Times the game handed him the
+  whether a shot followed within 7.5 game s, goals, xG, and whether his team had the puck next. Times the game handed him the
   goalie because the goalie caught the puck are not decisions and are counted apart. Person against computer in net
   for the same kinds of shot.
 python analysis/coach_report.py <TEAM> <TEAM> <match name> ...  -> reports/coach_<first match>.md"""
@@ -530,7 +530,7 @@ def rows(c):
         ("Passing", "attacking zone: completed / picked off", f"{c['pa_ok_att']}/{c['pa_att']} / {c['pa_pick_att']}", "+"),
         ("Passing", "neutral zone: completed / picked off", f"{c['pa_ok_neu']}/{c['pa_neu']} / {c['pa_pick_neu']}", "+"),
         ("Passing", "own zone: completed / picked off", f"{c['pa_ok_def']}/{c['pa_def']} / {c['pa_pick_def']}", "+"),
-        ("Passing", "passes that set up a shot within 3 s (xG)", f"{c['pa_shot']} ({c['pa_shot_xg']:.1f})", "+"),
+        ("Passing", "passes that set up a shot within 7.5 game s (xG)", f"{c['pa_shot']} ({c['pa_shot_xg']:.1f})", "+"),
         ("Passing", "across the slot: tried / completed / shot (xG)",
          f"{c['pa_across']} / {c['pa_across_ok']} / {c['pa_across_shot']} ({c['pa_across_xg']:.1f})", "+"),
         ("Bursts (C without the puck)", "check attempts / landed", f"{c['b_check']} / {c['b_check_landed']} ({pct(c['b_check_landed'], c['b_check'])})", "+"),
@@ -538,14 +538,14 @@ def rows(c):
         ("Bursts (C without the puck)", "positioning / got him into position", f"{c['b_position']} / {c['b_position_ok']} ({pct(c['b_position_ok'], c['b_position'])})", "+"),
         ("Bursts (C without the puck)", "other bursts", c["b_other"], ""),
         ("Bursts (C without the puck)", "the game's counted checks: knockdowns", f"{c['hit_down']} of {c['hit']}", "+"),
-        ("Bursts (C without the puck)", "risky: check attempts as the last man back / missed / shot against in 4 s",
+        ("Bursts (C without the puck)", "risky: check attempts as the last man back / missed / shot against in 10 game s",
          f"{c['b_lastman']} / {c['b_lastman_miss']} / {c['b_lastman_shot']}", "-"),
         ("Pokes (B)", "steal attempts (within reach) / won the puck", f"{c['k_steal']} / {c['k_steal_won']} ({pct(c['k_steal_won'], c['k_steal'])})", "+"),
-        ("Pokes (B)", "passing-lane pokes / a pass picked off within 1 s", f"{c['k_lane']} / {c['k_lane_won']}", "+"),
+        ("Pokes (B)", "passing-lane pokes / a pass picked off within 2.5 game s", f"{c['k_lane']} / {c['k_lane_won']}", "+"),
         ("Pokes (B)", "wasted (out of reach, at the carrier, no pass near)", c["k_wasted"], "-"),
         ("Pokes (B)", "passing-lane pokes in their end / neutral zone / his end",
          f"{c['k_lane_att']} / {c['k_lane_neu']} / {c['k_lane_own']}", ""),
-        ("Pokes (B)", "a shot against within 4 s: after a steal attempt / lane poke / wasted",
+        ("Pokes (B)", "a shot against within 10 game s: after a steal attempt / lane poke / wasted",
          f"{pct(c['k_steal_cost'], c['k_steal'])} / {pct(c['k_lane_cost'], c['k_lane'])} / {pct(c['k_wasted_cost'], c['k_wasted'])}", "-"),
         ("Defensive position", "his skater in position / goal-side off the line / caught up ice",
          f"{pct(c['pos_n_in'], pos_n)} / {pct(c['pos_n_off'], pos_n)} / {pct(c['pos_n_up'], pos_n)}", ""),
@@ -560,16 +560,16 @@ def rows(c):
         ("Who shoots", "shooter's working Shot Accuracy / the best on the ice then (avg)",
          f"{c['ws_sha'] / max(1, c['ws']):.1f} / {c['ws_best'] / max(1, c['ws']):.1f}", ""),
         ("Who shoots", "shots by the best shooter on the ice (within 1)", pct(c["ws_top"], c["ws"]), "+"),
-        ("Transition", "his team lost the puck outside their end: his skater in position within 2 s", pct(c["tr_back_quick"], c["tr_back_n"]), "+"),
-        ("Transition", "· average time to in position (5 s if never)", f"{c['tr_back_s'] / max(1, c['tr_back_n']):.1f} s", "-"),
-        ("Transition", "· a shot against within 5 s", pct(c["tr_lost_shot"], c["tr_lost"]), "-"),
-        ("Transition", "his team won the puck: a shot within 5 s", pct(c["tr_won_shot"], c["tr_won"]), "+"),
+        ("Transition", "his team lost the puck outside their end: his skater in position within 5 game s", pct(c["tr_back_quick"], c["tr_back_n"]), "+"),
+        ("Transition", "· average time to in position (12.5 game s if never)", f"{2.5 * c['tr_back_s'] / max(1, c['tr_back_n']):.1f} game s", "-"),
+        ("Transition", "· a shot against within 12.5 game s", pct(c["tr_lost_shot"], c["tr_lost"]), "-"),
+        ("Transition", "his team won the puck: a shot within 12.5 game s", pct(c["tr_won_shot"], c["tr_won"]), "+"),
         ("Pass risk", "completed: actual / expected from the league table", f"{c['pr_ok']} / {c['pr_exp']:.0f} of {c['pr_n']}", "+"),
         ("Pass risk", "risky passes (under 50% to get through) in their end / neutral / his end",
          f"{c['pr_risky_att']} / {c['pr_risky_neu']} / {c['pr_risky_def']}", "-"),
         ("Pass risk", "· of those completed", f"{c['pr_risky_ok_att']} / {c['pr_risky_ok_neu']} / {c['pr_risky_ok_def']}", ""),
         ("Goalie", "takeovers (and times the game handed him the goalie, who had caught the puck)", f"{c['gt']} ({c['gt_auto']})", ""),
-    ] + [("Goalie", f"· {label}: takeovers / a shot within 3 s / goals (xG) / his team had the puck next",
+    ] + [("Goalie", f"· {label}: takeovers / a shot within 7.5 game s / goals (xG) / his team had the puck next",
           f"{c['gt_' + key]} / {c[f'gt_{key}_shot']} / {c[f'gt_{key}_goal']} ({c[f'gt_{key}_xg']:.1f}) / {c[f'gt_{key}_ours']}", "")
          for key, label in REASONS] + [
         ("Goalie", "one-timers faced, person in net: shots / goals / xG each", g("p", "onetimer"), ""),
@@ -598,7 +598,8 @@ def main():
     ra, rb = rows(tot[a]), rows(tot[b])
     out = [f"# How the people played: {a} vs {b}", "", "Games: " + ", ".join(names), "",
            "Both people measured the same way; only their own skater or goalie counts. "
-           "+ more is better, - less is better. How each is measured: analysis/coach_report.py.", ""]
+           "+ more is better, - less is better. How each is measured: analysis/coach_report.py. "
+           "Durations are game seconds (1 game second = 0.4 s of real time).", ""]
     section = None
     for (sec, label, va, way), (_, _, vb, _) in zip(ra, rb):
         if sec != section:

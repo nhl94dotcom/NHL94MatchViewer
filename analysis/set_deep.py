@@ -1,7 +1,7 @@
 """A set of Genesis games between two teams, deeper than set_report.py (2026-11-06, the user: go much deeper on the BOS-VAN
 analysis). Both teams measured the same way, from the match files:
 - every goal at the release: attackers deep and in the slot, defenders goal-side, the nearest defender, and the defending
-  person's skater (who, how far, in the shot's lane or not, goal-side or not, what he did in the 2.5 s before, a switch);
+  person's skater (who, how far, in the shot's lane or not, goal-side or not, what he did in the 6 game s before, a switch);
 - every one-timer: the pass (across the middle or not, time in the air), the goalie's slide and distance off the line;
 - shots by area and by shooter, with goals against xG; the chances that didn't go in;
 - the goalies by shot quality;
@@ -25,6 +25,7 @@ sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from export_match import own_end  # noqa: E402
 import slot_defence as SD  # noqa: E402
+import gametime as GT  # noqa: E402
 
 K = 12
 FT = 3.0
@@ -145,6 +146,8 @@ def main():
     w = L.append
     w(f"# {A} vs {B}: deeper numbers")
     w("")
+    w(GT.NOTE)
+    w("")
     w("Games: " + ", ".join(f"{i} `{g.name}`" for i, g in enumerate(games, 1)) + ". Distances in feet (3 game units a foot). "
       "How each is measured: analysis/set_deep.py.")
 
@@ -154,14 +157,14 @@ def main():
     w("")
     w("Deep: skaters within 60 ft of the goal line. Goal-side: nearer the goal line than the shooter and within 23 ft across. "
       "In the lane: within 4 ft of the line from the shooter to the middle of the net. The defending person's skater is the "
-      "one he controlled at the release; 'did' lists his bursts, checks and pokes in the 2.5 s before.")
+      "one he controlled at the release; 'did' lists his bursts, checks and pokes in the 6 game s before (game seconds: 1 = 0.4 s of real time).")
     ga = {t: Counter() for t in teams}
     for gi, g in enumerate(games, 1):
         m = g.m
         w("")
         w(f"**Game {gi}: {g.ab[0]} {m['score'][2 * (g.N - 1)]}, {g.ab[1]} {m['score'][2 * (g.N - 1) + 1]}**")
         w("")
-        w("| When | Goal | Kind | Shot from | Attackers deep / in slot | Defenders goal-side | Nearest defender | Defending person | Did (2.5 s) |")
+        w("| When | Goal | Kind | Shot from | Attackers deep / in slot | Defenders goal-side | Nearest defender | Defending person | Did (6 game s) |")
         w("|---|---|---|---|---|---|---|---|---|")
         for goal in m["goals"]:
             team, f = goal["team"], goal["f"]
@@ -195,14 +198,14 @@ def main():
                 lane = seg_dist(x, y, px, py, 0, ny) <= 12
                 gside = abs(y - ny) < abs(py - ny)
                 acts = []
-                lo = g.frame_at(g.t[fs] - 2500)
+                lo = g.frame_at(g.t[fs] - 2400)
                 for q in range(lo, fs + 1):
                     a = ACT.get(g.anim(q, dk))
                     if a in ("burst", "check", "poke", "hook") and (not acts or acts[-1] != a):
                         acts.append(a)
                 switched = any(g.ctrl(q, d) != dk for q in range(g.frame_at(g.t[fs] - 2000), fs))
                 dp = (f"{g.rec_name(fs, dk)}, {dd:.0f} ft, {'in the lane' if lane else 'goal-side' if gside else 'behind the play'}"
-                      + (", switched in the 2 s before" if switched else ""))
+                      + (", switched in the 5 game s before" if switched else ""))
                 did = ", ".join(acts) or "nothing"
                 ga[key]["lane" if lane else "gside" if gside else "behind"] += 1
                 if acts:
@@ -221,7 +224,7 @@ def main():
     for label, key in (("goals against", "goals"), ("the person had the goalie", "goalie"),
                        ("his skater in the shot's lane", "lane"), ("goal-side, not in the lane", "gside"),
                        ("behind the play", "behind"), ("his skater was the nearest defender", "nearest"),
-                       ("burst, checked or poked in the 2.5 s before", "acted"),
+                       ("burst, checked or poked in the 6 game s before", "acted"),
                        ("attackers in the slot at the release (total)", "att_slot"),
                        ("defenders goal-side of the shooter (total)", "back")):
         w(f"| {label} | " + " | ".join(str(ga[t][key]) for t in teams) + " |")
@@ -233,7 +236,7 @@ def main():
     w("Across: the pass crossed the middle of the ice (x = 0). Slide: how far the goalie moved across while the pass was in "
       "the air. Off: the goalie's distance from the shot's line at the strike.")
     w("")
-    w("| Game | When | Team | Shooter | Passer | Distance | Across | Air | Goalie slide / off | Goalie | xG | Result |")
+    w("| Game | When | Team | Shooter | Passer | Distance | Across | Air (real) | Goalie slide / off | Goalie | xG | Result |")
     w("|---|---|---|---|---|---|---|---|---|---|---|---|")
     ots = defaultdict(list)
     for gi, g in enumerate(games, 1):
@@ -255,7 +258,7 @@ def main():
                        goal=sh["result"] == "goal", gctl=sh.get("gctl"))
             ots[g.ab[team]].append(row)
             w(f"| {gi} | {g.clock(f)} | {g.ab[team]} | {g.nm(team, sh['idx'])} | {g.nm(team, p['idx']) if p else '?'} | "
-              f"{row['dist']:.0f} ft | {'yes' if row['across'] else 'no'} | {row['air'] or 0:.2f} s | "
+              f"{row['dist']:.0f} ft | {'yes' if row['across'] else 'no'} | {row['air'] or 0:.2f} s (real) | "
               f"{row['slide'] or 0:.0f} / {row['off'] or 0:.0f} ft | {row['gctl']} | {row['xg']:.2f} | {sh['result']} |")
     w("")
     w("| One-timers | " + " | ".join(teams) + " |")
@@ -365,7 +368,7 @@ def main():
     w("## 5. Hits")
     w("")
     w("The game's counted checks (team = the thrower's). Zone by where it happened, for the thrower. 'Won the puck': his team "
-      "had it within 1.5 s; then a shot or goal by his team within 6 s.")
+      "had it within 4 game s; then a shot or goal by his team within 15 game s.")
     w("")
     H = {t: Counter() for t in teams}
     hitters = {t: defaultdict(Counter) for t in teams}
@@ -377,7 +380,7 @@ def main():
             ny_own = g.net_y(f, h["team"])
             zone = "neutral" if abs(h["y"]) <= 89 else "own" if (h["y"] > 0) == (ny_own > 0) else "attacking"
             who_ = "person" if h.get("human") else "computer"
-            won = any(g.owner_team(q) == h["team"] for q in range(f, min(g.N, g.frame_at(g.t[f] + 1500))))
+            won = any(g.owner_team(q) == h["team"] for q in range(f, min(g.N, g.frame_at(g.t[f] + 1600))))
             after = [s for s in sh_by if s[1] == h["team"] and 0 <= g.t[min(s[0], g.N - 1)] - g.t[f] <= 6000]
             after_against = [s for s in sh_by if s[1] != h["team"] and 0 <= g.t[min(s[0], g.N - 1)] - g.t[f] <= 6000]
             c = H[T]
@@ -399,8 +402,8 @@ def main():
     rows = [("hits", "hits"), ("by the person's skater", "person"), ("by computer skaters", "computer"),
             ("in his own end", "zone own"), ("in the neutral zone", "zone neutral"), ("in the attacking end", "zone attacking"),
             ("on the puck carrier", "on carrier"), ("on the carrier and his team won the puck", "won"),
-            ("a shot by his team within 6 s", "shot after"), ("a goal by his team within 6 s", "goal after"),
-            ("a goal against within 6 s", "goal against after")]
+            ("a shot by his team within 15 game s", "shot after"), ("a goal by his team within 15 game s", "goal after"),
+            ("a goal against within 15 game s", "goal against after")]
     w("| | " + " | ".join(teams) + " |")
     w("|---|" + "---|" * len(teams))
     for lab, k in rows:
@@ -411,7 +414,7 @@ def main():
         w(f"| {k[8:]} | " + " | ".join(str(H[t][k]) for t in teams) + " |")
     for t in teams:
         w("")
-        w(f"**{t} hitters** (hits, on the carrier, by the person, a goal for within 6 s): " + "; ".join(
+        w(f"**{t} hitters** (hits, on the carrier, by the person, a goal for within 15 game s): " + "; ".join(
             f"{n} {c['hits']}, {c['carrier']}, {c['person']}, {c['goal after']}"
             for n, c in sorted(hitters[t].items(), key=lambda kv: -kv[1]["hits"])))
 
@@ -455,7 +458,7 @@ def main():
             a, b = dl["f"], dl.get("end", dl["f"])
             sh = [s for s in g.shots if s["team"] == dl["team"] and a <= s["f"] <= b]
             share = sum(g.owner_team(q) == dl["team"] for q in range(a, b)) / max(1, b - a)
-            w(f"| {gi} | {g.clock(a)} | {g.ab[dl['team']]} | {(g.t[min(b, g.N - 1)] - g.t[a]) / 1000:.1f} s | {share:.0%} | "
+            w(f"| {gi} | {g.clock(a)} | {g.ab[dl['team']]} | {GT.gsec(g.t[min(b, g.N - 1)] - g.t[a]):.0f} game s | {share:.0%} | "
               f"{len(sh)} ({sum(s['result'] == 'goal' for s in sh)}, {sum(s.get('xg') or 0 for s in sh):.1f}) |")
     strength = {t: Counter() for t in teams}
     for g in games:
@@ -514,7 +517,7 @@ def main():
                 r[2] += bool(got) and won
                 r[3] += sum(s.get("xg") or 0 for s in got) if won else 0
                 r[4] += any(s["result"] == "goal" for s in got)
-    w("| Zone (for the team) | " + " | ".join(f"{t}: draws / won / an attempt within 5 s after a win (xG) / goals within 5 s" for t in teams) + " |")
+    w("| Zone (for the team) | " + " | ".join(f"{t}: draws / won / an attempt within 12.5 game s after a win (xG) / goals within 12.5 game s" for t in teams) + " |")
     w("|---|" + "---|" * len(teams))
     for lab in ("attacking", "neutral", "defending"):
         w(f"| {lab} | " + " | ".join(f"{F[t][lab][0]} / {F[t][lab][1]} / {F[t][lab][2]} ({F[t][lab][3]:.1f}) / {F[t][lab][4]}"
@@ -524,7 +527,7 @@ def main():
     w("")
     w("## 9. Which skaters each person ran")
     w("")
-    w("Seconds the person controlled each skater (goalie included), split by who had the puck.")
+    w("Game seconds the person controlled each skater (goalie included), split by who had the puck.")
     run = {t: defaultdict(lambda: [0.0, 0.0, 0.0]) for t in teams}
     switches = {t: [0, 0.0] for t in teams}
     for g in games:
@@ -532,7 +535,7 @@ def main():
             T = g.ab[team]
             prev = None
             for q in range(1, g.N):
-                dt = min(100, g.t[q] - g.t[q - 1]) / 1000
+                dt = GT.gsec(min(100, g.t[q] - g.t[q - 1]))
                 if g.m["puck"][3 * q + 2] < -100:
                     continue
                 k = g.ctrl(q, team)
@@ -550,10 +553,10 @@ def main():
         tot = sum(sum(v) for v in run[t].values()) or 1
         w("")
         w(f"**{t}** (with the puck / the other team's puck / loose): " + "; ".join(
-            f"{n} {100 * sum(v) / tot:.0f}% ({v[0]:.0f} / {v[1]:.0f} / {v[2]:.0f} s)"
+            f"{n} {100 * sum(v) / tot:.0f}% ({v[0]:.0f} / {v[1]:.0f} / {v[2]:.0f} game s)"
             for n, v in sorted(run[t].items(), key=lambda kv: -sum(kv[1]))[:9]))
         w(f"Skater-to-skater switches while the other team had the puck: {switches[t][0]}, "
-          f"{switches[t][0] / max(1, switches[t][1]) * 60:.0f} a minute of their possession.")
+          f"{switches[t][0] / max(1, switches[t][1]) * 60:.0f} a game minute of their possession.")
 
     # ---------------------------------------------------------------- the league's recorded games
     w("")

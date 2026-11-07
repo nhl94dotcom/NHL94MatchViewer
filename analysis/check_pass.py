@@ -12,13 +12,14 @@ first, within RESULT_MS of the burst. What the carrier did from the burst until 
   nobody had it within 3 s, or the passer got it back);
 - shot it before contact;
 - caught: contact came first and he lost the puck within LOST_MS. Split by his B (a rising edge on his controller)
-  in the first JUST_MS after contact (the user: a B press 0.2 s or more after the check is ignored here; B without the
+  in the first JUST_MS after contact (the user: a B press 0.2 s (real) or more after the check is ignored here; B without the
   puck also switches skaters): B a moment too late, the pass started (his pass animation began, but the puck was
   knocked loose before it left); B a moment too late, no pass came off (the puck was already gone); or no B in time;
 - held on through contact: contact came first and he still had it LOST_MS later (a failed check);
 - the check missed: no contact, and what he did then (kept it, passed later, lost it).
 Two bursts at the same carrier that end in the same pass, shot or lost puck count once (the later burst).
-Timing: the pass's lead, from its release to the contact that followed (or to the checker's closest approach when
+Timing (real seconds: these are split-second, so they stay in real time, marked "(real)"; the follow-up windows
+are shown in game seconds, FOLLOW_MS = 12.5 game s): the pass's lead, from its release to the contact that followed (or to the checker's closest approach when
 he never got there), and the checker's distance at the release. What followed: the passing team's attempts and
 xG within FOLLOW_MS while it kept the puck; after a pass picked off, the other team's within FOLLOW_MS.
 The carrier's buttons come from the match file's controller words (pad / pad2 with padTeam / pad2Team); a team with
@@ -198,16 +199,16 @@ def detail(rows_by, cols):
     passed = lambda es: [e for e in es if e["out"].startswith("passed")]
     lines = [
         ("passes out of a check: reached a teammate", lambda es: f"{sum(e['out'] == OUTCOMES[0] for e in passed(es))} of {len(passed(es))}"),
-        ("... their attempts within 5 s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
+        ("... their attempts within 12.5 game s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
             *(lambda v: (sum(x[0] for x in v), sum(x[1] for x in v), sum(x[2] for x in v)))([e["for"] for e in es if e["out"] == OUTCOMES[0]]))),
-        ("picked off: attempts against within 5 s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
+        ("picked off: attempts against within 12.5 game s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
             *(lambda v: (sum(x[0] for x in v), sum(x[1] for x in v), sum(x[2] for x in v)))([e["against"] for e in es if "against" in e and e["out"].startswith("passed")]))),
-        ("caught: attempts against within 5 s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
+        ("caught: attempts against within 12.5 game s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
             *(lambda v: (sum(x[0] for x in v), sum(x[1] for x in v), sum(x[2] for x in v)))([e["against"] for e in es if "against" in e and e["out"].startswith("caught")]))),
-        ("median lead of the pass before contact (s)", lambda es: f"{sorted(v := [e['lead'] for e in passed(es) if e.get('lead') is not None])[len(v) // 2]:.2f}"),
+        ("median lead of the pass before contact (s, real)", lambda es: f"{sorted(v := [e['lead'] for e in passed(es) if e.get('lead') is not None])[len(v) // 2]:.2f}"),
         ("passes where the checker never reached him", lambda es: f"{sum(e.get('lead') is None for e in passed(es))}"),
         ("median checker distance at the release (ft)", lambda es: f"{sorted(v := [e['dist_rel'] / 3 for e in passed(es)])[len(v) // 2]:.0f}"),
-        ("B a moment too late, the pass started: median start after contact (s)", lambda es: f"{sorted(v := [e['b_late'] for e in es if e['out'] == OUTCOMES[5]])[len(v) // 2]:+.2f}"),
+        ("B a moment too late, the pass started: median start after contact (s, real)", lambda es: f"{sorted(v := [e['b_late'] for e in es if e['out'] == OUTCOMES[5]])[len(v) // 2]:+.2f}"),
         ("checks by the person's skater / computer skaters", lambda es: f"{sum(e['checker_person'] for e in es)} / {sum(not e['checker_person'] for e in es)}"),
     ]
     for lab, fn in lines:
@@ -217,11 +218,11 @@ def detail(rows_by, cols):
 
 def by_lead(es):
     """Outcome of passes out of a check by how long before contact they left."""
-    bins = [("checker never got there", lambda e: e.get("lead") is None), ("under 0.10 s before contact", lambda e: e.get("lead") is not None and e["lead"] < 0.10),
+    bins = [("checker never got there", lambda e: e.get("lead") is None), ("under 0.10 s (real) before contact", lambda e: e.get("lead") is not None and e["lead"] < 0.10),
             ("0.10-0.25 s", lambda e: e.get("lead") is not None and 0.10 <= e["lead"] < 0.25),
             ("0.25-0.50 s", lambda e: e.get("lead") is not None and 0.25 <= e["lead"] < 0.50),
             ("0.50 s or more", lambda e: e.get("lead") is not None and e["lead"] >= 0.50)]
-    L = ["| Pass left | passes | reached a teammate | picked off by the checker | by another opponent | reached nobody |", "|---|---|---|---|---|---|"]
+    L = ["| Pass left (real time) | passes | reached a teammate | picked off by the checker | by another opponent | reached nobody |", "|---|---|---|---|---|---|"]
     ps = [e for e in es if e["out"].startswith("passed")]
     for lab, fn in bins:
         sel = [e for e in ps if fn(e)]
@@ -251,7 +252,7 @@ def main():
                     rows[f"{you}'s opponents"].append(e)
         cols = list(rows)
         out += [f"# Passing out of a check: every recorded Genesis game ({games} games)", "",
-                "How it is measured: analysis/check_pass.py. A person's carrier, an opposing skater bursting at him.", ""]
+                "How it is measured: analysis/check_pass.py. A person's carrier, an opposing skater bursting at him. Split-second timings are real seconds; the follow-up windows are game seconds (1 game second = 0.4 s of real time).", ""]
         out += table(rows, cols) + [""] + detail(rows, cols) + ["", "**When the pass left, every person**", ""] + by_lead(rows["every person"])
         if you:
             out += ["", f"**When the pass left, {you}'s person**", ""] + by_lead(rows[f"{you}'s person"])
@@ -266,7 +267,7 @@ def main():
                 rows[ab[e["team"]]].append(e)
                 listing.append((name, m, e))
         cols = sorted(rows)
-        out += ["# Passing out of a check: " + ", ".join(args), "", "How it is measured: analysis/check_pass.py.", ""]
+        out += ["# Passing out of a check: " + ", ".join(args), "", "How it is measured: analysis/check_pass.py. Split-second timings are real seconds; the follow-up windows are game seconds (1 game second = 0.4 s of real time).", ""]
         out += table(rows, cols) + [""] + detail(rows, cols)
         for c in cols:
             out += ["", f"**When the pass left, {c}**", ""] + by_lead(rows[c])
@@ -276,8 +277,8 @@ def main():
             f, A = e["f"], e["team"]
             nm = lambda team, i: m["rosters"][team][i]["name"].split()[-1] if 0 <= i < len(m["rosters"][team]) else "?"
             c = m["clock"][f]
-            extra = (f"{e['lead']:.2f} s" if e.get("lead") is not None else "never reached") if e["out"].startswith("passed") else \
-                (f"pass began {e['b_late']:.2f} s after contact" if e["out"] == OUTCOMES[5] else f"B {e['b_late']:.2f} s after contact" if "b_late" in e else "")
+            extra = (f"{e['lead']:.2f} s (real)" if e.get("lead") is not None else "never reached") if e["out"].startswith("passed") else \
+                (f"pass began {e['b_late']:.2f} s (real) after contact" if e["out"] == OUTCOMES[5] else f"B {e['b_late']:.2f} s (real) after contact" if "b_late" in e else "")
             out.append(f"| {name[11:]} | {max(0, m['t'][f] // 1000 - 2)} | P{m['period'][f] + 1} {c // 60}:{c % 60:02d} | {m['abbr'][A]} {nm(A, e['carrier'])} | "
                        f"{nm(1 - A, e['checker'])}{' (person)' if e['checker_person'] else ''} | {e['zone']} | {e['out']} | {extra} |")
         path = Path("reports") / f"check_pass_{'-'.join(cols)}_{args[0][:10]}.md"

@@ -97,7 +97,7 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## Things to review in the replays (each a quick look)
 
-1. **Goalie giveaway goals** (a goalie's pass picked off, a goal within 6 s): Moog twice, Joseph, Belfour in the older
+1. **Goalie giveaway goals** (a goalie's pass picked off, a goal within 15 game s): Moog twice, Joseph, Belfour in the older
    recordings. Are they right?
 2. **Own goals** found in the older games: Juneau and Suter (CGY-BOS), Ciccarelli (capture2), Robitaille (capture3).
    Did each defender really put it in his own net? (Steve Smith's in CHI-CGY was not one: it was an unrecorded SNES

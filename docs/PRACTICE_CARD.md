@@ -8,7 +8,7 @@ is recorded; the tally boxes are a backup. Afterwards, tell me the game's name (
 
 - An exhibition game against the computer, you on one team. Use a forward with good Shot Power (on the Genesis, a weak
   shooter can't wind up fully).
-- **Stop, then wait about 2 seconds** before shooting, so the goalie sets himself. A defender will come at you, so don't
+- **Stop, then wait about 5 game seconds (2 s)** before shooting, so the goalie sets himself. A defender will come at you, so don't
   wait much longer; if he's on you, skate off and set up again.
 - **Wind up fully**: hold the shoot button to the end of the wind-up.
 - The aim is the d-pad direction **held while you wind up and release**. Press it after you start the wind-up, so you

@@ -9,7 +9,7 @@ Rules this keeps, each from a mistake in an earlier write-up:
 - Tie a stat to goals, not only to totals, and count a goal once when several turnovers or misses lead to it.
 - The goalie is found by role, never as record 0. Animations are 4 characters a record.
 - xG depends on goalie position and Shot Accuracy, so these aren't independent reasons. One shot's xG is rough.
-- Post luck is a note unless it strongly affects an outcome. "Rush" here only means within 5 s of the zone entry.
+- Post luck is a note unless it strongly affects an outcome. "Rush" here only means within 12.5 game s of the zone entry. Durations are game seconds (tools/gametime.py).
 
 python analysis/set_report.py <TEAM> <TEAM> <match> ...   -> reports/set_<TEAM>-<TEAM>_<first match's date>.md"""
 import json
@@ -23,6 +23,7 @@ sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from share_game import load_js_object  # noqa: E402
 import check_outcomes as CO  # noqa: E402
+import gametime as GT  # noqa: E402
 import slot_defence as SD  # noqa: E402
 import check_pass as CPASS  # noqa: E402
 
@@ -116,7 +117,7 @@ def main():
             x["az"], x["paz"] = tt["attackZone"], tt["possZones"][0]
             x["fow"], x["fo"], x["pim"], x["chk"] = tt["fow"], tt["fo"], tt["pim"], tt["checks"]
             x["pChk"] = tt["persHits"][0]
-            x["bursts"], x["pokes"], x["pokeT"], x["gSec"] = hb.get("bursts", 0), hb.get("pokes", 0), hb.get("pokeTakeaways", 0), hb.get("goalieSeconds", 0)
+            x["bursts"], x["pokes"], x["pokeT"], x["gSec"] = hb.get("bursts", 0), hb.get("pokes", 0), hb.get("pokeTakeaways", 0), GT.gs(hb.get("goalieSeconds", 0))
             x["getUps"] = hb.get("getUps", 0)
             # passing out of a check (check_pass.py, Genesis): passes that got away before contact, and late B
             cp = [e for e in CP_EVENTS(m) if e["team"] == t]
@@ -204,9 +205,9 @@ def main():
             sg = 1 if xy(i, g0)[1] > 0 else -1
             X, Y = xy(i, o)
             if sg * Y >= 89:
-                A[(ab[t], gi)]["carryEnd"] += dt
+                A[(ab[t], gi)]["carryEnd"] += GT.gs(dt)
                 if abs(X) <= 35 and 0 <= 264 - sg * Y <= 100:
-                    A[(ab[t], gi)]["carrySlot"] += dt
+                    A[(ab[t], gi)]["carrySlot"] += GT.gs(dt)
         # each goal, with how it began
         lines = [f"**Game {gi}: {ab[0]} {score[0]}, {ab[1]} {score[1]}{' (OT)' if d.get('overtime') else ''}**", ""]
         fos = sorted(fo["f"] for fo in m.get("faceoffs", []))
@@ -218,13 +219,13 @@ def main():
             them = 1 - x_["team"]
             last = next((i for i in range(f, -1, -1) if O[i] is not None and 0 <= O[i] < 12 and (O[i] < 6) == (them == 0)), -1)
             if fo > last:
-                began = f"faceoff, {(T[f] - T[fo]) / 1000:.0f} s before"
+                began = f"faceoff, {GT.gsec(T[f] - T[fo]):.0f} game s before"
             elif last >= 0:
                 r_ = int(RO[last * K + O[last]], 36)
                 nm = Rs[them][r_]["name"].split()[-1] if r_ < len(Rs[them]) else "?"
                 tv = next((e for e in m["turnovers"] if e["from"] == them and e["kind"] != "dump-in" and abs(T[e.get("lost", e["f"])] - T[last]) <= 300), None)
                 shot = any(z["team"] == them and abs(T[z["f"]] - T[last]) <= 700 for z in m["shotList"])
-                began = f"{tv['how'] if tv else 'his shot' if shot else 'the puck coming loose'}, {nm}, {(T[f] - T[last]) / 1000:.0f} s before"
+                began = f"{tv['how'] if tv else 'his shot' if shot else 'the puck coming loose'}, {nm}, {GT.gsec(T[f] - T[last]):.0f} game s before"
             else:
                 began = "?"
             name = Rs[x_["team"]][x_["scorer"]]["name"].split()[-1] if isinstance(x_.get("scorer"), int) and x_["scorer"] < len(Rs[x_["team"]]) else "?"
@@ -251,27 +252,28 @@ def main():
     tot = lambda t, c: sum(A[(t, i)][c] for i in R_)
     side = lambda t, c, home: sum(A[(t, i)][c] for i in R_ if bool(A[(t, i)]["home"]) == home)
     w(f"# {a} vs {b}: the numbers\n")
+    w(GT.NOTE + "\n")
     w("| Game | Home | Result | xG | Deserve to win (winner) | Match |\n|---|---|---|---|---|---|")
     L += head
     w("")
     w("## Home and away\n")
     w(f"| | {a} home | {a} away | {b} home | {b} away |\n|---|---|---|---|---|")
     for lab, c, fmt in (("Goals", "goals", "{:.0f}"), ("xG", "xg", "{:.1f}"), ("Attempts", "att", "{:.0f}"), ("Slot attempts", "slot", "{:.0f}"),
-                        ("xG from the slot", "slotX", "{:.1f}"), ("Shots of 0.4 xG or better", "xg40", "{:.0f}"), ("Seconds carrying in the other end", "carryEnd", "{:.0f}"),
-                        ("Seconds carrying in the slot", "carrySlot", "{:.0f}"), ("Carried or passed entries", "ce", "{:.0f}"), ("... that led to an attempt", "ceS", "{:.0f}")):
+                        ("xG from the slot", "slotX", "{:.1f}"), ("Shots of 0.4 xG or better", "xg40", "{:.0f}"), ("Game seconds carrying in the other end", "carryEnd", "{:.0f}"),
+                        ("Game seconds carrying in the slot", "carrySlot", "{:.0f}"), ("Carried or passed entries", "ce", "{:.0f}"), ("... that led to an attempt", "ceS", "{:.0f}")):
         w(f"| {lab} | " + " | ".join(fmt.format(side(t, c, h)) for t in teams for h in (True, False)) + " |")
     w("")
     w("## Game by game\n")
     w("| | " + " | ".join(f"{t} {i}" for t in teams for i in R_) + f" | {a} | {b} |\n|---|" + "---|" * (2 * n + 2))
     ROWS = (("Goals", "goals", 0), ("xG", "xg", 1), ("Attempts", "att", 0), ("Slot attempts", "slot", 0), ("xG from the slot", "slotX", 1), ("Goals from the slot", "slotG", 0),
-            ("Puck in their end (game s)", "az", 0), ("Own possession there (game s)", "paz", 0), ("Seconds carrying in their end", "carryEnd", 0), ("Seconds carrying in the slot", "carrySlot", 0),
+            ("Puck in their end (game s)", "az", 0), ("Own possession there (game s)", "paz", 0), ("Game seconds carrying in their end", "carryEnd", 0), ("Game seconds carrying in the slot", "carrySlot", 0),
             ("Odd-man rushes", "odd", 0), ("Goals off them", "oddG", 0), ("Wrist shots", "wr", 0), ("Wrist goals", "wrG", 0), ("One-timers", "ot", 0), ("One-timer goals", "otG", 0), ("One-timers from outside the slot", "otOut", 0), ("Goals from those", "otOutG", 0),
             ("Slapshots", "sl", 0), ("Slapshot goals", "slG", 0), ("Posts", "posts", 0), ("xG on posts", "postX", 1),
-            ("Pucks lost", "lost", 0), ("Goal against within 5 s of one", "lostGoals", 0), ("... from his own mistake", "lostGoalsOwn", 0),
+            ("Pucks lost", "lost", 0), ("Goal against within 12.5 game s of one", "lostGoals", 0), ("... from his own mistake", "lostGoalsOwn", 0),
             ("Passes tracked", "passT", 0), ("Reached a teammate", "passOk", 0), ("Picked off", "passPick", 0),
             ("Passes out of a check (Genesis)", "cpN", 0), ("... reached a teammate", "cpOk", 0), ("... picked off", "cpPick", 0), ("Caught: B a moment too late", "cpLate", 0), ("Faceoffs won", "fow", 0), ("Faceoffs", "fo", 0),
             ("Checks (game's count)", "chk", 0), ("By the person", "pChk", 0), ("Hits taken on the carrier", "hitOn", 0), ("Knocked down", "hitDown", 0), ("Penalty minutes", "pim", 0),
-            ("Bursts", "bursts", 0), ("Pokes", "pokes", 0), ("Poke takeaways", "pokeT", 0), ("Get-ups", "getUps", 0), ("Goalie control (s)", "gSec", 0),
+            ("Bursts", "bursts", 0), ("Pokes", "pokes", 0), ("Poke takeaways", "pokeT", 0), ("Get-ups", "getUps", 0), ("Goalie control (game s)", "gSec", 0),
             ("Shots faced, person in net", "gk_person_n", 0), ("Goals", "gk_person_g", 0), ("xG", "gk_person_x", 1), ("Shots faced, computer in net", "gk_cpu_n", 0), ("Goals", "gk_cpu_g", 0), ("xG", "gk_cpu_x", 1),
             ("Maxed Shot Accuracy, top 5 skaters", "shaMax", 0))
     for lab, c, dec in ROWS:
@@ -308,7 +310,7 @@ def main():
         w(f"| {s_} | {vals[0]} | {vals[1]} |")
     w("")
     w("## Check attempts\n")
-    w("| | Attempts | Won the puck | Goal-side before / 1 s after | Shots in 6 s | xG | Goal in 6 s |\n|---|---|---|---|---|---|---|")
+    w("| | Attempts | Won the puck | Goal-side before / 2.5 game s after | Shots in 15 game s | xG | Goal in 15 game s |\n|---|---|---|---|---|---|---|")
     for t in teams:
         for r in CO.rows(checks[t]):
             w(f"| {t} {r[0]} | {r[1]} | {r[2]} | {r[3]} / {r[4]} | {r[5]} | {r[6]:.1f} | {r[7]} |")
@@ -318,7 +320,7 @@ def main():
     w("")
     for t in teams:
         v = {(e["game"], e["goal_f"]) for e in checks[t] if e["goal"] and e["result"] != "hit" and not e["late"]}
-        w(f"- {t}: {len(v)} goals against within 6 s of a miss (bursts under 1 s before the shot not counted).")
+        w(f"- {t}: {len(v)} goals against within 15 game s of a miss (bursts under 2.5 game s before the shot not counted).")
     w("")
     w("## Players\n")
     for t in teams:

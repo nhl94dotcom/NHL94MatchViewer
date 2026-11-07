@@ -548,7 +548,7 @@
 <text x='640.0' y='236.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>goals went in on the</text>
 <text x='640.0' y='253.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>shooter's side.</text>
 <text x='640.0' y='270.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'></text>
-<text x='640.0' y='287.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>He's locked 0.72 s: keep</text>
+<text x='640.0' y='287.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>He's locked 0.72 s (real): keep</text>
 <text x='640.0' y='304.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>gliding and shoot to your</text>
 <text x='640.0' y='321.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>own side of the net.</text>
 </svg>

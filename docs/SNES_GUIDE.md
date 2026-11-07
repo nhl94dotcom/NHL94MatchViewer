@@ -10,6 +10,9 @@ Playing the Genesis version? It differs in important ways: see the [Genesis play
 Some parts of the SNES code haven't been read yet (SNES_MECHANICS.md section 16 lists them). Where this guide has
 nothing to say about something, that's why; it doesn't assume the SNES works like the Genesis.
 
+Times are game seconds, as the game clock counts them: 1 game second is 0.4 s of real time. Split-second timings, like
+when to press a button, are real seconds, marked (real).
+
 **Buttons:**
 
 | Button | With the puck | Without the puck |
@@ -166,8 +169,8 @@ you take him, are played by the computer.
 | **Stick Handling** | Keeping and stealing the puck, catching passes, and **wobbling instead of falling when hit** (12 or more) | Wobble: **step 5 and 6 always; step 4 only at 78 and up or when maxed; lower steps only when maxed** |
 | **Checking** | Your knockdown chance on a check; **upending** (10+ of 15 as played, 9); **how often your computer teammates go for a hit** | Moderate for you, big for the computer's players (13.1) |
 | **Pass Accuracy** | How steady your passes' speed is (the game sets the speed by distance), **and how far your flips stray** | Moderate: steadier passes bobble less; it's the flip's accuracy (8.2) |
-| **Off. Awareness** | How quickly **computer-controlled** teammates react on offence and to loose pucks (0.25 s down to 0.12 s) | **Nothing for the player you control** |
-| **Def. Awareness** | How quickly computer teammates react on defence (0.37 s down to 0.12 s: a bigger range than Offensive) | Matters for the four skaters you're not controlling |
+| **Off. Awareness** | How quickly **computer-controlled** teammates react on offence and to loose pucks (0.25 s down to 0.12 s, real) | **Nothing for the player you control** |
+| **Def. Awareness** | How quickly computer teammates react on defence (0.37 s down to 0.12 s, real: a bigger range than Offensive) | Matters for the four skaters you're not controlling |
 | **Aggressiveness** | Penalty chance. **Maxed (below its band's middle) is the worst** | **Big** if you play with penalties on (section 10) |
 | **Endurance** | Energy | **Nothing with line changes off** |
 
@@ -218,8 +221,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   stack into a runaway skater as they can on the Genesis: the SNES turns that switch back off reliably (SNES_MECHANICS
   3.3).
 - **Don't skate into the goalie with the puck.** Any contact knocks you down and loses the puck, unless your Stick
-  Handling is 12+ (2.1), in which case you wobble and **keep the puck**. But **a second contact within a second of a
-  wobble always knocks you down**: get away from him.
+  Handling is 12+ (2.1), in which case you wobble and **keep the puck**. But **a second contact within 2.5 game seconds (1 s of real time)
+  of a wobble always knocks you down**: get away from him.
 
 ---
 
@@ -292,7 +295,7 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   swings.
 - **They go where your d-pad points**: you aim them, unlike the Genesis.
 - **Time the A press late.** The swing starts the moment you press, and the puck must reach his stick blade before it
-  ends: in recorded games every one-timer that connected came within 0.6 s of the press. Press A as the pass is about
+  ends: in recorded games every one-timer that connected came within 0.6 s (real) of the press. Press A as the pass is about
   to arrive, not as soon as you pass (the Genesis gives you almost a second, the SNES doesn't).
 - **They beat computer goalies:** while a pass is in the air the computer goalie **loses his Agility** and is slow to
   slide across, and every pass delays his next adjustment. A quick pass across and a one-timer catches him moving.
@@ -314,8 +317,8 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   Handling. Long passes to poor stickhandlers bobble; short passes almost never do. That's why the same player hardly
   ever bobbles twice in a row: the pass back to him usually comes from close by. A long pass back would bobble again.
 - **Why the puck sometimes goes right through a stick:** a player can't touch the puck for a moment after he passes
-  (up to about 0.4 s for a long pass), shoots (a quarter of a second), swings a one-timer, flips it (half a second), loses
-  it to a steal (about half a second), or has it bounce off him; for 2 seconds after a fall, and through a whole goal
+  (up to about 0.4 s (real) for a long pass), shoots (a quarter of a second), swings a one-timer, flips it (half a second), loses
+  it to a steal (about half a second), or has it bounce off him; for 5 game seconds (2 s of real time) after a fall, and through a whole goal
   celebration. A puck in the air or still rising also goes by. Otherwise any stick within reach of a slow puck takes it.
 - **Which way:** hold the d-pad toward your teammate as you press B and the pass goes at once that way. Without a
   direction, it goes when you let go of B, the way your player is facing.
@@ -336,7 +339,7 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - Your skater **turns to face up the ice first**, so it comes out late if you were facing sideways.
 - **It strays a lot**: the code allows up to about 23 ft along the ice and 8 ft across with perfect Pass Accuracy, up
   to about 33 and 18 ft with the worst.
-- **Played in the game** (2026-10-30): every flip comes down about 1.6 seconds later, after rising about 9 ft. From
+- **Played in the game** (2026-10-30): every flip comes down about 4 game seconds (1.6 s of real time) later, after rising about 9 ft. From
   your own end or centre it **lands short of its spot**, 5-20 ft inside the blue line (40-53 ft out from the goal
   line, above the circles), and slides on toward the corner. From inside the zone it lands about 10 ft out from the
   goal line, **on the far side** of the net from you, about 10 ft across. Good Pass Accuracy halves how far it strays
@@ -352,12 +355,12 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **There's no weight bug**: a person and the computer check the same way, and a heavier checker does only slightly
   better (50% against 39% in recorded games). **The Genesis "CB check" gains nothing here.**
 - **No "same man" rule**: you can knock the same player down again straight away.
-- **Burst from close.** The check only counts during the first 0.4 s of a burst. Reach your man later and you just
+- **Burst from close.** The check only counts during the first 0.4 s (real) of a burst. Reach your man later and you just
   shove him along (he stays up and keeps the puck).
 - **Upending** (the flip): hit a man from the side or behind while he skates **straight up or down the ice**, with a
   checker whose Checking is high (10 or more of 15 as played, which the hot / cold bug gives many players). Hit him from
   the front and he falls backward; at an angle, forward. One fall in eight in recorded games was an upend.
-- **A man who wobbles keeps the puck**, but **a second hit within a second always knocks him down**: follow up.
+- **A man who wobbles keeps the puck**, but **a second hit within 2.5 game seconds (1 s of real time) always knocks him down**: follow up.
 - **A soft check can leave you glued to the carrier.** If your burst meets him without much closing speed, he stays up
   and the two of you skate along together, even overlapping, and from then on no check can land: the game only checks
   players who are moving toward each other. Peel off and come at him again rather than riding along. With the puck, it's
@@ -407,7 +410,7 @@ and any skater twice as often within about 13 feet of the puck.
 ### 10.3 Getting up fast (a glitch)
 
 **When your player is knocked down, press Y (hook) and he gets up at once**, straight into a hook. The game checks the
-hook button before the lock that keeps a fallen player down. In recorded games, players who did it were up in 0.5-1.2 s
+hook button before the lock that keeps a fallen player down. In recorded games, players who did it were up in 0.5-1.2 s (real)
 instead of 2.3. It is a hook, though: near an opponent it can draw a hooking call. The viewer and the season page
 count these as **Get-ups**, apart from real hooks.
 
@@ -471,7 +474,7 @@ went in within 12.6 units of a goalie's centre.
 
 - **He's slow to react**: he rethinks only every few frames (more often with high Defensive Awareness), heading for
   where the puck is going on a spot about 7 feet out.
-- **When a shot is coming he slides to where it will cross**, starts a save move about a third of a second before it
+- **When a shot is coming he slides to where it will cross**, starts a save move about a third of a second (real) before it
   arrives, and **keeps sliding through the save**. Shots that make him slide a long way, quickly, are the ones that beat
   him: across the crease, or a pass across and a one-timer.
 - **He freezes when you wind up a shot** while skating straight up or down the ice: wind up, then shoot where he isn't.
@@ -481,12 +484,12 @@ went in within 12.6 units of a goalie's centre.
 - **A goalie holding the puck can't be pushed into the net** (on the Genesis he can).
 - **Passes slow him down** (7): attack with passes across and one-timers.
 - He has two attacking moves, the same for every goalie: a **poke check** at a carrier close in front (now and then,
-  then not again for 4 seconds), and a **dive** at a loose rebound, which he gets a single small chance at right after
+  then not again for 10 game seconds, 4 s of real time), and a **dive** at a loose rebound, which he gets a single small chance at right after
   each save. In recorded games computer goalies poked 18 times in 137 minutes and never dived.
 - **Your own goalie** (manual goalie on): X pokes, holding Y dives (toward the d-pad direction, or at the puck), holding A
   makes save moves.
-- **When he has the puck and an opponent comes within about 7 feet, he drops onto it and covers it** for a second and a
-  half; with nobody near he looks to pass it out. A goalie you control never does this.
+- **When he has the puck and an opponent comes within about 7 feet, he drops onto it and covers it** for about 4 game seconds
+  (1.5 s of real time); with nobody near he looks to pass it out. A goalie you control never does this.
 
 The viewer's **xG** plays every SNES shot out this way and shows the chance it had of going in, on each shot, the
 cards and the team stats; the **xG map** (Map menu) shows it for every spot.
@@ -500,8 +503,8 @@ cards and the team stats; the **xG map** (Map menu) shows it for every spot.
 
 - **The shot ends as soon as anyone picks up a loose puck, including you**: if you lose the puck, picking it back up
   ends your penalty shot. Don't lose it.
-- It also ends if the loose puck drifts back away from the net for almost a second, hits the boards, or the shot clock
-  (about 17 s) runs out.
+- It also ends if the loose puck drifts back away from the net for almost a second (real), hits the boards, or the shot clock
+  (about 17 s of real time) runs out.
 - **The retake bug:** if the net is knocked off during a penalty shot, the next faceoff becomes **another penalty shot**,
   starting from wherever the shooter lined up: after an attacker knocks the net off, the dot just outside the zone.
 
@@ -517,7 +520,7 @@ time instead of 96%). That's why SNES games are so physical, and why the compute
 
 ### 13.2 Awareness
 
-- **Awareness is reaction time** for computer players: from about 0.25 s (Offensive) or 0.37 s (Defensive) at the
+- **Awareness is reaction time** for computer players: from about 0.25 s (Offensive) or 0.37 s (Defensive), real time, at the
   bottom down to 0.12 s at the top. **It never affects the player you control.** A maxed awareness gives the best value.
 - Defensive Awareness drives how often your defencemen re-read the attackers (gap control). **It doesn't slow the switch
   after a turnover:** on the SNES computer players turn to defence the moment the other team has the puck (on the

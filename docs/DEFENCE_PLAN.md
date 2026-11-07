@@ -55,9 +55,9 @@ results.
 
 ### 3. Transition: what a lost puck costs
 
-- **Question:** when a team loses the puck, how often does a chance against follow within 5 seconds, by where it was
+- **Question:** when a team loses the puck, how often does a chance against follow within 12.5 game seconds, by where it was
   lost (their end, neutral zone, own end) and how (a pass picked off, a poke, a check, a shot held by the goalie)?
-- **Method:** every turnover in the match files, followed for 5 s.
+- **Method:** every turnover in the match files, followed for 12.5 game s.
 - **Output:** the risk price of each kind of play with the puck, which also feeds the offence side (a risky pass that
   sets up a 60% one-timer may still be worth it).
 

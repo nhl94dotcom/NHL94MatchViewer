@@ -4,6 +4,10 @@
 
 EA Specials played in the real Genesis game with a bot following up, and the ones in the recorded games (the method: [SCORING_MAP](SCORING_MAP.md)).
 
+Times of a second or more are given in game seconds, as the game clock counts them (1 game second = 24 frames = 0.4 s
+of real time; the clock stops at whistles), with the real time in brackets where it helps. Shorter timings, frames and
+milliseconds are real time, and so are rates per second (speeds).
+
 ## Contents
 
 - [EA Specials (Genesis, 2026-10-24)](#ea-specials-genesis-2026-10-24)
@@ -245,8 +249,8 @@ the shooter's own spot:
 - **The simulation doesn't match the user's play.** It is far too optimistic on its plateau (the bot has no defender
   and no hesitation), and too pessimistic close in at the top net, where the user scored 5 of 16.
 - **The bottom net's trouble is after the shot, not the release:** 24 of the 30 attempts were from good spots. Of the
-  bottom net's 30, the defender claimed the puck in 10, and in 7 the user's side had it but took no shot within 2 s (in
-  5 of those the shooter himself had claimed it, 0.3-1.7 s after the save). At the top net it was 8 and 4 of 40.
+  bottom net's 30, the defender claimed the puck in 10, and in 7 the user's side had it but took no shot within 5 game s (in
+  5 of those the shooter himself had claimed it, 0.3-1.7 s of real time after the save). At the top net it was 8 and 4 of 40.
 - Not yet checked: where the goalie stands at the release in the simulation against the user's games (15 units toward
   the near post at the release in the user's goals). The defender test (plan E) would show what a defender changes.
 
@@ -277,10 +281,10 @@ swung a backhand on at least 90% of the shots count.
   - from about 5 ft out the rebound drops beside the near post, 1-5 ft behind the goal line. The shooter claims it
     quickly (about 0.6 s), but a Genesis shot goes straight at the net, so from behind the line it runs along the goal
     line into the goalie at the post and caroms away;
-  - from about 9 ft out and beyond, the save kicks the puck 30-40 ft to the side and the shooter reaches it about 2 s
+  - from about 9 ft out and beyond, the save kicks the puck 30-40 ft to the side and the shooter reaches it about 5 game s
     later.
 - **Late second shots are not counted as EA Specials** (the user: a backhand EA Special is a quick fetch-the-rebound
-  and flip into the open net). The test window (2.5 s from the release) cuts some of the 2-second follow-ups off in
+  and flip into the open net). The test window (6 game s, 2.5 s real, from the release) cuts some of the 5-game-second follow-ups off in
   flight, so they show as "nothing". By then the goalie is set again, so a longer window would add ordinary shots at a
   set goalie, not EA Specials, and it was left as it is. The quick cells above have claims well inside it.
 
@@ -412,7 +416,7 @@ them, about 6 ft nearer the middle than the shooter:
 
 ![EDM, 2026-10-27 HFD-EDM, period 1 1:52: right-handed backhand, bottom net, 23 ft out, 14 ft to the side, follow-up 0.7 s later](img/scoring_map/ea_real_2026-10-27_0744_HFD-EDM_p1_152.gif)
 
-![EDM, 2026-10-27 EDM-HFD, period 2 0:31: left-handed forehand, bottom net, 27 ft out, 23 ft to the side, follow-up 1.7 s later](img/scoring_map/ea_real_2026-10-27_0733_EDM-HFD_p2_031.gif)
+![EDM, 2026-10-27 EDM-HFD, period 2 0:31: left-handed forehand, bottom net, 27 ft out, 23 ft to the side, follow-up 4 game s later](img/scoring_map/ea_real_2026-10-27_0733_EDM-HFD_p2_031.gif)
 
 ![EDM, 2026-10-27 HFD-EDM, period 1 0:45: left-handed forehand, bottom net, 23 ft out, 21 ft to the side, follow-up 0.9 s later](img/scoring_map/ea_real_2026-10-27_0744_HFD-EDM_p1_045.gif)
 

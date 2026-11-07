@@ -3,7 +3,8 @@ narrative write-up from what the recording shows, not a box score). Chronologica
 build-up (who carried the puck where, the passes, the shot, the goalie), big saves, posts, near misses, big hits,
 injuries, breakaways and odd-man rushes, turnovers that led to chances, penalties; then the flow of the game minute by
 minute. Places are named from the attacking team's view (its left wing, the slot, the right circle, the point ...),
-distances in feet (3 game units a foot).
+distances in feet (3 game units a foot), durations in game seconds (1 game second = 0.4 s of real time; speeds
+per real second).
 python analysis/play_by_play.py <match name>   (matches/ or Documents/NHL94 Viewer/matches)"""
 import json
 import math
@@ -134,21 +135,21 @@ def describe_goal(G, g, shots, passes, entries, turnovers, hits, faceoffs):
         tov = next((e for e in turnovers if abs(e["f"] - lost[3]) < 40 and e["from"] == opp), None)
         how = f" ({tov['how']}{' by ' + G.name(team, tov.get('by')) if tov.get('by') is not None else ''})" if tov else ""
         lines.append(f"  won the puck off {G.name(opp, lost[1])}{how} {G.where(lost[3], team, m['puck'][3 * lost[3]], m['puck'][3 * lost[3] + 1]).replace('from ', 'in ')}, "
-                     f"{(G.t[f] - G.t[lost[3]]) / 1000:.1f} s before the goal")
+                     f"{(G.t[f] - G.t[lost[3]]) / 400:.1f} game s before the goal")
         runs = runs[cut + 1:]
     else:
         fo = next((e for e in reversed(faceoffs) if e["f"] <= f and G.t[f] - G.t[e["f"]] < 15000), None)
         if fo:
             lines.append(f"  off a faceoff {G.where(fo['f'], team, fo['x'], fo['y']).replace('from ', 'in ')} "
                          f"({'won' if fo['won'] == team else 'lost' if fo['won'] == opp else 'unclear'}), "
-                         f"{(G.t[f] - G.t[fo['f']]) / 1000:.1f} s before")
+                         f"{(G.t[f] - G.t[fo['f']]) / 400:.1f} game s before")
     for t_, idx, a, b in runs:
         x0, y0, x1, y1 = m["puck"][3 * a], m["puck"][3 * a + 1], m["puck"][3 * b], m["puck"][3 * b + 1]
         carried = math.hypot(x1 - x0, y1 - y0) / FT
         p = next((p for p in passes if p["team"] == team and p["idx"] == idx and abs(p["f"] - b) <= 3), None)
         what = (f"passed {p['dir'] if p.get('dir') else ''} to {G.name(team, p['to'])}" if p and p.get("to", -1) >= 0
                 else "shot" if sh and abs(sh["f"] - b) <= 3 else "lost it")
-        lines.append(f"  {G.name(team, idx)} had it {(G.t[b] - G.t[a]) / 1000:.1f} s, {G.where(a, team, x0, y0).replace('from ', '')}"
+        lines.append(f"  {G.name(team, idx)} had it {(G.t[b] - G.t[a]) / 400:.1f} game s, {G.where(a, team, x0, y0).replace('from ', '')}"
                      f"{' -> ' + G.where(b, team, x1, y1).replace('from ', '') + f' ({carried:.0f} ft)' if carried > 8 else ''}, then {what}")
     ent = next((e for e in reversed(entries) if e["team"] == team and e["f"] <= f and G.t[f] - G.t[e["f"]] < 10000), None)
     if ent:
