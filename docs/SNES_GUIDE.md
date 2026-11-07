@@ -320,6 +320,11 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
   - **The last instant isn't worse than a moment earlier:** passes that left in the last 0.1 s (real) before contact
     got through 53%, those 0.1-0.25 s before 55%; the checker picked off 15% of each. Passes after contact got
     through 49%, the checker taking 17%. What counts is pressing B early in the burst, before he is on you.
+  - **The ratings, played the same way:** Pass Accuracy makes no difference, and nor does the defenders' Speed.
+    A receiver with poor Stick Handling (4) catches about 5 points fewer of these passes. Heavy defenders (Weight
+    112) catch the carrier before he passes more often (28% of trials against 23%), and light ones (32) less (17%);
+    defenders with low Checking (4) catch him less too (18% against 24%). The checker picks off the pass about 9% of
+    the time whatever the ratings.
   - **Once B starts the pass with the puck on your stick, it gets away.** A press after the puck has gone does nothing.
   - **In recorded games** about 80% of passes out of a check reached a teammate. People choose their moments, and
     there the timing showed little.

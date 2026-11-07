@@ -1208,6 +1208,26 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 - **No pass:** the carrier was caught 33% of the time.
 - **Conclusion:** the same shape as the Genesis by when B is pressed, weaker: B as the burst begins is best, and later presses do worse. Unlike the Genesis, a pass leaving in the last 0.1 s before contact does about as well as one 0.1-0.25 s before.
 
+**The SNES ratings** (`analysis/scoring_map/snes_check_pass_ratings.py`, run scpr1, gentle mode, 18,600 trials):
+- **Set-up:** the scpt2 moments, one seed, B at -6, +3, +12 and +24 frames from the burst. One rating changed at a time, written after placing and before the scout: the carrier's Pass Accuracy ($13A3) 4 / 15, the receiver's Stick Handling ($1403) 4 / 15, and every opposing skater's Speed ($1303) 8 / 15, Weight ($12C3) 32 / 112 or Checking ($1483) 4 / 15. The checker is the computer's, so his ratings went on all the defenders. A changed defence changes whether and when the burst comes (from 384 to 476 of 818 situations against base's 419), so each variant is compared with base over the situations with a burst in both.
+- **Against base, same situations (reached a teammate / picked off by the checker / caught before passing):**
+
+  | Variant | Situations | Base | Variant | Better / worse for a teammate |
+  |---|---|---|---|---|
+  | Pass Accuracy 4 | 419 | 36% / 9% / 25% | 36% / 9% / 25% | 44 / 38 |
+  | Pass Accuracy 15 | 419 | 36% / 9% / 25% | 36% / 9% / 25% | 4 / 3 |
+  | Receiver's Stick Handling 4 | 419 | 36% / 9% / 25% | 31% / 10% / 25% | 0 / 84 |
+  | Receiver's Stick Handling 15 | 419 | 36% / 9% / 25% | 36% / 9% / 25% | 0 / 0 |
+  | Defenders' Speed 8 | 339 | 37% / 8% / 24% | 39% / 10% / 20% | 131 / 104 |
+  | Defenders' Speed 15 | 367 | 37% / 9% / 24% | 37% / 10% / 23% | 77 / 73 |
+  | Defenders' Weight 32 | 353 | 36% / 9% / 23% | 39% / 10% / 17% | 149 / 109 |
+  | Defenders' Weight 112 | 343 | 37% / 9% / 23% | 33% / 10% / 28% | 120 / 171 |
+  | Defenders' Checking 4 | 275 | 37% / 8% / 24% | 40% / 10% / 18% | 179 / 142 |
+  | Defenders' Checking 15 | 331 | 36% / 9% / 24% | 37% / 9% / 24% | 196 / 181 |
+
+  Most of the base skaters already have Stick Handling and Checking at 15 (the SNES maxes "cold" ratings), so the high settings change little.
+- **Conclusion:** as on the Genesis, the passer's rating doesn't matter and a receiver with poor hands costs about 5 points. The defenders' Weight and Checking decide how often the carrier is caught before he passes, the normal way round (heavier and better checkers catch more): the checker here is the computer, with no weight bug.
+
 ## The SNES second period in full play (2026-11-07)
 
 - **Question:** the leagues' SNES games have about 5% fewer goals a shot in period 2 (LEAGUE_RESULTS). Standing shots with only the period number changed came out the same shot for shot, which left moving play and the people.
