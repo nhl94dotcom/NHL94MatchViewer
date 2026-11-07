@@ -455,6 +455,14 @@ The computer never holds a direction, so its wins go a random way.
   - **Don't go too early either:** a pass 0.5 s (real) or more before the hit reached a teammate only about a quarter
     of the time, because the receiver isn't ready for it.
   - **The recorded games agree:** 60% got through under 0.1 s before contact, against about 80% at 0.1-0.5 s.
+  - **The ratings, played the same way:**
+    - **Passing makes no difference.** It only sets the pass's speed.
+    - **The receiver's Stick Handling matters:** a poor one (working 8) catches 6 points fewer of these passes.
+    - **The checker's Speed doesn't matter.**
+    - **A light person checker catches you far more often** (the weight bug). With a light checker (weight 32), the
+      carrier was caught before passing in 19% of trials, against 10% normally and 6% for a heavy checker (112). So
+      against a light checker, pressing B late costs much more: a pass started 0.2-0.3 s (real) after the burst reached
+      a teammate about 40% of the time, against about 52% normally and 58% against a heavy checker.
   - STUDY_NOTES "Passing out of a check" has the details.
 - **Bobbles:** a pass faster than the receiver can handle (it depends on his Stick Handling) bounces off his stick.
 - **Why the puck sometimes goes right through a stick:** after a player shoots or passes, his stick ignores the puck

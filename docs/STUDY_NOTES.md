@@ -1159,6 +1159,27 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 - **Caveats:** the checker steers simply, and the carrier skates straight on.
 - **Conclusion:** the timing itself matters. The last-instant pass is the one the checker picks off. Pressing B as he starts his burst, about 0.1-0.25 s (real) before the hit, is best.
 
+**The ratings** (`analysis/scoring_map/check_pass_ratings.py`, run cpr1, gentle mode, 22,633 trials):
+- **Set-up:** the same moments and checker as cpt1. B at -6, +3, +12 and +18 frames from the burst, one seed. One rating changed at a time, written into the skater's record after placing: the carrier's Passing ($6E) 8 / 28, the receiver's Stick Handling ($71) 8 / 28, the checker's Speed ($69) 12 / 24, and the checker's Weight ($67, stored as the rating x 8) 32 / 112. Every rating was still set at the end of every trial.
+- **Reached a teammate, 624 situations with every variant played:**
+
+  | Variant | B -6 fr | +3 | +12 | +18 | All |
+  |---|---|---|---|---|---|
+  | Base | 65% | 59% | 53% | 52% | 57% |
+  | Passing 8 | 65% | 59% | 53% | 53% | 57% |
+  | Passing 28 | 65% | 59% | 52% | 50% | 56% |
+  | Receiver's Stick Handling 8 | 58% | 54% | 48% | 46% | 51% |
+  | Receiver's Stick Handling 28 | 66% | 60% | 53% | 52% | 58% |
+  | Checker's Speed 12 | 66% | 60% | 54% | 53% | 58% |
+  | Checker's Speed 24 | 66% | 59% | 52% | 50% | 57% |
+  | Checker's Weight 32 | 65% | 55% | 41% | 39% | 50% |
+  | Checker's Weight 112 | 65% | 62% | 57% | 58% | 60% |
+
+  The checker picked off 5-13% in every variant (base: 8%, 11%, 6%, 6%).
+- **Paired against base, same situation and offset (better / worse):** Passing 8: 163 / 158; Passing 28: 58 / 75; Stick Handling 8: 0 / 146; Stick Handling 28: 14 / 0; Speed 12: 61 / 36; Speed 24: 26 / 36; Weight 32: 62 / 235; Weight 112: 174 / 94.
+- **Why weight matters:** the checker is a person here (pad 2), so the weight bug applies: the lighter he is, the more often his check knocks the carrier down. With weight 32 the carrier was caught before passing in 19% of trials (10% at base, 6% at 112), and passes that left after contact reached a teammate 6% of the time (12% at base). Against a computer checker the weight works the normal way round (GENESIS_MECHANICS 7.2), which this run doesn't test.
+- **Conclusion:** Passing and the checker's Speed don't change it. A receiver with poor hands loses about 6 points. A light person checker punishes a late B: from 0.2 s (real) after the burst, about 12 points fewer passes reach a teammate. An early B is as good against any checker.
+
 **In the SNES game** (`analysis/scoring_map/snes_check_pass_timing.py`, run scpt1, gentle mode, 9,581 trials):
 - **Set-up:**
   - The SNES harness can't give pad 2 a skater, so the checker is the computer's own defender.
