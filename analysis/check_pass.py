@@ -1,4 +1,4 @@
-"""Passing out of a check, Genesis (2026-11-06, the user: "I often play to induce a check and then pass the puck to a
+"""Passing out of a check, Genesis and SNES (2026-11-06, the user: "I often play to induce a check and then pass the puck to a
 teammate (or at least attempt to) before the check lands. Occasionally, the defender just intercepts the pass
 immediately ... and occasionally I press B too late").
 
@@ -6,8 +6,10 @@ A check on the carrier: an opposing skater (the person's or a computer skater) s
 person's skater has the puck, with the carrier within REACH and CONE of his facing (check_outcomes.py's test). Contact:
 the first sample the two are under CONTACT apart, or the game counting a check by him on the carrier, whichever is
 first, within RESULT_MS of the burst. What the carrier did from the burst until contact (or the window's end):
-- passed it away: a pass (export_match's passes: B starts the pass animation within 1-3 samples, and the puck leaves
-  on that sample) released before contact. Its result: reached a teammate (completed or one-timed), picked off by
+- passed it away: a pass (export_match's passes: B starts the pass animation within 1-3 samples on the Genesis, 3-4
+  on the SNES, and the puck leaves then or 2 samples later) released before contact, or after contact while the puck
+  was still his until it left (the bodies met but the check didn't knock it loose first: "after contact").
+  On the SNES the checker's check animation (check_outcomes.SNES_CHECKS) also counts as contact. Its result: reached a teammate (completed or one-timed), picked off by
   the checker himself, picked off by another opponent (skater or goalie), or reached nobody (export_match's 'failed':
   nobody had it within 3 s, or the passer got it back);
 - shot it before contact;
@@ -26,7 +28,7 @@ The carrier's buttons come from the match file's controller words (pad / pad2 wi
 no known controller has no B timing.
 
 python analysis/check_pass.py <match> ...          the named games, a table per team, and every event with its time
-python analysis/check_pass.py --all [ABBR]         every recorded Genesis game, per person-side (ABBR: also that team's
+python analysis/check_pass.py --all [ABBR]         every recorded game, per system and person-side (ABBR: also that team's
                                                     person on its own)   -> reports/check_pass*.md"""
 import math
 import sys
@@ -37,6 +39,7 @@ sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import systems  # noqa: E402
 import slot_defence as SD  # noqa: E402
+from check_outcomes import SNES_CHECKS  # noqa: E402
 
 K, REACH, CONE, CONTACT = 12, 70, 35, 18
 RESULT_MS, LOST_MS, JUST_MS, FOLLOW_MS = 1000, 400, 200, 5000
@@ -62,6 +65,7 @@ def measure(m):
         pads[m["padTeam"]] = m["pad"]
     if m.get("pad2") and m.get("pad2Team", -1) in (0, 1):
         pads[m["pad2Team"]] = m["pad2"]
+    snes = m.get("system") == "snes"
     shots = m.get("shotList", [])
     passes = sorted(m.get("passes", []), key=lambda p: p["f"])
 
@@ -102,12 +106,18 @@ def measure(m):
                 dq = math.dist(P(q, o), P(q, c))
                 if dq < closest:
                     closest, closest_q = dq, q
-                if dq < CONTACT or (hit and q >= hit["f"]):
+                if dq < CONTACT or (hit and q >= hit["f"]) or (snes and an(q, o) in SNES_CHECKS):
                     contact = q
                     break
-            # the carrier's pass or shot from the burst until contact (or the window's end)
+            # the carrier's pass or shot from the burst until contact (or the window's end); a pass that leaves after
+            # contact counts too if the puck was still his until it left (the pass got away, the check didn't knock it
+            # loose first): "after contact", with a negative lead
             stop = contact if contact is not None else end
             pas = next((p for p in passes if p["team"] == A and p["idx"] == rc and f <= p["f"] <= stop), None)
+            if pas is None and contact is not None:
+                loss = next((q for q in range(contact, min(N, until(LOST_MS, contact) + 1)) if owner[q] != c), None)
+                pas = next((p for p in passes if p["team"] == A and p["idx"] == rc and contact < p["f"]
+                            and loss is not None and abs(p["f"] - loss) <= 2), None)
             sh = next((s for s in shots if s["team"] == A and s["idx"] == rc and f <= s["f"] <= stop), None)
             ev = {"f": f, "team": A, "carrier": rc, "checker": ro, "checker_person": bool(m["ctrl"][f] >> o & 1),
                   "dist0": d, "zone": None, "pass": pas, "contact": contact, "hit": bool(hit)}
@@ -117,6 +127,7 @@ def measure(m):
             if pas and (not sh or pas["f"] <= sh["f"]):
                 rel = pas["f"]
                 ev["lead"] = (t[contact] - t[rel]) / 1000 if contact is not None else None
+                ev["after_contact"] = contact is not None and rel > contact
                 ev["to_closest"] = (t[closest_q] - t[rel]) / 1000
                 ev["dist_rel"] = math.dist(P(rel, o), P(rel, c))
                 if pas["result"] in ("completed", "one-timer"):
@@ -205,7 +216,7 @@ def detail(rows_by, cols):
             *(lambda v: (sum(x[0] for x in v), sum(x[1] for x in v), sum(x[2] for x in v)))([e["against"] for e in es if "against" in e and e["out"].startswith("passed")]))),
         ("caught: attempts against within 12.5 game s / xG / goals", lambda es: "{} / {:.1f} / {}".format(
             *(lambda v: (sum(x[0] for x in v), sum(x[1] for x in v), sum(x[2] for x in v)))([e["against"] for e in es if "against" in e and e["out"].startswith("caught")]))),
-        ("median lead of the pass before contact (s, real)", lambda es: f"{sorted(v := [e['lead'] for e in passed(es) if e.get('lead') is not None])[len(v) // 2]:.2f}"),
+        ("median lead of the pass before contact (s, real)", lambda es: f"{sorted(v := [e['lead'] for e in passed(es) if e.get('lead') is not None and e['lead'] >= 0])[len(v) // 2]:.2f}"),
         ("passes where the checker never reached him", lambda es: f"{sum(e.get('lead') is None for e in passed(es))}"),
         ("median checker distance at the release (ft)", lambda es: f"{sorted(v := [e['dist_rel'] / 3 for e in passed(es)])[len(v) // 2]:.0f}"),
         ("B a moment too late, the pass started: median start after contact (s, real)", lambda es: f"{sorted(v := [e['b_late'] for e in es if e['out'] == OUTCOMES[5]])[len(v) // 2]:+.2f}"),
@@ -218,7 +229,8 @@ def detail(rows_by, cols):
 
 def by_lead(es):
     """Outcome of passes out of a check by how long before contact they left."""
-    bins = [("checker never got there", lambda e: e.get("lead") is None), ("under 0.10 s (real) before contact", lambda e: e.get("lead") is not None and e["lead"] < 0.10),
+    bins = [("checker never got there", lambda e: e.get("lead") is None), ("just after contact, still his", lambda e: e.get("lead") is not None and e["lead"] < 0),
+            ("under 0.10 s (real) before contact", lambda e: e.get("lead") is not None and 0 <= e["lead"] < 0.10),
             ("0.10-0.25 s", lambda e: e.get("lead") is not None and 0.10 <= e["lead"] < 0.25),
             ("0.25-0.50 s", lambda e: e.get("lead") is not None and 0.25 <= e["lead"] < 0.50),
             ("0.50 s or more", lambda e: e.get("lead") is not None and e["lead"] >= 0.50)]
@@ -241,21 +253,23 @@ def main():
         games = 0
         for p in matches():
             m = SD.json.loads(SD.load_js_object(p))
-            if m.get("system", "genesis") != "genesis" or "abbr" not in m:
+            if "abbr" not in m or "pos" not in m:
                 continue
             games += 1
+            sy = "SNES" if m.get("system") == "snes" else "Genesis"
             for e in measure(m):
-                rows["every person"].append(e)
+                rows[f"every person, {sy}"].append(e)
                 if you and m["abbr"][e["team"]] == you:
-                    rows[f"{you}'s person"].append(e)
+                    rows[f"{you}'s person, {sy}"].append(e)
                 elif you:
-                    rows[f"{you}'s opponents"].append(e)
-        cols = list(rows)
-        out += [f"# Passing out of a check: every recorded Genesis game ({games} games)", "",
+                    rows[f"{you}'s opponents, {sy}"].append(e)
+        cols = sorted(rows, key=lambda c: (c.split(", ")[-1], c))
+        out += [f"# Passing out of a check: every recorded game ({games} games)", "",
                 "How it is measured: analysis/check_pass.py. A person's carrier, an opposing skater bursting at him. Split-second timings are real seconds; the follow-up windows are game seconds (1 game second = 0.4 s of real time).", ""]
-        out += table(rows, cols) + [""] + detail(rows, cols) + ["", "**When the pass left, every person**", ""] + by_lead(rows["every person"])
-        if you:
-            out += ["", f"**When the pass left, {you}'s person**", ""] + by_lead(rows[f"{you}'s person"])
+        out += table(rows, cols) + [""] + detail(rows, cols)
+        for c in cols:
+            if not c.startswith(f"{you}'s opponents"):
+                out += ["", f"**When the pass left, {c}**", ""] + by_lead(rows[c])
         path = Path("reports") / (f"check_pass_all_{you}.md" if you else "check_pass_all.md")
     else:
         rows = defaultdict(list)
