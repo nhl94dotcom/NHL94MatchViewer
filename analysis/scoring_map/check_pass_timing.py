@@ -198,7 +198,7 @@ def main():
     sits = situations()
     random.Random(7).shuffle(sits)
     sits = sits[:n]
-    done = {(json.loads(l)["i"], json.loads(l)["seed"], json.loads(l)["offset"]) for l in open(path)} if path.exists() else set()
+    done = {(r["i"], r["seed"], r.get("offset", "?")) for r in map(json.loads, open(path))} if path.exists() else set()
     e = Emu(RETAIL)
     bases = [live_state(e, j) for j in range(LIVE_STATES)]
     t0 = time.time()
@@ -216,7 +216,7 @@ def main():
                     breathe()
                     if r is None:
                         continue
-                    r.update(i=i, seed=sd, real=s.get("real"))
+                    r.update(i=i, seed=sd, offset=off, real=s.get("real"))
                     fh.write(json.dumps(r) + "\n")
                     fh.flush()
             print(f"situation {i + 1} of {len(sits)}", flush=True)
