@@ -36,7 +36,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
 K, CONTACT, REACH, CONE, LEAD, AFTER, SCOUT = 12, 18, 70, 35, 15, 180, 150
 OFFSETS = [-12, -6, 0, 3, 6, 9, 12, 15, 18, 24, None]
 SEEDS = 2
-VEL = 2097                        # SNES velocity words per game unit a frame (measured: positions move every other frame)
+VEL = 4300                        # SNES velocity words per game unit a frame (2026-11-07: speed held, 2048 and 4096 moved
+                                  # 0.47 and 0.95 a frame, positions moving every other frame; run scpt1 used 2097, half)
 POSITION, FACING, SPA = 0x0F43, 0x1163, 0x11A3
 PFLAGS, C1PLAYER, CARRIER2 = 0x1283, 0x19EC, 0x0AE7
 PLAYERPAD = 0x19d4                # playerpad (ram94s.asm), per object

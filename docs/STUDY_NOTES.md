@@ -1180,32 +1180,33 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 - **Why weight matters:** the checker is a person here (pad 2), so the weight bug applies: the lighter he is, the more often his check knocks the carrier down. With weight 32 the carrier was caught before passing in 19% of trials (10% at base, 6% at 112), and passes that left after contact reached a teammate 6% of the time (12% at base). Against a computer checker the weight works the normal way round (GENESIS_MECHANICS 7.2), which this run doesn't test.
 - **Conclusion:** Passing and the checker's Speed don't change it. A receiver with poor hands loses about 6 points. A light person checker punishes a late B: from 0.2 s (real) after the burst, about 12 points fewer passes reach a teammate. An early B is as good against any checker.
 
-**In the SNES game** (`analysis/scoring_map/snes_check_pass_timing.py`, run scpt1, gentle mode, 9,581 trials):
+**In the SNES game** (`analysis/scoring_map/snes_check_pass_timing.py`, run scpt2, gentle mode, 9,383 trials):
 - **Set-up:**
   - The SNES harness can't give pad 2 a skater, so the checker is the computer's own defender.
-  - The 818 recorded SNES check moments were placed 15 frames before the burst, two seeds each.
-  - A scout run with no B found the frame an away skater burst at the carrier. That happened in 871 of 1,636 placements.
+  - The 818 recorded SNES check moments were placed 15 frames before the burst, two seeds each, every skater at his recorded place, speed and facing.
+  - A scout run with no B found the frame an away skater burst at the carrier. That happened in 853 of 1,636 placements.
   - The same placement was then replayed with B at offsets from that frame. The game is deterministic, so everything before the press repeats.
 - **Placing a skater for pad 1 needs three things:** `c1playernum`, `playerpad` ($19D4: the pad each object answers; negative means the computer) and the person flag. A skater's leftover animation (`pf2aip`, `pfalock`) must also be cleared, or the pad's presses are ignored.
+- **Speeds:** a SNES velocity word of about 4,300 moves an object one unit a frame (held steady, 2,048 and 4,096 moved 0.47 and 0.95 a frame; positions change every other frame).
 - **Reached a teammate, by offset, same placement:**
 
   | B, frames from the burst | -12 | -6 | 0 | 3 | 6 | 9 | 12 | 15 | 18 | 24 |
   |---|---|---|---|---|---|---|---|---|---|---|
-  | Reached a teammate | 35% | 37% | 38% | 42% | 37% | 36% | 35% | 36% | 33% | 31% |
+  | Reached a teammate | 32% | 36% | 38% | 42% | 34% | 36% | 32% | 33% | 31% | 29% |
 
   The share is lower than on the Genesis because a computer checker often takes the puck before a late press.
 - **By lead before contact (passes that left):**
 
   | Lead (real) | Teammate | Picked off by the checker | Passes |
   |---|---|---|---|
-  | after contact | 50% | 16% | 3,180 |
-  | under 0.10 s | 54% | 15% | 659 |
-  | 0.10-0.25 s | 62% | 10% | 374 |
-  | 0.25-0.50 s | 55% | 5% | 226 |
-  | 0.50 s or more | 26% | 20% | 156 |
+  | after contact | 49% | 17% | 2,912 |
+  | under 0.10 s | 53% | 15% | 615 |
+  | 0.10-0.25 s | 55% | 15% | 354 |
+  | 0.25-0.50 s | 51% | 12% | 246 |
+  | 0.50 s or more | 28% | 11% | 186 |
 
-- **No pass:** the carrier was caught 32% of the time.
-- **Conclusion:** the same shape as the Genesis, weaker. Pressing B as the burst begins, about 0.1-0.25 s (real) before contact, is best, and the last instant and after contact are worse.
+- **No pass:** the carrier was caught 33% of the time.
+- **Conclusion:** the same shape as the Genesis by when B is pressed, weaker: B as the burst begins is best, and later presses do worse. Unlike the Genesis, a pass leaving in the last 0.1 s before contact does about as well as one 0.1-0.25 s before.
 
 ## The SNES second period in full play (2026-11-07)
 

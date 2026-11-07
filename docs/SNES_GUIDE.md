@@ -314,12 +314,12 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 - **B passes** to a teammate. **The game sets the pass's speed by its distance**: short passes go slower, long ones
   faster. Pass Accuracy only makes the speed steadier; a poor passer's passes come in a bit fast or slow at random.
 - **Passing out of a check: pass as the checker starts his burst.**
-  - **Timing:** passes that leave 0.1-0.25 s (real) before contact got through most often: 62%, with the checker
-    picking off 10%. Passes in the last 0.1 s got through 54%, the checker taking 15%. Passes after contact got
-    through 50%, the checker taking 16%.
-  - **Earlier helps, up to a point:** replaying the same 871 moments with only B's timing changed, a pass reached a
-    teammate most often with B pressed 0.05 s (real) after the computer's burst began (42%). It fell to 31% at
-    0.4 s after.
+  - **Timing:** replaying the same 853 moments with only B's timing changed, a pass reached a teammate most often
+    with B pressed as the computer's burst began, up to 0.05 s (real) after it (42%). It fell to 29% at 0.4 s after,
+    and to 32% with B 0.2 s before the burst.
+  - **The last instant isn't worse than a moment earlier:** passes that left in the last 0.1 s (real) before contact
+    got through 53%, those 0.1-0.25 s before 55%; the checker picked off 15% of each. Passes after contact got
+    through 49%, the checker taking 17%. What counts is pressing B early in the burst, before he is on you.
   - **Once B starts the pass with the puck on your stick, it gets away.** A press after the puck has gone does nothing.
   - **In recorded games** about 80% of passes out of a check reached a teammate. People choose their moments, and
     there the timing showed little.
