@@ -175,7 +175,7 @@ How strong each league-season's coaches were is in `docs/LEAGUE_RATINGS.md` (`an
   against xG are about the same (0.98 / 0.94 / 0.91). Period 2's xG per attempt was lower in 16 of the 22 games (by
   0.06 +/- 0.06). Attempts, shots on goal, rushes and one-timers per minute were the same as in period 1; completed
   passes ran higher (46 against 38 per 5 minutes). Mostly one person's games, so a lead, not an answer: in period 2 the
-  same number of shots came from worse chances.
+  same number of shots came from worse chances. **Nor the game's own play** (2026-11-07): computer against computer from real period-1 and period-2 states, about 7,200 shots a period, gave 0.071 goals per shot in both (SNES_MECHANICS 16), so the dip most likely comes from how people play the second period.
 - **The Genesis game has tightened over the years:** 8.1-8.7 goals a game and 34-36% shooting in 2013-2017, 7.3-7.6
   and 31-32% since 2020, on the same 23-24 shots; the SNES stayed at 8.5-9.3 and 35-40%.
 

@@ -898,6 +898,14 @@ Ordered by how much the answer would matter in league play (usually penalties on
   games come in. Now 25 games, counting unblocked shots and one-timers: xG per attempt 0.20 against 0.26 and 0.28 in
   periods 1 and 3, goals per attempt 0.18 against 0.24 and 0.25, lower than the other two's average in 17 of 25 games.
   The goals' dip is far larger than the leagues' 5%, on only about 280 attempts a period, so most of its size may be chance.
+  **Not in the game's own play either** (2026-11-07, `analysis/scoring_map/snes_period_cvc.py`): the computer played
+  itself, both teams, from the harness's real period-1 and period-2 states (rushes, passes, one-timers, rebounds and
+  all), 641 segments of 2.5 minutes (real) each. Goals per shot: period 1 0.071 (512 / 7,200), period 2 0.071
+  (513 / 7,274), ±0.003 each. Period 3 (the period-1 state with the period number set to 2: 116 / 1,501, 0.077) and
+  period 2 with the number set to 1 (119 / 1,562, 0.076) agree. A 5% dip would be 0.004, inside the margin, so it
+  can't be ruled out entirely, but nothing points to it. In both periods the team attacking the top net did a little
+  better (0.074 and 0.078 against 0.068 and 0.065), each figure within about 2 margins of the others. So the leagues'
+  dip most likely comes from the people: how they play the second period, not what the game does.
   (Settled 2026-10-30: the SNES home edge is the home / away bonus, 2.3, with nothing left over; LEAGUE_RESULTS. The
   4.8 lane against a goalie who catches with the other hand: it stays on the shooter's left, SNES_SHOOTING 5.3.)
 - **Pressing or sitting back against a person.** Scripted rushes can't settle it (a script doesn't dodge or delay

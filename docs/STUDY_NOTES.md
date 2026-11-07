@@ -1206,3 +1206,20 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 
 - **No pass:** the carrier was caught 32% of the time.
 - **Conclusion:** the same shape as the Genesis, weaker. Pressing B as the burst begins, about 0.1-0.25 s (real) before contact, is best, and the last instant and after contact are worse.
+
+## The SNES second period in full play (2026-11-07)
+
+- **Question:** the leagues' SNES games have about 5% fewer goals a shot in period 2 (LEAGUE_RESULTS). Standing shots with only the period number changed came out the same shot for shot, which left moving play and the people.
+- **Method** (`analysis/scoring_map/snes_period_cvc.py`, run spc1, 3 chunks, gentle mode): the computer plays itself from the harness's states, every pad taken off the teams as StartGame does for an empty pad (cont1team $1C84 0, padside $19F6 $FFFE, teampads $19D0 0, playerpad and c1playernum cleared, the person flag off). FaceoffPads gives no pad back: no person-flagged object in any segment. Each segment is 9,000 frames (2.5 minutes real) from a fresh seed; goals and shots are the game's own counters (tmscore $178E, tmshots $177A).
+- **Results:**
+
+  | Condition | Segments | Shots | Goals | Goals per shot |
+  |---|---|---|---|---|
+  | Period 1 (snes_top.state) | 641 | 7,200 | 512 | 0.071 ± 0.003 |
+  | Period 2 (snes_bottom.state) | 641 | 7,274 | 513 | 0.071 ± 0.003 |
+  | Period 3 (period-1 state, gsp 2) | 134 | 1,501 | 116 | 0.077 ± 0.007 |
+  | Period 2 as period 1 (gsp 0) | 134 | 1,562 | 119 | 0.076 ± 0.007 |
+
+- **The period number shifts the random draws, not the play.** Paired segments with only gsp changed split apart, but through the random generator. In periods 1-2 the number goes into the records (tmPerShots $176A, the goal log at $313A), and the frames after a goal then take different work. In period 3, Gameloop draws a random number every frame with the music off (a team song, 1 in $1000) and the computer's goalie-pulling and line tables read it. No code in periods 1-2 uses it for play.
+- **Conclusion:** the computer's own play has no second-period dip. The leagues' dip (0.004 at this rate, inside the margin) most likely comes from the people.
+
