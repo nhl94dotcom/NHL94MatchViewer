@@ -11,10 +11,10 @@ first, within RESULT_MS of the burst. What the carrier did from the burst until 
   the checker himself, picked off by another opponent (skater or goalie), or reached nobody (export_match's 'failed':
   nobody had it within 3 s, or the passer got it back);
 - shot it before contact;
-- caught: contact came first and he lost the puck within LOST_MS. Split by his B (a rising edge on his controller):
-  the pass started too late (his pass animation began, but the puck was knocked loose before it left; timed from
-  contact), B just after the puck was gone (under JUST_MS after), B 0.2-0.6 s after it was gone (B without the puck
-  also switches skaters, so these can be a late pass or a switch to defence: they are kept apart), or no B;
+- caught: contact came first and he lost the puck within LOST_MS. Split by his B (a rising edge on his controller)
+  in the first JUST_MS after contact (the user: a B press 0.2 s or more after the check is ignored here; B without the
+  puck also switches skaters): B a moment too late, the pass started (his pass animation began, but the puck was
+  knocked loose before it left); B a moment too late, no pass came off (the puck was already gone); or no B in time;
 - held on through contact: contact came first and he still had it LOST_MS later (a failed check);
 - the check missed: no contact, and what he did then (kept it, passed later, lost it).
 Two bursts at the same carrier that end in the same pass, shot or lost puck count once (the later burst).
@@ -38,12 +38,12 @@ import systems  # noqa: E402
 import slot_defence as SD  # noqa: E402
 
 K, REACH, CONE, CONTACT = 12, 70, 35, 18
-RESULT_MS, LOST_MS, LATE_B_MS, JUST_MS, FOLLOW_MS = 1000, 400, 600, 200, 5000
+RESULT_MS, LOST_MS, JUST_MS, FOLLOW_MS = 1000, 400, 200, 5000
 PAD_B = 16
 DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
 OUTCOMES = ["passed: reached a teammate", "passed: picked off by the checker", "passed: picked off by another opponent",
-            "passed: reached nobody", "shot before contact", "caught: B pressed, the pass started too late",
-            "caught: B just after the puck was gone", "caught: B 0.2-0.6 s after it was gone (late pass or a switch)", "caught: no B",
+            "passed: reached nobody", "shot before contact", "caught: B a moment too late, the pass started",
+            "caught: B a moment too late, the puck already gone", "caught: no B in time",
             "held on through contact", "check missed: kept it or passed later", "check missed: lost it"]
 
 
@@ -139,33 +139,33 @@ def measure(m):
                 later = until(LOST_MS, contact)
                 kept = any(owner[q] == c for q in range(later, min(N, later + 3)))
                 if kept:
-                    ev["out"] = OUTCOMES[9]
+                    ev["out"] = OUTCOMES[8]
                 else:
                     # when the puck left him, and whether he had started a pass by then (B with the puck starts the pass
                     # animation within 1-3 samples); a B press after the puck has gone can be a late pass or a switch
                     # to the skater nearest the puck, so only the first JUST_MS after the loss is called a late pass
                     loss = next((q for q in range(contact, N) if owner[q] != c), contact)
                     pad = pads.get(A)
-                    started = next((q for q in range(f, min(N, loss + 2)) if an(q, c) in acts["pass"]), None)
-                    press = None if pad is None else next((q for q in range(loss, until(LATE_B_MS, loss) + 1)
+                    just = until(JUST_MS, contact)
+                    if t[just] - t[contact] >= JUST_MS:
+                        just -= 1
+                    started = next((q for q in range(f, min(N, loss + 2, just + 1)) if an(q, c) in acts["pass"]), None)
+                    press = None if pad is None else next((q for q in range(contact, just + 1)
                                                            if pad[q] & PAD_B and not pad[q - 1] & PAD_B), None)
                     ev["loss"] = (t[loss] - t[contact]) / 1000
                     if started is not None:
                         ev["out"] = OUTCOMES[5]
                         ev["b_late"] = (t[started] - t[contact]) / 1000
-                    elif press is not None and t[press] - t[loss] < JUST_MS:
-                        ev["out"] = OUTCOMES[6]
-                        ev["b_late"] = (t[press] - t[loss]) / 1000
                     elif press is not None:
-                        ev["out"] = OUTCOMES[7]
-                        ev["b_late"] = (t[press] - t[loss]) / 1000
+                        ev["out"] = OUTCOMES[6]
+                        ev["b_late"] = (t[press] - t[contact]) / 1000
                     else:
-                        ev["out"] = OUTCOMES[8]
+                        ev["out"] = OUTCOMES[7]
                         ev["no_pad"] = pad is None
                     ev["against"] = follow(contact, 1 - A)
             else:
                 kept = owner[end] == c or any(p["team"] == A and p["idx"] == rc and end < p["f"] <= until(500, end) for p in passes)
-                ev["out"] = OUTCOMES[10] if kept or teamof(owner[end]) == A else OUTCOMES[11]
+                ev["out"] = OUTCOMES[9] if kept or teamof(owner[end]) == A else OUTCOMES[10]
             ev["key"] = (("pass", pas["f"]) if ev["out"].startswith("passed") else ("shot", sh["f"]) if ev["out"] == OUTCOMES[4]
                          else ("loss", A, loss) if ev["out"].startswith("caught") else None)
             events.append(ev)
@@ -207,7 +207,7 @@ def detail(rows_by, cols):
         ("median lead of the pass before contact (s)", lambda es: f"{sorted(v := [e['lead'] for e in passed(es) if e.get('lead') is not None])[len(v) // 2]:.2f}"),
         ("passes where the checker never reached him", lambda es: f"{sum(e.get('lead') is None for e in passed(es))}"),
         ("median checker distance at the release (ft)", lambda es: f"{sorted(v := [e['dist_rel'] / 3 for e in passed(es)])[len(v) // 2]:.0f}"),
-        ("pass started, check first: median start after contact (s)", lambda es: f"{sorted(v := [e['b_late'] for e in es if e['out'] == OUTCOMES[5]])[len(v) // 2]:+.2f}"),
+        ("B a moment too late, the pass started: median start after contact (s)", lambda es: f"{sorted(v := [e['b_late'] for e in es if e['out'] == OUTCOMES[5]])[len(v) // 2]:+.2f}"),
         ("checks by the person's skater / computer skaters", lambda es: f"{sum(e['checker_person'] for e in es)} / {sum(not e['checker_person'] for e in es)}"),
     ]
     for lab, fn in lines:
@@ -277,7 +277,7 @@ def main():
             nm = lambda team, i: m["rosters"][team][i]["name"].split()[-1] if 0 <= i < len(m["rosters"][team]) else "?"
             c = m["clock"][f]
             extra = (f"{e['lead']:.2f} s" if e.get("lead") is not None else "never reached") if e["out"].startswith("passed") else \
-                (f"pass began {e['b_late']:.2f} s after contact" if e["out"] == OUTCOMES[5] else f"B {e['b_late']:.2f} s after the puck was gone" if "b_late" in e else "")
+                (f"pass began {e['b_late']:.2f} s after contact" if e["out"] == OUTCOMES[5] else f"B {e['b_late']:.2f} s after contact" if "b_late" in e else "")
             out.append(f"| {name[11:]} | {max(0, m['t'][f] // 1000 - 2)} | P{m['period'][f] + 1} {c // 60}:{c % 60:02d} | {m['abbr'][A]} {nm(A, e['carrier'])} | "
                        f"{nm(1 - A, e['checker'])}{' (person)' if e['checker_person'] else ''} | {e['zone']} | {e['out']} | {extra} |")
         path = Path("reports") / f"check_pass_{'-'.join(cols)}_{args[0][:10]}.md"
