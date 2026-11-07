@@ -313,6 +313,17 @@ Checked on 70 recorded draws: the centre whose swing was further along at the dr
 
 - **B passes** to a teammate. **The game sets the pass's speed by its distance**: short passes go slower, long ones
   faster. Pass Accuracy only makes the speed steadier; a poor passer's passes come in a bit fast or slow at random.
+- **Passing out of a check: pass as the checker starts his burst.**
+  - **Timing:** passes that leave 0.1-0.25 s (real) before contact got through most often: 62%, with the checker
+    picking off 10%. Passes in the last 0.1 s got through 54%, the checker taking 15%. Passes after contact got
+    through 50%, the checker taking 16%.
+  - **Earlier helps, up to a point:** replaying the same 871 moments with only B's timing changed, a pass reached a
+    teammate most often with B pressed 0.05 s (real) after the computer's burst began (42%). It fell to 31% at
+    0.4 s after.
+  - **Once B starts the pass with the puck on your stick, it gets away.** A press after the puck has gone does nothing.
+  - **In recorded games** about 80% of passes out of a check reached a teammate. People choose their moments, and
+    there the timing showed little.
+  - Details are in STUDY_NOTES, "Passing out of a check".
 - **Bobbles:** a pass bounces off the receiver's stick when it's faster than he can handle, which depends on his Stick
   Handling. Long passes to poor stickhandlers bobble; short passes almost never do. That's why the same player hardly
   ever bobbles twice in a row: the pass back to him usually comes from close by. A long pass back would bobble again.

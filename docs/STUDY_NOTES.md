@@ -1158,3 +1158,30 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 - **No pass:** the carrier was caught 22% of the time. The scripted checker landed his check in only about a quarter of the trials, fewer than a person's checks land, so not passing looks safer here than it is against a person.
 - **Caveats:** the checker steers simply, and the carrier skates straight on.
 - **Conclusion:** the timing itself matters. The last-instant pass is the one the checker picks off. Pressing B as he starts his burst, about 0.1-0.25 s (real) before the hit, is best.
+
+**In the SNES game** (`analysis/scoring_map/snes_check_pass_timing.py`, run scpt1, gentle mode, 9,581 trials):
+- **Set-up:**
+  - The SNES harness can't give pad 2 a skater, so the checker is the computer's own defender.
+  - The 818 recorded SNES check moments were placed 15 frames before the burst, two seeds each.
+  - A scout run with no B found the frame an away skater burst at the carrier. That happened in 871 of 1,636 placements.
+  - The same placement was then replayed with B at offsets from that frame. The game is deterministic, so everything before the press repeats.
+- **Placing a skater for pad 1 needs three things:** `c1playernum`, `playerpad` ($19D4: the pad each object answers; negative means the computer) and the person flag. A skater's leftover animation (`pf2aip`, `pfalock`) must also be cleared, or the pad's presses are ignored.
+- **Reached a teammate, by offset, same placement:**
+
+  | B, frames from the burst | -12 | -6 | 0 | 3 | 6 | 9 | 12 | 15 | 18 | 24 |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | Reached a teammate | 35% | 37% | 38% | 42% | 37% | 36% | 35% | 36% | 33% | 31% |
+
+  The share is lower than on the Genesis because a computer checker often takes the puck before a late press.
+- **By lead before contact (passes that left):**
+
+  | Lead (real) | Teammate | Picked off by the checker | Passes |
+  |---|---|---|---|
+  | after contact | 50% | 16% | 3,180 |
+  | under 0.10 s | 54% | 15% | 659 |
+  | 0.10-0.25 s | 62% | 10% | 374 |
+  | 0.25-0.50 s | 55% | 5% | 226 |
+  | 0.50 s or more | 26% | 20% | 156 |
+
+- **No pass:** the carrier was caught 32% of the time.
+- **Conclusion:** the same shape as the Genesis, weaker. Pressing B as the burst begins, about 0.1-0.25 s (real) before contact, is best, and the last instant and after contact are worse.
