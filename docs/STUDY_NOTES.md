@@ -1572,3 +1572,27 @@ compare frame for frame.
   and in the clock box on a power play (set by making tmap differ, $17A6: only the display was tested); Calgary its
   letters in both, laid out as the retail game prints a name ("LA PwrPlay" in retail). Boston and Vegas look the same
   on both ROMs, and the only changed bytes are those three teams' table entries and data (and the checksum).
+
+## McMarkis's score-box logos on the original SNES game: what retail leaves free (2026-11-08, for NOSE4Web)
+
+`analysis/scoring_map/snes_score_logo_check.py` plays a whole retail game (penalties on, line changes on and off,
+every period cut short) with the 12 tiles from ExtraChars marked in VRAM and palbuffer rows 4 and 7 watched every
+frame, a pause into every pause-menu screen, an instant replay, a power play and the breaks between periods, and scans
+both background maps every 10 frames of play (vertical and horizontal rink).
+
+- **ExtraChars** is $472 in play on NHL94.smc, NHL94_Classic.smc and SDL16.smc: VRAM words $5720-$57DF, below the
+  sprite tiles at $6000 (room up to ExtraChars $4F4). No map entry ever points at them (BG1, the text layer, tiles from
+  $2000, printed numbers 256 below the global ones: tiles $372-$37D; BG2, the rink, can't reach them). Only two pause
+  screens write over them: Edit Lines and Crowd Level; both go back to the rink through ExitStatsScreen (McMarkis's
+  ReloadRink). Game Stats, Team Roster, Player Stats, the summaries, Period Stats, Player Cards, Other Scores, the
+  replay, the power play, the horizontal scoreboard and the breaks between periods leave them alone.
+- **Palettes in play:** vertical rink BG1 uses palettes 0 and 1, and 4 for the line-change box (line changes on), whose
+  tiles use colours 1 and 4 only (colour 4 black); BG2 uses 0, 1, 2, 3, 5, 6. Palette 7 is unused on the vertical rink.
+  The horizontal scoreboard's team banners use palettes 6 (visitors) and 7 (home), colours 2-15: DrawHorTeams sends
+  colourbuf's palettes 6-7 straight to CGRAM while it is up, and ClrHor sends palbuffer's palettes 0-7 back (its X is a
+  colour count: $80 = 128 colours) whenever the vertical rink returns.
+- **palbuffer rows 4 and 7** are never written during a game (only setupice's RinkPalette copy at the start: row 4
+  colours 0-3, row 7 colour 0). DMAToCGRAM counts colours, not bytes; with the screen on it only queues one upload for
+  the NMI. FadeIn / BrightnessHook change brightness only.
+- **Horizontal mode:** printscores1's .sbscreen prints the period and the big scores; the team names are DrawHorTeams'
+  banners (TeamBlocksTiles), not three letters.
