@@ -1359,3 +1359,48 @@ Each patched ROM against its original, from the same moments with the same rando
   release, sent along the ice at his middle, +/- 6, at 9,000-22,000; 1,800 a ROM): the original let in 80, 77 through
   his middle; the fix none (36 of those went past him, 44 he held). Held 995 against 1,049 overall: the body test
   bounces more of them off him.
+
+## Code readings for NOSE4Web's next fixes (2026-11-08)
+
+Addresses are file offsets in the original ROMs (Genesis nhl94.bin; SNES NHL94.smc and the two 2 MB 2026 builds).
+
+- **Bug 13, delayed-penalty sniping (Genesis only).** doshot (logic94 ~1984): `cmp.w #$C8,d3` at $C414, `bhi .notperf`,
+  `jsr ReadGoaliePulled` ($FEFCC) at $C41C, `bmi.w .perf` at $C422 (`6B00 0084`). ReadGoaliePulled tests the
+  *shooting* team's tmgoalie (negative: pulled, CPgoalie's `st` makes it $FF00), so every shot within 200 of its aim
+  point is exact while the shooter's own goalie is off: a delayed penalty against the other team, or the computer's
+  late pull (with the goalie-pull fix, at 1 or 2 down as well). An empty net at the other end changes nothing (the
+  normal roll). The other three callers ($CD40 assdefo, $E016 asspuckc, $E7D2 assnearest) only shorten the computer's
+  re-decision timer by a frame with its own goalie off, and don't touch shots. Without the `bmi` the shot takes the
+  normal roll, (ShA + 1) / (ShA + 16) exact within 200 for working Shot Accuracy (about 52% at 15, 67% at 30). The SNES
+  doshot has no such test (highlight and distance only). Recordings (`analysis/pulled_goalie_shots.py`, 26 Genesis
+  games): 11 shots with the shooter's goalie off, all people's, the other goalie in; 8 through doshot (7 shots, a
+  one-timer), 10 within 200, 3 goals from the 8. Too few to measure the effect.
+- **Bug 25, the comeback bonus (SNES).** setplayer (routines/collide/setplayer.asm): half the period minus the clock,
+  `beq .2`, then `bpl .6` skips the bonus in the second half (the Genesis's bgt at $15B70). `10 22` (bpl) at file
+  $FCFFB ($9F:CFFB) in NHL94.smc, $FD10B in nhl94_2026.sfc (SA-1), $FD039 in nhl94snes_2026.sfc; `30` (bmi) turns it
+  round (the exact half still gets it, as on the Genesis).
+- **Bug 16, a goal after the award whistle (Genesis).** puckshootout's first call clears puckvx / puckvy and sets
+  BA_PS_flags bit 2, after which Goal skips its gmclock test; the puck is moved to centre about 33 frames later. But
+  the puck doesn't move in that window: six pucks sent at the net 3 frames after bit 2 came on stayed where they were,
+  and a puck put at rest in the net didn't count. Before bit 2 the clock is stopped and Goal refuses. What does count:
+  a foul on a breakaway carrier whose team keeps the puck is a delayed call (gmpendel), play goes on, and a goal then
+  counts and clears "pending" (Goal, collide94 ~1366), so the penalty shot is cancelled: the NHL's rule too. Probably
+  what was seen.
+- **Bug 18, a penalty shot that ends at once (Genesis).** Not reproduced: none of the 88 attempts in the fix tests did
+  (the shortest 269 frames). UpdatePenaltyShotEnd ends an attempt at once if the goalie has the puck (puckc =
+  BA_Goalie_SCnum), or if shootoutclock is 0; puckshootout sets shootoutclock to $19 only at .setstopped on its first
+  call, and a delayed penalty pending then (gmpendel) sends it to Stop4Pen before that, so a later call would start
+  the attempt with the clock at 0. Not seen; needs a recording or how it happened.
+- **Bug 20, the awareness slip.** Genesis: the computer's re-decision timer reloads from `move.b $6B(a3),$40(a3)`
+  (aidef) in asswingo at $D0DE and asscentero at $D2D6, where the other offence jobs use $6A (aioff: assdefo $CD3A,
+  asspuckc $E010, assnearest $E7CC); the byte to change is $D0E1 / $D2D9 ($6B to $6A). SNES (the same slip):
+  `18 7D 43 13` (clc; adc aidef,x) in asscentero at $F049E and asswingo at $F0ACC, retail and nhl94snes_2026
+  ($F04A0 / $F0ACE: $43 to $23, aioff $1323); SA-1 the same offsets ($7343 to $7323). Size (the 619 retail skaters,
+  ratings x 5, no hot / cold): the timer is 7-15 frames; Defensive for Offensive changes it by 0 frames for 196, at
+  most 1 for 456, at most 4, -0.3 on average. Small.
+- **Bug 21, the crowd bonus (Genesis).** SetSflags8Bit1 at $FEF66 starts `60 00 00 0C` (bra.w .set, skipping its own
+  bclr), so sflags8 bit 1 is always set; every crowd-bonus test reads it before the real flag (sflags7 bit 6, the
+  meter past its record): +2 Agility and +2 Speed in skating (logic94 ~7513, ~7557), the chaser's slot boost (~4932),
+  the goalie's body reach (collide94 ~1854), and a person's poke trip with penalties off (collide94 ~605). Two nops
+  there would let the bonus follow the meter, which the recordings show on 73% of live play (GENESIS_MECHANICS 14),
+  both teams alike: the +2 (of a working 30; about a tenth of top speed for a typical skater) gone the other 27%.
