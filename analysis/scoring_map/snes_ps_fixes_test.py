@@ -87,10 +87,11 @@ class Game:
     def target_net(self, up):
         return max(NETS, key=lambda n: up * self.sw(YPOS + 2 * n))
 
-    def outcome(self, extra):
+    def outcome(self, extra, tag_boards=True):
         """After a whistle (gmclock set): play on until it runs again. Whether the attempt was ended on the way by
         the loose puck meeting the boards (wallcoll's EndPenaltyShotPlay: penshot to 0 with a $0A entry on the
-        puck, object 14), which ends it whatever the whistle."""
+        puck, object 14), which ends it whatever the whistle. Not for the still puck: there the fix's own
+        EndPenaltyShotPlay (X the puck) writes that same entry."""
         boards = False
         for _ in range(4000):
             self.run()
@@ -100,7 +101,7 @@ class Game:
         else:
             return dict(res="play never resumed", **extra)
         self.run(5)
-        res = "retake" if self.w(PSLIVE) else "faceoff (the puck met the boards)" if boards else "faceoff"
+        res = "retake" if self.w(PSLIVE) else "faceoff (the puck met the boards)" if boards and tag_boards else "faceoff"
         return dict(res=res, penshot=self.w(PENSHOT), **extra)
 
     def net(self, base, rnd):
@@ -157,7 +158,7 @@ class Game:
             self.run()
             if self.w(GMCLOCK):
                 return self.outcome(dict(entry=hex(self.w(PENBUF)), frames=f, live_at_whistle=self.w(PSLIVE),
-                                         penshot_at_whistle=self.w(PENSHOT)))
+                                         penshot_at_whistle=self.w(PENSHOT)), tag_boards=False)
             if not self.w(PENSHOT) and f < 100:
                 return dict(res="attempt ended first", frames=f)
         return dict(res="no whistle", pspuckback=self.w(PSPUCKBACK), penshot=self.w(PENSHOT), live=self.w(PSLIVE),

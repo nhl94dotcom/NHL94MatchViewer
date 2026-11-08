@@ -1339,6 +1339,11 @@ Each patched ROM against its original, from the same moments with the same rando
   boards after the whistle (wallcoll ends the attempt for any loose-puck contact, even then); the fix never retook it.
   The SA-1 knocked net was checked in the code only (that build sets the attempt up in other objects; the stubs call
   its own EndPenaltyShotPlay $9E:C7F9 and AddPenalty2 $9E:B8EA).
+  With the faceoff fix in the same ROM (NHL94_faceoff_and_penalty_shot_fixes.smc and the SA-1 one; the two blocks
+  adjacent at the end of bank $9E, the penalty-shot jumps re-pointed to $9E:FF5F / FF6B, every other byte as in the
+  single-fix ROMs): exactly the single fix's results, retail (19 knocked nets, all faceoffs; the still puck 40 of 40
+  faceoffs; the original 11 and 40 retakes) and SA-1 (the still puck 40 of 40); the faceoff spots as the faceoff fix
+  alone (FACEOFF_PLACEMENT).
 - **SNES Y button** (`snes_y_button_test.py`): the recorded SNES check moments, no pass; each frame the pad-1 skater
   is locked (not bursting), without the puck, an opponent within 40, played with and without Y. The original: his own
   animation changed (a hook or hold) in 1,071 of 1,387 such frames (knockdowns, lock 1, and locks holding an animation:

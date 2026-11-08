@@ -184,6 +184,10 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
   earlier was not.
 - The third build (Genesis $14 and SNES $16, the injury stoppage, on the zone rule): Genesis 8,372 / 0, SNES 2026
   SA-1 2,112 / 0, SNES retail 4,208 / 16; the 16 are the same two puck-across-centre placements, now also with $16.
+- With the penalty-shot fixes in the same ROM (2026-11-08, NOSE4Web's NHL94_faceoff_and_penalty_shot_fixes.smc and
+  the SA-1 nhl94_2026_ one: the penalty-shot code the 25 bytes before the faceoff code at the end of bank $9E): retail
+  4,208 / 16 and SA-1 2,112 / 0, as the faceoff fix alone. The penalty-shot test gave the single fix's results too
+  (STUDY_NOTES, NOSE4Web's penalty-shot ... fixes).
 - Not tested: the FallDown and puckfaceoff entries into Stop4Pen (below), and a faceoff after a penalty shot.
 
 ## NOSE4Web's four questions, from the code
