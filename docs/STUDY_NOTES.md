@@ -1445,3 +1445,40 @@ For NOSE4Web: a low shot off the goalie's stick isn't counted (puckstick `.stdef
   and 581, goals 16 and 16. Every difference was +1 on one shot (53 top, 56 bottom), never more. 1,185 of the 1,195
   pairs played identically frame by frame for 150 frames; 10 drifted apart from frame 20-148, a few of them where
   the hook ran without counting: its extra cycles shift the game's video-counter randomness, as other hooks do.
+
+## How often the fixed bugs happen in the recorded games (2026-11-08)
+
+`python analysis/bug_frequency.py`: the recorded league games (26 Genesis, 25 SNES, people's games on the original
+ROMs), per game.
+
+| Bug (fix) | Recorded | A game |
+|---|---|---|
+| Genesis rocket passes (64 of them people's) | 69 | 2.7 |
+| Genesis saves not counted as shots on goal (stick deflections and other touches) | 108 of 567 saves | 4.2 |
+| Genesis faceoffs held off the game's dots (the faceoff fix) | 41 of 287 | 1.6 |
+| Genesis shots exact with the shooter's own goalie off (sniping) | 7, 3 goals | 0.27 |
+| Genesis runaway skaters | 3 | 0.12 |
+| Genesis goals through the legs (blind ring) / shoulder-bobble goals | 3 / 2 of 218 goals | 0.12 / 0.08 |
+| Genesis penalty shots awarded (table, retake, ghost puck) | 0 | 0 |
+| SNES hooks and holds straight from a fall by a person (Y button) | 106 | 4.2 |
+| SNES knocked-off nets / penalty shots (bug 27 needs both at once) | 12 / 2 | 0.48 / 0.08 |
+
+- **The SNES Y button is the one that happens most.** A person's skater went from a fall straight into the hook or
+  hold (animations $F864 / $F374, what Y starts while down: snes_y_button_test) 106 times. These are mid-fall, not a
+  hook as he got up: falls that ended on their own lasted a median 106-153 frames, the ones cut short by the hook a
+  median 29-38 frames (22 at the least).
+- **Uncounted saves:** 62 of 307 going up the screen, 46 of 260 going down. These games don't show the leagues'
+  direction effect (SHOOTING_STUDY: the leagues' 86,735 games do); the count fix would add about 4 shots on goal a
+  game.
+- The comeback bonus (wrong in every third period with a team tied or behind), the awareness slip and the crowd bonus
+  (always on) aren't events, so not counted.
+
+## One check for NOSE4Web's builds (2026-11-08)
+
+`python analysis/scoring_map/fix_check.py ROM [--orig ORIGINAL] [--full] [--only ID,...] [--list]`: finds which of
+the tested fixes a ROM has from their bytes (call sites and changed instructions, so combined builds are found too),
+lists any changed bytes outside them, and runs each fix's study script above on the ROM and the original of its layout
+(nhl94.bin, NHL94.smc, nhl94_2026.sfc, nhl94snes_2026.sfc, from the ROM's folder), smaller than the write-ups unless
+`--full`, with a pass when the ROM shows the fix and the original the bug. SNES files with a copier header are read
+without it. First run, every NOSE4Web build so far (quick sizes): all 22 tests on 20 ROMs passed, nothing else changed
+in any of them; the detection alone was right on all 25 ROMs in the folder (the originals: none found).
