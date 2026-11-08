@@ -168,12 +168,16 @@ def read_teams(rom_path):
     and the eight lines (G, LD, RD, LW, C, RW, extra attacker, 0: player numbers from 1). Players: a length word
     (name length + 2), the name, the jersey number as decimal digits, seven bytes of ratings (two to a byte, in the
     Genesis order); a length of 2 ends the list. Then city, abbreviation, nickname and arena, each length-prefixed.
-    Goalies are told by their ratings (below)."""
+    Goalies are told by their ratings (below). Where the team list and the uniform colours are, and how many teams
+    (28 retail, 32 in the 2 MB 2026 build), from the ROM (snes_layout)."""
     from .common import overall
+    from .snes_layout import layout
     rom = strip_header(rom_path.read_bytes())
+    lay = layout(rom)
+    team_list = lay.team_list or TEAM_LIST
     teams = []
-    for k in range(28):
-        ptr = rom[file_offset(TEAM_LIST) + 4 * k:file_offset(TEAM_LIST) + 4 * k + 3]
+    for k in range(lay.team_count or 28):
+        ptr = rom[file_offset(team_list) + 4 * k:file_offset(team_list) + 4 * k + 3]
         team = file_offset(ptr[0] | ptr[1] << 8 | ptr[2] << 16)
         players_off, _, names_off = struct.unpack_from("<3H", rom, team)
         players, off = [], team + players_off
@@ -194,7 +198,7 @@ def read_teams(rom_path):
             strings.append(rom[at + 2:at + length].decode("latin-1").rstrip("\x00") if 2 <= length < 40 else "")
             at += length
         palettes = [[colour(struct.unpack_from("<H", rom, file_offset(base) + 32 * k + 2 * i)[0]) for i in range(16)]
-                    for base in (HOME_PALETTES, AWAY_PALETTES)]
+                    for base in (lay.home_palettes, lay.away_palettes)]
         teams.append({"name": strings[0], "abbr": strings[1], "nickname": strings[2], "players": players,
                       "palettes": palettes, "logo": None})
     return teams
@@ -269,6 +273,11 @@ class Emulator:
                         rom_entry = self.raw(entry + 0x808 * 8, 8)
                         rom = struct.unpack("<Q", rom_entry)[0] + 0x8000 if rom_entry else 0
                         if b"NHL" in (self.raw(rom + 0x7FC0, 21) or b"") and self.raw(ram + RAM_SIZE - 16, 16) is not None:
+                            # An SA-1 cartridge (map mode $23): banks $40-$41 are its BW-RAM, mapped as $7E-$7F are
+                            # work RAM (the same pattern, met first and passed over by the title test above)
+                            sa1 = (self.raw(rom + 0x7FD5, 1) or b"\0")[0] == 0x23
+                            self.bwram = struct.unpack("<Q", self.raw(entry + 0x400 * 8, 8))[0] if sa1 else None
+                            self.big = (self.raw(rom + 0x7FD7, 1) or b"\x0a")[0] >= 11   # a 2 MB build
                             return ram, rom
                 return None
 
@@ -280,6 +289,11 @@ class Emulator:
         return self.p.pid  # RetroArch's process (the helper names the loaded ROM from its folder)
 
     @property
+    def teams(self):
+        """Team numbers below this are real (View: at or above it, the menus): 28 retail, 32 in the 2 MB builds."""
+        return 32 if getattr(self.p, "big", False) else 28
+
+    @property
     def ram(self):
         return self.p.ram
 
@@ -288,10 +302,27 @@ class Emulator:
         return self.p.rom
 
     def read(self, offset, size):
-        return self.p.read(offset, size)
+        """Work RAM as the retail game lays it out. On an SA-1 build the game's own variables are elsewhere
+        (github.com/Mhopkinsinc/NHL94SNES-SA1, docs/SA1.md): low RAM $0100-$1FFF in BW-RAM from $6100, and the game
+        state of bank $7E it needs (the scoring summary among it) in BW-RAM at the same offsets (SA1_MOVED); they are
+        copied over the stale work RAM there, so every sample reads as a retail one."""
+        data = self.p.read(offset, size)
+        bw = getattr(self.p, "bwram", None)
+        if data is None or not bw:
+            return data
+        out = bytearray(data)
+        for lo, hi, to in SA1_MOVED:
+            a, b = max(lo, offset), min(hi, offset + size)
+            if a < b:
+                moved = self.p.raw(bw + to + (a - lo), b - a)
+                if moved is None:
+                    return None
+                out[a - offset:b - offset] = moved
+        return bytes(out)
 
     def word(self, offset):
-        return self.p.word(offset)
+        data = self.read(offset, 2)
+        return struct.unpack("<H", data)[0] if data else None
 
     def byte(self, offset):
         data = self.read(offset, 1)
@@ -327,6 +358,9 @@ class Emulator:
 
 
 DEFAULT_ROM = Path.home() / "RetroArch-1.17-Win64/ROMs/SNES/NHL94.smc"
+# Work RAM ranges an SA-1 build keeps in BW-RAM (start, end, BW-RAM offset; its ram94snes.asm: !LowRam $6000, and
+# !GameRam7E bank $40: $30F4-$35F3, $37F4-$47F3, $E700-$E867). The direct page moved to I-RAM; nothing here reads it.
+SA1_MOVED = ((0x0100, 0x2000, 0x6100), (0x30F4, 0x35F4, 0x30F4), (0x37F4, 0x47F4, 0x37F4), (0xE700, 0xE868, 0xE700))
 
 
 def find_rom(capture):
@@ -379,7 +413,8 @@ class View:
         lineup = lambda places: (lambda on: bool(on) and len(set(on)) == len(on))([r for r in places if r != 0xFF])
         self.on_ice = lineup(rosters[:6]) and lineup(rosters[6:])
         self.screen = word(GAME_FLAGS2)
-        self.in_menus = self.teams[0] >= 28 or self.teams[1] >= 28 or (self.teams == (0, 0) and self.score == (0, 0)
+        top = getattr(emu, "teams", 28)  # 32 on the 2 MB builds (a team 29 had kept a whole SA-1 game unrecorded)
+        self.in_menus = self.teams[0] >= top or self.teams[1] >= top or (self.teams == (0, 0) and self.score == (0, 0)
                                                                           and self.period == 0 and self.clock == 0)
         self.in_game = not self.in_menus and not self.screen & PAUSED
 
@@ -411,21 +446,28 @@ def animation_frame(rom, spa, step, facing):
     save states this gives a frame for 98% of skaters and nearly every goalie."""
     if spa < 0x8000:
         return None
-    ptr = struct.unpack_from("<H", rom, file_offset(ANIM_BANK | spa) + 2 * (facing & 7))[0]
+    from .snes_layout import layout
+    lay = layout(rom)
+    bank, spa = lay.anim_bank << 16, lay.rom_spa(spa)   # spa: the retail word (the match file's)
+    ptr = struct.unpack_from("<H", rom, file_offset(bank | spa) + 2 * (facing & 7))[0]
     if ptr < 0x8000:
         return None
-    frame = struct.unpack_from("<H", rom, file_offset(ANIM_BANK | ptr) + step)[0]
+    frame = struct.unpack_from("<H", rom, file_offset(bank | ptr) + step)[0]
     return frame if frame < 976 else None
 
 
 def animation_lists(rom, spa):
-    """An animation's frames for each of the 8 facings (the viewer turns players with them, as the Genesis 'anims')."""
+    """An animation's frames for each of the 8 facings (the viewer turns players with them, as the Genesis 'anims').
+    spa: the retail word (the match file's), read from this ROM's own animation."""
+    from .snes_layout import layout
+    lay = layout(rom)
+    bank, spa = lay.anim_bank << 16, lay.rom_spa(spa)
     dirs = []
     for d in range(8):
-        ptr = struct.unpack_from("<H", rom, file_offset(ANIM_BANK | spa) + 2 * d)[0]
+        ptr = struct.unpack_from("<H", rom, file_offset(bank | spa) + 2 * d)[0]
         if ptr < 0x8000:
             return None
-        frames, at = [], file_offset(ANIM_BANK | ptr)
+        frames, at = [], file_offset(bank | ptr)
         while len(frames) < 64:
             frame, time = struct.unpack_from("<Hh", rom, at)
             if frame >= 976:
@@ -491,6 +533,8 @@ class MatchReader:
         from .common import PLAYERS, STAT_FIELDS
         self.rom = strip_header(rom_path.read_bytes())
         self.teams = read_teams(rom_path)
+        from .snes_layout import layout
+        self.layout = layout(self.rom)   # a 2 MB build's animation words read as the retail ones
         self.match = {"version": 21, "name": None, "system": NAME, "positions": ["G", "LD", "RD", "LW", "C", "RW"],
                       "t": [], "clock": [], "period": [], "score": [], "shots": [], "puck": [], "puckV": [], "lights": [],
                       "pos": [], "ctrl": [], "owner": [], "posts": [], "nets": [], "aim": [], "delayed": [], "penalties": [],
@@ -532,7 +576,25 @@ class MatchReader:
         if limit <= self.next:
             return
         self.checks_known = self.checks_real(cap, limit - 1) if checks_known is None else checks_known
+        # A longer rewind (2026-11-07: 2026-11-02_2139_WPG-TOR, eight times; netplay catching up after a stall, or
+        # RetroArch's rewind): after a gap of half a second or more the counter comes back 31-600 frames and the game
+        # clock with it (2-3 game seconds), and that stretch is played again. The rule above can't see it (the read
+        # after is too late), so the stretch was recorded twice. On the final reading the first copy is left out, the
+        # replayed one kept. (Only with the clock gone back in the same period: the counter also restarts between
+        # screens.) None on the Genesis.
+        rewound = set()
+        if final:
+            for j in range(self.next + 1, limit):
+                back = (frames[j - 1] - frames[j]) & 0xFFFF
+                if ROLLBACK_FRAMES < back <= REWIND_FRAMES and cap.word(j, PERIOD) == cap.word(j - 1, PERIOD) \
+                        and cap.word(j, CLOCK) > cap.word(j - 1, CLOCK):
+                    i = j - 1
+                    while i >= self.next and (frames[i] - frames[j]) & 0xFFFF <= REWIND_FRAMES:
+                        rewound.add(i)
+                        i -= 1
         for raw in range(self.next, limit):
+            if raw in rewound:
+                continue
             if any((frames[raw] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
                    for j in range(raw + 1, min(n, raw + 32)) if cap.ms(j) - cap.ms(raw) <= 500):
                 continue
@@ -649,7 +711,7 @@ class MatchReader:
                 self.last_work[k] = work
             self.match["pos"] += [sg(OBJ_X + 2 * k), sg(OBJ_Y + 2 * k)]
             face = w(OBJ_FACING + 2 * k) & 7
-            spa, step = w(OBJ_ANIM + 2 * k), w(OBJ_ANIM_STEP + 2 * k)
+            spa, step = self.layout.spa(w(OBJ_ANIM + 2 * k)), w(OBJ_ANIM_STEP + 2 * k)
             f = w(OBJ_FRAME + 2 * k)  # the game's own picture (the Genesis +$06)
             if spa >= 0x8000:
                 self.spas.add(spa)
@@ -815,6 +877,7 @@ def read_penalties(cap, count, match, rules):
 
 FRAME_COUNTER = 0x0764  # work RAM word counting frames (up 1-3 between the helper's reads, 92% of samples)
 ROLLBACK_FRAMES = 30    # how far back a rollback can take the counter
+REWIND_FRAMES = 600     # how far back a longer rewind (netplay catching up, RetroArch rewind) can: 10 s real
 
 
 class LivePlay:

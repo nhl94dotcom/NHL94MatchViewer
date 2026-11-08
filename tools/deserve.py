@@ -18,9 +18,12 @@ import math
 
 FLURRY_MS = 3000
 OT_SECONDS = {"genesis": 600, "snes": 300}
+# Goals per unblocked attempt in the recorded games (2026-11-07: Genesis 686 shots, 193 one-timers, 49 pass shots;
+# SNES 547, 240 and 11, too few pass shots for more than a rough rate). Every attempt in them now has xG; these serve
+# games without (an SA-1 SNES build, whose xG waits on the model being checked at 60 frames a second).
 FALLBACK = {
-    "genesis": {"shot": 0.17, "one-timer": 0.32, "pass shot": 0.19, "deflection": 0.25, "other": 0.25},
-    "snes": {"shot": 0.19, "one-timer": 0.17, "pass shot": 0.19, "deflection": 0.25, "other": 0.25},
+    "genesis": {"shot": 0.18, "one-timer": 0.37, "pass shot": 0.14, "deflection": 0.25, "other": 0.25},
+    "snes": {"shot": 0.24, "one-timer": 0.24, "pass shot": 0.09, "deflection": 0.25, "other": 0.25},
 }
 
 

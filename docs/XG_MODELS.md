@@ -115,7 +115,9 @@ print("xG", goals / n)
   `aim = xg.auto_aim(px, py, gx + 8 * gvx / 4096, gy + 8 * gvy / 4096, goal_line)`.
 - **A goalie in a pad stack** (animation $0250 or $02A2): reach 18, and the body test moves 6 to one side:
   `reach, shift = 18, xg.PAD_STACK["0250"]` (pass `shift` where the example passes 0).
-- **During a delayed penalty** the shot is always exact: perfect chance 1.0.
+- **During a delayed penalty** the shot is always exact: perfect chance 1.0. The shooting team's goalie is then off
+  the ice, so don't tell the net from him: `xg.attacks_top(match, sample, team)` uses his position, else the other
+  goalie's, else the period (home attacks up in periods 1 and 3), on both systems.
 - `play_out` returns 'goal', 'save', 'stick', 'post', 'over' or 'wide' for each play-out.
 
 ### SNES

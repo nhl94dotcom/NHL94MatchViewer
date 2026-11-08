@@ -292,6 +292,11 @@ def find_shots(m, goals=None):
     # 1:17): one shot per player and release.
     seen = set()
     shots = [sh for sh in shots if (sh['f'], sh['k']) not in seen and not seen.add((sh['f'], sh['k']))]
+    # Not after the whistle: the SNES game lets skaters play on while the clock is stopped (an offside, icing, a freeze,
+    # the period's end), and a shot then is no attempt; the match file hides the puck (-256) while it is stopped, as the
+    # Genesis game does from the whistle. 2026-11-07: 51 SNES releases 0.1-10 s after the clock stopped (5.6% of the
+    # SNES attempts, 4.3 xG), none counted by the game; on the Genesis none.
+    shots = [sh for sh in shots if P[3 * sh['f'] + 2] >= -100]
     shots.sort(key=lambda d: d['f'])
     score = lambda i, team: m['score'][2 * i + team]
     sog = lambda i, team: m['shots'][2 * i + team]
@@ -640,11 +645,17 @@ def game_weights(m, tick=None):
 
 
 def own_end(m, i, team):
-    """+1 if the team's goalie is at the +Y end at frame i, -1 if at -Y, None if no goalie is on."""
-    for k in range(team * 6, team * 6 + 6):
-        if m['role'][i * 12 + k] == '0':
-            return 1 if m['pos'][(i * 12 + k) * 2 + 1] > 0 else -1
-    return None
+    """+1 if the team defends the +Y end at frame i, -1 if the -Y end: where its goalie is; with him off the ice (pulled
+    for a delayed penalty or an extra attacker), the other end from the other team's goalie; with neither, the period
+    (home defends -Y in periods 1 and 3, overtime as period 2: right for 1,950 of 1,952 recorded shots, both systems).
+    Until 2026-11-07 it gave None with the goalie pulled, and every caller then skipped the moment (shots lost their
+    aim and xG, zone time and entries a few seconds each delayed penalty). Same rule as xg.attacks_top."""
+    for side, sign in ((team, 1), (1 - team, -1)):
+        for k in range(side * 6, side * 6 + 6):
+            if m['role'][i * 12 + k] == '0':
+                return sign if m['pos'][(i * 12 + k) * 2 + 1] > 0 else -sign
+    per = m['period'][i] if isinstance(m.get('period'), list) else 0
+    return -1 if (team == 0) == (per in (0, 2)) else 1
 
 
 def find_faceoffs(m):
@@ -887,6 +898,10 @@ def find_passes(m):
                 p['counted'] = hit is not None
                 if hit is not None:
                     rises.remove(hit)
+    # Not after the whistle (the puck hidden: the clock stopped), unless the game counted it: on the SNES a puck frozen
+    # or played on after a whistle read as failed passes going nowhere (2026-11-07: 57 of 2,563, none counted; the
+    # Genesis none)
+    out = [p for p in out if P[3 * p['f'] + 2] >= -100 or p.get('counted')]
     return sorted(out, key=lambda e: e['f'])
 
 

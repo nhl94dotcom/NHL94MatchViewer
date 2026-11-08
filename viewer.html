@@ -4054,8 +4054,8 @@ $('flowToggle').addEventListener('click', () => showFlow(!flowOn));
 // tie. Mid-game, only the shots so far count: who deserved to be ahead. Attempts without an xG get a typical chance.
 const DTW_FLURRY_MS = 3000, DTW_OT = { genesis: 600, snes: 300 };
 const DTW_FALLBACK = {
-  genesis: { shot: 0.17, 'one-timer': 0.32, 'pass shot': 0.19, deflection: 0.25, other: 0.25 },
-  snes: { shot: 0.19, 'one-timer': 0.17, 'pass shot': 0.19, deflection: 0.25, other: 0.25 },
+  genesis: { shot: 0.18, 'one-timer': 0.37, 'pass shot': 0.14, deflection: 0.25, other: 0.25 },
+  snes: { shot: 0.24, 'one-timer': 0.24, 'pass shot': 0.09, deflection: 0.25, other: 0.25 },
 };
 function deserveToWin(m, upto) {
   // The end of the data is the end of the game unless a live broadcast says it is still going on

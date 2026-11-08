@@ -353,6 +353,20 @@ def aimed(launch, rng, lift):
     return vx * math.cos(a) - vy * math.sin(a), vx * math.sin(a) + vy * math.cos(a), lift
 
 
+def attacks_top(m, f, team):
+    """Whether `team` attacks the top net (y > 0) at sample f: its own goalie is at the other end; with him off the
+    ice (pulled for a delayed penalty or an extra attacker) the other team's goalie is at that net; with neither,
+    the period (home attacks up in periods 1 and 3, overtime as period 2: right for 1,950 of 1,952 recorded shots,
+    both systems). Both systems; until 2026-11-07 a shot with the shooter's goalie pulled got no xG at all."""
+    P, role = m['pos'], m['role']
+    for side, sign in ((team, -1), (1 - team, 1)):
+        g = next((P[(f * 12 + k) * 2 + 1] for k in range(side * 6, side * 6 + 6) if role[f * 12 + k] == '0'), None)
+        if g is not None:
+            return (g > 0) == (sign > 0)
+    per = m['period'][f] if isinstance(m.get('period'), list) else 0
+    return (team == 0) == (per in (0, 2))
+
+
 def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
     """Each shot, one-timer and pass shot of a Genesis match gets `xg`, the chance it goes in by the game's rules (see
     above).
@@ -372,10 +386,7 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
         launch = launched(m, f) if sh['kind'] == 'pass shot' else None
         if sh['kind'] == 'pass shot' and launch is None:
             continue
-        own = next((1 if P[(f * 12 + k) * 2 + 1] > 0 else -1 for k in range(team * 6, team * 6 + 6) if role[f * 12 + k] == '0'), None)
-        if own is None:
-            continue
-        gl = 264 if own < 0 else -264
+        gl = 264 if attacks_top(m, f, team) else -264
         px, py, pz = m['puck'][3 * f], m['puck'][3 * f + 1], max(0.0, m['puck'][3 * f + 2])
         shooter = next((k for k in range(team * 6, team * 6 + 6)
                         if role[f * 12 + k] != 'x' and DIGITS.index(roster[f * 12 + k]) == sh['idx']), None)

@@ -387,7 +387,12 @@ and a read made while it was ahead shows every object a few frames on. The SNES 
 had about 240 such samples each, the first SNES game 17, capture6 21. Each system's read_match leaves out a sample
 when the frame counter (Genesis $B03E, SNES $0764: up 1-3 between reads in 92-95% of samples) shows the same frame
 again or up to ROLLBACK_FRAMES 30 earlier within the next half second; the time those samples covered is kept (not
-closed up like pauses). That also drops the earlier of two reads of one frame (a read in the middle of the frame):
+closed up like pauses). Longer rewinds get past that rule (2026-11-07: eight in 2026-11-02_2139_WPG-TOR, SNES
+netplay after lag: the counter back 47-56 frames, the clock 2-3 game seconds, the read after the turn too late for the
+half-second window): on the final reading (not live), the SNES reader leaves out the first copy of a stretch whose
+counter and clock both come back within REWIND_FRAMES 600 in one period, and keeps the replayed one. Two forward
+jumps of the counter with the clock a second back remain in that game (the host's state loaded, by the look of it).
+That also drops the earlier of two reads of one frame (a read in the middle of the frame):
 about 6-10% of samples. After it: no there-and-back jumps left (one in CHI-TOR); shots on goal, checks, goals,
 penalties, injuries, EA Special attempts and the reviewed bumps and bobbles unchanged (on the SNES, bobbles now look
 at the puck one sample after the bounce too, since its position can trail its speed: CHI-TOR then finds the user's 10
@@ -856,3 +861,59 @@ loads over every match with no script error (tests/viewer_smoke.py); every team-
 has help; the season page's tabs; the repository and its whole history hold no bucket, profile, home path or key.
 The disassemblies' new commits (Genesis 150+, SNES 100+ since our copies) are names and comments; none changes a
 mechanics finding, and three new comments disagree with their code (NEEDS_FROM_YOU).
+
+## SNES SA-1 and 2 MB builds (2026-11-07)
+
+The user's 2 MB SNES ROMs (nhl94_sa1_26teams, nhl94snes2026_sa-1: SA-1 cartridges; nhl94snes_2026 plain 2 MB) are
+built from github.com/Mhopkinsinc/NHL94SNES-SA1 (cloned in %USERPROFILE%\NHL94_disasm; its docs/SA1.md and
+docs/EXTENDING.md). Before this the helper saw them running and never a game (2026-10-19, twice).
+
+- **RAM (SA-1 only):** low RAM $0100-$1FFF lives in BW-RAM at $6100 on (!LowRam $6000, the same offsets), and the bank
+  $7E game state the SA-1 CPU needs ($30F4-$35F3 with the scoring summary, $37F4-$47F3, $E700-$E867) in BW-RAM at the
+  same offsets (bank $40); the direct page in I-RAM. Every address the reader uses keeps its retail offset (checked
+  against its ram94snes.asm). Snes9x maps banks $40-$41 to BW-RAM in its memory map exactly as $7E-$7F to work RAM
+  (so the finder meets that pattern first; the cartridge-title test passes over it), and map entry $400 is BW-RAM:
+  snes.Emulator.read lays the moved ranges over its work RAM read (SA1_MOVED), so captures, View and the converter see
+  a retail layout. The header's map mode $23 says SA-1.
+- **Teams:** the 2026 build has 32 (ids 0-31); View took a team at or over 28 for the menus, and an SA-1 game between
+  teams 4 and 29 would never have been recorded. Emulator.teams: 32 on a 2 MB ROM.
+- **ROM tables (all 2 MB builds), found in the ROM by systems/snes_layout.py:** the team list (bank $A1 in the
+  32-team build, $9CA627 in the 26-team one), the uniform colours (SetTeamColors' code; bank $A0 in the 32-team
+  build), the animations (bank $9D after code that grew: every animation 2,814 earlier in the 26-team build; 2,664 or
+  2,254 in the 32-team one, which inserts new ones before the board and bench checks). The animations are walked from
+  SPAlist and matched to the retail ones by their frame lists (tools/systems/snes_spa_retail.json, from the retail
+  ROM); the reader stores the retail word, and the ROM readers (animation_frame, animation_lists, xg_snes) map it
+  back. Sprite frames 1-976 are the retail ones in both builds (the 32-team build adds frames after 976); the sound
+  samples have not moved.
+- **Speed:** an SA-1 build runs the game logic 60 frames a second (the retail game 30; its physics scale with the
+  step, its AI and collisions run twice as often). Game seconds are unchanged. The SNES xG model's step and goalie
+  timing are the retail game's, so an SA-1 game gets no xG (Deserve to Win uses its fallback rates) until the model
+  is checked there.
+- **Checked:** tests/helper_snes_sa1.py runs the 32-team SA-1 ROM in a copy of the Snes9x core in its own process and
+  lets the helper find it as it finds RetroArch: 2026-11-07_2221_CAR-VGK recorded whole, converted, every count as the
+  game's (check_matches), every animation word a retail one. A retail SNES recording converts byte for byte as before.
+
+## Second review: the xG models and the converter's edges (2026-11-07)
+
+- **The xG models against the disassemblies:** both doshots (the perfect-shot chance, scatter, its caps and the
+  halving shooting down, lift, the shot targets), ReadGoaliePulled and the delayed flag the converter reads (both the
+  high byte of tmgoalie), checkgoal's box, the goalie reach table with its crowd-meter +2, the one-timer and pad-stack
+  reach, the stick's blind ring (puckstick does nothing for a goalie past 8 with the puck loose), playeracc and
+  MaxSpeed, shotdiradj: all as the models have them. The goalie's Puck Control is his Shot Power slot ($6C / $1363),
+  as the work rows give it.
+- **A goalie off the ice:** `own_end` (export_match) gave None when a team's goalie was off (pulled for a delayed
+  penalty or an extra attacker), and every caller skipped the moment: those shots lost their aim and so their xG (19
+  recorded shots, 6 goals, 8 Genesis, 11 SNES), and zone time, entries and sides lost those seconds. It now takes the
+  other goalie, then the period (home defends -Y in periods 1 and 3; right for 1,950 of 1,952 shots). xg.attacks_top
+  is the same rule for both models.
+- **After the whistle (SNES):** the SNES game plays on while its clock is stopped, and the shot and pass finders took
+  that play in: 51 shot attempts (5.6% of the SNES attempts, 4.3 xG, none counted by the game) and 57 passes going
+  nowhere (none counted). Both finders now leave out releases with the puck hidden (the clock stopped), passes unless
+  the game counted them. Checks after the whistle stay: the game counts them (hits = the game's checks).
+- **Rewinds:** the SNES reader's REWIND_FRAMES rule ("Reading game memory live").
+- **The season page:** tests/check_season.py checks every summary is current, in season.js and agrees with its match
+  file and with the other side. `fromStart` also needs the game's counts at 0 in the first snapshot (a test recording
+  begun 33 game seconds in at 0-0 passed as whole).
+- The SA-1 SNES ROMs: "SNES SA-1 and 2 MB builds" above.
+- Checked and fine: time going back (two reads in one millisecond, harmless), the score and shots never fall, the
+  clock's resets at intermissions and the end; two SNES clock drops in TOR-NYI (114 to 9, 45 to 36, the game's own).

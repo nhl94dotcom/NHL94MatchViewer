@@ -37,7 +37,8 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   which resets the manifest); rebuild the exe (`cmd /c "tools\build_helper.bat < nul"`) if the helper isn't running.
 - Converter changed: re-convert the recordings in both game folders (below; only those that already have a match
   file: other capture folders are tests, pieces of merged games or cut-off recordings) and run `tools/season.py` in
-  each; `python tests/check_matches.py` checks goals, shots on goal, checks and faceoffs against the game's own counts.
+  each; `python tests/check_matches.py` checks goals, shots on goal, checks and faceoffs against the game's own counts,
+  and `python tests/check_season.py` that every summary is current, in season.js and agrees with its match file.
 - Keep in step: viewer `STAT_HELP` / Help (`#help`) with every stat; season.html `HEAD_HELP`; season.py `VERSION` bump
   when summaries change; `tools/xg.py` with the viewer's XG port, `tools/xg_snes.py` with XG_SNES, `tools/deserve.py`
   with the viewer's `deserveToWin` (`python tests/xg_parity.py` compares all three).
@@ -92,8 +93,8 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
   reads them and prints aggregates only; put only aggregates in the docs. `analysis/coach_rating.py` fits a strength per coach and writes its table with names to that folder only, `analysis/coach_team_levels.py` compares Classic teams by level of player, and `analysis/classic_team_guide.py` writes the handouts `docs/TEAM_GUIDE_GENESIS.md` and `docs/TEAM_GUIDE_SNES.md`, `analysis/classic_player_guide.py` writes `docs/PLAYER_GUIDE_GENESIS.md` and `docs/PLAYER_GUIDE_SNES.md`, `analysis/classic_draft_guide.py` writes `docs/DRAFT_GUIDE_CLASSIC.md`, `analysis/coach_guide.py` writes a page per coach and `analysis/coach_history.py` each coach's Rating on past dates and `analysis/coach_movers.py` who has risen and fallen to that private folder only, and `analysis/league_ratings.py` writes `docs/LEAGUE_RATINGS.md` (method: `docs/COACH_RATING.md`; results: LEAGUE_RESULTS). A Classic league's name starts `Classic_Spring`, `Classic_Summer` or `Classic_Fall`; in a season, the league with the most As is the top one.
 - `python analysis/update_all.py` rebuilds everything from the league databases in order (ratings, team Elo, guides, graphics, history, league ratings, coach pages and reports) and finishes with `tests/check_league_outputs.py`; `--list`, `--from NAME`, `--tests` for the slower method tests.
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
-  `helper_snes_penalty_shots.py` ...): a recording played back as if RetroArch were running it; run one after changing
-  the helper or a system's `View`. Also `check_matches.py`, `xg_parity.py`, `viewer_smoke.py`, `viewer_stat_sums.py`
+  `helper_snes_penalty_shots.py`, `helper_snes_sa1.py` (a real SA-1 game in a core copy) ...): a recording played back as if RetroArch were running it; run one after changing
+  the helper or a system's `View`. Also `check_matches.py`, `check_season.py`, `xg_parity.py`, `viewer_smoke.py`, `viewer_stat_sums.py`
   (see After changes).
 - `samples/`: three game files for the README (remake with `share_game.make_game_file` after viewer changes worth
   showing).
@@ -107,6 +108,9 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
 - Genesis: `ReadProcessMemory` on retroarch.exe; work RAM found through Genesis Plus GX's 68000 memory map (entries
   $E0-$FF sharing one base, cartridge header `ESAG`). Words read little-endian; a byte at address A is at A XOR 1.
 - SNES: Snes9x's memory map (one pointer per 4 KB); work RAM bank $7E, cartridge at bank $80 + $8000.
+  SA-1 / 2 MB builds (github.com/Mhopkinsinc/NHL94SNES-SA1): low RAM in BW-RAM, laid back over work RAM by
+  `snes.Emulator.read`; ROM tables and animation words found by `tools/systems/snes_layout.py` (match files keep the
+  retail words); no SNES xG on SA-1 games yet (60 frames a second). docs/PROJECT_NOTES.md "SNES SA-1 and 2 MB builds".
 - Sampled about 60 times a second on our own clock (not frame-locked). Netplay rollback samples are dropped by the
   frame counter (Genesis $B03E, SNES $0764). Pauses / instant replays are left out (Genesis screen $FFF7 = 0 is play;
   SNES sflags $15D8). Intermission highlights of other games (Genesis) are left out by team ids.

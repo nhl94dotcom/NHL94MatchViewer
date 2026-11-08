@@ -108,8 +108,11 @@ class RomData:
         key = (spa, facing)
         if key not in self._anim:
             SN, rom = self.SN, self.rom
-            ptr = struct.unpack_from("<H", rom, SN.file_offset(SN.ANIM_BANK | spa) + 2 * (facing & 7))[0]
-            seq, at = [], SN.file_offset(SN.ANIM_BANK | ptr)
+            from systems.snes_layout import layout
+            lay = layout(rom)                               # a 2 MB build's own word for the retail one
+            bank = lay.anim_bank << 16
+            ptr = struct.unpack_from("<H", rom, SN.file_offset(bank | lay.rom_spa(spa)) + 2 * (facing & 7))[0]
+            seq, at = [], SN.file_offset(bank | ptr)
             while len(seq) < 40:
                 fr, t = struct.unpack_from("<Hh", rom, at)
                 seq.append((fr, t))
@@ -383,10 +386,15 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
     frames). notouch: the goalie's no-touch timer from the recording (touch_timer). internals: {sample: the goalie's
     inner state at that shot's release} (Goalie.set_internals; 2026-10-31, read from the recording's RAM by
     analysis/scoring_map/snes_goalie_state.py), else he starts fresh."""
-    from xg import aimed, launched
+    from xg import aimed, attacks_top, launched
     if m.get("system") != "snes" or not m.get("work"):
         return
     data = RomData(rom)
+    from systems.snes_layout import layout
+    if layout(data.rom).sa1:
+        # An SA-1 build runs the game 60 frames a second, not 30 (its docs/SA1.md: the AI and collisions twice as
+        # often): the model's game step and the goalie's timing are the retail game's. No xG until checked there.
+        return
     rows = {}
     for r in m["work"]:
         rows.setdefault(r[1], []).append(r)
@@ -408,10 +416,7 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
         launch = launched(m, f) if loose else None
         if loose and launch is None:
             continue
-        own = next((k for k in range(team * 6, team * 6 + 6) if role[f * 12 + k] == "0"), None)
-        if own is None:
-            continue
-        ty = 264 if P[(f * 12 + own) * 2 + 1] < 0 else -264   # doshot aims at y +/-$108
+        ty = 264 if attacks_top(m, f, team) else -264        # doshot aims at y +/-$108
         px, py = m["puck"][3 * f], m["puck"][3 * f + 1]
         shooter = next((k for k in range(team * 6, team * 6 + 6)
                         if role[f * 12 + k] != "x" and DIGITS.index(roster[f * 12 + k]) == sh["idx"]), None)
