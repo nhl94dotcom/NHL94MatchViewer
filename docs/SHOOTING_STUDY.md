@@ -369,3 +369,24 @@ before), the goalie's position when the pass left and at the strike, and the res
 **SNES** (55 one-timers, 8 goals, 15%): no clear pattern by pass. Within 60-100 units 8 of 25 scored, none of 30 from
 elsewhere; goalie 10+ off his line 3 of 16 (xG 42%). The SNES goalie gets sluggish while a pass is in the air
 (SNES_SHOOTING.md 5), which may blunt the pass effects seen on the Genesis; more games needed.
+
+## The direction edge by league level (2026-11-08)
+
+A community member asked whether the Genesis's higher shooting percentage going down the screen is bigger at the top
+level (their idea: pass shots are easier going down and A players use them more). `python analysis/direction_by_level.py`
+(the Classic leagues' games, goals and shots on goal by period; Home attacks up in periods 1 and 3, Away in period 2;
+bootstrap over games):
+
+| Level | Games | Down | Up | Down / up |
+|---|---|---|---|---|
+| Genesis A | 6,745 | 36.8% | 33.7% | 1.094 (1.080-1.108) |
+| Genesis B | 8,832 | 33.5% | 30.5% | 1.099 (1.085-1.113) |
+| Genesis C | 3,886 | 30.7% | 27.7% | 1.105 (1.080-1.128) |
+| Genesis D and lower | 2,981 | 28.6% | 25.4% | 1.123 (1.098-1.147) |
+| SNES, all levels | 13,342 | 37.3% | 37.0% | 1.010 (1.001-1.021) |
+
+No: the edge is about 3 points at every level, and as a ratio it is if anything smallest at A. It is the counting
+effect above (low shots going down go uncounted more), which the SNES, whose count doesn't depend on height, doesn't
+have. In the recorded Genesis games people's pass shots were no more common going down (23 of 425 shots) than up (26
+of 493). Pass shots never count as shots on goal unless they score (GENESIS_SHOOTING 4.7), so they do raise a
+team's shooting percentage wherever they're used, but not more in one direction.
