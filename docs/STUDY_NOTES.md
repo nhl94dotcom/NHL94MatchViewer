@@ -1733,3 +1733,34 @@ and TeamBlockPalettes imported), the overalls and team ratings as Classic's, the
 Campbell bracket, centre ice Classic's logos (shape, size, centred); **the centre-ice colours still wrong** (Montreal's
 red C grey: (148,80,82) -> (131,121,123); the Kings' silver bluish: (156,157,156) -> (131,141,172), (74,72,74) ->
 (74,72,115); Chicago's tan face and gold and green feathers pink and red). The 18:28 rebuild (each team's own 15 centre-ice colours set from Classic's rink rows): at the opening faceoff Los Angeles, Boston and Detroit pixel-identical to Classic, Montreal and Chicago differing only where skaters stand; no logo colour differs.
+
+## Genesis score-box logos: what the original game leaves free (2026-11-08, for NOSE4Web)
+
+NOSE4Web's plan: printscores1's 8x5 score box at x $17, y $17 becomes 8x7 at y $15 (a 24x16 logo and the score per
+team, visitors above, home below), each logo in its team's uniform palette line. Checked on nhl94.bin with
+`analysis/scoring_map/gen_score_logo_check.py` (a whole game: every 30 frames of vertical play the text map, every plane
+map and the sprite table read from video memory, which Genesis Plus GX keeps in its saved state at VRAM_AT = 74789;
+pause screens Edit Lines, Game Stats, Player Cards, Other Scores, Crowd Meter, a replay, both breaks) and
+`gen_lc_box_check.py` (the line-change box, palettes, sprite priority). RAM names from the disassembly's build listing.
+- **The corner** (columns $17-$1E, rows $15-$16 of the text map, plane A at $E000, 64x32): blank ($07FF) at every
+  look in vertical play. The one thing that reaches it is the **lower line-change box** (line changes On, A held by
+  a person's carrier; sflags3 bit 0): setlccords puts it at x $16, y $16, 9 wide, 6 rows (5 without a third line):
+  rows $16-$1B, over the score box, which printscores1 skips while it is up. So a box from row $15 would leave its top
+  row showing above the line-change box. lcfound_close blanks the box's area and calls printscores1, and ClrHor (back
+  from the horizontal rink) blanks the whole 32x28 text area and calls printscores1: both redraw a taller box whole.
+  The ticker (26x5 at x 3, y $17) only shows on the horizontal scoreboard; messages sit at x 0, y $A; the penalty-shot
+  and other boxes at the top.
+- **Video memory**: tiles no map or sprite used in play and nothing wrote all game, all zeros, clear of the planes
+  ($C000, $E000, window $F000), the sprite table ($DC00) and the scroll table ($FC00): **$294-$29F** (exactly 12, VRAM
+  $5280-$53FF) and **$3EC-$3FB** (16, $7D80-$7F7F, just before the box frame's tiles $3FC-$404). ExtraChars holds the
+  horizontal referee tiles here, so it isn't free as on the SNES. ClrHor and ReloadRinkGraphics reload the rink tiles
+  and the home team's graphics, but not these.
+- **Palettes**: in play line 2 holds the home team's home palette and line 3 the visitors' away palette (copied by
+  the routine setupice, StartHL2, the highlight setup and ReloadRinkGraphics call: after pause screens and replays);
+  SetHor draws with no palette lines, so the vertical box always has them. The box's fill tile ($400, line 1) is all
+  colour 7 = $0000 black; logo tiles replace their cells, so their see-through pixels would show the ice, not the box:
+  a logo's background must be painted in black from its own line. Colour 2 is $0000 in all 56 retail uniform
+  palettes (home and away, 28 teams).
+- **Priority**: none of the 31 sprites in the table has the priority bit (the players are low-priority sprites); the
+  box's letters, frame and fill all have it ($84xx, $A3FC-$A404), so the logo tiles need it too, or players would skate
+  over the logos.
