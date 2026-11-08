@@ -1527,3 +1527,22 @@ Offsets in NHL94.smc (retail), nhl94_2026.sfc (SA-1), nhl94snes_2026.sfc (2 MB).
   meeting a puck too fast to catch, adding a few cycles), where outcomes can differ either way. The recordings: 131 of
   532 saves in 29 SNES games weren't counted, 4.5 a game, the most the option can add (nearly all stick and glove
   deflections; the rest off the boards or as the clock stopped).
+
+## Momentum in the recorded games (2026-11-08, a community member's question)
+
+`analysis/momentum_study.py`: each team's shots in a recorded game, in order, split into a first and a second half
+(the middle shot of an odd count left out; team-games with 6+ shots), against the same shots shuffled within each
+team-game 2,000 times (order meaning nothing). The league's box scores, by period, are in LEAGUE_RESULTS "Momentum".
+
+| | Genesis (26 games) | SNES (29 games) |
+|---|---|---|
+| Shots on goal: first / second half | 27.3% / 36.7% (shuffled: a gap this big 1% of the time) | 30.8% / 31.8% (83%) |
+| All attempts: first / second half | 19.4% / 22.6% (22%) | 22.1% / 22.1% |
+| First-half % with second-half %, correlation (shuffled) | +0.33 (+0.26, 95% +0.06 to +0.46) | +0.06 (+0.15) |
+| Next 3 shots on goal after a goal / other shots (shuffled gap) | 35.9% / 27.0%: +8.9 (+6.4, 95% +0.8 to +11.9) | 33.8% / 29.4%: +4.4 (+4.0) |
+
+- The shots after a goal do go in more often, but nearly all of that is the shuffled baseline too: a team that scores
+  a lot in a game has more shots after its goals. Every gap is inside the shuffled range.
+- The Genesis second halves went in more often (36.7% against 27.3% on shots on goal), and shuffling rarely gives a
+  gap that size. But it is 26 games, mostly one person's, and all attempts (22% of shuffles) and the league's 87,000
+  Genesis box scores (no momentum by period) don't back it, so it reads as these games, not the ROM.

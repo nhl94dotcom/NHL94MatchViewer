@@ -1811,6 +1811,155 @@ def find_check_attempts(m):
     return events
 
 
+CP_REACH, CP_CONE, CP_CONTACT = 70, 35, 18                  # passing out of a check (find_check_passes)
+CP_RESULT_MS, CP_LOST_MS, CP_JUST_MS, CP_FOLLOW_MS, CP_PAD_B = 1000, 400, 200, 5000, 16
+CHECK_PASS_OUTCOMES = ["passed: reached a teammate", "passed: picked off by the checker", "passed: picked off by another opponent",
+                       "passed: reached nobody", "shot before contact", "caught: B a moment too late, the pass started",
+                       "caught: B a moment too late, the puck already gone", "caught: no B in time",
+                       "held on through contact", "check missed: kept it or passed later", "check missed: lost it"]
+
+
+def find_check_passes(m):
+    """Passing out of a check (2026-11-06; analysis/check_pass.py takes its events from here, and its docstring has the
+    rules; in the viewer since 2026-11-08): every burst by an opponent at a person's carrier, within CP_REACH and
+    CP_CONE of the checker's facing, with what the carrier did before contact (ev["out"], one of CHECK_PASS_OUTCOMES)."""
+    t, pos, role, owner, puck, N, K = m["t"], m["pos"], m["role"], m["owner"], m["puck"], len(m["t"]), 12
+    acts = systems.of_match(m).ACTIONS
+    lunge = acts["lunge"]
+    P = lambda f, k: (pos[(f * K + k) * 2], pos[(f * K + k) * 2 + 1])
+    an = lambda f, k: m["anim"][(f * K + k) * 4:(f * K + k) * 4 + 4]
+    roster = lambda f, k: DIGITS.index(m["roster"][f * K + k]) if m["roster"][f * K + k] in DIGITS else -1
+    skaters = lambda f, team: [k for k in range(team * 6, team * 6 + 6) if role[f * K + k] in "12345"]
+    teamof = lambda k: None if k is None or k < 0 or k >= 12 else k // 6
+    pads = {}
+    if m.get("pad") and m.get("padTeam", -1) in (0, 1):
+        pads[m["padTeam"]] = m["pad"]
+    if m.get("pad2") and m.get("pad2Team", -1) in (0, 1):
+        pads[m["pad2Team"]] = m["pad2"]
+    snes = m.get("system") == "snes"
+    shots = m.get("shotList", [])
+    passes = sorted(m.get("passes", []), key=lambda p: p["f"])
+
+    def until(ms_from, f):
+        q = f
+        while q < N - 1 and t[q] - t[f] < ms_from:
+            q += 1
+        return q
+
+    def follow(f, team):
+        """The team's attempts and xG from f for CP_FOLLOW_MS while it keeps the puck (loose pucks don't end it)."""
+        end = until(CP_FOLLOW_MS, f)
+        stop = next((q for q in range(f, end) if teamof(owner[q]) == 1 - team), end)
+        got = [s for s in shots if s["team"] == team and f <= s["f"] <= stop]
+        return len(got), sum(s.get("xg") or 0 for s in got), any(s["result"] == "goal" for s in got)
+
+    events = []
+    for f in range(1, N - 1):
+        c = owner[f]
+        if teamof(c) is None or role[f * K + c] not in "12345" or not m["ctrl"][f] >> c & 1 or puck[3 * f + 2] < -100:
+            continue
+        A = c // 6
+        for o in skaters(f, 1 - A):
+            if an(f, o) not in lunge or an(f - 1, o) in lunge:
+                continue
+            x, y = P(f, o)
+            a = math.radians(45 * int(m["facing"][f * K + o]))
+            dx, dy = P(f, c)[0] - x, P(f, c)[1] - y
+            d = math.hypot(dx, dy)
+            if d >= CP_REACH or math.degrees(math.acos(max(-1, min(1, (math.sin(a) * dx + math.cos(a) * dy) / (d or 1))))) > CP_CONE:
+                continue
+            ro, rc = roster(f, o), roster(f, c)
+            end = until(CP_RESULT_MS, f)
+            hit = next((h for h in m.get("hits", []) if h["team"] == 1 - A and h["by"] == ro and h["on"] == rc
+                        and f <= h["f"] <= end), None)
+            contact, closest, closest_q = None, d, f
+            for q in range(f, end + 1):
+                dq = math.dist(P(q, o), P(q, c))
+                if dq < closest:
+                    closest, closest_q = dq, q
+                if dq < CP_CONTACT or (hit and q >= hit["f"]) or (snes and an(q, o) in SNES_CHECK_ANIMS):
+                    contact = q
+                    break
+            # the carrier's pass or shot from the burst until contact (or the window's end); a pass that leaves after
+            # contact counts too if the puck was still his until it left (the pass got away, the check didn't knock it
+            # loose first): "after contact", with a negative lead
+            stop = contact if contact is not None else end
+            pas = next((p for p in passes if p["team"] == A and p["idx"] == rc and f <= p["f"] <= stop), None)
+            if pas is None and contact is not None:
+                loss = next((q for q in range(contact, min(N, until(CP_LOST_MS, contact) + 1)) if owner[q] != c), None)
+                pas = next((p for p in passes if p["team"] == A and p["idx"] == rc and contact < p["f"]
+                            and loss is not None and abs(p["f"] - loss) <= 2), None)
+            sh = next((s for s in shots if s["team"] == A and s["idx"] == rc and f <= s["f"] <= stop), None)
+            ev = {"f": f, "team": A, "carrier": rc, "checker": ro, "checker_person": bool(m["ctrl"][f] >> o & 1),
+                  "dist0": d, "zone": None, "pass": pas, "contact": contact, "hit": bool(hit)}
+            ny = 268 if any(role[f * K + k] == "0" and P(f, k)[1] > 0 for k in range(A * 6, A * 6 + 6)) else -268
+            yy = P(f, c)[1] * (1 if ny > 0 else -1)
+            ev["zone"] = "own" if yy >= 89 else "their" if yy <= -89 else "neutral"
+            if pas and (not sh or pas["f"] <= sh["f"]):
+                rel = pas["f"]
+                ev["lead"] = (t[contact] - t[rel]) / 1000 if contact is not None else None
+                ev["after_contact"] = contact is not None and rel > contact
+                ev["to_closest"] = (t[closest_q] - t[rel]) / 1000
+                ev["dist_rel"] = math.dist(P(rel, o), P(rel, c))
+                if pas["result"] in ("completed", "one-timer"):
+                    ev["out"] = CHECK_PASS_OUTCOMES[0]
+                elif pas["result"] == "intercepted":
+                    taker = next((owner[q] for q in range(rel, min(N, rel + 240)) if teamof(owner[q]) == 1 - A), None)
+                    ev["out"] = CHECK_PASS_OUTCOMES[1] if taker == o else CHECK_PASS_OUTCOMES[2]
+                elif pas["result"] == "pass shot":
+                    ev["out"] = CHECK_PASS_OUTCOMES[0]
+                else:
+                    ev["out"] = CHECK_PASS_OUTCOMES[3]
+                    ev["deep"] = pas.get("toZone") == "att"
+                n_, xg_, g_ = follow(rel, A) if ev["out"] in (CHECK_PASS_OUTCOMES[0], CHECK_PASS_OUTCOMES[3]) else (0, 0.0, False)
+                ev["for"] = (n_, xg_, g_)
+                if ev["out"] in (CHECK_PASS_OUTCOMES[1], CHECK_PASS_OUTCOMES[2]):
+                    ev["against"] = follow(rel, 1 - A)
+            elif sh:
+                ev["out"] = CHECK_PASS_OUTCOMES[4]
+                ev["for"] = (1, sh.get("xg") or 0, sh["result"] == "goal")
+            elif contact is not None:
+                later = until(CP_LOST_MS, contact)
+                kept = any(owner[q] == c for q in range(later, min(N, later + 3)))
+                if kept:
+                    ev["out"] = CHECK_PASS_OUTCOMES[8]
+                else:
+                    # when the puck left him, and whether he had started a pass by then (B with the puck starts the pass
+                    # animation within 1-3 samples); a B press after the puck has gone can be a late pass or a switch
+                    # to the skater nearest the puck, so only the first CP_JUST_MS after the loss is called a late pass
+                    loss = next((q for q in range(contact, N) if owner[q] != c), contact)
+                    pad = pads.get(A)
+                    just = until(CP_JUST_MS, contact)
+                    if t[just] - t[contact] >= CP_JUST_MS:
+                        just -= 1
+                    started = next((q for q in range(f, min(N, loss + 2, just + 1)) if an(q, c) in acts["pass"]), None)
+                    press = None if pad is None else next((q for q in range(contact, just + 1)
+                                                           if pad[q] & CP_PAD_B and not pad[q - 1] & CP_PAD_B), None)
+                    ev["loss"] = (t[loss] - t[contact]) / 1000
+                    if started is not None:
+                        ev["out"] = CHECK_PASS_OUTCOMES[5]
+                        ev["b_late"] = (t[started] - t[contact]) / 1000
+                    elif press is not None:
+                        ev["out"] = CHECK_PASS_OUTCOMES[6]
+                        ev["b_late"] = (t[press] - t[contact]) / 1000
+                    else:
+                        ev["out"] = CHECK_PASS_OUTCOMES[7]
+                        ev["no_pad"] = pad is None
+                    ev["against"] = follow(contact, 1 - A)
+            else:
+                kept = owner[end] == c or any(p["team"] == A and p["idx"] == rc and end < p["f"] <= until(500, end) for p in passes)
+                ev["out"] = CHECK_PASS_OUTCOMES[9] if kept or teamof(owner[end]) == A else CHECK_PASS_OUTCOMES[10]
+            ev["key"] = (("pass", pas["f"]) if ev["out"].startswith("passed") else ("shot", sh["f"]) if ev["out"] == CHECK_PASS_OUTCOMES[4]
+                         else ("loss", A, loss) if ev["out"].startswith("caught") else None)
+            events.append(ev)
+    # two bursts at the same carrier can end in the same pass, shot or lost puck: count it once, with the last burst
+    last = {}
+    for i, ev in enumerate(events):
+        if ev["key"] is not None:
+            last[ev["key"]] = i
+    return [ev for i, ev in enumerate(events) if ev["key"] is None or last[ev["key"]] == i]
+
+
 def add_quirks(m):
     """Quirky events (2026-10-19, the user: the game's oddities, in their own team-stats group), Genesis:
     - a goal through the legs (`five-hole` kind): in the second before the goal the loose puck, at ice level (height 5 or
@@ -2279,6 +2428,24 @@ def analyse(match, system, cap, rom_path):
     if match.get("hits") is not None and match.get("shotList") is not None:
         # The person's check attempts (hit / failed / whiff, and C or CB on the Genesis), after xG, which they sum
         match["checkAttempts"] = [{k: v for k, v in ev.items() if k != "goal"} for ev in find_check_attempts(match)]
+        # Passing out of a check: each burst at a person's carrier, what he did (an index into CHECK_PASS_OUTCOMES), the
+        # pass's lead on the contact (s real) and whether the checker was a person
+        match["checkPasses"] = [{"f": ev["f"], "team": ev["team"], "by": ev["carrier"], "checker": ev["checker"],
+                                 "cp": ev["checker_person"], "out": CHECK_PASS_OUTCOMES.index(ev["out"]),
+                                 **({"lead": round(ev["lead"], 2)} if ev.get("lead") is not None else {})}
+                                for ev in find_check_passes(match)]
+        # The goalie's distance off the shot line at the release: from the line between the puck and the middle of his
+        # net (match_report.py's measure; 3 units a foot): a person taking the goalie should get him square
+        for sh in match["shotList"]:
+            if sh["team"] not in (0, 1):
+                continue
+            g = next((k for k in range((1 - sh["team"]) * 6, (1 - sh["team"]) * 6 + 6) if match["role"][sh["f"] * 12 + k] == "0"), None)
+            if g is None:
+                continue
+            ny = 268 * own_end(match, sh["f"], 1 - sh["team"])
+            gx, gy = match["pos"][(sh["f"] * 12 + g) * 2], match["pos"][(sh["f"] * 12 + g) * 2 + 1]
+            dx, dy = -sh["x"], ny - sh["y"]
+            sh["gOff"] = round(abs((gx - sh["x"]) * dy - (gy - sh["y"]) * dx) / (math.hypot(dx, dy) or 1), 1)
 
 
 

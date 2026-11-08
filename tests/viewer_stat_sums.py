@@ -85,6 +85,13 @@ def check(r, from_start=True):
             cb = parts(v("Check attempts (person)", "· C / CB (knocked down)") or "")
             if cb and len(cb) == 4 and (cb[0] + cb[2] > tries or cb[1] > cb[0] or cb[3] > cb[2]):
                 problems.append(("Check attempts (person)", team, f"C / CB {cb} against {tries} attempts"))
+        # passing out of a check: the outcome rows add up to the bursts at the person's carrier
+        burst = num(v("Bursts at the person’s carrier") or "")
+        if burst is not None:
+            outs = [parts(v("Bursts at the person’s carrier", sub) or "") for sub in
+                    ("· passed: reached / picked off / nobody", "· caught: B too late / no B", "· held on / check missed / shot")]
+            if all(outs) and sum(map(sum, outs)) != burst:
+                problems.append(("Bursts at the person's carrier", team, f"outcomes {outs} don't add up to {burst}"))
         # possession by zone
         poss = v("Possession")
         if poss:

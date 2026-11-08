@@ -563,6 +563,10 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Zone entry</dt><dd>The puck crossing the blue line into the attacking zone: carried, passed, or dumped in; and whether a shot attempt came of it before it left the zone.</dd>
   <dt>Off the rush, sustained, off a faceoff</dt><dd>Where an attempt came from: within 12.5 game seconds of the zone entry (rush), later in that stay in the zone (sustained pressure), or from a faceoff in that zone.</dd>
   <dt>Odd-man rush</dt><dd>A carried or passed zone entry with more attackers than defenders back (at least two attackers): 2-on-1, 3-on-2 ...</dd>
+  <dt>Passing out of a check</dt><dd>An opponent bursting at the person's puck carrier from within reach in front of him, and what the carrier did before the check reached him: a pass that got away (and where it went), a shot, caught (B a moment too late, or no B), held on through it, or the check missed. In the team stats under Physical.</dd>
+  <dt>Goalie off the shot line</dt><dd>The goalie's distance, as a shot leaves the stick, from the line between the puck and the middle of his net: 5 feet or more and he is out of position (a cross-ice pass, or caught moving). In the team stats (Advanced), split by a person or the computer in net.</dd>
+  <dt>Chances by xG</dt><dd>Attempts split by their expected goals: long or poor (under 0.1), middling (0.1 to 0.6) and great chances (0.6 and up), each with the goals from them. In the team stats under Expected goals.</dd>
+  <dt>Leading, tied, trailing</dt><dd>Game time with each team ahead, level and behind, and its shot attempts and xG per 5 game minutes in each: how a team plays with a lead. In the team stats (Advanced), once someone has led.</dd>
   <dt>Breakaway</dt><dd>As the game counts it: the carrier crossing the blue line ahead of every defender.</dd>
   <dt>Giveaway, takeaway</dt><dd>The puck changing teams without a whistle: a takeaway when the other team forced it (poke check, hook, check, a burst that reached him, or stolen), otherwise a giveaway (a pass picked off, the puck lost).</dd>
   <dt>Costly giveaway, turnovers &rarr; shot against</dt><dd>Giveaways (turnovers) the other team turned into a shot attempt within 12.5 game seconds.</dd>
@@ -3297,6 +3301,12 @@ const STAT_HELP = {
   'PDO': 'Shooting % plus save %, times 100 (both on shots on goal). Around 100 is normal; well above means things went in for the team (often luck over a few games).',
   'Expected goals (xG)': 'Expected goals: each shot played out hundreds of times by the game’s own rules (where it was aimed, the shooter’s accuracy and the random scatter, the goalie’s reach and how he moves) and the share that went in, added up over the attempts that were not blocked (Genesis and SNES, each by its own rules; pass shots too, from the way the puck left the stick; deflections have none).',
   'Expected goals (xG)|· xG share': 'The team’s share of the two teams’ expected goals: who made the better chances.',
+  'Expected goals (xG)|· long / middling / great chances': 'Goals / attempts (not blocked) by how good a chance each was: under 0.1 xG (long or poor shots), 0.1 to 0.6, and 0.6 xG or more (great chances: a good shot at an open or beaten goalie). Games often turn on the last group.',
+  'Goalie 5+ ft off the shot line (G / shots)': 'Shots on the team\u2019s net (goals, saves and posts) with its goalie 5 feet or more off the line from the puck to the middle of his net as the shot left the stick, with the goals from them, out of all the shots on its net. Mostly cross-ice passes and goalies caught moving. xG already allows for where the goalie was.',
+  'Goalie 5+ ft off the shot line (G / shots)|· person / CPU in net': 'The same, split by who had the goalie at the release: the person (who took control of him) or the computer. A person taking the goalie should get him square to the shooter.',
+  'Time leading / tied / trailing': 'Game time (the game clock) with the team ahead, level and behind. Shown once someone has led.',
+  'Time leading / tied / trailing|· attempts per 5:00': 'The team\u2019s shot attempts per 5 game minutes of each score state: does it sit back with a lead or push when behind? A dash: under 30 game seconds in that state.',
+  'Time leading / tied / trailing|· xG per 5:00': 'The team\u2019s expected goals per 5 game minutes of each score state (attempts not blocked).',
   'Expected goals (xG)|· goals above xG': 'Goals scored from those same shots less their expected goals: above 0, the team finished better than the game’s odds (or the other goalie did badly). Goals off a deflection or scramble have no xG; "(4/6)" says how many of the team’s goals are counted.',
   'xG': 'His expected goals (the chance each of his shots that were not blocked had of going in, by the game’s own rules, added up), and his goals from those shots.',
   'xG against': 'Expected goals of the shots he faced that were not blocked: how many an average goalie in his place would have let in, by the game’s rules.',
@@ -3365,6 +3375,10 @@ const STAT_HELP = {
   'Into attacking zone': 'Passes made outside the attacking zone that ended in it.',
   // ---- physical and special teams
   'Body checks': 'Checks the team landed, as the game counts them.',
+  'Bursts at the person\u2019s carrier': 'Times an opponent (a person or the computer) burst at the person\u2019s puck carrier from within reach in front of him: the check coming. What the carrier did before it reached him is on the rows under it (passing out of a check: the pass has to be away before contact).',
+  'Bursts at the person\u2019s carrier|· passed: reached / picked off / nobody': 'He got a pass away before the check reached him (or as the bodies met, the puck still his until it left): it reached a teammate, was picked off (by the checker, another opponent or the goalie), or reached nobody.',
+  'Bursts at the person\u2019s carrier|· caught: B too late / no B': 'The check reached him first and the puck was gone within 1 game second (0.4 s real). B too late: he pressed B in the first 0.2 s (real) after contact (the pass started too late, or the puck had already gone). No B: no press in time.',
+  'Bursts at the person\u2019s carrier|· held on / check missed / shot': 'Held on: the check reached him and he still had the puck after it (the check failed). Check missed: the burst never reached him. Shot: he shot before contact.',
   'Check attempts (person)': 'Times the person\u2019s skater burst at an opponent while the other team had the puck (C on the Genesis, A on the SNES), with an opponent within reach in front of him, and got near someone. A burst that came nowhere near anyone (to get back into position) isn\u2019t counted.',
   'Check attempts (person)|\u00b7 hit / failed / whiff': 'Hit: the game counted a check. Failed: he reached a man and nothing happened (the check lost its roll, or only shoved him). Whiff: he got within about 10 feet but touched nobody.',
   'Check attempts (person)|\u00b7 goal against after a miss': 'Failed checks and whiffs followed by the other team\u2019s goal within 15 game seconds (6 s real) while his team didn\u2019t get the puck back and no faceoff came; not counting a goal under 2.5 game s after the burst (too late to have cost anything). A goal after a miss doesn\u2019t prove the miss caused it.',
@@ -3498,6 +3512,11 @@ function fillTeamStats(snap) {
   const cbRow = team => ['C', 'CB'].map(k => { const a = checkTries(team).filter(e => e.cb === k); return a.length + ' (' + a.filter(e => e.down).length + ')'; }).join(' / ');
   const rightChoice = team => { const a = checkTries(team).filter(e => e.right !== undefined); return a.filter(e => e.right).length + ' of ' + a.length; };
   const originalChecking = !(match.romSettings && match.romSettings.checkFix);  // C vs CB only matters with the weight bug
+  // Passing out of a check (match.checkPasses, export_match.find_check_passes): bursts at the person's carrier and what
+  // he did; out indexes CHECK_PASS_OUTCOMES (0 reached a teammate, 1 / 2 picked off by the checker / another, 3 reached
+  // nobody, 4 shot, 5 / 6 B a moment too late, 7 no B, 8 held on, 9 / 10 the check missed)
+  const checkedCarrier = team => (match.checkPasses || []).filter(e => e.f <= f && e.team === team);
+  const carrierDid = (team, ...groups) => groups.map(g => checkedCarrier(team).filter(e => g.includes(e.out)).length).join(' / ');
   // Passes by where they were made and which way they went (the converter's add_pass_shape), in each team's view
   const passShape = (match.passes || []).some(e => e.dir);
   const shaped = team => (match.passes || []).filter(e => e.team === team && e.dir && known(e, f));
@@ -3672,9 +3691,15 @@ function fillTeamStats(snap) {
             return (d >= 0 ? '+' : '') + d.toFixed(1) + (scored < all ? ' (' + scored + '/' + all + ')' : '');
           };
           const dtw = deserveToWin(match, f), pc = v => Math.round(100 * v) + '%';
+          // Goals / attempts by the chance each was: under 0.1 xG, 0.1-0.6, 0.6 and up
+          const band = team => [[0, 0.1], [0.1, 0.6], [0.6, Infinity]].map(([lo, hi]) => {
+            const n = xs(team).filter(sh => sh.xg >= lo && sh.xg < hi);
+            return n.filter(sh => sh.result === 'goal').length + '/' + n.length;
+          }).join(' \u00b7 ');
           return [['Expected goals (xG)', sum(0).toFixed(1), sum(1).toFixed(1)],
             ['· xG share', sharePct(sum(0), sum(1)), sharePct(sum(1), sum(0))],
             ['· goals above xG', diff(0), diff(1)],
+            ['· long / middling / great chances', band(0), band(1)],
             ['Deserve to win', pc(dtw.win[0]), pc(dtw.win[1])],
             ['· a tie', pc(dtw.tie), pc(dtw.tie)]];
         })() : []),
@@ -3694,6 +3719,32 @@ function fillTeamStats(snap) {
             ['Turnovers \u2192 shot against', costly(0).length + (costly(0).some(e => e.goalAfter) ? ' (' + costly(0).filter(e => e.goalAfter).length + ' G)' : ''),
               costly(1).length + (costly(1).some(e => e.goalAfter) ? ' (' + costly(1).filter(e => e.goalAfter).length + ' G)' : '')],
           ];
+        })() : []),
+        ...(list.some(sh => sh.gOff !== undefined) ? (() => {
+          // Shots on the team's net (goals, saves, posts) with its goalie 5 ft (15 units) or more off the line from the
+          // puck to the middle of the net at the release (the converter's gOff), out of all it faced
+          const faced = (team, who) => list.filter(sh => sh.team === 1 - team && sh.gOff !== undefined && ['goal', 'save', 'post'].includes(sh.result) && (!who || sh.gctl === who));
+          const off = (team, who) => { const all = faced(team, who), o = all.filter(sh => sh.gOff >= 15); return o.filter(sh => sh.result === 'goal').length + '/' + o.length + (who ? '' : ' of ' + all.length); };
+          return [['Goalie 5+ ft off the shot line (G / shots)', off(0), off(1)],
+            ...(hasHuman(0) || hasHuman(1) ? [['· person / CPU in net', ...[0, 1].map(team => (hasHuman(team) ? off(team, 'human') + ' \u00b7 ' + off(team, 'cpu') : '\u2013'))]] : [])];
+        })() : []),
+        ...(possession ? (() => {
+          // Leading, tied, trailing: game seconds in each, and the team's attempts and xG per 5:00 of it (under 30 game
+          // seconds in a state: too little to say). Only once someone has led.
+          const state = (i, team) => { const d = match.score[2 * i + team] - match.score[2 * i + 1 - team]; return d > 0 ? 0 : d < 0 ? 2 : 1; };
+          const secs = [[0, 0, 0], [0, 0, 0]], att = [[0, 0, 0], [0, 0, 0]], xgs = [[0, 0, 0], [0, 0, 0]];
+          for (let i = 0; i <= f; i++) if (possession.tick[i]) for (const team of [0, 1]) secs[team][state(i, team)] += possession.tick[i];
+          for (const sh of list) {
+            if (sh.team !== 0 && sh.team !== 1) continue;
+            const st = state(sh.f, sh.team);
+            att[sh.team][st]++;
+            if (sh.xg !== undefined && !['blocked', 'pending'].includes(sh.result)) xgs[sh.team][st] += sh.xg;
+          }
+          if (secs[0][0] + secs[0][2] < 30) return [];
+          const per = (team, v, dp) => [0, 1, 2].map(st => (secs[team][st] >= 30 ? (v[team][st] * 300 / secs[team][st]).toFixed(dp) : '\u2013')).join(' / ');
+          return [['Time leading / tied / trailing', ...[0, 1].map(team => secs[team].map(x => secondsText(1000 * x)).join(' / '))],
+            ['· attempts per 5:00', per(0, att, 1), per(1, att, 1)],
+            ...(list.some(sh => sh.xg !== undefined) ? [['· xG per 5:00', per(0, xgs, 2), per(1, xgs, 2)]] : [])];
         })() : [])];
     })() : []),
     section('Puck control'),
@@ -3749,6 +3800,10 @@ function fillTeamStats(snap) {
       ['· goal against after a miss', goalsAfterMiss(0), goalsAfterMiss(1)]] : []),
     ...(match.checkAttempts && match.checkAttempts.some(e => e.cb) ? [['· C / CB (knocked down)', cbRow(0), cbRow(1)],
       ...(originalChecking ? [['· C or CB right for the weights', rightChoice(0), rightChoice(1)]] : [])] : []),
+    ...(match.checkPasses ? [['Bursts at the person\u2019s carrier', checkedCarrier(0).length, checkedCarrier(1).length],
+      ['· passed: reached / picked off / nobody', carrierDid(0, [0], [1, 2], [3]), carrierDid(1, [0], [1, 2], [3])],
+      ['· caught: B too late / no B', carrierDid(0, [5, 6], [7]), carrierDid(1, [5, 6], [7])],
+      ['· held on / check missed / shot', carrierDid(0, [8], [9, 10], [4]), carrierDid(1, [8], [9, 10], [4])]] : []),
     ...(match.bumps ? [['Pucks lost on contact', bumped(0).length, bumped(1).length],
       ['· to the other team', bumped(0).filter(e => e.next === 'opponent').length, bumped(1).filter(e => e.next === 'opponent').length],
       ['Pucks lost on a goalie', onGoalie(0), onGoalie(1)]] : []),

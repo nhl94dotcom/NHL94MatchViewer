@@ -290,3 +290,29 @@ minutes from about 6 a game to 3-5; one-timers, breakaways and checks stayed lev
 **Goals by second of the period:** the first 10 seconds give a third of the usual rate (the faceoff), the last 10
 seconds about 8% more than usual; the rest is flat.
 
+
+## Momentum: does early shooting carry on? (`analysis/league_momentum.py`, 2026-11-08)
+
+A community member thought the ROM has momentum. The box scores have goals and shots only by period, so the halves
+here are periods (the recorded games' version, by shot order, is `analysis/momentum_study.py`, STUDY_NOTES). Team and
+goalie strength that game make one period's shooting % go with the next on their own, so the test is a baseline with
+order meaning nothing: each team-game's regulation goals dealt out again at random over its shots (shots per period
+kept), 300 times. Regulation only; simulated games left out.
+
+| | Genesis (173,474 team-games) | SNES (71,073) |
+|---|---|---|
+| Shooting % P1 / P2 / P3 | 31.7 / 31.8 / 32.3% | 37.9 / **35.5** / 38.2% |
+| Correlation P1 with P2 (no momentum) | +0.071 (+0.068 to +0.078) | +0.079 (+0.082 to +0.098) |
+| Correlation P2 with P3 | +0.074 (+0.070 to +0.080) | +0.066 (+0.083 to +0.100) |
+| Correlation P1 with P3 | +0.088 (+0.071 to +0.081) | +0.070 (+0.081 to +0.098) |
+| 50%+ in P1 (4+ shots): P2-P3 shooting % (no momentum) | 34.6% (34.0-34.4) | 39.1% (39.7-40.1) |
+
+- **No momentum worth the name on either system.** A team that shot 50% or better in the first period shot 34.6%
+  afterwards on the Genesis, against 34.2% if order meant nothing: 0.4 points. On the SNES it shot a little *worse*
+  than the baseline (39.1% against 39.9%).
+- Genesis: period 1 with period 3 sits just above the baseline (+0.088 against at most +0.081), and the third period's
+  shooting % is half a point up: small, and the third period has its own changes (the comeback bonus, GENESIS_MECHANICS
+  2.3; score effects).
+- SNES: every correlation is below the baseline, mostly from the known second-period dip (above: about 5% fewer goals
+  in period 2, most likely from how people play it), which breaks the link between period 2 and the periods either
+  side of it. That is the reverse of momentum.

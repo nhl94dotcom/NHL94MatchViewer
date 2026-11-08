@@ -1012,3 +1012,28 @@ attempts (person); hit / failed / whiff; goal against after a miss; C / CB (knoc
 weights (left out on a ROM with the C-then-B fix, `romSettings.checkFix`). tests/viewer_stat_sums.py checks the result
 rows add up to the attempts. Attempts count only checks tried at a man in front, so "hit" can be fewer than Checks
 landed (person).
+
+## Passing out of a check, the goalie off the shot line, chances by xG, score states (2026-11-08)
+
+The user asked which stats the analysis tracks that the team stats don't show, and to add the sensible ones.
+
+- Passing out of a check: `export_match.find_check_passes` (analysis/check_pass.py's rules, moved there; check_pass.py
+  and match_report.py take them from it, with the same output) writes `checkPasses`: each burst by an opponent at a
+  person's carrier, `by` (the carrier), `checker`, `cp` (the checker a person), `out` (an index into
+  `CHECK_PASS_OUTCOMES`: 0 reached a teammate, 1 / 2 picked off by the checker / another, 3 reached nobody, 4 shot, 5 / 6
+  B a moment too late, 7 no B, 8 held on, 9 / 10 the check missed) and `lead` (the pass's lead on the contact, s
+  real). Physical: Bursts at the person's carrier; passed: reached / picked off / nobody; caught: B too late / no B;
+  held on / check missed / shot (tests/viewer_stat_sums.py: the three rows add up to the bursts).
+- The goalie off the shot line: each shot's `gOff`, the defending goalie's distance at the release from the line
+  between the puck and the middle of his net (match_report.py's measure; 15 units = 5 ft). Advanced: Goalie 5+ ft
+  off the shot line (G / shots of the shots on that net: goals, saves, posts), and person / CPU in net.
+- Chances by xG: under Expected goals, goals / attempts (not blocked) under 0.1, 0.1-0.6 and 0.6+ xG (the viewer
+  only).
+- Leading, tied, trailing: game time in each score state (from `possession.tick`) and the team's attempts and xG per
+  5:00 of each (a dash under 30 game s); shown once someone has led (the viewer only; match_report.py section 12).
+
+Not added, and why (2026-11-08): slot defence time shares (slot_defence.py: one number from several thresholds, easy
+to misread live; it stays in the reports); rush defence (the controlled skater's gap at the blue line swings with
+who is controlled, and entries against with their shots and odd-man rushes are already rows); SNES quirks (the
+Y-button get-up hooks are already the Controller section's "Get-ups (hook glitch)" row, uncounted saves are "Saved,
+not counted").
