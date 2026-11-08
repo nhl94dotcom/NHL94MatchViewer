@@ -1468,8 +1468,11 @@ ROMs), per game.
   hook as he got up: falls that ended on their own lasted a median 106-153 frames, the ones cut short by the hook a
   median 29-38 frames (22 at the least).
 - **Uncounted saves:** 62 of 307 going up the screen, 46 of 260 going down. These games don't show the leagues'
-  direction effect (SHOOTING_STUDY: the leagues' 86,735 games do); the count fix would add about 4 shots on goal a
-  game.
+  direction effect (SHOOTING_STUDY: the leagues' 86,735 games do). Not all are the stick: `analysis/uncounted_study.py`
+  over the same games puts 42 of 98 as knocked away by the stick, 16 held and 15 bounced off his body uncounted (most
+  of those probably off the stick first), 16 off the boards or behind the net first and 9 after the clock stopped. So
+  the count-stick-deflections option adds about 2 shots on goal a game (1.6 the clear ones, at most about 2.8), not
+  the 4 of all uncounted saves (corrected 2026-11-08; NOSE4Web was told 4 first).
 - The comeback bonus (wrong in every third period with a team tied or behind), the awareness slip and the crowd bonus
   (always on) aren't events, so not counted.
 

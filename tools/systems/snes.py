@@ -10,6 +10,8 @@ import math
 import struct
 from pathlib import Path
 
+from . import snes_settings
+
 NAME = "snes"
 RAM_SIZE = 0x20000  # work RAM, bank $7E-$7F
 BYTE_SWAP = 0       # Snes9x keeps work RAM as plain bytes; words are little-endian, as on the SNES
@@ -802,6 +804,9 @@ class MatchReader:
         match["rules"] = read_rules(rom)
         match["penalties"], match["delayed"] = read_penalties(cap, count, match, match["rules"])
         match["rom"] = f"{zlib.crc32(rom):08x}"
+        hacks = snes_settings.rom_settings(rom)               # NHL94SNESVault's and the NOSE4Web editor's hacks
+        if hacks:
+            match["romSettings"] = hacks
         match["anims"] = {f"{spa:04x}": lists for spa in spas if (lists := animation_lists(rom, spa))}
         try:
             build_sprites(rom)

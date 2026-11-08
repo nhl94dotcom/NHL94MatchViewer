@@ -199,7 +199,8 @@ class Goalie:
         self.y += self.vy / 4096
 
 
-def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False, rebound=False, launch=None):
+def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=False, rebound=False, launch=None,
+             ring_fix=False):
     """One shot as the game plays it: 'goal', 'save', 'post', 'over' or 'wide' ('stick' with `stick`).
 
     stick (2026-10-23, off until it is shown to predict the recordings better): the goalie's stick as checkpuckcoll
@@ -270,8 +271,9 @@ def play_out(start, target, pp, sha, perfect, goalie, reach, shift, rng, stick=F
                     d2 = sdx * sdx + sdy * sdy
                     if d2 <= 64:
                         return "stick"
-                    if d2 <= 196:
-                        continue                              # the blind ring: no body test this frame
+                    if d2 <= 196 and not ring_fix:
+                        continue                              # the blind ring: no body test this frame (the
+                                                              # NOSE4Web blind-ring option sends it to the body test)
             gdx, gdy = G.x + shift - x, G.y - y
             if h <= 15 and abs(gdx) <= reach and abs(gdy) <= reach and gdx * gdx + gdy * gdy <= reach * reach:
                 if not rebound:
@@ -375,6 +377,7 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
     rom = GenesisRom(stick_rom) if stick_rom else None
     if m.get('system', 'genesis') != 'genesis' or not m.get('work'):
         return
+    rom_settings = m.get('romSettings') or {}             # the NOSE4Web sniping and blind-ring options change two rules
     rows = {}
     for r in m['work']:
         rows.setdefault(r[1], []).append(r)
@@ -446,10 +449,11 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
                 continue
         tx, tz = AIM[d]
         perfect = (sha + 1) / (sha + 16)
-        if any(dl['team'] == team and dl['f'] <= f <= dl.get('end', f) for dl in m.get('delayed', [])):
+        if not rom_settings.get('snipingFix') and any(
+                dl['team'] == team and dl['f'] <= f <= dl.get('end', f) for dl in m.get('delayed', [])):
             perfect = 1.0                                         # ReadGoaliePulled: the delayed-penalty snipe
         pp = max(1.0, sh['speed'] / 68)
-        key = (m.get('name', ''), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
+        key = (m.get('name', ''), bool(rom_settings.get('blindRingFix')), f, team, sh['idx'], px, py, pz, tx, gl, tz, pp, sha, perfect, reach, shift,
                (gx, gy, vgx, vgy, *gw[:5], saving) if goalie else None, bool(rom), rebound, sh['kind'], launch)
         if key in _CACHE:
             sh['xg'] = _CACHE[key]
@@ -459,7 +463,8 @@ def add_expected_goals(m, stick_rom=None, rebound=False, lock=False):
         def start():                                              # a pass shot's lift: random, 0-4,095 (dopass)
             return aimed(launch, rng, rng.randrange(4096)) if launch else None
         goals = sum(play_out((px, py, pz), (tx, gl, tz), pp, sha, perfect, goalie, reach, shift, rng,
-                             stick=bool(rom), rebound=rebound, launch=start()) == 'goal' for _ in range(N_SAMPLES))
+                             stick=bool(rom), rebound=rebound, launch=start(),
+                             ring_fix=bool(rom_settings.get('blindRingFix'))) == 'goal' for _ in range(N_SAMPLES))
         sh['xg'] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 
 

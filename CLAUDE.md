@@ -61,7 +61,7 @@ overview, method and maps), `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `S
 - `tools/export_match.py`: recording -> `matches/<name>.js` (`--live` worker mode for the broadcast). `analyse()` runs
   every finder after the system's `read_match` (shots, passes, turnovers, hits, entries, xG ...).
 - `tools/systems/`: `genesis.py`, `snes.py` (memory layout, `View` for the helper, `MatchReader`, ROM readers,
-  sprites, sounds), `genesis_settings.py` (league ROM settings), `common.py`, `process.py`.
+  sprites, sounds), `genesis_settings.py` / `snes_settings.py` (league ROM settings and the NOSE4Web / NHL94SNESVault fixes and options, `romSettings`), `common.py`, `process.py`.
 - `viewer.html` (one page: rink, sprites, maps, team stats, cards, clips, highlights, game files, live mode, Help),
   `season.html` + `tools/season.py` (per-game summaries, `matches/season.js`), `helper.html`.
 - `tools/`: `xg.py`, `xg_snes.py` (`make_xg_figures.py` draws XG_MODELS' figures), `deserve.py`, `share_game.py` (self-contained game files), `share_season.py`,

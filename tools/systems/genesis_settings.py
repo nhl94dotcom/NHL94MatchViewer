@@ -15,7 +15,12 @@ ORIGINAL = {
     "secondAssist": False, "plusMinus": False, "threeStars": "original", "baseWeight": 140, "goalieHold": 140,
     "goalieWidth": 36, "goalieOut": 231, "goalieLine": 170, "stamina": False, "energyDrain": 33, "energyRecovery": 9,
     "speedBurst": 0, "turnRate": 150, "realTimeClock": False,
+    # The NOSE4Web editor's gameplay fixes and options (2026-11), each a bug the Match Viewer project found or measured
+    "aggressionFix": False, "ppPkFix": False, "comebackFix": False, "passFix": False, "faceoffFix": False,
+    "runawayFix": False, "penaltyShotTableFix": False, "penaltyShotFixes": False, "goaliePullFix": False,
+    "blindRingFix": False, "snipingFix": False, "awarenessFix": False, "crowdFix": False, "stickShots": False,
 }
+
 
 PRODUCT_CODE_AT = 0x180
 
@@ -62,6 +67,74 @@ def _switch(rom, at, original, hacked):
     if _is(rom, at, _b(original)):
         return False
     if _is(rom, at, _b(hacked)):
+        return True
+    return None
+
+
+# The fixes' code and places, as the editor writes them (src/core/hacks.ts: the editor's own, to bugs found by the
+# Match Viewer project; each tested in the game, docs/STUDY_NOTES.md). A switch is (place, original, fix); a hook is
+# (place, the length of the instructions the call replaces, the code it calls).
+FIX_SWITCHES = {
+    "aggressionFix": [(0x15D78, "1743 0073 022B 000F 0073", "6100 000A E20B 1743 0073")],
+    "ppPkFix": [(0x15B1E, "11E8 0001 CF2E 0238 000F CF2E 6000 000E 1028 0001 E808 4400 11C0 CF2F",
+                 "1028 0001 E808 11C0 CF2E 4E71 6000 000E 700F C028 0001 4400 11C0 CF2F")],
+    "comebackFix": [(0x15B70, "6E00 0026", "6D00 0026")],
+    "penaltyShotTableFix": [(0x1914E, "0038 003C 0036 003A 002E 0030 0034 FFFF", "FFFF 0038 003C 0036 003A 002E 0030 0034")],
+    "goaliePullFix": [(0xF758, "6B00 5D0A B07C 0002 6600 5D02", "6F00 5D0A B07C 0002 6E00 5D02")],
+    "snipingFix": [(0xC422, "6B00 0084", "4E71 4E71")],
+    "awarenessFix": [(0xD0E1, "6B", "6A"), (0xD2D9, "6B", "6A")],
+    "crowdFix": [(0xFEF66, "6000 000C", "4E71 4E71")],
+}
+PASS_CODE = _b(
+    "3400 4440 9444 48C2 85C5 4A42 6B0E 6612 2202 4841 4A41 670A BB41 6A06 51CB FFE2 6022 B47C 0018 641C 2002 4840 48C0 "
+    "E780 81C5 6A02 7000 E742 D440 B47C 0008 6408 7408 6004 343C 00C0 3002 E648 B07C 000C 6302 700C 11C0 B776 4E75")
+FACEOFF_CODE = _b(
+    "2F09 327CC3A4 4A51 6740 4A59 66FC 5949 0C11000E 6762 0C110012 652E 0C11002B 6428 0C110014 6722 4241 12290001 "
+    "0241007F EF41 327CB04A 083100071062 6606 323C00CE 6004 323CFF32 4A40 6B04 7046 6002 70BA B27C0058 6E12 B27CFFA8 "
+    "6D12 4A41 6B04 7241 6014 72BF 6010 323C00CE 600A 323CFF32 6004 7000 7200 31C0BF94 31C1BF96 225F 4E75")
+RING_CODE = _b("4A6A 0034 661C 4A78 B7AA 6A16 0838 0004 C2EA 660E 0C80 0000 0040 6306 003C 0004 4E75 4EB9 0001 50E4 "
+               "023C 00FB 4E75")
+STICK_CODE = _b("4A6A 0034 662A 0838 0000 C2EA 6622 0838 0004 C2EA 661A 08B8 0004 C2EE 6712 487A 0010 48E7 C070 3038 "
+                "BED8 4EF9 0001 2FD0 4EB9 0001 013E 588F 4EF9 0001 5704")
+FIX_HOOKS = {
+    "passFix": dict(hooks=[(0xBF40, 48, PASS_CODE)], original=[(0xBF40, "3400 4440 9444 48C2 85C5 5ACB FFF4 6600 0004 5242 "
+                    "B47C 0018 6300 0004 7418 11C2 B776 B47C 000C 6D00 0008 11FC 000C B776")],
+                    edits=[(0xBF70, "3002 E740 0440 000A", "3002 4E71 0440 000A"), (0xBF88, "E280", "E880"),
+                           (0xBF98, "E281", "E881"), (0xBFA6, "C4FC 0078", "C4FC 000F")]),
+    "faceoffFix": dict(hooks=[(0x12504, 0x56, FACEOFF_CODE)], original=[(0x12504, "48A7 C000 B07C 0046 6D00 0006 303C 0046 "
+                       "B07C FFBA 6E00 0006 303C FFBA B27C 00A6 6D00 0012 323C 00CE 303C 0046 4A57 6A00 0004 4440 B27C FF5A "
+                       "6E00 0012 323C FF32 303C 0046 4A57 6A00 0004 4440 31C0 BF94 31C1 BF96 584F")], edits=[]),
+    "runawayFix": dict(hooks=[(0xAF76, 6, _b("08AB 0005 0064 6706 08AB 0000 0062 4E75")),
+                              (0xFEFF4, 6, _b("08AB 0003 0064 08AB 0000 0062 4E75"))],
+                       original=[(0xAF76, "08AB 0005 0064"), (0xFEFF4, "08AB 0003 0064")], edits=[(0xEBA0, "1AA6", "00C8")]),
+    "penaltyShotFixes": dict(hooks=[(0x15930, 6, _b("366A 0022 7805 08B8 0002 B7AC 4E75"))], original=[(0x15930, "366A 0022 7805")],
+                             edits=[(0xED0E, "08B8 0002 C2F2 08B8 0004 C2F2 08B8 0005 C2F2 08B8 0006 C2F2",
+                                     "0238 0083 C2F2 4E71 4E71 4E71 4E71 4E71 4E71 4E71 4E71 4E71")]),
+    "stickShots": dict(hooks=[(0x151D6, 8, STICK_CODE)], original=[(0x151D6, "6100 AF66 6000 0528")], edits=[]),
+}
+
+
+def _fix_switch(rom, places):
+    if all(_is(rom, at, _b(o)) for at, o, _ in places):
+        return False
+    if all(_is(rom, at, _b(h)) for at, _, h in places):
+        return True
+    return None
+
+
+def _fix_hook(rom, d):
+    if all(_is(rom, at, _b(o)) for at, o in d["original"]) and all(_is(rom, at, _b(o)) for at, o, _ in d["edits"]):
+        return False
+    if all(_hooked(rom, at, n, code) for at, n, code in d["hooks"]) and all(_is(rom, at, _b(h)) for at, _, h in d["edits"]):
+        return True
+    return None
+
+
+def _blind_ring(rom):
+    """bsr puckstick / bra .exit become a call to the code and bne.s .exit (6652), not NOP padding."""
+    if _is(rom, 0x14EC8, _b("6100 021A 6000 0054")):
+        return False
+    if _u16(rom, 0x14EC8) == 0x4EB9 and _u16(rom, 0x14ECE) == 0x6652 and             _is(rom, int.from_bytes(rom[0x14ECA:0x14ECE], "big"), RING_CODE):
         return True
     return None
 
@@ -193,6 +266,11 @@ def rom_settings(rom):
                            _site(rom, 0x10E48, "066B"), _site(rom, 0x10E56, "046B")]))
     clock = [_site(rom, 0x15DEC, "0478"), _site(rom, 0x128CC, "0678"), _site(rom, 0x15E32, "0478")]
     put("realTimeClock", False if clock == [0x0AAA, 0x0018, 0x0AAA] else True if clock == [0x0444, 0x003C, 0x0444] else None)
+    for name, places in FIX_SWITCHES.items():
+        put(name, _fix_switch(rom, places))
+    for name, d in FIX_HOOKS.items():
+        put(name, _fix_hook(rom, d))
+    put("blindRingFix", _blind_ring(rom))
     if unknown:
         found["unknown"] = unknown
     return found

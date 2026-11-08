@@ -639,7 +639,7 @@ the ice. Goalies: 0.2 a save, -0.5 a goal against, 1 for a shutout. The three be
 </section>
 
 <section id="h-rom"><h2>This game's ROM</h2>
-<p id="romSettingsNote">League ROMs can change how the game plays. The settings of the ROM this game was played on are listed here (Genesis ROMs of the original game and the 30-team ROMs built on it; they are read from the ROM's own code, as the NOSE4Web editor does).</p>
+<p id="romSettingsNote">League ROMs can change how the game plays. The settings and fixes of the ROM this game was played on are listed here, read from the ROM's own code as the NOSE4Web editor reads them (Genesis ROMs of the original game and the 30-team ROMs built on it; SNES ROMs of every build). Where a ROM has some other code in a fix's place, it says so rather than assume the original game.</p>
 <dl id="romSettingsList"></dl>
 </section>
 
@@ -1550,7 +1550,7 @@ const XG = (() => {
           if (Math.abs(sdx) <= 14 && Math.abs(sdy) <= 14) {
             const d2 = sdx * sdx + sdy * sdy;
             if (d2 <= 64) return 'stick';
-            if (d2 <= 196) continue;  // the blind ring: no body test this frame
+            if (d2 <= 196 && !extra.ringFix) continue;  // the blind ring: no body test this frame (not with the blind-ring option)
           }
         }
         const gdx = G.x + shift - x, gdy = G.y - y;
@@ -1603,7 +1603,7 @@ const XG = (() => {
       }
       return G;
     };
-    const extra = opts.stick ? { stick: true, rebound: true, spread: 0 } : {};
+    const extra = opts.stick ? { stick: true, rebound: true, spread: 0, ringFix: !!opts.ringFix } : {};
     const aims = opts.oneTimer ? null : [0, 1, 2, 3, 4, 5, 6, 7, 8];
     if (!aims) {  // a one-timer: the game aims it from where the goalie is heading, so the aim follows each goalie state
       let goals = 0;
@@ -1810,6 +1810,7 @@ function startXgMap(key) {
         states: xgGoalie === 'set' ? null : XG_SNES_GOALIE_STATES[xgShot === 'onetimer' && xgGoalie !== 'person' ? 'onetimer' : xgGoalie === 'person' ? 'person' : 'cpu'] }
     : { speed: XG_SHOTS[xgShot].speed, sha: 5 * xgAcc, oneTimer: xgShot === 'onetimer', person: xgGoalie === 'person',
         goalie: { weight: 48, agility: 20, speed: 20, aidef: 10 }, n: 120, stick: xgGoalie === 'set',
+        ringFix: !!(match && match.romSettings && match.romSettings.blindRingFix),  // the ROM's blind-ring option
         states: xgGoalie === 'set' ? null : XG_GOALIE_STATES[xgGoalie === 'person' ? 'person' : 'cpu'] };
   const model = snes ? XG_SNES_MODEL : XG;
   const spots = [];
@@ -3316,10 +3317,10 @@ const STAT_HELP = {
   'Deserve to win|· a tie': 'How often the replays end level (a tie after overtime; before the end, level so far).',
   'Posts': 'Shots that hit a post or the crossbar (the game counts them as shots on goal).',
   'Tapestry goals': 'Goals at the end of two or more quick passes: each pass reached the player who made the next one within 6 game s (a short carry is fine), the last went to the scorer within 7.5 game s of the goal, and the other team never had the puck. Tapestry 2 passes, fine tapestry 3, masterpiece 4 or more.',
-  'Through-the-legs goals': 'Goals that slid through the goalie: a flat puck (height 5 or under) passed within 7 units of his centre in the second before the goal while he was in the butterfly or a kick save. Those moves put his stick out to the side, and a low puck 8-14 units from the stick touches neither stick nor body that frame, so it slides through and in. A quirk of the Genesis game.',
+  'Through-the-legs goals': 'Goals that slid through the goalie: a flat puck (height 5 or under) passed within 7 units of his centre in the second before the goal while he was in the butterfly or a kick save. Those moves put his stick out to the side, and a low puck 8-14 units from the stick touches neither stick nor body that frame, so it slides through and in. A quirk of the Genesis game. Not shown for a game on a ROM with the NOSE4Web editor\u2019s the blind-ring option, where it can\u2019t happen.',
   'Shoulder-save bobble goals': 'Goals scored after the defending goalie caught the puck in a shoulder save and nobody else touched it: the top net\'s shoulder save holds the puck behind him, it is dragged to the front of the net, the net knocks it off his stick and it slides in. A quirk of the Genesis game.',
-  'Rocket passes': 'Passes that left the stick faster than 26,000 (about 88 mph; ordinary passes are 13,000-23,000). The game times a pass to meet the receiver and rounds that time down, so a short pass to a teammate skating toward the passer can come out up to twice as fast. A quirk of the Genesis game.',
-  'Runaway skaters': 'Times a person\'s skater went faster than 15,500 (about 52 mph; flat out is about 9,000) because the game left his "slow down" switch off after he took over a pass or fell into the boards, so speed bursts kept adding up. A quirk of the Genesis game.',
+  'Rocket passes': 'Passes that left the stick faster than 26,000 (about 88 mph; ordinary passes are 13,000-23,000). The game times a pass to meet the receiver and rounds that time down, so a short pass to a teammate skating toward the passer can come out up to twice as fast. A quirk of the Genesis game. Not shown for a game on a ROM with the NOSE4Web editor\u2019s the rocket pass fix, where it can\u2019t happen.',
+  'Runaway skaters': 'Times a person\'s skater went faster than 15,500 (about 52 mph; flat out is about 9,000) because the game left his "slow down" switch off after he took over a pass or fell into the boards, so speed bursts kept adding up. A quirk of the Genesis game. Not shown for a game on a ROM with the NOSE4Web editor\u2019s the runaway fix, where it can\u2019t happen.',
   'Missed tapestries': 'Shot attempts at the end of two or more quick passes (the same chain as a tapestry) that did not score: saved, wide, blocked or off the post. Tapestry goals over tapestry goals plus missed tapestries is how often the team finished them.',
   'Tapestry goals|\u00b7 2 / 3 / 4+ passes': 'Tapestry goals by the number of passes: tapestries (2), fine tapestries (3), masterpieces (4 or more).',
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
@@ -3718,11 +3719,12 @@ function fillTeamStats(snap) {
       ...sideRows('Carried by LD / RD', (team, dir) => carryShare(sideOf(team, dir), 0, 1)),
       ...sideRows('Shots from L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 7)),
       ...(list.some(sh => sh.aim) ? sideRows('Aimed at L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 13)) : [])] : []),
+    // a quirk the ROM has the NOSE4Web fix for can't happen there: its row is left out (romSettings)
     ...(match.runaways ? [section('Quirky Events'),
-      ['Through-the-legs goals', quirkGoals(0, 'five-hole'), quirkGoals(1, 'five-hole')],
+      ...(fixedInRom('blindRingFix') ? [] : [['Through-the-legs goals', quirkGoals(0, 'five-hole'), quirkGoals(1, 'five-hole')]]),
       ['Shoulder-save bobble goals', quirkGoals(0, 'goalie bobble'), quirkGoals(1, 'goalie bobble')],
-      ['Rocket passes', rockets(0), rockets(1)],
-      ['Runaway skaters', runaways(0), runaways(1)]] : []),
+      ...(fixedInRom('passFix') ? [] : [['Rocket passes', rockets(0), rockets(1)]]),
+      ...(fixedInRom('runawayFix') ? [] : [['Runaway skaters', runaways(0), runaways(1)]])] : []),
     section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
@@ -4358,16 +4360,42 @@ for (const b of document.querySelectorAll('#mtabs button')) b.addEventListener('
 showPane(mobilePane);
 // Help: a panel over the page (also opened by #help in the address, as the games and season pages link to it).
 // The search keeps the sections and entries whose words match.
+// Whether this game's ROM has one of the NOSE4Web editor's fixes or options on (match.romSettings).
+const fixedInRom = key => !!(match && match.romSettings && match.romSettings[key]);
 // The ROM's settings in words, for the help's "This game's ROM" (match.romSettings, read by the converter with
-// tools/systems/genesis_settings.py, after the NOSE4Web editor). Each line says what the setting means in play.
+// tools/systems/genesis_settings.py and snes_settings.py, after the NOSE4Web editor). Each line says what the setting
+// means in play.
+// The NOSE4Web editor's gameplay fixes and options and NHL94SNESVault's SNES hacks: [title, on, off (the original)].
+const ROM_FIXES = {
+  aggressionFix: ['Aggression', 'Fixed: a player\u2019s penalty odds rise with his Aggression.', 'The original game\u2019s wrap-round: a 4 plays like a 1, and 6 and 3 draw the most penalties.'],
+  ppPkFix: ['Power play and penalty kill', 'Fixed: each team\u2019s power-play and penalty-kill ratings are read from the halves meant for them.', 'The original game reads the two halves of the team\u2019s byte the wrong way round.'],
+  comebackFix: ['Comeback bonus', 'Fixed: a team tied or behind gets its small boost in the second half of the third period.', 'The original game gives the boost in the first half of the third period instead of the second.'],
+  passFix: ['Rocket passes', 'Fixed: passes are timed in 64ths of a second, so none goes much faster than its pass speed.', 'The original game rounds a pass\u2019s timing down, so some passes fly up to twice as fast (rocket passes).'],
+  faceoffFix: ['Faceoff spots', 'Every faceoff is on one of the nine dots, as the NHL rules place them.', 'The original game holds some faceoffs where the play stopped, off the dots (as the rules of its day allowed).'],
+  runawayFix: ['Runaway skaters', 'Fixed: a skater always slows down normally, so speed bursts don\u2019t stack.', 'The original game can leave a skater gliding without slowing, so his bursts stack into a runaway.'],
+  penaltyShotTableFix: ['Penalty shot names', 'Fixed: a penalty shot is named and recorded for its own foul.', 'The original game names a penalty shot for the foul listed before it (charging as slashing, and so on).'],
+  penaltyShotFixes: ['Penalty shot bugs', 'Fixed: another whistle during a penalty shot doesn\u2019t give it again.', 'The original game can give a penalty shot again after another whistle during it.'],
+  goaliePullFix: ['Computer goalie pull', 'Fixed: the computer pulls its goalie late in the third period when 1 or 2 goals down.', 'The original game\u2019s computer pulls its goalie only when exactly 2 goals down.'],
+  blindRingFix: ['Goalie\u2019s blind ring (option)', 'On: a loose puck 8-14 units from a goalie\u2019s blade hits his body, so fewer pucks go through his middle.', 'The original game: a low puck 8-14 units from his blade touches neither his stick nor his body, so it can go through his legs.'],
+  snipingFix: ['Delayed-penalty sniping (option)', 'On: shots with the shooter\u2019s own goalie off the ice take the normal accuracy roll.', 'The original game: every shot from within 200 is exact while the shooter\u2019s own goalie is off the ice (a delayed penalty or a late pull).'],
+  awarenessFix: ['Computer forwards\u2019 awareness (option)', 'On: the computer\u2019s wingers and centre on offence react by their Offensive Awareness.', 'The original game: the computer\u2019s wingers and centre on offence react by their Defensive Awareness (a slip in the code).'],
+  crowdFix: ['Crowd bonus (option)', 'On: the +2 Agility and Speed crowd bonus comes only with a loud building.', 'The original game: the +2 Agility and Speed crowd bonus is on all the time.'],
+  stickShots: ['Shots off the goalie\u2019s stick', 'Counted: a shot the goalie\u2019s stick knocks away counts as a shot on goal.', 'The original game: a hard low shot the goalie\u2019s stick knocks away isn\u2019t a shot on goal.'],
+  hotColdFix: ['Hot and cold', 'Fixed: a cold player\u2019s ratings go down, as meant.', 'The original game: every "cold" rating goes to the maximum (a sign bug), about 46% of all ratings.'],
+  defenceControl: ['Defence control', 'On for both teams at the start of every game.', 'As the menu sets it.'],
+  oneMinutePenalties: ['Minor penalties', 'One minute long.', 'Two minutes long (as the original game).'],
+  noInterference: ['Interference penalties', 'Never called.', 'Called (as the original game).'],
+  noPenaltyShots: ['Penalty shots', 'Never given.', 'Given for fouls on a breakaway (as the original game).'],
+  noGoalPosts: ['Goal posts', 'None: a puck reaching the net between the posts always goes in.', 'The original game\u2019s posts.'],
+  extraAttackerFix: ['Edit Lines extra attacker', 'Fixed: choosing the extra attacker for a position swaps him in.', 'The original game: choosing the extra attacker for a position puts him there twice and drops the player he replaced.'],
+  yButtonFix: ['Y while down', 'Fixed: a player who is down can\u2019t hook or hold until he is up.', 'The original game: a player who is down can still hook or hold with Y.'],
+};
 function fillRomSettings() {
   const list = $('romSettingsList'); if (!list) return;
   list.textContent = '';
   const r = match && match.romSettings;
   if (!r) {
-    $('romSettingsNote').textContent = match && match.system === 'snes'
-      ? 'SNES ROMs have no known gameplay settings to read; the SNES mechanics notes (docs/SNES_MECHANICS.md) say how the SNES game plays.'
-      : 'This game\u2019s ROM settings could not be read (not a ROM of the original game or the 30-team ROM built on it, or a game converted before they were read).';
+    $('romSettingsNote').textContent = 'This game\u2019s ROM settings could not be read (not a ROM they can be read from, or a game converted before they were read).';
     return;
   }
   const secs = f => (f / 24).toFixed(1).replace(/\.0$/, '') + ' game s (' + (f / 60).toFixed(2).replace(/\.?0+$/, '') + ' s real)';
@@ -4397,7 +4425,8 @@ function fillRomSettings() {
   if (r.secondAssist !== undefined) add('Second assist', r.secondAssist ? 'Fixed: a player who passed to the passer gets the second assist.' : 'The original game\u2019s bug: no second assist when two players pass back and forth.');
   if (r.plusMinus !== undefined) add('Plus-minus', r.plusMinus ? 'Kept by the game (not shown by it).' : 'Not kept by the game.');
   if (r.threeStars) add('Three stars', { original: 'The original game\u2019s choice.', linesOff: 'A fuller formula (made for line changes off).', linesOn: 'A fuller formula (made for line changes on).' }[r.threeStars]);
-  if (r.unknown && r.unknown.length) add('Not recognised', 'The code for ' + r.unknown.join(', ') + ' is not a known version.');
+  for (const [key, [title, on, off]] of Object.entries(ROM_FIXES)) if (r[key] !== undefined) add(title, r[key] ? on : off);
+  if (r.unknown && r.unknown.length) add('Not recognised', 'This ROM has other code where these go, so what it does there isn\u2019t known: ' + r.unknown.map(k => (ROM_FIXES[k] || [k])[0]).join(', ') + '.');
 }
 
 function showHelp(on) {

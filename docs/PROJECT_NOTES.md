@@ -779,6 +779,25 @@ BOS-PIT Oates "cold: -3 on every rating", TOR-CHI Gilmour "maxed: Speed, Off. aw
 the CDL game's settings list. All recordings re-converted (nothing else changed; full_buttons had not been re-converted
 since the rollback filter), the exe rebuilt, the Documents games re-converted, the samples remade.
 
+**The NOSE4Web fixes and options, both systems (2026-11-08).** `genesis_settings.py` now also reads the editor's
+gameplay fixes and options (hacks.ts): aggressionFix, ppPkFix, comebackFix, passFix, faceoffFix, runawayFix,
+penaltyShotTableFix, penaltyShotFixes, goaliePullFix, blindRingFix, snipingFix, awarenessFix, crowdFix, stickShots,
+each True / False, a switch by its two sets of bytes, a hook by the call and the exact code it calls (anything else:
+"unknown", never taken for the original). `tools/systems/snes_settings.py` (new) does the same for the SNES
+(sneshacks.ts): NHL94SNESVault's patches and the editor's fixes (hot / cold, power play / penalty kill, defence control,
+one-minute penalties, no interference, no penalty shots, no goal posts, faceoff spots, penalty shots, extra attacker,
+Y button, comeback, awareness), each found by the code around it so in every build (the SA-1 build's variables $6000
+higher); the extra attacker fix only in ROMs laid out as the original (left out elsewhere, not "unknown"); a copier
+header taken off. `python -m systems.genesis_settings` / `python tools/systems/snes_settings.py <roms>` list them.
+Checked on every ROM in the user's ROM folder: each of NOSE4Web's single-fix builds reads as exactly its fix, the
+combined SNES builds as both, the originals (retail, SA-1, 2 MB) and the Classic SNES ROM as none; the CDL / RGDL
+Genesis ROMs show their smozROM hacks as before; SDL16 (an expanded SNES ROM) has defence control, one-minute penalties
+and penalty-shot code the reading doesn't know ("unknown"). The SNES converter now stores `romSettings` too. What
+follows from them: export_match.add_quirks doesn't look for through-the-legs goals, rocket passes or runaways on a ROM
+with the blind-ring, pass or runaway fix; xg.py and the viewer's port take the snipingFix (no delayed-penalty snipe)
+and blindRingFix (the body test 8-14 from the blade) from it; the viewer leaves those Quirky Events rows out and lists
+every fix in the help's "This game's ROM" (ROM_FIXES; "Not recognised" names other code where a fix goes).
+
 ## Not yet known
 
 - Animations still unidentified: the individual goalie save types, what separates $07FC from $092E, and the

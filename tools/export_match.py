@@ -1710,9 +1710,12 @@ def add_quirks(m):
       time rounded down);
     - runaway skaters (`runaways`: [start frame, end frame, team, roster index, top speed]): a person's skater with
       deceleration off left on (3.4) above RUNAWAY_SPEED, from the reader's `fast` samples.
-    Nothing on the SNES (its goalie and passes work differently; `fast` is Genesis only)."""
+    Nothing on the SNES (its goalie and passes work differently; `fast` is Genesis only). A ROM with the NOSE4Web
+    editor's fix for one (romSettings: blindRingFix, passFix, runawayFix; 2026-11-08) can't have it, so it isn't
+    looked for there."""
     if m.get("system", "genesis") != "genesis":
         return
+    fixed = m.get("romSettings") or {}
     K, t, P, V, own = 12, m["t"], m["puck"], m["puckV"], m["owner"]
     role, anim = m["role"], m["anim"]
     A = lambda f, k: anim[(f * K + k) * 4:(f * K + k) * 4 + 4]
@@ -1738,11 +1741,11 @@ def add_quirks(m):
             if own[f] >= 0 and own[f] != gk and holder_after is None and not held:
                 holder_after = own[f]   # someone else had it after the goalie (scanning backwards: before held)
             f -= 1
-        if through and "five-hole" not in g["kinds"]:
+        if through and "five-hole" not in g["kinds"] and not fixed.get("blindRingFix"):
             g["kinds"].append("five-hole")
         if held and "goalie bobble" not in g["kinds"]:
             g["kinds"].append("goalie bobble")
-    for p in m.get("passes", []):
+    for p in m.get("passes", []) if not fixed.get("passFix") else []:
         if p.get("result") == "pass shot":
             continue
         f = p["f"]
@@ -1761,7 +1764,8 @@ def add_quirks(m):
         runs.append(cur)
     roster = m["roster"]
     m["runaways"] = [[a, b, 0 if k < 6 else 1, DIGITS.index(roster[a * K + k]), top]
-                     for a, b, k, top in runs if top > RUNAWAY_SPEED and roster[a * K + k] in DIGITS]
+                     for a, b, k, top in runs if top > RUNAWAY_SPEED and roster[a * K + k] in DIGITS
+                     and not fixed.get("runawayFix")]
 
 
 def add_tapestries(m):
