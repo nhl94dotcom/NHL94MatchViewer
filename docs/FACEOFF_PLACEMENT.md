@@ -188,6 +188,11 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
      (gmpendel), and the SNES from puckfaceoff (puckfaceoff.asm), with whatever a0 held.
    - The original game is just as exposed (its raw spot depends on the code it reads), but the fix reads the
      offender's pfgoal from -1(a0) as well, so on these paths it can pick an end from the wrong player.
+   - **puckfaceoff with a delayed penalty pending (gmpendel):** it runs after the stoppage, with the clock already
+     stopped, and Stop4Pen keeps the spot when the clock is stopped (bset / tsb gmclock, then .skipfo / .6), so a0 is
+     not read for the spot there: the penalty is called (gmpen, the whistle, the referee) and the faceoff stays where
+     the other stoppage put it. In the Genesis recordings, spots changed with the clock already stopped 68 times: 60
+     clears to centre at a period's start, 2 netplay rollback reads, the period's end, and one not explained.
 3. **SNES type $34.** Nothing in the code writes $34 into PenBuf that could be found. Every loop over PenBuf skips it
    (checkfornewpen, chkprogress, AddPenalty2's search for a free slot, limitfo), so it works as a reserved entry, and
    checkfornewpen never hands one to Stop4Pen. Treating it as a non-penalty is fine.
@@ -198,6 +203,11 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
    penalty shot appears to keep the foul's spot too. The penalty-shot versions of the Genesis penalties ($2E-$3C) are
    above the fix's range and follow the zone rule; the foul usually comes near the offending team's net, so that
    mostly gives their end-zone dot as well. Not tested in the game.
+5. **Other stoppages while a delayed penalty is pending.** In the Genesis recordings (the delayed flag and the
+   stoppage code from each whistle): 32 stoppages came with a penalty pending; 29 were the penalty being called, 2 were
+   goals (centre either way), 1 was another whistle. So the case where the NHL would still put the faceoff in the
+   offending team's end and the fix uses the zone rule came up once. No exact SNES count: the SNES match files' delayed
+   flag also marks penalty shots.
 
 Source: [NHL Official Rules 2021-22](https://media.nhl.com/site/asset/public/ext/2021-22/2021-22Rules.pdf) (Rules
 24.5, 67.3, 76.2, 81.2, 85.1).
