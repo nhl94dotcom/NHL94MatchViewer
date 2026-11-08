@@ -3,7 +3,8 @@ community member asked to see it; GENESIS_SHOOTING 4.7). There is no special ani
 under, not rising) reaching the goalie's stick blade faster than the catch limit (about 13,000) is sent off it with
 the stick-deflection sound (puckstick .stdef), and only a catch or a body touch counts the shot.
 
-The retail ROM in live play (bot_live states): the home centre at a spot with the puck, everyone else parked, a
+The retail ROM in live play (bot_live states): the home centre at a spot with the puck, everyone else parked (the
+shooter stays on the ice after the shot, pressing nothing), a
 slapshot (C held) with Down held (aimed along the ice) at the computer's goalie. Trials are searched for a low puck
 that turns back at the goalie, isn't held, isn't a goal, and leaves Home's shots on goal ($C6CE) as they were; the
 first is filmed frame by frame, the counter printed under each frame.
@@ -40,7 +41,9 @@ class Film:
             im = Image.frombuffer("RGB", (w, h), data, "raw", "BGR;16", pitch, 1)
         else:
             im = Image.frombuffer("RGBX", (w, h), data, "raw", "BGRX", pitch, 1).convert("RGB")
-        im = im.resize((w * 2, h * 2), Image.NEAREST)
+        # play is drawn 256 wide (H32), the menus and stats screens 320 (H40); both fill the same width on a TV,
+        # so every frame goes to one size (a GIF crops frames bigger than its first)
+        im = im.resize((640, h * 2), Image.NEAREST)
         d = ImageDraw.Draw(im)
         d.rectangle((0, im.height - 24, im.width, im.height), fill=(0, 0, 0))
         d.text((8, im.height - 19), f"Home shots on goal: {e.w(SHOTS)}    {note}", fill=colour)
@@ -81,7 +84,7 @@ def play(e, hold, film=None):
         return False
     turned = held = False
     for f in range(50):
-        park(e, keep_shooter=False)
+        park(e)                                          # the shooter stays where he is (nothing pressed)
         vy0 = e.sw(rec(14) + 0x2A)
         low = e.sw(rec(14) + 0x18) <= 5
         step(note="off the goalie's stick: not a shot on goal" if turned else "", colour=(255, 220, 120) if turned else (255, 255, 255))
