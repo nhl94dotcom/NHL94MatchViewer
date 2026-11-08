@@ -686,6 +686,13 @@ the goalie with the puck above the ice were saved and held"). The bottom net's b
 the user's period 2 pass shots at it all came off the stick lifted (heights 8-16, see 6.1: a pass shot's lift is random),
 which is why that period gave none.
 
+**How much it matters (2026-11-07, the xG model):** closing the ring (the body test also run where the blade is 8-14
+units from the puck) changes the 928 recorded unblocked shots' expected goals by -0.3% (shots -0.1%, one-timers 0, pass
+shots -13% of their 4.1). It touches few shots, but those it touches go in: 3 of the 218 recorded Genesis goals were
+five-hole goals. Where it is in the code: `checkpuckcoll .ccx` hands a puck within the stick's box (14) to `puckstick`,
+which for a goalie with the puck loose returns doing nothing past 8 units (cmp.l #$40,d0 / bhi rtss2), and `.ccx`
+skips the body test after `puckstick`.
+
 **Speed helps.** The game checks the puck's position once a frame, so a fast puck takes big steps (its speed / 4096
 units a frame) and more often jumps the thin strip of body (about 2 units) at the front edge of the blind band: a puck at
 13,000 (3 a frame) lands on it about 2 times in 3, one at 22,700 (5.5) about 1 in 3, a full slapshot at 28,000 (7)
