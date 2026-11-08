@@ -1282,3 +1282,27 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
   The fixed passes over 1.3x are the game's own limits: two at its 3 s limit (as fast in the original), two to a
   receiver right beside the passer at its eighth of a second minimum. No more interceptions with the slower, correct
   passes: fewer, if anything; the wrong-root passes, all picked off in the original's replays, reach their man in 3 of 8.
+
+## NOSE4Web's runaway-speed fix, played in the game (Genesis, 2026-11-08)
+
+- **The fix** clears the "deceleration off" flag (pfdoff; GENESIS_MECHANICS 3.4) where it leaked: asspassrec's exit when
+  a person takes over the receiver, the end of a fall (the boards), and EndOneTimer (every one-timer, hit or missed;
+  the third leak, found from the 2026-10-18_2219_WPG-BOS runaway: a missed one-timer never reaches puckstick).
+- **Method** (`analysis/scoring_map/runaway_fix_test.py`, runs rft2_* and rft3_*, gentle mode): the recorded check
+  moments in live play, the retail ROM against the patched one, with the same inputs; each case ends in three bursts
+  (C, 30 frames apart) skating away from the puck. A runaway: still over 10,000 0.6 s (real) after the last burst
+  (normal skating never passes about 9,500; a burst fades in about half a second; the peak alone also counts an
+  ordinary burst's spike).
+- **Results:**
+
+  | Case | Original: still fast after the bursts | Fixed |
+  |---|---|---|
+  | Taken over with a pass coming | 21 of 99 | 0 of 96 |
+  | Up from a fall into the boards | 7 of 15 | 0 of 16 |
+  | A missed one-timer | 7 of 258 | 1 of 259 (the flag off: one late spike, a hit) |
+  | Taken over, then a missed one-timer | 15 of 236 | 0 of 237 |
+
+- **One-timers that connect:** after a pass, shot speed median 4,778 against 4,702 and 18% over 15,000 in both; taken
+  over first, 5,494 against 5,204 and 10% against 9% (30 and 27 of 300). The same shot frame for frame in 216 and 164 of
+  300: the patch runs at every animation's end, so its few cycles shift the game's timing-based randomness (the
+  video counter), and play drifts apart from there; the flag reads the same in both until then.
