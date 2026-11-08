@@ -172,7 +172,7 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
 | nhl94.bin (Genesis retail) | Original | 8,364 | 8 |
 | nhl94_faceoff_fix.bin | Fixed | 8,372 | 0 (and 8,372 / 0 rebuilt, reading the newest PenBuf entry) |
 | NHL94.smc (SNES retail) | Original | 4,152 | 72 |
-| NHL94_faceoff_fix.smc | Fixed | 4,212 | 12 (the same rebuilt) |
+| NHL94_faceoff_fix.smc | Fixed | 4,212 | 12 (the same rebuilt; the third build, the one in use: 4,208 / 16, below) |
 | nhl94_2026.sfc (SNES 2 MB, SA-1) | Original | 2,112 | 0 |
 | nhl94_2026_faceoff_fix.sfc | Fixed | 2,112 | 0 (the same rebuilt) |
 
