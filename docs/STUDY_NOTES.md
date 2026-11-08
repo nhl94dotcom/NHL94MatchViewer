@@ -1728,4 +1728,8 @@ select, matchups, the pre-game menu, the horizontal scoreboard, the card's team 
 ice, both by a team's Classic index read in the 32-team alphabetical list (Anaheim-Calgary right; Chicago shows
 CAROLINA, Los Angeles EDMONTON, Montreal FLORIDA and Florida's centre ice). The playoff draw mixes the conferences
 (Classic's is Wales and Campbell); the team and player Overall ratings shown differ from Classic's (Montreal 73 -> 66
-on the matchups, Boston's card 76 -> 74): reported to NOSE4Web.
+on the matchups, Boston's card 76 -> 74): reported to NOSE4Web. The 18:00 rebuild: the banners right everywhere (TeamPlaceNames
+and TeamBlockPalettes imported), the overalls and team ratings as Classic's, the playoff draw Classic's own Wales and
+Campbell bracket, centre ice Classic's logos (shape, size, centred); **the centre-ice colours still wrong** (Montreal's
+red C grey: (148,80,82) -> (131,121,123); the Kings' silver bluish: (156,157,156) -> (131,141,172), (74,72,74) ->
+(74,72,115); Chicago's tan face and gold and green feathers pink and red).
