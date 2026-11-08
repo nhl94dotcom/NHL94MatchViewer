@@ -1699,6 +1699,118 @@ ROCKET_SPEED = 26000             # a pass leaving faster than this (normal passe
 RUNAWAY_SPEED = 15500            # a skater with deceleration off moving faster than this (normal top about 9,500)
 
 
+CHECK_REACH, CHECK_CONE, CHECK_CONTACT, CHECK_NEAR, CHECK_RESULT_MS, CHECK_AFTER_MS, CHECK_LATE_MS = 70, 35, 18, 30, 1000, 6000, 1000
+SNES_CHECK_ANIMS = {"f27a", "f2ac", "f2de", "f310"}       # the SNES check animations (snes_burst_contact_study.py)
+
+
+def find_check_attempts(m):
+    """A person's check attempts (2026-11-08, the user: failed and whiffed checks, and CB checks, in the viewer; the
+    rules are analysis/check_outcomes.py's, which takes them from here). An attempt: the person's skater starts a burst
+    (C on the Genesis, A on the SNES: the `lunge` animation) while the other team has the puck, an opposing skater
+    within CHECK_REACH and CHECK_CONE degrees of his facing. Its result within CHECK_RESULT_MS: hit (the game counted
+    a check by him, `hits`), failed (he reached a man, under CHECK_CONTACT, or the SNES shows his check animation, and
+    nothing counted), whiff (he got within CHECK_NEAR but touched nobody); a burst that never got within CHECK_NEAR of
+    anyone isn't one. What followed within CHECK_AFTER_MS while his team didn't get the puck and no faceoff came: the
+    other team's shots, their xG, their goal (a shot under CHECK_LATE_MS after the burst: "late", too late to have
+    cost anything). Last: no teammate goal-side of the puck at the burst; won: his team had the puck within about 2 s.
+    Genesis: `cb` for an attempt that reached a man: "C" if the person still had the checker at contact (within 20, in
+    the next 0.6 s), "CB" if he had switched away (C, then B: the computer makes the check), with `right` when that
+    was the better choice for the weights under the original checking code (C into a man 2+ weight steps heavier, CB
+    otherwise) and `down` when the man went down."""
+    t, pos, role, owner, puck, N, K = m["t"], m["pos"], m["role"], m["owner"], m["puck"], len(m["t"]), 12
+    lunge = systems.of_match(m).ACTIONS.get("lunge") or set()
+    snes = m.get("system") == "snes"
+    P = lambda f, k: (pos[(f * K + k) * 2], pos[(f * K + k) * 2 + 1])
+    an = lambda f, k: m["anim"][(f * K + k) * 4:(f * K + k) * 4 + 4]
+    skaters = lambda f, team: [k for k in range(team * 6, team * 6 + 6) if role[f * K + k] in "12345"]
+    roster = lambda f, k: DIGITS.index(m["roster"][f * K + k]) if m["roster"][f * K + k] in DIGITS else -1
+    has = lambda f, team: owner[f] is not None and 0 <= owner[f] < 12 and (owner[f] < 6) == (team == 0)
+    faceoffs = sorted(fo["f"] for fo in m.get("faceoffs", []))
+    shots = sorted((sh for sh in m.get("shotList", []) if sh["team"] in (0, 1)), key=lambda sh: sh["f"])
+    weight = lambda tm, idx: m["rosters"][tm][idx]["a"][0] if 0 <= idx < len(m["rosters"][tm]) and "a" in m["rosters"][tm][idx] else None
+
+    def goal_side(f, k, e):
+        ny = 264 * e
+        return math.hypot(P(f, k)[0], ny - P(f, k)[1]) < math.hypot(puck[3 * f], ny - puck[3 * f + 1])
+
+    def after(f, team):
+        out, q = [], f
+        stop = next((x for x in faceoffs if x > f), N)
+        for sh in shots:
+            if sh["f"] <= f or sh["team"] == team:
+                continue
+            if t[sh["f"]] - t[f] > CHECK_AFTER_MS or sh["f"] >= stop:
+                break
+            while q < sh["f"]:
+                if has(q, team):
+                    return out
+                q += 1
+            out.append(sh)
+        return out
+
+    events = []
+    for team in (0, 1):
+        them = 1 - team
+        for f in range(1, N - 1):
+            if not has(f, them) or puck[3 * f + 2] < -100:
+                continue
+            k = next((j for j in range(team * 6, team * 6 + 6) if m["ctrl"][f] >> j & 1 and role[f * K + j] in "12345"), None)
+            if k is None or an(f, k) not in lunge or an(f - 1, k) in lunge:
+                continue
+            x, y = P(f, k)
+            a = math.radians(45 * int(m["facing"][f * K + k]))
+            fx, fy = math.sin(a), math.cos(a)
+            target = None
+            for o in skaters(f, them):
+                dx, dy = P(f, o)[0] - x, P(f, o)[1] - y
+                d = math.hypot(dx, dy)
+                if d < CHECK_REACH and math.degrees(math.acos(max(-1, min(1, (fx * dx + fy * dy) / (d or 1))))) <= CHECK_CONE:
+                    if target is None or o == owner[f] or d < target[0] and target[1] != owner[f]:
+                        target = (d, o)
+            if target is None:
+                continue
+            e = own_end(m, f, team)
+            if e is None:
+                continue
+            who = roster(f, k)
+            hit = next((h for h in m.get("hits", []) if h["team"] == team and h["by"] == who and 0 <= t[h["f"]] - t[f] <= CHECK_RESULT_MS), None)
+            thrown, closest, contact = False, 10 ** 9, None
+            q = f
+            while q < N and t[q] - t[f] <= CHECK_RESULT_MS:
+                thrown = thrown or (snes and an(q, k) in SNES_CHECK_ANIMS)
+                for o in skaters(q, them):
+                    d = math.dist(P(q, k), P(q, o))
+                    closest = min(closest, d)
+                    if contact is None and d < 20 and t[q] - t[f] <= 600:
+                        contact = (q, o)
+                q += 1
+            if not (hit or thrown) and closest >= CHECK_NEAR:
+                continue                                  # never got near anyone: a burst to reposition, not a check
+            result = "hit" if hit else "failed" if closest < CHECK_CONTACT or thrown else "whiff"
+            later = next((q for q in range(f, N) if t[q] - t[f] >= 1000), N - 1)
+            back = [o for o in skaters(f, team) if o != k and goal_side(f, o, e)]
+            sh = after(f, team)
+            goal = next((x for x in sh if x["result"] == "goal"), None)
+            ev = {"f": f, "team": team, "by": who, "on": roster(f, target[1]), "carrier": target[1] == owner[f],
+                  "result": result, "outcome": hit["outcome"] if hit else None, "thrown": thrown,
+                  "zone": "own" if puck[3 * f + 1] * e >= 89 else "their" if puck[3 * f + 1] * e <= -89 else "neutral",
+                  "last": not back, "back": len(back), "side0": goal_side(f, k, e), "side1": goal_side(later, k, e),
+                  "won": any(has(q, team) for q in range(f, min(N, later + 60))), "shots": len(sh),
+                  "xg": round(sum(x.get("xg") or 0 for x in sh if x["result"] != "blocked"), 3),
+                  "goal_f": goal["f"] if goal else None, "late": bool(goal) and t[goal["f"]] - t[f] < CHECK_LATE_MS,
+                  "goal": goal}
+            if not snes and contact is not None:
+                cq, o = contact
+                ev["cb"] = "C" if m["ctrl"][cq] >> k & 1 else "CB"
+                wc, wt = weight(team, who), weight(them, roster(cq, o))
+                if wc is not None and wt is not None:
+                    ev["right"] = (ev["cb"] == "C") == (wt - wc >= 2)
+                ev["down"] = any(h["team"] == team and h["by"] == who and h["on"] == roster(cq, o) and -200 <= t[h["f"]] - t[cq] <= 900
+                                 for h in m.get("hits", []))
+            events.append(ev)
+    return events
+
+
 def add_quirks(m):
     """Quirky events (2026-10-19, the user: the game's oddities, in their own team-stats group), Genesis:
     - a goal through the legs (`five-hole` kind): in the second before the goal the loose puck, at ice level (height 5 or
@@ -2164,6 +2276,9 @@ def analyse(match, system, cap, rom_path):
         if any(sh.get("afterFlip") and sh["result"] == "goal" and sh["team"] == goal["team"]
                and abs(match["t"][sh["f"]] - match["t"][goal["f"]]) <= 2000 for sh in match.get("shotList", [])):
             goal["kinds"].append("EA Special")
+    if match.get("hits") is not None and match.get("shotList") is not None:
+        # The person's check attempts (hit / failed / whiff, and C or CB on the Genesis), after xG, which they sum
+        match["checkAttempts"] = [{k: v for k, v in ev.items() if k != "goal"} for ev in find_check_attempts(match)]
 
 
 

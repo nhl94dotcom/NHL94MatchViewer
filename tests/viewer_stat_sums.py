@@ -1,6 +1,7 @@
 """Renders each match's team stats (headless Edge, every group open, at the end of the game) and checks that the
 break-down rows add up to their parents: shot attempts against their outcomes, possession by zone, giveaways and
-takeaways by kind, faceoffs by zone, zone entries by kind, aimed shots by height, tapestries by length, carrying shares.
+takeaways by kind, faceoffs by zone, zone entries by kind, aimed shots by height, tapestries by length, carrying shares,
+the person's check attempts by result.
 python tests/viewer_stat_sums.py [match names ...]   (default: every match in both game folders)"""
 import html
 import json
@@ -72,6 +73,18 @@ def check(r, from_start=True):
             rest = sum(num(v(k) or "0") or 0 for k in ("Wide", "Blocked", "Saved, not counted"))
             if att < sog + rest:
                 problems.append(("Shot attempts", team, f"{att} < shots on goal {sog} + wide / blocked / not counted {rest}"))
+        # the person's check attempts: hit + failed + whiff = attempts; goals after a miss at most the misses; C + CB at most
+        # the attempts
+        tries, hfw = num(v("Check attempts (person)") or ""), parts(v("Check attempts (person)", "· hit / failed / whiff") or "")
+        if tries is not None and hfw and len(hfw) == 3:
+            if sum(hfw) != tries:
+                problems.append(("Check attempts (person)", team, f"hit / failed / whiff {hfw} don't add up to {tries}"))
+            after = num(v("Check attempts (person)", "· goal against after a miss") or "")
+            if after is not None and after > hfw[1] + hfw[2]:
+                problems.append(("Check attempts (person)", team, f"{after} goals after a miss, {hfw[1] + hfw[2]} misses"))
+            cb = parts(v("Check attempts (person)", "· C / CB (knocked down)") or "")
+            if cb and len(cb) == 4 and (cb[0] + cb[2] > tries or cb[1] > cb[0] or cb[3] > cb[2]):
+                problems.append(("Check attempts (person)", team, f"C / CB {cb} against {tries} attempts"))
         # possession by zone
         poss = v("Possession")
         if poss:

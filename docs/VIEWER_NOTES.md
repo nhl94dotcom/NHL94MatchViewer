@@ -998,3 +998,17 @@ season page Skaters xG and G-xG, Goalies xGA and GSAx, Advanced chances table xG
 summing now adds numbers only (a null had turned an array into a string). Documented in GENESIS_SHOOTING.md 4.9 and 5.3
 (the goalie's movement) and GENESIS_GUIDE.md 12.3. Not yet: the SNES (its goalie is a different box; added later,
 SNES_SHOOTING.md 4.7).
+
+## Check attempts, misses and CB checks in the team stats (2026-11-08)
+
+The user asked for failed and whiffed checks, and CB checks, in the viewer. The converter's
+`export_match.find_check_attempts` (the rules analysis/check_outcomes.py used, which now takes them from it) writes
+`checkAttempts`: one entry per check attempt by a person's skater (a burst at an opponent within 70 and 35 degrees of his
+facing while the other team has the puck, that gets within about 10 feet of someone): `result` hit / failed / whiff,
+what followed within 15 game s (`shots`, `xg`, `goal_f`, `late` for a goal under 2.5 game s after the burst), `last`,
+`won`, `zone`; on the Genesis `cb` (C if the person still had the checker at contact, CB if he had switched away),
+`right` (the better choice for the weights under the original checking code) and `down`. Team stats, Physical: Check
+attempts (person); hit / failed / whiff; goal against after a miss; C / CB (knocked down); C or CB right for the
+weights (left out on a ROM with the C-then-B fix, `romSettings.checkFix`). tests/viewer_stat_sums.py checks the result
+rows add up to the attempts. Attempts count only checks tried at a man in front, so "hit" can be fewer than Checks
+landed (person).

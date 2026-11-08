@@ -1516,3 +1516,14 @@ Offsets in NHL94.smc (retail), nhl94_2026.sfc (SA-1), nhl94snes_2026.sfc (2 MB).
   sf2shot, so once only; its crowd boost is harmless on the SNES). A hook: at `.t1x`'s `jmp .3`, jump to new code that
   does `lda position,y / bne` (not a goalie: on to `.3`) and otherwise `jsl ChkShotStat` before `.3`. It catches the
   glove too: the SNES goalie's stick / glove area deflects hard high shots as well (SNES_SHOOTING 4.6).
+- **Played in the game** (2026-11-08, `analysis/scoring_map/snes_assist_stick_test.py`; NOSE4Web's
+  *_second_assist_and_stick_shots builds, and for the shots copies with only the stick hook, since the assist hook runs
+  on every touch and shifts the game's timing-based randomness): **second assist**, the touch history set to C, A, B
+  and A taking the puck, then a goal into an empty net: the original's scoring summary has B and no second assist, the
+  fix's B and C, in all three builds; a control (C, B, D, then A) gives D and B on both. **Stick deflections**, the
+  same shots on both ROMs (the pad-1 skater with the puck at 20 spots, 9 aims, A held 3-12 frames): retail 267 to 297
+  shots on goal of 300 (goals 2 and 2); SA-1 389 to 393 of 400; 2 MB 366 to 372 of 400. In pairs that played the same
+  every difference was one more shot; in the 2 MB build 76 pairs drifted apart (the hook also runs for a skater's stick
+  meeting a puck too fast to catch, adding a few cycles), where outcomes can differ either way. The recordings: 131 of
+  532 saves in 29 SNES games weren't counted, 4.5 a game, the most the option can add (nearly all stick and glove
+  deflections; the rest off the boards or as the clock stopped).

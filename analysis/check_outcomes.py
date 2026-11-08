@@ -22,15 +22,13 @@ aren't told apart. Goals are rare, so one set of games says little: `--all` tota
 python analysis/check_outcomes.py <match> ...      a table per team, and each miss followed by a goal
 python analysis/check_outcomes.py --all            every recorded game with a person on the checking side, per system"""
 import math
-import os
 import sys
 from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import systems  # noqa: E402
-from export_match import own_end  # noqa: E402
+from export_match import own_end, find_check_attempts  # noqa: E402
 import slot_defence as SD  # noqa: E402
 import gametime as GT  # noqa: E402
 
@@ -45,12 +43,7 @@ SNES_CHECKS = {"f27a", "f2ac", "f2de", "f310"}       # the check animations (sne
 def measure(m):
     """(events, baseline, hold). events: one dict per check attempt. baseline, hold: (team, zone) -> [moments, shots, xG, goals]."""
     t, pos, role, owner, puck, N = m["t"], m["pos"], m["role"], m["owner"], m["puck"], len(m["t"])
-    lunge = systems.of_match(m).ACTIONS["lunge"]
-    snes = m.get("system") == "snes"
     P = lambda f, k: (pos[(f * K + k) * 2], pos[(f * K + k) * 2 + 1])
-    an = lambda f, k: m["anim"][(f * K + k) * 4:(f * K + k) * 4 + 4]
-    skaters = lambda f, team: [k for k in range(team * 6, team * 6 + 6) if role[f * K + k] in "12345"]
-    roster = lambda f, k: DIGITS.index(m["roster"][f * K + k]) if m["roster"][f * K + k] in DIGITS else -1
     has = lambda f, team: owner[f] is not None and 0 <= owner[f] < 12 and (owner[f] < 6) == (team == 0)
     faceoffs = sorted(fo["f"] for fo in m.get("faceoffs", []))
     shots = sorted((s for s in m.get("shotList", []) if s["team"] in (0, 1)), key=lambda s: s["f"])
@@ -80,52 +73,9 @@ def measure(m):
             out.append(s)
         return out
 
-    events, tried = [], defaultdict(list)
-    for team in (0, 1):
-        them = 1 - team
-        for f in range(1, N - 1):
-            if not has(f, them) or puck[3 * f + 2] < -100:
-                continue
-            k = next((j for j in range(team * 6, team * 6 + 6) if m["ctrl"][f] >> j & 1 and role[f * K + j] in "12345"), None)
-            if k is None or an(f, k) not in lunge or an(f - 1, k) in lunge:
-                continue
-            x, y = P(f, k)
-            a = math.radians(45 * int(m["facing"][f * K + k]))
-            fx, fy = math.sin(a), math.cos(a)
-            target = None
-            for o in skaters(f, them):
-                dx, dy = P(f, o)[0] - x, P(f, o)[1] - y
-                d = math.hypot(dx, dy)
-                if d < REACH and math.degrees(math.acos(max(-1, min(1, (fx * dx + fy * dy) / (d or 1))))) <= CONE:
-                    if target is None or o == owner[f] or d < target[0] and target[1] != owner[f]:
-                        target = (d, o)
-            if target is None:
-                continue
-            e = own_end(m, f, team)
-            if e is None:
-                continue
-            who = roster(f, k)
-            hit = next((h for h in m.get("hits", []) if h["team"] == team and h["by"] == who and 0 <= t[h["f"]] - t[f] <= RESULT_MS), None)
-            thrown, closest = False, 10 ** 9
-            q = f
-            while q < N and t[q] - t[f] <= RESULT_MS:
-                thrown = thrown or (snes and an(q, k) in SNES_CHECKS)
-                closest = min([closest] + [math.dist(P(q, k), P(q, o)) for o in skaters(q, them)])
-                q += 1
-            if not (hit or thrown) and closest >= NEAR:
-                continue                                  # never got near anyone: a burst to reposition, not a check
-            tried[team].append(f)
-            result = "hit" if hit else "failed" if closest < CONTACT or thrown else "whiff"
-            later = next((q for q in range(f, N) if t[q] - t[f] >= BEHIND_MS), N - 1)
-            back = [o for o in skaters(f, team) if o != k and goal_side(f, o, e)]
-            sh = after(f, team)
-            goal = next((s for s in sh if s["result"] == "goal"), None)
-            events.append({
-                "f": f, "team": team, "by": who, "on": roster(f, target[1]), "carrier": target[1] == owner[f], "result": result,
-                "outcome": hit["outcome"] if hit else None, "thrown": thrown, "zone": zone(f, e), "last": not back, "back": len(back),
-                "side0": goal_side(f, k, e), "side1": goal_side(later, k, e), "won": any(has(q, team) for q in range(f, min(N, later + 60))),
-                "shots": len(sh), "xg": sum(s.get("xg") or 0 for s in sh if s["result"] != "blocked"), "goal": goal,
-                "late": bool(goal) and t[goal["f"]] - t[f] < LATE_MS, "goal_f": goal["f"] if goal else None})
+    events, tried = find_check_attempts(m), defaultdict(list)   # the converter's (export_match), the same rules
+    for ev in events:
+        tried[ev["team"]].append(ev["f"])
     baseline = defaultdict(lambda: [0, 0, 0.0, 0])
     hold = defaultdict(lambda: [0, 0, 0.0, 0])
     for team in (0, 1):
