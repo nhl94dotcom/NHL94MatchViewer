@@ -22,7 +22,8 @@ goalies, power plays, game flow, ratings) is in [LEAGUE_RESULTS](LEAGUE_RESULTS.
   6.2% more shots on goal counted but scores 3.0% fewer goals (goals per counted shot 30.5% going up, 33.6% going
   down). If people shot less going down they would also score less going down; they score more. So shots going down
   are taken but not counted: the leading explanation is the goalie's stick knocking low shots away uncounted
-  (GENESIS_SHOOTING 4.7), since going down people push Down, a low shot. The SNES, whose count doesn't depend on a
+  (GENESIS_SHOOTING 4.7; in the game, with Game Stats before and after: [up](img/stick_deflection_up.gif),
+  [down](img/stick_deflection_down.gif)), since going down people push Down, a low shot. The SNES, whose count doesn't depend on a
   shot's height (SNES_SHOOTING 4.6), shows almost none of it (+1.2% shots, goals alike). It holds for 161 of the 213
   players with 50+ games, compared with themselves, and in every year from 2013 to 2026 (1.05-1.10).
 - **The 29 recorded Genesis games' home edge in attempts** (below: 1.22 times as many per minute) isn't in the

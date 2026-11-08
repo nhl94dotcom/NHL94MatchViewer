@@ -279,7 +279,9 @@ The computer never holds a direction, so its wins go a random way.
   it.
 - **Shots along the ice often aren't counted as shots on goal**: a hard low shot that the goalie's stick deflects
   doesn't count (about 4 in 10 of those that reached him, against 1 in 30 high shots). Holding Down toward the net
-  when attacking down the screen aims along the ice, so teams going down get fewer shots on goal counted.
+  when attacking down the screen aims along the ice, so teams going down get fewer shots on goal counted. See it in
+  the game, with Game Stats before and after: [going up](img/stick_deflection_up.gif),
+  [going down](img/stick_deflection_down.gif).
 - **A save the goalie makes with his body or by holding the puck is counted; one his stick knocks away usually
   isn't.** Neither is a shot that reaches him after the clock hits 0:00 at the end of a period.
 - **Posts are rare on the Genesis**: the post is only a sliver beside the goal mouth, so a shot that drifts wide of the
