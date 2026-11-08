@@ -1661,6 +1661,43 @@ the earlier piece in the game.
   **0.18 a game** (largest 0.62), the gap by 0.28 (average gap 2.62), and once (1 of 29) which team had the better
   chances. Only what hot / cold does at the shot is counted: its effect on skating, checking and passing, which make
   the chances, isn't.
+- **Study 4, are the dice streaky?** (`analysis/streaks.py`; each player's results in a game in order, the summed
+  products of consecutive results' distances from the sequence's own mean, against 2,000 shuffles of the same
+  sequences). **Shots, goalies and passes: no streaks** on either system (Genesis: shots 52% of shuffles at or above
+  the real statistic, goalies 57%, passes 66%; SNES 16%, 63%, 50%). After 1, 2 and 3+ misses in a row a shooter's
+  next shot scored as its expected goals said on the Genesis (126 goals against 127.6, 72 / 74.4, 43 / 40.4); on the
+  SNES below (107 / 122.2, 59 / 67.4, 33 / 41.2), which is selection (shooters who miss a lot are the ones the SNES
+  model overrates; its xG runs about 0.19 goals a team-game high), not a streak: the shuffle test, which compares
+  each shooter with himself, finds nothing. **Checks cluster**: hits follow hits (SNES 0% of shuffles, Genesis 7%).
+  Split by checker and target, the Genesis clustering goes (22%): the same man checked again and again (weights and
+  ratings decide). The SNES keeps some (2%, 169 checker-target sequences): something lasting through a spell
+  (perhaps the approach's speed and angle), not the dice.
+- **Study 5, missing a great chance** (`analysis/open_net_misses.py [--list]`; attempts worth 0.5+ xG that didn't
+  score, a miss placed by where the recording shows the puck crossing the net's front). Genesis: 205 such chances, 134
+  scored (155.3 expected); of the 71 that didn't, **the goalie got to it 32**, a skater blocked 10, wide of the post 9,
+  over the crossbar 7, never reached the net 5, a post 4, a crossing inside the frame (deflected) 4; 22 of the 71 had
+  the goalie 5+ ft off the shot line. SNES: 218, 143 scored (168.9 expected); of 75, **the goalie 44**, a post 14,
+  wide 5, over 4, blocked 4, never reached 3. So "missing an open net" is rarely a miss: the goalie getting across
+  (or the post, or a stick) is most of it; wide or over is one miss in five on the Genesis, one in eight on the SNES.
+  **The xG models run about 14% high on these chances on both systems** (the recorded goalies get across more often
+  than the modelled one): a point for the models' next calibration.
+- **Study 6, easy goals** (`analysis/easy_goals.py`; each goal matched to its shot, the ones under 0.1 xG or not
+  priced). Genesis: 36 of 218 goals (17%): 19 deflections and scrambles the models don't price, 17 priced shots;
+  among them 13 one-timers, 9 with the goalie 5+ ft off the line, 7 off a check, 6 off rebounds; the game's quirks
+  only 3 through the legs, 2 shoulder-save bobbles and 2 goalie giveaways. SNES: 23 of 217 (11%), 19 priced shots, 6
+  with the goalie off the line. **A person in net is over-represented**: a person had the goalie for 16% of the shots
+  on net on the Genesis (25% of all goals) but 12 of the 36 easy goals (33%); SNES 28% of shots (34% of goals) but 11
+  of the 23 (48%): taking the goalie lets in more of the low chances (few goals; a lead, not a finding). By band, the
+  models are too sure at both ends: shots under 0.1 xG scored about twice what they said (Genesis 17 goals against
+  7.6 on 537 attempts, SNES 19 against 9.1), 0.1-0.6 about right, 0.6 and up about 14% short (112 / 128.1, 127 /
+  148.0).
+- **Study 7, loose pucks** (`analysis/loose_pucks.py`; games with a person on each side; a loose spell of 0.1-3 s
+  with the clock running, ended by a player taking the puck; who had him just before he reached it, since control
+  moves to the carrier at the pickup). Genesis: of 2,873, a person's skater took 1,132, **a computer skater 1,462**, a
+  goalie 279. Per game the two computers' shares follow their teams' Offensive + Defensive Awareness steps
+  (correlation +0.62 over 22 games; the home team's computer won 54% on average, as its awareness bonus says). **No
+  catch-up**: the leading team's computer won more (605) than the trailing team's (513). SNES: the person's own skater
+  reaches most (2,641 of 3,118; computer skaters 80, too few to split).
 
 ## NOSE4Web's Classic import into the 32-team SA-1 build (2026-11-08)
 

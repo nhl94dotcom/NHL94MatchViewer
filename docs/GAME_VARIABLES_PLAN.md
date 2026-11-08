@@ -76,6 +76,22 @@ with goals and penalties by time), and the game itself run headless with its cod
   often as a person's; in the recorded Genesis games the computer's penalized skaters were a median 117 units from
   the puck, people's 42). ([LEAGUE_RESULTS.md, "Penalties and the score"](LEAGUE_RESULTS.md))
 
+- **Study 4, are the dice streaky?** No, for shots, goalies and passes: in the recorded games one result doesn't make
+  the same result likelier next time (each player's sequences against shuffles of themselves). A shooter's next shot
+  after 1, 2 or 3 misses in a row scored as its expected goals said (Genesis). Checks do cluster (hits follow hits),
+  but that's the target: the same man checked again and again, whose weight and ratings decide; split by checker and
+  target it goes on the Genesis (a little remains on the SNES).
+- **Study 5, missing a great chance:** of the chances worth 0.5 expected goals or more that didn't score, the goalie
+  got to most (32 of 71 on the Genesis, 44 of 75 on the SNES), then blocks and posts; the puck going wide or over the
+  bar is one miss in five on the Genesis, one in eight on the SNES.
+- **Study 6, easy goals:** 17% of Genesis goals and 11% of SNES goals came from chances under 0.1 expected goals (on
+  the Genesis about half of them deflections and scrambles). The game's named quirks are a small part (3 through the
+  legs, 2 shoulder-save bobbles). A person in net is over-represented: a person had the goalie for a third of the
+  easy goals on the Genesis (16% of shots) and half on the SNES (28% of shots).
+- **Study 7, loose pucks:** on the Genesis the computer's skaters win about half the loose pucks, and which team's
+  computer wins more follows the teams' awareness ratings (the home team's, with its bonus, 54%). No catch-up: the
+  leading team's computer wins more, not less. On the SNES a person's own skater gets to most loose pucks.
+
 ## Studies (in order)
 
 Each says what it settles and where the data comes from. All use material we already have.
@@ -109,5 +125,5 @@ Each says what it settles and where the data comes from. All use material we alr
    often he draws two of them and frees a teammate), compared between players of different strength. The hardest and
    least certain, so last.
 
-Phase 1: studies 1-3 (done, above). Phase 2: 4-7. Phase 3: 8-9. Results go into the project's documents as
+Phase 1: studies 1-3, phase 2: 4-7 (done, above). Phase 3: 8-9. Results go into the project's documents as
 each is done, and this list is kept up to date.
