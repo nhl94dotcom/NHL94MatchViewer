@@ -175,4 +175,4 @@ made in export_match.py).
 
 - Settled, don't redo: SNES faceoffs (timing, SNES_MECHANICS 9), SNES pass speed (by distance, no rocket pass), SNES
   hooks / holds / pokes (7.3), upends (7.2), goalie poke / dive (5.3), puck physics (7.8), the crowd (both systems).
-- Open: the open-questions sections of both mechanics docs; some studies need more games. `2026-10-19_2115_LA-BUF`'s recording is cut off (gzip without its end) and won't convert.
+- Open: the open-questions sections of both mechanics docs; some studies need more games. `2026-10-19_2115_LA-BUF` is a false start (the first 8 game seconds at 0-0, an empty full.bin.gz; checked 2026-11-08): the game restarted and `2117 LA-BUF` has all of it; nothing to recover.
