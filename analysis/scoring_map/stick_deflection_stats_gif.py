@@ -5,7 +5,8 @@ along the ice that comes off the goalie's stick; then START, Game Stats again: t
 Trials are searched with the whole sequence played, so the clip is the game as it ran, frame by frame (menu frames
 every other one at real speed, the play at a third of it).
 
-python stick_deflection_stats_gif.py OUT.gif [ROM]   (NHL94_SDG_DOWN=1: the bottom net, period 2)"""
+python stick_deflection_stats_gif.py OUT.gif [ROM]   (NHL94_SDG_DOWN=1: the bottom net, period 2)
+In the docs: docs/img/stick_deflection_up.gif and stick_deflection_down.gif (GENESIS_SHOOTING 4.7)."""
 import random
 import sys
 

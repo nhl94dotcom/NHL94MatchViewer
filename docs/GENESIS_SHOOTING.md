@@ -188,27 +188,23 @@ delayed penalty (0.7 and 0.3 units off the aim point).
 - **Code**, partly confirmed (the penalty shot).
 - **Shots along the ice are the ones that go uncounted.** The goalie's stick only plays a puck that is low (height 5
   or under) and not rising, and within 8 units of his blade it catches a puck slower than 13,000 (counted) and
-  deflects a faster one (not counted). There is no special animation for it: the stick-deflection sound plays and the puck comes off the
-  blade, whatever pose he is in (puckstick `.stdef`).
-
-  ![A low slapshot deflected off the goalie's stick; Home's shots on goal stay at 4](img/stick_deflection_v2.gif)
-
-  (`analysis/scoring_map/stick_deflection_gif.py`: the retail ROM, a slapshot with Down held; 8 of the first 74
-  such shots tried came off the stick uncounted.)
-
-  The same play with the game's own Game Stats before and after, in one continuous take (pause, Game Stats: Montreal
-  4 Shots; resume; the shot off the stick; pause, Game Stats: still 4):
-
-  ![Game Stats before and after a shot deflected off the goalie's stick: Shots stay at 4](img/stick_deflection_stats_v2.gif)
-
-  (`analysis/scoring_map/stick_deflection_stats_gif.py`; the game ignores the pad for a moment after a pause, so the
-  shooter waits 40 frames before the shot.)
-
-  Going down the screen (period 2, the bottom net), the same:
-
-  ![Game Stats before and after a shot going down the screen deflected off the goalie's stick: Shots stay at 0](img/stick_deflection_stats_down.gif) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
+  deflects a faster one (not counted). A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
   in; middle and high shots are lifted past the stick and hit his body (counted). **Confirmed** in 13 Genesis games:
   of the shots that reached the goalie, aimed along the ice 9 of 22 went uncounted, middle 21 of 189, high 2 of 61.
+  There is no special animation for a deflection: the stick-deflection sound plays and the puck comes off the blade,
+  whatever pose he is in (puckstick `.stdef`). Below, the game's own Game Stats before and after such a shot, in one continuous take each: pause, Game
+  Stats, resume, a slapshot with Down held that comes off the goalie's stick, pause, Game Stats again
+  (`analysis/scoring_map/stick_deflection_stats_gif.py`; the game ignores the pad for a moment after a pause, so the
+  shooter waits 40 frames before the shot).
+
+  Going up the screen (period 1, the top net): Montreal's Shots stay at 4.
+
+  ![Game Stats before and after a shot going up the screen deflected off the goalie's stick: Shots stay at 4](img/stick_deflection_up.gif)
+
+  Going down the screen (period 2, the bottom net): Shots stay at 0.
+
+  ![Game Stats before and after a shot going down the screen deflected off the goalie's stick: Shots stay at 0](img/stick_deflection_down.gif)
+
 - **So the direction you attack changes your shots on goal.** People hold the d-pad toward the net: attacking down
   the screen they aimed along the ice twice as often (25% of their shots against 12% going up) and high half as often
   (16% against 35%). With the rates above that costs a team going down about 6% of its shots on goal on shots
