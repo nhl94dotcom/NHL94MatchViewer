@@ -14,7 +14,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - Studies: `SHOOTING_STUDY.md`; `LEAGUE_RESULTS.md` (the league result databases); the scoring maps, shots played in the
   real game (`SCORING_MAP.md` the overview, `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`,
   `SCORING_SNES.md`); `FACEOFF_PLACEMENT.md` (where faceoffs are held and where the rules put them).
-- Plans: `DEFENCE_PLAN.md` (the defence studies), `BOT_PLAN.md` (the scripted bot). Open questions for the user:
+- Plans: `DEFENCE_PLAN.md` (the defence studies), `BOT_PLAN.md` (the scripted bot), `GAME_VARIABLES_PLAN.md`
+  (the forum's "game variables": what's known, what to study). Open questions for the user:
   `NEEDS_FROM_YOU.md`.
 
 ## Rules (from the user)

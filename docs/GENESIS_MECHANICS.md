@@ -1260,6 +1260,13 @@ change. **Code**
   normal state, and a quiet building slows them slightly. Both teams alike, so it favours neither.
 - The "+2 Agility, +2 Speed" crowd bonus in the skating code is hard-wired on for everyone, always; a loud building
   does **not** add speed.
+- **Two crowd levels** (2026-11-08, after the user noticed the crowd getting louder as they hammered C with the
+  goalie): the excitement above (`CwdExciteLvl`, the meter, the only one play reads) and the noise (`Crowdlevel`),
+  which sets the crowd's sound volume (`updatesound`, the PSG noise channel) and how fast the crowd animates
+  (`updatecrowdf`). The noise rises with more things than the excitement: every goalie save animation (+150), a
+  person's goalie diving (C with a direction, `doinput`: +150, and nothing to the excitement), breakaways, hits,
+  board checks, goals. So hammering C with the goalie at a stoppage does make the building louder and livelier,
+  but it changes nothing in play. **Code.**
 
 ---
 
