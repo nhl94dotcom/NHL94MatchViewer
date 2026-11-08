@@ -917,3 +917,14 @@ docs/EXTENDING.md). Before this the helper saw them running and never a game (20
 - The SA-1 SNES ROMs: "SNES SA-1 and 2 MB builds" above.
 - Checked and fine: time going back (two reads in one millisecond, harmless), the score and shots never fall, the
   clock's resets at intermissions and the end; two SNES clock drops in TOR-NYI (114 to 9, 45 to 36, the game's own).
+- **Genesis faceoff spots:** the Genesis reader keeps the game's own spot (fox / foy, $FFBF94, `foSpot`: [frame, x, y]
+  when it changes) and find_faceoffs takes the drop's position from it; before, the puck's first sample after the
+  whistle, which was within a unit or two of it (2026-10-17_2227_BOS-DAL: 6 of 12 a unit off). Where the game puts
+  faceoffs: docs/FACEOFF_PLACEMENT.md.
+- **SNES penalty shots, open:** an SNES penalty shot is played with the clock stopped, so the reader hides the puck
+  (-256) for it and the shot finder never sees the attempt: both recorded SNES penalty-shot goals (2026-10-17_1719_CHI-CGY,
+  2026-10-18_1934_BOS-PIT) are kind 'other', with no xG (the Genesis one is a shot with xG). Tried and taken out: the
+  puck shown while PenShotActive ($163A) or penshotlive ($1E9D) is set reads 0 through the attempt (PenShotActive
+  turns 1 only at the goal); shown while the shooter (BA_Sktr_SCnum $1E8D) is set covers the stoppage after the foul
+  too (2026-10-16_1528_TOR-CHI then failed its faceoff count and an after-the-whistle shot came back). What marks the
+  attempt itself is still to be found.

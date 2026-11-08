@@ -367,6 +367,7 @@ def build_sprites(rom):
 # middle, 0 along the ice) the shot is sent at, before the game's random scatter.
 AIM_DIR = 0xBEDC
 AIM_TABLE = [(0, 12), (16, 12), (16, 6), (16, 0), (0, 0), (-16, 0), (-16, 6), (-16, 12), (0, 6)]
+FACEOFF_SPOT = 0xBF94  # fox, foy (ram94.asm): the next faceoff's spot, set at the whistle
 FRAME_COUNTER = 0xB03E  # work RAM word counting frames (up 1-3 between reads in 95% of capture6's samples)
 ROLLBACK_FRAMES = 30    # how far back a rollback can take it
 
@@ -414,6 +415,10 @@ class MatchReader:
         self.match["locked"] = []  # [frame, mask of records locked in an animation (pflags bit 5, pfalock)] whenever it
                                    # changes: a goalie's save move holds him until it runs out (tools/xg.py lock)
         self.match["work"] = []  # [frame, record, weight, Agility, Speed, aidef, Shot Power, Shot Accuracy] whenever they change (WORK)
+        # The game's faceoff spot (fox / foy, FACEOFF_SPOT): [frame, x, y] whenever it changes. Stop4Pen sets it at the
+        # whistle (docs/FACEOFF_PLACEMENT.md); find_faceoffs takes the drop's position from it (the puck's first sample
+        # after a stoppage can already be past it).
+        self.match["foSpot"] = []
         self.last_work = [None] * PLAYERS
         self.aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
         # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
@@ -537,6 +542,9 @@ class MatchReader:
                 self.match["work"].append([len(self.match["t"]) - 1, k] + work)
                 self.last_work[k] = work
         self.match["ctrl"].append(mask)
+        spot = list(struct.unpack("<hh", struct.pack("<HH", cap.word(i, FACEOFF_SPOT), cap.word(i, FACEOFF_SPOT + 2))))
+        if not self.match["foSpot"] or self.match["foSpot"][-1][1:] != spot:
+            self.match["foSpot"].append([len(self.match["t"]) - 1] + spot)
         if not self.match["locked"] or self.match["locked"][-1][1] != locked:
             self.match["locked"].append([len(self.match["t"]) - 1, locked])
         vectors, counts = [], []

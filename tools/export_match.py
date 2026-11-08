@@ -673,8 +673,14 @@ def find_faceoffs(m):
         first = next((i for i in range(N) if P[3 * i + 2] > -100), None)
         if first is not None and first not in [b for a, b in starts]:
             starts.insert(0, (0, first))
+    spots = m.get('foSpot') or []                # Genesis: the game's own spot, as it stood at the drop
+    spot_f = [r[0] for r in spots]
     for a, b in starts:
         x, y = P[3 * b], P[3 * b + 1]
+        if spots:
+            j = bisect.bisect_right(spot_f, b) - 1
+            if j >= 0:
+                x, y = spots[j][1], spots[j][2]
         home_end = own_end(m, b, 0)
         if abs(y) < 100:
             zone = 'neu'

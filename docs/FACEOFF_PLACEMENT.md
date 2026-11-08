@@ -121,10 +121,83 @@ So the agreed targets, by stoppage:
 | Goalie holding, other whistles in the end zone | That end's dot on the side of the puck | Right past the hash marks; between the blue line and the hash marks off the dot |
 | Goalie holding, other whistles in the neutral zone | The nearest neutral-zone dot | Where the puck was: off the dot |
 
-Two choices are open, since the rulebook doesn't settle them:
-- **Which end-zone dot a power play gets.** The NHL lets the power-play team choose, and the game has no way to ask.
-- **A goalie whistled for holding the puck out in the neutral zone.** The neutral rule gives the nearest neutral dot.
-  The out-of-play rule's "least advantage to the offending team" would give the dot on his own side of centre.
+## Decisions for the fix (the user, 2026-11-07)
+
+The two questions the rulebook left open:
+
+1. **After a penalty**, the offending team's end-zone dot on the side of the rink where the puck was when play stopped.
+2. **A goalie whistled for holding the puck in the neutral zone:** the nearest neutral-zone dot to where he held it.
+
+How NOSE4Web is building it (the user can overrule any of these):
+
+- **Penalties** (Genesis codes $12-$2A, SNES $14-$2E): the offending team's own end-zone dot, the end read from the
+  penalized player's pfgoal flag (as icing does). Codes above those (the delayed-penalty signal, and on the Genesis
+  the penalty-shot versions) follow the zone rule.
+- **Every other stoppage** (whistle, goalie holding, offside, icing, the SNES net knocked off): past a blue line
+  (|y| 89 or more), that end's dot on the puck's side of x; in the neutral zone, the nearest neutral-zone dot.
+  Icing's +/-600 still lands in the icing team's end.
+- **Puck out of play:** the same zone rule, at the spot of the last player to touch it. In the neutral zone that gives
+  the nearest dot, not the rulebook's "least advantage to the offending team".
+- **Goal:** centre, as now.
+- **Ties:** x = 0 counts as the right-hand side (as the game has it); y = 0 in the neutral zone as the top half.
+- **limitfo** still runs afterwards, unchanged, so coincidental penalties to both teams still move to a neutral dot.
+- **Where:** Stop4Pen's clamp, between the raw spot and limitfo, is replaced by a call to the new code.
+
+Two codes inside those penalty ranges, both fine:
+- **Genesis $14** is PenNoText ("no text"); nothing in the game's code uses it.
+- **SNES $24** is PenShot, the penalty shot (a foul from behind on a breakaway: Bcheck, checkcheck, holdcheck). Rule
+  24.5 puts a missed penalty shot's faceoff "at either of the end face-off spots in the zone in which the penalty shot
+  has been tried", the offending team's end, and a goal's at centre: what the fix gives.
+
+## NOSE4Web's fix, tested in the game (2026-11-07)
+
+`analysis/scoring_map/faceoff_fix_test.py`: from moments of live play, a player is given the puck at a chosen spot, a
+PenBuf entry is written with a chosen stoppage code and that player, the game's own penalty check calls Stop4Pen (and
+limitfo), and the spot it sets is read. 48 spots (x +/-40, +/-100; y from -250 to 250), skaters of both teams (both
+attacking directions), 11 stoppage codes (out of play, goalie holding, whistle, icing, goal, offside, three to four
+penalties, the "no text" and penalty-shot codes), on several moments. Each ROM against its own rule, limitfo included:
+
+| ROM | Rule | Agree | Differ |
+|---|---|---|---|
+| nhl94.bin (Genesis retail) | Original | 8,364 | 8 |
+| nhl94_faceoff_fix.bin | Fixed | 8,372 | 0 |
+| NHL94.smc (SNES retail) | Original | 4,152 | 72 |
+| NHL94_faceoff_fix.smc | Fixed | 4,212 | 12 |
+| nhl94_2026.sfc (SNES 2 MB, SA-1) | Original | 2,112 | 0 |
+| nhl94_2026_faceoff_fix.sfc | Fixed | 2,112 | 0 |
+
+- The originals agreeing shows the test reads the game right; their differences are a carrier skating on (the
+  original's off-dot spot follows him, up to 8 units; 6 are allowed).
+- The fixed ROMs put every faceoff on the dot the decisions give. The SNES fix's 12 differences are moments where the
+  puck was still sliding across centre when the call came: the original ROM's spot there reads y -1, so the puck was
+  just below centre, and the fix's neutral dot on that side (-65) is right; the test's reading of the puck a frame
+  earlier was not.
+- Not tested: the FallDown and puckfaceoff entries into Stop4Pen (below), and a faceoff after a penalty shot.
+
+## NOSE4Web's four questions, from the code
+
+1. **Codes $14 (Genesis), $16 and $24 (SNES).** Genesis $14 (PenNoText) and SNES $16 (PenNoText2) are never entered by
+   the game's code. SNES $24 (PenShot) is entered by Bcheck, checkcheck and holdcheck through AddPenalty, on the
+   hitter (the offender), like any penalty, and AddPenalty lets it through even with penalties off. All three are
+   safe as penalties; $24's end is right by Rule 24.5.
+2. **Stop4Pen with a0 not at the entry: yes, on both systems.**
+   - FallDown (Genesis collide94.asm, SNES FallDown.asm) calls AddPenalty2 (roughing, $12 Genesis / $14 SNES) and then
+     goes straight into Stop4Pen. AddPenalty2 writes the entry through a1 and keeps a0, so Stop4Pen's -2(a0) and -1(a0)
+     are not that entry. On the SNES, a0 there is the hitter's team offset (0 or 2), a direct-page value.
+   - The Genesis also enters Stop4Pen from puckfaceoff (logic94.asm, twice) when a delayed penalty is pending
+     (gmpendel), and the SNES from puckfaceoff (puckfaceoff.asm), with whatever a0 held.
+   - The original game is just as exposed (its raw spot depends on the code it reads), but the fix reads the
+     offender's pfgoal from -1(a0) as well, so on these paths it can pick an end from the wrong player.
+3. **SNES type $34.** Nothing in the code writes $34 into PenBuf that could be found. Every loop over PenBuf skips it
+   (checkfornewpen, chkprogress, AddPenalty2's search for a free slot, limitfo), so it works as a reserved entry, and
+   checkfornewpen never hands one to Stop4Pen. Treating it as a non-penalty is fine.
+4. **The faceoff after a penalty shot.** SNES: StartPenaltyShot saves fox / foy (psfoxsave, psfoysave) and zeroes
+   them; EndPenaltyShotPlay puts them back. So the faceoff after a missed penalty shot is held at the spot Stop4Pen set
+   when the penalty-shot foul ($24) was called: the offending team's end with the fix, as Rule 24.5 wants. Genesis:
+   no such save; fox / foy are cleared to centre only when sflags8 bit 0 is set (logic94.asm), so the faceoff after a
+   penalty shot appears to keep the foul's spot too. The penalty-shot versions of the Genesis penalties ($2E-$3C) are
+   above the fix's range and follow the zone rule; the foul usually comes near the offending team's net, so that
+   mostly gives their end-zone dot as well. Not tested in the game.
 
 Source: [NHL Official Rules 2021-22](https://media.nhl.com/site/asset/public/ext/2021-22/2021-22Rules.pdf) (Rules
-67.3, 76.2, 81.2, 85.1).
+24.5, 67.3, 76.2, 81.2, 85.1).
