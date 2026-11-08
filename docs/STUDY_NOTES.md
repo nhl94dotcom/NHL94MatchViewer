@@ -1404,3 +1404,24 @@ Addresses are file offsets in the original ROMs (Genesis nhl94.bin; SNES NHL94.s
   the goalie's body reach (collide94 ~1854), and a person's poke trip with penalties off (collide94 ~605). Two nops
   there would let the bonus follow the meter, which the recordings show on 73% of live play (GENESIS_MECHANICS 14),
   both teams alike: the +2 (of a working 30; about a tenth of top speed for a typical skater) gone the other 27%.
+
+## NOSE4Web's sniping, comeback, awareness and crowd fixes, played in the game (2026-11-08)
+
+Each patched ROM against its original (every one changes only the bytes in the readings above). Scripts in
+`analysis/scoring_map/`.
+
+- **Sniping (bug 13, Genesis; `sniping_test.py`):** a wrist shot from 9 spots 94-174 from the aim point, 30 seeds
+  each, the shooter's own tmgoalie as it was or $FF00. Exact (the puck leaving with the spot's most common speeds):
+  goalie in, 151 of 270 on both ROMs; pulled, 270 of 270 on the original and 155 of 270 on the fix.
+- **Crowd bonus (bug 21, Genesis; `crowd_test.py`):** a skater from standstill skating 90 frames, the meter held loud
+  or quiet. Top speed 8,111 loud on both; quiet 8,111 on the original, 7,670 on the fix (5% less). sflags8 bit 1 on in
+  every frame on the original, never on the fix.
+- **Awareness (bug 20; `awareness_test.py`):** live play with the computer on every skater; each time a winger's or
+  centre's timer reloaded while his team had the puck, whether it was his aioff or aidef (where they differ).
+  Genesis: aidef 533, aioff 386 on the original (the other offence jobs, the carrier and the nearest man, already use
+  aioff); aidef 47, aioff 1,631 on the fix. SNES retail: 402 / 240 against 61 / 475 (the SNES adds the reload to a
+  slightly negative timer, so some don't match either); SA-1: 375 / 24 against 0 / 327.
+- **Comeback bonus (bug 25, SNES; `snes_comeback_test.py`):** the third period, Home one down or one up, a whistle
+  and its faceoff (setplayer runs there), then Home's working Checking, trailing minus leading. Original: +2 in the
+  first half, nothing in the second; fix: nothing in the first half, +2 in the second; retail and SA-1. Only the
+  skaters below the cap of 15 show it (2 of 5 retail, 1 of 5 SA-1; the hot / cold bug maxes many).
