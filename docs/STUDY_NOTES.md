@@ -1251,3 +1251,34 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 - **Model comparison:** `compare_xg.py RUN [GOALIES.json]`, `snes_compare_xg.py RUN [GOALIES.json [glide]]`. Genesis: set 0.014 against the game's 0.023 (the set goalie's quirks aren't in the model); as in games 0.074 against 0.084. SNES: set 0.004 against 0.003; as in games old movement 0.050, glide 0.066, against 0.052.
 - Results and pictures: SCORING_MAP "The goalie as in games".
 
+
+## NOSE4Web's rocket pass fix, played in the game (Genesis, 2026-11-07)
+
+- **The fix** (NOSE4Web's Genesis Hacks page): passtoa0's meeting time in 64ths of a second from the division's
+  remainder, not eighths rounded toward zero (the rocket pass), and the other root tried when the first is just below
+  zero (dbpl took a quotient of 0 as positive: a pass to a teammate skating away close by was made in an eighth). The
+  code reads right against the disassembly: the remainder's sign against the divisor's tells a time just below zero;
+  the four edits after it (the receiver's wait, where he will be x t / 16, the speed / 15 t) agree with the time in
+  64ths; lift and the limits (an eighth, 3 s) are unchanged. One change besides: with no root ahead (both below zero,
+  the second just so), the original made an eighth of it, the fix the 3 s limit.
+- **Method** (`analysis/scoring_map/rocket_pass_test.py`, runs rpt_orig and rpt_fix, gentle mode): NOSE4Web's cases
+  (every targeted pass of the recorded games; it counts the capture's raw samples, mapped here to the match file's
+  moment), placed in live play as bot_scenario places a situation, the passer pressing B toward the recorded receiver,
+  on the retail ROM and the patched one. 451 passes in both (194 moments can't be placed: fewer than six a side).
+- **The ROM does what the arithmetic says:** from the game's inputs read at the release, the original ROM's puck
+  matched the original arithmetic exactly on 297 of 433 passes, the patched ROM's the fix's on 295 of 432 (the rest
+  differ by when in the frame the receiver moved, alike for both).
+- **Results:**
+
+  | Cases | Passes | Speed / intended (median) | Over 1.3x | To the receiver | To an opponent |
+  |---|---|---|---|---|---|
+  | Over 1.3x in the recordings, original | 235 | 1.25 | 99 | 50% | 32% |
+  | the same, fixed | 235 | 1.03 | 1 | 53% | 31% |
+  | Wrong root, original | 8 | 1.70 | 5 | 0% | 100% |
+  | the same, fixed | 8 | 1.03 | 0 | 38% | 50% |
+  | The rest, original | 208 | 1.07 | 23 | 58% | 26% |
+  | the same, fixed | 208 | 1.01 | 3 | 62% | 22% |
+
+  The fixed passes over 1.3x are the game's own limits: two at its 3 s limit (as fast in the original), two to a
+  receiver right beside the passer at its eighth of a second minimum. No more interceptions with the slower, correct
+  passes: fewer, if anything; the wrong-root passes, all picked off in the original's replays, reach their man in 3 of 8.
