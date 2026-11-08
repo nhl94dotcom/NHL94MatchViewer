@@ -947,3 +947,25 @@ docs/EXTENDING.md). Before this the helper saw them running and never a game (20
   turns 1 only at the goal); shown while the shooter (BA_Sktr_SCnum $1E8D) is set covers the stoppage after the foul
   too (2026-10-16_1528_TOR-CHI then failed its faceoff count and an after-the-whistle shot came back). What marks the
   attempt itself is still to be found.
+
+## Faster re-converts: the cached read (2026-11-08)
+
+The user: re-processing the library after a change took a while. Profiled (one game each): reading the recording
+(`system.read_match`: millions of single-byte reads, sample by sample) was 12.1 of 14.5 s on the Genesis and 8.2 of
+10.6 s on the SNES; the analysis (`analyse`: shots, passes, checks, xG ...) about 1.9 s; the helper's `--convert` also
+rebuilt the season (1.1 s) after every game, and the old batch script rested 3 s between games: about 25 minutes for
+80 games.
+
+- `export_match.cached_read` keeps read_match's result beside the recording (`captures/<name>/read_cache.json.gz`,
+  about 1.3 MB a game) under a key of the recording files (size and modification time), the ROM (path, size, time),
+  the name / home / away arguments and `reader_fingerprint()` (a hash of every module in `tools/systems/` and of
+  `Capture` and `read_gzip`). Any change to those reads the recording again; a change to the analysis doesn't. The
+  match always goes through JSON, cached or not, so both give the same file: checked byte for byte on four games
+  (first read and cached), then on the whole library (86 match files and both game lists identical; building the
+  caches the first time took 15 minutes in gentle mode; 79 MB of caches). `--no-cache` skips it. The live worker doesn't use it.
+- `tools/reconvert.py`: one process per game folder (ROOT is fixed at import), every recording that has a match
+  file, the game list updated per game, the season rebuilt once at the end, idle priority and resting as long as it
+  works (lowload; `--full-speed` without rests). A game from a cached read takes about 2 s (1.6-3), one read afresh
+  5-11 s; with the rests, about 5 minutes for the library after an analysis change.
+- Not done: speeding up read_match itself (reading the samples in bulk instead of byte by byte); with the cache it
+  only matters for new recordings and changes to the reading code.

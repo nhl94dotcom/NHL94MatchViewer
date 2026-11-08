@@ -644,6 +644,53 @@ def game_weights(m, tick=None):
     return w
 
 
+READ_CACHE = "read_cache.json.gz"   # beside the recording: read_match's result, for re-converts (git-ignored with captures)
+
+
+def reader_fingerprint():
+    """A hash of the code that reads a recording into a match (every module in tools/systems/, and Capture and
+    read_gzip here): a change to any of it makes every cached read stale. The analysis (analyse and its finders) isn't
+    in it, so a change there re-uses the cached reads."""
+    import hashlib
+    import inspect
+    h = hashlib.sha1()
+    for f in sorted((Path(__file__).resolve().parent / "systems").glob("*.py")):
+        h.update(f.read_bytes())
+    h.update(inspect.getsource(Capture).encode())
+    h.update(inspect.getsource(read_gzip).encode())
+    return h.hexdigest()
+
+
+def cached_read(system, cap, folder, rom_path, name, home, away, use_cache=True):
+    """system.read_match(...), kept in the recording's folder (2026-11-08, the user: re-converting the library took a
+    while). Reading a recording is about 85% of a conversion (8-12 s a game) and the same every time unless the
+    recording, the ROM, the arguments or the reading code change; the key holds all of them, so a stale cache is never
+    used. The match always comes back through JSON, cached or not, so both give the same file."""
+    def stamp(p):
+        p = Path(p)
+        return [p.name, p.stat().st_size, p.stat().st_mtime_ns] if p.exists() else [p.name, None, None]
+    files = [stamp(Path(folder) / f) for f in ("fast.bin", "fast.bin.gz", "full.bin", "full.bin.gz", "ram.bin", "capture.json")]
+    key = {"reader": reader_fingerprint(), "files": files, "rom": [str(rom_path)] + stamp(rom_path)[1:],
+           "name": name, "home": home, "away": away}
+    path = Path(folder) / READ_CACHE
+    if use_cache and path.exists():
+        try:
+            data = json.loads(gzip.decompress(path.read_bytes()))
+            if data.get("key") == key:
+                cached_read.hit = True
+                return data["match"]
+        except (OSError, ValueError, KeyError):
+            pass
+    cached_read.hit = False
+    text = json.dumps(system.read_match(cap, rom_path, name, home, away), separators=(",", ":"))
+    if use_cache:
+        try:
+            path.write_bytes(gzip.compress(('{"key":' + json.dumps(key) + ',"match":' + text + "}").encode("utf-8"), 6))
+        except OSError:
+            pass
+    return json.loads(text)
+
+
 def own_end(m, i, team):
     """+1 if the team defends the +Y end at frame i, -1 if the -Y end: where its goalie is; with him off the ice (pulled
     for a delayed penalty or an extra attacker), the other end from the other team's goalie; with neither, the period
@@ -2530,6 +2577,7 @@ def main(argv=None):
     ap.add_argument("--home", help="home team name (default: read from the ROM)")
     ap.add_argument("--away", help="away team name (default: read from the ROM)")
     ap.add_argument("--out", type=Path, default=ROOT / "matches")
+    ap.add_argument("--no-cache", action="store_true", help="read the recording again and don't keep the read (read_cache.json.gz)")
     ap.add_argument("--live", action="store_true", help="the live broadcast's worker: on each line 'update' on stdin, read what the recording has grown by and write the match so far (see live_worker)")
     args = ap.parse_args(argv)
     if args.live:
@@ -2539,7 +2587,7 @@ def main(argv=None):
     cap = Capture(args.capture, system)
     rom_path, rom_note = (args.rom, "given") if args.rom else system.find_rom(args.capture)
     name = args.name or args.capture.resolve().name
-    match = system.read_match(cap, rom_path, name, args.home, args.away)
+    match = cached_read(system, cap, args.capture, rom_path, name, args.home, args.away, use_cache=not args.no_cache)
     analyse(match, system, cap, rom_path)
     args.out.mkdir(parents=True, exist_ok=True)
     target = args.out / f"{name}.js"

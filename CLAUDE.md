@@ -44,8 +44,11 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   (live_broadcast `S3Target` + the index.html transform with `window.NHL94_LIVE = 'live.json'`; never `publish_page`,
   which resets the manifest); rebuild the exe (`cmd /c "tools\build_helper.bat < nul"`) if the helper isn't running;
   remake `samples/` (`share_game.make_game_file`) when the change is worth showing.
-- Converter changed: re-convert the recordings in both game folders (only those that already have a match file: other
-  capture folders are tests or pieces of merged games) and run `tools/season.py` in each; `python
+- Converter changed: `python tools/reconvert.py` re-converts the recordings in both game folders (only those that
+  already have a match file: other capture folders are tests or pieces of merged games), gently, and rebuilds the
+  season once in each. It reuses each recording's cached read (`captures/<name>/read_cache.json.gz`, keyed on the
+  recording, the ROM and the code in `tools/systems/`), so after an analysis change a game takes about 2 s, not
+  6-12 s; `--no-cache` reads everything again. A viewer-only change needs no re-convert. `python
   tests/check_matches.py` checks goals, shots on goal, checks and faceoffs against the game's own counts, and `python
   tests/check_season.py` that every summary is current, in season.js and agrees with its match file.
 - Keep in step: viewer `STAT_HELP` / Help (`#help`) with every stat; season.html `HEAD_HELP`; season.py `VERSION` bump
@@ -77,7 +80,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `process.py`.
 - `viewer.html` (one page: rink, sprites, maps, team stats, cards, clips, highlights, game files, live mode, Help),
   `season.html` + `tools/season.py` (per-game summaries, `matches/season.js`), `helper.html`.
-- `tools/`: `xg.py`, `xg_snes.py` (`make_xg_figures.py` draws XG_MODELS' figures), `deserve.py`, `share_game.py`
+- `tools/`: `reconvert.py` (re-convert the library, above), `xg.py`, `xg_snes.py` (`make_xg_figures.py` draws XG_MODELS' figures), `deserve.py`, `share_game.py`
   (self-contained game files), `share_season.py`, `merge_recordings.py` (join a game the helper split),
   `make_diagrams.py` (docs/img SVGs), `romnames.py`, `extract_sprites.py`, `embed_rink.py`, `bench_mask.py`.
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
