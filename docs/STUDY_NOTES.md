@@ -1624,3 +1624,15 @@ the ROM there) and runs it in our copy of RetroArch 1.17's core (Genesis Plus GX
 $200001 reads the ROM; writing 1 to $A130F1 switches the save memory in (a written $C3 reads back), 0 switches the
 ROM back, repeatedly. 2 MB: the save memory past the end of the ROM, writing 0 hides it as well (reads $FF); power-on
 reads $FF (blank save memory or nothing: not told apart). Other emulators not tried.
+
+## The SNES big logos' overlapping pieces: which is in front (2026-11-08, for NOSE4Web)
+
+The big team logos (matchups, Game Setup and stats screens, player cards) are sprites: DrawSprite writes a logo's
+pieces into the sprite table in list order (sprcount + 4 a piece) and the game never rotates sprite priority (OAMADDH
+only ever cleared), so the first piece has the lowest sprite number and is in front. `analysis/scoring_map/
+snes_logo_overlap.py` rebuilds a logo from the game's own sprite table (OAMShowBuf), VRAM tiles and colourbuf on the
+matchups' first page, in both orders: on NHL94.smc the rebuild matches the screen in every pixel for all 28 teams.
+Only Hartford's pieces overlap (180 pixels where two pieces have colour; NOSE4Web counts 192), and in every one the
+two pieces have the same colour, so front-first and back-first give the same picture: a later-over-earlier render
+matches the game for every retail logo. A logo made or edited with overlapping pieces of different colours would show
+the earlier piece in the game.

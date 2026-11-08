@@ -129,7 +129,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   - NOSE4Web's builds: `fix_check.py ROM` (which tested fixes a build has by their bytes, any other changed bytes, and
     each fix's in-game test against the original), the per-fix tests (`*_fix_test.py`, `*_test.py`; STUDY_NOTES),
     `snes_score_logo_check.py` (what retail leaves free for score-box logos) and `snes_score_logo_build_check.py` (a
-    logo build against its original), `a130f1_test.py` (Genesis save memory switching on big ROMs), and
+    logo build against its original), `a130f1_test.py` (Genesis save memory switching on big ROMs), `snes_logo_overlap.py` (which
+    piece of a big logo is in front), and
     `menu_shots.py ROM OUT SCRIPT` (screenshots of the game's own screens from power-on by a script of presses, for
     edits outside play: photos, logos).
 
