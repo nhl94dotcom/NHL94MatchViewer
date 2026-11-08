@@ -194,7 +194,15 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   ![A low slapshot deflected off the goalie's stick; Home's shots on goal stay at 4](img/stick_deflection.gif)
 
   (`analysis/scoring_map/stick_deflection_gif.py`: the retail ROM, a slapshot with Down held; 8 of the first 74
-  such shots tried came off the stick uncounted.) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
+  such shots tried came off the stick uncounted.)
+
+  The same play with the game's own Game Stats before and after, in one continuous take (pause, Game Stats: Montreal
+  4 Shots; resume; the shot off the stick; pause, Game Stats: still 4):
+
+  ![Game Stats before and after a shot deflected off the goalie's stick: Shots stay at 4](img/stick_deflection_stats.gif)
+
+  (`analysis/scoring_map/stick_deflection_stats_gif.py`; the game ignores the pad for a moment after a pause, so the
+  shooter waits 40 frames before the shot.) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
   in; middle and high shots are lifted past the stick and hit his body (counted). **Confirmed** in 13 Genesis games:
   of the shots that reached the goalie, aimed along the ice 9 of 22 went uncounted, middle 21 of 189, high 2 of 61.
 - **So the direction you attack changes your shots on goal.** People hold the d-pad toward the net: attacking down
