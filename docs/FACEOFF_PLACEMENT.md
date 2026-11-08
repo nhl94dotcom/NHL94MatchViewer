@@ -15,12 +15,15 @@ clock is not already stopped, so the first stoppage wins.
 
 1. **A raw spot, by the code:**
 
+   Codes 2-$E are the same on both systems. Above that they differ: offside is $10 on the Genesis and $12 on the
+   SNES, and the penalties start at $12 (Genesis) and $14 (SNES).
+
    | Code | Stoppage | Raw spot |
    |---|---|---|
    | $E | Goal | Centre (0, 0) |
    | 6 (PenOOP) | Puck out of play (over the glass) | Where the **last player to touch the puck** stood (ltx / lty) |
    | $C (PenIcing) | Icing | Puck x, and y +/-600 toward the icing team's own end |
-   | everything else | Goalie holding (8), whistle ($A), offside ($10), penalties ($12 and up), period over (2) | Where the **puck** is |
+   | everything else | Goalie holding (8), whistle ($A), offside, penalties, period over (2) | Where the **puck** is |
 
 2. **The clamp:** x is held to +/-70. If y is 166 or more (or -166 or less), the spot becomes that end's dot on the
    side of the raw x: (+/-70, +/-206). **Otherwise y is kept as it is.** So any spot short of 166 from centre stays where
@@ -28,7 +31,8 @@ clock is not already stopped, so the first stoppage wins.
 
 3. **limitfo**, for every player in PenBuf (penalties): if the spot is past y 88 toward the end that player attacks
    (his attacking zone), it moves to the neutral dot outside that blue line, (+/-70, +/-65), keeping the side of x.
-   Nothing moves a spot into his own end.
+   Nothing moves a spot into his own end. The SNES limitfo is the same, except that it skips entries of type $34 (not
+   named in the disassembly).
 
 Elsewhere: the period starts and goals clear the spot to centre (Genesis `hockey94.asm`, `logic94.asm`), so a spot set
 at the end of a period is never used.
@@ -36,9 +40,11 @@ at the end of a period is never used.
 **Goalie holding the puck:**
 - **Genesis** (`logic94.asm`, checkanim): a hold timer (temp5) runs whenever the goalie has the puck, wherever he is,
   and its whistle (code 8) puts the faceoff at the puck: off the dot if he has skated out past the hash marks.
-- **SNES** (`routines/logic/assignments/assgoalie.asm`): a goalie holding the puck more than 187 from his goal line
-  (|y| under 187) is whistled at once, otherwise when the hold timer runs out. Code 8 there too, and the same spot rule.
-  `routines/collide/checkgoalp.asm` also whistles code 8, for the puck pinned against the net.
+- **SNES** (`routines/logic/assignments/assgoalie.asm`): a goalie holding the puck at |y| under 187 (more than 77 out
+  from his goal line at 264) is whistled at once, otherwise when the hold timer runs out. Code 8 there too, and the
+  same spot rule.
+- **The net knocked off (SNES):** `routines/collide/checkgoalp.asm` also whistles code 8, when a bursting player moves
+  the net (1 time in 8, the puck within 128 of it), so that faceoff too is held at the puck.
 
 ## Where it goes wrong, in the recorded games
 
@@ -65,8 +71,9 @@ at the end of a period is never used.
     by a player at (-55, -84): faced off at (-55, -84), in the neutral zone. 2026-10-16_1314_BOS-PIT: the puck out at
     (-130, -109) from a player at (-87, 100): faced off at (-70, 100), in the other end, short of the hash marks.
 
-- **SNES:** the match files' faceoff position (the puck where it was dropped; the SNES game drops it at the spot).
-  16 of 368 faceoffs were off the dots:
+- **SNES:** the match files' faceoff position (the puck where it was dropped; the SNES game drops it at the spot), the
+  stoppage told from the match file (a goal or penalty near the whistle, the goalie with the puck, the puck leaving the
+  ice), so less exact than the Genesis count. 16 of 368 faceoffs were off the dots:
 
   | Stoppage | Off a dot |
   |---|---|

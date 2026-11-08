@@ -104,7 +104,7 @@ def _team_record_ok(rom, address):
     if not 0 < players_off < 0x400 or off + 4 > len(rom):
         return False
     length = struct.unpack_from("<H", rom, off)[0]
-    return 2 < length <= 40 and all(32 <= c < 127 for c in rom[off + 2:off + length].rstrip(b"\x00"))
+    return 2 < length <= 40 and all(c >= 32 for c in rom[off + 2:off + length].rstrip(b"\x00"))   # Latin-1 names too
 
 
 def _team_count(rom, at):
