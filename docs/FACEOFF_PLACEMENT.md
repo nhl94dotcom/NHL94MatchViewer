@@ -3,6 +3,13 @@
 Findings only, for a fix to be made in NOSE4Web: how the game picks a faceoff spot, where it lands off the nine dots,
 and which dot the NHL rules give for each kind of stoppage.
 
+**Probably the rules of its day, not a bug.** The NHL has required every faceoff to be on one of the nine dots only
+since June 2007, when the Board of Governors amended Rule 76.2 for 2007-08. Before that, faceoffs were not always on
+the dots: after the puck left the playing surface, for example, the faceoff was "wherever the puck was last played"
+(Wikipedia, Face-off), which is what Stop4Pen does with the last touch (ltx / lty). So NHL '94's placement most likely
+follows the rules of 1993, and the fix brings it to today's. The pre-2007 rule for an ordinary whistle has not been
+confirmed. (Found by the user; NOSE4Web's Hacks pages describe the fix this way.)
+
 Coordinates are the game's: x across the ice (+ right), y along it (+ the top end), blue lines at y +/-89. The nine
 dots are centre (0, 0), the four neutral-zone dots (+/-70, +/-65) and the four end-zone dots (+/-70, +/-206).
 
@@ -46,7 +53,7 @@ at the end of a period is never used.
 - **The net knocked off (SNES):** `routines/collide/checkgoalp.asm` also whistles code 8, when a bursting player moves
   the net (1 time in 8, the puck within 128 of it), so that faceoff too is held at the puck.
 
-## Where it goes wrong, in the recorded games
+## Where it lands off the dots, in the recorded games
 
 - **Genesis:** the game's own spot (fox / foy, work RAM $FFBF94 / $FFBF96) and the stoppage code (the newest PenBuf
   entry, $FFC3A4), from the recordings in Documents\NHL94 Viewer. Of 222 spots used for a faceoff, 27 (12%) were off
@@ -85,7 +92,7 @@ at the end of a period is never used.
   Each one sat where the puck was at the whistle, x held to +/-70. For example (34, -33), (-21, -27), (-21, 139) and
   (-70, -149) after penalties, and (6, 158) and (21, 86) after other whistles.
 
-## What the rules say (NHL Official Rules 2021-22)
+## What today's rules say (NHL Official Rules 2021-22)
 
 - **Rule 76.2, the nine spots:** "All face-offs must be conducted on one of the nine (9) face-off spots located on the
   rink." And "No face-off shall be made within fifteen feet (15') of the goal or side boards nor anywhere other than
