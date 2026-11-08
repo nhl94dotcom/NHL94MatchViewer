@@ -1636,3 +1636,40 @@ Only Hartford's pieces overlap (180 pixels where two pieces have colour; NOSE4We
 two pieces have the same colour, so front-first and back-first give the same picture: a later-over-earlier render
 matches the game for every retail logo. A logo made or edited with overlapping pieces of different colours would show
 the earlier piece in the game.
+
+## Game variables: phase 1 (2026-11-08; docs/GAME_VARIABLES_PLAN.md)
+
+- **Study 3, penalties and the score:** LEAGUE_RESULTS "Penalties and the score". In the recorded games
+  (penalties' fouling player at the call, distance to the puck): Genesis, the computer's penalized skaters a median
+  117 from the puck (4 of 34 within 40), people's 42 (14 of 28 within 40); SNES 41 and 21. **Penalties away from the
+  play are mostly the computer's skaters**, as the roll says: a person's range is doubled (half the calls), so most
+  of a computer team's and a person's teammates' calls come off the puck.
+- **Study 1, luck against skill** (`analysis/luck_vs_skill.py`, the recorded whole games, mostly one person's): the
+  goal difference correlates 0.90 with the expected-goals difference on both systems (26 Genesis games, 28 SNES); the
+  rest (luck) is about a fifth of its variance (Genesis 4.8 of 24.3, SNES 2.4 of 13.7). A team's goals less the xG of
+  the same attempts (finishing luck, the forum's "AI factor" measured) has a spread (sd) of 1.5 goals a game on the
+  Genesis and 1.3 on the SNES: within a goal of the chances in about half the team-games, more than 2 goals off in one
+  in six. The team with clearly better chances (0.25 xG or more) lost 2 of 25 Genesis games and 6 of 28 SNES games;
+  the winners' Deserve to Win was a median 95% / 93%.
+- **Study 2, what hot / cold is worth** (`analysis/hot_cold_worth.py`): each recorded game's shots played out again
+  with the hot / cold taken out of the working ratings the expected-goals model reads (the shooter's Shot Accuracy;
+  the goalie's Agility, Speed, awareness and puck control), for the shooters, the goalies and both; the rerun with the
+  real ratings matched the stored xG in every game. Genesis (23 games; one value from -3 to +2 on the 0-30 scale):
+  hot / cold changed a team's expected goals by **0.05 a game** on average (largest 0.38, a cold goalie), the gap
+  between the teams by 0.08 (the average gap 2.89), and never which team had the better chances. SNES (29 games; the
+  sign bug's maxed ratings put back to their step plus the team's bonus, the goalie's reaction time left as played):
+  **0.18 a game** (largest 0.62), the gap by 0.28 (average gap 2.62), and once (1 of 29) which team had the better
+  chances. Only what hot / cold does at the shot is counted: its effect on skating, checking and passing, which make
+  the chances, isn't.
+
+## NOSE4Web's Classic import into the 32-team SA-1 build (2026-11-08)
+
+nhl94_2026_classic.sfc (McMarkis's 32-team SA-1 build with NHL94_Classic.smc's 28 teams imported) against
+NHL94_Classic.smc (`analysis/scoring_map/menu_shots.py`): Montreal v Los Angeles, Boston v Chicago, a playoff start.
+Right: the big logos (setup, matchups, player cards), the players' photos, names and positions, the team page's
+nickname and arena, the score-box logos, the playoff start. Wrong: the team-name banners everywhere (setup, player
+select, matchups, the pre-game menu, the horizontal scoreboard, the card's team page, the playoff bracket) and centre
+ice, both by a team's Classic index read in the 32-team alphabetical list (Anaheim-Calgary right; Chicago shows
+CAROLINA, Los Angeles EDMONTON, Montreal FLORIDA and Florida's centre ice). The playoff draw mixes the conferences
+(Classic's is Wales and Campbell); the team and player Overall ratings shown differ from Classic's (Montreal 73 -> 66
+on the matchups, Boston's card 76 -> 74): reported to NOSE4Web.

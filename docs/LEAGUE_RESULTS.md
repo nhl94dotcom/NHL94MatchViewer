@@ -316,3 +316,26 @@ kept), 300 times. Regulation only; simulated games left out.
 - SNES: every correlation is below the baseline, mostly from the known second-period dip (above: about 5% fewer goals
   in period 2, most likely from how people play it), which breaks the link between period 2 and the periods either
   side of it. That is the reverse of momentum.
+
+## Penalties and the score (`analysis/league_penalties.py`, 2026-11-08)
+
+docs/GAME_VARIABLES_PLAN.md study 3: does the game, or the way people play, call more penalties on the leading or the
+trailing team? Every penalty and goal in the databases has its period and second, so the score at each penalty is
+rebuilt from the goals before it (regulation, 5-minute periods, simulated games left out).
+
+| Penalties per 5 game minutes, by the penalized team | Genesis (86,668 games, 246,710 penalties) | SNES (36,243, 87,878) |
+|---|---|---|
+| Leading / tied / trailing | 0.477 / 0.467 / 0.477 | 0.406 / 0.400 / 0.406 |
+| By margin -2+ / -1 / 0 / +1 / +2+ | 0.475 / 0.479 / 0.467 / 0.474 / 0.480 | 0.410 / 0.400 / 0.400 / 0.403 / 0.408 |
+| Third period's last minute, leading / tied / trailing | 0.480 / **0.544** / 0.486 | 0.412 / **0.466** / 0.411 |
+
+- **The score doesn't change who gets called.** At every moment one team leads and the other trails, and the
+  leaders took 89,244 penalties against the trailers' 89,191 (Genesis; SNES 32,803 against 32,800). The game's own
+  roll has no score in it either: the fouling player's working Aggression (with his hot / cold), whether a person
+  controls him (half as many calls) and his distance from the puck (twice as many near it) (GENESIS_MECHANICS 8.1,
+  SNES_MECHANICS 8.1).
+- **One real effect: a tied game's last minute** draws about 15% more calls on both systems, most likely people
+  pressing to win (more checks and hooks).
+- The same team in the same game is called 12-13% more often while leading than while trailing, but that is the
+  penalties' own doing: a penalty often leads to a power-play goal against, which ends a lead, so penalties come just
+  before trailing spells. It isn't a sign of the game favouring the trailing team.

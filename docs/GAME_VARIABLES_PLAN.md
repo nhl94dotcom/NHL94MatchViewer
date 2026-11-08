@@ -55,6 +55,27 @@ with goals and penalties by time), and the game itself run headless with its cod
 - **Already in the Match Viewer** from the 2021 tracking proposal: possession (and by zone), chances (expected goals
   and high-danger attempts), penalties by person and computer, and saves with a person or the computer in net.
 
+## Results so far
+
+- **Study 1, luck against skill** (the recorded games): the chances a team makes decide most games. The goal
+  difference follows the expected-goals difference closely (correlation 0.90 on both systems); luck is about a fifth
+  of it. A team's goals against the expected goals of its own shots (the "AI factor", measured) usually land within
+  about a goal and a half of zero (the spread is 1.5 goals a game on the Genesis, 1.3 on the SNES), more than 2 goals
+  off in about one game in six. The team with clearly better chances lost 2 of 25 Genesis games and 6 of 28 SNES
+  games. ([STUDY_NOTES.md, "Game variables: phase 1"](STUDY_NOTES.md))
+- **Study 2, what hot / cold is worth:** at the shot, little. Played again with everyone's hot / cold taken out, a
+  team's expected goals changed by 0.05 a game on the Genesis (at most 0.38, a cold goalie) and never changed which
+  team had the better chances; on the SNES, where the bug maxes "cold" ratings, by 0.18 a game (at most 0.62), and it
+  changed which team had the better chances in 1 game of 29. (Its effect on skating, checking and passing isn't
+  counted.)
+- **Study 3, penalties and the score:** the score doesn't change who gets called. Over about 120,000 league games,
+  leading and trailing teams are called equally often (at every moment one team leads and the other trails: 89,244
+  penalties to the leaders, 89,191 to the trailers on the Genesis), and the game's penalty roll has no score in it.
+  One real effect: tied games in the last minute of the third draw about 15% more calls, most likely people pressing.
+  **Penalties away from the play are mostly the computer's skaters** (a computer skater's foul is called twice as
+  often as a person's; in the recorded Genesis games the computer's penalized skaters were a median 117 units from
+  the puck, people's 42). ([LEAGUE_RESULTS.md, "Penalties and the score"](LEAGUE_RESULTS.md))
+
 ## Studies (in order)
 
 Each says what it settles and where the data comes from. All use material we already have.
@@ -88,5 +109,5 @@ Each says what it settles and where the data comes from. All use material we alr
    often he draws two of them and frees a teammate), compared between players of different strength. The hardest and
    least certain, so last.
 
-Phase 1: studies 1-3 (each an hour or two). Phase 2: 4-7. Phase 3: 8-9. Results go into the project's documents as
+Phase 1: studies 1-3 (done, above). Phase 2: 4-7. Phase 3: 8-9. Results go into the project's documents as
 each is done, and this list is kept up to date.
