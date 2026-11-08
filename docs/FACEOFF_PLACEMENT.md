@@ -160,11 +160,11 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
 | ROM | Rule | Agree | Differ |
 |---|---|---|---|
 | nhl94.bin (Genesis retail) | Original | 8,364 | 8 |
-| nhl94_faceoff_fix.bin | Fixed | 8,372 | 0 |
+| nhl94_faceoff_fix.bin | Fixed | 8,372 | 0 (and 8,372 / 0 rebuilt, reading the newest PenBuf entry) |
 | NHL94.smc (SNES retail) | Original | 4,152 | 72 |
-| NHL94_faceoff_fix.smc | Fixed | 4,212 | 12 |
+| NHL94_faceoff_fix.smc | Fixed | 4,212 | 12 (the same rebuilt) |
 | nhl94_2026.sfc (SNES 2 MB, SA-1) | Original | 2,112 | 0 |
-| nhl94_2026_faceoff_fix.sfc | Fixed | 2,112 | 0 |
+| nhl94_2026_faceoff_fix.sfc | Fixed | 2,112 | 0 (the same rebuilt) |
 
 - The originals agreeing shows the test reads the game right; their differences are a carrier skating on (the
   original's off-dot spot follows him, up to 8 units; 6 are allowed).
@@ -176,10 +176,22 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
 
 ## NOSE4Web's four questions, from the code
 
-1. **Codes $14 (Genesis), $16 and $24 (SNES).** Genesis $14 (PenNoText) and SNES $16 (PenNoText2) are never entered by
-   the game's code. SNES $24 (PenShot) is entered by Bcheck, checkcheck and holdcheck through AddPenalty, on the
-   hitter (the offender), like any penalty, and AddPenalty lets it through even with penalties off. All three are
-   safe as penalties; $24's end is right by Rule 24.5.
+1. **Codes $14 (Genesis), $16 and $24 (SNES).**
+   - **Genesis $14 and SNES $16 are the injury stoppage without a penalty** (an earlier answer here said they were
+     never used: FallDown writes them as numbers, #$14 and #$0016, not by name). A hit that injures (Genesis: the
+     carrier knocked into a fall back, facing straight up or down the ice, the impact over a random 0-159; the SNES
+     much the same) stops play with $14 / $16 when penalties are off or the hitter is a goalie; with penalties on and a
+     skater hitting, it is roughing instead ($12 Genesis, $14 SNES), called straight away (FallDown -> AddPenalty2 ->
+     Stop4Pen). In the Genesis recordings: 9 roughing calls from hits, 4 injury stoppages with $14. So $14 (Genesis)
+     and $16 (SNES) are not penalties: Rule 76.2 puts an injury stoppage at the nearest spot in the zone of the puck,
+     the ordinary zone rule. As built, the fix sends 3 of the 4 recorded $14 stoppages to the hitter's own end instead
+     (for example the puck at (64, -76): built (70, -206), the zone rule (70, -65)).
+   - **SNES $24 (PenShot)** is entered by Bcheck, checkcheck and holdcheck through AddPenalty, on the hitter (the
+     offender), like any penalty, and AddPenalty lets it through even with penalties off. A penalty; its end is right by
+     Rule 24.5.
+   - **Roughing from a hit, with the fix as rebuilt** (the newest PenBuf entry, not a0): all 9 recorded Genesis cases
+     go to the hitter's own end on the puck's side, as a penalty should (the original game left 5 of them off the
+     dots). Not played in the game: no injury came of 450 hits played from the recorded check moments.
 2. **Stop4Pen with a0 not at the entry: yes, on both systems.**
    - FallDown (Genesis collide94.asm, SNES FallDown.asm) calls AddPenalty2 (roughing, $12 Genesis / $14 SNES) and then
      goes straight into Stop4Pen. AddPenalty2 writes the entry through a1 and keeps a0, so Stop4Pen's -2(a0) and -1(a0)
