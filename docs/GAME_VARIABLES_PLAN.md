@@ -104,6 +104,83 @@ with goals and penalties by time), and the game itself run headless with its cod
   there's no difference, and the person who did it more often didn't make the better chances. Inconclusive so far:
   it needs games from more players and a look at where the pass goes.
 
+## How each study was done
+
+**The data.** Two sources:
+- **The recorded games:** league and practice games recorded with the Match Viewer's helper, about 50 whole games
+  on each system, most of them played by one person. Each recording keeps every player's and the puck's position
+  about 60 times a second, the controllers, the game's own counts, and the ratings each player actually played with
+  (hot / cold included). The converter turns that into events: every shot with how it ended, passes, turnovers, check
+  attempts, zone entries, penalties.
+- **The league's result databases:** the box scores of about 120,000 league games since 2013 (87,000 Genesis,
+  36,000 SNES), with every goal and penalty and the period and second it came in. They have no positions, so they
+  answer questions about scores and penalties only. Simulated games are left out; only aggregates are published.
+
+**Expected goals (xG)**, used in several studies: each shot is played out hundreds of times by the game's own shot and
+save rules, taken from the game's code (where it was aimed, the shooter's Shot Accuracy and the random scatter, the
+puck's flight, the goalie's reach and how he moves), starting from the positions and speeds the recording shows at the
+release. The share that goes in is the shot's xG. Deflections and scrambles have none.
+([XG_MODELS.md](XG_MODELS.md))
+
+**Shuffle tests**, used where a question is about order (momentum, streaks): a sequence of results is compared with
+the same results in a random order, 2,000 times. If the real sequence doesn't stand out from the shuffles, its order
+carries no information. Shuffling each player's or team's own results keeps their overall quality fixed, so a good
+shooter's many goals can't pass for a streak.
+
+1. **Luck against skill.** Recorded games from the opening faceoff only. For each team: its xG (the chances it made)
+   and its goals from the same shots. "Finishing luck" (the "AI factor") is goals less xG; the result's luck is the
+   goal difference less the xG difference. Across games, the goal difference's variance is split into what the xG
+   difference explains and the rest. "Clearly better chances" means 0.25 xG or more ahead. The Deserve to Win figures
+   play each game's shots out exactly. Limit: xG itself is a model (studies 5 and 6 found where it is off).
+   (`analysis/luck_vs_skill.py`)
+2. **What hot / cold is worth.** Every recorded game's shots played out again with the hot / cold taken out of the
+   ratings the shot and save use (the shooter's Shot Accuracy; the goalie's Agility, Speed, awareness and puck
+   control): first the shooters only, then the goalies only, then both. The change in each team's xG is what hot /
+   cold did. On the SNES, a rating the bug maxed goes back to its normal value plus the team's bonus. Before any
+   change, the rerun with the real ratings was checked to reproduce the stored xG exactly. Limit: only the shot and
+   the save; hot / cold's effect on skating, checking and passing, which make the chances, isn't counted. On the SNES
+   the goalie's reaction time was left as played. (`analysis/hot_cold_worth.py`)
+3. **Penalties and the score.** League databases, games with 5-minute periods, regulation only. The score at each
+   penalty is rebuilt from the goals before it (a goal in the same second counts as after). Rates are penalties per
+   5 minutes of the time each team spent leading, tied or trailing, overall, by margin, by period and in the third
+   period's last minute. The cleanest test is the even split: at any moment one team leads and the other trails, so
+   with no score effect the leaders and trailers take the same number. A same-team-same-game comparison was also
+   made, but penalties cause power-play goals, which end leads, so that one leans by itself. The game's penalty roll
+   was read in both games' code. For "away from the play": in the recorded games, the penalized player's distance from
+   the puck at the call, person against computer. (`analysis/league_penalties.py`)
+4. **Are the dice streaky?** For each kind of roll, each player's results in a game, in order: shots (goal less xG),
+   the shots a goalie faced, check attempts that reached a man (hit or not), passes (picked off or not). The test
+   statistic adds up how much each result and the next lie on the same side of the player's own average; a positive
+   excess over the shuffles means like follows like. Checks were also split by checker and target, to see whether a
+   streak was really the same man being checked again. (`analysis/streaks.py`)
+5. **Missing a great chance.** Every recorded attempt worth 0.5 xG or more that didn't score, sorted by how it ended
+   (the goalie, a skater blocking, a post, or a miss). For a miss, where the puck crossed the front of the net, from
+   its recorded path: over the crossbar, wide of a post, or not reaching the net. Also counted: the kind of shot,
+   who shot, how far off his line the goalie was, the range. (`analysis/open_net_misses.py`)
+6. **Easy goals.** Every recorded goal, matched to its shot; those under 0.1 xG or not priced (deflections,
+   scrambles) sorted by the goal's own tags (through the legs, the shoulder bobble, an own goal ...), a rebound, the
+   goalie 5 feet or more off his line, a person in net, the kind of shot and the range. To judge "a person in net",
+   the same share was counted over all shots on net. Also goals against xG by band, for the models' calibration.
+   (`analysis/easy_goals.py`)
+7. **Loose pucks.** Games with a person on each side. A loose spell: nobody has the puck for between 0.1 and 3
+   seconds with the clock running, ended by someone taking it. Who took it: a person's skater, a computer skater or a
+   goalie. Because the game hands the person control of a skater the moment his team gets the puck, "who had him" is
+   read just before he reached it. Then each team's computer share against its skaters' awareness ratings, and by
+   the score. (`analysis/loose_pucks.py`)
+8. **What started each goal.** Games with a person on each side. Each goal gets every cause the recording shows, and
+   a primary one in this order: a giveaway by the scored-on team in the 12.5 game seconds before (in its own zone or
+   elsewhere), the puck taken from them by force, an odd-man rush, the shooter left open (no defender within about 10
+   feet at the release), the goalie 5 feet or more off his line, a rebound, a power play, off a faceoff, or none.
+   Limit: the recording shows what happened, not whose fault it was. (`analysis/goal_causes.py`)
+9. **Drawing two defenders.** Games with a person on each side. Each possession by a person's carrier in the
+   attacking zone. It "drew two" if at some moment two or more defenders were within about 17 feet of him while a
+   teammate in the zone had none that close. Compared: the team's xG in the possession and the 2 seconds after,
+   overall and at equal possession lengths (so longer possessions don't count twice), and, per game, how often each
+   person did it against which team made the better chances. (`analysis/draw_two.py`)
+
+Every script is in the project's repository and documents itself at the top; they can be run again as more games
+are recorded.
+
 ## Studies (in order)
 
 Each says what it settles and where the data comes from. All use material we already have.
