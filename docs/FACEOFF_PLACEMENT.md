@@ -4,11 +4,14 @@ Findings only, for a fix to be made in NOSE4Web: how the game picks a faceoff sp
 and which dot the NHL rules give for each kind of stoppage.
 
 **Probably the rules of its day, not a bug.** The NHL has required every faceoff to be on one of the nine dots only
-since June 2007, when the Board of Governors amended Rule 76.2 for 2007-08. Before that, faceoffs were not always on
-the dots: after the puck left the playing surface, for example, the faceoff was "wherever the puck was last played"
-(Wikipedia, Face-off), which is what Stop4Pen does with the last touch (ltx / lty). So NHL '94's placement most likely
-follows the rules of 1993, and the fix brings it to today's. The pre-2007 rule for an ordinary whistle has not been
-confirmed. (Found by the user; NOSE4Web's Hacks pages describe the fix this way.)
+since 2007-08: Rule 76.2 was amended on June 20, 2007. The NHL's notice of the change: "Previously, there had been
+instances, such as when the puck left the playing surface, which caused the faceoff to occur on unmarked ice, parallel
+to the dot nearest the place where the puck departed." That is Stop4Pen: x moved onto a dot's line (+/-70), y kept,
+and the out-of-play spot taken from where the puck was last played (ltx / lty). So NHL '94's placement is most likely
+a faithful copy of the rules of 1993, and the fix brings it to today's (NOSE4Web's hack, "off" keeping the game's own
+faceoffs). Source: the NHL's "NHL rule changes for 2007-08" notice,
+https://www.nhl.com/devils/news/nhl-rule-changes-for-2007-08/c-458244 (the live page comes back empty; the user read
+it in the Wayback Machine).
 
 Coordinates are the game's: x across the ice (+ right), y along it (+ the top end), blue lines at y +/-89. The nine
 dots are centre (0, 0), the four neutral-zone dots (+/-70, +/-65) and the four end-zone dots (+/-70, +/-206).
