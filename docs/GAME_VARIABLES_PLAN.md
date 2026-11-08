@@ -92,6 +92,12 @@ with goals and penalties by time), and the game itself run headless with its cod
   computer wins more follows the teams' awareness ratings (the home team's, with its bonus, 54%). No catch-up: the
   leading team's computer wins more, not less. On the SNES a person's own skater gets to most loose pucks.
 
+- **Study 8, what started each goal** (games with a person on each side): almost every goal has something the
+  defence did or allowed just before it. On the Genesis the first such thing was the shooter left open (no defender
+  within about 10 feet) for 30% of goals, an odd-man rush 24%, the puck taken by force 19%, a giveaway 20% (12% in the
+  team's own zone), and nothing of these only 3%; the SNES is much the same (giveaways 10%, nothing 11%). Whether each
+  is a mental error or the attacker's skill (a fine pass, a good breakout) the recording can't say.
+
 ## Studies (in order)
 
 Each says what it settles and where the data comes from. All use material we already have.
@@ -125,5 +131,5 @@ Each says what it settles and where the data comes from. All use material we alr
    often he draws two of them and frees a teammate), compared between players of different strength. The hardest and
    least certain, so last.
 
-Phase 1: studies 1-3, phase 2: 4-7 (done, above). Phase 3: 8-9. Results go into the project's documents as
+Phase 1: studies 1-3, phase 2: 4-7, and study 8 (done, above). Left: 9. Results go into the project's documents as
 each is done, and this list is kept up to date.

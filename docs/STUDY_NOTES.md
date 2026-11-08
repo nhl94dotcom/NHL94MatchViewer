@@ -1698,6 +1698,15 @@ the earlier piece in the game.
   (correlation +0.62 over 22 games; the home team's computer won 54% on average, as its awareness bonus says). **No
   catch-up**: the leading team's computer won more (605) than the trailing team's (513). SNES: the person's own skater
   reaches most (2,641 of 3,118; computer skaters 80, too few to split).
+- **Study 8, what started each goal** (`analysis/goal_causes.py`; games with a person on each side; each goal's
+  causes, and a primary one in this order: a giveaway by the scored-on team within 12.5 game s, in its own zone or
+  elsewhere; a takeaway (forced) in the same window; an odd-man rush; the shooter left open (no defender within 30,
+  about 10 ft, at the release); the goalie 5+ ft off the line; a rebound; a power play; off a faceoff; none).
+  Genesis (176 goals): own-zone giveaway 12%, giveaway elsewhere 8%, takeaway 19%, odd-man rush 24%, shooter left
+  open 30%, goalie off the line 2% (57 goals had it among their causes), the rest 1-3% each, none 3%. SNES (158): 6%,
+  4%, 18%, 25%, 26%, 7% (66 had it), power play 3%, none 11% (the SNES shot list marks no rebounds). Something the
+  defence did, or let happen, is behind almost every goal; how much of it is a mistake rather than the attacker's
+  skill (a fine pass, a good breakout) the recording can't say.
 
 ## NOSE4Web's Classic import into the 32-team SA-1 build (2026-11-08)
 
