@@ -1244,3 +1244,10 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
 - **The period number shifts the random draws, not the play.** Paired segments with only gsp changed split apart, but through the random generator. In periods 1-2 the number goes into the records (tmPerShots $176A, the goal log at $313A), and the frames after a goal then take different work. In period 3, Gameloop draws a random number every frame with the music off (a team song, 1 in $1000) and the computer's goalie-pulling and line tables read it. No code in periods 1-2 uses it for play.
 - **Conclusion:** the computer's own play has no second-period dip. The leagues' dip (0.004 at this rate, inside the margin) most likely comes from the people.
 
+## The scoring maps against a goalie as in games (both systems, 2026-11-07)
+
+- **Runs:** Genesis mvg1 (as in games) and mvs1 (set): `map_run.py 0 1 RUN 200 20 15 [goalies_genesis.json]` with NHL94_SMAP_SUBSET=coarse (352 jobs, about 70 s each in gentle mode). SNES smvg1 and smvs1: `snes_map_run.py RUN 24 4 13 13` with NHL94_SMAP_SUBSET=coarse and NHL94_SNES_GOALIES for the first (176 jobs, about 2 minutes each). Goalie states from `xg.goalie_states` / `xg_snes.goalie_states` over every recorded game (Genesis 742 computer goalies, SNES 423), in the work folder.
+- **SNES velocity:** placing the goalie's speed uses 4,096 a unit a frame; measured with the speed held, 4,096 moves an object 0.95 a frame.
+- **Model comparison:** `compare_xg.py RUN [GOALIES.json]`, `snes_compare_xg.py RUN [GOALIES.json [glide]]`. Genesis: set 0.014 against the game's 0.023 (the set goalie's quirks aren't in the model); as in games 0.074 against 0.084. SNES: set 0.004 against 0.003; as in games old movement 0.050, glide 0.066, against 0.052.
+- Results and pictures: SCORING_MAP "The goalie as in games".
+

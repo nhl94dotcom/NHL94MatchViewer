@@ -64,16 +64,21 @@ GAP = 70                                    # between the rows of panels: the to
 W = 2 * PW + 3 * 40
 H = 100 + 2 * PH + GAP + 20 + 120
 body = [f"<rect width='{W}' height='{H}' fill='#ffffff'/>"]
-title = "Chance a shot scores against a set computer goalie, best aim" if mode == "best" else     "Chance a shot scores against a set computer goalie, aimed at the middle"
+MOVING = (META.get("goalies") if SNES else (rows[0].get("goalies") if rows else None)) == "games"
+who = "a computer goalie as in games" if MOVING else "a set computer goalie"
+goalie_note = ("the goalie placed as recorded ones were at a release" if MOVING
+               else "the goalie has set himself")
+title = f"Chance a shot scores against {who}, " + ("best aim" if mode == "best" else "aimed at the middle")
 if SNES:
     body.append(text(W / 2, 26, title + " (SNES, played in the real game)", 16, anchor="middle", weight="bold"))
     body.append(text(W / 2, 46, f"Typical shooter (working Shot Power {META['shp']}, Shot Accuracy {META['sha']}), "
-                     "standing still with the puck; the goalie has set himself. Each square: one spot, "
+                     f"standing; {goalie_note}. Each square: one spot, "
                      f"{META['phases'] * META['seeds']} shots per aim.", 11, SOFT, "middle"))
 else:
+    per = "200+" if MOVING else "800+"
     body.append(text(W / 2, 26, title + " (Genesis, played in the real game)", 16, anchor="middle", weight="bold"))
-    body.append(text(W / 2, 46, "Average shooter (working Shot Power 20, Shot Accuracy 15), standing still with the "
-                     "puck; the goalie has set himself. Each square: one spot, 800+ shots per aim.", 11, SOFT,
+    body.append(text(W / 2, 46, "Average shooter (working Shot Power 20, Shot Accuracy 15), standing"
+                     f"; {goalie_note}. Each square: one spot, {per} shots per aim.", 11, SOFT,
                      "middle"))
 for pi, (net, hold, name) in enumerate(panels):
     ox = 40 + (pi % 2) * (PW + 40)

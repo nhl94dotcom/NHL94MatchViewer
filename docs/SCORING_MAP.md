@@ -18,8 +18,9 @@ This page has the overview, the method and the maps; the studies are in four mor
 5. [Building the SNES simulator](#building-the-snes-simulator)
 6. [How often each kind of goal happens](#how-often-each-kind-of-goal-happens)
 7. [The maps](#the-maps)
-8. [Limits and what comes next](#limits-and-what-comes-next)
-9. [Rebuilding it yourself](#rebuilding-it-yourself)
+8. [The goalie as in games](#the-goalie-as-in-games)
+9. [Limits and what comes next](#limits-and-what-comes-next)
+10. [Rebuilding it yourself](#rebuilding-it-yourself)
 
 ## At a glance
 
@@ -238,6 +239,49 @@ close to the goalie for a real shot.
   about half the time. The mirror shot on the right scores 0-3%.
 - The rays of blue squares pointing at the net are the same gap reached from farther out at an angle.
 
+## The goalie as in games
+
+The maps above shoot at a goalie who has set himself. In real games he is usually still moving at the release. Here
+every spot and aim was played again with the goalie first put where a recorded computer goalie was at a real shot's
+release, relative to his set spot, and moving as that goalie was: 742 such moments from the recorded Genesis games,
+423 from the SNES ones, one drawn at random for each shot. Each system also got a set-goalie map on the same grid and
+budget, to compare cell for cell (every other spot of the maps above: x -100 to 100 and 100-240 from centre ice, steps
+of 20; Genesis 200+ shots per aim, SNES 96).
+
+**Genesis** (the same shooter and goalie as the map above):
+
+![Genesis scoring map against a goalie as in games, best aim, by spot](img/scoring_map_moving.svg)
+
+**SNES:**
+
+![SNES scoring map against a goalie as in games, best aim, by spot](img/snes_scoring_map_moving.svg)
+
+**Average chance over the nine aims, set goalie / as in games:**
+
+| | Genesis wrist | Genesis slapshot | SNES wrist | SNES slapshot |
+|---|---|---|---|---|
+| Close (200-240 from centre, 8-21 ft out) | 4-6% / 10-12% | 4% / 9-10% | 0.0-0.1% / 3-4% | 0.0% / 5% |
+| Mid (150-180, 28-38 ft) | 0.0-0.4% / 6% | 1-3% / 12-13% | 0.0-0.1% / 4-5% | 0.5-0.6% / 9-10% |
+| Far (100-140, 41-55 ft) | 0.0-0.5% / 2-3% | 1-3% / 9-10% | 0.1-0.3% / 1.5% | 0.2-1.2% / 7-9% |
+
+- **A moving goalie is beaten far more often,** on both systems. In the recorded games a goalie within 3 units of
+  his spot let in 1 shot of 31, and one 10 or more out of it 22 of 59: these maps show the same thing in the game itself.
+- **The set goalie's gaps mostly hold up, a little weaker.** Genesis: the slapshot from 20 to the right close in drops
+  from 100% to 85% (top net) and from 82% to 67% (bottom); the middle slapshots 28-35 ft out from 53-60% to 43%.
+  SNES: the left-lane slapshot (top net, 20 left, 35 ft out) stays at 29%; the bottom net's slapshot from 20 right,
+  41 ft out, goes from 42% to 46%.
+- **Shots the set goalie always stopped now score.** The best spots against a moving goalie are close in and in the
+  middle: Genesis wrist shots from the slot 21-30% (0-9% against him set), the Down slapshot from the middle 28 ft
+  out 37% (3%); SNES wrist shots from the slot 23-51% (0-10%), slapshots from the middle 31-38% (1-4%).
+- **The expected-goals models.** Played on the same cells with the same goalie states, the Genesis model gives
+  0.074 against the game's 0.084: slapshots within about 20% either way, wrist shots about 30% low. The recorded
+  wrist shots don't show that gap (the model expected 98.8 goals and there were 90), so the model stays as it is. The
+  SNES model as the viewer uses it gives 0.050 against the game's 0.052, every area within about 25%. With the
+  gliding goalie (the model's goalie moving as the game moves him) it gives 0.066, 27% high everywhere: the same gap
+  as on the recorded shots (SNES_SHOOTING 4.7), so that gap comes from how a moving goalie saves, and the glide stays off.
+- **Limits.** The goalie is moved after he has set himself, so his inner state (his rethink timer, a save already
+  chosen) is the set goalie's. The shooter stands still; nobody else is near; the goalie is the computer.
+
 ## Limits and what comes next
 
 The maps are exact for one situation (a standing shooter, a set computer goalie, nobody else near). The studies
@@ -256,8 +300,7 @@ None of it covers a person in net yet: those tests are to be designed with the u
 - **Recorded games still use the xG models.** Replaying 135 recorded Genesis shots in the game gave the right total but
   worse shot-by-shot predictions than the xG model: a recording can't pin down the exact frame and the goalie's internal
   state.
-- **Next, if wanted:** a moving-goalie map using goalie states from recorded games (about 2 hours a system); other
-  shooters. (The Genesis goalie's stick, with the blind ring, is in the xG model for recorded games since 2026-10-29:
+- **Next, if wanted:** other shooters against the goalie as in games; a person in net (to be designed with the user). (The Genesis goalie's stick, with the blind ring, is in the xG model for recorded games since 2026-10-29:
   GENESIS_SHOOTING 4.9.)
 
 ## Rebuilding it yourself

@@ -1,0 +1,745 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='845' height='890' viewBox='0 0 845 890' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>Scoring map</title>
+<defs><marker id='a' viewBox='0 0 10 10' refX='5' refY='5' markerWidth='4' markerHeight='4' orient='auto'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
+<rect width='845.0' height='890.0' fill='#ffffff'/>
+<text x='422.5' y='26.0' font-size='16' fill='#1f2933' text-anchor='middle' font-weight='bold'>Chance a shot scores against a computer goalie as in games, best aim (Genesis, played in the real game)</text>
+<text x='422.5' y='46.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Average shooter (working Shot Power 20, Shot Accuracy 15), standing; the goalie placed as recorded ones were at a release. Each square: one spot, 200+ shots per aim.</text>
+<text x='40.0' y='78.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>Wrist shot: top net (attacking up the screen)</text>
+<rect x='40.0' y='100.0' width='362.5' height='290.0' fill='#f3f5f7' stroke='#52606d'/>
+<rect x='69.0' y='336.4' width='14.5' height='14.5' fill='#a6cffd'/>
+<line x1='80.6' y1='339.3' x2='71.9' y2='347.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='336.4' width='14.5' height='14.5' fill='#b9d9fe'/>
+<circle cx='105.2' cy='343.6' r='1.6' fill='#1f2933'/>
+<rect x='127.0' y='336.4' width='14.5' height='14.5' fill='#a6cffd'/>
+<line x1='140.3' y1='343.6' x2='128.2' y2='343.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='336.4' width='14.5' height='14.5' fill='#a6cffd'/>
+<circle cx='163.2' cy='343.6' r='1.6' fill='#1f2933'/>
+<rect x='185.0' y='336.4' width='14.5' height='14.5' fill='#94c6fd'/>
+<circle cx='192.2' cy='343.6' r='1.6' fill='#1f2933'/>
+<rect x='214.0' y='336.4' width='14.5' height='14.5' fill='#a4cefd'/>
+<line x1='225.6' y1='347.9' x2='216.9' y2='339.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='336.4' width='14.5' height='14.5' fill='#c3defe'/>
+<rect x='272.0' y='336.4' width='14.5' height='14.5' fill='#93c5fd'/>
+<line x1='274.9' y1='339.3' x2='283.6' y2='347.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='336.4' width='14.5' height='14.5' fill='#bcdafe'/>
+<circle cx='308.2' cy='343.6' r='1.6' fill='#1f2933'/>
+<rect x='330.0' y='336.4' width='14.5' height='14.5' fill='#c3defe'/>
+<line x1='337.2' y1='349.7' x2='337.2' y2='337.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='336.4' width='14.5' height='14.5' fill='#e0edfd'/>
+<rect x='69.0' y='307.4' width='14.5' height='14.5' fill='#8dc1fd'/>
+<circle cx='76.2' cy='314.6' r='1.6' fill='#1f2933'/>
+<rect x='98.0' y='307.4' width='14.5' height='14.5' fill='#8fc2fd'/>
+<line x1='105.2' y1='308.5' x2='105.2' y2='320.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='307.4' width='14.5' height='14.5' fill='#92c4fd'/>
+<circle cx='134.2' cy='314.6' r='1.6' fill='#1f2933'/>
+<rect x='156.0' y='307.4' width='14.5' height='14.5' fill='#a7cffd'/>
+<line x1='169.3' y1='314.6' x2='157.2' y2='314.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='307.4' width='14.5' height='14.5' fill='#8fc2fd'/>
+<line x1='187.9' y1='310.3' x2='196.6' y2='318.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='307.4' width='14.5' height='14.5' fill='#92c4fd'/>
+<line x1='227.3' y1='314.6' x2='215.2' y2='314.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='307.4' width='14.5' height='14.5' fill='#85bcfc'/>
+<line x1='254.6' y1='310.3' x2='245.9' y2='318.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='307.4' width='14.5' height='14.5' fill='#8abffc'/>
+<line x1='285.3' y1='314.6' x2='273.2' y2='314.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='307.4' width='14.5' height='14.5' fill='#92c4fd'/>
+<line x1='308.2' y1='320.7' x2='308.2' y2='308.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='307.4' width='14.5' height='14.5' fill='#93c5fd'/>
+<circle cx='337.2' cy='314.6' r='1.6' fill='#1f2933'/>
+<rect x='359.0' y='307.4' width='14.5' height='14.5' fill='#cde3fe'/>
+<rect x='69.0' y='278.4' width='14.5' height='14.5' fill='#a5cefd'/>
+<circle cx='76.2' cy='285.6' r='1.6' fill='#1f2933'/>
+<rect x='98.0' y='278.4' width='14.5' height='14.5' fill='#84bcfc'/>
+<line x1='105.2' y1='291.7' x2='105.2' y2='279.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='278.4' width='14.5' height='14.5' fill='#7db7fc'/>
+<line x1='140.3' y1='285.6' x2='128.2' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='278.4' width='14.5' height='14.5' fill='#6cacfb'/>
+<line x1='169.3' y1='285.6' x2='157.2' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='278.4' width='14.5' height='14.5' fill='#7cb7fc'/>
+<line x1='196.6' y1='289.9' x2='187.9' y2='281.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='278.4' width='14.5' height='14.5' fill='#71b0fb'/>
+<circle cx='221.2' cy='285.6' r='1.6' fill='#1f2933'/>
+<rect x='243.0' y='278.4' width='14.5' height='14.5' fill='#6dadfb'/>
+<line x1='250.2' y1='279.5' x2='250.2' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='278.4' width='14.5' height='14.5' fill='#7eb8fc'/>
+<line x1='285.3' y1='285.6' x2='273.2' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='278.4' width='14.5' height='14.5' fill='#86bdfc'/>
+<line x1='312.6' y1='289.9' x2='303.9' y2='281.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='278.4' width='14.5' height='14.5' fill='#d9e9fe'/>
+<rect x='359.0' y='278.4' width='14.5' height='14.5' fill='#b0d4fd'/>
+<line x1='360.2' y1='285.6' x2='372.3' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='249.4' width='14.5' height='14.5' fill='#73b1fb'/>
+<line x1='80.6' y1='252.3' x2='71.9' y2='260.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='249.4' width='14.5' height='14.5' fill='#7db7fc'/>
+<line x1='109.6' y1='260.9' x2='100.9' y2='252.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='249.4' width='14.5' height='14.5' fill='#8ab0bc'/>
+<line x1='140.3' y1='256.6' x2='128.2' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='249.4' width='14.5' height='14.5' fill='#7daccf'/>
+<line x1='169.3' y1='256.6' x2='157.2' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='249.4' width='14.5' height='14.5' fill='#94b2ad'/>
+<line x1='198.3' y1='256.6' x2='186.2' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='249.4' width='14.5' height='14.5' fill='#85aec3'/>
+<line x1='221.2' y1='250.5' x2='221.2' y2='262.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='249.4' width='14.5' height='14.5' fill='#6cacfb'/>
+<line x1='245.9' y1='260.9' x2='254.6' y2='252.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='249.4' width='14.5' height='14.5' fill='#70affb'/>
+<line x1='283.6' y1='252.3' x2='274.9' y2='260.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='249.4' width='14.5' height='14.5' fill='#7db7fc'/>
+<line x1='314.3' y1='256.6' x2='302.2' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='249.4' width='14.5' height='14.5' fill='#b9d9fe'/>
+<line x1='337.2' y1='262.7' x2='337.2' y2='250.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='249.4' width='14.5' height='14.5' fill='#c4defe'/>
+<rect x='69.0' y='220.3' width='14.5' height='14.5' fill='#8abffc'/>
+<line x1='76.2' y1='233.7' x2='76.2' y2='221.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='220.3' width='14.5' height='14.5' fill='#84aec5'/>
+<line x1='109.6' y1='223.3' x2='100.9' y2='231.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='220.3' width='14.5' height='14.5' fill='#c3be67'/>
+<line x1='140.3' y1='227.6' x2='128.2' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='220.3' width='14.5' height='14.5' fill='#7cacd1'/>
+<line x1='167.6' y1='231.9' x2='158.9' y2='223.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='220.3' width='14.5' height='14.5' fill='#ddc541'/>
+<line x1='198.3' y1='227.6' x2='186.2' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='220.3' width='14.5' height='14.5' fill='#fab615'/>
+<line x1='227.3' y1='227.6' x2='215.2' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='220.3' width='14.5' height='14.5' fill='#a7b791'/>
+<line x1='245.9' y1='231.9' x2='254.6' y2='223.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='220.3' width='14.5' height='14.5' fill='#71affb'/>
+<line x1='274.9' y1='223.3' x2='283.6' y2='231.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='220.3' width='14.5' height='14.5' fill='#7ab5fc'/>
+<circle cx='308.2' cy='227.6' r='1.6' fill='#1f2933'/>
+<rect x='330.0' y='220.3' width='14.5' height='14.5' fill='#75b2fb'/>
+<line x1='331.2' y1='227.6' x2='343.3' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='220.3' width='14.5' height='14.5' fill='#8ac0fc'/>
+<circle cx='366.2' cy='227.6' r='1.6' fill='#1f2933'/>
+<rect x='69.0' y='191.3' width='14.5' height='14.5' fill='#fac715'/>
+<line x1='76.2' y1='204.7' x2='76.2' y2='192.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='191.3' width='14.5' height='14.5' fill='#97b3a8'/>
+<line x1='105.2' y1='204.7' x2='105.2' y2='192.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='191.3' width='14.5' height='14.5' fill='#75aadb'/>
+<line x1='138.6' y1='194.3' x2='129.9' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='191.3' width='14.5' height='14.5' fill='#b9bc75'/>
+<line x1='169.3' y1='198.6' x2='157.2' y2='198.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='191.3' width='14.5' height='14.5' fill='#faa215'/>
+<line x1='198.3' y1='198.6' x2='186.2' y2='198.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='191.3' width='14.5' height='14.5' fill='#f98016'/>
+<line x1='227.3' y1='198.6' x2='215.2' y2='198.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='191.3' width='14.5' height='14.5' fill='#dbc443'/>
+<line x1='244.2' y1='198.6' x2='256.3' y2='198.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='191.3' width='14.5' height='14.5' fill='#9bb4a3'/>
+<line x1='279.2' y1='204.7' x2='279.2' y2='192.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='191.3' width='14.5' height='14.5' fill='#78b4fb'/>
+<line x1='312.6' y1='194.3' x2='303.9' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='191.3' width='14.5' height='14.5' fill='#69abfb'/>
+<circle cx='337.2' cy='198.6' r='1.6' fill='#1f2933'/>
+<rect x='359.0' y='191.3' width='14.5' height='14.5' fill='#9db4a0'/>
+<line x1='366.2' y1='204.7' x2='366.2' y2='192.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='162.3' width='14.5' height='14.5' fill='#64a6f4'/>
+<line x1='76.2' y1='175.7' x2='76.2' y2='163.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='162.3' width='14.5' height='14.5' fill='#a4b695'/>
+<line x1='105.2' y1='175.7' x2='105.2' y2='163.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='162.3' width='14.5' height='14.5' fill='#aab88c'/>
+<line x1='138.6' y1='165.3' x2='129.9' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='162.3' width='14.5' height='14.5' fill='#c4be65'/>
+<line x1='167.6' y1='165.3' x2='158.9' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='162.3' width='14.5' height='14.5' fill='#f86f17'/>
+<line x1='196.6' y1='165.3' x2='187.9' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='162.3' width='14.5' height='14.5' fill='#7f1d1d'/>
+<line x1='225.6' y1='165.3' x2='216.9' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='162.3' width='14.5' height='14.5' fill='#f99516'/>
+<line x1='245.9' y1='165.3' x2='254.6' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='162.3' width='14.5' height='14.5' fill='#86afc1'/>
+<line x1='274.9' y1='165.3' x2='283.6' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='162.3' width='14.5' height='14.5' fill='#78b4fb'/>
+<line x1='303.9' y1='173.9' x2='312.6' y2='165.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='162.3' width='14.5' height='14.5' fill='#7eb8fc'/>
+<line x1='337.2' y1='175.7' x2='337.2' y2='163.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='162.3' width='14.5' height='14.5' fill='#85bcfc'/>
+<circle cx='366.2' cy='169.6' r='1.6' fill='#1f2933'/>
+<rect x='69.0' y='133.3' width='14.5' height='14.5' fill='#7cb7fc'/>
+<line x1='71.9' y1='136.3' x2='80.6' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='133.3' width='14.5' height='14.5' fill='#7cb6fc'/>
+<line x1='100.9' y1='136.3' x2='109.6' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='133.3' width='14.5' height='14.5' fill='#68aafa'/>
+<line x1='134.2' y1='134.5' x2='134.2' y2='146.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='133.3' width='14.5' height='14.5' fill='#68aafa'/>
+<line x1='163.2' y1='134.5' x2='163.2' y2='146.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='133.3' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='214.0' y='133.3' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='243.0' y='133.3' width='14.5' height='14.5' fill='#961f1f'/>
+<line x1='245.9' y1='136.3' x2='254.6' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='133.3' width='14.5' height='14.5' fill='#8ab0bb'/>
+<line x1='283.6' y1='136.3' x2='274.9' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='133.3' width='14.5' height='14.5' fill='#92c5fd'/>
+<line x1='308.2' y1='134.5' x2='308.2' y2='146.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='133.3' width='14.5' height='14.5' fill='#aed3fd'/>
+<line x1='337.2' y1='134.5' x2='337.2' y2='146.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='133.3' width='14.5' height='14.5' fill='#afd4fd'/>
+<line x1='370.6' y1='136.3' x2='361.9' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<line x1='40.0' y1='100.0' x2='402.5' y2='100.0' stroke='#c94040' stroke-width='1.5'/>
+<rect x='192.25' y='88.4' width='58.0' height='11.6' fill='none' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='119.8' cy='189.9' r='2.5' fill='#c94040'/>
+<circle cx='322.8' cy='189.9' r='2.5' fill='#c94040'/>
+<line x1='40.0' y1='361.0' x2='402.5' y2='361.0' stroke='#3b82c4' stroke-width='2'/>
+<text x='36.0' y='347.6' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>168</text>
+<text x='36.0' y='275.1' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>118</text>
+<text x='36.0' y='202.6' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>68</text>
+<text x='36.0' y='130.1' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>18</text>
+<text x='442.5' y='78.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>Slapshot: top net (attacking up the screen)</text>
+<rect x='442.5' y='100.0' width='362.5' height='290.0' fill='#f3f5f7' stroke='#52606d'/>
+<rect x='471.5' y='336.4' width='14.5' height='14.5' fill='#77abd8'/>
+<line x1='478.8' y1='337.5' x2='478.8' y2='349.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='336.4' width='14.5' height='14.5' fill='#6bacfb'/>
+<line x1='503.4' y1='339.3' x2='512.1' y2='347.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='336.4' width='14.5' height='14.5' fill='#6eaefb'/>
+<line x1='541.1' y1='347.9' x2='532.4' y2='339.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='336.4' width='14.5' height='14.5' fill='#79abd5'/>
+<line x1='570.1' y1='347.9' x2='561.4' y2='339.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='336.4' width='14.5' height='14.5' fill='#dbc443'/>
+<line x1='599.1' y1='347.9' x2='590.4' y2='339.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='336.4' width='14.5' height='14.5' fill='#d0c153'/>
+<line x1='623.8' y1='337.5' x2='623.8' y2='349.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='336.4' width='14.5' height='14.5' fill='#eac82d'/>
+<line x1='652.8' y1='337.5' x2='652.8' y2='349.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='336.4' width='14.5' height='14.5' fill='#9fb59c'/>
+<circle cx='681.8' cy='343.6' r='1.6' fill='#1f2933'/>
+<rect x='703.5' y='336.4' width='14.5' height='14.5' fill='#a9b88d'/>
+<line x1='710.8' y1='337.5' x2='710.8' y2='349.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='336.4' width='14.5' height='14.5' fill='#b8bb77'/>
+<line x1='739.8' y1='337.5' x2='739.8' y2='349.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='336.4' width='14.5' height='14.5' fill='#7dacce'/>
+<line x1='768.8' y1='337.5' x2='768.8' y2='349.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='307.4' width='14.5' height='14.5' fill='#8ab0bc'/>
+<line x1='478.8' y1='308.5' x2='478.8' y2='320.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='307.4' width='14.5' height='14.5' fill='#9fb59d'/>
+<circle cx='507.8' cy='314.6' r='1.6' fill='#1f2933'/>
+<rect x='529.5' y='307.4' width='14.5' height='14.5' fill='#adb888'/>
+<line x1='541.1' y1='318.9' x2='532.4' y2='310.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='307.4' width='14.5' height='14.5' fill='#e8c730'/>
+<line x1='570.1' y1='318.9' x2='561.4' y2='310.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='307.4' width='14.5' height='14.5' fill='#faa815'/>
+<line x1='599.1' y1='318.9' x2='590.4' y2='310.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='307.4' width='14.5' height='14.5' fill='#fab315'/>
+<line x1='628.1' y1='318.9' x2='619.4' y2='310.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='307.4' width='14.5' height='14.5' fill='#fab415'/>
+<line x1='652.8' y1='308.5' x2='652.8' y2='320.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='307.4' width='14.5' height='14.5' fill='#b0b983'/>
+<line x1='681.8' y1='308.5' x2='681.8' y2='320.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='307.4' width='14.5' height='14.5' fill='#b4ba7c'/>
+<line x1='710.8' y1='308.5' x2='710.8' y2='320.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='307.4' width='14.5' height='14.5' fill='#adb888'/>
+<circle cx='739.8' cy='314.6' r='1.6' fill='#1f2933'/>
+<rect x='761.5' y='307.4' width='14.5' height='14.5' fill='#74b1fb'/>
+<line x1='773.1' y1='310.3' x2='764.4' y2='318.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='278.4' width='14.5' height='14.5' fill='#98b3a7'/>
+<line x1='478.8' y1='279.5' x2='478.8' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='278.4' width='14.5' height='14.5' fill='#c6bf63'/>
+<line x1='507.8' y1='279.5' x2='507.8' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='278.4' width='14.5' height='14.5' fill='#c1be6a'/>
+<line x1='541.1' y1='289.9' x2='532.4' y2='281.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='278.4' width='14.5' height='14.5' fill='#faa115'/>
+<line x1='571.8' y1='285.6' x2='559.7' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='278.4' width='14.5' height='14.5' fill='#f86f17'/>
+<line x1='600.8' y1='285.6' x2='588.7' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='278.4' width='14.5' height='14.5' fill='#f2601a'/>
+<line x1='629.8' y1='285.6' x2='617.7' y2='285.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='278.4' width='14.5' height='14.5' fill='#fab315'/>
+<line x1='652.8' y1='279.5' x2='652.8' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='278.4' width='14.5' height='14.5' fill='#c3be67'/>
+<line x1='681.8' y1='279.5' x2='681.8' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='278.4' width='14.5' height='14.5' fill='#a8b78e'/>
+<line x1='710.8' y1='279.5' x2='710.8' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='278.4' width='14.5' height='14.5' fill='#a8b78f'/>
+<line x1='739.8' y1='279.5' x2='739.8' y2='291.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='278.4' width='14.5' height='14.5' fill='#85bcfc'/>
+<line x1='773.1' y1='281.3' x2='764.4' y2='289.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='249.4' width='14.5' height='14.5' fill='#82aec7'/>
+<line x1='478.8' y1='250.5' x2='478.8' y2='262.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='249.4' width='14.5' height='14.5' fill='#a4b694'/>
+<line x1='507.8' y1='250.5' x2='507.8' y2='262.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='249.4' width='14.5' height='14.5' fill='#faab15'/>
+<line x1='542.8' y1='256.6' x2='530.7' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='249.4' width='14.5' height='14.5' fill='#f97716'/>
+<line x1='571.8' y1='256.6' x2='559.7' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='249.4' width='14.5' height='14.5' fill='#f05b1b'/>
+<line x1='600.8' y1='256.6' x2='588.7' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='249.4' width='14.5' height='14.5' fill='#df2f24'/>
+<line x1='629.8' y1='256.6' x2='617.7' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='249.4' width='14.5' height='14.5' fill='#fab415'/>
+<line x1='657.1' y1='260.9' x2='648.4' y2='252.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='249.4' width='14.5' height='14.5' fill='#faa615'/>
+<line x1='687.8' y1='256.6' x2='675.7' y2='256.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='249.4' width='14.5' height='14.5' fill='#d4c24d'/>
+<line x1='715.1' y1='260.9' x2='706.4' y2='252.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='249.4' width='14.5' height='14.5' fill='#6aa7ec'/>
+<line x1='739.8' y1='250.5' x2='739.8' y2='262.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='249.4' width='14.5' height='14.5' fill='#73b1fb'/>
+<line x1='764.4' y1='252.3' x2='773.1' y2='260.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='220.3' width='14.5' height='14.5' fill='#d3c24f'/>
+<line x1='478.8' y1='221.5' x2='478.8' y2='233.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='220.3' width='14.5' height='14.5' fill='#7cacd1'/>
+<line x1='507.8' y1='221.5' x2='507.8' y2='233.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='220.3' width='14.5' height='14.5' fill='#afb984'/>
+<line x1='536.8' y1='221.5' x2='536.8' y2='233.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='220.3' width='14.5' height='14.5' fill='#f99f16'/>
+<line x1='570.1' y1='231.9' x2='561.4' y2='223.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='220.3' width='14.5' height='14.5' fill='#f15d1b'/>
+<line x1='600.8' y1='227.6' x2='588.7' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='220.3' width='14.5' height='14.5' fill='#df2f24'/>
+<line x1='629.8' y1='227.6' x2='617.7' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='220.3' width='14.5' height='14.5' fill='#f99316'/>
+<line x1='657.1' y1='223.3' x2='648.4' y2='231.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='220.3' width='14.5' height='14.5' fill='#faa815'/>
+<line x1='686.1' y1='223.3' x2='677.4' y2='231.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='220.3' width='14.5' height='14.5' fill='#bdbc70'/>
+<line x1='706.4' y1='223.3' x2='715.1' y2='231.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='220.3' width='14.5' height='14.5' fill='#64a7fa'/>
+<line x1='744.1' y1='223.3' x2='735.4' y2='231.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='220.3' width='14.5' height='14.5' fill='#8abffc'/>
+<line x1='774.8' y1='227.6' x2='762.7' y2='227.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='191.3' width='14.5' height='14.5' fill='#7db7fc'/>
+<line x1='483.1' y1='194.3' x2='474.4' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='191.3' width='14.5' height='14.5' fill='#f98f16'/>
+<line x1='512.1' y1='194.3' x2='503.4' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='191.3' width='14.5' height='14.5' fill='#f98816'/>
+<line x1='541.1' y1='194.3' x2='532.4' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='191.3' width='14.5' height='14.5' fill='#e74320'/>
+<line x1='570.1' y1='194.3' x2='561.4' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='191.3' width='14.5' height='14.5' fill='#e43c22'/>
+<line x1='599.1' y1='194.3' x2='590.4' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='191.3' width='14.5' height='14.5' fill='#fac715'/>
+<line x1='629.8' y1='198.6' x2='617.7' y2='198.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='191.3' width='14.5' height='14.5' fill='#f98d16'/>
+<line x1='648.4' y1='194.3' x2='657.1' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='191.3' width='14.5' height='14.5' fill='#fabe15'/>
+<line x1='677.4' y1='194.3' x2='686.1' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='191.3' width='14.5' height='14.5' fill='#bebd6f'/>
+<line x1='706.4' y1='194.3' x2='715.1' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='191.3' width='14.5' height='14.5' fill='#f9cc17'/>
+<line x1='735.4' y1='194.3' x2='744.1' y2='202.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='191.3' width='14.5' height='14.5' fill='#89bffc'/>
+<line x1='762.7' y1='198.6' x2='774.8' y2='198.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='162.3' width='14.5' height='14.5' fill='#6cacfb'/>
+<line x1='478.8' y1='163.5' x2='478.8' y2='175.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='162.3' width='14.5' height='14.5' fill='#8abffc'/>
+<line x1='507.8' y1='163.5' x2='507.8' y2='175.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='162.3' width='14.5' height='14.5' fill='#68a7ee'/>
+<line x1='530.7' y1='169.6' x2='542.8' y2='169.6' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='162.3' width='14.5' height='14.5' fill='#f99c16'/>
+<line x1='570.1' y1='165.3' x2='561.4' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='162.3' width='14.5' height='14.5' fill='#f46719'/>
+<line x1='599.1' y1='165.3' x2='590.4' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='162.3' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='645.5' y='162.3' width='14.5' height='14.5' fill='#f98016'/>
+<line x1='652.8' y1='163.5' x2='652.8' y2='175.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='162.3' width='14.5' height='14.5' fill='#d0c154'/>
+<line x1='677.4' y1='165.3' x2='686.1' y2='173.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='162.3' width='14.5' height='14.5' fill='#70affb'/>
+<line x1='710.8' y1='163.5' x2='710.8' y2='175.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='162.3' width='14.5' height='14.5' fill='#9bc9fd'/>
+<line x1='744.1' y1='173.9' x2='735.4' y2='165.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='162.3' width='14.5' height='14.5' fill='#92c4fd'/>
+<circle cx='768.8' cy='169.6' r='1.6' fill='#1f2933'/>
+<rect x='471.5' y='133.3' width='14.5' height='14.5' fill='#84bcfc'/>
+<line x1='474.4' y1='136.3' x2='483.1' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='133.3' width='14.5' height='14.5' fill='#63a6f5'/>
+<line x1='503.4' y1='136.3' x2='512.1' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='133.3' width='14.5' height='14.5' fill='#62a6fa'/>
+<line x1='532.4' y1='136.3' x2='541.1' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='133.3' width='14.5' height='14.5' fill='#64a7fa'/>
+<circle cx='565.8' cy='140.6' r='1.6' fill='#1f2933'/>
+<rect x='587.5' y='133.3' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='616.5' y='133.3' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='645.5' y='133.3' width='14.5' height='14.5' fill='#7f1d1d'/>
+<line x1='648.4' y1='136.3' x2='657.1' y2='144.9' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='133.3' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='703.5' y='133.3' width='14.5' height='14.5' fill='#8abffc'/>
+<circle cx='710.8' cy='140.6' r='1.6' fill='#1f2933'/>
+<rect x='732.5' y='133.3' width='14.5' height='14.5' fill='#7eb8fc'/>
+<line x1='739.8' y1='134.5' x2='739.8' y2='146.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='133.3' width='14.5' height='14.5' fill='#a4cefd'/>
+<circle cx='768.8' cy='140.6' r='1.6' fill='#1f2933'/>
+<line x1='442.5' y1='100.0' x2='805.0' y2='100.0' stroke='#c94040' stroke-width='1.5'/>
+<rect x='594.75' y='88.4' width='58.0' height='11.6' fill='none' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='522.2' cy='189.9' r='2.5' fill='#c94040'/>
+<circle cx='725.2' cy='189.9' r='2.5' fill='#c94040'/>
+<line x1='442.5' y1='361.0' x2='805.0' y2='361.0' stroke='#3b82c4' stroke-width='2'/>
+<text x='438.5' y='347.6' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>168</text>
+<text x='438.5' y='275.1' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>118</text>
+<text x='438.5' y='202.6' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>68</text>
+<text x='438.5' y='130.1' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>18</text>
+<text x='40.0' y='452.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>Wrist shot: bottom net (attacking down the screen)</text>
+<rect x='40.0' y='460.0' width='362.5' height='290.0' fill='#f3f5f7' stroke='#52606d'/>
+<rect x='69.0' y='499.1' width='14.5' height='14.5' fill='#d8e8fe'/>
+<rect x='98.0' y='499.1' width='14.5' height='14.5' fill='#cee3fe'/>
+<rect x='127.0' y='499.1' width='14.5' height='14.5' fill='#d7e8fe'/>
+<rect x='156.0' y='499.1' width='14.5' height='14.5' fill='#cde3fe'/>
+<rect x='185.0' y='499.1' width='14.5' height='14.5' fill='#b2d5fd'/>
+<line x1='192.2' y1='500.3' x2='192.2' y2='512.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='499.1' width='14.5' height='14.5' fill='#8ec2fd'/>
+<line x1='215.2' y1='506.4' x2='227.3' y2='506.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='499.1' width='14.5' height='14.5' fill='#b8d8fe'/>
+<line x1='245.9' y1='510.7' x2='254.6' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='499.1' width='14.5' height='14.5' fill='#b9d9fe'/>
+<line x1='273.2' y1='506.4' x2='285.3' y2='506.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='499.1' width='14.5' height='14.5' fill='#c4defe'/>
+<rect x='330.0' y='499.1' width='14.5' height='14.5' fill='#cfe4fe'/>
+<rect x='359.0' y='499.1' width='14.5' height='14.5' fill='#c5dffe'/>
+<rect x='69.0' y='528.1' width='14.5' height='14.5' fill='#d9e9fe'/>
+<rect x='98.0' y='528.1' width='14.5' height='14.5' fill='#92c4fd'/>
+<line x1='111.3' y1='535.4' x2='99.2' y2='535.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='528.1' width='14.5' height='14.5' fill='#b1d5fd'/>
+<circle cx='134.2' cy='535.4' r='1.6' fill='#1f2933'/>
+<rect x='156.0' y='528.1' width='14.5' height='14.5' fill='#a4cefd'/>
+<line x1='167.6' y1='539.7' x2='158.9' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='528.1' width='14.5' height='14.5' fill='#a6cffd'/>
+<circle cx='192.2' cy='535.4' r='1.6' fill='#1f2933'/>
+<rect x='214.0' y='528.1' width='14.5' height='14.5' fill='#9bc9fd'/>
+<line x1='215.2' y1='535.4' x2='227.3' y2='535.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='528.1' width='14.5' height='14.5' fill='#b8d8fe'/>
+<line x1='245.9' y1='539.7' x2='254.6' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='528.1' width='14.5' height='14.5' fill='#b1d4fd'/>
+<line x1='274.9' y1='531.1' x2='283.6' y2='539.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='528.1' width='14.5' height='14.5' fill='#b1d4fd'/>
+<line x1='302.2' y1='535.4' x2='314.3' y2='535.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='528.1' width='14.5' height='14.5' fill='#bad9fe'/>
+<line x1='331.2' y1='535.4' x2='343.3' y2='535.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='528.1' width='14.5' height='14.5' fill='#a5cefd'/>
+<line x1='360.2' y1='535.4' x2='372.3' y2='535.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='557.1' width='14.5' height='14.5' fill='#c3defe'/>
+<rect x='98.0' y='557.1' width='14.5' height='14.5' fill='#c3defe'/>
+<rect x='127.0' y='557.1' width='14.5' height='14.5' fill='#8fc2fd'/>
+<line x1='129.9' y1='560.1' x2='138.6' y2='568.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='557.1' width='14.5' height='14.5' fill='#82bafc'/>
+<line x1='169.3' y1='564.4' x2='157.2' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='557.1' width='14.5' height='14.5' fill='#7eb8fc'/>
+<circle cx='192.2' cy='564.4' r='1.6' fill='#1f2933'/>
+<rect x='214.0' y='557.1' width='14.5' height='14.5' fill='#78b4fb'/>
+<line x1='215.2' y1='564.4' x2='227.3' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='557.1' width='14.5' height='14.5' fill='#70affb'/>
+<line x1='244.2' y1='564.4' x2='256.3' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='557.1' width='14.5' height='14.5' fill='#78b4fb'/>
+<line x1='274.9' y1='568.7' x2='283.6' y2='560.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='557.1' width='14.5' height='14.5' fill='#78b4fb'/>
+<line x1='302.2' y1='564.4' x2='314.3' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='557.1' width='14.5' height='14.5' fill='#82bafc'/>
+<circle cx='337.2' cy='564.4' r='1.6' fill='#1f2933'/>
+<rect x='359.0' y='557.1' width='14.5' height='14.5' fill='#8fc3fd'/>
+<line x1='361.9' y1='560.1' x2='370.6' y2='568.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='586.1' width='14.5' height='14.5' fill='#c4defe'/>
+<rect x='98.0' y='586.1' width='14.5' height='14.5' fill='#b1d4fd'/>
+<line x1='100.9' y1='589.1' x2='109.6' y2='597.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='586.1' width='14.5' height='14.5' fill='#8bc0fd'/>
+<line x1='140.3' y1='593.4' x2='128.2' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='586.1' width='14.5' height='14.5' fill='#68a7ee'/>
+<line x1='169.3' y1='593.4' x2='157.2' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='586.1' width='14.5' height='14.5' fill='#80adcb'/>
+<line x1='187.9' y1='589.1' x2='196.6' y2='597.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='586.1' width='14.5' height='14.5' fill='#8eb1b6'/>
+<line x1='215.2' y1='593.4' x2='227.3' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='586.1' width='14.5' height='14.5' fill='#7dacce'/>
+<line x1='245.9' y1='597.7' x2='254.6' y2='589.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='586.1' width='14.5' height='14.5' fill='#7daccf'/>
+<line x1='274.9' y1='597.7' x2='283.6' y2='589.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='586.1' width='14.5' height='14.5' fill='#68a7ee'/>
+<line x1='302.2' y1='593.4' x2='314.3' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='586.1' width='14.5' height='14.5' fill='#74b2fb'/>
+<line x1='331.2' y1='593.4' x2='343.3' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='586.1' width='14.5' height='14.5' fill='#87bdfc'/>
+<line x1='361.9' y1='589.1' x2='370.6' y2='597.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='615.1' width='14.5' height='14.5' fill='#c4defe'/>
+<rect x='98.0' y='615.1' width='14.5' height='14.5' fill='#7db7fc'/>
+<line x1='111.3' y1='622.4' x2='99.2' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='615.1' width='14.5' height='14.5' fill='#78b4fb'/>
+<line x1='138.6' y1='626.7' x2='129.9' y2='618.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='615.1' width='14.5' height='14.5' fill='#8eb1b6'/>
+<line x1='158.9' y1='618.1' x2='167.6' y2='626.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='615.1' width='14.5' height='14.5' fill='#98b3a7'/>
+<line x1='196.6' y1='626.7' x2='187.9' y2='618.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='615.1' width='14.5' height='14.5' fill='#dcc441'/>
+<line x1='215.2' y1='622.4' x2='227.3' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='615.1' width='14.5' height='14.5' fill='#fac515'/>
+<line x1='244.2' y1='622.4' x2='256.3' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='615.1' width='14.5' height='14.5' fill='#75aadb'/>
+<line x1='273.2' y1='622.4' x2='285.3' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='615.1' width='14.5' height='14.5' fill='#6cadfb'/>
+<line x1='302.2' y1='622.4' x2='314.3' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='615.1' width='14.5' height='14.5' fill='#63a7fa'/>
+<line x1='331.2' y1='622.4' x2='343.3' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='615.1' width='14.5' height='14.5' fill='#6cacfb'/>
+<line x1='360.2' y1='622.4' x2='372.3' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='644.1' width='14.5' height='14.5' fill='#65a8fa'/>
+<circle cx='76.2' cy='651.4' r='1.6' fill='#1f2933'/>
+<rect x='98.0' y='644.1' width='14.5' height='14.5' fill='#67a9fa'/>
+<line x1='109.6' y1='647.1' x2='100.9' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='644.1' width='14.5' height='14.5' fill='#8fb1b4'/>
+<line x1='140.3' y1='651.4' x2='128.2' y2='651.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='644.1' width='14.5' height='14.5' fill='#b6bb7a'/>
+<line x1='169.3' y1='651.4' x2='157.2' y2='651.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='644.1' width='14.5' height='14.5' fill='#bebd6f'/>
+<line x1='196.6' y1='655.7' x2='187.9' y2='647.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='644.1' width='14.5' height='14.5' fill='#fac015'/>
+<line x1='216.9' y1='655.7' x2='225.6' y2='647.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='644.1' width='14.5' height='14.5' fill='#f99716'/>
+<line x1='245.9' y1='655.7' x2='254.6' y2='647.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='644.1' width='14.5' height='14.5' fill='#dbc443'/>
+<line x1='273.2' y1='651.4' x2='285.3' y2='651.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='644.1' width='14.5' height='14.5' fill='#fac715'/>
+<line x1='303.9' y1='647.1' x2='312.6' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='644.1' width='14.5' height='14.5' fill='#f3ca1f'/>
+<line x1='331.2' y1='651.4' x2='343.3' y2='651.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='644.1' width='14.5' height='14.5' fill='#9eb59e'/>
+<line x1='360.2' y1='651.4' x2='372.3' y2='651.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='673.1' width='14.5' height='14.5' fill='#bad9fe'/>
+<line x1='70.2' y1='680.4' x2='82.3' y2='680.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='98.0' y='673.1' width='14.5' height='14.5' fill='#83bbfc'/>
+<circle cx='105.2' cy='680.4' r='1.6' fill='#1f2933'/>
+<rect x='127.0' y='673.1' width='14.5' height='14.5' fill='#76b3fb'/>
+<circle cx='134.2' cy='680.4' r='1.6' fill='#1f2933'/>
+<rect x='156.0' y='673.1' width='14.5' height='14.5' fill='#64a8fa'/>
+<line x1='167.6' y1='676.1' x2='158.9' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='673.1' width='14.5' height='14.5' fill='#c7bf60'/>
+<line x1='192.2' y1='686.5' x2='192.2' y2='674.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='673.1' width='14.5' height='14.5' fill='#7f1d1d'/>
+<line x1='216.9' y1='676.1' x2='225.6' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='243.0' y='673.1' width='14.5' height='14.5' fill='#d32525'/>
+<line x1='245.9' y1='676.1' x2='254.6' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='272.0' y='673.1' width='14.5' height='14.5' fill='#93b2ae'/>
+<line x1='274.9' y1='684.7' x2='283.6' y2='676.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='673.1' width='14.5' height='14.5' fill='#c5be64'/>
+<line x1='303.9' y1='684.7' x2='312.6' y2='676.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='330.0' y='673.1' width='14.5' height='14.5' fill='#68aafa'/>
+<circle cx='337.2' cy='680.4' r='1.6' fill='#1f2933'/>
+<rect x='359.0' y='673.1' width='14.5' height='14.5' fill='#92c4fd'/>
+<line x1='366.2' y1='686.5' x2='366.2' y2='674.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='69.0' y='702.1' width='14.5' height='14.5' fill='#d8e8fe'/>
+<rect x='98.0' y='702.1' width='14.5' height='14.5' fill='#a4cefd'/>
+<line x1='105.2' y1='703.3' x2='105.2' y2='715.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='127.0' y='702.1' width='14.5' height='14.5' fill='#84bcfc'/>
+<line x1='134.2' y1='715.5' x2='134.2' y2='703.3' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='156.0' y='702.1' width='14.5' height='14.5' fill='#bb2323'/>
+<line x1='158.9' y1='713.7' x2='167.6' y2='705.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='185.0' y='702.1' width='14.5' height='14.5' fill='#7f1d1d'/>
+<line x1='196.6' y1='705.1' x2='187.9' y2='713.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='214.0' y='702.1' width='14.5' height='14.5' fill='#7f1d1d'/>
+<circle cx='221.2' cy='709.4' r='1.6' fill='#1f2933'/>
+<rect x='243.0' y='702.1' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='272.0' y='702.1' width='14.5' height='14.5' fill='#c02323'/>
+<line x1='283.6' y1='705.1' x2='274.9' y2='713.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='301.0' y='702.1' width='14.5' height='14.5' fill='#62a6f6'/>
+<circle cx='308.2' cy='709.4' r='1.6' fill='#1f2933'/>
+<rect x='330.0' y='702.1' width='14.5' height='14.5' fill='#89bffc'/>
+<line x1='341.6' y1='705.1' x2='332.9' y2='713.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='359.0' y='702.1' width='14.5' height='14.5' fill='#c3defe'/>
+<line x1='370.6' y1='713.7' x2='361.9' y2='705.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<line x1='40.0' y1='750.0' x2='402.5' y2='750.0' stroke='#c94040' stroke-width='1.5'/>
+<rect x='192.25' y='750.0' width='58.0' height='11.6' fill='none' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='119.8' cy='660.1' r='2.5' fill='#c94040'/>
+<circle cx='322.8' cy='660.1' r='2.5' fill='#c94040'/>
+<line x1='40.0' y1='489.0' x2='402.5' y2='489.0' stroke='#3b82c4' stroke-width='2'/>
+<text x='36.0' y='510.4' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>168</text>
+<text x='36.0' y='582.9' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>118</text>
+<text x='36.0' y='655.4' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>68</text>
+<text x='36.0' y='727.9' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>18</text>
+<text x='442.5' y='452.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='bold'>Slapshot: bottom net (attacking down the screen)</text>
+<rect x='442.5' y='460.0' width='362.5' height='290.0' fill='#f3f5f7' stroke='#52606d'/>
+<rect x='471.5' y='499.1' width='14.5' height='14.5' fill='#99c8fd'/>
+<line x1='483.1' y1='510.7' x2='474.4' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='499.1' width='14.5' height='14.5' fill='#80b9fc'/>
+<line x1='512.1' y1='510.7' x2='503.4' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='499.1' width='14.5' height='14.5' fill='#6faefb'/>
+<line x1='541.1' y1='510.7' x2='532.4' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='499.1' width='14.5' height='14.5' fill='#a5b793'/>
+<line x1='565.8' y1='500.3' x2='565.8' y2='512.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='499.1' width='14.5' height='14.5' fill='#b9bc76'/>
+<circle cx='594.8' cy='506.4' r='1.6' fill='#1f2933'/>
+<rect x='616.5' y='499.1' width='14.5' height='14.5' fill='#d4c24e'/>
+<circle cx='623.8' cy='506.4' r='1.6' fill='#1f2933'/>
+<rect x='645.5' y='499.1' width='14.5' height='14.5' fill='#fac215'/>
+<line x1='648.4' y1='502.1' x2='657.1' y2='510.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='499.1' width='14.5' height='14.5' fill='#8bb0b9'/>
+<line x1='677.4' y1='510.7' x2='686.1' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='499.1' width='14.5' height='14.5' fill='#7fadcc'/>
+<line x1='706.4' y1='510.7' x2='715.1' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='499.1' width='14.5' height='14.5' fill='#77b4fb'/>
+<line x1='735.4' y1='510.7' x2='744.1' y2='502.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='499.1' width='14.5' height='14.5' fill='#99b3a5'/>
+<line x1='762.7' y1='506.4' x2='774.8' y2='506.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='528.1' width='14.5' height='14.5' fill='#84bcfc'/>
+<line x1='483.1' y1='539.7' x2='474.4' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='528.1' width='14.5' height='14.5' fill='#6aa8eb'/>
+<line x1='512.1' y1='539.7' x2='503.4' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='528.1' width='14.5' height='14.5' fill='#65a6f3'/>
+<line x1='532.4' y1='539.7' x2='541.1' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='528.1' width='14.5' height='14.5' fill='#8db0b8'/>
+<line x1='570.1' y1='539.7' x2='561.4' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='528.1' width='14.5' height='14.5' fill='#d4c24d'/>
+<line x1='599.1' y1='539.7' x2='590.4' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='528.1' width='14.5' height='14.5' fill='#faac15'/>
+<line x1='623.8' y1='529.3' x2='623.8' y2='541.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='528.1' width='14.5' height='14.5' fill='#f98816'/>
+<line x1='646.7' y1='535.4' x2='658.8' y2='535.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='528.1' width='14.5' height='14.5' fill='#fab815'/>
+<line x1='681.8' y1='529.3' x2='681.8' y2='541.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='528.1' width='14.5' height='14.5' fill='#8db0b8'/>
+<line x1='706.4' y1='539.7' x2='715.1' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='528.1' width='14.5' height='14.5' fill='#86afc1'/>
+<line x1='735.4' y1='539.7' x2='744.1' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='528.1' width='14.5' height='14.5' fill='#6aacfb'/>
+<line x1='764.4' y1='539.7' x2='773.1' y2='531.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='557.1' width='14.5' height='14.5' fill='#7db7fc'/>
+<line x1='484.8' y1='564.4' x2='472.7' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='557.1' width='14.5' height='14.5' fill='#65a8fa'/>
+<line x1='503.4' y1='568.7' x2='512.1' y2='560.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='557.1' width='14.5' height='14.5' fill='#a0b59b'/>
+<line x1='541.1' y1='568.7' x2='532.4' y2='560.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='557.1' width='14.5' height='14.5' fill='#d9c446'/>
+<line x1='559.7' y1='564.4' x2='571.8' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='557.1' width='14.5' height='14.5' fill='#fab215'/>
+<line x1='600.8' y1='564.4' x2='588.7' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='557.1' width='14.5' height='14.5' fill='#faa315'/>
+<line x1='617.7' y1='564.4' x2='629.8' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='557.1' width='14.5' height='14.5' fill='#f46619'/>
+<line x1='648.4' y1='560.1' x2='657.1' y2='568.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='557.1' width='14.5' height='14.5' fill='#fac815'/>
+<line x1='675.7' y1='564.4' x2='687.8' y2='564.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='557.1' width='14.5' height='14.5' fill='#adb888'/>
+<line x1='706.4' y1='568.7' x2='715.1' y2='560.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='557.1' width='14.5' height='14.5' fill='#79abd5'/>
+<line x1='735.4' y1='568.7' x2='744.1' y2='560.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='557.1' width='14.5' height='14.5' fill='#6aacfb'/>
+<line x1='764.4' y1='568.7' x2='773.1' y2='560.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='586.1' width='14.5' height='14.5' fill='#7db7fc'/>
+<circle cx='478.8' cy='593.4' r='1.6' fill='#1f2933'/>
+<rect x='500.5' y='586.1' width='14.5' height='14.5' fill='#6aabfb'/>
+<line x1='512.1' y1='597.7' x2='503.4' y2='589.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='586.1' width='14.5' height='14.5' fill='#bfbd6d'/>
+<line x1='542.8' y1='593.4' x2='530.7' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='586.1' width='14.5' height='14.5' fill='#fac415'/>
+<line x1='571.8' y1='593.4' x2='559.7' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='586.1' width='14.5' height='14.5' fill='#f98d16'/>
+<line x1='600.8' y1='593.4' x2='588.7' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='586.1' width='14.5' height='14.5' fill='#f25f1a'/>
+<line x1='617.7' y1='593.4' x2='629.8' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='586.1' width='14.5' height='14.5' fill='#ec501d'/>
+<line x1='648.4' y1='589.1' x2='657.1' y2='597.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='586.1' width='14.5' height='14.5' fill='#f99b16'/>
+<line x1='675.7' y1='593.4' x2='687.8' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='586.1' width='14.5' height='14.5' fill='#f3ca1f'/>
+<line x1='704.7' y1='593.4' x2='716.8' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='586.1' width='14.5' height='14.5' fill='#62a6f6'/>
+<line x1='733.7' y1='593.4' x2='745.8' y2='593.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='586.1' width='14.5' height='14.5' fill='#63a7fa'/>
+<line x1='764.4' y1='589.1' x2='773.1' y2='597.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='615.1' width='14.5' height='14.5' fill='#75b2fb'/>
+<line x1='474.4' y1='618.1' x2='483.1' y2='626.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='615.1' width='14.5' height='14.5' fill='#74b2fb'/>
+<line x1='513.8' y1='622.4' x2='501.7' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='615.1' width='14.5' height='14.5' fill='#94b2ac'/>
+<line x1='532.4' y1='618.1' x2='541.1' y2='626.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='615.1' width='14.5' height='14.5' fill='#faba15'/>
+<line x1='571.8' y1='622.4' x2='559.7' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='615.1' width='14.5' height='14.5' fill='#fac915'/>
+<line x1='594.8' y1='616.3' x2='594.8' y2='628.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='615.1' width='14.5' height='14.5' fill='#eb4d1e'/>
+<line x1='619.4' y1='618.1' x2='628.1' y2='626.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='615.1' width='14.5' height='14.5' fill='#f76d17'/>
+<line x1='646.7' y1='622.4' x2='658.8' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='615.1' width='14.5' height='14.5' fill='#f99216'/>
+<line x1='675.7' y1='622.4' x2='687.8' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='615.1' width='14.5' height='14.5' fill='#8cb0b9'/>
+<line x1='706.4' y1='626.7' x2='715.1' y2='618.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='615.1' width='14.5' height='14.5' fill='#63a7fa'/>
+<line x1='733.7' y1='622.4' x2='745.8' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='615.1' width='14.5' height='14.5' fill='#63a7fa'/>
+<line x1='762.7' y1='622.4' x2='774.8' y2='622.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='644.1' width='14.5' height='14.5' fill='#70affb'/>
+<line x1='478.8' y1='645.3' x2='478.8' y2='657.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='644.1' width='14.5' height='14.5' fill='#f56818'/>
+<line x1='512.1' y1='647.1' x2='503.4' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='644.1' width='14.5' height='14.5' fill='#f97e16'/>
+<line x1='541.1' y1='647.1' x2='532.4' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='644.1' width='14.5' height='14.5' fill='#ec501d'/>
+<line x1='570.1' y1='647.1' x2='561.4' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='644.1' width='14.5' height='14.5' fill='#f98c16'/>
+<line x1='599.1' y1='647.1' x2='590.4' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='644.1' width='14.5' height='14.5' fill='#ec521d'/>
+<line x1='619.4' y1='647.1' x2='628.1' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='645.5' y='644.1' width='14.5' height='14.5' fill='#f56718'/>
+<line x1='648.4' y1='647.1' x2='657.1' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='644.1' width='14.5' height='14.5' fill='#f66a18'/>
+<line x1='677.4' y1='647.1' x2='686.1' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='644.1' width='14.5' height='14.5' fill='#f46719'/>
+<line x1='706.4' y1='647.1' x2='715.1' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='644.1' width='14.5' height='14.5' fill='#faae15'/>
+<line x1='735.4' y1='647.1' x2='744.1' y2='655.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='644.1' width='14.5' height='14.5' fill='#84aec4'/>
+<line x1='762.7' y1='651.4' x2='774.8' y2='651.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='673.1' width='14.5' height='14.5' fill='#8fc2fd'/>
+<line x1='474.4' y1='676.1' x2='483.1' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='673.1' width='14.5' height='14.5' fill='#74b2fb'/>
+<circle cx='507.8' cy='680.4' r='1.6' fill='#1f2933'/>
+<rect x='529.5' y='673.1' width='14.5' height='14.5' fill='#91b1b1'/>
+<line x1='542.8' y1='680.4' x2='530.7' y2='680.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='558.5' y='673.1' width='14.5' height='14.5' fill='#faad15'/>
+<line x1='570.1' y1='676.1' x2='561.4' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='587.5' y='673.1' width='14.5' height='14.5' fill='#fabb15'/>
+<line x1='599.1' y1='676.1' x2='590.4' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='616.5' y='673.1' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='645.5' y='673.1' width='14.5' height='14.5' fill='#8a1e1e'/>
+<line x1='648.4' y1='676.1' x2='657.1' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='674.5' y='673.1' width='14.5' height='14.5' fill='#f15d1b'/>
+<line x1='677.4' y1='676.1' x2='686.1' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='703.5' y='673.1' width='14.5' height='14.5' fill='#bebd6f'/>
+<line x1='704.7' y1='680.4' x2='716.8' y2='680.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='673.1' width='14.5' height='14.5' fill='#7eb8fc'/>
+<line x1='739.8' y1='674.3' x2='739.8' y2='686.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='761.5' y='673.1' width='14.5' height='14.5' fill='#8ec2fd'/>
+<line x1='773.1' y1='676.1' x2='764.4' y2='684.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='471.5' y='702.1' width='14.5' height='14.5' fill='#c3defe'/>
+<line x1='474.4' y1='713.7' x2='483.1' y2='705.1' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='500.5' y='702.1' width='14.5' height='14.5' fill='#92c4fd'/>
+<line x1='503.4' y1='705.1' x2='512.1' y2='713.7' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='529.5' y='702.1' width='14.5' height='14.5' fill='#75b2fb'/>
+<circle cx='536.8' cy='709.4' r='1.6' fill='#1f2933'/>
+<rect x='558.5' y='702.1' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='587.5' y='702.1' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='616.5' y='702.1' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='645.5' y='702.1' width='14.5' height='14.5' fill='#e4e7eb'/>
+<rect x='674.5' y='702.1' width='14.5' height='14.5' fill='#65a8fa'/>
+<circle cx='681.8' cy='709.4' r='1.6' fill='#1f2933'/>
+<rect x='703.5' y='702.1' width='14.5' height='14.5' fill='#89bffc'/>
+<line x1='710.8' y1='703.3' x2='710.8' y2='715.5' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<rect x='732.5' y='702.1' width='14.5' height='14.5' fill='#73b1fb'/>
+<circle cx='739.8' cy='709.4' r='1.6' fill='#1f2933'/>
+<rect x='761.5' y='702.1' width='14.5' height='14.5' fill='#92c4fd'/>
+<line x1='774.8' y1='709.4' x2='762.7' y2='709.4' stroke='#1f2933' stroke-width='1.2' marker-end='url(#a)'/>
+<line x1='442.5' y1='750.0' x2='805.0' y2='750.0' stroke='#c94040' stroke-width='1.5'/>
+<rect x='594.75' y='750.0' width='58.0' height='11.6' fill='none' stroke='#1f2933' stroke-width='1.5'/>
+<circle cx='522.2' cy='660.1' r='2.5' fill='#c94040'/>
+<circle cx='725.2' cy='660.1' r='2.5' fill='#c94040'/>
+<line x1='442.5' y1='489.0' x2='805.0' y2='489.0' stroke='#3b82c4' stroke-width='2'/>
+<text x='438.5' y='510.4' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>168</text>
+<text x='438.5' y='582.9' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>118</text>
+<text x='438.5' y='655.4' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>68</text>
+<text x='438.5' y='727.9' font-size='9' fill='#52606d' text-anchor='end' font-weight='normal'>18</text>
+<rect x='40' y='780.0' width='58' height='14' fill='#f7f9fb' stroke='#d9e2ec'/>
+<text x='69.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>0%</text>
+<rect x='102' y='780.0' width='58' height='14' fill='#dbeafe' stroke='#d9e2ec'/>
+<text x='131.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>2%</text>
+<rect x='164' y='780.0' width='58' height='14' fill='#93c5fd' stroke='#d9e2ec'/>
+<text x='193.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>5%</text>
+<rect x='226' y='780.0' width='58' height='14' fill='#60a5fa' stroke='#d9e2ec'/>
+<text x='255.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>10%</text>
+<rect x='288' y='780.0' width='58' height='14' fill='#facc15' stroke='#d9e2ec'/>
+<text x='317.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>20%</text>
+<rect x='350' y='780.0' width='58' height='14' fill='#f97316' stroke='#d9e2ec'/>
+<text x='379.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>30%</text>
+<rect x='412' y='780.0' width='58' height='14' fill='#dc2626' stroke='#d9e2ec'/>
+<text x='441.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>45%</text>
+<rect x='474' y='780.0' width='58' height='14' fill='#a42121' stroke='#d9e2ec'/>
+<text x='503.0' y='808.0' font-size='10' fill='#52606d' text-anchor='middle' font-weight='normal'>60%</text>
+<text x='40.0' y='832.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Numbers at the left of each panel: units from the goal line (about 3 to a foot). Blue line: the blue line.</text>
+<text x='40.0' y='847.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Arrows: the d-pad direction to hold as you shoot, the best of the nine aims (dot: nothing held); shown where it</text>
+<text x='40.0' y='862.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>scores 3% or more. Up aims high, Down along the ice, Left / Right at the screen's sides, at both nets.</text>
+<text x='40.0' y='877.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Grey: no real shot there (the puck would start within the goalie's reach).</text>
+</svg>

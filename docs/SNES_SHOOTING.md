@@ -233,7 +233,10 @@ barely moves). A faithful replay needs the emulator's whole state at the shot, w
 game's own crossing estimate, all read from each shot's sample; `xg_snes.add_expected_goals(internals=)`): at a computer
 goalie the old movement 97.0 xG -> 92.7 with his state, the gliding goalie 122.6 -> 124.0, against 86 goals. So his
 inner state doesn't explain it; what is left is the shot as the recording reads it (aim, speed, height) or the save
-areas of a moving goalie. The switch stays off. **The game's own one-timers** (2026-11-01, `ot_xg_check_snes.py 7 4`: 6,903 strikes from 118 of the
+areas of a moving goalie. The switch stays off. **Standing shots at a moving goalie** (2026-11-07, SCORING_MAP "The
+goalie as in games": 2,763 spot-aims, the goalie placed and moving as recorded computer goalies were at the release,
+the shots exact): the game 0.052 a shot, the old movement 0.050, the gliding goalie 0.066, 27% high in every area. So
+the gliding goalie's gap is in how a moving goalie saves, not in how the recordings read the shot. **The game's own one-timers** (2026-11-01, `ot_xg_check_snes.py 7 4`: 6,903 strikes from 118 of the
 one-timer study's set-ups, the goalie moving across after the pass, 4 seeds each, retail ROM): the game scored 526.8
 (its rate summed); the old movement 480.5 (log loss 0.152), with his inner state 457.3 (0.153); the gliding goalie
 866.8 (0.166), with his state 838.1 (0.163). By distance: within 60 all four are right (game 217.8, old 210.3, glide
@@ -368,6 +371,10 @@ The ± is from the differences between line-ups. Single line-ups, held still, ra
 the game scores 1.3-2.4% from 88-178 out, where its own best aim gives 2.7-4.6% on average and about 50% in the lane.
 The lane is a few units wide and comes from frame-exact save areas, which the model's goalie (a 2-unit random spread on
 his position) blurs away.
+
+**Against a goalie as in games** (2026-11-07): the same map with the goalie placed and moving as recorded computer
+goalies were at the release: wrist shots 1.5-5% averaged over the aims, slapshots 5-10%, the best spots 30-51%,
+against almost nothing at a set goalie (SCORING_MAP, "The goalie as in games").
 
 ### 4.9 Other shots played in the real game
 

@@ -408,6 +408,11 @@ doesn't pin the moment down finely enough (60 samples a second, not locked to th
 and the game's outcome turns on a few units and a frame. **So the viewer keeps its xG model for recorded games; the
 map shows what the rules do.**
 
+**Against a goalie as in games** (2026-11-07): the map played again with the goalie placed and moving as recorded
+computer goalies were at the release: wrist shots 2-12% averaged over the aims (0-6% at a set goalie), slapshots
+9-13% (1-4%). The set goalie's gaps mostly hold, a little weaker; the slot and the middle open up. The xG model gives
+0.074 against the game's 0.084 there (SCORING_MAP, "The goalie as in games").
+
 ### 4.11 Other shots played in the real game
 
 The same harness, with a pass, a moving shooter or a follow-up; each study in full in [SCORING_MAP](SCORING_MAP.md).
