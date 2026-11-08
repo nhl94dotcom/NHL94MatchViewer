@@ -1,7 +1,7 @@
 """Renders each match's team stats (headless Edge, every group open, at the end of the game) and checks that the
 break-down rows add up to their parents: shot attempts against their outcomes, possession by zone, giveaways and
 takeaways by kind, faceoffs by zone, zone entries by kind, aimed shots by height, tapestries by length, carrying shares,
-the person's check attempts by result.
+the person's check attempts by result, and passing out of a check by outcome.
 python tests/viewer_stat_sums.py [match names ...]   (default: every match in both game folders)"""
 import html
 import json
