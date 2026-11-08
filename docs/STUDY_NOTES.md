@@ -1442,6 +1442,6 @@ For NOSE4Web: a low shot off the goalie's stick isn't counted (puckstick `.stdef
   original; none of the 1,195 test shots did that.
 - **In the game** (`count_deflections_test.py`, the same 600 shots per end on both ROMs, nine aims, wrist shots to
   full slapshots): top net, shots on goal 521 on the original and 574 with the hook, goals 11 and 11; bottom net 525
-  and 581, goals 16 and 16. Every difference was +1 on one shot (56 top, 56 bottom), never more. 1,185 of the 1,195
+  and 581, goals 16 and 16. Every difference was +1 on one shot (53 top, 56 bottom), never more. 1,185 of the 1,195
   pairs played identically frame by frame for 150 frames; 10 drifted apart from frame 20-148, a few of them where
   the hook ran without counting: its extra cycles shift the game's video-counter randomness, as other hooks do.
