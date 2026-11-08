@@ -164,7 +164,7 @@ Working values 0-15. Every place found where the code reads each rating:
 | **Checking** (array `checking`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.3) |
 | **Endurance** | Energy, which only matters with line changes on |
 | **Pass / shoot bias** | Whether a **computer** puck carrier shoots or passes (`chk4shot`, `chk4pass`) |
-| **Aggression** (array `aggress`) | Penalty odds, with an overflow bug (8.1) |
+| **Aggression** (array `aggress`) | Penalty odds; nothing wraps (8.1) |
 | **Fighting** | **Never read** |
 | **Goalie glove / stick save ratings** | **Nothing.** They are looked up and then overwritten before use |
 

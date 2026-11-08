@@ -1485,3 +1485,34 @@ lists any changed bytes outside them, and runs each fix's study script above on 
 `--full`, with a pass when the ROM shows the fix and the original the bug. SNES files with a copier header are read
 without it. First run, every NOSE4Web build so far (quick sizes): all 22 tests on 20 ROMs passed, nothing else changed
 in any of them; the detection alone was right on all 25 ROMs in the folder (the originals: none found).
+
+## The Genesis-only fixes: does the SNES have the bug? (2026-11-08, for NOSE4Web)
+
+Offsets in NHL94.smc (retail), nhl94_2026.sfc (SA-1), nhl94snes_2026.sfc (2 MB).
+
+| Genesis fix | SNES | Where / why not |
+|---|---|---|
+| Pulled-goalie sniping | No | doshot tests only the highlight flag and the distance before the accuracy roll |
+| Computer forwards' awareness | Yes | Already built and tested (the SNES awareness fix) |
+| Crowd bonus | No | The crowd has no effect on play (SNES_MECHANICS 13) |
+| Count stick deflections | **Yes**, wider | See below |
+| Second assist | **Yes** | See below |
+| Aggression wrap | No | checkagr is 16-bit; nothing wraps (8.1) |
+| Rocket pass | No | Pass speed comes from the distance |
+| Runaway skater | No | Confirmed in the recordings (3.3) |
+| Penalty-shot table | No | No table: a breakaway foul becomes the one PenShot entry ($24) |
+| Weight bug / C-then-B | No | Base 120 for everyone, 16-bit sum (7.1) |
+
+- **Second assist.** a2touchpuck (routines/logic/puck/a2touchpuck.asm `.t1`) shifts the touches with no check
+  (`lda tmtouch2,y / sta tmtouch3,y / lda tmtouch1,y / sta tmtouch2,y`), then drops the second assist when the new
+  toucher is also the third: C, A, B, A and A scores gives B one assist and C none, as on the Genesis. The shift is
+  `B9 9E 17 99 A2 17 B9 9A 17 99 9E 17` at $F4549 ($9E:C549) retail, $F45B1 SA-1 (`77` for `17`), $F4591 2 MB; d0 ($A5)
+  holds the new toucher's pnum. The Genesis fix's rule: when the new toucher is tmtouch2 already, keep tmtouch3. There
+  is only the one place on the SNES (the Genesis also shifts in the one-timer code).
+- **Stick (and glove) deflections.** puckstick `.t1x` ("too fast: nopuck 8, deflect", also the goalie's path when the
+  puck is faster than he can catch) goes to `.3`: PuckSfx, a2touchpuck (clears sf2shot), deflect, never ChkShotStat.
+  `.t1x` = `A4 91 A9 08 00 99 03 12 4C <.3>` at $F7714 ($9E:F714) retail, $F7797 SA-1, $F7766 2 MB; `.3` at $F768B /
+  $F770E / $F76DD. ChkShotStat is $9E:F213 / $9E:F296 / $9E:F265 (it checks sf2shot and the clock itself and clears
+  sf2shot, so once only; its crowd boost is harmless on the SNES). A hook: at `.t1x`'s `jmp .3`, jump to new code that
+  does `lda position,y / bne` (not a goalie: on to `.3`) and otherwise `jsl ChkShotStat` before `.3`. It catches the
+  glove too: the SNES goalie's stick / glove area deflects hard high shots as well (SNES_SHOOTING 4.6).
