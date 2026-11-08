@@ -101,7 +101,7 @@ one-timers-tried count 131 (old rule 123). King's goals: one-timers, xG 0.66 and
 the game's counts (2219 BOS-DAL's 9 vs 8 was already so: Oates's penalty-shot goal). 2026-10-19_2115_LA-BUF's fast.bin.gz
 is cut off (no end-of-stream marker) and fails to convert, before and after (2117 LA-BUF is the game). Checked
 2026-11-08: its 417 samples (6.75 s real) are period 1 from 5:00 to 4:52 at 0-0, LA and BUF, with an empty full.bin.gz;
-the game restarted from 5:00 two minutes later, and 2117 has it from the opening faceoff to the final (6-3). Nothing is lost.
+the game restarted from 5:00 two minutes later, and 2117 has it from the opening faceoff to the final (6-3). Nothing is lost. The fragment was deleted (the user, 2026-11-08).
 
 ## Scoring map: shots played in the real game (2026-10-22)
 
