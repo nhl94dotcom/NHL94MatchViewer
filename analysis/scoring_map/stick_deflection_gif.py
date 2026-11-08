@@ -15,13 +15,32 @@ import sys
 
 from PIL import Image, ImageDraw
 
-from blind_ring_test import park, SHOOTER, GOALIE
+from blind_ring_test import SHOOTER, GOALIE
 from bot import rec, PUCKC, pad
 from bot_scenario import live_state
 from emu import Emu
 from paths import WORK
 
 SHOTS, SCORE = 0xC6CE, 0xC6DA
+DOWN = bool(__import__("os").environ.get("NHL94_SDG_DOWN"))   # the bottom net (paths.STATE_BOTTOM, period 2)
+SIGN = -1 if DOWN else 1
+
+
+def park(e, keep_shooter=True):
+    """Everyone but the goalie in net and the shooter at the far end from the shot (blind_ring_test's park, which
+    always uses the bottom end)."""
+    for k in range(12):
+        if k == GOALIE or (k == SHOOTER and keep_shooter):
+            continue
+        e.setw(rec(k), (-100 + 18 * k) & 0xFFFF)
+        e.setw(rec(k) + 0x14, (-230 * SIGN) & 0xFFFF)
+        for off in (0x28, 0x2A, 0x2C):
+            e.setw(rec(k) + off, 0)
+
+
+def bases(e):
+    from paths import STATE_BOTTOM
+    return [open(STATE_BOTTOM, "rb").read()] * 4 if DOWN else [live_state(e, j) for j in range(4)]
 
 
 class Film:
@@ -51,7 +70,7 @@ class Film:
 
 
 def setup(e, base, rnd):
-    x, y = rnd.choice((-50, -25, 0, 25, 50)), rnd.choice((120, 150, 180))
+    x, y = rnd.choice((-50, -25, 0, 25, 50)), SIGN * rnd.choice((120, 150, 180))
     hold = rnd.choice((6, 9, 12))
     e.unserialize(base)
     e.setw(0xC468, 250)
@@ -85,10 +104,10 @@ def play(e, hold, film=None):
     turned = held = False
     for f in range(50):
         park(e)                                          # the shooter stays where he is (nothing pressed)
-        vy0 = e.sw(rec(14) + 0x2A)
+        vy0 = SIGN * e.sw(rec(14) + 0x2A)
         low = e.sw(rec(14) + 0x18) <= 5
         step(note="off the goalie's stick: not a shot on goal" if turned else "", colour=(255, 220, 120) if turned else (255, 255, 255))
-        if not turned and vy0 > 0 >= e.sw(rec(14) + 0x2A) and low and e.w(PUCKC) >= 0x8000 and \
+        if not turned and vy0 > 0 >= SIGN * e.sw(rec(14) + 0x2A) and low and e.w(PUCKC) >= 0x8000 and \
                 abs(e.sw(rec(14) + 0x14) - e.sw(rec(GOALIE) + 0x14)) < 20:
             turned = True
         held = held or e.w(PUCKC) == GOALIE
@@ -99,9 +118,9 @@ def main():
     out = sys.argv[1]
     rom = sys.argv[2] if len(sys.argv) > 2 else str(WORK / "nhl94_retail.bin")
     e = Emu(rom)
-    bases = [live_state(e, j) for j in range(4)]
+    bs = bases(e)
     for trial in range(400):
-        hold = setup(e, bases[trial % 4], random.Random(trial))
+        hold = setup(e, bs[trial % 4], random.Random(trial))
         start = e.serialize()
         if play(e, hold):
             e.unserialize(start)

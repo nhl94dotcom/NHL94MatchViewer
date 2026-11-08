@@ -202,7 +202,11 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   ![Game Stats before and after a shot deflected off the goalie's stick: Shots stay at 4](img/stick_deflection_stats_v2.gif)
 
   (`analysis/scoring_map/stick_deflection_stats_gif.py`; the game ignores the pad for a moment after a pause, so the
-  shooter waits 40 frames before the shot.) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
+  shooter waits 40 frames before the shot.)
+
+  Going down the screen (period 2, the bottom net), the same:
+
+  ![Game Stats before and after a shot going down the screen deflected off the goalie's stick: Shots stay at 0](img/stick_deflection_stats_down.gif) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
   in; middle and high shots are lifted past the stick and hit his body (counted). **Confirmed** in 13 Genesis games:
   of the shots that reached the goalie, aimed along the ice 9 of 22 went uncounted, middle 21 of 189, high 2 of 61.
 - **So the direction you attack changes your shots on goal.** People hold the d-pad toward the net: attacking down

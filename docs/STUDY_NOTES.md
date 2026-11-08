@@ -1425,3 +1425,23 @@ Each patched ROM against its original (every one changes only the bytes in the r
   and its faceoff (setplayer runs there), then Home's working Checking, trailing minus leading. Original: +2 in the
   first half, nothing in the second; fix: nothing in the first half, +2 in the second; retail and SA-1. Only the
   skaters below the cap of 15 show it (2 of 5 retail, 1 of 5 SA-1; the hot / cold bug maxes many).
+
+## A "count stick deflections" option, tested (Genesis, 2026-11-08)
+
+For NOSE4Web: a low shot off the goalie's stick isn't counted (puckstick `.stdef` at $151CE: `move.w #SFXstdef` /
+`bsr sfx` / `bsr a2touchpuck` ($1013E, which clears sf2shot) / `bra deflect` ($15704); never ChkShotStat, $12F30).
+- **ChkShotStat is not stats only:** with sf2shot set it goes through `.Cwdupdate` ($12FBC), which adds 100 to
+  Crowdlevel and 10 to CwdExciteLvl before the counts (`.addShot`, $12FD0: team, power play, period, shooter, the
+  other goalie's shots against). The crowd meter feeds play (the computer's quicker re-decisions, sflags7 bit 6; and
+  with the crowd option, the +2). Calling `.addShot` directly with ChkShotStat's own frame skips it.
+- **No room in `.stdef`:** the 8 bytes of `bsr a2touchpuck / bra deflect` at $151D6 become `jsr hook / nop`; the hook
+  ends with a2touchpuck, drops its return and jumps to deflect (`count_deflections_rom.py`, a test copy only).
+- **Once only:** the hook clears sf2shot, as a2touchpuck would anyway, so a later catch or body touch doesn't count
+  it again. A deflection that then goes in gets Goal's own extra count (ChkShotStat's sflags4 path counts the scorer's
+  shot on its second call when the shot flag is already clear), as a body touch that trickles in already does on the
+  original; none of the 1,195 test shots did that.
+- **In the game** (`count_deflections_test.py`, the same 600 shots per end on both ROMs, nine aims, wrist shots to
+  full slapshots): top net, shots on goal 521 on the original and 574 with the hook, goals 11 and 11; bottom net 525
+  and 581, goals 16 and 16. Every difference was +1 on one shot (56 top, 56 bottom), never more. 1,185 of the 1,195
+  pairs played identically frame by frame for 150 frames; 10 drifted apart from frame 20-148, a few of them where
+  the hook ran without counting: its extra cycles shift the game's video-counter randomness, as other hooks do.

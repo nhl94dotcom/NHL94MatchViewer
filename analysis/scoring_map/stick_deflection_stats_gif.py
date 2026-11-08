@@ -5,7 +5,7 @@ along the ice that comes off the goalie's stick; then START, Game Stats again: t
 Trials are searched with the whole sequence played, so the clip is the game as it ran, frame by frame (menu frames
 every other one at real speed, the play at a third of it).
 
-python stick_deflection_stats_gif.py OUT.gif [ROM]"""
+python stick_deflection_stats_gif.py OUT.gif [ROM]   (NHL94_SDG_DOWN=1: the bottom net, period 2)"""
 import random
 import sys
 
@@ -80,11 +80,11 @@ def main():
     out = sys.argv[1]
     rom = sys.argv[2] if len(sys.argv) > 2 else str(WORK / "nhl94_retail.bin")
     e = Emu(rom)
-    bases = [live_state(e, j) for j in range(4)]
+    bs = D.bases(e)
     for trial in range(400):
-        if take(e, bases[trial % 4], random.Random(trial)):
+        if take(e, bs[trial % 4], random.Random(trial)):
             film = Film(e)
-            take(e, bases[trial % 4], random.Random(trial), film)
+            take(e, bs[trial % 4], random.Random(trial), film)
             film.frames[0].save(out, save_all=True, append_images=film.frames[1:], duration=film.durations, loop=0,
                                 optimize=True)
             print("trial", trial, "frames", len(film.frames))
