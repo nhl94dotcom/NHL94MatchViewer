@@ -1306,3 +1306,51 @@ The user's play: draw a check, then pass just before it lands. The data comes fr
   over first, 5,494 against 5,204 and 10% against 9% (30 and 27 of 300). The same shot frame for frame in 216 and 164 of
   300: the patch runs at every animation's end, so its few cycles shift the game's timing-based randomness (the
   video counter), and play drifts apart from there; the flag reads the same in both until then.
+
+## NOSE4Web's penalty-shot, goalie-pull, Y-button, extra-attacker and blind-ring fixes, played in the game (2026-11-08)
+
+Each patched ROM against its original, from the same moments with the same random seeds (gentle mode). Scripts in
+`analysis/scoring_map/`, each documented at its top.
+
+- **Genesis penalty-shot table** (`ps_table_test.py`, bug 11): breakaways made in live play (the computer's carrier
+  crossing the blue line with every other skater behind him, a defender close behind fouling him: the computer's, or
+  pad 2 pressing C, B or holding B), 2,000 per ROM, 98 penalty shots each. The foul's own code comes from the same
+  frame played again with BA_PS_flags bit 3 ("pending", the word's $0800) set, so PenShotChk leaves it alone (the
+  game sets the penalty shot up one frame and writes PenBuf the next). The original gave every one the wrong penalty
+  shot: charging slashing's (17), slashing roughing's (14), roughing cross-checking's (3), cross-checking hooking's
+  (5), hooking tripping's (12), tripping interference's (42). The fix gave each its own, all 98, the fouled carrier the
+  shooter. No holding came up.
+- **Genesis penalty-shot fixes** (`ps_fixes_test.py`, bugs 15 and 17), 44 attempts per ROM. An out-of-play whistle
+  (a PenBuf entry) while the shooter carries the puck: the original put the puck back at centre and ran the attempt
+  again 44 of 44 (InProgress finds bit 3 still set); the fix went to a faceoff 44 of 44. The puck given pfnc at the
+  award whistle (as a puck flipped out of the rink has it): still set as the original's attempt went live 44 of 44,
+  the puck leaving the rink in 18; cleared every time on the fix, none left the rink. (The clock is stopped all through
+  a Genesis attempt; the whistle shows as gmpen.)
+- **Genesis goalie pull** (`goalie_pull_test.py`): third period, 50 s left, the computer (Away) with the puck in its
+  attacking half, 40 trials at each score. The original pulled only 2 down (38 of 40); the fix 1 down (38) and 2 down
+  (38); neither tied or 3 down. (CPgoalie's `st` sets tmgoalie's first byte: the word reads $FF00.)
+- **SNES penalty-shot fixes** (`snes_ps_fixes_test.py`, bug 27): the penalty shot awarded as the game does after
+  PenShotChk (BA_Sktr_SCnum, pspad, a PenBuf PenShot entry); the clock runs during a SNES attempt. The still-puck
+  whistle (a loose puck held at one spot while creeping forward): a retake 40 of 40 on the original, retail and SA-1,
+  a faceoff 40 of 40 on both fixes. A truly still puck ends the attempt first through pspuckback (48 frames of a loose
+  puck not going forward), so this retake needs a puck that is still yet "going forward" and is probably rare. The
+  knocked-off net (the shooter put beside it in the burst at $2400-$3400; one meeting in eight knocks it off): the
+  original retook the shot 11 times; its other knocks ended properly only because the puck carried on into the end
+  boards after the whistle (wallcoll ends the attempt for any loose-puck contact, even then); the fix never retook it.
+  The SA-1 knocked net was checked in the code only (that build sets the attempt up in other objects; the stubs call
+  its own EndPenaltyShotPlay $9E:C7F9 and AddPenalty2 $9E:B8EA).
+- **SNES Y button** (`snes_y_button_test.py`): the recorded SNES check moments, no pass; each frame the pad-1 skater
+  is locked (not bursting), without the puck, an opponent within 40, played with and without Y. The original: his own
+  animation changed (a hook or hold) in 1,071 of 1,387 such frames (knockdowns, lock 1, and locks holding an animation:
+  boards, bench, held). The fix: 0. Y still did something in 28 locked frames on the fix, all through another skater
+  (21 with a teammate carrying: Y works for the carrier, a pass). Unlocked frames: the same on both (239 of 266).
+- **SNES extra attacker** (`snes_extra_attacker_test.py`, bug 28): Edit Lines from the pause menu, every list pick at
+  RD, LW, C and RW. The original, choosing the extra attacker (roster 4) at C: C 04 and the extra attacker 04, the old
+  centre (03) off the line. The fix swaps them (C 04, extra attacker 03). Every other pick was the same on both (the
+  game's own neighbour checks already swap within the line; the lists offer only that position's players).
+- **Genesis blind ring** (`blind_ring_test.py`, the option): shots from 15 slot spots with 6 aims (the home centre,
+  everyone else parked, the computer's goalie set). Ordinary shots (3,960 a ROM, the run stopped there): 52 goals on
+  both, 3 through his middle on both; 5 shots ended differently. Flat pucks (NHL94_BRT_FLAT: the frame after the
+  release, sent along the ice at his middle, +/- 6, at 9,000-22,000; 1,800 a ROM): the original let in 80, 77 through
+  his middle; the fix none (36 of those went past him, 44 he held). Held 995 against 1,049 overall: the body test
+  bounces more of them off him.
