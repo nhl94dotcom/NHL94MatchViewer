@@ -188,7 +188,13 @@ delayed penalty (0.7 and 0.3 units off the aim point).
 - **Code**, partly confirmed (the penalty shot).
 - **Shots along the ice are the ones that go uncounted.** The goalie's stick only plays a puck that is low (height 5
   or under) and not rising, and within 8 units of his blade it catches a puck slower than 13,000 (counted) and
-  deflects a faster one (not counted). A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
+  deflects a faster one (not counted). There is no special animation for it: the stick-deflection sound plays and the puck comes off the
+  blade, whatever pose he is in (puckstick `.stdef`).
+
+  ![A low slapshot deflected off the goalie's stick; Home's shots on goal stay at 4](img/stick_deflection.gif)
+
+  (`analysis/scoring_map/stick_deflection_gif.py`: the retail ROM, a slapshot with Down held; 8 of the first 74
+  such shots tried came off the stick uncounted.) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
   in; middle and high shots are lifted past the stick and hit his body (counted). **Confirmed** in 13 Genesis games:
   of the shots that reached the goalie, aimed along the ice 9 of 22 went uncounted, middle 21 of 189, high 2 of 61.
 - **So the direction you attack changes your shots on goal.** People hold the d-pad toward the net: attacking down
