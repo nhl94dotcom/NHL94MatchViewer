@@ -1610,8 +1610,11 @@ are the five hooks NOSE4Web listed, three blocks of new code and logo data, and 
 its "B" in grey and olive rather than black and gold (Calgary, Buffalo, Chicago and Toronto look right in both
 palettes, so it is that logo's colours). The 16:49 rebuild (made logos only): Boston black and gold; Philadelphia and
 Los Angeles match the game's own big logos (black with a white "P" and a red dot; silver and black); Montreal,
-Buffalo, Calgary and Hartford's letters as before; Detroit's wheel comes out pink, (255,121,164) and (255,89,139),
-colours its big logo doesn't have (red $FF0000, dark red $AC0000, white), so its made logo still blends.
+Buffalo, Calgary and Hartford's letters as before; Detroit's wheel comes out pink, $51FF (255,121,164) and $457F (255,89,139). Both
+are the big logo's own shades between its red and white (82 and 11 of its pixels, against 285 white, 208 red $001F and
+111 dark red), and the game draws them as they are (palbuffer row 4, colours 6 and 7, exactly the screen's): no blend
+and no colour maths; the red-and-white stripes' mix is nearest the pink, so "nearest the mix" picks it. (Corrected
+2026-11-08: first reported as colours the big logo doesn't have.)
 
 ## $A130F1 in Genesis Plus GX (2026-11-08, for NOSE4Web)
 
