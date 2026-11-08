@@ -191,7 +191,7 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   deflects a faster one (not counted). There is no special animation for it: the stick-deflection sound plays and the puck comes off the
   blade, whatever pose he is in (puckstick `.stdef`).
 
-  ![A low slapshot deflected off the goalie's stick; Home's shots on goal stay at 4](img/stick_deflection.gif)
+  ![A low slapshot deflected off the goalie's stick; Home's shots on goal stay at 4](img/stick_deflection_v2.gif)
 
   (`analysis/scoring_map/stick_deflection_gif.py`: the retail ROM, a slapshot with Down held; 8 of the first 74
   such shots tried came off the stick uncounted.)
@@ -199,7 +199,7 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   The same play with the game's own Game Stats before and after, in one continuous take (pause, Game Stats: Montreal
   4 Shots; resume; the shot off the stick; pause, Game Stats: still 4):
 
-  ![Game Stats before and after a shot deflected off the goalie's stick: Shots stay at 4](img/stick_deflection_stats.gif)
+  ![Game Stats before and after a shot deflected off the goalie's stick: Shots stay at 4](img/stick_deflection_stats_v2.gif)
 
   (`analysis/scoring_map/stick_deflection_stats_gif.py`; the game ignores the pad for a moment after a pause, so the
   shooter waits 40 frames before the shot.) A shot aimed along the ice (Down held) gets no lift, so it stays low all the way
