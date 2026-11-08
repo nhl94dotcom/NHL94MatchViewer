@@ -63,7 +63,7 @@ def near_boundary(raw, code):
 class Genesis:
     snes = False
     CODES = [OOP, 0x08, 0x0A, ICING, GOAL, 0x10, 0x14, 0x16, 0x1E, 0x24, 0x2A]
-    PENALTY = range(0x12, 0x2B)
+    PENALTY = [c for c in range(0x12, 0x2B) if c != 0x14]   # $14: the injury stoppage, no penalty (FallDown)
 
     def __init__(self, rom):
         from emu import Emu
@@ -103,7 +103,7 @@ class Genesis:
 class Snes:
     snes = True
     CODES = [OOP, 0x08, 0x0A, ICING, GOAL, 0x12, 0x14, 0x16, 0x1A, 0x24, 0x2E]
-    PENALTY = range(0x14, 0x2F)
+    PENALTY = [c for c in range(0x14, 0x2F) if c != 0x16]   # $16: the injury stoppage, no penalty (FallDown)
     MOVED = ((0x0100, 0x2000, 0x6100), (0x30F4, 0x35F4, 0x30F4), (0x37F4, 0x47F4, 0x37F4))
 
     def __init__(self, rom, state=None):

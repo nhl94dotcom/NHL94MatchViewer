@@ -172,6 +172,8 @@ penalties, the "no text" and penalty-shot codes), on several moments. Each ROM a
   puck was still sliding across centre when the call came: the original ROM's spot there reads y -1, so the puck was
   just below centre, and the fix's neutral dot on that side (-65) is right; the test's reading of the puck a frame
   earlier was not.
+- The third build (Genesis $14 and SNES $16, the injury stoppage, on the zone rule): Genesis 8,372 / 0, SNES 2026
+  SA-1 2,112 / 0, SNES retail 4,208 / 16; the 16 are the same two puck-across-centre placements, now also with $16.
 - Not tested: the FallDown and puckfaceoff entries into Stop4Pen (below), and a faceoff after a penalty shot.
 
 ## NOSE4Web's four questions, from the code
