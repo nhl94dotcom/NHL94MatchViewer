@@ -98,6 +98,12 @@ with goals and penalties by time), and the game itself run headless with its cod
   team's own zone), and nothing of these only 3%; the SNES is much the same (giveaways 10%, nothing 11%). Whether each
   is a mental error or the attacker's skill (a fine pass, a good breakout) the recording can't say.
 
+- **Study 9, a first measure** ("elite players move the computer's skaters"): a person's carrier pulling two
+  defenders onto himself while a teammate is open happens in about 40% of attacking-zone possessions. It pays only
+  when the pass comes at once (possessions under a second: about half as much again in expected goals); in longer ones
+  there's no difference, and the person who did it more often didn't make the better chances. Inconclusive so far:
+  it needs games from more players and a look at where the pass goes.
+
 ## Studies (in order)
 
 Each says what it settles and where the data comes from. All use material we already have.
@@ -131,5 +137,5 @@ Each says what it settles and where the data comes from. All use material we alr
    often he draws two of them and frees a teammate), compared between players of different strength. The hardest and
    least certain, so last.
 
-Phase 1: studies 1-3, phase 2: 4-7, and study 8 (done, above). Left: 9. Results go into the project's documents as
+All nine have a first answer (above); study 9 needs more players' games to settle. Results go into the project's documents as
 each is done, and this list is kept up to date.

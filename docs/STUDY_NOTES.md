@@ -1707,6 +1707,16 @@ the earlier piece in the game.
   4%, 18%, 25%, 26%, 7% (66 had it), power play 3%, none 11% (the SNES shot list marks no rebounds). Something the
   defence did, or let happen, is behind almost every goal; how much of it is a mistake rather than the attacker's
   skill (a fine pass, a good breakout) the recording can't say.
+- **Study 9, a first measure: drawing two** (`analysis/draw_two.py`; games with a person on each side; a person's
+  carrier in his attacking zone "drew two" when two or more defenders were within 50, about 17 ft, of him while a
+  teammate in the zone had none that close; the team's xG from the possession's start to 2 s after it). It happens
+  in 38% of such possessions on the Genesis (1,640) and 46% on the SNES (1,760). Overall they bring more xG (Genesis
+  0.144 against 0.116, SNES 0.130 against 0.104), but at equal lengths only the quick ones do (under 1 s real:
+  0.124 against 0.085, SNES 0.115 against 0.061: draw and pass); at 1-4 s no difference. Per game, the person who
+  drew two more often didn't make the better chances (correlation with the xG difference +0.10 Genesis, -0.61 SNES).
+  **Inconclusive**: drawing defenders pays when the pass comes at once; doing it more isn't a mark of the stronger
+  player in these games (mostly one person's). A proper test needs more people's games and whether the pass goes to
+  the open man.
 
 ## NOSE4Web's Classic import into the 32-team SA-1 build (2026-11-08)
 
