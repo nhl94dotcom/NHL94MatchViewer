@@ -1614,7 +1614,8 @@ Buffalo, Calgary and Hartford's letters as before; Detroit's wheel comes out pin
 are the big logo's own shades between its red and white (82 and 11 of its pixels, against 285 white, 208 red $001F and
 111 dark red), and the game draws them as they are (palbuffer row 4, colours 6 and 7, exactly the screen's): no blend
 and no colour maths; the red-and-white stripes' mix is nearest the pink, so "nearest the mix" picks it. (Corrected
-2026-11-08: first reported as colours the big logo doesn't have.)
+2026-11-08: first reported as colours the big logo doesn't have.) The 17:03 rebuild leaves a big logo's in-between shades
+out: Detroit's wheel red and white; Boston, Philadelphia, Montreal and Los Angeles as before.
 
 ## $A130F1 in Genesis Plus GX (2026-11-08, for NOSE4Web)
 
