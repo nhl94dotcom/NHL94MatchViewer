@@ -1596,3 +1596,24 @@ both background maps every 10 frames of play (vertical and horizontal rink).
   the NMI. FadeIn / BrightnessHook change brightness only.
 - **Horizontal mode:** printscores1's .sbscreen prints the period and the big scores; the team names are DrawHorTeams'
   banners (TeamBlocksTiles), not three letters.
+
+## NOSE4Web's retail score-box logos, checked in the game (2026-11-08)
+
+`analysis/scoring_map/snes_score_logo_build_check.py ORIGINAL EDITED OUT HOME:VISITOR ...` (retail layout; penalties
+and line changes on): per matchup, on both ROMs, the score box, the power-play box for each side (tmap made to
+differ while the clock ticks), play after Edit Lines and Crowd Level, the horizontal pause scoreboard, play after the
+break into period 2 and the line-change box, as a sheet original beside edited, and the ROMs' changed byte ranges.
+NHL94_score_logos.smc against NHL94.smc, Buffalo v Calgary, Hartford v Boston, Toronto v Chicago: the logos in the
+score box and in the power-play box for either side, back after Edit Lines, Crowd Level and the break; Hartford keeps
+its letters in both boxes; the scoreboard's banners pixel-identical; the line-change box unchanged. The changed bytes
+are the five hooks NOSE4Web listed, three blocks of new code and logo data, and the checksum. Boston's made logo shows
+its "B" in grey and olive rather than black and gold (Calgary, Buffalo, Chicago and Toronto look right in both
+palettes, so it is that logo's colours).
+
+## $A130F1 in Genesis Plus GX (2026-11-08, for NOSE4Web)
+
+`analysis/scoring_map/a130f1_test.py` builds a test ROM (save memory declared at $200001-$20FFFF as EVO's, $5A in
+the ROM there) and runs it in our copy of RetroArch 1.17's core (Genesis Plus GX v1.7.4 ed5c591). 3 MB: at power-on
+$200001 reads the ROM; writing 1 to $A130F1 switches the save memory in (a written $C3 reads back), 0 switches the
+ROM back, repeatedly. 2 MB: the save memory past the end of the ROM, writing 0 hides it as well (reads $FF); power-on
+reads $FF (blank save memory or nothing: not told apart). Other emulators not tried.
