@@ -1546,3 +1546,27 @@ team-game 2,000 times (order meaning nothing). The league's box scores, by perio
 - The Genesis second halves went in more often (36.7% against 27.3% on shots on goal), and shuffling rarely gives a
   gap that size. But it is 26 games, mostly one person's, and all attempts (22% of shuffles) and the league's 87,000
   Genesis box scores (no momentum by period) don't back it, so it reads as these games, not the ROM.
+
+## NOSE4Web's player photo and score logo editing, seen in the game (2026-11-08)
+
+`analysis/scoring_map/menu_shots.py` boots a ROM in a copy of the core and follows a script of button presses, waits and
+screenshots (a `u:` step presses until a RAM word, a menu's cursor, has a value: presses can be lost, and the SNES pause
+menu ignores the first one at some moments). The same script on the original and the edited ROM gives screens to
+compare frame for frame.
+
+- **Genesis (nhl94_photos.bin, ANH vs BOS):** the setup screen's cards (Boston's six and Anaheim's six alternating,
+  Kasatonov the second card, after Boston's Sweeney) and the seven matchups differ from the original only in Moog's and
+  Kasatonov's pictures, now the test pattern, and in the hot / cold streaks and Ron Barr's lines (random each run). A
+  card opens at most 2 frames (real) later on the edited ROM. Houlder, Anaheim's 7th featured picture, is never on the
+  setup screen (cards94: it wraps after the sixth) or in the matchups (each position's first-line player, from the
+  team's line sets); with him put on Anaheim's first line in a scratch copy, his test pattern shows on the left
+  defence matchup (DrawPlayerPicture searches the whole list). The ROM's checksum check (checksum94, called at $300) is
+  skipped and its space reused; the header checksum is updated.
+- **SNES retail (NHL94_photos.smc, BOS vs LA):** the matchups and every pause-menu Player Card of both teams match the
+  original except Moog's card and goalie matchup and John Blue's card (had the generic goalie), both the test pattern.
+- **SNES SA-1 (nhl94_2026_photos.sfc, BOS vs VGK):** the setup screen's cards, the matchups and both teams' Player Cards
+  match except Swayman (card, setup screen, goalie matchup) and DiPietro (card).
+- **Score logos (nhl94_2026_score_logos.sfc):** Buffalo shows Boston's logo and Carolina Chicago's, in the score box
+  and in the clock box on a power play (set by making tmap differ, $17A6: only the display was tested); Calgary its
+  letters in both, laid out as the retail game prints a name ("LA PwrPlay" in retail). Boston and Vegas look the same
+  on both ROMs, and the only changed bytes are those three teams' table entries and data (and the checksum).
