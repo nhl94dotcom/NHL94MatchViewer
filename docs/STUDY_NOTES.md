@@ -1608,7 +1608,10 @@ score box and in the power-play box for either side, back after Edit Lines, Crow
 its letters in both boxes; the scoreboard's banners pixel-identical; the line-change box unchanged. The changed bytes
 are the five hooks NOSE4Web listed, three blocks of new code and logo data, and the checksum. Boston's made logo shows
 its "B" in grey and olive rather than black and gold (Calgary, Buffalo, Chicago and Toronto look right in both
-palettes, so it is that logo's colours).
+palettes, so it is that logo's colours). The 16:49 rebuild (made logos only): Boston black and gold; Philadelphia and
+Los Angeles match the game's own big logos (black with a white "P" and a red dot; silver and black); Montreal,
+Buffalo, Calgary and Hartford's letters as before; Detroit's wheel comes out pink, (255,121,164) and (255,89,139),
+colours its big logo doesn't have (red $FF0000, dark red $AC0000, white), so its made logo still blends.
 
 ## $A130F1 in Genesis Plus GX (2026-11-08, for NOSE4Web)
 
