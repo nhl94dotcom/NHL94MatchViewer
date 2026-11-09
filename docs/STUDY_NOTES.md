@@ -2710,3 +2710,21 @@ SNES 5 injuries (0.42 a game, 2 for the game), 29 knockdowns, 14 held / hooked, 
   22.7, held / hooked 24.6 / 20.5, injuries 0 / 2 (the build changes no injury roll: chance; the games go their own
   ways). No measurable change: the option takes about 22 x 100 + 20 x 50 = 3,200 a game against about 85,000 drained
   on the ice (88 shifts of about 970), under 4%.
+
+## NOSE4Web's SNES hit energy option, played (2026-11-09, 9d3695f: NHL94_hit_energy.smc, nhl94snes_SA1_hit_energy.sfc)
+
+The code (both builds; the SA-1 one with its own addresses: OptLine $40:34C6, position $6F43, getpde $9F:DDC6 /
+setpde $9F:DDE7, which start with the SA-1's own `lda $72A3,x` / table, flail $EA06): FallDown `.t2`'s `lda.w
+position,x` -> `jsr` (X, Y, a2, d0, d1 saved; OptLine 0 skips; X (the hitter) $18 or more skips (the puck); the faller
+a2 a goalie skips; getpde / -100 / setpde on him; `lda position,x / rts`, its flags for the untouched `beq .2`);
+holdcheck's `lda #SPAflail` -> `jsr` (-50 on X, the held player, then `lda #SPAflail / rts`).
+`snes_hit_energy_check.py`, retail, each trial on both ROMs from the same saved live state: the opponent himself
+down from a body check (A) -100 (6 with OptLine 1, 9 with 2) and from a poke (B) -100 (2); held / hooked (Y) -50 (3
+and 2); his going into the boards (not in the fall list) also -100; OptLine 0 nothing; the puck and the goalie trials
+cost nothing (no knockdown of him seen); the checks stats the same on both in every trial; one -33 (the drain's
+timing). The SA-1 build: the placed-player trials froze there (players put in place every frame stay frozen; put
+once, no hit came), so `--natural` instead (the computer on both sides, 7,200 frames, each skater going down or
+flailing, his energy over 4 frames): original down 0 (6), flail 0 (4); the option build with OptLine 1 down -100 (8),
+flail -50 (3); OptLine 2 the same (one -304: a burst of 204 just before); OptLine 0 nothing (14). So the SA-1 code
+reaches the moved energy table. Unlike the Genesis, the SNES drains energy with Auto too (the drain and the burst cost
+test OptLine for zero), and the option follows it.
