@@ -2731,3 +2731,11 @@ test OptLine for zero), and the option follows it.
 - Rebuilt at 204 / 102 (NOSE4Web e753a45's recommended values, up to 1024): retail trials the opponent down 204 (17:
   body checks 15, pokes 2; with OptLine 1 and 2), held / hooked 102 (5), OptLine 0 nothing, counts the same; the SA-1
   build in the computer's own play (OptLine 1) down -204 (13), flail -102 (9), OptLine 0 nothing (14).
+- At 204 / 102, the computer against itself (12 games each, the same seeds, 5-minute periods, line changes on;
+  Genesis: a scratch copy of nhl94_hit_energy.bin with the two amounts set to 204 / 102, against the retail games
+  above; SNES: NHL94_hit_energy.smc against NHL94.smc): shift ends a game Genesis 88.7 -> 101.7 (+15%, 2.3 standard
+  errors), SNES 114.5 -> 123.7 (+8%, 1.1); mean energy on the ice 89.3% -> 88.7% and 91.1% -> 90.5% (within the
+  spread); the lowest energy anyone reached 1568 -> 1139 and 1573 -> 1207 (means; 1.7 standard errors each);
+  knockdowns 22.4 -> 24.1 and 29.2 -> 31.0, held / hooked 24.6 -> 24.2 and 14.2 -> 18.3; injuries 0 -> 2 and 5 -> 2
+  (no injury change in these builds: chance). So at a burst's cost the computer changes lines a little more often
+  (clearly on the Genesis) and the most-hit skaters get noticeably more tired; the average skater barely changes.
