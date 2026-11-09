@@ -1893,22 +1893,32 @@ periods (the clock held to 5:00), penalties On, No Offside, the computer on both
 each was thrown out: seven Classic games had 10-minute periods from a missed menu press, and the SA-1 build's random
 state didn't vary with the menu frames, so its 12 games were 3.)
 
-| Per game, both teams | Classic (30) | SA-1 (60) | Difference | z |
-|---|---|---|---|---|
-| Goals | 3.10 ± 0.45 | 2.40 ± 0.31 | -0.70 | -1.3 |
-| Shots | 34.1 ± 0.9 | 37.1 ± 0.9 | +3.0 | 2.4 |
-| Saves | 31.0 ± 0.8 | 34.7 ± 0.9 | +3.8 | 3.0 |
-| Save % | 91.0 | 93.5 | +2.5 | 1.6 |
-| Body checks | 48.4 ± 1.9 | 60.9 ± 1.5 | +12.5 | 5.2 |
-| Penalties | 0.55 ± 0.23 | 2.90 ± 0.34 | +2.35 | 5.7 |
-| Passes completed / tried | 62.8 / 114.3 | 63.3 / 115.5 | +0.5 / +1.2 | 0.2 / 0.6 |
+Then, to separate the frame rate from the rest of the build: the same SA-1 build run at 30 (`--make-30`: its Gameloop
+waits for 2 frames, so every step has d7 = 2 as on the original engine), and a second team set, the original rosters:
+retail NHL94.smc against nhl94_SA1_Original.sfc (the SA-1 build with the original teams; it runs at 60 too: its own
+gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game different.
 
-- Clear: about a quarter more body checks and five times the penalties; a few more shots. Not clear in 20 games:
-  goals and save percentage (fewer goals on the SA-1 build, within chance). Passing is the same.
+| Per game, both teams (± one standard error) | Classic (30) | SA-1 Classic at 30 | SA-1 Classic (60) | Retail (30) | SA-1 Original (60) |
+|---|---|---|---|---|---|
+| Goals | 3.10 ± 0.45 | 2.00 ± 0.22 | 2.40 ± 0.31 | 2.20 ± 0.28 | 2.30 ± 0.33 |
+| Shots | 34.1 ± 0.9 | 38.1 ± 0.7 | 37.1 ± 0.9 | 33.5 ± 1.0 | 37.5 ± 1.2 |
+| Saves | 31.0 ± 0.8 | 36.1 ± 0.8 | 34.7 ± 0.9 | 31.3 ± 1.0 | 35.2 ± 1.2 |
+| Body checks | 48.4 ± 1.9 | 47.1 ± 1.4 | 60.9 ± 1.5 | 49.1 ± 1.2 | 64.2 ± 1.4 |
+| Penalties | 0.55 ± 0.23 | 1.75 ± 0.23 | 2.90 ± 0.34 | 0.70 ± 0.32 | 3.00 ± 0.35 |
+| Passes completed / tried | 62.8 / 114.3 | 66.3 / 115.4 | 63.3 / 115.5 | 65.0 / 115.9 | 59.8 / 105.6 |
+
+- **The frame rate itself** (the SA-1 build at 30 against 60): body checks up 30% (z 6.6), penalties up (1.75 to
+  2.90, z 2.8); shots, saves, goals and passing the same.
+- **The rest of the SA-1 build** (Classic against the SA-1 build at 30): about 4 more shots and 5 more saves a game
+  (z 3.6, 4.6) and more penalties (0.55 to 1.75, z 3.7); checks the same; goals 3.1 against 2.0 (z -2.2, borderline).
+- **Both together, in both team sets**: checks up a quarter to a third (48 to 61; 49 to 64, z 8.2), penalties four to
+  five times (0.55 to 2.9; 0.7 to 3.0), about 4 more shots and saves; goals no different (2.2 against 2.3 with the
+  original rosters; Classic's 3.1 stands alone, so no goal effect can be claimed). Passes tried fell in the original
+  team set (116 to 106, z -3.7) but not in Classic's: not settled.
 - The code: the computer's decision timers (temp1, the awareness delay; the assignments; asspuckc's chk4shot /
   chk4pass gate) count down by d7, so they run in real time on both builds: the computer doesn't decide more often.
   temp3 and temp4 count down by 1 a step, so they run twice as fast on the SA-1 build. Collisions (checks, the
-  penalty rolls that come with them), the controller reads and steering run every step, twice as often: the likely
-  cause of the extra checks and penalties.
-- Limit: the SA-1 build differs from Classic in more than the frame rate (the SA-1 engine, the 32-team ROM), so the
-  differences are the build's, of which 60 frames a second is the likely part.
+  penalty rolls that come with them), the controller reads and steering run every step, twice as often: the cause of
+  the extra checks, and of part of the extra penalties.
+- Limits: the computer against itself, one matchup per team set (Montreal against Los Angeles), regulation only;
+  nothing here on how the game feels to a person (input and steering twice as often).
