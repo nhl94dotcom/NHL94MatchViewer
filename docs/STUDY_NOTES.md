@@ -2077,11 +2077,17 @@ ShowMaxBoost, ManualPullGoalie and the computer's pull changed) against NHL94.sm
 only the listed ones ($9B:8C96 / $9B:CE78 the extra attacker fix; $9B:8E1A / $9B:CEBA; $9E:D0BF / $9E:FB6E; $9E:D148,
 $9E:D150; $9F:9A31 / $9F:FB43; the checksum).
 - **ForwardsAndDefenseHack** (SelectLinePlayer: the forward / defence test replaced): every row's list is all the
-  team's skaters (listcount 22, from the first after the goalies; retail 8 defencemen or 14 forwards). Every pick
-  on every row of line 1 (5 rows) and line 6 (4 rows), 198 picks: no player twice, nobody dropped (a pick already on
-  the line swaps, the extra attacker included, through the extra attacker fix; retail: the extra attacker picked at
-  LW, C or RW is in the line twice and the replaced player is off it). In play, LD given the line's extra attacker (a
-  forward; the old LD became the extra attacker) and C a defenceman off the line: both skate at those positions;
+  team's skaters (listcount 22, from the first after the goalies; retail 8 defencemen or 14 forwards). Every pick on
+  every row of line 1 (the Best Line, Line Changes Off) and line 6 (Pen. Kill 1, 4 rows; Line Changes set On in RAM:
+  with them Off the editor shows only line 1, so a first run's "line 6" never left line 1). Line 1, 110 picks: no
+  player twice, nobody dropped (a pick already on the line swaps, the extra attacker included, through the extra
+  attacker fix; retail: the extra attacker picked at LW, C or RW is in the line twice and the replaced player is off
+  it). **Line 6: the extra attacker fix misses the extra attacker** on retail and the hack alike: picking the line's
+  extra attacker at any of the 4 rows leaves him twice and drops the replaced player. The fix ($9B:CE78) searches
+  from the line's first slot + lineslots down, lineslots + 1 slots: offsets 5 (extra attacker) to 0 on a 5-row line,
+  4 (the unused RW slot) to 0 on the penalty-kill lines (lineslots 4, lines 6 and 7). A fixed count would cover all:
+  `adc #5` for `adc lineslots`, `ldx #6 / nop` for `ldx lineslots / inx`. In play, LD given the line's extra attacker
+  (a forward; the old LD became the extra attacker) and C a defenceman off the line: both skate at those positions;
   with the goalie pulled the old LD comes on as the extra attacker (position 6). The editor never edits the extra
   attacker's slot itself.
 - **ShowMaxBoost** (CalcAttrib's single-rating path: 100 when the signed hot / cold value r3 is negative): in Edit Lines

@@ -3,7 +3,8 @@ NHL94.smc with the extra attacker fix, ForwardsAndDefenseHack, ShowMaxBoost, Man
 at 1-3 goals behind with 120 s or less) against NHL94.smc. From the saved state SNES_STATE_TOP (Montreal at home on
 pad 1 against Los Angeles, first period, in play). Parts, each from that state:
 
-- lines: Edit Lines (START, down 4, B) on line 1 (Best Line) and line 6 (RIGHT x 5), every row, every pick of the
+- lines: Edit Lines (START, down 4, B) on line 1 (the Best Line, Line Changes Off as in the state) and line 6 (Pen.
+  Kill 1: Line Changes set On in RAM first, then RIGHT x 5), every row, every pick of the
   list (UP to its top, DOWN n, B): the list's size and first player (listcount $1DA3, pickfirst $1DAB), each line read
   back (home lines $1CE4, 8 bytes: goalie, LD, RD, LW, C, RW, extra attacker, 0), a player twice, a player dropped
   (one who was on the line and isn't after a pick of someone already on it).
@@ -35,7 +36,7 @@ SFLAGS, PSITEM, CLOCK, GMCLOCK, GSP = 0x15D8, 0x0D15, 0x1632, 0x15D6, 0x1630
 TMGOALIE, CONT1, CONT2, TEAMPADS, SCORE = 0x17AA, 0x1C84, 0x1C86, 0x19D0, 0x178E
 POSITION, PNUM, PFTEAM, LINES, HOTCOLD = 0x0F43, 0x12A3, 0x1503, 0x1CE4, 0x1A12
 LISTCOUNT, PICKFIRST, PICKROWS, PICKTOP = 0x1DA3, 0x1DAB, 0x1DAF, 0x1DA7
-TEXTMAP = 0x37F4
+TEXTMAP, OPTLINE, LINESEL = 0x37F4, 0x34C6, 0x0D43
 ROWS = ["LD", "RD", "LW", "C", "RW"]
 
 
@@ -60,6 +61,8 @@ class Game:
         self.e.run(wait)
 
     def editor(self, line=1):
+        if line > 1:                      # with Line Changes Off the editor shows only line 1 (the Best Line)
+            self.e.setw(OPTLINE, 1)
         self.tap("START", 60)
         for b in ("DOWN",) * 4 + ("B",):
             self.tap(b, 40)
@@ -88,14 +91,14 @@ def part_lines(rom):
         base = g.e.serialize()
         before = g.line(line)
         rows = ROWS[:5] if line < 6 else ROWS[:4]
-        res = {"before": before, "rows": {}}
+        res = {"editor_line": g.e.w(LINESEL), "before": before, "rows": {}}
         for r, name in enumerate(rows):
             g.e.unserialize(base)
             for _ in range(r):
                 g.tap("DOWN", 15)
             g.tap("B", 60)
             n, first = g.e.w(LISTCOUNT), g.e.w(PICKFIRST)
-            picks, twice, dropped = [], 0, 0
+            picks, twice, dropped, changed = [], 0, 0, 0
             for k in range(n):
                 g.e.unserialize(base)
                 for _ in range(r):
@@ -107,16 +110,16 @@ def part_lines(rom):
                     g.tap("DOWN", 10)
                 g.tap("B", 60)
                 after = g.line(line)
-                skaters = [v for v in after[:5]]
+                changed += after != before
                 dup = [p for p, c in Counter(after).items() if c > 1 and p]
-                # someone on the line before is missing although the pick was already on the line (a swap)
-                picked = (set(after) - set(before)) or {after[ROWS.index(name)]}
+                # someone on the line before is missing although nobody new came on (a pick from the line itself)
                 lost = set(before) - set(after)
                 drop = bool(lost) and not (set(after) - set(before))
                 twice += bool(dup)
                 dropped += drop
                 picks.append(dict(pick=k, line=after, twice=dup, dropped=sorted(lost) if drop else []))
-            res["rows"][name] = dict(listcount=n, pickfirst=first, picks=len(picks), with_a_player_twice=twice,
+            res["rows"][name] = dict(listcount=n, pickfirst=first, picks=len(picks), lines_changed=changed,
+                                     with_a_player_twice=twice,
                                      with_a_player_dropped=dropped, examples=[p for p in picks if p["twice"] or p["dropped"]][:4])
             lowload.breathe()
         out[f"line{line}"] = res
