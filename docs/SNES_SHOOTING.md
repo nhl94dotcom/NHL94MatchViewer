@@ -84,8 +84,8 @@ from the game's own scatter rule for an average shooter (working Shot Accuracy 1
 ![The chance an aimed shot goes into an empty net, by aim and distance](img/empty_net.svg)
 
 **At an open net: get within about 180 units (60 feet) if you can, and hold Down or nothing as you shoot, never Up.**
-Not yet checked on recorded shots (only five recorded shots had the goalie far out or pulled; they hint at more going
-wide: 24% wide with him 35-70 units out, 16% in his crease).
+Not yet checked on recorded SNES shots (the Genesis recordings hint at more going wide with the goalie far out:
+GENESIS_SHOOTING 4.2).
 
 ### 4.3 Shot power
 
@@ -423,7 +423,7 @@ All five are the same move:
   across (the skater turns side-on and the puck slides 4-10 feet across in front of him); keep that direction held;
   tap A 9-14 feet out; the puck leaves the stick 5-8 feet from the goalie and 4-7 feet to his side, and goes in low (one of the five high).
   Either side, swung back toward the side he came from (Neely) or on across (Suter, Robitaille).
-- **Like the Genesis deke** (GENESIS_SHOOTING 5.8: a swing, then the shot), but closer in: the Genesis best set-ups
+- **Like the Genesis deke** (GENESIS_SHOOTING 4.11: a swing, then the shot), but closer in: the Genesis best set-ups
   swing 20-24 feet out and the shot follows from about 10-15 feet; on the SNES the d-pad is still held sideways at
   the shot, and the release is right on top of the goalie.
 - **The goalie** barely moves before the release (0-9 units across); a person in net pressed the save button
@@ -583,9 +583,11 @@ At a rethink with the puck going to cross within 24 of the middle in under 19 fr
 (`GoalieSaveList`) by the puck's direction against the way he faces (the game's 8-way directions are coarse: anything
 between 1:2 and 2:1 counts as diagonal) and its height: well to one side, a **sprawl**; to one side and low, a **stick
 save**; high, a **glove / blocker save**; a pad stack while the puck is still carried; a **butterfly** for a slow puck
-straight at him. Most moves hold a single frame; his speed is halved as he starts, **and he keeps skating through the
-move** (it sets the animation lock `pfalock`, not `pf2aip`, which is what stops his routine), so he slides on toward
-the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the recorded goalies did).
+straight at him. Most moves hold a single frame; his speed is halved as he starts, and on that same step he still pushes toward the
+crossing point. After that **he glides through the move on the speed he has**, with friction: the move sets the
+animation lock `pfalock`, and `updateplayers` runs no assignment for a locked player, so he neither rethinks nor pushes
+until it ends (traced in 4.7, which corrected an earlier reading that he keeps skating through it). A goalie already
+sliding across slides on toward the crossing point.
 
 ### 5.3 The computer goalie
 
@@ -618,7 +620,8 @@ the crossing point. **Confirmed** (the model's goalie in 4.7 lands where the rec
   the carrier steps to the near post (SCORING_SNES, "EA Specials on the SNES": the walk-in, a weak low shot at the far side the shooter catches up
   with and carries on: 82-89% at the bottom net's best set-ups in the game, 55-79% at the top net. A carrier alone, without that first shot, doesn't draw
   him off the near post). He skates like a player (acceleration from Weight and Agility, + 8 for a goalie, his Agility taken away while a
-  pass is in the air; top speed from Speed), and a computer goalie with nowhere to go halves his speed each step.
+  pass is in the air; top speed from Speed), and a computer goalie with nowhere to go slows by 112 + his Agility a step
+  on each axis (`StopNA`; a person's goalie halves his speed instead).
   **He stops dead when an opposing carrier winds up a shot** while skating mostly up or down the ice.
 - **What each of his ratings does** (2026-10-30, every read of each rating array in the code checked; none changes
   his size, 5.1):
@@ -720,7 +723,8 @@ gave mostly pad stacks (16). With A, 8 goals in 25 (xG 0.41 a shot); without, 4 
   while skating mostly up or down the ice** (sideways speed under twice his up-and-down speed), the goalie's speed is
   set to zero once (`goaliestopped`). He picks up again at his next rethink. A carrier moving across doesn't trigger it.
 - **During a wind-up his positioning spot widens:** 34 across and 28 out, instead of 26 by 20. **Code**
-- **Save moves don't freeze him:** his speed is halved and he keeps sliding and rethinking through the move (5.2).
+- **Save moves don't stop him dead:** his speed is halved and he glides on through the move on what is left (5.2),
+  though he can't rethink or push until it ends.
 - **Recordings:** a save move started before the release on 9 of 121 SNES shots at computer goalies, a median 0 ms
   before (Genesis: 35 of 213, a median 92 ms before).
 - **Cross-crease goals still happen,** for other reasons:

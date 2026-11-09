@@ -215,7 +215,7 @@ delayed penalty (0.7 and 0.3 units off the aim point).
   "The leagues' own results"). The recordings' uncounted stops by direction (above) are too few to show it. (In these 13 games the middle-height shots went the other way, 16% uncounted going up
   against 7% going down, unexplained, so the recordings alone don't show the 10%.)
 - **By direction, in the recordings:** of shots and one-timers that reached the goalie, 126 of 148 were counted going
-  up (85%) and 143 of 157 going down (91%), the opposite of the leagues' 10% more going up, and with only 17 stick
+  up (85%) and 143 of 157 going down (91%), the opposite of the leagues' 6% more going up, and with only 17 stick
   knock-aways (9 up, 8 down) too few to show the aim effect above. About 100 whole games would be needed.
 - **Every uncounted save, one by one** (`analysis/uncounted_study.py`, 34 in the Genesis recordings, pass shots
   left out). How each one ended, against the counted ones:
@@ -521,7 +521,7 @@ The goalie stops a puck only if it physically reaches him:
 - After a body touch the puck is held or rebounds (5.2).
 - **The glove and stick save ratings are never used.**
 
-- **Confirmed:**
+**Confirmed:**
 
 - **In the leagues' results** (540,310 shots in the Classic leagues, the retail goalies): save % rises with Agility,
   64.7% at roster 3, 68.3% at 4, 69.6% at 5, 72.2% at 6 (LEAGUE_RESULTS, "Home and away, goalies and teams").
