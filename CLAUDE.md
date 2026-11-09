@@ -147,7 +147,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       (Genesis injuries forced in a scratch copy; the head blood builds).
     - Lines and options: `gen_line_dup_check.py` / `snes_line_dup_check.py` (the same skater twice on one line),
       `gen_line_editor_cursor.py` (the Genesis line editor's reachable slots), `gen_1on1_edit_lines.py` (Edit Lines and
-      Team Roster on a ROM dressing fewer skaters), `gen_looks_check.py` (intro waits, puck friction, puck and fan colours), `gen_songs_check.py` (organ songs by home
+      Team Roster on a ROM dressing fewer skaters), `gen_looks_check.py` (intro waits, puck friction, puck and fan colours), `gen_songs_check.py` / `snes_songs_check.py` (organ songs by home
       team and slot), `gen_leadsong_check.py` (the power-play songs after a real penalty), `gen_pad34_goalie.py`
       (pads 3 and 4 through EA's 4-Way Play: `emu.Emu(fourway=True)`), `gen_assist_repro.py` / `snes_regain_assist_test.py` (the
       lost-assist bug reproduced, and its fix), `snes_vault_hacks_test.py` (the

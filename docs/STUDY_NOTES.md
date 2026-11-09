@@ -2287,6 +2287,16 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   play, 2 other faceoffs, 3 a home goal, 4 a faceoff on a home penalty kill, 5 random in the third period. TeamSongs is
   followed by DefaultSongs, so its room: retail, Classic and SDL16 $80:DA56, 28 teams; nhl94_2026*.sfc $80:DC17 and
   nhl94snes_2026*.sfc $80:DA71, 32; nhl94_SA1_Original $80:DC17, 28.
+- **NOSE4Web's SNES song editing, played (5f3a2bc, NHL94_songs.smc):** only Boston's row changed (slot 1 $9A:AF99
+  Charge [E-flat] -> $96:B6CD, retail's San Jose slot 1, the Jaws Theme; slot 3 $FFFFFFFF -> $99:BB80, retail's
+  DefaultSongs entry 2 and Hartford's slots 0 / 5, Brass Bonanza) and the header checksum. `snes_songs_check.py`
+  (HomeTeam $1C98 set, the song MusicStart is given read from SongPtr $07ED and EventPtr+2 at $58, cursong $0CC3):
+  Boston's home goal plays $99:BB80 (retail: a DefaultSongs pick, $96:8646), the faceoff with a home power play
+  (PBnum $01) $96:B6CD (retail $9A:AF99), the penalty-kill faceoff (PBnum $10) and the period's first faceoff
+  (percue) $9A:B2DF and $99:9A9C on both; Hartford and San Jose the same on both ROMs. puckfaceoff2 picks slot 1 / 4
+  from PBnum ($1624, players in the boxes: home x 16 + visitors), visitors more (a home power play) slot 1, home more
+  slot 4; its inline comments call PBnum "score digits" and the slots "behind" / "ahead", which the code doesn't bear
+  out (the TeamSongs table's own comment has it right).
 - **The Genesis song format** (sound94): a song is an event stream of 4-byte events (a delay in frames to the next
   event, 0-255; a status byte, command in bits 6-4 and MIDI channel in 3-0; two data bytes), in up to 8 track slots
   of 8 MIDI channels each. Commands: $0x key off, $1x key on (note, velocity 0-127; velocity 0 = off), $3x controller
