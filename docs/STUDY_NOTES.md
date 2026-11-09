@@ -2225,11 +2225,11 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
     `bra` alone: d0 1-2 always period, but d0 = 3 (Fgt 12+) still the game. Every injury the period: $14508 `bne.w`
     -> two NOPs. $14508 -> `bra` with $14520 -> `bra`: every injury the game (right).
 - **Hot / cold range (topic 21637).** $F70AD is the low byte of Create_HotCold_Table's `move.w #9,d0` before
-  randomd0s, which gives -(n-1) .. n-1 (-8 .. 8 in retail; the comment's -9 is off by one), into all 16 bytes a
-  player. Play (AttributeCalc): rating x 5 + the player's first byte / 3 (signed, toward zero), so values within -2
-  .. 2 do nothing: n <= 3 removes the effect in play. The cards / Edit Lines (cards94 rating code) add each rating's
-  own byte, unscaled (rating x 18 + byte), so n = 2 or 3 still shows 1-2 point changes there; n = 0 or 1 makes every
-  byte 0 (randomd0 multiplies by the range: no division), no effect anywhere.
+  randomd0s, which doubles the range, draws 0 .. 2n-1 and takes n away: **-n .. n-1** (-9 .. 8 in retail, as the
+  code's comment says; a first reading here had -(n-1) .. n-1, corrected in play), into all 16 bytes a player. Play
+  (AttributeCalc): rating x 5 + the player's first byte / 3 (signed, toward zero), so -2 .. 2 does nothing: **n <= 2
+  removes the effect in play** (n = 3 can give -3, a step down). The cards / Edit Lines (cards94 rating code) add each
+  rating's own byte, unscaled, so n = 2 still shows 1-2 point changes there; n = 0 or 1 makes every byte 0.
 - **No icing (topic 15002).** $1023E `bset #ifok,(iflags)` at the end of a2touchpuck (a player sending the puck from
   his own half arms the icing check) and $102A0 `bset #ifcgl,(iflags)` in PuckIChk (the puck crossed the goal line
   outside the crease width); each -> `bra.s` over its own operand. The call needs both bits. $1023E alone: no icing
@@ -2284,4 +2284,23 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
   attribute, part of the puck), 405 the bottom net (object 12, 4 pieces) and 406 the top net (object 13, 2 pieces)
   ($A16BA-$A16E9), 407 SPFGoalie (the goalie's first frame, palette 2 as players: $A16F0 is its first piece's
   attribute). The replay draws the same frames (replay94: the frame words it recorded).
+- **The five forum options played** (NOSE4Web 8e1c951; `analysis/scoring_map/gen_forum_options_test.py`, scratch
+  copies built as NOSE4Web describes):
+  - Injuries (every carrier's fall made an injury): retail 4 injuries in 12,885 frames, by its own type rules; never
+    ($14440): none in 43,200 frames; period ($14508 NOPs, getFgtbyte forced to 3, a checker with Fighting 12+): 4 of 4
+    period ($FFFD, game bit clear); game ($14508 + $14520): 4 of 4 game ($FFFC). Penalty without the injury
+    ($14450 and the countdown's `move.w #4,(InjCntDown)` at $1446A NOP'd): the penalty called (the team's penalties
+    +1), the player kept (tmpdst stays $FFFF), no injury box, play on; he lies in the injury pose about 10 s, then
+    skates again.
+  - Hot / cold range: at the opening faceoff against range 0 (the same game, every byte 0): range 9 / 4 / 3 change 88
+    / 49 / 19 working ratings, range 2 none; Edit Lines' player list differs on 5 of its 8 rating pages at every
+    range, 2 included (Overall 54 / 55, 51 / 52): no effect in play at 2, still shown.
+  - No icing: four long shots from the home half wide of the net. Retail arms the icing every time (iflags 7: crossed,
+    the direction, ifok); 6004 and 6002 never (0 or 2), so no call can follow; the two the same in every shot (6002's
+    `eor.l d7,d0` changed nothing seen). The goalie played the loose puck on retail and both builds alike, so the
+    'goalie stays home' difference didn't show in these shots.
+  - B-checks with penalties off ($13FDC `bra.w`): the pad-1 skater skating into the away carrier and poking (B, the
+    sweep $0B24), 72 tries each: retail trips 66 with penalties on, 10 off; the option 66 on, 66 off.
+  - Goalie control delay at 12 (all eight places): B held without the puck, 32 tries: pad 1 takes the goalie after
+    17 frames on retail, 12 on the build (one count a frame). Pads 3 and 4 not played (the frontend drives two pads).
 

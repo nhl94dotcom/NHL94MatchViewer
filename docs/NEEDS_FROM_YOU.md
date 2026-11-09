@@ -73,7 +73,7 @@ record or check and what it will settle. Newest at the bottom of each section.
 
 ## To pass on to the disassembly maintainers (if you like)
 
-Found in the 2026-10-21 review and studies (the first seven still in the code 2026-11-08, paths current; the eighth found 2026-11-09): comments that say something different from the code they sit on (the code
+Found in the 2026-10-21 review and studies (all seven still in the code 2026-11-08, paths current): comments that say something different from the code they sit on (the code
 and our recordings agree with each other; the comments are the slips).
 1. **NHL94Genesis, collide94.asm, the breakaway roll in checkagr:** the comment says "d0 = 3..5"; the code loads 8, 7,
    4 or 3 by the fouled player's distance from the goal line (over 117, 59-117, 45-58, closer).
@@ -92,8 +92,6 @@ and our recordings agree with each other; the comments are the slips).
    check"; it's reached when the puck is *outside* ±$2C, and within it icing is cancelled.
 7. **NHL94SNES, routines/logic/puck/chk4shot.asm:** `cmp.w #$2711` ("distance^2 > 100*100?") has no branch after it, so the
    test does nothing (the Genesis branches with `bhi`).
-8. **NHL94Genesis, crowd94.asm, Create_HotCold_Table:** the comments say -9 .. 8 ("random -9 ... 8", "sets RNG limit
-   (-9 - +8)"); randomd0s with 9 gives -8 .. 8 (-(range-1) .. range-1, as its own comment says).
 
 ## Done (where the answers are)
 
