@@ -1939,3 +1939,21 @@ gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game differe
   No fighting penalty in 40 games. The extra penalties are mostly Roughing (16 of the SA-1 build's 39 calls against 2
   of Classic's 12), and Interference doubled (12 against 7); all the extra shots come with a man in a box (+3.6
   power play and short-handed, +0.4 even strength). Open: whether the build's fights are charged as Roughing.
+
+## NOSE4Web's SNES team-block colours, checked (2026-11-08)
+
+NHL94_banner_test.smc (Boston's TeamBlockPalettes entry: colours 2-7 greens, 8-14 magentas) against NHL94.smc, with
+`analysis/scoring_map/snes_banner_check.py`: the same presses on both and on a scratch copy of the test ROM with
+Boston's colours 1 and 15 also changed (red, cyan), for Boston at home (palette 7), Boston visiting (palette 6) and
+Boston against Boston: Game Setup, the controller screen, the matchups, the horizontal pause scoreboard, each pause
+item's first screen, the player card's team page, and the playoff bracket (New Playoffs, Best of 7).
+- The colours are at $D6F5C (0) to $D6F7A (15); colours 2-14 at $D6F60-$D6F79. Retail sets bit 15 on several
+  ($94A5 ...); SetColours / SendColours only copy, so it does nothing.
+- Only Boston's blocks change (706 pixels a block) on every screen, and the player card's diagonal stripes:
+  SetCardTeamColours copies block colours 7 and 8 (palette 7 at home, 6 visiting) to colours $4E / $4F.
+- The block's tiles (from video memory, tile base word $2000, map at text-map rows 10-11) use colours 2-15: 2-14
+  the fill, 15 the frame (172 pixels a block); never 1. Palette 6's colour 1 is also the menu text on Game Setup,
+  the controller screen, the matchups and Edit Lines while the visitors' block palette is loaded, so it must stay
+  $6F7B (every retail team has it). The bracket uses neither 1 nor 15.
+- Boston against Boston: DrawTeamBlocks writes both palettes and draws both blocks with the palette-6 attribute.
+- NOSE4Web's editor now offers colours 2-15 only (their commit 7a18e91).
