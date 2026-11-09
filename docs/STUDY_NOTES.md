@@ -2021,3 +2021,26 @@ overall ratings differ by the game's random hot / cold, not the import.)
   (counted in video memory) still leave Chicago's black outline at number 1 (white on the title) and put the tan face
   and dark brown at 7 (black): a white outline round a black face. The Snes9x saved state keeps CGRAM in its PPU
   block at offset 64, big-endian words.
+
+## The same skater twice on one line (2026-11-09, for NOSE4Web)
+
+nhl94_line_dup.bin / NHL94_line_dup.smc: Boston's NLC and Sc1 lines with Adam Oates (roster place 2) at LW and C,
+against nhl94.bin / NHL94.smc, by `analysis/scoring_map/gen_line_dup_check.py` and `snes_line_dup_check.py`: line
+changes Off and On, Boston by pad 1 (random presses) and by the computer, four game minutes each, every 10 frames of
+play Boston's skaters (position, roster place, sprite).
+- **On the ice**: both builds dress the line as read, Oates in two objects (LW and C), both drawn, both playing (each
+  carries the puck). Then, when the game rebuilds who should be on the ice (SetPlList from the current line), the
+  second Oates object finds no position of its own (newpos -1) and leaves: position $FF (SNES $FFFF), no sprite, and
+  Boston plays four skaters, without a penalty, until a line change brings a whole line back. Samples with four
+  skaters (Genesis / SNES): lines Off, pad 294 of 729 / 303 of 799; lines Off, computer 349 of 664 / 818 of 844 (on
+  the SNES from the first faceoff); lines On, pad 0 / 106; lines On, computer 478 of 681 / 0. The originals: never
+  under five, never a player twice. No crash or freeze (the clock pauses match the originals'), faceoffs go on.
+- **Stats**: by roster place, so Oates's goals, assists and shots count once; team checks equal the players' sum
+  (Genesis). Genesis ice time counts each object, so Oates gets double time while both are on (334 and 366 game
+  seconds in about 240 played); the LW has no time of his own. The SNES keeps no per-player ice time, and its
+  per-player checks ($168E) only work on Classic. Assists (from the code): a touch by the player who is already the
+  last touch changes nothing (Genesis logic94, SNES a2touchpuck), so Oates never assists himself; but a Genesis
+  one-timer from one Oates to the other shifts the touch list without that check, and the goal code then skips both
+  assists (assist 1 equals the scorer), so the player who passed to the first Oates loses his assist.
+- **Edit Lines**: shows the line as read (Genesis "Sc1 Line", SNES "Best Line": LW Oates, C Oates), the player list
+  has Oates once ("Ice"); picking another player for C works on both.
