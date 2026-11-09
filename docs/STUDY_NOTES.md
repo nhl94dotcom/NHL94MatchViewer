@@ -2146,3 +2146,21 @@ the 7 lines to RAM and, with Line Changes Off, copies line 1 over Scoring 1; Edi
 Retail Toronto, checked in the game: Best Line LD Gill, RD Ellett; Ken Baumgartner (place 16, the last of the 14
 forwards, so in the forward lists) at RD on Scoring 1, Pwr. Play 1 and Pen. Kill 2.
 
+## The Genesis one-timer assist bug (2026-11-09, for NOSE4Web)
+
+onetimershot (onetimer94.asm) pushes the shooter onto his team's touch list (tmtouch1 / 2 / 3, team struct +$18 /
++$1A / +$1C: the scorer and the two assists) with three moves at $F6CE4, without a2touchpuck's checks (already the
+last touch: no change; tmflast, set by puckglue when the other team takes the puck: overwrite, no shift; a second
+assist equal to the new last touch: cleared). puckstick's one-timer branch doesn't call a2touchpuck, so an ordinary
+one-timer counts once; but when the receiver's stick has touched the pass first (a touch, not a catch: a2touchpuck
+makes him the last touch) and the one-timer then fires, the list reads shooter, shooter, passer, and the goal code
+(assist 1 = scorer: stop) credits no assist. In the recorded Genesis games, 3 of 71 one-timer goals have no assist
+although a teammate's pass made them; the recordings' touch words show that sequence in all three (DAL-BOS P3 2:16:
+6 11 2 -> 11 6 -> 11 11 6; HFD-EDM P3 1:30: 20 5 0 -> 5 20 0 -> 5 5 20; BOS-VAN P1 3:40: 18 0 -> 11 18 0 -> 11 11 18).
+The fix (`analysis/scoring_map/gen_onetimer_assist_test.py`): at $F6CE4 a jsr to 42 bytes of a2touchpuck's list
+update (code at $FFB14), NOPs after. In play (the one-timer harness, 24 struck one-timers a ROM, 18 goals): as played
+the original and the fix give the same lists and assists; with the receiver made the last touch before the strike the
+original gives receiver, receiver, passer and the 18 goals no assist, the fix keeps receiver, passer, the one before,
+and credits both. A retail copy with the fix boots and plays once the boot's ROM sum ($300) is off, as in NOSE4Web's
+builds. (Deflection goals, a different path, are mostly unassisted too: 7 of 9 in the same games.)
+
