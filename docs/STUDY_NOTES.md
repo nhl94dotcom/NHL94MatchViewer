@@ -2228,4 +2228,20 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
   state at all, so no call, and the computer goalie goes out to a loose puck as always (logic94 3740: it stays home
   while ifok is set). $102A0 alone: no call, but ifok still set from the shoot-in to the next touch, so the computer
   goalie still holds back from the puck as for an icing. Either stops the call; $1023E alone is the clean one.
+- **B-checks with penalties off (topic 17875).** Bcheck (collide94.asm; CCStart's branch for a hitter in SPAsweepchk,
+  the B sweep): with OptPen 0 and a person's checker (pfjoycon) the trip needs randomd0($20 + his Chk - the target's
+  Agl, 2 less with sflags8 bit 1 or sflags7 bit 6) >= $18; otherwise straight to the direction test (.checkdir).
+  $13FDC `bne.w .checkdir` (penalties on) -> `beq`, $13FE6 `beq.w .checkdir` (not a person) -> `bne`: the roll then
+  applies with penalties on to the computer's checker only, and with penalties off to nobody. So with penalties on it
+  changes play: the computer's B trips get the roll (about 1 in 4 succeed at Chk = Agl) where retail had none; a
+  person's are unchanged. For "penalties off plays as on" alone: $13FDC `bne.w` -> `bra.w` (66 -> 60). No overlap
+  with NOSE4Web's weight bug and C-then-B fix ($13D72, CCStart's speed-burst check: the CB check is a body check).
+- **Goalie control delay (topic 13512).** bholdtimer ($FFBF06 pads 1 / 2) and bholdtimer34 ($FFBF08 pads 3 / 4, a
+  byte each) are set in eight places, NOSE4Web's list: logic94 242-243 (both words $1111 when holdreset runs out:
+  $AD04, $AD0A) and six `move.b #$11` (537 / 540 at the B change: $B12F / $B139; .bpress 699 / 702: $B36D / $B377;
+  .brel 712 / 725: $B39B / $B3C3); the rest only test and count down (660-692) or swap (273-322). Pads 3 and 4 run
+  through doinput with their word swapped into bholdtimer (pad index 0 for pad 3, 2 for pad 4) and each set picks
+  its byte by the index, so they keep and reset their own; 2-on-2 is right (they do read pads 1 / 2's goaliemode1 /
+  goaliemode2, which aren't swapped). The countdown is `subq.b #1` with `bpl`, so a start of $81 or more clamps to 0
+  on the first count (the goalie at once): keep it 1 .. $80; the two words take the value in both bytes.
 
