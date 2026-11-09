@@ -114,7 +114,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   its named table, `coach_guide.py`'s coach pages, `coach_history.py` and `coach_movers.py` go to that private folder
   only); handouts `classic_team_guide.py` (`docs/TEAM_GUIDE_*.md`), `classic_player_guide.py`
   (`docs/PLAYER_GUIDE_*.md`), `classic_draft_guide.py` (`docs/DRAFT_GUIDE_CLASSIC.md`); `coach_team_levels.py`;
-  `league_ratings.py` (`docs/LEAGUE_RATINGS.md`; method `docs/COACH_RATING.md`). `python analysis/update_all.py`
+  `league_ratings.py` (`docs/LEAGUE_RATINGS.md`; method `docs/COACH_RATING.md`). `classic_season_report.py LEAGUE COACH` (one coach's season against
+  his league, to that private folder). `python analysis/update_all.py`
   rebuilds them all in order and ends with `tests/check_league_outputs.py` (`--list`, `--from NAME`, `--tests`). A
   Classic league's name starts `Classic_Spring`, `Classic_Summer` or `Classic_Fall`; in a season, the league with the
   most As is the top one.

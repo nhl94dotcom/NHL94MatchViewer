@@ -1,0 +1,404 @@
+"""One coach's season in one league, against the rest of that league (2026-11-09, the user: Classic_Fall2026_GENS-A
+and _SNES-AB). Names real people, so the report goes only to %USERPROFILE%\\NHL94_League_Data\\season_reports, never
+the repository; the script prints nothing but the path.
+
+From the league database (All_Games_GENS.csv / All_Games_SNES.csv): every regular-season game of the league, as the
+league counts them (a double upload too); simulated games left out. Points: 2 a win, none for
+a loss (overtime included; a tie 1). Rates per game, so coaches with games left compare fairly. Ranks: 1 is the best
+(fewest for things against). Pre-season strength: coach_history's Classic rating the day before the league's first
+game (win chance against coach B = 1 / (1 + exp(-(a - b))); teams and home ice not in it).
+
+python analysis/classic_season_report.py LEAGUE COACH"""
+import ast
+import csv
+import json
+import math
+import os
+import sys
+from collections import Counter, defaultdict
+from datetime import date
+from pathlib import Path
+
+DATA = Path(os.path.expanduser("~")) / "NHL94_League_Data"
+OUT = DATA / "season_reports"
+STATS = ["Score", "Shots", "PPGoals", "PPTries", "SHGoals", "BreakGoals", "BreakTries", "OneTimerGoals",
+         "OneTimerTries", "PenShotGoals", "PenShotTries", "FaceoffWins", "Checks", "PIM", "AttackZoneTime",
+         "PassComps", "PassTries", "GoalsP1", "ShotsP1", "GoalsP2", "ShotsP2", "GoalsP3", "ShotsP3", "GoalsOT",
+         "ShotsOT"]
+
+
+def num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def load(league):
+    system = "GENS" if "GENS" in league else "SNES"
+    path = DATA / f"All_Games_{system}.csv"
+    with open(path, newline="", encoding="utf-8", errors="replace") as fh:
+        rows = [r for r in csv.DictReader(fh) if r["League"] == league and r["sim"] in ("0", "") and r["RegOrPlay"] == "R"]
+    # every uploaded game counts, as the league counts it (a double upload included: the user, 2026-11-09)
+    return system, sorted(rows, key=lambda r: (r["DateTime"], int(r["MatchID"])))
+
+
+def sides(r):
+    """The game from each coach's side: (coach, team, home?, own stats, opponent's stats, opponent, raw row)."""
+    out = []
+    for me, op in (("Home", "Away"), ("Away", "Home")):
+        mine = {k: num(r[me + k]) for k in STATS}
+        theirs = {k: num(r[op + k]) for k in STATS}
+        mine["Players"], mine["Goalies"], mine["Goals"], mine["Penalties"] = (ast.literal_eval(r[me + k] or "[]")
+                                                                            for k in ("Players", "Goalies", "Goals", "Penalties"))
+        theirs["Goals"] = ast.literal_eval(r[op + "Goals"] or "[]")
+        theirs["Penalties"] = ast.literal_eval(r[op + "Penalties"] or "[]")
+        out.append(dict(coach=r[me + "Player"], team=r[me + "TeamAbbrev"], home=me == "Home", us=mine, them=theirs,
+                        opp=r[op + "Player"], opp_team=r[op + "TeamAbbrev"], when=r["DateTime"], row=r))
+    return out
+
+
+def ratings(system, league_first_day):
+    hist = DATA / "coach_history" / f"{'GENESIS' if system == 'GENS' else 'SNES'}_classic.json"
+    d = json.load(open(hist, encoding="utf-8"))
+    day = max(int(k) for k in d if int(k) <= league_first_day.toordinal())
+    return {k: v[0] for k, v in d[str(day)].items()}, date.fromordinal(day)
+
+
+def sig(x):
+    return 1 / (1 + math.exp(-x))
+
+
+def pct(a, b, digits=1):
+    return f"{100 * a / b:.{digits}f}%" if b else "-"
+
+
+def fmt_time(s):
+    s = int(round(s))
+    return f"{s // 60}:{s % 60:02d}"
+
+
+def build(league, coach):
+    system, games = load(league)
+    per = defaultdict(list)
+    for r in games:
+        for g in sides(r):
+            per[g["coach"]].append(g)
+    if coach not in per:
+        raise SystemExit(f"{coach} has no games in {league}")
+    first = date.fromisoformat(min(r["DateTime"] for r in games)[:10])
+    rat, rat_day = ratings(system, first)
+    known = [rat[c.lower()] for c in per if c.lower() in rat]
+    mean_known = sum(known) / len(known)
+    R = lambda c: rat.get(c.lower(), mean_known)
+
+    # --- per-coach totals
+    tab = {}
+    for c, gs in per.items():
+        t = Counter()
+        for g in gs:
+            us, them = g["us"], g["them"]
+            ot = bool(us["GoalsOT"] or them["GoalsOT"] or us["ShotsOT"] or them["ShotsOT"])
+            win, loss = us["Score"] > them["Score"], us["Score"] < them["Score"]
+            t["GP"] += 1
+            t["W"] += win
+            t["L"] += loss
+            t["T"] += not win and not loss
+            t["OTW"] += win and ot
+            t["OTL"] += loss and ot
+            t["one_goal_W"] += win and us["Score"] - them["Score"] == 1
+            t["one_goal_L"] += loss and them["Score"] - us["Score"] == 1
+            t["blow_W"] += us["Score"] - them["Score"] >= 3
+            t["blow_L"] += them["Score"] - us["Score"] >= 3
+            for k in STATS:
+                t["F_" + k] += us[k]
+                t["A_" + k] += them[k]
+            t["exp_W"] += sig(R(c) - R(g["opp"]))
+            t["opp_rating"] += R(g["opp"])
+            t["first_goal"] += 0
+        t["Pts"] = 2 * t["W"] + t["T"]
+        tab[c] = t
+    teams = {c: Counter(g["team"] for g in gs).most_common(1)[0][0] for c, gs in per.items()}
+    me = tab[coach]
+
+    def rate(c, key):
+        t = tab[c]
+        return t[key] / t["GP"]
+
+    def rank(value_of, higher_better=True):
+        vals = sorted(((value_of(c), c) for c in tab), reverse=higher_better)
+        order = [c for _, c in vals]
+        return order.index(coach) + 1, len(order)
+
+    def league_avg(value_of):
+        return sum(value_of(c) for c in tab) / len(tab)
+
+    L = []
+    w = L.append
+    gp_all = Counter({c: t["GP"] for c, t in tab.items()})
+    w(f"# {coach}'s {league} season\n")
+    w(f"{len(games)} games played in the league so far ({min(r['DateTime'] for r in games)[:10]} to "
+      f"{max(r['DateTime'] for r in games)[:10]}), {len(tab)} coaches. {coach} played {me['GP']} as {teams[coach]}. "
+      f"Coaches still playing: " + ", ".join(f"{c} {n}" for c, n in sorted(gp_all.items(), key=lambda x: -x[1]) if n < me['GP'])
+      + ". Rates are per game, so they compare fairly; ranks are out of all coaches (1 the best).\n")
+
+    # --- standings
+    w("## Standings\n")
+    w("Points: 2 a win, none for any loss. Expected wins: from each coach's pre-season rating against his opponents' "
+      f"(coach_history, {rat_day}; teams and home ice not counted).\n")
+    w("| | Coach | Team | GP | W-L | OT W-L | Pts | Pts % | GF/G | GA/G | Diff/G | Exp. W | W - Exp. | Pre-season vs league avg |")
+    w("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    order = sorted(tab, key=lambda c: (-tab[c]["Pts"] / (2 * tab[c]["GP"]), -(tab[c]["F_Score"] - tab[c]["A_Score"]) / tab[c]["GP"]))
+    for i, c in enumerate(order, 1):
+        t = tab[c]
+        name = f"**{c}**" if c == coach else c
+        w(f"| {i} | {name} | {teams[c]} | {t['GP']} | {t['W']}-{t['L']}" + (f"-{t['T']}" if t['T'] else "") +
+          f" | {t['OTW']}-{t['OTL']} | {t['Pts']} | {t['Pts'] / (2 * t['GP']):.3f} | {t['F_Score'] / t['GP']:.2f} | "
+          f"{t['A_Score'] / t['GP']:.2f} | {(t['F_Score'] - t['A_Score']) / t['GP']:+.2f} | {t['exp_W']:.1f} | "
+          f"{t['W'] - t['exp_W']:+.1f} | {100 * sig(R(c) - mean_known):.0f}%{'' if c.lower() in rat else ' (no rating)'} |")
+    w("")
+
+    # --- a league of groups (SNES-AB: two groups of 8, 4 games within the group, 2 against some of the other)
+    meet = Counter(g["opp"] for g in per[coach])
+    group = {coach} | {o for o, n in meet.items() if n >= 4}
+    if len(group) >= 4 and all(meet[o] <= 2 for o in tab if o not in group):
+        w(f"### {coach}'s group\n")
+        w(f"The schedule has groups: {coach} played {', '.join(sorted(group - {coach}))} 4 or more times each, and the "
+          f"rest of the league ({len(tab) - len(group)} coaches) 2 times or not at all.\n")
+        w("| | Coach | Team | GP | W-L | Pts | Pts % | Diff/G | W - Exp. |")
+        w("|---|---|---|---|---|---|---|---|---|")
+        for i, c in enumerate([c for c in order if c in group], 1):
+            t = tab[c]
+            w(f"| {i} | {'**' + c + '**' if c == coach else c} | {teams[c]} | {t['GP']} | {t['W']}-{t['L']}" +
+              (f"-{t['T']}" if t['T'] else "") + f" | {t['Pts']} | {t['Pts'] / (2 * t['GP']):.3f} | "
+              f"{(t['F_Score'] - t['A_Score']) / t['GP']:+.2f} | {t['W'] - t['exp_W']:+.1f} |")
+        w("")
+
+    # --- team stats
+    def row(label, f_us, f_them=None, higher_better=True, fmt="{:.2f}"):
+        v = f_us(coach)
+        rk, n = rank(f_us, higher_better)
+        line = f"| {label} | {fmt.format(v)} | {fmt.format(league_avg(f_us))} | {rk} of {n} |"
+        if f_them:
+            v2 = f_them(coach)
+            rk2, _ = rank(f_them, not higher_better)
+            line += f" {fmt.format(v2)} | {fmt.format(league_avg(f_them))} | {rk2} of {n} |"
+        else:
+            line += " | | |"
+        w(line)
+
+    w("## Team stats per game\n")
+    w(f"For: {coach}'s team; against: his opponents. Rank 1 is the most for, and the fewest against.\n")
+    w(f"| | {coach} | League | Rank | Against | League | Rank |")
+    w("|---|---|---|---|---|---|---|")
+    row("Goals", lambda c: rate(c, "F_Score"), lambda c: rate(c, "A_Score"))
+    row("Shots on goal", lambda c: rate(c, "F_Shots"), lambda c: rate(c, "A_Shots"))
+    row("Shooting %", lambda c: 100 * tab[c]["F_Score"] / max(1, tab[c]["F_Shots"]),
+        lambda c: 100 * tab[c]["A_Score"] / max(1, tab[c]["A_Shots"]), fmt="{:.1f}")
+    row("Save %", lambda c: 100 - 100 * tab[c]["A_Score"] / max(1, tab[c]["A_Shots"]), None, fmt="{:.1f}")
+    row("PDO (shooting % + save %)", lambda c: 100 * tab[c]["F_Score"] / max(1, tab[c]["F_Shots"]) + 100 - 100 * tab[c]["A_Score"] / max(1, tab[c]["A_Shots"]), None, fmt="{:.1f}")
+    row("Shot share %", lambda c: 100 * tab[c]["F_Shots"] / max(1, tab[c]["F_Shots"] + tab[c]["A_Shots"]), None, fmt="{:.1f}")
+    row("Power-play goals", lambda c: rate(c, "F_PPGoals"), lambda c: rate(c, "A_PPGoals"))
+    row("Power plays", lambda c: rate(c, "F_PPTries"), lambda c: rate(c, "A_PPTries"))
+    row("Power play %", lambda c: 100 * tab[c]["F_PPGoals"] / max(1, tab[c]["F_PPTries"]),
+        lambda c: 100 * tab[c]["A_PPGoals"] / max(1, tab[c]["A_PPTries"]), fmt="{:.1f}")
+    row("Short-handed goals", lambda c: rate(c, "F_SHGoals"), lambda c: rate(c, "A_SHGoals"))
+    row("Breakaway goals", lambda c: rate(c, "F_BreakGoals"), lambda c: rate(c, "A_BreakGoals"))
+    row("Breakaways", lambda c: rate(c, "F_BreakTries"), lambda c: rate(c, "A_BreakTries"))
+    row("One-timer goals", lambda c: rate(c, "F_OneTimerGoals"), lambda c: rate(c, "A_OneTimerGoals"))
+    row("One-timer tries", lambda c: rate(c, "F_OneTimerTries"), lambda c: rate(c, "A_OneTimerTries"))
+    row("Faceoff win %", lambda c: 100 * tab[c]["F_FaceoffWins"] / max(1, tab[c]["F_FaceoffWins"] + tab[c]["A_FaceoffWins"]), None, fmt="{:.1f}")
+    row("Body checks", lambda c: rate(c, "F_Checks"), lambda c: rate(c, "A_Checks"))
+    row("Penalty minutes", lambda c: rate(c, "F_PIM"), lambda c: rate(c, "A_PIM"), higher_better=False)
+    row("Attack zone time (s)", lambda c: rate(c, "F_AttackZoneTime"), lambda c: rate(c, "A_AttackZoneTime"), fmt="{:.0f}")
+    row("Passes completed", lambda c: rate(c, "F_PassComps"), lambda c: rate(c, "A_PassComps"))
+    row("Pass completion %", lambda c: 100 * tab[c]["F_PassComps"] / max(1, tab[c]["F_PassTries"]),
+        lambda c: 100 * tab[c]["A_PassComps"] / max(1, tab[c]["A_PassTries"]), fmt="{:.1f}")
+    w("\n(Penalty minutes: rank 1 = the fewest taken; against = drawn, rank 1 the most drawn.)\n")
+
+    # --- by period
+    w("## By period\n")
+    w("| Period | GF/G | GA/G | Shots for/G | Shots against/G | League GF/G |")
+    w("|---|---|---|---|---|---|")
+    for p, lab in ((1, "1st"), (2, "2nd"), (3, "3rd")):
+        lg = league_avg(lambda c: rate(c, f"F_GoalsP{p}"))
+        w(f"| {lab} | {rate(coach, f'F_GoalsP{p}'):.2f} | {rate(coach, f'A_GoalsP{p}'):.2f} | "
+          f"{rate(coach, f'F_ShotsP{p}'):.2f} | {rate(coach, f'A_ShotsP{p}'):.2f} | {lg:.2f} |")
+    w("")
+
+    # --- game situations (own games)
+    mine = sorted(per[coach], key=lambda g: g["when"])
+    sit = Counter()
+    for g in mine:
+        us, them = g["us"], g["them"]
+        res = "W" if us["Score"] > them["Score"] else "L" if us["Score"] < them["Score"] else "T"
+        a2, b2 = us["GoalsP1"] + us["GoalsP2"], them["GoalsP1"] + them["GoalsP2"]
+        st = "led" if a2 > b2 else "trailed" if a2 < b2 else "tied"
+        sit[("after 2", st, res)] += 1
+        a1, b1 = us["GoalsP1"], them["GoalsP1"]
+        st1 = "led" if a1 > b1 else "trailed" if a1 < b1 else "tied"
+        sit[("after 1", st1, res)] += 1
+        goals = sorted([(x[0], x[1], "us") for x in us["Goals"]] + [(x[0], x[1], "them") for x in them["Goals"]])
+        if goals:
+            sit[("first goal", goals[0][2], res)] += 1
+        sit[("home" if g["home"] else "away", "", res)] += 1
+    w("## Game situations\n")
+    w("| | Record |")
+    w("|---|---|")
+    for lab, key in (("Home", ("home", "")), ("Away", ("away", ""))):
+        w(f"| {lab} | {sit[key + ('W',)]}-{sit[key + ('L',)]}" + (f"-{sit[key + ('T',)]}" if sit[key + ('T',)] else "") + " |")
+    for when in ("after 1", "after 2"):
+        for st in ("led", "tied", "trailed"):
+            k = (when, st)
+            n = sit[k + ("W",)] + sit[k + ("L",)] + sit[k + ("T",)]
+            if n:
+                w(f"| {st.capitalize()} {when} period{'s' if when == 'after 2' else ''} | {sit[k + ('W',)]}-{sit[k + ('L',)]}"
+                  + (f"-{sit[k + ('T',)]}" if sit[k + ('T',)] else "") + f" ({n} games) |")
+    for who, lab in (("us", "Scored first"), ("them", "Opponent scored first")):
+        k = ("first goal", who)
+        w(f"| {lab} | {sit[k + ('W',)]}-{sit[k + ('L',)]}" + (f"-{sit[k + ('T',)]}" if sit[k + ('T',)] else "") + " |")
+    w(f"| One-goal games | {me['one_goal_W']}-{me['one_goal_L']} |")
+    w(f"| Overtime | {me['OTW']}-{me['OTL']} |")
+    w(f"| Won / lost by 3+ | {me['blow_W']} / {me['blow_L']} |")
+    w("")
+    # league comparison for one-goal and comeback
+    comeback = lambda c: sum(1 for g in per[c] if (g['us']['GoalsP1'] + g['us']['GoalsP2'] < g['them']['GoalsP1'] + g['them']['GoalsP2']) and g['us']['Score'] > g['them']['Score'])
+    trailed = lambda c: sum(1 for g in per[c] if g['us']['GoalsP1'] + g['us']['GoalsP2'] < g['them']['GoalsP1'] + g['them']['GoalsP2'])
+    blown = lambda c: sum(1 for g in per[c] if (g['us']['GoalsP1'] + g['us']['GoalsP2'] > g['them']['GoalsP1'] + g['them']['GoalsP2']) and g['us']['Score'] < g['them']['Score'])
+    led = lambda c: sum(1 for g in per[c] if g['us']['GoalsP1'] + g['us']['GoalsP2'] > g['them']['GoalsP1'] + g['them']['GoalsP2'])
+    lg_cb = sum(comeback(c) for c in tab) / max(1, sum(trailed(c) for c in tab))
+    lg_bl = sum(blown(c) for c in tab) / max(1, sum(led(c) for c in tab))
+    w(f"League: teams trailing after two periods came back to win {100 * lg_cb:.0f}% of the time; teams leading after two "
+      f"lost {100 * lg_bl:.0f}%. One-goal games, every coach: " + ", ".join(
+          f"{c} {tab[c]['one_goal_W']}-{tab[c]['one_goal_L']}" for c in order) + ".\n")
+
+    # --- scoring
+    w("## How the goals came\n")
+    kinds_us, kinds_them = Counter(), Counter()
+    late_us = late_them = 0
+    for g in mine:
+        for x in g["us"]["Goals"]:
+            kinds_us[x[9]] += 1
+            late_us += x[0] == 3 and x[1] >= 240
+        for x in g["them"]["Goals"]:
+            kinds_them[x[9]] += 1
+            late_them += x[0] == 3 and x[1] >= 240
+    w(f"For: {', '.join(f'{k} {v}' for k, v in kinds_us.most_common())}; against: "
+      f"{', '.join(f'{k} {v}' for k, v in kinds_them.most_common())}. In the last minute of the 3rd: {late_us} for, "
+      f"{late_them} against.\n")
+    pen_types, pen_drawn = Counter(), Counter()
+    for g in mine:
+        for p in g["us"]["Penalties"]:
+            pen_types[p[5]] += 1
+        for p in g["them"]["Penalties"]:
+            pen_drawn[p[5]] += 1
+    w(f"Penalties taken ({sum(pen_types.values())}): " + ", ".join(f"{k} {v}" for k, v in pen_types.most_common()) +
+      f". Drawn ({sum(pen_drawn.values())}): " + ", ".join(f"{k} {v}" for k, v in pen_drawn.most_common()) + ".\n")
+
+    # --- players
+    pl = defaultdict(Counter)
+    gk = defaultdict(Counter)
+    for g in mine:
+        for p in g["us"]["Players"]:
+            k = (p[1], p[2])
+            pl[k]["GP"] += 1
+            for i, f in enumerate(("G", "A", "P", "SOG", "Chk", "PIM"), 3):
+                pl[k][f] += p[i]
+            if len(p) > 9:
+                pl[k]["TOI"] += p[9]
+        for q in g["us"]["Goalies"]:
+            k = q[1]
+            gk[k]["GP"] += 1
+            gk[k]["GA"] += q[2]
+            gk[k]["SV"] += q[3]
+            gk[k]["SA"] += q[4]
+    ppg = Counter()
+    for g in mine:
+        for x in g["us"]["Goals"]:
+            if x[9] == "PP":
+                ppg[x[4]] += 1
+    w(f"## {teams[coach]}'s players\n")
+    has_toi = any("TOI" in v for v in pl.values())
+    w("| Player | Pos | GP | G | A | Pts | Shots | Sh % | PP G | Checks | PIM |" + (" TOI/GP |" if has_toi else ""))
+    w("|---|---|---|---|---|---|---|---|---|---|---|" + ("---|" if has_toi else ""))
+    for (name, pos), v in sorted(pl.items(), key=lambda kv: (-kv[1]["P"], -kv[1]["G"])):
+        if v["P"] == 0 and v["SOG"] == 0 and v["Chk"] < 5:
+            continue
+        w(f"| {name} | {pos} | {v['GP']} | {v['G']} | {v['A']} | {v['P']} | {v['SOG']} | {pct(v['G'], v['SOG'])} | "
+          f"{ppg[name]} | {v['Chk']} | {v['PIM']} |" + (f" {fmt_time(v['TOI'] / v['GP'])} |" if has_toi else ""))
+    w("")
+    w("| Goalie | GP | Shots | Saves | GA | Save % | GA/G |")
+    w("|---|---|---|---|---|---|---|")
+    for name, v in sorted(gk.items(), key=lambda kv: -kv[1]["GP"]):
+        w(f"| {name} | {v['GP']} | {v['SA']} | {v['SV']} | {v['GA']} | {pct(v['SV'], v['SA'])} | {v['GA'] / v['GP']:.2f} |")
+    w("")
+
+    # --- head to head
+    w("## Against each opponent\n")
+    w("Exp. W: from the two pre-season ratings alone.\n")
+    w("| Opponent | Team | GP | W-L | GF-GA | Shots for-against | Exp. W | Their pre-season vs league avg |")
+    w("|---|---|---|---|---|---|---|---|")
+    h2h = defaultdict(Counter)
+    for g in mine:
+        o = g["opp"]
+        h2h[o]["GP"] += 1
+        h2h[o]["W"] += g["us"]["Score"] > g["them"]["Score"]
+        h2h[o]["L"] += g["us"]["Score"] < g["them"]["Score"]
+        h2h[o]["GF"] += g["us"]["Score"]
+        h2h[o]["GA"] += g["them"]["Score"]
+        h2h[o]["SF"] += g["us"]["Shots"]
+        h2h[o]["SA"] += g["them"]["Shots"]
+        h2h[o]["E"] += sig(R(coach) - R(o))
+    for o in sorted(h2h, key=lambda o: order.index(o)):
+        v = h2h[o]
+        w(f"| {o} | {teams.get(o, '')} | {v['GP']} | {v['W']}-{v['L']} | {int(v['GF'])}-{int(v['GA'])} | "
+          f"{int(v['SF'])}-{int(v['SA'])} | {v['E']:.1f} | {100 * sig(R(o) - mean_known):.0f}% |")
+    tot_e = sum(v["E"] for v in h2h.values())
+    w(f"\nTotal: {me['W']} wins against {tot_e:.1f} expected from the ratings. Average opponent pre-season rating "
+      f"{100 * sig(me['opp_rating'] / me['GP'] - mean_known):.0f}% (league average 50%).\n")
+
+    # --- form
+    w("## Over the season\n")
+    res = ["W" if g["us"]["Score"] > g["them"]["Score"] else "L" if g["us"]["Score"] < g["them"]["Score"] else "T" for g in mine]
+    w("In order: " + "".join(res) + "\n")
+    def streak(ch):
+        best = cur = 0
+        for r_ in res:
+            cur = cur + 1 if r_ == ch else 0
+            best = max(best, cur)
+        return best
+    w(f"Longest winning streak {streak('W')}, losing streak {streak('L')}.\n")
+    chunk = 10
+    w("| Games | W-L | GF-GA | Shots for-against |")
+    w("|---|---|---|---|")
+    for i in range(0, len(mine), chunk):
+        part = mine[i:i + chunk]
+        wv = sum(g["us"]["Score"] > g["them"]["Score"] for g in part)
+        lv = sum(g["us"]["Score"] < g["them"]["Score"] for g in part)
+        w(f"| {i + 1}-{i + len(part)} | {wv}-{lv} | {int(sum(g['us']['Score'] for g in part))}-{int(sum(g['them']['Score'] for g in part))} | "
+          f"{int(sum(g['us']['Shots'] for g in part))}-{int(sum(g['them']['Shots'] for g in part))} |")
+    w("")
+
+    # --- luck check
+    w("## Luck and repeatability\n")
+    gf, ga = me["F_Score"], me["A_Score"]
+    pyth = gf ** 2 / (gf ** 2 + ga ** 2)
+    w(f"- Pythagorean win % (GF^2 / (GF^2 + GA^2)) {100 * pyth:.1f}% against an actual {100 * me['W'] / me['GP']:.1f}% "
+      f"(about {me['W'] - pyth * me['GP']:+.1f} wins from how the goals fell).")
+    pdo = lambda c: 100 * tab[c]["F_Score"] / max(1, tab[c]["F_Shots"]) + 100 - 100 * tab[c]["A_Score"] / max(1, tab[c]["A_Shots"])
+    w(f"- PDO {pdo(coach):.1f} (league {league_avg(pdo):.1f}); one-goal games {me['one_goal_W']}-{me['one_goal_L']}, "
+      f"overtime {me['OTW']}-{me['OTL']}.")
+    return "\n".join(L) + "\n"
+
+
+def main():
+    league, coach = sys.argv[1], sys.argv[2]
+    OUT.mkdir(parents=True, exist_ok=True)
+    text = build(league, coach)
+    p = OUT / f"{league}_{coach}.md"
+    p.write_text(text, encoding="utf-8")
+    print(p)
+
+
+if __name__ == "__main__":
+    main()
