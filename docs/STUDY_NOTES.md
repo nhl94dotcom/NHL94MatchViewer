@@ -2024,3 +2024,10 @@ addresses). None of the six is on the SNES, retail or SA-1:
    goes on to his body. No distance band gets neither test. Same in the SA-1 build (all 256 instructions).
 6. **Crowd bonus**: no sflags8 or anything like it. The SNES raise at 110 dB (CrowdMeterScreen .11, +2 to four hot /
    cold values) is never reached, only the undo; Bcheck has no crowd term. Same in the SA-1 build.
+- **The name letters' colours** (NHL94.smc, measured on each screen): PrintTeamSprites draws them with attribute
+  $3800 (sprite palette 4), or in the horizontal blocks $3E00 (home, palette 7) / $3C00 (visitors, palette 6). They use
+  only colours 15 (the letter, $FFFF) and 1 (the edge). Palette 4 is UnusedSetupSpritePalette ($D715C: colour 1
+  $1D47, 15 $FFFF), but on Game Setup setoptions then writes colourbuf+$182 (palette 4's colour 1) = $14A5, so the edge
+  is dark grey there; everywhere else (the controller screen, matchups, pause stats pages, the card's team page, the
+  playoff bracket, the horizontal pause scoreboard) it is $1D47. On the pause scoreboard, palettes 6 and 7 have colour 1
+  $1D47 and colour 15 $FFFF, and PulsePauseSide pulses colour 15 of the pausing side's palette (colourbuf+$1DE / +$1FE).
