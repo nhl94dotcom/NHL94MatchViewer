@@ -349,7 +349,7 @@ function pool(byTeam = true, withExcluded = false) {
 function standings(list) {
   const rows = new Map();
   const row = (abbr, name) => rows.get(abbr) || rows.set(abbr, { abbr, name, gp: 0, w: 0, l: 0, otl: 0, t: 0, gf: 0, ga: 0, sog: 0, sa: 0, att: 0, attA: 0, posts: 0, postsA: 0, tap: 0, tapA: 0, tapMiss: 0, tapMissA: 0,
-    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, netsOff: 0, ownNetsOff: 0, chkGain: 0, chkShot: 0, chkGoal: 0, gkGiveGoals: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
+    ppg: 0, ppTries: 0, ppgA: 0, pkTimes: 0, assisted: 0, shg: 0, pim: 0, fow: 0, fo: 0, checks: 0, bigHits: 0, bumped: 0, onGoalie: 0, bobbled: 0, netsOff: 0, ownNetsOff: 0, fights: 0, instig: 0, fightHurt: 0, chkGain: 0, chkShot: 0, chkGoal: 0, gkGiveGoals: 0, possAtt: 0, possAttAgainst: 0, passTried: 0, passMade: 0, attackZone: 0,
     breakTried: 0, breakGoals: 0, oneTimerTried: 0, oneTimerGoals: 0, give: 0, take: 0, humanGames: 0, seconds: 0 }).get(abbr);
   for (const g of list) {
     for (const side of [0, 1]) {
@@ -554,6 +554,9 @@ function viewSkaters(list, team) {
     { key: 'chkPay', label: 'CHK→', title: 'His checks that paid off: his team had the puck within 5 game s · a shot within 12.5 game s of that · a goal within 20 game s (check on the carrier)', value: r => (r.chkGain || 0) + 10 * (r.chkGoal || 0),
       show: r => (r.chkGain || r.chkShot || r.chkGoal ? `${r.chkGain || 0}<small> · ${r.chkShot || 0} · ${r.chkGoal || 0}</small>` : '0') },
     { key: 'netsOff', label: 'NET', title: 'Nets he knocked off its spot (either net)', value: r => r.netsOff || 0, show: r => r.netsOff || 0 },
+    // fights (SNES 2 MB builds with Fighting on): shown only when a game listed had one
+    ...(rows.some(r => r.fights) ? [{ key: 'fights', label: 'FIGHT', title: 'Fights he was in (and, after the dot, times the game put him out for the game after one)', value: r => r.fights || 0,
+      show: r => (r.fights || r.fightHurt ? `${r.fights || 0}<small> · ${r.fightHurt || 0}</small>` : '0') }] : []),
     { key: 'bobbled', label: 'BOB', title: 'Passes that bounced off him (bobbled)', value: r => r.bobbled || 0, show: r => r.bobbled || 0 },
     { key: 'onGoalie', label: 'ONG', title: 'Pucks he lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie || 0, show: r => r.onGoalie || 0 },
     { key: 'take', label: 'TK', title: 'Takeaways' }, { key: 'give', label: 'GV', title: 'Giveaways' },
@@ -618,6 +621,8 @@ function viewTeams(list, team) {
       show: r => `${r.chkGoal}<small> · ${per(r.chkGain, r.gp)}</small>` },
     { key: 'gvg', label: 'GK GV→G', title: 'Goals the other team scored straight off its goalies’ picked-off passes (within 15 game s, up to two passes)', value: r => r.gkGiveGoals },
     { key: 'net', label: 'NET', title: 'Nets knocked off a game: the other team\u2019s (after the dot, its own)', value: r => r.netsOff / r.gp, show: r => `${per(r.netsOff, r.gp)}<small> · ${per(r.ownNetsOff, r.gp)}</small>` },
+    ...(rows.some(r => r.fights) ? [{ key: 'fight', label: 'FIGHT', title: 'Fights a game (SNES 2 MB builds with Fighting on); after the dots, its instigator penalties and its players put out for the game after a fight, in all', value: r => r.fights / r.gp,
+      show: r => `${per(r.fights, r.gp)}<small> · ${r.instig} · ${r.fightHurt}</small>` }] : []),
     { key: 'bmp', label: 'BMP', title: 'Pucks its carriers lost on body contact (no check, poke or hook, not knocked over)', value: r => r.bumped / r.gp, show: r => per(r.bumped, r.gp) },
     { key: 'ong', label: 'ONG', title: 'Pucks its carriers lost skating into a goalie, his own or the other team’s', value: r => r.onGoalie / r.gp, show: r => per(r.onGoalie, r.gp) },
     { key: 'tk', label: 'TK', title: 'Takeaways', value: r => r.take / r.gp, show: r => per(r.take, r.gp) },

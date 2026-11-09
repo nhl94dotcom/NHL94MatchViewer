@@ -19,7 +19,7 @@ from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 import deserve  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 31  # 31: xG with the refitted goalie spread (Genesis 6, SNES 3.5); 30: fromStart needs the game's counts at 0 when the recording begins; 29: a turnover is a hit only with a counted check or a fall (else burst, or a giveaway); 28: pass shots have xG; SNES flips apart from passes (match file `flips`); 27: Genesis xG with a goalie held in his save move (locked); 26: Genesis xG with the goalie's stick (tools/xg.py, 2026-10-29); 25: SNES get-up glitch hooks apart (habits getUps); 24: SNES controller presses by the SNES button names (A, B, X, Y, L, R, Select); 23: missed tapestries (team tapMiss / tapMissA, skater tapMiss); 22: tapestries (team tap / tapA, skater tapG / tapIn); 21: posts (team posts / postsA, skater posts); 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 32  # 32: fights (team fights / instig / fightHurt, skater fights / fightHurt; SNES 2 MB games); 31: xG with the refitted goalie spread (Genesis 6, SNES 3.5); 30: fromStart needs the game's counts at 0 when the recording begins; 29: a turnover is a hit only with a counted check or a fall (else burst, or a giveaway); 28: pass shots have xG; SNES flips apart from passes (match file `flips`); 27: Genesis xG with a goalie held in his save move (locked); 26: Genesis xG with the goalie's stick (tools/xg.py, 2026-10-29); 25: SNES get-up glitch hooks apart (habits getUps); 24: SNES controller presses by the SNES button names (A, B, X, Y, L, R, Select); 23: missed tapestries (team tapMiss / tapMissA, skater tapMiss); 22: tapestries (team tap / tapA, skater tapG / tapIn); 21: posts (team posts / postsA, skater posts); 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -240,6 +240,8 @@ def summarize(m, name, date=None):
     shots, goals, hits = m.get("shotList", []), m.get("goals", []), m.get("hits", [])
     xg_shots = [s for s in shots if "xg" in s and s["result"] != "blocked"]  # expected goals: unblocked shots the model played out
     turnovers, penalties, rules = m.get("turnovers", []), m.get("penalties", []), m.get("rules", {})
+    hurt_lists = ((m.get("gameStats") or {}).get("fightInjured") or [[], []])
+    fight_hurt = lambda team, idx: hurt_lists[team][idx] if idx < len(hurt_lists[team]) else 0  # the 2 MB builds' list
     faceoffs = [e for e in m.get("faceoffs", []) if e.get("won") in (0, 1)]
     entries = m.get("zoneEntries", [])
     # Odd-man rushes: carried or passed entries with more attackers than defenders back, at least two attackers.
@@ -311,6 +313,12 @@ def summarize(m, name, date=None):
             "chkGoal": sum(1 for h in hits if h["team"] == team and "goalAfter" in h),
             "gkGiveGoals": sum(1 for e in turnovers if e["from"] == team and "goalAfterFast" in e),  # goals off its goalies' giveaways
             "ownNetsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("side") == "defender"),  # its own
+            # fights (SNES 2 MB builds with Fighting on): its fights, instigator penalties (the ROM's rule name), its
+            # players hurt in a fight (the game's own list, the whole game)
+            **({"fights": len(m.get("fights", [])),
+                "instig": sum(1 for p in penalties if p["team"] == team and "instigat" in ((rules.get(str(p["code"])) or {}).get("name", "").lower())),
+                "fightHurt": sum(1 for v in ((m.get("gameStats") or {}).get("fightInjured") or [[], []])[team] if v)}
+               if m.get("fights") or m.get("gameStats") else {}),
             "passTried": team_value(team, "passTried"), "passMade": team_value(team, "passMade"),
             "attackZone": team_value(team, "attackZone"),
             "breakTried": team_value(team, "breakTried"), "breakGoals": team_value(team, "breakGoals"),
@@ -464,6 +472,9 @@ def summarize(m, name, date=None):
                     "onGoalie": sum(1 for e in m.get("bumps", []) if e.get("kind") == "goalie" and e["team"] == team and e["idx"] == idx),
                     "bobbled": sum(1 for e in m.get("bobbles", []) if e["team"] == team and e["idx"] == idx),
                     "netsOff": sum(1 for e in m.get("netsOff", []) if e.get("byTeam") == team and e.get("by") == idx),
+                    **({"fights": sum(1 for e in m.get("fights", []) if [team, idx] in e["players"]),
+                        "fightHurt": int(bool(fight_hurt(team, idx)))}
+                       if m.get("fights") or m.get("gameStats") else {}),
                     # shot speeds in mph (shots and one-timers): their sum and count for an average, and the hardest
                     "shotMphSum": round(sum(shot_mph(s["speed"]) for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")), 1),
                     "shotMphN": sum(1 for s in shots if s["team"] == team and s["idx"] == idx and s.get("speed") and s["kind"] in ("shot", "one-timer")),

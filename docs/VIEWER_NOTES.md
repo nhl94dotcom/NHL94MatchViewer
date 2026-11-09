@@ -1058,3 +1058,7 @@ skater's card his fights, the game's checks for / against and ice time, "Hurt in
 Fighting (bits 1-3 of the handedness value) on SNES 2 MB games. Help: "Fight", "The game's own counts"; STAT_HELP
 and RATING_HELP entries.
 
+Season page (season.py VERSION 32): team `fights`, `instig` (instigator penalties, by the ROM's rule name) and
+`fightHurt`, skater `fights` and `fightHurt`, for games with `fights` or `gameStats`; the Skaters and Team stats tables
+get a FIGHT column only when a listed game had a fight.
+
