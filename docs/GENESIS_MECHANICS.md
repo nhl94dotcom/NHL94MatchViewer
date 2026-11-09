@@ -576,7 +576,11 @@ on its own, not with C.
 **Poke check (B without the puck):**
 
 - Lasts 0.27 s. It puts a stick on the puck for a steal roll (6.4), and **trips the carrier if your body touches him
-  while you're facing him** (with penalties on, always; with penalties off, a rating roll).
+  while you're facing him** (with penalties on, always; with penalties off, a skater a person controls needs a roll,
+  `Bcheck`: randomd0($20 + his working Checking - the target's working Agility, 2 less when sflags8 bit 1 is set,
+  which is always) of $18 or more, so about 1 in 5 at equal ratings; the computer's skaters never roll).
+  **Confirmed** in play (the pad-1 skater skating into a carrier and poking, 72 tries each): 66 trips with penalties
+  on, 10 with them off (STUDY_NOTES, "The five forum options played").
 - **Confirmed:** two-thirds of pokes in the recordings were from more than 30 units away and did nothing. Within 30
   units (74 pokes): tripped him 28%, knocked the puck loose 30%, took it 12%, loose then his team got it back 11%,
   nothing 19%.
@@ -1324,8 +1328,7 @@ C-then-B check, and the weight bug for computer checkers too.
 the penalty-shot bugs and table, the goalie pull, faceoffs, the power-play bonus, sniping, comeback, awareness, crowd
 and aggression fixes, the second assist, stick-shot counting and the one-timer assist fix. Each was played in the game against the original before it
 was offered (STUDY_NOTES, the "NOSE4Web's ..." sections); the viewer reads the fixes a ROM has
-(`tools/systems/genesis_settings.py`, not yet the one-timer assist fix) and leaves the bugs a fix removes out of its
-counts.
+(`tools/systems/genesis_settings.py`) and leaves the bugs a fix removes out of its counts.
 
 ---
 
@@ -1342,7 +1345,7 @@ counts.
 | Aggression | Wraps: rating 4 plays like 1, ratings 6 and 3 most penalised |
 | Penalty-shot table | Off by one; holding and interference give no penalty shot |
 | Pulling the goalie | The computer pulls its goalie late only when exactly two behind, never one |
-| One-timer assists | If the receiver's stick touched the pass before his one-timer goal, no assists are credited (3 of 71 recorded one-timer goals; STUDY_NOTES, "The Genesis one-timer assist bug") |
+| Assists | A give-and-go (C to A, A to B, B back to A) loses C's second assist; a one-timer goal whose receiver's stick touched the pass first gets no assists at all (3 of 71 recorded one-timer goals; STUDY_NOTES, "The Genesis one-timer assist bug"); the other team taking possession clears them, the goalie included (a save he holds for a moment before it comes loose) |
 | Goalie lock | On a penalty kill (and all game on ROMs dressing fewer than six) a person's goalie passing toward the left of centre ice can pick the boxed player (or an empty slot) as the receiver, and control goes to him: the pad is dead until a teammate takes the puck (11.2) |
 | Icing | Always on; no icing if the puck crosses the goal line within 44 of the middle; a shorthanded team can't ice |
 | Glass | Pucks 19-29 high stay in off the top end's glass, go out of play off the sides and the bottom end |

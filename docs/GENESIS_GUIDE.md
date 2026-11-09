@@ -560,7 +560,9 @@ viewer's Help, "This game's ROM", says whether yours does).
 - **Poke check (B without the puck):** only from close. In recorded games two-thirds of pokes were from more than 10
   feet away and did nothing. Within 10 feet: tripped him 28%, knocked the puck loose 30%, took it 12%, nothing 19%.
   **Facing him, a poke that bumps his body trips him**, and with penalties on that's always a trip (and a chance of a
-  tripping call).
+  tripping call). **With penalties off, the skater you control trips him only about 1 time in 5** (a roll: better
+  Checking against his Agility helps); the computer's pokes still always do. Played in the game: 66 trips in 72 with
+  penalties on, 10 in 72 with them off.
 - **Hook (A without the puck):** drags a fast carrier to your speed and freezes him for two-thirds of a second, but
   carries the highest penalty risk of any move, and on the carrier he kept the puck only 4 times in 22. Usually not
   worth it.
@@ -613,7 +615,8 @@ stopped; anything farther away goes past him. Reach is 12-15 units (4-5 feet) by
 ![The goalie's reach circles against the goal mouth](img/saves_reach.svg)
 
 
-- **Take the goalie yourself** (B with the puck loose or the other team's): **he always has the full reach, 15.** In
+- **Take the goalie yourself** (hold B for about 0.3 s (real), 17 frames, with the puck loose or the other team's; a
+  tap pokes or switches skaters): **he always has the full reach, 15.** In
   recorded games, with a person in net, no goal except one-timers went in within 20 units of him.
 - **One-timers cut his reach to 12** whoever controls him.
 - To score: shoot **wide of his reach** (a corner, from inside the zone, where your shot can be exact), use one-timers,
