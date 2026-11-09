@@ -383,7 +383,14 @@ def find_rom(capture):
 
 
 # ------------------------------------------------------------------------------------------- what the helper reads
-BLOCKS = [(0x0000, 0x4000)]  # what each sample keeps: the objects, the stats, the scoring summary (work RAM $0000-$3FFF)
+# What each sample keeps: the objects, the stats, the scoring summary (work RAM $0000-$3FFF); and $E700-$E867, where
+# the 2 MB builds keep their fights (fighton $E700 ...) and the stats the original game doesn't (posts $E7F0, checks
+# for / against $E788 / $E7BC, time on ice $E800: github.com/Mhopkinsinc/NHL94SNES-SA1, src/ram94snes.asm; in BW-RAM
+# on the SA-1 builds, moved back by Emulator.read). The retail game never uses that part of bank $7E.
+BLOCKS = [(0x0000, 0x4000), (0xE700, 0x168)]
+EXTRA = 0xE700                       # the 2 MB builds' block
+FIGHTER = 0x0400                     # OBJ_FLAGS: fighting (pffight)
+POSTS, CHECKS_FOR, CHECKS_AGAINST, ICE_TIME, FIGHT_INJURED = 0xE7F0, 0xE788, 0xE7BC, 0xE800, 0xE74E
 
 
 class View:
@@ -398,7 +405,7 @@ class View:
         block = emu.read(*BLOCKS[0])
         if block is None:
             raise ConnectionError("the emulator went away")
-        self.blocks = [block]
+        self.blocks = [block] + [emu.read(start, length) or bytes(length) for start, length in BLOCKS[1:]]
         word = lambda a: struct.unpack_from("<H", block, a)[0]
         self.period, self.clock = word(PERIOD), word(CLOCK)
         if self.period >= 4:
@@ -803,6 +810,11 @@ class MatchReader:
         match["stats"] = stats
         match["rules"] = read_rules(rom)
         match["penalties"], match["delayed"] = read_penalties(cap, count, match, match["rules"])
+        fights = read_fights(cap, count)
+        if fights:
+            match["fights"] = fights
+        if len(rom) > 0x100000 and count:
+            match["gameStats"] = read_extra_stats(cap, count - 1)
         match["rom"] = f"{zlib.crc32(rom):08x}"
         hacks = snes_settings.rom_settings(rom)               # NHL94SNESVault's and the NOSE4Web editor's hacks
         if hacks:
@@ -835,6 +847,36 @@ def read_match(cap, rom_path, name, home=None, away=None):
     return reader.result(cap, rom_path, name, home, away)
 
 
+def read_fights(cap, count):
+    """Fights (the 2 MB builds: NHLPA 93's, ported): [{f, end, players: [[team, roster place], ...]}], each the samples
+    with a player's pflags $0400 (pffight) set, the fighters those flagged in it."""
+    fights, cur = [], None
+    for i in range(count):
+        who = [k for k in range(12) if cap.word(i, OBJ_FLAGS + 2 * k) & FIGHTER]
+        if who:
+            if cur is None:
+                cur = {"f": i, "end": i, "players": []}
+                fights.append(cur)
+            cur["end"] = i
+            for k in who:
+                p = [0 if k < 6 else 1, cap.byte(i, OBJ_ROSTER + 2 * k)]
+                if p not in cur["players"]:
+                    cur["players"].append(p)
+        else:
+            cur = None
+    return fights
+
+
+def read_extra_stats(cap, i):
+    """The stats the 2 MB builds keep and the original game doesn't, at sample i (the game's end): posts per team,
+    checks for and against and time on ice (seconds) per roster place, and who was hurt in a fight (out for the game)."""
+    per = lambda a, size, n=26: [[(cap.word(i, a + size * (t * n + j)) if size == 2 else cap.byte(i, a + t * n + j))
+                                  for j in range(n)] for t in (0, 1)]
+    return {"posts": [cap.word(i, POSTS), cap.word(i, POSTS + 2)], "checksFor": per(CHECKS_FOR, 1),
+            "checksAgainst": per(CHECKS_AGAINST, 1), "iceTime": per(ICE_TIME, 2),
+            "fightInjured": [[j for j, v in enumerate(row) if v] for row in per(FIGHT_INJURED, 1)]}
+
+
 def read_penalties(cap, count, match, rules):
     """Penalties as the Genesis reader lists them: [{f (listed: the player went to the box), called (the foul),
     period, secs (into the period), team, code, idx}], and penalty shots awarded as 'delayed' flags with no penalty
@@ -862,6 +904,8 @@ def read_penalties(cap, count, match, rules):
             calls.append(call)
         for j in range(52):
             state = cap.word(i, BOX_STATE + 2 * j)
+            if 0 < state < 0x8000:
+                state &= ~0x4000                 # the coincidental bit (two majors at one whistle: the fights' 5:00s)
             boxed = 0 < state < 0x1000
             if boxed and not in_box[j]:
                 team, idx = (0, j) if j < 26 else (1, j - 26)

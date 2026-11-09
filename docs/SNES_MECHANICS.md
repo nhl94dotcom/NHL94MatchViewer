@@ -885,7 +885,8 @@ pulled.
   after a whistle likelier to start one), and three stats the original never keeps: posts per team (`tmposts`),
   checks for and against per player (`pchf` / `pcha`) and time on ice per player (`ptoi`, not in nhl94snes_2026).
   From the SA-1 repository's docs/HANDOFF.md ("Fights (2 MB build)"); the Fighting row's text is in all three 2 MB
-  ROMs checked. The viewer doesn't read fights or these stats yet (no recorded game has one).
+  ROMs checked, and in McMarkis's "Classic + 60fps + Fighting" release (2026-11-09). The converter reads fights,
+  their majors and these stats (PROJECT_NOTES, "SNES SA-1 and 2 MB builds"); the viewer doesn't show them yet.
 
 Everything in this document applies to these ROMs as they come. **NOSE4Web** (the editor in GENESIS_MECHANICS.md
 section 15) can now also add fixes and options to an SNES ROM: the hot / cold, power-play, faceoff, extra-attacker,

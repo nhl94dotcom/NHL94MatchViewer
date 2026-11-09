@@ -904,6 +904,21 @@ docs/EXTENDING.md). Before this the helper saw them running and never a game (20
   ROM); the reader stores the retail word, and the ROM readers (animation_frame, animation_lists, xg_snes) map it
   back. Sprite frames 1-976 are the retail ones in both builds (the 32-team build adds frames after 976); the sound
   samples have not moved.
+- **Fights and the extra stats (2026-11-09):** the 2 MB builds have NHLPA 93's fights (Game Setup Fighting: On / Off /
+  After Whistle; McMarkis's "Classic + 60fps + Fighting" release of 2026-11-09, nhl94snes_SA1.sfc, is the Classic
+  league's 28 teams on the SA-1 build) and keep posts, checks for / against and time on ice. The fight state and those
+  stats are at $E700-$E867 (in BW-RAM on the SA-1 builds, already in SA1_MOVED); snes.BLOCKS now records that block
+  with every sample (retail never uses it), and full.bin's snapshots hold it for older recordings. A fighter has
+  pflags $0400 (pffight), in the low block, so read_fights finds fights in any recording: match `fights` [{f, end,
+  players: [[team, roster place]]}]. The fight majors (Fighting $2A, Fighting * $2C, 5:00; Fight Instigator $2E, 2:00:
+  the ROM's own rule table) are coincidental: box state $4000 | seconds ($412C), which read_penalties now strips
+  (before, a box time of $1000 or more wasn't taken as the box, so the majors would have been missed). On a 2 MB ROM
+  match `gameStats` holds the game's own posts (team pair), checksFor / checksAgainst (bytes per roster place),
+  iceTime (seconds per roster place) and fightInjured (roster places out for the game), from the last sample.
+  Checked on a capture made headless (analysis/scoring_map/snes_fight_capture.py: the release played CPU against
+  CPU, Fighting On, START tapped through the intermission): one fight (MTL 19, LA 11), both majors listed with the
+  fight as their call, checks for / against mirror each other. Not done yet: the viewer shows neither; the 2 MB
+  teams threshold (Emulator.teams, 32) is high for a 28-team 2 MB build (only matters if its menus use ids 28-31).
 - **Speed:** an SA-1 build runs the game logic 60 frames a second (the retail game 30; its physics scale with the
   step, its AI and collisions run twice as often). Game seconds are unchanged. The SNES xG model's step and goalie
   timing are the retail game's, so an SA-1 game gets no xG (Deserve to Win uses its fallback rates) until the model

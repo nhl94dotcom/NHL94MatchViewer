@@ -2528,3 +2528,29 @@ NOPed). From power-on, a screenshot at every change, against retail:
     total of 100+ to 99; his counted skater weights sum to 66 (goalie 62), so on the 0-6 scale a player averaging
     above 3 shows 99 (retail's 40: above 5).
 
+
+## McMarkis's Classic + 60 fps + Fighting release, from the code and played (2026-11-09, for NOSE4Web)
+
+nhl94snes_SA1.sfc (release 26.11.09.14; source Mhopkinsinc/NHL94SNES-SA1 `src/routines/fights/`, NHLPA 93's fights
+ported). The release thread's manual (the author's) agrees with the code below.
+
+- The fight rating (`setplayer`): fightagg = 2 x Fighting + Aggression, capped at 14. Fighting is bits 1-3 of its
+  byte (0-7); bit 0 of the same nibble is the handedness bit, so an editor showing the nibble shows 15 / 14 for the
+  same Fighting 7 (found by diffing the release with nhl94_SA1_Original). Of the 49 raised players: 10 at 7, 14 at 6,
+  25 at 5; every 7 is at the cap whatever his Aggression, a 6 with Aggression 2+, a 5 with 4+.
+- Fights On (`checkfight`, `SetInst`): no dice. A hard collision (both impacts 10+, in play, neither locked) fights when
+  one player's fightagg >= 8 + max(0, 24 - ChkCnt) / 4 (rounded down: 14 at 0 knockdowns, 13 at 1-4 ... 8 at 21+;
+  the manual's table, 0-3 = 14, is one off) and the other's is 2+ and >= 14 - 2 x his own knockdowns since the last
+  fight; both ways round. ChkCnt counts knockdowns since the last fight, +3 for one by a player of fightagg 0
+  (`FightCountCheck`); a fight clears it and every player's count; a new game starts from 0 (`FightGameStart`).
+- After Whistle: the n-th check of a stoppage fights when random((40 - both fightaggs) x 128) < n x 512.
+- Who wins (`assfight`, `chkhit`, `FightFall`): each takes energy x fightagg / $1000 punches (at least 5), one per
+  landed punch. The computer punches at random within 25 px (high 3/8, low 4/8, grab 1/8); a person with A, B, Y.
+  The loser is hurt for the game when random(60) <= the winner's working Aggression. Instigator (penalties on): a
+  shoulder check's fighter, else 1 in 4 the more willing one; served by the first teammate on the ice unpenalised.
+- NOSE4Web's regained-puck assist fix on this release: site $9E:C58B, `.4` at $C5CD, $9E:FFEB free; played with
+  `snes_regain_assist_test.py` on a scratch copy: the release loses the retaker's assist (B's goal unassisted), the
+  fixed copy gives it (assist A); the control (a different teammate wins it back) is the same on both.
+- The converter reads the fights and the extra stats (PROJECT_NOTES "Fights and the extra stats"); first checked on
+  a headless fight from `snes_fight_capture.py` (MTL 19 v LA 11, both majors, called at the fight's start). How often
+  fights happen under On and After Whistle is not measured yet (computer games; asked of the user).
