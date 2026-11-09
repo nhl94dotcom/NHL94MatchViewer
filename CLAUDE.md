@@ -137,7 +137,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves free;
     `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
     `gen_lc_box_check.py`: the line-change box), `gen_injury_check.py` / `gen_blood_check.py` (Genesis injuries forced
-    in a scratch copy; the head blood builds), `snes_banner_check.py` (team-block colours on every block screen),
+    in a scratch copy; the head blood builds), `snes_banner_check.py` (team-block colours on every block screen), `snes_vault_hacks_test.py` (the NHL94SNESVault hacks: Edit Lines
+    lists, max boost display, L+R goalie pull, the computer's pull),
     `a130f1_test.py` (Genesis save memory switching on big ROMs), `snes_logo_overlap.py` (which piece of a big logo is
     in front), and `menu_shots.py ROM OUT SCRIPT` (screenshots of the game's own screens from power-on by a script of
     presses, for edits outside play: photos, logos). Genesis Plus GX's video memory is read from its saved state

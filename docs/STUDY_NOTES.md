@@ -2038,8 +2038,8 @@ overall ratings differ by the game's random hot / cold, not the import.)
 
 ## SNES "No interference penalties" in every period (2026-11-09, for NOSE4Web)
 
-NOSE4Web's hack (McMarkis's) turns checkint's last `bmi .rtl` before the roll (a2's impact under 31) into `bra`: retail
-$9E:B8A8 (file $F3AA8 with the copier header, the "$9E:BAA8" NOSE4Web lists; it finds the place by bytes). checkint
+NOSE4Web's hack (McMarkis's) turns checkint's last `bmi .rtl` before the roll (a2's impact under 31) into `bra` at
+$9E:BAA8 (retail NHL94.smc has no copier header: file $F3AA8; NOSE4Web finds the place by bytes). checkint
 then always returns before its roll, whatever the period; PenInterference ($26) is set nowhere else (checkcheck gives
 $18 / $1A / $1C / $1E, holdcheck hooking / holding, Bcheck tripping / penalty shot). In play: scratch copies of
 NHL94.smc with the roll always passing (`cmp #2 / bcs` at the roll's `bcs` NOP'd), without and with the hack, 4 full
@@ -2068,3 +2068,37 @@ play Boston's skaters (position, roster place, sprite).
   assists (assist 1 equals the scorer), so the player who passed to the first Oates loses his assist.
 - **Edit Lines**: shows the line as read (Genesis "Sc1 Line", SNES "Best Line": LW Oates, C Oates), the player list
   has Oates once ("Ice"); picking another player for C works on both.
+
+## NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 44ab460)
+
+NHL94_vault_hacks.smc (retail NHL94.smc, which has no copier header, with the extra attacker fix, ForwardsAndDefenseHack,
+ShowMaxBoost, ManualPullGoalie and the computer's pull changed) against NHL94.smc, by
+`analysis/scoring_map/snes_vault_hacks_test.py` from the saved state (Montreal on pad 1 at home). The bytes changed are
+only the listed ones ($9B:8C96 / $9B:CE78 the extra attacker fix; $9B:8E1A / $9B:CEBA; $9E:D0BF / $9E:FB6E; $9E:D148,
+$9E:D150; $9F:9A31 / $9F:FB43; the checksum).
+- **ForwardsAndDefenseHack** (SelectLinePlayer: the forward / defence test replaced): every row's list is all the
+  team's skaters (listcount 22, from the first after the goalies; retail 8 defencemen or 14 forwards). Every pick
+  on every row of line 1 (5 rows) and line 6 (4 rows), 198 picks: no player twice, nobody dropped (a pick already on
+  the line swaps, the extra attacker included, through the extra attacker fix; retail: the extra attacker picked at
+  LW, C or RW is in the line twice and the replaced player is off it). In play, LD given the line's extra attacker (a
+  forward; the old LD became the extra attacker) and C a defenceman off the line: both skate at those positions;
+  with the goalie pulled the old LD comes on as the extra attacker (position 6). The editor never edits the extra
+  attacker's slot itself.
+- **ShowMaxBoost** (CalcAttrib's single-rating path: 100 when the signed hot / cold value r3 is negative): in Edit Lines
+  every cell that changed reads 100, and in 11 rating columns the cells match the cold values; unchanged cells read
+  as on retail; the team roster the same (GetNameandAttrib). Not shown: a value of -1 (r3 = -1 x 3/4 rounds to 0;
+  in play the 8-bit unsigned shift maxes it all the same): 2 of the 22 skaters' cells here (an Agility, a Checking),
+  about 1 rating in 28. Overall, Energy, Weight and Handed are untouched (hot / cold value 9, spodds, has no column).
+- **ManualPullGoalie** (ChkGoalies .1): L+R (the pad's low byte exactly $30: not with A or X) toggles tmgoalie 0 /
+  $FFFF; nothing between whistles (ChkGoalies runs only with the clock going), with tmgoalie $FF00 (pulled by the
+  game on a delayed penalty) or with the backup in net (1: only 0 and $FFFF toggle). The pads checked are 1 then 2:
+  with both on one team only pad 1 has it (pad 2 alone on a team has it). A sound starts the frame after the toggle
+  (louder audio for about 9 frames, none on retail). It is read once a game second (ChkGoalies, every 24 frames), from
+  the buttons held then: held 2 / 4 / 8 / 12 / 16 frames it pulled in 1 / 2 / 4 / 6 / 8 of 12 tries; 24 frames 12 of
+  12; held longer it toggles again at the next pass (30 frames: 3 of 12 back in; 48: all 12 back in). The pull lasts
+  through faceoffs (ReturnGoalies keeps $FFFF).
+- **The computer's pull** (CPgoalie: 3 -> 4 goals, $3D -> $79 s): home by the computer, third period, clock held, 60
+  game seconds each: retail pulled behind by 1 or 2 at 55 s (not at 65 / 115 / 125, not behind by 3 or 4); the hack
+  behind by 1, 2 or 3 at 115, 65 and 55 s (not at 125, not behind by 4). Both still need the puck carried by the team in
+  its attacking half.
+
