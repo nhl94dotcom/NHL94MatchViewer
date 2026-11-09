@@ -529,7 +529,7 @@ Create_HotCold_Table.asm), and checked against the recordings where marked. Noth
   than 10 past the line (y > 94); ClearOffsidesIfAllPlayers clears the flag once none is past it (tag-up). While
   flagged, the computer's attacking jobs go back to defence (assdefo, asswingo, asscentero test the flag) and a2offsides,
   run inside a2touchpuck, calls offside ($10, a faceoff) when one of that team touches the puck with it more than 104 in
-  (so the first 20 units inside the line are free). a2touchpuck runs every frame for the carrier (pucknorm), for stick
+  (104 = $68: so the first 16 units inside the line are free). a2touchpuck runs every frame for the carrier (pucknorm), for stick
   deflections and steals (puckstick), body bounces (puckbody) and the goalie (puckgoalie); the one-timer strike
   (puckstick -> onetimershot) never calls it, so an offside player can one-time a pass with no whistle and the goal
   counts (the user's Genesis quirk). The individual pf3oside bit only serves the breakaway test. A carrier whose body

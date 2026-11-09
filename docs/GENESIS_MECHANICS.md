@@ -233,8 +233,8 @@ Now and then a person's skater bursts and shoots off far past top speed, sliding
 (the user: usually racing back on defence; switching to another skater is the usual way out).
 
 - **The flag:** each skater has a "deceleration off" bit (`pfdoff`, `pflags` bit 0). With it set, friction takes 1/512
-  of his speed a frame instead of 1/64 (`updateplayers`: the puck's friction), so he keeps 0.97 of his speed a second
-  instead of 0.39. A speed burst normally fades back to cruising speed in about half a second; with the flag on it barely
+  of his speed a frame instead of 1/64 (`updateplayers`: the puck's friction), so he keeps 0.89 of his speed a second
+  (the puck's 89%, section 13) instead of 0.39. A speed burst normally fades back to cruising speed in about half a second; with the flag on it barely
   fades, so **each burst stacks on the last** (about +6,300 each): two bursts take a skater from 8,000 to 20,000, more
   than twice top speed (normal skating never exceeds about 9,500). Nothing caps speed above the top: skating input only
   limits how fast he can accelerate.
@@ -404,6 +404,57 @@ recordings that went over the glass (heights 44 and 42 at the boards).
   knocks the puck loose in a random direction.
 - The poke check (7.5) is just the quickest way to get a stick there.
 
+### 6.5 Passes to players off the ice
+
+**Goalie lock: the lost control star (a goalie's pass to someone not on the ice)** (the user, 2026-10-27: after
+passing with his goalie, the star stays on the goalie, the pad does nothing and B doesn't switch, until a teammate
+picks the puck up; seen on penalty kills, on the retail ROM too). **Code**, and **Confirmed** in the RAM of the
+recordings. Four pieces of code combine:
+
+- **The pass picks a receiver** (`passmode` .findplayer): the nearest teammate within 45 degrees of the pass
+  direction, skipping the passer, goalies and players marked unavailable (`pf2unav`). It doesn't skip players who
+  aren't on the ice (position negative).
+- **A goalie a person controls hands control to the receiver at once** (`passto`: only for a goalie's pass; a
+  skater's pass leaves control with the passer).
+- **A player not on the ice is never updated** (`updateplayers`: position negative skips him), and each pad is read
+  in the update of the player it controls. With control on such a player nothing reads the pad: no skating, no B.
+  Control comes back only when the game reassigns it (a teammate taking the puck, a faceoff).
+- **Every faceoff clears every player's unavailable flag** (`resetplstuff`, from `puckfaceoff2`: `clr.b pflags2` for
+  all twelve, before it checks who is on the ice), and the faceoff set-up parks everyone not on the ice at -240, 0
+  (the left side of centre ice). A player in the penalty box is marked unavailable on his way there (`asspenalty`),
+  but from the faceoff after the call he is off the ice, **not unavailable**, at -240, 0, until he comes out
+  (`assepen`). Read from the RAM of `2026-10-18_2149_BOS-WPG`: every boxed player in its 17 snapshots during
+  penalties had position $FFFF, sat at -240, 0 and was not marked unavailable.
+- **So on a penalty kill the boxed player is a receiver.** A short-handed goalie's pass toward the left side of
+  centre ice (from the top net down and to the left, from the bottom net up and to the left, or across to the left)
+  with no teammate on the ice nearer in that 45-degree cone goes to the man in the box, and control with it. The
+  user's video `gartnerclip.mp4` shows one (from about 1:04 into it; at a pause the star shows at the penalty
+  box). Only the short-handed team has such a player, which is why it is always the penalty-killing side.
+- **ROMs that dress fewer than six** (a 2v2 ROM: records 3-5 of each team, position $FFFF, parked at -240, 0, also
+  not unavailable) have such players all game, so it can happen at even strength there: `2026-10-27_0733_EDM-HFD`,
+  P2 1:16 to 0:57, 18 game s (7.3 s real) on record 5 (the last of the three empty slots wins the tie), until EDM's other skater
+  picked up the loose puck.
+- **Avoiding it:** a short-handed goalie shouldn't pass toward the left of centre ice unless a teammate is clearly
+  nearer in that direction. A ROM fix would be for the receiver search to skip players who aren't on the ice
+  (`tst.w position(a1)` / `beq.w .next` to `ble.w .next` in `passmode`): untested.
+
+**A pass to the penalized player (related, not confirmed):** a pass to the penalized player made after the penalty is whistled can leave him
+skating about the box scene without going in, and the game waits there (the user's `not_going_into_box.mp4`).
+The call gives the penalized player the box assignment (`asspenalty`, by `assreplace`). If any pass then (a
+skater's or the goalie's: every pass does this, the goalie's control handover plays no part) picks him as its
+receiver, `passto` pushes the pass-receiving assignment on top of it (`assinsert`), and
+`asspassrec` does nothing while the clock is stopped (`donothing`: he coasts to a stop; before it looks at who controls
+him) and never exits then. A pass already on its way when the penalty is called is harmless: the call replaces his
+current assignment (the pass reception) with the box. No clock check stops passing during the stoppage. The
+clock stays stopped through the penalty scene, so his box assignment underneath never runs again: he never reaches
+the box. **Code**; a recording of one would confirm it. (Where the off-ice players are: every faceoff parks them all
+at -240, 0, level with the red line well outside the left boards, for both teams; the bench door is at -136 and the
+box at +136.)
+
+**B can switch players while your goalie keeps the puck** (the user's GIF): while a player is locked in an animation, B switches control
+(`doinput_islocked`) unless he already carries the puck, so a B press during the goalie's save move, before the puck
+is his, moves control to a skater and leaves the goalie to the computer, who holds it (a whistle). Likely, not traced.
+
 ---
 
 ## 7. Checking, hooking, poking and collisions
@@ -417,7 +468,7 @@ recordings that went over the glass (heights 44 and 42 at the boards).
   or 240 for a checker a person controls). At 0 or below, or with the target against the boards, **he goes down**.
   Otherwise a roll against half the checker's working Checking decides.
 - **Goalies can't be knocked down.**
-- **A burst doesn't block a pickup** (2026-10-25, the disassembly). `burst` (input94) adds speed along the facing
+- **A burst doesn't block a pickup** (2026-10-25, the disassembly). `burst` (logic94) adds speed along the facing
   direction and starts `SPAburst` with `pfalock`. That animation is the plain skating frames (`SPFskate`), so the
   stick hot point is where it is when skating. It sets neither `nopuck` nor `pf2unav`, the only player-side bars in
   `checkpuckcoll` (with `pfnc`). The usual rules apply: the stick hot point within 14 of the puck (`cstick`; 7 while
@@ -834,64 +885,19 @@ offsides on.
   than 10 units past the line**, the team is flagged offside.
 - **Delayed offside with tag-up:** the flag clears once none of them is past the line. Meanwhile the computer's
   attackers retreat on their own.
-- While flagged, **one of that team touching the puck more than 20 units inside the zone** is whistled offside.
+- While flagged, **one of that team touching the puck more than 16 units (about 5 feet) inside the zone** (104 from centre; the blue line is at 88) is whistled offside.
 
 ### 11.2 Quirks
 
 - **One-timers dodge offside.** The offside call lives in the game's "player touched the puck" routine, which runs for
   carrying, receiving, stick deflections, body bounces and the goalie, but **not for the one-timer strike**. An offside
   player can one-time a pass from outside the zone with no whistle, **and the goal counts**.
-- **A free band:** in the first 20 units inside the line, an offside team can play the puck without a whistle.
+- **A free band:** in the first 16 units inside the line, an offside team can play the puck without a whistle.
 - **Defenders can put attackers offside:** the attacking team is checked whenever the puck enters their zone, even if a
   defender carried it back into his own end. Attackers standing in the zone then become offside, and their next touch
   there is whistled.
 - **Backwards entries:** a carrier whose body leads the puck in by more than 10 units (skating backwards) could put
   himself offside.
-- **Goalie lock: the lost control star (a goalie's pass to someone not on the ice)** (the user, 2026-10-27: after
-  passing with his goalie, the star stays on the goalie, the pad does nothing and B doesn't switch, until a teammate
-  picks the puck up; seen on penalty kills, on the retail ROM too). **Code**, and **Confirmed** in the RAM of the
-  recordings. Four pieces of code combine:
-  - **The pass picks a receiver** (`passmode` .findplayer): the nearest teammate within 45 degrees of the pass
-    direction, skipping the passer, goalies and players marked unavailable (`pf2unav`). It doesn't skip players who
-    aren't on the ice (position negative).
-  - **A goalie a person controls hands control to the receiver at once** (`passto`: only for a goalie's pass; a
-    skater's pass leaves control with the passer).
-  - **A player not on the ice is never updated** (`updateplayers`: position negative skips him), and each pad is read
-    in the update of the player it controls. With control on such a player nothing reads the pad: no skating, no B.
-    Control comes back only when the game reassigns it (a teammate taking the puck, a faceoff).
-  - **Every faceoff clears every player's unavailable flag** (`resetplstuff`, from `puckfaceoff2`: `clr.b pflags2` for
-    all twelve, before it checks who is on the ice), and the faceoff set-up parks everyone not on the ice at -240, 0
-    (the left side of centre ice). A player in the penalty box is marked unavailable on his way there (`asspenalty`),
-    but from the faceoff after the call he is off the ice, **not unavailable**, at -240, 0, until he comes out
-    (`assepen`). Read from the RAM of `2026-10-18_2149_BOS-WPG`: every boxed player in its 17 snapshots during
-    penalties had position $FFFF, sat at -240, 0 and was not marked unavailable.
-  - **So on a penalty kill the boxed player is a receiver.** A short-handed goalie's pass toward the left side of
-    centre ice (from the top net down and to the left, from the bottom net up and to the left, or across to the left)
-    with no teammate on the ice nearer in that 45-degree cone goes to the man in the box, and control with it. The
-    user's video `gartnerclip.mp4` shows one (from about 1:04 into it; at a pause the star shows at the penalty
-    box). Only the short-handed team has such a player, which is why it is always the penalty-killing side.
-  - **ROMs that dress fewer than six** (a 2v2 ROM: records 3-5 of each team, position $FFFF, parked at -240, 0, also
-    not unavailable) have such players all game, so it can happen at even strength there: `2026-10-27_0733_EDM-HFD`,
-    P2 1:16 to 0:57, 18 game s (7.3 s real) on record 5 (the last of the three empty slots wins the tie), until EDM's other skater
-    picked up the loose puck.
-  - **Avoiding it:** a short-handed goalie shouldn't pass toward the left of centre ice unless a teammate is clearly
-    nearer in that direction. A ROM fix would be for the receiver search to skip players who aren't on the ice
-    (`tst.w position(a1)` / `beq.w .next` to `ble.w .next` in `passmode`): untested.
-- **Related, not confirmed:** a pass to the penalized player made after the penalty is whistled can leave him
-  skating about the box scene without going in, and the game waits there (the user's `not_going_into_box.mp4`).
-  The call gives the penalized player the box assignment (`asspenalty`, by `assreplace`). If any pass then (a
-  skater's or the goalie's: every pass does this, the goalie's control handover plays no part) picks him as its
-  receiver, `passto` pushes the pass-receiving assignment on top of it (`assinsert`), and
-  `asspassrec` does nothing while the clock is stopped (`donothing`: he coasts to a stop; before it looks at who controls
-  him) and never exits then. A pass already on its way when the penalty is called is harmless: the call replaces his
-  current assignment (the pass reception) with the box. No clock check stops passing during the stoppage. The
-  clock stays stopped through the penalty scene, so his box assignment underneath never runs again: he never reaches
-  the box. **Code**; a recording of one would confirm it. (Where the off-ice players are: every faceoff parks them all
-  at -240, 0, level with the red line well outside the left boards, for both teams; the bench door is at -136 and the
-  box at +136.) And **B can switch players
-  while your goalie keeps the puck** (the user's GIF): while a player is locked in an animation, B switches control
-  (`doinput_islocked`) unless he already carries the puck, so a B press during the goalie's save move, before the puck
-  is his, moves control to a skater and leaves the goalie to the computer, who holds it (a whistle). Likely, not traced.
 
 ---
 
@@ -1346,7 +1352,7 @@ was offered (STUDY_NOTES, the "NOSE4Web's ..." sections); the viewer reads the f
 | Penalty-shot table | Off by one; holding and interference give no penalty shot |
 | Pulling the goalie | The computer pulls its goalie late only when exactly two behind, never one |
 | Assists | A give-and-go (C to A, A to B, B back to A) loses C's second assist; a one-timer goal whose receiver's stick touched the pass first gets no assists at all (3 of 71 recorded one-timer goals; STUDY_NOTES, "The Genesis one-timer assist bug"); the other team taking possession clears them, the goalie included (a save he holds for a moment before it comes loose) |
-| Goalie lock | On a penalty kill (and all game on ROMs dressing fewer than six) a person's goalie passing toward the left of centre ice can pick the boxed player (or an empty slot) as the receiver, and control goes to him: the pad is dead until a teammate takes the puck (11.2) |
+| Goalie lock | On a penalty kill (and all game on ROMs dressing fewer than six) a person's goalie passing toward the left of centre ice can pick the boxed player (or an empty slot) as the receiver, and control goes to him: the pad is dead until a teammate takes the puck (6.5) |
 | Icing | Always on; no icing if the puck crosses the goal line within 44 of the middle; a shorthanded team can't ice |
 | Glass | Pucks 19-29 high stay in off the top end's glass, go out of play off the sides and the bottom end |
 | Delayed penalties | Other team immune (except interference, injury roughing) |
@@ -1417,9 +1423,6 @@ Ordered by how much the answer would matter in league play (penalties on except 
 - **Speed:** the game's velocity words; a position moves by speed / 4096 units a frame. A puck speed of 23,000 is about
   78 mph; skaters top out around 9,000.
 
-Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
-speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
-
 **The rink:**
 
 | Landmark | Units | Feet |
@@ -1469,8 +1472,10 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 ### Sources
 
 - Genesis disassembly: [github.com/abdulahmad/NHL94Genesis](https://github.com/abdulahmad/NHL94Genesis)
-  (`src/collide94.asm`, `checks94.asm`, `input94.asm`, `crowd94.asm`, `assign94.asm`, `penalty94.asm`,
-  `onetimer94.asm`, `replay94.asm`, `stats94.asm`, `cards94.asm`)
+  (`src/logic94.asm`: input, skating, the computer's jobs, shots, passes and goalies; `collide94.asm`: collisions,
+  checks and the net; `chgplayer94.asm`, `crowd94.asm`, `penalty94.asm`, `onetimer94.asm`, `replay94.asm`,
+  `stats94.asm`, `cards94.asm`; RAM names in `ram94.asm`, animation names in `frames94.asm`). The files are
+  reorganised from time to time, so a routine cited here may have moved: search for its name.
 - League ROM settings: the NOSE4Web editor, [github.com/nhl94dotcom/NOSE4Web](https://github.com/nhl94dotcom/NOSE4Web)
   (`src/core/hacks.ts`), after smozoma's smozROM and the NHL94 forums.
 - Recordings made with this project's helper; the project's `docs/PROJECT_NOTES.md` holds the detailed notes, addresses and test

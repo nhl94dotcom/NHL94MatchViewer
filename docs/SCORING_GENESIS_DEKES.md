@@ -58,7 +58,7 @@ handers" were left-handers and were run again). Both nets, 12 moments x 4 seeds 
     no left-right bias.
 - **Why the deke works: it baits a pad stack that slides the wrong way** (traced 2026-10-24: the goalie's save and
   where the puck crossed, 48 attempts per set-up and net). With the puck still carried, the swing makes the computer
-  goalie commit early, and a carried puck gets the pad stack (`goaliesave`, checks94.asm). That code ignores the
+  goalie commit early, and a carried puck gets the pad stack (`goaliesave`, logic94.asm). That code ignores the
   puck's side: it moves the goalie 6 units toward the middle of the ice (x = 0) and slides him that way at $1000, and
   picks the stack picture (R or L) from the end he defends, the side of centre he is on and his catching hand. The deke
   has carried the puck out to the side the shooter came from, so he slides away from it: in the right-hander's

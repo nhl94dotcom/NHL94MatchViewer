@@ -740,7 +740,7 @@ wanted direction is `$28` (no direction, plus C). That isn't 8 ("none"), so he t
 facing), and his facing flips between up (0) and up-left (7) every frame while he skates along it (`playeracc` with
 his facing). Facing 0 is up the screen at both ends, so he goes up and a little left whatever net he is in. With a
 d-pad direction held too, the same flip-flop should make him drift one step anticlockwise of where you point (not
-checked). **Code** (`input94.asm` `doinput_ispc`, `video94.asm` `ReadJoy`, `checks94.asm` `goalieacc`; seen in play
+checked). **Code** (`logic94.asm` `doinput_ispc`, `middle94.asm` `ReadJoy`, `logic94.asm` `goalieacc`; seen in play
 by the user, 2026-10-23).
 
 ### 5.6 Save moves that start before the shot: the wind-up rule

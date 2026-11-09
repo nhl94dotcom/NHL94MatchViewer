@@ -809,7 +809,7 @@ The footer's "Highlights" button (`&highlights` opens it) shows the game's three
 - **The test goalie is Kelly Hrudey** (Los Angeles; retail Agility 3, Speed 3, Defensive Awareness 4, Puck Control 4)
   with the game's single hot / cold value at -2: working 13 / 13 / 18 / 18. A mid-pack retail starter, not a backup.
 - **Record +$6B is `aidef`, not Defensive Awareness:** setplayer stores 15 - (DfA + bonus) / 4, 7-15 (collide94.asm);
-  the computer goalie's reaction timer is aidef / 4 frames (checks94.asm). The SNES stores a goalie's as
+  the computer goalie's reaction timer is aidef / 4 frames (logic94.asm). The SNES stores a goalie's as
   (30 - DfA) / 2 on its 0-15 scale (setplayer.asm, `.t1x`). `NHL94_GOALIE` wrote its third value there raw until
   2026-10-25, so the first goalie runs (10 / 20 / 30) also gave the goalie 2 / 5 / 7-frame reactions; now it converts.
 - **Raising only the test goalie's Agility to 20** took the far-post slapshot from the middle (35 ft, top net, the
