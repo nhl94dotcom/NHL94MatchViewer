@@ -1993,3 +1993,14 @@ item's first screen, the player card's team page, and the playoff bracket (New P
   $6F7B (every retail team has it). The bracket uses neither 1 nor 15.
 - Boston against Boston: DrawTeamBlocks writes both palettes and draws both blocks with the palette-6 attribute.
 - NOSE4Web's editor now offers colours 2-15 only (their commit 7a18e91).
+
+## NOSE4Web's SNES photo import freeing replaced photos, checked (2026-11-08)
+
+nhl94_2026_photo_import.sfc (nhl94_2026.sfc with Classic Boston imported into team 1, then Classic Chicago over it,
+with photos), by `analysis/scoring_map/menu_shots.py`: every pause-menu Player Card of team 1 against Vegas, and of
+Carolina against Vegas (the defaults), on the import ROM and nhl94_2026.sfc; Chicago's cards on NHL94_Classic.smc.
+Team 1 is Chicago with 24 players; the six with photos of their own (Belfour, Roenick, Goulet, Larmer, Steve Smith,
+Chelios) and the 18 stand-ins are pixel-identical to Classic's (the picture area of each card); no Boston photo, nothing
+scrambled. Vegas (both games) and Carolina, both with photos of their own: every card identical to nhl94_2026.sfc.
+Seen on the way: team 1's banner still reads BOSTON and its logo is the Bruins' (setup, matchups, scoreboard, team
+page), with the Blackhawks' nickname, arena and rating.
