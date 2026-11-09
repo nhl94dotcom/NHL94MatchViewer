@@ -19,6 +19,7 @@ ORIGINAL = {
     "aggressionFix": False, "ppPkFix": False, "comebackFix": False, "passFix": False, "faceoffFix": False,
     "runawayFix": False, "penaltyShotTableFix": False, "penaltyShotFixes": False, "goaliePullFix": False,
     "blindRingFix": False, "snipingFix": False, "awarenessFix": False, "crowdFix": False, "stickShots": False,
+    "oneTimerAssistFix": False,
 }
 
 
@@ -169,6 +170,12 @@ for _branch in ("002A", "002E"):
         f"0839 0000 00FF C2EA 6600 {_branch} 5268 0010 4240 102B 0066 D0C0 5228 0102 90C0 90FC 0364 B7CA 6E00 0006 "
         f"D0FC 06C8 4240 102A 0066 D0C0 5228 011C 4E75")
 ASSIST_CODE = _b("B068 001A 6700 0008 3168 001A 001C 4E75")
+# onetimershot's three moves ($F6CE4) and NOSE4Web's one-timer assist fix (2026-11-09: a2touchpuck's list update; with
+# the second-assist fix, its test too): a JSR there, NOPs after
+ONE_TIMER_ORIGINAL = _b("3168 001A 001C 3168 0018 001A 3140 0018")
+ONE_TIMER_CODE = _b("B068 0018 6722 08A8 0003 0030 660C 3168 001A 001C 3168 0018 001A 3140 0018 B068 001C 6604 50E8 001C 4E75")
+ONE_TIMER_SA_CODE = _b("B068 0018 6728 08A8 0003 0030 6612 B068 001A 6706 3168 001A 001C 3168 0018 001A 3140 0018 B068 001C "
+                       "6604 50E8 001C 4E75")
 PLUS_MINUS_CODE = _b(
     "0678 001E B8A2 48E7 E0C0 0838 0005 C2F4 6700 0010 0838 0000 C2FA 6600 0006 08C0 0006 B4FC C6CE 6700 0006 08C0 "
     "0007 307C DEF6 3210 D0F8 DEF4 5E78 DEF4 5E78 DEF4 3210 10C0 5248 700B 327C B04A 323C 0080 343C FF10 B451 6600 "
@@ -236,10 +243,18 @@ def rom_settings(rom):
         body = None
     put("bodychecks", body)
 
-    if all(_is(rom, at, _b("3168 001A 001C")) for at in (0x10188, 0xF6CE4)):
+    # $F6CE4 (onetimershot's touch-list update): the original, the second-assist fix's JSR (6 bytes), or the
+    # one-timer assist fix's (16 bytes) to its routine alone or with the second-assist test
+    one_timer = ("original" if _is(rom, 0xF6CE4, ONE_TIMER_ORIGINAL) else
+                 "second assist" if _hooked(rom, 0xF6CE4, 6, ASSIST_CODE) else
+                 "fix" if _hooked(rom, 0xF6CE4, 16, ONE_TIMER_CODE) else
+                 "fix + second assist" if _hooked(rom, 0xF6CE4, 16, ONE_TIMER_SA_CODE) else None)
+    put("oneTimerAssistFix", None if one_timer is None else one_timer.startswith("fix"))
+    if _is(rom, 0x10188, _b("3168 001A 001C")) and one_timer in ("original", "fix"):
         put("secondAssist", False)
     else:
-        put("secondAssist", True if all(_hooked(rom, at, 6, ASSIST_CODE) for at in (0x10188, 0xF6CE4)) else None)
+        put("secondAssist", True if _hooked(rom, 0x10188, 6, ASSIST_CODE)
+            and one_timer in ("second assist", "fix + second assist") else None)
 
     if _is(rom, 0x1494A, _b("0678 001E B8A2")):
         put("plusMinus", False)
