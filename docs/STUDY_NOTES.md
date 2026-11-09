@@ -1765,6 +1765,31 @@ pause screens Edit Lines, Game Stats, Player Cards, Other Scores, Crowd Meter, a
   box's letters, frame and fill all have it ($84xx, $A3FC-$A404), so the logo tiles need it too, or players would skate
   over the logos.
 
+## NOSE4Web's Genesis score-box logos, checked in the game (2026-11-08)
+
+nhl94_score_logos.bin (NOSE4Web, 19:12) against nhl94.bin with `analysis/scoring_map/gen_score_logo_build_check.py`:
+the same presses on both ROMs; at each moment a screenshot, the text map's cells (columns $16-$1E, rows $15-$1C) and the
+logo tiles. Full run: Montreal (home) v Los Angeles, penalties and line changes On, pad 1 home; in play, the lower
+line-change box opened (A held by pad 1's carrier) and closed (B), back from Edit Lines and Game Stats, an instant
+replay (its own menu, then the pause menu on the side view, Resume), the break, period 2 in play, a skater under the
+box. Short runs (in play only, palettes): Hartford v Boston, Boston v Montreal, Montreal v Boston.
+- **The bytes**: only the listed hooks, the checksum test NOP'd at $300, the header, new code at $FFAC0 and data at
+  $100000-$102691.
+- **In play**: the box is 7 rows, $15-$1B; visitors' logo tiles $29A-$29F on rows $16-$17 (map words $E29A..., the
+  priority bit, line 3), home $294-$299 on rows $19-$1A ($C294..., priority, line 2); each score at columns $1C-$1D on
+  the logo's lower row. Hartford shows its letters (HFD) in the logo's place, as planned. Palette lines 2 and 3 are
+  the same as the original's in every matchup (the build changes no colours): Boston's logo at home is drawn from its
+  home line and on the road from its away line (a few pixels differ, the grey shades), Montreal's likewise (the H's
+  white $EEE at home, $CCC away). Each logo's edge has a few pixels in the colours every uniform line shares (slot 6,
+  the skin tone, pink; slot 15, light blue); they show against the black box. They are probably the converter's
+  nearest colours for anti-aliased edges, and are cosmetic.
+- **The line-change box**: opened, row $15 is blanked ($87FF) and the box covers $16-$1B; closed, the whole 7-row box
+  with both logos is back.
+- **After pause screens, the replay, the side view and the break**: the box and logos are intact after Edit Lines,
+  Game Stats and the replay. The pause menu's side view and the break's scoreboard look the same as the original's.
+  Period 2 in play has both logos (visitors still above). In replays neither ROM shows the score box.
+- **A skater under the box**: drawn behind it, as on the original (the logo tiles have the priority bit).
+
 ## The xG models' goalie spread refitted (2026-11-08)
 
 Studies 5 and 6 of docs/GAME_VARIABLES_PLAN.md found the models too sure at both ends. `analysis/xg_spread_fit.py`
