@@ -2319,6 +2319,14 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   assist with `st` (a byte), so a cleared slot reads $FFxx (-254, -246 ...), still no assist. The other unassisted goals after
   passes were real changes of possession: the goalie holding it 0.5 s or more (12 SNES goals), a skater holding it
   0.5 s or more (9), or a defender's stick picking it up for 0.1-0.3 s (5), which also clears them.
+- **Reproduced on purpose (Genesis, `analysis/scoring_map/gen_assist_repro.py`, the scoring-map test ROM's code and
+  state; only the loose puck placed by hand, every pickup, the pass and the goal the game's own):** home A picks the
+  puck up (list [A, 11]); away D picks it up (puckglue: [A, -, -], tmflast set); A picks it back up: tmflast stays
+  set; A passes to B (B pressed, UP held), B's touch replaces him: [B, -, -], and the puck sent on into the empty net
+  is a goal by B, unassisted. The control (another home skater, C, wins it back and passes): [B, C], C's assist. The
+  same plays on a scratch copy with the fix (the 8 bytes at $10176 -> `jsr $FFF00` / `nop`; at $FFF00 `cmp.w
+  $18(a0),d0` / `bne.s +12` / `bclr #3,$30(a0)` / `move.l #$101A4,(sp)` / `rts`): A's retake clears tmflast, B's
+  touch shifts him to [B, A], the goal is assisted by A; the control unchanged (C's assist).
 - **Where to fix it:** SNES retail and Classic $9E:C523 (file $F4523; SDL16 $9E:C723, nhl94snes_2026 $9E:C56B; not
   matched in nhl94_2026.sfc or the SA-1 original), Genesis retail and CDL $1017A (the `beq.w .same`, to $101A4). A fix
   clears the flag on the same-player path too and changes nothing else: same player and flag set, clear the flag and
