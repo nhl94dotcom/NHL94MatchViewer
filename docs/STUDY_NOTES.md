@@ -2011,3 +2011,13 @@ nhl94_2026.sfc. Wrong: the banners' name reads BOSTON (setup, matchups, scoreboa
 the setup row says Chicago); the title screen's flying puck shows Chicago's logo shape in Boston-like colours (white,
 grey, gold), so the title's logo colours come from somewhere the import doesn't write. (The cards' strengths and
 overall ratings differ by the game's random hot / cold, not the import.)
+- **The rebuilds (a62f54f, d732326).** The banner reads CHICAGO on setup, the matchups, the scoreboard and the card
+  team page; every other team's setup banner is pixel-identical to nhl94_2026.sfc (all 32 cycled). Centre ice at the
+  opening faceoff still looks as in Classic. The title: every puck takes its colours from TitlePalette ($9A:CCA9, ROM
+  $D4CA9, the same data in retail, Classic and both 2026 ROMs; unpacked to $7F:0000 and sent to CGRAM once in
+  TitleScreen .7); LoadTitleLogo ORs each logo pixel with LogoPalBits ($0BED): $60, or $70 when an attribute byte of the
+  logo's map has bits $1C set. Classic's Chicago uses $60, team 1 in the build $70, so its colours are CGRAM $70-$7F
+  (6B5A 7FFF 4A52 2529 5EF7 025B 0F3F 0000 4CA4 3400 0165 6DA9 009A 0012 05FF 1DD9). After d732326 the logo's pixels
+  (counted in video memory) still leave Chicago's black outline at number 1 (white on the title) and put the tan face
+  and dark brown at 7 (black): a white outline round a black face. The Snes9x saved state keeps CGRAM in its PPU
+  block at offset 64, big-endian words.
