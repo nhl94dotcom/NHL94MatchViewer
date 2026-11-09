@@ -2021,6 +2021,17 @@ overall ratings differ by the game's random hot / cold, not the import.)
   (counted in video memory) still leave Chicago's black outline at number 1 (white on the title) and put the tan face
   and dark brown at 7 (black): a white outline round a black face. The Snes9x saved state keeps CGRAM in its PPU
   block at offset 64, big-endian words.
+- **Why the title doesn't show the file's numbers (540bab7 rebuild, 2026-11-09).** The 2 MB build's LoadTitleLogo
+  calls TitleIceColours (NHL94SNES-SA1 `routines/hockey/CenterIcePalette.asm`) after Decompress: when the team's
+  IceTitleColours row (16 bytes a team: byte 0 the palette bits $60 / $70, 0 = retail colours; bytes 1-15 the title
+  number for each of the logo's own colours) is non-zero, it renumbers every pixel in place through that row and sets
+  LogoPalBits from byte 0. CenterIcePalette reads the same byte 0 to pick the rink's own colours (IcePalettes) over
+  RinkPalette. In this build the table is at $A0:9CFC (file $101CFC; found from TitleIceColours's `lda.l`, bytes
+  48 8A 0A AA BF + address), and the import leaves team 1's row as built: 70 01 01 01 01 04 06 06 05 02 03 03 07 07 07
+  07. So the outline (own 7) and own 6 show as 6 (0F3F, gold, 532 pixels) and own 12-15, the face among them, as 7
+  (black, 384): a gold outline round a black face. The same row turned the previous build's 3 and 15 into 1 and 7.
+  Fix: write the team's row with the title number wanted for each own colour (byte 0 non-zero). Centre ice at the
+  opening faceoff is still as in Classic (the same colours in the circle).
 
 ## The same skater twice on one line (2026-11-09, for NOSE4Web)
 
