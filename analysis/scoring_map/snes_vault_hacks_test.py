@@ -38,7 +38,7 @@ SFLAGS, PSITEM, CLOCK, GMCLOCK, GSP = 0x15D8, 0x0D15, 0x1632, 0x15D6, 0x1630
 TMGOALIE, CONT1, CONT2, TEAMPADS, SCORE = 0x17AA, 0x1C84, 0x1C86, 0x19D0, 0x178E
 POSITION, PNUM, PFTEAM, LINES, HOTCOLD = 0x0F43, 0x12A3, 0x1503, 0x1CE4, 0x1A12
 LISTCOUNT, PICKFIRST, PICKROWS, PICKTOP = 0x1DA3, 0x1DAB, 0x1DAF, 0x1DA7
-TEXTMAP, OPTLINE, LINESEL = 0x37F4, 0x34C6, 0x0D43
+TEXTMAP, OPTLINE, LINESEL, OPTPEN, TMLINE, TMAP = 0x37F4, 0x34C6, 0x0D43, 0x34C4, 0x1796, 0x17A6
 ROWS = ["LD", "RD", "LW", "C", "RW"]
 
 
@@ -62,9 +62,10 @@ class Game:
         self.e.run(3, **({"hold2": [b]} if pad2 else {"hold": [b]}))
         self.e.run(wait)
 
-    def editor(self, line=1):
-        if line > 1:                      # with Line Changes Off the editor shows only line 1 (the Best Line)
-            self.e.setw(OPTLINE, 1)
+    def editor(self, line=1, optline=None):
+        # with Line Changes Off the editor shows only line 1 (the Best Line): On for any other line
+        if optline is not None or line > 1:
+            self.e.setw(OPTLINE, 1 if line > 1 else optline)
         self.tap("START", 60)
         for b in ("DOWN",) * 4 + ("B",):
             self.tap(b, 40)
@@ -87,9 +88,9 @@ class Game:
 def part_lines(rom):
     g = Game(rom)
     out = {}
-    for line in (1, 6):
+    for line, optline, label in ((1, 0, "Best Line"), (1, 1, "Scoring 1"), (6, 1, "Pen. Kill 1"), (7, 1, "Pen. Kill 2")):
         g.reset()
-        g.editor(line)
+        g.editor(line, optline)
         base = g.e.serialize()
         before = g.line(line)
         rows = ROWS[:5] if line < 6 else ROWS[:4]
@@ -124,7 +125,7 @@ def part_lines(rom):
                                      with_a_player_twice=twice,
                                      with_a_player_dropped=dropped, examples=[p for p in picks if p["twice"] or p["dropped"]][:4])
             lowload.breathe()
-        out[f"line{line}"] = res
+        out[label] = res
     return out
 
 
@@ -368,6 +369,41 @@ def part_ramdiff(retail, hack):
     diff = [a for a in range(len(rams[0])) if rams[0][a] != rams[1][a]]
     return dict(tmgoalie=hex(g.e.w(TMGOALIE)), addresses_that_differ=[f"${a:04X}" if a < 0x10000 else f"$7F:{a - 0x10000:04X}" for a in diff][:40],
                 count=len(diff))
+
+
+def part_shorthanded(rom):
+    """Line Changes and Penalties On, Montreal (pad 1) played with random presses (checks, hooks) until it is short-handed
+    on a penalty-kill line (tmline $1796 = 5 or 6) with the clock running; then L+R (24 frames) and 240 frames: the
+    line, the players on the ice by position, and where the line's extra attacker plays."""
+    import random
+    g = Game(rom)
+    g.reset()
+    g.e.setw(OPTLINE, 1)
+    g.e.setw(OPTPEN, 2)
+    rnd = random.Random(11)
+    found = None
+    for f in range(0, 60 * 60 * 40, 6):
+        g.e.run(6, hold=rnd.choice([["UP", "B"], ["DOWN", "Y"], ["LEFT", "A"], ["RIGHT", "Y"], ["UP", "Y"], ["B"]]))
+        if g.e.w(SFLAGS) & 1:
+            g.tap("START", 60)
+        if g.e.w(TMLINE) in (5, 6) and not g.e.w(GMCLOCK) and not g.e.w(SFLAGS) & 1:
+            g.e.run(30)
+            if g.e.w(TMLINE) in (5, 6) and not g.e.w(GMCLOCK):
+                found = f
+                break
+        if f % 3600 == 0:
+            lowload.breathe()
+    if found is None:
+        return dict(found=False)
+    line = g.e.w(TMLINE)
+    row = [g.e.b(LINES + 8 * line + j) for j in range(7)]
+    before = {g.e.w(POSITION + 2 * k): (g.e.w(PNUM + 2 * k) & 0xFF) + 1 for k in range(6)}
+    g.e.run(24, hold=["L", "R"])
+    g.e.run(240)
+    after = {g.e.w(POSITION + 2 * k): (g.e.w(PNUM + 2 * k) & 0xFF) + 1 for k in range(6)}
+    return dict(found_after_frames=found, tmline=line, line_row=row, extra_attacker=row[6], tmap=g.e.w(TMAP),
+                tmgoalie=hex(g.e.w(TMGOALIE)), on_ice_before=before, on_ice_after_pull=after,
+                still_on_pk_line=g.e.w(TMLINE) == line)
 
 
 def part_cpu(rom):

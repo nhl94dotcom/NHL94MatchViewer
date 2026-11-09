@@ -2119,6 +2119,18 @@ $9E:D150; $9F:9A31 / $9F:FB43; the checksum).
   the code differs); a whole-game comparison with retail diverges from the extra cycles alone (as the penalty-roll
   stubs did). Max Boost: Agility 11 and Checking 9 cells at 100 (the two -1s included), no cold value missed, the
   rest as retail. The extra attacker fix is still the old one (penalty-kill lines not fixed).
+- **10:34 rebuilds (c4c6417, 0c87d85).** L+R: the counts are zeroed while paused (sflags bit 0); a press in a pause
+  resumed 30 or 120 frames later, or during a whistle: nothing; taps and holds as before (2 frames 11 of 12, 4-120
+  frames once, 12 of 12), the rest unchanged. Extra attacker fix (`adc #5`, `ldx #6 / nop`), on NHL94_vault_hacks.smc
+  and NHL94_extra_attacker.smc (retail + the fix only): every pick on every row of the Best Line, Scoring 1 (the same
+  RAM line, Line Changes Off / On), Pen. Kill 1 and Pen. Kill 2: no player twice, nobody dropped (retail: the line's
+  extra attacker picked at LW or C of either penalty-kill line, or LW / C / RW of line 1, is in it twice).
+- **A short-handed pull doesn't bring on the extra attacker.** SetPlList fills the team's places from priolist (G, LD,
+  RD, C, LW, RW, extra attacker), skipping G when the goalie is out; a team of 5 (short-handed) gets LD, RD, C, LW and
+  RW, so the 5th skater is the penalty-kill line's RW slot, which Edit Lines doesn't show (4 rows). In play (the Vault
+  ROM, Line Changes and Penalties On, Montreal short-handed on Pen. Kill 2: LD 22, RD 19, LW 3, C 13, RW slot 7,
+  extra attacker 6), L+R: the goalie off and roster place 7 on at RW (position 5); place 6 stayed off. The extra
+  attacker slot plays only with 6 places to fill (full strength, a penalty-kill line still on after the penalty).
 - **Can a defenceman be a line's extra attacker on retail? (code)** Only if the ROM's own line data puts one there.
   The RAM lines are written by LoadTeamLines (from the team data: at the start, setoptions, Restore default lines) and
   by the editor (SetLineSlot / SwapLineSlots), which writes slot offsets 0-4 only (lineslots 5 or 4) and swaps only
