@@ -2554,3 +2554,25 @@ ported). The release thread's manual (the author's) agrees with the code below.
 - The converter reads the fights and the extra stats (PROJECT_NOTES "Fights and the extra stats"); first checked on
   a headless fight from `snes_fight_capture.py` (MTL 19 v LA 11, both majors, called at the fight's start). How often
   fights happen under On and After Whistle is not measured yet (computer games; asked of the user).
+
+## NOSE4Web's title credits editors, played (2026-11-09, Genesis 4b25bef, SNES a638265)
+
+- **Genesis nhl94_credits.bin** against nhl94.bin: Credits / CreditsPages rewritten in place in the original's 934
+  bytes ($5776-$5B1B; the rest zero; the copyright page byte for byte), plus only the usual checksum-check removal
+  ($301 nops, $FFAC0- freed) and the header checksum. Pages: the copyright page; "NOSE4Web Test League / Season 12,
+  2026 / (an empty String) / The Commissioner"; "Tested by / Match Viewer"; "Design adapted by / Michael Brook";
+  "Programmed by / Mark Lesser". Played from power-on (menu_shots, a shot every 10 frames): each page scrolls in
+  and holds centred (CreditsPrintRow: column $11 - length word / 2, as the original's), the blank line shows as a
+  gap, lower case and the comma right; the first two lines of every page sit close in both ROMs (the title's line
+  scroll). After page 5 the title ends into Game Setup, as the original does after its last page (TitleScreen
+  returns into Opening2); the title, and so the roll, comes back only at power-on / reset.
+- **SNES NHL94_credits.smc / nhl94snes_SA1_credits.sfc** against NHL94.smc / nhl94snes_SA1.sfc: only the 949 bytes
+  after CopyrightLines (CreditTitles kept at its address, CreditNames moved to just after it: two of the four lda.l
+  loads change value), the last terminator on the original's last byte ($66C0 retail, $6881 SA-1), and the header
+  checksum. `snes_credits_check.py`: the five titles and their names rest in order and centred (TESTED BY / THE
+  COMMISSIONER is the shared string), "@" is the copyright sign, digits and "." right, ADDITIONAL PROGRAMMING (22
+  letters, as the original) fits. The roll ends (CreditStep 3) after title 5 at frame ~2990 from power-on; the
+  title then sits without credits until its fixed $1284 frames (~3450 frames, 58 s real) end and it fades into the
+  menus at ~6500, as the original (whose 17 titles end at ~6250, ~190 frames before). Every frame before the credits
+  start (sampled every 3 frames to 1500) is pixel for pixel the original's, the copyright lines (shown only briefly
+  in the title's zoom) included. The SNES title, too, plays once per power-on.
