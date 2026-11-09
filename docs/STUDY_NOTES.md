@@ -2654,3 +2654,33 @@ takes 24 frames on both (the SA-1 build at 60 frames a second: exactly 24 each; 
 99:00 overtime runs out at 0:00 and the game ends (period 4, then a new game's setup). Menu (screenshots): Period
 goes 5 Minutes, 10, 20, "5 Min, 99 OT" and round again on both. Testing note: at 60 frames a second menu presses 4
 frames apart can be lost (a wait between presses).
+
+## Knockdowns, holds, injuries and shift energy: a baseline for a "hits cost energy" option (2026-11-09, NOSE4Web)
+
+From the code (both systems): every knockdown goes through `FallDown` (Genesis collide94 :638, a2 down / a3 hitter;
+SNES collide/FallDown, a2 down / X hitter), from body checks, the poke trip (`Bcheck`), checkint and a fast high puck
+(`puckbody`); a real fall (not a stumble) is Genesis `.cont2`, SNES `.t2`, where the team's checks stat goes up.
+Holds and hooks catch in `holdcheck` (once: the held player is then locked). The injury roll: Genesis `randomd0(160)
+<= impact`, SNES `randoma8(150) x 2 < impact`, only the carrier falling back facing straight up or down with the clock
+running. `PeriodOver` runs once at each period's end on both. Free RAM: Genesis after `PALflag` ($FFDEF4, zero in all
+1,498 full snapshots up to the stack at about $FFFE60; cleared at power-on only); SNES retail $7E:F034-$7E:FFFF (zero
+in all 31 games); the SA-1 CPU sees only ROM, I-RAM and BW-RAM.
+
+`analysis/knockdown_study.py` (the recorded league games, people against people, line changes off): per game
+
+| | knockdowns (the game's checks) | poke trips | body checks (the rest) | holds caught | hooks caught | injuries |
+|---|---|---|---|---|---|---|
+| Genesis, 26 games | 50.1 | 8.3 | 41.8 | 1.5 | 10.1 | 0.38 |
+| SNES, 29 games | 51.8 | 6.8 | 45.1 | 9.7 | 8.0 | 0 |
+
+(The converter's hits include the poke trips: a hit is any knockdown with a hitter.)
+
+Energy with line changes on, the computer on both sides (`gen_energy_shifts.py`, one 10-minute period;
+`snes_energy_shifts.py`, two 5-minute periods; full energy 4096):
+
+| | shift (game s, median) | energy lost a shift | at the shift's end | lost a game second on the ice |
+|---|---|---|---|---|
+| Genesis | 108 | 971 (24%) | 76% | 8.0 |
+| SNES | 60 | 411 (10%) | 89% | 5.4 |
+
+A burst costs 204 on both; the bench gives back 9 a second (Genesis) / 10 a call (SNES).

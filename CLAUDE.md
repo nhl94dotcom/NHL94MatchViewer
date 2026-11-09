@@ -103,7 +103,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `set_report.py <TEAM> <TEAM> <match> ...` (both systems; its docstring lists the rules a write-up keeps) and
   `set_deep.py` (Genesis, deeper); `coach_report.py` (how the two people played, Genesis; league tables from
   `coach_models.py`) and `coach_predict.py`; `check_pass.py <match> ... | --all [ABBR]` (passing out of a check, both
-  systems: the converter's `find_check_passes`); `assist_loss_study.py` (assists lost to a2touchpuck's same-player exit). `reports/<set>_writeup.md` are the written analyses.
+  systems: the converter's `find_check_passes`); `assist_loss_study.py` (assists lost to a2touchpuck's same-player exit); `knockdown_study.py` (knockdowns, poke trips,
+  holds and injuries per game, both systems). `reports/<set>_writeup.md` are the written analyses.
 - Moment tools: `goal_trace.py <capture> <period> <m:ss>` (any moment frame by frame), `b_button_study.py`; the older
   BOS-NYI series scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`); shot / one-timer
   / passing / pickup / goalie studies; `bug_frequency.py` (how often NOSE4Web's fixed bugs happen in the recordings);
@@ -149,7 +150,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       (Genesis injuries forced in a scratch copy; the head blood builds).
     - Lines and options: `gen_line_dup_check.py` / `snes_line_dup_check.py` (the same skater twice on one line),
       `gen_line_editor_cursor.py` (the Genesis line editor's reachable slots), `gen_1on1_edit_lines.py` (Edit Lines and
-      Team Roster on a ROM dressing fewer skaters), `gen_net_colour_check.py` (sprite edits compared from one shared play state, in play and the replay), `gen_setup_screen.py` (the Game Setup screen's video memory, colours and how much background shows), `gen_ot_check.py` (period lengths in the menu and overtime lengths, played; `snes_ot_check.py` the SNES's), `gen_looks_check.py` (intro waits, puck friction, puck and fan colours), `snes_credits_check.py` (the SNES title credits: a screenshot at each rest, the roll's end), `gen_songs_check.py` / `snes_songs_check.py` (organ songs by home
+      Team Roster on a ROM dressing fewer skaters), `gen_energy_shifts.py` / `snes_energy_shifts.py` (energy over shifts with line changes on), `gen_net_colour_check.py` (sprite edits compared from one shared play state, in play and the replay), `gen_setup_screen.py` (the Game Setup screen's video memory, colours and how much background shows), `gen_ot_check.py` (period lengths in the menu and overtime lengths, played; `snes_ot_check.py` the SNES's), `gen_looks_check.py` (intro waits, puck friction, puck and fan colours), `snes_credits_check.py` (the SNES title credits: a screenshot at each rest, the roll's end), `gen_songs_check.py` / `snes_songs_check.py` (organ songs by home
       team and slot), `gen_leadsong_check.py` (the power-play songs after a real penalty), `gen_pad34_goalie.py`
       (pads 3 and 4 through EA's 4-Way Play: `emu.Emu(fourway=True)`), `gen_assist_repro.py` / `snes_regain_assist_test.py` (the
       lost-assist bug reproduced, and its fix), `snes_vault_hacks_test.py` (the
