@@ -2631,3 +2631,13 @@ the fighters' pffight flag:
 - **After Whistle:** 0 fights in 6 games (62-82 checks a game): the computer doesn't check after the whistle, so
   with After Whistle fights come only from people checking late.
 Two teams, the computer only and short periods: a guide, not a league rate.
+
+## Net colours, played (Genesis, 2026-11-09, NOSE4Web a2b7752)
+
+nhl94_nets_crowd.bin / nhl94_nets_home.bin against nhl94.bin: only the six net pieces' attribute high bytes
+($A16C0-$A16E8 every 8: $00 / $08 -> $20 / $28 crowd line, $40 / $48 home line; the flip bit kept) and the usual
+checksum-check removal. `gen_net_colour_check.py`: the test ROMs boot a few frames sooner (no checksum check), which
+moves the random seed, so every ROM starts from retail's saved play state: 2400 frames of play and 20 s of instant
+replay, each frame compared with retail's. Only a net-sized box differs, in play and in the replay; the puck and its
+shadow are pixel for pixel retail's. With the puck put at each end, both nets differ (top and bottom). Crowd line:
+an olive-grey net; home line (Montreal at home): a dark navy net with a red frame, heavy against the ice.
