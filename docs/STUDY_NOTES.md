@@ -2641,3 +2641,16 @@ moves the random seed, so every ROM starts from retail's saved play state: 2400 
 replay, each frame compared with retail's. Only a net-sized box differs, in play and in the replay; the puck and its
 shadow are pixel for pixel retail's. With the puck put at each end, both nets differ (top and bottom). Crowd line:
 an olive-grey net; home line (Montreal at home): a dark navy net with a red frame, heavy against the ice.
+
+## The SNES fourth period length with a 99:00 overtime, played (2026-11-09, NOSE4Web 5bcacbd)
+
+NHL94_fourth_period_ot.smc / nhl94snes_SA1_fourth_period_ot.sfc against NHL94.smc / nhl94snes_SA1.sfc: ResetClock's
+`lda.l OptPlayMode / bne .1` -> `jmp $FFE6` + 3 nops (bank $9F), 26 bytes there (`lda.l OptPlayMode / bne -> jmp .1;
+lda.l Optperlen / cmp #3 / bne -> jmp lda #300; lda #5940 / sta d0 / jmp .1`; on SA-1 the options at $40:34BC /
+$40:34C2), the period count 3 -> 4, GetPeriodTime's fourth entry 30 -> 300, the name "5 Min, 99 OT", the header
+checksum. `snes_ot_check.py` (live play, options set in RAM; overtime = period 3, the teams, 0-0, the clock run 3 s):
+both builds: regular season 300 on 5 Minutes and 5940 on the fourth length; playoffs 300 on both. The clock second
+takes 24 frames on both (the SA-1 build at 60 frames a second: exactly 24 each; retail 22-25 at 60 Hz). A tied
+99:00 overtime runs out at 0:00 and the game ends (period 4, then a new game's setup). Menu (screenshots): Period
+goes 5 Minutes, 10, 20, "5 Min, 99 OT" and round again on both. Testing note: at 60 frames a second menu presses 4
+frames apart can be lost (a wait between presses).
