@@ -1874,8 +1874,8 @@ asl.l #5,d2` (the tile number signed) now `mulu.w #32,d2`. Checked with `analysi
   after the hit): the blood at the head, growing, in front of him. No player showed 369-372 in any other animation.
   On CDL the blood piece's tiles are in video memory byte for byte from ROM $1ED124 (tile $C795), as on nhl94_blood
   from $FFBA4 (the Genesis Plus GX state keeps video memory as little-endian words). When the horizontal scoreboard
-  comes up the facing turns, and a player lying on 370 can be drawn on 372 (the frame the original would switch
-  from 275 to 291), so the blood comes with the frame; but the side view never showed the lying player (in no
+  comes up the facing turns, and a player lying on 370 was drawn on 372 in one injury (the original's 275 / 291 weren't
+  watched there), and the blood comes with the frame; but the side view never showed the lying player (in no
   injury, nor with him moved about the rink), so it wasn't seen there.
 - **Period injuries and other falls**: period injuries frame for frame as on nhl94.bin (273, 274, 275 for 30, then
   641-646 or 647-652); every other animation's list is unchanged.
@@ -1886,83 +1886,43 @@ asl.l #5,d2` (the tile number signed) now `mulu.w #32,d2`. Checked with `analysi
 ## McMarkis's 60 frames a second: the computer against itself (2026-11-08, for NOSE4Web)
 
 The original engine runs the game logic at 30 frames a second (d7 = 2 each step); McMarkis's SA-1 build at 60 (d7 =
-1). `analysis/scoring_map/snes_60fps_cvc.py`: NHL94_Classic.smc against nhl94_2026_classic.sfc (the 32-team SA-1
-build with Classic's 28 teams imported, checked the same as Classic), Montreal at home against Los Angeles, 5-minute
-periods (the clock held to 5:00), penalties On, No Offside, the computer on both sides, each game's random seed
-($0792 / $0794) set from its number, 20 games each, regulation only, the game's own team stats. (A first run of 12
-each was thrown out: seven Classic games had 10-minute periods from a missed menu press, and the SA-1 build's random
-state didn't vary with the menu frames, so its 12 games were 3.)
+1). `analysis/scoring_map/snes_60fps_cvc.py`: Montreal at home against Los Angeles, 5-minute periods (the clock held to
+5:00), penalties On, No Offside (the option set to 2 when play starts), the computer on both sides, each game's random
+seed ($0792 / $0794) set from its number, 20 games per ROM, regulation only, the game's own team stats, each penalty's
+number from the buffer at $15DE when it is called and each shot's strength from the players in the boxes ($1624).
+Five ROMs: NHL94_Classic.smc and nhl94_2026_classic.sfc (the 32-team SA-1 build with Classic's teams imported) at 60
+and at 30 (`--make-30`: a scratch copy whose Gameloop waits for 2 frames, so every step has d7 = 2 as on the original
+engine; checked: timestep $0ADB is 2 at every frame, the clock runs as before); retail NHL94.smc and
+nhl94_SA1_Original.sfc (the SA-1 build with the original teams, also 60: its gamefps readout $0A98 reads 60).
 
-Then, to separate the frame rate from the rest of the build: the same SA-1 build run at 30 (`--make-30`: its Gameloop
-waits for 2 frames, so every step has d7 = 2 as on the original engine), and a second team set, the original rosters:
-retail NHL94.smc against nhl94_SA1_Original.sfc (the SA-1 build with the original teams; it runs at 60 too: its own
-gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game different.
-
-| Per game, both teams (± one standard error) | Classic (30) | SA-1 Classic at 30 | SA-1 Classic (60) | Retail (30) | SA-1 Original (60) |
+| Per game, both teams | Classic (30) | SA-1 Classic at 30 | SA-1 Classic (60) | Retail (30) | SA-1 Original (60) |
 |---|---|---|---|---|---|
-| Goals | 3.10 ± 0.45 | 2.00 ± 0.22 | 2.40 ± 0.31 | 2.20 ± 0.28 | 2.30 ± 0.33 |
-| Shots | 34.1 ± 0.9 | 38.1 ± 0.7 | 37.1 ± 0.9 | 33.5 ± 1.0 | 37.5 ± 1.2 |
-| Saves | 31.0 ± 0.8 | 36.1 ± 0.8 | 34.7 ± 0.9 | 31.3 ± 1.0 | 35.2 ± 1.2 |
-| Body checks | 48.4 ± 1.9 | 47.1 ± 1.4 | 60.9 ± 1.5 | 49.1 ± 1.2 | 64.2 ± 1.4 |
-| Penalties | 0.55 ± 0.23 | 1.75 ± 0.23 | 2.90 ± 0.34 | 0.70 ± 0.32 | 3.00 ± 0.35 |
-| Passes completed / tried | 62.8 / 114.3 | 66.3 / 115.4 | 63.3 / 115.5 | 65.0 / 115.9 | 59.8 / 105.6 |
+| Goals | 2.95 | 2.00 | 2.40 | 2.25 | 2.30 |
+| Shots | 35.5 | 38.1 | 37.1 | 34.2 | 37.5 |
+| Saves | 32.6 | 36.1 | 34.7 | 32.0 | 35.2 |
+| Body checks | 41.6 | 47.1 | 60.9 | 44.0 | 64.2 |
+| Penalties | 2.20 | 1.75 | 2.90 | 2.55 | 3.00 |
+| Passes completed / tried | 65 / 117 | 66 / 115 | 63 / 116 | 65 / 116 | 60 / 106 |
+| Roughing or Cross Check / injury Roughing ($14) / other penalties | 0.45 / 0.20 / 1.60 | 0.75 / 0.30 / 0.90 | | 0.75 / 0.35 / 1.45 | |
+| Even / power-play / short-handed shots | 29.1 / 4.4 / 2.1 | 32.1 / 3.8 / 2.3 | | 26.8 / 4.1 / 3.3 | |
 
-- **The frame rate itself** (the SA-1 build at 30 against 60): body checks up 30% (z 6.6), penalties up (1.75 to
+- **The frame rate** (the SA-1 build at 30 against 60): body checks up 30% (47 to 61, z 6.6), penalties up (1.75 to
   2.90, z 2.8); shots, saves, goals and passing the same.
-- **The rest of the SA-1 build** (Classic against the SA-1 build at 30; **the penalties and power-play shots in this
-  bullet and the next two are wrong**: see "Correction" below): about 4 more shots and 5 more saves a game
-  (z 3.6, 4.6) and more penalties (0.55 to 1.75, z 3.7); checks the same; goals 3.1 against 2.0 (z -2.2, borderline).
-- **Both together, in both team sets**: checks up a quarter to a third (48 to 61; 49 to 64, z 8.2), penalties four to
-  five times (0.55 to 2.9; 0.7 to 3.0), about 4 more shots and saves; goals no different (2.2 against 2.3 with the
-  original rosters; Classic's 3.1 stands alone, so no goal effect can be claimed). Passes tried fell in the original
-  team set (116 to 106, z -3.7) but not in Classic's: not settled.
-- The code: the computer's decision timers (temp1, the awareness delay; the assignments; asspuckc's chk4shot /
+- **The rest of the build** (Classic against the SA-1 build at 30): about 2.6 more shots (z 2.5) and 3.5 more saves
+  (z 3.1), 5 more checks (z 2.6), fewer goals (2.95 against 2.00, z -2.3); no more penalties (2.20 against 1.75). Not
+  explained here.
+- **The whole build against the original** (both team sets): checks up 45-50% (42 to 61; 44 to 64, z 10), penalties
+  a little up (2.2 to 2.9; 2.55 to 3.0, z 1.0), 2-3 more shots and saves, goals no different with the original rosters
+  (2.25 against 2.30). Passes tried fell with the original rosters (116 to 106, z -3.7), not with Classic's: not
+  settled. No fighting penalty in any game.
+- **The code**: the computer's decision timers (temp1, the awareness delay; the assignments; asspuckc's chk4shot /
   chk4pass gate) count down by d7, so they run in real time on both builds: the computer doesn't decide more often.
-  temp3 and temp4 count down by 1 a step, so they run twice as fast on the SA-1 build. Collisions (checks, the
-  penalty rolls that come with them), the controller reads and steering run every step, twice as often: the cause of
-  the extra checks, and of part of the extra penalties.
-- Limits: the computer against itself, one matchup per team set (Montreal against Los Angeles), regulation only;
-  nothing here on how the game feels to a person (input and steering twice as often).
-- **Which penalties, which shots** (wrong, see "Correction" below) (NOSE4Web: the build's only other gameplay change is McMarkis's fighting). Classic
-  and the SA-1 build at 30 again (the same seeds, so the same games: totals as above), now with each penalty's number
-  from the buffer at $15DE when it is called and each shot's strength from the players in the boxes ($1624). Per
-  game, both teams:
-
-  | | Classic (30) | SA-1 Classic at 30 | z |
-  |---|---|---|---|
-  | Fighting / Instigator ($2A, $2C, $2E) | 0 | 0 | |
-  | Roughing ($14, $1C) | 0.10 | 0.80 | 3.9 |
-  | Other penalties | 0.50 | 1.15 | 2.2 |
-  | Even-strength shots | 31.7 | 32.1 | 0.2 |
-  | Power-play shots | 1.5 | 3.8 | 2.6 |
-  | Short-handed shots | 0.9 | 2.3 | 2.4 |
-
-  No fighting penalty in 40 games. The extra penalties are mostly Roughing (16 of the SA-1 build's 39 calls against 2
-  of Classic's 12), and Interference doubled (12 against 7); all the extra shots come with a man in a box (+3.6
-  power play and short-handed, +0.4 even strength). Open: whether the build's fights are charged as Roughing.
-- **Correction (penalties off).** On the original engine (NHL94_Classic.smc, NHL94.smc) the menu presses that set
-  Penalties were lost in 15 of the 20 seeds (the timing moves with the seed), so those games had penalties Off; the
-  SA-1 build starts on On, No Offside. snes_60fps_cvc.py now sets the option ($34C4 = 2) when play starts and records
-  what it found. With penalties on in every game (20 each; the SA-1 games were already right):
-
-  | Per game, both teams | Classic (30) | SA-1 Classic at 30 | z | Retail (30) | SA-1 Original (60) | z |
-  |---|---|---|---|---|---|---|
-  | Goals | 2.95 | 2.00 | -2.3 | 2.25 | 2.30 | 0.1 |
-  | Shots | 35.5 | 38.1 | 2.5 | 34.2 | 37.5 | 2.0 |
-  | Saves | 32.6 | 36.1 | 3.1 | 32.0 | 35.2 | 1.9 |
-  | Body checks | 41.6 | 47.1 | 2.6 | 44.0 | 64.2 | 10.0 |
-  | Penalties | 2.20 | 1.75 | -1.2 | 2.55 | 3.00 | 1.0 |
-  | Roughing / Cross Check | 0.45 | 0.75 | 1.6 | 0.75 | | |
-  | Injury Roughing ($14) | 0.20 | 0.30 | 0.6 | 0.35 | | |
-  | Other penalties | 1.60 | 0.90 | -2.1 | 1.45 | | |
-  | Even / power-play / short-handed shots | 29.1 / 4.4 / 2.1 | 32.1 / 3.8 / 2.3 | | 26.8 / 4.1 / 3.3 | | |
-
-  No fighting penalty in any game. The SA-1 build calls no more penalties than the original at 30 frames a second;
-  60 frames a second adds some (1.75 to 2.90 within the SA-1 build; retail 2.55 against 3.00). Still there at 30: a
-  few more shots and saves, fewer goals (z -2.3), and more checks (z 2.6).
-- **The penalty rolls** (`analysis/scoring_map/snes_penalty_rolls.py`: each roll's `jsl` through a counting stub in
-  a scratch copy; play unchanged, the stubbed games identical to the plain ones). Classic against the SA-1 build at 30,
-  20 games each, penalties on: reached per game / came up a penalty (of all rolls) / called:
+  temp3 and temp4 count down by 1 a step, so they run twice as fast on the SA-1 build. Collisions (checks, the penalty
+  rolls with them), the controller reads and steering run every step, twice as often.
+- **The penalty rolls** (`analysis/scoring_map/snes_penalty_rolls.py`: each roll's `jsl` sent through a counting stub
+  in a scratch copy; on the SA-1 build the stubbed games are identical to the plain ones, on Classic the stubs' extra
+  cycles change the games slightly). Classic against the SA-1 build at 30, 20 games each: reached per game / came up a
+  penalty / called:
 
   | Roll | Classic | SA-1 at 30 |
   |---|---|---|
@@ -1972,9 +1932,15 @@ gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game differe
   | Hooking / Holding (holdcheck) | 19.6 / 9 / 9 | 20.1 / 2 / 2 |
   | Tripping (Bcheck, under 5) | 1.9 / 0 / 0 | 1.8 / 3 / 3 |
 
-  The rolls come up alike (the code from checkagr / checkint to AddPenalty is the same bytes, RAM moved; the SA-1
-  multiply gives the same products); the SA-1 build reaches the Roughing roll a little more often (z 2.5), with its
-  extra checks. Every roll that came up was called; the earlier "uncalled" results were the penalties-off games.
+  The rolls come up alike: the code from checkagr / checkint to AddPenalty is the same bytes with the RAM moved, and
+  the SA-1 build's multiply (on the SA-1, its own arithmetic unit) masks both factors to 8 bits as the original does
+  (read, not measured). The SA-1 build reaches the Roughing roll a little more often (z 2.5), with its extra checks.
+- **A mistake made on the way** (corrected above): the original engine's Penalties option is set by menu presses whose
+  timing moves with the seed, and 15 of the 20 seeds lost them, leaving penalties Off; the SA-1 build starts on On, No
+  Offside. The first comparisons (penalties "five times" higher on the SA-1 build, its extra shots "power-play
+  shots") came from those games. The script now sets the option and records what it found (`optpen_found`).
+- Limits: the computer against itself, one matchup per team set, regulation only; nothing on how the game feels to a
+  person (input and steering twice as often).
 
 ## NOSE4Web's SNES team-block colours, checked (2026-11-08)
 
@@ -1984,7 +1950,7 @@ Boston's colours 1 and 15 also changed (red, cyan), for Boston at home (palette 
 Boston against Boston: Game Setup, the controller screen, the matchups, the horizontal pause scoreboard, each pause
 item's first screen, the player card's team page, and the playoff bracket (New Playoffs, Best of 7).
 - The colours are at $D6F5C (0) to $D6F7A (15); colours 2-14 at $D6F60-$D6F79. Retail sets bit 15 on several
-  ($94A5 ...); SetColours / SendColours only copy, so it does nothing.
+  ($94A5 ...); SetColours / SendColours only copy it, and nothing found reads it.
 - Only Boston's blocks change (706 pixels a block) on every screen, and the player card's diagonal stripes:
   SetCardTeamColours copies block colours 7 and 8 (palette 7 at home, 6 visiting) to colours $4E / $4F.
 - The block's tiles (from video memory, tile base word $2000, map at text-map rows 10-11) use colours 2-15: 2-14

@@ -1,19 +1,19 @@
-"""How often each SNES penalty roll is reached, original engine against McMarkis's SA-1 build (2026-11-08, for NOSE4Web:
-the SA-1 build at 30 frames a second calls more Roughing and Interference; more contact, or a different roll?).
+"""How often each SNES penalty roll is reached and comes up a penalty, the original engine against McMarkis's SA-1 build
+(2026-11-08, for NOSE4Web: more contact, or a different roll?).
 
 The rolls (NHL94SNES disassembly): checkagr (random below (20 - aggress) x 16, doubled for a player on a pad, halved
 near the puck; a penalty when the result is small) from four places: checkcheck's Charging roll (a burst check that
 doesn't knock the man down) and Roughing roll (one that does), holdcheck's Hooking / Holding roll, Bcheck's Tripping
-roll; and checkint's own Interference roll (a skater and a goalie colliding: randoma8(20 - aggress) < 2). In a scratch
-copy, each of those five `jsl` goes instead to a stub in free ROM ($9B:D000, ROM $DD000, unused in both) that calls the real
-routine and adds 1 to its own word, and, after the
-real routine returns, to a second word when the roll came up a penalty (checkagr's d0 = 0, Bcheck's under 5, Interference's
-result under 2; the caller may still not call it: highlights, or a goalie flag), and to a third and fourth when it came up
-during highlights (gmode $15D4 bit gmhl: the callers call nothing) or in the side view (sfhormode $15DA: AddPenalty2
-queues nothing), so play is otherwise unchanged. The counters: work RAM $7F:FF00 on the original, BW-RAM $40:FF00 on the SA-1 build (its game
-code may run on the SA-1, which can't reach work RAM). The SA-1 build is also run at 30 frames a second
-(snes_60fps_cvc.make_30). Games as snes_60fps_cvc (seeded, computer against computer, 5-minute periods), with the
-penalties called by number.
+roll; and checkint's own Interference roll (a skater and a goalie colliding: randoma8(20 - aggress) < 2).
+
+In a scratch copy each of those five `jsl` goes to a stub in free ROM ($9B:D000, ROM $DD000, unused in both) that
+calls the real routine and counts, each in its own word: the roll reached; the roll came up a penalty (checkagr's d0 =
+0, Bcheck's under 5, Interference's under 2; the caller may still not call it); and of those, the ones during
+highlights (gmode $15D4 bit gmhl: the callers call nothing) or in the side view (sfhormode $15DA: AddPenalty2 queues
+nothing). Counters at work RAM $7F:FF00 on the original, BW-RAM $40:FF00 on the SA-1 build (its game code may run on
+the SA-1, which can't reach work RAM). On the SA-1 build the stubbed games are identical to the plain ones; on the
+original the stubs' extra cycles change the games slightly. The SA-1 build is run at 30 frames a second
+(snes_60fps_cvc.make_30). Games as snes_60fps_cvc (seeded, penalties set on), with the penalties called by number.
 
 python snes_penalty_rolls.py ROM GAMES OUT.jsonl"""
 import json

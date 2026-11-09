@@ -1,23 +1,21 @@
 """How much McMarkis's 60 frames a second changes play (2026-11-08, for NOSE4Web): the original engine (game logic at 30
-frames a second, d7 = 2) against the SA-1 build (60, d7 = 1; the physics scale with d7, the AI, input and collisions
-run twice as often), with the same teams: NHL94_Classic.smc against nhl94_2026_classic.sfc (McMarkis's 32-team SA-1
-build with Classic's 28 teams imported).
+frames a second, d7 = 2) against the SA-1 build (60, d7 = 1). The physics scale with d7 and the computer's decision
+timers count down by it (real time on both); collisions, input and steering run every step, twice as often at 60.
 
-Each game: Montreal at home against Los Angeles (both ROMs' defaults), 5-minute periods, penalties On, No Offside,
-the clock held to 5:00 at most (a missed menu press can't lengthen a game), the Penalties option set to
-On, No Offside ($34C4 = 2) when play starts (on the original, menu presses lost by the seed's timing had left it Off
-in 15 of 20 games before this was added, 2026-11-08: the earlier penalty comparisons were wrong), each game's random seed ($0792 / $0794)
-set from its number when play starts (the SA-1 build's random state doesn't depend on the menu frames), the computer on
-both sides (every pad off the teams, as snes_period_cvc.computer_only, put back every 5 s), played
-through the three regulation periods (the breaks passed with START); a different number of frames in the menus each
-game, so each starts from a different random state. At the end of regulation, from the game's own team stats (low RAM,
-in BW-RAM on the SA-1 build: faceoff_fix_test.Snes.MOVED): goals and shots by period (P1-P3), saves (shots less goals),
-body checks, penalties, passes completed and tried. Every 10 frames: each penalty called, (team, penalty number), from
-the buffer at $15DE (numbers as snes.read_penalties: $14 / $1C Roughing, $2A / $2C Fighting ...), and each shot's
-strength (even, power play, short-handed) from the players in the boxes ($1624) when the team's shot count rises. Gentle (one process per ROM, lowload).
+Each game, the computer on both sides: Montreal at home against Los Angeles (the ROMs' defaults; on the original the
+menu presses set 5-minute periods and penalties), the clock held to 5:00 at most and the Penalties option set to On,
+No Offside ($34C4 = 2) when play starts (on the original engine a press lost to the seed's timing left penalties Off in
+15 of 20 games before this was added; `optpen_found` records what the menus left), each game's random seed ($0792 /
+$0794) set from its number (the SA-1 build's random state doesn't depend on the menu frames), every pad taken off the
+teams (as snes_period_cvc.computer_only, again every 5 s), the three regulation periods (breaks passed with START). At
+the end of regulation, from the game's own team stats (low RAM; in BW-RAM on the SA-1 build,
+faceoff_fix_test.Snes.MOVED): goals and shots by period, saves, body checks, penalties, passes completed and tried.
+Every 10 frames: each penalty called (team, number) from the buffer at $15DE (numbers as snes.read_penalties: $14 /
+$1C Roughing, $2A / $2C Fighting ...), and each shot's strength (even, power play, short-handed) from the players in
+the boxes ($1624) when the shot count rises. Gentle (lowload).
 
-The SA-1 build at 30 frames a second, to separate the frame rate from the rest of the build: `--make-30 ROM OUT.sfc`
-writes a copy whose Gameloop waits for 2 frames instead of 1 (at $F8517 `lda vcount / sec / sbc oldvcount / beq` becomes
+`--make-30 ROM OUT.sfc` writes the SA-1 build at 30 frames a second, to separate the frame rate from the rest of the
+build: its Gameloop waits for 2 frames instead of 1 (at $F8517 `lda vcount / sec / sbc oldvcount / beq` becomes
 `... / lsr / beq`, taking the 3 bytes of `inc gameframes`, which only feeds the gamefps readout), so every step has
 d7 = 2 as on the original engine (checked: timestep $0ADB is 2 at every frame, the clock runs as before).
 

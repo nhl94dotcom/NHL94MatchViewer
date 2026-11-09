@@ -1,14 +1,15 @@
 """What an injury looks like in NHL '94 (Genesis), in the game (2026-11-08, for NOSE4Web's plan to bring NHLPA '93's
 head blood back).
 
-Injuries are rare (a puck carrier knocked onto his back, facing up or down the rink, with a random draw against the
-hit's impact: FallDown), so a scratch copy of nhl94.bin is patched to make every fall of a puck carrier an injury (the
-SPAfallback test at $1440E, the facing test at $1441A and the draw's `bgt.w .22` at $14436 NOP'd) and, for `game`, to make every injury a game injury (setInjuryType's `tst.w d0 / bne.w
-.not0` at $14506 becomes `bra.w .injurygame`); the boot's ROM check (jsr $FFAC0 at $300) NOP'd, as in NOSE4Web's builds. `period` to make every injury a period
-injury (the `bne.w .not0` at $14508 NOP'd: the $FFFD path). Pad 1 on the home team, no presses (its skater stands still and gets hit). From the
-first frame a player's animation is SPAinjuryfall ($145C) or SPAinjury1 ($1AF4): sflags7 ($C2FC, bit 5 the game
-injury), the injured player's animation word and sprite frame every 10 frames and a screenshot every 40, until the
-next faceoff's play.
+Injuries are rare (a puck carrier knocked onto his back, facing up or down the rink, and a random draw against the
+hit's impact: FallDown), so a scratch copy of the ROM is patched: every fall of a puck carrier is an injury (the
+SPAfallback test at $1440E, the facing test at $1441A and the draw's `bgt.w .22` at $14436 NOP'd); `game` makes every
+injury a game injury (setInjuryType's `tst.w d0 / bne.w .not0` at $14506 becomes `bra.w .injurygame`), `period` a
+period injury (the `bne.w .not0` at $14508 NOP'd: the $FFFD path); the boot's ROM check (jsr $FFAC0 at $300) is NOP'd,
+as in NOSE4Web's builds. Pad 1 on the home team, no presses (its skater stands still and gets hit). From the first
+frame a player's animation is SPAinjuryfall ($145C) or SPAinjury1 ($1AF4): sflags7 ($C2FC, bit 5 the game injury),
+the injured player's animation word and sprite frame every 10 frames and a screenshot every 40, until the next
+faceoff's play.
 
 python gen_injury_check.py ROM OUT [game|period]"""
 import sys

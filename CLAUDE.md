@@ -129,14 +129,19 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     with the user there).
   - Replays with one thing changed: `check_pass_timing.py` / `snes_check_pass_timing.py` (the B timing),
     `check_pass_ratings.py` / `snes_check_pass_ratings.py` (one rating), `snes_period_cvc.py` (the SNES computer
-    against itself by period; pad 1 moved with c1playernum, playerpad $19D4 and the person flag).
+    against itself by period; pad 1 moved with c1playernum, playerpad $19D4 and the person flag),
+    `snes_60fps_cvc.py` (the SNES computer against itself, seeded, penalties set on; `--make-30` runs McMarkis's SA-1
+    build at 30 frames a second) and `snes_penalty_rolls.py` (each penalty roll counted through stubs).
   - NOSE4Web's builds: `fix_check.py ROM` (which tested fixes a build has by their bytes, any other changed bytes, and
     each fix's in-game test against the original), the per-fix tests (`*_fix_test.py`, `*_test.py`; STUDY_NOTES),
-    `snes_score_logo_check.py` (what retail leaves free for score-box logos) and `snes_score_logo_build_check.py` (a
-    logo build against its original), `a130f1_test.py` (Genesis save memory switching on big ROMs), `snes_logo_overlap.py` (which
-    piece of a big logo is in front), and
-    `menu_shots.py ROM OUT SCRIPT` (screenshots of the game's own screens from power-on by a script of presses, for
-    edits outside play: photos, logos).
+    score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves free;
+    `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
+    `gen_lc_box_check.py`: the line-change box), `gen_injury_check.py` / `gen_blood_check.py` (Genesis injuries forced
+    in a scratch copy; the head blood builds), `snes_banner_check.py` (team-block colours on every block screen),
+    `a130f1_test.py` (Genesis save memory switching on big ROMs), `snes_logo_overlap.py` (which piece of a big logo is
+    in front), and `menu_shots.py ROM OUT SCRIPT` (screenshots of the game's own screens from power-on by a script of
+    presses, for edits outside play: photos, logos). Genesis Plus GX's video memory is read from its saved state
+    (VRAM_AT in gen_score_logo_check.py, little-endian words); Snes9x's from memory id 3.
 
 ## How it reads the games
 
