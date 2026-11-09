@@ -940,13 +940,17 @@ docs/EXTENDING.md). Before this the helper saw them running and never a game (20
   when it changes) and find_faceoffs takes the drop's position from it; before, the puck's first sample after the
   whistle, which was within a unit or two of it (2026-10-17_2227_BOS-DAL: 6 of 12 a unit off). Where the game puts
   faceoffs: docs/FACEOFF_PLACEMENT.md.
-- **SNES penalty shots, open:** an SNES penalty shot is played with the clock stopped, so the reader hides the puck
-  (-256) for it and the shot finder never sees the attempt: both recorded SNES penalty-shot goals (2026-10-17_1719_CHI-CGY,
-  2026-10-18_1934_BOS-PIT) are kind 'other', with no xG (the Genesis one is a shot with xG). Tried and taken out: the
-  puck shown while PenShotActive ($163A) or penshotlive ($1E9D) is set reads 0 through the attempt (PenShotActive
-  turns 1 only at the goal); shown while the shooter (BA_Sktr_SCnum $1E8D) is set covers the stoppage after the foul
-  too (2026-10-16_1528_TOR-CHI then failed its faceoff count and an after-the-whistle shot came back). What marks the
-  attempt itself is still to be found.
+- **SNES penalty shots (settled 2026-11-09):** the attempt is played with the game clock running (gmclock 0;
+  penshotlive $1E9D and PenShotActive $163A are 1, pstimer $1E9F counts down from 1000), so the reader shows the puck
+  and the shot finder sees it. What had looked like an attempt hidden by a stopped clock was an attempt never
+  recorded: during it everyone but the shooter and the goalie is parked off the ice and two can share a place, which
+  the helper's line-up test took for "not in play" until 2026-10-18 (View: parked players don't count). Three
+  recordings lack their attempt (2026-10-16_2018_PHI-VAN, 2026-10-17_1719_CHI-CGY, 2026-10-18_1934_BOS-PIT: the two
+  goals there stay kind 'other', no xG; the game's frame counter $0764 restarts across the gap). The seven recorded
+  attempts (TOR-CHI 10-16, TOR-CGY 10-20, both TOR-WPG 11-02, the three TOR-MTL 11-08): the converter has a shot in
+  each of the five the game counted a shot for (one goal, xG 0.098; saves, a post) and none in the two it didn't
+  (the puck lost and taken by the goalie before a shot). The shot is an ordinary one in the shot list, as the game
+  counts it among the shots on goal; the Penalty shots row is the game's own count.
 
 ## Faster re-converts: the cached read (2026-11-08)
 
