@@ -2303,4 +2303,27 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
     sweep $0B24), 72 tries each: retail trips 66 with penalties on, 10 off; the option 66 on, 66 off.
   - Goalie control delay at 12 (all eight places): B held without the puck, 32 tries: pad 1 takes the goalie after
     17 frames on retail, 12 on the build (one count a frame). Pads 3 and 4 not played (the frontend drives two pads).
+- **Organ songs (topic 11307).** ChooseSong (arena94): SongNum = TeamSongs[HmTeam x 6 + SongIndex] (TeamSongs $FE5B0,
+  6 bytes a team in TeamList order, All-Stars included: 168 bytes), and a 0 there = one of the 8 RandomSongs ($FE658)
+  at random; nothing in the highlight reel. SongIndex: 0 period start, 1 the away team ahead on players, 2 the
+  faceoff (once a period; also the shootout), 3 a home goal, 4 the home team ahead on players, 5 the late-game tune
+  (once in the 3rd period). A sound number d0 (0-$7A) plays from SoundStreamTable ($2C648, a long each); $30 and up
+  are songs, so $2C708 is entry $30 (music_001, "Go Team Go", Boston's) and the 75 song pointers are $30-$7A ($78 the
+  title, $79 the end of a period, $7A the scouting report). Retail ANH 119, 117, 118, 0, 90, 0; BOS 49, 50, 48, 0, 90,
+  49 (90 = $5A, music_043, in most teams' slot 4).
+- **Intro screens (topic 22589).** $17AAC is EASportsScreen's and $FEE2C HiScoreScreen's (the High Score
+  Productions / Mark Lesser picture) `move.w #$50,(seed)`: a count of 4-frame waits (waitx 4, until it goes
+  negative), so (n + 1) x 4 frames: 324 frames (5.4 s real) in retail, any button ending it. The count lives in the
+  random seed's first word and always ends at $FFFF, so a smaller n changes only the time.
+- **Puck friction (topic 22589).** updateplayers (logic94 ~160): on the ice (Z 0) each speed loses itself >> d2 a
+  frame: `moveq #6,d2` ($AC10, the 6 at $AC11: 1/64, a skater) or with pfdoff (pflags bit 0) `moveq #9,d2` ($AC1C, the
+  9 at $AC1D: 1/512). The puck's pflags start at 1 (defaultsprites_0's list), so it always takes the 9; so does a
+  skater with pfdoff (a pass's receiver; the runaway-speed bug, 3.4 of GENESIS_MECHANICS). Nothing else reads them; in
+  the air there's no friction.
+- **Overall rating (topic 22589).** $19420 PAttribOverallMask ($1FBA000A) and $19582 GAttribOverallMask ($130F000A):
+  the high word's bits are the ratings counted; $FAB1C OvrPlayerWgtList and $FAB2C OvrGoalWgtList (16 weights).
+  CalcAttrib (cards94): each counted rating adds rating x w / 2 (w - 1 extra adds, then a halving: per rating,
+  truncated), Weight (bit 13) and Fighting (bit 6) unweighted if a mask has them (retail's don't), plus the hot /
+  cold average; the overall masks are also the key: CalcAttrib compares d4 with each to pick the weight list, so they
+  must stay different from each other and from single-rating masks. An editor's Ovr has to mirror those three.
 
