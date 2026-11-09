@@ -2162,7 +2162,12 @@ update (code at $FFB14), NOPs after. In play (the one-timer harness, 24 struck o
 the original and the fix give the same lists and assists; with the receiver made the last touch before the strike the
 original gives receiver, receiver, passer and the 18 goals no assist, the fix keeps receiver, passer, the one before,
 and credits both. A retail copy with the fix boots and plays once the boot's ROM sum ($300) is off, as in NOSE4Web's
-builds. (Deflection goals, a different path, are mostly unassisted too: 7 of 9 in the same games.)
+builds.
+- **Deflection goals with no assist (7 of 9), checked: the game's rule, not a bug.** In six the other team had the
+  puck in the last 5 s before the goal (a skater, or the goalie holding it after the first shot: puckgoalie goes
+  through puckglue, which clears the other team's assists and sets tmflast); the seventh (BOS-WPG P3 0:38) was a
+  solo rush after taking the puck from the other team. The scorer's own rebound keeps the list only when nobody on
+  the other team took the puck in between.
 
 ## The Genesis line editor's cursor (2026-11-09, for NOSE4Web)
 
