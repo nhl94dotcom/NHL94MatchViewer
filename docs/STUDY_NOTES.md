@@ -2202,3 +2202,30 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
   the SA-1 build as it is: its SNES states are retail's, and the build keeps low RAM in BW-RAM (snes_60fps_cvc.Mem
   maps it), so a check needs SA-1 states and a shot runner.
 
+## Three Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)
+
+- **Injuries (topic 33962).** FallDown (collide94.asm, the hit code before .22 and setInjuryType):
+  - $14440 `bne.w .22` after `btst #gmclock,(gmode)` (the last test before the injury) -> `bra`: never an injury;
+    the fall and the knocked-loose puck stay, the crowd sound follows (.22). Safe alone.
+  - $14450 `bsr setInjuryType` -> NOPs: the injury animations, the penalty ($12 roughing, or $14 when the hitter is
+    a goalie or penalties are off) and Stop4Pen stay, and InjCntDown = 4 still brings ShowInjuryBox 4 game seconds
+    later: 'Injury to:' TempPlOffset (left from the last injury or set by the penalty log to a penalized player),
+    'Out for period / game' from a stale sflags7 bit 5; the player is not marked out (pf2unav, tmpdst), so he plays
+    on. The box needs its countdown removed too (the `move.w #4,(InjCntDown)` after .9).
+  - setInjuryType: d0 = the checker's Fgt / 4 (0-3). $14508 `bne.w .not0` (d0 = 0: period); .not0 $14520
+    `beq.w .injurygame` (d0 = 3: game); else period, $14536 `beq.w .exit` after chkFgtBit1 (else game). $14536 ->
+    `bra` alone: d0 1-2 always period, but d0 = 3 (Fgt 12+) still the game. Every injury the period: $14508 `bne.w`
+    -> two NOPs. $14508 -> `bra` with $14520 -> `bra`: every injury the game (right).
+- **Hot / cold range (topic 21637).** $F70AD is the low byte of Create_HotCold_Table's `move.w #9,d0` before
+  randomd0s, which gives -(n-1) .. n-1 (-8 .. 8 in retail; the comment's -9 is off by one), into all 16 bytes a
+  player. Play (AttributeCalc): rating x 5 + the player's first byte / 3 (signed, toward zero), so values within -2
+  .. 2 do nothing: n <= 3 removes the effect in play. The cards / Edit Lines (cards94 rating code) add each rating's
+  own byte, unscaled (rating x 18 + byte), so n = 2 or 3 still shows 1-2 point changes there; n = 0 or 1 makes every
+  byte 0 (randomd0 multiplies by the range: no division), no effect anywhere.
+- **No icing (topic 15002).** $1023E `bset #ifok,(iflags)` at the end of a2touchpuck (a player sending the puck from
+  his own half arms the icing check) and $102A0 `bset #ifcgl,(iflags)` in PuckIChk (the puck crossed the goal line
+  outside the crease width); each -> `bra.s` over its own operand. The call needs both bits. $1023E alone: no icing
+  state at all, so no call, and the computer goalie goes out to a loose puck as always (logic94 3740: it stays home
+  while ifok is set). $102A0 alone: no call, but ifok still set from the shoot-in to the next touch, so the computer
+  goalie still holds back from the puck as for an icing. Either stops the call; $1023E alone is the clean one.
+
