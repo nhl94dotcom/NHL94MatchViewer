@@ -2164,3 +2164,11 @@ original gives receiver, receiver, passer and the 18 goals no assist, the fix ke
 and credits both. A retail copy with the fix boots and plays once the boot's ROM sum ($300) is off, as in NOSE4Web's
 builds. (Deflection goals, a different path, are mostly unassisted too: 7 of 9 in the same games.)
 
+## The Genesis line editor's cursor (2026-11-09, for NOSE4Web)
+
+`analysis/scoring_map/gen_line_editor_cursor.py` (retail nhl94.bin, Edit Lines from the pause menu, every slot the
+cursor reaches from the first by up / down / left / right; TestList $D5B8, OptLine $D058): with OptLine 0 (line
+changes on) LD to RW on lines 0-4 (Sc1 ... PP2) and LD, RD, LW, C on lines 5 and 6 (PK1, PK2); with OptLine 1 LD to
+RW of line 0 only. The extra attacker's slot is never reached (LineCursorTable sends a move onto it to the next group
+of lines), and the editor has no row for it; the penalty-kill lines' RW slot can't be edited, as on the SNES.
+
