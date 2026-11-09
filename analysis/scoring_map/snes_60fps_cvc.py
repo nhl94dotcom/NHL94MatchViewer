@@ -11,7 +11,7 @@ teams (as snes_period_cvc.computer_only, again every 5 s), the three regulation 
 the end of regulation, from the game's own team stats (low RAM; in BW-RAM on the SA-1 build,
 faceoff_fix_test.Snes.MOVED): goals and shots by period, saves, body checks, penalties, passes completed and tried.
 Every 10 frames: each penalty called (team, number) from the buffer at $15DE (numbers as snes.read_penalties: $14 /
-$1C Roughing, $2A / $2C Fighting ...), and each shot's strength (even, power play, short-handed) from the players in
+$1C Roughing, $2A / $2C Fighting ...) with its period, and each shot's strength (even, power play, short-handed) from the players in
 the boxes ($1624) when the shot count rises. Gentle (lowload).
 
 `--make-30 ROM OUT.sfc` writes the SA-1 build at 30 frames a second, to separate the frame rate from the rest of the
@@ -97,6 +97,7 @@ def game(rom, n, extra=None):
     m.setw(SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)                    # menu frames don't vary the SA-1 build's)
     still, frames, person = 0, 0, 0
     calls, seen = [], set()                  # each penalty called: (team, number), from the buffer at the foul
+    call_periods = []                        # the period of each (0-2)
     strength = {}                            # shots by (team, "even" / "pp" / "sh")
     shots_now = [sum(m.w(SHOTS_P + 4 * q + 2 * t) for q in range(3)) for t in (0, 1)]
     while m.w(GSP) < 3 and frames < 200000:
@@ -111,6 +112,7 @@ def game(rom, n, extra=None):
                     now.add((slot, code, obj))
                     if (slot, code, obj) not in seen:
                         calls.append((0 if obj < 6 else 1, code))
+                        call_periods.append(m.w(GSP))
             seen = now
             box = m.w(IN_BOX)
             boxed = [(box >> 4) & 0xF, box & 0xF]
@@ -139,7 +141,7 @@ def game(rom, n, extra=None):
                 saves=[shots[1] - goals[1], shots[0] - goals[0]],                # saves by each team's goalie
                 checks=[m.w(CHECKS), m.w(CHECKS + 2)], penalties=[m.w(PENS), m.w(PENS + 2)],
                 passes=[[m.w(PASSES_C), m.w(PASSES_T)], [m.w(PASSES_C + 2), m.w(PASSES_T + 2)]],
-                reached_p4=m.w(GSP) >= 3, optpen_found=optpen_found, calls=calls, shot_strength=strength,
+                reached_p4=m.w(GSP) >= 3, optpen_found=optpen_found, calls=calls, call_periods=call_periods, shot_strength=strength,
                 **(extra(e, m) if extra else {}))
 
 

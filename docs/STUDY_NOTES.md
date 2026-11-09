@@ -2032,6 +2032,19 @@ overall ratings differ by the game's random hot / cold, not the import.)
   (black, 384): a gold outline round a black face. The same row turned the previous build's 3 and 15 into 1 and 7.
   Fix: write the team's row with the title number wanted for each own colour (byte 0 non-zero). Centre ice at the
   opening faceoff is still as in Classic (the same colours in the circle).
+- **9fefc98 rebuild (09:19).** Team 1's row is 60 01 02 ... 0F; with titleteams held at team 1 the title's logo is
+  pixel-for-pixel Classic's in video memory: LogoPalBits $60, $61 (0000) x465, $6A (1DD9) x230, $6D x89 ... every
+  number and count equal. Centre ice at the opening faceoff still as in Classic.
+
+## SNES "No interference penalties" in every period (2026-11-09, for NOSE4Web)
+
+NOSE4Web's hack (McMarkis's) turns checkint's last `bmi .rtl` before the roll (a2's impact under 31) into `bra`: retail
+$9E:B8A8 (file $F3AA8 with the copier header, the "$9E:BAA8" NOSE4Web lists; it finds the place by bytes). checkint
+then always returns before its roll, whatever the period; PenInterference ($26) is set nowhere else (checkcheck gives
+$18 / $1A / $1C / $1E, holdcheck hooking / holding, Bcheck tripping / penalty shot). In play: scratch copies of
+NHL94.smc with the roll always passing (`cmp #2 / bcs` at the roll's `bcs` NOP'd), without and with the hack, 4 full
+games each by snes_60fps_cvc (penalties On, No Offside): without the hack 8 interference calls (periods 1 / 2 / 3: 1 /
+4 / 3); with it none (54 other calls, every period). The forum report (first period only) doesn't hold in retail.
 
 ## The same skater twice on one line (2026-11-09, for NOSE4Web)
 
