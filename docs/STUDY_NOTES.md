@@ -2101,4 +2101,18 @@ $9E:D150; $9F:9A31 / $9F:FB43; the checksum).
   game seconds each: retail pulled behind by 1 or 2 at 55 s (not at 65 / 115 / 125, not behind by 3 or 4); the hack
   behind by 1, 2 or 3 at 115, 65 and 55 s (not at 125, not behind by 4). Both still need the puck carried by the team in
   its attacking half.
+- **Can a defenceman be a line's extra attacker on retail? (code)** Only if the ROM's own line data puts one there.
+  The RAM lines are written by LoadTeamLines (from the team data: at the start, setoptions, Restore default lines) and
+  by the editor (SetLineSlot / SwapLineSlots), which writes slot offsets 0-4 only (lineslots 5 or 4) and swaps only
+  among LD / RD or the forward slots, never the extra attacker's. On the ice the extra attacker's stand-in
+  (SetPlList's sublist .center) comes from the C, LW and RW slots of the lines, which the retail editor fills from the
+  forward list. No PP or PK path.
+
+## The SNES lines as loaded (LoadTeamLines; 2026-11-09)
+
+A SNES team record's word at +6 points to lines 2-8 (Scoring 1 ... Pen. Kill 2, 7 x 8 bytes: goalie, LD, RD, LW, C,
+RW, extra attacker, 0; values roster place + 1); line 1 (no line changes) sits 8 bytes before. LoadTeamLines copies
+the 7 lines to RAM and, with Line Changes Off, copies line 1 over Scoring 1; Edit Lines then shows it as Best Line.
+Retail Toronto, checked in the game: Best Line LD Gill, RD Ellett; Ken Baumgartner (place 16, the last of the 14
+forwards, so in the forward lists) at RD on Scoring 1, Pwr. Play 1 and Pen. Kill 2.
 
