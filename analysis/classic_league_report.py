@@ -5,6 +5,8 @@ season's end, with at least one complimentary thing about every coach). Names re
 python analysis/classic_league_report.py Classic_Fall2026            every league whose name starts so (both systems)
 python analysis/classic_league_report.py Classic_Fall2026_GENS-A ...  the leagues named
     --coaches   also each coach's own report (classic_season_report.py) beside it
+Coaches with fewer than a quarter of the league's most games (or under 5) are left out of the tables, the rankings
+and the coach reports; their games still count for their opponents.
 
 Per league, from the league database (as classic_season_report.py: every regular-season game the league counts, a
 double upload too, simulated games left out; 2 points a win, none for a loss):
@@ -92,6 +94,13 @@ def build(league):
             t["opp_rating"] += R(g["opp"])
         t["Pts"] = 2 * t["W"] + t["T"]
         tab[c] = t
+    # coaches with very few games are left out of the tables and the rankings (the user, 2026-11-09); their games
+    # still count in their opponents' records
+    gp_league = {c: t["GP"] for c, t in tab.items()}
+    omitted = sorted(c for c in tab if tab[c]["GP"] < max(5, max(gp_league.values()) / 4))
+    for c in omitted:
+        del tab[c]
+        del per[c]
     n = len(tab)
     order = sorted(tab, key=lambda c: (-tab[c]["Pts"] / (2 * tab[c]["GP"]),
                                        -(tab[c]["F_Score"] - tab[c]["A_Score"]) / tab[c]["GP"]))
@@ -145,7 +154,8 @@ def build(league):
     w(f"{len(games)} games from {min(r['DateTime'] for r in games)[:10]} to {max(r['DateTime'] for r in games)[:10]}, "
       f"{n} coaches. Games played: " + ", ".join(f"{c} {g}" for g, c in gp_all) + ". Rates are per game; ranks are out "
       f"of all {n} coaches (1 the best, ties share a rank). Pre-season ratings: coach_history's Classic rating on "
-      f"{rat_day}.\n")
+      f"{rat_day}." + (" Left out for playing very few games (their games still count for their opponents): " +
+                       ", ".join(f"{c} ({gp_league[c]})" for c in omitted) + "." if omitted else "") + "\n")
 
     # --- standings
     w("## Standings\n")
@@ -174,7 +184,7 @@ def build(league):
             if x in grp:
                 continue
             grp.add(x)
-            stack += [o for o, k in meet[x].items() if k >= 4 and o not in grp]
+            stack += [o for o, k in meet[x].items() if k >= 4 and o not in grp and o in tab]
         seen |= grp
         comp.append(grp)
     groups = [g for g in comp if len(g) >= 3]
@@ -345,9 +355,11 @@ def build(league):
         extra = []
         wins = [g for g in per[c] if result(g) == "W"]
         if wins:
-            bw = min(wins, key=lambda g: (place[g["opp"]], -(g["us"]["Score"] - g["them"]["Score"])))
-            extra.append(f"best win: {int(bw['us']['Score'])}-{int(bw['them']['Score'])} over {bw['opp']} "
-                         f"({ORD(place[bw['opp']])} in the standings, {bw['when'][:10]})")
+            wins = [g for g in wins if g["opp"] in place] or wins
+            bw = min(wins, key=lambda g: (place.get(g["opp"], 99), -(g["us"]["Score"] - g["them"]["Score"])))
+            extra.append(f"best win: {int(bw['us']['Score'])}-{int(bw['them']['Score'])} over {bw['opp']} " +
+                         (f"({ORD(place[bw['opp']])} in the standings, {bw['when'][:10]})" if bw["opp"] in place
+                          else f"({bw['when'][:10]})"))
         s = streaks(c)
         if s >= 3:
             extra.append(f"a {s}-game winning streak")
@@ -365,7 +377,8 @@ def build(league):
                 extra.append(f"{nm}'s {v['P']} points ({v['G']} goals), {ORD(lr)} among the league's skaters")
             elif v["P"]:
                 extra.append(f"{nm} leading the team with {v['P']} points ({v['G']} goals)")
-        close = [g for g in per[c] if result(g) == "L" and g["them"]["Score"] - g["us"]["Score"] == 1]
+        close = [g for g in per[c] if result(g) == "L" and g["them"]["Score"] - g["us"]["Score"] == 1
+                 and g["opp"] in place]
         if close:
             cl = min(close, key=lambda g: place[g["opp"]])
             ot = cl["us"]["GoalsOT"] or cl["them"]["GoalsOT"]
@@ -400,7 +413,8 @@ def main():
         print(p)
         if coaches:
             system, games = S.load(lg)
-            for c in sorted({r["HomePlayer"] for r in games} | {r["AwayPlayer"] for r in games}):
+            gp = Counter([r["HomePlayer"] for r in games] + [r["AwayPlayer"] for r in games])
+            for c in sorted(c for c in gp if gp[c] >= max(5, max(gp.values()) / 4)):
                 q = S.OUT / f"{lg}_{c}.md"
                 q.write_text(S.build(lg, c), encoding="utf-8")
                 print(q)
