@@ -685,7 +685,7 @@ one real example. Ciccarelli's goal in capture2_away (P1 14:28), which the user 
 was the computer's (Detroit; the person played Philadelphia), so no EA Special is in the recordings yet; each turnover's `shotAfter` / `goalAfter` (the gaining team's attempt within 5 s,
 no whistle between). Expected goals was put off until there are thousands of shots (about 250 now).
 Shown: shot tooltips (high danger, rebound, flip, set up by), the card (High-danger att., Shot assists, Rebounds,
-Costly giveaways), team stats' Advanced group (high-danger and rebound goals / attempts, EA Specials when any,
+Costly giveaways), team stats' Chances group (high-danger and rebound goals / attempts, EA Specials when any,
 attempts off a pass, turnovers -> shot against), the season Goalies tab (HD SV%, Reb%: saves that gave a rebound),
 and the Advanced tab (a "Chances, rebounds and turnovers" team table: HDCF, HDCA, HDCF%, HDGF, HDGA, HD SV%, rebound
 goals, rebounds allowed, EA Specials, attempts off a pass, turnovers -> shot, zone entries carried / all and how many led to
@@ -710,7 +710,7 @@ Play context (2026-10-16, `add_play_context` in export_match.py, after add_shot_
   presses (rising edges), bursts (C without the puck, $0C5E: speed burst and check lunge in one), checks landed by the
   controlled skater, poke checks and hooks with the takeaways they made, the goalie's dives and the time a person had
   the goalie (hooks not known on the SNES).
-Shown: shot tooltips (rush / sustained / faceoff, wraparound); viewer team stats groups "How chances were made", "Person
+Shown: shot tooltips (rush / sustained / faceoff, wraparound); viewer team stats groups "Chances" (once "How chances were made"), "Person
 vs computer" (checks, penalties, saves with a person / the CPU in net) and "Controller (whole game)"; season summaries
 (VERSION 5: persHits, persPen, origin, oddMan, wrap, habits, humanPasses, pass `pairs` "passer>receiver": [passes with
 a receiver, completed, shot attempts off them] - a picked-off pass has no known target - and `shotMap` per team:
@@ -724,7 +724,16 @@ EA Specials, wraparounds).
 
 From a review of the pages at 1920x1080, 1366x768 and phone width (the user chose all four changes):
 - Viewer side panels: `clamp(256px, 19vw, 340px)` wide, from the top; the team stats in collapsible groups (click a
-  heading; `closedGroups`, remembered; Physical, How chances were made, Person vs computer and Controller start closed).
+  heading; `closedGroups`, remembered; Physical, Person vs computer, Controller, Passing by zone and direction and
+  Screen sides start closed).
+- Team stats groups, reordered 2026-11-09: Shooting (outcomes, shot kinds, aim and speed, breakaways and penalty
+  shots, then tapestries and own goals), Advanced (Corsi, Fenwick, PDO, xG and its break-downs, Deserve to win, time
+  leading / tied / trailing), Chances (high-danger, rebounds, attempts off a pass, turnovers into shots, EA Specials,
+  then where attempts came from: rush, sustained pressure, faceoffs, odd-man rushes, wraparounds; `playRows(f, list,
+  'chances')`), Goaltending (Save % from the game's counts, what became of saves, the goalie off the shot line),
+  Puck control (possession and its zones next to the game's Attack zone time), Passing by zone and direction,
+  Physical, Special teams (power play, shorthanded goals, penalties, PIM), Person vs computer and Controller
+  (`playRows(f, list, 'people')`), then Screen sides and Quirky Events.
 - Footer in three groups: playback (Play, seek, time, speed), the Map menu and its filters, then Game flow,
   Highlights, Clip, Save game file and "&#9881; View": a menu with the on/off switches (Game sprites, Event tags,
   Overhead rink, Follow the puck, Sound with its settings, Live knowledge), moved out of the footer and the on-ice

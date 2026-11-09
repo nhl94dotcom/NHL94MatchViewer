@@ -2978,6 +2978,8 @@ const rosterIndex = (f, k) => (match.roster ? parseInt(match.roster[f * PLAYERS 
 // Live stats come in snapshots: the team values (stats.n of them), then 7 per roster place (see the converter).
 // Shooting percentage can pass 100%: now and then a puck goes in without a shot being counted.
 const shootingText = (goals, shots) => (shots ? (100 * goals / shots).toFixed(1) + '%' : '\u2013');
+// A team's save %: of the other team's shots on goal, the share that weren't goals.
+const saveText = (goals, shots) => (shots ? (100 * (shots - goals) / shots).toFixed(1) + '%' : '\u2013');
 const TEAM_FIELDS = ['shots', 'goals', 'faceoffs', 'checks', 'passTried', 'passMade', 'attackZone', 'breakTried', 'breakGoals', 'oneTimerTried', 'oneTimerGoals', 'psTried', 'psGoals',
   'ppGoals', 'ppTries', 'penalties', 'pim', 'shGoals'];
 function statSnapshot(f) {
@@ -3221,7 +3223,7 @@ function gameClockText(f) {
   return periodName(period) + ' ' + clockText(clock);
 }
 // The converter's play context (add_play_context): how the attempts came about, and the person against the computer.
-function playRows(f, list) {
+function playRows(f, list, part) {
   if (!list.some(sh => sh.origin)) return [];
   const m = match, section = title => [title];
   const both = fn => [fn(0), fn(1)];
@@ -3244,13 +3246,17 @@ function playRows(f, list) {
     const faced = list.filter(sh => sh.team !== team && sh.gctl === who && ['goal', 'save', 'post'].includes(sh.result));
     return faced.length ? faced.filter(sh => sh.result !== 'goal').length + '/' + faced.length : '\u2013';
   };
-  const rows = [section('How chances were made'),
+  // part 'chances': where the attempts came from (rows for the Chances group); 'people': the person against the
+  // computer and the controller groups
+  const chances = [
     ['Off the rush (G / attempts)', origin(0, 'rush'), origin(1, 'rush')],
     ['Sustained pressure', origin(0, 'zone'), origin(1, 'zone')],
     ['Off a faceoff', origin(0, 'faceoff'), origin(1, 'faceoff')],
     ['Odd-man rushes', odd(0), odd(1)],
     ...(wraps(0).length + wraps(1).length ? [['Wraparounds (G / attempts)', ...both(team => wraps(team).filter(sh => sh.result === 'goal').length + '/' + wraps(team).length)]] : []),
   ];
+  if (part === 'chances') return chances;
+  const rows = [];
   if (human(0) || human(1)) {
     rows.push(section('Person vs computer'),
       ['Checks (person / CPU)', split(hits(0), 0), split(hits(1), 1)],
@@ -3284,6 +3290,7 @@ const STAT_HELP = {
   // ---- team stats: shooting
   'Shots on goal': 'Shots on goal as the game itself counts them (a shot the goalie stopped, a goal, or a shot off the post). The game does not count every stopped shot, and never a pass shot unless it scores.',
   'Shooting %': 'Goals divided by shots on goal.',
+  'Save %': 'The share of the other team\u2019s shots on goal (as the game counts them) that the team\u2019s goalies stopped: 100% less the other team\u2019s shooting %. Goals into an empty net count against it.',
   'Shot attempts': 'Every shot the team took, whatever happened to it: on goal, wide, blocked, or stopped but not counted by the game.',
   'Wide': 'Shot attempts that missed the net with nobody touching them.',
   'Blocked': 'Shot attempts an opposing skater (not the goalie) got to before the goal line.',
@@ -3484,7 +3491,7 @@ function statHelp(label, parent) {
     (/^Transition/.test(key) ? STAT_HELP.Transition : '');
 }
 // Team-stat groups closed by the viewer (by heading); the long lists start closed.
-let closedGroups = new Set(['Physical and special teams', 'Physical', 'How chances were made', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction', 'Screen sides']);
+let closedGroups = new Set(['Physical', 'Person vs computer', 'Controller (whole game)', 'Passing by zone and direction', 'Screen sides']);
 try { const saved = localStorage.getItem('nhl94-closed-groups'); if (saved) closedGroups = new Set(JSON.parse(saved)); } catch (e) { /* defaults */ }
 function fillTeamStats(snap) {
   const box = $('teamStats');
@@ -3637,7 +3644,8 @@ function fillTeamStats(snap) {
   // 'has' the puck), so each one-timer attempt is added to completed passes, capped at passes tried.
   const made = t => Math.min(t.passTried, t.passMade + (t.oneTimerTried || 0));
   const pct = t => (t.passTried ? Math.round(100 * made(t) / t.passTried) + '%' :'\u2013');
-  // In three groups, each under a heading: shooting, puck control, then physical play and special teams.
+  // In groups, each under a heading: shooting, advanced (shares, xG, the score), chances, goaltending, puck control,
+  // passing, physical play, special teams, the people, then screen sides and quirks.
   const section = title => [title];  // a heading row
   const rows = [
     section('Shooting'),
@@ -3649,10 +3657,6 @@ function fillTeamStats(snap) {
       ['Blocked', ended(0, ['blocked']), ended(1, ['blocked'])],
       ...(uncountedSaves(0) + uncountedSaves(1) ? [['Saved, not counted', uncountedSaves(0), uncountedSaves(1)]] : []),
       ...(posts(0) + posts(1) ? [['Posts', posts(0), posts(1)]] : []),
-      ...(ownGoals(0) + ownGoals(1) ? [['Own goals (into own net)', ownGoals(0), ownGoals(1)]] : []),
-      ...(match.passes ? [['Tapestry goals', tapestries(0), tapestries(1)]] : []),
-      ...(tapestries(0) + tapestries(1) ? [['\u00b7 2 / 3 / 4+ passes', [2, 3, 4].map(n => tapestries(0, n)).join(' / '), [2, 3, 4].map(n => tapestries(1, n)).join(' / ')]] : []),
-      ...(match.passes ? [['Missed tapestries', missedTapestries(0), missedTapestries(1)]] : []),
       ['Wrist shots (G / att)', goalsOf(0, sh => sh.type === 'wrist shot'), goalsOf(1, sh => sh.type === 'wrist shot')],
       ['Slapshots (G / att)', goalsOf(0, sh => sh.type === 'slapshot'), goalsOf(1, sh => sh.type === 'slapshot')],
     ] : []),
@@ -3671,6 +3675,13 @@ function fillTeamStats(snap) {
     ...(h.psTried === undefined ? [] : [
       ['Penalty shots', h.psGoals + '/' + h.psTried, a.psGoals + '/' + a.psTried],
     ]),
+    // Rarer goals last: tapestries (passing plays), own goals
+    ...(match.shotList ? [
+      ...(match.passes ? [['Tapestry goals', tapestries(0), tapestries(1)]] : []),
+      ...(tapestries(0) + tapestries(1) ? [['\u00b7 2 / 3 / 4+ passes', [2, 3, 4].map(n => tapestries(0, n)).join(' / '), [2, 3, 4].map(n => tapestries(1, n)).join(' / ')]] : []),
+      ...(match.passes ? [['Missed tapestries', missedTapestries(0), missedTapestries(1)]] : []),
+      ...(ownGoals(0) + ownGoals(1) ? [['Own goals (into own net)', ownGoals(0), ownGoals(1)]] : []),
+    ] : []),
     ...(match.shotList ? (() => {
       // Advanced: shot-attempt shares (Corsi: all attempts; Fenwick: not blocked), all situations and even strength,
       // and PDO (shooting % + save %, times 100: about 100 is normal, well above it suggests luck running hot).
@@ -3703,31 +3714,6 @@ function fillTeamStats(snap) {
             ['Deserve to win', pc(dtw.win[0]), pc(dtw.win[1])],
             ['· a tie', pc(dtw.tie), pc(dtw.tie)]];
         })() : []),
-        ...(list.some(sh => sh.danger) ? (() => {
-          // From the converter's shot context: the slot (high danger), rebounds, EA Specials, set-up attempts,
-          // and turnovers the other team turned into an attempt within 5 s.
-          const goals = (team, test) => list.filter(sh => sh.team === team && test(sh) && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === team && test(sh)).length;
-          const flips = list.some(sh => sh.flip);
-          const costly = team => turnovers.filter(e => e.from === team && e.shotAfter !== undefined && e.shotAfter <= f);
-          return [
-            ['High-danger goals / attempts', goals(0, sh => sh.danger === 'high'), goals(1, sh => sh.danger === 'high')],
-            ['Rebound goals / attempts', goals(0, sh => sh.rebound), goals(1, sh => sh.rebound)],
-            ...(list.some(sh => sh.after) ? [['Saves: held / rebound / cleared', afterSaves(0), afterSaves(1)]] : []),
-            ...(flips ? [['EA Specials (goals / attempts)', list.filter(sh => sh.team === 0 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 0 && sh.flip).length,
-              list.filter(sh => sh.team === 1 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 1 && sh.flip).length]] : []),
-            ['Attempts off a pass', list.filter(sh => sh.team === 0 && sh.assist !== undefined).length, list.filter(sh => sh.team === 1 && sh.assist !== undefined).length],
-            ['Turnovers \u2192 shot against', costly(0).length + (costly(0).some(e => e.goalAfter) ? ' (' + costly(0).filter(e => e.goalAfter).length + ' G)' : ''),
-              costly(1).length + (costly(1).some(e => e.goalAfter) ? ' (' + costly(1).filter(e => e.goalAfter).length + ' G)' : '')],
-          ];
-        })() : []),
-        ...(list.some(sh => sh.gOff !== undefined) ? (() => {
-          // Shots on the team's net (goals, saves, posts) with its goalie 5 ft (15 units) or more off the line from the
-          // puck to the middle of the net at the release (the converter's gOff), out of all it faced
-          const faced = (team, who) => list.filter(sh => sh.team === 1 - team && sh.gOff !== undefined && ['goal', 'save', 'post'].includes(sh.result) && (!who || sh.gctl === who));
-          const off = (team, who) => { const all = faced(team, who), o = all.filter(sh => sh.gOff >= 15); return o.filter(sh => sh.result === 'goal').length + '/' + o.length + (who ? '' : ' of ' + all.length); };
-          return [['Goalie 5+ ft off the shot line (G / shots)', off(0), off(1)],
-            ...(hasHuman(0) || hasHuman(1) ? [['· person / CPU in net', ...[0, 1].map(team => (hasHuman(team) ? off(team, 'human') + ' \u00b7 ' + off(team, 'cpu') : '\u2013'))]] : [])];
-        })() : []),
         ...(possession ? (() => {
           // Leading, tied, trailing: game seconds in each, and the team's attempts and xG per 5:00 of it (under 30 game
           // seconds in a state: too little to say). Only once someone has led.
@@ -3747,17 +3733,50 @@ function fillTeamStats(snap) {
             ...(list.some(sh => sh.xg !== undefined) ? [['· xG per 5:00', per(0, xgs, 2), per(1, xgs, 2)]] : [])];
         })() : [])];
     })() : []),
+    ...((() => {  // Chances: where the attempts came from (the converter's shot context and origins)
+      const r = [
+        ...(list.some(sh => sh.danger) ? (() => {
+          // From the converter's shot context: the slot (high danger), rebounds, EA Specials, set-up attempts,
+          // and turnovers the other team turned into an attempt within 5 s.
+          const goals = (team, test) => list.filter(sh => sh.team === team && test(sh) && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === team && test(sh)).length;
+          const flips = list.some(sh => sh.flip);
+          const costly = team => turnovers.filter(e => e.from === team && e.shotAfter !== undefined && e.shotAfter <= f);
+          return [
+            ['High-danger goals / attempts', goals(0, sh => sh.danger === 'high'), goals(1, sh => sh.danger === 'high')],
+            ['Rebound goals / attempts', goals(0, sh => sh.rebound), goals(1, sh => sh.rebound)],
+            ...(flips ? [['EA Specials (goals / attempts)', list.filter(sh => sh.team === 0 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 0 && sh.flip).length,
+              list.filter(sh => sh.team === 1 && sh.afterFlip && sh.result === 'goal').length + '/' + list.filter(sh => sh.team === 1 && sh.flip).length]] : []),
+            ['Attempts off a pass', list.filter(sh => sh.team === 0 && sh.assist !== undefined).length, list.filter(sh => sh.team === 1 && sh.assist !== undefined).length],
+            ['Turnovers \u2192 shot against', costly(0).length + (costly(0).some(e => e.goalAfter) ? ' (' + costly(0).filter(e => e.goalAfter).length + ' G)' : ''),
+              costly(1).length + (costly(1).some(e => e.goalAfter) ? ' (' + costly(1).filter(e => e.goalAfter).length + ' G)' : '')],
+          ];
+        })() : []),
+        ...playRows(f, list, 'chances')];
+      return r.length ? [section('Chances'), ...r] : [];
+    })()),
+    section('Goaltending'),
+    // Each team's goalies: the other team's shots on goal and goals, as the game counts them
+    ['Save %', saveText(a.goals, a.shots), saveText(h.goals, h.shots)],
+    ...(list.some(sh => sh.after) ? [['Saves: held / rebound / cleared', afterSaves(0), afterSaves(1)]] : []),
+    ...(list.some(sh => sh.gOff !== undefined) ? (() => {
+      // Shots on the team's net (goals, saves, posts) with its goalie 5 ft (15 units) or more off the line from the
+      // puck to the middle of the net at the release (the converter's gOff), out of all it faced
+      const faced = (team, who) => list.filter(sh => sh.team === 1 - team && sh.gOff !== undefined && ['goal', 'save', 'post'].includes(sh.result) && (!who || sh.gctl === who));
+      const off = (team, who) => { const all = faced(team, who), o = all.filter(sh => sh.gOff >= 15); return o.filter(sh => sh.result === 'goal').length + '/' + o.length + (who ? '' : ' of ' + all.length); };
+      return [['Goalie 5+ ft off the shot line (G / shots)', off(0), off(1)],
+        ...(hasHuman(0) || hasHuman(1) ? [['· person / CPU in net', ...[0, 1].map(team => (hasHuman(team) ? off(team, 'human') + ' \u00b7 ' + off(team, 'cpu') : '\u2013'))]] : [])];
+    })() : []),
     section('Puck control'),
     ...(held ? [['Possession', secondsText(1000 * held[0]) + share(0), secondsText(1000 * held[1]) + share(1)],
       // Each team's possession by where the puck was, in its own view; the three add up to its possession.
       ...['attacking', 'neutral', 'defensive'].map((name, z) => ['· ' + name + ' zone',
         secondsText(1000 * possession.zones[z][zoneAt]), secondsText(1000 * possession.zones[3 + z][zoneAt])]),
       ['Transition ' + secondsText(1000 * held[2]) + share(2) + (liveKnowledge ? ' · undecided ' + secondsText(1000 * undecided) : ''), '', '']] : []),
+    ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
+    ...(held ? [['Attack-zone possession per goal', perGoal(0), perGoal(1)]] : []),
     ...(held ? [['Carried by D / C / W', carriers(0, DCW), carriers(1, DCW)],
       ['· LD / RD', carriers(0, [[1], [2]]), carriers(1, [[1], [2]])],
       ['· LW / RW', carriers(0, [[3], [5]]), carriers(1, [[3], [5]])]] : []),
-    ...(held ? [['Attack-zone possession per goal', perGoal(0), perGoal(1)]] : []),
-    ['Attack zone', clockText(h.attackZone), clockText(a.attackZone)],
     ...(match.zoneEntries ? [['Zone entries', entries(0).length, entries(1).length],
       ['· carried / passed / dumped', entryKinds(0), entryKinds(1)],
       ['· led to a shot attempt', entries(0).filter(e => entryShot(e, f)).length, entries(1).filter(e => entryShot(e, f)).length]] : []),
@@ -3777,19 +3796,7 @@ function fillTeamStats(snap) {
       ['Diagonal back / backward', passDir(0, 1), passDir(1, 1)],
       ['Out of own zone', passCross(0, 'def'), passCross(1, 'def')],
       ['Into attacking zone', passInto(0), passInto(1)]] : []),
-    ...(ends && possession ? [section('Screen sides'),
-      ...sideRows('Puck on screen left / right', (team, dir) => pctPair(sideOf(team, dir).slice(5, 7))),
-      ...sideRows('Carried by LW / RW', (team, dir) => carryShare(sideOf(team, dir), 2, 4)),
-      ...sideRows('Carried by LD / RD', (team, dir) => carryShare(sideOf(team, dir), 0, 1)),
-      ...sideRows('Shots from L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 7)),
-      ...(list.some(sh => sh.aim) ? sideRows('Aimed at L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 13)) : [])] : []),
-    // a quirk the ROM has the NOSE4Web fix for can't happen there: its row is left out (romSettings)
-    ...(match.runaways ? [section('Quirky Events'),
-      ...(fixedInRom('blindRingFix') ? [] : [['Through-the-legs goals', quirkGoals(0, 'five-hole'), quirkGoals(1, 'five-hole')]]),
-      ['Shoulder-save bobble goals', quirkGoals(0, 'goalie bobble'), quirkGoals(1, 'goalie bobble')],
-      ...(fixedInRom('passFix') ? [] : [['Rocket passes', rockets(0), rockets(1)]]),
-      ...(fixedInRom('runawayFix') ? [] : [['Runaway skaters', runaways(0), runaways(1)]])] : []),
-    section(h.ppTries === undefined ? 'Physical' : 'Physical and special teams'),
+    section('Physical'),
     ['Body checks', h.checks, a.checks],
     ...(match.hits ? [['· big hits', bigHits(0), bigHits(1)]] : []),
     ...(match.hits && match.hits.some(e => e.how) ? [['· shoulder / hip / cross-check', checkTypes(0), checkTypes(1)]] : []),
@@ -3810,13 +3817,25 @@ function fillTeamStats(snap) {
     ...(match.netsOff ? [['Nets knocked off (theirs / own)', netsOff(0, false) + ' / ' + netsOff(0, true), netsOff(1, false) + ' / ' + netsOff(1, true)]] : []),
     ...(anyInjuries ? [['Injuries caused', injuriesCaused(0), injuriesCaused(1)]] : []),
     ...(skating ? [['Distance skated', milesText(teamSkated(0)), milesText(teamSkated(1))]] : []),
-    ...(h.ppTries === undefined ? [] : [
+    ...(h.ppTries === undefined ? [] : [section('Special teams'),
       ['Power play', h.ppGoals + '/' + h.ppTries, a.ppGoals + '/' + a.ppTries],
       ['Shorthanded goals', h.shGoals, a.shGoals],
       ['Penalties', h.penalties, a.penalties],
       ['Penalty minutes', h.pim, a.pim],
     ]),
-    ...playRows(f, list),
+    ...playRows(f, list, 'people'),
+    ...(ends && possession ? [section('Screen sides'),
+      ...sideRows('Puck on screen left / right', (team, dir) => pctPair(sideOf(team, dir).slice(5, 7))),
+      ...sideRows('Carried by LW / RW', (team, dir) => carryShare(sideOf(team, dir), 2, 4)),
+      ...sideRows('Carried by LD / RD', (team, dir) => carryShare(sideOf(team, dir), 0, 1)),
+      ...sideRows('Shots from L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 7)),
+      ...(list.some(sh => sh.aim) ? sideRows('Aimed at L / M / R (G / att)', (team, dir) => triple(sideOf(team, dir), 13)) : [])] : []),
+    // a quirk the ROM has the NOSE4Web fix for can't happen there: its row is left out (romSettings)
+    ...(match.runaways ? [section('Quirky Events'),
+      ...(fixedInRom('blindRingFix') ? [] : [['Through-the-legs goals', quirkGoals(0, 'five-hole'), quirkGoals(1, 'five-hole')]]),
+      ['Shoulder-save bobble goals', quirkGoals(0, 'goalie bobble'), quirkGoals(1, 'goalie bobble')],
+      ...(fixedInRom('passFix') ? [] : [['Rocket passes', rockets(0), rockets(1)]]),
+      ...(fixedInRom('runawayFix') ? [] : [['Runaway skaters', runaways(0), runaways(1)]])] : []),
   ];
   const table = box.querySelector('table');
   table.textContent = '';
