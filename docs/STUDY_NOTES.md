@@ -1909,7 +1909,8 @@ gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game differe
 
 - **The frame rate itself** (the SA-1 build at 30 against 60): body checks up 30% (z 6.6), penalties up (1.75 to
   2.90, z 2.8); shots, saves, goals and passing the same.
-- **The rest of the SA-1 build** (Classic against the SA-1 build at 30): about 4 more shots and 5 more saves a game
+- **The rest of the SA-1 build** (Classic against the SA-1 build at 30; **the penalties and power-play shots in this
+  bullet and the next two are wrong**: see "Correction" below): about 4 more shots and 5 more saves a game
   (z 3.6, 4.6) and more penalties (0.55 to 1.75, z 3.7); checks the same; goals 3.1 against 2.0 (z -2.2, borderline).
 - **Both together, in both team sets**: checks up a quarter to a third (48 to 61; 49 to 64, z 8.2), penalties four to
   five times (0.55 to 2.9; 0.7 to 3.0), about 4 more shots and saves; goals no different (2.2 against 2.3 with the
@@ -1922,7 +1923,7 @@ gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game differe
   the extra checks, and of part of the extra penalties.
 - Limits: the computer against itself, one matchup per team set (Montreal against Los Angeles), regulation only;
   nothing here on how the game feels to a person (input and steering twice as often).
-- **Which penalties, which shots** (NOSE4Web: the build's only other gameplay change is McMarkis's fighting). Classic
+- **Which penalties, which shots** (wrong, see "Correction" below) (NOSE4Web: the build's only other gameplay change is McMarkis's fighting). Classic
   and the SA-1 build at 30 again (the same seeds, so the same games: totals as above), now with each penalty's number
   from the buffer at $15DE when it is called and each shot's strength from the players in the boxes ($1624). Per
   game, both teams:
@@ -1939,6 +1940,41 @@ gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game differe
   No fighting penalty in 40 games. The extra penalties are mostly Roughing (16 of the SA-1 build's 39 calls against 2
   of Classic's 12), and Interference doubled (12 against 7); all the extra shots come with a man in a box (+3.6
   power play and short-handed, +0.4 even strength). Open: whether the build's fights are charged as Roughing.
+- **Correction (penalties off).** On the original engine (NHL94_Classic.smc, NHL94.smc) the menu presses that set
+  Penalties were lost in 15 of the 20 seeds (the timing moves with the seed), so those games had penalties Off; the
+  SA-1 build starts on On, No Offside. snes_60fps_cvc.py now sets the option ($34C4 = 2) when play starts and records
+  what it found. With penalties on in every game (20 each; the SA-1 games were already right):
+
+  | Per game, both teams | Classic (30) | SA-1 Classic at 30 | z | Retail (30) | SA-1 Original (60) | z |
+  |---|---|---|---|---|---|---|
+  | Goals | 2.95 | 2.00 | -2.3 | 2.25 | 2.30 | 0.1 |
+  | Shots | 35.5 | 38.1 | 2.5 | 34.2 | 37.5 | 2.0 |
+  | Saves | 32.6 | 36.1 | 3.1 | 32.0 | 35.2 | 1.9 |
+  | Body checks | 41.6 | 47.1 | 2.6 | 44.0 | 64.2 | 10.0 |
+  | Penalties | 2.20 | 1.75 | -1.2 | 2.55 | 3.00 | 1.0 |
+  | Roughing / Cross Check | 0.45 | 0.75 | 1.6 | 0.75 | | |
+  | Injury Roughing ($14) | 0.20 | 0.30 | 0.6 | 0.35 | | |
+  | Other penalties | 1.60 | 0.90 | -2.1 | 1.45 | | |
+  | Even / power-play / short-handed shots | 29.1 / 4.4 / 2.1 | 32.1 / 3.8 / 2.3 | | 26.8 / 4.1 / 3.3 | | |
+
+  No fighting penalty in any game. The SA-1 build calls no more penalties than the original at 30 frames a second;
+  60 frames a second adds some (1.75 to 2.90 within the SA-1 build; retail 2.55 against 3.00). Still there at 30: a
+  few more shots and saves, fewer goals (z -2.3), and more checks (z 2.6).
+- **The penalty rolls** (`analysis/scoring_map/snes_penalty_rolls.py`: each roll's `jsl` through a counting stub in
+  a scratch copy; play unchanged, the stubbed games identical to the plain ones). Classic against the SA-1 build at 30,
+  20 games each, penalties on: reached per game / came up a penalty (of all rolls) / called:
+
+  | Roll | Classic | SA-1 at 30 |
+  |---|---|---|
+  | Roughing (checkcheck .t2x, a knock-down check) | 41.4 / 12 of 827 (1.45%) / 12 | 46.2 / 15 of 924 (1.62%) / 15 |
+  | Interference (checkint, skater and goalie) | 1.9 / 9 of 38 (24%) / 8 | 3.0 / 13 of 59 (22%) / 12 |
+  | Charging (checkcheck, no knock-down) | 18.1 / 4 / 4 | 17.5 / 1 / 1 |
+  | Hooking / Holding (holdcheck) | 19.6 / 9 / 9 | 20.1 / 2 / 2 |
+  | Tripping (Bcheck, under 5) | 1.9 / 0 / 0 | 1.8 / 3 / 3 |
+
+  The rolls come up alike (the code from checkagr / checkint to AddPenalty is the same bytes, RAM moved; the SA-1
+  multiply gives the same products); the SA-1 build reaches the Roughing roll a little more often (z 2.5), with its
+  extra checks. Every roll that came up was called; the earlier "uncalled" results were the penalties-off games.
 
 ## NOSE4Web's SNES team-block colours, checked (2026-11-08)
 

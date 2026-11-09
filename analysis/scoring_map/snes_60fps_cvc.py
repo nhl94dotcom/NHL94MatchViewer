@@ -4,7 +4,9 @@ run twice as often), with the same teams: NHL94_Classic.smc against nhl94_2026_c
 build with Classic's 28 teams imported).
 
 Each game: Montreal at home against Los Angeles (both ROMs' defaults), 5-minute periods, penalties On, No Offside,
-the clock held to 5:00 at most (a missed menu press can't lengthen a game), each game's random seed ($0792 / $0794)
+the clock held to 5:00 at most (a missed menu press can't lengthen a game), the Penalties option set to
+On, No Offside ($34C4 = 2) when play starts (on the original, menu presses lost by the seed's timing had left it Off
+in 15 of 20 games before this was added, 2026-11-08: the earlier penalty comparisons were wrong), each game's random seed ($0792 / $0794)
 set from its number when play starts (the SA-1 build's random state doesn't depend on the menu frames), the computer on
 both sides (every pad off the teams, as snes_period_cvc.computer_only, put back every 5 s), played
 through the three regulation periods (the breaks passed with START); a different number of frames in the menus each
@@ -31,6 +33,7 @@ from faceoff_fix_test import Snes
 
 CONT1TEAM, PADSIDE, PLAYERPAD, C1PLAYER, TEAMPADS, PFLAGS = 0x1C84, 0x19F6, 0x19D4, 0x19EC, 0x19D0, 0x1283
 GSP, CLOCK, CLOCKSTOP, SEED = 0x1630, 0x1632, 0x15D6, 0x0792   # seed: RandomWord's two words
+OPTPEN = 0x34C4                              # the Penalties option: 0 Off, 2 On, No Offside
 GOALS_P, SHOTS_P = 0x177E, 0x176A          # per period (+4 a period), home / away words
 CHECKS, PENS, PASSES_C, PASSES_T = 0x17B6, 0x174A, 0x17BA, 0x17BE
 PEN_BUFFER, IN_BOX = 0x15DE, 0x1624         # (penalty number, object) byte pairs at the foul; players in the boxes (Home x 16 + Away)
@@ -73,7 +76,7 @@ def computer_only(m):
         m.setw(PFLAGS + 2 * k, m.w(PFLAGS + 2 * k) & ~8)
 
 
-def game(rom, n):
+def game(rom, n, extra=None):
     e = M.emulator(rom)
     m = Mem(e, rom)
     tmp = Path("x_tmp_60fps")
@@ -89,6 +92,8 @@ def game(rom, n):
             break
         e.run(4, hold=["START"])
         e.run(60)
+    optpen_found = m.w(OPTPEN)                # a lost menu press can leave penalties Off (15 of 20 seeds did)
+    m.setw(OPTPEN, 2)
     computer_only(m)
     m.setw(SEED, (0x9E37 * (n + 1)) & 0xFFFF or 1)                        # each game its own random state (the
     m.setw(SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)                    # menu frames don't vary the SA-1 build's)
@@ -136,7 +141,8 @@ def game(rom, n):
                 saves=[shots[1] - goals[1], shots[0] - goals[0]],                # saves by each team's goalie
                 checks=[m.w(CHECKS), m.w(CHECKS + 2)], penalties=[m.w(PENS), m.w(PENS + 2)],
                 passes=[[m.w(PASSES_C), m.w(PASSES_T)], [m.w(PASSES_C + 2), m.w(PASSES_T + 2)]],
-                reached_p4=m.w(GSP) >= 3, calls=calls, shot_strength=strength)
+                reached_p4=m.w(GSP) >= 3, optpen_found=optpen_found, calls=calls, shot_strength=strength,
+                **(extra(e, m) if extra else {}))
 
 
 def make_30(rom, out):
