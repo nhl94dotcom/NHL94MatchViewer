@@ -20,7 +20,8 @@ is read, and the play is followed to a goal (the team's assists, +$CE a byte per
 test ROM with the fix.
 
 python gen_onetimer_assist_test.py patch ROM OUT
-python gen_onetimer_assist_test.py test"""
+python gen_onetimer_assist_test.py test
+python gen_onetimer_assist_test.py builds RETAIL BUILD ...   (NOSE4Web's builds laid over the test ROM: test_builds)"""
 import os
 import struct
 import sys
@@ -103,9 +104,109 @@ def test():
     return results
 
 
+def overlay(build, retail, base, out):
+    """The test ROM (base) with a NOSE4Web build's changes against retail laid over it: every changed range but the
+    header checksum and the boot's ROM-sum call ($300: the test ROM has it off already)."""
+    a, b, r = Path(retail).read_bytes(), Path(build).read_bytes(), bytearray(Path(base).read_bytes())
+    i = 0
+    while i < len(a):
+        if a[i] != b[i]:
+            j = i
+            while j < len(a) and any(a[q] != b[q] for q in range(j, min(j + 4, len(a)))):
+                j += 1
+            if not (i < 0x200 or 0x300 <= i < 0x306):
+                r[i:j] = b[i:j]
+            i = j
+        else:
+            i += 1
+    Path(out).write_bytes(r)
+
+
+def test_builds(builds):
+    """The cases on the test ROM and on each build laid over it. One-timers (cross-slot, as test()), the touch list
+    set just before the strike: "as played"; "receiver touched first" (receiver, passer, a third: the bug); "give and
+    go" (passer, receiver, a third C: the receiver had passed to the passer, who passes back). And "give and go,
+    caught": the same list, the pass taken (no one-timer: a2touchpuck's path). The list 8 frames after the strike /
+    the catch, and each one-timer played out (the assists credited at a goal)."""
+    import harness
+    from ot_harness import OneTimer, PASSER, RECEIVER
+    from paths import ROM
+    roms = [("test ROM", ROM)]
+    for build in builds:
+        out = Path(os.environ.get("TEMP", ".")) / ("smap94_" + Path(build).name)
+        overlay(build, RETAIL, ROM, out)
+        roms.append((Path(build).name, str(out)))
+    setups = [((0, 213), (60, 213)), ((0, 213), (-60, 213)), ((30, 213), (-30, 213)), ((-30, 213), (30, 213))]
+    third = 7
+    res = {}
+    for name, rom in roms:
+        harness.Harness.__init__.__defaults__ = (rom,) + harness.Harness.__init__.__defaults__[1:]
+        ot = OneTimer("genesis")
+        e, s = ot.e, ot.s
+        pn = lambda k: e.b(s.rec(k) + 0x66)
+        lst = lambda: tuple(e.w(HOME + TOUCH + 2 * i) for i in range(3))
+        rows = []
+        for R, P in setups:
+            for p in range(3):
+                ot.setup("top", P, R, p, None)
+                start = e.serialize()
+                r, q = pn(RECEIVER), pn(PASSER)
+                cases = {"receiver touched first": (r, q, third), "give and go": (q, r, third)}
+                # caught: the pass played with no press until the receiver has the puck
+                e.unserialize(start)
+                for i, v in enumerate(cases["give and go"]):
+                    e.setw(HOME + TOUCH + 2 * i, v)
+                d = __import__("ot_harness").DIRS[__import__("ot_harness").direction(ot.R[0] - ot.P[0], ot.R[1] - ot.P[1])]
+                got = None
+                for f in range(90):
+                    ot.run([s.pass_button] + d if f < 4 else d)
+                    if s.carrier() == RECEIVER:
+                        for _ in range(5):                  # the list changes a frame after the catch
+                            ot.run(d)
+                        got = lst()
+                        break
+                rows.append(dict(R=R, P=P, p=p, case="give and go, caught", receiver=r, passer=q, after=got))
+                e.unserialize(start)
+                press, info = ot.pass_to_press("early", by=2 + p)
+                if press is None:
+                    continue
+                pre, frames = ot.swing(press, None)
+                if pre is None:
+                    continue
+                for case in ("as played", "receiver touched first", "give and go"):
+                    e.unserialize(pre)
+                    if case in cases:
+                        for i, v in enumerate(cases[case]):
+                            e.setw(HOME + TOUCH + 2 * i, v)
+                    assists0 = [e.b(HOME + ASSISTS + i) for i in range(26)]
+                    s.set_seed(0x1234567 + p)
+                    ot.run()
+                    for _ in range(8):
+                        ot.run()
+                    after = lst()
+                    out = ot.play_out()
+                    assists = [e.b(HOME + ASSISTS + i) - assists0[i] for i in range(26)]
+                    rows.append(dict(R=R, P=P, p=p, case=case, receiver=r, passer=q, after=after, outcome=out,
+                                     assists_credited={i: a for i, a in enumerate(assists) if a}))
+        res[name] = rows
+    return res
+
+
+RETAIL = os.environ.get("NHL94_RETAIL", "")
+
+
 def main():
     if sys.argv[1] == "patch":
         patch(sys.argv[2], sys.argv[3])
+        return
+    if sys.argv[1] == "builds":                 # python gen_onetimer_assist_test.py builds RETAIL BUILD ...
+        import json
+        global RETAIL
+        RETAIL = sys.argv[2]
+        for name, rows in test_builds(sys.argv[3:]).items():
+            print("==", name)
+            for r in rows:
+                print(json.dumps(r))
         return
     import json
     res = test()

@@ -2163,6 +2163,15 @@ the original and the fix give the same lists and assists; with the receiver made
 original gives receiver, receiver, passer and the 18 goals no assist, the fix keeps receiver, passer, the one before,
 and credits both. A retail copy with the fix boots and plays once the boot's ROM sum ($300) is off, as in NOSE4Web's
 builds.
+- **NOSE4Web's builds (b5df2d5, 11:15), checked** (`gen_onetimer_assist_test.py builds`: each build's changes laid
+  over the test ROM; 12 one-timers a ROM, 9 goals): nhl94_one_timer.bin (the 42 bytes at $FFAC6, over the unused ROM
+  sum) and nhl94_one_timer_second_assist.bin (a2touchpuck's first shift at $10188 skipped when the player is the
+  first assist; the one-timer routine, 48 bytes at $FFADA, with the same test). As played: the same lists and assists
+  as the test ROM on both. Receiver touched first: test ROM receiver, receiver, passer and no assists; both builds
+  receiver, passer, the one before, both credited. A give-and-go (C, receiver, passer before the pass back): test
+  ROM and the one-timer fix alone end receiver, passer, no second assist (the one-timer routine clears a second
+  assist equal to the scorer, $FF10 from `st`), the passer credited; with both fixes receiver, passer, C, both
+  credited; caught instead of one-timed, the same (test ROM and fix alone lose C, both fixes keep him).
 - **Deflection goals with no assist (7 of 9), checked: the game's rule, not a bug.** In six the other team had the
   puck in the last 5 s before the goal (a skater, or the goalie holding it after the first shot: puckgoalie goes
   through puckglue, which clears the other team's assists and sets tmflast); the seventh (BOS-WPG P3 0:38) was a
