@@ -1,0 +1,126 @@
+"""How much McMarkis's 60 frames a second changes play (2026-11-08, for NOSE4Web): the original engine (game logic at 30
+frames a second, d7 = 2) against the SA-1 build (60, d7 = 1; the physics scale with d7, the AI, input and collisions
+run twice as often), with the same teams: NHL94_Classic.smc against nhl94_2026_classic.sfc (McMarkis's 32-team SA-1
+build with Classic's 28 teams imported).
+
+Each game: Montreal at home against Los Angeles (both ROMs' defaults), 5-minute periods, penalties On, No Offside,
+the clock held to 5:00 at most (a missed menu press can't lengthen a game), each game's random seed ($0792 / $0794)
+set from its number when play starts (the SA-1 build's random state doesn't depend on the menu frames), the computer on
+both sides (every pad off the teams, as snes_period_cvc.computer_only, put back every 5 s), played
+through the three regulation periods (the breaks passed with START); a different number of frames in the menus each
+game, so each starts from a different random state. At the end of regulation, from the game's own team stats (low RAM,
+in BW-RAM on the SA-1 build: faceoff_fix_test.Snes.MOVED): goals and shots by period (P1-P3), saves (shots less goals),
+body checks, penalties, passes completed and tried. Gentle (one process per ROM, lowload).
+
+python snes_60fps_cvc.py ROM GAMES OUT.jsonl"""
+import json
+import sys
+from pathlib import Path
+
+import lowload
+import menu_shots as M
+from faceoff_fix_test import Snes
+
+CONT1TEAM, PADSIDE, PLAYERPAD, C1PLAYER, TEAMPADS, PFLAGS = 0x1C84, 0x19F6, 0x19D4, 0x19EC, 0x19D0, 0x1283
+GSP, CLOCK, CLOCKSTOP, SEED = 0x1630, 0x1632, 0x15D6, 0x0792   # seed: RandomWord's two words
+GOALS_P, SHOTS_P = 0x177E, 0x176A          # per period (+4 a period), home / away words
+CHECKS, PENS, PASSES_C, PASSES_T = 0x17B6, 0x174A, 0x17BA, 0x17BE
+
+
+class Mem:
+    """Word reads and writes, with the SA-1 build's low RAM in BW-RAM."""
+    def __init__(self, e, rom):
+        import ctypes as C
+        self.e = e
+        data = Path(rom).read_bytes()
+        self.sa1 = len(data) > 0x7FD6 and data[0x7FD5] == 0x23
+        self.bw = (C.c_ubyte * e.lib.retro_get_memory_size(0)).from_address(e.lib.retro_get_memory_data(0)) if self.sa1 else None
+
+    def at(self, a):
+        if self.sa1:
+            for lo, hi, to in Snes.MOVED:
+                if lo <= a < hi:
+                    return self.bw, to + a - lo
+        return self.e.ram, a
+
+    def w(self, a):
+        buf, o = self.at(a)
+        return buf[o] | buf[o + 1] << 8
+
+    def setw(self, a, v):
+        buf, o = self.at(a)
+        buf[o], buf[o + 1] = v & 0xFF, (v >> 8) & 0xFF
+
+
+def computer_only(m):
+    for i in range(5):
+        m.setw(CONT1TEAM + 2 * i, 0)
+        m.setw(PADSIDE + 2 * i, 0xFFFE)
+        m.setw(C1PLAYER + 2 * i, 0xFFFF)
+    m.setw(TEAMPADS, 0)
+    m.setw(TEAMPADS + 2, 0)
+    for k in range(12):
+        m.setw(PLAYERPAD + 2 * k, 0xFFFF)
+        m.setw(PFLAGS + 2 * k, m.w(PFLAGS + 2 * k) & ~8)
+
+
+def game(rom, n):
+    e = M.emulator(rom)
+    m = Mem(e, rom)
+    tmp = Path("x_tmp_60fps")
+    if m.sa1:
+        M.play(e, f"w{1800 + 53 * n} START w240", tmp)                          # its defaults: 5 min, On, No Offside
+    else:
+        M.play(e, f"w{1500 + 53 * n} START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", tmp)
+    M.play(e, "START w240 START w200 w2400", tmp)                           # player select, the matchups
+    for _ in range(12):                                                    # the pre-game menu: START until the clock runs
+        c = m.w(CLOCK)
+        e.run(240)
+        if m.w(CLOCK) != c and m.w(CLOCKSTOP) == 0:
+            break
+        e.run(4, hold=["START"])
+        e.run(60)
+    computer_only(m)
+    m.setw(SEED, (0x9E37 * (n + 1)) & 0xFFFF or 1)                        # each game its own random state (the
+    m.setw(SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)                    # menu frames don't vary the SA-1 build's)
+    still, frames, person = 0, 0, 0
+    while m.w(GSP) < 3 and frames < 200000:
+        c = m.w(CLOCK)
+        e.run(30)
+        frames += 30
+        if m.w(CLOCK) > 300:                                               # 5-minute periods whatever the menu set
+            m.setw(CLOCK, 300)
+        if frames % 300 == 0:
+            if any(m.w(PFLAGS + 2 * k) & 8 for k in range(12)):
+                person += 1
+            computer_only(m)
+            lowload.breathe()
+        still = still + 30 if m.w(CLOCK) == c else 0
+        if still >= 900:                                                    # a break or a menu waiting: START
+            e.run(4, hold=["START"])
+            still = 0
+    per = lambda base, t: sum(m.w(base + 4 * p + 2 * t) for p in range(3))
+    goals = [per(GOALS_P, t) for t in (0, 1)]
+    shots = [per(SHOTS_P, t) for t in (0, 1)]
+    return dict(game=n, rom=Path(rom).name, frames=frames, person_seen=person, goals=goals, shots=shots,
+                saves=[shots[1] - goals[1], shots[0] - goals[0]],                # saves by each team's goalie
+                checks=[m.w(CHECKS), m.w(CHECKS + 2)], penalties=[m.w(PENS), m.w(PENS + 2)],
+                passes=[[m.w(PASSES_C), m.w(PASSES_T)], [m.w(PASSES_C + 2), m.w(PASSES_T + 2)]],
+                reached_p4=m.w(GSP) >= 3)
+
+
+def main():
+    rom, games, out = sys.argv[1], int(sys.argv[2]), Path(sys.argv[3])
+    lowload.gentle()
+    done = {json.loads(line)["game"] for line in out.read_text().splitlines()} if out.exists() else set()
+    for n in range(games):
+        if n in done:
+            continue
+        r = game(rom, n)
+        with out.open("a") as fh:
+            fh.write(json.dumps(r) + "\n")
+        print(json.dumps(r), flush=True)
+
+
+if __name__ == "__main__":
+    main()

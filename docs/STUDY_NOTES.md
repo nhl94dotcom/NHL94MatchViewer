@@ -1789,6 +1789,43 @@ box. Short runs (in play only, palettes): Hartford v Boston, Boston v Montreal, 
   Game Stats and the replay. The pause menu's side view and the break's scoreboard look the same as the original's.
   Period 2 in play has both logos (visitors still above). In replays neither ROM shows the score box.
 - **A skater under the box**: drawn behind it, as on the original (the logo tiles have the priority bit).
+- **The rebuild (19:34)**, logos without the colours every uniform line shares: in Boston v Montreal and Montreal v
+  Boston, Montreal's logo has no stray pixels and Boston's has one light-blue and one pink pixel (the first build: 21
+  and 19).
+
+## Injuries and NHLPA '93's blood (2026-11-08, for NOSE4Web)
+
+NOSE4Web plans to bring '93's head blood into '94 (Genesis). Read from both ROMs and the '94 disassembly; seen in play
+with `analysis/scoring_map/gen_injury_check.py` (a scratch copy of nhl94.bin patched so every fall of a puck carrier is
+an injury, `game` or `period` forced; pad 1 idle) and in the 10 injuries of the recorded league games.
+- **'93's frames**: frame table $6FAC2 (650 frames), tile bank $3A382, animation tables from SPAlist $4D8E. The blood
+  is small pieces in palette lines 0 and 1 (dark red) in two sets of frames:
+  - **633-644**, the "injured on the ice" frames (in '94 the same drawings are 641-652, SPFinjury1, after the 8 flip
+    frames '94 added at 633, redrawn without the blood). '93's check injury ($102E2) always plays this animation
+    (SPA $1616, frames 273-275 / 289-291 then 633-638 or 639-644, the last held -900), and its injury routine
+    ($10332) always sets the player's status to $FFFD (out for the period): '93 has no game injuries, so every
+    check injury bleeds.
+  - **371-376**, the end of the fight loser's fall (SPA $10CE: 368-370, then 371-376, the last held -400). '93's fight
+    code ($A7F2) draws a random number below $3C against a rating byte (+$75) of one fighter: under it, this bloody
+    fall, the injury routine and then status $112C; over it, the plain fall (SPA $10AC: 368-370, held 200). The
+    fight frames 354-370 and their tables ($5D1C-$5E5C) are fights' alone.
+  - How long: the animation times count 2 a frame, as '94's. A check injury's blood shows from 21 frames after the hit
+    and its animation lasts 509 more frames (21 game seconds), longer than the play stays on screen (in '94 the
+    penalty scoreboard comes about 480 frames after the hit). A fight's blood lasts 267 frames (11 game seconds).
+- **'94 in play**: every injury starts SPAinjuryfall ($145C: 273-275 or 289-291, the last held 1024). setInjuryType
+  sets sflags7 bit 5 (the byte at $C2FC) for a game injury and clears it for a period injury; only a period injury
+  goes on to SPAinjury1 ($1AF4: from 641 or 647, writhing 644-646 or 650-652). Seen: a game injury lies still on 275
+  from 20 frames after the hit until he is taken off 530 frames after it; a period injury writhes 641-646 from 50
+  frames. Both: the referee box, then "Injury to ... Out for game / period", then the penalty scoreboard (roughing,
+  or $14 when the hitter is a goalie or penalties are off), then the faceoff. The recordings: 10 injuries, all period
+  ones, all SPAinjury1.
+- **'94's frames 353-376** (gloves, fight, fight injury) all point to one placeholder piece (tile 3749, one pixel). No
+  animation table in '94 uses 353-376, and no code sets them (the two immediates 360 and 368 in the code are a timer
+  and a screen window). Their HotList entries (stick points) are still there (369 (-22, -1), 370 (-32, -4), 371-376
+  (-24, -4)) but are read only for a frame a player is showing. Filling 369-376 can't change play until a table uses
+  them. To bleed like '93: the period injury could get blood on 641-652 (SPAinjury1 is used only by injuries); the
+  game injury's frames 273-275 / 289-291 are every fall back's, so it would need its own frames (369-376 are free)
+  and an SPAinjuryfall table pointing at them.
 
 ## The xG models' goalie spread refitted (2026-11-08)
 
@@ -1818,3 +1855,33 @@ goalies caught on long shots), not one number. After the refit, studies 1, 5 and
 xG difference 0.88 / 0.90 (Genesis / SNES), finishing luck's spread 1.6 / 1.3 goals a game, the clearly better chances
 lost 2 of 25 / 5 of 27; the 0.6+ chances 129 goals / 140.9 expected and 138 / 156.4 (was 14% short, now 8-9%). Study 2
 (hot / cold) ran with the old spread; its effects are differences between two runs and change little.
+
+## McMarkis's 60 frames a second: the computer against itself (2026-11-08, for NOSE4Web)
+
+The original engine runs the game logic at 30 frames a second (d7 = 2 each step); McMarkis's SA-1 build at 60 (d7 =
+1). `analysis/scoring_map/snes_60fps_cvc.py`: NHL94_Classic.smc against nhl94_2026_classic.sfc (the 32-team SA-1
+build with Classic's 28 teams imported, checked the same as Classic), Montreal at home against Los Angeles, 5-minute
+periods (the clock held to 5:00), penalties On, No Offside, the computer on both sides, each game's random seed
+($0792 / $0794) set from its number, 20 games each, regulation only, the game's own team stats. (A first run of 12
+each was thrown out: seven Classic games had 10-minute periods from a missed menu press, and the SA-1 build's random
+state didn't vary with the menu frames, so its 12 games were 3.)
+
+| Per game, both teams | Classic (30) | SA-1 (60) | Difference | z |
+|---|---|---|---|---|
+| Goals | 3.10 ± 0.45 | 2.40 ± 0.31 | -0.70 | -1.3 |
+| Shots | 34.1 ± 0.9 | 37.1 ± 0.9 | +3.0 | 2.4 |
+| Saves | 31.0 ± 0.8 | 34.7 ± 0.9 | +3.8 | 3.0 |
+| Save % | 91.0 | 93.5 | +2.5 | 1.6 |
+| Body checks | 48.4 ± 1.9 | 60.9 ± 1.5 | +12.5 | 5.2 |
+| Penalties | 0.55 ± 0.23 | 2.90 ± 0.34 | +2.35 | 5.7 |
+| Passes completed / tried | 62.8 / 114.3 | 63.3 / 115.5 | +0.5 / +1.2 | 0.2 / 0.6 |
+
+- Clear: about a quarter more body checks and five times the penalties; a few more shots. Not clear in 20 games:
+  goals and save percentage (fewer goals on the SA-1 build, within chance). Passing is the same.
+- The code: the computer's decision timers (temp1, the awareness delay; the assignments; asspuckc's chk4shot /
+  chk4pass gate) count down by d7, so they run in real time on both builds: the computer doesn't decide more often.
+  temp3 and temp4 count down by 1 a step, so they run twice as fast on the SA-1 build. Collisions (checks, the
+  penalty rolls that come with them), the controller reads and steering run every step, twice as often: the likely
+  cause of the extra checks and penalties.
+- Limit: the SA-1 build differs from Classic in more than the frame rate (the SA-1 engine, the 32-team ROM), so the
+  differences are the build's, of which 60 frames a second is the likely part.
