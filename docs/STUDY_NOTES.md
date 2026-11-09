@@ -2031,3 +2031,17 @@ addresses). None of the six is on the SNES, retail or SA-1:
   is dark grey there; everywhere else (the controller screen, matchups, pause stats pages, the card's team page, the
   playoff bracket, the horizontal pause scoreboard) it is $1D47. On the pause scoreboard, palettes 6 and 7 have colour 1
   $1D47 and colour 15 $FFFF, and PulsePauseSide pulses colour 15 of the pausing side's palette (colourbuf+$1DE / +$1FE).
+
+## NOSE4Web's SNES Import team with logos, checked (2026-11-08)
+
+nhl94_2026_chicago_import.sfc (nhl94_2026.sfc, Classic Boston then Classic Chicago imported into team 1, with logos and
+photos) against NHL94_Classic.smc (Chicago at home) and nhl94_2026.sfc, by menu_shots (setup, matchups, the opening
+faceoff, every Player Card) and the title screen with its logo list (titleteams $7E:F000) held at team 1 (Classic:
+Chicago, 4). Right: the team logo on setup, the card team page and every player card (pixel-identical to Classic);
+centre ice at the opening faceoff (Classic's logo; only the visitors' uniforms differ); the score box keeps the build's
+Boston logo; the block palette (palette 7) equal to Classic's; all 24 photos and names pixel-identical to Classic's;
+Carolina and Vegas (setup, matchups, Carolina's centre ice, all cards) and the default title identical to
+nhl94_2026.sfc. Wrong: the banners' name reads BOSTON (setup, matchups, scoreboard, card team page; Classic CHICAGO;
+the setup row says Chicago); the title screen's flying puck shows Chicago's logo shape in Boston-like colours (white,
+grey, gold), so the title's logo colours come from somewhere the import doesn't write. (The cards' strengths and
+overall ratings differ by the game's random hot / cold, not the import.)
