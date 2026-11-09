@@ -2004,3 +2004,23 @@ Chelios) and the 18 stand-ins are pixel-identical to Classic's (the picture area
 scrambled. Vegas (both games) and Carolina, both with photos of their own: every card identical to nhl94_2026.sfc.
 Seen on the way: team 1's banner still reads BOSTON and its logo is the Bruins' (setup, matchups, scoreboard, team
 page), with the Blackhawks' nickname, arena and rating.
+
+## Six Genesis bugs looked for on the SNES (2026-11-08, for NOSE4Web)
+
+From the NHL94SNES disassembly (retail), then the same routines compared instruction by instruction in nhl94_2026.sfc
+(McMarkis's SA-1 build), allowing only its moved low RAM (+$6000) and moved code (long calls, jumps, its own table
+addresses). None of the six is on the SNES, retail or SA-1:
+1. **Rocket pass**: dopass sets a targeted pass's speed from the distance to the lead spot (2/3 of it, held at 64-80);
+   the divisions that round (d / 4, d / 5) only set the lead, not the speed. Same in the SA-1 build.
+2. **Penalty-shot table**: there is none. PenShotChk returns -1 when the man hit is the carrier on a breakaway, and
+   the caller calls PenShot itself. Same in the SA-1 build.
+3. **Ghost puck**: wallcollb gives a puck out of the rink pfnc, as on the Genesis, and SetupPenaltyShot doesn't clear
+   it; but puckfaceoff2 calls Endfaceoff before SetupPenaltyShot, and every path through Endfaceoff ends at .12,
+   `stz pfnc,x` on the puck. Same in the SA-1 build.
+4. **Computer goalie pull**: CPgoalie pulls when 1 or 2 goals behind (bmi ahead, beq tied, 3 or more left in), third
+   period, 60 or fewer seconds, puck in the attacking half. Same in the SA-1 build.
+5. **Blind ring**: checkpuckcoll_ccx's goalie part tests the stick / glove circle of the save frame, and every way out
+   of it (in reach or not, over or under its heights) goes on to the 11-unit body box; a skater's missed stick test
+   goes on to his body. No distance band gets neither test. Same in the SA-1 build (all 256 instructions).
+6. **Crowd bonus**: no sflags8 or anything like it. The SNES raise at 110 dB (CrowdMeterScreen .11, +2 to four hot /
+   cold values) is never reached, only the undo; Bcheck has no crowd term. Same in the SA-1 build.
