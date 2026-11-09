@@ -103,7 +103,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `set_report.py <TEAM> <TEAM> <match> ...` (both systems; its docstring lists the rules a write-up keeps) and
   `set_deep.py` (Genesis, deeper); `coach_report.py` (how the two people played, Genesis; league tables from
   `coach_models.py`) and `coach_predict.py`; `check_pass.py <match> ... | --all [ABBR]` (passing out of a check, both
-  systems: the converter's `find_check_passes`). `reports/<set>_writeup.md` are the written analyses.
+  systems: the converter's `find_check_passes`); `assist_loss_study.py` (assists lost to a2touchpuck's same-player exit). `reports/<set>_writeup.md` are the written analyses.
 - Moment tools: `goal_trace.py <capture> <period> <m:ss>` (any moment frame by frame), `b_button_study.py`; the older
   BOS-NYI series scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`); shot / one-timer
   / passing / pickup / goalie studies; `bug_frequency.py` (how often NOSE4Web's fixed bugs happen in the recordings);
