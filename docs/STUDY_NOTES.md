@@ -2326,4 +2326,22 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
   truncated), Weight (bit 13) and Fighting (bit 6) unweighted if a mask has them (retail's don't), plus the hot /
   cold average; the overall masks are also the key: CalcAttrib compares d4 with each to pick the weight list, so they
   must stay different from each other and from single-rating masks. An editor's Ovr has to mirror those three.
+- **Follow-ups (NOSE4Web bbe0bd5).**
+  - DPWM3RegularSeason (11 cards): its FeaturedPictures lists run through the roster (picture.l, roster index) with
+    picture 0 for players without a card (entry 6 in every team checked). Game Setup, played: featuredplayer steps
+    0-10 and wraps, no crash; an entry with picture 0 draws a garbage picture (the ROM's start unpacked as a picture)
+    with that entry's player named; later entries with pictures draw normally. DrawPlayerPicture (player cards,
+    matchups) stops at the first picture 0, so the players listed after it get no picture there.
+  - TeamSongs in other ROMs: ChooseSong's `movea.l #TeamSongs,a0 / movea.l #RandomSongs,a1 / move.w (HmTeam).w,d0 /
+    mulu.w #6,d0` (207C aaaaaaaa 227C bbbbbbbb 3038 xxxx C0FC 0006) finds it: $FE572 in retail and in every 30-team ROM
+    here (CDL, IDL, DPWM, RGDL, GDL, 2on2 ...), the table still 28 teams at $FE5B0; EVO (64 teams) has it at $181C30.
+    In a 30-team ROM teams 28 and 29 read past it: team 28 the first 6 RandomSongs, team 29 the last two and then code
+    bytes ($48, $E7, $C0, $80: the last three above $7A, so no song).
+  - AdamCatalyst's overall formula: skater mask $3FBF (bits 0-5, 7-13), goalie $1B0F (0-3, 8, 9, 11, 12); every
+    counted bit has a weight of 2 or more (weight index = bit number; his skater 6 (0) is Fighting, not counted).
+    Bit 13 (Weight) is in the skater mask, as in NOSE4Web's $3FBA, so Weight adds its raw value (his weight 4 there is
+    not used). The masks differ from each other and from single-rating masks. A weight under 2 on a counted bit would
+    loop ~65,536 times (dbf from -1 or -2). Scale: PrintOverallRating shows total x 100 / 100 and CalcAttrib clips a
+    total of 100+ to 99; his counted skater weights sum to 66 (goalie 62), so on the 0-6 scale a player averaging
+    above 3 shows 99 (retail's 40: above 5).
 
