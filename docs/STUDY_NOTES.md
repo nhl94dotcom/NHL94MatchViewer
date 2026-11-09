@@ -2684,3 +2684,23 @@ Energy with line changes on, the computer on both sides (`gen_energy_shifts.py`,
 | SNES | 60 | 411 (10%) | 89% | 5.4 |
 
 A burst costs 204 on both; the bench gives back 9 a second (Genesis) / 10 a call (SNES).
+
+## NOSE4Web's Genesis hit energy option, played (2026-11-09, 36fe502, nhl94_hit_energy.bin: 100 a knockdown, 50 a hold)
+
+The code: `.cont2` ($14116) -> `jsr $FFAC6` (OptLine 0 and sflags7 bit 4 clear, a2 not a goalie, a3 a player
+(SCnum <= 11): getpde on a2, -100, setpde, registers saved; then .cont2's own test, a goalie hitter returning to
+.chkpos), holdcheck's `move #SPAflail,d1 / bsr SetSPA` ($13F5C) -> `jsr $FFB0E` (-50 on a3, the held player, same
+test; then the move and `jmp SetSPA` $1073A, the bsr's own target).
+`gen_hit_energy_check.py`: NOSE4Web's 142 changed bytes laid over the scoring-map test ROM (the test ROM's only other
+byte there: the replaced checksum routine's own sum), every trial on both copies with the same seed. With OptLine 0
+(On): body checks that knocked him down 5, all -100; poke trips 1, -100; holds / hooks that caught 12 (first run 15),
+-50 each (one -83: the drain on the ice fires on the video beam position, which the patch's extra cycles can move by
+one tick of 33); a fast high puck knocking him down 4, no cost; checks that didn't knock down, no cost. With OptLine 1
+(Off) and 2 (Auto): 124 trials each, nothing taken. The team checks stat and the checker's per-player count the same
+on both copies in every trial. Not seen in play: a goalie knocked down (CCStart returns for a goalie a2 before any
+fall: body checks never knock goalies down) and a stumble (16 soft bumps on a Stickhandling-30 carrier, none; in the
+code a stumble branches to `.hitter`, never reaching `.cont2`).
+
+Computer against itself, line changes on (5-minute periods, regulation, 12 games each; `gen_injury_baseline.py`,
+`snes_injury_baseline.py`): Genesis no injuries, 22 knockdowns, 25 held / hooked a game, lowest energy median 38%;
+SNES 5 injuries (0.42 a game, 2 for the game), 29 knockdowns, 14 held / hooked, lowest energy median 41%.
