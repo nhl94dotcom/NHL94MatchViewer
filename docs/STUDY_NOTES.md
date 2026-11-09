@@ -2620,3 +2620,14 @@ Min OT", the usual checksum-check removal. `gen_ot_check.py`:
 - How much shows: the background's tiles decide 50.0% of the screen's pixels with the logos up, 44.4% with a card:
   besides the open areas, the menu box and the card box are see-through (their tiles' colour-0 pixels), so the
   background shows through them too.
+
+## How often fights happen: Fighting On against After Whistle (2026-11-09, nhl94snes_SA1.sfc)
+
+`snes_fight_rate.py`: 6 games a setting, the computer on both sides (Montreal at home against Los Angeles, the
+ROM's defaults; 5-minute periods, penalties On, regulation only; snes_60fps_cvc's seeded games), fights counted from
+the fighters' pffight flag:
+- **On:** 10 fights in 6 games (1, 3, 1, 2, 1, 2: 1.7 a game), 2 instigator penalties; 54-67 body checks a game.
+  Each fight put 3 fighting-major entries in the penalty buffer.
+- **After Whistle:** 0 fights in 6 games (62-82 checks a game): the computer doesn't check after the whistle, so
+  with After Whistle fights come only from people checking late.
+Two teams, the computer only and short periods: a guide, not a league rate.

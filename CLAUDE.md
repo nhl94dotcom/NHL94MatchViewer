@@ -135,7 +135,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     against itself by period; pad 1 moved with c1playernum, playerpad $19D4 and the person flag),
     `snes_60fps_cvc.py` (the SNES computer against itself, seeded, penalties set on; `--make-30` runs McMarkis's SA-1
     build at 30 frames a second), `snes_penalty_rolls.py` (each penalty roll counted through stubs) and
-    `snes_fight_capture.py` (a 2 MB build's computer games, Fighting On, until a fight: a recording of it).
+    `snes_fight_capture.py` (a 2 MB build's computer games, Fighting On, until a fight: a recording of it) and
+    `snes_fight_rate.py` (fights a game with Fighting On / After Whistle, computer against computer).
   - NOSE4Web's builds and ROM edits (results in STUDY_NOTES):
     - Fixes: `fix_check.py ROM` (which tested fixes a build has by their bytes, any other changed bytes, and each
       fix's in-game test against the original) and the per-fix tests (`*_fix_test.py`, `*_test.py`);
@@ -212,7 +213,8 @@ snapshots (STAT_FIELDS order); rosters, palettes, `romSettings`, sprite library 
 analysis: `goals`, `shotList` (kind shot / one-timer / pass shot / other, result, counted, xg, aim, danger, origin,
 gctl, gOff (the goalie off the shot line) ...), `passes`, `turnovers`, `hits`, `checkAttempts`, `checkPasses`
 (passing out of a check), `zoneEntries`, `faceoffs`, `penalties`, `bumps`, `bobbles`, `netsOff`, `runaways`, `habits`,
-SNES `flips` (the Y dump-in, kept apart from the passes), SNES `fights` and on 2 MB builds `gameStats` (the game's own
+SNES `flips` (the Y dump-in, kept apart from the passes), SNES `fights` and on 2 MB builds `gameStats` (both shown
+by the viewer: a Fight banner and highlight, a Fights section, the game's own counts, Fighting on the card) (the game's own
 posts, checks for / against, ice time) and more (each documented where it is made in
 export_match.py).
 

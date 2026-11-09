@@ -1046,3 +1046,15 @@ to misread live; it stays in the reports); rush defence (the controlled skater's
 who is controlled, and entries against with their shots and odd-man rushes are already rows); SNES quirks (the
 Y-button get-up hooks are already the Controller section's "Get-ups (hook glitch)" row, uncounted saves are "Saved,
 not counted").
+
+## Fights and the 2 MB builds' own counts (2026-11-09)
+
+From the match file's `fights` ([{f, end, players: [[team, roster], ...]}]) and `gameStats` (posts, checksFor,
+checksAgainst, iceTime, fightInjured; the whole game, at the end of the recording): a "Fight" banner on the ice (it
+stands for the fighting majors the game calls at the fight's start, which would otherwise show as "Delayed penalty")
+and a Fight highlight (the fight's whole length); team stats sections "Fights" (fights, instigator penalties by the
+ROM's rule name, hurt in a fight) and "The game's own counts (whole game)" (posts, checks for / against); on a
+skater's card his fights, the game's checks for / against and ice time, "Hurt in a fight", and in the ratings
+Fighting (bits 1-3 of the handedness value) on SNES 2 MB games. Help: "Fight", "The game's own counts"; STAT_HELP
+and RATING_HELP entries.
+

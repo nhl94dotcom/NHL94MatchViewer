@@ -598,7 +598,9 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Net knocked off</dt><dd>A skater (or goalie) bumped a net off its spot and play stopped. An attacker knocking the other team's net off gets the faceoff moved out to a dot just outside that zone; a defender knocking his own off keeps it in the zone. The faceoff that follows tells which it was; whoever was nearest the net on that side gets the credit. Shown as a banner, in the team stats (theirs / own), on the card and on the season page. Much more common on the SNES.</dd>
   <dt>Bobbled pass</dt><dd>A pass that reached a teammate close enough to take it, but bounced off him instead of onto his stick. Not counted when he swung at it (a one-timer) or passed it on, when an opponent picked it off, or when the pass missed and came off the boards. It still counts if he gets the puck back afterwards. Shown as a "Bobbled" tag, on the receiver's card and in the team stats.</dd>
   <dt>Lost it on the goalie, pucks lost on a goalie</dt><dd>The puck carrier skated into a goalie, his own or the other team's, and the puck came loose (the game knocks it off his stick). Counted apart from bumps by skaters, on the card ("Lost puck on goalie") and in the team stats.</dd>
-  <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
+  <dt>Fight</dt><dd>On the SNES 2 MB builds with the Fighting option on (McMarkis's Classic + 60 fps + Fighting, ported from NHLPA 93): two players drop the gloves. A banner shows it on the ice, the highlights include it, the team stats count fights and instigator penalties, and a skater's card shows his fights and his Fighting rating. The majors (5 minutes) and any instigator penalty (2) show in the penalty list as the game calls them.</dd>
+  <dt>The game's own counts</dt><dd>The SNES 2 MB builds keep some stats the original doesn't: posts, checks given and taken, ice time and who was hurt in a fight. The viewer shows them as the game counted them, for the whole game, in the team stats and on the card (marked "Game").</dd>
+    <dt>Injury</dt><dd>A player hurt, with the check that caused it, and whether the game put him out for the rest of the period or of the game (read from the game itself: the computer may keep a player on the bench even after he is fit again).</dd>
 </dl>
 <h3>Advanced</h3>
 <dl>
@@ -2623,9 +2625,12 @@ function drawLogo() {
 // as a delayed penalty), and a penalty shot from the foul that earned it.
 function findCallouts(m) {
   const out = [];
+  // A fighting major is called as the fight starts: the fight's own banner (below) stands for it.
+  const fightMajor = (p, at) => /^fighting/i.test(((m.rules || {})[p.code] || {}).name || '') &&
+    (m.fights || []).some(e => at >= e.f - 30 && at <= (e.end || e.f));
   for (const p of m.penalties || []) {
     const at = p.called !== undefined ? p.called : p.f;
-    if (at >= 0) out.push({ f: at, kind: p.called !== undefined && p.called < p.f ? 'Delayed penalty' : 'Penalty', text: penaltyWho(p) + ' \u00b7 ' + penaltyName(p) });
+    if (at >= 0 && !fightMajor(p, at)) out.push({ f: at, kind: p.called !== undefined && p.called < p.f ? 'Delayed penalty' : 'Penalty', text: penaltyWho(p) + ' \u00b7 ' + penaltyName(p) });
   }
   const tried = TEAM_FIELDS.indexOf('psTried');
   for (const d of m.delayed || []) {
@@ -2653,6 +2658,13 @@ function findCallouts(m) {
     out.push({ f: e.f, kind: 'Net off \u00b7 ' + (e.team ? m.team2 : m.team1) + ' net',
       text: (who ? who + (e.side === 'defender' ? ' knocked his own net off' : ' knocked the net off') : 'The net came off')
         + (e.side === 'attacker' ? ': faceoff outside the zone' : e.side === 'defender' ? ': faceoff in the zone' : '') });
+  }
+  // Fights (SNES 2 MB builds with Fighting on: the converter's fights, from the fighters' flag), from the first frame
+  for (const e of m.fights || []) {
+    const [a, b] = e.players;
+    if (!a || !b) continue;
+    out.push({ f: e.f, kind: 'Fight', text: playerName(a[0], a[1]) + ' (' + (a[0] ? m.team2 : m.team1) + ') and ' +
+      playerName(b[0], b[1]) + ' (' + (b[0] ? m.team2 : m.team1) + ') drop the gloves' });
   }
   for (const e of (m.injuries || []).filter(e => !e.atStart)) {
     out.push({ f: e.f, kind: 'Injury · ' + (e.team ? m.team2 : m.team1),
@@ -2807,6 +2819,7 @@ const RATING_HELP = {
   'Weight': 'His weight. Heavier players accelerate slower (on the Genesis a Weight point costs as much as 2 Agility points), are harder to knock down and push harder in collisions. On the Genesis a person-controlled checker does best against heavier players (the weight bug).',
   'Agility': 'Acceleration, and so how quickly he changes direction. For a goalie also his reach: how far from his centre he can stop a puck.',
   'Speed': 'Top skating speed.',
+  'Fighting': 'Fighting ability, 0-7 (SNES 2 MB builds that fight). His fight rating is 2 × Fighting + Aggression, at most 14: the higher it is, the sooner he will drop the gloves (With Fighting On), the more often After Whistle checks turn into fights, and the more punches he can take. Stored with his handedness (bit 0).',
   'Off. aware': 'How quickly he reacts when the computer controls him: chasing loose pucks, pressuring the puck carrier, a defenceman getting back when the puck leaves the zone. No effect while a person controls him.',
   'Def. aware': 'How quickly he reacts on defence when the computer controls him: a defenceman re-reading a rush, everyone switching to defence after a turnover, a goalie re-aiming. No effect while a person controls him.',
   'Shot power': 'Shot speed. On the Genesis a player with low shot power cannot wind up a full slapshot.',
@@ -2960,6 +2973,12 @@ function refreshPopover(f, snap) {
       live.rebounds = mine.filter(sh => sh.idx === shown.idx && sh.rebound);
     }
     if (match.shotList) live.posts = match.shotList.filter(sh => known(sh, f) && sh.team === shown.team && sh.idx === shown.idx && resultAt(sh, f) === 'post').length;
+    if (match.fights || match.gameStats) live.fights = (match.fights || []).filter(e => e.f <= f && e.players.some(p => p[0] === shown.team && p[1] === shown.idx)).length;
+    if (match.gameStats) {
+      // the 2 MB builds' own counts for him, at the end of the recording (the whole game)
+      const gs = match.gameStats, pick = k => (gs[k] && gs[k][shown.team] ? gs[k][shown.team][shown.idx] : undefined);
+      live.gameOwn = { checksFor: pick('checksFor'), checksAgainst: pick('checksAgainst'), ice: pick('iceTime'), hurt: pick('fightInjured') };
+    }
     live.takeaways = list.filter(e => e.kind === 'takeaway' && e.from !== shown.team && e.by === shown.idx).length;
     if (match.failedOneTimers) live.failedOneTimers = match.failedOneTimers.filter(e => known(e, f) && e.team === shown.team && e.idx === shown.idx).length;
     if (match.passes) {
@@ -3174,6 +3193,13 @@ function fillCard(card, p, position, live) {
       }
       addStat(grid, 'Ice time', clockText(live.toi));
       addStat(grid, 'Energy', live.energy + ' / 16', live.energy / 16);
+      if (live.fights !== undefined) addStat(grid, 'Fights', live.fights);
+      if (live.gameOwn) {
+        const g = live.gameOwn;
+        if (g.checksFor !== undefined) addStat(grid, 'Game: checks for / ag.', g.checksFor + ' / ' + (g.checksAgainst === undefined ? '–' : g.checksAgainst));
+        if (g.ice !== undefined) addStat(grid, 'Game: ice time', clockText(g.ice));
+        if (g.hurt) { addStat(grid, 'Hurt in a fight', 'out for the game'); grid.lastChild.style.gridColumn = '1 / -1'; }
+      }
     }
     card.append(title, grid);
   }
@@ -3191,7 +3217,7 @@ function fillCard(card, p, position, live) {
     stat.append(label, value);
     if (RATING_HELP[label]) { stat.title = RATING_HELP[label]; stat.classList.add('has-help'); }
     if (i === 0) value.textContent = (baseWeight + 8 * v) + ' lb';
-    else if (i === 7) value.textContent = v % 2 ? 'Right' : 'Left';  // skaters: this value also holds fighting ability
+    else if (i === 7) value.textContent = v % 2 ? 'Right' : 'Left';  // skaters: this value also holds fighting ability (below)
     else {
       value.textContent = v;
       const bar = document.createElement('div'), fill = document.createElement('i');
@@ -3200,6 +3226,17 @@ function fillCard(card, p, position, live) {
     }
     stats.append(stat);
   });
+  // Fighting (SNES 2 MB builds, which fight): bits 1-3 of the handedness value, 0-7 (bit 0 is the hand)
+  if (!p.g && match.system === 'snes' && match.gameStats && p.a[7] !== undefined) {
+    const v = p.a[7] >> 1, stat = document.createElement('div'), value = document.createElement('b');
+    const bar = document.createElement('div'), fill = document.createElement('i');
+    stat.className = 'stat has-help'; stat.title = RATING_HELP.Fighting;
+    value.textContent = v;
+    bar.className = 'bar'; fill.style.width = Math.min(100, v / 7 * 100) + '%';
+    bar.append(fill);
+    stat.append('Fighting', value, bar);
+    stats.append(stat);
+  }
   const hotCold = hotColdWords(p);
   if (hotCold) {
     const stat = document.createElement('div'), value = document.createElement('b');
@@ -3407,6 +3444,14 @@ const STAT_HELP = {
   'Power play': 'Power-play goals / power plays, as the game counts them.',
   'Shorthanded goals': 'Goals scored while the team had more players serving penalties than the other.',
   'Penalties': 'Penalties called on the team.',
+  'Fights': 'Fights so far (SNES 2 MB builds with the Fighting option on): each involves one player of each team, so both columns are the same. On a card: the fights he was in. With Fighting On a fight can start on a hard collision once enough players have been knocked down since the last one (willing players first: 2 × Fighting + Aggression); with After Whistle, on checks after the whistle.',
+  'Fights|· instigator penalties': 'Instigator penalties the game gave the team (2 minutes, served by a teammate on the ice, so a power play): the fighter caught in a shoulder check, or one time in 4 the more willing fighter.',
+  'Fights|· hurt in a fight (whole game)': 'The team’s players the game put out for the rest of the game after losing a fight (the game’s own list, at the end of the recording).',
+  'Posts (the game’s count)': 'Shots off the post or crossbar as the 2 MB builds count them themselves, for the whole game (the Posts row above is the viewer’s own, from the shots).',
+  'Checks for / against': 'Body checks the team’s players gave / took, as the 2 MB builds count them themselves, for the whole game.',
+  'Game: checks for / ag.': 'Checks he gave / took, as the 2 MB builds count them themselves, for the whole game.',
+  'Game: ice time': 'His time on the ice as the 2 MB builds count it themselves, for the whole game (game minutes and seconds).',
+  'Hurt in a fight': 'He lost a fight and the game put him out for the rest of the game.',
   'Penalty minutes': 'Penalty minutes, from the ROM\u2019s rule table.',
   // ---- how chances were made
   'Off the rush (G / attempts)': 'Attempts within 12.5 game s of the team carrying, passing or dumping the puck into the attacking zone (the puck still there).',
@@ -3609,6 +3654,11 @@ function fillTeamStats(snap) {
   const checkTypes = team => ['shoulder', 'hip', 'cross-check'].map(h => (match.hits || []).filter(e => e.f <= f && e.team === team && e.how === h).length).join(' / ');
   const injuriesCaused = team => (match.injuries || []).filter(e => !e.atStart && e.f <= f && e.team !== team).length;
   const anyInjuries = (match.injuries || []).some(e => !e.atStart && e.f <= f);
+  const fightsSoFar = (match.fights || []).filter(e => e.f <= f);
+  const isInstigator = p => /instigat/i.test(((match.rules || {})[p.code] || {}).name || '');
+  const instigated = team => (match.penalties || []).filter(p => p.team === team && (p.called !== undefined ? p.called : p.f) <= f && isInstigator(p)).length;
+  const sumOf = list => (list || []).reduce((s, v) => s + (v || 0), 0);
+  const fightHurt = team => ((match.gameStats || {}).fightInjured || [[], []])[team].filter(Boolean).length;
   // Screen sides by direction, as tools/season.py screen_sides counts them for the season page: someone may favour a
   // side of the screen whichever way his team goes (Home goes up in periods 1 and 3, Away in 2 and OT). For a team and
   // a direction (0 up, 1 down): carrying game seconds by position (LD, RD, LW, C, RW) and by the puck's half of the
@@ -3823,6 +3873,15 @@ function fillTeamStats(snap) {
       ['Penalties', h.penalties, a.penalties],
       ['Penalty minutes', h.pim, a.pim],
     ]),
+    // Fights (SNES 2 MB builds): each involves both teams; the instigator penalty is the game's own (its rules' name)
+    ...(match.fights || match.gameStats ? [section('Fights'),
+      ['Fights', fightsSoFar.length, fightsSoFar.length],
+      ['· instigator penalties', instigated(0), instigated(1)],
+      ...(match.gameStats && match.gameStats.fightInjured ? [['· hurt in a fight (whole game)', fightHurt(0), fightHurt(1)]] : [])] : []),
+    // What the 2 MB builds count themselves (at the end of the recording: the whole game)
+    ...(match.gameStats ? [section('The game’s own counts (whole game)'),
+      ...(match.gameStats.posts ? [['Posts (the game’s count)', match.gameStats.posts[0], match.gameStats.posts[1]]] : []),
+      ...(match.gameStats.checksFor ? [['Checks for / against', ...[0, 1].map(t => sumOf(match.gameStats.checksFor[t]) + ' / ' + sumOf(match.gameStats.checksAgainst ? match.gameStats.checksAgainst[t] : []))]] : [])] : []),
     ...playRows(f, list, 'people'),
     ...(ends && possession ? [section('Screen sides'),
       ...sideRows('Puck on screen left / right', (team, dir) => pctPair(sideOf(team, dir).slice(5, 7))),
@@ -5513,6 +5572,12 @@ function findHighlights(m) {
   for (const e of (m.injuries || []).filter(e => !e.atStart)) {
     items.push({ f: e.f, ...span(e.f), kind: 'Injury', team: e.team, text: who(e.team, e.idx).replace(/^#\d+ /, '') + ' is hurt' +
       (e.by !== null && e.by !== undefined ? ' (' + who(1 - e.team, e.by).replace(/^#\d+ /, '') + '’s check)' : '') });
+  }
+  for (const e of m.fights || []) {
+    const [a, b] = e.players;
+    if (!a || !b) continue;
+    items.push({ f: e.f, from: at(e.f) - HIGHLIGHT_BEFORE, to: at(Math.min(e.end || e.f, m.t.length - 1)) + 1000, kind: 'Fight',
+      team: a[0], text: who(a[0], a[1]).replace(/^#\d+ /, '') + ' and ' + who(b[0], b[1]).replace(/^#\d+ /, '') + ' fight' });
   }
   // EA Special attempts that didn't score (one that did is shown as the goal, tagged EA Special).
   const ENDING = { save: 'saved', post: 'off the post', wide: 'wide', blocked: 'blocked' };
