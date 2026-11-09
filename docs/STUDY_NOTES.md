@@ -2327,6 +2327,18 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   same plays on a scratch copy with the fix (the 8 bytes at $10176 -> `jsr $FFF00` / `nop`; at $FFF00 `cmp.w
   $18(a0),d0` / `bne.s +12` / `bclr #3,$30(a0)` / `move.l #$101A4,(sp)` / `rts`): A's retake clears tmflast, B's
   touch shifts him to [B, A], the goal is assisted by A; the control unchanged (C's assist).
+- **NOSE4Web's fixes, played (16feaf6 Genesis, 863eeb1 SNES):**
+  - Genesis nhl94_regain_assist.bin and nhl94_assist_fixes.bin (the routine byte for byte at $FFAC6 / $FFB0E):
+    the regain play credits A (retail: none), the control credits C as on retail (`gen_assist_repro.py`). On
+    nhl94_assist_fixes.bin also `gen_onetimer_assist_test.py builds`: one-timers as played 2 assists (as retail),
+    "receiver touched first" 2 (retail none), the one-timer give-and-go 2 (retail 1), a caught give-and-go keeps
+    the third (retail clears it); 9 goals a case. nhl94_regain_assist.bin alone leaves those as retail.
+  - SNES (`snes_regain_assist_test.py`, live play, the scoring summary read at the goal): retail NHL94.smc and the
+    2 MB nhl94_2026.sfc: A's retake leaves bit 2 set, B's touch replaces him, B's goal unassisted; the control
+    (C the last toucher before the steal) credits A. NHL94_regain_assist.smc and nhl94_2026_regain_assist.sfc: A's
+    retake clears bit 2, the goal is B's assisted by A; the control the same as retail. The routine (`CMP
+    tmtouch1,Y` / `BEQ +1` / `RTS` / `PLA` / `LDA tmflags,Y` / `AND #$FFFB` / `STA tmflags,Y` / `LDA $A5` / `JMP .4`,
+    $9E:FFEB-$FFFF) is right; the `LDA $A5` (d0, the toucher) is harmless but unneeded: .4 begins `LDA #$1000`.
 - **Where to fix it:** SNES retail and Classic $9E:C523 (file $F4523; SDL16 $9E:C723, nhl94snes_2026 $9E:C56B; not
   matched in nhl94_2026.sfc or the SA-1 original), Genesis retail and CDL $1017A (the `beq.w .same`, to $101A4). A fix
   clears the flag on the same-player path too and changes nothing else: same player and flag set, clear the flag and
@@ -2347,6 +2359,7 @@ NOPed). From power-on, a screenshot at every change, against retail:
   palette rows are what the new picture is drawn with, and the new 64 colours are never loaded.
 - A scratch copy with $FEE18 `moveq #$F,d5` (7A0F): the screen matches the picture decoded from the ROM exactly (the
   same 46 colours, pixel for pixel), the top-left tile and the dark blue field clean.
+- Rebuilt (NOSE4Web 863eeb1, $FEE18 7A0F): the same exact match.
 
 ## SNES xG for SA-1 games: chunk 1, what it takes (2026-11-09)
 
