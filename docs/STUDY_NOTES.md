@@ -2739,3 +2739,27 @@ test OptLine for zero), and the option follows it.
   knockdowns 22.4 -> 24.1 and 29.2 -> 31.0, held / hooked 24.6 -> 24.2 and 14.2 -> 18.3; injuries 0 -> 2 and 5 -> 2
   (no injury change in these builds: chance). So at a burst's cost the computer changes lines a little more often
   (clearly on the Genesis) and the most-hit skaters get noticeably more tired; the average skater barely changes.
+
+## NOSE4Web's Genesis injury risk option, played and estimated (2026-11-09, f3d8449)
+
+Builds: nhl94_injury_risk.bin (+2, cap 10, with hit energy 204 / 102), nhl94_injury_risk_strong.bin (+10, cap 60, no
+energy). Counts a byte a player at $FFF000 (32 a team, away +32, by pnum), +1 in FallDown's `.cont2` hook (any line
+changes), cleared at StartGame (via its `jsr clearTeamStats` at $778C), halved at PeriodOver ($17236); the roll at
+$14432 adds min(count x bonus, cap) to impact before `cmp.w impact(a2),d0`. RAM: $FFF000-$FFF03F is zero in all
+1,498 full snapshots of 28 recorded games; the plus-minus hack's log runs up from $FFDEF4 (a length word and about 16
+bytes a goal), thousands of bytes below.
+`gen_injury_risk_check.py` (the builds laid over the scoring-map test ROM, as gen_hit_energy_check.py):
+- Counts: each knockdown of the carrier +1, with line changes On and Off (6); holds / hooks (18) and no knockdown
+  (66) nothing.
+- From power-on: $5A written to $FFF000-$FFF03F at Game Setup read 0 at the first frame of play; 7, 10, 255 set in
+  play read 3, 5, 127 in the next period.
+- Injuries (the strong build against the unchanged ROM; heavy checker, light carrier, the puck kept on him; 120
+  trials a case): the carrier facing straight down (facing 4, the case the game can injure), count 0: injured 7 times
+  (unchanged 6); count 6 (+60): 13 times (unchanged 6). On a diagonal (facing 3): never, 45 knockdowns a case, with
+  or without the bonus. Testing note: a period injury replaces SPAinjuryfall with SPAinjury1 in the same frame.
+- `injury_risk_estimate.py`, the 26 recorded Genesis league games: 1,289 knockdowns, 28 that could injure (1.08 a
+  game; impact median 38: about a 27% chance each); the roll's expected 0.29 injuries a game against 0.38 real. Before
+  those hits the skater had taken (halved at intermissions) 0 knockdowns 11 times, 1: 6, 2: 5, 3: 4, 4: 1, 7: 1.
+  Skaters with 5+ knockdowns in the game take 68% of the injury chance. Bonus / cap -> injuries a game (all), and
+  for the 5+ skaters: +2/10 +6%, x1.09; +3/15 +9%, x1.13; +4/20 +12%, x1.17; +5/25 +16%, x1.22; +6/30 +19%, x1.26;
+  +8/40 +25%, x1.34; +10/40 +30%, x1.42; +12/60 +37%, x1.52; +15/60 +45%, x1.63; +20/80 +61%, x1.84. (28 hits: rough.)
