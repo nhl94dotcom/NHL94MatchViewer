@@ -880,6 +880,12 @@ pulled.
   logic **60 frames a second** instead of 30. The physics keep their speed, but the computer players, the pads and the
   collisions act twice as often: in games of the computer against itself, more body checks and more penalties
   (STUDY_NOTES, "McMarkis's 60 frames a second"). The numbers in this document are the original game's.
+  They also have **fights** (NHLPA 93's, ported: a Game Setup row Fighting, On / Off / After Whistle; Fighting majors
+  of 5:00, an instigator minor, a fighter hurt in a fight out for the game; After Whistle makes each check landed
+  after a whistle likelier to start one), and three stats the original never keeps: posts per team (`tmposts`),
+  checks for and against per player (`pchf` / `pcha`) and time on ice per player (`ptoi`, not in nhl94snes_2026).
+  From the SA-1 repository's docs/HANDOFF.md ("Fights (2 MB build)"); the Fighting row's text is in all three 2 MB
+  ROMs checked. The viewer doesn't read fights or these stats yet (no recorded game has one).
 
 Everything in this document applies to these ROMs as they come. **NOSE4Web** (the editor in GENESIS_MECHANICS.md
 section 15) can now also add fixes and options to an SNES ROM: the hot / cold, power-play, faceoff, extra-attacker,
