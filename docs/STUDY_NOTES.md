@@ -2260,13 +2260,18 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   $60 in 1 and 4. On CDL_Season_12.bin the same runs read RandomSongs' bytes for 28 ($49, $42, $40, $58, $34, $5C)
   and code bytes for 29 ($E7, $48, $66, $C0, $65, $80). Teams 0, 13 and 27 picked the same songs on both ROMs, random
   picks included (team 0's slot 3 and team 27's slots 3 and 5 are 0).
-- **LeadSong's slots are the other way round from the names** (logos94): with the home team ahead on players the
-  `exg` leaves a3 = the home struct and the `cmpa` sends it to slot 1 (named SngPPAway); with the away team ahead,
-  slot 4 (SngPP). Seen in play: home ahead picked slot 1, away ahead slot 4.
-- **LeadSong may never pick in a real power play** (code; not yet seen in a real penalty): it exits when sflags2
-  bit 5 is set ("one song per lead"), and the power-play display (penalty94 `.upp`) sets that same bit, sf2pwrplay,
-  whenever the teams are uneven; LeadSong also restores the whole sflags2 word on exit. With tmap uneven the display
-  set it before the faceoff and LeadSong did nothing; the test clears it to see the picks.
+- **LeadSong's slots: the disassembly's names are backwards, the code is right** (logos94): with the home team ahead
+  on players the `exg` leaves a3 = the home struct and the `cmpa` picks slot 1 (named SngPPAway); with the away team
+  ahead, slot 4 (named SngPP), which holds "Defense" ($5A) for most teams. So slot 1 is the home power play and slot
+  4 the home penalty kill, as the SNES disassembly names its own slots. Seen in play both ways (tmap set), and after
+  real penalties (below).
+- **The power-play songs do play after a real penalty** (`analysis/scoring_map/gen_leadsong_check.py`: a scratch copy
+  of the test ROM with checkagr's roll forced to 0, $13E70 -> `moveq #0,d0` / `nop`, penalties on; the home skater
+  pokes the away carrier, the trip is called and play runs on). In all three runs the home team went a man short
+  (tmap 5 / 6) and the next faceoff picked slot 4 ($5A) with sflags2 bit 5 still clear: the power-play display sets
+  that bit only on the frame after. Later calls that left the same team a man up (5 / 6 to 4 / 6, 4 / 5) picked
+  nothing: one song per change of which team is ahead, as LeadSong intends. (A first reading, from a test that set
+  tmap by hand so the display ran before the faceoff, wrongly suggested the bit blocks them.)
 - **SNES credits** (`RollCredits`, `PrintCopyright`, `PrintStringSprites`): CopyrightLines (two zero-ended strings;
   the second found as CopyrightLines+23, an immediate operand, so the first must stay 22 characters or that operand
   change), CreditTitles (17 word pointers, $0000, then the strings) and CreditNames (word pointers in lists ended by
