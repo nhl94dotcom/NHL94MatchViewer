@@ -104,6 +104,13 @@ with goals and penalties by time), and the game itself run headless with its cod
   there's no difference, and the person who did it more often didn't make the better chances. Inconclusive so far:
   it needs games from more players and a look at where the pass goes.
 
+- **The expected-goals models refitted** (2026-11-08, from studies 5 and 6): the one number fitted to the recordings,
+  how far the modelled goalie may be from where he really was, was widened (Genesis 4 to 6 units, SNES 2 to 3.5),
+  which fits the recorded shots better on both systems. The best chances now come out 8-9% too high instead of 14%;
+  long shots still score more than the models say, which is left for a closer look. Studies 1, 5 and 6 above were run
+  again with it: their findings stand (chances against goal difference 0.88 Genesis, 0.90 SNES; finishing luck's
+  spread 1.6 / 1.3 goals a game). ([STUDY_NOTES.md, "The xG models' goalie spread refitted"](STUDY_NOTES.md))
+
 ## How each study was done
 
 **The data.** Two sources:

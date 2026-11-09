@@ -1764,3 +1764,32 @@ pause screens Edit Lines, Game Stats, Player Cards, Other Scores, Crowd Meter, a
 - **Priority**: none of the 31 sprites in the table has the priority bit (the players are low-priority sprites); the
   box's letters, frame and fill all have it ($84xx, $A3FC-$A404), so the logo tiles need it too, or players would skate
   over the logos.
+
+## The xG models' goalie spread refitted (2026-11-08)
+
+Studies 5 and 6 of docs/GAME_VARIABLES_PLAN.md found the models too sure at both ends. `analysis/xg_spread_fit.py`
+replays every recorded unblocked attempt with a model price under candidate spreads (the jitter on the emulated
+goalie's position, GOALIE_SPREAD, fitted before on seven Genesis games):
+
+| Genesis (928 shots, 199 goals) | log loss | expected | 0-0.1 | 0.1-0.3 | 0.3-0.6 | 0.6+ |
+|---|---|---|---|---|---|---|
+| 4 (was) | 0.3498 | 204.8 | 17 / 7.6 | 27 / 25.2 | 43 / 43.9 | 112 / 128.1 |
+| 6 (now) | 0.3399 | 214.7 | 13 / 8.0 | 27 / 34.6 | 57 / 59.1 | 102 / 113.0 |
+| 7 | 0.3388 | 220.0 | 12 / 8.5 | 21 / 36.4 | 73 / 70.5 | 93 / 104.6 |
+
+| SNES (913 shots, 213 goals) | log loss | expected | 0-0.1 | 0.1-0.3 | 0.3-0.6 | 0.6+ |
+|---|---|---|---|---|---|---|
+| 2 (was) | 0.3762 | 223.6 | 19 / 9.1 | 37 / 24.8 | 30 / 41.8 | 127 / 148.0 |
+| 3.5 (now) | 0.3666 | 229.9 | 19 / 9.8 | 36 / 34.9 | 37 / 51.6 | 121 / 133.6 |
+| 4 | 0.3677 | 232.2 | 17 / 10.0 | 38 / 37.8 | 40 / 56.6 | 118 / 127.9 |
+
+Genesis 6 takes nearly all of the log-loss gain with less total bias than 7; SNES 3.5 is the minimum. Changed in
+tools/xg.py, tools/xg_snes.py and the viewer's ports; season VERSION 31; the library re-converted (from the cached
+reads, 5 minutes). tests/xg_parity.py: the SNES 0.65 of its allowance, the Genesis 1.03 at one grid point (Python 0.005,
+the viewer 0.013): the 3-sigma normal allowance is too tight where the chance is near 0 (a handful of goals each), and
+every other point is inside. Still open: shots under 0.1 score more than the models say on both systems (Genesis 13
+against 8.0, SNES 19 against 9.8), and the models' total runs 8% high: something the models leave out (screens,
+goalies caught on long shots), not one number. After the refit, studies 1, 5 and 6: the goal difference against the
+xG difference 0.88 / 0.90 (Genesis / SNES), finishing luck's spread 1.6 / 1.3 goals a game, the clearly better chances
+lost 2 of 25 / 5 of 27; the 0.6+ chances 129 goals / 140.9 expected and 138 / 156.4 (was 14% short, now 8-9%). Study 2
+(hot / cold) ran with the old spread; its effects are differences between two runs and change little.

@@ -31,7 +31,8 @@ import random
 import struct
 
 N_SAMPLES = 400
-GOALIE_SPREAD = 2.0
+GOALIE_SPREAD = 3.5   # fitted (log loss) over the recordings (2026-11-08: 2 -> 3.5 over 913 shots in 29 games,
+                      # analysis/xg_spread_fit.py: 0.3762 -> 0.3666)
 # The goalie as the game moves him (2026-10-31, SNES_SHOOTING 4.7): gliding in a save move (pfalock: no assignment) and
 # the computer's StopNA friction. Right on the game's own shots (3,712 from xg_calib.py, the user's dekes 31% against
 # the game's 33%, the model before 27%) but 24% high on recorded shots at a computer goalie (175 xG for 138 goals),

@@ -39,7 +39,8 @@ import random
 import sys
 
 N_SAMPLES = 400
-GOALIE_SPREAD = 4.0   # units: the emulated goalie's position error, fitted (log loss) over the recordings
+GOALIE_SPREAD = 6.0   # units: the emulated goalie's position error, fitted (log loss) over the recordings (2026-11-08:
+                      # 4 -> 6 over 928 shots in 26 games, analysis/xg_spread_fit.py: log loss 0.3498 -> 0.3399)
 AIM = [(0, 12), (16, 12), (16, 6), (16, 0), (0, 0), (-16, 0), (-16, 6), (-16, 12), (0, 6)]  # doshot's shotsets (screen x, z)
 REACH = [12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15]  # .cbg, by (Agility + 2) / 2
 PAD_STACK = {"0250": -6, "02a2": 6}

@@ -22,7 +22,7 @@ times, and counts the goals:
 ![How each model scores one shot: the aim, the shot code, the flight, the goalie, the save, repeated; xG is the share of goals](img/xg_playout.svg)
 
 xG is the share of those play-outs that end in a goal. The only number fitted to recorded games is how far the
-emulated goalie's position may be off (4 units on the Genesis, 2 on the SNES: random spread, `GOALIE_SPREAD`).
+emulated goalie's position may be off (6 units on the Genesis, 3.5 on the SNES: random spread, `GOALIE_SPREAD`; refitted 2026-11-08 over about 900 recorded shots each, from 4 and 2).
 
 Pure Python 3, standard library only. The SNES model, and the Genesis goalie's stick, read sprite and animation data
 from the game ROM: bring your own copy (`NHL 94 (USA)` Genesis or SNES; none is in this repository and none should be
