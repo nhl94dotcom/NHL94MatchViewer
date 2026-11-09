@@ -10,7 +10,9 @@ both sides (every pad off the teams, as snes_period_cvc.computer_only, put back 
 through the three regulation periods (the breaks passed with START); a different number of frames in the menus each
 game, so each starts from a different random state. At the end of regulation, from the game's own team stats (low RAM,
 in BW-RAM on the SA-1 build: faceoff_fix_test.Snes.MOVED): goals and shots by period (P1-P3), saves (shots less goals),
-body checks, penalties, passes completed and tried. Gentle (one process per ROM, lowload).
+body checks, penalties, passes completed and tried. Every 10 frames: each penalty called, (team, penalty number), from
+the buffer at $15DE (numbers as snes.read_penalties: $14 / $1C Roughing, $2A / $2C Fighting ...), and each shot's
+strength (even, power play, short-handed) from the players in the boxes ($1624) when the team's shot count rises. Gentle (one process per ROM, lowload).
 
 The SA-1 build at 30 frames a second, to separate the frame rate from the rest of the build: `--make-30 ROM OUT.sfc`
 writes a copy whose Gameloop waits for 2 frames instead of 1 (at $F8517 `lda vcount / sec / sbc oldvcount / beq` becomes
@@ -31,6 +33,7 @@ CONT1TEAM, PADSIDE, PLAYERPAD, C1PLAYER, TEAMPADS, PFLAGS = 0x1C84, 0x19F6, 0x19
 GSP, CLOCK, CLOCKSTOP, SEED = 0x1630, 0x1632, 0x15D6, 0x0792   # seed: RandomWord's two words
 GOALS_P, SHOTS_P = 0x177E, 0x176A          # per period (+4 a period), home / away words
 CHECKS, PENS, PASSES_C, PASSES_T = 0x17B6, 0x174A, 0x17BA, 0x17BE
+PEN_BUFFER, IN_BOX = 0x15DE, 0x1624         # (penalty number, object) byte pairs at the foul; players in the boxes (Home x 16 + Away)
 
 
 class Mem:
@@ -90,9 +93,30 @@ def game(rom, n):
     m.setw(SEED, (0x9E37 * (n + 1)) & 0xFFFF or 1)                        # each game its own random state (the
     m.setw(SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)                    # menu frames don't vary the SA-1 build's)
     still, frames, person = 0, 0, 0
+    calls, seen = [], set()                  # each penalty called: (team, number), from the buffer at the foul
+    strength = {}                            # shots by (team, "even" / "pp" / "sh")
+    shots_now = [sum(m.w(SHOTS_P + 4 * q + 2 * t) for q in range(3)) for t in (0, 1)]
     while m.w(GSP) < 3 and frames < 200000:
         c = m.w(CLOCK)
-        e.run(30)
+        for _ in range(3):
+            e.run(10)
+            now = set()
+            for slot in range(0, 64, 2):
+                buf, o = m.at(PEN_BUFFER + slot)
+                code, obj = buf[o], buf[o + 1] & 0x7F
+                if code and obj < 12:
+                    now.add((slot, code, obj))
+                    if (slot, code, obj) not in seen:
+                        calls.append((0 if obj < 6 else 1, code))
+            seen = now
+            box = m.w(IN_BOX)
+            boxed = [(box >> 4) & 0xF, box & 0xF]
+            for t in (0, 1):
+                now_shots = sum(m.w(SHOTS_P + 4 * q + 2 * t) for q in range(3))
+                if now_shots > shots_now[t]:
+                    kind = "pp" if boxed[1 - t] > boxed[t] else "sh" if boxed[t] > boxed[1 - t] else "even"
+                    strength[f"{t}{kind}"] = strength.get(f"{t}{kind}", 0) + now_shots - shots_now[t]
+                shots_now[t] = now_shots
         frames += 30
         if m.w(CLOCK) > 300:                                               # 5-minute periods whatever the menu set
             m.setw(CLOCK, 300)
@@ -112,7 +136,7 @@ def game(rom, n):
                 saves=[shots[1] - goals[1], shots[0] - goals[0]],                # saves by each team's goalie
                 checks=[m.w(CHECKS), m.w(CHECKS + 2)], penalties=[m.w(PENS), m.w(PENS + 2)],
                 passes=[[m.w(PASSES_C), m.w(PASSES_T)], [m.w(PASSES_C + 2), m.w(PASSES_T + 2)]],
-                reached_p4=m.w(GSP) >= 3)
+                reached_p4=m.w(GSP) >= 3, calls=calls, shot_strength=strength)
 
 
 def make_30(rom, out):

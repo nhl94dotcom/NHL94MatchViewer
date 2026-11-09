@@ -1922,3 +1922,20 @@ gamefps readout, $0A98, reads 60). Same setup, 20 games each, every game differe
   the extra checks, and of part of the extra penalties.
 - Limits: the computer against itself, one matchup per team set (Montreal against Los Angeles), regulation only;
   nothing here on how the game feels to a person (input and steering twice as often).
+- **Which penalties, which shots** (NOSE4Web: the build's only other gameplay change is McMarkis's fighting). Classic
+  and the SA-1 build at 30 again (the same seeds, so the same games: totals as above), now with each penalty's number
+  from the buffer at $15DE when it is called and each shot's strength from the players in the boxes ($1624). Per
+  game, both teams:
+
+  | | Classic (30) | SA-1 Classic at 30 | z |
+  |---|---|---|---|
+  | Fighting / Instigator ($2A, $2C, $2E) | 0 | 0 | |
+  | Roughing ($14, $1C) | 0.10 | 0.80 | 3.9 |
+  | Other penalties | 0.50 | 1.15 | 2.2 |
+  | Even-strength shots | 31.7 | 32.1 | 0.2 |
+  | Power-play shots | 1.5 | 3.8 | 2.6 |
+  | Short-handed shots | 0.9 | 2.3 | 2.4 |
+
+  No fighting penalty in 40 games. The extra penalties are mostly Roughing (16 of the SA-1 build's 39 calls against 2
+  of Classic's 12), and Interference doubled (12 against 7); all the extra shots come with a man in a box (+3.6
+  power play and short-handed, +0.4 even strength). Open: whether the build's fights are charged as Roughing.
