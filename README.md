@@ -27,7 +27,7 @@ reel), Game flow, and pointing at a player in the lineups for his card.
 ## Use it
 
 - **With Python 3**: double-click `NHL94 Helper.bat` and leave its window open while you play. Games are listed at
-  http://localhost:9494/helper.html. Run `python tools/embed_rink.py` once first, to make `rink_gens.js`. Games are
+  http://localhost:9494/helper.html. Run `python tools/embed_rink.py` once first, to make `rink_gens.js` and `rink_snes.js`. Games are
   kept in `Documents\NHL94 Viewer`, the same folder the exe uses (`python tools/nhl94_helper.py` on its own keeps them
   in the project folder, for testing).
 - **Without Python**: build `dist\NHL94 Helper.exe` with `tools\build_helper.bat` (needs

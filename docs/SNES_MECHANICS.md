@@ -824,6 +824,29 @@ In the leagues' usual setting (line changes off) none of this happens.
 **Not checked against the recordings** except the turnover timing in 12.1: the recordings have no SNES job numbers
 (the Genesis ones are in each record).
 
+### 12.5 Pulling the goalie, and who comes on
+
+**Code** (`ChkGoalies`, run once a game second while the clock runs; `CPgoalie`; `ReturnGoalies`; `Pausemode_go`;
+`SetPlList`). `tmgoalie` holds each team's goalie (0 the starter, 1 the backup) with the high byte $FF while he's
+pulled.
+
+- **The computer** pulls its goalie in the third period when **one or two goals behind** with **60 seconds or less**
+  left, its team carrying the puck in its attacking half, and no pad on the team (the Genesis only when exactly two
+  behind: GENESIS_MECHANICS 12.4). At the next faceoff he comes back and the test is made again.
+- **On a delayed penalty** the team with the puck pulls its goalie, a person's team too (that test comes before the
+  pad test), and he comes back at the faceoff.
+- **A person** pulls the goalie from the pause menu: its goalie item goes starter, backup, pulled, starter.
+- **Who takes his place:** `SetPlList` fills the team's places in the order goalie, LD, RD, C, LW, RW, extra attacker,
+  skipping the goalie when he's out. At full strength (six places) the line's **extra attacker** comes on; a
+  short-handed team (five places) gets LD, RD, C, LW and **the line's RW slot** instead. On the two penalty-kill lines
+  that slot is one Edit Lines doesn't show (their four rows are LD, RD, LW and C), so the player who comes on for a
+  pulled goalie on the penalty kill is whoever the ROM's line data has there. **Code**, checked in the game
+  (STUDY_NOTES, "NOSE4Web's NHL94SNESVault hacks").
+- **Edit Lines** never edits a line's extra attacker slot, and offers forwards for the forward rows and defencemen for
+  LD and RD, by the team's forward and defence counts (its roster order: goalies, forwards, defencemen). With line
+  changes Off only the first line shows, as the Best Line: line 1 of the team data, copied over Scoring 1 when the game
+  loads its lines (`LoadTeamLines`).
+
 ---
 
 ## 13. Energy and the crowd
@@ -846,8 +869,18 @@ In the leagues' usual setting (line changes off) none of this happens.
   **1-minute minors**, and the stats screen's "Penalties" column renamed "Checks"; everything else in its first
   megabyte is the original game's.
 
-There's no known editor of SNES gameplay settings (the Genesis has many, see GENESIS_MECHANICS.md section 15), so
-everything in this document applies to all of these ROMs.
+- **The 2026 2 MB builds** (github.com/Mhopkinsinc/NHL94SNES-SA1; 32 or 26 teams): the SA-1 cartridges run the game
+  logic **60 frames a second** instead of 30. The physics keep their speed, but the computer players, the pads and the
+  collisions act twice as often: in games of the computer against itself, more body checks and more penalties
+  (STUDY_NOTES, "McMarkis's 60 frames a second"). The numbers in this document are the original game's.
+
+Everything in this document applies to these ROMs as they come. **NOSE4Web** (the editor in GENESIS_MECHANICS.md
+section 15) can now also add fixes and options to an SNES ROM: the hot / cold, power-play, faceoff, extra-attacker,
+penalty-shot, Y-button, comeback and awareness fixes, one-minute penalties, no interference, no penalty shots, no
+posts and defence control, which the viewer reads (`tools/systems/snes_settings.py`) and lists in its Help ("This
+game's ROM"); and McMarkis's NHL94SNESVault hacks (any skater at any position in Edit Lines, maxed ratings shown as
+100, L+R to pull the goalie, the computer pulling one to three behind with two minutes left), which it doesn't read
+yet. Each was checked in the game (STUDY_NOTES).
 
 ---
 
@@ -874,6 +907,7 @@ everything in this document applies to all of these ROMs.
 | Turnovers | Computer skaters switch to defence at once (no awareness delay, unlike the Genesis) |
 | Faceoffs | Pure timing; held direction 3 in 4 |
 | Penalty shots | Retaken from the side dot after a net knocked off |
+| Pulling the goalie | The computer pulls one or two behind in the last minute; short-handed, the penalty-kill line's hidden RW slot comes on, not its extra attacker (12.5) |
 | Glove / stick save ratings, Fighting | Unused |
 | Line changes off | No fatigue, Endurance unused |
 

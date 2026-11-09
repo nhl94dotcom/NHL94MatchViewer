@@ -1012,6 +1012,11 @@ Using the "Rgh" pass/shoot bias rating (2.4):
   **only when exactly two goals behind** (`CPgoalie`: `cmp #2` then `bne`, commented "exit if behind by more than 2").
   **Down by one, it never pulls him.** The SNES port tests "one or two behind", which shows what was meant. **Code**
   (no recorded game had a computer team trailing late).
+- **Who takes a pulled goalie's place** (`SetPlList`, as on the SNES: SNES_MECHANICS 12.5): the team's places are
+  filled in the order goalie, LD, RD, C, LW, RW, extra attacker, skipping the goalie. At full strength the line's
+  extra attacker comes on; short-handed, the line's RW slot, which on the two penalty-kill lines Edit Lines doesn't
+  show (their four rows are LD, RD, LW and C; no line's extra attacker slot can be edited). **Code**; the editor's
+  cursor checked in the game (STUDY_NOTES, "The Genesis line editor's cursor").
 
 ### 12.5 How computer players change with the puck's zone
 
@@ -1314,6 +1319,14 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 bug and the C-then-B check work on all of these ROMs, except that on WJ2025 everyone checks with base 240: no
 C-then-B check, and the weight bug for computer checkers too.
 
+**NOSE4Web's bug fixes.** Since 2026-11 NOSE4Web also offers fixes for many of the bugs in this document (its
+"recommended fixes" among them): the weight bug and C-then-B check, the rocket pass, runaway speed, the blind ring,
+the penalty-shot bugs and table, the goalie pull, faceoffs, the power-play bonus, sniping, comeback, awareness, crowd
+and aggression fixes, the second assist, stick-shot counting and the one-timer assist fix. Each was played in the game against the original before it
+was offered (STUDY_NOTES, the "NOSE4Web's ..." sections); the viewer reads the fixes a ROM has
+(`tools/systems/genesis_settings.py`, not yet the one-timer assist fix) and leaves the bugs a fix removes out of its
+counts.
+
 ---
 
 ## 16. Quick reference: bugs and exploits
@@ -1329,6 +1342,7 @@ C-then-B check, and the weight bug for computer checkers too.
 | Aggression | Wraps: rating 4 plays like 1, ratings 6 and 3 most penalised |
 | Penalty-shot table | Off by one; holding and interference give no penalty shot |
 | Pulling the goalie | The computer pulls its goalie late only when exactly two behind, never one |
+| One-timer assists | If the receiver's stick touched the pass before his one-timer goal, no assists are credited (3 of 71 recorded one-timer goals; STUDY_NOTES, "The Genesis one-timer assist bug") |
 | Goalie lock | On a penalty kill (and all game on ROMs dressing fewer than six) a person's goalie passing toward the left of centre ice can pick the boxed player (or an empty slot) as the receiver, and control goes to him: the pad is dead until a teammate takes the puck (11.2) |
 | Icing | Always on; no icing if the puck crosses the goal line within 44 of the middle; a shorthanded team can't ice |
 | Glass | Pucks 19-29 high stay in off the top end's glass, go out of play off the sides and the bottom end |

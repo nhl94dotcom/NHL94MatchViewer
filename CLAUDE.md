@@ -80,9 +80,10 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `process.py`.
 - `viewer.html` (one page: rink, sprites, maps, team stats, cards, clips, highlights, game files, live mode, Help),
   `season.html` + `tools/season.py` (per-game summaries, `matches/season.js`), `helper.html`.
-- `tools/`: `reconvert.py` (re-convert the library, above), `xg.py`, `xg_snes.py` (`make_xg_figures.py` draws XG_MODELS' figures), `deserve.py`, `share_game.py`
-  (self-contained game files), `share_season.py`, `merge_recordings.py` (join a game the helper split),
-  `make_diagrams.py` (docs/img SVGs), `romnames.py`, `extract_sprites.py`, `embed_rink.py`, `bench_mask.py`.
+- `tools/`: `reconvert.py` (re-convert the library, above), `xg.py`, `xg_snes.py` (`make_xg_figures.py` draws
+  XG_MODELS' figures), `deserve.py`, `share_game.py` (self-contained game files), `share_season.py`,
+  `merge_recordings.py` (join a game the helper split), `make_diagrams.py` (docs/img SVGs), `romnames.py`,
+  `extract_sprites.py`, `embed_rink.py`, `bench_mask.py`.
 - `tests/`: fake-emulator tests of the helper (`helper_genesis.py`, `helper_snes.py`, `helper_live.py`,
   `helper_snes_penalty_shots.py`, `helper_snes_sa1.py` ...: a recording played back as if RetroArch were running it),
   and the checks under After changes. `samples/`: three game files for the README.
@@ -132,18 +133,23 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     against itself by period; pad 1 moved with c1playernum, playerpad $19D4 and the person flag),
     `snes_60fps_cvc.py` (the SNES computer against itself, seeded, penalties set on; `--make-30` runs McMarkis's SA-1
     build at 30 frames a second) and `snes_penalty_rolls.py` (each penalty roll counted through stubs).
-  - NOSE4Web's builds: `fix_check.py ROM` (which tested fixes a build has by their bytes, any other changed bytes, and
-    each fix's in-game test against the original), the per-fix tests (`*_fix_test.py`, `*_test.py`; STUDY_NOTES),
-    score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves free;
-    `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
-    `gen_lc_box_check.py`: the line-change box), `gen_injury_check.py` / `gen_blood_check.py` (Genesis injuries forced
-    in a scratch copy; the head blood builds), `snes_banner_check.py` (team-block colours on every block screen), `snes_vault_hacks_test.py` (the NHL94SNESVault hacks: Edit Lines
-    lists, max boost display, L+R goalie pull, the computer's pull), `gen_onetimer_assist_test.py` (the Genesis one-timer assist bug: a fix,
-    built and played), `gen_line_editor_cursor.py` (the Genesis line editor's reachable slots),
-    `a130f1_test.py` (Genesis save memory switching on big ROMs), `snes_logo_overlap.py` (which piece of a big logo is
-    in front), and `menu_shots.py ROM OUT SCRIPT` (screenshots of the game's own screens from power-on by a script of
-    presses, for edits outside play: photos, logos). Genesis Plus GX's video memory is read from its saved state
-    (VRAM_AT in gen_score_logo_check.py, little-endian words); Snes9x's from memory id 3.
+  - NOSE4Web's builds and ROM edits (results in STUDY_NOTES):
+    - Fixes: `fix_check.py ROM` (which tested fixes a build has by their bytes, any other changed bytes, and each
+      fix's in-game test against the original) and the per-fix tests (`*_fix_test.py`, `*_test.py`);
+      `gen_onetimer_assist_test.py` (the Genesis one-timer assist bug: a fix, built and played; `builds` lays
+      NOSE4Web's builds over the test ROM).
+    - Graphics: score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves
+      free; `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
+      `gen_lc_box_check.py`: the line-change box), `snes_banner_check.py` (team-block colours on every block screen),
+      `snes_logo_overlap.py` (which piece of a big logo is in front), `gen_injury_check.py` / `gen_blood_check.py`
+      (Genesis injuries forced in a scratch copy; the head blood builds).
+    - Lines and options: `gen_line_dup_check.py` / `snes_line_dup_check.py` (the same skater twice on one line),
+      `gen_line_editor_cursor.py` (the Genesis line editor's reachable slots), `snes_vault_hacks_test.py` (the
+      NHL94SNESVault hacks: Edit Lines lists, max boost display, L+R goalie pull, the computer's pull),
+      `a130f1_test.py` (Genesis save memory switching on big ROMs).
+    - `menu_shots.py ROM OUT SCRIPT`: screenshots of the game's own screens from power-on by a script of presses, for
+      edits outside play (photos, logos). Genesis Plus GX's video memory is read from its saved state (VRAM_AT in
+      gen_score_logo_check.py, little-endian words); Snes9x's from memory id 3.
 
 ## How it reads the games
 
