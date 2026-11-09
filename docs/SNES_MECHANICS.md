@@ -702,7 +702,7 @@ So: **mash B, and hold the d-pad toward the teammate you want it to reach** (bac
 
 ![A penalty shot step by step, with its bugs](img/penalty_shot.svg)
 
-### 10.0 Breakaways
+### 10.1 Breakaways
 
 `CheckBreakaway`, `StartBreakaway`, `PenShotChk`, `doshot`. **Code.**
 
@@ -715,7 +715,7 @@ So: **mash B, and hold the d-pad toward the teammate you want it to reach** (bac
   moment; otherwise the normal penalty.
 
 
-### 10.1 How one ends
+### 10.2 How one ends
 
 - **anyone takes the puck who didn't already have it**, including the shooter picking up a puck he lost;
 - the loose puck moves back away from the net for 48 frames (0.8 s);
@@ -725,7 +725,7 @@ So: **mash B, and hold the d-pad toward the teammate you want it to reach** (bac
 
 The setup puts the puck at centre and **gives it straight to the shooter where he stands** (`SetupPenaltyShot`).
 
-### 10.2 The retake bug (explains an observed bug)
+### 10.3 The retake bug (explains an observed bug)
 
 **A knocked-off net isn't one of the ways a penalty shot ends.** The whistle comes, the "penalty shot" flag stays, and
 the next faceoff sets up **another** penalty shot instead of dropping the puck. The setup hands the puck to the shooter
@@ -859,6 +859,12 @@ pulled.
   (`CurCrowdMeter` $19C2, at most 128). **The crowd has no effect on play**: the 110 dB flag (`CrowdLoud` $19C0) only
   triggers an undo of a hot / cold raise that is never made (2.2). **Code**, **Confirmed** (analysis/crowd_study.py:
   15 games, meter median 72-86 dB, peaks 86-128, `HotColdRaised` always 0).
+- **Organ songs** (`PlayTeamSong`, `TeamSongs`, `DefaultSongs`; **Code**): the home team's songs only, six per team,
+  each a long pointer straight to the song data (24 bytes a team): slot 0 the first faceoff of a period, 1 a faceoff
+  on a home power play, 2 other faceoffs, 3 a home goal, 4 a faceoff on a home penalty kill, 5 at random in the third
+  period. A $FFFFFFFF pointer plays one of 8 `DefaultSongs` at random. Room for 28 teams on the original game,
+  Classic and SDL16 ($80:DA56), 32 on the 2026 2 MB builds (STUDY_NOTES, "Organ songs moved, played; SNES credits and
+  songs").
 
 ---
 

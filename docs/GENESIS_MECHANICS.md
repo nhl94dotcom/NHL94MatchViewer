@@ -1283,6 +1283,29 @@ change. **Code**
   board checks, goals. So hammering C with the goalie at a stoppage does make the building louder and livelier,
   but it changes nothing in play. **Code.**
 
+### 14.4 Organ songs
+
+**Code** (`ChooseSong`, `TeamSongs`, `LeadSong`), **Confirmed** in play (2026-11-09, `analysis/scoring_map/gen_songs_check.py`
+and `gen_leadsong_check.py`). The arena organ plays **the home team's** songs only: six song numbers per team in
+`TeamSongs` ($FE5B0 on the original ROM, 28 teams in team order), one per moment. A 0 there plays one of eight
+`RandomSongs` at random. Nothing plays during the intermission highlight reels.
+
+| Slot | When |
+|---|---|
+| 0 | The start of each period |
+| 1 | A faceoff with the **home team on the power play** (the first after the numbers change) |
+| 2 | The faceoff tune: once in periods 1 and 2, at the first faceoff after half the period with a minute or more left |
+| 3 | A home goal |
+| 4 | A faceoff with the **home team killing a penalty** (most teams: "Defense") |
+| 5 | Once in the 3rd period, late on |
+
+- The disassembly names slots 1 and 4 the other way round; the code, and play after real penalties, have them as
+  above (the SNES uses the same meanings).
+- `LeadSong` plays one power-play song each time the team that is a man up changes, not one per penalty.
+- **30-team league ROMs** read past the 28-team table for teams 28 and 29: the eight random songs' numbers and then
+  code bytes, some of which aren't songs. NOSE4Web can move the table (only the `movea.l` at $FE574 reads it), which
+  gives every team its own six songs.
+
 ---
 
 ## 15. League ROMs: settings that change the game

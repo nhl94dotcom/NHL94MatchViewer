@@ -442,7 +442,7 @@ SNES breakaways and injuries (2026-10-18): CheckBreakaway = carrier in his attac
 more than 4 nearer the goal (teammates ignored); StartBreakaway at the blue line counts it; doshot re-tests (a caught-up
 breakaway ends: no breakaway goal); PenShotChk re-tests at a foul. Injury (FallDown): the carrier only, SPAfallback,
 facedir & 3 == 0, hitter a skater, randoma8(150) x 2 < impact, clock running; setInjuryType $FFFD (period) or 1 in 7
-$FFFC (game); roughing $14 with penalties on. SNES_MECHANICS 10.0, 10.9.
+$FFFC (game); roughing $14 with penalties on. SNES_MECHANICS 10.1, 7.9.
 
 SNES one-timers (2026-10-18, asspassrec): request = a person's new A ($0080 in padnew) while waiting (B $8000 cancels),
 or a computer team in the attacking zone (|Y| past $58) on RandomWord & $80; the swing (SPAonetimerf / b by Findhittype)
