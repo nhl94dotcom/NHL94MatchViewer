@@ -288,7 +288,7 @@ def part_goaliedelay(retail, out):
     state. Pad 1 controls the home skater (record 2) without the puck, the away carrier far up the ice; B held from
     frame 0 (after settling 30 frames, 8 random seeds and 4 start frames): the frame pad 1's control (record +$62 bit
     3) reaches the home goalie (record 5), and how many game loops that is (the timer counts one a pass of doinput).
-    Pads 3 and 4 (2-on-2) can't be pressed here: the headless frontend drives two pads."""
+    Pads 3 and 4 (2-on-2, EA's 4-Way Play): gen_pad34_goalie.py."""
     import harness as H
     from paths import ROM
     places = [(0xAD04, "1111", "0c0c"), (0xAD0A, "1111", "0c0c")] + [(a, "11", "0c") for a in

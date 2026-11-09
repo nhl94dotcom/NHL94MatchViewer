@@ -24,11 +24,14 @@ class GameInfo(C.Structure):
 
 
 class Emu:
-    def __init__(self, rom=ROM, core=CORE):
-        """One per process: the core is a single DLL, and a second Emu would take over its callbacks."""
+    def __init__(self, rom=ROM, core=CORE, fourway=False):
+        """One per process: the core is a single DLL, and a second Emu would take over its callbacks. fourway: EA's
+        4-Way Play adaptor on both ports (the core's device $401, "MD Joypad 3 Button + 4-WayPlay"), so pads 3 and 4
+        (ports 2 and 3) can be pressed too (run's hold3 / hold4)."""
         self.lib = C.CDLL(str(core))
         self.held = set()
         self.held2 = set()                                  # pad 2 (port 1)
+        self.held34 = (set(), set())                        # pads 3 and 4 (ports 2, 3; 4-Way Play only)
         self.frame = None
         self._sysdir = C.c_char_p(str(Path(core).parent).encode())
         self._cbs = [ENV_CB(self._env), VIDEO_CB(self._video), AUDIO_CB(lambda l, r: None),
@@ -53,6 +56,9 @@ class Emu:
         L.retro_unserialize.restype = C.c_bool
         ptr, size = L.retro_get_memory_data(2), L.retro_get_memory_size(2)
         self.ram = (C.c_ubyte * size).from_address(ptr)
+        if fourway:
+            for port in (0, 1):
+                L.retro_set_controller_port_device(port, 0x401)
 
     # --- callbacks
     def _env(self, cmd, data):
@@ -73,17 +79,21 @@ class Emu:
             self.frame = (C.string_at(data, h * pitch), w, h, pitch)
 
     def _state(self, port, device, index, id_):
+        device &= 0xFF                                      # a subclass ($401, 4-Way Play) is still a joypad
         if device == 1 and port in (0, 1):
             return 1 if id_ in (self.held if port == 0 else self.held2) else 0
+        if device == 1 and port in (2, 3):
+            return 1 if id_ in self.held34[port - 2] else 0
         return 0
 
     want_frame = False
     PAD = PAD
 
     # --- control
-    def run(self, n=1, hold=(), hold2=()):
+    def run(self, n=1, hold=(), hold2=(), hold3=(), hold4=()):
         self.held = {self.PAD[b] for b in hold}
         self.held2 = {self.PAD[b] for b in hold2}
+        self.held34 = ({self.PAD[b] for b in hold3}, {self.PAD[b] for b in hold4})
         for _ in range(n):
             self.lib.retro_run()
 

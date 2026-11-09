@@ -2404,7 +2404,13 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   - B-checks with penalties off ($13FDC `bra.w`): the pad-1 skater skating into the away carrier and poking (B, the
     sweep $0B24), 72 tries each: retail trips 66 with penalties on, 10 off; the option 66 on, 66 off.
   - Goalie control delay at 12 (all eight places): B held without the puck, 32 tries: pad 1 takes the goalie after
-    17 frames on retail, 12 on the build (one count a frame). Pads 3 and 4 not played (the frontend drives two pads).
+    17 frames on retail, 12 on the build (one count a frame). **Pads 3 and 4, played (2026-11-09,
+    `gen_pad34_goalie.py`):** the frontend with EA's 4-Way Play adaptor (emu.Emu(fourway=True), the core's device
+    $401 on both ports), booted with it so Detect4WayPlay sets FourWayPlay ($D046) and port 2's lines; pads 3 / 4 put
+    on the home / away side (cont3team $C32C, cont4team $C32E) with a skater each (c3playernum $C324, c4playernum
+    $C326, and the skater's pflags bit 3, without which doinput never runs for that pad); each pad holds B alone, its
+    team without the puck, 32 tries: retail pads 1 / 3 18-19 frames, pads 2 / 4 17; the 12 build 13-14 and 12. So
+    pads 3 and 4 keep their own timers (bholdtimer34) and the option reaches them as it does pads 1 and 2.
 - **Organ songs (topic 11307).** ChooseSong (arena94): SongNum = TeamSongs[HmTeam x 6 + SongIndex] (TeamSongs $FE5B0,
   6 bytes a team in TeamList order, All-Stars included: 168 bytes), and a 0 there = one of the 8 RandomSongs ($FE658)
   at random; nothing in the highlight reel. SongIndex: 0 period start, 1 the away team ahead on players, 2 the
