@@ -292,8 +292,32 @@ class Emulator:
 
     @property
     def teams(self):
-        """Team numbers below this are real (View: at or above it, the menus): 28 retail, 32 in the 2 MB builds."""
-        return 32 if getattr(self.p, "big", False) else 28
+        """Team numbers below this are real (View: at or above it, the menus): the loaded cartridge's team count from
+        its team list (snes_layout: 28 retail and McMarkis's 2 MB release of 2026-11-09, 32 in the 2026 builds).
+        Read once per cartridge (keyed by its address and header); 32 / 28 by size if it can't be read."""
+        guess = 32 if getattr(self.p, "big", False) else 28
+        try:
+            head = self.p.raw(self.rom + 0x7FC0, 0x40)
+        except Exception:  # noqa: BLE001  (a ROM that can't be read: the guess)
+            head = None
+        if not head:
+            return guess
+        key = (self.rom, head)
+        cached = getattr(self, "_teams", None)
+        if cached and cached[0] == key:
+            return cached[1]
+        count = guess
+        try:
+            from .snes_layout import layout
+            code = head[0x17]
+            size = max(0x100000, min(0x400000, 1024 << code if code < 13 else 0))
+            data = self.p.raw(self.rom, size)
+            if data:
+                count = layout(data).team_count or guess
+        except Exception:  # noqa: BLE001
+            pass
+        self._teams = (key, count)
+        return count
 
     @property
     def ram(self):
