@@ -2596,3 +2596,27 @@ Min OT", the usual checksum-check removal. `gen_ot_check.py`:
   faceoff song needs the clock under half the period (PerTimeTotal / 2), so a 99:00 overtime has none in its first
   49:30 (the original's 10:00: 5:00). PushTime (summaries, team stats) prints minutes 0-99. StartGame's pad-1 $E0
   at game start (Optperlen 3, retail's 30-second periods) now gives the fourth length.
+
+## The Genesis Game Setup screen's video memory (2026-11-09, for NOSE4Web's custom setup background)
+
+`gen_setup_screen.py` on retail, with the logos and with the first player card up:
+- Tiles from d4 (LoadSetupTiles starts at 2): team banners $002-$31D (two copies), frame $31E, small font $327,
+  setup font $385, GameSetUpMap $3E3-$4D2 (240), visitors' picture $4D3 (36), top strip $4F7, menu box $514, home
+  picture $51D (36), logo boxes $541 / $547; the last $54C. Nothing on the screen uses a tile above $54C, and there
+  are no sprites. Tiles $600-$76E hold leftovers of earlier screens.
+- VDP: plane A $E000 (everything but the background), plane B $C000 (the background, 40 x 28), 64 x 32 planes, the
+  window table $B800 but the window off (registers 17 / 18 = 0), sprite table $B400 (tile $5A0), full-screen
+  horizontal scroll at $0000 (register 11 = 0: 4 bytes in tile 0), backdrop line 0 colour 0.
+- Room: the d4 tiles must end below the sprite table: 83 more ($54D-$59F), so a background of up to 323 tiles
+  with the code as it is. Unused but not in d4's run: $5B4-$5FF (after an 80-entry sprite table, and the unused
+  window table), $680-$6FF (between plane B's end $D000 and plane A), $780-$7FE (after plane A; $7FF is the blank
+  tile).
+- Colours, line 0: the background 1-14; setup font 1, 4, 6; frame 4-7; top strip 3-7; menu box 3-6; logo boxes 1,
+  3-7 (and line 1 1-6). Only the background uses 2 and 8-15 (the small font's remap, 12 / 15, draws nothing on
+  this screen).
+- Lines 1-3: GameSetUpMap's palette data holds line 0 and filler for 2 and 3 (d5 = $D loads 0, 2, 3; line 1 not).
+  Line 1: the team banners (1-6) and the home logo or the player photo (5-12); line 2: the visitors' logo (overwrites
+  it after dobitmap); line 3: GameSetUpMap's filler, drawn with by nothing.
+- How much shows: the background's tiles decide 50.0% of the screen's pixels with the logos up, 44.4% with a card:
+  besides the open areas, the menu box and the card box are see-through (their tiles' colour-0 pixels), so the
+  background shows through them too.
