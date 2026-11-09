@@ -31,9 +31,9 @@ def patched(rom, out, game):
         data[0x14506:0x1450C] = bytes.fromhex("600000324e71")          # bra.w .injurygame ($1453A)
     else:
         data[0x14508:0x1450C] = bytes.fromhex("4e714e71")              # bne.w .not0 gone: always the period path
-    assert data[0x300:0x306].hex() == "4eb9000ffac0"
+    assert data[0x300:0x306].hex() in ("4eb9000ffac0", "4e714e714e71")
     data[0x300:0x306] = bytes.fromhex("4e714e714e71")                  # the boot's ROM check ($FFAC0), as NOSE4Web's builds
-    p = out / ("inj_game.bin" if game else "inj_period.bin")
+    p = out / f"{Path(rom).stem}_inj_{'game' if game else 'period'}.bin"
     p.write_bytes(data)
     return str(p)
 

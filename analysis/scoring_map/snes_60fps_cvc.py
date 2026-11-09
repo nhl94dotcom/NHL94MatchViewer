@@ -12,7 +12,13 @@ game, so each starts from a different random state. At the end of regulation, fr
 in BW-RAM on the SA-1 build: faceoff_fix_test.Snes.MOVED): goals and shots by period (P1-P3), saves (shots less goals),
 body checks, penalties, passes completed and tried. Gentle (one process per ROM, lowload).
 
-python snes_60fps_cvc.py ROM GAMES OUT.jsonl"""
+The SA-1 build at 30 frames a second, to separate the frame rate from the rest of the build: `--make-30 ROM OUT.sfc`
+writes a copy whose Gameloop waits for 2 frames instead of 1 (at $F8517 `lda vcount / sec / sbc oldvcount / beq` becomes
+`... / lsr / beq`, taking the 3 bytes of `inc gameframes`, which only feeds the gamefps readout), so every step has
+d7 = 2 as on the original engine (checked: timestep $0ADB is 2 at every frame, the clock runs as before).
+
+python snes_60fps_cvc.py ROM GAMES OUT.jsonl
+python snes_60fps_cvc.py --make-30 SA1ROM OUT.sfc"""
 import json
 import sys
 from pathlib import Path
@@ -109,7 +115,17 @@ def game(rom, n):
                 reached_p4=m.w(GSP) >= 3)
 
 
+def make_30(rom, out):
+    data = bytearray(Path(rom).read_bytes())
+    assert data[0xF8517:0xF8522].hex() == "a58338ed016df0f8ee6d7d", "not the SA-1 build's Gameloop"
+    data[0xF8517:0xF8522] = bytes.fromhex("a58338ed016d4af0f7eaea")
+    Path(out).write_bytes(data)
+
+
 def main():
+    if sys.argv[1] == "--make-30":
+        make_30(sys.argv[2], sys.argv[3])
+        return
     rom, games, out = sys.argv[1], int(sys.argv[2]), Path(sys.argv[3])
     lowload.gentle()
     done = {json.loads(line)["game"] for line in out.read_text().splitlines()} if out.exists() else set()

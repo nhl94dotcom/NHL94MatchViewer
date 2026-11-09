@@ -1856,6 +1856,33 @@ xG difference 0.88 / 0.90 (Genesis / SNES), finishing luck's spread 1.6 / 1.3 go
 lost 2 of 25 / 5 of 27; the 0.6+ chances 129 goals / 140.9 expected and 138 / 156.4 (was 14% short, now 8-9%). Study 2
 (hot / cold) ran with the old spread; its effects are differences between two runs and change little.
 
+## NOSE4Web's head blood builds, checked (2026-11-08)
+
+nhl94_blood.bin and CDL_Season_12_blood.bin (a league ROM; its blood tiles past $15DE64, tile numbers $8000 and up).
+The change: SPAinjuryfall's lists 273, 274, 369 (30), 370 (held) and 289, 290, 371 (30), 372; frames 369-372 are 275
+/ 291 with one blood piece in front (palette line 1, colours 12 and 13); the frame table copied to the ROM's end (the
+long at Sprites+4, Sprites = $5DE7A: $FFC04 and $1ED184); HotList 369-372 from 275 / 291; addframe2's `ext.l d2 /
+asl.l #5,d2` (the tile number signed) now `mulu.w #32,d2`. Checked with `analysis/scoring_map/gen_blood_check.py`
+(injuries forced in a scratch copy, as gen_injury_check) and by reading the ROMs.
+- **The bytes**: only the listed changes (and on nhl94_blood the boot's ROM check NOP'd, the ROM 2 MB).
+- **Frames**: in both ROMs every frame but 369-372 draws exactly as the original's (pieces and tile bytes); 369-372 are
+  275 / 291's pieces with the blood piece first; the HotList entries equal 275's (2, 31) and 291's (1, -25). Only
+  CDL's blood tiles are numbered $8000 or more, and addframe2 is the only reader of the frame table and tiles
+  (Sprites, Spritetiles), so the unsigned read changes nothing else.
+- **Game injuries in play** (4 on nhl94_blood, both lying directions twice; 1 on CDL): 273, 274 (or 289, 290), the
+  small blood frame 369 / 371 for 30, then 370 / 372 with the larger blood until he is taken off (570-600 frames
+  after the hit): the blood at the head, growing, in front of him. No player showed 369-372 in any other animation.
+  On CDL the blood piece's tiles are in video memory byte for byte from ROM $1ED124 (tile $C795), as on nhl94_blood
+  from $FFBA4 (the Genesis Plus GX state keeps video memory as little-endian words). When the horizontal scoreboard
+  comes up the facing turns, and a player lying on 370 can be drawn on 372 (the frame the original would switch
+  from 275 to 291), so the blood comes with the frame; but the side view never showed the lying player (in no
+  injury, nor with him moved about the rink), so it wasn't seen there.
+- **Period injuries and other falls**: period injuries frame for frame as on nhl94.bin (273, 274, 275 for 30, then
+  641-646 or 647-652); every other animation's list is unchanged.
+- **Palette line 1, colours 12 and 13**: $004A / $0006 in palfadenew and in the colour memory all through play on
+  both ROMs (the colour memory in its 9-bit form 21 / 3), changed only during the game's own fades, the same on
+  nhl94.bin.
+
 ## McMarkis's 60 frames a second: the computer against itself (2026-11-08, for NOSE4Web)
 
 The original engine runs the game logic at 30 frames a second (d7 = 2 each step); McMarkis's SA-1 build at 60 (d7 =
