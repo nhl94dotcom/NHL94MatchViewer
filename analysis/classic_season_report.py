@@ -144,7 +144,7 @@ def build(league, coach):
 
     # --- standings
     w("## Standings\n")
-    w("Points: 2 a win, none for any loss. Expected wins: from each coach's pre-season rating against his opponents' "
+    w("Points: 2 a win, none for any loss. Expected wins: from each coach's pre-season rating against their opponents' "
       f"(coach_history, {rat_day}; teams and home ice not counted).\n")
     w("| | Coach | Team | GP | W-L | OT W-L | Pts | Pts % | GF/G | GA/G | Diff/G | Exp. W | W - Exp. | Pre-season vs league avg |")
     w("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
@@ -188,7 +188,7 @@ def build(league, coach):
         w(line)
 
     w("## Team stats per game\n")
-    w(f"For: {coach}'s team; against: his opponents. Rank 1 is the most for, and the fewest against.\n")
+    w(f"For: {coach}'s team; against: their opponents. Rank 1 is the most for, and the fewest against.\n")
     w(f"| | {coach} | League | Rank | Against | League | Rank |")
     w("|---|---|---|---|---|---|---|")
     row("Goals", lambda c: rate(c, "F_Score"), lambda c: rate(c, "A_Score"))
