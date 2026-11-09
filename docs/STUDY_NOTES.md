@@ -2252,4 +2252,36 @@ of lines), and the editor has no row for it; the penalty-kill lines' RW slot can
   its byte by the index, so they keep and reset their own; 2-on-2 is right (they do read pads 1 / 2's goaliemode1 /
   goaliemode2, which aren't swapped). The countdown is `subq.b #1` with `bpl`, so a start of $81 or more clamps to 0
   on the first count (the goalie at once): keep it 1 .. $80; the two words take the value in both bytes.
+- **$17012 / $17014 (topics 20230 forum: the puck to the boards).** defaultsprites_0 (setup94, at $16E80; also from
+  setoptions) sets the 16 objects from its .list ($16EEE, 20 bytes each: X, Y, Z, frame, attribute, a VRchar step,
+  radiusx, radiusy, asslist byte, pflags byte); the puck is object 14 ($17006), and $17012 / $17014 are its radiusx /
+  radiusy (5 / 5), set nowhere else. checkcoll copies them to wcradiusx / wcradiusy for checkwallcoll: the side boards
+  at 136 - rx, the end boards at 298 - ry, the corner circles shifted the same, and checkgoal's box around each net,
+  16 + rx across and 2 + ry deep, inside which the puck meets the posts, the net or goes in. So yes: they move the
+  posts and the back of the net with the boards.
+- **$F8908 (featured player cards).** The immediate of cards94's `cmpi.w #6,(featuredplayer)`: Game Setup's card
+  steps through the first 6 entries of the team's FeaturedPictures list (picture.l, roster index.w; ended by a 0
+  long) with no end check. Retail lists hold 6-8 (All-Stars 25); CDL_Season_12's and 2on2_update's hold 26 and CDL
+  cycles 11. A count over a team's entries reads the end marker (picture pointer 0) and the data after it. The
+  matchups and the player cards (DrawPlayerPicture) don't use the count: they look the player up in the list up to
+  its end marker. $FD4B8 is MatchupLineSlots, `dc.b 0,4,3,5,1,2,0,0`: matchup 0 the teams, 1-6 the first line's C,
+  LW, RW, LD, RD, G (the forum's $FD4B9 6 bytes); the names are a separate list (MatchupPosNames).
+- **2-on-2 Edit Lines fix (2on2_update.bin).** With line changes off (OptLine set) the editor shows line 1 from the
+  entry before LineIconPosTable: $82F2 the cursor's first slot (`move.w #1,(TestList)`, 1 LD -> 3 LW); $8375 / $837B
+  the cursor's limits (`cmp.w #1` / `#5` -> 3 / 4); $8636 DrawLineIcon's first slot (`addq.w #1,d4` -> #3); $879D that
+  entry's slot count - 1 (4 -> 1); $8C6E / $8C76 the Team Roster's line view (`lea 1(a3,d0)` -> 3, the first slot;
+  `moveq #4,d1` -> 1, rows - 1; penalty-kill lines one fewer); $86DC-$86F4 the editor's header (LD RD LW C RW) and
+  $191D2 PlayerPositionText (the roster rows' names). For any ROM whose used slots are consecutive in LD RD LW C RW
+  order (first s, n of them): s at $82F2, $8375 and the lea's byte; s + n - 1 at $837B; `addq.w #s,d4` ($5044 |
+  s << 9); n - 1 at $879D and in the moveq; the names of the used slots first. With n = 1 the roster's penalty-kill
+  rows would be -1 (a dbf of 65,536 rows): that `subq.w #1,d1` needs skipping too. With line changes On the editor
+  still uses LineCursorTable and the 5-row entries (the empty slots selectable).
+- **Puck and net sprite pieces ($A1660-$A16F8).** Pieces are 8 bytes: x, y, tile, attribute word (palette, flips,
+  size in bits 0-3), in the frame table's order ($9E724), so the forum's 8-byte groups from $A1660 are 2 bytes off
+  (each is one piece's attribute and the next piece's x, y, tile). Frames: 393 SPFreplay (the replay marker, 6
+  pieces to $A1661), 394 SPFpuck (the puck shadow, object 15; it turns into the siren on a goal), 395 the puck
+  (object 14) and 396-404 its flip animation (SPApflip), one piece each ($A1662-$A16B9: $A16B8 is frame 404's
+  attribute, part of the puck), 405 the bottom net (object 12, 4 pieces) and 406 the top net (object 13, 2 pieces)
+  ($A16BA-$A16E9), 407 SPFGoalie (the goalie's first frame, palette 2 as players: $A16F0 is its first piece's
+  attribute). The replay draws the same frames (replay94: the frame words it recorded).
 
