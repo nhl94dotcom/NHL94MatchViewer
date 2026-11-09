@@ -146,7 +146,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       (Genesis injuries forced in a scratch copy; the head blood builds).
     - Lines and options: `gen_line_dup_check.py` / `snes_line_dup_check.py` (the same skater twice on one line),
       `gen_line_editor_cursor.py` (the Genesis line editor's reachable slots), `gen_1on1_edit_lines.py` (Edit Lines and
-      Team Roster on a ROM dressing fewer skaters), `snes_vault_hacks_test.py` (the
+      Team Roster on a ROM dressing fewer skaters), `gen_looks_check.py` (intro waits, puck friction, puck and fan colours), `snes_vault_hacks_test.py` (the
       NHL94SNESVault hacks: Edit Lines lists, max boost display, L+R goalie pull, the computer's pull),
       `a130f1_test.py` (Genesis save memory switching on big ROMs).
     - `menu_shots.py ROM OUT SCRIPT`: screenshots of the game's own screens from power-on by a script of presses, for
