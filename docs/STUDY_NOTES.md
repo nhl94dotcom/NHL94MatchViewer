@@ -2728,3 +2728,6 @@ flailing, his energy over 4 frames): original down 0 (6), flail 0 (4); the optio
 flail -50 (3); OptLine 2 the same (one -304: a burst of 204 just before); OptLine 0 nothing (14). So the SA-1 code
 reaches the moved energy table. Unlike the Genesis, the SNES drains energy with Auto too (the drain and the burst cost
 test OptLine for zero), and the option follows it.
+- Rebuilt at 204 / 102 (NOSE4Web e753a45's recommended values, up to 1024): retail trials the opponent down 204 (17:
+  body checks 15, pokes 2; with OptLine 1 and 2), held / hooked 102 (5), OptLine 0 nothing, counts the same; the SA-1
+  build in the computer's own play (OptLine 1) down -204 (13), flail -102 (9), OptLine 0 nothing (14).

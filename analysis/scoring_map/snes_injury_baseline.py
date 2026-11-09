@@ -4,7 +4,8 @@ snes_60fps_cvc's games (Montreal at home against Los Angeles, 5-minute periods, 
 regulation), with Line Changes set On in RAM at Game Setup (OptLine $34C6 = 1, before the game starts). Every 10
 frames: a player newly out injured (tmpdst $1852, the visitors +$34: $FFFD out, $FFFC out for the game), a player
 newly flailing (held or hooked: SPA $11A3 = $F46A). At the end: knockdowns (the game's team checks $17B6, which FallDown
-counts) and the lowest energy any skater on the ice reached (tmpde $17EA).
+counts), the lowest energy any skater on the ice reached (tmpde $17EA), the mean energy of the skaters on the ice
+(every watched step) and how many times a player went from the ice to the bench (shift ends).
 
 python snes_injury_baseline.py ROM GAMES OUT.jsonl"""
 import json
@@ -47,7 +48,14 @@ def main():
                         st["injuries"].append({"team": t, "slot": s, "game": v == 0xFFFC})
                     elif v == 0xFFFF:
                         st["out"].discard((t, s))
-                        st["low"] = min(st["low"], m.w(TMPDE + 0x34 * t + 2 * s))
+                        en = m.w(TMPDE + 0x34 * t + 2 * s)
+                        st["low"] = min(st["low"], en)
+                        st["ice"][0] += en
+                        st["ice"][1] += 1
+                        st["on"].add((t, s))
+                    if v == 0xFFFE and (t, s) in st["on"]:
+                        st["on"].discard((t, s))
+                        st["shift_ends"] += 1
             for k in range(12):
                 f = m.w(SPA + 2 * k) == FLAIL
                 if f and not st["flail"][k]:
@@ -73,10 +81,11 @@ def main():
         if n in done:
             continue
         st.clear()
-        st.update(out=set(), injuries=[], holds=0, flail=[False] * 12, low=0x1000, live=False)
+        st.update(out=set(), injuries=[], holds=0, flail=[False] * 12, low=0x1000, live=False, ice=[0, 0], on=set(), shift_ends=0)
         r = cvc.game(rom, n, lambda e, m: {"optline": m.w(OPTLINE)})
         res = {"game": n, "injuries": st["injuries"], "holds": st["holds"], "knockdowns": r["checks"],
-               "lowest_energy": st["low"], "goals": r["goals"], "optline": r["optline"], "reached_p4": r["reached_p4"]}
+               "lowest_energy": st["low"], "mean_ice_energy": round(st["ice"][0] / st["ice"][1]) if st["ice"][1] else None,
+               "shift_ends": st["shift_ends"], "goals": r["goals"], "optline": r["optline"], "reached_p4": r["reached_p4"]}
         with out.open("a") as fh:
             fh.write(json.dumps(res) + "\n")
         print(json.dumps(res), flush=True)
