@@ -2576,3 +2576,23 @@ ported). The release thread's manual (the author's) agrees with the code below.
   menus at ~6500, as the original (whose 17 titles end at ~6250, ~190 frames before). Every frame before the credits
   start (sampled every 3 frames to 1500) is pixel for pixel the original's, the copyright lines (shown only briefly
   in the title's zoom) included. The SNES title, too, plays once per power-on.
+
+## The fourth period length with its own overtime, played (Genesis, 2026-11-09, NOSE4Web 67b16fb)
+
+nhl94_fourth_period_ot.bin against nhl94.bin: ResetClock's `tst.w OptPlayMode / bne.w` at $7822 -> `jsr $FFAC6 /
+nop` (playoffs: return past the 10:00 load; regular season with Optperlen 3: d0 = 5940 and past it; else back to
+it), GetPeriodTime's fourth entry 30 -> 300, both OptionLimits period counts 3 -> 4, the fourth name "5 Minutes, 99
+Min OT", the usual checksum-check removal. `gen_ot_check.py`:
+- Menu, one pad and 4-Way Play: RIGHT on Per. Length goes 10, 20, "5 Minutes, 99 Min OT" (fits the box), 5, 10.
+- Overtime clock in real overtime play: regular season 600 on 5 Minutes, 5940 (99:00) on the fourth; playoffs 300
+  on both. A test pitfall: intermission highlights put another game's (or this game's) period, clock and score in
+  the same RAM, and the overtime's faceoff resets the clock once more; "in overtime" needs gsp 3, our team ids,
+  0-0 and a clock that has run 3 s.
+- The clock on the rink and on the pause scoreboard reads right at 98:59, 83:19, 59:59, 19:58, 9:59, 8:19 (after
+  83:19), 0:58. A goal at 1:40 left is ScoreSum $D6D0 (OT, 97:20 in: gsp << 14 | seconds, 14 bits).
+- A tied 99:00 overtime in the regular season ends the game at 0:00 (Stars of the Game, then Game Setup), as the
+  original's 10:00 one (PeriodOver: gsp 4 after overtime unless OptPlayMode).
+- From the code: CheckLateGameSong runs in the third period only (overtime length plays no part); puckfaceoff's
+  faceoff song needs the clock under half the period (PerTimeTotal / 2), so a 99:00 overtime has none in its first
+  49:30 (the original's 10:00: 5:00). PushTime (summaries, team stats) prints minutes 0-99. StartGame's pad-1 $E0
+  at game start (Optperlen 3, retail's 30-second periods) now gives the fourth length.
