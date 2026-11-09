@@ -594,6 +594,13 @@ a person's skater.
 - Then the chance grows with the hit's force: randoma8(150) x 2 under the impact, about impact / 300.
 - **Out for the period**, or **for the game 1 time in 7** (on the Genesis the checker's fighting rating decides).
 - With penalties on, **roughing** is called on the hitter and play stops; the hitter is knocked back.
+- **How often:** the computer playing itself (line changes on, 5-minute periods) injured 5 players in 12 games (0.42 a
+  game, 2 for the game); the 29 recorded league games had none (STUDY_NOTES, "computer-vs-computer injury baselines").
+- **Where knockdowns happen in the code** (for ROM edits): every knockdown goes through `FallDown` (a2 the player going
+  down, X the hitter), from body checks (`checkcheck`, `checkint`), the poke trip (`Bcheck`, from `SPAsweepchk`) and a
+  fast high puck (`puckbody`); a real fall, not a stumble, continues at `.t2`, where the team's checks stat goes up. A
+  hold or hook catches in `holdcheck` (once: the held player is then locked). Per game in the recorded league games:
+  52 knockdowns (6.8 of them poke trips), 9.7 holds and 8.0 hooks that caught someone.
 
 ---
 
@@ -854,7 +861,14 @@ pulled.
 
 - **With line changes Off, energy never drains**: skating and bursts cost nothing, **fatigue doesn't exist and
   Endurance does nothing**. **Confirmed**: every skater stayed at full energy all game in the four games first checked.
-- With line changes On, energy scales top speed (down to half) and shot power.
+- With line changes On, energy scales top speed (down to half) and shot power, and stickhandling in steals
+  (`makepde`). **Auto drains too**: the drain and the burst cost only test that line changes aren't Off (Auto bursts at
+  full speed whatever the energy).
+- **Amounts** (energy 0-4096; `playeracc`, `burst`, `RestoreBenchEnergy`, **Code**): on the ice -33 on a random 1 step
+  in 64; while above 3/4 the drain gives back the whole Endurance byte; a burst -204; on the bench +10 a second.
+  The computer changes lines at 75% (12.4, `AvgCline`). **Measured** (the computer against itself, line changes
+  on, two 5-minute periods, `snes_energy_shifts.py`): shifts of 60 game s (median), each costing about 410 (10%),
+  players coming off at about 89%; about 5.4 a game second on the ice.
 - The crowd's excitement rises with shots, hits and goals (`CwdExciteLvl`); the meter is sqrt(excitement x 4) + 65 dB
   (`CurCrowdMeter` $19C2, at most 128). **The crowd has no effect on play**: the 110 dB flag (`CrowdLoud` $19C0) only
   triggers an undo of a hot / cold raise that is never made (2.2). **Code**, **Confirmed** (analysis/crowd_study.py:

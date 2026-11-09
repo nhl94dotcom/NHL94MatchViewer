@@ -2763,3 +2763,10 @@ bytes a goal), thousands of bytes below.
   Skaters with 5+ knockdowns in the game take 68% of the injury chance. Bonus / cap -> injuries a game (all), and
   for the 5+ skaters: +2/10 +6%, x1.09; +3/15 +9%, x1.13; +4/20 +12%, x1.17; +5/25 +16%, x1.22; +6/30 +19%, x1.26;
   +8/40 +25%, x1.34; +10/40 +30%, x1.42; +12/60 +37%, x1.52; +15/60 +45%, x1.63; +20/80 +61%, x1.84. (28 hits: rough.)
+- SNES (`injury_risk_estimate.py snes`, the 29 recorded league games; the roll randoma8(150) x 2 < impact, the bonus
+  assumed added to the impact): 1,350 knockdowns, 47 judged able to injure, expected 0.28 injuries a game, but none
+  happened (the computer's own games: 0.42 a game). So the recordings don't pick the SNES's injurable hits out right
+  (likely the impact read after the hit, which later collisions add to, or the puck already knocked loose before
+  FallDown runs); the relative effects it gives (+2/10 +5%, x1.08; +3/15 +8%, x1.12; +4/20 +11%, x1.16 for the 5+
+  skaters) are only indicative. The SNES computer does get injured, so there a computer-vs-computer comparison can
+  measure the option directly.

@@ -988,3 +988,18 @@ rebuilt the season (1.1 s) after every game, and the old batch script rested 3 s
   5-11 s; with the rests, about 5 minutes for the library after an analysis change.
 - Not done: speeding up read_match itself (reading the samples in bulk instead of byte by byte); with the cache it
   only matters for new recordings and changes to the reading code.
+
+## Free RAM and save RAM, for ROM edits (2026-11-09)
+
+- Genesis work RAM: after the last variable (`PALflag`, $FFDEF4) up to the stack, zero in all 1,498 full snapshots of
+  28 recorded games from $FFE000 to about $FFFE60 (the deepest stack seen: $FFFE68). Cleared at power-on only
+  (Opening2's per-game clear stops at `varend`): a table there needs its own clear (StartGame). NOSE4Web's plus-minus
+  log uses $FFDEF4 up; its injury-risk counts $FFF000-$FFF03F. The team structs ($364 bytes each) have no spare bytes.
+- SNES retail and 1 MB builds: $7E:F034-$7E:FFFF (after `titleteams`), zero in all 31 recorded games. The SA-1 CPU
+  sees only ROM, I-RAM and BW-RAM: on the SA-1 builds a table must go in BW-RAM (bank $40 holds the moved game state
+  $30F4-$35F3, $37F4-$47F3, $E700-$E867 and low RAM at $6100-$7FFF; bank $41 LineSave).
+- Genesis save RAM ($2000 bytes; sum in $1FFE-$1FFF, `MakeSRAMChecksum`): player records from 0, crowd records $B60,
+  user records $D20, name log $DA0-$E1F, line data $1EF6 ($100 bytes: `databuffer` team byte + 17 bytes of line
+  nibbles, `passbits` the playoff state, `outputbuffer` the packed playoff stat totals from +$4A up, `marker`). The
+  disassembly notes room below $1EF6 ($E20-$1EF5 unused in retail).
+

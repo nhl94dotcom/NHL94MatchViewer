@@ -586,6 +586,17 @@ anywhere on the ice**.
   him out for the game, 0, 1, 2 and 4 only for the period (`setInjuryType`: the rating / 2, with 3 or an odd rating
   meaning the game).
 
+- **The roll** (`FallDown` .21, **Code**): randomd0(160) <= impact, so a chance of (impact + 1) / 160. In the 26
+  recorded league games 28 hits could injure (1.1 a game, impact median 38: about 27% each), which predicts 0.29
+  injuries a game against the 0.38 seen. The computer playing itself almost never meets the conditions: no injury in
+  24 games (line changes on, 5-minute periods).
+- **Where knockdowns happen in the code** (for ROM edits): every knockdown goes through `FallDown` (collide94; a2
+  the player going down, a3 the hitter), from body checks (CCStart, checkint), the poke trip (`Bcheck`) and a fast
+  high puck (`puckbody`); a real fall, not a stumble, reaches `.cont2`, where the team's and the checker's check counts
+  go up. Body checks never knock a goalie down (CCStart returns for a goalie first). A hook or hold catches in
+  `holdcheck` (a2 the holder, a3 held; once: a3 is then locked). Per game in the recorded league games: 50 knockdowns
+  (8.3 of them poke trips), 1.5 holds and 10 hooks that caught someone.
+
 ### 7.5 Hooks, holds and pokes
 
 **B without the puck: poke or switch?** (`doinput`, `chgplayer`, `Sweepcheck`; 2026-10-19, the user asked.) One rule
@@ -1254,6 +1265,9 @@ are the screen direction, below: SHOOTING_STUDY, "The leagues' own results"):
   he gains 9 a second of real time. **Confirmed** in a game with line changes on: steps of -33 and -20 to -26 on the ice, -204 at
   bursts, +9 on the bench.
 - "Auto" line changes: energy drains, but every use of it reads full energy.
+- **Measured** (the computer against itself, line changes on, one 10-minute period, `gen_energy_shifts.py`): shifts of
+  108 game s (median), each costing about 970 (24%), players coming off at about 76% (the computer's 75% change);
+  about 8 a game second on the ice, bursts included. So a burst (204) is about 25 game s of skating.
 
 ### 14.2 How the computer changes lines (line changes On)
 
