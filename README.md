@@ -9,8 +9,7 @@ totals any set of games: standings, skater and goalie stats, team stats and head
 
 Written in Python and JavaScript. The viewer runs in any browser, and shared game files are single HTML pages that
 open on any system, phones included. The converter is plain Python with no extra libraries. Only the live recorder
-is Windows-only for now, because it reads the game's memory out of RetroArch with a Windows call (read only);
-Mac and Linux recording is being worked on.
+is Windows-only, because it reads the game's memory out of RetroArch with a Windows call (read only).
 
 ## Try it
 
