@@ -502,12 +502,14 @@ the two players' weights, and **for the player you control** the sum overflows:
 
 | You check someone | Chance to knock him down |
 |---|---|
-| **16 lb or more heavier than you** | **almost certain** |
+| **16 lb or more heavier than you** | **certain on a hit hard enough to count** (the code makes it automatic) |
 | About your weight or lighter | low (around 1 in 10 in recorded games) |
 
 The computer's checkers work the sensible way: heavier checkers do better. Recorded games: a person checking a man
 2+ steps heavier knocked him down 48% of the time, 7% against a man 2+ steps lighter; computer checkers the other way
-round, 15% and 34%.
+round, 15% and 34%. (Those counts take every burst that touched the man, so they include touches too light to count, wobbles
+(Stick Handling) and repeat hits on a man already knocked down by the same checker (9.3 below), none of which the
+code ever knocks down.)
 
 ![Knockdown number by weight difference, for a person's checker and the computer's](img/weight_bug.svg)
 
@@ -799,9 +801,10 @@ shots are best, not exact odds.
    square). Across the slot with the receiver inside 18 feet: 63%; on the doorstep with the pass from 14-20 feet to
    the side, close to automatic. In the recorded games, open one-timers from the slot scored half the time. ([7](#7-one-timers))
 2. **Don't shoot at a set goalie.** Pass first, or shoot while he's moving or off his line. ([6](#6-shooting))
-3. **The deke needs the swing.** Without it the same shot scores 0-1%; with it the best set-ups score 80-90%. Come in
-   about 30 units off the middle, swing about 72 units from the goalie, shoot a fraction of a second later, and swing
-   to your forehand or your own left. Swing too late and the goalie takes the puck. ([13](#13-breakaways-and-penalty-shots), [SCORING_GENESIS_DEKES](SCORING_GENESIS_DEKES.md))
+3. **The deke needs the swing.** Without it the same shot scores 0-1%; with it the best set-ups score 80-96%. Come in
+   about 15 feet to one side, drifting gently toward the middle, swing about 20 feet from the goalie (24-28 for a
+   swing to your right), and shoot a fraction of a second later. It needs your speed. Swing too late and the goalie
+   takes the puck. ([6](#6-shooting), [SCORING_GENESIS_DEKES](SCORING_GENESIS_DEKES.md))
 4. **From the middle, the slapshot with Down held** (30-55 feet out) goes under a goalie in the butterfly: 28% on
    average for a strong shooter, more at the bottom net. It needs Shot Power (the slapshot jumps between 3 and 4). ([6](#6-shooting))
 5. **The far-post slapshot on the move**: skate across toward your stick side and release before the middle, 28-35
