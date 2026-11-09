@@ -5,7 +5,8 @@ folders. An opponent picking the puck up (puckglue) wipes the team's assists and
 should clear it. But a2touchpuck returns at once when the toucher is already tmtouch1 ("same player"), before the
 flag is cleared, so when the last toucher before the turnover wins the puck back himself, the flag stays set and the
 teammate he passes to overwrites him: his assist is lost. Counted: goals left unassisted where the scoring team's
-first carrier after the wipe was the tmtouch1 of the wipe and a teammate scored. Aggregates only.
+first holder after the last opponent possession (the wipe) was the tmtouch1 at that moment and a different player
+scored. Aggregates only (-v lists each case by game and roster number).
 
 python analysis/assist_loss_study.py"""
 import sys
@@ -32,22 +33,22 @@ def folders(snes):
                 yield cap
 
 
-def carrier(cap, i, snes, team):
-    """The scoring team's carrier's roster number at sample i, or None."""
+def holder(cap, i, snes):
+    """(team, roster number) of the player holding the puck at sample i, or None when it is loose."""
     if snes:
         pc = sw(cap.word(i, 0x0AD9))
-        if 0 <= pc < 24 and pc % 2 == 0 and (pc // 2 >= 6) == (team == 1):
-            return cap.word(i, 0x12A3 + pc)
+        if 0 <= pc < 24 and pc % 2 == 0:
+            return (1 if pc // 2 >= 6 else 0), cap.word(i, 0x12A3 + pc)
         return None
     puck = 0xB04A + 14 * 0x80
     if cap.byte(i, puck + 0x60) == 0:
         k = cap.byte(i, puck + 0x61)
-        if k < 12 and (k >= 6) == (team == 1):
-            return cap.byte(i, 0xB04A + k * 0x80 + 0x66)
+        if k < 12:
+            return (1 if k >= 6 else 0), cap.byte(i, 0xB04A + k * 0x80 + 0x66)
     return None
 
 
-def study(snes):
+def study(snes, verbose=False):
     res, games = Counter(), 0
     for folder in folders(snes):
         try:
@@ -62,23 +63,25 @@ def study(snes):
             else:
                 b = GEN_TEAM[team]
                 T1, T2, FL, FB, G = b + 0x18, b + 0x1A, b + 0x30, 0x800, b + 0xC
-            prevg, wipe_t1, carriers, flagprev = None, None, [], 0
+            prevg, wipe_t1, carriers = None, None, []
             for i in range(cap.count):
-                flag = cap.word(i, FL) & FB
-                if flag and not flagprev and sw(cap.word(i, T2)) < 0:
+                h = holder(cap, i, snes)
+                if h is not None and h[0] != team:          # an opponent holds it: puckglue wiped the assists
                     wipe_t1, carriers = sw(cap.word(i, T1)), []
-                flagprev = flag
-                pn = carrier(cap, i, snes, team)
-                if pn is not None and (not carriers or carriers[-1] != pn):
-                    carriers.append(pn)
+                elif h is not None and (not carriers or carriers[-1] != h[1]):
+                    carriers.append(h[1])
                 g = cap.word(i, G)
                 if prevg is not None and g == prevg + 1 and g < 30:
                     t1, t2 = sw(cap.word(i - 1, T1)), sw(cap.word(i - 1, T2))
                     res["goals"] += 1
                     if t2 < 0:
                         res["unassisted"] += 1
+                        # the bug: the first of the team to hold it after the last opponent's possession was the
+                        # last toucher before it, and then a different player scored
                         if wipe_t1 is not None and carriers and carriers[0] == wipe_t1 and t1 != wipe_t1:
                             res["unassisted by the bug"] += 1
+                            if verbose:
+                                print("  ", folder.name, "team", team, "re-taker", wipe_t1, "carriers", carriers, "scorer", t1)
                     wipe_t1, carriers = None, []
                 prevg = g
     return games, dict(res)
@@ -86,5 +89,5 @@ def study(snes):
 
 if __name__ == "__main__":
     for snes in (True, False):
-        g, r = study(snes)
+        g, r = study(snes, verbose="-v" in sys.argv)
         print("SNES" if snes else "Genesis", g, "games:", r)

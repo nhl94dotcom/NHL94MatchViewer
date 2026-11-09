@@ -2311,8 +2311,12 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   an assist). Traced frame by frame in all six SNES goals the converter flagged (a completed pass to the scorer
   within 4 s, no assist): each time the passer had been tmtouch1 before the wipe, carried the puck with the flag still
   set, and the receiver's touch replaced him (two were one-timers).
-- **How often** (`analysis/assist_loss_study.py`, every recording with a match): SNES 10 of 259 goals (57 unassisted),
-  Genesis 9 of 274 (61 unassisted): about one goal in 27, one unassisted goal in six. The other unassisted goals after
+- **How often** (`analysis/assist_loss_study.py`, every recording with a match): SNES 9 of 259 goals (57 unassisted),
+  Genesis 8 of 274 (61 unassisted): about one goal in 30, one unassisted goal in seven. (A first count, which
+  reset only on the first wipe and not on a second opponent possession, said 10 and 9: one false case each, a goal
+  scored alone by a player who got the puck after a second turnover.) Each Genesis case traced too: the re-taker
+  (two of them goalies) carried with tmflast still set and the next teammate replaced him. The Genesis clears an
+  assist with `st` (a byte), so a cleared slot reads $FFxx (-254, -246 ...), still no assist. The other unassisted goals after
   passes were real changes of possession: the goalie holding it 0.5 s or more (12 SNES goals), a skater holding it
   0.5 s or more (9), or a defender's stick picking it up for 0.1-0.3 s (5), which also clears them.
 - **Where to fix it:** SNES retail and Classic $9E:C523 (file $F4523; SDL16 $9E:C723, nhl94snes_2026 $9E:C56B; not

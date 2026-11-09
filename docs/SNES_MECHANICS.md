@@ -903,7 +903,7 @@ yet. Each was checked in the game (STUDY_NOTES).
 | Aggression | Cold (maxed) players take most penalties; a person's skater is called half as often as the computer's |
 | Interference | Anyone can be called; 40% for a maxed-Aggression player |
 | Delayed penalties | No immunity: both teams can be called at one whistle |
-| Assists | Any opponent pickup (puckglue) clears the team's assists, the goalie's catch included; and when the last player to touch it before the turnover wins it back himself, his assist on the goal that follows is lost (a2touchpuck's "same player" exit leaves tmflags bit 2 set: 10 of 259 recorded goals; STUDY_NOTES, "Assists that disappear") |
+| Assists | Any opponent pickup (puckglue) clears the team's assists, the goalie's catch included; and when the last player to touch it before the turnover wins it back himself, his assist on the goal that follows is lost (a2touchpuck's "same player" exit leaves tmflags bit 2 set: 9 of 259 recorded goals; STUDY_NOTES, "Assists that disappear") |
 | One-timers | Go where the d-pad points; goalie reach unchanged, but the computer goalie is slowed by passes; can be offside |
 | Person in net | Moves much faster; taking him doesn't make him bigger, but holding A (a save move) adds a stick / glove / pad area on one side |
 | Wind-up | No Genesis-style early pad stack; he stops once when a carrier winds up skating up or down the ice |
