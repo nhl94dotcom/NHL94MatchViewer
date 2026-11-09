@@ -2704,3 +2704,9 @@ code a stumble branches to `.hitter`, never reaching `.cont2`).
 Computer against itself, line changes on (5-minute periods, regulation, 12 games each; `gen_injury_baseline.py`,
 `snes_injury_baseline.py`): Genesis no injuries, 22 knockdowns, 25 held / hooked a game, lowest energy median 38%;
 SNES 5 injuries (0.42 a game, 2 for the game), 29 knockdowns, 14 held / hooked, lowest energy median 41%.
+- Retail against nhl94_hit_energy.bin, the computer against itself (`gen_injury_baseline.py` with the mean energy on
+  the ice each second and shift ends added; the same 12 seeds; 5-minute periods, line changes on): mean energy on the
+  ice 3656 / 3660 of 4096 (89%), shift ends 88.7 / 87.3 a game, lowest energy median 1574 / 1614, knockdowns 22.4 /
+  22.7, held / hooked 24.6 / 20.5, injuries 0 / 2 (the build changes no injury roll: chance; the games go their own
+  ways). No measurable change: the option takes about 22 x 100 + 20 x 50 = 3,200 a game against about 85,000 drained
+  on the ice (88 shifts of about 970), under 4%.
