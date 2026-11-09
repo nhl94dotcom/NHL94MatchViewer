@@ -2107,6 +2107,18 @@ $9E:D150; $9F:9A31 / $9F:FB43; the checksum).
   game seconds each: retail pulled behind by 1 or 2 at 55 s (not at 65 / 115 / 125, not behind by 3 or 4); the hack
   behind by 1, 2 or 3 at 115, 65 and 55 s (not at 125, not behind by 4). Both still need the puck carried by the team in
   its attacking half.
+- **4e60517 rebuild (10:23): L+R on a fresh press, Max Boost on the stored byte.** GetNewPresses' last store
+  ($9B:84D8) calls $9B:CEDB: per pad 1 / 2, a new L or R with exactly $30 held sets $1EF0,X = 24, else it counts down
+  (once per ReadPads: every game loop, every other frame in play); ManualPullGoalie acts on and clears its pad's
+  count. Held 4 to 120 frames: pulled once, 12 of 12 each; 2 frames: 11 of 12 (missed when a game loop took 3
+  frames, so no ReadPads during the tap). Backup in net, $FF00, a stoppage: nothing; both pads on home: pad 1 only;
+  the sound as before. Ghost presses: none from a whistle (play 677 frames later) or from a pause resumed 120 frames
+  after the press; **a press in a pause resumed 30 frames later pulled the goalie 84 frames after the press**: the
+  count stops for about 37 frames while play resumes (no ReadPads), so a press in the last part of its count before
+  START fires once play runs. In the pause the only extra RAM the press changes is $1EF0 (the stack bytes differ as
+  the code differs); a whole-game comparison with retail diverges from the extra cycles alone (as the penalty-roll
+  stubs did). Max Boost: Agility 11 and Checking 9 cells at 100 (the two -1s included), no cold value missed, the
+  rest as retail. The extra attacker fix is still the old one (penalty-kill lines not fixed).
 - **Can a defenceman be a line's extra attacker on retail? (code)** Only if the ROM's own line data puts one there.
   The RAM lines are written by LoadTeamLines (from the team data: at the start, setoptions, Restore default lines) and
   by the editor (SetLineSlot / SwapLineSlots), which writes slot offsets 0-4 only (lineslots 5 or 4) and swaps only

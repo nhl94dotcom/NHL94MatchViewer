@@ -18,6 +18,8 @@ pad 1 against Los Angeles, first period, in play). Parts, each from that state:
   during a stoppage (gmclock $15D6 set by play); tmgoalie $FF00 (pulled by the game) and 1 (the backup); both pads
   on the home team (cont2team $1C86 = 1) with pad 2 alone pressing, then pad 1; pad 2 alone on the home team; the
   sound (part_sound: the audio frame by frame from the press, against the same frames without it).
+- ghost: L+R pressed during a whistle or a pause; is the goalie pulled once play resumes? ramdiff: the same
+  inputs on both ROMs (L+R only inside a pause), the work RAM that differs at the end.
 - cpu: both teams by the computer (snes_60fps_cvc.computer_only), third period ($1630 = 2), home behind by 1-4
   (tmscore $178E / $1790), the clock held at 125 / 115 / 65 / 55 s for 60 game seconds: did home pull its goalie?
 
@@ -228,7 +230,7 @@ def part_lr(rom):
     res = {}
     # timing: hold h frames after o frames
     timing = {}
-    for h in (2, 4, 8, 12, 16, 24, 30, 36, 48):
+    for h in (2, 4, 8, 12, 16, 24, 30, 36, 48, 120):
         pulled = 0
         for o in range(0, 24, 2):
             g.reset()
@@ -307,6 +309,67 @@ def part_sound(g):
                 first_frame_that_differs=next((f for f in range(40) if a[f][0] != b[f][0]), None))
 
 
+def part_ghost(rom):
+    """L+R pressed (6 frames) while the clock is stopped by a whistle, and while paused: frames from the press until the
+    clock runs again, and whether the goalie was pulled by 120 frames after that. Also a press in the pause with play
+    resumed at once (within the press's count)."""
+    g = Game(rom)
+    out = {}
+    def play_on(frames):
+        for f in range(frames):
+            g.e.run(1)
+    # a whistle: play until the clock stops
+    g.reset()
+    for f in range(60 * 60 * 3):
+        g.e.run(1, hold=["UP"] if f % 120 < 60 else ["DOWN", "B"])
+        if g.e.w(GMCLOCK) and not g.e.w(SFLAGS) & 1:
+            break
+    g.e.run(6, hold=["L", "R"])
+    n = 6
+    while (g.e.w(GMCLOCK) or g.e.w(SFLAGS) & 1) and n < 3000:
+        g.e.run(1, hold=["START"] if n % 200 == 100 else [])
+        n += 1
+    play_on(120)
+    out["whistle"] = dict(frames_from_press_to_play=n, pulled=hex(g.e.w(TMGOALIE)))
+    # a pause: L+R in the pause, then resume after 30 / 120 frames
+    for wait in (30, 120):
+        g.reset()
+        g.tap("START", 60)
+        g.e.run(6, hold=["L", "R"])
+        g.e.run(wait)
+        n = 6 + wait
+        g.e.run(3, hold=["START"])
+        n += 3
+        while g.e.w(SFLAGS) & 1 and n < 600:
+            g.e.run(1)
+            n += 1
+        play_on(120)
+        out[f"pause, resumed {wait} frames after"] = dict(frames_from_press_to_play=n, pulled=hex(g.e.w(TMGOALIE)))
+    return out
+
+
+def part_ramdiff(retail, hack):
+    """The same inputs on both ROMs from the state (a pause with L+R pressed in it, resume, 30 s of play with random
+    presses but never L and R together; the pause long enough for the press's count to run out): the work RAM addresses
+    that differ at the end."""
+    import random
+    rams = []
+    for rom in (retail, hack):
+        g = Game(rom)
+        g.reset()
+        rnd = random.Random(5)
+        g.tap("START", 60)
+        g.e.run(6, hold=["L", "R"])
+        g.e.run(300)                      # past the press's count: no pull after the pause
+        g.tap("START", 120)
+        for f in range(0, 1800, 6):
+            g.e.run(6, hold=rnd.choice([["UP"], ["DOWN", "B"], ["LEFT", "Y"], ["RIGHT", "A"], ["L"], ["R"], ["X"], []]))
+        rams.append(bytes(g.e.ram))
+    diff = [a for a in range(len(rams[0])) if rams[0][a] != rams[1][a]]
+    return dict(tmgoalie=hex(g.e.w(TMGOALIE)), addresses_that_differ=[f"${a:04X}" if a < 0x10000 else f"$7F:{a - 0x10000:04X}" for a in diff][:40],
+                count=len(diff))
+
+
 def part_cpu(rom):
     import snes_60fps_cvc as V
     g = Game(rom)
@@ -334,15 +397,17 @@ def part_cpu(rom):
 
 def main():
     retail, hack, out = sys.argv[1], sys.argv[2], Path(sys.argv[3])
-    parts = sys.argv[4:] or ["lines", "play", "ratings", "lr", "cpu"]
+    parts = sys.argv[4:] or ["lines", "play", "ratings", "lr", "ghost", "ramdiff", "cpu"]
     lowload.gentle()
     res = json.loads(out.read_text()) if out.exists() else {}
     for part in parts:
         if part == "ratings":
             res["ratings"] = ratings(retail, hack)
+        elif part == "ramdiff":
+            res["ramdiff"] = part_ramdiff(retail, hack)
         else:
             fn = globals()[f"part_{part}"]
-            res[part] = {Path(r).name: fn(r) for r in ((retail, hack) if part in ("lines", "cpu", "lr") else (hack,))}
+            res[part] = {Path(r).name: fn(r) for r in ((retail, hack) if part in ("lines", "cpu", "lr", "ghost") else (hack,))}
         out.write_text(json.dumps(res, indent=1, default=str))
         print(part, json.dumps(res[part], default=str)[:3000], flush=True)
 
