@@ -2172,3 +2172,19 @@ changes on) LD to RW on lines 0-4 (Sc1 ... PP2) and LD, RD, LW, C on lines 5 and
 RW of line 0 only. The extra attacker's slot is never reached (LineCursorTable sends a move onto it to the next group
 of lines), and the editor has no row for it; the penalty-kill lines' RW slot can't be edited, as on the SNES.
 
+## SNES xG for SA-1 games: chunk 1, what it takes (2026-11-09)
+
+- **No SA-1 games recorded yet.** The 31 SNES captures in the game folder are on three 1 MB ROMs (29 on cd85e387); the
+  two SA-1 ROM copies there (06edd6c6, 308bd713, Oct 19) have no captures. Every recorded SNES shot has xG.
+- **What changes at 60 frames a second** (NHL94SNES-SA1 docs/SA1.md; retail code): the physics scale with the frame
+  step d7 (timestep, velstep, gravstep): playeracc multiplies the acceleration by d7, updateplayers' friction comes
+  from tables indexed by timestep (.21 / .22), the decision timers count down by d7. What runs per game step, twice as
+  often in real time: the AI (assignments: the goalie's rethinks land on finer frame boundaries), input, and the
+  collisions (the puck against the goalie's body box and stick / glove areas tested every frame, not every other).
+- **The model** (tools/xg_snes.py, the viewer's XG_SNES port) steps puck and goalie STEP = 2 frames, with gravity,
+  speeds, friction and timers per frame times STEP, so an SA-1 version is mostly STEP = 1, once each per-step rule is
+  checked in the SA-1 code (the goalie's rethink every aidef / 2, pucknorm's crossing countdown every 5 frames, the
+  save start under 19 frames, the no-touch timer). xg_calib.py (the game's own shots against the model) can't run on
+  the SA-1 build as it is: its SNES states are retail's, and the build keeps low RAM in BW-RAM (snes_60fps_cvc.Mem
+  maps it), so a check needs SA-1 states and a shot runner.
+
