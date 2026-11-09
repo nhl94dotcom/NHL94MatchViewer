@@ -7,6 +7,10 @@ numbers like (7.2) point there.
 
 Playing the Genesis version? It differs in important ways: see the [Genesis player's guide](GENESIS_GUIDE.md).
 
+On the **2026 2 MB SA-1 builds**, the game runs 60 frames a second instead of 30: skating and the puck keep their
+speed, but the computer players, the pads and the collisions act twice as often, and games of the computer against
+itself had more body checks and more penalties. The numbers in this guide are the original game's (SNES_MECHANICS 14).
+
 Some parts of the SNES code haven't been read yet (SNES_MECHANICS.md section 16 lists them). Where this guide has
 nothing to say about something, that's why; it doesn't assume the SNES works like the Genesis.
 
@@ -506,6 +510,11 @@ went in within 12.6 units of a goalie's centre.
   makes save moves.
 - **When he has the puck and an opponent comes within about 7 feet, he drops onto it and covers it** for about 4 game seconds
   (1.5 s of real time); with nobody near he looks to pass it out. A goalie you control never does this.
+- **Pulling the goalie:** the computer pulls its own when one or two goals down with a minute or less left, while it
+  has the puck in your half (on the Genesis only when exactly two down). Every team pulls on a delayed penalty while it
+  has the puck. To pull yours, use the pause menu's goalie item (starter, backup, pulled). At full strength the line's
+  extra attacker comes on; **on a penalty kill it's the line's hidden RW** (the penalty-kill lines show only four rows
+  in Edit Lines, but the ROM's line has a fifth player there). (SNES_MECHANICS 12.5.)
 
 The viewer's **xG** plays every SNES shot out this way and shows the chance it had of going in, on each shot, the
 cards and the team stats; the **xG map** (Map menu) shows it for every spot.
