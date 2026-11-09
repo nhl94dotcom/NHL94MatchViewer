@@ -161,7 +161,7 @@ Working values 0-15. Every place found where the code reads each rating:
 | **Shot Accuracy** | The chance a shot goes exactly where aimed, and how far it scatters if not |
 | **Passing** | How steady a pass's speed is (6.1) **and the flip's accuracy** (6.3) |
 | **Stickhandling** | Steals, catching passes, and wobbling instead of falling when hit (12+) |
-| **Checking** (array `checking`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.3) |
+| **Checking** (array `checking`) | Knockdowns; the upend fall; **how often computer skaters go for a hit** (12.2) |
 | **Endurance** | Energy, which only matters with line changes on |
 | **Pass / shoot bias** | Whether a **computer** puck carrier shoots or passes (`chk4shot`, `chk4pass`) |
 | **Aggression** (array `aggress`) | Penalty odds; nothing wraps (8.1) |
@@ -270,8 +270,9 @@ target never reads it.) **Code** Because the speed comes from the
 
 A skater's stick takes a loose puck when it is slower than **13,000 + 700 x his Stick Handling**; a faster one bounces
 off his stick (`puckstick`): a bobble. So he catches anything under 13,000 at Stick Handling 0 and 23,500 at 15.
-**Code** (the routine adds 3,000 when "the object's position" is the goalie's or it is the pass's receiver, but the
-object it looks at is the puck, whose position reads 0, so every stick gets the 3,000.)
+**Code** (the 13,000 is the routine's 10,000 plus 3,000 meant only for a goalie or the pass's receiver: it tests the
+position of the object it is looking at, which is the puck, whose position reads 0 like a goalie's, so every stick gets
+the 3,000.)
 
 What that means: a **long pass** (up to 20,480, more with a poor passer's random extra) to a **low-Stick Handling**
 receiver can bob off his stick; a **short pass** (16,384) almost never does. The game keeps no memory of a bobble: the
@@ -577,12 +578,22 @@ a person's skater.
 
 - **On the ice the puck keeps about 88% of its speed a second.** It goes through the skaters' friction step, with its
   "gliding" bit set (table `.22`: $FF/256 a step at the usual two frames a step). Measured (analysis/puck_glide_study.py):
-  a median 0.881 a second over 262 clean stretches (the Genesis 0.895 over 227).
+  a median 0.881 a second over 262 clean stretches (the Genesis about 0.89: GENESIS_MECHANICS 13.1).
 - **In the air there's no friction** (measured 1.000, 245 stretches). Gravity 96 a step; **on landing it bounces back up
   at half its landing speed** (a bounce sound when that's big).
 - **Boards** (`wallcoll`, the same code as the Genesis): the speed into the boards is quartered and reversed, the speed
   along them loses 1/64 + 1/128 (about 98% kept). Rim shots ride the boards; pucks fired straight in die. A hard hit
   (more than 4,096 into the boards) pops the puck up by a random amount, with a sound.
+
+### 7.9 Injuries
+
+`FallDown`, `setInjuryType`. **Code.** Much rarer than on the Genesis, which is why none has been recorded yet:
+
+- **Only the puck carrier can be hurt**, and only when a check knocks him flat on his back while he faces straight up or
+  down the ice, with the clock running and the hitter a skater.
+- Then the chance grows with the hit's force: randoma8(150) x 2 under the impact, about impact / 300.
+- **Out for the period**, or **for the game 1 time in 7** (on the Genesis the checker's fighting rating decides).
+- With penalties on, **roughing** is called on the hitter and play stops; the hitter is knocked back.
 
 ---
 
@@ -722,16 +733,6 @@ where he stands, and he'd lined up for the faceoff: after a net knocked off by t
 the zone. So the new shot starts from the side dot.
 
 ---
-
-### 10.9 Injuries
-
-`FallDown`, `setInjuryType`. **Code.** Much rarer than on the Genesis, which is why none has been recorded yet:
-
-- **Only the puck carrier can be hurt**, and only when a check knocks him flat on his back while he faces straight up or
-  down the ice, with the clock running and the hitter a skater.
-- Then the chance grows with the hit's force: randoma8(150) x 2 under the impact, about impact / 300.
-- **Out for the period**, or **for the game 1 time in 7** (on the Genesis the checker's fighting rating decides).
-- With penalties on, **roughing** is called on the hitter and play stops; the hitter is knocked back.
 
 ## 11. Offsides
 
@@ -902,7 +903,7 @@ yet. Each was checked in the game (STUDY_NOTES).
 | Goalie pushed in | Impossible: the net ignores a puck the goalie holds |
 | Flip | A computer dump-in by side of centre; scatters by Passing |
 | Weak shooters | No limit: anyone can take a full slapshot |
-| Set goalie's right | A slapshot from 6-16 units to the shooter's left of centre, 25-40 feet out, aimed at that side: about half go in (his side save leaves a gap, 4.8) |
+| Set goalie's right | A slapshot from 6-16 units to the shooter's left of centre, 25-40 feet out, aimed at that side: about half go in with the ice clear, about 45% at the top net and 20% at the bottom with real line-ups (his side save leaves a gap, 4.8) |
 | Computer skaters | Hit-happy (two check rolls a frame) |
 | Turnovers | Computer skaters switch to defence at once (no awareness delay, unlike the Genesis) |
 | Faceoffs | Pure timing; held direction 3 in 4 |
@@ -971,9 +972,6 @@ Ordered by how much the answer would matter in league play (usually penalties on
   lines at +/-264 (the code's tests; the net object sits at +/-268), blue lines at +/-88. About 3 units per foot.
 - **Speed:** the game's velocity words; skaters top out around 9,000.
 
-Distances are in the game's own units: **about 3 units to a foot**, so divide by 3 for feet. Speeds are the game's
-speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
-
 **The rink:**
 
 | Landmark | Units | Feet |
@@ -1024,6 +1022,7 @@ speed numbers; a puck moves its speed / 4,096 units a frame, 60 frames a second.
 ### Sources
 
 - SNES disassembly: [github.com/abdulahmad/NHL94SNES](https://github.com/abdulahmad/NHL94SNES)
-  (`src/routines/hockey`, `src/routines/logic`, `src/routines/stats`, `src/ram94s.asm`)
+  (`src/routines/logic`, `src/routines/collide`, `src/routines/hockey`, `src/routines/penalty`, `src/routines/stats`;
+  RAM names in `src/ram94s.asm`)
 - Recordings and save states read with this project's helper; the project's `docs/PROJECT_NOTES.md` holds the detailed notes,
   addresses and test methods behind each finding.
