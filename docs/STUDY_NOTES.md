@@ -3016,3 +3016,24 @@ after).
   two runs on both). `wav` writes the songs out: $32's loudness holds through its 2.6 s (real) and drops to the
   background at its end: the organ patch's release lets each 0-frame note ring, as the original's own short notes do.
 
+## NOSE4Web's MIDI-made SNES organ songs, played (2026-11-10: NHL94_songs_midi.smc, nhl94snes_SA1_songs_midi.sfc)
+
+From the code (sound/MusicStart, SequencerTick, StepTrack, ReadTrackEvent, ReadVarLen): TempoTick = $2760 / the
+header's tempo byte ($1FE0 on PAL); SequencerTick, from SoundUpdate in the NMI every frame, adds $40 and runs a tick
+each time TempoAcc passes TempoTick, so tempo 157 is one tick a frame. A track is [delta][event] ... (deltas
+variable-length ticks; the first one dropped, so every track starts at tick 0); a note is its code (below $D9), a
+velocity byte and a variable-length length; **$D9 / $DA on any track stops the whole song** (MusicStop), and
+SequencerTick steps the tracks from the highest down and quits as soon as the music stops. Panning comes with the
+instrument: $DE reads its stereo bytes (+$12 / +$13).
+`snes_song_streams.py` (the songs decoded): San Jose's new Brass Bonanza ($80:FCF7, tempo 157, 2 tracks, $DC 11 /
+$DC 12, $D9 at tick 737 on both) against the game's own SNES Brass Bonanza ($99:BB80: tempo 120, a tick every 1.31
+frames, $D9 at 561 / 562, so 738 frames): the same notes (codes, velocity 110) at the same moments (ticks 1, 20, 39 ...
+there are frames 1.3, 26, 51; here 0, 25, 50), the same length; but the notes are shared out between the two tracks
+(instruments 11 and 12) differently, 49 / 65 against 67 / 47. Boston's Charge fanfare ($80:FCAC): one track,
+instrument 11, 6 notes, $D9 at 134.
+`snes_midi_song_check.py` (live play, the home power-play faceoff, WAVs): San Jose's new song starts and plays 737
+frames; Boston's 135; run into the period's end it is replaced by PeriodOver's song at once; left / right loudness
+1.81 for the fanfare (all instrument 11) against 1.03-1.12 for the game's own songs. TempoAcc on the 1 MB build: +$40
+a frame, one SequencerTick a frame. Not measured: an effect during the new songs (none started in these runs), and
+the SA-1 build (the harness didn't reach the song; no song in its saved state to time).
+
