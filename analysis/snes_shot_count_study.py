@@ -12,6 +12,7 @@ holding it (a catch). Counted against the converter's own `counted`.
 
 python snes_shot_count_study.py [NAME ...]   (default: every SNES game with a recording in Documents\\NHL94 Viewer)"""
 import bisect
+import math
 import json
 import sys
 from collections import Counter
@@ -21,7 +22,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from injury_risk_estimate import HOME, Capture  # noqa: E402
 
 SFLAGS, SF2SHOT, GMCLOCK, PUCKC, POSITION, TMSHOTS = 0x15D8, 0x1000, 0x15D6, 0x0AD9, 0x0F43, 0x177A
-PUCKX, PUCKY, SHOTPLAYER, LASTPLAYER = 0x0D71, 0x0DD3, 0x0D29, 0x0CF3
+PUCKX, PUCKY, SHOTPLAYER, LTPLAYER, PFTEAM = 0x0D71, 0x0DD3, 0x0D29, 0x30F6, 0x1503
+PUCKVX, PUCKVY = 0x0EDF, 0x0EFF      # Xvel $0EC3 / Yvel $0EE3 + the puck (object 14 x 2)
 
 
 def signed(v):
@@ -52,31 +54,33 @@ def study(name):
                 why = "flag still set 5 s later"
             else:
                 up = shots(min(cap.n - 1, k + 2)) > shots(max(0, k - 2))
-                pc = signed(cap.w(k, PUCKC))
-                goalie = 0 <= pc < 24 and cap.w(k, POSITION + pc) == 0
                 if up:
                     why = "counted"
                 elif cap.w(k, GMCLOCK):
                     why = "clock stopped"
-                elif 0 <= pc < 24 and not goalie:
-                    why = "a skater took it"
-                elif goalie:
-                    why = "goalie took it, not counted"
                 else:
-                    x, y = signed(cap.w(k, PUCKX)), signed(cap.w(k, PUCKY))
-                    why = "loose: a wall, post or touch"
-                    s["_xy"] = (x, y)
-                if why not in ("counted", "clock stopped"):
-                    lp = signed(cap.w(k, LASTPLAYER))      # puckstick / doshot set it: the goalie's stick?
-                    sp = signed(cap.w(k, SHOTPLAYER))
-                    by = ("the goalie" if 0 <= lp < 24 and cap.w(k, POSITION + lp) == 0 else
-                          "the shooter" if lp == sp else "another skater" if 0 <= lp < 24 else "-")
-                    why += f" (last touch: {by})"
+                    # a2touchpuck writes the toucher (object number) to ltplayer on every touch; no new toucher
+                    # around the flag's end: a wall or post (wallcoll; the net's posts through checkgoalp)
+                    lt = lambda i: cap.w(i, LTPLAYER)
+                    toucher = next((lt(i) for i in range(k, max(j, k - 3), -1) if lt(i) != lt(i - 1)), None)
+                    shooter = cap.w(k, SHOTPLAYER) // 2
+                    if toucher is None or toucher > 11:
+                        why = "a wall or post"
+                    elif cap.w(k, POSITION + 2 * toucher) == 0:
+                        v = max(math.hypot(signed(cap.w(i, PUCKVX)), signed(cap.w(i, PUCKVY)))
+                                for i in range(max(0, k - 3), k + 1))
+                        why = "the goalie's stick, " + ("over 13,000" if v > 13000 else "13,000 or under")
+                    elif toucher == shooter:
+                        why = "the shooter again"
+                    elif cap.w(k, PFTEAM + 2 * toucher) == cap.w(k, PFTEAM + 2 * shooter):
+                        why = "a teammate's stick or body"
+                    else:
+                        why = "a defender's stick or body"
         end = min(cap.n - 1, i0 + 120)
         pc = signed(cap.w(end, PUCKC))
         held = 0 <= pc < 24 and cap.w(end, POSITION + pc) == 0
         out.append({"kind": s["kind"], "save": s.get("save"), "counted": s.get("counted"), "why": why, "held": held,
-                    "xy": s.get("_xy"), "ms": cap.ms[i0] - cap.ms[0]})
+                    "type": s.get("type"), "ms": cap.ms[i0] - cap.ms[0]})
     return out
 
 
@@ -92,12 +96,10 @@ def main():
             continue
         if r:
             rows += [dict(x, game=n) for x in r]
-    c = Counter((r["kind"], r["counted"], r["why"], "held" if r["held"] else "-") for r in rows)
+    c = Counter((r["kind"] if r["kind"] == "one-timer" else r["type"], r["counted"], r["why"]) for r in rows)
     for k, v in sorted(c.items(), key=str):
         print(k, v)
-    loose = [r["xy"] for r in rows if r["xy"]]
-    if loose:
-        print("puck where the flag went (loose):", sorted(loose)[:40])
+
 
 
 if __name__ == "__main__":

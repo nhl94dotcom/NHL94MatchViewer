@@ -2860,18 +2860,33 @@ test ROMs and CDL_Season_12.bin, then `gen_setup_compare.py`:
   columns 8-10, rows 6-11, under the visitors' logo (logos up) and the player photo (card up): never with Los Angeles
   at Montreal and Rob Blake's card, but another logo or photo with colour-0 pixels would show them.
 
-## SNES saves the game doesn't count as shots (2026-11-10, a community member: "a shot doesn't count when the goalie catches it")
+## SNES saves the game doesn't count as shots (2026-11-10, community members: "a shot doesn't count when the goalie catches it"; "SNES clappers right at the goalie, no shot")
 
-From the code: ChkShotStat counts a shot only while sf2shot (sflags $15D8 bit $1000) is set and the clock runs
-(gmclock $15D6 = 0); doshot sets the flag only when the shooter has the puck; a wall or post (wallcoll) and any
-player's touch (a2touchpuck, from puckstick's deflection too) clear it without counting. A clean catch counts:
-puckglue calls ChkShotStat before anything clears the flag. `analysis/snes_shot_count_study.py` over the 29 recorded
-SNES games, the saves of shots and one-timers (512): 384 counted. Of the 122 the game didn't count: 81 had another
-skater's stick touch the puck on the way (43 a teammate's: tips and screens; 38 a defender's; a median 0.23 s, real,
-after the shot), which ends the shot for the game; 11 the goalie's own stick knocked it away (puckstick's deflection,
-a2touchpuck, no count: a stick save that isn't counted, then picked up); 12 off a post or the boards first; 13
-where doshot never set the flag (the shooter didn't have the puck at the release); 2 with the clock already stopped.
-The converter's `counted` already follows the game.
+**From the code** (collide/checkpuckcoll_ccx, puckstick, puckgoalie, puckglue, puckbody, wallcoll; logic/puck/doshot,
+a2touchpuck; penalty/shotstats/ChkShotStat): a shot counts in ChkShotStat only while sf2shot (sflags $15D8 bit
+$1000) is set and the clock runs (gmclock $15D6 = 0). doshot sets the flag only when the shooter has the puck.
+ChkShotStat runs from puckgoalie's save (before its a2touchpuck), from puckglue when a goalie takes the puck, from
+Goal and checkgoal. The flag is cleared without a count by:
+- **the goalie's stick, on a fast shot**: checkpuckcoll_ccx checks a goalie's stick first (`.9`, puckstick) and his
+  body after it in the same frame (`.3xx: jmp .7`, puckgoalie). puckstick catches a loose puck (puckglue: counted)
+  only when its speed is under 10,000 + 3,000 for a goalie (the stickhandling bonus is off while the shot flag is
+  set); faster, a goalie always deflects it (`.t1x` -> `.3`: a2touchpuck, then deflect), the flag goes, and the body
+  save that follows, or the goalie covering it later, can't count. 85% of recorded SNES slapshots (75 of 88), nearly
+  all one-timers (275 of 281) and 43% of wrist shots (256 of 595) are over 13,000;
+- any other player's stick (puckstick's deflection) or body (puckbody, within 8) on the way: a2touchpuck;
+- a wall, post or the net's frame (wallcoll; the posts through checkgoalp);
+- the whistle: after it nothing counts (gmclock).
+Also from the code: a goal whose flag was cleared (a deflection) adds a goal and no shot; a shot that touches nothing
+keeps its flag, so a goalie covering it much later (or a dump-in he takes cleanly) still counts.
+
+**In the recordings** (`analysis/snes_shot_count_study.py`, the 29 recorded SNES games; the toucher from ltplayer
+$30F6, which a2touchpuck writes on every touch): of 512 saves of shots and one-timers, 390 counted. Of the 122 the game
+didn't count: **the goalie's stick at over 13,000: 56** (one-timers 27, slapshots 9, wrist shots 20; every goalie-stick
+case was over 13,000), a wall, post or the net 31, a defender's stick or body 14, a teammate's 4, the clock stopped
+2; and 13 slow "shots" (2,400-8,400) with no doshot behind them (shotplayer stale or empty): passes or pushes the
+converter took for shots. Slapshot saves: 18 of 50 uncounted, 9 of them off the goalie's stick.
+A fix for an edit: in puckstick's goalie deflection (`.t1x`, position 0) call ChkShotStat before a2touchpuck, so a
+stick save counts like a body save.
 
 ## Energy, speed and the drain on the Genesis; the SNES sites (2026-11-10, for NOSE4Web's "energy from hits only")
 
