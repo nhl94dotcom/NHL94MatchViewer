@@ -1,4 +1,4 @@
-"""The period length option and overtime length, played (Genesis, 2026-11-09, for NOSE4Web 67b16fb: a fourth period
+"""The period length option and overtime length, played (Genesis, 2026-11-09, for NOSE4Web 438dec8: a fourth period
 length with its own regular-season overtime; McMarkis's 99MinOT_Menu made general). One emulator per process.
 
 menu ROM OUT [4way]: power-on to Game Setup (with EA's 4-Way Play adaptor for 4way: OptionLimits4Way), DOWN to the

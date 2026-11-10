@@ -1,4 +1,4 @@
-"""NOSE4Web's hit energy option on the SNES, played (2026-11-09, 9d3695f: a knockdown takes 100 from the skater
+"""NOSE4Web's hit energy option on the SNES, played (2026-11-09, 41def89: a knockdown takes 100 from the skater
 knocked down, a hold or hook that catches 50, with line changes on; gen_hit_energy_check.py is the Genesis one).
 
 Each trial runs on the unchanged ROM and the option build from the same state (the unchanged ROM's live-play states,

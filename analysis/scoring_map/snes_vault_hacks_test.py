@@ -1,4 +1,4 @@
-"""NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 44ab460), played in the game: NHL94_vault_hacks.smc (retail
+"""NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 0100df7), played in the game: NHL94_vault_hacks.smc (retail
 NHL94.smc with the extra attacker fix, ForwardsAndDefenseHack, ShowMaxBoost, ManualPullGoalie and the computer's pull
 at 1-3 goals behind with 120 s or less) against NHL94.smc. From the saved state SNES_STATE_TOP (Montreal at home on
 pad 1 against Los Angeles, first period, in play). Parts, each from that state:

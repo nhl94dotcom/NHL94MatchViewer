@@ -1,5 +1,5 @@
 """The SNES injury risk option, ready for NOSE4Web's build (2026-11-09; gen_injury_risk_check.py is the Genesis one,
-f3d8449 there: a count a player of the knockdowns he took, cleared at the start of a game, halved at each intermission,
+0f3e827 there: a count a player of the knockdowns he took, cleared at the start of a game, halved at each intermission,
 and min(count x bonus, cap) added to the impact in FallDown's injury roll).
 
 The SNES roll (FallDown .24, the NHL94SNES disassembly): only the puck carrier, only when he goes into SPAfallback
@@ -28,7 +28,7 @@ Parts:
 - `whistle ROM OUT SPEC|-`: hits after the whistle (the clock stopped, gmclock $15D6 = 1) and with it running: each
   trial's energy change, knockdowns, count change; run on the unchanged ROM (SPEC -) and the build, then compared.
 SPEC is where the build keeps the counts: BASE[:TEAM_STRIDE[:SIZE]] in bank $7E (hex BASE, TEAM_STRIDE bytes between
-the home and away tables, default $20; SIZE 1 for bytes, 2 for words; indexed by pnum), e.g. F034:40:2 (NOSE4Web 80e8368: a word a player at $7E:F034, the away team +$40).
+the home and away tables, default $20; SIZE 1 for bytes, 2 for words; indexed by pnum), e.g. F034:40:2 (NOSE4Web efb691b: a word a player at $7E:F034, the away team +$40).
 
 python snes_injury_risk_check.py injuries ROM OUT [--counts SPEC] | counts ROM OUT SPEC | halving ROM OUT SPEC
        | start ROM OUT SPEC | whistle ROM OUT SPEC|-"""

@@ -1,4 +1,4 @@
-"""SNES organ songs by home team, played (2026-11-09, for NOSE4Web 5f3a2bc's song editing). In live play
+"""SNES organ songs by home team, played (2026-11-09, for NOSE4Web 01bd4bf's song editing). In live play
 (snes_assist_stick_test.Game) with HomeTeam ($1C98) set to a team, the events that start a team song are driven and
 the song the game starts is read: PlayTeamSong stores the slot + 1 in cursong ($0CC3) and MusicStart the song's
 address in SongPtr ($07ED) and its bank in EventPtr+2 (direct page $58); MusicOn ($07F3) is written 0 before each

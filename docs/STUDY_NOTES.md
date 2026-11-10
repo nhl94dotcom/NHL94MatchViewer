@@ -12,7 +12,7 @@ In the order written (newest last).
 
 **Studies, models and the recordings:** [Passing study (2026-10-18)](#passing-study-2026-10-18); [B without the puck: poke or switch (2026-10-19)](#b-without-the-puck-poke-or-switch-2026-10-19); [One-timers struck at the stick's reach (2026-10-21)](#one-timers-struck-at-the-sticks-reach-2026-10-21); [Scoring map: shots played in the real game (2026-10-22)](#scoring-map-shots-played-in-the-real-game-2026-10-22); [Game mechanics from the disassemblies (2026-10-17)](#game-mechanics-from-the-disassemblies-2026-10-17); [Three of the user's observations explained (2026-10-17)](#three-of-the-users-observations-explained-2026-10-17); [The user's five BOS-DAL games (2026-10-17)](#the-users-five-bos-dal-games-2026-10-17); [SNES ratings screen confirmed; the computer goalie's cover (2026-10-17)](#snes-ratings-screen-confirmed-the-computer-goalies-cover-2026-10-17); [Post, body, goal (2026-10-23)](#post-body-goal-2026-10-23); [How league players score against people (the user, 2026-10-23)](#how-league-players-score-against-people-the-user-2026-10-23); [RetroArch videos as a source (pilot, 2026-10-23)](#retroarch-videos-as-a-source-pilot-2026-10-23); [SNES get-up glitch apart from hooks (2026-10-25)](#snes-get-up-glitch-apart-from-hooks-2026-10-25); [A scripted bot (Genesis, 2026-10-31)](#a-scripted-bot-genesis-2026-10-31); [What check attempts lead to (both systems, 2026-11-03)](#what-check-attempts-lead-to-both-systems-2026-11-03); [Keeping the other team out of the slot (Genesis, 2026-11-01)](#keeping-the-other-team-out-of-the-slot-genesis-2026-11-01); [Passing out of a check (Genesis, 2026-11-06 / 07)](#passing-out-of-a-check-genesis-2026-11-06--07); [The SNES second period in full play (2026-11-07)](#the-snes-second-period-in-full-play-2026-11-07); [The scoring maps against a goalie as in games (both systems, 2026-11-07)](#the-scoring-maps-against-a-goalie-as-in-games-both-systems-2026-11-07); [A "count stick deflections" option, tested (Genesis, 2026-11-08)](#a-count-stick-deflections-option-tested-genesis-2026-11-08); [How often the fixed bugs happen in the recorded games (2026-11-08)](#how-often-the-fixed-bugs-happen-in-the-recorded-games-2026-11-08); [Momentum in the recorded games (2026-11-08, a community member's question)](#momentum-in-the-recorded-games-2026-11-08-a-community-members-question); [Game variables: phase 1 (2026-11-08; docs/GAME_VARIABLES_PLAN.md)](#game-variables-phase-1-2026-11-08-docsgame_variables_planmd); [The xG models' goalie spread refitted (2026-11-08)](#the-xg-models-goalie-spread-refitted-2026-11-08); [The SNES lines as loaded (LoadTeamLines; 2026-11-09)](#the-snes-lines-as-loaded-loadteamlines-2026-11-09); [SNES xG for SA-1 games: chunk 1, what it takes (2026-11-09)](#snes-xg-for-sa-1-games-chunk-1-what-it-takes-2026-11-09).
 
-**Checks of ROM edits (NOSE4Web, McMarkis and forum hacks):** [NOSE4Web's rocket pass fix, played in the game (Genesis, 2026-11-07)](#nose4webs-rocket-pass-fix-played-in-the-game-genesis-2026-11-07); [NOSE4Web's runaway-speed fix, played in the game (Genesis, 2026-11-08)](#nose4webs-runaway-speed-fix-played-in-the-game-genesis-2026-11-08); [NOSE4Web's penalty-shot, goalie-pull, Y-button, extra-attacker and blind-ring fixes, played in the game (2026-11-08)](#nose4webs-penalty-shot-goalie-pull-y-button-extra-attacker-and-blind-ring-fixes-played-in-the-game-2026-11-08); [Code readings for NOSE4Web's next fixes (2026-11-08)](#code-readings-for-nose4webs-next-fixes-2026-11-08); [NOSE4Web's sniping, comeback, awareness and crowd fixes, played in the game (2026-11-08)](#nose4webs-sniping-comeback-awareness-and-crowd-fixes-played-in-the-game-2026-11-08); [One check for NOSE4Web's builds (2026-11-08)](#one-check-for-nose4webs-builds-2026-11-08); [The Genesis-only fixes: does the SNES have the bug? (2026-11-08, for NOSE4Web)](#the-genesis-only-fixes-does-the-snes-have-the-bug-2026-11-08-for-nose4web); [NOSE4Web's player photo and score logo editing, seen in the game (2026-11-08)](#nose4webs-player-photo-and-score-logo-editing-seen-in-the-game-2026-11-08); [McMarkis's score-box logos on the original SNES game: what retail leaves free (2026-11-08, for NOSE4Web)](#mcmarkiss-score-box-logos-on-the-original-snes-game-what-retail-leaves-free-2026-11-08-for-nose4web); [NOSE4Web's retail score-box logos, checked in the game (2026-11-08)](#nose4webs-retail-score-box-logos-checked-in-the-game-2026-11-08); [$A130F1 in Genesis Plus GX (2026-11-08, for NOSE4Web)](#a130f1-in-genesis-plus-gx-2026-11-08-for-nose4web); [The SNES big logos' overlapping pieces: which is in front (2026-11-08, for NOSE4Web)](#the-snes-big-logos-overlapping-pieces-which-is-in-front-2026-11-08-for-nose4web); [NOSE4Web's Classic import into the 32-team SA-1 build (2026-11-08)](#nose4webs-classic-import-into-the-32-team-sa-1-build-2026-11-08); [Genesis score-box logos: what the original game leaves free (2026-11-08, for NOSE4Web)](#genesis-score-box-logos-what-the-original-game-leaves-free-2026-11-08-for-nose4web); [NOSE4Web's Genesis score-box logos, checked in the game (2026-11-08)](#nose4webs-genesis-score-box-logos-checked-in-the-game-2026-11-08); [Injuries and NHLPA '93's blood (2026-11-08, for NOSE4Web)](#injuries-and-nhlpa-93s-blood-2026-11-08-for-nose4web); [NOSE4Web's head blood builds, checked (2026-11-08)](#nose4webs-head-blood-builds-checked-2026-11-08); [McMarkis's 60 frames a second: the computer against itself (2026-11-08, for NOSE4Web)](#mcmarkiss-60-frames-a-second-the-computer-against-itself-2026-11-08-for-nose4web); [NOSE4Web's SNES team-block colours, checked (2026-11-08)](#nose4webs-snes-team-block-colours-checked-2026-11-08); [NOSE4Web's SNES photo import freeing replaced photos, checked (2026-11-08)](#nose4webs-snes-photo-import-freeing-replaced-photos-checked-2026-11-08); [Six Genesis bugs looked for on the SNES (2026-11-08, for NOSE4Web)](#six-genesis-bugs-looked-for-on-the-snes-2026-11-08-for-nose4web); [NOSE4Web's SNES Import team with logos, checked (2026-11-08)](#nose4webs-snes-import-team-with-logos-checked-2026-11-08); [SNES "No interference penalties" in every period (2026-11-09, for NOSE4Web)](#snes-no-interference-penalties-in-every-period-2026-11-09-for-nose4web); [The same skater twice on one line (2026-11-09, for NOSE4Web)](#the-same-skater-twice-on-one-line-2026-11-09-for-nose4web); [NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 44ab460)](#nose4webs-nhl94snesvault-hacks-2026-11-09-nose4web-44ab460); [The Genesis one-timer assist bug (2026-11-09, for NOSE4Web)](#the-genesis-one-timer-assist-bug-2026-11-09-for-nose4web); [The Genesis line editor's cursor (2026-11-09, for NOSE4Web)](#the-genesis-line-editors-cursor-2026-11-09-for-nose4web); [Edit Lines on the 1-on-1 ROM (2026-11-09, for NOSE4Web's "Edit Lines for fewer skaters")](#edit-lines-on-the-1-on-1-rom-2026-11-09-for-nose4webs-edit-lines-for-fewer-skaters); [NOSE4Web 7495973 and 196539f: Edit Lines for fewer skaters rebuilt, and the "looks" build (2026-11-09)](#nose4web-7495973-and-196539f-edit-lines-for-fewer-skaters-rebuilt-and-the-looks-build-2026-11-09); [Organ songs moved, played; SNES credits and songs; the song format (2026-11-09, for NOSE4Web b21423e)](#organ-songs-moved-played-snes-credits-and-songs-the-song-format-2026-11-09-for-nose4web-b21423e); [Assists that disappear (2026-11-09, the user: SNES goals left unassisted after passes, perhaps one-timers)](#assists-that-disappear-2026-11-09-the-user-snes-goals-left-unassisted-after-passes-perhaps-one-timers); [NOSE4Web's splash screen picture, played (2026-11-09, NOSE4Web 5e97b74)](#nose4webs-splash-screen-picture-played-2026-11-09-nose4web-5e97b74); [Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)](#genesis-forum-hacks-from-the-code-2026-11-09-for-nose4web-not-played).
+**Checks of ROM edits (NOSE4Web, McMarkis and forum hacks):** [NOSE4Web's rocket pass fix, played in the game (Genesis, 2026-11-07)](#nose4webs-rocket-pass-fix-played-in-the-game-genesis-2026-11-07); [NOSE4Web's runaway-speed fix, played in the game (Genesis, 2026-11-08)](#nose4webs-runaway-speed-fix-played-in-the-game-genesis-2026-11-08); [NOSE4Web's penalty-shot, goalie-pull, Y-button, extra-attacker and blind-ring fixes, played in the game (2026-11-08)](#nose4webs-penalty-shot-goalie-pull-y-button-extra-attacker-and-blind-ring-fixes-played-in-the-game-2026-11-08); [Code readings for NOSE4Web's next fixes (2026-11-08)](#code-readings-for-nose4webs-next-fixes-2026-11-08); [NOSE4Web's sniping, comeback, awareness and crowd fixes, played in the game (2026-11-08)](#nose4webs-sniping-comeback-awareness-and-crowd-fixes-played-in-the-game-2026-11-08); [One check for NOSE4Web's builds (2026-11-08)](#one-check-for-nose4webs-builds-2026-11-08); [The Genesis-only fixes: does the SNES have the bug? (2026-11-08, for NOSE4Web)](#the-genesis-only-fixes-does-the-snes-have-the-bug-2026-11-08-for-nose4web); [NOSE4Web's player photo and score logo editing, seen in the game (2026-11-08)](#nose4webs-player-photo-and-score-logo-editing-seen-in-the-game-2026-11-08); [McMarkis's score-box logos on the original SNES game: what retail leaves free (2026-11-08, for NOSE4Web)](#mcmarkiss-score-box-logos-on-the-original-snes-game-what-retail-leaves-free-2026-11-08-for-nose4web); [NOSE4Web's retail score-box logos, checked in the game (2026-11-08)](#nose4webs-retail-score-box-logos-checked-in-the-game-2026-11-08); [$A130F1 in Genesis Plus GX (2026-11-08, for NOSE4Web)](#a130f1-in-genesis-plus-gx-2026-11-08-for-nose4web); [The SNES big logos' overlapping pieces: which is in front (2026-11-08, for NOSE4Web)](#the-snes-big-logos-overlapping-pieces-which-is-in-front-2026-11-08-for-nose4web); [NOSE4Web's Classic import into the 32-team SA-1 build (2026-11-08)](#nose4webs-classic-import-into-the-32-team-sa-1-build-2026-11-08); [Genesis score-box logos: what the original game leaves free (2026-11-08, for NOSE4Web)](#genesis-score-box-logos-what-the-original-game-leaves-free-2026-11-08-for-nose4web); [NOSE4Web's Genesis score-box logos, checked in the game (2026-11-08)](#nose4webs-genesis-score-box-logos-checked-in-the-game-2026-11-08); [Injuries and NHLPA '93's blood (2026-11-08, for NOSE4Web)](#injuries-and-nhlpa-93s-blood-2026-11-08-for-nose4web); [NOSE4Web's head blood builds, checked (2026-11-08)](#nose4webs-head-blood-builds-checked-2026-11-08); [McMarkis's 60 frames a second: the computer against itself (2026-11-08, for NOSE4Web)](#mcmarkiss-60-frames-a-second-the-computer-against-itself-2026-11-08-for-nose4web); [NOSE4Web's SNES team-block colours, checked (2026-11-08)](#nose4webs-snes-team-block-colours-checked-2026-11-08); [NOSE4Web's SNES photo import freeing replaced photos, checked (2026-11-08)](#nose4webs-snes-photo-import-freeing-replaced-photos-checked-2026-11-08); [Six Genesis bugs looked for on the SNES (2026-11-08, for NOSE4Web)](#six-genesis-bugs-looked-for-on-the-snes-2026-11-08-for-nose4web); [NOSE4Web's SNES Import team with logos, checked (2026-11-08)](#nose4webs-snes-import-team-with-logos-checked-2026-11-08); [SNES "No interference penalties" in every period (2026-11-09, for NOSE4Web)](#snes-no-interference-penalties-in-every-period-2026-11-09-for-nose4web); [The same skater twice on one line (2026-11-09, for NOSE4Web)](#the-same-skater-twice-on-one-line-2026-11-09-for-nose4web); [NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 0100df7)](#nose4webs-nhl94snesvault-hacks-2026-11-09-nose4web-0100df7); [The Genesis one-timer assist bug (2026-11-09, for NOSE4Web)](#the-genesis-one-timer-assist-bug-2026-11-09-for-nose4web); [The Genesis line editor's cursor (2026-11-09, for NOSE4Web)](#the-genesis-line-editors-cursor-2026-11-09-for-nose4web); [Edit Lines on the 1-on-1 ROM (2026-11-09, for NOSE4Web's "Edit Lines for fewer skaters")](#edit-lines-on-the-1-on-1-rom-2026-11-09-for-nose4webs-edit-lines-for-fewer-skaters); [NOSE4Web 6075749 and aaf3864: Edit Lines for fewer skaters rebuilt, and the "looks" build (2026-11-09)](#nose4web-6075749-and-aaf3864-edit-lines-for-fewer-skaters-rebuilt-and-the-looks-build-2026-11-09); [Organ songs moved, played; SNES credits and songs; the song format (2026-11-09, for NOSE4Web 5d1ec5e)](#organ-songs-moved-played-snes-credits-and-songs-the-song-format-2026-11-09-for-nose4web-5d1ec5e); [Assists that disappear (2026-11-09, the user: SNES goals left unassisted after passes, perhaps one-timers)](#assists-that-disappear-2026-11-09-the-user-snes-goals-left-unassisted-after-passes-perhaps-one-timers); [NOSE4Web's splash screen picture, played (2026-11-09, NOSE4Web fdacede)](#nose4webs-splash-screen-picture-played-2026-11-09-nose4web-fdacede); [Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)](#genesis-forum-hacks-from-the-code-2026-11-09-for-nose4web-not-played).
 
 ## Passing study (2026-10-18)
 
@@ -1966,7 +1966,7 @@ item's first screen, the player card's team page, and the playoff bracket (New P
   the controller screen, the matchups and Edit Lines while the visitors' block palette is loaded, so it must stay
   $6F7B (every retail team has it). The bracket uses neither 1 nor 15.
 - Boston against Boston: DrawTeamBlocks writes both palettes and draws both blocks with the palette-6 attribute.
-- NOSE4Web's editor now offers colours 2-15 only (their commit 7a18e91).
+- NOSE4Web's editor now offers colours 2-15 only (their commit 5088278).
 
 ## NOSE4Web's SNES photo import freeing replaced photos, checked (2026-11-08)
 
@@ -2019,17 +2019,17 @@ nhl94_2026.sfc. Wrong: the banners' name reads BOSTON (setup, matchups, scoreboa
 the setup row says Chicago); the title screen's flying puck shows Chicago's logo shape in Boston-like colours (white,
 grey, gold), so the title's logo colours come from somewhere the import doesn't write. (The cards' strengths and
 overall ratings differ by the game's random hot / cold, not the import.)
-- **The rebuilds (a62f54f, d732326).** The banner reads CHICAGO on setup, the matchups, the scoreboard and the card
+- **The rebuilds (4f37d16, 1792846).** The banner reads CHICAGO on setup, the matchups, the scoreboard and the card
   team page; every other team's setup banner is pixel-identical to nhl94_2026.sfc (all 32 cycled). Centre ice at the
   opening faceoff still looks as in Classic. The title: every puck takes its colours from TitlePalette ($9A:CCA9, ROM
   $D4CA9, the same data in retail, Classic and both 2026 ROMs; unpacked to $7F:0000 and sent to CGRAM once in
   TitleScreen .7); LoadTitleLogo ORs each logo pixel with LogoPalBits ($0BED): $60, or $70 when an attribute byte of the
   logo's map has bits $1C set. Classic's Chicago uses $60, team 1 in the build $70, so its colours are CGRAM $70-$7F
-  (6B5A 7FFF 4A52 2529 5EF7 025B 0F3F 0000 4CA4 3400 0165 6DA9 009A 0012 05FF 1DD9). After d732326 the logo's pixels
+  (6B5A 7FFF 4A52 2529 5EF7 025B 0F3F 0000 4CA4 3400 0165 6DA9 009A 0012 05FF 1DD9). After 1792846 the logo's pixels
   (counted in video memory) still leave Chicago's black outline at number 1 (white on the title) and put the tan face
   and dark brown at 7 (black): a white outline round a black face. The Snes9x saved state keeps CGRAM in its PPU
   block at offset 64, big-endian words.
-- **Why the title doesn't show the file's numbers (540bab7 rebuild, 2026-11-09).** The 2 MB build's LoadTitleLogo
+- **Why the title doesn't show the file's numbers (9105301 rebuild, 2026-11-09).** The 2 MB build's LoadTitleLogo
   calls TitleIceColours (NHL94SNES-SA1 `routines/hockey/CenterIcePalette.asm`) after Decompress: when the team's
   IceTitleColours row (16 bytes a team: byte 0 the palette bits $60 / $70, 0 = retail colours; bytes 1-15 the title
   number for each of the logo's own colours) is non-zero, it renumbers every pixel in place through that row and sets
@@ -2040,7 +2040,7 @@ overall ratings differ by the game's random hot / cold, not the import.)
   (black, 384): a gold outline round a black face. The same row turned the previous build's 3 and 15 into 1 and 7.
   Fix: write the team's row with the title number wanted for each own colour (byte 0 non-zero). Centre ice at the
   opening faceoff is still as in Classic (the same colours in the circle).
-- **9fefc98 rebuild (09:19).** Team 1's row is 60 01 02 ... 0F; with titleteams held at team 1 the title's logo is
+- **d02b823 rebuild (09:19).** Team 1's row is 60 01 02 ... 0F; with titleteams held at team 1 the title's logo is
   pixel-for-pixel Classic's in video memory: LogoPalBits $60, $61 (0000) x465, $6A (1DD9) x230, $6D x89 ... every
   number and count equal. Centre ice at the opening faceoff still as in Classic.
 
@@ -2077,7 +2077,7 @@ play Boston's skaters (position, roster place, sprite).
 - **Edit Lines**: shows the line as read (Genesis "Sc1 Line", SNES "Best Line": LW Oates, C Oates), the player list
   has Oates once ("Ice"); picking another player for C works on both.
 
-## NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 44ab460)
+## NOSE4Web's NHL94SNESVault hacks (2026-11-09, NOSE4Web 0100df7)
 
 NHL94_vault_hacks.smc (retail NHL94.smc, which has no copier header, with the extra attacker fix, ForwardsAndDefenseHack,
 ShowMaxBoost, ManualPullGoalie and the computer's pull changed) against NHL94.smc, by
@@ -2115,7 +2115,7 @@ $9E:D150; $9F:9A31 / $9F:FB43; the checksum).
   game seconds each: retail pulled behind by 1 or 2 at 55 s (not at 65 / 115 / 125, not behind by 3 or 4); the hack
   behind by 1, 2 or 3 at 115, 65 and 55 s (not at 125, not behind by 4). Both still need the puck carried by the team in
   its attacking half.
-- **4e60517 rebuild (10:23): L+R on a fresh press, Max Boost on the stored byte.** GetNewPresses' last store
+- **bfbd6a5 rebuild (10:23): L+R on a fresh press, Max Boost on the stored byte.** GetNewPresses' last store
   ($9B:84D8) calls $9B:CEDB: per pad 1 / 2, a new L or R with exactly $30 held sets $1EF0,X = 24, else it counts down
   (once per ReadPads: every game loop, every other frame in play); ManualPullGoalie acts on and clears its pad's
   count. Held 4 to 120 frames: pulled once, 12 of 12 each; 2 frames: 11 of 12 (missed when a game loop took 3
@@ -2127,7 +2127,7 @@ $9E:D150; $9F:9A31 / $9F:FB43; the checksum).
   the code differs); a whole-game comparison with retail diverges from the extra cycles alone (as the penalty-roll
   stubs did). Max Boost: Agility 11 and Checking 9 cells at 100 (the two -1s included), no cold value missed, the
   rest as retail. The extra attacker fix is still the old one (penalty-kill lines not fixed).
-- **10:34 rebuilds (c4c6417, 0c87d85).** L+R: the counts are zeroed while paused (sflags bit 0); a press in a pause
+- **10:34 rebuilds (7163f00, 2dd8ea6).** L+R: the counts are zeroed while paused (sflags bit 0); a press in a pause
   resumed 30 or 120 frames later, or during a whistle: nothing; taps and holds as before (2 frames 11 of 12, 4-120
   frames once, 12 of 12), the rest unchanged. Extra attacker fix (`adc #5`, `ldx #6 / nop`), on NHL94_vault_hacks.smc
   and NHL94_extra_attacker.smc (retail + the fix only): every pick on every row of the Best Line, Scoring 1 (the same
@@ -2171,7 +2171,7 @@ the original and the fix give the same lists and assists; with the receiver made
 original gives receiver, receiver, passer and the 18 goals no assist, the fix keeps receiver, passer, the one before,
 and credits both. A retail copy with the fix boots and plays once the boot's ROM sum ($300) is off, as in NOSE4Web's
 builds.
-- **NOSE4Web's builds (b5df2d5, 11:15), checked** (`gen_onetimer_assist_test.py builds`: each build's changes laid
+- **NOSE4Web's builds (5f06405, 11:15), checked** (`gen_onetimer_assist_test.py builds`: each build's changes laid
   over the test ROM; 12 one-timers a ROM, 9 goals): nhl94_one_timer.bin (the 42 bytes at $FFAC6, over the unused ROM
   sum) and nhl94_one_timer_second_assist.bin (a2touchpuck's first shift at $10188 skipped when the player is the
   first assist; the one-timer routine, 48 bytes at $FFADA, with the same test). As played: the same lists and assists
@@ -2220,7 +2220,7 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   $FE57A ($FE658, right after the table), so moving TeamSongs leaves it in place. The EVO ROMs already moved TeamSongs
   (to $181C30) the same way.
 
-## NOSE4Web 7495973 and 196539f: Edit Lines for fewer skaters rebuilt, and the "looks" build (2026-11-09)
+## NOSE4Web 6075749 and aaf3864: Edit Lines for fewer skaters rebuilt, and the "looks" build (2026-11-09)
 
 - **2on2_update.bin** (before the rebuild; `gen_1on1_edit_lines.py`): line changes off, Edit Lines (LW and C) works;
   Team Rosters' two penalty-kill lines show LW only (the PK `subq` at $8C82 still there). Line changes on, Edit Lines
@@ -2247,7 +2247,7 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
     map SetHor draws behind the pause menu and the intermission screens) is green instead of grey; nothing else
     differs.
 
-## Organ songs moved, played; SNES credits and songs; the song format (2026-11-09, for NOSE4Web b21423e)
+## Organ songs moved, played; SNES credits and songs; the song format (2026-11-09, for NOSE4Web 5d1ec5e)
 
 - **CDL_Season_12_songs.bin** (TeamSongs copied to $1ED032, 30 rows; only the `movea.l` at $FE574 repointed; rows 0-27
   byte for byte the old ones; RandomSongs and its pointer untouched; the header checksum the only other change).
@@ -2287,7 +2287,7 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   play, 2 other faceoffs, 3 a home goal, 4 a faceoff on a home penalty kill, 5 random in the third period. TeamSongs is
   followed by DefaultSongs, so its room: retail, Classic and SDL16 $80:DA56, 28 teams; nhl94_2026*.sfc $80:DC17 and
   nhl94snes_2026*.sfc $80:DA71, 32; nhl94_SA1_Original $80:DC17, 28.
-- **NOSE4Web's SNES song editing, played (5f3a2bc, NHL94_songs.smc):** only Boston's row changed (slot 1 $9A:AF99
+- **NOSE4Web's SNES song editing, played (01bd4bf, NHL94_songs.smc):** only Boston's row changed (slot 1 $9A:AF99
   Charge [E-flat] -> $96:B6CD, retail's San Jose slot 1, the Jaws Theme; slot 3 $FFFFFFFF -> $99:BB80, retail's
   DefaultSongs entry 2 and Hartford's slots 0 / 5, Brass Bonanza) and the header checksum. `snes_songs_check.py`
   (HomeTeam $1C98 set, the song MusicStart is given read from SongPtr $07ED and EventPtr+2 at $58, cursong $0CC3):
@@ -2337,7 +2337,7 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   same plays on a scratch copy with the fix (the 8 bytes at $10176 -> `jsr $FFF00` / `nop`; at $FFF00 `cmp.w
   $18(a0),d0` / `bne.s +12` / `bclr #3,$30(a0)` / `move.l #$101A4,(sp)` / `rts`): A's retake clears tmflast, B's
   touch shifts him to [B, A], the goal is assisted by A; the control unchanged (C's assist).
-- **NOSE4Web's fixes, played (16feaf6 Genesis, 863eeb1 SNES):**
+- **NOSE4Web's fixes, played (2140fd9 Genesis, 7fabafa SNES):**
   - Genesis nhl94_regain_assist.bin and nhl94_assist_fixes.bin (the routine byte for byte at $FFAC6 / $FFB0E):
     the regain play credits A (retail: none), the control credits C as on retail (`gen_assist_repro.py`). On
     nhl94_assist_fixes.bin also `gen_onetimer_assist_test.py builds`: one-timers as played 2 assists (as retail),
@@ -2354,7 +2354,7 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   clears the flag on the same-player path too and changes nothing else: same player and flag set, clear the flag and
   keep the list; same player and flag clear, as now.
 
-## NOSE4Web's splash screen picture, played (2026-11-09, NOSE4Web 5e97b74)
+## NOSE4Web's splash screen picture, played (2026-11-09, NOSE4Web fdacede)
 
 nhl94_splash.bin (retail grown to 2 MB; changes: the first High Score picture $F4378 cut to 1 tile at 0,0, the second
 at 0,0 and its `movea.l` at $FEE02 pointing to a 40 x 28 picture at $FFAC0: header (palette offset $124A, map offset
@@ -2369,7 +2369,7 @@ NOPed). From power-on, a screenshot at every change, against retail:
   palette rows are what the new picture is drawn with, and the new 64 colours are never loaded.
 - A scratch copy with $FEE18 `moveq #$F,d5` (7A0F): the screen matches the picture decoded from the ROM exactly (the
   same 46 colours, pixel for pixel), the top-left tile and the dark blue field clean.
-- Rebuilt (NOSE4Web 863eeb1, $FEE18 7A0F): the same exact match.
+- Rebuilt (NOSE4Web 7fabafa, $FEE18 7A0F): the same exact match.
 
 ## SNES xG for SA-1 games: chunk 1, what it takes (2026-11-09)
 
@@ -2461,7 +2461,7 @@ NOPed). From power-on, a screenshot at every change, against retail:
   attribute, part of the puck), 405 the bottom net (object 12, 4 pieces) and 406 the top net (object 13, 2 pieces)
   ($A16BA-$A16E9), 407 SPFGoalie (the goalie's first frame, palette 2 as players: $A16F0 is its first piece's
   attribute). The replay draws the same frames (replay94: the frame words it recorded).
-- **The five forum options played** (NOSE4Web 8e1c951; `analysis/scoring_map/gen_forum_options_test.py`, scratch
+- **The five forum options played** (NOSE4Web 92a30a9; `analysis/scoring_map/gen_forum_options_test.py`, scratch
   copies built as NOSE4Web describes):
   - Injuries (every carrier's fall made an injury): retail 4 injuries in 12,885 frames, by its own type rules; never
     ($14440): none in 43,200 frames; period ($14508 NOPs, getFgtbyte forced to 3, a checker with Fighting 12+): 4 of 4
@@ -2509,7 +2509,7 @@ NOPed). From power-on, a screenshot at every change, against retail:
   truncated), Weight (bit 13) and Fighting (bit 6) unweighted if a mask has them (retail's don't), plus the hot /
   cold average; the overall masks are also the key: CalcAttrib compares d4 with each to pick the weight list, so they
   must stay different from each other and from single-rating masks. An editor's Ovr has to mirror those three.
-- **Follow-ups (NOSE4Web bbe0bd5).**
+- **Follow-ups (NOSE4Web 93c077e).**
   - DPWM3RegularSeason (11 cards): its FeaturedPictures lists run through the roster (picture.l, roster index) with
     picture 0 for players without a card (entry 6 in every team checked). Game Setup, played: featuredplayer steps
     0-10 and wraps, no crash; an entry with picture 0 draws a garbage picture (the ROM's start unpacked as a picture)
@@ -2555,7 +2555,7 @@ ported). The release thread's manual (the author's) agrees with the code below.
   a headless fight from `snes_fight_capture.py` (MTL 19 v LA 11, both majors, called at the fight's start). How often
   fights happen under On and After Whistle is not measured yet (computer games; asked of the user).
 
-## NOSE4Web's title credits editors, played (2026-11-09, Genesis 4b25bef, SNES a638265)
+## NOSE4Web's title credits editors, played (2026-11-09, Genesis 292693b, SNES 14d040d)
 
 - **Genesis nhl94_credits.bin** against nhl94.bin: Credits / CreditsPages rewritten in place in the original's 934
   bytes ($5776-$5B1B; the rest zero; the copyright page byte for byte), plus only the usual checksum-check removal
@@ -2577,7 +2577,7 @@ ported). The release thread's manual (the author's) agrees with the code below.
   start (sampled every 3 frames to 1500) is pixel for pixel the original's, the copyright lines (shown only briefly
   in the title's zoom) included. The SNES title, too, plays once per power-on.
 
-## The fourth period length with its own overtime, played (Genesis, 2026-11-09, NOSE4Web 67b16fb)
+## The fourth period length with its own overtime, played (Genesis, 2026-11-09, NOSE4Web 438dec8)
 
 nhl94_fourth_period_ot.bin against nhl94.bin: ResetClock's `tst.w OptPlayMode / bne.w` at $7822 -> `jsr $FFAC6 /
 nop` (playoffs: return past the 10:00 load; regular season with Optperlen 3: d0 = 5940 and past it; else back to
@@ -2632,7 +2632,7 @@ the fighters' pffight flag:
   with After Whistle fights come only from people checking late.
 Two teams, the computer only and short periods: a guide, not a league rate.
 
-## Net colours, played (Genesis, 2026-11-09, NOSE4Web a2b7752)
+## Net colours, played (Genesis, 2026-11-09, NOSE4Web 629e033)
 
 nhl94_nets_crowd.bin / nhl94_nets_home.bin against nhl94.bin: only the six net pieces' attribute high bytes
 ($A16C0-$A16E8 every 8: $00 / $08 -> $20 / $28 crowd line, $40 / $48 home line; the flip bit kept) and the usual
@@ -2642,7 +2642,7 @@ replay, each frame compared with retail's. Only a net-sized box differs, in play
 shadow are pixel for pixel retail's. With the puck put at each end, both nets differ (top and bottom). Crowd line:
 an olive-grey net; home line (Montreal at home): a dark navy net with a red frame, heavy against the ice.
 
-## The SNES fourth period length with a 99:00 overtime, played (2026-11-09, NOSE4Web 5bcacbd)
+## The SNES fourth period length with a 99:00 overtime, played (2026-11-09, NOSE4Web 5560584)
 
 NHL94_fourth_period_ot.smc / nhl94snes_SA1_fourth_period_ot.sfc against NHL94.smc / nhl94snes_SA1.sfc: ResetClock's
 `lda.l OptPlayMode / bne .1` -> `jmp $FFE6` + 3 nops (bank $9F), 26 bytes there (`lda.l OptPlayMode / bne -> jmp .1;
@@ -2685,7 +2685,7 @@ Energy with line changes on, the computer on both sides (`gen_energy_shifts.py`,
 
 A burst costs 204 on both; the bench gives back 9 a second (Genesis) / 10 a call (SNES).
 
-## NOSE4Web's Genesis hit energy option, played (2026-11-09, 36fe502, nhl94_hit_energy.bin: 100 a knockdown, 50 a hold)
+## NOSE4Web's Genesis hit energy option, played (2026-11-09, 3180527, nhl94_hit_energy.bin: 100 a knockdown, 50 a hold)
 
 The code: `.cont2` ($14116) -> `jsr $FFAC6` (OptLine 0 and sflags7 bit 4 clear, a2 not a goalie, a3 a player
 (SCnum <= 11): getpde on a2, -100, setpde, registers saved; then .cont2's own test, a goalie hitter returning to
@@ -2711,7 +2711,7 @@ SNES 5 injuries (0.42 a game, 2 for the game), 29 knockdowns, 14 held / hooked, 
   ways). No measurable change: the option takes about 22 x 100 + 20 x 50 = 3,200 a game against about 85,000 drained
   on the ice (88 shifts of about 970), under 4%.
 
-## NOSE4Web's SNES hit energy option, played (2026-11-09, 9d3695f: NHL94_hit_energy.smc, nhl94snes_SA1_hit_energy.sfc)
+## NOSE4Web's SNES hit energy option, played (2026-11-09, 41def89: NHL94_hit_energy.smc, nhl94snes_SA1_hit_energy.sfc)
 
 The code (both builds; the SA-1 one with its own addresses: OptLine $40:34C6, position $6F43, getpde $9F:DDC6 /
 setpde $9F:DDE7, which start with the SA-1's own `lda $72A3,x` / table, flail $EA06): FallDown `.t2`'s `lda.w
@@ -2728,7 +2728,7 @@ flailing, his energy over 4 frames): original down 0 (6), flail 0 (4); the optio
 flail -50 (3); OptLine 2 the same (one -304: a burst of 204 just before); OptLine 0 nothing (14). So the SA-1 code
 reaches the moved energy table. Unlike the Genesis, the SNES drains energy with Auto too (the drain and the burst cost
 test OptLine for zero), and the option follows it.
-- Rebuilt at 204 / 102 (NOSE4Web e753a45's recommended values, up to 1024): retail trials the opponent down 204 (17:
+- Rebuilt at 204 / 102 (NOSE4Web 6794239's recommended values, up to 1024): retail trials the opponent down 204 (17:
   body checks 15, pokes 2; with OptLine 1 and 2), held / hooked 102 (5), OptLine 0 nothing, counts the same; the SA-1
   build in the computer's own play (OptLine 1) down -204 (13), flail -102 (9), OptLine 0 nothing (14).
 - At 204 / 102, the computer against itself (12 games each, the same seeds, 5-minute periods, line changes on;
@@ -2740,7 +2740,7 @@ test OptLine for zero), and the option follows it.
   (no injury change in these builds: chance). So at a burst's cost the computer changes lines a little more often
   (clearly on the Genesis) and the most-hit skaters get noticeably more tired; the average skater barely changes.
 
-## NOSE4Web's Genesis injury risk option, played and estimated (2026-11-09, f3d8449)
+## NOSE4Web's Genesis injury risk option, played and estimated (2026-11-09, 0f3e827)
 
 Builds: nhl94_injury_risk.bin (+2, cap 10, with hit energy 204 / 102), nhl94_injury_risk_strong.bin (+10, cap 60, no
 energy). Counts a byte a player at $FFF000 (32 a team, away +32, by pnum), +1 in FallDown's `.cont2` hook (any line
@@ -2777,7 +2777,7 @@ bytes a goal), thousands of bytes below.
   diagonal, 80 knockdowns, none falling back facing straight, no injuries. Its other parts (counts by A / B / Y,
   halving at the intermission, clearing from power-on) run on retail with a stand-in address and wait for the build.
 
-## NOSE4Web's Genesis "any skater at any position", played (2026-11-09, 68134c4, nhl94_any_position.bin)
+## NOSE4Web's Genesis "any skater at any position", played (2026-11-09, b2606c6, nhl94_any_position.bin)
 
 `gen_any_position_check.py` (the build itself from power-on; Edit Lines from the pause menu, the exit menu's Save /
 Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
@@ -2793,7 +2793,7 @@ Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
   defenceman put at C and saved again: the old block's bytes 0-17 stayed exactly as after the first save, and the
   original loads that earlier, fitting line-up. The one leftover: the old team byte is written even when the nibbles
   aren't, so a team whose first save doesn't fit loads as empty (zero) lines on the original.
-- **e0dbd27 (the old nibbles written per slot: as the original for a player who fits, 0, the first forward or
+- **6a41e01 (the old nibbles written per slot: as the original for a player who fits, 0, the first forward or
   defenceman, for one who doesn't):** played the same way. Saves that fit load exactly on nhl94.bin. A defenceman at
   C loads there as the first forward at C (player 3; the rest as saved). A defenceman at LW with the first forward
   already at RW: the LW nibble is 0 as designed, and the original's load, which places by swapping, brings LW back
@@ -2807,7 +2807,7 @@ Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
 - Lines saved on the original nhl94.bin (LW and RW of line 0 swapped), its save RAM put into the option ROM's before
   power-on: Load Team Line gives them exactly (the new block's team byte doesn't match: the original code runs).
 
-## NOSE4Web's hit option builds: SNES injury risk at +19 and hits after the whistle (2026-11-09, 80e8368 / b0efcd5)
+## NOSE4Web's hit option builds: SNES injury risk at +19 and hits after the whistle (2026-11-09, efb691b / 917b991)
 
 NHL94_hit_option.smc (SNES: counts a word a player at $7E:F034, the away team +$40) and nhl94_hit_option.bin
 (Genesis), against retail.
@@ -2827,7 +2827,7 @@ NHL94_hit_option.smc (SNES: counts a word a player at $7E:F034, the away team +$
   SNES only indicative): Genesis +10 / cap 50: +54% injuries a game and the most-hit skaters x1.66 (as first
   estimated, counting only earlier knockdowns: +31%, x1.43); +5 / 25: +27%, x1.33. SNES +19 (cap 5 knockdowns):
   +87%, x2.11 (first estimate +52%, x1.77); +10 / 50: +46%, x1.58.
-- The commissioner kept the order and lowered the values (NOSE4Web b9b6ae2: Genesis +5 / cap 25, SNES +6, cap 5
+- The commissioner kept the order and lowered the values (NOSE4Web abfd401: Genesis +5 / cap 25, SNES +6, cap 5
   knockdowns; the rebuilt NHL94_hit_option.smc holds 6 / 30). SNES with --self: +4 +18%, x1.23; +5 +23%, x1.29; +6
   +27%, x1.35; +7 +32%, x1.41; +8 +37%, x1.47: +6 matches the Genesis's +5 / 25 (+27%, x1.33).
 

@@ -1,4 +1,4 @@
-"""NOSE4Web's Genesis injury risk option, played (2026-11-09, f3d8449): a count a player of the knockdowns he took
+"""NOSE4Web's Genesis injury risk option, played (2026-11-09, 0f3e827): a count a player of the knockdowns he took
 ($FFF000, 32 a team, the away team +32, by pnum), cleared at StartGame, halved at PeriodOver, and min(count x bonus,
 cap) added to the impact in FallDown's injury roll (randomd0(160) <= impact).
 

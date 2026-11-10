@@ -1,4 +1,4 @@
-"""Organ songs by home team, played (2026-11-09, for NOSE4Web b21423e: TeamSongs moved so 30-team ROMs read their own
+"""Organ songs by home team, played (2026-11-09, for NOSE4Web 5d1ec5e: TeamSongs moved so 30-team ROMs read their own
 rows). From one play state of each ROM, HomeTeam ($C330) is set to a team and the events that pick a song are driven:
 a home goal (slot 3: the puck sent into the net the home team attacks), the faceoff after it (LeadSong, with one team's
 players-on-ice count tmap set lower first, so the home team ahead (slot 4) or the away team ahead (slot 1)), the end of

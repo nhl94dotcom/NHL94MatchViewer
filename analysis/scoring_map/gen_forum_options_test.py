@@ -1,4 +1,4 @@
-"""NOSE4Web's five Genesis forum options (NOSE4Web 8e1c951, 2026-11-09), played in the game: each built into a scratch
+"""NOSE4Web's five Genesis forum options (NOSE4Web 92a30a9, 2026-11-09), played in the game: each built into a scratch
 copy of retail nhl94.bin as NOSE4Web describes (the boot's ROM sum at $300 off, as its builds), against retail.
 
 - injuries: every fall of a puck carrier made an injury chance that always succeeds (FallDown's fall-back, facing and

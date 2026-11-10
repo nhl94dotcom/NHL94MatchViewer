@@ -1,4 +1,4 @@
-"""NOSE4Web's Genesis "any skater at any position" option, played (2026-11-09, 68134c4: SelectLinePlayer lists every
+"""NOSE4Web's Genesis "any skater at any position" option, played (2026-11-09, b2606c6: SelectLinePlayer lists every
 skater for every slot; EncodeTeamLines also writes a byte a slot, counted from the first skater, to save RAM $1EC0
 (team + 1 first, 34 bytes); DecodeTeamLines reads it when its team byte matches the old block's).
 
@@ -15,7 +15,7 @@ skater for every slot; EncodeTeamLines also writes a byte a slot, counted from t
   its save RAM put into the option ROM's before power-on, then Load Team Line there: the lines against the saved ones.
 `compat ANY_ROM ORIGINAL_ROM OUT`: the other way round. On the option ROM, line 0's LW and RW swapped (fits the old
   format) and saved, then a defenceman put at C (doesn't fit) and saved again; each save RAM given to the original ROM,
-  Load Team Line there: the lines against the saved ones, and the old block's bytes after each save. 68134c4 doesn't
+  Load Team Line there: the lines against the saved ones, and the old block's bytes after each save. b2606c6 doesn't
   write the old block's nibbles, so both load wrong there; a build that also writes them when every player fits should
   load the first exactly (and the second as whatever it chose to leave).
 

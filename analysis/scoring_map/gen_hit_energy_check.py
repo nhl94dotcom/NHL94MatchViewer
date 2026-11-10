@@ -1,4 +1,4 @@
-"""NOSE4Web's hit energy option, played (Genesis, 2026-11-09, 36fe502: a knockdown takes energy from the skater
+"""NOSE4Web's hit energy option, played (Genesis, 2026-11-09, 3180527: a knockdown takes energy from the skater
 knocked down, a hold or hook that catches takes half, with line changes On). NOSE4Web's changes (the bytes that
 differ between retail nhl94.bin and nhl94_hit_energy.bin: FallDown .cont2 at $14116, holdcheck at $13F5C, the code at
 $FFAC0-, the checksum call at $301) are laid over a copy of the scoring-map test ROM (its bytes there checked to be

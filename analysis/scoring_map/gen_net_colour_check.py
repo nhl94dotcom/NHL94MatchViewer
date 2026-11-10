@@ -1,4 +1,4 @@
-"""NOSE4Web's net colours (Genesis, 2026-11-09, a2b7752: both nets' six sprite pieces, attribute high bytes
+"""NOSE4Web's net colours (Genesis, 2026-11-09, 629e033: both nets' six sprite pieces, attribute high bytes
 $A16C0-$A16E8 every 8, given another palette line). The first ROM (retail) plays from power-on into play (gen_ot_check.into_play) and saves
 that state; every ROM then starts from it with the same presses, so the same frames: 2400 frames of play with a screenshot every
 120, then START, DOWN to Instant Replay and C, and a screenshot every 60 frames of the replay. Each ROM's

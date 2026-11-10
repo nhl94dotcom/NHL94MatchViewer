@@ -1,4 +1,4 @@
-"""SNES title screen credits, played (2026-11-09, for NOSE4Web a638265's credits editor). From power-on with no
+"""SNES title screen credits, played (2026-11-09, for NOSE4Web 14d040d's credits editor). From power-on with no
 input, the title screen's credits (StartCredits / RollCredits) are watched through their RAM: CreditStep ($0BD9: 0
 title and name scroll in, 1 name scrolls in, 2 held, 3 done), CreditTitleIdx ($0BDD), CreditNameIdx ($0BE1). Each
 time a title and name come to rest (step 2) a screenshot is saved as OUT/<run>_t<title>_n<name>.png; the frame each

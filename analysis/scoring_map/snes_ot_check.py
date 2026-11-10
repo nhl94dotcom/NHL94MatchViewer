@@ -1,4 +1,4 @@
-"""SNES overtime length by play mode and period length, played (2026-11-09, for NOSE4Web 5bcacbd: the fourth period
+"""SNES overtime length by play mode and period length, played (2026-11-09, for NOSE4Web 5560584: the fourth period
 length with a 99:00 regular-season overtime; gen_ot_check.py is the Genesis one). In live play
 (snes_assist_stick_test.Game: retail, or the SA-1 build at 60 frames a second), for each case the play mode
 (OptPlayMode $34BC: 0 regular season, else playoffs) and period length (Optperlen $34C2) set in RAM (ResetClock reads

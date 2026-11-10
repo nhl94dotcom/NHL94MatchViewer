@@ -1,4 +1,4 @@
-"""Hits after the whistle on NOSE4Web's Genesis hit option (2026-11-09, b0efcd5, nhl94_hit_option.bin: the knockdown /
+"""Hits after the whistle on NOSE4Web's Genesis hit option (2026-11-09, 917b991, nhl94_hit_option.bin: the knockdown /
 hold energy cost and the injury-risk count do nothing while the clock is stopped, gmode bit gmclock).
 
 NOSE4Web's changes laid over a copy of the scoring-map test ROM (gen_hit_energy_check.patched) and played in the
