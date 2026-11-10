@@ -2952,3 +2952,19 @@ in the preset nothing lowers a goalie's energy (a minute of computer play, line 
 retail the drain runs for goalies too (3,996 and 4,060 after the same minute; they never go to the bench), so the
 speed option used with the drain on would slow goalies, more than retail does.
 
+## SNES goalie poke, and NOSE4Web's "Goalie poke check reaches the ice" (2026-11-10, c545a2e)
+
+The goalie's stick test (checkpuckcoll_ccx `.9`) puts a box on the frame's stick spot (GetHot) whose size comes from
+GetFrameHot: the frame record's bytes $14-$15 less the spot at $12-$13 (corrected the same day: an earlier note took
+the spot itself for the size). For every SPAgpoke frame that vector is about (2, 2) (full sideways right (3, 2)); the
+ready stance's (0, 0). So in retail a poke touches a puck only within about 2 units of its tip (11-12 ahead facing up
+or down the ice, 20-35 to the side), and an ice-level puck only in the full sideways-right frame. The option (only in
+SPAgpoke: reach max(|x|, |y|), the window from the ice to the same top, which can't go higher than retail's by
+construction; outside the poke the original path byte for byte) lets every poke frame reach an ice-level puck within
+those 2 units. `snes_goalie_poke_check.py trials` (goalie and carrier pinned, the computer goalie's own pokes, the
+same state and seed on both ROMs; the cause from the goalie's lockout: stick 20+, body 10): diagonals, the option's
+stick knocked the puck loose 8 times where retail's never did; sideways, no stick contact on either; straight on,
+loose on both but by his body (the carried puck sits within his +-11 body box before it can reach a tip 11 out).
+`cvc` (8 computer games each): 19 pokes at a carried puck on retail, 7 on the option build; too few, the games
+diverge, and "came loose" there also counts a carrier shooting or passing during the poke: no measurable change.
+
