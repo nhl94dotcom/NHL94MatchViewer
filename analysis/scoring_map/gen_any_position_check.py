@@ -13,8 +13,13 @@ skater for every slot; EncodeTeamLines also writes a byte a slot, counted from t
   - the console reset, back to play, Edit Lines, Load Team Line: line 0 against the lines saved.
 `orig ORIGINAL_ROM ANY_ROM OUT`: lines saved on the original ROM (the LW and RW of line 0 swapped through the editor),
   its save RAM put into the option ROM's before power-on, then Load Team Line there: the lines against the saved ones.
+`compat ANY_ROM ORIGINAL_ROM OUT`: the other way round. On the option ROM, line 0's LW and RW swapped (fits the old
+  format) and saved, then a defenceman put at C (doesn't fit) and saved again; each save RAM given to the original ROM,
+  Load Team Line there: the lines against the saved ones, and the old block's bytes after each save. 68134c4 doesn't
+  write the old block's nibbles, so both load wrong there; a build that also writes them when every player fits should
+  load the first exactly (and the second as whatever it chose to leave).
 
-python gen_any_position_check.py any ROM OUT | orig ORIGINAL_ROM ANY_ROM OUT"""
+python gen_any_position_check.py any ROM OUT | orig ORIGINAL_ROM ANY_ROM OUT | compat ANY_ROM ORIGINAL_ROM OUT"""
 import ctypes as C
 import json
 import sys
@@ -209,9 +214,78 @@ def orig_save(orig, out):
     (out / "orig_saved.json").write_text(json.dumps(saved))
 
 
+def compat_save(anyrom, out):
+    """On the option ROM: line 0's LW and RW swapped (both forwards: fits the old format), saved; then a defenceman put
+    at C (doesn't fit), saved again. Each save's save RAM and lines kept."""
+    r = Run(anyrom, out / "compat_save")
+    r.to_play()
+    r.e.setw(OPTLINE, 1)
+    open_edit_lines(r)
+    to_slot(r, 5)
+    r.press("C", 120)
+    lst = [r.e.b(SATT + i) for i in range(r.e.w(ROWS) + 1)]
+    pick_row(r, lst.index(line0(r.e)[3] - 1))
+    fit = line0(r.e)
+    exit_menu(r, 2)
+    (out / "compat_fit.bin").write_bytes(bytes(sram(r.e)))
+    open_edit_lines(r)
+    to_slot(r, 4)
+    r.press("C", 120)
+    lst = [r.e.b(SATT + i) for i in range(r.e.w(ROWS) + 1)]
+    pick_row(r, len(lst) - 1)                          # the last row: a defenceman
+    unfit = line0(r.e)
+    exit_menu(r, 2)
+    (out / "compat_unfit.bin").write_bytes(bytes(sram(r.e)))
+    (out / "compat_saved.json").write_text(json.dumps({"fit": fit, "unfit": unfit}))
+
+
+def load_on(rom, sram_path, out):
+    """A save RAM given to a ROM before power-on, then Load Team Line: line 0 before and after."""
+    r = Run(rom, out)
+    buf = sram(r.e)
+    data = Path(sram_path).read_bytes()
+    for i in range(min(len(data), len(buf))):
+        buf[i] = data[i]
+    r.e.lib.retro_reset()
+    r.to_play()
+    open_edit_lines(r)
+    before = line0(r.e)
+    exit_menu(r, 3)
+    r.shot("after_load")
+    (out / "load.json").write_text(json.dumps({"before Load": before, "after Load": line0(r.e)}))
+
+
+def compat_part(anyrom, orig, out):
+    import subprocess
+    subprocess.run([sys.executable, __file__, "--compat-save", anyrom, str(out)], check=True)
+    saved = json.loads((out / "compat_saved.json").read_text())
+    res = {"saved on the option ROM": saved}
+    for kind in ("fit", "unfit"):
+        where = out / f"compat_load_{kind}"
+        subprocess.run([sys.executable, __file__, "--load", orig, str(out / f"compat_{kind}.bin"), str(where)], check=True)
+        got = json.loads((where / "load.json").read_text())
+        old = [sbyte((out / f"compat_{kind}.bin").read_bytes(), LINEBLOCK + i) for i in range(28)]
+        res[f"{kind}: the old block's bytes 0-27 after the save"] = old
+        res[f"{kind}: on the original ROM"] = dict(got, **{"loaded = saved": got["after Load"][1:6] == saved[kind][1:6]})
+    return res
+
+
 def main():
     if sys.argv[1] == "--orig-save":
         orig_save(sys.argv[2], Path(sys.argv[3]))
+        return
+    if sys.argv[1] == "--compat-save":
+        compat_save(sys.argv[2], Path(sys.argv[3]))
+        return
+    if sys.argv[1] == "--load":
+        load_on(sys.argv[2], sys.argv[3], Path(sys.argv[4]))
+        return
+    if sys.argv[1] == "compat":
+        out = Path(sys.argv[4])
+        out.mkdir(parents=True, exist_ok=True)
+        res = compat_part(sys.argv[2], sys.argv[3], out)
+        print(json.dumps(res, indent=1))
+        (out / "compat.json").write_text(json.dumps(res, indent=1))
         return
     if sys.argv[1] == "any":
         out = Path(sys.argv[3])

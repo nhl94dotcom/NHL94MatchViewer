@@ -2770,6 +2770,12 @@ bytes a goal), thousands of bytes below.
   FallDown runs); the relative effects it gives (+2/10 +5%, x1.08; +3/15 +8%, x1.12; +4/20 +11%, x1.16 for the 5+
   skaters) are only indicative. The SNES computer does get injured, so there a computer-vs-computer comparison can
   measure the option directly.
+- SNES test, ready for the build (`snes_injury_risk_check.py`; the counts' place an argument, BASE:STRIDE:SIZE): on
+  retail, the same trials as the Genesis (heavy checker, light carrier with stickhandling 0 so a weak hit can't make
+  him only stumble, the puck kept on him; 144 a case): facing straight down the ice, 94 fell back facing straight and
+  27 were injured (the code: FallDown .24, SPAinjury1 $F90E retail replaces the fall in the same frame); on a
+  diagonal, 80 knockdowns, none falling back facing straight, no injuries. Its other parts (counts by A / B / Y,
+  halving at the intermission, clearing from power-on) run on retail with a stand-in address and wait for the build.
 
 ## NOSE4Web's Genesis "any skater at any position", played (2026-11-09, 68134c4, nhl94_any_position.bin)
 
@@ -2779,8 +2785,14 @@ Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
   for C; then picked for LW: the LW's old player went to C (SetLineSlot's swap).
 - Save Team Line changed save RAM $1EC0-$1EE1 (the new block: team + 1, then a byte a slot), the old block's team
   byte ($1EF6) and the checksum ($1FFE-$1FFF), nothing else; a pattern planted in the old block's playoff bytes
-  (block bytes 18-27, passbits, loaded at boot) was kept. The old block's line nibbles are not written (they stay as
-  they were: zeros on a fresh save), so lines saved with the option load as nonsense on a ROM without it.
+  (block bytes 18-27, passbits, loaded at boot) was kept. In that save line 0 had a defenceman at C, so the old block's
+  line nibbles were left as they were (zeros on a fresh save); the `compat` run below shows they are written when the
+  lines fit the old format.
+- The other way round (`compat`): line 0's LW and RW swapped (both forwards) and saved on the option ROM, that save
+  RAM given to the original nhl94.bin: Load Team Line gives the lines exactly (the old nibbles were written). Then a
+  defenceman put at C and saved again: the old block's bytes 0-17 stayed exactly as after the first save, and the
+  original loads that earlier, fitting line-up. The one leftover: the old team byte is written even when the nibbles
+  aren't, so a team whose first save doesn't fit loads as empty (zero) lines on the original.
 - With line changes off, back in play: the defenceman (roster place 24) is the record playing C (position 4) and
   lines up for the next faceoff.
 - After a console reset and back to play, Load Team Line gives line 0 exactly as saved.
