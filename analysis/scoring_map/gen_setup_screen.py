@@ -24,7 +24,7 @@ VARS = {"teambitmapchars": None, "framercset": 0xB01E, "smallfontchars": 0xB012,
         "vispicchars": 0xD432, "setupmenuchars": 0xD426, "homepicchars": 0xD430, "logobox1chars": 0xD436,
         "logobox2chars": 0xD438}
 CARDFLAGS = 0xD42E
-GAMESETUPMAP = 0x4B7A0
+GAMESETUPMAP_PTR = 0xF823C                  # where the game keeps GameSetUpMap's address (retail $4B7A0)
 
 
 def state(e):
@@ -69,6 +69,7 @@ def layout(e, rom, out, tag):
     # the unknown boundaries: the team banners' two copies are the same size; the background is 240 tiles
     # (GameSetUpMap's tile count, read from its data below); the strip starts 36 after vispicchars
     data = Path(rom).read_bytes()
+    GAMESETUPMAP = struct.unpack(">I", data[GAMESETUPMAP_PTR:GAMESETUPMAP_PTR + 4])[0]
     pal_off, map_off = struct.unpack(">II", data[GAMESETUPMAP:GAMESETUPMAP + 8])
     span = (base["framercset"] - 2) // 2
     b = {"tb2": 2 + span, "bg0": None, "strip0": base["vispicchars"] + 0x24,
@@ -150,6 +151,14 @@ def layout(e, rom, out, tag):
            "sprites": sprites,
            "colour memory now": [" ".join(rgb(v) for v in cramw[16 * l:16 * l + 16]) for l in range(4)],
            "GameSetUpMap palette data": [" ".join(rgb(v) for v in palrom[16 * l:16 * l + 16]) for l in range(4)]}
+    # plane B against the map's words: each cell's word in video memory minus / XOR the map's word (one value each
+    # when the words go in as they are, offset by the background's first tile)
+    pb = [vword(vr, planeB + 2 * (width * (i // mw) + i % mw)) for i in range(mw * mh)]
+    res["map size"] = [mw, mh]
+    res["plane B - map word"] = sorted({(v - w) & 0xFFFF for v, w in zip(pb, words)})[:10]
+    res["plane B ^ map word, high bits (palette / priority / flips)"] = sorted({((v ^ w) & 0xF800) for v, w in zip(pb, words)})
+    res["palette lines the background's cells use"] = sorted({(v >> 13) & 3 for v in pb})
+    (out / f"{tag}.state").write_bytes(bytes(st))
     (out / f"{tag}.json").write_text(json.dumps(res, indent=1))
     print(json.dumps({k: v for k, v in res.items() if k not in ("sprites",)}, indent=1), flush=True)
     # screenshots: as is, background tiles blanked, background tiles filled with colour 1

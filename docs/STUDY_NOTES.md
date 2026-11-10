@@ -2844,3 +2844,19 @@ pad on the attacking half: C pressed in the sample the pass left 5 of 6 without 
 one (16 unexplained), no C 594 without (2 the computer's own). No C held from before the release in these games.
 Write-up: GENESIS_SHOOTING 4.8.
 
+## NOSE4Web's Game Setup backgrounds, checked (Genesis, 2026-11-09: nhl94_menu_picture.bin, nhl94_menu_colours.bin)
+
+The picture's address is now read from $F823C (retail $4B7A0; also in CDL's ROM). `gen_setup_screen.py` on retail, both
+test ROMs and CDL_Season_12.bin, then `gen_setup_compare.py`:
+- Both test ROMs, logos up and a card up: every pixel the background doesn't decide is exactly retail's (cards,
+  logos, banners, menu, lettering: 0 differences), and the background shows in exactly the same pixels. Plane B's
+  words are the map's words + $3E3 with no palette, priority or flip bits changed. menu_picture: 323 tiles, the d4 run
+  ending $59F, the highest tile drawn $59F; it looks like CDL's picture (the ice, red line, NHLPA skater and NHL
+  shield), a little simpler. CDL's own: 1,120 tiles from $113 (over the team banners' tiles; drawn tiles up to $7FE).
+- menu_colours: 25 bars, each one (line, colour): line 0 colours 0 (the backdrop), 2, 8-15 and line 3 colours 1-15,
+  each in exactly its ROM palette word's colour, in both states: the map's line-3 words draw in line 3 as they are.
+- Cells (40 x 28) whose background never shows in either state: 132. 64 under the top strip, 44 under the team
+  banners (no banner tile of any team has a colour-0 pixel), 6 under the logo box frame: never for any team; 18 at
+  columns 8-10, rows 6-11, under the visitors' logo (logos up) and the player photo (card up): never with Los Angeles
+  at Montreal and Rob Blake's card, but another logo or photo with colour-0 pixels would show them.
+
