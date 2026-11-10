@@ -605,6 +605,17 @@ sliding across slides on toward the crossing point.
     times.
 - **A goalie you control** (`assgoalie`, when he's yours): **X pokes** (toward the d-pad direction, or at the puck with
   the pad centred), **Y held dives** (the same way), and A held starts save moves (5.5).
+- **What the poke does** (2026-11-10, a community member: "the goalie's X poke seems useless"): nothing but his
+  stick. SPAgpoke is 19 frames (4 part-way, 15 at full reach); no other code treats it specially. A carried puck is
+  taken when it comes within about 6 units of his stick spot (puckstick: a goalie always wins it), and the goalie's
+  stick test (checkpuckcoll_ccx `.9`) reads the frame's stick spot sideways offset as its reach and its up-down offset
+  as a height: a puck on the ice is only reachable where the stick spot is more to the side than up or down. Stick
+  spots (ROM, sideways / up-down): ready 1-9 / 1-7; poke at full reach facing up -1 / -11, down 4 / 12, the
+  diagonals 20-30 / 3-11, sideways 26-35 / 2-3. So **facing straight up or down the ice the poke (like his stick
+  in any frame) can't touch a puck on the ice**: a carrier coming straight at him can't be poked; to the side and on
+  the diagonals it reaches 20-35 units. **Recorded** (the retail-size SNES games): computer goalies poked 43 times and
+  got the puck 3 times (2 of them straight on: the carrier ran into his body); people's goalies 10 times, 5 won, all
+  sideways or diagonal.
 - **Covering the puck** (`assgoalie`): once a computer goalie has held the puck a moment, now and then (a 1-in-4 roll)
   he checks the opposing skaters. **If one is within 20 units of the puck he drops onto it and covers it** (`SPAgcover`)
   for 90 frames; within 35, he waits; with nobody within 35 he looks to pass it out (`chk4pass`). A goalie a person
