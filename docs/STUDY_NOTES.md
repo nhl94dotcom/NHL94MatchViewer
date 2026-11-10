@@ -2888,6 +2888,12 @@ converter took for shots. Slapshot saves: 18 of 50 uncounted, 9 of them off the 
 This is what NOSE4Web's SNES option "Count stick deflections as shots" already fixes (puckstick's `.t1x` calls
 ChkShotStat for a goalie; on its recommended list; tested 2026-11-08, "NOSE4Web's sniping, comeback, awareness and
 crowd fixes": the same 300 shots on retail 267 -> 297 counted). A ROM without it shows these uncounted saves.
+What it looks like (the user, 4 of the listed cases in the viewer): the puck spins right after the goalie gets it,
+and it doesn't always look near his stick. deflect gives the puck a random speed (x and y each up to +-4,096, height
+speed up to 4,095) and starts puckflip, the puck's spin; a body save's rebound spins too (puckgoalie's .4x), so the
+spin means "knocked away, not caught", not always "stick". The stick test (checkpuckcoll_ccx .9) is a box around the
+current frame's stick spot as wide each way as the spot is from his centre (often 10-14 units), the puck below about
+two thirds of the spot's height, checked before his body: a puck reaching his pads on the stick side can take it.
 
 ## Energy, speed and the drain on the Genesis; the SNES sites (2026-11-10, for NOSE4Web's "energy from hits only")
 
@@ -2934,4 +2940,15 @@ $CC at $BB72; SNES $F020D), knockdowns 1365, holds 683; bench recovery unchanged
 - SNES top speed by knockdowns (`snes_energy_speed_check.py speed`, leg speed 15, most skaters in the state; the
   speed index legspd x (energy / 2 + $800) / $1000): none 9,214 (index 15), 1 knockdown 8,443 (12), 2: 7,927 (10),
   3: 7,167 (7). The SNES never slows a skater below half his speed index from energy.
+
+## NOSE4Web's SNES "Energy takes all of a skater's speed", played (2026-11-10, 450306d)
+
+playeracc's lsr / clc / adc #$0800 before the tax (retail $F2805, 5 bytes) made NOPs: the speed index legspd x energy
+/ $1000 (retail: legspd x (energy / 2 + $800) / $1000); part of the SNES hits-only preset. `snes_energy_speed_check.py
+speed`, leg speed 15, line changes On: NHL94_hits_only.smc 9,214 / 7,927 / 6,645 / 5,369 after 0 / 1 / 2 / 3
+knockdowns (index 15 / 10 / 5 / 0); nhl94snes_SA1_hits_only.sfc 9,215 / 7,866 / 6,655 / 5,375. Line changes Auto:
+9,214 (SA-1 9,215) at every energy. Goalies: holdcheck exits for a goalie and the knockdown cost skips position 0, so
+in the preset nothing lowers a goalie's energy (a minute of computer play, line changes On: both stay 4,096). On
+retail the drain runs for goalies too (3,996 and 4,060 after the same minute; they never go to the bench), so the
+speed option used with the drain on would slow goalies, more than retail does.
 

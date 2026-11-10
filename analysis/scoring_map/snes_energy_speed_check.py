@@ -6,6 +6,8 @@ In live play (snes_assist_stick_test.Game, the retail game states; line changes 
 - `speed ROM OUT`: the pad-1 skater skating straight from a standstill for 150 frames, everyone else parked, his
   energy (tmpde $17EA, by pnum) held at $1000 and after 1, 2 and 3 knockdowns of 1365 (2731, 1366, 1), his working
   leg speed (legspd $1303) the median skater's and 15: the highest speed reached (|Xvel, Yvel|).
+  Also with line changes Auto (OptLine 2: the game reads energy as $1000). Both formulas shown: retail's, and
+  NOSE4Web's "energy takes all of a skater's speed" (450306d: legspd x energy / $1000).
 - `shift ROM OUT`: the same skater, energy $1000, never hit, skating up and down and pressing A (the burst) every 40
   frames for 1,500 frames (the median SNES shift, 60 game s), and a player of his team on the bench (tmpdst $1852 =
   $FFFE) put at $800: both energies at the end.
@@ -45,21 +47,25 @@ def speed(rom, out):
     sk = sorted(G.w(LEGSPD + 2 * k) for k in range(12) if G.w(POSITION + 2 * k) not in (0, 0xFFFF))
     avg = sk[len(sk) // 2]
     res = {"working leg speeds on the ice": sk, "average used": avg}
-    for legspd in (avg, 15):
-        for n, en in ((0, 0x1000), (1, 4096 - 1365), (2, 4096 - 2730), (3, 1)):
-            a, team, up = start(G)
-            G.put(a, 0, -180 * up)
-            top = 0
-            for f in range(150):
-                keep_others(G, a, up)
-                G.setw(LEGSPD + 2 * a, legspd)
-                G.setw(slot(G, a), en)
-                G.run(hold=["UP" if up > 0 else "DOWN"])
-                vx, vy = G.sw(XVEL + 2 * a), G.sw(YVEL + 2 * a)
-                top = max(top, math.hypot(vx, vy))
-            idx = (legspd * 16 * (en // 2 + 0x800)) >> 16
-            res[f"leg speed {legspd}, {n} knockdowns (energy {en})"] = {"top reached": round(top), "code: index": idx}
-        lowload.breathe()
+    for optline, label in ((1, "On"), (2, "Auto")):
+        for legspd in ((avg, 15) if optline == 1 else (15,)):
+            for n, en in ((0, 0x1000), (1, 4096 - 1365), (2, 4096 - 2730), (3, 1)):
+                a, team, up = start(G)
+                G.setw(OPTLINE, optline)
+                G.put(a, 0, -180 * up)
+                top = 0
+                for f in range(150):
+                    keep_others(G, a, up)
+                    G.setw(LEGSPD + 2 * a, legspd)
+                    G.setw(slot(G, a), en)
+                    G.run(hold=["UP" if up > 0 else "DOWN"])
+                    vx, vy = G.sw(XVEL + 2 * a), G.sw(YVEL + 2 * a)
+                    top = max(top, math.hypot(vx, vy))
+                e = 0x1000 if optline == 2 else en
+                res[f"line changes {label}, leg speed {legspd}, {n} knockdowns (energy {en})"] = {
+                    "top reached": round(top), "index, retail formula": (legspd * 16 * (e // 2 + 0x800)) >> 16,
+                    "index, energy takes all": (legspd * e) >> 12}
+            lowload.breathe()
     (out / f"speed_{Path(rom).stem}.json").write_text(json.dumps(res, indent=1))
     print(json.dumps(res, indent=1))
 
