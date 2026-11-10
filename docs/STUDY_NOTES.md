@@ -2996,3 +2996,23 @@ pixel for pixel as before); the pause items' screens (stats, rosters, player car
 Islanders' and Washington's logos on the old ROM, none on the relaid one. Pittsburgh-Quebec and San Jose-St. Louis
 showed no difference on any screen.
 
+## NOSE4Web's MIDI-made Genesis organ songs, played (2026-11-10, nhl94_songs_midi.bin)
+
+Changed: SoundStreamTable ($2C648) entries $31 -> $FFAC0 and $32 -> $1002C0 (a 2 MB ROM; $31's stream runs over the 1 MB
+line to $100298), the checksum check ($301); nothing else, so every other sound is retail's. The streams follow the
+format (a 20-frame wait first, program 11 on channel 0, $90 / $80 notes, status 0 with $FFFF to end; NOSE4Web's tag
+after).
+- `gen_song_streams.py` (the streams decoded as notes, the driver's pairing: a key off ends that pitch): $31 against
+  the original Brass Bonanza (song $40, found by matching notes): both 1,480 frames, program 11, at most 4 notes at
+  once against 5; 164 notes the same in start and pitch (125 also in length), 91 of the original's and 86 of the new
+  differ, all where two notes overlap: their ends (and in places the notes) are swapped, e.g. frame 20: the original
+  ends 41 after 1 frame and 69 after 16, the new one the other way round. A converter pairing each key off with the
+  oldest sounding note of the channel rather than its pitch would do exactly this. Key-on velocity 37 against 35.
+  $32 ("Charge"): six notes, each keyed on and off in the same frame, the waits (9-59 frames) after the key offs.
+- `gen_midi_song_check.py` (the driver's track slots $D3D4 every frame; a slot is free when its pointer's top word is
+  negative: a stream's end sets the top byte, st (a5)): Boston at home, the next period's first faceoff starts $31
+  from $FFAC0 (retail $2D29E) on the same frame; it plays 1,481 frames and frees its slot (retail's $31 884); a home
+  goal 300 frames in frees it 2 frames later, as on retail; sound effects play alongside as on retail (4 and 7 in the
+  two runs on both). `wav` writes the songs out: $32's loudness holds through its 2.6 s (real) and drops to the
+  background at its end: the organ patch's release lets each 0-frame note ring, as the original's own short notes do.
+
