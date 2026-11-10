@@ -605,6 +605,11 @@ sliding across slides on toward the crossing point.
     times.
 - **A goalie you control** (`assgoalie`, when he's yours): **X pokes** (toward the d-pad direction, or at the puck with
   the pad centred), **Y held dives** (the same way), and A held starts save moves (5.5).
+- **No screens** (2026-11-10, a community question): nothing in `assgoalie` or `puckgoalie` reads where other players
+  stand between him and the puck. He positions and picks saves from the puck alone (its spot and motion, the pass
+  receiver while a pass is in the air), and the save is geometry. Screens matter only physically: a stick or body on
+  the way deflects the puck (`puckstick`, `puckbody`) after he may have committed to a save (he rethinks every 3-11
+  frames and a save move locks him), skaters running into him push him (`checkplcoll`), and rebounds off bodies.
 - **What the poke does** (2026-11-10, a community member: "the goalie's X poke seems useless"): nothing but his
   stick. SPAgpoke is 19 frames (4 part-way, 15 at full reach); no other code treats it specially. A carried puck
   within about 6 units of his stick spot (puckstick `.t1`: dx^2 + dy^2 under 37, whatever the reach) is **knocked
