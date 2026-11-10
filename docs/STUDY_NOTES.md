@@ -2885,8 +2885,9 @@ didn't count: **the goalie's stick at over 13,000: 56** (one-timers 27, slapshot
 case was over 13,000), a wall, post or the net 31, a defender's stick or body 14, a teammate's 4, the clock stopped
 2; and 13 slow "shots" (2,400-8,400) with no doshot behind them (shotplayer stale or empty): passes or pushes the
 converter took for shots. Slapshot saves: 18 of 50 uncounted, 9 of them off the goalie's stick.
-A fix for an edit: in puckstick's goalie deflection (`.t1x`, position 0) call ChkShotStat before a2touchpuck, so a
-stick save counts like a body save.
+This is what NOSE4Web's SNES option "Count stick deflections as shots" already fixes (puckstick's `.t1x` calls
+ChkShotStat for a goalie; on its recommended list; tested 2026-11-08, "NOSE4Web's sniping, comeback, awareness and
+crowd fixes": the same 300 shots on retail 267 -> 297 counted). A ROM without it shows these uncounted saves.
 
 ## Energy, speed and the drain on the Genesis; the SNES sites (2026-11-10, for NOSE4Web's "energy from hits only")
 
