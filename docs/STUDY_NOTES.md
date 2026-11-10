@@ -2793,6 +2793,14 @@ Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
   defenceman put at C and saved again: the old block's bytes 0-17 stayed exactly as after the first save, and the
   original loads that earlier, fitting line-up. The one leftover: the old team byte is written even when the nibbles
   aren't, so a team whose first save doesn't fit loads as empty (zero) lines on the original.
+- **e0dbd27 (the old nibbles written per slot: as the original for a player who fits, 0, the first forward or
+  defenceman, for one who doesn't):** played the same way. Saves that fit load exactly on nhl94.bin. A defenceman at
+  C loads there as the first forward at C (player 3; the rest as saved). A defenceman at LW with the first forward
+  already at RW: the LW nibble is 0 as designed, and the original's load, which places by swapping, brings LW back
+  as the player who was at RW before the load (7): no skater twice on the line. On the option ROM every save loads
+  exactly (the defenceman at C after a reset; the defenceman at LW too). Save Team Line changes only $1EC0-$1EE1,
+  the old block's bytes 0-17 ($1EF6-$1F07) and the checksum; the planted playoff bytes are kept; with line changes
+  off the defenceman at C takes the next faceoff.
 - With line changes off, back in play: the defenceman (roster place 24) is the record playing C (position 4) and
   lines up for the next faceoff.
 - After a console reset and back to play, Load Team Line gives line 0 exactly as saved.

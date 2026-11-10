@@ -236,7 +236,21 @@ def compat_save(anyrom, out):
     unfit = line0(r.e)
     exit_menu(r, 2)
     (out / "compat_unfit.bin").write_bytes(bytes(sram(r.e)))
-    (out / "compat_saved.json").write_text(json.dumps({"fit": fit, "unfit": unfit}))
+    # the defenceman moved to LW (the LW goes to C by the swap), then the first forward put at RW:
+    # a stand-in for LW (the first forward) who is already on the line
+    open_edit_lines(r)
+    to_slot(r, 3)
+    r.press("C", 120)
+    lst = [r.e.b(SATT + i) for i in range(r.e.w(ROWS) + 1)]
+    pick_row(r, lst.index(line0(r.e)[4] - 1))
+    to_slot(r, 5)
+    r.press("C", 120)
+    lst = [r.e.b(SATT + i) for i in range(r.e.w(ROWS) + 1)]
+    pick_row(r, 0)                                     # the first row: the first forward
+    unfit2 = line0(r.e)
+    exit_menu(r, 2)
+    (out / "compat_unfit2.bin").write_bytes(bytes(sram(r.e)))
+    (out / "compat_saved.json").write_text(json.dumps({"fit": fit, "unfit": unfit, "unfit2": unfit2}))
 
 
 def load_on(rom, sram_path, out):
@@ -252,7 +266,13 @@ def load_on(rom, sram_path, out):
     before = line0(r.e)
     exit_menu(r, 3)
     r.shot("after_load")
-    (out / "load.json").write_text(json.dumps({"before Load": before, "after Load": line0(r.e)}))
+    after = line0(r.e)
+    open_edit_lines(r)                                 # the C slot's list there: its first row is the first forward
+    to_slot(r, 4)
+    r.press("C", 120)
+    first = r.e.b(SATT) + 1
+    (out / "load.json").write_text(json.dumps({"before Load": before, "after Load": after,
+                                               "first row of the C list (first forward)": first}))
 
 
 def compat_part(anyrom, orig, out):
@@ -260,7 +280,7 @@ def compat_part(anyrom, orig, out):
     subprocess.run([sys.executable, __file__, "--compat-save", anyrom, str(out)], check=True)
     saved = json.loads((out / "compat_saved.json").read_text())
     res = {"saved on the option ROM": saved}
-    for kind in ("fit", "unfit"):
+    for kind in ("fit", "unfit", "unfit2"):
         where = out / f"compat_load_{kind}"
         subprocess.run([sys.executable, __file__, "--load", orig, str(out / f"compat_{kind}.bin"), str(where)], check=True)
         got = json.loads((where / "load.json").read_text())
