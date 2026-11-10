@@ -2981,6 +2981,11 @@ pfalock 0 and the next think puts him back in SPAgready ($E528 -> $E0FE after on
 goalie at the bottom net can't poke straight up the ice; a pad goalie goes through the same `.22`. pfalock ($14E3) is
 only ever tested zero / non-zero (every read is bne / beq or ORed into one) and cleared with stz when the animation
 ends; the facing is facedir. So any non-zero lock is safe (the dive stores 150 there).
+NOSE4Web 038dc3c hooks `.22`'s sta pfalock,x (retail-size $F5596, SA-1 $F5619: $74E3) to store $80, nothing else
+changed (the dive and the other sta pfalock sites as before). Played: at the bottom net, facing up the ice, retail's
+poke lasts 2 frames in SPAgpoke and never draws its full stretch (frame 679); the build's stays in SPAgpoke through the
+25 frames watched and draws 679. Facing down: the same on both. (The SA-1 build's saved states are all at the top net,
+so only facing down was played there; the same hook is in it.)
 
 ## NOSE4Web's SNES logo spill, checked (2026-11-10, 85a17a2: nhl94_2026_classic.sfc and _relaid.sfc)
 
