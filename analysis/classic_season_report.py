@@ -48,7 +48,22 @@ def load(league):
     # DateTime is when a result was uploaded (a batch's games seconds apart), and the games are taken to be uploaded
     # in the order played (the user, 2026-11-10: there is no way of knowing otherwise), so streaks, "in a row" and
     # the last game follow it; MatchID only breaks an exact tie
-    return system, sorted(rows, key=lambda r: (r["DateTime"], int(r["MatchID"])))
+    rows.sort(key=lambda r: (r["DateTime"], int(r["MatchID"])))
+    # A row the same as an earlier one in everything but MatchID and time is a copy: a mistake, or a game neither
+    # player saved at its end, entered from another save state with the same outcome (the user, 2026-11-10). Its
+    # result counts, and its stats count in the totals as the league counts them, but its score and stats aren't
+    # that game's: single-game lists (best games, shutouts, notable games, best wins) skip it (is_copy).
+    seen = set()
+    for r in rows:
+        k = tuple(v for f, v in r.items() if f not in ("MatchID", "DateTime"))
+        r["_copy"] = k in seen
+        seen.add(k)
+    return system, rows
+
+
+def is_copy(g):
+    """A game (one side of a row from sides()) whose row copies an earlier one: no single-game claims from it."""
+    return g["row"].get("_copy", False)
 
 
 def sides(r):
@@ -509,14 +524,14 @@ def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rat
     def result(g):
         return g["us"]["Score"] - g["them"]["Score"]
     # opponents left out of the table have no place, so they don't make a best win or a surprising loss
-    wins = [g for g in mine if result(g) > 0 and g["opp"] in order]
-    losses = [g for g in mine if result(g) < 0 and g["opp"] in order]
+    wins = [g for g in mine if result(g) > 0 and g["opp"] in order and not is_copy(g)]
+    losses = [g for g in mine if result(g) < 0 and g["opp"] in order and not is_copy(g)]
     bits = []
     if wins:
         g = min(wins, key=lambda g: (order.index(g["opp"]), -result(g)))
         bits.append(f"the best win was {int(g['us']['Score'])}-{int(g['them']['Score'])} over {g['opp']} "
                     f"({nth(order.index(g['opp']) + 1)} in the standings, {g['when'][:10]})")
-    wins = [g for g in mine if result(g) > 0]
+    wins = [g for g in mine if result(g) > 0 and not is_copy(g)]
     if wins:
         g = max(wins, key=result)
         if result(g) >= 4:
@@ -526,8 +541,8 @@ def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rat
         if order.index(g["opp"]) > order.index(coach):
             bits.append(f"the most surprising loss {int(g['us']['Score'])}-{int(g['them']['Score'])} to {g['opp']} "
                         f"({nth(order.index(g['opp']) + 1)}, {g['when'][:10]})")
-    cb = [g for g in mine if g["us"]["GoalsP1"] + g["us"]["GoalsP2"] < g["them"]["GoalsP1"] + g["them"]["GoalsP2"] and result(g) > 0]
-    bl = [g for g in mine if g["us"]["GoalsP1"] + g["us"]["GoalsP2"] > g["them"]["GoalsP1"] + g["them"]["GoalsP2"] and result(g) < 0]
+    cb = [g for g in mine if not is_copy(g) and g["us"]["GoalsP1"] + g["us"]["GoalsP2"] < g["them"]["GoalsP1"] + g["them"]["GoalsP2"] and result(g) > 0]
+    bl = [g for g in mine if not is_copy(g) and g["us"]["GoalsP1"] + g["us"]["GoalsP2"] > g["them"]["GoalsP1"] + g["them"]["GoalsP2"] and result(g) < 0]
     if cb:
         bits.append(f"{len(cb)} comeback win{'s' if len(cb) > 1 else ''} from behind after two periods")
     if bl:

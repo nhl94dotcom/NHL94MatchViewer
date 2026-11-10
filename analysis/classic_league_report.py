@@ -294,6 +294,13 @@ def build(league):
       f"of all {n} coaches (1 the best, ties share a rank). Pre-season ratings: coach_history's Classic rating on "
       f"{rat_day}." + (" Left out for playing very few games (their games still count for their opponents): " +
                        ", ".join(f"{c} ({gp_league[c]})" for c in omitted) + "." if omitted else "") + "\n")
+    copies = [r for r in games if r["_copy"]]
+    if copies:
+        w(f"{len(copies)} game{'s' if len(copies) > 1 else ''} repeat{'' if len(copies) > 1 else 's'} an earlier one in "
+          "every number (" + "; ".join(f"{r['HomePlayer']} {int(S.num(r['HomeScore']))}-{int(S.num(r['AwayScore']))} "
+                                       f"{r['AwayPlayer']}, {r['DateTime'][:10]}" for r in copies)
+          + "): a mistake, or a game entered from another save state with the same outcome. The results and totals "
+          "count them, as the league does; the lists of single games leave them out.\n")
 
     # --- standings
     w("## Standings\n")
@@ -386,6 +393,8 @@ def build(league):
                 gk[k]["SV"] += q[3]
                 gk[k]["SA"] += q[4]
                 cur = best_goalie_game.get(c)
+                if S.is_copy(g):
+                    continue
                 if cur is None or (q[3], -q[2]) > (cur[1], -cur[2]):
                     best_goalie_game[c] = (q[1], q[3], q[2], g)
     w("## Skaters\n")
@@ -427,12 +436,13 @@ def build(league):
     w("")
 
     # --- notable games and streaks
-    allg = [(g, c) for c, gs in per.items() for g in gs if result(g) == "W"]
+    # copies (S.is_copy) have the right winner but not that game's score: no single-game lists from them
+    allg = [(g, c) for c, gs in per.items() for g in gs if result(g) == "W" and not S.is_copy(g)]
     w("## Notable games\n")
     big = sorted(allg, key=lambda x: -(x[0]["us"]["Score"] - x[0]["them"]["Score"]))[:3]
     w("- Biggest wins: " + "; ".join(f"{c} {int(g['us']['Score'])}-{int(g['them']['Score'])} over {g['opp']} "
                                      f"({g['when'][:10]})" for g, c in big) + ".")
-    most = sorted({r["MatchID"]: r for r in games}.values(),
+    most = sorted({r["MatchID"]: r for r in games if not r["_copy"]}.values(),
                   key=lambda r: -(S.num(r["HomeScore"]) + S.num(r["AwayScore"])))[:3]
     w("- The most goals: " + "; ".join(f"{r['HomePlayer']} {int(S.num(r['HomeScore']))}-{int(S.num(r['AwayScore']))} "
                                        f"{r['AwayPlayer']} ({r['DateTime'][:10]})" for r in most) + ".")
@@ -491,7 +501,7 @@ def build(league):
             if len(picked) == 3:
                 break
         extra = []
-        wins = [g for g in per[c] if result(g) == "W"]
+        wins = [g for g in per[c] if result(g) == "W" and not S.is_copy(g)]
         if wins:
             wins = [g for g in wins if g["opp"] in place] or wins
             bw = min(wins, key=lambda g: (place.get(g["opp"], 99), -(g["us"]["Score"] - g["them"]["Score"])))
@@ -515,7 +525,7 @@ def build(league):
                 extra.append(f"{nm}'s {v['P']} points ({v['G']} goals), {ORD(lr)} among the league's skaters")
             elif v["P"]:
                 extra.append(f"{nm} leading the team with {v['P']} points ({v['G']} goals)")
-        close = [g for g in per[c] if result(g) == "L" and g["them"]["Score"] - g["us"]["Score"] == 1
+        close = [g for g in per[c] if not S.is_copy(g) and result(g) == "L" and g["them"]["Score"] - g["us"]["Score"] == 1
                  and g["opp"] in place]
         if close:
             cl = min(close, key=lambda g: place[g["opp"]])
