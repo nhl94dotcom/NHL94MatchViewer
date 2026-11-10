@@ -1,6 +1,6 @@
 """Everything for writing a league's season story in one print (2026-11-10): the league report's brief, standings,
 groups, notable games and good words; classic_season_extras' best games, rivalries, home / away and ratings; the
-top six's records week by week with their first and last game days; shutouts by goalie; the most body checks and the
+top six's records week by week (W-L, and ties when there are any) with their first and last game days; shutouts by goalie; the most body checks and the
 top scorers. Names real people: prints only, to the terminal.
 
 python analysis/classic_story_material.py LEAGUE"""
@@ -50,7 +50,9 @@ def main():
         for wk in weeks:
             gs = [g for g in per[c] if g["when"][:10] <= wk.isoformat()]
             wins = sum(g["us"]["Score"] > g["them"]["Score"] for g in gs)
-            line.append(f"{wins}-{len(gs) - wins}")
+            losses = sum(g["us"]["Score"] < g["them"]["Score"] for g in gs)
+            ties = len(gs) - wins - losses  # a tie is its own column, not a loss (review 2026-11-10)
+            line.append(f"{wins}-{losses}" + (f"-{ties}" if ties else ""))
         gs = sorted(per[c], key=lambda g: g["when"])
         print(f"  {c[:16]:16s}", " ".join(x.rjust(6) for x in line), "first", gs[0]["when"][:10], "last", gs[-1]["when"][:10])
     sh = Counter()

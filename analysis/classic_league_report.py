@@ -205,7 +205,7 @@ def build(league):
     known = [rat[c.lower()] for c in per if c.lower() in rat] or [0.0]
     mean_known = sum(known) / len(known)
     R = lambda c: rat.get(c.lower(), mean_known)
-    teams = {c: Counter(g["team"] for g in gs).most_common(1)[0][0] for c, gs in per.items()}
+    teams = {c: S.team_label(gs) for c, gs in per.items()}
 
     tab = {}
     for c, gs in per.items():

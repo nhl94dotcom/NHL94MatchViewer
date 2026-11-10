@@ -5,7 +5,8 @@ the repository; the script prints nothing but the path.
 From the league database (All_Games_GENS.csv / All_Games_SNES.csv): every regular-season game of the league, as the
 league counts them (a double upload too); simulated games left out. Points: 2 a win, none for
 a loss (overtime included; a tie 1). Rates per game, so coaches with games left compare fairly. Ranks: 1 is the best
-(fewest for things against). Pre-season strength: coach_history's Classic rating the day before the league's first
+(fewest for things against); coaches with very few games (under a quarter of the most, or under 5) are left out of
+the table and ranks as in classic_league_report.py, their games still counted for their opponents. Pre-season strength: coach_history's Classic rating the day before the league's first
 game (win chance against coach B = 1 / (1 + exp(-(a - b))); teams and home ice not in it).
 
 "Their season" at the top tells it in words from the same numbers (2026-11-10): the result against the pre-season
@@ -17,6 +18,7 @@ import csv
 import json
 import math
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 from datetime import date
@@ -81,6 +83,13 @@ def fmt_time(s):
     return f"{s // 60}:{s % 60:02d}"
 
 
+def team_label(gs):
+    """The coach's team, or teams when they ran a second one for a real share of their games (SNES-CD 2026: Chicago
+    40 and Dallas 34)."""
+    n = Counter(g["team"] for g in gs).most_common()
+    return "/".join(t for t, k in n if k >= len(gs) / 4) or n[0][0]
+
+
 def build(league, coach):
     system, games = load(league)
     per = defaultdict(list)
@@ -121,7 +130,15 @@ def build(league, coach):
             t["first_goal"] += 0
         t["Pts"] = 2 * t["W"] + t["T"]
         tab[c] = t
-    teams = {c: Counter(g["team"] for g in gs).most_common(1)[0][0] for c, gs in per.items()}
+    # as classic_league_report: coaches with very few games are left out of the tables and ranks (their games still
+    # count for their opponents), so a coach's report and the league report agree on places (review, 2026-11-10)
+    gp_league = {c: t["GP"] for c, t in tab.items()}
+    omitted = sorted(c for c in tab if tab[c]["GP"] < max(5, max(gp_league.values()) / 4))
+    if coach in omitted:
+        raise SystemExit(f"{coach} played too few games in {league} for a report ({gp_league[coach]})")
+    for c in omitted:
+        del tab[c]
+    teams = {c: team_label(gs) for c, gs in per.items()}
     me = tab[coach]
 
     def rate(c, key):
@@ -140,10 +157,13 @@ def build(league, coach):
     w = L.append
     gp_all = Counter({c: t["GP"] for c, t in tab.items()})
     w(f"# {coach}'s {league} season\n")
-    w(f"{len(games)} games played in the league so far ({min(r['DateTime'] for r in games)[:10]} to "
-      f"{max(r['DateTime'] for r in games)[:10]}), {len(tab)} coaches. {coach} played {me['GP']} as {teams[coach]}. "
-      f"Coaches still playing: " + ", ".join(f"{c} {n}" for c, n in sorted(gp_all.items(), key=lambda x: -x[1]) if n < me['GP'])
-      + ". Rates are per game, so they compare fairly; ranks are out of all coaches (1 the best).\n")
+    fewer = [f"{c} {n}" for c, n in sorted(gp_all.items(), key=lambda x: -x[1]) if n < me['GP']]
+    w(f"{len(games)} games in the league ({min(r['DateTime'] for r in games)[:10]} to "
+      f"{max(r['DateTime'] for r in games)[:10]}), {len(tab)} coaches. {coach} played {me['GP']} as {teams[coach]}."
+      + (" Fewer games: " + ", ".join(fewer) + "." if fewer else "")
+      + (" Left out for playing very few games (their games still count for their opponents): " +
+         ", ".join(f"{c} ({gp_league[c]})" for c in omitted) + "." if omitted else "")
+      + " Rates are per game, so they compare fairly; ranks are out of all coaches (1 the best).\n")
 
     # --- standings
     w("## Standings\n")
@@ -163,7 +183,7 @@ def build(league, coach):
 
     # --- a league of groups (SNES-AB: two groups of 8, 4 games within the group, 2 against some of the other)
     meet = Counter(g["opp"] for g in per[coach])
-    group = {coach} | {o for o, n in meet.items() if n >= 4}
+    group = {coach} | {o for o, n in meet.items() if n >= 4 and o in tab}
     if len(group) >= 4 and all(meet[o] <= 2 for o in tab if o not in group):
         w(f"### {coach}'s group\n")
         w(f"The schedule has groups: {coach} played {', '.join(sorted(group - {coach}))} 4 or more times each, and the "
@@ -352,7 +372,7 @@ def build(league, coach):
         h2h[o]["SF"] += g["us"]["Shots"]
         h2h[o]["SA"] += g["them"]["Shots"]
         h2h[o]["E"] += sig(R(coach) - R(o))
-    for o in sorted(h2h, key=lambda o: order.index(o)):
+    for o in sorted(h2h, key=lambda o: (order.index(o) if o in order else len(order), o)):
         v = h2h[o]
         w(f"| {o} | {teams.get(o, '')} | {v['GP']} | {v['W']}-{v['L']} | {int(v['GF'])}-{int(v['GA'])} | "
           f"{int(v['SF'])}-{int(v['SA'])} | {v['E']:.1f} | {100 * sig(R(o) - mean_known):.0f}% |")
@@ -431,7 +451,9 @@ def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rat
         best = max(range(len(chunks)), key=lambda i: rec(chunks[i])[0] - rec(chunks[i])[1])
         worst = min(range(len(chunks)), key=lambda i: rec(chunks[i])[0] - rec(chunks[i])[1])
         start = "started strongly" if f0[0] > f0[1] + 2 else "started poorly" if f0[1] > f0[0] + 2 else "started evenly"
-        finish = "finished strongly" if fl[0] > fl[1] + 2 else "faded at the end" if fl[1] > fl[0] + 2 else "finished about even"
+        finish = ("finished strongly" if fl[0] > fl[1] + 2 else
+                  "never turned it around" if fl[1] > fl[0] + 2 and start == "started poorly" else
+                  "faded at the end" if fl[1] > fl[0] + 2 else "finished about even")
         span = lambda i: f"games {10 * i + 1}-{10 * i + len(chunks[i])}"
         arc = f"They {start} ({f0[0]}-{f0[1]} in the first {len(chunks[0])} games) and {finish} ({fl[0]}-{fl[1]} in the last {len(chunks[-1])})."
         if best not in (0, len(chunks) - 1):
@@ -440,7 +462,9 @@ def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rat
             arc += f" The hardest was {span(worst)} ({rec(chunks[worst])[0]}-{rec(chunks[worst])[1]})."
     else:
         arc = f"In {gp} games they went {w_}-{l_}."
-    run = lambda ch: max((len(s) for s in "".join(res).split("L" if ch == "W" else "W")), default=0)
+    # a tie ends a streak, as in the league report (review 2026-11-10: splitting on the other letter alone ran
+    # TheProfessor's 11 through a tie into 20)
+    run = lambda ch: max((len(s) for s in re.split(f"[^{ch}]", "".join(res))), default=0)
     sw, sl = run("W"), run("L")
     if sw >= 4:
         arc += f" Their longest winning streak was {sw} games."
@@ -481,13 +505,16 @@ def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rat
     # 4. key games
     def result(g):
         return g["us"]["Score"] - g["them"]["Score"]
-    wins = [g for g in mine if result(g) > 0]
-    losses = [g for g in mine if result(g) < 0]
+    # opponents left out of the table have no place, so they don't make a best win or a surprising loss
+    wins = [g for g in mine if result(g) > 0 and g["opp"] in order]
+    losses = [g for g in mine if result(g) < 0 and g["opp"] in order]
     bits = []
     if wins:
         g = min(wins, key=lambda g: (order.index(g["opp"]), -result(g)))
         bits.append(f"the best win was {int(g['us']['Score'])}-{int(g['them']['Score'])} over {g['opp']} "
                     f"({nth(order.index(g['opp']) + 1)} in the standings, {g['when'][:10]})")
+    wins = [g for g in mine if result(g) > 0]
+    if wins:
         g = max(wins, key=result)
         if result(g) >= 4:
             bits.append(f"the biggest {int(g['us']['Score'])}-{int(g['them']['Score'])} over {g['opp']} ({g['when'][:10]})")

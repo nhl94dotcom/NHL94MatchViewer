@@ -7,7 +7,8 @@ From the league database (as classic_season_report.py) and coach_history's Class
 - rivalries: each pair of coaches who met 3+ times, the closest series by goal difference, the most lopsided;
 - home and away: every coach's record at home and away, and the biggest gap;
 - looking ahead: each coach's Classic rating the day before the league's first game and on the last day of the
-  history (after this season), as a win chance against the average coach, and the change.
+  history (after this season; it says so if the history stops before the league's last game day; run late, it
+  includes any later games too), as a win chance against the average coach, and the change.
 
 python analysis/classic_season_extras.py LEAGUE"""
 import math
@@ -85,7 +86,9 @@ def main():
         b, a = before.get(c.lower()), after.get(c.lower())
         if b is not None and a is not None:
             rows.append((sig(a) - sig(b), c, sig(b), sig(a)))
-    print(f"  ({day0} -> {day1})")
+    last = date.fromisoformat(max(r["DateTime"] for r in games)[:10])
+    print(f"  ({day0} -> {day1})" + ("" if day1 > last else
+          f"  NOTE: the latest rating ({day1}) is from before the league's last game day ({last}): rebuild coach_history"))
     for d, c, b, a in sorted(rows, reverse=True):
         print(f"  {c}: {100 * b:.0f}% -> {100 * a:.0f}% ({100 * d:+.0f})")
     new = [c for c in keep if c.lower() not in before]
