@@ -2770,3 +2770,19 @@ bytes a goal), thousands of bytes below.
   FallDown runs); the relative effects it gives (+2/10 +5%, x1.08; +3/15 +8%, x1.12; +4/20 +11%, x1.16 for the 5+
   skaters) are only indicative. The SNES computer does get injured, so there a computer-vs-computer comparison can
   measure the option directly.
+
+## NOSE4Web's Genesis "any skater at any position", played (2026-11-09, 68134c4, nhl94_any_position.bin)
+
+`gen_any_position_check.py` (the build itself from power-on; Edit Lines from the pause menu, the exit menu's Save /
+Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
+- The list for C and for LW: every skater, roster places 2-24 (23 rows, scrolling); the last (a defenceman) picked
+  for C; then picked for LW: the LW's old player went to C (SetLineSlot's swap).
+- Save Team Line changed save RAM $1EC0-$1EE1 (the new block: team + 1, then a byte a slot), the old block's team
+  byte ($1EF6) and the checksum ($1FFE-$1FFF), nothing else; a pattern planted in the old block's playoff bytes
+  (block bytes 18-27, passbits, loaded at boot) was kept. The old block's line nibbles are not written (they stay as
+  they were: zeros on a fresh save), so lines saved with the option load as nonsense on a ROM without it.
+- With line changes off, back in play: the defenceman (roster place 24) is the record playing C (position 4) and
+  lines up for the next faceoff.
+- After a console reset and back to play, Load Team Line gives line 0 exactly as saved.
+- Lines saved on the original nhl94.bin (LW and RW of line 0 swapped), its save RAM put into the option ROM's before
+  power-on: Load Team Line gives them exactly (the new block's team byte doesn't match: the original code runs).
