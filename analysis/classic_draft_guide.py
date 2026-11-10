@@ -114,26 +114,41 @@ def section(label, csv_name, guide, player_guide, players):
     def note(r):
         a = r["abbr"]
         bits = []
+        nth = lambda n: f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
         if r["agree"]:
-            bits.append("Strength and Elo agree")
+            bits.append("Its Elo adjustment ranks it about the same, so this one is fairly solid")
+        elif r["few"]:
+            bits.append("It has few games behind it, so treat this with care")
         else:
-            bits.append(f"Elo place {elo[a]}, so treat with care" if not r["few"] else "Elo rests on few games, so treat with care")
+            bits.append(f"Its Elo adjustment ranks it {nth(elo[a])} instead, so treat this with care")
         if r["best"] in ("High-level", "Low-level"):
             bits.append(f"{r['best'].lower()} coaches get more from it ({r['sure'].lower()})")
-        return "; ".join(bits)
+        return ". ".join(b[0].upper() + b[1:] for b in bits)
 
     value = sorted((r for r in rows if r["vs_demand"] >= GAP and r["overall"] != "Poor"), key=lambda r: -r["vs_demand"])
     soft = sorted((r for r in rows if r["vs_demand"] >= GAP and r["overall"] == "Poor"), key=lambda r: -r["vs_demand"])
     dear = sorted((r for r in rows if r["vs_demand"] <= -GAP), key=lambda r: r["vs_demand"])
-    out += ["### Teams that give more than their demand", ""]
-    out += [f"- **{r['name']}:** strength place {strength[r['abbr']]}, demand place {demand[r['abbr']]}. {note(r)}." for r in value] or ["- None that aren't also Poor."]
+    nth = lambda n: f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+    strongest = lambda n: "the strongest" if n == 1 else f"{nth(n)} strongest"
+    wanted = lambda n: "the most in demand" if n == 1 else f"{nth(n)} in demand"
+    out += ["### Overlooked teams: they win more than their popularity suggests", "",
+            "These teams rank higher for winning than for how much people want them. If one is still there later in "
+            "the draft than its strength deserves, it's good value.", ""]
+    out += [f"- **{r['name']}:** {strongest(strength[r['abbr']])}, but only {wanted(demand[r['abbr']])}. "
+            f"{note(r)}." for r in value] or ["- None that aren't also below average."]
     out.append("")
     if soft:
-        out += ["### Low demand, better than that suggests, but still below the average team", ""]
-        out += [f"- **{r['name']}:** strength {signed(r['now'])}, place {strength[r['abbr']]}; demand place {demand[r['abbr']]}. {note(r)}." for r in soft]
+        out += ["### Overlooked, but still below the average team", "",
+                "Wanted less than their results deserve, but still weaker than the average team: better than their "
+                "reputation, not good.", ""]
+        out += [f"- **{r['name']}:** {strongest(strength[r['abbr']])} (strength {signed(r['now'])}), "
+                f"{wanted(demand[r['abbr']])}. {note(r)}." for r in soft]
         out.append("")
-    out += ["### Teams in more demand than their results", ""]
-    out += [f"- **{r['name']}:** demand place {demand[r['abbr']]}, strength place {strength[r['abbr']]}. {note(r)}." for r in dear] or ["- None."]
+    out += ["### Popular teams that win less than their popularity suggests", "",
+            "These teams are wanted more than their results justify. Taking one early may cost you a pick that "
+            "would have bought more.", ""]
+    out += [f"- **{r['name']}:** {wanted(demand[r['abbr']])}, but only {strongest(strength[r['abbr']])}. "
+            f"{note(r)}." for r in dear] or ["- None."]
     out.append("")
     over = sorted((r for r in rows if r["vs_ovr"] >= GAP), key=lambda r: -r["vs_ovr"])
     under = sorted((r for r in rows if r["vs_ovr"] <= -GAP), key=lambda r: r["vs_ovr"])
@@ -175,7 +190,7 @@ def main():
            "- **Expected:** the win % the team's coaches, home ice and opponents predict if it were the average team, over all years. Low means it has tended to go to weaker coaches.",
            "- **Demand place:** the team's place on the average of its Used lately place and its Expected place, 1 being most in demand.",
            "- **Strength place:** its place by strength now.",
-           "- **Stronger than demand by:** Demand place minus Strength place. Plus means the team has done better than its demand suggests.",
+           "- **Stronger than demand by:** how many places higher the team ranks for strength than for demand (Demand place minus Strength place). Plus: it wins more than its popularity suggests; minus: it's wanted more than its results justify.",
            "- **Lineup Ovr:** the mean roster Overall of the team's five most used skaters and most used goalie.",
            "- **Ovr place:** its place by Lineup Ovr.",
            "- **Stronger than Ovr by:** Ovr place minus Strength place. Plus means it has done better than its ratings look.", "",

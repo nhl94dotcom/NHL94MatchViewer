@@ -23,7 +23,7 @@ Treat any call here as a place to start, not a verdict.
 - **Expected:** the win % the team's coaches, home ice and opponents predict if it were the average team, over all years. Low means it has tended to go to weaker coaches.
 - **Demand place:** the team's place on the average of its Used lately place and its Expected place, 1 being most in demand.
 - **Strength place:** its place by strength now.
-- **Stronger than demand by:** Demand place minus Strength place. Plus means the team has done better than its demand suggests.
+- **Stronger than demand by:** how many places higher the team ranks for strength than for demand (Demand place minus Strength place). Plus: it wins more than its popularity suggests; minus: it's wanted more than its results justify.
 - **Lineup Ovr:** the mean roster Overall of the team's five most used skaters and most used goalie.
 - **Ovr place:** its place by Lineup Ovr.
 - **Stronger than Ovr by:** Ovr place minus Strength place. Plus means it has done better than its ratings look.
@@ -67,24 +67,30 @@ Recent use counts 2023-11-10 to 2026-11-09. Details on each team are in [TEAM_GU
 | St. Louis (STL) | −7.8 | −51 | Poor | Unclear | 2.2% | 55.0% | 17 | 21 | −4 | 72 | 13 | −8 |
 | NY Rangers (NYR) | −10.2 | −66 | Poor | Both alike | 2.7% | 53.4% | 13 | 22 | −9 | 76 | 7 | −15 |
 
-### Teams that give more than their demand
+### Overlooked teams: they win more than their popularity suggests
 
-- **Hartford:** strength place 9, demand place 20. Elo place 15, so treat with care.
-- **Dallas:** strength place 8, demand place 12. Strength and Elo agree.
+These teams rank higher for winning than for how much people want them. If one is still there later in the draft than its strength deserves, it's good value.
 
-### Low demand, better than that suggests, but still below the average team
+- **Hartford:** 9th strongest, but only 20th in demand. Its Elo adjustment ranks it 15th instead, so treat this with care.
+- **Dallas:** 8th strongest, but only 12th in demand. Its Elo adjustment ranks it about the same, so this one is fairly solid.
 
-- **NY Islanders:** strength −4.0, place 13; demand place 20. Elo rests on few games, so treat with care.
-- **New Jersey:** strength −3.6, place 12; demand place 16. Elo rests on few games, so treat with care.
+### Overlooked, but still below the average team
 
-### Teams in more demand than their results
+Wanted less than their results deserve, but still weaker than the average team: better than their reputation, not good.
 
-- **Pittsburgh:** demand place 11, strength place 20. Strength and Elo agree.
-- **NY Rangers:** demand place 13, strength place 22. Strength and Elo agree.
-- **Los Angeles:** demand place 9, strength place 15. Elo place 9, so treat with care.
-- **Vancouver:** demand place 2, strength place 6. Strength and Elo agree; high-level coaches get more from it (leaning).
-- **Toronto:** demand place 7, strength place 11. Strength and Elo agree.
-- **St. Louis:** demand place 17, strength place 21. Strength and Elo agree.
+- **NY Islanders:** 13th strongest (strength −4.0), 20th in demand. It has few games behind it, so treat this with care.
+- **New Jersey:** 12th strongest (strength −3.6), 16th in demand. It has few games behind it, so treat this with care.
+
+### Popular teams that win less than their popularity suggests
+
+These teams are wanted more than their results justify. Taking one early may cost you a pick that would have bought more.
+
+- **Pittsburgh:** 11th in demand, but only 20th strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid.
+- **NY Rangers:** 13th in demand, but only 22nd strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid.
+- **Los Angeles:** 9th in demand, but only 15th strongest. Its Elo adjustment ranks it 9th instead, so treat this with care.
+- **Vancouver:** 2nd in demand, but only 6th strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid. High-level coaches get more from it (leaning).
+- **Toronto:** 7th in demand, but only 11th strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid.
+- **St. Louis:** 17th in demand, but only 21st strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid.
 
 ### Against the roster ratings
 
@@ -168,26 +174,32 @@ Recent use counts 2023-11-10 to 2026-11-09. Details on each team are in [TEAM_GU
 | NY Islanders (NYI) | −4.4 | −51* | Poor | Unclear | 2.6% | 62.5% | 19 | 21 | −2 | 67 | 21 | 0 |
 | Dallas (DAL) | −6.1 | −39* | Poor | Both alike | 1.1% | 53.6% | 18 | 22 | −4 | 69 | 19 | −3 |
 
-### Teams that give more than their demand
+### Overlooked teams: they win more than their popularity suggests
 
-- **New Jersey:** strength place 1, demand place 16. Strength and Elo agree; low-level coaches get more from it (leaning).
-- **Edmonton:** strength place 12, demand place 19. Strength and Elo agree; low-level coaches get more from it (leaning, few games).
-- **Vancouver:** strength place 4, demand place 9. Elo place 13, so treat with care.
-- **Toronto:** strength place 9, demand place 14. Strength and Elo agree.
-- **Washington:** strength place 7, demand place 11. Elo place 20, so treat with care; low-level coaches get more from it (likely).
+These teams rank higher for winning than for how much people want them. If one is still there later in the draft than its strength deserves, it's good value.
 
-### Low demand, better than that suggests, but still below the average team
+- **New Jersey:** the strongest, but only 16th in demand. Its Elo adjustment ranks it about the same, so this one is fairly solid. Low-level coaches get more from it (leaning).
+- **Edmonton:** 12th strongest, but only 19th in demand. Its Elo adjustment ranks it about the same, so this one is fairly solid. Low-level coaches get more from it (leaning, few games).
+- **Vancouver:** 4th strongest, but only 9th in demand. Its Elo adjustment ranks it 13th instead, so treat this with care.
+- **Toronto:** 9th strongest, but only 14th in demand. Its Elo adjustment ranks it about the same, so this one is fairly solid.
+- **Washington:** 7th strongest, but only 11th in demand. Its Elo adjustment ranks it 20th instead, so treat this with care. Low-level coaches get more from it (likely).
 
-- **Hartford:** strength −2.2, place 16; demand place 21. Elo rests on few games, so treat with care.
+### Overlooked, but still below the average team
 
-### Teams in more demand than their results
+Wanted less than their results deserve, but still weaker than the average team: better than their reputation, not good.
 
-- **Detroit:** demand place 3, strength place 15. Elo place 10, so treat with care.
-- **Boston:** demand place 1, strength place 9. Strength and Elo agree; high-level coaches get more from it (likely).
-- **Buffalo:** demand place 12, strength place 19. Strength and Elo agree.
-- **Philadelphia:** demand place 10, strength place 16. Elo place 7, so treat with care; low-level coaches get more from it (leaning).
-- **Montreal:** demand place 6, strength place 11. Elo place 4, so treat with care; low-level coaches get more from it (leaning).
-- **Dallas:** demand place 18, strength place 22. Elo rests on few games, so treat with care.
+- **Hartford:** 16th strongest (strength −2.2), 21st in demand. It has few games behind it, so treat this with care.
+
+### Popular teams that win less than their popularity suggests
+
+These teams are wanted more than their results justify. Taking one early may cost you a pick that would have bought more.
+
+- **Detroit:** 3rd in demand, but only 15th strongest. Its Elo adjustment ranks it 10th instead, so treat this with care.
+- **Boston:** the most in demand, but only 9th strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid. High-level coaches get more from it (likely).
+- **Buffalo:** 12th in demand, but only 19th strongest. Its Elo adjustment ranks it about the same, so this one is fairly solid.
+- **Philadelphia:** 10th in demand, but only 16th strongest. Its Elo adjustment ranks it 7th instead, so treat this with care. Low-level coaches get more from it (leaning).
+- **Montreal:** 6th in demand, but only 11th strongest. Its Elo adjustment ranks it 4th instead, so treat this with care. Low-level coaches get more from it (leaning).
+- **Dallas:** 18th in demand, but only 22nd strongest. It has few games behind it, so treat this with care.
 
 ### Against the roster ratings
 
