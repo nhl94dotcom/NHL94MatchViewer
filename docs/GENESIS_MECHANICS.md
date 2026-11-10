@@ -596,6 +596,10 @@ anywhere on the ice**.
   go up. Body checks never knock a goalie down (CCStart returns for a goalie first). A hook or hold catches in
   `holdcheck` (a2 the holder, a3 held; once: a3 is then locked). Per game in the recorded league games: 50 knockdowns
   (8.3 of them poke trips), 1.5 holds and 10 hooks that caught someone.
+- **After the whistle** (clock stopped: `btst #gmclock,(gmode).w`): a burst check that lands sets both players' impact
+  to $100 (NHLPA 93's "fight chance", CCStart), so a late hit almost always knocks the player down, and it counts in
+  the team's and the checker's checks; no injury then (the roll needs the clock running); goalie interference knocks
+  nobody down then. The skating drain, bursts and the bench's recovery all go on while the clock is stopped.
 
 ### 7.5 Hooks, holds and pokes
 
@@ -1262,7 +1266,7 @@ are the screen direction, below: SHOOTING_STUDY, "The leagues' own results"):
 - Amounts (energy runs 0-4096): on the ice a skater loses 33 at a time, every 5-7.5 game seconds (2-3 s real; the code tests the video
   chip's beam position, about 1 frame in 128); **while he is above 3/4 his Endurance gives back half its working
   value** (up to 15), so Endurance only slows the first quarter of the drain. Each speed burst costs 204. On the bench
-  he gains 9 a second of real time. **Confirmed** in a game with line changes on: steps of -33 and -20 to -26 on the ice, -204 at
+  he gains 9 every 24 frames (`periodicevents`: once a game second, about 22 a real second, clock running or not). **Confirmed** in a game with line changes on: steps of -33 and -20 to -26 on the ice, -204 at
   bursts, +9 on the bench.
 - "Auto" line changes: energy drains, but every use of it reads full energy.
 - **Measured** (the computer against itself, line changes on, one 10-minute period, `gen_energy_shifts.py`): shifts of
@@ -1341,7 +1345,7 @@ recognises each change by the code it leaves in the ROM; the NHL '94 Viewer read
 | Goalie hold whistle | 140 frames (2.33 s) | longer, shorter, or never |
 | A person's goalie, without the puck | kept within 36 to each side and 231 from centre | wider |
 | A person's goalie whistle line | 170 from centre (reachable only with the puck) | moved |
-| Energy (line changes on) | on the ice -33 every 5-7.5 game s (Endurance gives back up to 15 while above 3/4), -204 a burst; +9 a real second on the bench | other amounts, or unlimited stamina |
+| Energy (line changes on) | on the ice -33 every 5-7.5 game s (Endurance gives back up to 15 while above 3/4), -204 a burst; +9 a game second on the bench | other amounts, or unlimited stamina |
 | Speed burst | 32 when fresh, less when tired | one fixed push for everyone |
 | Stopping and reversing | sheds 150 speed a frame | faster or slower |
 | Clock | 2.5x real time | real time |

@@ -601,6 +601,9 @@ a person's skater.
   fast high puck (`puckbody`); a real fall, not a stumble, continues at `.t2`, where the team's checks stat goes up. A
   hold or hook catches in `holdcheck` (once: the held player is then locked). Per game in the recorded league games:
   52 knockdowns (6.8 of them poke trips), 9.7 holds and 8.0 hooks that caught someone.
+- **After the whistle** (clock stopped: `gmclock` $15D6 nonzero): a body check sets a fight-chance impact as on the
+  Genesis (`checkcheck`); `FallDown` then never lets him stumble (he always falls) and doesn't count the check in the
+  team's stats; no injury. The skating drain, bursts and the bench's recovery go on while the clock is stopped.
 
 ---
 
@@ -865,7 +868,7 @@ pulled.
   (`makepde`). **Auto drains too**: the drain and the burst cost only test that line changes aren't Off (Auto bursts at
   full speed whatever the energy).
 - **Amounts** (energy 0-4096; `playeracc`, `burst`, `RestoreBenchEnergy`, **Code**): on the ice -33 on a random 1 step
-  in 64; while above 3/4 the drain gives back the whole Endurance byte; a burst -204; on the bench +10 a second.
+  in 64; while above 3/4 the drain gives back the whole Endurance byte; a burst -204; on the bench +10 every 24 frames (once a game second, clock running or not).
   The computer changes lines at 75% (12.4, `AvgCline`). **Measured** (the computer against itself, line changes
   on, two 5-minute periods, `snes_energy_shifts.py`): shifts of 60 game s (median), each costing about 410 (10%),
   players coming off at about 89%; about 5.4 a game second on the ice.
