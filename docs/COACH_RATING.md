@@ -24,8 +24,9 @@ A game is used if it has a home and away score, two different named players and 
 skipped. Regular-season and playoff games count the same. Names are compared in lower case.
 
 - **Classic leagues.** A Classic league's name starts with `Classic_Spring`, `Classic_Summer` or `Classic_Fall`. These play the retail rosters.
-- **Repeated results.** About 0.3% of rows repeat another row's league, players, score, shots and goal list. These stay in. They're
-  usually a real second game, played when no save state was taken after the first, so an earlier save state with the right winner was used again.
+- **Repeated results.** About 0.3% of rows repeat another row's league, players, score, shots and goal list. These stay in. Each is
+  either a mistake or a real game whose end wasn't saved by either player, entered from another save state with the same
+  outcome, so its score and stats aren't the real game's. There's no telling which, so the league counts them all.
 - **Period lengths.** Nearly all leagues play 5-minute periods. A league's length is read from its longest regulation goal, and goal times in the
   few others are converted to a share of the period: two Genesis leagues with 7-minute periods and three with 3-minute periods, 890 games in all. No
   SNES league or league group is affected. Short overtimes need nothing, because overtime wins get no coasting bonus.

@@ -93,8 +93,8 @@ def read_extra(name):
 def prepare(name):
     games = [g for g in load(name) if g["hp"] and g["ap"] and g["hp"] != g["ap"] and day(g["date"]) and g["league"] not in OUTLIERS
              and (PREFIX is None or g["league"].lower().startswith(GROUP_STARTS[PREFIX]))]
-    # Rows with the same score, shots and goal list stay in (about 0.3%): per the user, usually a second game played when no save state was taken after
-    # the first, so an earlier save state with the right winner was used again.
+    # Rows with the same score, shots and goal list stay in (about 0.3%): per the user, either a mistake or a real game neither player saved at
+    # its end, entered from another save state with the same outcome (its score and stats not the real game's); no telling which, so they count.
     extra, lengths = read_extra(name)
     for g in games:
         g["key"] = (g["date"], g["league"], g["hp"], g["ap"], f"{g['hs']:g}", f"{g['as']:g}")
