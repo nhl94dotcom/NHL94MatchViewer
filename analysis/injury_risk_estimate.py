@@ -12,7 +12,11 @@ record, SPAfallback $0DD8. SNES: word arrays by object (impact $0F23, facing $11
 $0AD9 = object x 2, SPAfallback $F54E retail. Then per game: the expected injuries without the option (the sum of (impact + 1) / 160) against the
 real ones, and with each bonus / cap; and the same for the hits on skaters who had 5+ knockdowns that game.
 
-python injury_risk_estimate.py [NAME ...]   (default: every Genesis game in Documents\\NHL94 Viewer)"""
+--self: the hit being rolled counts too (NOSE4Web's builds count a knockdown before its own roll: Genesis .cont2,
+SNES .2), so the bonus is min((count + 1) x bonus, cap). --opt B/C (repeatable): the bonus / cap pairs to show.
+
+python injury_risk_estimate.py [genesis|snes] [--self] [--opt B/C ...] [NAME ...]   (default: every game in
+Documents\\NHL94 Viewer)"""
 import gzip
 import json
 import os
@@ -131,6 +135,17 @@ def study(name, S=Genesis):
 
 def main():
     args = sys.argv[1:]
+    self_count = "--self" in args
+    if self_count:
+        args.remove("--self")
+    opts = []
+    while "--opt" in args:
+        i = args.index("--opt")
+        b, c = args[i + 1].split("/")
+        opts.append((int(b), int(c)))
+        del args[i:i + 2]
+    options = opts or OPTIONS
+    plus = 1 if self_count else 0
     S = SYSTEMS[args.pop(0)] if args and args[0] in SYSTEMS else Genesis
     chance = S.chance
     names = args or sorted(p.stem for p in (HOME / "matches").glob("*.js") if p.name != "season.js"
@@ -160,9 +175,9 @@ def main():
           {c: counts.count(c) for c in sorted(set(counts))})
     heavy = lambda h, game: game["totals"].get(f"{h['victim'][0]},{h['victim'][1]}", 0) >= 5
     hb = sum(chance(h["impact"]) for h, game in elig if heavy(h, game))
-    for bonus, cap in OPTIONS:
-        exp = sum(chance(h["impact"], min(h["count"] * bonus, cap)) for h, _ in elig)
-        exph = sum(chance(h["impact"], min(h["count"] * bonus, cap)) for h, game in elig if heavy(h, game))
+    for bonus, cap in options:
+        exp = sum(chance(h["impact"], min((h["count"] + plus) * bonus, cap)) for h, _ in elig)
+        exph = sum(chance(h["impact"], min((h["count"] + plus) * bonus, cap)) for h, game in elig if heavy(h, game))
         print(f"+{bonus} / cap {cap}: {exp / g:.3f} a game ({100 * (exp / base - 1):+.0f}%); skaters with 5+ knockdowns "
               f"in the game: {hb / g:.3f} -> {exph / g:.3f} a game (x{exph / hb if hb else float('nan'):.2f})")
 

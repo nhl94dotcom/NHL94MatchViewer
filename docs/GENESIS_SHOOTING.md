@@ -259,6 +259,18 @@ angle to the net). If the puck is slow he holds the top of the wind-up for up to
 the puck comes within 10 units of the blade, and gets a strong minimum shot speed, auto-aim (4.4), and **the goalie's
 reach cut to its minimum** (5.1).
 
+**C must be a fresh press after the pass has left** (2026-11-09, a community member: "B pass, C shoot, and the
+receiver just takes the pass and stalls"). B only starts the pass: the puck leaves when **B is released**
+(`passmode`: the d-pad sets the direction until B changes). While B is held the passer still has the puck, and C
+does nothing; the one-timer test (`doinput`) wants C newly pressed in a frame while the pass is in flight. So C
+pressed while B is still down, or in the same frame B comes up, is lost (it is already held when the pass exists),
+and the receiver simply takes the pass. In the recorded games: C pressed in the same sample (1/60 s, real) as the
+pass left: 5 of 6 gave no one-timer; C pressed after it had left: 395 of 411 did. Tap B, let go, then C.
+Nothing else in the code blocks one: the one-timer flag (`onetimerplayer`) never stayed set after a one-timer ended
+(471 one-timers in 26 games). The other refusals: the puck not yet past centre, a goalie's pass to the pad's skater,
+the receiver on a teammate's pad. 16 of the 411 fresh presses (4%) started nothing for no reason the recordings show
+(`analysis/one_timer_misses.py`).
+
 **It fails** when the puck doesn't reach the blade before the swing ends (a slow pass, a receiver drifting off the
 pass's line, a deflection), when anyone else touches the puck first, or when the puck goes away from him.
 

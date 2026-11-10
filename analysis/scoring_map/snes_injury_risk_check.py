@@ -25,11 +25,13 @@ Parts:
   next period: the counts there (expected 3, 5, 127).
 - `start ROM OUT SPEC`: from power-on (snes_60fps_cvc's menus), junk ($5A) written over the counts at Game Setup:
   the counts at the first frame of play (expected all 0).
+- `whistle ROM OUT SPEC|-`: hits after the whistle (the clock stopped, gmclock $15D6 = 1) and with it running: each
+  trial's energy change, knockdowns, count change; run on the unchanged ROM (SPEC -) and the build, then compared.
 SPEC is where the build keeps the counts: BASE[:TEAM_STRIDE[:SIZE]] in bank $7E (hex BASE, TEAM_STRIDE bytes between
-the home and away tables, default $20; SIZE 1 for bytes, 2 for words; indexed by pnum), e.g. 1F00:20:1.
+the home and away tables, default $20; SIZE 1 for bytes, 2 for words; indexed by pnum), e.g. F034:40:2 (NOSE4Web 80e8368: a word a player at $7E:F034, the away team +$40).
 
 python snes_injury_risk_check.py injuries ROM OUT [--counts SPEC] | counts ROM OUT SPEC | halving ROM OUT SPEC
-       | start ROM OUT SPEC"""
+       | start ROM OUT SPEC | whistle ROM OUT SPEC|-"""
 import json
 import sys
 from collections import Counter
@@ -39,6 +41,7 @@ import lowload
 from snes_assist_stick_test import Game, POSITION, PUCK, ZPOS, CLOCK
 
 PUCKC, TMPDST, SPA, PNUM, FACE, PFTEAM = 0x0AD9, 0x1852, 0x11A3, 0x12A3, 0x1163, 0x1503
+TMPDE, GMCLOCK, OPTLINE = 0x17EA, 0x15D6, 0x34C6
 WEIGHT, STICKHAND, CHECKING, CHECKS, PERIOD = 0x12C3, 0x1403, 0x1483, 0x17B6, 0x1630
 SEED = 0x0792
 FALLBACK, INJURY1 = 0xF54E, 0xF90E
@@ -76,10 +79,12 @@ def tmpdst(G, k):
     return TMPDST + (0x34 if G.w(PFTEAM + 2 * k) else 0) + 2 * (G.w(PNUM + 2 * k) & 0xFF)
 
 
-def trial(G, base, button, dy, at, seed, facing_kind="straight", preset=None, counts=None, heavy=True):
+def trial(G, base, button, dy, at, seed, facing_kind="straight", preset=None, counts=None, heavy=True, stopped=False, optline=None):
     """One trial; returns what happened to O."""
     e = G.e
     e.unserialize(base)
+    if optline is not None:
+        G.setw(OPTLINE, optline)          # the hit energy option works only with line changes on
     W = words(G)
     a, team, up = G.me()
     o = next(k for k in range((1 - team) * 6, (1 - team) * 6 + 6) if G.w(POSITION + 2 * k) not in (0, 0xFFFF))
@@ -100,6 +105,8 @@ def trial(G, base, button, dy, at, seed, facing_kind="straight", preset=None, co
         G.setw(FACE + 2 * o, face_o)
         G.put(PUCK, 0, dy * up + 6 * up)
         G.setw(ZPOS, 0)
+        if stopped:
+            G.setw(GMCLOCK, 1)
         G.run()
     G.setw(SEED, (0x9E37 * (seed + 1)) & 0xFFFF or 1)
     G.setw(SEED + 2, (0x7F4A * (seed + 3)) & 0xFFFF or 1)
@@ -112,6 +119,11 @@ def trial(G, base, button, dy, at, seed, facing_kind="straight", preset=None, co
         counts.set(G, o, preset)
     c_before = counts.get(G, o) if counts else None
     slot = tmpdst(G, o)
+    for t in range(2):                     # everyone at 3/4 energy, so a cost shows
+        for s in range(26):
+            G.setw(TMPDE + 0x34 * t + 2 * s, 0xC00)
+    en = TMPDE + (0x34 if G.w(PFTEAM + 2 * o) else 0) + 2 * (G.w(PNUM + 2 * o) & 0xFF)
+    e0 = G.w(en)
     checks0 = G.w(CHECKS) + G.w(CHECKS + 2)
     res = dict(down=False, fellback_straight=False, injured=False, flail=False, injured_for_game=False)
     way = "UP" if up > 0 else "DOWN"
@@ -122,6 +134,8 @@ def trial(G, base, button, dy, at, seed, facing_kind="straight", preset=None, co
         if spa not in W["falls"] and spa != W["injury"] and not res["down"]:
             G.setw(PUCKC, 2 * o)           # he keeps the puck until he goes down (the roll is for the carrier)
             G.setw(FACE + 2 * o, face_o)
+        if stopped:
+            G.setw(GMCLOCK, 1)
         G.run(hold=[way] + ([button] if at <= f < at + 3 else []))
         spa = G.w(SPA + 2 * o)
         if spa in W["falls"]:
@@ -135,6 +149,7 @@ def trial(G, base, button, dy, at, seed, facing_kind="straight", preset=None, co
             res["injured"] = True
             res["injured_for_game"] |= v == 0xFFFC
     res["knockdowns counted"] = G.w(CHECKS) + G.w(CHECKS + 2) - checks0
+    res["de"] = G.w(en) - e0
     if counts:
         res["count change"] = counts.get(G, o) - c_before
     return res
@@ -144,7 +159,7 @@ def injuries_part(rom, out, spec=None):
     G = Game(rom)
     counts = Counts(spec) if spec else None
     tally = Counter()
-    presets = (0, 6) if counts else (None,)
+    presets = (0, 5) if counts else (None,)   # the SNES option counts at most 5 knockdowns
     for facing in ("straight", "diagonal"):
         for preset in presets:
             for bi, base in enumerate(G.g.bases[:2]):
@@ -182,6 +197,25 @@ def counts_part(rom, out, spec):
                         tally[(button, event, r["count change"])] += 1
             lowload.breathe()
     return {str(k): v for k, v in sorted(tally.items(), key=str)}
+
+
+def whistle_part(rom, out, spec):
+    """Hits after the whistle (line changes On, OptLine $34C6 = 1): the same trials (A body check, Y hook / hold) with the clock stopped (gmclock $15D6 = 1
+    every frame) and running, each trial kept (so the unchanged ROM's and the build's can be put side by side)."""
+    G = Game(rom)
+    counts = Counts(spec) if spec != "-" else None
+    res = []
+    for stopped in (False, True):
+        for button in ("A", "Y"):
+            for bi, base in enumerate(G.g.bases[:2]):
+                for dy in (30, 50, 70):
+                    for at in (5, 15):
+                        for sd in range(3):
+                            r = trial(G, base, button, dy, at, 0x5000 + 131 * sd + dy + at + 7 * bi, "straight", None,
+                                      counts, heavy=(button == "A"), stopped=stopped, optline=1)
+                            res.append(dict(stopped=stopped, what=button, base=bi, dy=dy, at=at, seed=sd, **r))
+            lowload.breathe()
+    return res
 
 
 def halving_part(rom, out, spec):
@@ -255,7 +289,8 @@ def main():
         spec = sys.argv[sys.argv.index("--counts") + 1] if "--counts" in sys.argv else None
         res = injuries_part(rom, out, spec)
     else:
-        res = {"counts": counts_part, "halving": halving_part, "start": start_part}[part](rom, out, sys.argv[4])
+        res = {"counts": counts_part, "halving": halving_part, "start": start_part,
+               "whistle": whistle_part}[part](rom, out, sys.argv[4])
     print(json.dumps(res, indent=1), flush=True)
     (out / f"{part}_{Path(rom).stem}.json").write_text(json.dumps(res, indent=1))
 

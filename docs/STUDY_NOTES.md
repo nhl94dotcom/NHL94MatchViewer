@@ -2806,3 +2806,38 @@ Load Team Line; save RAM byte X at 2X + 1 of the core's save RAM):
 - After a console reset and back to play, Load Team Line gives line 0 exactly as saved.
 - Lines saved on the original nhl94.bin (LW and RW of line 0 swapped), its save RAM put into the option ROM's before
   power-on: Load Team Line gives them exactly (the new block's team byte doesn't match: the original code runs).
+
+## NOSE4Web's hit option builds: SNES injury risk at +19 and hits after the whistle (2026-11-09, 80e8368 / b0efcd5)
+
+NHL94_hit_option.smc (SNES: counts a word a player at $7E:F034, the away team +$40) and nhl94_hit_option.bin
+(Genesis), against retail.
+- SNES (`snes_injury_risk_check.py`, SPEC F034:40:2): each knockdown of him +1 (A body checks 32 of 32, poke trips 5,
+  injuries too), holds / hooks and misses nothing; 7, 10, 255 set in play read 3, 5, 127 in the next period; junk at
+  Game Setup reads 0 at the first frame of play. Injuries (heavy checker, light carrier, the puck kept on him, 144
+  trials a case): facing straight down the ice, count 0: 27 injured (retail, same seeds: 23); count 5 (the cap): 57.
+  On a diagonal: never, with or without the bonus.
+- After the whistle (the clock stopped every frame: Genesis gmode $C2EA | $0100, SNES gmclock $15D6 = 1; line changes
+  On), trial by trial against the unchanged game (`gen_after_whistle_check.py`, `snes_injury_risk_check.py whistle`):
+  clock running, a knockdown costs 204 and counts +1, a hold / hook 102 (Genesis one 69), nothing; clock stopped,
+  late hits still knock him down (Genesis 12 of 12, SNES 6) and holds still catch, with no energy cost and no count, on
+  both systems.
+- **The knockdown counts itself:** on both systems the count goes up where the fall is counted (Genesis .cont2, SNES
+  .2), before FallDown's injury roll, so even a player's first knockdown gets one bonus (the SNES count-0 trials: 27
+  injured against retail's 23). `injury_risk_estimate.py --self` redoes the estimate with that (the recorded games;
+  SNES only indicative): Genesis +10 / cap 50: +54% injuries a game and the most-hit skaters x1.66 (as first
+  estimated, counting only earlier knockdowns: +31%, x1.43); +5 / 25: +27%, x1.33. SNES +19 (cap 5 knockdowns):
+  +87%, x2.11 (first estimate +52%, x1.77); +10 / 50: +46%, x1.58.
+
+## One-timers that don't happen: "B pass, C shoot, he just takes the pass" (Genesis, 2026-11-09, a community member)
+
+From the code (logic94 `passmode`, `doinput`; onetimer94 `assonetimer`): B starts pass mode and the puck leaves when B
+is released; C starts a one-timer only when newly pressed in a frame with the pass in flight (the passer's pad:
+lastplayer him, passReceiverPlayerNum set, onetimerplayer -1, the receiver a skater not on a pad, the puck on the
+attacking half; the receiver's pad: the pass not a goalie's, the puck loose and past centre). A C pressed while B is
+held, or in B's release frame, is already held once the pass exists. `analysis/one_timer_misses.py` over 26 recorded
+games (onetimerplayer $FFBF6C, passReceiverPlayerNum $BEE0, lastplayer $BEDA, c1 / c2playernum $C320 / $C322, pads
+$BEEF / $BEF1): the one-timer flag never stayed set past a one-timer's end (471, so nothing "clogs" it); passes by a
+pad on the attacking half: C pressed in the sample the pass left 5 of 6 without a one-timer, after it 395 of 411 with
+one (16 unexplained), no C 594 without (2 the computer's own). No C held from before the release in these games.
+Write-up: GENESIS_SHOOTING 4.8.
+
