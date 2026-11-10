@@ -35,8 +35,15 @@ def patched(out, nose, retail):
         if t[k] == b[k]:                                   # the test ROM is built without the checksum call already
             continue
         # the checksum routine NOSE4Web's code replaces holds the test ROM's own expected sum
-        assert t[k] == a[k] or 0xFFAC0 <= k < 0xFFB40, f"test ROM byte {k:#x} differs from retail"
-        t[k] = b[k]
+        if t[k] == a[k] or 0xFFAC0 <= k < 0xFFB40:
+            t[k] = b[k]
+            continue
+        # the test ROM's code sits elsewhere here (it is built from the disassembly, not byte for byte retail): find
+        # the 16 retail bytes around k in it, once only, and change the same byte there
+        ctx = a[k - 8:k + 8]
+        at = t.find(ctx)
+        assert at >= 0 and t.find(ctx, at + 1) < 0, f"test ROM byte {k:#x}: retail's bytes there not found once"
+        t[at + 8] = b[k]
     p = out / "hit_energy_test.bin"
     p.write_bytes(t)
     return str(p), len(dif)

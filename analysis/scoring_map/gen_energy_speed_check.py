@@ -13,7 +13,11 @@ while the energy is still at least $C00, gives back endurance / 2, with no cap a
   the ice for 7200 frames (2 minutes, real; the clock held), on the ROM as given: his energy and top speed each
   second (real). Run on the test ROM and on a copy with `.sube`'s 33 made 0 ($10D42 = 0, the drain-0 case).
 
-python gen_energy_speed_check.py speed ROM OUT | drain ROM OUT | make-drain0 OUT   (a copy of the test ROM)"""
+- `shift ROM OUT`: the same skater (energy $1000, never hit) skating up and down and pressing C (a burst) every 40
+  frames for 2,700 frames (a 108 game s shift, the median), and a home player on the bench (tmpdst $FFFE) put at
+  $800: both energies at the end, for comparing a build with the game (2026-11-10, NOSE4Web's "energy from hits only").
+
+python gen_energy_speed_check.py speed ROM OUT | drain ROM OUT | shift ROM OUT | make-drain0 OUT   (a copy of the test ROM)"""
 import json
 import math
 import sys
@@ -114,6 +118,29 @@ def drain(rom, out, label):
         print(r)
 
 
+def shift(rom, out):
+    h = H.Harness(rom=rom)
+    e = h.e
+    prep(h, 24, 15)
+    e.setw(energy_addr(e), 0x1000)
+    bench = next(s for s in range(26) if e.w(TEAM + 0x32 + 52 + 2 * s) == 0xFFFE)
+    e.setw(TEAM + 0x32 + 2 * bench, 0x800)
+    way, bursts = "UP", 0
+    for f in range(2700):
+        hold_still(h)
+        y = e.sw(H.rec(ME) + 0x14)
+        way = "DOWN" if y > 200 else "UP" if y < -200 else way
+        c = f % 40 == 0
+        bursts += c
+        e.run(1, hold=[way] + (["C"] if c else []))
+        if f % 900 == 899:
+            lowload.breathe()
+    res = {"rom": Path(rom).name, "C presses": bursts, "skater energy at the end": hex(e.w(energy_addr(e))),
+           "bench player": bench, "bench energy $800 ->": hex(e.w(TEAM + 0x32 + 2 * bench))}
+    (out / f"shift_{Path(rom).stem}.json").write_text(json.dumps(res, indent=1))
+    print(res)
+
+
 def main():
     what = sys.argv[1]
     if what == "make-drain0":
@@ -129,6 +156,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     if what == "speed":
         speed(rom, out)
+    elif what == "shift":
+        shift(rom, out)
     else:
         drain(rom, out, Path(rom).stem)
 

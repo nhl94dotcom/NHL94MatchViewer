@@ -2915,3 +2915,22 @@ From the code (logic94 playeracc, burst, collide94 makepde; SNES skating/playera
   his new cap keeps his speed but can't speed up or steer harder (playeracc keeps the old velocity when the new one
   is over the cap) until friction or the boards slow him.
 
+## NOSE4Web's "energy from hits only", played (2026-11-10, 20b3a17: nhl94_hits_only.bin, NHL94_hits_only.smc)
+
+Skating costs no energy (Genesis: the bne at $10D2A made bra; SNES: the bne at $F2867), bursts cost 0 (Genesis the
+$CC at $BB72; SNES $F020D), knockdowns 1365, holds 683; bench recovery unchanged.
+- Costs, trial by trial against the unchanged game, line changes On (`gen_hit_energy_check.py`, which now finds a
+  changed byte by its retail surroundings where our test ROM's code sits elsewhere: its burst is 8 bytes earlier;
+  `snes_hit_energy_check.py`): Genesis knockdowns by C or B 1365 every time, holds 683; a burst with no contact 0 (the
+  game 204), the 33s of drain gone; nothing with line changes Off; a puck knocking a player down costs nothing (as
+  in the earlier hit builds). SNES, where the two games stay in step: knockdowns 1365, holds 683 (650 once: the
+  game's own 33 in the same trial), bursts and the drain free.
+- A whole shift, never hit, skating and bursting: Genesis (`gen_energy_speed_check.py shift`, 2,700 frames, 68 C
+  presses) $1000 at the end on the build, 0 on the game. SNES (live play is less steady over a shift: whistles,
+  control moving between two skaters): his lowest energy over 1,500 frames 2,731 on the build, one knockdown when he
+  ran into a parked player, against 1,120 on the game.
+- The bench: the same on both, Genesis $800 -> $BF0 over the shift (+9 every 24 frames), SNES $800 -> $A6C.
+- SNES top speed by knockdowns (`snes_energy_speed_check.py speed`, leg speed 15, most skaters in the state; the
+  speed index legspd x (energy / 2 + $800) / $1000): none 9,214 (index 15), 1 knockdown 8,443 (12), 2: 7,927 (10),
+  3: 7,167 (7). The SNES never slows a skater below half his speed index from energy.
+
