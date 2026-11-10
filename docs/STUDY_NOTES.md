@@ -2980,3 +2980,19 @@ retail too:** assgoalie `.22` does `sta facedir,x / sta pfalock,x` with A the po
 pfalock 0 and the next think puts him back in SPAgready ($E528 -> $E0FE after one frame, seen in the trials). A
 goalie at the bottom net can't poke straight up the ice; a pad goalie goes through the same `.22`.
 
+## NOSE4Web's SNES logo spill, checked (2026-11-10, 85a17a2: nhl94_2026_classic.sfc and _relaid.sfc)
+
+From the code (video/FindCachedFrame: LoadFrameTiles): NOSE4Web's reading is right. A block frame (negative piece
+count) gets ceil(word +2 / 4) units of 16x16 (2 tile columns by 2 tile rows); up to 8 units one run in a group of 8,
+its room 2 x units columns of tile rows 0-1 from column 2 x (run & 7); more, a chain of whole groups of 8 and the
+rest. The first DMA goes linearly from the room's start (sprox, frame +$0C bytes), the second one tile row down ($100
+words; past 8 units at start + (sprox / 2 & $FF00) + $100). So a frame whose first DMA is longer than its room's row
+writes over whatever else is cached there, and its own pieces past the room draw that instead.
+`snes_logo_spill_check.py` (the 13 spilling teams in 7 home / visitor pairs, chosen by HomeTeam $1C98 / VisTeam $1C9A:
+the setup menu wraps at 28; the same presses on both ROMs): Game Setup, the controller screen, the five matchup
+moments and the pause scoreboard identical on both ROMs (both teams' big logos on screen, so the relaid logos draw
+pixel for pixel as before); the pause items' screens (stats, rosters, player cards ...) differ in 5 of the 7 pairs by
+77-191 pixels at the logos: stray blocks and stripes beside or under Anaheim's, Boston's, Dallas's, Florida's, the
+Islanders' and Washington's logos on the old ROM, none on the relaid one. Pittsburgh-Quebec and San Jose-St. Louis
+showed no difference on any screen.
+

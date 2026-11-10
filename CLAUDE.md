@@ -148,7 +148,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     - Graphics: score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves
       free; `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
       `gen_lc_box_check.py`: the line-change box), `snes_banner_check.py` (team-block colours on every block screen),
-      `snes_logo_overlap.py` (which piece of a big logo is in front), `gen_injury_check.py` / `gen_blood_check.py`
+      `snes_logo_overlap.py` (which piece of a big logo is in front), `snes_logo_spill_check.py` (logos laid out past their sprite-cache room: every logo screen, two ROMs), `gen_injury_check.py` / `gen_blood_check.py`
       (Genesis injuries forced in a scratch copy; the head blood builds).
     - Lines and options: `gen_line_dup_check.py` / `snes_line_dup_check.py` (the same skater twice on one line),
       `gen_line_editor_cursor.py` (the Genesis line editor's reachable slots), `gen_1on1_edit_lines.py` (Edit Lines and
