@@ -8,6 +8,9 @@ a loss (overtime included; a tie 1). Rates per game, so coaches with games left 
 (fewest for things against). Pre-season strength: coach_history's Classic rating the day before the league's first
 game (win chance against coach B = 1 / (1 + exp(-(a - b))); teams and home ice not in it).
 
+"Their season" at the top tells it in words from the same numbers (2026-11-10): the result against the pre-season
+ratings, the arc by ten-game stretches and streaks, the best and worst ranks, key games, luck and the leading players.
+
 python analysis/classic_season_report.py LEAGUE COACH"""
 import ast
 import csv
@@ -388,7 +391,144 @@ def build(league, coach):
     pdo = lambda c: 100 * tab[c]["F_Score"] / max(1, tab[c]["F_Shots"]) + 100 - 100 * tab[c]["A_Score"] / max(1, tab[c]["A_Shots"])
     w(f"- PDO {pdo(coach):.1f} (league {league_avg(pdo):.1f}); one-goal games {me['one_goal_W']}-{me['one_goal_L']}, "
       f"overtime {me['OTW']}-{me['OTL']}.")
+    L[2:2] = narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rate, pdo, pl, gk, sig)
     return "\n".join(L) + "\n"
+
+
+def nth(n):
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rate, pdo, pl, gk, sig):
+    """'Their season': the season told from the numbers in the report below it (nothing else), so every line can be
+    checked against a table. (2026-11-10, the user: a scripted narrative for every coach.)"""
+    me, n = tab[coach], len(tab)
+    place = order.index(coach) + 1
+    pre = sorted(tab, key=lambda c: -R(c)).index(coach) + 1
+    w_, l_, gp = me["W"], me["L"], me["GP"]
+    diff = (me["F_Score"] - me["A_Score"]) / gp
+    beat = w_ - me["exp_W"]
+    out = ["## Their season\n"]
+    # 1. the result against expectations
+    if place == 1:
+        where, tail = "won the league", f", first of {n}"
+    else:
+        where = f"finished {nth(place)} of {n}"
+        tail = (", near the top" if place <= max(2, n // 4) else ", near the bottom" if place > n - max(2, n // 4) else "")
+    exp_txt = (f"well above what the pre-season ratings expected ({me['exp_W']:.1f} wins; they had {coach} {nth(pre)})"
+               if beat >= 3 else
+               f"well below what the pre-season ratings expected ({me['exp_W']:.1f} wins; they had {coach} {nth(pre)})"
+               if beat <= -3 else
+               f"about what the pre-season ratings expected ({me['exp_W']:.1f} wins; they had {coach} {nth(pre)})")
+    out.append(f"{coach} {where} as {teams[coach]}{tail}, going {w_}-{l_}" + (f"-{me['T']}" if me["T"] else "") +
+               f" with {me['F_Score'] / gp:.2f} goals for and {me['A_Score'] / gp:.2f} against a game ({diff:+.2f}). "
+               f"That is {exp_txt}.\n")
+    # 2. the arc
+    chunks = [mine[i:i + 10] for i in range(0, len(mine), 10)]
+    rec = lambda part: (sum(g["us"]["Score"] > g["them"]["Score"] for g in part), sum(g["us"]["Score"] < g["them"]["Score"] for g in part))
+    if len(chunks) >= 2:
+        f0, fl = rec(chunks[0]), rec(chunks[-1])
+        best = max(range(len(chunks)), key=lambda i: rec(chunks[i])[0] - rec(chunks[i])[1])
+        worst = min(range(len(chunks)), key=lambda i: rec(chunks[i])[0] - rec(chunks[i])[1])
+        start = "started strongly" if f0[0] > f0[1] + 2 else "started poorly" if f0[1] > f0[0] + 2 else "started evenly"
+        finish = "finished strongly" if fl[0] > fl[1] + 2 else "faded at the end" if fl[1] > fl[0] + 2 else "finished about even"
+        span = lambda i: f"games {10 * i + 1}-{10 * i + len(chunks[i])}"
+        arc = f"They {start} ({f0[0]}-{f0[1]} in the first {len(chunks[0])} games) and {finish} ({fl[0]}-{fl[1]} in the last {len(chunks[-1])})."
+        if best not in (0, len(chunks) - 1):
+            arc += f" The best stretch was {span(best)} ({rec(chunks[best])[0]}-{rec(chunks[best])[1]})."
+        if worst not in (0, len(chunks) - 1) and worst != best and rec(chunks[worst])[0] < rec(chunks[worst])[1]:
+            arc += f" The hardest was {span(worst)} ({rec(chunks[worst])[0]}-{rec(chunks[worst])[1]})."
+    else:
+        arc = f"In {gp} games they went {w_}-{l_}."
+    run = lambda ch: max((len(s) for s in "".join(res).split("L" if ch == "W" else "W")), default=0)
+    sw, sl = run("W"), run("L")
+    if sw >= 4:
+        arc += f" Their longest winning streak was {sw} games."
+    if sl >= 4:
+        arc += f" They also lost {sl} in a row at one point." if sw >= 4 else f" Their longest losing streak was {sl} games."
+    out.append(arc + "\n")
+    # 3. strengths and weaknesses: ranks on the stats of the table below
+    pp = lambda c: 100 * tab[c]["F_PPGoals"] / max(1, tab[c]["F_PPTries"])
+    pk = lambda c: 100 - 100 * tab[c]["A_PPGoals"] / max(1, tab[c]["A_PPTries"])
+    stats = [
+        ("goal difference", lambda c: rate(c, "F_Score") - rate(c, "A_Score"), True, "{:+.2f} a game"),
+        ("attack", lambda c: rate(c, "F_Score"), True, "{:.2f} goals a game"),
+        ("defence", lambda c: rate(c, "A_Score"), False, "{:.2f} goals against a game"),
+        ("shots", lambda c: rate(c, "F_Shots"), True, "{:.1f} shots a game"),
+        ("shots allowed", lambda c: rate(c, "A_Shots"), False, "{:.1f} shots against a game"),
+        ("shooting", lambda c: 100 * tab[c]["F_Score"] / max(1, tab[c]["F_Shots"]), True, "{:.1f}% shooting"),
+        ("goaltending", lambda c: 100 - 100 * tab[c]["A_Score"] / max(1, tab[c]["A_Shots"]), True, "a {:.1f}% save percentage"),
+        ("power play", pp, True, "a {:.1f}% power play"),
+        ("penalty kill", pk, True, "a {:.1f}% penalty kill"),
+        ("faceoffs", lambda c: 100 * tab[c]["F_FaceoffWins"] / max(1, tab[c]["F_FaceoffWins"] + tab[c]["A_FaceoffWins"]), True, "{:.1f}% of faceoffs won"),
+        ("discipline", lambda c: rate(c, "F_PIM"), False, "{:.1f} penalty minutes a game"),
+        ("possession", lambda c: rate(c, "F_AttackZoneTime"), True, "{:.0f} s a game in the attacking zone"),
+        ("passing", lambda c: 100 * tab[c]["F_PassComps"] / max(1, tab[c]["F_PassTries"]), True, "{:.1f}% of passes completed"),
+        ("hitting", lambda c: rate(c, "F_Checks"), True, "{:.1f} body checks a game"),
+    ]
+    ranked = [(rank(f, hb)[0], name, fmt.format(f(coach))) for name, f, hb, fmt in stats]
+    good = sorted((x for x in ranked if x[0] <= max(2, n // 4)), key=lambda x: x[0])[:3]
+    bad = sorted((x for x in ranked if x[0] > n - max(2, n // 4)), key=lambda x: -x[0])[:3]
+    phr = lambda x: f"{x[1]} ({x[2]}, {'the best' if x[0] == 1 else 'the worst' if x[0] == n else nth(x[0])} in the league)"
+    sw_txt = ""
+    if good:
+        sw_txt += "Their strengths: " + "; ".join(phr(x) for x in good) + ". "
+    if bad:
+        sw_txt += ("Where it went wrong: " if place > n // 2 else "Their weak spots: ") + "; ".join(phr(x) for x in bad) + "."
+    if not good and not bad:
+        sw_txt = "No part of their game stood out at either end of the league: they were in the middle on nearly everything."
+    out.append(sw_txt.strip() + "\n")
+    # 4. key games
+    def result(g):
+        return g["us"]["Score"] - g["them"]["Score"]
+    wins = [g for g in mine if result(g) > 0]
+    losses = [g for g in mine if result(g) < 0]
+    bits = []
+    if wins:
+        g = min(wins, key=lambda g: (order.index(g["opp"]), -result(g)))
+        bits.append(f"the best win was {int(g['us']['Score'])}-{int(g['them']['Score'])} over {g['opp']} "
+                    f"({nth(order.index(g['opp']) + 1)} in the standings, {g['when'][:10]})")
+        g = max(wins, key=result)
+        if result(g) >= 4:
+            bits.append(f"the biggest {int(g['us']['Score'])}-{int(g['them']['Score'])} over {g['opp']} ({g['when'][:10]})")
+    if losses:
+        g = max(losses, key=lambda g: (order.index(g["opp"]), -result(g)))
+        if order.index(g["opp"]) > order.index(coach):
+            bits.append(f"the most surprising loss {int(g['us']['Score'])}-{int(g['them']['Score'])} to {g['opp']} "
+                        f"({nth(order.index(g['opp']) + 1)}, {g['when'][:10]})")
+    cb = [g for g in mine if g["us"]["GoalsP1"] + g["us"]["GoalsP2"] < g["them"]["GoalsP1"] + g["them"]["GoalsP2"] and result(g) > 0]
+    bl = [g for g in mine if g["us"]["GoalsP1"] + g["us"]["GoalsP2"] > g["them"]["GoalsP1"] + g["them"]["GoalsP2"] and result(g) < 0]
+    if cb:
+        bits.append(f"{len(cb)} comeback win{'s' if len(cb) > 1 else ''} from behind after two periods")
+    if bl:
+        bits.append(f"{len(bl)} game{'s' if len(bl) > 1 else ''} lost after leading going into the third")
+    if bits:
+        s = "; ".join(bits)
+        out.append(s[0].upper() + s[1:] + ".\n")
+    # 5. luck and the players
+    gf, ga = me["F_Score"], me["A_Score"]
+    pyth = gf ** 2 / (gf ** 2 + ga ** 2) if gf + ga else 0.5
+    luck = w_ - pyth * gp
+    one = f"{me['one_goal_W']}-{me['one_goal_L']}"
+    if luck >= 2:
+        lk = f"They won about {luck:.0f} more games than their goals for and against would suggest, helped by a {one} record in one-goal games."
+    elif luck <= -2:
+        lk = f"They won about {-luck:.0f} fewer games than their goals for and against would suggest, with a {one} record in one-goal games."
+    else:
+        lk = f"Their record matches their goals for and against (one-goal games {one})."
+    lp = league_avg(pdo)
+    if pdo(coach) - lp >= 3:
+        lk += f" Their shooting and save percentages together (PDO {pdo(coach):.1f}, league {lp:.1f}) ran hot, which rarely lasts."
+    elif pdo(coach) - lp <= -3:
+        lk += f" Their shooting and save percentages together (PDO {pdo(coach):.1f}, league {lp:.1f}) ran cold, which also rarely lasts."
+    if pl:
+        (name, pos), v = max(pl.items(), key=lambda kv: (kv[1]["P"], kv[1]["G"]))
+        lk += f" {name} led the team with {v['G']} goals and {v['P']} points in {v['GP']} games."
+    if gk:
+        name, v = max(gk.items(), key=lambda kv: kv[1]["GP"])
+        lk += f" {name} was in goal for {v['GP']}, saving {100 * v['SV'] / max(1, v['SA']):.1f}%."
+    out.append(lk + "\n")
+    return out
 
 
 def main():

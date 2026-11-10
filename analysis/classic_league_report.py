@@ -14,6 +14,8 @@ double upload too, simulated games left out; 2 points a win, none for a loss):
   has them (coaches meeting 4+ times), with each group's record against the other;
 - every coach's rates per game side by side, the league leaders, skaters' and goalies' leaders;
 - head to head; notable games (biggest wins, the most goals, comebacks, upsets by pre-season odds); streaks;
+- "The season in brief" (the title race, the favourite, the biggest surprise and shortfall, the leaders) and "League
+  numbers" (both teams together, beside the season's other leagues on the system, from one read of the database);
 - "A good word for every coach": for each coach the season numbers where they rank best in the league (top quarter,
   ties sharing a rank), as plain compliments; when a coach is near the top in nothing, their best moments instead
   (their best win, longest winning streak, best ten-game stretch, top scorer, a goalie's best game). Every one is a
@@ -41,6 +43,142 @@ def leagues_for(prefix):
                 if r["League"].startswith(prefix) and r["RegOrPlay"] == "R" and r["sim"] in ("0", ""):
                     out.add(r["League"])
     return sorted(out)
+
+
+_NUMBERS = {}
+
+
+def league_numbers(league):
+    """Every league of the season on this system (Classic_Fall2026_GENS-A -> Classic_Fall2026_GENS), aggregated in one
+    read of the database and kept: per league its games and the totals the "League numbers" table shows. Returns
+    (this league's totals, {each other league: totals})."""
+    import csv
+    head, tail = league.rsplit("_", 1)
+    prefix = head + "_" + tail.split("-")[0]
+    if prefix not in _NUMBERS:
+        system = "GENS" if "GENS" in league else "SNES"
+        agg = defaultdict(Counter)
+        with open(S.DATA / f"All_Games_{system}.csv", newline="", encoding="utf-8", errors="replace") as fh:
+            for r in csv.DictReader(fh):
+                if not r["League"].startswith(prefix) or r["RegOrPlay"] != "R" or r["sim"] not in ("0", ""):
+                    continue
+                a = agg[r["League"]]
+                hs, aw = S.num(r["HomeScore"]), S.num(r["AwayScore"])
+                a["GP"] += 1
+                a["goals"] += hs + aw
+                a["shots"] += S.num(r["HomeShots"]) + S.num(r["AwayShots"])
+                a["ppg"] += S.num(r["HomePPGoals"]) + S.num(r["AwayPPGoals"])
+                a["ppt"] += S.num(r["HomePPTries"]) + S.num(r["AwayPPTries"])
+                a["pim"] += S.num(r["HomePIM"]) + S.num(r["AwayPIM"])
+                a["chk"] += S.num(r["HomeChecks"]) + S.num(r["AwayChecks"])
+                a["homeW"] += hs > aw
+                a["decided"] += hs != aw
+                a["ot"] += any(S.num(r[k]) for k in ("HomeGoalsOT", "AwayGoalsOT", "HomeShotsOT", "AwayShotsOT"))
+                a["one"] += abs(hs - aw) == 1
+                a["blow"] += abs(hs - aw) >= 3
+                h2 = S.num(r["HomeGoalsP1"]) + S.num(r["HomeGoalsP2"])
+                a2 = S.num(r["AwayGoalsP1"]) + S.num(r["AwayGoalsP2"])
+                a["behind2"] += h2 != a2
+                a["cameback"] += (h2 < a2 and hs > aw) or (a2 < h2 and aw > hs)
+        _NUMBERS[prefix] = agg
+    agg = _NUMBERS[prefix]
+    return agg.get(league, Counter()), {k: v for k, v in agg.items() if k != league}
+
+
+def numbers_table(mine, others):
+    rows = [("Goals a game (both teams)", lambda a: a["goals"] / max(1, a["GP"]), "{:.2f}"),
+            ("Shots on goal a game (both teams)", lambda a: a["shots"] / max(1, a["GP"]), "{:.1f}"),
+            ("Shooting %", lambda a: 100 * a["goals"] / max(1, a["shots"]), "{:.1f}"),
+            ("Power plays a game", lambda a: a["ppt"] / max(1, a["GP"]), "{:.1f}"),
+            ("Power play %", lambda a: 100 * a["ppg"] / max(1, a["ppt"]), "{:.1f}"),
+            ("Penalty minutes a game", lambda a: a["pim"] / max(1, a["GP"]), "{:.1f}"),
+            ("Body checks a game", lambda a: a["chk"] / max(1, a["GP"]), "{:.1f}"),
+            ("Home team won %", lambda a: 100 * a["homeW"] / max(1, a["decided"]), "{:.1f}"),
+            ("Games to overtime %", lambda a: 100 * a["ot"] / max(1, a["GP"]), "{:.1f}"),
+            ("One-goal games %", lambda a: 100 * a["one"] / max(1, a["GP"]), "{:.1f}"),
+            ("Won by 3 or more %", lambda a: 100 * a["blow"] / max(1, a["GP"]), "{:.1f}"),
+            ("Comebacks from behind after two %", lambda a: 100 * a["cameback"] / max(1, a["behind2"]), "{:.1f}")]
+    tot = Counter()
+    for v in others.values():
+        tot.update(v)
+    out = ([f"| | This league | The season's other leagues ({len(others)}) |", "|---|---|---|"] if others else
+           ["| | This league |", "|---|---|"])
+    for lab, f, fmt in rows:
+        out.append(f"| {lab} | {fmt.format(f(mine))} |" + (f" {fmt.format(f(tot))} |" if others else ""))
+    return out
+
+
+def season_brief(order, tab, place, teams, R, per, vals, pl, gk, groups, streaks, mine_num, other_num):
+    """'The season in brief': the league's story from the numbers in the report below it (2026-11-10, the user)."""
+    pts = lambda c: tab[c]["Pts"] / (2 * tab[c]["GP"])
+    first, second, last = order[0], order[1], order[-1]
+    out = ["## The season in brief\n"]
+    gap = pts(first) - pts(second)
+    t1, t2 = tab[first], tab[second]
+    if gap >= 0.08:
+        s = f"{first} ({teams[first]}) ran away with the league, {t1['W']}-{t1['L']} ({pts(first):.3f})."
+    elif gap > 0:
+        s = (f"{first} ({teams[first]}) won the league, {t1['W']}-{t1['L']} ({pts(first):.3f}), holding off {second} "
+             f"({t2['W']}-{t2['L']}, {pts(second):.3f}).")
+    else:
+        s = (f"{first} ({teams[first]}) and {second} finished level at {pts(first):.3f}; {first} took first on goal "
+             f"difference ({t1['W']}-{t1['L']}).")
+    fav = max(order, key=R)
+    if fav == first:
+        s += f" {first} also had the best pre-season rating, so the favourite delivered."
+    else:
+        pre = sorted(order, key=lambda c: -R(c)).index(first) + 1
+        s += f" The pre-season favourite, {fav}, finished {ORD(place[fav])}; {first} went in rated {ORD(pre)}."
+    h = Counter(result(g) for g in per[first] if g["opp"] == second)
+    if sum(h.values()):
+        s += f" Between the top two, {first} went {h['W']}-{h['L']} against {second}."
+    out.append(s + "\n")
+    if groups:
+        gl = sorted(groups, key=lambda g: min(place[c] for c in g))
+        cross = Counter(result(g) for c in gl[0] for g in per[c] if g["opp"] in gl[1])
+        out.append(f"The league played in groups; the group with {first} went {cross['W']}-{cross['L']} against the "
+                   f"other.\n")
+    over = max(order, key=lambda c: tab[c]["W"] - tab[c]["exp_W"])
+    under = min(order, key=lambda c: tab[c]["W"] - tab[c]["exp_W"])
+    sp = []
+    if tab[over]["W"] - tab[over]["exp_W"] >= 2:
+        sp.append(f"the season's biggest surprise was {over}, {ORD(place[over])} with {tab[over]['W']} wins against "
+                  f"{tab[over]['exp_W']:.1f} expected from the pre-season ratings")
+    if tab[under]["W"] - tab[under]["exp_W"] <= -2:
+        sp.append(f"the biggest shortfall was {under}'s, " + ("last" if under == last else ORD(place[under])) +
+                  f" with {tab[under]['W']} wins against {tab[under]['exp_W']:.1f} expected")
+    if not (under == last and tab[under]["W"] - tab[under]["exp_W"] <= -2):
+        sp.append(f"{last} finished last, {tab[last]['W']}-{tab[last]['L']}")
+    s = "; ".join(sp)
+    out.append(s[0].upper() + s[1:] + ".\n")
+    gf = max(order, key=lambda c: vals["gf"][c])
+    ga = min(order, key=lambda c: vals["ga"][c])
+    ln = [f"{gf} had the best attack ({vals['gf'][gf]:.2f} goals a game)",
+          f"{ga} the best defence ({vals['ga'][ga]:.2f} against)"]
+    if pl:
+        (nm, _, c), v = max(pl.items(), key=lambda kv: (kv[1]["P"], kv[1]["G"]))
+        ln.append(f"{nm} ({c}) led all skaters with {v['P']} points ({v['G']} goals)")
+    if gk:
+        gmin = max(1, max(x["GP"] for x in gk.values()) // 3)
+        (nm, c), v = max(((k, v) for k, v in gk.items() if v["GP"] >= gmin), key=lambda kv: kv[1]["SV"] / max(1, kv[1]["SA"]))
+        ln.append(f"{nm} ({c}) had the best save percentage, {100 * v['SV'] / max(1, v['SA']):.1f}%")
+    st = max(order, key=streaks)
+    if streaks(st) >= 5:
+        ln.append(f"{st} had the longest winning streak, {streaks(st)} games")
+    s = "; ".join(ln)
+    out.append(s[0].upper() + s[1:] + ".\n")
+    if other_num and mine_num["GP"]:
+        tot = Counter()
+        for v in other_num.values():
+            tot.update(v)
+        g1, g0 = mine_num["goals"] / mine_num["GP"], tot["goals"] / max(1, tot["GP"])
+        comp = ("higher-scoring than the season's other leagues" if g1 - g0 >= 0.5 else
+                "lower-scoring than the season's other leagues" if g0 - g1 >= 0.5 else
+                "about as high-scoring as the season's other leagues")
+        out.append(f"At {g1:.2f} goals a game (both teams) it was {comp} ({g0:.2f}); "
+                   f"{100 * mine_num['one'] / mine_num['GP']:.0f}% of games were decided by one goal and "
+                   f"{100 * mine_num['ot'] / mine_num['GP']:.0f}% went to overtime.\n")
+    return out
 
 
 def result(g):
@@ -395,6 +533,11 @@ def build(league):
         few = f", {t['GP']} games" if t["GP"] < 10 else ""
         w(f"- **{c}** ({ORD(place[c])}, {teams[c]}{few}): " + "; ".join(picked) + ".")
     w("")
+    mine_num, other_num = league_numbers(league)
+    real_groups = groups if len(groups) >= 2 and sum(len(g) for g in groups) == n else []
+    L[2:2] = (season_brief(order, tab, place, teams, R, per, vals, pl, gk, real_groups, streaks, mine_num, other_num)
+              + ["## League numbers\n", "Both teams together, every game of the league; beside it the season's other "
+                 "leagues on this system, their games pooled.\n"] + numbers_table(mine_num, other_num) + [""])
     return "\n".join(L) + "\n"
 
 
