@@ -2827,6 +2827,9 @@ NHL94_hit_option.smc (SNES: counts a word a player at $7E:F034, the away team +$
   SNES only indicative): Genesis +10 / cap 50: +54% injuries a game and the most-hit skaters x1.66 (as first
   estimated, counting only earlier knockdowns: +31%, x1.43); +5 / 25: +27%, x1.33. SNES +19 (cap 5 knockdowns):
   +87%, x2.11 (first estimate +52%, x1.77); +10 / 50: +46%, x1.58.
+- The commissioner kept the order and lowered the values (NOSE4Web b9b6ae2: Genesis +5 / cap 25, SNES +6, cap 5
+  knockdowns; the rebuilt NHL94_hit_option.smc holds 6 / 30). SNES with --self: +4 +18%, x1.23; +5 +23%, x1.29; +6
+  +27%, x1.35; +7 +32%, x1.41; +8 +37%, x1.47: +6 matches the Genesis's +5 / 25 (+27%, x1.33).
 
 ## One-timers that don't happen: "B pass, C shoot, he just takes the pass" (Genesis, 2026-11-09, a community member)
 
