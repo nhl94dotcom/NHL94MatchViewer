@@ -1,6 +1,7 @@
 """Genesis song event streams, decoded and compared (2026-11-10, for NOSE4Web's MIDI-to-organ songs).
 
-The format (sound94; STUDY_NOTES "the song format"): 4-byte events, a delay in frames to the next (0-255), a status
+The format (sound94; STUDY_NOTES "the song format"): 4-byte events: the wait in frames before the event (0-255; the driver loads the next event's
+byte 0 after each event, the first event's at the start), a status
 byte (command in bits 6-4, MIDI channel in 3-0), two data bytes. Commands: 0 key off, 1 key on (note, velocity; 0 =
 off), 3 controller (7 volume), 4 program change, 6 pitch bend; status 0 ends the stream (or loops to a long pointer).
 SoundStreamTable at $2C648 in retail nhl94.bin (long pointers, sounds 0-$7A).
@@ -31,7 +32,8 @@ def decode(rom, song, limit=20000):
         if at + 4 > len(rom):
             break
         delay, status, a, b = rom[at:at + 4]
-        if status == 0:
+        t += delay                                 # byte 0 is the wait before this event (the driver loads the
+        if status == 0:                            # next event's byte 0 after each one; the first, at the start)
             break
         cmd, ch = (status >> 4) & 7, status & 15
         if cmd == 1 and b:
@@ -42,7 +44,6 @@ def decode(rom, song, limit=20000):
             programs.append((t, ch, a))
         elif cmd == 3 and a == 7:
             volumes.append((t, ch, b))
-        t += delay
         at += 4
     # pair the ons and offs into notes
     sounding, notes, most = {}, [], 0

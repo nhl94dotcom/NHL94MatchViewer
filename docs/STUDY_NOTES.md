@@ -2297,8 +2297,8 @@ lines). NHL941on1.bin (C only), NOSE4Web's NHL941on1_edit_lines.bin, and nhl94.b
   from PBnum ($1624, players in the boxes: home x 16 + visitors), visitors more (a home power play) slot 1, home more
   slot 4; its inline comments call PBnum "score digits" and the slots "behind" / "ahead", which the code doesn't bear
   out (the TeamSongs table's own comment has it right).
-- **The Genesis song format** (sound94): a song is an event stream of 4-byte events (a delay in frames to the next
-  event, 0-255; a status byte, command in bits 6-4 and MIDI channel in 3-0; two data bytes), in up to 8 track slots
+- **The Genesis song format** (sound94): a song is an event stream of 4-byte events (the wait in frames before the
+  event, 0-255, corrected 2026-11-10: the driver loads the next event's byte 0 after each one, the first at the start; a status byte, command in bits 6-4 and MIDI channel in 3-0; two data bytes), in up to 8 track slots
   of 8 MIDI channels each. Commands: $0x key off, $1x key on (note, velocity 0-127; velocity 0 = off), $3x controller
   (only 7, volume), $4x program change, $6x pitch bend (scaled by the patch's byte $1E); $2x, $5x, $7x ignored; status
   0 ends the stream, or loops to a long pointer. Voices: 5 FM channels, given out per note (a free one or the
@@ -2978,7 +2978,9 @@ nothing else differed. The raised-shot top is unchanged by construction (max(5, 
 SPAgpoke the code takes the original path. **Facing up the ice (direction 0) no poke ever reaches full stretch, on
 retail too:** assgoalie `.22` does `sta facedir,x / sta pfalock,x` with A the poke direction, so direction 0 leaves
 pfalock 0 and the next think puts him back in SPAgready ($E528 -> $E0FE after one frame, seen in the trials). A
-goalie at the bottom net can't poke straight up the ice; a pad goalie goes through the same `.22`.
+goalie at the bottom net can't poke straight up the ice; a pad goalie goes through the same `.22`. pfalock ($14E3) is
+only ever tested zero / non-zero (every read is bne / beq or ORed into one) and cleared with stz when the animation
+ends; the facing is facedir. So any non-zero lock is safe (the dive stores 150 there).
 
 ## NOSE4Web's SNES logo spill, checked (2026-11-10, 85a17a2: nhl94_2026_classic.sfc and _relaid.sfc)
 
@@ -3002,13 +3004,12 @@ Changed: SoundStreamTable ($2C648) entries $31 -> $FFAC0 and $32 -> $1002C0 (a 2
 line to $100298), the checksum check ($301); nothing else, so every other sound is retail's. The streams follow the
 format (a 20-frame wait first, program 11 on channel 0, $90 / $80 notes, status 0 with $FFFF to end; NOSE4Web's tag
 after).
-- `gen_song_streams.py` (the streams decoded as notes, the driver's pairing: a key off ends that pitch): $31 against
-  the original Brass Bonanza (song $40, found by matching notes): both 1,480 frames, program 11, at most 4 notes at
-  once against 5; 164 notes the same in start and pitch (125 also in length), 91 of the original's and 86 of the new
-  differ, all where two notes overlap: their ends (and in places the notes) are swapped, e.g. frame 20: the original
-  ends 41 after 1 frame and 69 after 16, the new one the other way round. A converter pairing each key off with the
-  oldest sounding note of the channel rather than its pitch would do exactly this. Key-on velocity 37 against 35.
-  $32 ("Charge"): six notes, each keyed on and off in the same frame, the waits (9-59 frames) after the key offs.
+- `gen_song_streams.py` (the streams decoded as notes; byte 0 the wait before its event, as the driver reads it,
+  `move.b EventSize+ev_delay(a0),sl_delaybyte(a5)`: a first version read it as the wait after, which made the notes
+  look swapped where two overlap and the fanfare's notes 0 frames long; NOSE4Web caught it): $31 against the original
+  Brass Bonanza (song $40, found by matching notes) on the rebuilt nhl94_songs_midi.bin (velocity 35 as the original):
+  250 of the original's 255 notes the same in start, pitch and length, the 5 others the ones over 4 at once; both
+  1,480 frames, program 11. $32 ("Charge"): six notes of 9, 9, 9, 29, 14 and 59 frames, as written.
 - `gen_midi_song_check.py` (the driver's track slots $D3D4 every frame; a slot is free when its pointer's top word is
   negative: a stream's end sets the top byte, st (a5)): Boston at home, the next period's first faceoff starts $31
   from $FFAC0 (retail $2D29E) on the same frame; it plays 1,481 frames and frees its slot (retail's $31 884); a home
