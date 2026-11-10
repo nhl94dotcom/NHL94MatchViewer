@@ -3035,6 +3035,11 @@ instrument 11, 6 notes, $D9 at 134.
 `snes_midi_song_check.py` (live play, the home power-play faceoff, WAVs): San Jose's new song starts and plays 737
 frames; Boston's 135; run into the period's end it is replaced by PeriodOver's song at once; left / right loudness
 1.81 for the fanfare (all instrument 11) against 1.03-1.12 for the game's own songs. TempoAcc on the 1 MB build: +$40
-a frame, one SequencerTick a frame. Not measured: an effect during the new songs (none started in these runs), and
-the SA-1 build (the harness didn't reach the song; no song in its saved state to time).
+a frame, one SequencerTick a frame.
+- Rebuilt (e279997: a note alone plays on both organs, instrument 11 on track 0 and 12 on track 1; in a chord the top
+  note on 11, the rest on 12), both builds (on the SA-1 build the goal slide set once: players put every frame stay
+  frozen there): the fanfare's left / right loudness 1.01 (1 MB) and 1.02 (SA-1), Brass Bonanza's 1.05 / 1.06; the
+  fanfare 135 frames on both (TempoAcc +$40 and -64 every frame: one tick a frame on the SA-1 build too); effect
+  voices (VoiceState $08F2 in use, VoiceTrack $08FA $10 or more) sounding on every frame of the songs on both (the
+  crowd's own voices included, so a single short effect isn't told apart).
 

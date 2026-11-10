@@ -6,7 +6,8 @@ stops the whole song (MusicStop) at the first $D9 / $DA any track reaches.
 
 In live play (snes_assist_stick_test.Game) with HomeTeam ($1C98) the team, the faceoff on a home power play (PBnum
 $1624 = $01: TeamSongs slot 1, as snes_songs_check.py drives it): the song MusicStart gets (SongPtr $07ED, bank at
-$58), the frames until MusicOn ($07F3) goes 0, whether the effects track (TrackPtr + 32: track 16) runs meanwhile, and
+$58), the frames until MusicOn ($07F3) goes 0, the frames with an effect sounding meanwhile (a voice in use, VoiceState $08F2, owned by track $10 or more,
+VoiceTrack $08FA), TempoAcc's steps ($07F5: +$40 a frame, less TempoTick at each tick), and
 the audio into a WAV; `interrupt`: the period run out 100 frames into the song (PeriodOver starts its song).
 
 python snes_midi_song_check.py OUT ROM [ROM ...]"""
@@ -20,7 +21,7 @@ from snes_assist_stick_test import Game, PUCKC, CARRIER2, POSITION, PFGOAL, PUCK
 from gen_midi_song_check import capture  # noqa: E402
 from snes_songs_check import HOMETEAM, CURSONG, SONGPTR, BANK, MUSICON, PBNUM, GOALS, song  # noqa: E402
 
-TRACKPTR = 0x0804
+TRACKPTR, VSTATE, VTRACK, TEMPOACC = 0x0804, 0x08F2, 0x08FA, 0x07F5
 
 
 def team_index(rom, city):
@@ -47,10 +48,10 @@ def play(G, base, team, out, label, interrupt=False):
     gk = next(k for k in range(6, 12) if G.w(POSITION + 2 * k) == 0)
     g0 = G.w(GOALS)
     buf = capture(e)
-    start, songs, cut, fx, ended, last_fx = None, [], 0, 0, None, None
+    start, songs, cut, fx, ended, last_fx, steps = None, [], 0, 0, None, None, {}
     for f in range(4000):
         if start is None:
-            if f < 60:
+            if f < (1 if G.g.sa1 else 60):               # (players put every frame stay frozen on SA-1)
                 slide_goal(G, up, gk)
             if G.w(GOALS) != g0 and any(c == 4 for c, _ in songs):
                 G.setw(MUSICON, 0)
@@ -62,9 +63,11 @@ def play(G, base, team, out, label, interrupt=False):
             if start is None and cur[0] == 2:          # slot 1 + 1
                 start, cut, target = f, len(buf), cur[1]
         if start is not None:
-            tp = G.w(TRACKPTR + 32)
-            fx += tp != last_fx and tp not in (0, 0xFFFF)
-            last_fx = tp
+            fx += any(G.w(VSTATE + v) & 0xFF and G.w(VTRACK + v) & 0xFF >= 0x10 for v in range(8))
+            acc = G.w(TEMPOACC) & 0xFF
+            if last_fx is not None:
+                steps[(acc - last_fx) & 0xFF] = steps.get((acc - last_fx) & 0xFF, 0) + 1
+            last_fx = acc
             if f - start == 60:
                 G.setw(0x1632, 3)                       # an effect to hear: the clock running out sounds the horn
             if interrupt and f - start == 100:
@@ -88,7 +91,7 @@ def play(G, base, team, out, label, interrupt=False):
     right = sum(abs(pcm[i]) for i in range(1, len(pcm), 2))
     return {"label": label, "song": hex(target), "frames": (ended or f) - start,
             "ended by": ("the next song" if ended and song(G) != target else "MusicOn 0") if ended else "still on",
-            "songs after": [(c, hex(s)) for c, s in songs[-3:]], "effect starts on track 16 during the song": fx,
+            "songs after": [(c, hex(s)) for c, s in songs[-3:]], "frames with an effect voice sounding": fx, "TempoAcc steps per frame": steps,
             "left / right loudness": round(left / max(1, right), 2), "wav": str(path)}
 
 
