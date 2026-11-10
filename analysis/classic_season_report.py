@@ -44,7 +44,10 @@ def load(league):
     path = DATA / f"All_Games_{system}.csv"
     with open(path, newline="", encoding="utf-8", errors="replace") as fh:
         rows = [r for r in csv.DictReader(fh) if r["League"] == league and r["sim"] in ("0", "") and r["RegOrPlay"] == "R"]
-    # every uploaded game counts, as the league counts it (a double upload included: the user, 2026-11-09)
+    # every uploaded game counts, as the league counts it (a double upload included: the user, 2026-11-09).
+    # DateTime is when a result was uploaded (a batch's games seconds apart), and the games are taken to be uploaded
+    # in the order played (the user, 2026-11-10: there is no way of knowing otherwise), so streaks, "in a row" and
+    # the last game follow it; MatchID only breaks an exact tie
     return system, sorted(rows, key=lambda r: (r["DateTime"], int(r["MatchID"])))
 
 
