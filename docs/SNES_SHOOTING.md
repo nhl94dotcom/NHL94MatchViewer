@@ -610,20 +610,20 @@ sliding across slides on toward the crossing point.
   receiver while a pass is in the air), and the save is geometry. Screens matter only physically: a stick or body on
   the way deflects the puck (`puckstick`, `puckbody`) after he may have committed to a save (he rethinks every 3-11
   frames and a save move locks him), skaters running into him push him (`checkplcoll`), and rebounds off bodies.
-- **What the poke does** (2026-11-10, a community member: "the goalie's X poke seems useless"): nothing but his
-  stick. SPAgpoke is 19 frames (4 part-way, 15 at full reach); no other code treats it specially. A carried puck
-  within about 6 units of his stick spot (puckstick `.t1`: dx^2 + dy^2 under 37, whatever the reach) is **knocked
-  loose**, not taken: a goalie skips the steal roll, but the steal goes on to `.3` (a2touchpuck, then `deflect`: a
-  random direction, the puck spinning), and both he and the carrier get nopuck = Stickhandling (by energy) + 20
-  frames, during which his collisions aren't checked at all; whoever reaches it next has it. The goalie's
-  stick test (checkpuckcoll_ccx `.9`) reads the frame's stick spot sideways offset as its reach and its up-down offset
-  as a height: a puck on the ice is only reachable where the stick spot is more to the side than up or down. Stick
-  spots (ROM, sideways / up-down): ready 1-9 / 1-7; poke at full reach facing up -1 / -11, down 4 / 12, the
-  diagonals 20-30 / 3-11, sideways 26-35 / 2-3. So **facing straight up or down the ice the poke (like his stick
-  in any frame) can't touch a puck on the ice**: a carrier coming straight at him can't be poked; to the side and on
-  the diagonals it reaches 20-35 units. **Recorded** (the retail-size SNES games): computer goalies poked 43 times and
-  got the puck 3 times (2 of them straight on: the carrier ran into his body); people's goalies 10 times, 5 won, all
-  sideways or diagonal.
+- **What the poke does** (2026-11-10, a community member: "the goalie's X poke seems useless"; corrected the same day):
+  nothing but his stick, and its contact zone is tiny. SPAgpoke is 19 frames (4 part-way, 15 at full reach); no other
+  code treats it specially. The goalie's stick test (checkpuckcoll_ccx `.9`) centres a box on the frame's stick spot
+  (GetHot: the poke's tip is 11-12 units ahead facing up or down the ice, 20-35 to the side and on the diagonals) but
+  takes its size from GetFrameHot, the frame record's bytes $14-$15 less the spot ($12-$13): reach |x| of that vector,
+  height window (2/3)|y| +- (2/3)|x| (top at least 5). For every poke frame the vector is about (2, 2): a box of about
+  2 units round the tip, and its bottom at 0, so a puck exactly on the ice fails it; only the full sideways frame
+  facing right (3, 2) reaches the ice. (The ready stance's vector is (0, 0): his stick never touches a puck then.) When
+  it does touch a carried puck it is **knocked loose**, not taken: a goalie skips the steal roll, but the steal goes on
+  to `.3` (a2touchpuck, then `deflect`: a random direction, the puck spinning), and both he and the carrier get
+  nopuck = Stickhandling (by energy) + 20 frames, during which his collisions aren't checked; whoever reaches it next
+  has it. A carried puck close in front is more often knocked loose by his body (`puckgoalie`, within 11: his nopuck
+  10, the carrier's 20). **Recorded** (the retail-size SNES games): computer goalies poked 43 times at a carried puck
+  and got it 3 times; pads poked 7 times (one in four games or so, some in quick succession) and got it 5 times.
 - **Covering the puck** (`assgoalie`): once a computer goalie has held the puck a moment, now and then (a 1-in-4 roll)
   he checks the opposing skaters. **If one is within 20 units of the puck he drops onto it and covers it** (`SPAgcover`)
   for 90 frames; within 35, he waits; with nobody within 35 he looks to pass it out (`chk4pass`). A goalie a person
