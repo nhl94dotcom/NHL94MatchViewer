@@ -29,7 +29,7 @@ PUCKC, SPA, FRAME, PFTEAM, FACE, NOPUCK = 0x0AD9, 0x11A3, 0x0D97, 0x1503, 0x1163
 SEED = 0x0792
 GPOKE = 0xE528
 SA1_SHIFT = 0xEA06 - 0xF46A
-SPOTS = [("straight", 0, f) for f in (12, 14, 16)] + \
+SPOTS = [("straight", 0, f) for f in (16, 20, 24, 28)] + \
         [("sideways", s * x, 2) for s in (1, -1) for x in (25, 30)] + \
         [("diagonal", s * x, f) for s in (1, -1) for x, f in ((18, 14), (22, 18))]
 
@@ -51,7 +51,7 @@ def trial(G, base, spot, seed):
     G.setw(SEED + 2, (0x7F4A * (seed + 3)) & 0xFFFF or 1)
     gx, gy = G.sw(XPOS + 2 * g), G.sw(YPOS + 2 * g)
     G.park(a, up)
-    start, d, how = None, None, None
+    start, d, how, prel = None, None, None, None
     for f in range(1200):
         G.put(g, gx, gy)
         G.put(a, gx + sx, gy - up * fwd)                 # "in front" of the goalie: toward centre ice
@@ -68,11 +68,12 @@ def trial(G, base, spot, seed):
             if how is None and G.w(PUCKC) >= 0x8000:
                 np = G.w(NOPUCK + 2 * g)
                 how = "stick" if np > 15 else "body" if np >= 8 else "other (%d)" % np
+                prel = (G.sw(XPOS + 2 * PUCK) - gx, (gy - G.sw(YPOS + 2 * PUCK)) * up)
             if f - start >= 22:
                 break
     if start is None:
         return {"poke": False}
-    return {"poke": True, "dir": d, "loose": how is not None, "how": how}
+    return {"poke": True, "dir": d, "loose": how is not None, "how": how, "puck": prel}
 
 
 def run_trials(rom, out, label):
@@ -103,6 +104,8 @@ def trials(orig, option, out):
     print("by the option's poke direction (kind, dir, option, original):")
     for k, v in sorted(dirs.items(), key=str):
         print("  ", k, v)
+    print("where the puck was (x, how far in front) when the option's stick knocked it loose:",
+          sorted(tuple(y["puck"]) for y in b if y.get("how") == "stick"))
 
 
 def cvc(rom, games, out):

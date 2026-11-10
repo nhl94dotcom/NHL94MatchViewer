@@ -621,7 +621,8 @@ sliding across slides on toward the crossing point.
   it does touch a carried puck it is **knocked loose**, not taken: a goalie skips the steal roll, but the steal goes on
   to `.3` (a2touchpuck, then `deflect`: a random direction, the puck spinning), and both he and the carrier get
   nopuck = Stickhandling (by energy) + 20 frames, during which his collisions aren't checked; whoever reaches it next
-  has it. A carried puck close in front is more often knocked loose by his body (`puckgoalie`, within 11: his nopuck
+  has it. **And facing straight up the ice he can't poke at all:** assgoalie `.22` stores the poke direction in
+  pfalock, so direction 0 leaves him unlocked and his next think cancels the poke after one frame. A carried puck close in front is more often knocked loose by his body (`puckgoalie`, within 11: his nopuck
   10, the carrier's 20). **Recorded** (the retail-size SNES games): computer goalies poked 43 times at a carried puck
   and got it 3 times; pads poked 7 times (one in four games or so, some in quick succession) and got it 5 times.
 - **Covering the puck** (`assgoalie`): once a computer goalie has held the puck a moment, now and then (a 1-in-4 roll)

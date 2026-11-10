@@ -2968,3 +2968,15 @@ loose on both but by his body (the carried puck sits within his +-11 body box be
 `cvc` (8 computer games each): 19 pokes at a carried puck on retail, 7 on the option build; too few, the games
 diverge, and "came loose" there also counts a carrier shooting or passing during the poke: no measurable change.
 
+### The rebuilt poke (c2a3549: reach max(d2, 6) in SPAgpoke) and a retail bug in the up-ice poke
+
+Code as described (retail-size $F7FDF; the SA-1 build the same with SPA $71A3 and its SPAgpoke $DAC4). Trials
+(`snes_goalie_poke_check.py trials`, the same states and seeds as retail, the goalie and carrier pinned): facing down
+the ice (direction 4) the option's stick knocked a carried puck loose 7 times with it 12-14 units in front (retail: his
+body only); sideways and diagonal it reached pucks 15-23 units to the side 24 times where retail never touched them;
+nothing else differed. The raised-shot top is unchanged by construction (max(5, d3 + d4) as before), and outside
+SPAgpoke the code takes the original path. **Facing up the ice (direction 0) no poke ever reaches full stretch, on
+retail too:** assgoalie `.22` does `sta facedir,x / sta pfalock,x` with A the poke direction, so direction 0 leaves
+pfalock 0 and the next think puts him back in SPAgready ($E528 -> $E0FE after one frame, seen in the trials). A
+goalie at the bottom net can't poke straight up the ice; a pad goalie goes through the same `.22`.
+
