@@ -3,7 +3,7 @@ away, looking ahead). Names real people, so it prints only, to the terminal: not
 goes in the repository.
 
 From the league database (as classic_season_report.py) and coach_history's Classic ratings:
-- best single games (a copied row, S.is_copy, left out: not that game's numbers): the most goals and points by one player in a game, shutouts, the most shots by a team;
+- best single games: the most goals and points by one player in a game, shutouts, the most shots by a team;
 - rivalries: each pair of coaches who met 3+ times, the closest series by goal difference, the most lopsided;
 - home and away: every coach's record at home and away, and the biggest gap;
 - looking ahead: each coach's Classic rating the day before the league's first game and on the last day of the
@@ -36,17 +36,15 @@ def main():
     best = []
     for c, gs in per.items():
         for g in gs:
-            if S.is_copy(g):
-                continue
             for p in g["us"]["Players"]:
                 best.append((p[3], p[5], p[1], c, g["opp"], g["when"][:10], int(g["us"]["Score"]), int(g["them"]["Score"])))
     for lab, key in (("goals", lambda x: (x[0], x[1])), ("points", lambda x: (x[1], x[0]))):
         top = sorted(best, key=key, reverse=True)[:4]
         print(f"  most {lab} by one player:", "; ".join(f"{x[2]} ({x[3]}) {x[0]} G {x[1]} P vs {x[4]} {x[6]}-{x[7]} {x[5]}" for x in top))
     shut = [(c, g["opp"], g["when"][:10], int(g["us"]["Score"]), [q[1] for q in g["us"]["Goalies"]]) for c, gs in per.items()
-            for g in gs if g["them"]["Score"] == 0 and not S.is_copy(g)]
+            for g in gs if g["them"]["Score"] == 0]
     print(f"  shutouts ({len(shut)}):", "; ".join(f"{c} {s}-0 vs {o} ({', '.join(gl)}) {d}" for c, o, d, s, gl in shut))
-    shots = sorted(((int(g["us"]["Shots"]), c, g["opp"], g["when"][:10]) for c, gs in per.items() for g in gs if not S.is_copy(g)), reverse=True)[:3]
+    shots = sorted(((int(g["us"]["Shots"]), c, g["opp"], g["when"][:10]) for c, gs in per.items() for g in gs), reverse=True)[:3]
     print("  most shots by a team:", "; ".join(f"{c} {n} vs {o} {d}" for n, c, o, d in shots))
 
     print("== Rivalries (3+ meetings)")

@@ -58,13 +58,10 @@ def main():
     sh = Counter()
     for c, gs in per.items():
         for g in gs:
-            if g["them"]["Score"] == 0 and not S.is_copy(g):
+            if g["them"]["Score"] == 0:
                 for q in g["us"]["Goalies"]:
                     sh[(q[1], c)] += 1
     print("== shutouts by goalie:", sh.most_common(6))
-    copies = [r for r in games if r["_copy"]]
-    print(f"== copied rows ({len(copies)}: results count, no single-game claims):", "; ".join(
-        f"{r['HomePlayer']} {r['HomeScore']}-{r['AwayScore']} {r['AwayPlayer']} {r['DateTime'][:10]}" for r in copies))
 
 
 if __name__ == "__main__":
