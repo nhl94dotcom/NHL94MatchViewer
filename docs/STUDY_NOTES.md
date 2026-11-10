@@ -2860,3 +2860,43 @@ test ROMs and CDL_Season_12.bin, then `gen_setup_compare.py`:
   columns 8-10, rows 6-11, under the visitors' logo (logos up) and the player photo (card up): never with Los Angeles
   at Montreal and Rob Blake's card, but another logo or photo with colour-0 pixels would show them.
 
+## SNES saves the game doesn't count as shots (2026-11-10, a community member: "a shot doesn't count when the goalie catches it")
+
+From the code: ChkShotStat counts a shot only while sf2shot (sflags $15D8 bit $1000) is set and the clock runs
+(gmclock $15D6 = 0); doshot sets the flag only when the shooter has the puck; a wall or post (wallcoll) and any
+player's touch (a2touchpuck, from puckstick's deflection too) clear it without counting. A clean catch counts:
+puckglue calls ChkShotStat before anything clears the flag. `analysis/snes_shot_count_study.py` over the 29 recorded
+SNES games, the saves of shots and one-timers (512): 384 counted. Of the 122 the game didn't count: 81 had another
+skater's stick touch the puck on the way (43 a teammate's: tips and screens; 38 a defender's; a median 0.23 s, real,
+after the shot), which ends the shot for the game; 11 the goalie's own stick knocked it away (puckstick's deflection,
+a2touchpuck, no count: a stick save that isn't counted, then picked up); 12 off a post or the boards first; 13
+where doshot never set the flag (the shooter didn't have the puck at the release); 2 with the clock already stopped.
+The converter's `counted` already follows the game.
+
+## Energy, speed and the drain on the Genesis; the SNES sites (2026-11-10, for NOSE4Web's "energy from hits only")
+
+From the code (logic94 playeracc, burst, collide94 makepde; SNES skating/playeracc, burst):
+- Genesis speed: level n = floor(floor(legspd / 2) x energy / 4096) (an odd legspd half a step more under level 15),
+  the top speed (n + 20) x 275; `andi #$3F` on 4n wraps level 16 to 0. Energy also scales shot power (the shot speed
+  factor ShP / 2 x energy / 4096 + 20: for ShP 30 35 at full, 20 at none), stickhandling in steal rolls and the
+  no-touch times after a steal (Stk / 2 x energy / 4096), and the burst (energy / 128 added along the facing: none at
+  0 energy, so checks hit softer). Pass speed and pass aim don't use energy. Auto line changes (OptLine 2) become On
+  with sflags7 bit 4 set, which makes all of these read full energy whatever it is.
+- Genesis sites (retail): `.sube` $10D26 (drain: subi #$21 at $10D40, the 33 at $10D42; the endurance / 2 give-back
+  while energy >= $C00 follows, with no cap); burst's cost subi #$CC at $BB70 (the $CC at $BB72).
+- SNES sites (retail): the drain in playeracc `.5` (only with OptLine nonzero: on or auto): $F2861 ($9E:A861) lda
+  seed / and #$003F / bne (1 call in 64), $F286F ($9E:A86F) sec / sbc #$0021 (the 33 at $F2871), then the full
+  endurance byte added while energy >= $C00 (so a lower drain can also climb past $1000; there the speed index has no
+  mask and runs past MaxSpeed's end); burst's cost $F020B ($9E:820B) sec / sbc #$00CC (the $CC at $F020D), Auto's
+  burst speed from a fixed $1000. SNES speed index = legspd x (energy / 2 + $800) / $1000: no energy is half the speed
+  index, not none.
+- `gen_energy_speed_check.py speed` (test ROM, line changes On, energy held): top speed from a standstill, the code's
+  figure in brackets: the median skater (Speed 20, +2 from the home crowd boost in this state: 22) 8,524 (8,525) at
+  full, 7,425 at 2/3, 6,325 at 1/3, 5,499 at none; Speed 30: 9,624, 8,239, 6,600, 5,499. At no energy everyone
+  skates at 5,500.
+- NOSE4Web's drain option with the drain under 8 (`drain` on a copy with the 33 made 0, Speed 30, endurance 30,
+  skating up and down for 2 minutes, real): energy $1000 -> $12BE (on the unchanged game $1000 -> $7BA). Straight
+  runs: $1111 tops at 9,624, $1112 at 5,499 (the wrap), $12BE 5,760, $1400 6,050. A skater already moving faster than
+  his new cap keeps his speed but can't speed up or steer harder (playeracc keeps the old velocity when the new one
+  is over the cap) until friction or the boards slow him.
+
