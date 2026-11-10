@@ -409,6 +409,9 @@ Different from the Genesis:
   gliding (animations $EBB0, $EBE2, $EAFE): the game's own distance figure (`puckdist`) and lock state aren't in the
   recordings.
 
+- **X without the puck** (`doinput` `.17`) takes control of your goalie (`PadTakeGoalie`) when your team has manual
+  goalies on; otherwise it does nothing. It never pokes. (On a modern pad RetroArch maps by position: the button
+  labelled X on an Xbox-style pad is the SNES Y, the hook.)
 - **Y without the puck** (`Holdplayer`, `Acheck`): picks the nearest opponent in front (distance + 16 for each 45
   degrees he is off your facing) and starts a **hook** (`SPAhook`, $F864), or a **hold** (`SPAHold`, $F374) when he faces
   you (roughly face to face). Not as a goalie, nor while locked in anything but a speed burst.
