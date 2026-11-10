@@ -51,7 +51,22 @@ def load(league):
     # DateTime is when a result was uploaded (a batch's games seconds apart), and the games are taken to be uploaded
     # in the order played (the user, 2026-11-10: there is no way of knowing otherwise), so streaks, "in a row" and
     # the last game follow it; MatchID only breaks an exact tie
+    # DateTime's month, day and hour aren't zero-padded ("2015-4-27 9:31:00"), so as text 9:31 sorted after 23:20 on
+    # the same day (review 2026-11-10): written padded here, so every comparison and [:10] below is right
+    for r in rows:
+        r["DateTime"] = padded(r["DateTime"])
     return system, sorted(rows, key=lambda r: (r["DateTime"], int(r["MatchID"])))
+
+
+def padded(text):
+    """'2015-4-27 9:31:00' -> '2015-04-27 09:31:00' (unparsable text kept as it is)."""
+    try:
+        d, _, t = text.strip().partition(" ")
+        y, m, dd = (int(x) for x in d.split("-"))
+        hms = [int(x) for x in t.split(":") if x] + [0, 0, 0]
+        return f"{y:04d}-{m:02d}-{dd:02d} {hms[0]:02d}:{hms[1]:02d}:{hms[2]:02d}"
+    except ValueError:
+        return text
 
 
 def sides(r):
