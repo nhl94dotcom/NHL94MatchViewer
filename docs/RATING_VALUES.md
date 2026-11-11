@@ -171,6 +171,15 @@ stumble); catches are passes reaching a skater, against the converter's bobbles.
 - **Catching matters at the low end:** a Genesis receiver at 2 bobbles 15% of the passes reaching him, at 3 8%, at 4
   and up 3-4% (the pass speeds: median 13,900, 90% under 16,900, against limits of 13,000 + 350 x working Stk). On the
   SNES (limit 10,000 + 700 x Stk, +3,000 for the intended receiver) 3% at 4, 1% at 5; the 2, 3 and 6 rows are small.
+- **SNES catching follows the game's hot / cold roll** (2026-11-11). A cold Stickhandling roll maxes it to 15 for that
+  game (the sign bug: about 46% of rolls); otherwise it plays at roster x 5 / 2 plus 0-3. Passes reaching a skater,
+  bobbled, by Stickhandling as played: **cold (maxed) 2.9% (1,151 passes); working 5-9 about 12% (16 of 136); working
+  10-15 about 3% (35 of 1,125).** So the same player can catch everything one game and bobble one pass in eight the
+  next: a roster 3 or lower (working 7-10) bobbles about four times as often when his roll isn't cold; from roster 4
+  (working 10 and up) the roll hardly matters. It shows before the game: on the SNES the Edit Lines and card numbers
+  include hot / cold, and a Stick Handling number **below its band's middle** is maxed in play (SNES_MECHANICS 2.2:
+  under 54 for a roster 3, under 43 for a 2). After 84 bobbles the other team had the puck next 35% of the time, a shot
+  within 12.5 game s 13 times and a goal 2 (29 games): costly when it happens, about one goal in 15 games.
 - **What a step is worth** (about 76 possessions a game, 0.10 goals each; about 8 passes reach each skater a game and
   he is knocked down with the puck about 0.8 times (Genesis), 1.8 (SNES)):
   - Genesis 4 -> 5: the wobble arrives, about 0.8 x 0.26 x 0.74 = **0.15 possessions a game** kept, plus 0.02 from

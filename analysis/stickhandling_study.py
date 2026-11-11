@@ -16,7 +16,8 @@ Printed:
 - Catches: every pass that reached a skater (completed or intercepted: the first sample the receiver owns the puck)
   and every bobble (find_bobbles): the puck's speed in the last sample before (match units), its spread, and the share
   of those arrivals that fall between each Stickhandling step's limit and the next; and the share bobbled by the
-  receiver's roster Stickhandling.
+  receiver's roster Stickhandling; on the SNES also by his Stickhandling as played (the per-game hot / cold, `hcs`:
+  a cold roll maxes it to 15), and what followed a bobble.
 
 python stickhandling_study.py"""
 import json
@@ -52,6 +53,7 @@ def main():
     recv = {s: defaultdict(Counter) for s in ("genesis", "snes")}
     keep = {s: defaultdict(Counter) for s in ("genesis", "snes")}
     nxt = {s: Counter() for s in ("genesis", "snes")}
+    snes_hc, snes_after = defaultdict(Counter), Counter()
     games = Counter()
     for name, m in load():
         s = m.get("system", "genesis")
@@ -92,6 +94,8 @@ def main():
                     rp = player(i, own[i])
                     if rp and not rp.get("g"):
                         recv[s][rp["a"][STK]]["catch"] += 1
+                        if s == "snes":
+                            snes_hc[snes_working(rp)]["catch"] += 1
                     break
         for b in m.get("bobbles", []):
             arrive[s]["bobble"].append(max(speed(m, b["f"] - 1), speed(m, b["f"] - 2)))
@@ -99,6 +103,13 @@ def main():
             rp = player(b["f"], b["idx"])
             if rp and not rp.get("g"):
                 recv[s][rp["a"][STK]]["bobble"] += 1
+                if s == "snes":
+                    snes_hc[snes_working(rp)]["bobble"] += 1
+                    shots = [x for x in m.get("shotList", []) if x["team"] != (0 if b["idx"] < 6 else 1)
+                             and b["f"] <= x["f"] <= b["f"] + 300]
+                    snes_after["bobbles"] += 1
+                    snes_after["a shot against within 12.5 game s"] += bool(shots)
+                    snes_after["a goal against within 12.5 game s"] += any(x["result"] == "goal" for x in shots)
     print("Games:", dict(games))
     for s in ("genesis", "snes"):
         print(f"\n== {s}: wobbles (hits on skaters) by the hit player's roster Stickhandling"
@@ -130,9 +141,21 @@ def main():
             print(f"  working Stk {lo:2d}: limit {L0:5.1f}; arrivals over it {over:4d} ({100 * over / len(allv):4.1f}%);"
                   f" between it and Stk {hi}'s {band:3d} ({100 * band / len(allv):4.1f}%)")
     receivers(recv)
+    print("== snes: bobbled by the receiver's Stickhandling as played (cold = maxed to 15 by the bug; otherwise roster x 5 / 2"
+          " plus his hot value, the hidden bonuses left out)")
+    for k in sorted(snes_hc, key=lambda k: -1 if k == "cold" else k):
+        c = snes_hc[k]
+        n = c["catch"] + c["bobble"]
+        print(f"  {'cold (maxed)' if k == 'cold' else 'working ' + str(k):13s}: {c['bobble']:3d} bobbled of {n:4d} ({100 * c['bobble'] / n:4.1f}%)")
+    print("  after a bobble:", dict(snes_after))
     for s in ("genesis", "snes"):
         print(f"== {s}: after a carrier's wobble / fall, the next to have the puck (3 s (real)):",
               {w: dict(c) for w, c in keep[s].items()}, "| after a bobble:", dict(nxt[s]))
+
+
+def snes_working(p):
+    hc = p.get("hcs", [0] * 14)[STK]
+    return "cold" if hc == "max" else min(15, p["a"][STK] * 5 // 2 + (hc or 0))
 
 
 def receivers(recv):
