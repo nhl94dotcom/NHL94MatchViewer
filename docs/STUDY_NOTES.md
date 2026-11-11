@@ -2492,6 +2492,20 @@ Game Setup; video and colour memory from the cores).
   Colour row 2 changes (colours 1-5 the picture's, 7-15 zero, 0 and 6 as before) and is drawn by the picture alone;
   rows 0-1 and 3-7 unchanged. The screenshots outside the rectangle differ only on Ron Barr's old cells (3,171 pixels),
   but for three letters typed a frame apart on the 1 MB build's first sample.
+- **SNES, the whole of Ron Barr's area (2026-11-11, for the commissioner via NOSE4Web;** `snes_announcer_area.py` now
+  prints his cells row by row; retail and nhl94_2026.sfc the same, but for the 2026 text reaching column 21 in more
+  rows). **Nothing shares his tiles, cells or colours:** his 162 BG2 cells use 147 distinct tiles (104-250, his
+  alone: no other BG2 cell is on a tile past the menu background's 104) and colour row 2 (his alone). The menu
+  background (MenuBack, BG2) fills every other cell and is laid first; his map writes only his own cells, so cells a
+  new picture leaves out show the plain background (as on NOSE4Web's builds). **What overlaps him is the text box, on
+  the other layer (BG1, the font's tiles, drawn by the scouting text):** it covers rows 13-23, columns 1-22, and of his
+  cells it ever draws over 14 (its right edge in column 22 and letters, rows 15-23: his rows 15-23 reach left to
+  columns 19-22); 148 are never covered. His rows: 13: 24-25; 14: 23-26; 15-16: 22-26; 17: 23-26; 18: 21-28; 19-21:
+  20-29; 22: 20-30; 23: 19-30; **the desk** 24: 15-30; 25: 15-31; 26: 10-31; 27: 6-31 (81 cells, rows BG1 never
+  draws in). **Room for a new picture:** any BG2 cells outside the box: columns 23-31 rows 12-23 (108) and rows 24-27
+  right across (128), 236 cells; cells under the box show only through its gaps. Limits: **152 tiles** (104-255,
+  BG1's tiles start after) and **15 colours** (row 2; 0 transparent). A one-for-one replacement of his 162 cells fits
+  (147 tiles now). Moving the box would mean changing where the scouting text is drawn (code), not moving a copy.
 
 ## chaos's fighting patch as NOSE4Web puts it in, checked (2026-11-11, d864683: nhl94_fighting.bin, CDL_Season_12_fighting.bin)
 

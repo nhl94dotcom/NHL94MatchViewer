@@ -4,7 +4,8 @@ anything else uses while the screen runs (the text types out and the matchups pa
 visible pixel (the text, the matchup names and ratings), BG2 cells that aren't the picture and aren't the plain
 menu background (the frames and boxes), and sprites. Sampled every 30 frames for 60 s (real), from 180 frames into the
 screen (before that it is still fading in, and the video memory holds some of the last screen). The largest rectangle inside the bottom-right area that nothing but the picture and the plain background ever
-uses, and the rectangles a picture of Ron Barr's own extent would cross. Screenshots now and then (shot_<frame>.png).
+uses, and the rectangles a picture of Ron Barr's own extent would cross; his cells row by row, how many BG1 ever
+draws over, and his distinct tiles. Screenshots now and then (shot_<frame>.png).
 
 python snes_announcer_area.py ROM OUT"""
 import ctypes
@@ -31,7 +32,7 @@ def main():
     M.play(e, "w1500 START w240 START w240 w60 START w240", out)
     e.run(4, hold=["START"])
     back = None
-    picture, bg1, bg2_other, bg2_words = set(), Counter(), Counter(), Counter()
+    picture, bg1, bg2_other, bg2_words, tiles = set(), Counter(), Counter(), Counter(), set()
     samples = 0
     for k in range(126):
         e.run(30)
@@ -49,6 +50,7 @@ def main():
                 t2, pal2 = w2 & 0x3FF, (w2 >> 10) & 7
                 if t2 >= back and pal2 == 2:
                     picture.add((x, y))
+                    tiles.add(t2)
                 elif t2 >= back:
                     bg2_other[(x, y)] += 1
                 bg2_words[(x, y, w2 & 0x3FF if t2 < back else -1)] += 1
@@ -57,6 +59,12 @@ def main():
     print(f"{samples} samples, every 30 frames; backchars {back}")
     xs, ys = [x for x, _ in picture], [y for _, y in picture]
     print(f"Ron Barr's cells: {len(picture)}, columns {min(xs)}-{max(xs)}, rows {min(ys)}-{max(ys)}")
+    for y in range(min(ys), max(ys) + 1):
+        row = sorted(x for (x, yy) in picture if yy == y)
+        print(f"  his row {y:2d}: columns {row[0]}-{row[-1]} ({len(row)} cells, {sum((x, y) in bg1 for x in row)} under BG1)")
+    under = [c for c in picture if c in bg1]
+    print(f"his cells BG1 ever draws over: {len(under)}; never: {len(picture) - len(under)}; "
+          f"his distinct tiles: {len({w & 0x3FF for (x, y, w) in bg2_words if (x, y) in picture and w >= 0} | tiles)}")
     # what the background tiles (below backchars) are in the bottom-right: the menu background repeats, a frame doesn't
     print("BG1 cells ever drawn in rows 12-27 (row: columns):")
     for y in range(12, 28):
