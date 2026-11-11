@@ -2437,6 +2437,28 @@ CDL_Season_12_teams_moved.bin (24), NHL94_teams_moved.smc (26), nhl94_2026_teams
   commentary, the timeout menu, the scouting text, other scores, game info and the shootout winner, and the real New
   York teams (12, 11) lose their long names. The All-Stars still clamp to team 25 in NewPO (now Anaheim's place).
 
+## Ron Barr's picture on the matchup screen, measured (2026-11-10, for NOSE4Web's own-picture feature)
+
+`analysis/scoring_map/gen_ronbarr_check.py` / `snes_ronbarr_check.py ROM OUT` (retail ROMs, the matchup screen after
+Game Setup; video and colour memory from the cores).
+- **Genesis.** ScoutingReport (scout94.asm) draws RonBarrMap ($B389C in nhl94.bin; its `movea.l` at $FCDEE) with
+  dobitmap at text cell (1,1), d5 = $C (palette lines 2 and 3 copied). The block: palette at +$4C4, map at +$544, the
+  tiles packed (DecompressGraphicsPlain) from +8: 1,212 bytes, 61 tiles (1,952 unpacked); the map 8 x 9 cells (148
+  bytes, every word on line 3). Its palette data holds only line 3 (lines 0-2 are $80E filler): line 2 is copied in
+  too, then reloaded by the matchup pictures. On screen: tiles 467-527, line 3 only, all 15 colours; nothing else
+  shows its tiles. Line 3 is shared: the text frames and boxes (plane A, colours 1, 4, 5, 7) and the SPORTS background
+  (plane B, colours 1, 2, 4, 5). Lines 1 and 2 are the home and visitors' pictures and logos, line 0 the font and
+  background. The hot / cold icons are loaded right after Ron Barr's tiles (hoticonchars, coldiconchars from d4), and
+  the first table above them is the sprite table at tile 1,440: room is not the limit.
+- **SNES.** LoadScoutingScreen: BG2 tiles at $1000 words (room for 256), BG1's at $2000. RonBarrTiles (Huffman, 2,944
+  bytes packed, $1280 = 4,736 unpacked: 148 tiles) follow MenuBackTiles (backchars 104): tiles 104-251, 4 free before
+  BG1's. RonBarrMap (Huffman, 295 packed, $0706 = 1,798: a 6-byte header and 32 x 28 words): 162 non-empty words,
+  the announcer at his desk in the bottom right (rows 13-27, columns 6-31 at the widest, row 27); the empty words are
+  the screen's frame and text area (BG1 text, BG2 MenuBack frame). RonBarrPalette (LZ, 44 packed, $0100 = 256
+  unpacked; only the first 16 colours loaded) to colour row 2, used by nothing else. Row 0: the BG1 font; row 3:
+  MenuBackPalette, the BG2 frame and background; rows 4-7: BG1, the team logos and player photos. Only
+  LoadScoutingScreen reads the three pieces.
+
 ## Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)
 
 - **Injuries (topic 33962).** FallDown (collide94.asm, the hit code before .22 and setInjuryType):
