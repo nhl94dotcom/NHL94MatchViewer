@@ -2459,6 +2459,30 @@ Game Setup; video and colour memory from the cores).
   MenuBackPalette, the BG2 frame and background; rows 4-7: BG1, the team logos and player photos. Only
   LoadScoutingScreen reads the three pieces.
 
+### NOSE4Web's Genesis announcer picture, checked, and the SNES picture's room (2026-11-10, 2e0aedb)
+
+- **Genesis, nhl94_announcer.bin** (`gen_announcer_check.py ORIGINAL NEW OUT`: both ROMs to the matchup screen the same
+  way, every matchup page; plane cells, tile data, sprites, colour memory, screenshots). ScoutingReport's movea at
+  $FCDEE points at the new block $FFAC0 (palette +$42A, map +$4AA, the word after the header $0021: bit 15 clear,
+  unpacked); the map 8 x 9 at cell (1,1), 33 tiles (467-499), line 3. The test picture shows the right way round:
+  red top-left, green top-right, blue bottom-left, yellow bottom-right, the white circle in the middle (the grey frame
+  is inside the picture's own cells and identical, 590 pixels). Every other cell on both planes has the same map word
+  and the same tile data (2,168 cells), and the screenshot outside the picture is the same pixel for pixel. Colour
+  lines 0-2 the same; line 3 differs only in colours 8-15 (1-7 kept). The hot / cold icons follow the picture's tiles,
+  so they now start at 500 (528 in the original): the 96 tiles from there are the same data in both, and the HOT and
+  COLD icons draw correctly on the matchup pages (who gets them differs from run to run: the hot / cold rolls are
+  random, and differed between the two ROMs' runs, 85 / 82 for Robitaille).
+- **SNES, where a new picture could go** (`snes_announcer_area.py ROM OUT`: the scouting screen sampled every 30
+  frames for 60 s (real) from 180 frames in, the text typing and the matchups paging by themselves). BG1 draws only the
+  text box there: rows 13-23, columns 1-22 (the box's edges, and the text in rows 14-21, columns 2-20; column 21 and
+  row 22 inside it stay empty). Nothing else (no BG2 frame, no sprite) is ever in the bottom right. Free of BG1 at all
+  times: columns 23-31 from row 12 down (9 x 16 cells) and rows 24-27 right across. So the largest rectangle a picture
+  can fill completely is columns 23-31, rows 12-27 (72 x 128 pixels); Ron Barr himself (162 cells, rows 13-27) also
+  runs under the box's right side (columns 19-22 in rows 15-23) and along the bottom (the desk, rows 24-27 from column
+  6). BG1 covers him only where it draws (the box's edge in column 22, the letters): in column 21 and between the
+  letters his suit shows through the box. (The first 180 frames are the fade-in, and the video memory still holds
+  some of the last screen then.)
+
 ## Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)
 
 - **Injuries (topic 33962).** FallDown (collide94.asm, the hit code before .22 and setInjuryType):

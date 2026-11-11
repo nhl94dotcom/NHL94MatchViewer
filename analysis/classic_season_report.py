@@ -86,7 +86,8 @@ LEVELS = {}  # league -> {coach: level letter}; {} for an ordinary league
 def level_letters(league):
     m = re.search(r"_(?:GENS|SNES)-([A-Za-z]{2,})$", league)
     letters = m.group(1).upper() if m else ""
-    return letters if len(letters) >= 2 and set(letters) != {"A"} else ""  # AA / AAA are one level
+    # AA / AAA are one level; a name like SNES-MAMAS or SNES-SUPER (Puck Dynasty) is not levels at all
+    return letters if len(letters) >= 2 and set(letters) <= set("ABCDEF") and len(set(letters)) == len(letters) else ""
 
 
 def split_levels(league, system, rows):
@@ -103,6 +104,8 @@ def split_levels(league, system, rows):
         h, a = (r["HomePlayer"], r["HomeTeamAbbrev"]), (r["AwayPlayer"], r["AwayTeamAbbrev"])
         meet[h][a] += 1
         meet[a][h] += 1
+    if not meet:
+        return {}
     common = Counter(k for x in meet for k in meet[x].values()).most_common(1)[0][0]
     comps, seen = [], set()
     for n in sorted(meet):

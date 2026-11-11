@@ -370,6 +370,7 @@ AIM_TABLE = [(0, 12), (16, 12), (16, 6), (16, 0), (0, 0), (-16, 0), (-16, 6), (-
 FACEOFF_SPOT = 0xBF94  # fox, foy (ram94.asm): the next faceoff's spot, set at the whistle
 FRAME_COUNTER = 0xB03E  # work RAM word counting frames (up 1-3 between reads in 95% of capture6's samples)
 ROLLBACK_FRAMES = 30    # how far back a rollback can take it
+COUNTERS = (0x00, 0x0C, 0x0E, 0x10, 0x12, 0x14)  # team shots, goals, faceoffs, checks, passes tried, made: only go up
 
 
 HOT_COLD = 0x1A2  # in each team block: 16 bytes per roster place, rolled at the start of each game
@@ -431,6 +432,7 @@ class MatchReader:
         self.game_teams = None  # the teams of the first sample with players on the ice (see _sample)
         self.previous = None
         self.frames, self.next = [], 0
+        self.counter_cache = {}
         self.rom_cache = None
 
     def feed(self, cap, final=True):
@@ -445,12 +447,49 @@ class MatchReader:
         if not final:
             while limit > self.next and cap.ms(n - 1) - cap.ms(limit - 1) <= 500:
                 limit -= 1
+        # A desync (2026-11-10_2257_LA-QUE, heavy lag): the game here ran apart from the other player's, and netplay
+        # loaded their state over it: the puck and players jump, and the game's own counts (shots, goals, checks,
+        # passes) change at once, some of them down, which in play they never do. Six times there, the longest 17 s
+        # (real) before it; one had a QUE goal the real game never had. Everything before the load whose counts are
+        # above the loaded state's was not the real game: on the final reading it is left out (the time it covered
+        # kept, as for the rollback samples). Read live, only the half second before is (the samples are read once the
+        # half second after them is in).
+        diverged = set()
+        if final:
+            for j in range(self.next + 1, limit):
+                if not self._resync(cap, j):
+                    continue
+                period, teams, counts = self._counters(cap, j)
+                i = j - 1
+                while i >= self.next and self._counters(cap, i)[:2] == (period, teams)                         and any(x > y for x, y in zip(self._counters(cap, i)[2], counts)):
+                    diverged.add(i)
+                    i -= 1
         for i in range(self.next, limit):
+            if i in diverged:
+                continue
             if any((frames[i] - frames[j]) & 0xFFFF <= ROLLBACK_FRAMES
                    for j in range(i + 1, min(n, i + 32)) if cap.ms(j) - cap.ms(i) <= 500):
                 continue
+            if not final and any(self._resync(cap, j) and any(x > y for x, y in zip(self._counters(cap, i)[2], self._counters(cap, j)[2]))
+                                 for j in range(i + 1, min(n, i + 40)) if cap.ms(j) - cap.ms(i) <= 500):
+                continue
             self._sample(cap, i)
         self.next = limit
+
+    def _counters(self, cap, i):
+        """The period, the teams and the team counts that only go up in a game (shots, goals, faceoffs, checks, passes
+        tried and made, both teams)."""
+        if i not in self.counter_cache:
+            self.counter_cache[i] = (cap.word(i, 0xC466), (cap.word(i, HOME_TEAM), cap.word(i, AWAY_TEAM)),
+                                     tuple(cap.word(i, b + o) for b in STAT_BLOCKS for o in COUNTERS))
+        return self.counter_cache[i]
+
+    def _resync(self, cap, j):
+        """Sample j (in play) has a count below the sample before's, in the same period of the same game."""
+        if j < 1 or cap.word(j, 0xFFF7) & 0xFF or cap.word(j - 1, 0xFFF7) & 0xFF:
+            return False
+        a, b = self._counters(cap, j - 1), self._counters(cap, j)
+        return a[:2] == b[:2] and any(b[2]) and any(x > y for x, y in zip(a[2], b[2]))
 
     def _sample(self, cap, i):
         # Between periods the Genesis sometimes shows highlights of another game (2026-10-21, the user: a WSH-FLA game at

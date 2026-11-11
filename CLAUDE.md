@@ -151,10 +151,12 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     - Fixes: `fix_check.py ROM` (which tested fixes a build has by their bytes, any other changed bytes, and each
       fix's in-game test against the original) and the per-fix tests (`*_fix_test.py`, `*_test.py`);
       `gen_onetimer_assist_test.py` (the Genesis one-timer assist bug: a fix, built and played; `builds` lays
-      NOSE4Web's builds over the test ROM).
+      NOSE4Web's builds over the test ROM); `gen_open_net_fix_test.py RETAIL BUILD` (the open-net one-timer fix: the aim and goals with the
+      goalie in position and out of the sightline).
     - Graphics: score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves
       free; `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
-      `gen_lc_box_check.py`: the line-change box), `snes_banner_check.py` (team-block colours on every block screen),
+      `gen_lc_box_check.py`: the line-change box), `gen_announcer_check.py ORIGINAL NEW OUT` (an announcer picture build against the original: every
+      matchup page) and `snes_announcer_area.py` (the SNES scouting screen's cells over time: where a picture can go), `snes_banner_check.py` (team-block colours on every block screen),
       `snes_logo_overlap.py` (which piece of a big logo is in front), `snes_logo_spill_check.py` (logos laid out past their sprite-cache room: every logo screen, two ROMs), `gen_injury_check.py` / `gen_blood_check.py`
       (Genesis injuries forced in a scratch copy; the head blood builds).
     - Lines and options: `gen_line_dup_check.py` / `snes_line_dup_check.py` (the same skater twice on one line),
@@ -181,7 +183,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   words found by `tools/systems/snes_layout.py` (match files keep the retail words); SNES xG on SA-1 games plays out a
   frame at a time (60 frames a second; `xg_snes.play_out` step 1, match `sa1`). docs/PROJECT_NOTES.md "SNES SA-1 and 2 MB builds".
 - Sampled about 60 times a second on our own clock (not frame-locked). Netplay rollback samples are dropped by the
-  frame counter (Genesis $B03E, SNES $0764). Pauses / instant replays are left out (Genesis screen $FFF7 = 0 is play;
+  frame counter (Genesis $B03E, SNES $0764); after a netplay desync (Genesis: the other player's state loaded, the team
+  counts jumping, some down) the stretch before it whose counts are above the loaded state's is left out. Pauses / instant replays are left out (Genesis screen $FFF7 = 0 is play;
   SNES sflags $15D8). Intermission highlights of other games (Genesis) are left out by team ids.
 
 ## Genesis memory (work RAM $FFxxxx)

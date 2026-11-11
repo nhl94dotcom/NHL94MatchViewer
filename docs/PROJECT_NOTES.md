@@ -392,6 +392,18 @@ netplay after lag: the counter back 47-56 frames, the clock 2-3 game seconds, th
 half-second window): on the final reading (not live), the SNES reader leaves out the first copy of a stretch whose
 counter and clock both come back within REWIND_FRAMES 600 in one period, and keeps the replayed one. Two forward
 jumps of the counter with the clock a second back remain in that game (the host's state loaded, by the look of it).
+Desyncs (2026-11-10_2257_LA-QUE, Genesis netplay with very heavy lag, the user: "REALLY bad lag and rollback"): the
+game here ran apart from the other player's, and netplay loaded their state over it. The frame counter carries on
+(forward a few frames, so neither rule above sees it), but the puck and players jump and the team counts change at once,
+some of them down (at P2 2:31: both teams' shots up 1 and checks up 2, Quebec's passes tried 32 -> 25). Six such loads
+followed stretches of 1-17 s (real) (the longest P2 3:13-2:31), plus many of under 0.1 s; one stretch had a Quebec shot
+and goal (2-1 -> 2-2) that the real game never had, and the match file had QUE 4 goals to the game's 3 (and a shot and a
+check too many each side). The Genesis reader now leaves out, on the final reading, every sample before such a load
+(a count below the sample before's, same period and teams, in play) whose shots, goals, faceoffs, checks or passes tried
+or made are above the loaded state's (genesis.COUNTERS): 2,001 samples, 32 s (real), in LA-QUE; the time is kept, so
+the viewer holds the picture and then jumps. Read live, only those within the half second before are left out. LA-QUE
+then agrees with the game's counts (passes counted 36 / 40 and 45 / 47: the passes made during the left-out stretches
+show only in the counts). STL-PHI the same night (lag, no loads) had only the sub-0.1 s kind; the three other games none.
 That also drops the earlier of two reads of one frame (a read in the middle of the frame):
 about 6-10% of samples. After it: no there-and-back jumps left (one in CHI-TOR); shots on goal, checks, goals,
 penalties, injuries, EA Special attempts and the reviewed bumps and bobbles unchanged (on the SNES, bobbles now look
