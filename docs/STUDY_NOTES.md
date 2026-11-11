@@ -3434,3 +3434,69 @@ a frame, one SequencerTick a frame.
   voices (VoiceState $08F2 in use, VoiceTrack $08FA $10 or more) sounding on every frame of the songs on both (the
   crowd's own voices included, so a single short effect isn't told apart).
 
+
+## Penalty time and injury options (2026-11-11, for NOSE4Web)
+
+### Penalty time, N seconds a penalty minute (bcd4dfb; test ROMs at N = 30)
+
+`gen_penalty_time_check.py ROM GAMES OUT` / `snes_penalty_time_check.py ROM GAMES OUT`: computer games, penalties on
+except offsides, every skater's Aggression at 15 (more penalties; goalies left alone), each penalised player's tmpdst
+word (Genesis team block +$66, SNES $1852 / +$34: the seconds left; $2000 "just called", cleared as the penalty starts)
+from the call until he is out, with the game-clock seconds that took and whether the other team scored then; the team
+stats at the end. Majors from scratch copies with Cross Check and Roughing made 5 minutes (Genesis $19041 / $18FBD, the
+retail copy's boot ROM check skipped as in NOSE4Web's builds; SNES by the entries' bytes).
+- **Genesis nhl94_penalty_time_30.bin** (`mulu.w #$1E,d2` at $1230C): minors start at 60 s and are served in 59-63 s
+  (retail 120 / 119-125), majors 150 s, served 150-152 (retail 300); penalty minutes 2 and 5 as before; power-play
+  time matches the time served (a power-play goal after 12 s: 12 + 60 = 72 s) and power-play goals end the time.
+- **SNES NHL94_penalty_time_30.smc**: minors 60 s, served 59; majors 150 s; minutes 2 and 5; a power-play goal released
+  a minor after 24 s with 24 s of power-play time.
+- **On both systems a power-play goal releases a major too** (retail as well: Genesis retail, a major out after 126 of
+  300 s at a goal): PenGoalStuff releases the first player in the box whose penalty is not coincidental, majors
+  included. Original behaviour, not the build's.
+- No coincidental majors came up in play; the code compares the two box times, so they pair at any N. A third player
+  waits for one of the two serving to come out (retail too).
+- Nothing else found that assumes 60 seconds.
+
+### Injuries on the SNES, mapped (for the Genesis-style Injuries choice)
+
+FallDown `.24` (NHL94SNES routines/collide/FallDown.asm). Retail NHL94.smc addresses; the SA-1 and nhl94_2026 builds
+have the same code $1B later ($68 later for setInjuryType); found by byte pattern.
+- **The roll** ($9E:9DC3: `lda #$0096 / jsl randoma8 / asl / ldy a2 / sec / sbc impact,y / bpl .23 / lda gmclock /
+  bne .23 / lda position,y / bmi .25 / beq .25`): only the puck carrier, falling back (SPAfallback), facing straight up
+  or down the ice, not a goalie hitter, not in a highlight or Shootout mode, not already penalised; injured when
+  randoma8(150) x 2 < impact, with the clock running. **Never:** `bne .23` after `lda gmclock` at **$9E:9DD6** -> `bra`
+  (`D0` -> `80`): the fall and the loose puck stay (the Genesis $14440 equivalent).
+- **setInjuryType** ($9E:C343 `lda #$0007 / jsl randoma8 / cmp #0 / bne .rtl / lda #TMPDINJGAME`): marks him
+  unavailable (pf2unav), the crowd and groan, the camera lock, tmpdst TMPDOUT ($FFFD, out for the period), and
+  **one time in 7** (randoma8(7) is 0-6: not 8) TMPDINJGAME ($FFFC, the game). **Every injury the period:** `bne .rtl` at
+  **$9E:C34D** -> `bra`; **every injury the game:** the same two bytes -> `EA EA`.
+- **The penalty without the injury** ($9E:9E21 `jsl setInjuryType / lda #4 / sta InjCntDown / lda #$16 / sta d0`, then
+  the penalty at $9E:9E3C): `jsl setInjuryType` ($9E:9E21-24) -> NOPs and `sta InjCntDown` ($9E:9E28-2A) -> NOPs (else
+  ShowInjuryBox comes 4 game seconds later with a stale name). The injury animation (SPAinjury1, set before) and the
+  call stay: Roughing (PenRoughing2, $14) and Stop4Pen with penalties on; the $16 injury stoppage with them off or a
+  goalie hitter. He is not marked out, so he plays on after the faceoff.
+
+### "A long fall instead of an injury", both systems
+
+- **What separates the fall from the injury:** the injury animation is set first (Genesis `move.w #SPAinjuryfall,d1 /
+  bsr SetSPA`, then SPAinjury1 for a period injury after setInjuryType; SNES `lda #SPAinjury1 / jsl SetSPAFromA`); all
+  of the injury itself comes after, in one run: setInjuryType (out of play, tmpdst, the crowd, the camera lock),
+  InjCntDown = 4 (the injury box), the penalty and Stop4Pen. So skipping from the call to setInjuryType to the
+  no-injury path leaves just the animation: **Genesis `bsr.w setInjuryType` at $14450 -> `bra.w .22`** (the crowd
+  sound, as after any fall); **SNES `jsl setInjuryType` at $9E:9E21 -> `jmp .25`** (4C + the address of .25 and a NOP:
+  the no-injury path).
+- **How long the falls last:** an ordinary back fall plays fall 6 + 6 ticks, lies 100, gets up 8 + 8 (SPFduck); about
+  one tick a frame on both systems: measured in the recorded games, **2.24 s (real) a back fall** (Genesis 2,220-2,265
+  ms, SNES 2,265-2,325; 590 and 554 falls), so the lying part is about 1.7 s. The injury animations never get up:
+  Genesis SPAinjuryfall falls 6 + 6, lies 30 then holds (-1024); SNES SPAinjury1 falls 20 + 20 (slower), lies 1,000
+  ticks (about 17 s) then holds; the injured player lies until he is taken off at the stoppage (Genesis, seen: about
+  530 frames after the hit).
+- **So a long fall needs an animation that gets up.** The clean way is to rewrite the injury animation's lists in place
+  for that option (in it no one is injured, so nothing else needs them; FallDown's early exits on SPAinjuryfall /
+  SPAinjury1 then also keep a lying player from being knocked down again). Each list has 4 frame / time pairs, and a
+  fall that gets up needs 5 (fall, fall, lie, get up, duck), so drop the first fall frame: **Genesis SPAinjuryfall**
+  (two lists: directions 0-2 and 7, 3-6) `SPFfallback+1,6, SPFfallback+2,L, SPFfallback+3,8, SPFduck,-8` (and +17,
+  +18, +19, SPFduck+4 for the second); **SNES SPAinjury1** (lists .d0, .d3) the same with the SNES frames
+  (SPFfallback+1 / +2 / +3, SPFduck; +17 / +18 / +19, SPFduck+4 for .d3). L is the lying time in ticks (about frames):
+  100 is the ordinary fall, 300 about 5 s (real), 600 about 10 s. The Genesis period injury's SPAinjury1 is never
+  reached then.

@@ -5,7 +5,7 @@ and min(count x bonus, cap) added to the impact in FallDown's injury roll).
 The SNES roll (FallDown .24, the NHL94SNES disassembly): only the puck carrier, only when he goes into SPAfallback
 facing straight up or down the ice (facedir & 3 = 0), the hitter a skater, the clock running; then an injury when
 randoma8(150) x 2 < impact (about impact / 300). setInjuryType then sets his tmpdst entry ($1852, the visitors +$34, by
-pnum) to $FFFD (out for the period), or one time in 8 $FFFC (for the game).
+pnum) to $FFFD (out for the period), or one time in 7 (randoma8(7) is 0-6) $FFFC (for the game).
 
 In live play (snes_assist_stick_test.Game, the retail game states): the pad-1 skater A skates at an opponent O who has
 the puck (it kept on him, puckc $0AD9 = O x 2, until he goes down), facing him straight down the ice (the case the

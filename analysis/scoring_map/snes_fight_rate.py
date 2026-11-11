@@ -6,7 +6,7 @@ penalties called (snes_60fps_cvc's buffer watch: $2A / $2C fighting majors, $2E 
 fighters a major) and, as a check, from the fighters' pflags $0400 (pffight) every 10 frames: each run of frames
 with a fighter is one fight.
 
-python snes_fight_rate.py ROM on|whistle GAMES OUT.jsonl"""
+python snes_fight_rate.py ROM on|whistle|none GAMES OUT.jsonl"""
 import json
 import sys
 from pathlib import Path
@@ -17,7 +17,8 @@ import snes_60fps_cvc as cvc  # noqa: E402
 from systems import snes  # noqa: E402
 
 OPTFIGHTS, PFLAGS, FIGHTER = 0xE708, 0x1283, 0x0400
-SETTING = {"on": 0, "whistle": 2}
+SETTING = {"on": 0, "whistle": 2, "none": None}   # none: a build with no Fighting option (its fights always on):
+                                                  # nothing poked ($E708 is ordinary work RAM there)
 
 
 def at(m, a):
@@ -42,7 +43,8 @@ def main():
 
     def computer_only(m):
         orig(m)
-        setw(m, OPTFIGHTS, value)
+        if value is not None:
+            setw(m, OPTFIGHTS, value)
 
     cvc.computer_only = computer_only
     orig_run = None
