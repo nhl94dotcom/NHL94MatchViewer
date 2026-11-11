@@ -304,8 +304,8 @@ light forwards throw more checks (-0.56 a game a point). The teams show it: besi
 regular forwards' average Weight takes **-2.15 +- 0.65 points of win chance a Weight point** (three standard errors
 from zero), the defencemen's average Weight nothing (+0.18). Against the forwards' scoring part of the same fit, that's
 **-0.52 goals a game a Weight point** in a forward's value; how big exactly is uncertain (the middle 80% of resampled
-teams: -0.16 to -1.30), but it's large: a forward 3 points lighter is worth about one more step of Shot Power and
-Speed together.
+teams: -0.16 to -1.30), but it's large: at -0.52, one Weight point lighter is worth about a step of Shot Power and a
+step of Speed together (0.29 + 0.22).
 
 **Does it make sense? The teams' measured strength.** COACH_RATING section 9 measures each Classic team's strength from
 the results with the coaches taken out. The 22 teams' strength fitted on each set of parts, and each team predicted from
