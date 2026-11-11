@@ -13,7 +13,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   models' inputs, units and use outside the project).
 - Studies: `SHOOTING_STUDY.md`; `LEAGUE_RESULTS.md` (the league result databases); the scoring maps, shots played in the
   real game (`SCORING_MAP.md` the overview, `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`,
-  `SCORING_SNES.md`); `FACEOFF_PLACEMENT.md` (where faceoffs are held and where the rules put them).
+  `SCORING_SNES.md`); `FACEOFF_PLACEMENT.md` (where faceoffs are held and where the rules put them); `RATING_VALUES.md` (what a rating step is worth in league play: the
+  ledger, then the played gaps and a league value; for NOSE4Web).
 - Plans: `DEFENCE_PLAN.md` (the defence studies), `BOT_PLAN.md` (the scripted bot), `GAME_VARIABLES_PLAN.md`
   (the forum's "game variables": what's known, what to study). Open questions for the user:
   `NEEDS_FROM_YOU.md`.
