@@ -3526,3 +3526,36 @@ ROM's own setup defaults, as SDL16's setup screen differs from retail's), `snes_
   the injury risk's count is the same shape, so they chain: the hook to the injury risk's code, ending in `jml
   F_countcheck` instead of its own tail; X (the hitter) and 16-bit A / X kept. No RAM clash (the fights use the game's
   arrays around $1463 and the direct page, the injury risk $7E:F034 up).
+
+## How people play, and how their skaters differ from the computer's (2026-11-11, `analysis/human_vs_cpu.py`)
+
+The recorded games (32 Genesis, 29 SNES; people on both sides), the person's skater against his five computer
+teammates in the same games (`ctrl`, the events' `human` and `gctl`); the button habits from the match summaries.
+
+| | Genesis | SNES |
+|---|---|---|
+| Puck carried by a person's skater | 94% of possession | 92% |
+| Shot attempts by people / goals | 90% (1,165 of 1,299) / 243 of 261 | 89% (883 of 993) / 203 of 217 |
+| xG a shot: person / computer teammate | 0.234 / 0.208 | 0.255 / 0.108 |
+| Median shot distance: person / computer | 77 / 78 | 63 / 84 |
+| People's shots: wrist / one-timer / slapshot | 56% / 19% / 17% | 60% / 29% / 8% |
+| Shots from rushes (all) | 71% | 72% |
+| Passes by people (completed) / computer (completed) | 3,006 (60%) / 108 (75%) | 2,659 (69%) / 226 (74%) |
+| Hits by people (the game's knockdowns) | 70% (1,093 of 1,572) | 66% (985 of 1,503) |
+| Skating: median speed person / computer; at a sprint; standing | 80 / 65; 46% / 39%; 29% / 42% | 78 / 69; 42% / 38%; 31% / 39% |
+| Defending: the person's skater nearest the carrier | 52% of the time (median 62 from him; the nearest computer teammate 63) | 48% (65 / 62) |
+| Goalie: a person in net for the shot / goals against xG | 19% of shots; 77 on 82.1 (computer 184 on 207.9) | 25%; 74 on 77.6 (computer 143 on 156.3) |
+| Presses a minute: B / C (Genesis) or A (SNES); bursts; pokes (8.5% win the puck) | B 64, C 18; 10; 5 | B 54, A 21; 10; 5 |
+| The goalie taken, game seconds a game (median) | 46 | 46 |
+
+- **People play through the puck:** control follows the puck, so their skater has it about 93% of the time and takes
+  nine shots in ten; computer teammates rarely carry, shoot or pass (when they do pass they complete more: short,
+  safe passes). Per skater, a person's hits are about nine times a computer skater's (two thirds of all knockdowns
+  from one skater in five).
+- **People skate faster and stand less**, and **on defence are the nearest to the carrier only half the time**: the
+  computer's chaser is usually as close, so people often shadow rather than lead the pressure (or switch late).
+- **People's goalies** do a little worse than the computer's against the same xG (goals / xG 0.94 against 0.89 on the
+  Genesis, 0.95 against 0.91 on the SNES), the same as the off-the-line finding (the match reports, section 6).
+- **On the SNES the person's shots are far better than the computer teammates' (0.255 xG a shot against 0.108)** and
+  closer (63 against 84); on the Genesis they are about the same. SNES people use one-timers more (29%) and slapshots
+  less (8%) than Genesis people (19% / 17%).
