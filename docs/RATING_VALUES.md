@@ -236,9 +236,54 @@ Defensive Awareness and Puck Control 4.5 each, the four glove / stick ratings 1 
 - **Goalies:** the four unused ratings are a quarter of a goalie's Overall; Agility counts no more than Defensive
   Awareness, which does nothing measurable to shots.
 
+### Chunk B, played (2026-11-11, `analysis/scoring_map/ratings_chunk_b.py`, one process)
+
+**Races to a loose puck** (`races`): the pad-1 skater without the puck, frames (60 a second) to cover a distance from a
+standstill, and from his top speed going the wrong way (Up held from the start); the others the test skater's (Weight
+9, Agility and Speed working 18).
+
+| From a standstill: 20 / 40 / 60 / 100 ft | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| Speed | 56 / 90 / 124 / 192 | 55 / 87 / 118 / 180 | 55 / 84 / 113 / 170 | 55 / 83 / 110 / 162 | 55 / 83 / 108 / 159 |
+| Agility | 60 / 90 / 120 / 179 | 57 / 88 / 117 / 176 | 54 / 84 / 114 / 173 | 53 / 82 / 112 / 171 | 50 / 80 / 110 / 169 |
+
+Weight 4 / 7 / 9 / 12 / 15 (roster points): 51 / 54 / 55 / 58 / 62 frames to 20 ft, 170 / 172 / 174 / 177 / 182 to 100
+ft. From top speed the wrong way every distance takes about 30 frames longer (the skid stop is the same for all), and
+the order is the same.
+
+- **Speed doesn't win short races:** every Speed level reaches 20 ft in 55-56 frames. It counts from about 40 ft on: over
+  100 ft a Speed 6 skater is 33 frames (0.55 s real, about 18 ft) ahead of a Speed 2.
+- **Agility wins the short ones:** 10 frames over 20 ft from 2 to 6, about what Speed gains over 60 ft. A step of
+  Agility is worth about 2.5 Weight points, as the formula says.
+- So for loose pucks within a few strides, Agility and low Weight matter; for a long chase, Speed.
+
+**Standing shots against a retail starter** (`shots 32`: the computer goalie at working Agility / Speed / Defensive
+Awareness / Puck Control 20 / 20 / 25 / 20, the shooter standing, all nine aims, 32 moments x 2 seeds: 576 shots a spot
+and shot type for each rating pair; the best aim 64):
+
+| Spot (top net) | Wrist shot | Slapshot |
+|---|---|---|
+| Slot, 21 ft straight in | 0-1% over the aims, best aim 0-6% | 0-1%, best 0-9% |
+| Left circle, 21 ft out, 21 ft to the side | 0-1.4%, best 2-12% | **6-14%, best aim 28-38%** |
+| Left point, 62 ft out | 0-1%, best 0-9% | 0-0.3%, best 0-3% |
+
+- **Against a set retail goalie a standing shot hardly ever scores, at any rating**, except the slapshot from the
+  circle. (Against the weak test goalie, working Agility 13, the same shots scored several times as often: SCORING_GENESIS.)
+- **From the circle Shot Power hardly matters** once the aim is right: the best aim (down-left, at the far side) scored
+  19 / 22 / 19 / 19 / 18 of 64 at Power 2-6. Weak shooters' average over all aims was higher (13.7% at Power 2 against
+  6.8% at 4), as a few more aims also worked for them. The near-post aim (Left) scored 18-20 of 64 at Powers 2, 3 and 5
+  and 0-1 in every Power-4 case: some timing at that one shot speed. Accuracy 2 -> 6 at Power 4: best aim 20% -> 38%.
+- So the slapshot cliff at Power 3 -> 4 (the scoring maps, against the weak goalie) is about beating a slow goalie on
+  the far side; against a retail starter, standing, it is mostly the aim that counts. The skating far-post slapshot and
+  one-timers, the shots people really score with, are in the tables above.
+
+**Steals** (`steals`): not measured yet. A pad-1 skater poking a computer carrier standing still started no steal roll
+in any of 60 tries a setting (the carrier's puck sat out of reach, or the stick test needs more than reach); the
+carrier's own passes were the only losses. The steal formula above stands (Code).
+
 ### Gaps for the next chunks
 
-- **B (played):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
+- **B (played, done above but the steals):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
   slapshots from the slot, the circles and the point by Power and Accuracy, against a goalie of retail starter quality
   (working Agility 20); steals and keeping the puck by Stickhandling, poked and checked.
 - **C (played):** Offensive and Defensive Awareness in whole games, the computer against itself, one team's Awareness

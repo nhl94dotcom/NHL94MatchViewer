@@ -108,7 +108,7 @@ def main():
         park()
         place_target()
         e.setb(rt + 0x67, wc + 16)
-        e.setb(rt + 0x6F, 10)                      # Stickhandling low: no wobble
+        e.setb(rt + 0x71, 10)                      # Stickhandling ($71) low: no wobble
         e.run(2)
         base = e.serialize()
         down, rise = run_check()
@@ -197,6 +197,82 @@ def main():
                 rises |= {r1, r2}
             print(f"  equal weights, approach speed {speed}, after he is up (160 frames on), {n} seeds: the same pair "
                   f"knocked him down {rep} times, a fresh pair {fresh}; check-count rises seen {sorted(rises)}")
+        rows = bench(e, h, rc, rt, park)
+        print("  into the bench (the first hit's animation, then the same checker again: (frames from the first hit, "
+              "his animation, nopuck) at contact, knocked down?):")
+        print("   ", rows)
+
+def bench(e, h, rc, rt, park_fn):
+    """A man checked into the bench (the right boards at centre ice: SPAbenchcheckr, $1A00, about 153 frames), the
+    checker coming from his left facing right; the same checker again at a few moments, held still 8 frames after each
+    move (the y-sorted list). Returns [(contact frame from the first hit, the target's animation then, nopuck then,
+    knocked down?)]."""
+    BENCH = (0x193E, 0x1A00)
+    TX = 110
+    e.unserialize(h.base)
+    wc = e.b(rc + 0x67)
+
+    def approach():
+        for _ in range(8):
+            park_fn()
+            e.setw(rc, TX - 50)
+            e.setw(rc + 0x14, 0)
+            for off in (0x28, 0x2A):
+                e.setw(rc + off, 0)
+                e.setw(rt + off, 0)
+            e.setb(rc + 0x55, 2)
+            e.run(1, hold=["RIGHT"])
+        e.setw(rc + 0x28, 8000)
+
+    for _ in range(10):
+        park_fn()
+        e.setw(rt, TX)
+        e.setw(rt + 0x14, 0)
+        for off in (0x28, 0x2A):
+            e.setw(rt + off, 0)
+        e.setb(rt + 0x67, wc + 16)
+        e.setb(rt + 0x71, 10)
+        e.run(1)
+    approach()
+    hit = None
+    for f in range(40):
+        park_fn()
+        for off in (0x28, 0x2A):
+            e.setw(rt + off, 0)
+        e.run(1, hold=["RIGHT"] + (["C"] if f < 2 else []))
+        if hit is None and e.w(rt + 0x58) in BENCH:
+            hit = f
+    after = e.serialize()
+    since = 40 - hit
+    rows = [("first hit", hex(e.w(rt + 0x58)))]
+    for wait in (70, 80, 90, 100, 130):
+        e.unserialize(after)
+        for _ in range(wait):
+            park_fn()
+            e.setw(rc, TX - 90)
+            e.setw(rc + 0x14, 60)
+            for off in (0x28, 0x2A):
+                e.setw(rc + off, 0)
+                e.setw(rt + off, 0)
+            e.run(1)
+        approach()
+        prev, down, contact = e.b(rt + 0x5E), False, None
+        imp = e.w(rt + 0x32)
+        for f in range(30):
+            park_fn()
+            for off in (0x28, 0x2A):
+                e.setw(rt + off, 0)
+            anim_before = e.w(rt + 0x58)
+            e.run(1, hold=["RIGHT"] + (["C"] if f < 2 else []))
+            if contact is None and e.w(rt + 0x32) > imp + 2:      # a collision adds to his impact
+                contact = (since + wait + 8 + f, hex(anim_before), prev)
+            imp = e.w(rt + 0x32)
+            cur = e.b(rt + 0x5E)
+            down = down or cur > prev
+            prev = cur
+        rows.append((contact, down))
+    return rows
+
 
 if __name__ == "__main__":
     main()
