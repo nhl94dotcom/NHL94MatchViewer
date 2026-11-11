@@ -2387,6 +2387,56 @@ NOPed). From power-on, a screenshot at every change, against retail:
   the SA-1 build as it is: its SNES states are retail's, and the build keeps low RAM in BW-RAM (snes_60fps_cvc.Mem
   maps it), so a check needs SA-1 states and a shot runner.
 
+## SNES xG for SA-1 games: chunk 2, checked and on (2026-11-10)
+
+- **The code** (NHL94SNES-SA1 against NHL94SNES): assgoalie, doshot, puckgoalie, checkgoal, checkpuckcoll_ccx,
+  playeracc, updateplayers, GetHot and GetFrameHot differ only in labels and constants (and PlayerIceTime, PostCount, the
+  `d7` energy roll). Every timer the model uses counts by the step: pucknorm's crossing countdown and the goalie's
+  rethink (temp1) by `d7`, nopuck and the animation counters (SPAcnt) by `timestep`; updateplayers' friction table .21
+  is indexed by it ($FD at 1, $FA at 2). The goalie's hot points (144 frames) and save moves on nhl94_SA1_Original are
+  the retail bytes. So the SA-1 game is the retail rules a frame at a time: `xg_snes.play_out(step=1)`.
+- **Tools:** `NHL94_SNES_SA1=<ROM>` (paths.py) runs every SNES tool on an SA-1 build: snes_emu routes the moved RAM
+  (snes.SA1_MOVED) to BW-RAM, snes_make_states makes its states (period 1 top, period 2 bottom, timestep 1),
+  xg_calib's watcher asks the model at step 1. `xg_calib_rescore.py RUN STEP` scores a run again with today's model.
+- **The run** (xg_calib.py snes sa1_calib, an hour, nhl94_SA1_Original): 11,787 shots, 716 goals. Re-scored, the
+  goalie's spot blurred as for recordings:
+
+  | Shots | Model | Goals | xG | Log loss: model / one rate |
+  |---|---|---|---|---|
+  | SA-1 (all) | step 1 | 716 | 627 | 0.089 / 0.229 |
+  | SA-1 (all) | step 2 | 716 | 640 | 0.089 / 0.229 |
+  | Retail: standing, EA, walk-in (xgsnes_all) | step 2 | 169 | 121 | 0.034 / 0.096 |
+  | Retail: the user's dekes replayed (xgdeke3) | step 2 | 826 | 678 | 0.413 / 0.637 |
+
+  By kind on SA-1 at step 1: replayed dekes 631 / 558, walk-ins 54 / 29, EA follow-ups 15 / 14, standing 10 / 7,
+  dekes 6 / 19. The model is about as right on SA-1 shots as on retail ones (low by an eighth against a fifth); the
+  step itself changes little, and step 1 is what the code does. Walk-ins are low on both builds.
+- **The game is harder to score on at 60** (the same jobs on both builds): replayed dekes 33.3% retail, 25.9% SA-1
+  (22 jobs scored only on retail, 5 only on SA-1), walk-ins 3.9% / 1.7%, EA follow-ups 0.8% / 0.4%, standing 0.2% /
+  0.4%. The model sees much of it already in the goalie's state at the release (the dekes: 27% retail, 23% SA-1).
+- **On:** add_expected_goals plays SA-1 games at step 1 and marks the match `sa1`; the viewer's XG_SNES takes
+  `opts.step` (its map key separates SA-1); tests/xg_parity.py compares both steps.
+
+## NOSE4Web's moved team numbers (2026-11-10, NOSE4Web 603c7fc Genesis, c45dad7 SNES)
+
+Four test ROMs with the first N teams reversed (team k = the original's N - 1 - k): nhl94_teams_moved.bin (26),
+CDL_Season_12_teams_moved.bin (24), NHL94_teams_moved.smc (26), nhl94_2026_teams_moved.sfc (32).
+- **The ROM data:** every moved team is its original twin (name, abbreviation, roster and ratings, palettes, logo;
+  systems' read_teams), the unmoved ones unchanged; the Genesis TeamSongs rows moved; the playoff trees (32 rows of 16
+  team numbers, both systems) renumbered right and every team in some tree, so NewPO finds every team (no freeze).
+- **On screen** (`analysis/scoring_map/team_move_check.py ORIGINAL MOVED N OUT HOME:VISITOR`: the same presses with
+  the teams picked by number, the moved ROM's mirrored): Game Setup (and the Genesis setup cards), the controller and
+  matchup screens (the Genesis team ratings), and on the SNES every pause screen at the opening faceoff (player cards,
+  stats, Edit Lines, the team card): identical, pixel for pixel, the 12 players' roster numbers the same; differences
+  only from timing (the play screen a second apart, the faceoff inset), the random hot / cold draws and the random
+  other scores. Organ songs: the same per team (SNES all slots; Genesis the team slots, the random ones random).
+  New Playoffs with the first and last teams on both SNES ROMs: the bracket, real conferences, no freeze.
+- **Found:** the SNES GetTeamLongName hard-codes teams $0D and $0E as NY Islanders and NY Rangers (their TeamList city
+  is "New York"); the moved ROMs still compare 13 / 14 (2026 build: 17 / 18, at $DC5AB / $DC531 in the files), so
+  moved team 14 (Montreal) is called "NY Rangers" and 13 (New Jersey) "NY Islanders" on Game Setup, the matchup
+  commentary, the timeout menu, the scouting text, other scores, game info and the shootout winner, and the real New
+  York teams (12, 11) lose their long names. The All-Stars still clamp to team 25 in NewPO (now Anaheim's place).
+
 ## Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)
 
 - **Injuries (topic 33962).** FallDown (collide94.asm, the hit code before .22 and setInjuryType):

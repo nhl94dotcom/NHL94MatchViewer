@@ -393,10 +393,12 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
         return
     data = RomData(rom)
     from systems.snes_layout import layout
-    if layout(data.rom).sa1:
-        # An SA-1 build runs the game 60 frames a second, not 30 (its docs/SA1.md: the AI and collisions twice as
-        # often): the model's game step and the goalie's timing are the retail game's. No xG until checked there.
-        return
+    # An SA-1 build runs the game 60 frames a second (d7 = 1): the same rules, every timer counting by the step, the
+    # collisions and the goalie's rethinks on every frame. Played out a frame at a time (2026-11-10: checked on the
+    # game's own shots, 11,787 on nhl94_SA1_Original: 716 goals, the model 627 at step 1, log loss 0.089 against 0.229
+    # for one rate; retail 995 / 798 at step 2; docs/STUDY_NOTES.md "SNES xG for SA-1 games").
+    step = 1 if layout(data.rom).sa1 else STEP
+    m["sa1"] = step == 1                           # for the viewer's map (XG_SNES step)
     rows = {}
     for r in m["work"]:
         rows.setdefault(r[1], []).append(r)
@@ -447,7 +449,7 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
         perfect = (sha + 1) / (sha + 16)
         key = (m.get('name', ''), f, team, sh['idx'], px, py, tx, ty, tz, pp, sha,
                (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4], goalie.nopuck) if goalie else None,
-               sh["kind"], launch, json.dumps(internals.get(f), sort_keys=True) if internals else None)
+               sh["kind"], launch, json.dumps(internals.get(f), sort_keys=True) if internals else None, step)
         if key in _CACHE:
             sh["xg"] = _CACHE[key]
             continue
@@ -455,7 +457,7 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
 
         def start():                                              # a pass shot's lift: random, 0-$FFF (dopass)
             return aimed(launch, rng, rng.randrange(0x1000)) if launch else None
-        goals = sum(play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, launch=start()) == "goal"
+        goals = sum(play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, launch=start(), step=step) == "goal"
                     for _ in range(N_SAMPLES))
         sh["xg"] = _CACHE[key] = round(goals / N_SAMPLES, 3)
 

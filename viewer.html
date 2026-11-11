@@ -1631,7 +1631,11 @@ const XG = (() => {
 
 // ---- SNES xG model: a port of tools/xg_snes.py's Goalie and play_out, for the xG map. Keep the two in step.
 const XG_SNES = (rom => {
-  const SPREAD = 3.5, STEP = 2;  // tools/xg_snes.py GOALIE_SPREAD
+  const SPREAD = 3.5;  // tools/xg_snes.py GOALIE_SPREAD
+  // frames a game step: 2 for the retail game, 1 for an SA-1 build (60 game frames a second; match.sa1, opts.step;
+  // tools/xg_snes.py play_out's step), with updateplayers' friction for that step
+  let STEP = 2;
+  const FRICTION = { 1: 0xFD, 2: 0xFA };
   const AIM = [[0, 12], [15, 12], [15, 6], [15, 0], [0, 0], [-15, 0], [-15, 6], [-15, 12], [0, 6]];
   const DIRSTEP = [[0, 6], [4, 4], [6, 0], [4, -4], [0, -6], [-4, -4], [-6, 0], [-4, 4]];
   const VTOA = [1, 7, 3, 5, 0, 0, 4, 4, 2, 6, 2, 6, 1, 7, 3, 5];
@@ -1694,7 +1698,7 @@ const XG_SNES = (rom => {
     G.dir = vtoa(gx - (G.x + Math.trunc(G.vx / 256)), gy - (G.y + Math.trunc(G.vy / 256)), 5);
   }
   function step(G, px, py, pvx, pvy, pz, pvz) {
-    G.vx = Math.trunc(G.vx * 0xFA / 256); G.vy = Math.trunc(G.vy * 0xFA / 256);
+    G.vx = Math.trunc(G.vx * FRICTION[STEP] / 256); G.vy = Math.trunc(G.vy * FRICTION[STEP] / 256);
     G.crossTimer -= STEP;
     if (G.crossTimer < 0) {
       G.crossTimer += 5;
@@ -1769,8 +1773,9 @@ const XG_SNES = (rom => {
     return [d0, d1 + d3];
   }
   // xG from (px, py) at the top or bottom net, for each of the nine aims (one-timers too: the SNES lets you aim them).
-  // opts: {speed, sha (working Shot Accuracy 0-15), goalie {weight, agility, speed, aidef}, states, n}.
+  // opts: {speed, sha (working Shot Accuracy 0-15), goalie {weight, agility, speed, aidef}, states, n, step (1: SA-1)}.
   function spot(px, py, top, opts) {
+    STEP = opts.step || 2;
     const gl = top ? 264 : -264, [sx, sy] = setSpot(px, py, top), sg = top ? 1 : -1;
     const pp = Math.max(1, opts.speed / 136), perfect = (opts.sha + 1) / (opts.sha + 16);
     const start = () => {
@@ -1813,6 +1818,7 @@ function startXgMap(key) {
   // is a slapshot against the goalies as they were at recorded one-timers (usually moving across after the pass).
   const opts = snes
     ? { speed: XG_SHOTS[xgShot].speed, sha: (5 * xgAcc) >> 1, goalie: { weight: 48, agility: 10, speed: 10, aidef: 12 }, n: 120,
+        step: match && match.sa1 ? 1 : 2,  // an SA-1 game: the model a frame at a time (tools/xg_snes.py)
         states: xgGoalie === 'set' ? null : XG_SNES_GOALIE_STATES[xgShot === 'onetimer' && xgGoalie !== 'person' ? 'onetimer' : xgGoalie === 'person' ? 'person' : 'cpu'] }
     : { speed: XG_SHOTS[xgShot].speed, sha: 5 * xgAcc, oneTimer: xgShot === 'onetimer', person: xgGoalie === 'person',
         goalie: { weight: 48, agility: 20, speed: 20, aidef: 10 }, n: 120, stick: xgGoalie === 'set',
@@ -1848,7 +1854,7 @@ function startXgMap(key) {
   setTimeout(work, 0);
 }
 function drawXgMap() {
-  const key = [match && match.system === 'snes' ? 'snes' : 'genesis', xgShot, xgAcc, xgGoalie].join('|'), cells = match ? xgMaps.get(key) : null;
+  const key = [match && match.system === 'snes' ? (match.sa1 ? 'snes-sa1' : 'snes') : 'genesis', xgShot, xgAcc, xgGoalie].join('|'), cells = match ? xgMaps.get(key) : null;
   if (match && !cells) startXgMap(key);
   if (cells && !cells.image) {
     // One small picture per end, a pixel per spot, drawn stretched and smoothed (as the heat map is).

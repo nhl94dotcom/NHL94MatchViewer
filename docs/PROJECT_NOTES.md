@@ -920,9 +920,10 @@ docs/EXTENDING.md). Before this the helper saw them running and never a game (20
   fight as their call, checks for / against mirror each other. Not done yet: the viewer shows neither; the 2 MB
   teams threshold (Emulator.teams, 32) is high for a 28-team 2 MB build (only matters if its menus use ids 28-31).
 - **Speed:** an SA-1 build runs the game logic 60 frames a second (the retail game 30; its physics scale with the
-  step, its AI and collisions run twice as often). Game seconds are unchanged. The SNES xG model's step and goalie
-  timing are the retail game's, so an SA-1 game gets no xG (Deserve to Win uses its fallback rates) until the model
-  is checked there.
+  step, its AI and collisions run twice as often). Game seconds are unchanged. SNES xG on an SA-1 game (2026-11-10):
+  the model plays out a frame at a time (`xg_snes.play_out` step 1; every timer it uses counts by d7 / timestep in the
+  SA-1 code, and the goalie's hot points and save moves are the retail bytes); the match file says `sa1` and the
+  viewer's map follows it. Checked on the game's own shots: docs/STUDY_NOTES.md "SNES xG for SA-1 games: chunk 2".
 - **Checked:** tests/helper_snes_sa1.py runs the 32-team SA-1 ROM in a copy of the Snes9x core in its own process and
   lets the helper find it as it finds RetroArch: 2026-11-07_2221_CAR-VGK recorded whole, converted, every count as the
   game's (check_matches), every animation word a retail one. A retail SNES recording converts byte for byte as before.

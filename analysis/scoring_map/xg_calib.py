@@ -19,6 +19,8 @@ drops a shot not yet decided. The model is asked as add_expected_goals asks it (
 SAMPLES draws): "prod" with the recordings' goalie blur, "exact" without it (the state here is exact).
 
 python xg_calib.py genesis|snes RUN [minutes] [categories]   -> paths.RUNS / RUN / xg_calib_<system>.jsonl
+With NHL94_SNES_SA1=<an SA-1 build> (paths.py) the SNES shots are that build's (its own states, snes_make_states.py),
+and the model plays them out at its step, 1 frame (2026-11-10).
 One line per shot: category, job, the shot's order since the last rewind (0 the first: an EA follow-up is 1), the
 inputs, goal (0/1) and the model's two values. Gentle mode, a pool per category (one emulator per process)."""
 import itertools
@@ -198,8 +200,11 @@ class Watcher:
             d = p["aim"] if p["aim"] is not None and 0 <= p["aim"] <= 8 else 8
             tx, tz = xs.AIM[d]
             G = xs.Goalie(self.data, gx, gy, gvx, gvy, p["facing"], p["frame"], w, agl, spd, aid)
+            # an SA-1 build (NHL94_SNES_SA1) plays out a frame at a time, its game step (2026-11-10)
+            step = 1 if getattr(self.e, "sa1", False) else xs.STEP
             goals = sum(xs.play_out(p["px"], p["py"], tx, p["gl"], tz, max(1.0, p["speed"] / 136), p["sha"],
-                                    (p["sha"] + 1) / (p["sha"] + 16), G, rng) == "goal" for _ in range(SAMPLES))
+                                    (p["sha"] + 1) / (p["sha"] + 16), G, rng, step=step) == "goal"
+                        for _ in range(SAMPLES))
             xs.GOALIE_SPREAD = 2.0
         return goals / SAMPLES
 

@@ -25,3 +25,10 @@ SNES_CORE_SOURCE = RETROARCH / "cores" / "snes9x_libretro.dll"
 SNES_CORE = WORK / "core" / "snes9x_libretro.dll"
 SNES_STATE_TOP = WORK / "snes_top.state"
 SNES_STATE_BOTTOM = WORK / "snes_bottom.state"
+# NHL94_SNES_SA1=<an SA-1 build> (2026-11-10, SNES xG for SA-1 games): every SNES tool on that ROM instead, with its
+# own states (snes_make_states.py makes them); snes_emu routes its moved RAM to BW-RAM, xG plays out at step 1
+import os as _os
+if _os.environ.get("NHL94_SNES_SA1"):
+    SNES_ROM = Path(_os.environ["NHL94_SNES_SA1"])
+    SNES_STATE_TOP = WORK / f"snes_sa1_{SNES_ROM.stem}_top.state"
+    SNES_STATE_BOTTOM = WORK / f"snes_sa1_{SNES_ROM.stem}_bottom.state"

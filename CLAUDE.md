@@ -163,6 +163,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       lost-assist bug reproduced, and its fix), `snes_vault_hacks_test.py` (the
       NHL94SNESVault hacks: Edit Lines lists, max boost display, L+R goalie pull, the computer's pull),
       `a130f1_test.py` (Genesis save memory switching on big ROMs).
+    - `team_move_check.py ORIGINAL MOVED N OUT H:V ...` (teams moved to new numbers: every team screen and the rosters, the
+      original against the moved ROM with the numbers mirrored); `xg_calib_rescore.py RUN STEP` (an xg_calib run scored again
+      by today's SNES model; `NHL94_SNES_SA1=<ROM>` runs the SNES tools on an SA-1 build).
     - `menu_shots.py ROM OUT SCRIPT`: screenshots of the game's own screens from power-on by a script of presses, for
       edits outside play (photos, logos). Genesis Plus GX's video memory is read from its saved state (VRAM_AT in
       gen_score_logo_check.py, little-endian words); Snes9x's from memory id 3.
@@ -173,8 +176,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   $E0-$FF sharing one base, cartridge header `ESAG`). Words read little-endian; a byte at address A is at A XOR 1.
 - SNES: Snes9x's memory map (one pointer per 4 KB); work RAM bank $7E, cartridge at bank $80 + $8000.
   SA-1 / 2 MB builds: low RAM in BW-RAM, laid back over work RAM by `snes.Emulator.read`; ROM tables and animation
-  words found by `tools/systems/snes_layout.py` (match files keep the retail words); no SNES xG on SA-1 games yet (60
-  frames a second). docs/PROJECT_NOTES.md "SNES SA-1 and 2 MB builds".
+  words found by `tools/systems/snes_layout.py` (match files keep the retail words); SNES xG on SA-1 games plays out a
+  frame at a time (60 frames a second; `xg_snes.play_out` step 1, match `sa1`). docs/PROJECT_NOTES.md "SNES SA-1 and 2 MB builds".
 - Sampled about 60 times a second on our own clock (not frame-locked). Netplay rollback samples are dropped by the
   frame counter (Genesis $B03E, SNES $0764). Pauses / instant replays are left out (Genesis screen $FFF7 = 0 is play;
   SNES sflags $15D8). Intermission highlights of other games (Genesis) are left out by team ids.
@@ -243,4 +246,4 @@ export_match.py).
 
 - Settled, don't redo: SNES faceoffs (timing, SNES_MECHANICS 9), SNES pass speed (by distance, no rocket pass), SNES
   hooks / holds / pokes (7.3), upends (7.2), goalie poke / dive (5.3), puck physics (7.8), the crowd (both systems).
-- Open: the open-questions sections of both mechanics docs; some studies need more games; no SNES xG on SA-1 games.
+- Open: the open-questions sections of both mechanics docs; some studies need more games; the SNES xG model is low on walk-ins (both builds).

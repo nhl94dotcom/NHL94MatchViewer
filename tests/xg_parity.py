@@ -126,29 +126,30 @@ def check_xg_snes(html):
     fresh = json.loads(json.dumps(xg_snes.map_tables(rom)))
     print(f"SNES xG ROM tables in the viewer: {'same as the ROM gives' if embedded == fresh else 'DIFFERENT from the ROM'}")
     js = block(html, "const XG_SNES = (rom => {", "// ---- end of the SNES xG model")
-    js_out = node("const XG_SNES_ROM = " + json.dumps(fresh) + ";\n" + js + f"""
+    for step in (2, 1):                          # the retail game's step, and an SA-1 build's (2026-11-10)
+        js_out = node("const XG_SNES_ROM = " + json.dumps(fresh) + ";\n" + js + f"""
 const model = XG_SNES(XG_SNES_ROM), out = [];
-for (const [px, py, top] of {json.dumps(SPOTS)}) out.push(model.spot(px, py, !!top, {{speed: {SNES_SHOT['speed']}, sha: {SNES_SHOT['sha']}, goalie: {json.dumps(SNES_GOALIE)}, n: {N}}}).map(r => r.xg));
+for (const [px, py, top] of {json.dumps(SPOTS)}) out.push(model.spot(px, py, !!top, {{speed: {SNES_SHOT['speed']}, sha: {SNES_SHOT['sha']}, goalie: {json.dumps(SNES_GOALIE)}, n: {N}, step: {step}}}).map(r => r.xg));
 console.log(JSON.stringify(out));""")
-    data, rng, worst = xg_snes.RomData(rom), random.Random(2), 0
-    g = SNES_GOALIE
-    pp = max(1, SNES_SHOT["speed"] / 136)
-    perfect = (SNES_SHOT["sha"] + 1) / (SNES_SHOT["sha"] + 16)
-    for (px, py, top), js_aims in zip(SPOTS, js_out):
-        gl = 264 if top else -264
-        sx, sy = xg_snes.set_spot(px, py, top)
-        f = xg_snes.vtoa(px - sx, py - sy)
-        facing = (4 if top else 0) if f == 8 else f
-        goalie = xg_snes.Goalie(data, sx, sy, 0, 0, facing, data.anim(0xE0FE, facing)[0][0], g["weight"], g["agility"], g["speed"], g["aidef"])
-        for d, b in enumerate(js_aims):
-            tx, tz = xg_snes.AIM[d]
-            a = sum(xg_snes.play_out(px, py, tx, gl, tz, pp, SNES_SHOT["sha"], perfect, goalie, rng) == "goal" for _ in range(N)) / N
-            noise = 3 * math.sqrt(max(a * (1 - a), b * (1 - b), 1 / N) / N) * math.sqrt(2)
-            worst = max(worst, abs(a - b) / noise)
-            if abs(a - b) > noise:
-                print(f"  SNES xG differs at ({px}, {py}) aim {d}: python {a:.3f}, viewer {b:.3f}")
-    print(f"SNES xG: worst difference {worst:.2f} of the noise allowance ({'ok' if worst <= 1 else 'CHECK'})")
-
+        data, rng, worst = xg_snes.RomData(rom), random.Random(2), 0
+        g = SNES_GOALIE
+        pp = max(1, SNES_SHOT["speed"] / 136)
+        perfect = (SNES_SHOT["sha"] + 1) / (SNES_SHOT["sha"] + 16)
+        for (px, py, top), js_aims in zip(SPOTS, js_out):
+            gl = 264 if top else -264
+            sx, sy = xg_snes.set_spot(px, py, top)
+            f = xg_snes.vtoa(px - sx, py - sy)
+            facing = (4 if top else 0) if f == 8 else f
+            goalie = xg_snes.Goalie(data, sx, sy, 0, 0, facing, data.anim(0xE0FE, facing)[0][0], g["weight"], g["agility"], g["speed"], g["aidef"])
+            for d, b in enumerate(js_aims):
+                tx, tz = xg_snes.AIM[d]
+                a = sum(xg_snes.play_out(px, py, tx, gl, tz, pp, SNES_SHOT["sha"], perfect, goalie, rng, step=step) == "goal"
+                        for _ in range(N)) / N
+                noise = 3 * math.sqrt(max(a * (1 - a), b * (1 - b), 1 / N) / N) * math.sqrt(2)
+                worst = max(worst, abs(a - b) / noise)
+                if abs(a - b) > noise:
+                    print(f"  SNES xG (step {step}) differs at ({px}, {py}) aim {d}: python {a:.3f}, viewer {b:.3f}")
+        print(f"SNES xG, step {step}: worst difference {worst:.2f} of the noise allowance ({'ok' if worst <= 1 else 'CHECK'})")
 
 if __name__ == "__main__":
     html = (ROOT / "viewer.html").read_text(encoding="utf-8")
