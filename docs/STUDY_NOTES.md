@@ -2483,6 +2483,29 @@ Game Setup; video and colour memory from the cores).
   letters his suit shows through the box. (The first 180 frames are the fade-in, and the video memory still holds
   some of the last screen then.)
 
+## NOSE4Web's open-net one-timer fix, played (2026-11-10, e3de67f: nhl94_open_net_fix.bin)
+
+The fix (from GENESIS_SHOOTING 4.4): shotdiradj's `clr.w d0` at $C5FC -> `moveq #8,d0`, so a one-timer whose
+sightline through the goalie misses the net is aimed at the middle, mid-height (the pulled-goalie aim) instead of high
+middle. The build's other changes against retail are NOSE4Web's usual ones (the header checksum, the boot's ROM-sum
+jsr at $300 NOPed, the sum routine's room at $FFAC0 cleared). `gen_open_net_fix_test.py RETAIL BUILD [N]`: the one-timer
+harness (test ROM, and the build laid over it), cross-slot passes at 44, 64, 94 and 124 from the goal line (7 setups:
+one at 44 never gave a one-timer), the goalie left where he settled or, just before the strike, put still out of the
+sightline (wide of the far post on the goal line, or out in front to the shooter's side); 20 seeds each.
+
+| Goalie at the strike | Aim, retail -> fix | Goals, retail | Goals, fix |
+|---|---|---|---|
+| In position | 2 / 6 -> 2 / 6 (all 140) | 39 / 140 | 39 / 140 (shot for shot the same) |
+| Out wide | 0 -> 8 (all 140) | 78 / 140 (56%) | 120 / 140 (86%) |
+| Out front | 0 -> 8 (all 140) | 78 / 140 (56%) | 120 / 140 (86%) |
+
+By depth at the open net (retail -> fix): 44: 15 / 20 -> 20 / 20; 64: 22 / 40 -> 39 / 40; 94: 21 / 40 -> 34 / 40; 124:
+20 / 40 -> 27 / 40 (the worked-out table in 4.4: 61 / 58 / 57 / 55% high middle, 100 / 100 / 86 / 73% middle). Computer
+shooters weren't played: they reach the same `.setpassdir` with the same d0 (shotdiradj runs for them on every shot,
+for a person only on one-timers), so at an open net they now aim at the middle too, and the build changes nothing else
+in shooting. In the league's recorded games the high-middle aim came up 14 times on one-timers (8 goals); tonight's
+four (2026-11-10) had 1 goal, 1 save, Simpson's over the bar at 18 (VAN-EDM P3 0:17) and Recchi's high and wide.
+
 ## Genesis forum hacks, from the code (2026-11-09, for NOSE4Web; not played)
 
 - **Injuries (topic 33962).** FallDown (collide94.asm, the hit code before .22 and setInjuryType):
