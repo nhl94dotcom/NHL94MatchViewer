@@ -278,9 +278,29 @@ and shot type for each rating pair; the best aim 64):
   the far side; against a retail starter, standing, it is mostly the aim that counts. The skating far-post slapshot and
   one-timers, the shots people really score with, are in the tables above.
 
-**Steals** (`steals`): not measured yet. A pad-1 skater poking a computer carrier standing still started no steal roll
-in any of 60 tries a setting (the carrier's puck sat out of reach, or the stick test needs more than reach); the
-carrier's own passes were the only losses. The steal formula above stands (Code).
+**Steals** (`passby`, 2026-11-11): the pad-1 skater carries the puck up the ice past an away skater held in place
+facing him, 200 pass-bys a setting (an earlier test with both standing still never started a steal roll: the stick has
+to come within 6 units of the puck, puckstick's distance^2 $24). Every loss was a stick steal (both no-touch timers set
+to Stk / 2 + 20, no checks). With the stealer straight in the carrier's path (offset 0; 4 to the side gave much the same, the carrier's Stk 147 -> 139 stolen of 200):
+
+| Working Stk (rating) | Carrier's Stk moved: stolen of 200 | its mean steal frame | Stealer's Stk moved: stolen of 200 | its mean steal frame |
+|---|---|---|---|---|
+| 10 (2) | 150 | 100.4 | 150 | 101.6 |
+| 15 (3) | 150 | 101.0 | 150 | 101.0 |
+| 20 (4) | 150 | 101.6 | 152 | 100.2 |
+| 25 (5) | 148 | 102.5 | 153 | 99.7 |
+| 30 (6) | 147 | 102.8 | 152 | 98.8 |
+
+- **Once a stick is on the puck, the puck goes, whatever the ratings.** The roll is 3 in 34-44 each frame of contact,
+  and a stick lying on the puck stays there for many frames, so nearly every contact ends in a steal (about 75% of the
+  pass-bys; the others never touched). Stickhandling moves **when** it goes: a carrier's step keeps the puck about
+  0.6 frames longer (10 ms (real)), a stealer's step takes it about 0.7 frames sooner; out of 200, a step changes one
+  steal at most.
+- **So Stickhandling barely protects the puck from a stick in its path**; keeping the puck is keeping it away from
+  sticks (Speed, Agility, the carrier's path), which a person controls. That fits the league fit's small weight on
+  Stickhandling (a weight of 0.10 in the forwards' value).
+- **A quirk:** after a steal both players are kept off the puck for Stk / 2 + 20 frames (energy-adjusted), so a high
+  Stickhandling **lengthens** the stripped carrier's wait (and the stealer's) by about 2.5 frames a step.
 
 ### Chunk C, played (2026-11-11, `analysis/scoring_map/gen_awareness_cvc.py`, one process)
 
@@ -449,7 +469,7 @@ Gilmour, Kovalenko, Bradley) the other way round. A league value has to be per s
 
 ### Gaps for the next chunks
 
-- **B (played, done above but the steals):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
+- **B (played, done above):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
   slapshots from the slot, the circles and the point by Power and Accuracy, against a goalie of retail starter quality
   (working Agility 20); steals and keeping the puck by Stickhandling, poked and checked.
 - **C (played):** Offensive and Defensive Awareness in whole games, the computer against itself, one team's Awareness

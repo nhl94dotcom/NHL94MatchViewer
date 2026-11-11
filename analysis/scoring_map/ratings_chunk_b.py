@@ -14,7 +14,16 @@ python ratings_chunk_b.py OUT races
 python ratings_chunk_b.py OUT steals [N]
     Pokes: an away carrier standing still with the puck, the pad-1 skater beside him (stick in reach, bodies apart)
     tapping B, N seeds: how often the puck comes loose, by the carrier's Stickhandling (the poker at 15) and by the
-    poker's (the carrier at 15). -> OUT/steals.json"""
+    poker's (the carrier at 15). -> OUT/steals.json  (No steal roll ever started: the stick point never came within
+    puckstick's range of the puck, 6 units, distance^2 $24.)
+python ratings_chunk_b.py OUT passby scan|run [N]
+    Steals as a carrier skates past (2026-11-11): the pad-1 skater (record 2) with the puck from (0, -150), UP held,
+    past an away skater (record 8) held at (DX, 0) facing down (his position and speed set every frame; his own
+    animations, pokes among them, left to the game), everyone else parked. A try ends when the puck leaves the carrier
+    (puckc $B7AA, a steal or a poke) or he passes y 80. scan: DX -28..28 by 4, Stk 15 / 15, N seeds; run: the two
+    offsets with the most losses, the carrier's working Stk 10-30 (the stealer at 15) and the stealer's (the carrier at
+    15), N seeds; each steal's frame kept (the contact lasts many frames, so the rating moves how soon the puck
+    goes more than whether). -> OUT/passby_scan.json / passby.json"""
 import json
 import os
 import random
@@ -174,6 +183,95 @@ def steals(out, n):
     (out / "steals.json").write_text(json.dumps(res))
 
 
+def passby(out, what, n):
+    gentle()
+    from harness import Harness, rec, PUCKC
+    from paths import STATE_TOP
+    h = Harness(state=STATE_TOP)
+    e = h.e
+    me, d = rec(2), rec(8)
+    SEED = 0xD066
+
+    def park():
+        for k in range(12):
+            if k in (2, 8, 11):
+                continue
+            e.setw(rec(k), -100 + 18 * k)
+            e.setw(rec(k) + 0x14, -230)
+            for off in (0x28, 0x2A, 0x2C):
+                e.setw(rec(k) + off, 0)
+
+    def hold_d(dx):
+        e.setw(d, dx)
+        e.setw(d + 0x14, 0)
+        for off in (0x28, 0x2A, 0x2C):
+            e.setw(d + off, 0)
+
+    def setup(dx, stk_c, stk_d):
+        e.unserialize(h.base)
+        for _ in range(40):                        # held still a while: the y-sorted list catches up
+            park()
+            hold_d(dx)
+            e.setb(d + 0x55, 4)                    # facing down, at the carrier
+            e.setw(me, 0)
+            e.setw(me + 0x14, -150)
+            for off in (0x28, 0x2A):
+                e.setw(me + off, 0)
+            e.setw(PUCKC, 2)
+            e.setb(me + 0x71, stk_c)
+            e.setb(d + 0x71, stk_d)
+            e.run(1)
+        return e.serialize()
+
+    def tries(dx, stk_c, stk_d):
+        base = setup(dx, stk_c, stk_d)
+        lost, frames = 0, []
+        for k in range(n):
+            e.unserialize(base)
+            e.setw(SEED, (1000 + 7919 * k) & 0xFFFF)
+            e.setw(SEED + 2, ((1000 + 7919 * k) >> 4) | 1)
+            for f in range(200):
+                park()
+                hold_d(dx)
+                e.setb(me + 0x71, stk_c)
+                e.setb(d + 0x71, stk_d)
+                e.run(1, hold=["UP"])
+                if e.w(PUCKC) != 2:
+                    lost += 1
+                    frames.append(f)
+                    if os.environ.get("PASSBY_DEBUG"):
+                        print(f"  dx {dx - 0x10000 if dx > 0x7FFF else dx} f{f}: puckc ${e.w(PUCKC):04X}, nopuck carrier "
+                              f"{e.b(me + 0x5E)} stealer {e.b(d + 0x5E)}, anim carrier ${e.w(me + 0x58):04X} stealer "
+                              f"${e.w(d + 0x58):04X}, away checks {e.w(0xCA32 + 0x10)}", flush=True)
+                    break
+                y = e.w(me + 0x14)
+                if 80 < y < 0x8000:
+                    break
+        return lost, frames
+
+    if what == "scan":
+        res = {}
+        for dx in range(-28, 29, 4):
+            res[dx] = [tries(dx & 0xFFFF, 15, 15)[0], n]
+            print("dx", dx, res[dx], flush=True)
+            breathe()
+        (out / "passby_scan.json").write_text(json.dumps(res))
+        return
+    scan = json.loads((out / "passby_scan.json").read_text())
+    best = sorted(scan, key=lambda k: -scan[k][0])[:2]
+    res = {}
+    for dx in map(int, best):
+        for who, levels in (("carrier", [(5 * s, 15) for s in (2, 3, 4, 5, 6)]),
+                            ("stealer", [(15, 5 * s) for s in (2, 3, 4, 5, 6)])):
+            for stk_c, stk_d in levels:
+                lost, frames = tries(dx & 0xFFFF, stk_c, stk_d)
+                res[f"dx {dx} {who} carrier {stk_c} stealer {stk_d}"] = [lost, n, frames]
+                print(dx, who, stk_c, stk_d, lost, n, "steal frame: mean", round(sum(frames) / len(frames), 1),
+                      "first", min(frames), flush=True)
+                breathe()
+    (out / "passby.json").write_text(json.dumps(res))
+
+
 def main():
     out, what = Path(sys.argv[1]), sys.argv[2]
     out.mkdir(parents=True, exist_ok=True)
@@ -184,6 +282,8 @@ def main():
         races(out)
     elif what == "steals":
         steals(out, int(sys.argv[3]) if len(sys.argv) > 3 else 40)
+    elif what == "passby":
+        passby(out, sys.argv[3], int(sys.argv[4]) if len(sys.argv) > 4 else 40)
     elif what == "report":
         report_shots(json.loads((out / "shots.json").read_text()))
 
