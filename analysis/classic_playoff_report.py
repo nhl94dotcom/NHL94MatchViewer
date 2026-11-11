@@ -220,6 +220,15 @@ def build(league):
             f"{s['winner']} ({ORD(seed[s['winner']])}) over {l_} ({ORD(seed[l_])})" for s, l_ in upsets) + ".")
     if sweeps or long_:
         brief.append(f"{len(sweeps)} sweep{'s' if len(sweeps) != 1 else ''}, {len(long_)} series to the last game.")
+    # coaches placed above a playoff coach who didn't play in the playoffs (2026-11-10: SNES B's best regular season,
+    # 26-5, sat out): the seeds are regular-season places, not a league's own seeding
+    in_po = {c for s in ss for c in s["teams"]}
+    lowest = max((seed[c] for c in in_po if c in seed), default=0)
+    absent = [c for c in order[:lowest] if S.base_name(c) not in in_po]
+    if absent:
+        brief.append("Not in the playoffs though placed above a coach who was: " + ", ".join(
+            f"{c} ({ORD(order.index(c) + 1)}, {tab[c]['W']}-{tab[c]['GP'] - tab[c]['W'] - tab[c]['T']} in "
+            f"{tab[c]['GP']} games)" for c in absent) + "; the seeds here are regular-season places.")
     unf = [s for s in main if not s["finished"]]
     if unf:
         brief.append("Not finished in the data: " + "; ".join(res(s) for s in unf) + ".")
