@@ -170,7 +170,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       (pads 3 and 4 through EA's 4-Way Play: `emu.Emu(fourway=True)`), `gen_assist_repro.py` / `snes_regain_assist_test.py` (the
       lost-assist bug reproduced, and its fix), `snes_vault_hacks_test.py` (the
       NHL94SNESVault hacks: Edit Lines lists, max boost display, L+R goalie pull, the computer's pull),
-      `a130f1_test.py` (Genesis save memory switching on big ROMs).
+      `a130f1_test.py` (Genesis save memory switching on big ROMs); `gen_menu_compare.py` (Game Setup's lines and choices,
+      two ROMs), `gen_fight_check.py` (chaos's fighting patch: fights in computer games), `gen_records_check.py` (saved
+      records across a reset).
     - `team_move_check.py ORIGINAL MOVED N OUT H:V ...` (teams moved to new numbers: every team screen and the rosters, the
       original against the moved ROM with the numbers mirrored); `xg_calib_rescore.py RUN STEP` (an xg_calib run scored again
       by today's SNES model; `NHL94_SNES_SA1=<ROM>` runs the SNES tools on an SA-1 build).

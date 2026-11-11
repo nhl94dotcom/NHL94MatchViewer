@@ -2493,6 +2493,37 @@ Game Setup; video and colour memory from the cores).
   rows 0-1 and 3-7 unchanged. The screenshots outside the rectangle differ only on Ron Barr's old cells (3,171 pixels),
   but for three letters typed a frame apart on the 1 MB build's first sample.
 
+## chaos's fighting patch as NOSE4Web puts it in, checked (2026-11-11, d864683: nhl94_fighting.bin, CDL_Season_12_fighting.bin)
+
+Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Season_12.bin):
+
+- **The menu** (`gen_menu_compare.py ORIGINAL EDITED OUT [--fourway]`: each Game Setup line's choices cycled with RIGHT,
+  the cursor's row compared): every line's caption and choices the same as the original's (retail: Play Mode 4, Players
+  5, both team lines 28, Period Length 3, Goalies 3, Line Changes 3; CDL: both team lines 24, Period Length 4; with the
+  4-Way Play adaptor Players has 7 on both), the starting Away team aside (picked at random at power-on), and Line Changes
+  carrying the "more below" arrow; then Fighting: On, On - Arcade Mode, Off. Penalties cycles Off / On / On, Except
+  Off-sides (screenshots). (The first build, before d864683, showed "Home" / "Away" and "Goalie Ctrl" for "Team 1" / "Team
+  2" and "Goalies": chaos's own menu.)
+- **The title and credits**: the credit roll rebuilt from the row where text enters, frame by frame, the same on both
+  (422 rows); the title the same picture.
+- **Fights** (`gen_fight_check.py ROM OUT --hot`: the computer against itself, Penalties On Except Off-sides, 5-minute
+  periods, every player's fighting rating, +$74, set to 14 in RAM; screenshots while a player has pf2fight, +$63 bit 0):
+  retail build six fights in a game (both players a fighting major each, $26 / $28; two instigating minors), the game
+  played to its end; CDL build two in the time it ran (into overtime at 3-3). The fight banner ("20 Luc Robitaille LA vs
+  26 Gary Leeman MTL"), the referee inset and the gathering play; the scoreboard shows 5:00 Fighting for both. About 23 s
+  (real) from the fight flag to the majors.
+- **Saved records** (`gen_records_check.py ROM OUT [--names]`: User Records on, a whole game, the save memory read
+  after it and after `retro_reset` and a boot to Game Setup; CDL starts at "Two - Head to Head", so Players set to One -
+  Home and a name entered): retail original and build both wrote 46 bytes of records, CDL original 30 and CDL build 24
+  (different games), and every one was the same byte for byte after the reset (the checksum held, nothing formatted).
+- **Rosters**: a Fighting page after Checking on the Team Roster, 0-100 (14 a point: 0, 14, 28, 42 ...); Edit Lines'
+  player list pages the same way.
+- **Shootout** (Play Mode 4) starts and plays on all four ROMs; **the reverse-angle replay** (pause, Instant Replay,
+  START for the banner, C) turns the rink round on all four, and play carries on after.
+- **CDL's own changes**: every CDL change against retail is still there, except one routine CDL kept at $1E2B5A (called
+  by `jsr`s at $1018C, $1494E and $F6CE8), which NOSE4Web moved unchanged to $1ED032 (free, all $FF before) and
+  repointed the three calls to; chaos's save-memory code at $1F9A00 went into free space in CDL too.
+
 ## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
 
 The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at
@@ -2525,6 +2556,11 @@ both are held still 8 frames before the burst.
   Stickhandling, a bobble, a puck off his body, a bounce-off or a d-pad turn with the puck 8-10, the goalie 8.
 - **One-timers:** FallDown records the pair before its one-timer exits, sets no nopuck there and counts nothing, so a
   one-timer contact can now call FallDown again on later frames; each call exits the same way.
+- **The second version (774efea: the bench falls, $193E / $1A00, blocked too)**: everything above unchanged on the
+  remade build. But no checker can reach a man in a bench fall in the first place: the check carries him over the boards
+  into the bench within 10 frames (x 123 -> 136 at the right boards), and the checker stops at the boards (x 119), 17
+  units away, past the 16-unit collision reach, for the whole fall (150 frames). So the extra test never comes into play;
+  it does no harm. (The gap suggested from the animation's length alone, before checking where he is during it.)
 - **The SNES has no pair block** (its FallDown, `src/routines/collide/FallDown.asm`, goes from the animation tests
   straight to the stumble roll).
 
