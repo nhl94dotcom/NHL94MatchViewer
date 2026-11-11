@@ -118,8 +118,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   its named table, `coach_guide.py`'s coach pages, `coach_history.py` and `coach_movers.py` go to that private folder
   only); handouts `classic_team_guide.py` (`docs/TEAM_GUIDE_*.md`), `classic_player_guide.py`
   (`docs/PLAYER_GUIDE_*.md`), `classic_draft_guide.py` (`docs/DRAFT_GUIDE_CLASSIC.md`); `coach_team_levels.py`;
-  `league_ratings.py` (`docs/LEAGUE_RATINGS.md`; method `docs/COACH_RATING.md`); `league_value.py` (a 0-99 league value per
-  Genesis player from the measured rating effects, checked on the teams' strength: RATING_VALUES chunk D). `classic_season_report.py LEAGUE COACH` (one coach's season against
+  `league_ratings.py` (`docs/LEAGUE_RATINGS.md`; method `docs/COACH_RATING.md`); `league_value.py [genesis|snes]` (a 0-99 league
+  value per player from the measured rating effects, checked on the teams' strength: RATING_VALUES chunk D). `classic_season_report.py LEAGUE COACH` (one coach's season against
   their league; `classic_season_extras.py LEAGUE` prints a league's best single games, rivalries, home / away and rating changes for a written story; `classic_story_material.py LEAGUE` all of a story's material at once, with the leaders' weekly records and shutouts by goalie) and `classic_league_report.py PREFIX|LEAGUE [--coaches]` (every league of a season: standings, groups,
   leaders, head to head, notable games and a good word for every coach), both to that private folder. `python analysis/update_all.py`
   rebuilds them all in order and ends with `tests/check_league_outputs.py` (`--list`, `--from NAME`, `--tests`). A

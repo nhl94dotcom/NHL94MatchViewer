@@ -369,6 +369,48 @@ scores), and Weight's size from only 22 teams; the defencemen's value is offence
 while the computer has him (a person's goalie always has the longest reach). Chunk C (the Awareness ratings) may move
 the defencemen.
 
+### The SNES league value (2026-11-11, `analysis/league_value.py snes`)
+
+The same build from the SNES Classic leagues (NHL94_Classic's retail rosters):
+
+- **Forwards:** goals a game a step (LEAGUE_RESULTS): Speed +0.18, Shot Power +0.16, Shot Accuracy +0.14, Agility
+  +0.14, Stickhandling +0.14, **Weight +0.08** (heavier forwards score a little more).
+- **Defencemen:** points a game a step (PLAYER_GUIDE_SNES): Stickhandling +0.182, Speed +0.176, Off. Awareness +0.102,
+  Weight +0.067, Checking +0.057, Agility -0.027, Shot Power -0.016, Shot Accuracy -0.014, Pass Accuracy -0.087.
+- **Goalies:** +0.31 save-% points an Agility step, on 11.6 shots a game: **0.04 goals saved a game a step**, a seventh
+  of the Genesis's. The 40-99 scale still spreads them (Belfour and Roy 99, Fuhr 84, Agility 4 at 70), but on the SNES a
+  goalie's rating is worth little: read the goalie values as an order, not a size.
+
+**Weight works the other way on the SNES.** The SNES has no weight bug (everyone checks on one formula, base 120 in 16
+bits, and the heavier checker does a little better: SNES_MECHANICS 7), and Weight costs less acceleration. Heavier
+forwards score a little more, and the teams agree: the regular forwards' average Weight takes **+1.10 +- 0.39 points of
+win chance a Weight point** (New Jersey, Pittsburgh and the Rangers, the strongest, have some of the heaviest
+forwards). The value keeps the scoring's +0.08: the SNES forwards' scoring part doesn't predict the teams (below), so
+the Genesis's way of turning the team coefficient into a per-player value doesn't work here.
+
+**The team check can't settle it on the SNES.** Neither set of parts predicts a team it hasn't seen (left one team out:
+league value -0.29, Overall -0.16; with the forwards' Weight 0.09 and 0.03). SNES team strengths repeat poorly
+(COACH_RATING: two halves of the leagues agree at 0.38, the Genesis 0.77), so 22 SNES teams can't confirm or refute
+either number; the SNES value rests on the players' own results alone.
+
+**SNES forwards with 150+ league games (65), the top 20:** Mogilny 99 (Overall rank 2), Lemieux 99 (1), Yzerman 94 (3),
+Klima 93 (35), Selanne 93 (7), Roenick 92 (8), Lindros 92 (18), Sandstrom 91 (25), Gartner 91 (16), Hull 91 (23), Bure
+91 (6), Neely 90 (10), Ciccarelli 90 (24), Robitaille 90 (14), Modano 89 (21), Carson 89 (36), Turgeon 89 (22), Fedorov
+88 (17), Richer 87 (54), Messier 87 (15).
+
+- **Overall's biggest overrates on the SNES are the light playmakers:** Doug Gilmour (rank 9 -> 49), Theoren Fleury (11
+  -> 50), Pat LaFontaine (5 -> 42), Steve Larmer (12 -> 38), Adam Oates (4 -> 24): nearly the Genesis's list of risers.
+- **Its biggest underrates:** Stephane Richer (54 -> 19), Petr Klima (35 -> 4), Vladimir Ruzicka (61 -> 32), Owen Nolan
+  (57 -> 36), Russ Courtnall (47 -> 26), Jimmy Carson (36 -> 16).
+
+**SNES defencemen with 150+ games (42), the top 12:** Coffey 99 (Overall rank 4), Bourque 95 (1), Zalapski 93 (6),
+Iafrate 92 (7), Blake 91 (14), Stevens 91 (8), Chelios 90 (2), Steve Smith 90 (13), Hatcher 89 (17), Housley 88 (3),
+Manson 87 (10), Patrick 85 (19). Overrated by Overall: Brian Leetch (9 -> 36), Gary Suter (5 -> 17).
+
+**So the same player can be worth very different things on the two systems.** The heavy stars (Lemieux, Lindros,
+Neely, Messier) are near the top on the SNES and near the bottom on the Genesis; the light, quick forwards (Fleury,
+Gilmour, Kovalenko, Bradley) the other way round. A league value has to be per system.
+
 ### Gaps for the next chunks
 
 - **B (played, done above but the steals):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
