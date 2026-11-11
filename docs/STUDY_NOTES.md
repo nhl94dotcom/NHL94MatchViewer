@@ -2674,6 +2674,28 @@ third) and then repeats the test; $1725C and $7C4C original; the end code as bef
 - **CDL build** (one home shot put in, `--force`): the same, a final 2-1, the settings unchanged; **the plus-minus log
   again kept the shootout goal** (length $000E), as on the after-overtime build.
 
+### SNES: free RAM and calling PlayShootout mid-game (2026-11-11, for NOSE4Web's SNES shootouts)
+
+`snes_ram_use_check.py ROM OUT game|shootout` (from the first frame of play: every byte not zero then, or changed
+since, through a whole computer game with every pause-menu screen (Instant Replay too), the intermissions and the
+screens after it; and a Shootout-mode game from power-on, three complete shootouts): never written, runs of $800+:
+- **Retail NHL94.smc and NHL94_Classic.smc:** $7E:E68C-$EFFF ($974), **$7E:F033-$FFFF ($FCD)**, $7F:F3F6-$FFFF.
+- **SA-1 builds** (nhl94snes_SA1.sfc, nhl94_2026.sfc; the game runs on the SA-1, which sees only I-RAM and BW-RAM):
+  BW-RAM free on both: **$40:46F4-$40:5FFF** ($190C; $40:46F4-$47F3 is the end of the moved $37F4-$47F3 block, so
+  $40:4800-$40:5FFF, $1800, is the safe part), $40:BFFE-$40:E67B ($267E) and $40:E856 up (bank $41 holds LineSave,
+  written when lines are saved: not seen in the tour, keep out). Work RAM $7E:F03F-$FFFF is free there too, but the SA-1
+  can't reach it.
+- **Calling PlayShootout from PeriodOver** (the disassembly): it is a whole game of its own: StartGame_go (zeroes
+  $0AD7-$1A10 and $7E:30F4-$3478, the scoring summary `ScoreSum` $313C included, clears the team stats, reloads both
+  teams' lines, re-rolls the other games' scores (InitScores), resets goalie modes, timeouts, `lastperiod` $1EAD,
+  `newperiod`, the replay pointer, counts `gamesstarted` $7E:347A), StartPer (its setupice loads the game sound driver
+  itself), the pause menu as the shootout's set-up screen, then turns until the two tmscores differ after five rounds:
+  the shootout goals are counted in tmscore, so the winner must be read before the saved block goes back. Each turn
+  sets gmode itself (gmdir for the away team: no ends problem on the SNES), and gmode ($15D4) is inside the saved
+  block. Opening2's path to it sets only the stack, the data bank, the menu music, `jmlvector` and CheckPAL, all already
+  in place in a game. PeriodOver can't be re-entered from inside the shootout in practice: every whistle there goes
+  through SetPA, which sets `shootoutstop`, and puckfaceoff then ends the turn before its clock-out jump.
+
 ### Both choices remade (2026-11-11, NOSE4Web cb1ba29: the plus-minus log's length word kept too)
 
 The start code adds `move.w ($DEF4).w,($F74E).w` after the scoring summary's length ($F74C); the end code puts it back
