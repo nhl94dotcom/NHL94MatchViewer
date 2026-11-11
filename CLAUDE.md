@@ -156,7 +156,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       `gen_onetimer_assist_test.py` (the Genesis one-timer assist bug: a fix, built and played; `builds` lays
       NOSE4Web's builds over the test ROM); `gen_open_net_fix_test.py RETAIL BUILD` (the open-net one-timer fix: the aim and goals with the
       goalie in position and out of the sightline); `gen_repeat_check_fix_test.py RETAIL BUILD` (the repeated-checks
-      fix: the same checker again by delay, paired against a fresh pair); `ratings_chunk_b.py` (RATING_VALUES chunk B: races,
+      fix: the same checker again by delay, paired against a fresh pair); `gen_awareness_cvc.py` / `gen_awareness_report.py` (RATING_VALUES chunk C: Awareness in computer games); `ratings_chunk_b.py` (RATING_VALUES chunk B: races,
       shots against a retail goalie, steals).
     - Graphics: score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves
       free; `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;

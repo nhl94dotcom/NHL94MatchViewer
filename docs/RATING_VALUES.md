@@ -174,8 +174,9 @@ line; then the same strikes with him in:
 - **Defensive Awareness** covers a defenceman's gap on rushes, everyone's switch to defence after a turnover, and
   (a coding slip) forwards' positioning on offence. **Offensive Awareness** covers the chaser on loose pucks and the
   defenceman's retreat after a turnover.
-- **League:** Offensive Awareness +0.07 points a game a step for forwards, -0.02 for defencemen. What either does to
-  goals against is not measured yet (chunk C).
+- **League:** Offensive Awareness +0.07 points a game a step for forwards, -0.02 for defencemen.
+- **Played (chunk C, below):** in whole computer games neither moved goals measurably: Offensive +0.035 +- 0.052 goals a
+  game a step, Defensive -0.080 +- 0.051 (the wrong way, not significant).
 
 ### Aggression
 
@@ -280,6 +281,29 @@ and shot type for each rating pair; the best aim 64):
 **Steals** (`steals`): not measured yet. A pad-1 skater poking a computer carrier standing still started no steal roll
 in any of 60 tries a setting (the carrier's puck sat out of reach, or the stick test needs more than reach); the
 carrier's own passes were the only losses. The steal formula above stands (Code).
+
+### Chunk C, played (2026-11-11, `analysis/scoring_map/gen_awareness_cvc.py`, one process)
+
+80 whole games, the computer against itself, the same team (Game Setup's first, team 11) on both sides, 5-minute periods, penalties on
+except offsides, line changes off. Every 2 frames each skater's working timer for the rating tested (aioff +$6A or
+aidef +$6B: the frames between decisions) was set to 8 (rating 6) on one team and 14 (rating 1) on the other, the other
+Awareness rating 11 on both; goalies untouched. The rating tested alternated game by game, and the faster team home and
+away in turn (the home side scored about 0.7 goals a game more, a hidden home bonus plus chance, cancelled this way).
+Regulation only (`gen_awareness_report.py`):
+
+| Rating moved 1 -> 6 | Games | Goals a game, faster - slower team | A step | Shots a game, difference | Faster team W-L-T |
+|---|---|---|---|---|---|
+| Offensive Awareness | 40 | +0.17 +- 0.26 | +0.035 +- 0.052 | +0.85 +- 0.68 | 15-12-13 |
+| Defensive Awareness | 40 | -0.40 +- 0.25 | -0.080 +- 0.051 | -0.65 +- 0.75 | 9-19-12 |
+
+- **Neither rating moves goals measurably**, even across five steps for a whole team. Computer games score little (about
+  2.3 goals a game here), so a step's effect is within +-0.1 goals a game of zero for both.
+- **Defensive Awareness leans the wrong way** (the faster team scored less and lost more), 1.6 standard errors from zero:
+  not settled. A reason it could be real: on offence forwards re-pick their spot on the Defensive Awareness timer (the
+  coding slip), and re-picking more often may keep them from settling into a spot. Settling it would take about 150 more
+  games, or the offence and defence parts tested apart.
+- **For a league value:** Awareness acts only on the skaters a person isn't controlling, and in whole games it does
+  little; leaving both at about nothing (as the league fit does: +0.07 / -0.02 points a step) is consistent with this.
 
 ### Chunk D: a league value (2026-11-11, `analysis/league_value.py`)
 
