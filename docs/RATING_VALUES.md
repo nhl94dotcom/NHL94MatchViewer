@@ -60,16 +60,17 @@ more, so it holds more than the rating's own mechanics. Points per game for ever
   once he skates back the other way. **Code, Played** (both ends of Agility gave the same stop to the unit).
 - **Who wins a race to a loose puck** depends on both, and on the head start: not yet played (chunk B).
 
-Played (`analysis/scoring_map/rating_gifs.py skating`): the same skater without the puck, one rating moved, each lane a
-separate run, real time. Speed sets where he ends up; Agility only how soon he gets going.
+Played (`analysis/scoring_map/rating_gifs.py skating_real`): the game's own skater without the puck, one rating moved,
+one run a rating with the camera held still, each run's skater cut from its frames and drawn in his own lane on the
+same ice, real time. Speed sets where he ends up; Agility only how soon he gets going.
 
-![Speed 1 to 6: a sprint from a standstill](img/rating_values/skating_speed_sprint.gif)
+![Speed 1 to 6: a sprint from a standstill](img/rating_values/skating_speed_sprint_real.gif)
 
-![Agility 1 to 6: a sprint from a standstill](img/rating_values/skating_agility_sprint.gif)
+![Agility 1 to 6: a sprint from a standstill](img/rating_values/skating_agility_sprint_real.gif)
 
-![Speed 1 to 6: turning round at top speed](img/rating_values/skating_speed_turn.gif)
+![Speed 1 to 6: turning round at top speed](img/rating_values/skating_speed_turn_real.gif)
 
-![Agility 1 to 6: turning round at top speed](img/rating_values/skating_agility_turn.gif)
+![Agility 1 to 6: turning round at top speed](img/rating_values/skating_agility_turn_real.gif)
 
 ### Shooting: Shot Power and Shot Accuracy
 

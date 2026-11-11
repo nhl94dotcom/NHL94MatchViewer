@@ -20,6 +20,10 @@ python rating_gifs.py OUT_DIR skating       Speed 1-6 and Agility 1-6 (the other
                                             six lanes, one run each, in real time;
                                             the turn starts each skater at his own top speed, Down held at once.
 
+python rating_gifs.py OUT_DIR skating_real  The same with the game's own skater: the camera pinned (BD18 / BD1C poked each
+                                            frame), each run's skater cut from its frames (the pixels differing from the
+                                            empty ice) and drawn in his own lane on one picture of the rink.
+
 Ratings are working values (roster x 5), no hot / cold. Gentle mode (lowload.py)."""
 import math
 import sys
@@ -323,11 +327,148 @@ def lanes_gif(path, title, sub, runs, which, turn=False):
     print("wrote", path)
 
 
+# ---------------------------------------------------------------- skating, the game's own skaters
+
+LANES = (-90, -54, -18, 18, 54, 90)     # screen pixels from the middle: where each rating's skater is drawn
+
+
+def real_run(h, vram, cam, wgt, agl, spd, frames, start_y, start_speed=0, down=False, background=False):
+    """One run with the camera pinned at cam (BD18, BD1C) and the clock and score boxes hidden: the frames, and the
+    skater's world y and speed each frame. background: the skater kept out of view (the empty ice)."""
+    from harness import rec, SHOOTER, PUCK, PUCKC
+    from goal_frames import frame, hide_genesis_hud
+    e = h.e
+    e.unserialize(h.base)
+    r = rec(SHOOTER)
+    e.setb(r + 0x67, wgt)
+    e.setb(r + 0x68, agl)
+    e.setb(r + 0x69, spd)
+
+    def keep():
+        h.park(keep_shooter=True)
+        e.setw(PUCKC, 0xFFFF)                          # the puck at rest in the view's bottom-right corner (out of
+        e.setw(PUCK, 112)                              # view, the game draws an arrow pointing at it)
+        e.setw(PUCK + 0x14, cam[0] - 212 + 118)
+        for off in (0x28, 0x2A, 0x2C):
+            e.setw(PUCK + off, 0)
+        e.setw(0xBD18, cam[0] & 0xFFFF)
+        e.setw(0xBD1C, cam[1] & 0xFFFF)
+        hide_genesis_hud(e, vram)
+    for _ in range(8):                                 # held still: the camera settles, the y-sorted list catches up
+        keep()
+        e.setw(r, 0)
+        e.setw(r + 0x14, -240 if background else start_y)
+        for off in (0x28, 0x2A):
+            e.setw(r + off, 0)
+        e.run(1, hold=["UP"])
+    if background:
+        keep()
+        img = frame(h, lambda: e.run(1))
+        # the game's arrow toward a skater out of view (pad 2's, parked below): painted over with the ice above it
+        px = img.load()
+        dark = [(x, y) for y in range(150, img.height) for x in range(96, 160) if sum(px[x, y]) < 200]
+        if dark:
+            x0, x1 = min(x for x, _ in dark) - 2, max(x for x, _ in dark) + 3
+            y0, y1 = min(y for _, y in dark) - 2, max(y for _, y in dark) + 3
+            patch = img.crop((x0, y0 - (y1 - y0) - 4, x1, y0 - 4))
+            img.paste(patch, (x0, y0))
+        return img
+    e.setw(r + 0x2A, start_speed)
+    out = []
+    for f in range(frames):
+        keep()
+        img = frame(h, lambda: e.run(1, hold=["DOWN"] if down else ["UP"]))
+        out.append((img, e.sw(r + 0x14), e.sw(r + 0x2A), e.sw(0xBD18), e.sw(0xBD1C)))
+    return out
+
+
+def cut_skater(img, bg, y, cam_y, cam_x):
+    """The skater's own pixels: those differing from the empty ice, in a box around where he stands (screen row from
+    the camera as net_on_screen has it)."""
+    row = cam_y - y + 118
+    col = 126.5 - cam_x
+    box = (int(col - 22), int(row - 44), int(col + 22), int(row + 14))
+    a, b = img.crop(box), bg.crop(box)
+    mask = Image.new("L", a.size, 0)
+    pa, pb, pm = a.load(), b.load(), mask.load()
+    for yy in range(a.height):
+        for xx in range(a.width):
+            if pa[xx, yy] != pb[xx, yy]:
+                pm[xx, yy] = 255
+    return a, mask, box
+
+
+def skating_real(out):
+    gentle()
+    from harness import Harness
+    from paths import STATE_TOP
+    from goal_frames import genesis_vram
+    h = Harness(state=STATE_TOP)
+    h.e.unserialize(h.base)
+    h.e.run(1)
+    vram = genesis_vram(h.e)
+    WGT, BASE = 72, 18
+    scenes = (("sprint", -175, 0, False, 100, "a sprint from a standstill", "Up held from the start."),
+              ("turn", -120, None, True, 110, "turning round at top speed",
+               "Each starts at his own top speed going up, Down held from the start. The skid stop is the same for "
+               "every rating; Agility counts once he skates back."))
+    for which in ("Speed", "Agility"):
+        for name, start_y, start_speed, down, frames, what, how in scenes:
+            cam = (start_y + 205 - 118 - (60 if name == "turn" else 0), 0)
+            bg = real_run(h, vram, cam, WGT, BASE, BASE, 0, start_y, background=True)
+            runs = []
+            for p in range(1, 7):
+                agl, spd = (BASE, 5 * p) if which == "Speed" else (5 * p, BASE)
+                sp = (20 + min(spd + 2, 30) // 2) * 275 if start_speed is None else start_speed
+                runs.append((p, real_run(h, vram, cam, WGT, agl, spd, frames, start_y, sp, down)))
+                breathe()
+            other = "Agility" if which == "Speed" else "Speed"
+            compose_real(out / f"skating_{which.lower()}_{name}_real.gif", bg, runs, which,
+                         f"{which} 1 to 6: {what}",
+                         f"{how} The game's own skater, one run a rating, each drawn in his own lane on the same ice "
+                         f"({other} working {BASE}, Weight 9, no puck). Real time.")
+
+
+def compose_real(path, bg, runs, which, title, sub):
+    lines = textwrap.wrap(sub, 95)
+    Z, head, foot = 2, 34 + 16 * len(lines) + 6, 52
+    W, H = bg.width * Z, head + bg.height * Z + foot
+    W = max(W, 620)
+    x_off = (W - bg.width * Z) // 2
+    n = len(runs[0][1])
+    start = runs[0][1][0][1]
+    frames = []
+    for t in list(range(0, n, 2)) + [n - 1] * 40:
+        img = Image.new("RGB", (W, H), "white")
+        canvas = bg.copy()
+        for i, (p, run) in enumerate(runs):
+            im, y, v, cy, cx = run[min(t, len(run) - 1)]
+            sprite, mask, box = cut_skater(im, bg, y, cy, cx)
+            canvas.paste(sprite, (box[0] + LANES[i], box[1]), mask)
+        img.paste(canvas.resize((bg.width * Z, bg.height * Z), Image.NEAREST), (x_off, head))
+        d = ImageDraw.Draw(img)
+        d.text((10, 6), title, fill="#1f2933", font=f(17, True))
+        for j, line in enumerate(lines):
+            d.text((10, 28 + 16 * j), line, fill="#52606d", font=f(13))
+        for i, (p, run) in enumerate(runs):
+            im, y, v, cy, cx = run[min(t, len(run) - 1)]
+            cx_lane = x_off + (126.5 - cx + LANES[i]) * Z
+            d.text((cx_lane - 24, head + bg.height * Z + 4), f"{which} {p}", fill="#1f2933", font=f(13, True))
+            d.text((cx_lane - 24, head + bg.height * Z + 22), f"{abs(v) / SKATE_MPH:.0f} mph", fill="#52606d", font=f(12))
+            d.text((cx_lane - 24, head + bg.height * Z + 36), f"{(y - start) / UNITS_PER_FT:+.0f} ft", fill="#52606d",
+                   font=f(12))
+        d.text((W - 110, 6), f"{t / 60:.2f} s (real)", fill="#1f2933", font=f(14, True))
+        frames.append(img.quantize(colors=128, dither=Image.Dither.NONE))
+    frames[0].save(path, save_all=True, append_images=frames[1:], duration=33, loop=0, optimize=True)
+    print("wrote", path)
+
+
 def main():
     out, what = Path(sys.argv[1]), sys.argv[2]
     out.mkdir(parents=True, exist_ok=True)
     n = int(sys.argv[3]) if len(sys.argv) > 3 else 24
-    {"shots": lambda: shots(out, n), "onetimer": lambda: onetimer(out, n), "skating": lambda: skating(out)}[what]()
+    {"shots": lambda: shots(out, n), "onetimer": lambda: onetimer(out, n), "skating": lambda: skating(out),
+     "skating_real": lambda: skating_real(out)}[what]()
 
 
 if __name__ == "__main__":
