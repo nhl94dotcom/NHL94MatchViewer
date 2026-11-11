@@ -2524,6 +2524,32 @@ Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Seas
   by `jsr`s at $1018C, $1494E and $F6CE8), which NOSE4Web moved unchanged to $1ED032 (free, all $FF before) and
   repointed the three calls to; chaos's save-memory code at $1F9A00 went into free space in CDL too.
 
+## Free work RAM, the fighting setting at $FFF080, blood with fights, overtime until a goal (2026-11-11, for NOSE4Web)
+
+- **Work RAM from $FFE000** (`gen_ram_use_check.py ROM`: a whole computer game with the pause menu and replays, every
+  byte from $FFC000 compared with Game Setup's every 4 frames; `gen_ram_tour_check.py ROM [--fights]`: the playoff
+  tree, a shootout, the pause menu's screens, fights on the fighting builds): on nhl94, CDL Season 12, DPWM3, GDL Season
+  4, IDL5 and RGDL, nothing from $FFE000 to $FFFEBF ever changed; only the stack, from $FFFEC0 up (its deepest).
+  So **$FFF080-$FFF081 is free on all of them**, and there's room beside it. (The scoring-map test ROM's hook also uses
+  $FFE000-$FFE028, our tool only.)
+- **The setting at $FFF080 on CDL** (`gen_fight_setting_check.py ROM CHOICE OUT [--hot]`: chosen on the menu, two
+  computer games in a row, every 2 frames): Off, On and Arcade each held through both games; no fights with Off (8
+  goals), 4 fights with On, 6 a game with Arcade (with every fighting rating at 14 the fights took the games over: no
+  goals). **The plus-minus log** ($FFDEF4): the Off build and the original CDL, same presses and seed, played the same
+  games at first and their logs were byte for byte the same at those goals (then the games drifted apart).
+- **Fights and head blood** (nhl94_fighting_blood.bin, CDL_Season_12_fighting_blood.bin, injuries forced in a scratch
+  copy, fighting ratings at 14): retail 2 fights (3 fighting majors) and 5 injuries, CDL 3 fights (6 majors) and 2
+  injuries in the same games; the blood frames (369-372) shown on the injured players (4,898 and 2,576 samples), the
+  injury box and the fight banners and dropped gloves as they should be, play going on.
+- **Overtime until a goal** (`gen_ot_goal_check.py ROM`; nhl94_overtime_until_goal.bin, e86d31a: PeriodOver's `move.w
+  #4,(gsp).w` at $1725C made NOPs): **not enough on its own.** At the end of a period hockey94's `.eop` ends the game
+  itself: `cmpi.w #3,(gsp).w` / `bne` / `tst.w (OptPlayMode).w` / **`beq.s .eog` at $7C4C** (67 C8): in the regular
+  season the end of overtime sets gmeog, stops the clock and calls PenEOG ("Stars of the Game"). With only $1725C
+  changed, PeriodOver then goes into another overtime with the game marked over, and the intermission's Resume Game never
+  resumes (40 presses, 100 s). A scratch copy with $7C4C made `4E71` as well plays on: another overtime (10:00:
+  ResetClock's regular-season overtime length, $7818, left as it is), still 1-1; in the playoffs a goal in the extra
+  overtime ended the game, as before.
+
 ## A shootout to settle a tied regular-season game (Genesis, 2026-11-11, for NOSE4Web; from the code, not built)
 
 - **How a game ends now** (`PeriodOver`, setup94): after period 3 a tie goes to overtime (gsp 3); after overtime a

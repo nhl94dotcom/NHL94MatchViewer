@@ -173,7 +173,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       NHL94SNESVault hacks: Edit Lines lists, max boost display, L+R goalie pull, the computer's pull),
       `a130f1_test.py` (Genesis save memory switching on big ROMs); `gen_menu_compare.py` (Game Setup's lines and choices,
       two ROMs), `gen_fight_check.py` (chaos's fighting patch: fights in computer games), `gen_records_check.py` (saved
-      records across a reset).
+      records across a reset), `gen_ram_use_check.py` / `gen_ram_tour_check.py` (which work RAM a ROM writes: free
+      memory for hacks), `gen_fight_setting_check.py` (the fighting setting on a plus-minus ROM), `gen_ot_goal_check.py`
+      (overtime until a goal), `gen_fight_blood_check.py`.
     - `team_move_check.py ORIGINAL MOVED N OUT H:V ...` (teams moved to new numbers: every team screen and the rosters, the
       original against the moved ROM with the numbers mirrored); `xg_calib_rescore.py RUN STEP` (an xg_calib run scored again
       by today's SNES model; `NHL94_SNES_SA1=<ROM>` runs the SNES tools on an SA-1 build).
