@@ -2524,6 +2524,42 @@ Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Seas
   by `jsr`s at $1018C, $1494E and $F6CE8), which NOSE4Web moved unchanged to $1ED032 (free, all $FF before) and
   repointed the three calls to; chaos's save-memory code at $1F9A00 went into free space in CDL too.
 
+## A shootout to settle a tied regular-season game (Genesis, 2026-11-11, for NOSE4Web; from the code, not built)
+
+- **How a game ends now** (`PeriodOver`, setup94): after period 3 a tie goes to overtime (gsp 3); after overtime a
+  regular-season game (OptPlayMode 0) is over (gsp 4) whatever the score; in the playoffs overtime goes on until a
+  goal. `PeriodOver_sp` then: the ticker scores, `Intermission` (the period / game stats screens, and `UpdateRecords`,
+  which writes the saved records from the final score), then `GameOver` (EncodePW, the playoff screens) and the title.
+- **Shootout mode** (Play Mode 4, gmode2 bit 0; shootout94, shootoutpath94, period94 `EndShootout`): a mode of its own,
+  started from Game Setup (forced: line changes, penalties and user records off). `ClearShootout` clears every player
+  record (SortCords) and the shootout state; `InitShooters` takes each team's six starters as its shooter list (the
+  "Shootout Setup" menu lets people choose five). Each attempt is the penalty-shot machinery (BA_* variables,
+  `StartShootoutPath` picks one of seven skate-in paths for a computer shooter, `EndPenaltyShotPlay`). Teams alternate,
+  home first; the shooters cycle after five. `CountShootoutGoals`: from round 5 on, after each away attempt, it ends as
+  soon as the goals differ (sudden death after five rounds) and `EndShootout` (the winners' celebration); "SHOOTOUT WON
+  BY" (`ShootoutWonBy`), then `NextShooter` jumps to `ExitToOpening`: no Intermission, no GameOver, no records.
+- **A shootout goal is scored as an ordinary goal** (`Goal`, collide94: the penalty-shot end test, homeshootgoals /
+  awayshootgoals + 1, `EndPenaltyShotPlay`, then `.8`): the team's goals (tmscore), the scorer's goals and points, the
+  scoring summary and the goal shown; only the penalty-shot-goal count is skipped. Shootout mode gets away with it
+  because it starts from cleared stats and never reports a game.
+- **Starting one from a tied overtime in the same game** needs: a branch in `PeriodOver` where it now sets gsp 4 for a
+  regular-season tie, into a set-up like Shootout mode's (gmode2 bit 0, the shooter lists, the first attempt's
+  positions: what `StartGame` / `StartPer` do with gmode2 bit 0 set, without `clearTeamStats` and without clearing
+  the scoring summary); the goal code told to count a shootout goal only in homeshootgoals / awayshootgoals (no score,
+  no player stats, no summary entry); `NextShooter`'s exit, instead of the title, to: the winner's team score + 1
+  (tmscore only), gmode2 bit 0 off, gsp 4, `PeriodOver_sp` (so Intermission, UpdateRecords and GameOver run as for any
+  game). Things that could go wrong: shots, saves and shooters' stats from the attempts (the shot and save counters run
+  in the attempt code too: to be checked); the stats screen and records showing a plain 3-2 with no goal behind the
+  extra one; the pause menu (shootout mode has its own); penalties and line changes (off in Shootout mode; a game's
+  settings would still be on); the clock and period display; the playoffs (unaffected: overtime goes on there).
+- **The record:** a win for the winner with the score + 1 (3-2), as the NHL does, is what the code can hold: the team
+  score is one number; nothing marks the extra goal as a shootout goal, so the saved records and the league's results
+  would see a 3-2 win. (Match Viewer would see the score change at the end with no goal in play and could mark it.)
+- **Size:** a moderate patch (some 150-300 bytes of new code and five or six hooks), and a careful one to test. **Most
+  of the way for almost nothing:** regular-season overtime that goes on until a goal, as in the playoffs (in
+  `PeriodOver`, skip `move.w #4,(gsp).w` after `tst.w (OptPlayMode).w`): no ties, one changed instruction, but no
+  shootout and an overtime that can run long.
+
 ## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
 
 The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at
