@@ -464,8 +464,10 @@ All-Star teams left out), put on 40 + 59 x (sum - low) / (high - low), clamped t
 
 | | Forwards | Defencemen | Goalies (a step) |
 |---|---|---|---|
-| Genesis ends | -6.344 to 2.175 | -0.187 to 0.589 | 0.531 to 1.594 (0.2655 an Agility step) |
-| SNES ends | 1.132 to 4.540 | 0.787 to 2.422 | 0.072 to 0.215 (0.0358 an Agility step) |
+| Genesis ends | -7.486 to 1.848 | -0.226 to 0.589 | 0.531 to 1.594 (0.2655 an Agility step) |
+| SNES ends | 1.132 to 4.540 | 0.806 to 2.974 | 0.072 to 0.215 (0.0358 an Agility step) |
+
+(2026-11-11, the defencemen's Weight bands: a defenceman's sum gets **Genesis -0.138 at stored Weight 7-9**, 0 otherwise; **SNES +0.552 at 7-9, +0.486 at 10+**, 0 at 6 and under (RATING_VALUES "Defence"). The Genesis forwards' Weight is now -0.60 a point (the team fit with the bands beside it). Ends before: Genesis F -6.344 to 2.175, D -0.187 to 0.589; SNES D 0.787 to 2.422.)
 
 **The SNES catching step** (2026-11-11, after the user): a SNES skater (forward or defenceman) at Stickhandling 3 or
 less has **0.028 taken off his sum** before scaling: his extra bobbles (about 7.8% of the passes reaching him over a
@@ -482,7 +484,8 @@ and the goalie steps rounded; NOSE4Web's check found it.)
 forwards and top 3 defencemen by league value (their average) and its best goalie's value, weighted by a fit of the
 Classic teams' strength on the three, the weights scaled to add up to 1 (`league_value.py`, last table):
 
-**Genesis team rating = 0.74 x top-4 forwards + 0.10 x top-3 defencemen + 0.16 x top goalie** (league values, 0-99).
+**Genesis team rating = 0.71 x top-4 forwards + 0.15 x top-3 defencemen + 0.14 x top goalie** (league values, 0-99;
+with the defencemen's Weight bands, 2026-11-11: R^2 0.69, each team left out 0.50; before them 0.74 / 0.10 / 0.16).
 A rating point is worth about one win-chance point against an average team (0.78 + 0.10 + 0.17). It explains the
 teams' strength nearly as well as the regulars as they actually played (R^2 0.64, each team left out 0.44, against
 0.72 / 0.47), from the ROM alone; the same top players by the game's Overall 0.34 / 0.03. Top 3 + 2 did the same
@@ -586,7 +589,22 @@ are mostly chance). Per player's step, goals a game:
 - **Cautions:** coaches choose their players, and ratings of one team's players go together, so single numbers move
   when others are added (as Genesis defencemen's Speed and Checking did); the SNES's stored ratings are blurred by the
   hot / cold bug (46% maxed each game), and its rows carry no ice time. Odd signs (SNES defencemen's Speed, forwards'
-  Shot Accuracy and Def. Awareness) are not explained. Not yet in the league value.
+  Shot Accuracy and Def. Awareness) are not explained.
+- **These weights overfit the teams.** Classic rosters are the same every season, so a team's lineup ratings are nearly
+  the team itself: 20-odd weights against 26 teams. A value built from them explains the teams' strength well when the
+  weights saw those teams (Genesis 0.78, each team left out 0.67; SNES 0.69 / 0.44) but not in the honest test
+  (`defence_weight_bands.py SYSTEM --nested`: each team's games left out of the weights' fit too): **Genesis 0.15, SNES
+  -0.62**, against the scoring value's 0.47 / 0.12. So they are not used.
+- **Within teams** (`--teams`: fixed effects for both teams too, so a rating shows only through which players a coach
+  picks from the same roster), the defencemen's Weight bands hold where the user said: **Genesis middleweight -0.16 +-
+  0.06 goals a game** against a light one, heavy +0.01 +- 0.08 (no different from light); **SNES middleweight +0.57 +-
+  0.10, heavy +0.53 +- 0.15** (being light is the cost). The single ratings swing too much there to use.
+- **In the league value (2026-11-11, now the default):** the scoring weights as before, and the defencemen's band added
+  to his sum, shrunk by how well measured: **Genesis middleweight (7-9) -0.138, heavy 0; SNES middleweight +0.552,
+  heavy +0.486** (light 0). The team test (regulars as played): Genesis 0.72 / 0.47 -> **0.74 / 0.50**; the top-players
+  team rating 0.64 / 0.44 -> **0.69 / 0.50**, the defencemen's share 0.10 (-0.06 to 0.24) -> **0.15 (0.05 to 0.24)**.
+  The Genesis forwards' Weight from the team fit moves to -0.60 (was -0.52). The SNES test can't say (0.43 / 0.12 ->
+  0.41 / 0.08; top players 0.25 / -0.01 -> 0.30 / 0.05); the band is in on the strength of the within-team measure.
 
 ### Gaps for the next chunks
 

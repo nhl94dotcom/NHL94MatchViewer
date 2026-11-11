@@ -2,10 +2,14 @@
 to C checks nor to CB checks; on the SNES heavier checks better). defence_value.py's fit (each Classic team-game's goals
 from both lineups and both coaches), with the defencemen's Weight as bands instead of a straight line: per team-game,
 how many of its two top defencemen are middleweights (stored Weight 7-9) and how many heavy (10+), light (6 and under)
-the baseline; the defencemen's other ratings averaged, the forwards' ten as before. Names nobody.
+the baseline; the defencemen's other ratings averaged, the forwards' ten as before. Names nobody. Writes the totals
+(goals for plus against cut, a player's step, with standard errors) to reports/both_ends_SYSTEM.json for league_value.py.
 
-python analysis/defence_weight_bands.py genesis|snes"""
+python analysis/defence_weight_bands.py genesis|snes [--nested] [--teams]   (--teams: team fixed effects too, a rating shown only by
+lineup choices within a team; --nested: the team test with each team's games left
+out of the weights' fit too)"""
 import ast
+import json
 import csv
 import sys
 from pathlib import Path
@@ -53,13 +57,23 @@ for r in csv.DictReader(open(DV.DATA / ("All_Games_GENS.csv" if system == "genes
     except (ValueError, SyntaxError): continue
     if None in side.values(): continue
     for s, o in (("Home","Away"),("Away","Home")):
-        rows.append((float(r[s+"Score"]), side[s], side[o], s=="Home", r[s+"Player"].strip().lower(), r[o+"Player"].strip().lower()))
+        rows.append((float(r[s+"Score"]), side[s], side[o], s=="Home", r[s+"Player"].strip().lower(), r[o+"Player"].strip().lower(),
+                     r[s+"TeamAbbrev"].strip(), r[o+"TeamAbbrev"].strip()))
 n = Counter(x[4] for x in rows); coaches = sorted(c for c,k in n.items() if k >= 40); ci = {c:i for i,c in enumerate(coaches)}; K = len(coaches)
 nf = len(rows[0][1][0])
 X = np.zeros((len(rows), 2*nf + 2 + 2*(K+1) + 1), np.float32)
-for j, (gf, own, opp, home, c, oc) in enumerate(rows):
+for j, (gf, own, opp, home, c, oc, *_) in enumerate(rows):
     X[j,:nf] = own[0]; X[j,nf] = own[1]; X[j,nf+1:2*nf+1] = opp[0]; X[j,2*nf+1] = opp[1]
     X[j,2*nf+2+ci.get(c,K)] = 1; X[j,2*nf+2+K+1+ci.get(oc,K)] = 1; X[j,-1] = home
+if "--teams" in sys.argv:
+    # team fixed effects too (own team's and the opponent's): a rating then shows only through the lineups coaches
+    # choose within a team (Classic rosters are the same every season, so across teams a rating is the team itself)
+    tl = sorted({x[6] for x in rows}); ti = {t: i for i, t in enumerate(tl)}
+    TF = np.zeros((len(rows), 2 * len(tl)), np.float32)
+    for j, x in enumerate(rows):
+        TF[j, ti[x[6]]] = 1
+        TF[j, len(tl) + ti[x[7]]] = 1
+    X = np.hstack([X, TF])
 y = np.array([x[0] for x in rows])
 b, *_ = np.linalg.lstsq(X, y, rcond=None)
 rng = np.random.default_rng(3); ng = len(rows)//2; bs = []
@@ -76,3 +90,59 @@ for i, nm in enumerate(names):
     k = 10 + i
     f, a = b[k]/2, -b[nf+1+k]/2
     print(f"  D {nm}: for {f:+.3f}, against (cut) {a:+.3f} +- {se[nf+1+k]/2:.3f}, total {f+a:+.3f}")
+# the totals (for + against cut) a player's step, with standard errors from the bootstrap's own totals, for
+# league_value.py's both-ends value: reports/both_ends_SYSTEM.json
+B = np.array(bs)
+tot = lambda arr, k, div: (arr[..., k] - arr[..., nf + 1 + k]) / div
+out = {"F": {}, "D": {}}
+for i, idx in enumerate(DV.IDX):                       # forwards: the ten, as averages of 3
+    out["F"][str(idx)] = [float(tot(b, i, 3)), float(np.std(tot(B, i, 3)))]
+for i, idx in enumerate([j for j in DV.IDX if j != 0]):   # defencemen: nine, averages of 2
+    out["D"][str(idx)] = [float(tot(b, 10 + i, 2)), float(np.std(tot(B, 10 + i, 2)))]
+out["bands"] = {"mid": [float(tot(b, nf - 2, 1)), float(np.std(tot(B, nf - 2, 1)))],
+                "heavy": [float(tot(b, nf - 1, 1)), float(np.std(tot(B, nf - 1, 1)))]}
+out["G"] = [float(b[nf] - b[2 * nf + 1]), float(np.std(B[:, nf] - B[:, 2 * nf + 1]))]
+tag = "_teams" if "--teams" in sys.argv else ""
+(HERE.parent / "reports" / f"both_ends_{system}{tag}.json").write_text(json.dumps(out, indent=1))
+print(f"wrote reports/both_ends_{system}{tag}.json")
+
+if "--nested" in sys.argv:
+    # The honest team test: for each Classic team, the both-ends weights refitted on the games without it, every
+    # team's value rebuilt with them, the team strengths fitted on the other teams, and the left-out team predicted.
+    import league_value as L
+    from league_player_study import rom
+    from systems import genesis
+    cfg = L.SYSTEMS[system]
+    L.STK_STEP = cfg.get("stk_step", 0)
+    L.GOALIE_SV_STEP = cfg["gsv"]
+    mod = genesis if system == "genesis" else __import__("systems.snes", fromlist=["snes"])
+    teams = mod.read_teams(rom(cfg["rom"]))
+    pdata = json.loads((HERE.parent / "reports" / "classic_players.json").read_text())[cfg["key"]]
+    spg = sum(g["sa"] for g in pdata["goalies"]) / sum(g["games"] for g in pdata["goalies"])
+    strength = L.team_strengths(cfg["col"])
+    SE = {"F": {i: float(np.std(tot(B, i, 3))) for i in range(10)},
+          "D": {i: float(np.std(tot(B, 10 + i, 2))) for i in range(9)}}
+    se_band = (float(np.std(tot(B, nf - 2, 1))), float(np.std(tot(B, nf - 1, 1))))
+    tm = [(x[6], x[7]) for x in rows]
+
+    def weights(bb):
+        L.FWD.clear(); L.DEF.clear()
+        L.FWD.update({idx: L.shrink(float(tot(bb, i, 3)), SE["F"][i]) for i, idx in enumerate(DV.IDX)})
+        L.DEF.update({idx: L.shrink(float(tot(bb, 10 + i, 2)), SE["D"][i]) for i, idx in enumerate([j for j in DV.IDX if j != 0])})
+        L.BOTH = {"mid": L.shrink(float(tot(bb, nf - 2, 1)), se_band[0]), "heavy": L.shrink(float(tot(bb, nf - 1, 1)), se_band[1])}
+        return {r["team"]: r for r in L.team_parts(teams, pdata, strength, spg)}
+    full = weights(b)
+    names = sorted(full)
+    pred, actual = [], []
+    for T in names:
+        keep = np.array([T not in t for t in tm])
+        bT, *_ = np.linalg.lstsq(X[keep], y[keep], rcond=None)
+        parts = weights(bT)
+        others = [a for a in names if a != T]
+        A = np.array([[parts[a]["f"], parts[a]["d"], parts[a]["g"], 1.0] for a in others])
+        coef, *_ = np.linalg.lstsq(A, np.array([strength[a] for a in others]), rcond=None)
+        pred.append(np.array([parts[T]["f"], parts[T]["d"], parts[T]["g"], 1.0]) @ coef)
+        actual.append(strength[T])
+    pred, actual = np.array(pred), np.array(actual)
+    r2 = 1 - ((actual - pred) ** 2).sum() / ((actual - actual.mean()) ** 2).sum()
+    print(f"nested team test ({len(names)} teams; each team's own games out of the weights' fit too): {r2:.2f}")

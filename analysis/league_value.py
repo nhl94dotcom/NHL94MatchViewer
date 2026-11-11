@@ -21,7 +21,9 @@ on the three parts (forwards, defencemen, goalie) each way, and how much of the 
 Reads the ROM (the retail Genesis rosters), reports/classic_players.json (classic_player_guide.py: games and
 positions; aggregates of the leagues' results, no person named) and docs/COACH_RATING.md. Prints tables for
 RATING_VALUES.md, and a team rating from the top players only (top 4 forwards, top 3 defencemen, the best goalie).
-python analysis/league_value.py [genesis|snes]   (the SNES: its own steps, ROM and team strengths)"""
+python analysis/league_value.py [genesis|snes] [both|nobands]   (by default the scoring weights and the
+defencemen's Weight bands, which need defence_weight_bands.py SYSTEM --teams first; both: the both-ends weights (they
+overfit the teams: RATING_VALUES "Defence"); nobands: without the bands)   (the SNES: its own steps, ROM and team strengths)"""
 import json
 import re
 import sys
@@ -57,6 +59,21 @@ SYSTEMS = {
 # team the puck 35% of the time, a swing of about 0.2 goals (0.10 a possession each way): about 0.028 goals a game,
 # taken off his value as one step (the linear Stickhandling weight stays). The team test can't size it on the SNES.
 STK_STEP = 0
+BOTH = None          # defencemen's Weight band effects (modes both and bands)
+FULL = False         # mode both: the forwards' Weight inside their fitted weights (not the team fit's)
+
+
+def shrink(est, se):
+    """A noisy estimate shrunk by how well it is measured: est x t^2 / (1 + t^2), t = est / se."""
+    t2 = (est / se) ** 2 if se > 0 else 0.0
+    return est * t2 / (1 + t2)
+
+
+def d_band(a):
+    """The defencemen's Weight band's worth (both-ends value): middleweight 7-9, heavy 10+, light the baseline."""
+    if not BOTH:
+        return 0.0
+    return BOTH["mid"] if 7 <= a[0] <= 9 else BOTH["heavy"] if a[0] >= 10 else 0.0
 DEF = {12: 0.060, 6: 0.042, 1: 0.033, 2: 0.026, 5: 0.013, 9: 0.009, 0: -0.022, 3: -0.018, 8: -0.010}
 GOALIE_SV_STEP = 0.0225
 
@@ -144,24 +161,46 @@ def team_parts(teams, pdata, strength, shots_per_game):
         g = max(gk, key=lambda x: x[1])[0]
         avg = lambda L, f: sum(f(p) * n for p, n in L) / sum(n for _, n in L)
         rows.append(dict(team=ab, strength=strength[ab],
-                         f=avg(F, lambda p: sum(v * p["a"][i] for i, v in FWD.items() if i != 0)
+                         f=avg(F, lambda p: sum(v * p["a"][i] for i, v in FWD.items() if i != 0 or FULL)
                                - (STK_STEP if p["a"][8] <= 3 else 0)),
-                         d=avg(D, lambda p: sum(v * p["a"][i] for i, v in DEF.items()) - (STK_STEP if p["a"][8] <= 3 else 0)),
+                         d=avg(D, lambda p: sum(v * p["a"][i] for i, v in DEF.items()) - (STK_STEP if p["a"][8] <= 3 else 0)
+                               + d_band(p["a"])),
                          g=GOALIE_SV_STEP * g["a"][1] * shots_per_game, fw=avg(F, lambda p: p["a"][0]),
                          fovr=avg(F, lambda p: p["ovr"]), dovr=avg(D, lambda p: p["ovr"]), govr=g["ovr"], goalie=g["name"]))
     return rows
 
 
 def main():
-    global WEIGHT, GOALIE_SV_STEP, STK_STEP
+    global WEIGHT, GOALIE_SV_STEP, STK_STEP, BOTH, FULL
     system = sys.argv[1] if len(sys.argv) > 1 else "genesis"
+    both = "both" in sys.argv[2:]
+    bands = not both and "nobands" not in sys.argv[2:]     # the defencemen's Weight bands: in the value by default
     cfg = SYSTEMS[system]
     FWD.clear()
     FWD.update(cfg["fwd"])
     DEF.clear()
     DEF.update(cfg["dfn"])
+    if both:
+        # every rating's total at both ends (goals for plus goals against cut, a player's roster step: defence_value's
+        # fit with the defencemen's Weight in bands, defence_weight_bands.py), each shrunk by how well it is measured
+        be = json.loads((ROOT / "reports" / f"both_ends_{system}.json").read_text())
+        FWD.clear()
+        FWD.update({int(k): shrink(*v) for k, v in be["F"].items()})
+        DEF.clear()
+        DEF.update({int(k): shrink(*v) for k, v in be["D"].items()})
+        BOTH = {k: shrink(*v) for k, v in be["bands"].items()}
+        print("both ends: forwards " + ", ".join(f"{k}:{v:+.3f}" for k, v in sorted(FWD.items())) + "; defencemen "
+              + ", ".join(f"{k}:{v:+.3f}" for k, v in sorted(DEF.items())) + f"; bands middle {BOTH['mid']:+.3f}, heavy "
+              f"{BOTH['heavy']:+.3f}")
     GOALIE_SV_STEP = cfg["gsv"]
     STK_STEP = cfg.get("stk_step", 0)
+    FULL = both
+    if bands:
+        # the scoring weights kept, and the defencemen's Weight band added (the fit with team fixed effects too, so it
+        # is measured by lineup choices within a team: defence_weight_bands.py --teams), shrunk by how well measured
+        be = json.loads((ROOT / "reports" / f"both_ends_{system}_teams.json").read_text())
+        BOTH = {k: shrink(*v) for k, v in be["bands"].items()}
+        print(f"defencemen's Weight bands (within teams): middle {BOTH['mid']:+.3f}, heavy {BOTH['heavy']:+.3f} goals a game")
     mod = genesis if system == "genesis" else __import__("systems.snes", fromlist=["snes"])
     teams = mod.read_teams(rom(cfg["rom"]))
     pdata = json.loads((ROOT / "reports" / "classic_players.json").read_text())[cfg["key"]]
@@ -191,7 +230,9 @@ def main():
     lo, hi = np.percentile(ratios, [10, 90])
     print(f"  the forwards' Weight coefficient {beta[3]:+.2f} +- {np.sqrt(cov[3, 3]):.2f} (one s.e.); the ratio's middle 80% "
           f"over resampled teams {lo:+.2f} to {hi:+.2f}")
-    FWD[0] = WEIGHT
+    if not both:
+        FWD[0] = WEIGHT
+
     print(f"forwards' Weight in the team fit: {beta[3]:+.2f} win-chance points a Weight point of the team's average forward"
           + (f", = {WEIGHT:+.2f} goals a game of a forward's value (his own scoring alone: {cfg['fwd'][0]:+.2f})"
              if cfg["team_weight"] else f"; the value keeps his own scoring's {WEIGHT:+.2f}"))
@@ -214,7 +255,7 @@ def main():
             ps = "F" if skater_no < nfwd[ti] else "D"           # the roster's order: goalies, forwards, defencemen
             skater_no += 1
             w = FWD if ps == "F" else DEF
-            raw[ps][key] = sum(v * a[i] for i, v in w.items()) - (STK_STEP if a[8] <= 3 else 0)
+            raw[ps][key] = sum(v * a[i] for i, v in w.items()) - (STK_STEP if a[8] <= 3 else 0) +                 (d_band(a) if ps == "D" else 0)
             info[key] = dict(pos=ps, ovr=p["ovr"], games=s["n"] if s else 0, a=a)
     lv = {}
     for ps in raw:
@@ -257,7 +298,7 @@ def main():
     for r, a, b in sorted(zip(trows, p_lv, p_ovr), key=lambda x: -x[0]["strength"]):
         print(f"| {r['team']} | {r['strength']:+.1f} | {a:+.1f} | {b:+.1f} | {r['fw']:.1f} | {r['goalie']} |")
     out = {f"{k[0]}|{k[1]}": dict(lv=lv[k], **{x: info[k][x] for x in ("pos", "ovr", "games")}) for k in lv}
-    (ROOT / "reports" / f"league_value_{system}.json").write_text(json.dumps(out))
+    (ROOT / "reports" / f"league_value_{system}{'_both' if both else '' if bands else '_nobands'}.json").write_text(json.dumps(out))
     top_players_rating(lv, info, strength, system)
 
 
