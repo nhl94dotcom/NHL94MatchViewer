@@ -154,7 +154,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       fix's in-game test against the original) and the per-fix tests (`*_fix_test.py`, `*_test.py`);
       `gen_onetimer_assist_test.py` (the Genesis one-timer assist bug: a fix, built and played; `builds` lays
       NOSE4Web's builds over the test ROM); `gen_open_net_fix_test.py RETAIL BUILD` (the open-net one-timer fix: the aim and goals with the
-      goalie in position and out of the sightline).
+      goalie in position and out of the sightline); `gen_repeat_check_fix_test.py RETAIL BUILD` (the repeated-checks
+      fix: the same checker again by delay, paired against a fresh pair).
     - Graphics: score-box logos (`snes_score_logo_check.py` / `gen_score_logo_check.py`: what the original leaves
       free; `snes_score_logo_build_check.py` / `gen_score_logo_build_check.py`: a logo build against its original;
       `gen_lc_box_check.py`: the line-change box), `gen_announcer_check.py ORIGINAL NEW OUT` (an announcer picture build against the original: every

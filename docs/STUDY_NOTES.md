@@ -2493,6 +2493,41 @@ Game Setup; video and colour memory from the cores).
   rows 0-1 and 3-7 unchanged. The screenshots outside the rectangle differ only on Ron Barr's old cells (3,171 pixels),
   but for three letters typed a frame apart on the 1 MB build's first sample.
 
+## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
+
+The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at
+$140B8 a NOP. At $FFAC6: `cmpa.l (PlayerChked $DEDC).w,a2 / bne`, `cmpa.l (PlayerChking $DEE0).w,a3 / bne`, `tst.w
+$5E(a2) / beq` (nopuck and nopuckb both counted out), and only if all three hold `addq.l #4,sp / rts` (leaves FallDown
+as the old rts did); otherwise back to FallDown, which records the pair as before. Nothing else changed (the header
+checksum, the boot's ROM-sum jsr, the room at $FFAC0 as in NOSE4Web's other builds).
+
+`gen_repeat_check_fix_test.py RETAIL BUILD [N]` (the test ROM and the build laid over it, one process each): the pad-1
+skater bursts into an away skater standing still. Moving a player by writing his position leaves the game's y-sorted
+object list out of order, and collisions are tested only between neighbours in it (`checkcoll`), so after each move
+both are held still 8 frames before the burst.
+
+- **The first check** (the target 2 Weight points heavier: a person's check wraps, always down): the team's checks +1;
+  the fall animation ($0DD8) ends 135 frames after the hit, his nopuck (120 at the hit) about 15 frames before that.
+- **The same checker again** (still 2 heavier), contact about 30-170 frames after the first hit: the original never
+  knocks him down; the build does from the first frame he is out of the fall animation (blocked before that by
+  FallDown's own animation tests, nopuck or not), each time +1 check.
+- **Equal weights, paired by seed** (the pair recorded by a first heavy check): the build's repeated check knocked him
+  down exactly as a fresh pair (PlayerChked cleared) did, 40 of 40 at both approach speeds tried, the original 0 of 40.
+  The approach builds enough impact for a sure knockdown, so this shows the repeated pair is now a fresh one, not the
+  roll's rate. The check count never rose by more than one in a collision.
+- **How long the falls last** (the recorded league games, frames from the hit): knocked down ($0DD8 / $0D26) median 134
+  (up to 164-213), upended ($136A) 148: both in FallDown's exclusion list (SPAfallfwd / SPAfallback / SPAflip).
+  Into the boards (four animations) about 102, not excluded but inside the 120. **Into the bench ($193E, $1A00, the
+  SPAbenchcheck falls near centre ice) 154-157, not excluded**: for the last 35 frames or so the same checker can
+  flatten him again. Any other checker already could in the original.
+- **Other nopuck settings** (each keeps only the last pair's checker off that man, and only that long): his own pass
+  (dopass) or shot (doshot) 16 frames, a faceoff 20, losing the puck to a steal 20 + about half the stealer's
+  Stickhandling, a bobble, a puck off his body, a bounce-off or a d-pad turn with the puck 8-10, the goalie 8.
+- **One-timers:** FallDown records the pair before its one-timer exits, sets no nopuck there and counts nothing, so a
+  one-timer contact can now call FallDown again on later frames; each call exits the same way.
+- **The SNES has no pair block** (its FallDown, `src/routines/collide/FallDown.asm`, goes from the animation tests
+  straight to the stumble roll).
+
 ## NOSE4Web's open-net one-timer fix, played (2026-11-10, e3de67f: nhl94_open_net_fix.bin)
 
 The fix (from GENESIS_SHOOTING 4.4): shotdiradj's `clr.w d0` at $C5FC -> `moveq #8,d0`, so a one-timer whose
