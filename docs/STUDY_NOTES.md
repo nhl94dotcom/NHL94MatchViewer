@@ -2674,6 +2674,20 @@ third) and then repeats the test; $1725C and $7C4C original; the end code as bef
 - **CDL build** (one home shot put in, `--force`): the same, a final 2-1, the settings unchanged; **the plus-minus log
   again kept the shootout goal** (length $000E), as on the after-overtime build.
 
+### Both choices remade (2026-11-11, NOSE4Web cb1ba29: the plus-minus log's length word kept too)
+
+The start code adds `move.w ($DEF4).w,($F74E).w` after the scoring summary's length ($F74C); the end code puts it back
+after the summary, before the winners' goal. All four ROMs:
+- **The shootout after overtime (retail):** the checks as for the after-period-3 one, all passed: 1-0 in the shootout
+  after 35 rounds, a 2-1 final with only the score changed, the save memory byte for byte as after a 2-1 regulation
+  win; regulation and overtime-end wins at retail's frame; the playoffs until a goal; Shootout mode as before.
+- **CDL, both choices** (one home shot put in): the plus-minus log's length word back to $0000 after the shootout, as
+  after the same game won in regulation (the shootout goal's entry bytes stay past the length, unread); the settings
+  unchanged. The after-period-3 retail build again went straight to the shootout (0-1 after 77 rounds, a 1-2 final).
+- **$FFDEF4 in the original game** is `PALflag`, its last variable: cleared at power-on and bit 0 set on a PAL console
+  (hockey94's start), read nowhere else; zero in all 1,498 recorded snapshots (NTSC). Saving and restoring it is harmless
+  on any ROM; on a PAL system the plus-minus log's length word starts at 1.
+
 ## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
 
 The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at
