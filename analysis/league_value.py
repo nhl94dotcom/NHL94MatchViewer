@@ -20,7 +20,8 @@ on the three parts (forwards, defencemen, goalie) each way, and how much of the 
 
 Reads the ROM (the retail Genesis rosters), reports/classic_players.json (classic_player_guide.py: games and
 positions; aggregates of the leagues' results, no person named) and docs/COACH_RATING.md. Prints tables for
-RATING_VALUES.md. python analysis/league_value.py [genesis|snes]   (the SNES: its own steps, ROM and team strengths)"""
+RATING_VALUES.md, and a team rating from the top players only (top 4 forwards, top 3 defencemen, the best goalie).
+python analysis/league_value.py [genesis|snes]   (the SNES: its own steps, ROM and team strengths)"""
 import json
 import re
 import sys
@@ -257,6 +258,41 @@ def main():
         print(f"| {r['team']} | {r['strength']:+.1f} | {a:+.1f} | {b:+.1f} | {r['fw']:.1f} | {r['goalie']} |")
     out = {f"{k[0]}|{k[1]}": dict(lv=lv[k], **{x: info[k][x] for x in ("pos", "ovr", "games")}) for k in lv}
     (ROOT / "reports" / f"league_value_{system}.json").write_text(json.dumps(out))
+    top_players_rating(lv, info, strength, system)
+
+
+def top_players_rating(lv, info, strength, system):
+    """A team rating from its top players only (2026-11-11, the user: line changes off, only the top skaters and the #1
+    goalie play): the average league value of its top 4 forwards and top 3 defencemen, and its best goalie's, weighted
+    by a fit of the Classic teams' strength on the three (win-chance points against an average team a value point),
+    the weights scaled to add up to 1, so the rating is on the players' 0-99 scale."""
+    by = defaultdict(lambda: {"F": [], "D": [], "G": []})
+    for (ab, name), v in lv.items():
+        by[ab][info[(ab, name)]["pos"]].append(v)
+    parts = {a: [float(np.mean(sorted(d["F"], reverse=True)[:4])), float(np.mean(sorted(d["D"], reverse=True)[:3])),
+                 float(max(d["G"]))] for a, d in by.items() if d["F"] and d["D"] and d["G"]}
+    teams = [a for a in parts if a in strength]
+    X, y = [parts[a] for a in teams], np.array([strength[a] for a in teams])
+    beta, _, r2, loo = loo_fit(X, y)
+    A = np.column_stack([np.array(X, float), np.ones(len(X))])
+    rng = np.random.default_rng(1)
+    shares = []
+    for _ in range(4000):
+        ix = rng.integers(0, len(y), len(y))
+        b, *_ = np.linalg.lstsq(A[ix], y[ix], rcond=None)
+        shares.append(b[:3] / b[:3].sum())
+    lo, hi = np.percentile(np.array(shares), [10, 90], axis=0)
+    w = beta[:3] / beta[:3].sum()
+    print(f"\nTop players' team rating (top 4 forwards, top 3 defencemen, top goalie): Classic teams' strength explained "
+          f"R^2 {r2:.2f}, left one team out {loo:.2f}; win-chance points a value point F {beta[0]:.2f}, D {beta[1]:.2f}, "
+          f"G {beta[2]:.2f}; weights F {w[0]:.2f} ({lo[0]:.2f} to {hi[0]:.2f}), D {w[1]:.2f} ({lo[1]:.2f} to {hi[1]:.2f}), "
+          f"G {w[2]:.2f} ({lo[2]:.2f} to {hi[2]:.2f}) (middle 80% over resampled teams)")
+    print("| Team | Top-players rating | Top 4 F | Top 3 D | Top G | Strength |")
+    print("|---|---|---|---|---|---|")
+    for a in sorted(parts, key=lambda a: -float(np.array(parts[a]) @ w)):
+        f, d, g = parts[a]
+        st = f"{strength[a]:+.1f}" if a in strength else "-"
+        print(f"| {a} | {float(np.array(parts[a]) @ w):.1f} | {f:.1f} | {d:.1f} | {g:.0f} | {st} |")
 
 
 if __name__ == "__main__":

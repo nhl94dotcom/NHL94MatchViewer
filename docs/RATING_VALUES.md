@@ -477,6 +477,20 @@ anything stronger (+4.8 +- 3.6 win points for a whole team).
 (2026-11-11: the first ends given were from positions guessed by ratings for players outside the leagues' regulars,
 and the goalie steps rounded; NOSE4Web's check found it.)
 
+**A team rating from the top players only** (2026-11-11, the user: with line changes off only the top skaters and the
+#1 goalie play; top 4 forwards and top 3 defencemen because coaches pick slightly different lines). Each team's top 4
+forwards and top 3 defencemen by league value (their average) and its best goalie's value, weighted by a fit of the
+Classic teams' strength on the three, the weights scaled to add up to 1 (`league_value.py`, last table):
+
+**Genesis team rating = 0.74 x top-4 forwards + 0.10 x top-3 defencemen + 0.16 x top goalie** (league values, 0-99).
+A rating point is worth about one win-chance point against an average team (0.78 + 0.10 + 0.17). It explains the
+teams' strength nearly as well as the regulars as they actually played (R^2 0.64, each team left out 0.44, against
+0.72 / 0.47), from the ROM alone; the same top players by the game's Overall 0.34 / 0.03. Top 3 + 2 did the same
+(0.65 / 0.46). How sure: forwards 0.59-0.88 and goalie 0.10-0.26 (middle 80% over resampled teams), defencemen -0.06
+to 0.24 (the least sure: their league value is offence only). Highest: MTL 88.1, CHI 87.2, DET 86.2, BUF 84.6, BOS
+83.7; lowest ANH 71.0, FLA 72.3, SJ 72.9, OTW 73.3, NYI 75.5. **The SNES:** no usable weights (forwards -0.17 to 0.76);
+its team test can't check any team rating.
+
 **Limits.** The scoring weights come from fits within each team (who scores on a team, not how much more the team
 scores), and Weight's size from only 22 teams; the defencemen's value is offence only; a goalie's Agility counts only
 while the computer has him (a person's goalie always has the longest reach). Chunk C (the Awareness ratings) may move
