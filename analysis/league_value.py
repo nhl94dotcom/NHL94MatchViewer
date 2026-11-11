@@ -8,6 +8,7 @@ Classic leagues' own results, and a check of it against the teams' measured stre
 - Defencemen: points a game per step (PLAYER_GUIDE_GENESIS): Pass Accuracy +0.060, Checking +0.042, Agility +0.033,
   Speed +0.026, Shot Power +0.013, Shot Accuracy +0.009, Weight -0.022, Off. Awareness -0.018, Stickhandling -0.010.
   What a defenceman's ratings do to goals against has not been measured, so this is his offence only.
+- The SNES: its own steps (SYSTEMS), and a skater at Stickhandling 3 or less loses 0.028 (the catching cutoff, below).
 - Goalies: save % +2.25 points per Agility step (PLAYER_GUIDE_GENESIS), times the shots a goalie faces a game in these
   leagues: goals saved a game; Puck Control and the rest left at 0 (RATING_VALUES: little or nothing).
 Each position's weighted sum is put on 40-99 across its retail players (the lowest 40, the highest 99).
@@ -46,8 +47,15 @@ SYSTEMS = {
                     gsv=0.0225, rom="9438f5dd_a738ea1c.bin", key="Genesis", col=0, team_weight=True),
     "snes": dict(fwd={2: 0.18, 5: 0.16, 9: 0.14, 1: 0.14, 8: 0.14, 0: 0.08},
                  dfn={8: 0.182, 2: 0.176, 3: 0.102, 0: 0.067, 6: 0.057, 1: -0.027, 5: -0.016, 9: -0.014, 12: -0.087},
-                 gsv=0.0031, rom="cd85e387.smc", key="SNES", col=1, team_weight=False),
+                 gsv=0.0031, rom="cd85e387.smc", key="SNES", col=1, team_weight=False,
+                 stk_step=0.028),
 }
+# The SNES catching cutoff (RATING_VALUES "SNES catching follows the game's hot / cold roll", 2026-11-11): a skater at
+# Stickhandling 3 or less bobbles about 7.8% of the passes reaching him over a season (12% in the 54% of games his roll
+# doesn't max it, 3% otherwise) against about 3% at 4+: 0.40 more bobbles a game on 8.3 passes; a bobble gives the other
+# team the puck 35% of the time, a swing of about 0.2 goals (0.10 a possession each way): about 0.028 goals a game,
+# taken off his value as one step (the linear Stickhandling weight stays). The team test can't size it on the SNES.
+STK_STEP = 0
 DEF = {12: 0.060, 6: 0.042, 1: 0.033, 2: 0.026, 5: 0.013, 9: 0.009, 0: -0.022, 3: -0.018, 8: -0.010}
 GOALIE_SV_STEP = 0.0225
 
@@ -135,15 +143,16 @@ def team_parts(teams, pdata, strength, shots_per_game):
         g = max(gk, key=lambda x: x[1])[0]
         avg = lambda L, f: sum(f(p) * n for p, n in L) / sum(n for _, n in L)
         rows.append(dict(team=ab, strength=strength[ab],
-                         f=avg(F, lambda p: sum(v * p["a"][i] for i, v in FWD.items() if i != 0)),
-                         d=avg(D, lambda p: sum(v * p["a"][i] for i, v in DEF.items())),
+                         f=avg(F, lambda p: sum(v * p["a"][i] for i, v in FWD.items() if i != 0)
+                               - (STK_STEP if p["a"][8] <= 3 else 0)),
+                         d=avg(D, lambda p: sum(v * p["a"][i] for i, v in DEF.items()) - (STK_STEP if p["a"][8] <= 3 else 0)),
                          g=GOALIE_SV_STEP * g["a"][1] * shots_per_game, fw=avg(F, lambda p: p["a"][0]),
                          fovr=avg(F, lambda p: p["ovr"]), dovr=avg(D, lambda p: p["ovr"]), govr=g["ovr"], goalie=g["name"]))
     return rows
 
 
 def main():
-    global WEIGHT, GOALIE_SV_STEP
+    global WEIGHT, GOALIE_SV_STEP, STK_STEP
     system = sys.argv[1] if len(sys.argv) > 1 else "genesis"
     cfg = SYSTEMS[system]
     FWD.clear()
@@ -151,6 +160,7 @@ def main():
     DEF.clear()
     DEF.update(cfg["dfn"])
     GOALIE_SV_STEP = cfg["gsv"]
+    STK_STEP = cfg.get("stk_step", 0)
     mod = genesis if system == "genesis" else __import__("systems.snes", fromlist=["snes"])
     teams = mod.read_teams(rom(cfg["rom"]))
     pdata = json.loads((ROOT / "reports" / "classic_players.json").read_text())[cfg["key"]]
@@ -203,7 +213,7 @@ def main():
             ps = "F" if skater_no < nfwd[ti] else "D"           # the roster's order: goalies, forwards, defencemen
             skater_no += 1
             w = FWD if ps == "F" else DEF
-            raw[ps][key] = sum(v * a[i] for i, v in w.items())
+            raw[ps][key] = sum(v * a[i] for i, v in w.items()) - (STK_STEP if a[8] <= 3 else 0)
             info[key] = dict(pos=ps, ovr=p["ovr"], games=s["n"] if s else 0, a=a)
     lv = {}
     for ps in raw:

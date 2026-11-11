@@ -184,8 +184,9 @@ stumble); catches are passes reaching a skater, against the converter's bobbles.
   plus the game-weighted share of its regular skaters past the cutoff): SNES, Stickhandling 3 or less: **-5.5 +- 3.5**
   win-chance points for a whole team of them (R^2 0.41 -> 0.49, left one team out 0.09 -> 0.12): the expected direction,
   1.6 standard errors, about -1 point for one regular of five; Genesis, Stickhandling 5+ (the wobble): +3.7 +- 3.9,
-  nothing (left one out 0.47 -> 0.45). Not added to the formula: the SNES hint is too weak to size a step yet, and the
-  SNES value already weights Stickhandling heavily (forwards 0.14, defencemen 0.182, their largest).
+  nothing (left one out 0.47 -> 0.45). The SNES team fit can't size a step (its forwards' value coefficient comes out
+  negative), so the SNES step in the league value (below, "The SNES catching step") is sized from the bobbles
+  themselves.
 - **What a step is worth** (about 76 possessions a game, 0.10 goals each; about 8 passes reach each skater a game and
   he is knocked down with the puck about 0.8 times (Genesis), 1.8 (SNES)):
   - Genesis 4 -> 5: the wobble arrives, about 0.8 x 0.26 x 0.74 = **0.15 possessions a game** kept, plus 0.02 from
@@ -464,7 +465,14 @@ All-Star teams left out), put on 40 + 59 x (sum - low) / (high - low), clamped t
 | | Forwards | Defencemen | Goalies (a step) |
 |---|---|---|---|
 | Genesis ends | -6.344 to 2.175 | -0.187 to 0.589 | 0.531 to 1.594 (0.2655 an Agility step) |
-| SNES ends | 1.160 to 4.540 | 0.815 to 2.422 | 0.072 to 0.215 (0.0358 an Agility step) |
+| SNES ends | 1.132 to 4.540 | 0.787 to 2.422 | 0.072 to 0.215 (0.0358 an Agility step) |
+
+**The SNES catching step** (2026-11-11, after the user): a SNES skater (forward or defenceman) at Stickhandling 3 or
+less has **0.028 taken off his sum** before scaling: his extra bobbles (about 7.8% of the passes reaching him over a
+season against 3% at 4+, 0.40 a game on 8.3 passes, each a 0.2-goal swing a third of the time). It moves no value by
+more than a point (114 retail players down 1, 31 up 1 from the rescaling) and the SNES team test edges up (0.41 to 0.43;
+left one team out 0.09 to 0.12). Not on the Genesis: there the teams with more Stickhandling-3-or-less regulars were if
+anything stronger (+4.8 +- 3.6 win points for a whole team).
 
 (2026-11-11: the first ends given were from positions guessed by ratings for players outside the leagues' regulars,
 and the goalie steps rounded; NOSE4Web's check found it.)
