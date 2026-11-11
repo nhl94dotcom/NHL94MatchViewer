@@ -180,6 +180,12 @@ stumble); catches are passes reaching a skater, against the converter's bobbles.
   include hot / cold, and a Stick Handling number **below its band's middle** is maxed in play (SNES_MECHANICS 2.2:
   under 54 for a roster 3, under 43 for a 2). After 84 bobbles the other team had the puck next 35% of the time, a shot
   within 12.5 game s 13 times and a goal 2 (29 games): costly when it happens, about one goal in 15 games.
+- **A cutoff in the league value? The team test** (2026-11-11; each Classic team's strength against its league value
+  plus the game-weighted share of its regular skaters past the cutoff): SNES, Stickhandling 3 or less: **-5.5 +- 3.5**
+  win-chance points for a whole team of them (R^2 0.41 -> 0.49, left one team out 0.09 -> 0.12): the expected direction,
+  1.6 standard errors, about -1 point for one regular of five; Genesis, Stickhandling 5+ (the wobble): +3.7 +- 3.9,
+  nothing (left one out 0.47 -> 0.45). Not added to the formula: the SNES hint is too weak to size a step yet, and the
+  SNES value already weights Stickhandling heavily (forwards 0.14, defencemen 0.182, their largest).
 - **What a step is worth** (about 76 possessions a game, 0.10 goals each; about 8 passes reach each skater a game and
   he is knocked down with the puck about 0.8 times (Genesis), 1.8 (SNES)):
   - Genesis 4 -> 5: the wobble arrives, about 0.8 x 0.26 x 0.74 = **0.15 possessions a game** kept, plus 0.02 from
