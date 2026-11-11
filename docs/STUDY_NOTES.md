@@ -2552,7 +2552,13 @@ Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Seas
   game's code changed) works:** a regular-season game tied 1-1 at the end of overtime played three more 10:00 overtimes
   (computer against computer) and ended on a goal, 1-2 with 5:04 left in the third (gsp 4, the game over as usual); the
   playoffs were as on retail (retail: extra 10:00 overtimes until a goal, 1-2 in the third; the build: 1-2 in the
-  first).
+  first). (A score of 3-4 that an earlier check printed was an intermission highlight of another game, not ours.)
+- **The SNES builds** (`snes_ot_goal_check.py ROM OUT`; NOSE4Web abba8ad: NHL94_overtime_until_goal.smc and
+  nhl94snes_SA1_overtime_until_goal.sfc; clockcont_0's regular-season game-over `beq` made `EA EA`, PeriodOver's
+  play-mode `bne` made `bra`, nothing else but the checksum): a game set to overtime with 3 s left at 1-1, computer
+  against computer. Retail NHL94.smc: the regular season over at 1-1 (period 4), the playoffs on in 5:00 overtimes until
+  a goal. The retail build: three more 5:00 overtimes, then 2-1 and the game over; the playoffs until a goal (2-1). The
+  SA-1 build: five more overtimes, then 2-1 and the game over; the playoffs the same.
 
 ## A shootout to settle a tied regular-season game (Genesis, 2026-11-11, for NOSE4Web; from the code, not built)
 
