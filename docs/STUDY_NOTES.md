@@ -3500,3 +3500,29 @@ have the same code $1B later ($68 later for setInjuryType); found by byte patter
   (SPFfallback+1 / +2 / +3, SPFduck; +17 / +18 / +19, SPFduck+4 for .d3). L is the lying time in ticks (about frames):
   100 is the ordinary fall, 300 about 5 s (real), 600 about 10 s. The Genesis period injury's SPAinjury1 is never
   reached then.
+- **The SA-1 build** (nhl94snes_SA1_penalty_time_30.sfc): minors 60 s, served 59-60, 2 minutes each, in three games;
+  no major came up there (the same multiply as the 1 MB build's, whose majors served 150 s).
+
+## McMarkis's SNES fighting as NOSE4Web puts it in, played (2026-11-11, b3f1510)
+
+NHL94_fighting.smc (bank $A0), NHL94_Classic_fighting.smc ($A0), SDL16_fighting.smc ($A3); the bonus word at the block's
++$446C and +$47D (a 512-byte copier header on the Classic and SDL16 files moves every offset $200); bonus 0 and 8 tried
+in scratch copies. `snes_fight_rate.py ROM none GAMES OUT` (none: no Fighting option to set; $E708 is ordinary work
+RAM on these builds), `snes_fight_shots.py ROM OUT [minutes] [startonly]` (a computer game until a player's pflags
+$0400, pictures every 20 frames, the calls, then the pause menu and an instant replay; startonly: START through a league
+ROM's own setup defaults, as SDL16's setup screen differs from retail's), `snes_fight_capture.py ... --no-option`.
+- **Fights**: on all three builds the names box ("14 K. Haller vs. 7 T. Sandstrom"), gloves and sticks on the ice, the
+  punching, one fighter down, the fade, then the penalty scoreboard: both fighters a 5:00 major ($2A "Fighting", and
+  $2C "Fighting *", its asterisk drawn as a tick), the pause menu with both in the box (4:53), the instant replay with
+  its controls, then a faceoff. On SDL16 the fight ended with "Injury to: 10 E. Tikkanen, Out for the game" (the
+  NHLPA 93 fight injury). No instigator minor came: only a fight that starts from a shoulder check gives one (93S
+  SetInst), and none of the three did.
+- **The bonus**: three computer games each (the computer on both sides, penalties on): bonus 0 and the default 2 no
+  fights (the same games: the bonus only matters at the fight check), bonus 8 fights in two of three (one each, the
+  majors called).
+- **SDL16 otherwise**: plays as before (goals, checks, the clock; the original SDL16 behaves the same in the harness).
+- **The injury risk on the same hook** ($9E:9BD2, FallDown .2 where a knockdown is counted: `ldy a2 / lda #$0078`):
+  McMarkis's F_countcheck is straight-line (counts the check, does the two replaced instructions, `jml $9E:9BD7`), and
+  the injury risk's count is the same shape, so they chain: the hook to the injury risk's code, ending in `jml
+  F_countcheck` instead of its own tail; X (the hitter) and 16-bit A / X kept. No RAM clash (the fights use the game's
+  arrays around $1463 and the direct page, the injury risk $7E:F034 up).

@@ -7,7 +7,8 @@ intermission screens wait for a button). The last 20 s (real) are kept as it pla
 pflags $0400 (fighting) is seen, 40 s more are recorded and the capture written: OUT/capture.json, fast.bin.gz,
 full.bin.gz. Then: python tools/export_match.py OUT --rom ROM --out SOMEWHERE
 
-python snes_fight_capture.py ROM OUT [max_minutes]"""
+python snes_fight_capture.py ROM OUT [max_minutes] [--no-option]   (--no-option: a build whose fights are always on,
+with no Fighting option to set: McMarkis's 1 MB-based build as NOSE4Web puts it in)"""
 import collections
 import gzip
 import json
@@ -51,13 +52,14 @@ class Reader:
 
 def main():
     rom, out = sys.argv[1], Path(sys.argv[2])
-    limit = int(sys.argv[3]) if len(sys.argv) > 3 else 30
+    limit = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].isdigit() else 30
     out.mkdir(parents=True, exist_ok=True)
     g = Snes(rom)
     e = g.e
     r = Reader(g)
     e.unserialize(g.bases[0])
-    r.setw(0xE708, 0)                      # OptFights: on (in play)
+    if "--no-option" not in sys.argv:          # (a build with no Fighting option: $E708 is ordinary work RAM there)
+        r.setw(0xE708, 0)                      # OptFights: on (in play)
     r.setw(0x34C4, 2)                      # OptPen: on
     keep = collections.deque(maxlen=20 * FPS)
     fulls = collections.deque(maxlen=21)
