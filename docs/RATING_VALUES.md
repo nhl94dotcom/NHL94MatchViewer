@@ -328,41 +328,53 @@ Buffalo and Montreal, the strongest, average 5.9-6.1.
 |---|---|---|---|---|---|
 | Jeremy Roenick | CHI | 99 | 1 | 89 | 8 |
 | Theoren Fleury | CGY | 98 | 2 | 86 | 12 |
-| Dino Ciccarelli | DET | 93 | 3 | 80 | 25 |
-| Andrei Kovalenko | QUE | 93 | 4 | 69 | 78 |
-| Doug Gilmour | TOR | 93 | 5 | 89 | 9 |
-| Pavel Bure | VAN | 93 | 6 | 90 | 6 |
-| Brian Bradley | TB | 91 | 7 | 71 | 69 |
-| Steve Yzerman | DET | 89 | 8 | 95 | 3 |
-| Nelson Emerson | STL | 89 | 9 | 70 | 73 |
-| Teemu Selanne | WPG | 89 | 10 | 90 | 7 |
-| Dallas Drake | DET | 88 | 11 | 66 | 83 |
-| Wayne Gretzky | LA | 88 | 12 | 87 | 10 |
-| Ted Donato | BOS | 87 | 13 | 65 | 85 |
-| Joe Juneau | BOS | 87 | 14 | 72 | 62 |
-| Pat LaFontaine | BUF | 87 | 15 | 91 | 5 |
-| Alexander Mogilny | BUF | 87 | 16 | 96 | 2 |
-| Neal Broten | DAL | 87 | 17 | 69 | 76 |
-| Stephan Lebeau | MTL | 87 | 18 | 74 | 49 |
-| Russ Courtnall | DAL | 86 | 19 | 73 | 54 |
-| Denis Savard | MTL | 86 | 20 | 75 | 41 |
+| Dino Ciccarelli | DET | 94 | 3 | 80 | 25 |
+| Doug Gilmour | TOR | 94 | 4 | 89 | 9 |
+| Pavel Bure | VAN | 94 | 5 | 90 | 6 |
+| Andrei Kovalenko | QUE | 93 | 6 | 69 | 78 |
+| Brian Bradley | TB | 92 | 7 | 71 | 69 |
+| Teemu Selanne | WPG | 91 | 8 | 90 | 7 |
+| Steve Yzerman | DET | 90 | 9 | 95 | 3 |
+| Wayne Gretzky | LA | 90 | 10 | 87 | 10 |
+| Nelson Emerson | STL | 90 | 11 | 70 | 73 |
+| Ted Donato | BOS | 89 | 12 | 65 | 85 |
+| Pat LaFontaine | BUF | 89 | 13 | 91 | 5 |
+| Dallas Drake | DET | 89 | 14 | 66 | 83 |
+| Stephan Lebeau | MTL | 89 | 15 | 74 | 49 |
+| Joe Juneau | BOS | 88 | 16 | 72 | 62 |
+| Alexander Mogilny | BUF | 88 | 17 | 96 | 2 |
+| Neal Broten | DAL | 88 | 18 | 69 | 76 |
+| Russ Courtnall | DAL | 88 | 19 | 73 | 54 |
+| Denis Savard | MTL | 88 | 20 | 75 | 41 |
 
-- **Overall's biggest overrates are the heavy stars:** Mario Lemieux (rank 1 by Overall, 80 by league value), Cam Neely
+- **Overall's biggest overrates are the heavy stars:** Mario Lemieux (rank 1 by Overall, 78 by league value), Cam Neely
   (11 -> 85), Mark Messier (16 -> 88), Eric Lindros (19 -> 91), Jaromir Jagr (29 -> 89), Kevin Stevens (35 -> 92).
   With Weight at the low end of its range (-0.16) they fall far less; at any value they fall.
-- **Its biggest underrates are light shooters:** Andrei Kovalenko (78 -> 4), Dallas Drake (83 -> 11), Ted Donato (85 ->
-  13), Bob Bassen (92 -> 24), Nelson Emerson (73 -> 9), Brian Bradley (69 -> 7).
-- Gretzky (Shot Power 2, Shot Accuracy 2, below the slapshot cliff) stays near his Overall: his light Weight (4) makes
+- **Its biggest underrates are light shooters:** Ted Donato (85 -> 12), Andrei Kovalenko (78 -> 6), Dallas Drake (83 ->
+  14), Bob Bassen (92 -> 24), Brian Bradley (69 -> 7), Nelson Emerson (73 -> 11).
+- Gretzky (Shot Power 2, Shot Accuracy 2, below the slapshot cliff) stays at his Overall's rank (10): his light Weight (4) makes
   up for the shot.
 
 **Defencemen with 150+ games (63), the top 12** (offence only): Ray Bourque 99 (Overall rank 1), Phil Housley 97 (3),
-Don Sweeney 93 (17), Gary Suter 90 (5), Brian Leetch 88 (9), Chris Chelios 86 (2), Paul Coffey 86 (4), Glen Wesley 85
-(18), Nicklas Lidstrom 85 (25), Dave Ellett 85 (16), Scott Stevens 84 (8), James Patrick 84 (19). Overrated by Overall:
+Don Sweeney 94 (17), Gary Suter 91 (5), Brian Leetch 90 (9), Chris Chelios 88 (2), Paul Coffey 88 (4), Glen Wesley 87
+(18), Nicklas Lidstrom 87 (25), Dave Ellett 87 (16), Scott Stevens 86 (8), James Patrick 86 (19). Overrated by Overall:
 Steve Chiasson (21 -> 52), Larry Murphy (11 -> 40), Jeff Brown (20 -> 49), Rob Blake (14 -> 39).
 
 **Goalies with 150+ games (24):** Ed Belfour and Patrick Roy 99 (Agility 6), Grant Fuhr 84 (5), then the Agility-4
 goalies at 70. By Overall, Andy Moog (rank 20), Jon Casey (18), Chris Terreri (17) and Sean Burke (16) sit well below
 their Agility; Felix Potvin (4 -> 14), Bob Essensa (7 -> 16) and Curtis Joseph (5 -> 13) well above it.
+
+**For an editor (NOSE4Web): the formula and the fixed scale.** The weighted sum of the stored ratings (roster steps 0-6,
+Weight as stored), by the roster's own positions (goalies, then the team record's forward count, then defencemen; the
+All-Star teams left out), put on 40 + 59 x (sum - low) / (high - low), clamped to 0-99, with the retail roster's ends:
+
+| | Forwards | Defencemen | Goalies (a step) |
+|---|---|---|---|
+| Genesis ends | -6.344 to 2.175 | -0.187 to 0.589 | 0.531 to 1.594 (0.2655 an Agility step) |
+| SNES ends | 1.160 to 4.540 | 0.815 to 2.422 | 0.072 to 0.215 (0.0358 an Agility step) |
+
+(2026-11-11: the first ends given were from positions guessed by ratings for players outside the leagues' regulars,
+and the goalie steps rounded; NOSE4Web's check found it.)
 
 **Limits.** The scoring weights come from fits within each team (who scores on a team, not how much more the team
 scores), and Weight's size from only 22 teams; the defencemen's value is offence only; a goalie's Agility counts only
@@ -394,9 +406,9 @@ league value -0.29, Overall -0.16; with the forwards' Weight 0.09 and 0.03). SNE
 either number; the SNES value rests on the players' own results alone.
 
 **SNES forwards with 150+ league games (65), the top 20:** Mogilny 99 (Overall rank 2), Lemieux 99 (1), Yzerman 94 (3),
-Klima 93 (35), Selanne 93 (7), Roenick 92 (8), Lindros 92 (18), Sandstrom 91 (25), Gartner 91 (16), Hull 91 (23), Bure
-91 (6), Neely 90 (10), Ciccarelli 90 (24), Robitaille 90 (14), Modano 89 (21), Carson 89 (36), Turgeon 89 (22), Fedorov
-88 (17), Richer 87 (54), Messier 87 (15).
+Klima 93 (35), Roenick 92 (8), Selanne 92 (7), Sandstrom 91 (25), Gartner 91 (16), Lindros 91 (18), Hull 91 (23), Bure
+91 (6), Ciccarelli 90 (24), Robitaille 90 (14), Neely 89 (10), Modano 89 (21), Carson 88 (36), Turgeon 88 (22), Fedorov
+87 (17), Richer 86 (54), Messier 86 (15).
 
 - **Overall's biggest overrates on the SNES are the light playmakers:** Doug Gilmour (rank 9 -> 49), Theoren Fleury (11
   -> 50), Pat LaFontaine (5 -> 42), Steve Larmer (12 -> 38), Adam Oates (4 -> 24): nearly the Genesis's list of risers.

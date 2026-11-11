@@ -52,6 +52,31 @@ DEF = {12: 0.060, 6: 0.042, 1: 0.033, 2: 0.026, 5: 0.013, 9: 0.009, 0: -0.022, 3
 GOALIE_SV_STEP = 0.0225
 
 
+def forward_counts(system, rom_path):
+    """Each team's forward count, from its team record (the byte after the three team bytes: forwards in the high
+    nibble, defencemen in the low; NOSE4Web's team.ts / snesteam.ts). A roster lists its goalies, then its forwards,
+    then its defencemen."""
+    import struct
+    if system == "genesis":
+        data = rom_path.read_bytes()
+        out = []
+        for k in range(genesis.team_count(data)):
+            team = struct.unpack_from(">I", data, genesis.TEAM_TABLE + 4 * k)[0]
+            out.append(data[team + 0x4C + 3] >> 4)
+        return out
+    from systems import snes
+    from systems.snes_layout import layout
+    data = snes.strip_header(rom_path.read_bytes())
+    lay = layout(data)
+    tl = lay.team_list or snes.TEAM_LIST
+    out = []
+    for k in range(lay.team_count or 28):
+        ptr = data[snes.file_offset(tl) + 4 * k:snes.file_offset(tl) + 4 * k + 3]
+        team = snes.file_offset(ptr[0] | ptr[1] << 8 | ptr[2] << 16)
+        out.append(data[team + 0x0E + 3] >> 4)
+    return out
+
+
 def team_strengths(col=0):
     """COACH_RATING section 9's "Strength now": col 0 the Genesis table, 1 the SNES one (the same rows, side by side)."""
     text = (ROOT / "docs" / "COACH_RATING.md").read_text(encoding="utf-8")
@@ -161,8 +186,12 @@ def main():
              if cfg["team_weight"] else f"; the value keeps his own scoring's {WEIGHT:+.2f}"))
     raw = {"F": {}, "D": {}, "G": {}}
     info = {}
-    for t in teams:
+    nfwd = forward_counts(system, rom(cfg["rom"]))
+    for ti, t in enumerate(teams):
         ab = t["abbr"]
+        if ab in ("ASE", "ASW"):                # the All-Star teams: their players are on their own teams too
+            continue
+        skater_no = 0
         for p in t["players"]:
             key = (ab, p["name"])
             a = p["a"]
@@ -171,15 +200,15 @@ def main():
                 info[key] = dict(pos="G", ovr=p["ovr"], games=gs.get((ab, p["name"].lower()), {}).get("games", 0), a=a)
                 continue
             s = pos.get((ab, p["name"].lower()))
-            ps = s["pos"] if s else None
-            if ps is None:                      # not a regular in the leagues: his position from the roster order
-                ps = "D" if a[6] > a[5] and a[12] >= a[9] else "F"     # (a rough guess, only for the scale)
+            ps = "F" if skater_no < nfwd[ti] else "D"           # the roster's order: goalies, forwards, defencemen
+            skater_no += 1
             w = FWD if ps == "F" else DEF
             raw[ps][key] = sum(v * a[i] for i, v in w.items())
             info[key] = dict(pos=ps, ovr=p["ovr"], games=s["n"] if s else 0, a=a)
     lv = {}
     for ps in raw:
         lv.update(scale(raw[ps]))
+        print(f"scale ends, {ps}: {min(raw[ps].values()):.3f} to {max(raw[ps].values()):.3f}")
     print(f"shots a goalie faces a game in {cfg['key']} Classic: {shots_per_game:.1f}; an Agility step is "
           f"{GOALIE_SV_STEP * shots_per_game:.2f} goals saved a game")
     # rankings: regulars (150+ games) by position
