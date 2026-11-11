@@ -69,6 +69,11 @@ while time.time() - t0 < 1800:
         s = json.loads(urllib.request.urlopen(f"http://localhost:{H.PORT}/api/state").read())
     except Exception:
         continue
+    tn = (s.get("game") or {}).get("tonight")
+    if tn and any(t["players"] for t in tn["teams"]) and not globals().get("_tonight_shown"):
+        _tonight_shown = True
+        print(f"{time.time() - t0:5.0f}s tonight's rolls:", [(t["team"], [(p["slot"], p["name"].split()[-1], p.get("maxed"), p.get("stk"))
+                                                               for p in t["players"]]) for t in tn["teams"]], flush=True)
     line = (s["state"], s["detail"])
     if line != last:
         print(f"{time.time() - t0:5.0f}s", *line, flush=True)

@@ -26,7 +26,16 @@ Game file, Delete, and tick boxes with "Export N games to ZIP" (2026-10-27: `/ap
 `share_season.make_share` into `shared/NHL94 <matchups> <dates>` and its zip; the packaged helper makes the share's
 season data by running itself with `--season`; this replaced the old "game file after every game" setting). Recordings are gzipped (`fast.bin.gz`, about 23 KB per second of play; `full.bin.gz`, all of RAM every 10 s for research only - the converter does not use it: converting the CGY-BOS game without it gives an identical match; about 16 MB a game in all) and the ROM is copied
 out of the emulator into `roms/<fingerprint>.bin` for the converter, so no ROM folder is needed. The list is
-`matches/games.json`. Tested offline by feeding it `captures/explore1_menus` through a fake emulator (with a made-up
+`matches/games.json`. **Tonight's rolls** (2026-11-11, the user: the SNES bobbles): under the status card, from the
+scouting screen to the final horn, each team's line 1 (RAM line 0 of its lines: Genesis team block +$16A, SNES $1CE4 /
+$1D1C; goalie, LD, RD, LW, C, RW, extra attacker; it is the line on the ice with line changes off, checked on recorded
+games) with the hot / cold rolled for the game, read from the emulator every 2 s (`genesis.tonight`, `snes.tonight`,
+`nhl94_helper.tonight_panel`): on the SNES the ratings the sign bug maxed (SPD AGL SHP SHA CHK STK PAS; a goalie's AGL)
+and "bobble risk" for a skater whose Stick Handling is 9 or less tonight (roster x 5 / 2 plus his hot value, unless
+maxed: RATING_VALUES), on the Genesis each player's one value (or "per rating" on ROMs with per-rating bonuses; none on
+ROMs with them off). It never stops a recording: a read that fails only hides it (and notes it once in the activity
+log). Checked with the three fake-emulator tests (Genesis, SNES, the SA-1 32-team ROM: the panel before the opening
+faceoff; the SNES values the same as the converter's `hcs`). Tested offline by feeding it `captures/explore1_menus` through a fake emulator (with a made-up
 final horn): it waited through the menus, started at the faceoff, marked the pause and replay, stopped 3 s after the
 horn, converted; not yet tested on a live game (it has recorded every league game since). Python modules: `tools/nhl94_memory.py` (reads the emulator, like the
 PowerShell recorders), `tools/share_game.py` (the shareable file; also `python tools/share_game.py <match>`).

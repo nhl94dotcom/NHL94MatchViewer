@@ -535,6 +535,31 @@ def add_hot_cold(cap, match):
             player["hcs"] = values
 
 
+LINES = (0x1CE4, 0x1D1C)  # homelines / awaylines: 7 lines of 8 slot bytes; line 0 the one on the ice with line changes off
+
+
+def tonight(emu):
+    """Live, for the helper's "Tonight's rolls": each team's line 1 (RAM line 0: goalie, LD, RD, LW, C, RW, extra
+    attacker, 1-based roster places) and those players' hot / cold as add_hot_cold reads it (per rating, roster order;
+    "max" where the sign bug maxes it). [{"line": [7 places], "hot": {place: [14 values]}}, home then away]."""
+    table = emu.read(HOT_COLD, 52 * 12)
+    if table is None:
+        return None
+    out = []
+    for team, addr in enumerate(LINES):
+        line = list(emu.read(addr, 7) or bytes(7))
+        hot = {}
+        for place in line:
+            if 1 <= place <= 26:
+                values = [0] * 14
+                for n, a in enumerate(HOT_COLD_RATINGS):
+                    byte = table[(place - 1 + 26 * team) * 12 + n]
+                    values[a] = "max" if byte > 127 else byte >> 2
+                hot[place] = values
+        out.append({"line": line, "hot": hot})
+    return out
+
+
 class _Kept:
     """The live-play samples read so far (as LivePlay, but keep and times grow as the reader goes)."""
 

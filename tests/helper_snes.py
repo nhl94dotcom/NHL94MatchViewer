@@ -57,6 +57,10 @@ for k in range(140):
     time.sleep(1)
     try:
         s = json.loads(urllib.request.urlopen('http://localhost:9496/api/state').read())
+        tn = (s.get('game') or {}).get('tonight')
+        if tn and any(t['players'] for t in tn['teams']) and not globals().get('_tonight_shown'):
+            _tonight_shown = True
+            print(f"{k:3d}s tonight's rolls:", [(t['team'], [(p['slot'], p['name'].split()[-1], p.get('hc', p.get('maxed')), p.get('stk')) for p in t['players']]) for t in tn['teams']], flush=True)
         line = (s['state'], s['detail'], s['game'] and {k2: s['game'].get(k2) for k2 in ('clock', 'paused')})
         if not seen or seen[-1][:2] != line[:2]: seen.append(line); print(f"{k:3d}s", line, flush=True)
         if s['state'] == 'idle' and 'Saved' in s['detail']: break

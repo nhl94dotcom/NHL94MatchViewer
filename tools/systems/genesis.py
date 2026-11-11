@@ -397,6 +397,31 @@ def add_hot_cold(cap, match, settings):
                 player["hc"] = int(raw[0] / 3)
 
 
+def tonight(emu, mode="one value per player"):
+    """Live, for the helper's "Tonight's rolls": each team's line 1 (RAM line 0 of its block's lines, tmlines +$16A:
+    goalie, LD, RD, LW, C, RW, extra attacker, 1-based roster places; it is the line on the ice with line changes off)
+    and those players' hot / cold as add_hot_cold reads it: one value on the 0-30 working scale, or per rating
+    ("per rating" ROMs). [{"line": [7 places], "hot": {place: value}}, home then away]."""
+    signed = lambda v: v - 256 if v > 127 else v
+    span = HOT_COLD - 0x16A + 26 * 16
+    out = []
+    for block in STAT_BLOCKS:
+        start = block + 0x16A
+        data = emu.read(start, span)
+        if data is None:
+            return None
+        b = lambda a: data[(a ^ 1) - start]
+        line = [b(start + k) for k in range(7)]
+        hot = {}
+        for place in line:
+            if 1 <= place <= 26:
+                raw = [signed(b(block + HOT_COLD + 16 * (place - 1) + n)) for n in range(16)]
+                hot[place] = ([int(raw[a + 2] / 3) if 1 <= a <= 13 and a != 7 else 0 for a in range(14)]
+                              if mode == "per rating" else int(raw[0] / 3))
+        out.append({"line": line, "hot": hot})
+    return out
+
+
 class MatchReader:
     """read_match in pieces: feed() reads samples as a recording grows (the live broadcast gives it the new ones only),
     result() makes the match file's contents from what has been read so far (copies: the reader goes on)."""

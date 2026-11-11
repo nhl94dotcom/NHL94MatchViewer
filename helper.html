@@ -22,6 +22,17 @@
   .status small { display: block; color: var(--muted); }
   .live { margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; }
   .live .score { font-size: 22px; font-weight: 700; }
+  .tonightnote { display: block; color: var(--muted); margin: -4px 0 10px; }
+  .tonight { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .tonight h3 { margin: 0 0 6px; font-size: 15px; }
+  .tonight .row { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; border-top: 1px solid var(--raised); flex-wrap: wrap; }
+  .tonight .slot { color: var(--muted); width: 26px; font-size: 12px; }
+  .tonight .name { min-width: 120px; }
+  .tonight .chip { font-size: 11px; padding: 1px 6px; border-radius: 9px; background: var(--raised); }
+  .tonight .max { background: #1f5130; color: #c9f2d4; }
+  .tonight .risk { background: #5a2427; color: #ffd6d8; }
+  .tonight .hot { color: #6fd08c; font-weight: 600; }
+  .tonight .cold { color: #ff8a8f; font-weight: 600; }
   input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
   table { width: 100%; border-collapse: collapse; }
   th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; padding: 0 8px 8px; }
@@ -71,6 +82,12 @@
       <div class="live" id="live" hidden><div class="score" id="liveScore"></div><small id="liveClock"></small></div>
     </div>
     <details><summary>Activity</summary><div class="log" id="log"></div></details>
+  </section>
+
+  <section class="card" id="tonight" hidden>
+    <div class="listhead"><h2>Tonight's rolls</h2></div>
+    <small class="tonightnote" id="tonightNote"></small>
+    <div class="tonight" id="tonightBody"></div>
   </section>
 
   <section class="card">
@@ -236,8 +253,29 @@ async function poll() {
     $('liveScore').textContent = g.teams[0] + ' ' + g.score[0] + ' – ' + g.score[1] + ' ' + g.teams[1];
     $('liveClock').textContent = (g.paused ? 'Paused · ' : '') + g.clock;
   }
+  renderTonight(g && g.tonight);
   $('log').textContent = (s.log || []).join('\n');
   renderGames(s.games || []);
+}
+// Tonight's rolls: each team's line 1 and the hot / cold the game rolled for this game (the helper reads it from
+// memory from the scouting screen on). SNES: the ratings the sign bug maxed, and receivers with Stick Handling 9 or
+// less tonight (about one pass in eight bobbled: RATING_VALUES); Genesis: each player's one value.
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function renderTonight(t) {
+  $('tonight').hidden = !t;
+  if (!t) return;
+  const snes = t.system === 'snes';
+  $('tonightNote').textContent = snes
+    ? "Green: maxed tonight by the game's hot / cold bug (plays as the top rating). Red: a receiver with Stick Handling 9 or less tonight bobbles about one pass in eight."
+    : "Each player's hot / cold tonight, added to all his ratings (-3 to +2 on the game's 0-30 scale).";
+  $('tonightBody').innerHTML = t.teams.map(team => '<div><h3>' + esc(team.team) + ' · line 1</h3>' + team.players.map(p => {
+    let extra;
+    if (snes) extra = (p.maxed || []).map(m => '<span class="chip max">' + m + '</span>').join(' ')
+      + (p.risk ? ' <span class="chip risk">bobble risk · STK ' + p.stk + '</span>' : '');
+    else if (Array.isArray(p.hc)) extra = '<span class="chip">per rating</span>';
+    else extra = '<span class="' + (p.hc > 0 ? 'hot' : p.hc < 0 ? 'cold' : '') + '">' + (p.hc > 0 ? '+' : '') + p.hc + '</span>';
+    return '<div class="row"><span class="slot">' + p.slot + '</span><span class="name">' + esc(p.name) + '</span>' + extra + '</div>';
+  }).join('') + '</div>').join('');
 }
 poll();
 setInterval(poll, 1000);

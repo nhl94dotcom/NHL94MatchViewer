@@ -180,6 +180,68 @@ def team_abbreviations(system, rom_path, home, away):
         return [f"T{home}", f"T{away}"]
 
 
+# ---------------------------------------------------------------------------------------------- tonight's rolls
+TONIGHT_S = 2.0          # how often the "Tonight's rolls" panel is read again (line edits show within that)
+SLOTS = ("G", "LD", "RD", "LW", "C", "RW", "X")
+SNES_SHOWN = ((2, "SPD"), (1, "AGL"), (5, "SHP"), (9, "SHA"), (6, "CHK"), (8, "STK"), (12, "PAS"))
+tonight_cache = {"at": 0.0, "panel": None}
+
+
+def tonight_panel(emu, system, rom_path, ids):
+    """Each team's line 1 with the hot / cold the game rolled for tonight (docs: SNES_MECHANICS 2.2, GENESIS_MECHANICS
+    2.2): on the SNES the ratings the sign bug maxed and the receivers whose Stick Handling is 9 or less tonight (they
+    bobble about one pass in eight: RATING_VALUES); on the Genesis each player's one value. None when it can't be read."""
+    now = time.monotonic()
+    if now - tonight_cache["at"] < TONIGHT_S:
+        return tonight_cache["panel"]
+    tonight_cache["at"] = now
+    try:
+        if rom_path not in team_cache:
+            team_cache[rom_path] = system.read_teams(rom_path)
+        teams = team_cache[rom_path]
+        if emu.system == "genesis":
+            from systems import genesis_settings
+            modes = tonight_cache.setdefault("modes", {})
+            if rom_path not in modes:
+                modes[rom_path] = genesis_settings.rom_settings(Path(rom_path).read_bytes()).get("bonusesOnIce", "one value per player")
+            mode = modes[rom_path]
+            if mode == "none":
+                tonight_cache["panel"] = None
+                return None
+            raw = system.tonight(emu, mode)
+        else:
+            raw = system.tonight(emu)
+        if raw is None:
+            raise ValueError("its memory could not be read")
+        out = []
+        for side in (0, 1):
+            team = teams[ids[side]]
+            roster, players = team["players"], []
+            for slot, place in zip(SLOTS, raw[side]["line"]):
+                if not 1 <= place <= len(roster):
+                    continue
+                p, h = roster[place - 1], raw[side]["hot"].get(place)
+                e = {"slot": slot, "name": p["name"]}
+                if emu.system == "snes":
+                    shown = SNES_SHOWN if not p["g"] else ((1, "AGL"),)
+                    e["maxed"] = [label for i, label in shown if h and h[i] == "max"]
+                    if not p["g"]:
+                        stk = 15 if h and h[8] == "max" else min(15, p["a"][8] * 5 // 2 + (h[8] if h else 0))
+                        e["stk"], e["risk"] = stk, stk <= 9
+                else:
+                    e["hc"] = h
+                players.append(e)
+            out.append({"team": team.get("abbr") or team["name"], "players": players})
+        # nothing until the lines are loaded (an SA-1 build loads them after its scouting screen)
+        tonight_cache["panel"] = {"system": emu.system, "teams": out} if any(t["players"] for t in out) else None
+    except Exception as ex:                  # the panel is a help, never a reason to stop recording: say it once
+        if not tonight_cache.get("said"):
+            tonight_cache["said"] = True
+            status.note(f"Tonight's rolls can't be read on this ROM ({type(ex).__name__}: {ex})")
+        tonight_cache["panel"] = None
+    return tonight_cache["panel"]
+
+
 # --------------------------------------------------------------------------------------------------------- recording
 class Recording:
     def __init__(self, emu, view, rom_path, fingerprint):
@@ -335,7 +397,9 @@ def watch():
                 View = systems.get(emu.system).View
             view = View(emu)
             if not view.live:
-                status.set("ready", "NHL '94 is running; waiting for a game to start")
+                # the scouting screen and the first faceoff: the rolls are made before the scouting screen
+                panel = tonight_panel(emu, systems.get(emu.system), rom_path, view.teams) if not view.in_menus else None
+                status.set("ready", "NHL '94 is running; waiting for a game to start", {"tonight": panel} if panel else None)
                 time.sleep(0.25)
                 continue
             rec = Recording(emu, view, rom_path, fingerprint)
@@ -353,7 +417,8 @@ def watch():
                     why = rec.step(view)
                     status.set("recording", f"Recording {rec.teams[0]} vs {rec.teams[1]}", {
                         "name": rec.name, "teams": rec.teams, "score": list(rec.view.score), "clock": rec.view.describe(),
-                        "seconds": round(rec.live_ms / 1000), "paused": not view.in_game}, say=False)
+                        "seconds": round(rec.live_ms / 1000), "paused": not view.in_game,
+                        "tonight": tonight_panel(emu, rec.system, rom_path, view.teams)}, say=False)
                     next_sample += SAMPLE_S
                     time.sleep(max(0.0, next_sample - time.perf_counter()))
             except ConnectionError:
