@@ -605,6 +605,12 @@ are mostly chance). Per player's step, goals a game:
   team rating 0.64 / 0.44 -> **0.69 / 0.50**, the defencemen's share 0.10 (-0.06 to 0.24) -> **0.15 (0.05 to 0.24)**.
   The Genesis forwards' Weight from the team fit moves to -0.60 (was -0.52). The SNES test can't say (0.43 / 0.12 ->
   0.41 / 0.08; top players 0.25 / -0.01 -> 0.30 / 0.05); the band is in on the strength of the within-team measure.
+- **Forwards' Weight in bands** (the same fits, the forwards' Weight as bands; within teams): **Genesis middleweight
+  -0.08 +- 0.05, heavy (10+) -0.35 +- 0.07 goals a game** against a light forward (6 and under), at both ends: no
+  middleweight dip for forwards, heavier is simply worse (a heavy carrier is knocked down: the user); SNES -0.01 +- 0.08
+  and -0.01 +- 0.13, nothing. On the Genesis team test the value's straight Weight line (-0.60 a point, from the team
+  fit) does better than the bands (R^2 0.74 / each team left out 0.58 against 0.59 / 0.24; both together 0.74 / 0.57;
+  no forwards' Weight 0.54 / 0.18), so the line stays: the bands confirm its direction.
 
 ### Gaps for the next chunks
 
