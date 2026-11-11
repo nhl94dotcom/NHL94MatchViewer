@@ -2590,6 +2590,38 @@ Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Seas
   `PeriodOver`, skip `move.w #4,(gsp).w` after `tst.w (OptPlayMode).w`): no ties, one changed instruction, but no
   shootout and an overtime that can run long.
 
+### The first build, played (2026-11-11, NOSE4Web 2776621: nhl94_shootout.bin)
+
+`gen_shootout_check.py ROM OUT tie|playoff|reg|ot|mode4 [--gmdir] [--end] [--cdl]` (the computer on both sides; RAM:
+gmode $C2EA, gmode2 $C2FA, shootoutclock $D454, homeshootgoals / awayshootgoals $D574 / $D576, shootoutround $D578,
+shootoutteam $D594). The build: $7C4C `4E71`; $1725C `jsr $FFAC6` (tied: gmode2 bit 0, $FFF082 = $FF, ClearShootout,
+Create_HotCold_Table for both teams); NextShooter's `jmp ExitToOpening` at $FC4CA `jsr $FFB0A` (with $FFF082 set: +1 to
+the team with more shootout goals, `andi.w #$FFF4,($C2FA).w`, gsp 4, forceblack, `jmp PeriodOver_sp`).
+
+- **Into the shootout: works.** A tie at the end of overtime gets the intermission with Start Shootout, then the Shootout
+  Mode box, rounds and attempts; the game clock stands at 10:00 and gsp stays 3 throughout (no period can end); the
+  shootout clock runs each attempt.
+- **No goal can count.** The shootout keeps the overtime period's ends (gmode bit 1, gmdir, set: home attacks down in
+  periods 2 and 4), so each shooter attacks the other net from Shootout mode's: home the bottom one, away the top.
+  `Goal`'s shootout test takes a home shooter's goal only at y >= 0 and an away shooter's only at y < 0, so every goal is
+  thrown out: 0-0 after 120 rounds (240 attempts; retail Shootout mode, computer against computer, scores about one in
+  ten), and a puck put into the attacked net during attempts never counted (12 of 12; on retail 5 of 5 did). **Fix:
+  clear gmdir when the shootout starts** (`bclr #1,(gmode).w`); cleared in RAM at that moment, the computer scored in
+  the first round and the shootout ended in round 5 with Shootout Won By.
+- **The end, with gmdir cleared:** two faults. (1) `andi.w #$FFF4,($C2FA).w` clears bits 0, 1 and 3 of gmode2's low byte;
+  the game's bits are in the first byte (`btst` / `bset` on memory work on bytes), so gmode2 stays $2B: the intermission
+  after the shootout shows the shootout menu again (Start Shootout ...) and START goes to the title (no game-over menu).
+  Should be `andi.b #$F4,($C2FA).w`. (2) A shootout goal also goes through `Goal`'s ordinary path (as in Shootout mode):
+  the score, the scorer's goals (tmgoals), the goalie's goals against, the overtime goals by period (tmPerGoals +$348)
+  and a scoring summary entry ($C472); with the end's +1 a 1-1 game won 1-0 in the shootout finished 3-1. Shots don't
+  change (and no saves are kept in the team blocks). Both corrected in RAM (the first byte cleared, the score put back to
+  the shootout's start + 1): a final 1-2 and the usual game-over menu (Exit Game, Game Stats, Player Stats, Scoring
+  Summary).
+- **Unchanged, as asked:** a regulation win (2-1 at the end of the third) and a game leading at the end of overtime
+  reach the menus at the same frame as on retail and on the overtime build; in the playoffs no shootout ($FFF082 never
+  set) and overtime until a goal; Shootout mode from the menu ends at the title as on retail. (Also: Create_HotCold_Table
+  re-rolls both teams' hot / cold tables at the end of overtime; harmless, the game is over.)
+
 ## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
 
 The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at

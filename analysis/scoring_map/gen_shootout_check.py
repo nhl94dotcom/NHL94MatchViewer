@@ -1,0 +1,157 @@
+"""Shootouts for tied regular-season games (2026-11-11, for NOSE4Web 2776621: nhl94_shootout.bin,
+CDL_Season_12_shootout.bin). From a game in play (power-on, START into play, the computer on both sides: cont1team /
+cont2team cleared and the person flag taken off every second), one case at a time:
+
+  tie       regular season (OptPlayMode $D048 = 0), overtime (gsp $C466 = 3) with 3 s left at 1-1
+  playoff   the same in the playoffs (2): overtime until a goal, no shootout expected
+  reg       regular season, the third period with 3 s left at 2-1: the game over as usual
+  ot        regular season, overtime with 3 s left at 2-1 (a game won in overtime)
+  mode4     Shootout from Game Setup (Play Mode 4), as on retail: expected to end at the title
+
+Played (START every 2.5 s while the clock stands, as gen_ot_goal_check, but in a shootout only until its clock, shootoutclock $D454, first runs: later presses open the pause menu) until the game is over and the menus come back,
+or 40 minutes of frames. Logged whenever it changes: gsp, the screen ($FFF7), gmode2 ($C2FA, bit 0 in its first byte), $FFF082 (the build's
+shootout flag), shootoutround ($D578), homeshootgoals / awayshootgoals ($D574 / $D576), the score, the shots and the
+clock; a screenshot at every change of screen, every 2 s while gmode2 bit 0 is on and every second from gsp 4. At the shootout's start and end
+both team stat blocks ($C6CE / $CA32, $364 bytes; the hot / cold table +$1A2-$341 left out) and the player stats (tmstruct+$20...) are kept and the changed
+offsets printed. With --cdl, also the fighting setting ($FFF080), OptPen / OptLine and the plus-minus log ($FFDEF4,
+first 64 bytes) before and after.
+
+--gmdir clears gmode bit 1 (gmdir, $C2EA's first byte) once when $FFF082 is first set: the build plays its shootout
+with the overtime period's ends (gmdir set), so each shooter attacks the net where Goal's shootout test (home: puck y >= 0,
+away: y < 0) throws the goal out; with gmdir clear the ends are Shootout mode's.
+
+--end, when $FFF082 clears (the build's end code has run): gmode2's first byte's bits 0, 1 and 3 cleared (the build clears
+the low byte's) and the score put back to the shootout's start plus 1 for the winner (shootout goals go through Goal's
+ordinary path too). At that moment the stat blocks and scoring summary ($C472) are compared with the shootout's start.
+
+python gen_shootout_check.py ROM OUT CASE [--cdl] [--gmdir] [--end]"""
+import sys
+from pathlib import Path
+
+import gen_ot_check as G
+import lowload
+from emu import Emu
+
+PLAYMODE, OPTPEN, OPTLINE, GSP, CLOCK, SCREEN = 0xD048, 0xD056, 0xD058, 0xC466, 0xC468, 0xFFF7
+CONT1, CONT2, BASE, SZ = 0xC328, 0xC32A, 0xB04A, 0x80
+GMODE, GMODE2, SOFLAG, SOROUND, HSO, ASO, SOCLOCK = 0xC2EA, 0xC2FA, 0xFFF082, 0xD578, 0xD574, 0xD576, 0xD454
+HM, AW, HSHOTS, ASHOTS, TEAMB, TMSIZE = 0xC6DA, 0xCA3E, 0xC6CE, 0xCA32, (0xC6CE, 0xCA32), 0x364
+FIGHT, PLUSMINUS, SUMMARY = 0xFFF080, 0xFFDEF4, 0xC472
+
+
+def blocks(e):
+    return [bytes(e.b(t + i) for i in range(TMSIZE)) for t in TEAMB]
+
+
+def diff(a, b):
+    out = []
+    for t in range(2):
+        ch = [i for i in range(TMSIZE) if a[t][i] != b[t][i] and not 0x1A2 <= i < 0x342]   # not tmHotCold
+        out.append(" ".join(f"+${i:03X}:{a[t][i]}->{b[t][i]}" for i in ch[:40]) + (" ..." if len(ch) > 40 else ""))
+    return out
+
+
+def main():
+    rom, out, case = sys.argv[1], Path(sys.argv[2]), sys.argv[3]
+    cdl = "--cdl" in sys.argv
+    gmdir_fix = "--gmdir" in sys.argv
+    end_fix = "--end" in sys.argv
+    saved, flag_was, summ0 = None, 0, None
+    gmdir_done = False
+    out.mkdir(parents=True, exist_ok=True)
+    lowload.gentle()
+    e = Emu(rom)
+    G.to_setup(e, out)
+    if case == "mode4":
+        e.setw(PLAYMODE, 4)
+        for _ in range(4):
+            e.run(4, hold=["START"])
+            e.run(300)
+    elif not G.into_play(e):
+        print("never reached play")
+        return
+    if case != "mode4":
+        G.OURS.append(tuple(e.b(a) for a in G.TEAMS))
+        mode, gsp, hm, aw = {"tie": (0, 3, 1, 1), "playoff": (2, 3, 1, 1), "reg": (0, 2, 2, 1),
+                             "ot": (0, 3, 2, 1)}[case]
+        e.setw(PLAYMODE, mode)
+        e.setw(GSP, gsp)
+        e.setw(CLOCK, 3)
+        e.setw(HM, hm)
+        e.setw(AW, aw)
+    if cdl:
+        print(f"before: fighting ${e.w(FIGHT):04X}, OptPen {e.w(OPTPEN)}, OptLine {e.w(OPTLINE)}, plus-minus "
+              + bytes(e.b(PLUSMINUS + i) for i in range(64)).hex())
+    prev, last, still, shots_n = None, None, 0, 0
+    so_start, started = None, False
+    for f in range(60 * 60 * 40):
+        if f % 60 == 0:
+            e.setw(CONT1, 0)
+            e.setw(CONT2, 0)
+            for k in range(12):
+                e.setb(BASE + SZ * k + 0x62, e.b(BASE + SZ * k + 0x62) & ~8)
+            if f % 3600 == 0:
+                lowload.breathe()
+        so = e.b(GMODE2) & 1
+        fl = e.b(SOFLAG)
+        if fl and not flag_was:
+            saved = (e.w(HM), e.w(AW))
+            summ0 = bytes(e.b(SUMMARY + i) for i in range(0x168))
+        if flag_was and not fl and saved:
+            d = diff(so_start, blocks(e)) if so_start else ["?", "?"]
+            print(f"f{f}: shootout over (the build's end code): score {e.w(HM)}-{e.w(AW)} (at the start {saved[0]}-"
+                  f"{saved[1]}), gmode2 ${e.w(GMODE2):04X}; stat blocks changed since the start: home {d[0] or 'none'};"
+                  f" away {d[1] or 'none'}; scoring summary changed: "
+                  f"{summ0 != bytes(e.b(SUMMARY + i) for i in range(0x168))}", flush=True)
+            if end_fix:
+                e.setb(GMODE2, e.b(GMODE2) & 0xF4)
+                win = e.w(HSO) > e.w(ASO)
+                e.setw(HM, saved[0] + win)
+                e.setw(AW, saved[1] + (not win))
+                print(f"f{f}: end corrected in RAM: gmode2 ${e.w(GMODE2):04X}, score {e.w(HM)}-{e.w(AW)}", flush=True)
+        flag_was = fl
+        if gmdir_fix and not gmdir_done and e.b(SOFLAG):
+            e.setb(GMODE, e.b(GMODE) & ~2)          # the suggested fix, in RAM: Shootout mode's ends (gmdir clear)
+            gmdir_done = True
+            print(f"f{f}: gmdir cleared", flush=True)
+        if so and e.w(SOCLOCK):
+            started = True                  # the first attempt is on: no more presses until the shootout ends
+        if not so:
+            started = False
+        e.run(1, hold=["START"] if still >= 150 and f % 150 == 0 and not (so and started) else [])
+        c = e.w(CLOCK)
+        still = still + 1 if c == last else 0
+        last = c
+        g2 = e.b(GMODE2)
+        if case != "mode4" and not G.ours(e):
+            continue
+        st = (e.w(GSP), e.b(SCREEN), g2, e.b(SOFLAG), e.w(SOROUND), e.w(HSO), e.w(ASO), e.w(HM), e.w(AW),
+              e.w(HSHOTS), e.w(ASHOTS))
+        if st != prev:
+            print(f"f{f}: gsp {st[0]} screen {st[1]} gmode2 ${st[2]:02X} flag ${st[3]:02X} round {st[4]} "
+                  f"shootout {st[5]}-{st[6]} score {st[7]}-{st[8]} shots {st[9]}-{st[10]} clock {c}", flush=True)
+            if prev is None or st[1] != prev[1] or st[0] != prev[0]:
+                e.screenshot(out / f"{case}_{shots_n:03d}_f{f}.png")
+                shots_n += 1
+            if g2 & 1 and so_start is None and case != "mode4":
+                so_start = blocks(e)
+                print("shootout on: stat blocks kept", flush=True)
+            if so_start is not None and not g2 & 1 and prev is not None and prev[2] & 1:
+                d = diff(so_start, blocks(e))
+                print(f"stat blocks changed during the shootout: home {d[0] or 'none'}; away {d[1] or 'none'}",
+                      flush=True)
+            prev = st
+        if (g2 & 1 and f % 120 == 0 or e.w(GSP) >= 4 and f % 60 == 0) and shots_n < 400:
+            e.screenshot(out / f"{case}_{shots_n:03d}_f{f}.png")
+            shots_n += 1
+        if f > 600 and e.w(GSP) == 0 and e.b(SCREEN) not in (0, 0x80, 100):
+            print(f"f{f}: back to the menus (screen {e.b(SCREEN)})")
+            break
+    e.screenshot(out / f"{case}_end.png")
+    if cdl:
+        print(f"after: fighting ${e.w(FIGHT):04X}, OptPen {e.w(OPTPEN)}, OptLine {e.w(OPTLINE)}, plus-minus "
+              + bytes(e.b(PLUSMINUS + i) for i in range(64)).hex())
+
+
+if __name__ == "__main__":
+    main()

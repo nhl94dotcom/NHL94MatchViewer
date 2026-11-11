@@ -175,7 +175,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
       two ROMs), `gen_fight_check.py` (chaos's fighting patch: fights in computer games), `gen_records_check.py` (saved
       records across a reset), `gen_ram_use_check.py` / `gen_ram_tour_check.py` (which work RAM a ROM writes: free
       memory for hacks), `gen_fight_setting_check.py` (the fighting setting on a plus-minus ROM), `gen_ot_goal_check.py`
-      (overtime until a goal), `gen_fight_blood_check.py`.
+      (overtime until a goal), `gen_fight_blood_check.py`, `gen_shootout_check.py` (a shootout for tied regular-season games: into it, its goals, its end, the cases that must stay as they are).
     - `team_move_check.py ORIGINAL MOVED N OUT H:V ...` (teams moved to new numbers: every team screen and the rosters, the
       original against the moved ROM with the numbers mirrored); `xg_calib_rescore.py RUN STEP` (an xg_calib run scored again
       by today's SNES model; `NHL94_SNES_SA1=<ROM>` runs the SNES tools on an SA-1 build).
