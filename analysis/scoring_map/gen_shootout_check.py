@@ -24,7 +24,13 @@ away: y < 0) throws the goal out; with gmdir clear the ends are Shootout mode's.
 the low byte's) and the score put back to the shootout's start plus 1 for the winner (shootout goals go through Goal's
 ordinary path too). At that moment the stat blocks and scoring summary ($C472) are compared with the shootout's start.
 
-python gen_shootout_check.py ROM OUT CASE [--cdl] [--gmdir] [--end]"""
+--records: User Records on (OptUserRec $D054 = 0) at Game Setup, and the save memory's changed bytes printed after the
+game (UpdateTeamRecord counts a win, loss or tie by the two teams' tmscore).
+
+--force: the first home shot of the shootout put into the net it was going at (shootoutteam $D594 = 0, the puck loose
+past y 150): for ROMs whose computer shooters never score (CDL Season 12, its own Shootout mode too).
+
+python gen_shootout_check.py ROM OUT CASE [--cdl] [--gmdir] [--end] [--records] [--force]"""
 import sys
 from pathlib import Path
 
@@ -32,11 +38,12 @@ import gen_ot_check as G
 import lowload
 from emu import Emu
 
-PLAYMODE, OPTPEN, OPTLINE, GSP, CLOCK, SCREEN = 0xD048, 0xD056, 0xD058, 0xC466, 0xC468, 0xFFF7
+PLAYMODE, OPTUSER, OPTPEN, OPTLINE, GSP, CLOCK, SCREEN = 0xD048, 0xD054, 0xD056, 0xD058, 0xC466, 0xC468, 0xFFF7
 CONT1, CONT2, BASE, SZ = 0xC328, 0xC32A, 0xB04A, 0x80
 GMODE, GMODE2, SOFLAG, SOROUND, HSO, ASO, SOCLOCK = 0xC2EA, 0xC2FA, 0xFFF082, 0xD578, 0xD574, 0xD576, 0xD454
 HM, AW, HSHOTS, ASHOTS, TEAMB, TMSIZE = 0xC6DA, 0xCA3E, 0xC6CE, 0xCA32, (0xC6CE, 0xCA32), 0x364
 FIGHT, PLUSMINUS, SUMMARY = 0xFFF080, 0xFFDEF4, 0xC472
+SOTEAM, PUCK, PUCKC = 0xD594, 0xB04A + 14 * 0x80, 0xB7AA
 
 
 def blocks(e):
@@ -56,12 +63,19 @@ def main():
     cdl = "--cdl" in sys.argv
     gmdir_fix = "--gmdir" in sys.argv
     end_fix = "--end" in sys.argv
+    force = "--force" in sys.argv
+    forced = False
     saved, flag_was, summ0 = None, 0, None
     gmdir_done = False
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()
     e = Emu(rom)
     G.to_setup(e, out)
+    userrec = "--records" in sys.argv
+    if userrec:
+        from gen_records_check import sram
+        e.setw(OPTUSER, 0)
+        s0 = sram(e)
     if case == "mode4":
         e.setw(PLAYMODE, 4)
         for _ in range(4):
@@ -119,6 +133,15 @@ def main():
         if not so:
             started = False
         e.run(1, hold=["START"] if still >= 150 and f % 150 == 0 and not (so and started) else [])
+        pk = PUCK
+        py = e.w(pk + 0x14) - (0x10000 if e.w(pk + 0x14) > 0x7FFF else 0)
+        if force and not forced and so and started and e.w(SOTEAM) == 0 and e.w(PUCKC) >= 0xFF00 and 150 < abs(py) < 250:
+            end = 1 if py > 0 else -1               # the first home shot put into the net it was going at
+            for off, v in ((0x00, 0), (0x1C, 0), (0x14, end * 262), (0x20, end * 256), (0x18, 0), (0x24, 0), (0x28, 0),
+                           (0x2A, end * 12000), (0x2C, 0)):
+                e.setw(pk + off, v & 0xFFFF)
+            forced = True
+            print(f"f{f}: the home shot put into the {'top' if end > 0 else 'bottom'} net", flush=True)
         c = e.w(CLOCK)
         still = still + 1 if c == last else 0
         last = c
@@ -148,6 +171,11 @@ def main():
             print(f"f{f}: back to the menus (screen {e.b(SCREEN)})")
             break
     e.screenshot(out / f"{case}_end.png")
+    if userrec:
+        e.run(300)
+        s1 = sram(e)
+        ch = [i for i in range(len(s0)) if s0[i] != s1[i]]
+        print(f"save memory changed at {len(ch)} bytes: " + " ".join(f"{i:04X}:{s0[i]:02X}->{s1[i]:02X}" for i in ch[:60]))
     if cdl:
         print(f"after: fighting ${e.w(FIGHT):04X}, OptPen {e.w(OPTPEN)}, OptLine {e.w(OPTLINE)}, plus-minus "
               + bytes(e.b(PLUSMINUS + i) for i in range(64)).hex())

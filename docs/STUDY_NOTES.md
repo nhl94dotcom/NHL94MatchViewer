@@ -2622,6 +2622,26 @@ the team with more shootout goals, `andi.w #$FFF4,($C2FA).w`, gsp 4, forceblack,
   set) and overtime until a goal; Shootout mode from the menu ends at the title as on retail. (Also: Create_HotCold_Table
   re-rolls both teams' hot / cold tables at the end of overtime; harmless, the game is over.)
 
+### The second build (2026-11-11, NOSE4Web cbff027: nhl94_shootout.bin, CDL_Season_12_shootout.bin)
+
+The start code now also clears gmdir (`bclr #1,($C2EA).w`) and copies both team structs ($C6CE-$CF95) and the scoring
+summary's length ($C472) to $FFF084-$FFF74D; the end code (only with $FFF082 set and gsp 3) puts them back, adds the
+winners' goal and clears gmode2 with `andi.b #$F4,($C2FA).w`.
+
+- **Retail build: everything as asked.** A tied game went into the shootout, the computer scored (1-0 after round 5;
+  in another run after 35 rounds), Shootout Won By, a final 2-1 with only the score changed in the team blocks, gmode2
+  clear, the game-over menu, the menus. **The saved records** (User Records on, `--records`): after the shootout win
+  the save memory was byte for byte the same as after a 2-1 regulation win (the win counted); a retail 1-1 tie writes
+  the ties instead. Regulation and overtime-end wins reach the menus at the same frame as retail; the playoffs play
+  overtime until a goal ($FFF082 never set); Shootout mode from the menu runs as before.
+- **CDL Season 12:** CDL's computer shooters never score (its own Shootout mode from the menu, on the original ROM, was
+  0-0 after 167 rounds: the shooter shoots from centre ice at once, wide; the shootout clock stands at 0:10), so the
+  first home shot was put into the net (`--force`): the goal counted (the gmdir fix works there too), the shootout
+  ended after round 5, a final 2-1 with only the score changed, then the menus; the fighting setting ($FFF080), OptPen
+  and OptLine unchanged. **One gap: the plus-minus log.** After the shootout game the log at $FFDEF4 holds an entry
+  (length $000E: the shootout goal logged as a goal), after a regulation win from the same start it is empty: the
+  shootout goal counts in plus-minus. Its length word needs saving and putting back too (on plus-minus ROMs).
+
 ## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
 
 The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at
