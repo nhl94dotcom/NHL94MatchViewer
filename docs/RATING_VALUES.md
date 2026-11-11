@@ -538,6 +538,56 @@ Manson 87 (10), Patrick 85 (19). Overrated by Overall: Brian Leetch (9 -> 36), G
 Neely, Messier) are near the top on the SNES and near the bottom on the Genesis; the light, quick forwards (Fleury,
 Gilmour, Kovalenko, Bradley) the other way round. A league value has to be per system.
 
+### Defence: what each rating does at both ends (2026-11-11, `analysis/defence_value.py`, `defence_weight_bands.py`)
+
+The league values above count scoring only; with line changes off the top two defencemen are on the ice for nearly
+every goal against, and forwards defend too (the user). Every Classic regular-season team-game (Genesis 19,942 games,
+SNES 7,591) is a row: its goals, from its lineup (the 3 forwards and 2 defencemen with the most ice time, the SNES
+rows' dressed players by how often the team used them; stored ratings averaged by position; the goalie's Agility) and
+the opponent's, home ice, and fixed effects for both coaches (so a rating is measured by the same coaches with
+different players). A team's own ratings give goals FOR, the opponent's goals AGAINST (cut), the sum the total.
+Held-out leagues: the ratings add to the coaches alone (Genesis R^2 -0.07 -> 0.05, SNES 0.01 -> 0.05: a game's goals
+are mostly chance). Per player's step, goals a game:
+
+| Genesis | For | Against (cut) | Total | SNES | For | Against (cut) | Total |
+|---|---|---|---|---|---|---|---|
+| **Forwards** Weight | -0.051 | -0.028 | **-0.080** +- 0.009 | Weight | +0.009 | +0.003 | +0.012 |
+| Agility | +0.072 | +0.019 | **+0.092** +- 0.028 | Agility | -0.034 | -0.020 | -0.053 |
+| Speed | +0.025 | -0.031 | -0.006 | Speed | +0.124 | -0.006 | **+0.118** +- 0.039 |
+| Off. Aware | -0.019 | +0.010 | -0.009 | Off. Aware | +0.091 | +0.033 | **+0.124** +- 0.034 |
+| Def. Aware | -0.008 | +0.021 | +0.014 | Def. Aware | -0.042 | -0.047 | -0.089 +- 0.035 |
+| Shot Power | +0.050 | -0.010 | +0.040 +- 0.019 | Shot Power | +0.045 | +0.012 | +0.057 +- 0.028 |
+| Checking | +0.031 | +0.011 | +0.042 +- 0.016 | Checking | +0.061 | **+0.058** | **+0.118** +- 0.026 |
+| Stickhandling | -0.011 | -0.002 | -0.014 | Stickhandling | -0.028 | -0.021 | -0.049 |
+| Shot Acc | +0.053 | -0.004 | +0.049 +- 0.013 | Shot Acc | +0.004 | -0.060 | -0.056 +- 0.020 |
+| Pass Acc | +0.053 | +0.014 | +0.067 +- 0.020 | Pass Acc | -0.010 | -0.010 | -0.020 |
+| **Defencemen** Weight (straight line) | -0.002 | -0.002 | -0.004 | Weight | +0.030 | +0.039 | **+0.070** +- 0.015 |
+| Agility | -0.011 | +0.015 | +0.004 | Agility | +0.050 | +0.052 | +0.102 +- 0.051 |
+| Speed | +0.062 | -0.044 | +0.018 | Speed | -0.051 | -0.097 | -0.148 +- 0.065 |
+| Off. Aware | -0.060 | -0.050 | -0.111 +- 0.038 | Off. Aware | -0.033 | +0.030 | -0.003 |
+| Checking | -0.010 | +0.006 | -0.004 | Checking | +0.001 | -0.034 | -0.033 |
+| Stickhandling | +0.104 | +0.007 | **+0.111** +- 0.038 | Stickhandling | -0.027 | +0.032 | +0.006 |
+| Pass Acc | -0.050 | +0.022 | -0.027 | Pass Acc | +0.067 | +0.004 | +0.071 |
+| **Goalie** Agility | -0.044 | **+0.304** | +0.26 | Agility | +0.048 | +0.099 | +0.15 |
+
+(Standard errors from 60 bootstraps of games; those not shown are about 0.01-0.05.)
+
+- **Defencemen's Weight is not a straight line on the Genesis** (the user: middleweights suit neither C nor CB checks):
+  with Weight in bands (`defence_weight_bands.py`), against a light defenceman (6 and under), **a middleweight (7-9)
+  costs 0.18 +- 0.04 goals a game** (0.12 for, 0.06 against) and **a heavy one (10+) gains 0.12 +- 0.06** (mostly
+  against: +0.08). On the SNES heavier is simply better: **middleweight +0.39 +- 0.09, heavy +0.52 +- 0.10**, half of it
+  at each end.
+- **Genesis defencemen's Checking and Speed** (fitted with fewer ratings beside them, so they don't share their
+  effect): Checking cuts goals against (+0.027 to +0.030 a step, about two standard errors); Speed adds goals for
+  (+0.06) and gives a little back (-0.03 against): fast defencemen join the rush.
+- **Forwards defend through Checking on the SNES** (+0.058 against a step, the clearest defensive skater effect);
+  on the Genesis their defence hardly shows; their Weight costs at both ends (a heavy forward carries deep and is
+  knocked down: the user).
+- **Cautions:** coaches choose their players, and ratings of one team's players go together, so single numbers move
+  when others are added (as Genesis defencemen's Speed and Checking did); the SNES's stored ratings are blurred by the
+  hot / cold bug (46% maxed each game), and its rows carry no ice time. Odd signs (SNES defencemen's Speed, forwards'
+  Shot Accuracy and Def. Awareness) are not explained. Not yet in the league value.
+
 ### Gaps for the next chunks
 
 - **B (played, done above):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
