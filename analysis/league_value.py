@@ -37,7 +37,8 @@ from systems import genesis  # noqa: E402
 
 # rating index in the ROM's 14 (league_player_study.NAMES): Weight 0, Agility 1, Speed 2, Off. Aware 3, Def. Aware 4,
 # Shot Power 5, Checking 6, Handed 7, Stick Hand 8, Shot Acc 9, Endurance 10, Shoot bias 11, Pass Acc 12, Aggression 13
-FWD = {5: 0.29, 2: 0.22, 9: 0.15, 8: 0.10, 1: 0.09, 0: -0.06}
+FWD = {5: 0.29, 2: 0.22, 9: 0.15, 8: 0.10, 1: 0.09, 0: -0.06}     # Weight replaced by the team fit's below
+WEIGHT = 0
 DEF = {12: 0.060, 6: 0.042, 1: 0.033, 2: 0.026, 5: 0.013, 9: 0.009, 0: -0.022, 3: -0.018, 8: -0.010}
 GOALIE_SV_STEP = 0.0225
 
@@ -58,12 +59,83 @@ def scale(values):
     return {k: round(40 + 59 * (v - lo) / (hi - lo)) for k, v in values.items()}
 
 
+def loo_fit(X, y):
+    """Least squares with an intercept: (coefficients, R^2, R^2 with each row predicted from the others)."""
+    X = np.array(X, float)
+    A = np.column_stack([X, np.ones(len(X))])
+    beta, *_ = np.linalg.lstsq(A, y, rcond=None)
+    pred = A @ beta
+    r2 = 1 - ((y - pred) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+    loo = []
+    for i in range(len(y)):
+        m = np.ones(len(y), bool)
+        m[i] = False
+        b, *_ = np.linalg.lstsq(A[m], y[m], rcond=None)
+        loo.append(A[i] @ b)
+    loo = np.array(loo)
+    return beta, pred, r2, 1 - ((y - loo) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+
+
+def team_parts(teams, pdata, strength, shots_per_game):
+    """Per Classic team: its strength; its regular forwards' scoring value without Weight, defencemen's value, the main
+    goalie's goals saved, the forwards' average Weight (all weighted by games), and the same skaters' mean Overall."""
+    pos = {(s["team"], s["name"].lower()): s for s in pdata["skaters"]}
+    gs = {(g["team"], g["name"].lower()): g for g in pdata["goalies"]}
+    rows = []
+    for t in teams:
+        ab = t["abbr"]
+        if ab not in strength:
+            continue
+        F, D = [], []
+        for p in t["players"]:
+            s = pos.get((ab, p["name"].lower()))
+            if p["g"] or not s:
+                continue
+            (F if s["pos"] == "F" else D).append((p, s["n"]))
+        gk = [(p, gs.get((ab, p["name"].lower()), {}).get("games", 0)) for p in t["players"] if p["g"]]
+        if not F or not D or not gk:
+            continue
+        g = max(gk, key=lambda x: x[1])[0]
+        avg = lambda L, f: sum(f(p) * n for p, n in L) / sum(n for _, n in L)
+        rows.append(dict(team=ab, strength=strength[ab],
+                         f=avg(F, lambda p: sum(v * p["a"][i] for i, v in FWD.items() if i != 0)),
+                         d=avg(D, lambda p: sum(v * p["a"][i] for i, v in DEF.items())),
+                         g=GOALIE_SV_STEP * g["a"][1] * shots_per_game, fw=avg(F, lambda p: p["a"][0]),
+                         fovr=avg(F, lambda p: p["ovr"]), dovr=avg(D, lambda p: p["ovr"]), govr=g["ovr"], goalie=g["name"]))
+    return rows
+
+
 def main():
+    global WEIGHT
     teams = genesis.read_teams(rom("9438f5dd_a738ea1c.bin"))
     pdata = json.loads((ROOT / "reports" / "classic_players.json").read_text())["Genesis"]
     pos = {(s["team"], s["name"].lower()): s for s in pdata["skaters"]}
     gs = {(g["team"], g["name"].lower()): g for g in pdata["goalies"]}
     shots_per_game = sum(g["sa"] for g in pdata["goalies"]) / sum(g["games"] for g in pdata["goalies"])
+    strength = team_strengths()
+    trows = team_parts(teams, pdata, strength, shots_per_game)
+    y = np.array([r["strength"] for r in trows])
+    # Weight's worth to a team: the forwards' average Weight beside the three value parts; in goals a game of a
+    # forward's value per Weight point (its coefficient over the forwards' value coefficient)
+    beta, _, r2w, loow = loo_fit([[r["f"], r["d"], r["g"], r["fw"]] for r in trows], y)
+    WEIGHT = beta[3] / beta[0]
+    # how sure: the coefficient's standard error, and a bootstrap of the teams for the ratio
+    A = np.column_stack([np.array([[r["f"], r["d"], r["g"], r["fw"]] for r in trows], float), np.ones(len(trows))])
+    res = y - A @ beta
+    cov = (res @ res / (len(y) - A.shape[1])) * np.linalg.inv(A.T @ A)
+    rng = np.random.default_rng(1)
+    ratios = []
+    for _ in range(2000):
+        ix = rng.integers(0, len(y), len(y))
+        b, *_ = np.linalg.lstsq(A[ix], y[ix], rcond=None)
+        if b[0] > 0.5:
+            ratios.append(b[3] / b[0])
+    lo, hi = np.percentile(ratios, [10, 90])
+    print(f"  the forwards' Weight coefficient {beta[3]:+.2f} +- {np.sqrt(cov[3, 3]):.2f} (one s.e.); the ratio's middle 80% "
+          f"over resampled teams {lo:+.2f} to {hi:+.2f}")
+    FWD[0] = WEIGHT
+    print(f"forwards' Weight from the team fit: {beta[3]:+.2f} win-chance points a Weight point of the team's average "
+          f"forward, = {WEIGHT:+.2f} goals a game of a forward's value (his own scoring alone: -0.06)")
     raw = {"F": {}, "D": {}, "G": {}}
     info = {}
     for t in teams:
@@ -104,60 +176,23 @@ def main():
                                                             for k, _ in moves[-6:][::-1]))
         print(f"  most overrated by Overall: " + "; ".join(f"{k[1]} ({k[0]}) Ovr rank {rk_ovr[k]} -> {rk_lv[k]}"
                                                           for k, _ in moves[:6]))
-    # the team check
-    strength = team_strengths()
-    X_lv, X_ovr, y, names = [], [], [], []
-    team_rows = []
-    for t in teams:
-        ab = t["abbr"]
-        if ab not in strength:
-            continue
-        parts_lv, parts_ovr = [], []
-        for ps in ("F", "D"):
-            ks = [k for k in raw[ps] if k[0] == ab and info[k]["games"] > 0]
-            wsum = sum(info[k]["games"] for k in ks)
-            if not wsum:
-                break
-            parts_lv.append(sum(raw[ps][k] * info[k]["games"] for k in ks) / wsum)
-            parts_ovr.append(sum(info[k]["ovr"] * info[k]["games"] for k in ks) / wsum)
-        gk = [k for k in raw["G"] if k[0] == ab]
-        if len(parts_lv) < 2 or not gk:
-            continue
-        g = max(gk, key=lambda k: info[k]["games"])
-        parts_lv.append(raw["G"][g])
-        parts_ovr.append(info[g]["ovr"])
-        X_lv.append(parts_lv)
-        X_ovr.append(parts_ovr)
-        y.append(strength[ab])
-        names.append(ab)
-        team_rows.append((ab, strength[ab], parts_lv, parts_ovr, g[1]))
-    y = np.array(y)
-
-    def fit(X, label):
-        X = np.array(X, float)
-        A = np.column_stack([X, np.ones(len(X))])
-        beta, *_ = np.linalg.lstsq(A, y, rcond=None)
-        pred = A @ beta
-        r2 = 1 - ((y - pred) ** 2).sum() / ((y - y.mean()) ** 2).sum()
-        # leave one out
-        loo = []
-        for i in range(len(y)):
-            m = np.ones(len(y), bool)
-            m[i] = False
-            b, *_ = np.linalg.lstsq(A[m], y[m], rcond=None)
-            loo.append(A[i] @ b)
-        loo = np.array(loo)
-        r2_loo = 1 - ((y - loo) ** 2).sum() / ((y - y.mean()) ** 2).sum()
-        print(f"  {label}: R^2 {r2:.2f}, left-one-out {r2_loo:.2f}; per unit: forwards {beta[0]:+.2f}, defencemen "
-              f"{beta[1]:+.2f}, goalie {beta[2]:+.2f}")
-        return pred
-    print(f"\nTeams ({len(y)}): strength (win chance points) against their parts")
-    p_lv = fit(X_lv, "league value parts (forwards' goals, defencemen's points, goalie's goals saved)")
-    p_ovr = fit(X_ovr, "the game's Overall (forwards, defencemen, goalie)")
-    print("\n| Team | Strength | From league value | From Overall | Main goalie |")
-    print("|---|---|---|---|---|")
-    for (ab, s, pl, po, gname), a, b in sorted(zip(team_rows, p_lv, p_ovr), key=lambda r: -r[0][1]):
-        print(f"| {ab} | {s:+.1f} | {a:+.1f} | {b:+.1f} | {gname} |")
+    # the team check: league value (Weight from the teams) against the game's Overall, each with and without the
+    # forwards' average Weight beside it
+    print(f"\nTeams ({len(y)}): strength (win-chance points) explained, each team also predicted from the others")
+    print("| Built from | R^2 | Left one team out |")
+    print("|---|---|---|")
+    for label, cols in (("League value: forwards' scoring, defencemen, goalie", ["f", "d", "g"]),
+                        ("League value with the forwards' Weight", ["f", "d", "g", "fw"]),
+                        ("The game's Overall: forwards, defencemen, goalie", ["fovr", "dovr", "govr"]),
+                        ("The game's Overall with the forwards' Weight", ["fovr", "dovr", "govr", "fw"])):
+        _, pred, r2, loo = loo_fit([[r[c] for c in cols] for r in trows], y)
+        print(f"| {label} | {r2:.2f} | {loo:.2f} |")
+    _, p_lv, _, _ = loo_fit([[r["f"], r["d"], r["g"], r["fw"]] for r in trows], y)
+    _, p_ovr, _, _ = loo_fit([[r["fovr"], r["dovr"], r["govr"]] for r in trows], y)
+    print("\n| Team | Strength | From league value | From Overall | Forwards' weight | Main goalie |")
+    print("|---|---|---|---|---|---|")
+    for r, a, b in sorted(zip(trows, p_lv, p_ovr), key=lambda x: -x[0]["strength"]):
+        print(f"| {r['team']} | {r['strength']:+.1f} | {a:+.1f} | {b:+.1f} | {r['fw']:.1f} | {r['goalie']} |")
     out = {f"{k[0]}|{k[1]}": dict(lv=lv[k], **{x: info[k][x] for x in ("pos", "ovr", "games")}) for k in lv}
     (ROOT / "reports" / "league_value.json").write_text(json.dumps(out))
 

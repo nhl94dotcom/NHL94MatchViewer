@@ -287,7 +287,7 @@ One number per player, 0-99 like the game's Overall, weighting each roster ratin
 Classic leagues' results:
 
 - **Forwards:** goals a game per step (above): Shot Power +0.29, Speed +0.22, Shot Accuracy +0.15, Stickhandling
-  +0.10, Agility +0.09, Weight -0.06; nothing for the rest.
+  +0.10, Agility +0.09; **Weight -0.52 a point, from the teams' results** (below); nothing for the rest.
 - **Defencemen:** points a game per step (PLAYER_GUIDE_GENESIS): Pass Accuracy +0.060, Checking +0.042, Agility +0.033,
   Speed +0.026, Shot Power +0.013, Shot Accuracy +0.009, Weight -0.022, Off. Awareness -0.018, Stickhandling -0.010.
   **Offence only**: what a defenceman's ratings do to goals against isn't measured.
@@ -296,50 +296,64 @@ Classic leagues' results:
   add little or nothing, the glove and stick ratings nothing.)
 - Each position's weighted sum is put on 40-99 across its retail players.
 
+**Weight: the leagues' experience, measured** (the user, 2026-11-11: "we particularly have success with lighter players
+and their superior checking and ability not to be knocked over by opposing human controlled skaters"). A forward's own
+scoring barely shows it (-0.06 goals a Weight point), but the weight bug works on the whole team's play: a person's
+skater knocks anyone 2+ points heavier down automatically, and is himself hard for a person to knock down (7.2), and
+light forwards throw more checks (-0.56 a game a point). The teams show it: beside the three value parts, the
+regular forwards' average Weight takes **-2.15 +- 0.65 points of win chance a Weight point** (three standard errors
+from zero), the defencemen's average Weight nothing (+0.18). Against the forwards' scoring part of the same fit, that's
+**-0.52 goals a game a Weight point** in a forward's value; how big exactly is uncertain (the middle 80% of resampled
+teams: -0.16 to -1.30), but it's large: a forward 3 points lighter is worth about one more step of Shot Power and
+Speed together.
+
 **Does it make sense? The teams' measured strength.** COACH_RATING section 9 measures each Classic team's strength from
-the results with the coaches taken out. Fitting the 22 teams' strength on three parts (the regular forwards' and
-defencemen's values, weighted by their games, and the main goalie's), the same way with the game's Overall:
+the results with the coaches taken out. The 22 teams' strength fitted on each set of parts, and each team predicted from
+the other 21:
 
-| Built from | Share of the teams' strength explained (R^2) | Leaving each team out of its own fit |
+| Built from | R^2 | Left one team out |
 |---|---|---|
-| League value | 0.59 | 0.27 |
-| The game's Overall | 0.34 | 0.01 |
+| League value: forwards' scoring, defencemen, goalie | 0.54 | 0.18 |
+| **League value with the forwards' Weight** | **0.72** | **0.47** |
+| The game's Overall: forwards, defencemen, goalie | 0.34 | 0.01 |
+| The game's Overall with the forwards' Weight | 0.62 | 0.37 |
 
-The league value explains the teams about as well as anything 22 teams can show; the game's Overall, tested fairly
-(each team predicted from the others), explains almost nothing. Chicago, Detroit and Buffalo come out on top either way
-from their goalies and shooters; the league value has Detroit second, where Overall had it in the middle.
+The game's Overall alone predicts almost nothing a team didn't already tell it; Weight, which Overall leaves out, is
+what fixes it most. Pittsburgh (forwards 9.2 on average, the heaviest) is -6.3 for all its stars; Chicago, Detroit,
+Buffalo and Montreal, the strongest, average 5.9-6.1.
 
 **Forwards with 150+ league games (93), the top 20 by league value:**
 
 | Player | Team | League value | Rank | Game's Overall | Rank |
 |---|---|---|---|---|---|
 | Jeremy Roenick | CHI | 99 | 1 | 89 | 8 |
-| Alexander Mogilny | BUF | 97 | 2 | 96 | 2 |
-| Steve Yzerman | DET | 95 | 3 | 95 | 3 |
-| Dino Ciccarelli | DET | 95 | 4 | 80 | 25 |
-| Pavel Bure | VAN | 95 | 5 | 90 | 6 |
-| Teemu Selanne | WPG | 95 | 6 | 90 | 7 |
-| Petr Klima | EDM | 93 | 7 | 76 | 36 |
-| Mike Gartner | NYR | 93 | 8 | 85 | 17 |
-| Theoren Fleury | CGY | 91 | 9 | 86 | 12 |
-| Mike Modano | DAL | 91 | 10 | 82 | 22 |
-| Luc Robitaille | LA | 91 | 11 | 85 | 15 |
-| Mario Lemieux | PIT | 91 | 12 | 100 | 1 |
-| Brett Hull | STL | 91 | 13 | 81 | 24 |
-| Russ Courtnall | DAL | 90 | 14 | 73 | 54 |
-| Tomas Sandstrom | LA | 90 | 15 | 80 | 26 |
-| Mark Recchi | PHI | 89 | 16 | 83 | 20 |
-| Doug Gilmour | TOR | 89 | 17 | 89 | 9 |
-| Sergei Fedorov | DET | 88 | 18 | 84 | 18 |
-| Joe Sakic | QUE | 88 | 19 | 83 | 21 |
-| Peter Bondra | WSH | 88 | 20 | 78 | 33 |
+| Theoren Fleury | CGY | 98 | 2 | 86 | 12 |
+| Dino Ciccarelli | DET | 93 | 3 | 80 | 25 |
+| Andrei Kovalenko | QUE | 93 | 4 | 69 | 78 |
+| Doug Gilmour | TOR | 93 | 5 | 89 | 9 |
+| Pavel Bure | VAN | 93 | 6 | 90 | 6 |
+| Brian Bradley | TB | 91 | 7 | 71 | 69 |
+| Steve Yzerman | DET | 89 | 8 | 95 | 3 |
+| Nelson Emerson | STL | 89 | 9 | 70 | 73 |
+| Teemu Selanne | WPG | 89 | 10 | 90 | 7 |
+| Dallas Drake | DET | 88 | 11 | 66 | 83 |
+| Wayne Gretzky | LA | 88 | 12 | 87 | 10 |
+| Ted Donato | BOS | 87 | 13 | 65 | 85 |
+| Joe Juneau | BOS | 87 | 14 | 72 | 62 |
+| Pat LaFontaine | BUF | 87 | 15 | 91 | 5 |
+| Alexander Mogilny | BUF | 87 | 16 | 96 | 2 |
+| Neal Broten | DAL | 87 | 17 | 69 | 76 |
+| Stephan Lebeau | MTL | 87 | 18 | 74 | 49 |
+| Russ Courtnall | DAL | 86 | 19 | 73 | 54 |
+| Denis Savard | MTL | 86 | 20 | 75 | 41 |
 
-- **Overall's biggest overrates:** Mark Messier (rank 16 by Overall, 68 by league value), **Wayne Gretzky (10 -> 61:
-  Shot Power 2, Shot Accuracy 2, below the slapshot cliff)**, Kevin Stevens (35 -> 86), Jaromir Jagr (29 -> 70), Adam
-  Oates (4 -> 40: Shot Power 3), Ron Francis (43 -> 78). Overall rewards their Awareness, Passing and Endurance, which
-  barely move results.
-- **Its biggest underrates:** Evgeny Davydov (87 -> 39), Russ Courtnall (54 -> 14), Brian Bradley (69 -> 30), Stephane
-  Richer (64 -> 26), Owen Nolan (68 -> 37), Joe Juneau (62 -> 31): shooters and skaters with modest Awareness.
+- **Overall's biggest overrates are the heavy stars:** Mario Lemieux (rank 1 by Overall, 80 by league value), Cam Neely
+  (11 -> 85), Mark Messier (16 -> 88), Eric Lindros (19 -> 91), Jaromir Jagr (29 -> 89), Kevin Stevens (35 -> 92).
+  With Weight at the low end of its range (-0.16) they fall far less; at any value they fall.
+- **Its biggest underrates are light shooters:** Andrei Kovalenko (78 -> 4), Dallas Drake (83 -> 11), Ted Donato (85 ->
+  13), Bob Bassen (92 -> 24), Nelson Emerson (73 -> 9), Brian Bradley (69 -> 7).
+- Gretzky (Shot Power 2, Shot Accuracy 2, below the slapshot cliff) stays near his Overall: his light Weight (4) makes
+  up for the shot.
 
 **Defencemen with 150+ games (63), the top 12** (offence only): Ray Bourque 99 (Overall rank 1), Phil Housley 97 (3),
 Don Sweeney 93 (17), Gary Suter 90 (5), Brian Leetch 88 (9), Chris Chelios 86 (2), Paul Coffey 86 (4), Glen Wesley 85
@@ -350,10 +364,10 @@ Steve Chiasson (21 -> 52), Larry Murphy (11 -> 40), Jeff Brown (20 -> 49), Rob B
 goalies at 70. By Overall, Andy Moog (rank 20), Jon Casey (18), Chris Terreri (17) and Sean Burke (16) sit well below
 their Agility; Felix Potvin (4 -> 14), Bob Essensa (7 -> 16) and Curtis Joseph (5 -> 13) well above it.
 
-**Limits.** The forwards' and defencemen's weights come from fits within each team (who scores on a team, not how much
-more the team scores), and the team check has only 22 teams; the defencemen's value is offence only; a goalie's
-Agility counts only while the computer has him (a person's goalie always has the longest reach). Chunk C (the
-Awareness ratings) may move the defencemen.
+**Limits.** The scoring weights come from fits within each team (who scores on a team, not how much more the team
+scores), and Weight's size from only 22 teams; the defencemen's value is offence only; a goalie's Agility counts only
+while the computer has him (a person's goalie always has the longest reach). Chunk C (the Awareness ratings) may move
+the defencemen.
 
 ### Gaps for the next chunks
 
