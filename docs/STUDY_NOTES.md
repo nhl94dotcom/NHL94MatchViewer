@@ -2548,7 +2548,11 @@ Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Seas
   changed, PeriodOver then goes into another overtime with the game marked over, and the intermission's Resume Game never
   resumes (40 presses, 100 s). A scratch copy with $7C4C made `4E71` as well plays on: another overtime (10:00:
   ResetClock's regular-season overtime length, $7818, left as it is), still 1-1; in the playoffs a goal in the extra
-  overtime ended the game, as before.
+  overtime ended the game, as before. **The remade build (51739b3: $1725C and $7C4C both `4E71`, nothing else in the
+  game's code changed) works:** a regular-season game tied 1-1 at the end of overtime played three more 10:00 overtimes
+  (computer against computer) and ended on a goal, 1-2 with 5:04 left in the third (gsp 4, the game over as usual); the
+  playoffs were as on retail (retail: extra 10:00 overtimes until a goal, 1-2 in the third; the build: 1-2 in the
+  first).
 
 ## A shootout to settle a tied regular-season game (Genesis, 2026-11-11, for NOSE4Web; from the code, not built)
 
