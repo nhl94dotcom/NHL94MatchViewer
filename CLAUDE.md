@@ -126,6 +126,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   its own league) is split into its levels by `classic_season_report.split_levels` (the schedule's groups, the higher by
   pre-season rating); reports, stories and `coach_team_levels.py` treat each level as its own league. Pre-season ratings
   are taken on the season's first day on the system (`season_start`); a newcomer's starting rating makes no favourite.
+  Despite their names, `classic_league_report.py`, `classic_season_report.py`, `classic_season_extras.py` and
+  `classic_story_material.py` take any league (exact name or prefix); a non-Classic league uses the all-leagues ratings.
 - `analysis/scoring_map/`: the game itself, headless (a libretro frontend over copies of the cores; work files in
   `%USERPROFILE%\NHL94_scoring_map`; `build.py`'s docstring is the how-to).
   - Scoring maps: a Genesis test ROM built from the disassembly with a doshot hook (GENESIS_SHOOTING 4.10); the SNES

@@ -2,11 +2,11 @@
 away, looking ahead). Names real people, so it prints only, to the terminal: nothing is written, and nothing named
 goes in the repository.
 
-From the league database (as classic_season_report.py) and coach_history's Classic ratings:
+From the league database (as classic_season_report.py) and coach_history's ratings (Classic for a Classic league, all-leagues for any other):
 - best single games: the most goals and points by one player in a game, shutouts, the most shots by a team;
 - rivalries: each pair of coaches who met 3+ times, the closest series by goal difference, the most lopsided;
 - home and away: every coach's record at home and away, and the biggest gap;
-- looking ahead: each coach's Classic rating the day before the league's first game and on the last day of the
+- looking ahead: each coach's rating the day before the league's first game and on the last day of the
   history (after this season; it says so if the history stops before the league's last game day; run late, it
   includes any later games too), as a win chance against the average coach, and the change.
 
@@ -85,24 +85,25 @@ def main():
     big = max(ha, key=lambda c: abs(ha[c]))
     print(f"  biggest gap: {big} ({ha[big]:+.3f})")
 
-    print("== Looking ahead (Classic rating as a win chance against the average coach)")
+    print(f"== Looking ahead ({'Classic' if S.is_classic(league) else 'all-leagues'} rating as a win chance against the average coach, before the season and after the league)")
     first = S.season_start(league)  # pre-season: before the season's first game on the system
-    before, day0 = S.ratings(system, first)
-    after, day1 = S.ratings(system, date.today())
+    before, day0 = S.ratings(system, first, league)
+    # after: the first rating after the league's last game (an old league's change, not one to today: 2026-11-10)
+    last = date.fromisoformat(max(r["DateTime"] for r in games)[:10])
+    after, day1 = S.ratings_after(system, date.fromordinal(last.toordinal() + 1), league)
     sig = lambda x: 1 / (1 + math.exp(-x))
     rows = []
     for c in keep:
         b, a = before.get(S.base_name(c).lower()), after.get(S.base_name(c).lower())
         if b is not None and a is not None:
             rows.append((sig(a) - sig(b), c, sig(b), sig(a)))
-    last = date.fromisoformat(max(r["DateTime"] for r in games)[:10])
     print(f"  ({day0} -> {day1})" + ("" if day1 > last else
           f"  NOTE: the latest rating ({day1}) is from before the league's last game day ({last}): rebuild coach_history"))
     for d, c, b, a in sorted(rows, reverse=True):
         print(f"  {c}: {100 * b:.0f}% -> {100 * a:.0f}% ({100 * d:+.0f})")
-    new = [c for c in keep if S.base_name(c).lower() not in before]
+    new = [c for c in keep if S.newcomer(system, first, c, league)]
     if new:
-        print("  no rating before the season (new to Classic):", ", ".join(new))
+        print(f"  no rating before the season ({S.first_league(league)}):", ", ".join(new))
 
 
 if __name__ == "__main__":

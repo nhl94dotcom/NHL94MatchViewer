@@ -279,7 +279,7 @@ class Goalie:
         self.y += frames * self.vy / 4096
 
 
-def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, launch=None):
+def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, launch=None, step=STEP):
     """One shot as the SNES game plays it: 'goal', 'save', 'post', 'over' or 'wide'.
 
     rebound (2026-10-29, xg_calib.py: close follow-ups scored half again as often in the game as in the model): a touch
@@ -289,7 +289,8 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, l
     touch it for 10 frames: it can go in off him.
 
     launch: (vx, vy, vz), the puck's own start (a pass shot, a deflection): no aim, no scatter; ty then only says which
-    net."""
+    net. step: frames a game step, 2 for the retail game and 1 for an SA-1 build (60 game frames a second: the same
+    rules, every timer counting by the step, d7 / timestep, in its code; 2026-11-10)."""
     if launch:
         vx, vy, vz = launch
     else:
@@ -314,11 +315,11 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, l
         G.randomise(rng)
     x, y, h = px, py, 0.0
     front = 259 if ty > 0 else -259
-    for _ in range(0, 300, STEP):
+    for _ in range(0, 300, step):
         seen = (x, y, vx, vy, h, vz)                          # the puck as the goalie will see it (STALE_PUCK)
-        nx, ny = x + STEP * vx / 4096, y + STEP * vy / 4096
-        vz -= 96 * STEP
-        nh = h + STEP * vz / 4096
+        nx, ny = x + step * vx / 4096, y + step * vy / 4096
+        vz -= 96 * step
+        nh = h + step * vz / 4096
         if nh < 0:
             nh, vz = 0.0, -vz / 2 if vz < 0 else vz
         if (ny - front) * (y - front) <= 0 and ny != y:
@@ -331,9 +332,9 @@ def play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, rebound=False, l
             return "post" if abs(cx) <= 22 else "wide"
         x, y, h = nx, ny, nh
         if G:
-            G.step(*(seen if STALE_PUCK else (x, y, vx, vy, h, vz)), rng)
+            G.step(*(seen if STALE_PUCK else (x, y, vx, vy, h, vz)), rng, frames=step)
             if G.nopuck > 0:                                  # just bounced off him: no touch for 10 frames
-                G.nopuck -= STEP
+                G.nopuck -= step
                 if abs(y) > 300 or abs(x) > 140:
                     return "wide"
                 continue

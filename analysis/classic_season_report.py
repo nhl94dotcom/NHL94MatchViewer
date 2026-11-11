@@ -6,7 +6,7 @@ From the league database (All_Games_GENS.csv / All_Games_SNES.csv): every regula
 league counts them (a double upload too); simulated games left out. Points: 2 a win, none for
 a loss (overtime included; a tie 1). Rates per game, so coaches with games left compare fairly. Ranks: 1 is the best
 (fewest for things against); coaches with very few games (under a quarter of the most, or under 5) are left out of
-the table and ranks as in classic_league_report.py, their games still counted for their opponents. Pre-season strength: coach_history's Classic rating the day before the league's first
+the table and ranks as in classic_league_report.py, their games still counted for their opponents. Any league (2026-11-10). Pre-season strength: coach_history's rating (Classic for a Classic league, all-leagues for any other) the day before the league's first
 game (win chance against coach B = 1 / (1 + exp(-(a - b))); teams and home ice not in it).
 
 "Their season" at the top tells it in words from the same numbers (2026-11-10): the result against the pre-season
@@ -39,8 +39,26 @@ def num(v):
         return 0.0
 
 
+_SYSTEM = {}
+
+
+def system_of(league):
+    """'GENS' or 'SNES': from the name, or, for a league named for neither (Classic_Dynasty_S1, a Genesis league), the
+    database that holds it (2026-11-10: it was read from the SNES file and had no games)."""
+    if "GENS" in league:
+        return "GENS"
+    if "SNES" in league:
+        return "SNES"
+    if league not in _SYSTEM:
+        _SYSTEM[league] = "SNES"
+        with open(DATA / "All_Games_GENS.csv", newline="", encoding="utf-8", errors="replace") as fh:
+            if any(r["League"] == league for r in csv.DictReader(fh)):
+                _SYSTEM[league] = "GENS"
+    return _SYSTEM[league]
+
+
 def load(league):
-    system = "GENS" if "GENS" in league else "SNES"
+    system = system_of(league)
     path = DATA / f"All_Games_{system}.csv"
     with open(path, newline="", encoding="utf-8", errors="replace") as fh:
         rows = [r for r in csv.DictReader(fh) if r["League"] == league and r["sim"] in ("0", "") and r["RegOrPlay"] == "R"]
@@ -125,6 +143,18 @@ def split_levels(league, system, rows):
     return out
 
 
+def player_line(p):
+    """One skater's line from a game's Players list as a dict. Most rows are [number, name, position, G, A, P, shots,
+    checks, PIM] with time on ice after (Genesis); older SNES rows have no checks, [number, name, position, G, A, P,
+    shots, PIM] (their shots and PIM add up to the team's): Chk is None there (review 2026-11-10)."""
+    if len(p) == 8:
+        return {"G": p[3], "A": p[4], "P": p[5], "SOG": p[6], "Chk": None, "PIM": p[7]}
+    out = {"G": p[3], "A": p[4], "P": p[5], "SOG": p[6], "Chk": p[7], "PIM": p[8] if len(p) > 8 else 0}
+    if len(p) > 9:
+        out["TOI"] = p[9]
+    return out
+
+
 def base_name(c):
     """A coach's own name, without the '(TEAM)' a two-level league adds."""
     return re.sub(r" \([A-Z]{2,4}\)$", "", c)
@@ -161,39 +191,79 @@ def sides(r):
     return out
 
 
-RATED_GAMES = {}  # (system, day) -> {coach: Classic games behind the rating}; 0 is a newcomer's starting rating
+RATED_GAMES = {}  # (system, day, scope) -> {coach: games behind the rating}; 0 is a newcomer's starting rating
 _SEASON_START = {}
 
 
+def is_classic(league):
+    return league.lower().startswith("classic")
+
+
+def scope(league):
+    """The ratings a league is measured by (2026-11-10, the user: these reports for any league): a Classic league by
+    coach_history's Classic rating (Classic games only), any other by its all-leagues rating (every league)."""
+    return "classic" if is_classic(league) else "all"
+
+
+def first_league(league):
+    """How a newcomer is described: no games before in Classic leagues, or none in any league."""
+    return "new to Classic" if is_classic(league) else "in their first league"
+
+
+def rated_word(league):
+    return "Classic games" if is_classic(league) else "league games"
+
+
+def season_key(league):
+    """The season a league belongs to: its name without the level at its end (Classic_Fall2026_GENS-A ->
+    Classic_Fall2026_GENS; Blitz_'94_Season_10-B -> Blitz_'94_Season_10; Classic_Fall2020_GENS-B-E ->
+    Classic_Fall2020_GENS; Velocity_League_Season_5 is its own)."""
+    return re.sub(r"-[A-Za-z]{1,3}\d?(?:-[A-Za-z])?$", "", league)
+
+
 def season_start(league):
-    """The first game day of the league's whole season on its system (Classic_Fall2026_GENS-E -> every
-    Classic_Fall2026_GENS league). Pre-season ratings are taken then, the same for every league of the season: taken on
-    each league's own first day, a league starting a day later had the others' first games in its "pre-season"
-    ratings (review 2026-11-10: a coach new on October 3 in Genesis F was "the favourite" of Genesis E on October 4)."""
-    m = re.match(r"(.+?_)(GENS|SNES)", league)
-    prefix, system = (m.group(1) + m.group(2), m.group(2)) if m else (league, "GENS" if "GENS" in league else "SNES")
-    if prefix not in _SEASON_START:
+    """The first game day of the league's whole season on its system (the leagues with its season_key). Pre-season
+    ratings are taken then, the same for every league of the season: taken on each league's own first day, a league
+    starting a day later had the others' first games in its "pre-season" ratings (review 2026-11-10: a coach new on
+    October 3 in Genesis F was "the favourite" of Genesis E on October 4)."""
+    key, system = season_key(league), system_of(league)
+    if (system, key) not in _SEASON_START:
         with open(DATA / f"All_Games_{system}.csv", newline="", encoding="utf-8", errors="replace") as fh:
             days = [padded(r["DateTime"])[:10] for r in csv.DictReader(fh)
-                    if r["League"].startswith(prefix) and r["RegOrPlay"] == "R" and r["sim"] in ("0", "")]
-        _SEASON_START[prefix] = date.fromisoformat(min(days))
-    return _SEASON_START[prefix]
+                    if season_key(r["League"]) == key and r["RegOrPlay"] == "R" and r["sim"] in ("0", "")]
+        _SEASON_START[(system, key)] = date.fromisoformat(min(days))
+    return _SEASON_START[(system, key)]
 
 
-def ratings(system, league_first_day):
-    hist = DATA / "coach_history" / f"{'GENESIS' if system == 'GENS' else 'SNES'}_classic.json"
+def ratings(system, league_first_day, league="Classic"):
+    """{coach: rating} from coach_history on the last day it has on or before league_first_day (the ratings from
+    games before that day), and that day: the Classic ratings for a Classic league, the all-leagues ones otherwise."""
+    sc = scope(league)
+    hist = DATA / "coach_history" / f"{'GENESIS' if system == 'GENS' else 'SNES'}_{sc}.json"
     d = json.load(open(hist, encoding="utf-8"))
     day = max(int(k) for k in d if int(k) <= league_first_day.toordinal())
-    RATED_GAMES[(system, league_first_day)] = {k: v[1] for k, v in d[str(day)].items()}
+    RATED_GAMES[(system, league_first_day, sc)] = {k: v[1] for k, v in d[str(day)].items()}
     return {k: v[0] for k, v in d[str(day)].items()}, date.fromordinal(day)
 
 
-def newcomer(system, league_first_day, coach):
-    """True when the coach's pre-season rating is only the starting rating (no Classic games before the league), so
-    it says nothing about them: no favourite or pre-season place from it (review 2026-11-10)."""
-    if (system, league_first_day) not in RATED_GAMES:
-        ratings(system, league_first_day)
-    return RATED_GAMES[(system, league_first_day)].get(base_name(coach).lower(), 0) == 0
+def ratings_after(system, day, league="Classic"):
+    """The first ratings coach_history has on or after day (for "looking ahead": the day after a league's last game),
+    and that day; the last it has when none is that late (a league still playing)."""
+    sc = scope(league)
+    hist = DATA / "coach_history" / f"{'GENESIS' if system == 'GENS' else 'SNES'}_{sc}.json"
+    d = json.load(open(hist, encoding="utf-8"))
+    later = [int(k) for k in d if int(k) >= day.toordinal()]
+    k = min(later) if later else max(int(k) for k in d)
+    return {c: v[0] for c, v in d[str(k)].items()}, date.fromordinal(k)
+
+
+def newcomer(system, league_first_day, coach, league="Classic"):
+    """True when the coach's pre-season rating is only the starting rating (no games before the league in its
+    ratings' leagues), so it says nothing about them: no favourite or pre-season place from it (review 2026-11-10)."""
+    key = (system, league_first_day, scope(league))
+    if key not in RATED_GAMES:
+        ratings(system, league_first_day, league)
+    return RATED_GAMES[key].get(base_name(coach).lower(), 0) == 0
 
 
 def sig(x):
@@ -225,7 +295,7 @@ def build(league, coach):
     if coach not in per:
         raise SystemExit(f"{coach} has no games in {league}")
     first = season_start(league)  # the season's first day on the system: pre-season ratings the same for every league
-    rat, rat_day = ratings(system, first)
+    rat, rat_day = ratings(system, first, league)
     known = [rat[base_name(c).lower()] for c in per if base_name(c).lower() in rat]
     mean_known = sum(known) / len(known)
     R = lambda c: rat.get(base_name(c).lower(), mean_known)
@@ -415,7 +485,7 @@ def build(league, coach):
             n = sit[k + ("W",)] + sit[k + ("L",)] + sit[k + ("T",)]
             if n:
                 w(f"| {st.capitalize()} {when} period{'s' if when == 'after 2' else ''} | {sit[k + ('W',)]}-{sit[k + ('L',)]}"
-                  + (f"-{sit[k + ('T',)]}" if sit[k + ('T',)] else "") + f" ({n} games) |")
+                  + (f"-{sit[k + ('T',)]}" if sit[k + ('T',)] else "") + f" ({n} game{'' if n == 1 else 's'}) |")
     for who, lab in (("us", "Scored first"), ("them", "Opponent scored first")):
         k = ("first goal", who)
         w(f"| {lab} | {sit[k + ('W',)]}-{sit[k + ('L',)]}" + (f"-{sit[k + ('T',)]}" if sit[k + ('T',)] else "") + " |")
@@ -464,10 +534,15 @@ def build(league, coach):
         for p in g["us"]["Players"]:
             k = (p[1], p[2])
             pl[k]["GP"] += 1
-            for i, f in enumerate(("G", "A", "P", "SOG", "Chk", "PIM"), 3):
-                pl[k][f] += p[i]
-            if len(p) > 9:
-                pl[k]["TOI"] += p[9]
+            line = player_line(p)
+            for f in ("G", "A", "P", "SOG", "PIM"):
+                pl[k][f] += line[f]
+            if "TOI" in line:
+                pl[k]["TOI"] += line["TOI"]
+            if line["Chk"] is None:
+                pl[k]["nochk"] += 1            # an older row with no checks: the column shows "-"
+            else:
+                pl[k]["Chk"] += line["Chk"]
         for q in g["us"]["Goalies"]:
             k = q[1]
             gk[k]["GP"] += 1
@@ -487,7 +562,8 @@ def build(league, coach):
         if v["P"] == 0 and v["SOG"] == 0 and v["Chk"] < 5:
             continue
         w(f"| {name} | {pos} | {v['GP']} | {v['G']} | {v['A']} | {v['P']} | {v['SOG']} | {pct(v['G'], v['SOG'])} | "
-          f"{ppg[name]} | {v['Chk']} | {v['PIM']} |" + (f" {fmt_time(v['TOI'] / v['GP'])} |" if has_toi else ""))
+          f"{ppg[name]} | {'-' if v['nochk'] == v['GP'] else v['Chk']} | {v['PIM']} |"
+          + (f" {fmt_time(v['TOI'] / v['GP'])} |" if has_toi else ""))
     w("")
     w("| Goalie | GP | Shots | Saves | GA | Save % | GA/G |")
     w("|---|---|---|---|---|---|---|")
@@ -516,7 +592,7 @@ def build(league, coach):
         w(f"| {o} | {teams.get(o, '')} | {v['GP']} | {v['W']}-{v['L']} | {int(v['GF'])}-{int(v['GA'])} | "
           f"{int(v['SF'])}-{int(v['SA'])} | {v['E']:.1f} | {100 * sig(R(o) - mean_known):.0f}% |")
     tot_e = sum(v["E"] for v in h2h.values())
-    w(f"\nTotal: {me['W']} wins against {tot_e:.1f} expected from the ratings. Average opponent pre-season rating "
+    w(f"\nTotal: {me['W']} win{'' if me['W'] == 1 else 's'} against {tot_e:.1f} expected from the ratings. Average opponent pre-season rating "
       f"{100 * sig(me['opp_rating'] / me['GP'] - mean_known):.0f}% (league average 50%).\n")
 
     # --- form
@@ -552,7 +628,7 @@ def build(league, coach):
       f"overtime {me['OTW']}-{me['OTL']}.")
     at = 3 if my_level else 2  # after the title and the header lines
     L[at:at] = narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rate, pdo, pl, gk, sig,
-                         new=lambda c: newcomer(system, first, c), level=my_level)
+                         new=lambda c: newcomer(system, first, c, league), level=my_level, rated_label=rated_word(league))
     return "\n".join(L) + "\n"
 
 
@@ -561,7 +637,7 @@ def nth(n):
 
 
 def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rate, pdo, pl, gk, sig,
-              new=lambda c: False, level=None):
+              new=lambda c: False, level=None, rated_label="Classic games"):
     """'Their season': the season told from the numbers in the report below it (nothing else), so every line can be
     checked against a table. (2026-11-10, the user: a scripted narrative for every coach.) new(c): the coach's
     rating is only a newcomer's starting one; level: the coach's level of a two-level league."""
@@ -582,7 +658,7 @@ def narrative(coach, tab, order, teams, per, mine, res, R, rank, league_avg, rat
         tail = (", near the top" if place <= max(2, n // 4) else ", near the bottom" if place > n - max(2, n // 4) else "")
     how = "above" if beat >= 3 else "below" if beat <= -3 else "about"
     exp_txt = ((f"well {how} " if how != "about" else "about ") + "what the pre-season ratings expected (" +
-               (f"{me['exp_W']:.1f} wins; they had {coach} {nth(pre)} of the {len(rated)} with Classic games before"
+               (f"{me['exp_W']:.1f} wins; they had {coach} {nth(pre)} of the {len(rated)} with {rated_label} before"
                 if pre else f"{me['exp_W']:.1f} wins from a newcomer's starting rating, so a weak guide") + ")")
     out.append(f"{coach} {where} as {teams[coach]}{tail}, going {w_}-{l_}" + (f"-{me['T']}" if me["T"] else "") +
                f" with {me['F_Score'] / gp:.2f} goals for and {me['A_Score'] / gp:.2f} against a game ({diff:+.2f}). "
