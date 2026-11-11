@@ -2482,6 +2482,16 @@ Game Setup; video and colour memory from the cores).
   6). BG1 covers him only where it draws (the box's edge in column 22, the letters): in column 21 and between the
   letters his suit shows through the box. (The first 180 frames are the fade-in, and the video memory still holds
   some of the last screen then.)
+- **SNES, NOSE4Web's builds (8f5a975: NHL94_announcer.smc against NHL94.smc, nhl94_2026_announcer.sfc against
+  nhl94_2026.sfc; `snes_announcer_check.py ORIGINAL NEW OUT`, the scouting screen every 30 frames for 30 s (real) from
+  180 frames in).** The same on both: the test picture (red, green, blue, yellow quarters, the white circle) fills
+  every cell of columns 23-31, rows 12-27 (144 BG2 cells, palette 2, no flips, unchanged over the samples) and no
+  other cell; its tiles 105-126 (22, 129 tiles of BG2's room left; backchars 104 as before). Ron Barr's 66 cells
+  outside the rectangle now show the menu background, every other BG2 cell is as in the original, and the menu
+  background's tiles are unchanged. BG1 (the box and the text) is the same, and draws nothing inside the rectangle.
+  Colour row 2 changes (colours 1-5 the picture's, 7-15 zero, 0 and 6 as before) and is drawn by the picture alone;
+  rows 0-1 and 3-7 unchanged. The screenshots outside the rectangle differ only on Ron Barr's old cells (3,171 pixels),
+  but for three letters typed a frame apart on the 1 MB build's first sample.
 
 ## NOSE4Web's open-net one-timer fix, played (2026-11-10, e3de67f: nhl94_open_net_fix.bin)
 
