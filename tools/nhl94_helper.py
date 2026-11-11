@@ -187,6 +187,16 @@ SNES_SHOWN = ((2, "SPD"), (1, "AGL"), (5, "SHP"), (9, "SHA"), (6, "CHK"), (8, "S
 tonight_cache = {"at": 0.0, "panel": None}
 
 
+def tonight_text(p):
+    """One player of the panel as text: 'Gill LD (SHA CHK PAS) BOBBLE RISK STK 6', or 'Gilmour C +2'."""
+    name = f"{p['name'].split()[-1]} {p['slot']}"
+    if "maxed" in p:
+        return (name + (f" ({' '.join(p['maxed'])})" if p["maxed"] else "")
+                + (f" BOBBLE RISK STK {p['stk']}" if p.get("risk") else ""))
+    hc = p.get("hc")
+    return f"{name} {'per rating' if isinstance(hc, list) else f'{hc:+d}' if hc else '0'}"
+
+
 def tonight_panel(emu, system, rom_path, ids):
     """Each team's line 1 with the hot / cold the game rolled for tonight (docs: SNES_MECHANICS 2.2, GENESIS_MECHANICS
     2.2): on the SNES the ratings the sign bug maxed and the receivers whose Stick Handling is 9 or less tonight (they
@@ -234,6 +244,12 @@ def tonight_panel(emu, system, rom_path, ids):
             out.append({"team": team.get("abbr") or team["name"], "players": players})
         # nothing until the lines are loaded (an SA-1 build loads them after its scouting screen)
         tonight_cache["panel"] = {"system": emu.system, "teams": out} if any(t["players"] for t in out) else None
+        panel = tonight_cache["panel"]
+        # in the helper's window and activity log too: when first read, and again when it changes (a line edited)
+        if panel and json.dumps(panel) != tonight_cache.get("printed"):
+            tonight_cache["printed"] = json.dumps(panel)
+            status.note("Tonight's rolls (line 1):" + "".join("\n  " + t["team"] + "  " + " | ".join(tonight_text(p) for p in t["players"])
+                                                             for t in panel["teams"]))
     except Exception as ex:                  # the panel is a help, never a reason to stop recording: say it once
         if not tonight_cache.get("said"):
             tonight_cache["said"] = True

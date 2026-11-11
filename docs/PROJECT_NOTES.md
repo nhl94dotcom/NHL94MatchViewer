@@ -35,7 +35,7 @@ and "bobble risk" for a skater whose Stick Handling is 9 or less tonight (roster
 maxed: RATING_VALUES), on the Genesis each player's one value (or "per rating" on ROMs with per-rating bonuses; none on
 ROMs with them off). It never stops a recording: a read that fails only hides it (and notes it once in the activity
 log). Checked with the three fake-emulator tests (Genesis, SNES, the SA-1 32-team ROM: the panel before the opening
-faceoff; the SNES values the same as the converter's `hcs`). Tested offline by feeding it `captures/explore1_menus` through a fake emulator (with a made-up
+faceoff; the SNES values the same as the converter's `hcs`). It is also printed in the helper's window and activity log, once when first read and again when it changes (a line edited). Tested offline by feeding it `captures/explore1_menus` through a fake emulator (with a made-up
 final horn): it waited through the menus, started at the faceoff, marked the pause and replay, stopped 3 s after the
 horn, converted; not yet tested on a live game (it has recorded every league game since). Python modules: `tools/nhl94_memory.py` (reads the emulator, like the
 PowerShell recorders), `tools/share_game.py` (the shareable file; also `python tools/share_game.py <match>`).
