@@ -281,6 +281,80 @@ and shot type for each rating pair; the best aim 64):
 in any of 60 tries a setting (the carrier's puck sat out of reach, or the stick test needs more than reach); the
 carrier's own passes were the only losses. The steal formula above stands (Code).
 
+### Chunk D: a league value (2026-11-11, `analysis/league_value.py`)
+
+One number per player, 0-99 like the game's Overall, weighting each roster rating by what a step was worth in the
+Classic leagues' results:
+
+- **Forwards:** goals a game per step (above): Shot Power +0.29, Speed +0.22, Shot Accuracy +0.15, Stickhandling
+  +0.10, Agility +0.09, Weight -0.06; nothing for the rest.
+- **Defencemen:** points a game per step (PLAYER_GUIDE_GENESIS): Pass Accuracy +0.060, Checking +0.042, Agility +0.033,
+  Speed +0.026, Shot Power +0.013, Shot Accuracy +0.009, Weight -0.022, Off. Awareness -0.018, Stickhandling -0.010.
+  **Offence only**: what a defenceman's ratings do to goals against isn't measured.
+- **Goalies:** Agility alone, +2.25 save-% points a step times the 11.8 shots a goalie faces a game in Genesis Classic:
+  **0.27 goals saved a game a step**. (So the goalie value has only five levels; Puck Control and Defensive Awareness
+  add little or nothing, the glove and stick ratings nothing.)
+- Each position's weighted sum is put on 40-99 across its retail players.
+
+**Does it make sense? The teams' measured strength.** COACH_RATING section 9 measures each Classic team's strength from
+the results with the coaches taken out. Fitting the 22 teams' strength on three parts (the regular forwards' and
+defencemen's values, weighted by their games, and the main goalie's), the same way with the game's Overall:
+
+| Built from | Share of the teams' strength explained (R^2) | Leaving each team out of its own fit |
+|---|---|---|
+| League value | 0.59 | 0.27 |
+| The game's Overall | 0.34 | 0.01 |
+
+The league value explains the teams about as well as anything 22 teams can show; the game's Overall, tested fairly
+(each team predicted from the others), explains almost nothing. Chicago, Detroit and Buffalo come out on top either way
+from their goalies and shooters; the league value has Detroit second, where Overall had it in the middle.
+
+**Forwards with 150+ league games (93), the top 20 by league value:**
+
+| Player | Team | League value | Rank | Game's Overall | Rank |
+|---|---|---|---|---|---|
+| Jeremy Roenick | CHI | 99 | 1 | 89 | 8 |
+| Alexander Mogilny | BUF | 97 | 2 | 96 | 2 |
+| Steve Yzerman | DET | 95 | 3 | 95 | 3 |
+| Dino Ciccarelli | DET | 95 | 4 | 80 | 25 |
+| Pavel Bure | VAN | 95 | 5 | 90 | 6 |
+| Teemu Selanne | WPG | 95 | 6 | 90 | 7 |
+| Petr Klima | EDM | 93 | 7 | 76 | 36 |
+| Mike Gartner | NYR | 93 | 8 | 85 | 17 |
+| Theoren Fleury | CGY | 91 | 9 | 86 | 12 |
+| Mike Modano | DAL | 91 | 10 | 82 | 22 |
+| Luc Robitaille | LA | 91 | 11 | 85 | 15 |
+| Mario Lemieux | PIT | 91 | 12 | 100 | 1 |
+| Brett Hull | STL | 91 | 13 | 81 | 24 |
+| Russ Courtnall | DAL | 90 | 14 | 73 | 54 |
+| Tomas Sandstrom | LA | 90 | 15 | 80 | 26 |
+| Mark Recchi | PHI | 89 | 16 | 83 | 20 |
+| Doug Gilmour | TOR | 89 | 17 | 89 | 9 |
+| Sergei Fedorov | DET | 88 | 18 | 84 | 18 |
+| Joe Sakic | QUE | 88 | 19 | 83 | 21 |
+| Peter Bondra | WSH | 88 | 20 | 78 | 33 |
+
+- **Overall's biggest overrates:** Mark Messier (rank 16 by Overall, 68 by league value), **Wayne Gretzky (10 -> 61:
+  Shot Power 2, Shot Accuracy 2, below the slapshot cliff)**, Kevin Stevens (35 -> 86), Jaromir Jagr (29 -> 70), Adam
+  Oates (4 -> 40: Shot Power 3), Ron Francis (43 -> 78). Overall rewards their Awareness, Passing and Endurance, which
+  barely move results.
+- **Its biggest underrates:** Evgeny Davydov (87 -> 39), Russ Courtnall (54 -> 14), Brian Bradley (69 -> 30), Stephane
+  Richer (64 -> 26), Owen Nolan (68 -> 37), Joe Juneau (62 -> 31): shooters and skaters with modest Awareness.
+
+**Defencemen with 150+ games (63), the top 12** (offence only): Ray Bourque 99 (Overall rank 1), Phil Housley 97 (3),
+Don Sweeney 93 (17), Gary Suter 90 (5), Brian Leetch 88 (9), Chris Chelios 86 (2), Paul Coffey 86 (4), Glen Wesley 85
+(18), Nicklas Lidstrom 85 (25), Dave Ellett 85 (16), Scott Stevens 84 (8), James Patrick 84 (19). Overrated by Overall:
+Steve Chiasson (21 -> 52), Larry Murphy (11 -> 40), Jeff Brown (20 -> 49), Rob Blake (14 -> 39).
+
+**Goalies with 150+ games (24):** Ed Belfour and Patrick Roy 99 (Agility 6), Grant Fuhr 84 (5), then the Agility-4
+goalies at 70. By Overall, Andy Moog (rank 20), Jon Casey (18), Chris Terreri (17) and Sean Burke (16) sit well below
+their Agility; Felix Potvin (4 -> 14), Bob Essensa (7 -> 16) and Curtis Joseph (5 -> 13) well above it.
+
+**Limits.** The forwards' and defencemen's weights come from fits within each team (who scores on a team, not how much
+more the team scores), and the team check has only 22 teams; the defencemen's value is offence only; a goalie's
+Agility counts only while the computer has him (a person's goalie always has the longest reach). Chunk C (the
+Awareness ratings) may move the defencemen.
+
 ### Gaps for the next chunks
 
 - **B (played, done above but the steals):** races to a loose puck by Speed, Agility and Weight from even and uneven starts; wrist shots and
@@ -288,8 +362,6 @@ carrier's own passes were the only losses. The steal formula above stands (Code)
   (working Agility 20); steals and keeping the puck by Stickhandling, poked and checked.
 - **C (played):** Offensive and Defensive Awareness in whole games, the computer against itself, one team's Awareness
   moved (the nearest thing to the teammates and goalie around a person); goals for and against.
-- **D:** the league value: each step turned into goals a game for forwards, defencemen and goalies (anchored on the
-  league regression, with the mechanics above for what it can't separate), on a 0-99 scale, with a table of
-  well-known players and teams ranked by it against the game's Overall.
+- **D (done above):** the league value.
 - **Defencemen:** the league regression above is about scoring. What a defenceman's ratings do to goals against needs
   its own fit (D).
