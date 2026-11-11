@@ -147,6 +147,40 @@ line; then the same strikes with him in:
   Roster 4 never gets it (17-22), roster 5 does unless 2-3 cold (22-27), roster 6 always. **A step from 4 to 5 adds
   a whole new way to keep the puck.** **Code.**
 
+### Stickhandling's wobble and catch, in league games (2026-11-11, `analysis/stickhandling_study.py`)
+
+For the commissioner (via NOSE4Web): how often a player wobbles instead of falling, and catches a pass instead of
+bobbling it, by Stickhandling. 32 recorded Genesis and 29 SNES league games. Wobbles are the stumble animation's starts
+(Genesis $11E6, SNES $F7B2) against falls (the converter's hits can't be used: the game's checks count never rises on a
+stumble); catches are passes reaching a skater, against the converter's bobbles.
+
+| Roster Stk | Genesis: carrier wobbles of knockdowns | others | passes bobbled | SNES: carrier wobbles | others | passes bobbled |
+|---|---|---|---|---|---|---|
+| 2 | 0 of 12 | 0 of 32 | 15% (52) | 7% (57) | 2% (96) | 6% (198) |
+| 3 | 0 of 69 | 0 of 165 | 8.2% (318) | 10% (29) | 2% (56) | 8.8% (170) |
+| 4 | 1.6% (249) | 1.4% (654) | 4.0% (1,340) | 14% (370) | 4% (974) | 2.7% (1,752) |
+| 5 | **28%** (149) | 15% (344) | 3.4% (705) | 23% (53) | 10% (98) | 1.2% (243) |
+| 6 | **38%** (24) | 22% (54) | 3.3% (90) | 14% (22) | 13% (24) | 11% (46) |
+
+- **The Genesis wobble is a switch at 5:** it needs working 24, so 4 and under almost never wobble (the few at 4 were
+  hot) and 5-6 wobble on about one carrier knockdown in four to three (cold 5s less: 0 of 16 at -3). The SNES wobble
+  rises with Stickhandling more gently (working 12+, which the cold sign bug hands out).
+- **A wobble keeps the puck:** after a carrier's wobble his team had it next 93% of the time on the Genesis (50 of 54)
+  and 99% on the SNES; after a fall 19% (Genesis) and 66% (SNES). **A bobble gives it away about a third of the time**
+  (to the other team 35% on both; the receiver or a teammate the rest).
+- **Catching matters at the low end:** a Genesis receiver at 2 bobbles 15% of the passes reaching him, at 3 8%, at 4
+  and up 3-4% (the pass speeds: median 13,900, 90% under 16,900, against limits of 13,000 + 350 x working Stk). On the
+  SNES (limit 10,000 + 700 x Stk, +3,000 for the intended receiver) 3% at 4, 1% at 5; the 2, 3 and 6 rows are small.
+- **What a step is worth** (about 76 possessions a game, 0.10 goals each; about 8 passes reach each skater a game and
+  he is knocked down with the puck about 0.8 times (Genesis), 1.8 (SNES)):
+  - Genesis 4 -> 5: the wobble arrives, about 0.8 x 0.26 x 0.74 = **0.15 possessions a game** kept, plus 0.02 from
+    catching: about **0.02 goals a game**. 5 -> 6: about 0.06 more possessions.
+  - Genesis 2 -> 3 and 3 -> 4: fewer bobbles, about 0.2 and 0.1 possessions a game (0.02 and 0.01 goals).
+  - SNES 4 -> 5: about 0.05 possessions from wobbles and 0.05 from catching: about 0.01 goals.
+- **So both are real but small in goals,** the Genesis 4 -> 5 step the largest (it switches the wobble on). Beside the
+  league fit (Stickhandling a weight of 0.10 in the forwards' value; defencemen -0.010) they don't change the picture:
+  a defenceman carries and receives less than a forward, so his share is smaller still, in line with about nothing.
+
 ### Checking and Weight
 
 - **A knockdown** (GENESIS_MECHANICS 7.1-7.2): value = (base - checker weight + target weight) / 2 - impact, weights

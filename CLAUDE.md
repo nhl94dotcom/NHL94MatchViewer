@@ -106,7 +106,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `coach_models.py`) and `coach_predict.py`; `check_pass.py <match> ... | --all [ABBR]` (passing out of a check, both
   systems: the converter's `find_check_passes`); `assist_loss_study.py` (assists lost to a2touchpuck's same-player exit); `knockdown_study.py` (knockdowns, poke trips,
   holds and injuries per game, both systems); `injury_risk_estimate.py` (the injury risk option's
-  effect in the recorded games, both systems; `--self` the knockdown counting itself); `one_timer_misses.py` (C presses
+  effect in the recorded games, both systems; `--self` the knockdown counting itself); `stickhandling_study.py` (wobbles against falls and passes bobbled by Stickhandling, both systems: RATING_VALUES); `one_timer_misses.py` (C presses
   that started no one-timer, and why); `snes_shot_count_study.py` (SNES saves the game didn't count as shots, and why). `reports/<set>_writeup.md` are the written analyses.
 - Moment tools: `goal_trace.py <capture> <period> <m:ss>` (any moment frame by frame), `b_button_study.py`; the older
   BOS-NYI series scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`); shot / one-timer
