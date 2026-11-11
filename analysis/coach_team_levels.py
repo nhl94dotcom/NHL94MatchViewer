@@ -5,6 +5,8 @@ in two ways:
 - coach: each coach's career strength in that system's Classic leagues. Coaches are cut into three levels, each with about a third of the team appearances.
 - league: each league's mean coach strength. Leagues are cut the same way, so a coach's level can change as they move between leagues.
 - name: each season's top league (the most As) against the same season's other leagues.
+A Classic league that held two levels in one schedule (SNES Fall 2026 AB and CD) counts as its two levels, each side in its
+own (level_sides), for the league and name measures.
 
 The rating's equation with one team term per team and level, the term going by the level of the side using the team:
     result value = home coach - away coach + home team at its level - away team at its level + home edge
@@ -52,6 +54,26 @@ def top_leagues(leagues):
         most = max(ranks.values())
         for lg, r in ranks.items():
             out[lg] = 0 if r == most and most > 0 else 2
+    return out
+
+
+def level_sides(games):
+    """{(league, coach, team): the level's own league name} for the Classic leagues that held two levels in one schedule
+    (Classic_Fall2026_SNES-AB and -CD, an experiment: each level is normally its own league, the user 2026-11-10). Each
+    side then counts in its own level, for the league's strength and the name, not in the pair: the levels found by
+    classic_season_report.split_levels (the schedule's groups, the higher one by pre-season rating)."""
+    import classic_season_report as S
+    out = {}
+    for lg in sorted({g["league"] for g in games}):
+        if not lg.lower().startswith("classic_") or not S.level_letters(lg):
+            continue
+        _, rows = S.load(lg)
+        lv = S.LEVELS.get(lg, {})
+        for r in rows:
+            for side in ("Home", "Away"):
+                c = r[side + "Player"]
+                if c in lv:
+                    out[(lg, S.base_name(c).strip().lower(), r[side + "TeamAbbrev"].strip())] = S.level_title(lg, lv[c])
     return out
 
 
@@ -206,10 +228,15 @@ def main():
             sides[g["hp"]] += 1
             sides[g["ap"]] += 1
         coach_level = thirds([(p, career[i], sides[p]) for p, i in D.people.items()])
+        split = level_sides(games)
+        side_league = lambda g, home: split.get((g["league"], g["hp"] if home else g["ap"], g["ht"] if home else g["at"]),
+                                                g["league"])
         players, league_n = defaultdict(set), defaultdict(int)
         for g in games:
-            players[g["league"]] |= {g["hp"], g["ap"]}
-            league_n[g["league"]] += 1
+            for home in (True, False):
+                lg = side_league(g, home)
+                players[lg].add(g["hp"] if home else g["ap"])
+                league_n[lg] += 1  # appearances (a two-level league's sides go to their own level)
         strength = {lg: float(np.mean([career[D.people[p]] for p in ps])) for lg, ps in players.items()}
         league_level = thirds([(lg, strength[lg], league_n[lg]) for lg in players])
         scale = conv[at]
@@ -219,10 +246,10 @@ def main():
             lgs = [lg for lg, v in league_level.items() if v == k]
             lines.append(f"{name_}: {len(who)} coaches; {len(lgs)} leagues.")
         a, pa, da = study(games, D, y, ridge, scale, lambda g, home: coach_level[g["hp"] if home else g["ap"]], f"{label}, by the coach's level", lines)
-        b, pb, db = study(games, D, y, ridge, scale, lambda g, home: league_level[g["league"]], f"{label}, by the league's level", lines)
+        b, pb, db = study(games, D, y, ridge, scale, lambda g, home: league_level[side_league(g, home)], f"{label}, by the league's level", lines)
         named = top_leagues(players)
         lines.append(f"\nBy name: {sum(v == 0 for v in named.values())} top leagues, {sum(v == 2 for v in named.values())} others, {sum(v == 1 for v in named.values())} with no level (their games are in Mid). Top: {', '.join(sorted(lg for lg, v in named.items() if v == 0))}.")
-        _, _, dn = study(games, D, y, ridge, scale, lambda g, home: named[g["league"]], f"{label}, the season's top league (High) against its other leagues (Low)", lines)
+        _, _, dn = study(games, D, y, ridge, scale, lambda g, home: named[side_league(g, home)], f"{label}, the season's top league (High) against its other leagues (Low)", lines)
         saved[label] = {t: {"coach": da[t], "strength": db[t], "name": dn[t]} for t in da}
         common = sorted(set(a) & set(b))
         same = [k for k in pa if k in pb]

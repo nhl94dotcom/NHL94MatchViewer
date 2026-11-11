@@ -181,8 +181,8 @@ Used in 16 of 63 leagues (5 of them a season's top league), by 13 coaches, 737 g
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +2.7 ± 2.2 | +7.2 ± 3.4 | −4.5 ± 3.9 |
-| By league strength | +2.5 ± 2.6 | +6.9 ± 3.1 | −4.4 ± 3.9 |
-| Top league against others | −0.5 ± 2.4 | +6.6 ± 3.0 | −7.1 ± 3.7 |
+| By league strength | +2.6 ± 2.5 | +6.9 ± 3.1 | −4.3 ± 4.0 |
+| Top league against others | −0.4 ± 2.4 | +6.6 ± 3.0 | −7.1 ± 3.7 |
 
 **Record**
 
@@ -254,8 +254,8 @@ Used in 60 of 63 leagues (19 of them a season's top league), by 51 coaches, 2,53
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +3.4 ± 2.8 | +1.9 ± 1.9 | +1.5 ± 3.1 |
-| By league strength | +5.7 ± 1.8 | +3.9 ± 1.7 | +1.8 ± 2.3 |
-| Top league against others | +5.2 ± 1.9 | +3.0 ± 1.4 | +2.2 ± 2.3 |
+| By league strength | +5.6 ± 1.8 | +3.9 ± 1.7 | +1.7 ± 2.4 |
+| Top league against others | +4.9 ± 2.0 | +3.2 ± 1.3 | +1.8 ± 2.3 |
 
 **Record**
 
@@ -327,8 +327,8 @@ Used in 56 of 63 leagues (18 of them a season's top league), by 37 coaches, 2,55
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +1.6 ± 1.8 | +1.1 ± 1.9 | +0.5 ± 2.7 |
-| By league strength | +2.4 ± 1.8 | +0.6 ± 2.2 | +1.9 ± 2.8 |
-| Top league against others | +2.0 ± 1.7 | +2.1 ± 1.8 | −0.1 ± 2.5 |
+| By league strength | +2.5 ± 1.8 | +0.7 ± 2.2 | +1.9 ± 2.8 |
+| Top league against others | +2.2 ± 1.8 | +2.0 ± 1.8 | +0.2 ± 2.5 |
 
 **Record**
 
@@ -399,8 +399,8 @@ Used in 47 of 63 leagues (16 of them a season's top league), by 30 coaches, 2,13
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +1.9 ± 2.2 | −0.6 ± 2.0 | +2.5 ± 3.0 |
-| By league strength | +1.2 ± 2.3 | +0.5 ± 2.1 | +0.7 ± 3.3 |
-| Top league against others | +0.5 ± 2.0 | +0.6 ± 1.5 | −0.1 ± 2.6 |
+| By league strength | +1.2 ± 2.3 | −0.1 ± 2.0 | +1.2 ± 3.2 |
+| Top league against others | +0.9 ± 2.1 | +0.3 ± 1.4 | +0.6 ± 2.6 |
 
 **Record**
 
@@ -472,8 +472,8 @@ Used in 58 of 63 leagues (18 of them a season's top league), by 52 coaches, 2,43
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +1.4 ± 1.9 | +0.5 ± 2.6 | +1.0 ± 3.3 |
-| By league strength | +1.3 ± 1.8 | +0.8 ± 2.9 | +0.5 ± 3.4 |
-| Top league against others | +1.6 ± 1.5 | −0.3 ± 1.8 | +1.9 ± 2.4 |
+| By league strength | +1.4 ± 1.8 | +1.0 ± 2.7 | +0.4 ± 3.4 |
+| Top league against others | +1.5 ± 1.5 | −0.2 ± 1.8 | +1.7 ± 2.5 |
 
 **Record**
 
@@ -545,8 +545,8 @@ Used in 54 of 63 leagues (19 of them a season's top league), by 36 coaches, 2,25
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +1.4 ± 1.5 | +1.3 ± 2.1 | +0.1 ± 2.4 |
-| By league strength | +0.1 ± 1.7 | +0.9 ± 2.0 | −0.8 ± 2.7 |
-| Top league against others | +1.4 ± 1.7 | +1.6 ± 1.5 | −0.2 ± 2.2 |
+| By league strength | +0.3 ± 1.7 | +1.6 ± 1.8 | −1.3 ± 2.5 |
+| Top league against others | +1.0 ± 1.7 | +1.9 ± 1.5 | −0.9 ± 2.2 |
 
 **Record**
 
@@ -618,8 +618,8 @@ Used in 26 of 63 leagues (12 of them a season's top league), by 22 coaches, 1,13
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | 0.0 ± 1.2 | +2.0 ± 2.8 | −2.1 ± 3.0 |
-| By league strength | −2.4 ± 1.1 | +4.5 ± 2.9 | −6.9 ± 3.1 |
-| Top league against others | −2.4 ± 1.1 | +4.3 ± 2.9 | −6.6 ± 3.2 |
+| By league strength | −2.4 ± 1.1 | +4.8 ± 2.8 | −7.2 ± 3.0 |
+| Top league against others | −2.3 ± 1.1 | +4.3 ± 2.9 | −6.6 ± 3.2 |
 
 **Record**
 
@@ -691,8 +691,8 @@ Used in 46 of 63 leagues (12 of them a season's top league), by 36 coaches, 1,98
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +0.6 ± 2.0 | +1.3 ± 2.8 | −0.7 ± 3.5 |
-| By league strength | −2.6 ± 1.7 | −3.7 ± 2.5 | +1.0 ± 2.9 |
-| Top league against others | −1.8 ± 1.9 | −0.7 ± 2.1 | −1.1 ± 3.0 |
+| By league strength | −1.5 ± 1.7 | −3.2 ± 2.5 | +1.7 ± 3.1 |
+| Top league against others | −1.8 ± 1.8 | −0.8 ± 2.1 | −1.0 ± 3.0 |
 
 **Record**
 
@@ -764,8 +764,8 @@ Used in 19 of 63 leagues (7 of them a season's top league), by 19 coaches, 790 g
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −0.8 ± 3.0 | −3.4 ± 3.7 | +2.6 ± 5.0 |
-| By league strength | −3.2 ± 3.0 | +2.5 ± 4.1 | −5.7 ± 5.0 |
-| Top league against others | −5.2 ± 2.2 | +0.7 ± 3.2 | −5.9 ± 4.0 |
+| By league strength | −3.8 ± 2.6 | +2.6 ± 4.0 | −6.4 ± 4.8 |
+| Top league against others | −5.2 ± 2.3 | +0.7 ± 3.2 | −6.0 ± 4.0 |
 
 **Record**
 
@@ -837,8 +837,8 @@ Used in 61 of 63 leagues (19 of them a season's top league), by 48 coaches, 2,52
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | +3.7 ± 1.6 | +1.0 ± 1.7 | +2.6 ± 2.3 |
-| By league strength | +3.8 ± 1.7 | −1.7 ± 1.8 | +5.5 ± 2.4 |
-| Top league against others | +4.2 ± 1.8 | −1.1 ± 2.2 | +5.3 ± 2.7 |
+| By league strength | +3.8 ± 1.7 | −1.8 ± 1.8 | +5.6 ± 2.4 |
+| Top league against others | +4.4 ± 1.8 | −1.1 ± 2.1 | +5.5 ± 2.8 |
 
 **Record**
 
@@ -910,8 +910,8 @@ Used in 41 of 63 leagues (14 of them a season's top league), by 36 coaches, 1,71
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −0.5 ± 2.2 | +0.6 ± 2.1 | −1.1 ± 3.2 |
-| By league strength | −3.4 ± 1.6 | +3.0 ± 2.5 | −6.3 ± 2.9 |
-| Top league against others | −1.5 ± 1.9 | +2.3 ± 1.8 | −3.7 ± 2.6 |
+| By league strength | −4.0 ± 1.6 | +3.0 ± 2.4 | −7.0 ± 2.8 |
+| Top league against others | −1.4 ± 1.9 | +2.3 ± 1.8 | −3.8 ± 2.6 |
 
 **Record**
 
@@ -983,8 +983,8 @@ Used in 11 of 63 leagues (9 of them a season's top league), by 7 coaches, 509 ga
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −1.4 ± 2.3 | +3.6 ± 1.9* | −5.0 ± 2.9 |
-| By league strength | −2.3 ± 2.5 | +2.8 ± 2.3* | −5.1 ± 3.4 |
-| Top league against others | −2.0 ± 2.1 | +2.9 ± 2.5* | −4.9 ± 3.3 |
+| By league strength | −1.6 ± 2.2 | +2.8 ± 2.3* | −4.4 ± 3.2 |
+| Top league against others | −1.9 ± 2.1 | +3.0 ± 2.5* | −4.9 ± 3.3 |
 
 **Record**
 
@@ -1055,8 +1055,8 @@ Used in 30 of 63 leagues (12 of them a season's top league), by 24 coaches, 1,31
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −3.4 ± 2.1 | −2.0 ± 2.7 | −1.4 ± 3.7 |
-| By league strength | −0.5 ± 1.4 | −2.5 ± 2.8 | +2.0 ± 3.2 |
-| Top league against others | −2.6 ± 2.2 | −3.5 ± 2.0 | +0.9 ± 3.1 |
+| By league strength | +0.2 ± 1.5 | −2.5 ± 2.7 | +2.7 ± 3.2 |
+| Top league against others | −2.6 ± 2.2 | −3.4 ± 2.0 | +0.9 ± 3.1 |
 
 **Record**
 
@@ -1128,8 +1128,8 @@ Used in 13 of 63 leagues (3 of them a season's top league), by 13 coaches, 553 g
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −0.3 ± 2.7 | +0.4 ± 3.1 | −0.7 ± 4.1 |
-| By league strength | −1.1 ± 3.4 | +0.9 ± 2.8 | −2.0 ± 4.2 |
-| Top league against others | −3.8 ± 2.6* | +1.7 ± 2.6 | −5.5 ± 3.4 |
+| By league strength | −1.1 ± 3.4 | +0.3 ± 3.2* | −1.3 ± 4.5 |
+| Top league against others | −3.8 ± 2.5* | +1.8 ± 2.7 | −5.6 ± 3.4 |
 
 **Record**
 
@@ -1200,8 +1200,8 @@ Used in 59 of 63 leagues (18 of them a season's top league), by 45 coaches, 2,33
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −1.1 ± 2.1 | −2.9 ± 2.8 | +1.8 ± 3.4 |
-| By league strength | −1.5 ± 1.5 | −1.0 ± 2.9 | −0.5 ± 3.2 |
-| Top league against others | −1.7 ± 1.4 | −0.7 ± 2.3 | −1.0 ± 2.6 |
+| By league strength | −1.4 ± 1.5 | −1.6 ± 2.7 | +0.3 ± 3.0 |
+| Top league against others | −1.5 ± 1.4 | −0.8 ± 2.2 | −0.7 ± 2.6 |
 
 **Record**
 
@@ -1273,8 +1273,8 @@ Used in 5 of 63 leagues (3 of them a season's top league), by 5 coaches, 228 gam
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −1.2 ± 2.1 | +0.7 ± 1.4* | −1.9 ± 2.6 |
-| By league strength | −2.2 ± 1.7* | −1.2 ± 1.1* | −0.9 ± 2.1 |
-| Top league against others | −0.3 ± 2.2 | −1.3 ± 1.2* | +0.9 ± 2.5 |
+| By league strength | −2.3 ± 1.7* | −1.1 ± 1.2* | −1.2 ± 2.1 |
+| Top league against others | −0.3 ± 2.1 | −1.2 ± 1.2* | +0.9 ± 2.6 |
 
 **Record**
 
@@ -1345,8 +1345,8 @@ Used in 15 of 63 leagues (6 of them a season's top league), by 14 coaches, 643 g
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −4.3 ± 2.2 | +2.8 ± 4.0 | −7.1 ± 4.5 |
-| By league strength | −3.5 ± 2.0 | +1.7 ± 3.5 | −5.1 ± 4.2 |
-| Top league against others | −3.4 ± 2.1 | +1.3 ± 3.4 | −4.7 ± 3.9 |
+| By league strength | −3.3 ± 2.0 | +1.8 ± 3.5 | −5.1 ± 4.2 |
+| Top league against others | −3.3 ± 2.1 | +1.4 ± 3.4 | −4.7 ± 3.9 |
 
 **Record**
 
@@ -1418,8 +1418,8 @@ Used in 21 of 63 leagues (9 of them a season's top league), by 16 coaches, 907 g
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −3.2 ± 2.3 | −7.6 ± 5.3* | +4.4 ± 5.8 |
-| By league strength | −0.7 ± 2.6 | −14.4 ± 4.8* | +13.7 ± 5.7 |
-| Top league against others | +0.7 ± 2.2 | −13.4 ± 2.6 | +14.1 ± 3.7 |
+| By league strength | −1.2 ± 2.3 | −14.2 ± 4.7* | +12.9 ± 5.5 |
+| Top league against others | +0.8 ± 2.2 | −13.3 ± 2.6 | +14.1 ± 3.7 |
 
 **Record**
 
@@ -1491,8 +1491,8 @@ Used in 49 of 63 leagues (16 of them a season's top league), by 39 coaches, 2,12
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −1.1 ± 2.0 | −5.1 ± 2.4 | +4.1 ± 3.0 |
-| By league strength | −3.1 ± 2.1 | −5.1 ± 2.8 | +2.0 ± 3.5 |
-| Top league against others | −2.9 ± 1.9 | −4.4 ± 2.1 | +1.5 ± 2.7 |
+| By league strength | −3.0 ± 2.1 | −5.1 ± 2.6 | +2.1 ± 3.4 |
+| Top league against others | −2.8 ± 2.0 | −4.5 ± 2.0 | +1.7 ± 2.7 |
 
 **Record**
 
@@ -1634,8 +1634,8 @@ Used in 8 of 63 leagues (3 of them a season's top league), by 6 coaches, 303 gam
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −6.8 ± 1.9 | too few | too few |
-| By league strength | −6.7 ± 2.8 | −5.8 ± 3.0* | −0.9 ± 4.3 |
-| Top league against others | −6.6 ± 2.0* | −4.3 ± 2.8* | −2.3 ± 3.4 |
+| By league strength | −7.7 ± 2.0 | −5.8 ± 3.0* | −1.9 ± 3.8 |
+| Top league against others | −6.6 ± 2.0* | −4.3 ± 2.9* | −2.4 ± 3.4 |
 
 **Record**
 
@@ -1705,7 +1705,7 @@ Used in 5 of 63 leagues (1 of them a season's top league), by 6 coaches, 188 gam
 | | High level | Low level | High minus low |
 | --- | --- | --- | --- |
 | By coach | −3.0 ± 1.3* | −7.3 ± 4.7* | +4.2 ± 5.0 |
-| By league strength | −1.9 ± 1.3* | −6.9 ± 4.2* | +5.0 ± 4.3 |
+| By league strength | −1.8 ± 1.3* | −6.8 ± 4.1* | +5.0 ± 4.3 |
 | Top league against others | −2.4 ± 1.6* | −4.3 ± 3.2 | +1.9 ± 3.6 |
 
 **Record**

@@ -48,10 +48,32 @@ def leagues_for(prefix):
 _NUMBERS = {}
 
 
-def league_numbers(league):
+def add_row(a, r):
+    """One game into the "League numbers" totals."""
+    hs, aw = S.num(r["HomeScore"]), S.num(r["AwayScore"])
+    a["GP"] += 1
+    a["goals"] += hs + aw
+    a["shots"] += S.num(r["HomeShots"]) + S.num(r["AwayShots"])
+    a["ppg"] += S.num(r["HomePPGoals"]) + S.num(r["AwayPPGoals"])
+    a["ppt"] += S.num(r["HomePPTries"]) + S.num(r["AwayPPTries"])
+    a["pim"] += S.num(r["HomePIM"]) + S.num(r["AwayPIM"])
+    a["chk"] += S.num(r["HomeChecks"]) + S.num(r["AwayChecks"])
+    a["homeW"] += hs > aw
+    a["decided"] += hs != aw
+    a["ot"] += any(S.num(r[k]) for k in ("HomeGoalsOT", "AwayGoalsOT", "HomeShotsOT", "AwayShotsOT"))
+    a["one"] += abs(hs - aw) == 1
+    a["blow"] += abs(hs - aw) >= 3
+    h2 = S.num(r["HomeGoalsP1"]) + S.num(r["HomeGoalsP2"])
+    a2 = S.num(r["AwayGoalsP1"]) + S.num(r["AwayGoalsP2"])
+    a["behind2"] += h2 != a2
+    a["cameback"] += (h2 < a2 and hs > aw) or (a2 < h2 and aw > hs)
+
+
+def league_numbers(league, rows=None):
     """Every league of the season on this system (Classic_Fall2026_GENS-A -> Classic_Fall2026_GENS), aggregated in one
     read of the database and kept: per league its games and the totals the "League numbers" table shows. Returns
-    (this league's totals, {each other league: totals})."""
+    (this league's totals, {each other league: totals}). rows: one level of a two-level league, its games (those with
+    one of its teams) as "this league", against the season's other leagues."""
     import csv
     head, tail = league.rsplit("_", 1)
     prefix = head + "_" + tail.split("-")[0]
@@ -62,27 +84,16 @@ def league_numbers(league):
             for r in csv.DictReader(fh):
                 if not r["League"].startswith(prefix) or r["RegOrPlay"] != "R" or r["sim"] not in ("0", ""):
                     continue
-                a = agg[r["League"]]
-                hs, aw = S.num(r["HomeScore"]), S.num(r["AwayScore"])
-                a["GP"] += 1
-                a["goals"] += hs + aw
-                a["shots"] += S.num(r["HomeShots"]) + S.num(r["AwayShots"])
-                a["ppg"] += S.num(r["HomePPGoals"]) + S.num(r["AwayPPGoals"])
-                a["ppt"] += S.num(r["HomePPTries"]) + S.num(r["AwayPPTries"])
-                a["pim"] += S.num(r["HomePIM"]) + S.num(r["AwayPIM"])
-                a["chk"] += S.num(r["HomeChecks"]) + S.num(r["AwayChecks"])
-                a["homeW"] += hs > aw
-                a["decided"] += hs != aw
-                a["ot"] += any(S.num(r[k]) for k in ("HomeGoalsOT", "AwayGoalsOT", "HomeShotsOT", "AwayShotsOT"))
-                a["one"] += abs(hs - aw) == 1
-                a["blow"] += abs(hs - aw) >= 3
-                h2 = S.num(r["HomeGoalsP1"]) + S.num(r["HomeGoalsP2"])
-                a2 = S.num(r["AwayGoalsP1"]) + S.num(r["AwayGoalsP2"])
-                a["behind2"] += h2 != a2
-                a["cameback"] += (h2 < a2 and hs > aw) or (a2 < h2 and aw > hs)
+                add_row(agg[r["League"]], r)
         _NUMBERS[prefix] = agg
     agg = _NUMBERS[prefix]
-    return agg.get(league, Counter()), {k: v for k, v in agg.items() if k != league}
+    others = {k: v for k, v in agg.items() if k != league}
+    if rows is not None:
+        mine = Counter()
+        for r in rows:
+            add_row(mine, r)
+        return mine, others
+    return agg.get(league, Counter()), others
 
 
 def numbers_table(mine, others):
@@ -108,7 +119,8 @@ def numbers_table(mine, others):
     return out
 
 
-def season_brief(order, tab, place, teams, R, per, vals, pl, gk, groups, streaks, mine_num, other_num):
+def season_brief(order, tab, place, teams, R, per, vals, pl, gk, groups, streaks, mine_num, other_num,
+                 new=lambda c: False):
     """'The season in brief': the league's story from the numbers in the report below it (2026-11-10, the user)."""
     pts = lambda c: tab[c]["Pts"] / (2 * tab[c]["GP"])
     first, second, last = order[0], order[1], order[-1]
@@ -123,12 +135,22 @@ def season_brief(order, tab, place, teams, R, per, vals, pl, gk, groups, streaks
     else:
         s = (f"{first} ({teams[first]}) and {second} finished level at {pts(first):.3f}; {first} took first on goal "
              f"difference ({t1['W']}-{t1['L']}).")
-    fav = max(order, key=R)
-    if fav == first:
-        s += f" {first} also had the best pre-season rating, so the favourite delivered."
+    # the favourite among the coaches whose ratings rest on games: a newcomer's starting rating says nothing
+    # (review 2026-11-10: SNES-D's four newcomers all sat above its three rated coaches)
+    rated = [c for c in order if not new(c)]
+    fav = max(rated, key=R) if rated else None
+    news = len(order) - len(rated)
+    note = (f" ({news} of the {len(order)} {'was' if news == 1 else 'were'} new to Classic, with no rating to go on)"
+            if news else "")
+    if fav is None:
+        s += " Nobody had a Classic rating before the season, so there was no favourite."
+    elif fav == first:
+        s += f" {first} also had the best pre-season rating{note}, so the favourite delivered."
+    elif new(first):
+        s += f" {first} was new to Classic; the pre-season favourite, {fav}, finished {ORD(place[fav])}{note}."
     else:
-        pre = sorted(order, key=lambda c: -R(c)).index(first) + 1
-        s += f" The pre-season favourite, {fav}, finished {ORD(place[fav])}; {first} went in rated {ORD(pre)}."
+        pre = sorted(rated, key=lambda c: -R(c)).index(first) + 1
+        s += f" The pre-season favourite, {fav}, finished {ORD(place[fav])}; {first} went in rated {ORD(pre)}{note}."
     h = Counter(result(g) for g in per[first] if g["opp"] == second)
     if sum(h.values()):
         s += f" Between the top two, {first} went {h['W']}-{h['L']} against {second}."
@@ -138,16 +160,19 @@ def season_brief(order, tab, place, teams, R, per, vals, pl, gk, groups, streaks
         cross = Counter(result(g) for c in gl[0] for g in per[c] if g["opp"] in gl[1])
         out.append(f"The league played in groups; the group with {first} went {cross['W']}-{cross['L']} against the "
                    f"other.\n")
-    over = max(order, key=lambda c: tab[c]["W"] - tab[c]["exp_W"])
-    under = min(order, key=lambda c: tab[c]["W"] - tab[c]["exp_W"])
+    # surprises against the ratings only for rated coaches (a newcomer's expected wins come from the starting rating)
+    pool = rated or order
+    over = max(pool, key=lambda c: tab[c]["W"] - tab[c]["exp_W"])
+    under = min(pool, key=lambda c: tab[c]["W"] - tab[c]["exp_W"])
     sp = []
-    if tab[over]["W"] - tab[over]["exp_W"] >= 2:
-        sp.append(f"the season's biggest surprise was {over}, {ORD(place[over])} with {tab[over]['W']} wins against "
+    if rated and tab[over]["W"] - tab[over]["exp_W"] >= 2:
+        sp.append(f"the season's biggest surprise was {over}, {ORD(place[over])} with {tab[over]['W']} win{'' if tab[over]['W'] == 1 else 's'} against "
                   f"{tab[over]['exp_W']:.1f} expected from the pre-season ratings")
-    if tab[under]["W"] - tab[under]["exp_W"] <= -2:
+    short = bool(rated) and tab[under]["W"] - tab[under]["exp_W"] <= -2
+    if short:
         sp.append(f"the biggest shortfall was {under}'s, " + ("last" if under == last else ORD(place[under])) +
-                  f" with {tab[under]['W']} wins against {tab[under]['exp_W']:.1f} expected")
-    if not (under == last and tab[under]["W"] - tab[under]["exp_W"] <= -2):
+                  f" with {tab[under]['W']} win{'' if tab[under]['W'] == 1 else 's'} against {tab[under]['exp_W']:.1f} expected")
+    if not (under == last and short):
         sp.append(f"{last} finished last, {tab[last]['W']}-{tab[last]['L']}")
     s = "; ".join(sp)
     out.append(s[0].upper() + s[1:] + ".\n")
@@ -190,7 +215,8 @@ def wl(t):
     return f"{t['W']}-{t['L']}" + (f"-{t['T']}" if t["T"] else "")
 
 
-def build(league):
+def build(league, level=None):
+    """The league's report; level: one level of a two-level league (S.LEVELS), its coaches alone in the tables."""
     system, games = S.load(league)
     if not games:
         raise SystemExit(f"no games in {league}")
@@ -200,11 +226,11 @@ def build(league):
             per[g["coach"]].append(g)
     for c in per:
         per[c].sort(key=lambda g: g["when"])
-    first = date.fromisoformat(min(r["DateTime"] for r in games)[:10])
+    first = S.season_start(league)  # the season's first day on the system: pre-season ratings the same for every league
     rat, rat_day = S.ratings(system, first)
-    known = [rat[c.lower()] for c in per if c.lower() in rat] or [0.0]
+    known = [rat[S.base_name(c).lower()] for c in per if S.base_name(c).lower() in rat] or [0.0]
     mean_known = sum(known) / len(known)
-    R = lambda c: rat.get(c.lower(), mean_known)
+    R = lambda c: rat.get(S.base_name(c).lower(), mean_known)
     teams = {c: S.team_label(gs) for c, gs in per.items()}
 
     tab = {}
@@ -239,7 +265,16 @@ def build(league):
     for c in omitted:
         del tab[c]
         del per[c]
+    # one level of a two-level league: only its coaches in the tables; games against the other level still count
+    lv = S.LEVELS.get(league, {})
+    title = S.level_title(league, level) if level else league
+    if level:
+        for c in [c for c in tab if lv.get(c) != level]:
+            del tab[c]
+            del per[c]
+        games = [r for r in games if lv.get(r["HomePlayer"]) == level or lv.get(r["AwayPlayer"]) == level]
     n = len(tab)
+    mine_omitted = [c for c in omitted if not level or lv.get(c) == level]
     order = sorted(tab, key=lambda c: (-tab[c]["Pts"] / (2 * tab[c]["GP"]),
                                        -(tab[c]["F_Score"] - tab[c]["A_Score"]) / tab[c]["GP"]))
     place = {c: i for i, c in enumerate(order, 1)}
@@ -278,9 +313,13 @@ def build(league):
     ]
     vals = {k: {c: f(c) for c in tab} for k, _, f, _, _, _ in METRICS}
 
+    is_new = lambda c: S.newcomer(system, first, c)
+
     def rank_of(k, c, hb):
         v = vals[k][c]
-        return 1 + sum(1 for o in tab if (vals[k][o] > v if hb else vals[k][o] < v))
+        # wins above expectation: ranked among the coaches whose ratings rest on games
+        pool = [o for o in tab if not is_new(o)] if k == "weo" else tab
+        return 1 + sum(1 for o in pool if (vals[k][o] > v if hb else vals[k][o] < v))
 
     def rankword(r):
         return "best" if r == 1 else f"{ORD(r)}-best"
@@ -288,12 +327,18 @@ def build(league):
     L = []
     w = L.append
     gp_all = sorted(((tab[c]["GP"], c) for c in tab), reverse=True)
-    w(f"# {league}: the season\n")
+    w(f"# {title}: the season\n")
+    if level:
+        other = "/".join(sorted(set(lv.values()) - {level}))
+        w(f"{league} held two levels in one schedule (an experiment; each level is normally its own league). This is the "
+          f"{level} level: its {n} coaches in the tables and ranks, with their games against the {other} level counted "
+          f"in every record. The levels are the schedule's groups; the higher one is the group whose coaches with Classic "
+          f"games before the season had the higher mean pre-season rating.\n")
     w(f"{len(games)} games from {min(r['DateTime'] for r in games)[:10]} to {max(r['DateTime'] for r in games)[:10]}, "
       f"{n} coaches. Games played: " + ", ".join(f"{c} {g}" for g, c in gp_all) + ". Rates are per game; ranks are out "
       f"of all {n} coaches (1 the best, ties share a rank). Pre-season ratings: coach_history's Classic rating on "
       f"{rat_day}." + (" Left out for playing very few games (their games still count for their opponents): " +
-                       ", ".join(f"{c} ({gp_league[c]})" for c in omitted) + "." if omitted else "") + "\n")
+                       ", ".join(f"{c} ({gp_league[c]})" for c in mine_omitted) + "." if mine_omitted else "") + "\n")
 
     # --- standings
     w("## Standings\n")
@@ -304,7 +349,7 @@ def build(league):
         w(f"| {place[c]} | {c} | {teams[c]} | {t['GP']} | {wl(t)} | {t['OTW']}-{t['OTL']} | {t['Pts']} | "
           f"{t['Pts'] / (2 * t['GP']):.3f} | {rate(c, 'F_Score'):.2f} | {rate(c, 'A_Score'):.2f} | "
           f"{rate(c, 'F_Score') - rate(c, 'A_Score'):+.2f} | {t['exp_W']:.1f} | {t['W'] - t['exp_W']:+.1f} | "
-          f"{100 * S.sig(R(c) - mean_known):.0f}%{'' if c.lower() in rat else ' (new)'} |")
+          f"{100 * S.sig(R(c) - mean_known):.0f}%{' (new)' if S.newcomer(system, first, c) else ''} |")
     w("\nOrdered by points percentage, then goal difference a game (the league's own tiebreaks may differ).\n")
 
     # --- groups
@@ -443,10 +488,13 @@ def build(league):
             f"{c} over {g['opp']} {int(g['us']['Score'])}-{int(g['them']['Score'])}, down "
             f"{int(g['them']['GoalsP1'] + g['them']['GoalsP2'] - g['us']['GoalsP1'] - g['us']['GoalsP2'])} ({g['when'][:10]})"
             for g, c in cbs[:4]) + f" ({len(cbs)} in all).")
-    ups = sorted(allg, key=lambda x: S.sig(R(x[1]) - R(x[0]["opp"])))[:3]
-    w("- Upsets by pre-season odds: " + "; ".join(
-        f"{c} over {g['opp']} {int(g['us']['Score'])}-{int(g['them']['Score'])} ({100 * S.sig(R(c) - R(g['opp'])):.0f}% "
-        f"chance, {g['when'][:10]})" for g, c in ups) + ".")
+    # odds only between coaches with ratings from games
+    ups = sorted((x for x in allg if not is_new(x[1]) and not is_new(x[0]["opp"])),
+                 key=lambda x: S.sig(R(x[1]) - R(x[0]["opp"])))[:3]
+    if ups:
+        w("- Upsets by pre-season odds (between coaches rated from games): " + "; ".join(
+            f"{c} over {g['opp']} {int(g['us']['Score'])}-{int(g['them']['Score'])} ({100 * S.sig(R(c) - R(g['opp'])):.0f}% "
+            f"chance, {g['when'][:10]})" for g, c in ups) + ".")
 
     def streaks(c):
         res = [result(g) for g in per[c]]
@@ -467,6 +515,8 @@ def build(league):
         cands = []
         for k, l, _, hb, f, phrase in METRICS:
             r = rank_of(k, c, hb)
+            if k == "weo" and is_new(c):  # a newcomer's expectation is the starting rating's: no compliment from it
+                continue
             if k == "ogw" and t["one_goal_W"] + t["one_goal_L"] < 4:
                 continue
             if k == "shg" and t["F_SHGoals"] == 0:
@@ -533,9 +583,11 @@ def build(league):
         few = f", {t['GP']} games" if t["GP"] < 10 else ""
         w(f"- **{c}** ({ORD(place[c])}, {teams[c]}{few}): " + "; ".join(picked) + ".")
     w("")
-    mine_num, other_num = league_numbers(league)
+    mine_num, other_num = league_numbers(league, games if level else None)
     real_groups = groups if len(groups) >= 2 and sum(len(g) for g in groups) == n else []
-    L[2:2] = (season_brief(order, tab, place, teams, R, per, vals, pl, gk, real_groups, streaks, mine_num, other_num)
+    at = 3 if level else 2  # after the title and the header lines
+    L[at:at] = (season_brief(order, tab, place, teams, R, per, vals, pl, gk, real_groups, streaks, mine_num, other_num,
+                             new=lambda c: S.newcomer(system, first, c))
               + ["## League numbers\n", "Both teams together, every game of the league; beside it the season's other "
                  "leagues on this system, their games pooled.\n"] + numbers_table(mine_num, other_num) + [""])
     return "\n".join(L) + "\n"
@@ -551,14 +603,17 @@ def main():
         names += [a] if a.count("_") >= 2 and "-" in a.split("_")[-1] else leagues_for(a)
     S.OUT.mkdir(parents=True, exist_ok=True)
     for lg in names:
-        p = S.OUT / f"{lg}_league.md"
-        p.write_text(build(lg), encoding="utf-8")
-        print(p)
+        system, games = S.load(lg)
+        lv = S.LEVELS.get(lg, {})
+        # a two-level league: a report per level, named for the level (Classic_Fall2026_SNES-AB -> _SNES-A, _SNES-B)
+        for level in (sorted(set(lv.values())) or [None]):
+            p = S.OUT / f"{S.level_title(lg, level) if level else lg}_league.md"
+            p.write_text(build(lg, level), encoding="utf-8")
+            print(p)
         if coaches:
-            system, games = S.load(lg)
             gp = Counter([r["HomePlayer"] for r in games] + [r["AwayPlayer"] for r in games])
             for c in sorted(c for c in gp if gp[c] >= max(5, max(gp.values()) / 4)):
-                q = S.OUT / f"{lg}_{c}.md"
+                q = S.OUT / f"{S.level_title(lg, lv[c]) if c in lv else lg}_{c}.md"
                 q.write_text(S.build(lg, c), encoding="utf-8")
                 print(q)
 

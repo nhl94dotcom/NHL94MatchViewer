@@ -3,7 +3,7 @@ groups, notable games and good words; classic_season_extras' best games, rivalri
 top six's records week by week (W-L, and ties when there are any) with their first and last game days; shutouts by goalie; the most body checks and the
 top scorers. Names real people: prints only, to the terminal.
 
-python analysis/classic_story_material.py LEAGUE"""
+python analysis/classic_story_material.py LEAGUE [LEVEL]   (LEVEL: one level of a two-level league such as SNES-AB)"""
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -28,18 +28,22 @@ def section(text, start, stop):
 
 def main():
     league = sys.argv[1]
-    rep = (S.OUT / f"{league}_league.md").read_text(encoding="utf-8")
+    level = sys.argv[2].upper() if len(sys.argv) > 2 else None  # one level of a two-level league
+    rep = (S.OUT / f"{S.level_title(league, level) if level else league}_league.md").read_text(encoding="utf-8")
     for start, stop in (("## The season in brief", "## League numbers"), ("## Standings", "Ordered"),
                         ("## The groups", "## Every coach"), ("Most body checks", None), ("## Notable games", None)):
         print("\n".join(section(rep, start, stop)[:60]))
         if start == "Most body checks":
             print("\n".join(section(rep, "## Skaters", "Most body")[:7]))
-    subprocess.run([sys.executable, str(Path(__file__).with_name("classic_season_extras.py")), league])
+    subprocess.run([sys.executable, str(Path(__file__).with_name("classic_season_extras.py")), league]
+                   + ([level] if level else []))
     system, games = S.load(league)
+    lv = S.LEVELS.get(league, {})
     per = defaultdict(list)
     for r in games:
         for g in S.sides(r):
-            per[g["coach"]].append(g)
+            if not level or lv.get(g["coach"]) == level:
+                per[g["coach"]].append(g)
     first = date.fromisoformat(min(r["DateTime"] for r in games)[:10])
     last = date.fromisoformat(max(r["DateTime"] for r in games)[:10])
     weeks = [first + timedelta(days=7 * k + 6) for k in range((last - first).days // 7 + 1)]

@@ -10,7 +10,7 @@ From the league database (as classic_season_report.py) and coach_history's Class
   history (after this season; it says so if the history stops before the league's last game day; run late, it
   includes any later games too), as a win chance against the average coach, and the change.
 
-python analysis/classic_season_extras.py LEAGUE"""
+python analysis/classic_season_extras.py LEAGUE [LEVEL]   (LEVEL: A, B ... of a two-level league such as SNES-AB)"""
 import math
 import sys
 from collections import Counter, defaultdict
@@ -23,13 +23,22 @@ import classic_season_report as S  # noqa: E402
 
 def main():
     league = sys.argv[1]
+    level = sys.argv[2].upper() if len(sys.argv) > 2 else None  # one level of a two-level league (S.LEVELS)
     system, games = S.load(league)
+    lv = S.LEVELS.get(league, {})
+    if lv and not level:
+        raise SystemExit(f"{league} holds levels {', '.join(sorted(set(lv.values())))}: name one")
     per = defaultdict(list)
     for r in games:
         for g in S.sides(r):
             per[g["coach"]].append(g)
     gp = {c: len(v) for c, v in per.items()}
     keep = {c for c in per if gp[c] >= max(5, max(gp.values()) / 4)}
+    if level:
+        # the level's coaches (their games against the other level included); few-game coaches in it still give
+        # single games
+        per = {c: v for c, v in per.items() if lv.get(c) == level}
+        keep = {c for c in keep if c in per}
     res = lambda g: "W" if g["us"]["Score"] > g["them"]["Score"] else "L" if g["us"]["Score"] < g["them"]["Score"] else "T"
 
     print("== Best single games")
@@ -77,13 +86,13 @@ def main():
     print(f"  biggest gap: {big} ({ha[big]:+.3f})")
 
     print("== Looking ahead (Classic rating as a win chance against the average coach)")
-    first = date.fromisoformat(min(r["DateTime"] for r in games)[:10])
+    first = S.season_start(league)  # pre-season: before the season's first game on the system
     before, day0 = S.ratings(system, first)
     after, day1 = S.ratings(system, date.today())
     sig = lambda x: 1 / (1 + math.exp(-x))
     rows = []
     for c in keep:
-        b, a = before.get(c.lower()), after.get(c.lower())
+        b, a = before.get(S.base_name(c).lower()), after.get(S.base_name(c).lower())
         if b is not None and a is not None:
             rows.append((sig(a) - sig(b), c, sig(b), sig(a)))
     last = date.fromisoformat(max(r["DateTime"] for r in games)[:10])
@@ -91,7 +100,7 @@ def main():
           f"  NOTE: the latest rating ({day1}) is from before the league's last game day ({last}): rebuild coach_history"))
     for d, c, b, a in sorted(rows, reverse=True):
         print(f"  {c}: {100 * b:.0f}% -> {100 * a:.0f}% ({100 * d:+.0f})")
-    new = [c for c in keep if c.lower() not in before]
+    new = [c for c in keep if S.base_name(c).lower() not in before]
     if new:
         print("  no rating before the season (new to Classic):", ", ".join(new))
 
