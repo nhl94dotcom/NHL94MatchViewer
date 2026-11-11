@@ -6,6 +6,8 @@ cont2team cleared and the person flag taken off every second), one case at a tim
   playoff   the same in the playoffs (2): overtime until a goal, no shootout expected
   reg       regular season, the third period with 3 s left at 2-1: the game over as usual
   ot        regular season, overtime with 3 s left at 2-1 (a game won in overtime)
+  tie3      regular season, the third period with 3 s left at 1-1 (NOSE4Web 6c951fc: the shootout after period 3)
+  playoff3  the same in the playoffs: overtime expected
   mode4     Shootout from Game Setup (Play Mode 4), as on retail: expected to end at the title
 
 Played (START every 2.5 s while the clock stands, as gen_ot_goal_check, but in a shootout only until its clock, shootoutclock $D454, first runs: later presses open the pause menu) until the game is over and the menus come back,
@@ -87,7 +89,8 @@ def main():
     if case != "mode4":
         G.OURS.append(tuple(e.b(a) for a in G.TEAMS))
         mode, gsp, hm, aw = {"tie": (0, 3, 1, 1), "playoff": (2, 3, 1, 1), "reg": (0, 2, 2, 1),
-                             "ot": (0, 3, 2, 1)}[case]
+                             "ot": (0, 3, 2, 1),
+                             "tie3": (0, 2, 1, 1), "playoff3": (2, 2, 1, 1)}[case]
         e.setw(PLAYMODE, mode)
         e.setw(GSP, gsp)
         e.setw(CLOCK, 3)

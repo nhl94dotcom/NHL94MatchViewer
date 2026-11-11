@@ -2662,6 +2662,18 @@ winners' goal and clears gmode2 with `andi.b #$F4,($C2FA).w`.
   (length $000E: the shootout goal logged as a goal), after a regulation win from the same start it is empty: the
   shootout goal counts in plus-minus. Its length word needs saving and putting back too (on plus-minus ROMs).
 
+### The shootout after period 3 (2026-11-11, NOSE4Web 6c951fc: nhl94_shootout_after_period_3.bin, CDL_Season_12_...)
+
+PeriodOver's tie test at $17262 becomes a jsr that runs the shootout's start code (regular season, the end of the
+third) and then repeats the test; $1725C and $7C4C original; the end code as before. `gen_shootout_check.py` cases
+`tie3` / `playoff3` (the third period with 3 s left at 1-1).
+- **Retail build:** a game tied after period 3 went straight to the shootout (no overtime period: the flag set at the
+  end of the third), ended 1-0 in the shootout after 58 rounds of computer attempts, a final 2-1 with only the score
+  changed, then the menus; **the save memory byte for byte as after a 2-1 regulation win** (User Records on). A 2-1 game
+  ended at the same frame as retail; the playoffs went to overtime and a goal (2-1) ended it.
+- **CDL build** (one home shot put in, `--force`): the same, a final 2-1, the settings unchanged; **the plus-minus log
+  again kept the shootout goal** (length $000E), as on the after-overtime build.
+
 ## NOSE4Web's repeated-checks fix, played (2026-11-11, b03835c: nhl94_repeat_check_fix.bin)
 
 The fix (GENESIS_MECHANICS 7.3): FallDown's pair test at $140A8 becomes `jsr $FFAC6`, NOPs, and the original `rts` at
