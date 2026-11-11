@@ -54,7 +54,22 @@ more, so it holds more than the rating's own mechanics. Points per game for ever
   own puck carrier accelerates at half rate** (Code).
   - From a standstill to a Speed-4 top speed: 0.73 s (real) at Agility 2, 0.63 s at 4, 0.59 s at 5. Turning round at
     top speed takes about twice that.
+- **Stopping ignores the ratings.** Pushing against the way he's skating starts the skid stop (`dostop`), which takes
+  a fixed 150 off each axis every frame: no Agility, no Weight. So **every skater stops in the same time from the same
+  speed**, and **a faster skater needs more room to stop** (about 9 ft at Speed 1 to 16 ft at 6). Agility only counts
+  once he skates back the other way. **Code, Played** (both ends of Agility gave the same stop to the unit).
 - **Who wins a race to a loose puck** depends on both, and on the head start: not yet played (chunk B).
+
+Played (`analysis/scoring_map/rating_gifs.py skating`): the same skater without the puck, one rating moved, each lane a
+separate run, real time. Speed sets where he ends up; Agility only how soon he gets going.
+
+![Speed 1 to 6: a sprint from a standstill](img/rating_values/skating_speed_sprint.gif)
+
+![Agility 1 to 6: a sprint from a standstill](img/rating_values/skating_agility_sprint.gif)
+
+![Speed 1 to 6: turning round at top speed](img/rating_values/skating_speed_turn.gif)
+
+![Agility 1 to 6: turning round at top speed](img/rating_values/skating_agility_turn.gif)
 
 ### Shooting: Shot Power and Shot Accuracy
 
@@ -82,6 +97,35 @@ more, so it holds more than the rating's own mechanics. Points per game for ever
     between a 2 / 2 and a 6 / 6 shooter is 18-23 points; on the doorstep 9.
   - Against a better goalie (Agility working 20+) the slapshot mostly stops working: 19% falls to 5-9% (below).
 - Wrist shots by rating, and slapshots from the point: not yet played (chunk B).
+
+Played (`rating_gifs.py shots 24`): Shot Power 1 to 6, Accuracy 4, the same 24 attempts at each power (the same moments
+and random draws); each GIF shows the attempt whose results best match each power's rate.
+
+- **The slapshot** from the middle, 36 ft out, at the far post: 51 / 58 / 62 / **78** / 83 / 91 mph, and **0 / 0 / 2 /
+  14 / 14 / 15 goals** in 24. The cliff between 3 and 4 is the full wind-up.
+
+![Shot Power 1 to 6: the slapshot](img/rating_values/shot_power_slap.gif)
+
+- **The wrist shot** at the bottom net's early-pad-stack spot (one of the few places a wrist shot beats a set
+  goalie): 23 to 36 mph, but **11 / 10 / 10 / 10 / 10 / 9 goals** in 24. **Power does nothing for a wrist shot**:
+  it beats the goalie by where it goes, not how fast.
+
+![Shot Power 1 to 6: the wrist shot](img/rating_values/shot_power_wrist.gif)
+
+Played (`rating_gifs.py onetimer 48`): one one-timer (the pass across, receiver 18 ft out and 10 ft to the side, Shot
+Power 4), the same 48 strikes at each Accuracy. With the goalie taken off after the strike, where each crosses the goal
+line; then the same strikes with him in:
+
+| Accuracy | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| Exactly on the aim point (formula) | 15 / 46 (29%) | 21 / 47 (42%) | 26 / 48 (52%) | 29 / 48 (58%) | 32 / 48 (63%) | 35 / 48 (67%) |
+| On target | 29 | 32 | 36 | 38 | 39 | 39 |
+| Goals with the goalie in | 27 | 31 | 36 | 38 | 39 | 39 |
+
+- **The goals are the shots on target:** against this one-timer the goalie stops almost nothing, and Accuracy alone
+  decides it. The misses go wide of the post on the shooter's side; better Accuracy pulls the scatter in.
+
+![One-timer Shot Accuracy 1 to 6: where it crosses the goal line](img/rating_values/onetimer_accuracy.gif)
 
 ### Passing
 
@@ -164,7 +208,10 @@ more, so it holds more than the rating's own mechanics. Points per game for ever
 - **One-timers ignore the goalie's ratings:** reach is cut to 12 against a one-timer, whatever his Agility, and the
   scoring maps found 58-62% at every goalie level (Played).
 
-### Steps where a rating suddenly matters
+### Steps where a rating suddenly matters, and where it doesn't
+
+- **Stopping:** no rating at all. Faster skaters need more room to stop.
+- **Shot Power on a wrist shot:** nothing.
 
 - **Shot Power 3 -> 4:** the full slapshot (working 20). The standing slapshot nearly triples (7 -> 19%), the skating
   far-post slapshot triples (15 -> 44%). **A cold 4 falls back below the line** for that game.

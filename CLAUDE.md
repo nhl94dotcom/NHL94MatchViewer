@@ -136,7 +136,8 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   - Scoring maps: a Genesis test ROM built from the disassembly with a doshot hook (GENESIS_SHOOTING 4.10); the SNES
     retail ROM with no hook (`snes_*.py`, SNES_SHOOTING 4.8); both take recorded goalie states for a goalie "as in
     games" (map_run.py's 7th argument, NHL94_SNES_GOALIES; NHL94_SMAP_SUBSET=coarse). `goal_types.py`,
-    `goal_frames.py` / `goal_diagram.py`, `animate.py` (GIFs of makes and misses).
+    `goal_frames.py` / `goal_diagram.py`, `animate.py` (GIFs of makes and misses); `rating_gifs.py` (GIFs of a rating
+    step: Shot Power 1-6, one-timer Accuracy 1-6, Speed and Agility 1-6 skating; RATING_VALUES).
   - The bot: `bot.py` (a scripted Genesis player, the user's scoring moves), `bot_run.py` (whole games against the
     computer), `bot_situations.py` / `bot_scenario.py` / `bot_scen_report.py` (from recorded situations; BOT_PLAN),
     `bot_live.py` (controller 2 of the user's RetroArch by key presses while it has the focus; `test` and `play` only
