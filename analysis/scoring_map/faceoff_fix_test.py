@@ -116,7 +116,7 @@ class Snes:
             if self.sa1 else None
         if state:
             self.bases = [open(state, "rb").read()]
-        elif not self.sa1:
+        elif not self.sa1 and len(data) < 0x200000:   # the 1 MB ROMs: the retail states (2 MB builds boot their own)
             from paths import SNES_STATE_TOP, SNES_STATE_BOTTOM
             self.bases = [open(SNES_STATE_TOP, "rb").read(), open(SNES_STATE_BOTTOM, "rb").read()]
         else:

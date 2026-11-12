@@ -66,6 +66,8 @@ with a big one.
 56 is 55 slapping where people do (40-110 out, the slot; 150 for big shooters), also in place of 32's wrist shot
 (PEOPLE56; scoring_moves.py: people slap 45 of 83 slot shots, the bot 12 of 88, none of its 76 slot wrist shots in).
 57 is 56 waiting for the goalie to be off the shooting line before 32's shot from the slot or in close (PEOPLE57).
+58 is 57 taking the slapshot skating across, aimed at the far post (the user's tip; PEOPLE58).
+59 is 58 winding the slapshot up as long as people do, and starting it only with the goalie off the line (PEOPLE59).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -329,6 +331,27 @@ if __import__("os").environ.get("NHL94_PEOPLE57"):
     PEOPLE57.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE57"]))
 
 
+# version 58 (2026-11-12, the user: the best slot slapshots are taken skating across the slot, aimed at the far post,
+# the one he is skating toward; people's slapshots 40-130 out (138): moving across 0.5+ a frame 26% scored (aimed at a
+# post 28-29%, at the middle 0 of 7), standing 15% (at the middle 0 of 13); the bot's slapshot held Down: the low middle):
+# the slapshot aimed at the far post (mid height: the aim code 2 is the +x post at the +y net, 6 the -x post, the
+# reverse at the -y net) when moving across "moving"+ a frame, else at the post away from the goalie; standing, its
+# chance times "standing"; env NHL94_PEOPLE58 as JSON
+PEOPLE58 = {"moving": 0.5, "standing": 0.33}
+if __import__("os").environ.get("NHL94_PEOPLE58"):
+    PEOPLE58.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE58"]))
+
+
+# version 59 (2026-11-12, people's slapshots, 187 with the C press found: C held a median 36 frames (quartiles 32-38),
+# speed 23,600 at 35+ frames; by Shot Power 3 18,300, 4 22,100, 5 25,200; the bot's 58 held 20 (speed median 17,700
+# against people's 21,600 at 40-130 out), and its slapshots came with the goalie nearer the line (gOff median 3.5,
+# people's 5.3): 57's wait applied to 32's wrist shot only): the wind-up "windup" frames; the slapshot (people_carry's and
+# in place of 32's wrist shot) with the goalie square on PEOPLE57's test only "closed" as often; env NHL94_PEOPLE59 as JSON
+PEOPLE59 = {"windup": 36, "closed": 0.3}
+if __import__("os").environ.get("NHL94_PEOPLE59"):
+    PEOPLE59.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE59"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -346,14 +369,16 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57)
-        self.v54 = version in (54, 55, 56, 57)
-        self.v55 = version in (55, 56, 57)
-        self.v56 = version in (56, 57)
-        self.v57 = version == 57
-        if version in (51, 52, 53, 54, 55, 56, 57):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59)
+        self.v54 = version in (54, 55, 56, 57, 58, 59)
+        self.v55 = version in (55, 56, 57, 58, 59)
+        self.v56 = version in (56, 57, 58, 59)
+        self.v57 = version in (57, 58, 59)
+        self.v58 = version in (58, 59)
+        self.v59 = version == 59
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -416,6 +441,7 @@ class Bot:
                                      gx=sg * P[g]["x"], gy=sg * P[g]["y"], v=round(math.hypot(pk["vx"], pk["vy"]), 2)))
         their_goalie = next((k for k in self.theirs if P[k]["pos"] == 0), self.theirs[-1])
         s = 1 if P[their_goalie]["y"] > 0 else -1           # the net we attack
+        self.att_s, self.att_g = s, their_goalie
         if owner == me and P[me]["pos"] == 0:
             # our goalie has it (manual goalies: the pad drives him): pass to the nearest teammate after a moment
             self.t = self.t + 1 if self.phase == "goalie" else 0
@@ -699,11 +725,23 @@ class Bot:
             self.note("shot", kind="clear")
             return pad(aview(0))
         if self.phase == "slap":
+            if self.v58 and getattr(self, "slap_aim", None) is not None:
+                if self.t < (PEOPLE59["windup"] if self.v59 else 20):
+                    return ["C"] + pad(self.slap_aim)   # version 58: wind up holding the far post
+                self.note("shot", kind="slap", aim=self.slap_aim)
+                return pad(self.slap_aim)          # released holding it (set again at the next slapshot)
             if self.t < 20:
                 return ["C"] + pad(aview(4))        # wind up, Down held
             self.note("shot", kind="slap")
             return pad(aview(4))
         return []
+
+    def goalie_open(self, P, me):
+        """The goalie PEOPLE57 "open"+ off the line from the shooter to the middle of the net (versions 57+)."""
+        m, q = P[me], P[getattr(self, "att_g", self.theirs[-1])]
+        nx, ny = 0.0, getattr(self, "att_s", 1) * NET_Y
+        L = math.hypot(nx - m["x"], ny - m["y"]) or 1
+        return abs((q["x"] - m["x"]) * (ny - m["y"]) - (q["y"] - m["y"]) * (nx - m["x"])) / L >= PEOPLE57["open"]
 
     def may_shoot(self, P, me, g, s):
         """The shot's go-ahead (32's shoot_ok); version 57: also the goalie PEOPLE57 "open"+ off the line from the shooter
@@ -717,6 +755,19 @@ class Bot:
         off = abs((q["x"] - m["x"]) * (ny - m["y"]) - (q["y"] - m["y"]) * (nx - m["x"])) / L
         return off >= PEOPLE57["open"] or self.rng.random() < PEOPLE57["anyway"]
 
+    def slap_choice(self, P, me, chance):
+        """Version 58: the slapshot's aim (self.slap_aim: the far post when moving across, else the post away from the
+        goalie) and its chance (times PEOPLE58 "standing" when not moving across)."""
+        m = P[me]
+        s = getattr(self, "att_s", 1)
+        moving = abs(m["vx"]) >= PEOPLE58["moving"]
+        side = m["vx"] if moving else -P[getattr(self, "att_g", self.theirs[-1])]["x"] or 1
+        self.slap_aim = 2 if side * s > 0 else 6
+        chance = chance if moving else chance * PEOPLE58["standing"]
+        if self.v59 and not self.goalie_open(P, me):
+            chance *= PEOPLE59["closed"]           # the goalie square: now and then anyway
+        return chance
+
     def wrist_or_slap(self, P, me, ay):
         """Version 56: 32's wrist shot becomes the slapshot by the shooter's class (PEOPLE55's chance, never above its
         cap) within PEOPLE56 "slap_in" to the class's reach out from the goal line; else (and before 56) the wrist shot."""
@@ -725,8 +776,10 @@ class Bot:
         out = 264 - ay
         cls = min(6, round(P[me]["shp"] / 5))
         out_max = PEOPLE55["far_out"] if cls >= PEOPLE55["far_from"] else PEOPLE54["slap_out"]
-        if PEOPLE56["slap_in"] < out < out_max and \
-                self.rng.random() < min(PEOPLE55["cap"], PEOPLE55["slap"] * PEOPLE55["factor"][str(cls)]):
+        chance = min(PEOPLE55["cap"], PEOPLE55["slap"] * PEOPLE55["factor"][str(cls)])
+        if self.v58:
+            chance = self.slap_choice(P, me, chance)
+        if PEOPLE56["slap_in"] < out < out_max and self.rng.random() < chance:
             self.note("slap start", ay=ay, cls=cls, instead="wrist")
             return "slap"
         return "wrist"
@@ -868,6 +921,8 @@ class Bot:
             cls = min(6, round(P[me]["shp"] / 5))
             out_max = PEOPLE55["far_out"] if cls >= PEOPLE55["far_from"] else PEOPLE54["slap_out"]
             chance = min(PEOPLE55["cap"], PEOPLE55["slap"] * PEOPLE55["factor"][str(cls)])
+            if self.v58:
+                chance = self.slap_choice(P, me, chance)
         else:
             out_max, chance = PEOPLE54["slap_out"], PEOPLE54["slap"]
         lo_out = PEOPLE56["slap_in"] if self.v56 else 89      # version 56: from the slot as well (55: 90-175 up)

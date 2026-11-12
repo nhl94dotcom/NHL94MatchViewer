@@ -52,7 +52,9 @@ SA1_SHIFT = 0xEA06 - 0xF46A               # the SA-1 build's animation words, mo
 
 class Counts:
     def __init__(self, spec):
-        parts = spec.split(":")
+        # "40:BASE:..." (2026-11-12): in the SA-1 builds' BW-RAM (bank $40), read and written there directly
+        self.bw = spec.startswith("40:")
+        parts = spec[3:].split(":") if self.bw else spec.split(":")
         self.base = int(parts[0], 16)
         self.stride = int(parts[1], 16) if len(parts) > 1 else 0x20
         self.size = int(parts[2]) if len(parts) > 2 else 1
@@ -60,13 +62,25 @@ class Counts:
     def addr(self, G, k):
         return self.base + (self.stride if G.w(PFTEAM + 2 * k) else 0) + self.size * (G.w(PNUM + 2 * k) & 0xFF)
 
+    def rw(self, G, a):
+        if self.bw:
+            b = G.g.bw
+            return b[a] | b[a + 1] << 8
+        return G.w(a)
+
+    def ww(self, G, a, v):
+        if self.bw:
+            G.g.bw[a], G.g.bw[a + 1] = v & 0xFF, (v >> 8) & 0xFF
+        else:
+            G.setw(a, v)
+
     def get(self, G, k):
         a = self.addr(G, k)
-        return G.w(a) if self.size == 2 else G.w(a) & 0xFF
+        return self.rw(G, a) if self.size == 2 else self.rw(G, a) & 0xFF
 
     def set(self, G, k, v):
         a = self.addr(G, k)
-        G.setw(a, v if self.size == 2 else (G.w(a) & 0xFF00) | (v & 0xFF))
+        self.ww(G, a, v if self.size == 2 else (self.rw(G, a) & 0xFF00) | (v & 0xFF))
 
 
 def words(G):
@@ -259,7 +273,10 @@ def start_part(rom, out, spec):
     def play(e, script, tmp):
         if script.startswith("START w240 START w200") and "m" in st:
             for a in range(counts.base, counts.base + span, 2):
-                st["m"].setw(a, 0x5A5A)
+                if counts.bw:
+                    st["m"].bw[a], st["m"].bw[a + 1] = 0x5A, 0x5A
+                else:
+                    st["m"].setw(a, 0x5A5A)
         return orig_play(e, script, tmp)
 
     class Mem(orig_mem):
@@ -268,8 +285,9 @@ def start_part(rom, out, spec):
             st["m"] = self
 
     def computer_only(m):
-        st["first"] = sorted({m.w(a) & 0xFF for a in range(counts.base, counts.base + span)} |
-                             {m.w(a) >> 8 for a in range(counts.base, counts.base + span, 2)})
+        rd = (lambda a: m.bw[a] | m.bw[a + 1] << 8) if counts.bw else m.w
+        st["first"] = sorted({rd(a) & 0xFF for a in range(counts.base, counts.base + span)} |
+                             {rd(a) >> 8 for a in range(counts.base, counts.base + span, 2)})
         raise Stop
     M.play, cvc.Mem, cvc.computer_only = play, Mem, computer_only
     try:

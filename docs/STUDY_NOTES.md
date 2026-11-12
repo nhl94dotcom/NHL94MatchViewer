@@ -4239,3 +4239,51 @@ more steps in the 0.6 s before a wrist shot); else by distance. Coaches rated 80
   still poor: those shots come from another path (people_carry's hold running out) and are the next thing to look at.
   The EA Special and the cross-crease are now rare (0.06 and 0.19 a game, people 0.79 and 0.86): to bring back on purpose.
 - **Version 57 is now the default** (bot_run.py, bot_live.py).
+
+### NOSE4Web's original-layout SNES hacks in the 2 MB builds, played (2026-11-12, bbe2758; `snes_2mb_hacks_check.py`)
+
+`snes_2mb_hacks_check.py ORIGINAL HACK OUT [part ...]` runs `snes_vault_hacks_test.py`'s parts on a 2 MB build: each ROM
+boots through its menus with pad 1 on the home team (snes_shootout_lock_check.person_start) and plays on until the
+clock runs, and every read and write goes through faceoff_fix_test.Snes (the SA-1 builds' low RAM in BW-RAM). The pick
+list's text is read with each build's font offset (lower case 1 before retail's tile on the SA-1 builds, 2 past it on
+the LoROM 32-team build; capitals and digits one further). `faceoff_fix_test.Snes` now boots any 2 MB ROM instead of
+loading the retail states; `snes_injury_risk_check.py` takes a count SPEC in BW-RAM as "40:BASE:...".
+- **nhl94snes_2026_five.sfc (LoROM 32-team): everything passes.**
+  - L+R: pulls at every hold from 2 frames to 120, 12 of 12 each. Pressed again it brings the goalie back. Nothing
+    happens in a stoppage, and presses during a whistle or a pause don't pull him once play resumes. With both pads
+    on the home team only pad 1 has it, as on retail. (The original LoROM build pulls on a 120-frame hold by itself:
+    its own feature.)
+  - Any position: every row of every line (Best Line, Scoring 1, Pen. Kill 1 and 2) lists all 22 skaters. No pick
+    puts a player on twice or drops one; the original lists 7 or 15 and does both.
+  - The extra attacker fix: a forward edited into LD plays LD, and when the goalie is pulled the old LD comes on as
+    the extra attacker.
+  - Injury counts (word a player, the away team +$40, at $7E:F040): $5A written over them at Game Setup reads 0 when
+    play starts, and counts of 7, 10 and 255 read 3, 5 and 127 after an intermission.
+- **nhl94snes_2026_maxboost.sfc: passes.** In the LD pick list 77 of 77 rating cells read 100 exactly when that
+  player's hot / cold value for the rating is negative. Status, Overall, Energy, Handed and Weight are untouched.
+- **nhl94snes_SA1_five.sfc: three of the four fail.**
+  - L+R never pulls: 0 of 12 at every hold length, both pads, twice from fresh boots. The press is seen: the count
+    at BW $7EF0 goes to 24 on the first frame of L+R and counts down to 0, which on the LoROM build is followed by the
+    pull within 15 frames. Here tmgoalie never changes, in BW-RAM ($77AA) or work RAM ($17AA).
+  - Edit Lines lists all 22 skaters, but picking one already on the line leaves him on it twice and drops another
+    (4-5 of the 22 picks a row, on every line).
+  - The extra attacker isn't swapped: the line [18, 17, 7, 3, 12, 4] with 4 (the extra attacker) picked at LD reads
+    [4, 17, 7, 3, 12, 4].
+  - The new code's `jsl` targets match the LoROM build's routine for routine (the same code, variables +$6000). The
+    beep's target on the SA-1 build is its SNES-only wrapper.
+  - Injury counts (BW $40:5400): cleared at the start of a game, and halved at an intermission (3, 5, 127): pass.
+- **nhl94snes_SA1_maxboost.sfc: fails.** 41 of 88 rating cells right. All 47 wrong ones are cold players showing their
+  ordinary rating (Agility 65 for a -10, Speed 49 for a -7 ...). Its code is the LoROM build's but for the store
+  ($60A5 for $00A5): `lda $16 / cmp #$80 / bcs` to `lda #100 / sta`. Whether direct page $16 holds the hot / cold
+  value there on the SA-1 build is the question.
+- **The hot / cold bug is in all four builds** (the `lsr / lsr / bit #$00 / beq / ora #$00` bytes: $FD34B in the SA-1
+  builds, $FD279 in the LoROM ones, as retail's $FD237), so show max boost means the same there.
+- **RAM.**
+  - In a whole computer game nothing writes the SA-1 builds' BW $40:7EF0-7EF3 (the L+R counts) or $40:5400-547F (the
+    injury counts), nor the LoROM build's $7E:F040-F0BF or work RAM $1EF0-1EF3 (`snes_ram_use_check.py` masks).
+  - In the Shootout-mode runs (the computer-only Shootout mode that hangs or crashes on these builds) BW $7EF0 and
+    $7EF3 were written on nhl94snes_SA1.sfc, $7EF2-7EF3 on nhl94_2026.sfc, and work RAM $1EF0-1EF3 on all three 2 MB
+    builds; never on retail or Classic.
+  - At boot the game clears them. Junk (23) written at power-on over the L+R and injury counts, and at BW $40:F000,
+    was still there after the first frame and gone (0) by Game Setup, on both five builds. So a stale count can't
+    carry over from an earlier session's save memory.
