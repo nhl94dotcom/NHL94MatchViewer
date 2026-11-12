@@ -2506,6 +2506,17 @@ Game Setup; video and colour memory from the cores).
   right across (128), 236 cells; cells under the box show only through its gaps. Limits: **152 tiles** (104-255,
   BG1's tiles start after) and **15 colours** (row 2; 0 transparent). A one-for-one replacement of his 162 cells fits
   (147 tiles now). Moving the box would mean changing where the scouting text is drawn (code), not moving a copy.
+- **SNES, NOSE4Web's whole-place builds (e2ba1b1: NHL94_announcer_whole.smc against NHL94.smc,
+  nhl94snes_SA1_announcer_whole.sfc against nhl94snes_SA1.sfc; `snes_announcer_check.py`), the same on both:** the
+  test picture (a cut-out figure) on 142 BG2 cells, columns 15-31, rows 14-27, fitted in the bottom right of his
+  place; 59 tiles (105-163: 92 to spare of the 152), colour row 2 its own (no other cell uses it). Of Ron Barr's 162
+  cells none keeps his tiles: those the picture leaves out show the menu background (21 outside the old strip). 3
+  cells that were background in the original now carry the picture (inside his 208 x 128 place). The box and its text
+  (BG1) unchanged, the menu background's tiles unchanged, the other colour rows the same; the picture stays put over
+  all 59 samples (30 s real) as the pages go by. Like Ron, a picture there sits behind the box's right part: the text,
+  on BG1, is drawn over it, so a picture's detail in columns 15-22, rows 14-23 would be behind the ends of longer
+  lines (on the test picture the head's left edge, about column 16, comes up to the ends of the longest lines; the letters
+  stay readable, drawn over it).
 
 ## chaos's fighting patch as NOSE4Web puts it in, checked (2026-11-11, d864683: nhl94_fighting.bin, CDL_Season_12_fighting.bin)
 
@@ -3535,6 +3546,17 @@ minutes (real) of play.
 - **A lying player doesn't move:** the movement step skips a player in SPAinjuryfall (Genesis logic94.asm) /
   SPAinjury1 (SNES updateplayers), so he stops where he was hit instead of sliding as an ordinary fall does. A look only, as the
   injured player always did.
+
+### NOSE4Web's SNES Injuries choice, played (aa0ac43; `snes_long_fall_check.py` on each build: SPAinjury1 stretches)
+
+The same forced game (every carrier's knockdown down the injury path, 5 minutes real) on the 1 MB and SA-1 builds of
+each choice; the same results on both:
+- **Never:** no injury path at all (0 SPAinjury1); back falls 134-139 frames, as always.
+- **The penalty but no injury:** 7 injury-path falls: the penalty called each time, InjCntDown never set (no injury
+  box), tmpdst never $FFFD / $FFFC; the player lies in SPAinjury1 until the stoppage (566-749 frames) and plays on
+  from the faceoff (three were on the bench, $FFFE, for the faceoff: the lines put back after the penalty).
+- **Every injury for the period:** 4: tmpdst $FFFD each time, InjCntDown set (the box), the penalty called.
+- **Every injury for the game:** 6: tmpdst $FFFC each time, the box, the penalty.
 
 ## McMarkis's SNES fighting as NOSE4Web puts it in, played (2026-11-11, b3f1510)
 
