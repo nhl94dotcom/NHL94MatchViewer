@@ -4339,3 +4339,19 @@ made again from the new ROMs), **every result is as before the fix**:
   holds another player, so reading by the object's player gave 0 for the away one).
 - Boot clears the counts on nhl94_2026_five as on the others ($40:7EF0-7EF3 and $40:5400-547F junk at power-on: 0 by
   Game Setup).
+
+### Bot version 60 (EA Special and cross-crease) and passing, measured (2026-11-12; `bot_compare.py`)
+
+- **`bot_compare.py 59 60 32`** (paired on the same 32 seeds and matchups): xG 3.62 ±0.24 against 3.28 ±0.36 a game
+  (difference -0.35 ±0.41), goals 2.78 against 2.56 (-0.22 ±0.40), shots on goal 12.8 against 11.1 (-1.7 ±0.9), xG
+  against 2.90 against 2.15 (-0.74 ±0.37, the only difference near 2 standard errors). Pairing narrows the spread
+  little: the same seed gives a different game once the bot plays differently.
+- **Its plays** (`scoring_moves.py`): EA Special attempts 0.16 a game (people 0.79: version 8's line, started from a
+  plan drawn on 6% of zone entries, rarely reaches its release spot), cross-crease 0.69 a game (people 0.86) but 5%
+  scored, xG 0.124 (people 33%, 0.379): its run across isn't the fast one in close that leaves the goalie behind.
+  **Version 59 stays the default.**
+- **Passing is not a gap.** Version 59's passes (32 games) against the coaches rated 80%+ (28 side-games): reached a
+  teammate (completed, one-timer, pass shot) 71% and 71%, intercepted 25% and 24%; the game credits 84% of the
+  completed ones for both; one-timer passes 4.5 a game for both (never counted completed). The bot passes less (46 a
+  game against 53), so the uncredited one-timers weigh more in its share: the game's counter 50% against 56%. It is
+  intercepted more in the attacking zone (36% against 31%) and less in its own (15% against 25%). Left as it is.
