@@ -630,7 +630,7 @@ numbers.
 
 ## The NOSE4Web editor (reference)
 
-`C:\D\GenAI\NOSE_source_1.2b_wboy\nose-web` is the user's web ROM editor (TypeScript, based on wboy's NOSE, with
+NOSE4Web (its folder is local to the user's machine) is the user's web ROM editor (TypeScript, based on wboy's NOSE, with
 smozoma's smozROM hacks; GPL). Read it for ROM facts; do not change it from this project. Useful files in `src/core`:
 
 - `team.ts` - the team block, which agrees with the layout below and adds: +$4C three bytes of team ratings then a

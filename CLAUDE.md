@@ -26,9 +26,10 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - Never put credentials, the S3 bucket name or the AWS profile name in committed files.
 - Only ever read the user's emulator's memory (our own headless core copies may be poked). Never kill the user's
   processes. Don't rebuild the exe while "NHL94 Helper.exe" is running (check with `tasklist | grep -i nhl94`).
-- NOSE4Web (`C:\D\GenAI\NOSE_source_1.2b_wboy\nose-web`, the user's ROM editor) is read-only reference; where it and
-  the disassemblies disagree, trust the disassemblies. Its test builds sit in `C:\D\GenAI\NOSE_source_1.2b_wboy` beside
-  the original ROMs and may be run for testing (never change them; a scratch copy for a test is fine). NOSE4Web keeps
+- NOSE4Web (the user's ROM editor; its folder on this machine is in the local memory, never in the repo) is
+  read-only reference; where it and the disassemblies disagree, trust the disassemblies. Its test builds sit one
+  level above its source, beside
+  the original ROMs, and may be run for testing (never change them; a scratch copy for a test is fine). NOSE4Web keeps
   `NHL94_known_bugs.md`: give findings, don't edit it.
 - League rules: no point for an overtime loss; overtime is 10 minutes on the Genesis, 5 on the SNES.
 - Commit and push when work is done; check `git status -sb` before mentioning unpushed commits (the user pushes too).
