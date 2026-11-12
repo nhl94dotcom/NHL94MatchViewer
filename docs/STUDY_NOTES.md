@@ -3882,7 +3882,7 @@ were the bot's one-timers: 41 (with them, on looser limits) had 4.8 one-timer tr
 near the experts' 5.0 / 1.8; taking them out (46) cut its one-timers to 0.9. The game counts no one-timer as a
 completed pass, for people too. Next (48): the slot pass back, on people's spots and coverage.
 
-### Versions 48-49: one-timers on people's spots (chunk 3, step 8)
+### Versions 48-50: one-timers on people's spots (chunk 3, step 8)
 
 - **48** (47 with 32's slot pass back and open_mate on people's spots: the receiver 30-140 out, within 60 of the
   middle, the pass 30-130 across and under 170, the receiver open by 15, the lane by 5; PEOPLE48), 8 games: **one-timer
@@ -3891,6 +3891,12 @@ completed pass, for people too. Next (48): the slot pass back, on people's spots
 - **49** (48 without 32's slot pass: the one-timer only from people_carry's offer, 35% every 6 frames), 8 games: still
   9.1 tries and 1.4 goals (15%); shots 17.0, passes 59.2 (45% credited), penalty minutes 3.2, goals 2.8 to 1.1 (6 of 8
   won). The offer alone, on people's loose spots, fires as often as both did.
+- **50** (49 offering the one-timer 20% of the time, only with the goalie drawn 4+ toward the passer's side, as 15
+  required; PEOPLE50), 8 games: **one-timer tries 6.0, goals 1.0** (17% scoring; experts 5.0 / 1.8, 36%), **passes
+  tried 44.8** (experts 43.5), 51% credited, goals 3.4 to 1.2 (7 of 8 won), shots 18.4 (13.7), checks 23.1 (31),
+  penalty minutes 5.0 (2.4). The number of one-timers is near the experts' now; their finish is not: people's
+  one-timer passes scored 33% with receivers as covered, so the gap is likely in the strike (the C timing, ARRIVE 14
+  frames before the puck reaches him) rather than in the choice of pass.
 
 ### NOSE4Web's lock on Exit Shootout, played (2026-11-11, 51876ae; `snes_shootout_lock_check.py`)
 
@@ -3905,9 +3911,37 @@ default (setting cont1team after the start doesn't let START pause), the same on
   Down, B: no prompt, still paused in the shootout; Resume Shootout: play on.
 - **Then** B every second to the end: rounds 1 to 6, the score 2-3, the game over (gsp 4), the mark cleared.
 - The after-overtime builds needed START at overtime's start (a person's game waits for it), as in any game.
-- **50** (49 offering the one-timer 20% of the time, only with the goalie drawn 4+ toward the passer's side, as 15
-  required; PEOPLE50), 8 games: **one-timer tries 6.0, goals 1.0** (17% scoring; experts 5.0 / 1.8, 36%), **passes
-  tried 44.8** (experts 43.5), 51% credited, goals 3.4 to 1.2 (7 of 8 won), shots 18.4 (13.7), checks 23.1 (31),
-  penalty minutes 5.0 (2.4). The number of one-timers is near the experts' now; their finish is not: people's
-  one-timer passes scored 33% with receivers as covered, so the gap is likely in the strike (the C timing, ARRIVE 14
-  frames before the puck reaches him) rather than in the choice of pass.
+
+### The overnight sweep: version 50's settings against the experts (2026-11-12; `bot_sweep.py`, version 51)
+
+Version 50 with six settings drawn from a grid: the one-timer's C timing (ARRIVE: 8, 11, 14, 17, 20 frames before the
+pass arrives), how far out its receiver may be (100, 120, 140), how often it is offered (0.1-0.3), whether the goalie
+must be drawn (0 or 4), the CB share of the bursts (0.1-0.3) and the shot share of the attacking holds (0.4-0.8). There
+were 40 settings (version 50's own among them), 8 games each against the computer on seeds 0-7, scored against the
+85-90% coaches by the mean of ((bot - expert) / scale)^2 over shots, one-timer tries and share scored, checks, penalty
+minutes, passes tried and share completed, attack-zone time and breakaways (lower is closer). The best 3 then played
+16 more games each (seeds 8-23). It took about 3 hours, two games at a time, and every capture was deleted once it was
+measured.
+
+| Setting (C timing, out, offer, drawn, CB, shoot) | Games | Score | Shots | OT tries | OT scored | Checks | PIM | Passes | Credited | AZT | Breakaways | GF-GA | Won |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Experts | | | 13.7 | 5.0 | 36% | 31 | 2.4 | 43.5 | 65% | 337 | 2.2 | 5.1-3.3 | |
+| **17, 100, 0.1, 0, 0.3, 0.4 (version 51)** | 24 | **1.91** | 11.8 | 3.5 | 25% | 18.8 | 3.8 | 37.7 | 54% | 376 | 1.2 | 2.2-1.1 | 17 |
+| 17, 140, 0.15, 4, 0.1, 0.8 | 24 | 2.35 | 15.9 | 5.6 | 24% | 19.0 | 4.2 | 44.2 | 47% | 375 | 1.4 | 3.6-1.3 | 21 |
+| 20, 120, 0.1, 4, 0.1, 0.8 | 24 | 2.42 | 16.7 | 4.7 | 21% | 19.3 | 3.5 | 41.5 | 51% | 409 | 1.5 | 3.1-1.2 | 19 |
+| 14, 140, 0.2, 4, 0.2, 0.6 (version 50) | 8 | 2.31 | 18.4 | 6.0 | 17% | 23.1 | 5.0 | 44.8 | 51% | 379 | 1.4 | 3.4-1.2 | 7 |
+
+The full table of all 40 settings is in `runs/sweep1/report.md`; `python bot_sweep.py --report OUT` makes it again.
+
+- **8 games is too few to rank on.** The first-8 leaders fell back on 16 new games. 20/120/0.1/4/0.1/0.8 went from
+  1.83 to 2.80, and 17/140 went to 2.63. The winner went from 1.73 to 2.30 on its new games alone, which is version
+  50's level. Its 24-game 1.91 beats version 50's 8-game 2.31, but much of that gap may be noise.
+- **A later C may help.** The three settings replayed on 24 games all use 17-20 frames, not 14, and they score 21-25%
+  of their one-timers against version 50's 17% (the experts score 36%). The weak point is that the 8-game leaders also
+  include 8 and 11 frames.
+- **What no setting reaches:** checks (15-23 a game against 31) and passes credited (47-55% against 65%). Neither
+  changes much across the grid, so the CB share and the offer rate are not where these gaps come from. They are the
+  next targets, and they need new behaviour rather than different settings.
+- **Version 51** = 50 with the winner's settings (bot.py `SWEEP1`; an env override of any of them still wins). It is
+  now `bot_run.py`'s default, replacing 32, so `bot_record.py` and `bot_run.py` play it unless NHL94_BOT_VERSION says
+  otherwise. Its smoke game finished 2-1 with a one-timer goal.

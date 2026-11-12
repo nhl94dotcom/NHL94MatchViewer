@@ -55,6 +55,7 @@ whenever a teammate is open across the slot (a safer open_mate) and with fewer C
 47 with 32's slot pass back and open_mate on people's one-timer spots and coverage (PEOPLE48). 49 is 48 without 32's
 slot pass (48: 9.1 one-timer tries a game, 1.2 goals; experts 5.0 / 1.8): the one-timer only from people_carry's offer.
 50 is 49 offering it less often and only with the goalie drawn toward the passer's side (PEOPLE50).
+51 is 50 with the overnight sweep's best settings (bot_sweep.py, sweep1, 2026-11-12: SWEEP1); the default.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -242,9 +243,34 @@ def dir_to(dx, dy):
     return round(math.degrees(math.atan2(dx, dy)) / 45) % 8
 
 
+# version 51: sweep1's best setting (bot_sweep.py, 24 games, score 1.91 against version 50's 2.31): the one-timer's C
+# 17 frames before the pass arrives, its receiver at most 100 out, offered 0.1 of the checks, no goalie-drawn test,
+# a CB check on 0.3 of the bursts, a shot from 0.4 of the holds in the attacking zone. An env override of any of these
+# (bot_sweep.env_for's names) is kept.
+SWEEP1 = {"arrive": 17, "out": 100, "offer": 0.1, "drawn": 0, "cb": 0.3, "shoot": 0.4}
+
+
+def use_sweep1():
+    global ARRIVE
+    env = __import__("os").environ
+    if not env.get("NHL94_ARRIVE"):
+        ARRIVE = SWEEP1["arrive"]
+    if not env.get("NHL94_PEOPLE48"):
+        PEOPLE48["out"] = (PEOPLE48["out"][0], SWEEP1["out"])
+    if not env.get("NHL94_PEOPLE50"):
+        PEOPLE50.update(offer=SWEEP1["offer"], drawn=SWEEP1["drawn"])
+    if not env.get("NHL94_DEF47"):
+        DEF47["cb"] = SWEEP1["cb"]
+    if not env.get("NHL94_PEOPLE41"):
+        PEOPLE41["shoot"] = SWEEP1["shoot"]
+
+
 class Bot:
     def __init__(self, team=0, version=32):
         self.rng = __import__("random").Random(7919 * team + version)   # version 40's draws
+        if version == 51:                           # 51: 50 with sweep1's settings (env overrides still win)
+            use_sweep1()
+            version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE
