@@ -3692,3 +3692,21 @@ check again (32 never did, for its penalties). 7 games against the computer (the
 Next steps for people's play: fewer, later shots (people shoot about once in three attacking-zone carries), the
 one-timer set-up as people make it (the receiver moving into the slot, the pass across), and the big hit (a burst
 from farther out at full speed).
+
+### Version 41: fewer, later shots, people's one-timers, checks from farther out (chunk 3, step 2)
+
+Version 41 is 40 with: in the attacking zone no shot starts before the carry's hold time runs out, and then only 60%
+of the time (else hold on and draw again), while he skates as 32 does; a prime chance (past 200 up the ice, within 40
+of the middle) always taken; the one-timer pass 80% of the time it is there, on 13-14's limits (not 15's narrow
+ones); the burst check from within 70, every 15 frames, closing at 1.0+ a frame (bot.py PEOPLE41, DEF41). (A first
+try held the puck at the top of the circle instead: 9 attempts a team-game at 0.03 xG and 22 giveaways in its one
+game.) 6 games against the computer, all pass check_matches; per team, 15 minutes, people's in brackets:
+
+- **Now like people (no significant difference):** goals 3.3 (3.8), shot attempts 21.5 (18.2), shots on goal 14.2
+  (11.0), xG 3.4 (4.2), median distance 81 (77), **one-timer tries 4.8 (4.6)** and 20% of attempts (25%; 40: 1%),
+  slapshots 21% (17%), wrist shots 50% (50%), high-danger attempts 5.7 (5.2), odd-man rushes 9.7 (9.8), passed entries
+  16% (16%), entries leading to a shot 45% (46%), pass completion 53% (55%), body checks 26.7 (26.3).
+- **Still off:** penalties 3.5 (1.5: the longer bursts), big hits 1.5 (3.9), giveaways 19 (13), takeaways 20 (12),
+  possession 441 game s (385), passes 55 (46), rebounds 1.7 (0.9).
+- It won all 6, 3.3 goals to 0.7 (40: 6.3 to 1.6; 32: 8.4 to 1.5): about a person's scoring against the computer's
+  goalie.
