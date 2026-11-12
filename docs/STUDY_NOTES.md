@@ -3853,3 +3853,13 @@ against 0.2 a game (7 of 8 won, 2.1 goals for); check attempts land as people's 
 penalty minutes 5.0 (cross-checking 7 and roughing 6 of 20 calls: the knockdown's roll), checks 17.5 (experts 31),
 attack-zone time 411 s (experts 337). Next: one-timers set up as people make them (an offer whenever a teammate is
 open across the slot, not only when the carry's hold runs out), and fewer roughing / cross-checking calls.
+
+### Version 47: the one-timer offered more often, fewer CB checks (chunk 3, step 7)
+
+47 is 46 offering the one-timer pass every 6 frames in the attacking zone (35% of the time) whenever open_mate finds a
+receiver, open_mate's receiver open by 35 and the lane clear by 20 (safer than 41-46's 20 / 15), and the CB check on
+20% of bursts (PEOPLE47, DEF47). 8 games (7 won, 2.4 goals to 1.0): one-timer tries 1.4 (46: 0.9; experts 5.0), checks
+23.6 (46: 17.5; experts 31), penalty minutes 4.2 (46: 5.0; experts 2.4), passes completed 21.8 of 36.2 (60%; experts
+65%), attack-zone time 423 s (experts 337). The safe receiver open across the slot rarely comes up with the
+computer's teammates; people's one-timer set-ups need measuring from the recordings (where the passer and the
+receiver are, how covered, how the receiver is moving) before the offer is shaped again.
