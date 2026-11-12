@@ -4411,6 +4411,46 @@ his reach; people shoot while he catches up.
   cross the middle: 0.53 a game, 12%, 0.174; people against the computer goalie 34%, 0.282). **Version 61 is the
   default**: equal on results, the move strong coaches use about once a game in people's shape, aim and wind-up.
 
+### The user's two games against version 61, and versions 62 and 63 (2026-11-12)
+
+The user played version 61 twice (BOS against the bot's LA, PHI against the bot's CHI; `bot_live.py play`) and saw:
+its goalie seldom passed after claiming the puck and skated about; no slapshots across the slot despite Sandstrom,
+Robitaille and Roenick; a few close one-timers across the slot; no cross-crease; carriers deep in the zone skating all
+the way back out to the neutral zone, even on a breakaway ("no human would do that"); and in the intermissions the bot
+held Down, moving the menu. Measured (8 bot_record.py games a version against the computer; people: the coaches rated
+80%+, 28 side-games):
+- **The goalie** (a goalie's hold over 0.1 s (real), then who touches the puck next within 2 s (real)):
+
+  | | Holds | Held (real, median) | A teammate next | Pass length (median) | An opponent next | Nobody (a whistle) |
+  |---|---|---|---|---|---|---|
+  | Strong coaches | 210 | 1.3 s | 67% | 130 | 19% (178 away) | 15% |
+  | Version 61 | 77 | 0.3 s | 34% | 31 | 4% | 62% |
+  | Version 62 | 79 | 0.3 s | 58% | 72 | 15% (39 away) | 27% |
+
+  Through 61 the goalie held the d-pad toward the nearest teammate (skating) and tapped B once at 20 frames; in the
+  user's games (the helper's recordings) he held 3.1 s (real, median), half his holds ending in a whistle. 62 stands
+  still 10 frames, then taps B every 16 frames toward the teammate farthest from any opponent. People's goalies lose it
+  to an opponent too (19%), but far up the ice; 62's are picked off near the net (39 away): it passes into the
+  forecheck, ignoring the lane. **63**: still for 45 frames unless an opponent comes within 35, then B toward the
+  teammate farthest up the ice whose lane has no opponent within 22 of it (else 62's choice; GOALIE63).
+- **Carrying back out of the attacking zone** (a carry that got within 140 of the goal line, then crossed back over
+  the blue line with the same carrier): strong coaches 8 of 1,008 (1%), and the user notes it is people's mistake, not
+  a play; version 61 42 of 421 (10%); **62** 7 of 421 (2%). The cause: past the deke's gate with no shot on, version
+  32's carry swung back out to (GATE - 20, GATE - 70), 194 out, beyond the blue line. 62 instead (`zone_hold`): with a
+  lane clear of opponents (30 from the line to the net) it drives in and shoots inside 40; else it cycles across the
+  slot 115 out. A trace (`zone exit` in the bot's log, phase, buttons, the nearest opponent) found 2 exits in 3 games,
+  both just after picking up a loose puck while skating out, turning back in as the line was crossed.
+- **Slapshots across the slot**: shooters of Shot Power 4+ on the roster scale (working value / 5) cut across the slot
+  on 15% of zone entries (others 6%), and on 60% of those cuts slap, wound up before the middle (30 before it), aimed at
+  the far post (the post he skates toward; the user: the most effective slot slapshots). 62: 4 cross-crease slapshots in
+  8 games; cross-crease shots 35 (61: 38), EA Specials 8 (4), dekes 37 (20).
+- **Intermissions**: `bot_live.py`'s "in play" was the helper's live flag (screen byte 0, players on the ice), true
+  through the end of a period and the intermission (the clock at 0 for about 6 s (real) with the period unchanged, then
+  the next period with the clock at 0). Now the bot lets every key go while the clock reads 0.
+- `bot_live.py` keeps the bot's own log of each play session (`%USERPROFILE%\NHL94_scoring_map\bot_live_logs`), and
+  `tools/bot_games.py` counts a game as the bot's from 10 minutes before the session's start (the user's BOS-LA game
+  began a minute before bot_live.py was started and was missed).
+
 ### NOSE4Web's c04618e (direct-page forms on the SA-1 builds), played: everything passes (2026-11-12)
 
 nhl94snes_SA1_five / _maxboost and the SA-1 32-team nhl94_2026_five / _maxboost (`snes_2mb_hacks_check.py`, boot states

@@ -6,6 +6,8 @@ $B03E moves) the bot decides the buttons to hold, and the keys bound to RetroArc
 match. Keys go only to RetroArch: whenever another window has the focus, or the game isn't in play (a menu, the pause
 menu, a replay), every key is let go and the bot waits. Ctrl+C stops it and lets every key go.
 
+The bot lets every key go while the clock reads 0 (the end of a period and the intermission menus: 2026-11-12).
+
 Setup (once, in RetroArch): Settings > Input > Port 2 Controls, bind the keypad (NumLock on or off, either works):
 Up keypad 8, Down keypad 5, Left keypad 4, Right keypad 6, and the Genesis buttons A keypad 7, B keypad 9, C keypad 0
 (clear of keypad 1-3, which the user plays A, B, C with on port 1, the d-pad on a gamepad; Port 2's rows show the core's names; if yours show the RetroPad's, Genesis Plus GX's default is Y = A, B = B, A = C).
@@ -128,7 +130,11 @@ def word(emu, a):
 
 def in_play(emu):
     try:
-        return GEN.View(emu).live
+        v = GEN.View(emu)
+        # the clock at 0 is the period's end and the intermission (the user, 2026-11-12: the bot held Down there and
+        # moved the menu): the screen byte reads 0 and the players stay on the ice, so the clock tells it apart; the
+        # next period's clock is back at its length before its opening faceoff
+        return v.live and v.clock != 0
     except ConnectionError:
         raise
 
@@ -179,6 +185,7 @@ def _run(mode, version):
     print(f"attached to RetroArch (pid {emu.pid}); mode {mode}" + (f", bot version {version}" if mode == "play" else "")
           + ". Ctrl+C stops.", flush=True)
     bot, team, last_frame, last_print, waiting = None, None, None, 0.0, None
+    logs = []                                   # every bot's own log this session (2026-11-12): saved at the end
     try:
         while True:
             frame = word(emu, FRAME_COUNTER)
@@ -199,6 +206,8 @@ def _run(mode, version):
                 print("playing", flush=True)
                 waiting = None
             if bot is None or t != team:
+                if bot is not None:
+                    logs.append({"team": team, "log": bot.log})
                 team, bot = t, Bot(t, version)
                 print(f"the bot plays {'Home' if t == 0 else 'Away'} on controller 2", flush=True)
             live.refresh()
@@ -213,6 +222,16 @@ def _run(mode, version):
     finally:
         keys.release()
         winmm.timeEndPeriod(1)
+        if mode == "play" and bot is not None:
+            logs.append({"team": team, "log": bot.log})
+        if mode == "play" and logs:
+            import json
+            from datetime import datetime
+            d = SESSIONS.parent / "bot_live_logs"
+            d.mkdir(parents=True, exist_ok=True)
+            f = d / f"{datetime.now():%Y-%m-%d_%H%M}_v{version}.json"
+            f.write_text(json.dumps(logs), encoding="utf-8")
+            print(f"the bot's log: {f}", flush=True)
 
 
 def test():

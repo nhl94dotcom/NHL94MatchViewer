@@ -72,6 +72,8 @@ with a big one.
 cross-crease (PLAYS60).
 61 is 60 with the cross-crease run as people skate it: set up wide near the dot, then across at a steady distance
 out (CROSS61; the trace of 60's: it drove at the net, crossed slowly and lost the puck in the crease, 24 of 26).
+62 is 61 after the user's games against it (2026-11-12): the goalie passes out at once to an open teammate, no
+retreat out of the attacking zone, and strong shooters cutting across the slot slap at the far post (PLAY62).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -395,6 +397,32 @@ if __import__("os").environ.get("NHL94_CROSS61"):
     CROSS61.update(__import__("json").loads(__import__("os").environ["NHL94_CROSS61"]))
 
 
+# version 62 (2026-11-12, the user's two games against 61: "it usually didn't pass the puck when its goalie had claimed
+# it but would often skate somewhat randomly"; "it did not try any slapshots across the slot, despite having Sandstrom,
+# Robitaille and Roenick"; "it would often skate in deep into my zone and then retreat all the way out to the neutral
+# zone with the puck, even on a breakaway. No human would do that"):
+# - its goalie held the puck 3.1 s (real, median of 22), moving 44; then nobody had it 12 times (a whistle), a teammate
+#   8; people 1.1 s, 23, a teammate 287 of 447: the d-pad was held toward the nearest teammate (skating him) and B
+#   tapped once at 20 frames. Now: still for "goalie_wait" frames, then B every "goalie_every" frames toward the most
+#   open teammate (the farthest from any opponent);
+# - past the gate with no shot on, 32 swung back out to (GATE - 20, GATE - 70): 194 out, beyond the blue line. Now
+#   inside the zone: a lane clear of opponents ("lane" from the line to the net), drive at the net and shoot inside
+#   "close"; else cycle across the slot "cycle_out" out;
+# - strong shooters (class "strong"+, Shot Power 4 on the roster scale) cut across the slot on "strong_cross" of zone
+#   entries, and on "slap_share" of those cuts slap: wound up "slap_at" before the middle, aimed at the far post
+#   (people's slot slapshots skating across, aimed at a post: 26-29% scored); the others on "cross" (the user saw
+#   none in two games at 61's 6%: about 3 plans drawn in 57 entries, some dropped off the wing).
+PLAY62 = {"goalie_wait": 10, "goalie_every": 16, "lane": 30, "close": 40, "cycle_out": 115, "cycle_x": 55,
+          "strong": 4, "strong_cross": 0.15, "slap_share": 0.6, "slap_at": 30, "cross": 0.12}
+# version 63 (2026-11-12): the goalie's outlet as people's (strong coaches, 210 holds: 1.3 s (real), a teammate next
+# 67% at a median 130 away, an opponent 19%; 62: 0.3 s, 58% at 72, an opponent 15% at 39 away, so into the
+# forecheck): still for "goalie_wait" frames (unless an opponent comes within "rush"), then B toward the teammate
+# farthest up the ice whose lane from the goalie has no opponent within "lane" (the nearest-free one if none has).
+GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22}
+if __import__("os").environ.get("NHL94_PLAY62"):
+    PLAY62.update(__import__("json").loads(__import__("os").environ["NHL94_PLAY62"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -412,18 +440,20 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61)
-        self.v56 = version in (56, 57, 58, 59, 60, 61)
-        self.v57 = version in (57, 58, 59, 60, 61)
-        self.v58 = version in (58, 59, 60, 61)
-        self.v59 = version in (59, 60, 61)
-        self.v60 = version in (60, 61)
-        self.v61 = version == 61
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63)
+        self.v58 = version in (58, 59, 60, 61, 62, 63)
+        self.v59 = version in (59, 60, 61, 62, 63)
+        self.v60 = version in (60, 61, 62, 63)
+        self.v61 = version in (61, 62, 63)
+        self.v62 = version in (62, 63)
+        self.v63 = version == 63
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -491,6 +521,8 @@ class Bot:
             # our goalie has it (manual goalies: the pad drives him): pass to the nearest teammate after a moment
             self.t = self.t + 1 if self.phase == "goalie" else 0
             self.phase = "goalie"
+            if self.v62:
+                return self.goalie_pass(P, me)
             mate = min((math.hypot(P[k]["x"] - P[me]["x"], P[k]["y"] - P[me]["y"]), k) for k in self.mine if k != me)[1]
             d = dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"])
             return (["B"] if 20 <= self.t < 23 else []) + pad(d)
@@ -518,8 +550,20 @@ class Bot:
         if owner == me and self.phase == "shot" and self.t < 15:
             self.t += 1                                     # the shot hasn't left the stick yet
             return []
+        if owner != me:
+            self.deep_carry = None
         if owner == me:
             out = self.offence(P, me, s, their_goalie)
+            # trace only (2026-11-12, the user: carrying out of the attacking zone is people's mistake, not a play):
+            # a carry that got within 140 of the goal line and then crosses back over the blue line
+            ay = s * P[me]["y"]
+            if NET_Y - ay < 140:
+                self.deep_carry = me
+            elif getattr(self, "deep_carry", None) == me and ay < 89:
+                self.deep_carry = None
+                near = min(math.hypot(P[k]["x"] - P[me]["x"], P[k]["y"] - P[me]["y"]) for k in self.theirs if k != their_goalie)
+                self.note("zone exit", phase=self.phase, press=out, ax=round(s * P[me]["x"]), vy=round(s * P[me]["vy"], 2),
+                          near=round(near), plan=getattr(self, "plan", None))
         elif self.phase == "pass" and self.t < 70 and owner is None:
             self.t += 1                                     # the pass is on its way
             d = dir_to(0, s)                                # the d-pad toward the net while it travels
@@ -675,6 +719,10 @@ class Bot:
                 self.phase, self.t = "drive", 0
                 self.note("deke start", ax=ax, ay=ay, v=round(math.hypot(m["vx"], m["vy"]), 2), hand=hand)
             else:
+                if self.v62 and ay > 89:
+                    act = self.zone_hold(P, me, s, ax, ay)
+                    if act is not None:
+                        return act
                 tx, ty = GATE
                 if ay > GATE[1] - 15:               # past the gate's line or off it: swing back out to it
                     tx, ty = GATE[0] - 20, GATE[1] - 70
@@ -795,7 +843,10 @@ class Bot:
             return None
         if not getattr(self, "plan_drawn", False):
             r = self.rng.random()
-            self.plan = "ea" if r < PLAYS60["ea"] else "cross" if r < PLAYS60["ea"] + PLAYS60["cross"] else None
+            strong = self.v62 and round(P[me]["shp"] / 5) >= PLAY62["strong"]
+            cross = PLAY62["strong_cross"] if strong else (PLAY62["cross"] if self.v62 else PLAYS60["cross"])
+            self.plan = "ea" if r < PLAYS60["ea"] else "cross" if r < PLAYS60["ea"] + cross else None
+            self.cross_slap = strong and self.plan == "cross" and self.rng.random() < PLAY62["slap_share"]
             self.plan_drawn, self.plan_f, self.cross_side = True, self.frame, None
             if self.plan:
                 self.note("plan", play=self.plan, ax=round(ax), ay=round(ay))
@@ -865,6 +916,13 @@ class Bot:
             self.note("cross too close", ax=round(ax), out=round(out))
             return None
         go = steer(-sx * C["across"], C["in"])
+        if self.v62 and getattr(self, "cross_slap", False) and ax * sx < PLAY62["slap_at"] and out < C["shoot_out"] + 25:
+            # version 62: the strong shooter's slapshot across the slot, wound up before the middle, at the far post
+            self.phase, self.t = "slap", 0
+            self.slap_aim = 2 if P[me]["vx"] * sa > 0 else 6
+            self.note("cross slap", ax=round(ax), out=round(out), vx=round(vx, 2), open=self.goalie_open(P, me))
+            self.plan, self.cross_slap = None, False
+            return ["C"] + pad(self.slap_aim)
         if ax * sx < -C["past"] and out < C["shoot_out"] and (self.goalie_open(P, me) or ax * sx < -C["anyway"]):
             self.phase, self.t = "wrist", 0
             # aimed high at the side he is moving toward (people's cross-crease shots against the computer goalie: 21 of
@@ -874,6 +932,98 @@ class Bot:
             self.note("cross shot", ax=round(ax), out=round(out), vx=round(vx, 2), open=self.goalie_open(P, me))
             self.plan = None
         return go
+
+    def goalie_pass(self, P, me):
+        """Version 62: our goalie has the puck: still for PLAY62 "goalie_wait" frames, then B every "goalie_every"
+        frames (3 held) toward the most open teammate."""
+        wait = PLAY62["goalie_wait"]
+        if self.v63:
+            m = P[me]
+            if self.t == 0:
+                self.goalie_waited = 0
+            close = min((math.hypot(P[o]["x"] - m["x"], P[o]["y"] - m["y"]) for o in self.theirs if P[o]["pos"] not in (0, 0xFF)),
+                        default=999)
+            if self.t < GOALIE63["goalie_wait"] and close >= GOALIE63["rush"]:
+                self.goalie_waited = self.t + 1
+                return []
+            wait = getattr(self, "goalie_waited", 0) if self.t >= getattr(self, "goalie_waited", 0) else 0
+            k = self.lane_mate(P, me)
+            if k is not None and (self.t - wait) % PLAY62["goalie_every"] < 3:
+                if (self.t - wait) % PLAY62["goalie_every"] == 0:
+                    self.note("goalie pass", to=k, lane=True)
+                q = P[k]
+                return ["B"] + pad(dir_to(q["x"] - m["x"], q["y"] - m["y"]))
+        if self.t < wait or (self.t - wait) % PLAY62["goalie_every"] >= 3:
+            return []
+        m, best = P[me], None
+        for k in self.mine:
+            if k == me or P[k]["pos"] in (0, 0xFF):
+                continue
+            q = P[k]
+            room = min((math.hypot(P[o]["x"] - q["x"], P[o]["y"] - q["y"]) for o in self.theirs if P[o]["pos"] not in (0, 0xFF)),
+                       default=999)
+            if best is None or room > best[0]:
+                best = (room, k)
+        if best is None:
+            return []
+        q = P[best[1]]
+        if (self.t - PLAY62["goalie_wait"]) % PLAY62["goalie_every"] == 0:
+            self.note("goalie pass", to=best[1], room=round(best[0]))
+        return ["B"] + pad(dir_to(q["x"] - m["x"], q["y"] - m["y"]))
+
+    def lane_mate(self, P, me):
+        """Version 63: the teammate farthest up the ice (away from our net) with no opponent within GOALIE63 "lane" of
+        the line from the goalie to him; None if every lane is covered."""
+        m, best = P[me], None
+        up = 1 if m["y"] < 0 else -1                        # our goalie's net is at his end: up the ice is away from it
+        for k in self.mine:
+            if k == me or P[k]["pos"] in (0, 0xFF):
+                continue
+            q = P[k]
+            dx, dy = q["x"] - m["x"], q["y"] - m["y"]
+            L2 = dx * dx + dy * dy or 1
+            ok = True
+            for o in self.theirs:
+                a = P[o]
+                if a["pos"] in (0, 0xFF):
+                    continue
+                u = max(0.0, min(1.0, ((a["x"] - m["x"]) * dx + (a["y"] - m["y"]) * dy) / L2))
+                if math.hypot(a["x"] - (m["x"] + u * dx), a["y"] - (m["y"] + u * dy)) < GOALIE63["lane"]:
+                    ok = False
+                    break
+            if ok and (best is None or up * q["y"] > best[0]):
+                best = (up * q["y"], k)
+        return best[1] if best else None
+
+    def zone_hold(self, P, me, s, ax, ay):
+        """Version 62: in the attacking zone with no shot on: a clear lane to the net, drive in and shoot inside
+        PLAY62 "close"; else cycle across the slot. Never back out of the zone."""
+        C = PLAY62
+        out = NET_Y - ay
+        turn = lambda d: pad(d) if s > 0 else pad((d + 4) % 8)
+        dx, dy = -ax, NET_Y - ay
+        L2 = dx * dx + dy * dy or 1
+        clear = True
+        for o in self.theirs:
+            a = P[o]
+            if a["pos"] in (0, 0xFF):
+                continue
+            ox, oy = s * a["x"], s * a["y"]
+            u = max(0.0, min(1.0, ((ox - ax) * dx + (oy - ay) * dy) / L2))
+            if u > 0 and math.hypot(ox - (ax + u * dx), oy - (ay + u * dy)) < C["lane"]:
+                clear = False
+                break
+        if clear:
+            if out > C["close"]:
+                return turn(dir_to(-0.4 * ax, NET_Y - 30 - ay))
+            self.phase, self.t = "wrist", 0
+            self.note("drive shot", ax=round(ax), out=round(out))
+            return []
+        side = getattr(self, "cycle_side", None)
+        if side is None or abs(ax - side * C["cycle_x"]) < 20:
+            side = -(1 if ax >= 0 else -1)
+            self.cycle_side = side
+        return turn(dir_to(side * C["cycle_x"] - ax, (NET_Y - C["cycle_out"]) - ay))
 
     def goalie_open(self, P, me):
         """The goalie PEOPLE57 "open"+ off the line from the shooter to the middle of the net (versions 57+)."""

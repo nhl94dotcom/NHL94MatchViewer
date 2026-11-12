@@ -2,7 +2,7 @@
 user's RetroArch and logs each play session (start, stop, the bot's version) to
 %USERPROFILE%\\NHL94_scoring_map\\bot_live_sessions.jsonl. The helper records those games as it records people's, so
 season.py asks here: a game whose recording started during a session (its name's date and time, YYYY-MM-DD_HHMM,
-from a minute before the session's start to its stop) was played against the bot, on controller 2's side.
+from 10 minutes before the session's start to its stop: a game set up before bot_live.py was started) was played against the bot, on controller 2's side.
 
 bot_session(name) -> the bot's version, or None"""
 import datetime
@@ -48,7 +48,7 @@ def bot_session(name):
     except ValueError:
         return None
     for start, stop, version in spans():
-        if start - datetime.timedelta(minutes=1) <= t <= stop:
+        if start - datetime.timedelta(minutes=10) <= t <= stop:
             return version
     return None
 
