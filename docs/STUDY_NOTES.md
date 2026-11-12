@@ -3778,3 +3778,23 @@ it lost 2 of 8 (3.0 goals to 1.6). Next: fewer, safer passes, and checks back up
   $1464,x) changed 17 times on the chained build (25 on NHL94_fighting.smc: the games part ways), the injury-risk
   counts reaching 2. No fight came up in 45 minutes (retail) or 60 (Classic) of computer games; fights in computer
   games were as rare on the fighting-only build (2 of 3 games with none).
+
+## NOSE4Web's SNES shootout for tied regular-season games, played (2026-11-11, 76802d1; `snes_shootout_check.py`)
+
+NHL94_shootout.smc (after one overtime), NHL94_shootout_after_period_3.smc and the Classic copies; a computer game,
+each case from the same state (period 3, 3 s left), the computer on both sides; the same results on all four:
+- **Tied after period 3 (the after-period-3 builds):** the shootout at once (shootoutmode $1D81 on, the scores reset
+  for its tally); 5 rounds, home 2-1; then gsp 2 for a moment, the score 3-2 (2-2 and the winners' goal), the game
+  over (gsp 4) and the final screen "FINAL Los Angeles 2, Montreal 3" with the usual Exit Game menu.
+- **Tied after one overtime (the after-overtime builds; overtime's clock set to 3 s once it ran):** overtime to 0:00,
+  then the shootout: 6 rounds (into sudden death), the visitors 2-1; the score 2-3, the game over.
+- **Untied (3-2):** the game ends at the horn, no shootout. **Playoffs, tied:** overtime until a goal (2-3 on the
+  retail build, 3-2 on Classic), no shootout.
+- **The stats put back:** from period 3's last second to the game's end, nothing changed in $1636-$1793 (shots,
+  penalties, power plays and their times and shots, goals and shots by period) beyond what an untied game's last
+  seconds change (a faceoff won, the puck touches, the nearest-player words, energies); the teams the same. The
+  winners' goal is in the score only: not in goals by period, a player's goals or the scoring summary.
+- **The shootout opens on its menu** ("Resume Shootout", sflags $0400) and waits for pad 1 (sfpj); one press of B
+  (held 8 frames: shorter presses were lost) starts it, and between shooters the menu comes and goes by itself. In an
+  earlier run, B pressed again every 3 s whenever that menu was up sent the game back to Game Setup in the second
+  round, the shootout's result lost; one press never did. The original game's own Shootout mode wasn't tried.
