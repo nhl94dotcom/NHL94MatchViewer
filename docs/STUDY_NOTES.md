@@ -4410,3 +4410,19 @@ his reach; people shoot while he catches up.
   (`scoring_moves.py`, 32 games): 1.22 a game (people 0.86), 13% scored, xG 0.187 a shot (59's shots that happened to
   cross the middle: 0.53 a game, 12%, 0.174; people against the computer goalie 34%, 0.282). **Version 61 is the
   default**: equal on results, the move strong coaches use about once a game in people's shape, aim and wind-up.
+
+### NOSE4Web's c04618e (direct-page forms on the SA-1 builds), played: everything passes (2026-11-12)
+
+nhl94snes_SA1_five / _maxboost and the SA-1 32-team nhl94_2026_five / _maxboost (`snes_2mb_hacks_check.py`, boot states
+made again from the new ROMs):
+- **Extra attacker:** the forward picked at LD swaps with the old LD (SA-1 [18, 17, 7, 3, 12, 4] -> [4, 17, 7, 3, 12,
+  18]; 32-team [18, 19, 5, 3, 4, 6] -> [6, 19, 5, 3, 4, 18]), and with the goalie pulled the old LD comes on as the extra
+  attacker (position 6).
+- **Any position:** every row of every line (Best Line, Scoring 1, Pen. Kill 1 and 2) lists the 22 skaters; no pick
+  leaves a player twice or drops one (both builds).
+- **L+R:** 12 of 12 at every hold from 2 to 120 frames, a second press brings him back, nothing in a stoppage, nothing
+  after L+R in a whistle or a pause, pad 1 only with both pads on the home team (both builds).
+- **Max boost:** 88 of 88 rating cells (SA-1) and 77 of 77 (32-team) read 100 exactly when the player's hot / cold
+  value for the rating is negative. (The 32-team build's pick list reads 3 characters high with the SA-1 offset: its
+  font sits 3 tiles further on; shifted back for the check.)
+- Injury counts (start at 0, halved at intermissions) and the boot clearing were already passing on both.
