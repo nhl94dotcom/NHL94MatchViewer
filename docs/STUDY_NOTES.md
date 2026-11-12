@@ -4157,3 +4157,31 @@ Shootout mode from power-on (Play Mode 4), the computer on both sides, B once at
 So **the 2 MB builds' computer-only shootouts fail without any NOSE4Web code** (the LoROM build's own Shootout mode
 crashed the same way). Computer-only shootouts on these builds say nothing about NOSE4Web's hooks, and with a person
 on a team they play.
+
+### The SNES scouting box's row width, played (2026-11-12, for NOSE4Web's editor: it wraps at 21)
+
+A scratch copy of NHL94.smc, the team places emptied and the greeting replaced by "abcdefghijklmnopqrs X
+ABCDEFGHIJKLMNOPQRST abcdefghijklmnopqrstu Z" (`scouting_text_check.py`, the box read from column 2 to its right edge):
+- the 19-letter word, then "X" on the **next** row: ScoutTypeWord starts a new row once a word would end past column 20
+  (the 21st cell), so two words never fill more than 20 cells;
+- the 20-letter word on a row of its own, filling columns 2-21: **20 letters fit**;
+- the 21-letter word printed whole on one row, its last letter in column 22, **on top of the box's right edge**. The
+  scroll (ScrollDisplayUp: $28 bytes, 20 cells a row) moves columns 2-21 only, so that letter stays where it was as
+  the text scrolls up, a stray "u" on the frame.
+So the editor's wrap and its longest word should be **20**, not 21. The rows of at most 19 seen before were the
+text's own words, not the limit.
+
+### A "-" in a SNES banner name, played (2026-11-12, for NOSE4Web ff0ff52: the commissioner's jumbled matchup screen)
+
+A scratch copy of retail NHL94.smc with Montreal's TeamPlaceNames entry "Montreal" made "Mon-real" (file $E16DD;
+screenshots of both ROMs on the same presses, `runs/banner_hyphen`). PrintTeamSprites sends a character outside A-Z,
+0-9, space, "." and "@" through `and #$DF / sbc #$41`: a negative letter index, so DrawSprite draws another sprite
+frame in its place, at a width from before LetterWidths. In the game:
+- **Game Setup** and **Player Select**: Montreal's banner reads "MON REAL" with a gap, and **a whole skater sprite**
+  (a falling player in Montreal's colours) is drawn over the banner and the logo box above it;
+- **the matchup screen**: the same skater over Montreal's "Overall 73", at the top right of the screen: the jumble
+  the commissioner saw;
+- **the playoff bracket**: "MON:REAL", with dots and a small orange sprite piece in the gap;
+- the game then plays normally (a faceoff and play, 1-0 after a few minutes).
+So one hyphen in a banner name explains it, as NOSE4Web read from the code; an apostrophe or any other character the
+routine doesn't know would go the same way (a different stray frame for each).

@@ -61,6 +61,8 @@ the puck from farther and more often (DEF52; check_profile.py): fewer checks (16
 53 is 51 with people's pokes: one B press per approach at a slow carrier coming at it (DEF53; knockdown_approach.py).
 54 is 53 shooting from where people do: the slapshot only within PEOPLE54 "slap_out" of the goal line, "slap" of
 the time (51 slapped from 89-174 out, 35%: 4.9 shots a game from 80-130 out, none scored; people 2.9).
+55 is 54 slapping by the shooter's Shot Power, as people do (PEOPLE55): seldom with a weak shot, from the point
+with a big one.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -286,6 +288,22 @@ if __import__("os").environ.get("NHL94_PEOPLE54"):
     PEOPLE54.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE54"]))
 
 
+# version 55 (2026-11-12, the user: people do slap with a weak shooter now and then, but seldom; people's shots by the
+# shooter's roster Shot Power, 64 games: 2: 1 slapshot in 41 shots, 3: 20%, 4: 25% (19-35% scored against people in
+# goal), 5: 51%, from farther out (median 109 against 76-85) and 5% scored): the hold's slapshot chance PEOPLE54 "slap"
+# times "factor" by the shooter's class (his working Shot Power, record +$6C, about 5 x the roster rating with hot /
+# cold: class = round(working / 5)), and within "far_out" of the goal line for class "far_from" and up; env
+# NHL94_PEOPLE55 as JSON
+# "slap": its own base chance in place of PEOPLE54's (people's shooters of Shot Power 3-4 slap a fifth to a quarter of
+# their shots, 55 at 54's 0.2 only 3-6%; their slapshots go in against people in goal, not against the computer's)
+# "cap": no shooter's chance above it (the user: a top player doesn't slap every time with a strong shooter; at "slap"
+# 0.9 class 5 came to 1.0, a slapshot at every hold that ran out within reach)
+PEOPLE55 = {"factor": {"0": 0.1, "1": 0.1, "2": 0.1, "3": 0.8, "4": 1.0, "5": 2.0, "6": 2.0}, "far_from": 5, "far_out": 150,
+            "slap": 0.9, "cap": 0.5}
+if __import__("os").environ.get("NHL94_PEOPLE55"):
+    PEOPLE55.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE55"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -303,11 +321,12 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54)
-        self.v54 = version == 54
-        if version in (51, 52, 53, 54):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54, 55)
+        self.v54 = version in (54, 55)
+        self.v55 = version == 55
+        if version in (51, 52, 53, 54, 55):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -340,7 +359,7 @@ class Bot:
             r = rec(k)
             P[k] = dict(x=e.sw(r), y=e.sw(r + 0x14), z=e.sw(r + 0x18), vx=e.sw(r + 0x28) / 4096, vy=e.sw(r + 0x2A) / 4096,
                         pos=e.b(r + 0x35), flags=e.b(r + 0x62), face=e.b(r + 0x55) & 7, left=e.b(r + 0x76) & 1,
-                        anim=e.w(r + 0x58))
+                        anim=e.w(r + 0x58), shp=e.b(r + 0x6C))
         own = e.w(PUCKC)
         return P, (own if own < 12 else None)
 
@@ -792,7 +811,13 @@ class Bot:
             self.phase, self.t, self.passer = "pass", 0, me
             self.note("pass start", ax=ax, ay=ay, people=True, relief=True)
             return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
-        if zone == "att" and 90 < ay < 175 and ((264 - ay < PEOPLE54["slap_out"] and self.rng.random() < PEOPLE54["slap"])
+        if self.v55:
+            cls = min(6, round(P[me]["shp"] / 5))
+            out_max = PEOPLE55["far_out"] if cls >= PEOPLE55["far_from"] else PEOPLE54["slap_out"]
+            chance = min(PEOPLE55["cap"], PEOPLE55["slap"] * PEOPLE55["factor"][str(cls)])
+        else:
+            out_max, chance = PEOPLE54["slap_out"], PEOPLE54["slap"]
+        if zone == "att" and 90 < ay < 175 and ((264 - ay < out_max and self.rng.random() < chance)
                                                  if self.v54 else self.rng.random() < PEOPLE40["slap"]):
             self.phase, self.t = "slap", 0
             self.note("slap start", ax=ax, ay=ay, people=True)

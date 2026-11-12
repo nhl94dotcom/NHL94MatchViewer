@@ -4,6 +4,8 @@ pad 1, Home, Montreal; the computer Away, Los Angeles; bot_start.state's league 
 seeds, game n the (n + 1)th), and every frame a sample of genesis.BLOCKS as cvc_record keeps them, a full RAM snapshot
 every 10 s, capture.json; then tools/export_match.py converts it. One process a game; gentle.
 
+NHL94_BOT_TEAMS=1 (2026-11-12): game n starts from bot_start_{n % 16}.state (bot_states.py all: 16 matchups) instead.
+
 python bot_record.py OUT GAMES [FIRST]   -> OUT/captures/bot_genesis_NN, OUT/matches/bot_genesis_NN.js"""
 import gzip
 import json
@@ -28,7 +30,8 @@ def one(n, out):
     folder = out / "captures" / f"bot_genesis_{n:02d}"
     folder.mkdir(parents=True, exist_ok=True)
     e = Emu(bot_run.RETAIL)
-    start = (WORK / "bot_start.state").read_bytes()
+    import os
+    start = (WORK / (f"bot_start_{n % 16:02d}.state" if os.environ.get("NHL94_BOT_TEAMS") else "bot_start.state")).read_bytes()
     ram = memoryview(e.ram)
     state = {"frame": 0, "count": 0}
     with gzip.open(folder / "fast.bin.gz", "wb", compresslevel=3) as fast, \

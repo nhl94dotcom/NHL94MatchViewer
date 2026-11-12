@@ -2,7 +2,10 @@
 the Helper keeps one in roms/ as 9438f5dd_a738ea1c.bin) booted to the opening faceoff with the game's default setup
 (Regular Season, one player on Home, Montreal v Los Angeles, line changes off, goalies Manual Control) and 5-minute
 periods, with the Genesis leagues' penalties: "On, Except Off-sides" (the user, 2026-10-31; before that the default,
-off). Writes bot_start.state. python bot_states.py"""
+off). Writes bot_start.state. python bot_states.py
+`all` (2026-11-12, the user: some variety in the bot's teams): also bot_start_NN.state for NN 0-15, the matchup of
+cvc_record.teams_for(NN) (HomeTeam $C330 / VisTeam $C332 set on the Game Setup screen, as cvc_record does; the bot
+plays Home on pad 1). python bot_states.py all"""
 from emu import Emu
 from paths import WORK
 
@@ -12,7 +15,7 @@ OPT_GOALIE, OPT_PEN, OPT_LINE = 0xD050, 0xD056, 0xD058   # OptGoalie (0 Manual),
 BOT_STATE = WORK / "bot_start.state"
 
 
-def main():
+def main(teams=None):
     e = Emu(RETAIL)
     for _ in range(3):                      # title screens to the game setup
         e.run(150); e.run(4, hold=["START"]); e.run(4)
@@ -25,13 +28,25 @@ def main():
     for _ in range(2):
         e.run(4, hold=["RIGHT"]); e.run(20)
     assert (e.w(OPT_GOALIE), e.w(OPT_PEN), e.w(OPT_LINE)) == (0, 2, 1), (e.w(OPT_GOALIE), e.w(OPT_PEN), e.w(OPT_LINE))
+    if teams is not None:
+        e.setw(0xC330, teams[0])
+        e.setw(0xC332, teams[1])
     for _ in range(3):                      # on to the opening faceoff
         e.run(150); e.run(4, hold=["START"]); e.run(4)
     e.run(300)
     assert e.b(0xFFF7) == 0 and e.w(0xC466) == 0, "not in play"
-    BOT_STATE.write_bytes(e.serialize())
-    print("ok: clock", e.w(0xC468), "teams", e.b(0xC6F7), e.b(0xCA5B))
+    out = BOT_STATE if teams is None else WORK / f"bot_start_{teams[2]:02d}.state"
+    if teams is not None:
+        assert (e.b(0xC6F7), e.b(0xCA5B)) == (teams[0], teams[1]), ("teams", e.b(0xC6F7), e.b(0xCA5B), teams)
+    out.write_bytes(e.serialize())
+    print("ok:", out.name, "clock", e.w(0xC468), "teams", e.b(0xC6F7), e.b(0xCA5B), flush=True)
 
 
 if __name__ == "__main__":
+    import sys
     main()
+    if len(sys.argv) > 1 and sys.argv[1] == "all":
+        from cvc_record import teams_for
+        for n in range(16):
+            h, a = teams_for(n)
+            main((h, a, n))

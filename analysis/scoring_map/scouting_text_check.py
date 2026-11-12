@@ -2,7 +2,7 @@
 A ROM is taken to the matchup screen (gen_announcer_check's / snes_announcer_check's presses) and the text box is read
 from video memory every 6 frames until the text is done: Genesis plane A rows 4-10, columns 9-38 (UpdateScoutingDisplay:
 print at 9,4 plus scoutcolumn / VertLineScrolling, a new row past column 29); SNES BG1 (map at word 0) rows 14-21,
-columns 2-20 (ScoutTypeWord: a new row past column 20). Each cell is decoded through the ROM's own font map (Genesis
+columns 2-22 (ScoutTypeWord: a new row past column 20; read to the box's right edge). Each cell is decoded through the ROM's own font map (Genesis
 SmallFontMap, the word for a character plus smallfontchars $B012; SNES SmallFontMap+6, plus smallfontchars and
 printfontset), so a character whose font word is 0 reads as a space, as it shows. The rows are followed through the box's
 scrolling (a row that leaves the top is kept), giving the whole text as typed, row by row. Then:
@@ -65,7 +65,7 @@ class Genesis:
 
 
 class Snes:
-    rows, cols, width = range(14, 22), range(2, 21), 19
+    rows, cols, width = range(14, 22), range(2, 23), 20     # text in columns 2-21 (20 letters); 22 is the box's right edge
     box_px = (8, 104, 184, 192)
     stands = re.compile(r"%[0-9a-zA-Z]")
     shown = [29, 28, 30, 31, 32, 33]
