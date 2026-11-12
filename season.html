@@ -1248,9 +1248,9 @@ function viewGames(list, team) {
   return '<h2>Games</h2>' + table('games', rows, [
     { key: 'in', label: 'Count', title: 'Count this game in the stats (untick to leave it out)', sortable: false, show: r => `<input type="checkbox" data-game="${esc(r.name)}"${r.off ? '' : ' checked'} aria-label="Count this game">` },
     { key: 'date', label: 'When', left: true, show: r => esc((r.date || '').replace('T', ' ')) },
-    { key: 'home', label: 'Home', left: true, value: r => r.names[0], show: r => esc(r.names[0]) + (r.humans[0] ? '' : '<span class="tag">CPU</span>') + (r.abbr[0] === myTeam() ? '<span class="tag you">you</span>' : '') },
+    { key: 'home', label: 'Home', left: true, value: r => r.names[0], show: r => esc(r.names[0]) + (r.bot && r.bot.side === 0 ? '<span class="tag" title="the scripted bot, version ' + r.bot.version + '">Bot</span>' : r.humans[0] ? '' : '<span class="tag">CPU</span>') + (r.abbr[0] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'score', label: 'Score', value: r => r.score[0] - r.score[1], show: r => `<b>${r.score[0]}–${r.score[1]}</b>${r.overtime ? ' <small>OT</small>' : ''}` },
-    { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.abbr[1] === myTeam() ? '<span class="tag you">you</span>' : '') },
+    { key: 'away', label: 'Away', left: true, value: r => r.names[1], show: r => esc(r.names[1]) + (r.bot && r.bot.side === 1 ? '<span class="tag" title="the scripted bot, version ' + r.bot.version + '">Bot</span>' : r.humans[1] ? '' : '<span class="tag">CPU</span>') + (r.abbr[1] === myTeam() ? '<span class="tag you">you</span>' : '') },
     { key: 'whole', label: '', sortable: false, show: r => (r.finished && r.fromStart ? '' : '<small>part of a game</small>') },
     { key: 'watch', label: '', sortable: false, show: r => `<a href="viewer.html?match=${encodeURIComponent(r.name)}">Watch</a>` },
   ], 'date') + `<p class="note">Untick a game to leave it out of every table${currentSeason() ? (canSave ? ' (saved with the season)' : ' (open this page from the helper to save it)') : ' (remembered in this browser)'}.
