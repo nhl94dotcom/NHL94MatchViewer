@@ -67,7 +67,7 @@ PUCK = 14
 PUCKC = 0xB7AA
 NET_Y = 264
 DIRS = ["UP", ["UP", "RIGHT"], "RIGHT", ["DOWN", "RIGHT"], "DOWN", ["DOWN", "LEFT"], "LEFT", ["UP", "LEFT"]]
-ARRIVE = 14            # version 5: the one-timer's C this many frames before the pass arrives
+ARRIVE = int(__import__("os").environ.get("NHL94_ARRIVE") or 14)   # version 5: the one-timer's C this many frames before the pass arrives
 PRESSURE = 24          # units (3 to a foot)
 POKE = 26
 DEKE = {"L": dict(D=60, lag=10), "R": dict(D=60, lag=13)}
@@ -185,11 +185,15 @@ DEF46 = {"cb": 0.35}
 # receiver open by "open" with the lane clear by "lane" (open_mate's other limits as 41's); CB on "cb" of the bursts
 PEOPLE47 = {"every": 6, "offer": 0.35, "open": 35, "lane": 20}
 DEF47 = {"cb": 0.2}
+if __import__("os").environ.get("NHL94_DEF47"):
+    DEF47.update(__import__("json").loads(__import__("os").environ["NHL94_DEF47"]))
 # version 48: 47 with 32's slot pass back (it made the one-timers: 41 4.8 tries a game) and open_mate on people's
 # one-timer spots: the receiver "out" from the goal line and within "mid" of the middle, the pass "across" and under
 # "len", the receiver open by "open", the lane clear by "lane"
 # version 50: 49 with the goalie drawn "drawn"+ toward the passer's side before the pass across, offered "offer"
 PEOPLE50 = {"drawn": 4, "offer": 0.2}
+if __import__("os").environ.get("NHL94_PEOPLE50"):
+    PEOPLE50.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE50"]))
 PEOPLE48 = {"out": (30, 140), "mid": 60, "across": (30, 130), "len": 170, "open": 15, "lane": 5}
 if __import__("os").environ.get("NHL94_PEOPLE48"):
     PEOPLE48.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE48"]))
