@@ -63,6 +63,9 @@ the puck from farther and more often (DEF52; check_profile.py): fewer checks (16
 the time (51 slapped from 89-174 out, 35%: 4.9 shots a game from 80-130 out, none scored; people 2.9).
 55 is 54 slapping by the shooter's Shot Power, as people do (PEOPLE55): seldom with a weak shot, from the point
 with a big one.
+56 is 55 slapping where people do (40-110 out, the slot; 150 for big shooters), also in place of 32's wrist shot
+(PEOPLE56; scoring_moves.py: people slap 45 of 83 slot shots, the bot 12 of 88, none of its 76 slot wrist shots in).
+57 is 56 waiting for the goalie to be off the shooting line before 32's shot from the slot or in close (PEOPLE57).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -304,6 +307,28 @@ if __import__("os").environ.get("NHL94_PEOPLE55"):
     PEOPLE55.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE55"]))
 
 
+# version 56 (2026-11-12, scoring_moves.py: shots 60-110 out, coaches rated 80%+ 3.0 a game, 19% scored, xG 0.194, 45 of
+# 83 slapshots, speed median 18,050; version 55 5.5 a game, none scored, xG 0.026, 76 of 88 wrist shots, speed 9,800.
+# People's wrist shots are as slow (C held a median 5 frames, 10,500): the difference is the slapshot. 55 could slap
+# only 90-175 up the ice (89-174 out) and 32's wrist shot never): the slapshot window from "slap_in" out to PEOPLE54's
+# "slap_out" (PEOPLE55's "far_out" for big shooters), in people_carry and in place of 32's wrist shot, with 55's chance
+# by the shooter's class; env NHL94_PEOPLE56 as JSON
+PEOPLE56 = {"slap_in": 40}
+if __import__("os").environ.get("NHL94_PEOPLE56"):
+    PEOPLE56.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE56"]))
+
+
+# version 57 (2026-11-12, shots within 110 of the goal line by how far the goalie stood off the line from the puck to
+# the net, the converter's gOff: people (489 shots) 0-2: 1% scored, 2-5: 8%, 5-10: 21%, 10-20: 37%, 20+: 47%; the
+# bot's 55 and 56 (428) 1%, 0%, 14%, 35%, 40%: the same once he is off the line, but 56% of the bot's shots came with
+# him within 5 of it, people's 47%): 32's wrist shot (or 56's slapshot in its place) only with the goalie "open"+ off
+# the line from the shooter to the middle of the net, else each frame with chance "anyway" (people take some anyway;
+# not rote); env NHL94_PEOPLE57 as JSON
+PEOPLE57 = {"open": 5, "anyway": 0.03}
+if __import__("os").environ.get("NHL94_PEOPLE57"):
+    PEOPLE57.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE57"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -321,12 +346,14 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55)
-        self.v54 = version in (54, 55)
-        self.v55 = version == 55
-        if version in (51, 52, 53, 54, 55):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54, 55, 56, 57)
+        self.v54 = version in (54, 55, 56, 57)
+        self.v55 = version in (55, 56, 57)
+        self.v56 = version in (56, 57)
+        self.v57 = version == 57
+        if version in (51, 52, 53, 54, 55, 56, 57):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -546,8 +573,8 @@ class Bot:
                 # a pad stack sliding to the middle (GENESIS_GUIDE 6: 37% when he dropped), released at his own side
                 self.phase, self.t = "close", 0
                 self.note("close start", ax=ax, ay=ay)
-            elif ((WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y)                     and getattr(self, "shoot_ok", True):
-                self.phase, self.t = "wrist", 0     # in close off the deke's line: a wrist shot away from the goalie
+            elif ((WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y)                     and self.may_shoot(P, me, g, s):
+                self.phase, self.t = self.wrist_or_slap(P, me, ay), 0     # in close off the deke's line: a wrist shot away from the goalie
                 self.note("wrist start", ax=ax, ay=ay)
             elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90)                     and self.version < 16:          # version 16: no slapshot under pressure (about none went in)
                 self.phase, self.t = "slap", 0
@@ -611,7 +638,7 @@ class Bot:
                     self.mate, self.phase, self.t, self.passer = mate, "pass", 0, me
                     self.note("pass start", ax=ax, ay=ay, bail=True)
                 else:
-                    self.phase, self.t = "wrist", 0
+                    self.phase, self.t = self.wrist_or_slap(P, me, ay), 0
                     self.note("wrist start", ax=ax, ay=ay, bail=True)
                 return pad(aview(0))
             if dg <= deke[hand]["D"]:
@@ -677,6 +704,32 @@ class Bot:
             self.note("shot", kind="slap")
             return pad(aview(4))
         return []
+
+    def may_shoot(self, P, me, g, s):
+        """The shot's go-ahead (32's shoot_ok); version 57: also the goalie PEOPLE57 "open"+ off the line from the shooter
+        to the middle of the net, or now and then anyway."""
+        ok = getattr(self, "shoot_ok", True)
+        if not ok or not self.v57:
+            return ok
+        m, q = P[me], P[g]
+        nx, ny = 0.0, s * NET_Y
+        L = math.hypot(nx - m["x"], ny - m["y"]) or 1
+        off = abs((q["x"] - m["x"]) * (ny - m["y"]) - (q["y"] - m["y"]) * (nx - m["x"])) / L
+        return off >= PEOPLE57["open"] or self.rng.random() < PEOPLE57["anyway"]
+
+    def wrist_or_slap(self, P, me, ay):
+        """Version 56: 32's wrist shot becomes the slapshot by the shooter's class (PEOPLE55's chance, never above its
+        cap) within PEOPLE56 "slap_in" to the class's reach out from the goal line; else (and before 56) the wrist shot."""
+        if not self.v56:
+            return "wrist"
+        out = 264 - ay
+        cls = min(6, round(P[me]["shp"] / 5))
+        out_max = PEOPLE55["far_out"] if cls >= PEOPLE55["far_from"] else PEOPLE54["slap_out"]
+        if PEOPLE56["slap_in"] < out < out_max and \
+                self.rng.random() < min(PEOPLE55["cap"], PEOPLE55["slap"] * PEOPLE55["factor"][str(cls)]):
+            self.note("slap start", ay=ay, cls=cls, instead="wrist")
+            return "slap"
+        return "wrist"
 
     def ea_dir(self, d, hand):
         """A direction in the right-hander's EA view (attacker's view, from his left) for this skater's hand."""
@@ -817,7 +870,8 @@ class Bot:
             chance = min(PEOPLE55["cap"], PEOPLE55["slap"] * PEOPLE55["factor"][str(cls)])
         else:
             out_max, chance = PEOPLE54["slap_out"], PEOPLE54["slap"]
-        if zone == "att" and 90 < ay < 175 and ((264 - ay < out_max and self.rng.random() < chance)
+        lo_out = PEOPLE56["slap_in"] if self.v56 else 89      # version 56: from the slot as well (55: 90-175 up)
+        if zone == "att" and 264 - lo_out > ay > 90 and ((264 - ay < out_max and self.rng.random() < chance)
                                                  if self.v54 else self.rng.random() < PEOPLE40["slap"]):
             self.phase, self.t = "slap", 0
             self.note("slap start", ax=ax, ay=ay, people=True)

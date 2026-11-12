@@ -4204,3 +4204,38 @@ routine doesn't know would go the same way (a different stray frame for each).
   and penalty differences are within the noise of 16 games (the same version's penalty minutes moved 1-2 a game
   between runs). Montreal, the old fixed team, had flattered the bot: version 54 scored 3.6 a game with it.
 - **Version 55 is now the default** (bot_run.py, bot_live.py), for the user's games against it.
+
+### The close-in moves, and bot versions 56-57: shooting when the goalie is off the line (2026-11-12; `analysis/scoring_moves.py`)
+
+The user: does the bot try EA Specials, cross-crease goals, dekes? `scoring_moves.py` sorts every ordinary shot by the
+shooter's movement in the second before it: an EA Special attempt (the converter's `flip`); cross-crease (within 90 of
+the goal line, crossing the middle, moving across faster than 1 a frame); a deke (within 80, his facing turned two or
+more steps in the 0.6 s before a wrist shot); else by distance. Coaches rated 80%+ (28 side-games) against version 55
+(16 games on the 16 matchups), a game, share scored, xG a shot:
+
+| Move | Strong coaches | Bot 55 | Bot 57 |
+|---|---|---|---|
+| EA Special attempt | 0.79, 0% (its goal is the follow-up shot), 0.057 | 0.25 | 0.06 |
+| cross-crease | 0.86, 33%, 0.379 | 0.69, 9%, 0.116 | 0.19, 0%, 0.057 |
+| deke | 3.14, 23%, 0.302 | 5.38, 14%, 0.260 | 3.88, 26%, 0.353 |
+| in close (within 60) | 2.61, 21%, 0.265 | 2.94, 21%, 0.297 | 3.25, 19%, 0.233 |
+| slot (60-110) | 2.96, 19%, 0.194 | 5.50, 0%, 0.026 | 5.75, 1%, 0.030 |
+| farther | 2.21, 8%, 0.059 | 2.62, 0%, 0.016 | 2.50, 0%, 0.014 |
+
+- **The slot.** People's slot shots came at speed 18,050 (median), 45 of 83 slapshots; the bot's at 9,800, 76 of 88
+  wrist shots, 65 of them aimed at one side. The wind-up is not it: people hold C a median 5 frames for a wrist shot
+  (quartiles 4-7), and their wrist shots are as slow (10,500). The goalie mostly the computer for people too (72 of 83).
+- **Version 56** = 55 with the slapshot window where people use it (40-110 out, 150 for big shooters), and 32's wrist
+  shot turned into the slapshot by the same chances: 16 games, goals 2.5, the slot still 0% (xG 0.040). Slapshots don't
+  beat the computer goalie from there either.
+- **The goalie off the line** (shots within 110, the converter's gOff): people (all recorded, 489 shots) 0-2: 1%
+  scored, 2-5: 8%, 5-10: 21%, 10-20: 37%, 20+: 47%; bot 55 + 56 (428): 1%, 0%, 14%, 35%, 40%. The same once he is
+  off the line, but 56% of the bot's shots came with him within 5 of it, people's 47%. People shoot when he has been
+  pulled across.
+- **Version 57** = 56 with 32's wrist shot (or 56's slapshot in its place) only when the goalie is 5+ off the line from
+  the shooter to the middle of the net, else each frame with chance 0.03 (people take some anyway; not rote): 16 games
+  on the 16 matchups, **goals 3.7 a game** (55: 2.4, 56: 2.5; strong coaches 4.2), one-timer goals 1.8 (0.9, 0.5;
+  league top band 1.8), its dekes 3.88 a game at 26% scored (people's 3.14 at 23%), penalty minutes 3.4. The slot is
+  still poor: those shots come from another path (people_carry's hold running out) and are the next thing to look at.
+  The EA Special and the cross-crease are now rare (0.06 and 0.19 a game, people 0.79 and 0.86): to bring back on purpose.
+- **Version 57 is now the default** (bot_run.py, bot_live.py).
