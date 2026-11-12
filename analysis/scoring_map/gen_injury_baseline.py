@@ -7,6 +7,8 @@ on screens that wait). Every 4 frames: a player newly out injured (team struct +
 $FFFC for the game), a player newly flailing (held or hooked: animation word +$58 = $0CF4). At the end: knockdowns
 (the game's team checks, +$10, which FallDown counts), the lowest energy any skater reached, the mean energy of the
 players on the ice (each second) and how many times a player went from the ice to the bench (shift ends).
+Since 2026-11-12 also energy_track.py's per-skater figures (below a third, empty, the longest bench stint, the
+longest on the ice below a third), each game second of running clock.
 
 python gen_injury_baseline.py ROM GAMES OUT.jsonl   (resumes: games already in OUT are skipped)"""
 import json
@@ -15,6 +17,7 @@ from pathlib import Path
 
 import gen_ot_check as G
 import lowload
+from energy_track import EnergyTrack
 from emu import Emu
 
 TEAMS = (0xC6CE, 0xCA32)
@@ -37,6 +40,7 @@ def game(rom, n, out):
     low = 0x1000
     ice_sum, ice_n, changes, was_on = 0, 0, 0, set()
     frame, still, last = 0, 0, None
+    track, tick_clock = EnergyTrack(), None
     while e.w(GSP) < 3 and frame < 60 * 60 * 40:
         if frame % 60 == 0:
             e.setw(CONT1, 0)
@@ -52,6 +56,9 @@ def game(rom, n, out):
         frame += 4
         if e.b(SCREEN) != 0:
             continue
+        c_now = e.w(CLOCK)
+        tick = tick_clock is not None and c_now != tick_clock and e.w(GSP) < 3     # a game second of running clock
+        tick_clock = c_now
         for t, base in enumerate(TEAMS):
             for s in range(26):
                 st = e.w(base + TMPDST + 2 * s)
@@ -66,6 +73,8 @@ def game(rom, n, out):
                     if frame % 60 == 0:
                         ice_sum += en
                         ice_n += 1
+                if tick and st in (0xFFFF, 0xFFFE):
+                    track.second((t, s), st == 0xFFFF, st == 0xFFFE, e.w(base + TMPDE + 2 * s))
                 if frame % 60 == 0:
                     if st == 0xFFFE and (t, s) in was_on:
                         changes += 1
@@ -80,7 +89,7 @@ def game(rom, n, out):
     return {"game": n, "frames": frame, "periods": e.w(GSP), "injuries": injuries, "holds": holds,
             "knockdowns": [e.w(t + CHECKS) for t in TEAMS], "lowest_energy": low,
             "mean_ice_energy": round(ice_sum / ice_n) if ice_n else None, "shift_ends": changes,
-            "score": [e.w(0xC6DA), e.w(0xCA3E)]}
+            "score": [e.w(0xC6DA), e.w(0xCA3E)], **track.result()}
 
 
 def main():

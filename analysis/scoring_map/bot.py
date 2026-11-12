@@ -418,7 +418,8 @@ PLAY62 = {"goalie_wait": 10, "goalie_every": 16, "lane": 30, "close": 40, "cycle
 # 67% at a median 130 away, an opponent 19%; 62: 0.3 s, 58% at 72, an opponent 15% at 39 away, so into the
 # forecheck): still for "goalie_wait" frames (unless an opponent comes within "rush"), then B toward the teammate
 # farthest up the ice whose lane from the goalie has no opponent within "lane" (the nearest-free one if none has).
-GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22}
+GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22, "drive_anyway": 0.25}
+# and its drive at the net (zone_hold) shoots only with the goalie off his line, or on "drive_anyway" of drives
 if __import__("os").environ.get("NHL94_PLAY62"):
     PLAY62.update(__import__("json").loads(__import__("os").environ["NHL94_PLAY62"]))
 
@@ -1016,6 +1017,18 @@ class Bot:
         if clear:
             if out > C["close"]:
                 return turn(dir_to(-0.4 * ax, NET_Y - 30 - ay))
+            if self.v63 and not self.goalie_open(P, me) and self.rng.random() >= GOALIE63["drive_anyway"]:
+                # version 63: 62 shot from every clear drive (20.8 shots on goal a game, people 11.4, no more goals):
+                # the goalie set, a pass across if one is on, else on round the cycle
+                g = self.att_g
+                mate = self.open_mate(P, me, s, g)
+                if mate is not None:
+                    self.mate, self.relief = mate, False
+                    self.phase, self.t, self.passer = "pass", 0, me
+                    self.note("pass start", ax=round(ax), ay=round(ay), drive=True)
+                    return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
+                clear = False
+        if clear:
             self.phase, self.t = "wrist", 0
             self.note("drive shot", ax=round(ax), out=round(out))
             return []

@@ -26,7 +26,8 @@ REC = 0xB04A
 def patched(rom, out, game):
     data = bytearray(Path(rom).read_bytes())
     assert data[0x14432:0x1443A].hex() == "b06a00326e00005c" and data[0x14506:0x1450C].hex() == "4a4066000012"
-    for at in (0x1440E, 0x1441A, 0x14436):                            # the fall-back, facing and random tests
+    keep_roll = bool(__import__("os").environ.get("NHL94_INJ_KEEP_ROLL"))   # (2026-11-12: the random roll kept, so
+    for at in ((0x1440E, 0x1441A) if keep_roll else (0x1440E, 0x1441A, 0x14436)):   # some falls stay plain: fights)
         data[at:at + 4] = bytes.fromhex("4e714e71")
     if game:
         data[0x14506:0x1450C] = bytes.fromhex("600000324e71")          # bra.w .injurygame ($1453A)
@@ -34,7 +35,7 @@ def patched(rom, out, game):
         data[0x14508:0x1450C] = bytes.fromhex("4e714e71")              # bne.w .not0 gone: always the period path
     assert data[0x300:0x306].hex() in ("4eb9000ffac0", "4e714e714e71")
     data[0x300:0x306] = bytes.fromhex("4e714e714e71")                  # the boot's ROM check ($FFAC0), as NOSE4Web's builds
-    p = out / f"{Path(rom).stem}_inj_{'game' if game else 'period'}.bin"
+    p = out / f"{Path(rom).stem}_inj_{'game' if game else 'period'}{'_roll' if keep_roll else ''}.bin"
     p.write_bytes(data)
     return str(p)
 

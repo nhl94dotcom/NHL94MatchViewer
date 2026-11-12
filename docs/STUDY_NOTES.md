@@ -2566,6 +2566,11 @@ Both 3 MB, the menu starting at On. Against their originals (nhl94.bin, CDL_Seas
   copy, fighting ratings at 14): retail 2 fights (3 fighting majors) and 5 injuries, CDL 3 fights (6 majors) and 2
   injuries in the same games; the blood frames (369-372) shown on the injured players (4,898 and 2,576 samples), the
   injury box and the fight banners and dropped gloves as they should be, play going on.
+  **The rebuilds (2026-11-12 14:33, after be39649):** blood the same (nhl94 4 injuries, CDL 2, frames 369-372 only in
+  SPAinjuryfall); fights with Fighting On and ratings at 14 (`gen_fight_setting_check.py ROM 1 OUT --hot`): nhl94 2 and
+  3, CDL 3 and 4 in two games each. Both start at Fighting On. In `gen_fight_blood_check.py` (injuries forced) no fight
+  came on either rebuild, even with `--on` (the setting and penalties held on: CDL's extra menu line had left the
+  harness's presses setting Penalties Off) and with the injury roll kept (NHL94_INJ_KEEP_ROLL=1): not yet explained.
 - **Overtime until a goal** (`gen_ot_goal_check.py ROM`; nhl94_overtime_until_goal.bin, e86d31a: PeriodOver's `move.w
   #4,(gsp).w` at $1725C made NOPs): **not enough on its own.** At the end of a period hockey94's `.eop` ends the game
   itself: `cmpi.w #3,(gsp).w` / `bne` / `tst.w (OptPlayMode).w` / **`beq.s .eog` at $7C4C** (67 C8): in the regular
@@ -4410,6 +4415,33 @@ his reach; people shoot while he catches up.
   (`scoring_moves.py`, 32 games): 1.22 a game (people 0.86), 13% scored, xG 0.187 a shot (59's shots that happened to
   cross the middle: 0.53 a game, 12%, 0.174; people against the computer goalie 34%, 0.282). **Version 61 is the
   default**: equal on results, the move strong coaches use about once a game in people's shape, aim and wind-up.
+
+### NOSE4Web's "energy from hits only" builds, whole games (2026-11-12, 83f3f14)
+
+nhl94_hits_only.bin (SHA-1 02a9199e...; skating free, burst 0, knockdown 1,365, hold 683) and NHL94_hits_only.smc (SHA-1
+e7887ef4...; skating free, free burst, energy takes all of the speed, the same costs), against nhl94.bin and NHL94.smc:
+`gen_injury_baseline.py` / `snes_injury_baseline.py` (the computer against itself, 12 games each, the same seeds,
+5-minute periods, line changes on), with `energy_track.py`'s per-skater figures (full energy 4,096; a third 1,365;
+each game second of running clock). Means a game (original -> hits only; ± standard errors):
+
+| | Genesis | SNES |
+|---|---|---|
+| Shift ends (line changes) | 88.7 -> 92.4 (+0.6 se) | 114.5 -> 116.5 (+0.3 se) |
+| Mean energy on the ice | 3,656 -> 3,672 | 3,731 -> 3,707 |
+| Lowest energy anyone reached | 1,568 -> 0 (11 of 12 games 0) | 1,573 -> 57 (10 of 12 at 0 or 1) |
+| Skaters below a third | 0.6 -> 4.1 | 0.3 -> 3.3 |
+| Skaters at empty (0) | 0 -> 1.4 | 0 -> 1.2 |
+| Longest a skater stayed on the ice below a third (game s) | 7 -> 100 (44-233) | 7 -> 71 (22-128) |
+| Longest bench stint of a skater who had played (game s) | 319 -> 337 | 463 -> 579 (+1.7 se) |
+| Knockdowns | 22.4 -> 30.2 | 29.2 -> 39.4 |
+| Held / hooked | 24.6 -> 21.9 | 14.2 -> 15.8 |
+| Injuries (12 games) | 0 -> 1 | 5 -> 7 |
+
+So the computer changes lines as often as before and the average skater on the ice is as fresh, but three knockdowns
+empty a skater, and the computer leaves the one or two it has worn down on the ice a long time: every hits-only game had
+a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128 on the SNES, where that energy is his
+speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
+why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
 ### The user's two games against version 61, and versions 62 and 63 (2026-11-12)
 
