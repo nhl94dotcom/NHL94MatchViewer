@@ -4185,3 +4185,22 @@ frame in its place, at a width from before LetterWidths. In the game:
 - the game then plays normally (a faceoff and play, 1-0 after a few minutes).
 So one hyphen in a banner name explains it, as NOSE4Web read from the code; an apostrophe or any other character the
 routine doesn't know would go the same way (a different stray frame for each).
+
+### Bot version 55: slapshots by the shooter's Shot Power, and 16 matchups (2026-11-12)
+
+- **People's slapshots by the shooter's roster Shot Power** (people's Genesis games, ordinary shots by a person's
+  skater): Shot Power 2: 1 slapshot in 41 shots; 3: 20%; 4: 25% (19-35% of them scored, against people in goal); 5: 51%,
+  from farther out (median 109 against 76-85) and 5% scored. Coaches rated 80%+ the same: 0%, 19%, 26%, 50%.
+- **The working Shot Power** (record +$6C, which the bot now reads) is about 5 times the roster rating, moved by hot and
+  cold (roster 2: 7-12, 3: 12-17, 4: 17-22, 5: 24-27, 6: 30), so the bot takes the shooter's class as round(working / 5).
+- **Version 55** = 54 with the hold's slapshot chance "slap" 0.9 times a factor by class (2 and below 0.1, 3 0.8, 4 1.0, 5
+  and up 2.0), never above "cap" 0.5 (the user: a top player doesn't slap every time with a strong shooter), and for
+  class 5 and up from as far as 150 out (PEOPLE55).
+- **The bot's test games now vary the teams** (the user: playing the same team each time would be dull; ratings now
+  matter): `bot_states.py all` saves 16 matchups (cvc_record.teams_for), and `bot_record.py` with NHL94_BOT_TEAMS=1
+  starts game n from matchup n % 16. On them, 16 games each: version 54 2.8 goals, 14.6 shots, penalty minutes 3.8;
+  version 55 2.4, 14.2, 5.5. Version 55's slapshots by class: 2: 3%, 3: 9%, 4: 11%, 5: 21% (54: 0%, 8%, 6%, 0%). That is
+  people's pattern at half their rate. None of either version's slapshots scored against the computer goalie. The goal
+  and penalty differences are within the noise of 16 games (the same version's penalty minutes moved 1-2 a game
+  between runs). Montreal, the old fixed team, had flattered the bot: version 54 scored 3.6 a game with it.
+- **Version 55 is now the default** (bot_run.py, bot_live.py), for the user's games against it.
