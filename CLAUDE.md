@@ -111,7 +111,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - Moment tools: `goal_trace.py <capture> <period> <m:ss>` (any moment frame by frame), `b_button_study.py`; the older
   BOS-NYI series scripts (`matchup_review.py`, `bos_nyi_*.py`, `person_play.py`, `person_defense.py`); shot / one-timer
   / passing / pickup / goalie studies; `bug_frequency.py` (how often NOSE4Web's fixed bugs happen in the recordings);
-  `momentum_study.py` (shooting by shot order in the recorded games).
+  `momentum_study.py` (shooting by shot order in the recorded games); `team_style_compare.py CVC_MATCHES` (a people's team against a computer's team, per 15 minutes: the computer games from `scoring_map/cvc_record.py genesis|snes ROM OUT GAMES [FIRST]`, recorded and converted as people's are).
 - League databases (every league game since 2013, both systems, real players' names, so never in the repo):
   `%USERPROFILE%\NHL94_League_Data\All_Games_GENS.csv`, `All_Games_SNES.csv`. Scripts print or commit aggregates only:
   `league_home_study.py`, `league_momentum.py`, `direction_by_level.py` ...; `coach_rating.py` (a strength per coach;

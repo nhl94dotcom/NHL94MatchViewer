@@ -3614,3 +3614,33 @@ teammates in the same games (`ctrl`, the events' `human` and `gctl`); the button
 - **On the SNES the person's shots are far better than the computer teammates' (0.255 xG a shot against 0.108)** and
   closer (63 against 84); on the Genesis they are about the same. SNES people use one-timers more (29%) and slapshots
   less (8%) than Genesis people (19% / 17%).
+
+## How a people's team plays against a computer's team (2026-11-11, `analysis/team_style_compare.py`; chunk 1)
+
+The user: not the person's skater against his computer teammates (above), but a team people play against a team the
+computer plays, for better simulations and a bot that plays like people. Computer games recorded as the helper records
+people's (`analysis/scoring_map/cvc_record.py`: the retail ROMs, the league's settings, the computer on both sides, a
+matchup and a seed of its own each game, every frame sampled, converted by tools/export_match.py): 8 Genesis and 8
+SNES games, 16 team-games each; all pass tests/check_matches.py but for one faceoff win in four SNES games (the SNES
+recording starts once the clock runs, after the opening faceoff). People: every recorded league game with people on
+both sides (56 Genesis, 48 SNES team-games). Each team-game scaled to 15 minutes of play; ** marks a difference over
+2 standard errors. Per team, people against the computer:
+
+- **Finishing and goaltending dominate the scores:** goals 3.8 / 1.3 (Genesis), 3.3 / 0.7 (SNES); on goal the
+  shooting % 35 / 9 and 33 / 4. Both halves are in it: people shoot from better places (xG a shot attempt 0.22 / 0.14,
+  0.24 / 0.05), and the computer's goalie (on both sides of a computer game) saves far more than a goalie in people's
+  games (people's league goalies are manual on the Genesis; both people's goalies are against people's shooters).
+- **Genesis: people hit, the computer passes.** Body checks 26 / 13 and big hits 3.9 / 0.7 a team; passes 46 / 58;
+  giveaways 12.7 / 18.6, takeaways 11.7 / 7.6. People dump in more (11% / 5% of entries), carry in less (73% / 81%),
+  enter more often (27 / 24) and keep the puck longer in the attacking zone (149 / 126 s); more odd-man rushes
+  (9.8 / 8.2); fewer shots on goal (11.0 / 14.1) from a little closer; one-timers, breakaways, penalties alike.
+- **SNES: the computer shoots from far, people work the puck in close.** Shot attempts 15 / 29, median distance 63 / 91,
+  slapshots 7% / 16%, rebounds 0.3 / 1.9 (its long shots saved and given back); people's shots more often one-timers
+  (29% / 23%) and from sustained pressure (17% / 9%). People carry in (76% / 65%), the computer dumps in (6% / 19%);
+  people keep the puck (404 / 372 s, in the attacking zone 162 / 98 s); 71% of the computer's entries lead to a shot
+  against 47% of people's (it shoots at once). Checks 27 / 21 (big hits alike), giveaways 8 / 11, takeaways 13 / 10.
+- **For the simulations and the bot:** computer-against-computer runs (the ratings chunks, the period and 60 fps
+  studies) are games with fewer hits (Genesis), more passes, and (SNES) far more long shots and dump-ins than league
+  games, and goalies that stop nearly everything; effects that work through hits, close shots or holding the zone are
+  understated there. A bot that plays like people carries the puck in and holds it in the zone, shoots from close,
+  takes one-timers, and (Genesis) checks hard.
