@@ -68,6 +68,8 @@ with a big one.
 57 is 56 waiting for the goalie to be off the shooting line before 32's shot from the slot or in close (PEOPLE57).
 58 is 57 taking the slapshot skating across, aimed at the far post (the user's tip; PEOPLE58).
 59 is 58 winding the slapshot up as long as people do, and starting it only with the goalie off the line (PEOPLE59).
+60 is 59 with two plays drawn now and then on entering the attacking zone: version 8's EA Special, and the
+cross-crease (PLAYS60).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -352,6 +354,17 @@ if __import__("os").environ.get("NHL94_PEOPLE59"):
     PEOPLE59.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE59"]))
 
 
+# version 60 (2026-11-12, scoring_moves.py: coaches rated 80%+ try 0.79 EA Specials and 0.86 cross-crease plays a game,
+# the cross-crease scoring 33% (xG 0.379); version 59 0.06 and 0.19, the latter 0%): on each entry into the attacking
+# zone, once, the plan "ea" with chance "ea" (version 8's ea_carry until it hands back) or "cross" with chance "cross":
+# set up on his side "set_x" across and "set_out" out, then skate hard across the front of the net to "cross_x" on the
+# other side at "cross_out" out; past the middle, the wrist shot (away from the goalie, as 32's) once the goalie is off
+# the line (PEOPLE57) or at the far side anyway; "give_up" frames at most; env NHL94_PLAYS60 as JSON
+PLAYS60 = {"ea": 0.06, "cross": 0.08, "set_x": 45, "set_out": 40, "cross_x": 45, "cross_out": 28, "give_up": 180}
+if __import__("os").environ.get("NHL94_PLAYS60"):
+    PLAYS60.update(__import__("json").loads(__import__("os").environ["NHL94_PLAYS60"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -369,16 +382,17 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59)
-        self.v54 = version in (54, 55, 56, 57, 58, 59)
-        self.v55 = version in (55, 56, 57, 58, 59)
-        self.v56 = version in (56, 57, 58, 59)
-        self.v57 = version in (57, 58, 59)
-        self.v58 = version in (58, 59)
-        self.v59 = version == 59
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60)
+        self.v55 = version in (55, 56, 57, 58, 59, 60)
+        self.v56 = version in (56, 57, 58, 59, 60)
+        self.v57 = version in (57, 58, 59, 60)
+        self.v58 = version in (58, 59, 60)
+        self.v59 = version in (59, 60)
+        self.v60 = version == 60
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -566,6 +580,10 @@ class Bot:
                 ea = self.ea_carry(m, s, ax, ay, hand, near, ahead)
                 if ea is not None:
                     return ea
+            if self.v60:
+                act = self.planned_play(P, me, s, g, m, ax, ay, hand, near, ahead)
+                if act is not None:
+                    return act
             if self.version >= 16 and WRIST16["ay"] < ay < NET_Y and abs(ax) >= WRIST16["mid"]:
                 # version 16: in close but off to the side (the bot's wrist shots from there: 7%): cut in toward the
                 # middle of the slot first (people's wrist-shot goals came from within 30 of the middle)
@@ -735,6 +753,56 @@ class Bot:
             self.note("shot", kind="slap")
             return pad(aview(4))
         return []
+
+    def planned_play(self, P, me, s, g, m, ax, ay, hand, near, ahead):
+        """Version 60: the plan drawn on entering the attacking zone (PLAYS60), its buttons, or None for the usual plays."""
+        if ay < 89:
+            self.plan, self.plan_drawn = None, False
+            return None
+        if not getattr(self, "plan_drawn", False):
+            r = self.rng.random()
+            self.plan = "ea" if r < PLAYS60["ea"] else "cross" if r < PLAYS60["ea"] + PLAYS60["cross"] else None
+            self.plan_drawn, self.plan_f, self.cross_side = True, self.frame, None
+            if self.plan:
+                self.note("plan", play=self.plan, ax=round(ax), ay=round(ay))
+        if self.plan == "ea":
+            act = self.ea_carry(m, s, ax, ay, hand, near, ahead)
+            if act is None:
+                self.plan = None
+            return act
+        if self.plan == "cross":
+            act = self.cross_carry(P, me, ax, ay)
+            if act is None:
+                self.plan = None
+            return act
+        return None
+
+    def cross_carry(self, P, me, ax, ay):
+        """Version 60's cross-crease (GENESIS_SHOOTING 5.7: within 30 of the goal line at full speed across, the goalie
+        trails the puck's line by more than his reach): set up on his side, then across the front of the net; the wrist
+        shot past the middle once the goalie is off the line, or at the far side anyway. None when it is over."""
+        if self.frame - self.plan_f > PLAYS60["give_up"]:
+            return None
+        out = NET_Y - ay
+        if self.cross_side is None:
+            sx = 1 if ax >= 0 else -1
+            tx, ty = sx * PLAYS60["set_x"], NET_Y - PLAYS60["set_out"]
+            if abs(ax - tx) < 18 and abs(ay - ty) < 25 or out < PLAYS60["set_out"] + 10 and ax * sx > 20:
+                self.cross_side = sx                 # set up: now across
+                self.note("cross start", ax=round(ax), ay=round(ay))
+            else:
+                return pad(dir_to(tx - ax, ty - ay)) if getattr(self, "att_s", 1) > 0 else pad((dir_to(tx - ax, ty - ay) + 4) % 8)
+        sx = self.cross_side
+        tx, ty = -sx * PLAYS60["cross_x"], NET_Y - PLAYS60["cross_out"]
+        d = dir_to(tx - ax, ty - ay)
+        go = pad(d) if getattr(self, "att_s", 1) > 0 else pad((d + 4) % 8)
+        past = ax * sx < -5
+        if past and (self.goalie_open(P, me) or ax * sx < -PLAYS60["cross_x"] + 12):
+            self.phase, self.t = "wrist", 0
+            self.note("cross shot", ax=round(ax), ay=round(ay), open=self.goalie_open(P, me))
+            self.plan = None
+            return go
+        return go
 
     def goalie_open(self, P, me):
         """The goalie PEOPLE57 "open"+ off the line from the shooter to the middle of the net (versions 57+)."""
