@@ -3863,3 +3863,45 @@ receiver, open_mate's receiver open by 35 and the lane clear by 20 (safer than 4
 65%), attack-zone time 423 s (experts 337). The safe receiver open across the slot rarely comes up with the
 computer's teammates; people's one-timer set-ups need measuring from the recordings (where the passer and the
 receiver are, how covered, how the receiver is moving) before the offer is shaped again.
+
+### People's one-timer set-ups, and a correction (chunk 3; `analysis/one_timer_setups.py`)
+
+**243 one-timer passes by people's skaters** (the recorded Genesis games; 80 goals, 33%), in the attacking team's
+view: the passer a median 206 up the ice (the goal line 264; quartiles 167-229), the receiver 97 out from the goal line
+(63-120) and near the middle (-32 to 28 across), the pass 105 long (75-141) and 82 across (51-119); the receiver's
+nearest opponent 51 (36-67), the lane gap 27 (15-42). **How covered the receiver was made no difference to the goal
+rate** (32-34% from 15-25 to 50+), nor did a tight lane (39% with an opponent within 10 of the line). The user: "we
+humans are more willing to accept suboptimal circumstances when deciding whether to attempt a one-timer". The bot's
+open_mate allows 11% of these (47's 35 / 20), 17% (41-46's 20 / 15), 26% on its spot limits alone (the receiver 15-100
+out, within 70 of the middle, the pass 39-110 across and under 130): most of what it turns down is where people stand,
+not how open.
+
+**Correction to the pass diagnosis above:** bot_pass_probe.py counts the next player to take the puck, so a pass that
+became a one-timer shot, saved or blocked and then gathered by a defender, shows as "an opponent". 32's slot passes
+were the bot's one-timers: 41 (with them, on looser limits) had 4.8 one-timer tries and 1.5 one-timer goals a game,
+near the experts' 5.0 / 1.8; taking them out (46) cut its one-timers to 0.9. The game counts no one-timer as a
+completed pass, for people too. Next (48): the slot pass back, on people's spots and coverage.
+
+### Versions 48-49: one-timers on people's spots (chunk 3, step 8)
+
+- **48** (47 with 32's slot pass back and open_mate on people's spots: the receiver 30-140 out, within 60 of the
+  middle, the pass 30-130 across and under 170, the receiver open by 15, the lane by 5; PEOPLE48), 8 games: **one-timer
+  tries 9.1 a game, 1.2 goals** (experts 5.0 / 1.8: too many, too poor: 13% scoring against 36%), passes 52.6, 40%
+  credited (one-timers are never "completed"), penalty minutes 5.2, goals 1.9 to 1.4 (5 of 8 won).
+- **49** (48 without 32's slot pass: the one-timer only from people_carry's offer, 35% every 6 frames), 8 games: still
+  9.1 tries and 1.4 goals (15%); shots 17.0, passes 59.2 (45% credited), penalty minutes 3.2, goals 2.8 to 1.1 (6 of 8
+  won). The offer alone, on people's loose spots, fires as often as both did.
+
+### NOSE4Web's lock on Exit Shootout, played (2026-11-11, 51876ae; `snes_shootout_lock_check.py`)
+
+PauseExitGame's jsl AskExitGame goes to a stub that answers No while $7E:F0F0 is set. On NHL94_shootout.smc,
+NHL94_shootout_after_period_3.smc and the Classic copies, with pad 1 on the home team from the controller screen's
+default (setting cont1team after the start doesn't let START pause), the same on all four:
+- **A regular game:** the mark 0; START, Down to the last line (Exit Game, item 15), B: the "Exit Game?" prompt
+  (AskExitGame ran: curitem set to 0); Down, B: Game Setup, as before.
+- **The shootout's opening menu** (pmenulist 3): Down to Exit Shootout (item 5), B, Down, B: no prompt, the menu still
+  up (sflags $0401); Up to Start Shootout, B: the shootout started (round 0 to 1).
+- **Its pause menu between shooters** (pmenulist 4, START once a shot was over: the 6th press): Exit Shootout, B,
+  Down, B: no prompt, still paused in the shootout; Resume Shootout: play on.
+- **Then** B every second to the end: rounds 1 to 6, the score 2-3, the game over (gsp 4), the mark cleared.
+- The after-overtime builds needed START at overtime's start (a person's game waits for it), as in any game.
