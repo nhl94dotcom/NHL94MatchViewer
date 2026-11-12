@@ -2689,7 +2689,10 @@ third) and then repeats the test; $1725C and $7C4C original; the end code as bef
 
 `snes_ram_use_check.py ROM OUT game|shootout` (from the first frame of play: every byte not zero then, or changed
 since, through a whole computer game with every pause-menu screen (Instant Replay too), the intermissions and the
-screens after it; and a Shootout-mode game from power-on, three complete shootouts): never written, runs of $800+:
+screens after it; and a Shootout-mode game from power-on; **correction 2026-11-12:** that run pressed only START, and
+with the computer on both sides the shootout's menu waits for a pad's B, so on the 1 MB and SA-1 ROMs it never left
+round 0 (only the LoROM 32-team build's went on, and crashed): the Shootout-mode part covered the menu, not a
+shootout): never written, runs of $800+:
 - **Retail NHL94.smc and NHL94_Classic.smc:** $7E:E68C-$EFFF ($974), **$7E:F033-$FFFF ($FCD)**, $7F:F3F6-$FFFF.
 - **SA-1 builds** (nhl94snes_SA1.sfc, nhl94_2026.sfc; the game runs on the SA-1, which sees only I-RAM and BW-RAM):
   BW-RAM free on both: **$40:46F4-$40:5FFF** ($190C; $40:46F4-$47F3 is the end of the moved $37F4-$47F3 block, so
@@ -4015,8 +4018,9 @@ nhl94snes_2026_shootout.sfc (LoROM, 32 teams).
   as the first shooter's turn loads, and low RAM fills with repeated words (round 257 / 1664 / 17184, scores 32898-6
   ...). **The unmodified nhl94snes_2026.sfc does the same in its own Shootout mode** (yesterday's RAM tour, computer
   only: round 257 and junk scores in the first turn), so on the LoROM build it is not NOSE4Web's code. The SA-1
-  after-overtime build and the SA-1 32-team build played computer-only shootouts to the end, and the SA-1 base build
-  played three computer-only Shootout-mode games cleanly (2026-11-11). The hooks were ruled out as far as they could
+  after-overtime build and the SA-1 32-team build played computer-only shootouts to the end. (Said here at first: the
+  SA-1 base build's own Shootout mode had played cleanly in the RAM tour. Wrong: that run never left the menu; see
+  below.) The hooks were ruled out as far as they could
   be: the shared code after $9F:FF70 is byte for byte the after-overtime build's, the period-3 hook's test is sound,
   and turning off the after-overtime build's other change ($9F:8CC0 `beq` to nops) in a scratch copy changes nothing.
 - **SA-1: BW-RAM $40:4800-$5FFF.** In every case only $40:4811-$40:5318 changed, at the frame the shootout began (the
@@ -4120,3 +4124,36 @@ which count in unmodified ROMs. So this is about how people knock players down, 
   (0.8), thrown 8.9 (10.2), checks 19.4 (20.4), penalty minutes 1.8 (3.5; experts 2.4), 2.9 goals for and 1.4 against.
 - A sweep of 53's C timing (the closing rate needed, how often it may press: `NHL94_DEF45`) was stopped half done to
   make room for NOSE4Web's retests.
+
+### Bot version 54: shooting from where people shoot (2026-11-12)
+
+- **The shots** (ordinary shots, not one-timers). Coaches rated 80%+ (28 side-games): 12.6 a game, xG 0.216 a shot,
+  18% scored, 26% slapshots; out from the goal line 2.5 a game within 40, 5.4 at 40-80, 2.9 at 80-130 (xG 0.155, 21%
+  scored), 1.3 farther. Version 51: 16.0 a game, xG 0.135, 9% scored, 39% slapshots, 4.9 a game at 80-130 out (xG
+  0.008, none scored) and 2.6 farther. Its slapshots came from the hold running out anywhere 90-175 up the ice
+  (PEOPLE40 "slap" 0.35). People's long shots are against a person in goal; the computer goalie saves nearly all of
+  them (the xG model counts that), so part of the gap is the opponent. Still, the bot shot from far out twice as often.
+- **Version 54** = 53 with the hold's slapshot only within 110 of the goal line and on 20% of holds (PEOPLE54), the
+  same 16 seeds as 53: goals 3.6 a game (53: 2.4), ordinary shots 14.1 (19.3), xG 0.190 a shot (0.101), 16% scored
+  (6%), slapshots 7% (32%; people 26%), shots at 80-130 out 4.6 (6.2), farther 1.1 (3.4). Passes completed 23.1 a game
+  (20.4). Penalty minutes 4.5 (2.6): 36 penalties in 16 games against 23, most of them codes 22 and 24 and the
+  computer teammates' too. It isn't explained by the shot rule; to watch. **Version 54 is now bot_run.py's default**,
+  and so bot_live.py's.
+- **Passing, measured as the game counts it** (the same coaches, 28 side-games): the game's counter 56% completed
+  (league 85-90% band: 65%), the converter's 62%. Version 51: 48% and 58%. Both credit 83-84% of the passes that reach
+  a teammate. The bot's passes are shorter and are intercepted more when the receiver is covered (42% within 30 of an
+  opponent, people 32%).
+
+### The SA-1 base build's own Shootout mode, computer on both sides (2026-11-12, for NOSE4Web)
+
+Shootout mode from power-on (Play Mode 4), the computer on both sides, B once at the shootout's menu:
+- **Retail NHL94.smc:** five rounds, 1-0, the shootout over.
+- **nhl94snes_SA1.sfc** (unmodified) **and nhl94_2026.sfc:** round 1 starts, then nothing for 30,000 frames. The
+  screen goes nearly black with one small sprite. On nhl94snes_SA1.sfc no byte of work RAM or BW-RAM changes over 120
+  frames: the game is hung.
+- **nhl94snes_SA1.sfc with pad 1 left on a team:** rounds 1 to 8 played (0-0, pad 1's shooter standing still) and
+  memory changing.
+
+So **the 2 MB builds' computer-only shootouts fail without any NOSE4Web code** (the LoROM build's own Shootout mode
+crashed the same way). Computer-only shootouts on these builds say nothing about NOSE4Web's hooks, and with a person
+on a team they play.

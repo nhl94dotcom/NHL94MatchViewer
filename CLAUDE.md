@@ -141,8 +141,12 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     step: Shot Power 1-6, one-timer Accuracy 1-6, Speed and Agility 1-6 skating, `skating_real` with the game's own skaters in lanes; RATING_VALUES).
   - The bot: `bot.py` (a scripted Genesis player, the user's scoring moves), `bot_run.py` (whole games against the
     computer), `bot_situations.py` / `bot_scenario.py` / `bot_scen_report.py` (from recorded situations; BOT_PLAN),
-    `bot_sweep.py OUT [N] [HOURS]` (version 50's settings against the expert coaches: 8 games each, scored, the best replayed; keeps numbers only; sweep1's best is version 51, `bot_run.py`'s default), `bot_record.py OUT GAMES [FIRST]` (the bot's games recorded and converted as people's are: `team_style_compare.py`), `bot_live.py` (controller 2 of the user's RetroArch by key presses while it has the focus; `test` and `play` only
-    with the user there).
+    `bot_sweep.py OUT [N] [HOURS]` (version 50's settings against the expert coaches: 8 games each, scored, the best replayed; keeps numbers only; sweep1's best is version 51; `bot_run.py`'s default is now 54, shooting from where people shoot), `bot_record.py OUT GAMES [FIRST]` (the bot's games recorded and converted as people's are: `team_style_compare.py`), `bot_live.py` (controller 2 of the user's RetroArch by key presses while it has the focus; `test` and `play` only
+    with the user there; its default version is `bot_run.py`'s; each play session is logged to
+    `%USERPROFILE%\NHL94_scoring_map\bot_live_sessions.jsonl`, since the helper records those games as people's: leave
+    them out of people's analyses). `analysis/check_profile.py` (how a side knocks players down: thrown checks, pokes,
+    on and off the puck, by coach strength) and `analysis/knockdown_approach.py` (the C or B press before each
+    knockdown).
   - Replays with one thing changed: `check_pass_timing.py` / `snes_check_pass_timing.py` (the B timing),
     `check_pass_ratings.py` / `snes_check_pass_ratings.py` (one rating), `snes_period_cvc.py` (the SNES computer
     against itself by period; pad 1 moved with c1playernum, playerpad $19D4 and the person flag),

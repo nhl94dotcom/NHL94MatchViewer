@@ -14,7 +14,7 @@ In the game's menus set controller 2 to the bot's team (the team setup screen), 
 python bot_live.py watch       read only: print what the bot would press, every half second (no keys sent)
 python bot_live.py test        press each of the bot's keys for a moment and check that controller 2's buttons in the
                                game's memory ($BEF1) answer (in a game, play running; it moves pad 2's skater a little)
-python bot_live.py play [ver]  play (version default bot.py's, 32)
+python bot_live.py play [ver]  play (version default bot_run.py's VERSION: 54 since 2026-11-12)
 
 The bot's buttons reach the game a frame late (a key pressed during a frame is read at the next): it was tested with
 none. Penalties, line changes off, manual goalies: as in bot_run.py's games."""
@@ -148,7 +148,30 @@ def bot_team(emu):
     return {1: 0, 2: 1}.get(t)
 
 
+SESSIONS = Path.home() / "NHL94_scoring_map" / "bot_live_sessions.jsonl"
+
+
+def log_session(event, version):
+    """When a play session starts and stops, and the version (2026-11-12): the helper records these games as people's
+    (a pad on each side), so analyses of people's games leave out recordings made during a session."""
+    import json
+    from datetime import datetime
+    SESSIONS.parent.mkdir(parents=True, exist_ok=True)
+    with open(SESSIONS, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"event": event, "time": datetime.now().isoformat(timespec="seconds"), "version": version}) + "\n")
+
+
 def run(mode, version):
+    if mode == "play":
+        log_session("start", version)
+    try:
+        _run(mode, version)
+    finally:
+        if mode == "play":
+            log_session("stop", version)
+
+
+def _run(mode, version):
     emu = attach()
     live = Live(emu)
     keys = Keys(emu.pid)
@@ -225,7 +248,8 @@ def main():
     if mode == "test":
         test()
     elif mode in ("watch", "play"):
-        run(mode, int(sys.argv[2]) if len(sys.argv) > 2 else 32)
+        from bot_run import VERSION
+        run(mode, int(sys.argv[2]) if len(sys.argv) > 2 else VERSION)
     else:
         print(__doc__)
 

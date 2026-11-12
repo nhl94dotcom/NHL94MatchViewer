@@ -59,6 +59,8 @@ slot pass (48: 9.1 one-timer tries a game, 1.2 goals; experts 5.0 / 1.8): the on
 52 is 51 ramming the carrier on some approaches (no gap, no C: people's plain-contact knockdowns) and hitting off
 the puck from farther and more often (DEF52; check_profile.py): fewer checks (16.5 a game against 51's 20.4).
 53 is 51 with people's pokes: one B press per approach at a slow carrier coming at it (DEF53; knockdown_approach.py).
+54 is 53 shooting from where people do: the slapshot only within PEOPLE54 "slap_out" of the goal line, "slap" of
+the time (51 slapped from 89-174 out, 35%: 4.9 shots a game from 80-130 out, none scored; people 2.9).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -275,6 +277,15 @@ if __import__("os").environ.get("NHL94_DEF53"):
     DEF53.update(__import__("json").loads(__import__("os").environ["NHL94_DEF53"]))
 
 
+# version 54 (2026-11-12, the shots of coaches rated 80%+ against the bot's 51: people's ordinary shots 12.6 a game, xG
+# 0.216 a shot, 18% scored, 26% slapshots, 2.9 a game from 80-130 out and 1.3 from farther; 51's 16.0, 0.135, 9%, 39%
+# slapshots, 4.9 from 80-130 out (xG 0.008, none scored) and 2.6 from farther): the hold's slapshot (PEOPLE40 "slap"
+# from 90-175 up the ice) only within "slap_out" of the goal line and with "slap"; env NHL94_PEOPLE54 as JSON
+PEOPLE54 = {"slap_out": 110, "slap": 0.2}
+if __import__("os").environ.get("NHL94_PEOPLE54"):
+    PEOPLE54.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE54"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -292,10 +303,11 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version == 53
-        if version in (51, 52, 53):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54)
+        self.v54 = version == 54
+        if version in (51, 52, 53, 54):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -780,7 +792,8 @@ class Bot:
             self.phase, self.t, self.passer = "pass", 0, me
             self.note("pass start", ax=ax, ay=ay, people=True, relief=True)
             return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
-        if zone == "att" and 90 < ay < 175 and self.rng.random() < PEOPLE40["slap"]:
+        if zone == "att" and 90 < ay < 175 and ((264 - ay < PEOPLE54["slap_out"] and self.rng.random() < PEOPLE54["slap"])
+                                                 if self.v54 else self.rng.random() < PEOPLE40["slap"]):
             self.phase, self.t = "slap", 0
             self.note("slap start", ax=ax, ay=ay, people=True)
             return ["C"] + pad(av(4))
