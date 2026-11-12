@@ -4466,6 +4466,16 @@ from the third (2), regular season without the extra aggression (1), CDL regular
 - **CDL:** regular season 3-on-3 (all draws 3 a side); playoffs 5-on-5 (OT 5:00, the opening draw 5 a side, penalties
   by the usual 6-based counts).
 - **Not tested:** a shootout (neither ROM has one), a person's goalie pull.
+- **The rebuild (0c544c0: GetLowestPen's test at $12A50 counts the box in overtime)** changes the timing, so seed 2 no
+  longer replays. `gen_3on3_ot_trace.py`, 12 overtimes on each ROM: **the build, seed 11, OT 9:01, the away team at
+  the drop with its goalie, LW 9 and RD 18 only.** Its line 1: G 1, LD 17, RD 18, LW 8, C 4, RW 13, EA 5; in the box 4
+  and 8 (tmpdst $78), 5 on the bench ($FFFE), tmap 4. SetPlList's centre slot tried 4 (refused) and **accepted 5**
+  about 200 frames before the drop. PlList read all 0 at the drop (setpersonel clears each slot it gives an object),
+  so 5 was given one, yet the objects were 18 (RD), 8 and 4 (in the box, position $FF), the goalie, an empty one
+  (pnum $FF) and 9 (LW). setpersonel's second pass gives a player the first object not asked for this time that has a
+  position (`tst.w position(a3)` / `dbpl`), else the last free one; a boxed player's object counts as free too, so 5
+  most likely went onto a boxed object. Retail, 12 overtimes the same way: no short draw (the even-strength case with
+  C, EA and a D in the box at tmap 4 was not set up).
 
 ### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
 
