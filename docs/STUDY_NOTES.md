@@ -3794,10 +3794,19 @@ each case from the same state (period 3, 3 s left), the computer on both sides; 
   penalties, power plays and their times and shots, goals and shots by period) beyond what an untied game's last
   seconds change (a faceoff won, the puck touches, the nearest-player words, energies); the teams the same. The
   winners' goal is in the score only: not in goals by period, a player's goals or the scoring summary.
-- **The shootout opens on its menu** ("Resume Shootout", sflags $0400) and waits for pad 1 (sfpj); one press of B
-  (held 8 frames: shorter presses were lost) starts it, and between shooters the menu comes and goes by itself. In an
-  earlier run, B pressed again every 3 s whenever that menu was up sent the game back to Game Setup in the second
-  round, the shootout's result lost; one press never did. The original game's own Shootout mode wasn't tried.
+- **The shootout's menus, and the game lost in a test (NOSE4Web's follow-up):** the shootout has two pause menus
+  (Pausemode_menu; PauseMenuItems / PauseMenuHandlers): before it (pmenulist 3, when a pad has a team: pregamepause)
+  "Start Shootout, Shootout Setup, Team Roster, Goalie, Player Cards, Exit Shootout", and between shooters (list 4)
+  "Resume Shootout, Instant Replay, Team Roster, Goalie, Player Cards, Exit Shootout". B or A runs the highlighted
+  line, Up / Down move, START resumes. **Exit Shootout is PauseExitGame:** the "Exit Game?" prompt (AskExitGame),
+  which starts on No; only Down then B (Yes) goes to Opening2 (Game Setup). **The test game that went back to Game
+  Setup was something else:** the harness's game had no pad on a team (the computer on both sides), which the game
+  treats as its attract demo: demoread, called every frame of play by Gameloop, sends any button but START to Opening2
+  when cont1team-cont5team are all 0. The B press that did it came on round 1's shooter banner ("SHOOTOUT R. Blake vs.
+  P. Roy"); any game, not only a shootout, ends so with no pad on a team. **With pad 1 on the home team** (as in a
+  person's game), B pressed every second all through the shootout: the opening menu (list 3) took B as Start Shootout,
+  5 rounds were played, the visitors won it, the score 2-3, the game over as any other. The original game's own
+  Shootout mode runs the same PlayShootout, menus and demoread (not played here).
 
 ### Version 45: fewer, safer passes, more checks tried (chunk 3, step 5)
 
