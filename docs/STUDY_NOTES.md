@@ -4443,6 +4443,22 @@ a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128
 speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
 why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
+### Which way a skater turns around: his hand (2026-11-12, for NOSE4Web's line builder)
+
+`doplayeracc` turns the facing toward the wanted direction the shorter way (its .ftab: wanted - facing 1-3 clockwise,
+5-7 counter-clockwise; Genesis logic94.asm, SNES routines/logic/skating/doplayeracc.asm). **Only a straight reversal
+(the wanted direction exactly opposite the facing) goes to `noturn0`**: moving along the facing he brakes first
+(`dostop`), then turns one step a call: `addq #1,facedir` (clockwise: 0 up, 2 right on the screen, so to his own
+right), and with the mirrored sprite (Genesis attribute bit 3, set for right-handers in collide94.asm; SNES attribute
+$0800, set for right-handers in setplayer.asm) `subq #2`, counter-clockwise (to his left). Once a step is taken the
+rest of the turn is the short way, so the whole reversal keeps that sense. Skating backwards (pfrev) swaps straight and
+opposite. And in his own half, with the wanted direction straight back toward his goal and the puck within a step of
+straight ahead of him, he skates backwards instead (pfrev) and doesn't turn.
+**Played (Genesis retail, the 16 bot start states, pad 1's skater: UP 50 frames then DOWN 60, and DOWN then UP):**
+every straight reversal of a left-hander turned clockwise (19), of a right-hander counter-clockwise (8); the one other
+turn started facing 6 (not a reversal: the short way). So **a left-handed LD and a right-handed RD turn toward the
+middle** when they turn around; the opposite hands turn toward the boards. The SNES code is the same (not played).
+
 ### Where the computer decides to change lines (2026-11-12, for NOSE4Web; from the disassemblies, retail addresses)
 
 **Genesis** (logic94.asm; nhl94.bin):
