@@ -4443,6 +4443,53 @@ a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128
 speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
 why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
+### Calls during a delayed penalty, and 3-on-3 overtime: code readings (2026-11-12, for NOSE4Web; nothing played)
+
+**Calls during a delayed penalty (known bug 12).**
+- **Genesis: the block is in `checkagr`** (collide94, the penalty roll of Bcheck, CCStart's checks and holdcheck),
+  `.teamchk` at **$13EBE**: a home checker with DelayedPen ($FFC300) bit 2 (visitors pending) set, or an away checker
+  with bit 1 set, gets d0 = $7F (`move.w #$7F,d0` at $13EDC), no penalty. `btst #2,($C300).w` at $13EC4, `bne` at
+  $13ECA, `bra .end` at $13ECE, `btst #1,($C300).w` at $13ED2, `beq .end` at $13ED8, rts at $13EE0. To allow the call:
+  `bra.w` to the rts at $13EC4 (`6000 001A`). Goalie interference and the injury roughing call AddPenalty without
+  checkagr, so they already get through. The rest holds two teams' calls: **PenBuf** 32 entries (penalty, player),
+  any team; **DelayedPen** a bit per team (and only checkagr reads bits 1-2); `checkfornewpen` calls an entry at once
+  when the guilty player's team has the puck, else delays it, entry by entry, so the second team's foul with the puck
+  stops play at once and both go to the box at that whistle; the box list `tmboxlist` per team; the penalty log
+  PenSum 59 entries. **At the whistle**, `InProgress` matches as coincidental only a **5-minute** penalty against the
+  same time on the other team; two minors are both served, `InProgress_ap` counts each team's players off (never below
+  4 = goalie and three) and the power play comes from the tmap difference (`updatepwrplay`): two minors give **4-on-4**
+  with no power-play display. **One-penalty assumptions:** gmpendel is one bit (the referee's arm is raised once,
+  `SetPA $2C`); `ChkGoalies` pulls the goalie of whichever team has the puck while gmpendel is set, without asking
+  whose penalty it is (a team with its own penalty pending can't hold the puck without being called, so no harm);
+  `PenGoalStuff` clears the whole PenBuf on a goal against a full-strength team.
+- **SNES: no block.** `checkagr` (routines/collide/checkagr.asm) has no team test, and the recordings have two
+  whistles with both teams called (SNES_MECHANICS 8.3). Coincidental matching: the $4000 bit is tested
+  (InProgress_ap, updatepentime, GetLowestPen, PenGoalStuff) but nothing in the penalty code sets it, so two minors are
+  both served (4-on-4, the floor 4 the same). The delayed-penalty goalie pull (`ChkGoalies`) is the Genesis's.
+
+**3-on-3 overtime.**
+- **The fewer-skater ROMs** (1-on-1, 2-on-2, 3-on-3) are team data: empty line slots (0). `SetPlList` takes each
+  position's player from the current line in priority order and leaves an empty slot empty (no substitute). The
+  NOSE4Web builds also changed the Edit Lines / Team Roster row counts (above). No playing code changed.
+- **The game already plays short-handed by `tmap`** (players on the ice with the goalie, 6 at full strength):
+  `SetPlList` fills `tmap` places in `priolist` order (0 G, 1 LD, 2 RD, 4 C, 3 LW, 5 RW, 6 the extra attacker), so tmap
+  4 is G, LD, RD and C. The SNES penalty shot sets tmap 1 on both sides. The lines are in RAM on both (Genesis
+  `tmlines(a2)`, SNES `GetTeamLines`), so emptying two slots per line at overtime would also work, but tmap is simpler
+  and leaves the lines whole: a power play can then add a skater (tmap 5 adds the line's LW) and no line needs
+  cutting, with line changes on or off.
+- **Where:** overtime is **gsp 3** on the Genesis (periods from 0; gsp 4 is the game's end); `StartPer` ($7870 `bset
+  #1,($C2FC).w`, overtime) runs at each overtime's start, the overtime-until-a-goal build's extra overtimes too.
+  `restoreteams` sets tmap 6 ($7800); `InProgress_ap` recounts after every penalty from 6 (`moveq #6,d1`) with the
+  floor `cmp.w #4,d1` at **$DA88** ($FA1A, $12404 ... are other compares). A 3-on-3 hook: tmap 4 for both at
+  StartPer in overtime, and InProgress_ap counting from 4 in overtime (with the NHL's 4-on-3: the other team +1 per
+  player off rather than the penalized team -1).
+- **Assumptions of six:** the faceoff formation table (`.apl`, logic94 before `.ptab`) has rows for 6, 5 and 4
+  players only: tmap 3 (a penalized team 2-on-3) would read past it into `.ptab`; so 4-on-3 (5 against 4) is the safe
+  way. `PenGoalStuff` (`cmpi #6,tmap(a1)` at $1284E) and `GetLowestPen` (`cmpi #6,tmap(a3)`) take 6 as full strength
+  (a goal ends overtime; the power-play time shown might be off). `CompLine` takes the power-play / penalty-kill lines
+  on any tmap difference. Icing (`PuckIChk`) is waved off for the team with fewer on the ice. Not checked: the
+  shootout hacks (they set their own players; tmap should be put back), the SNES faceoff formation.
+
 ### Which way a skater turns around: his hand (2026-11-12, for NOSE4Web's line builder)
 
 `doplayeracc` turns the facing toward the wanted direction the shorter way (its .ftab: wanted - facing 1-3 clockwise,
