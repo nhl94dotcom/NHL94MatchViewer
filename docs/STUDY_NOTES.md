@@ -4449,7 +4449,7 @@ nhl94_delayed_calls.bin (SHA-1 8b27117b...; from nhl94.bin: `bra.w` at $13EC4 to
 NOPs), `gen_delayed_calls_check.py`:
 - **Whole games** (the computer against itself, penalties On Except Off-sides, line changes off, 5-minute periods,
   every skater's Aggression held at 38 so checks are often called): the build 6 games, 181 penalties, 2 called on a
-  team while the other's minor was pending (roughing, interference); retail on the same seeds 0 (2 games so far, 56
+  team while the other's minor was pending (roughing, interference); retail on the same seeds 0 (6 games, 184
   penalties). Both cross calls ended in a whistle with both teams sent off. The penalty log (PenSumLength / 4) equals
   the teams' penalty counts in every game, both ROMs.
 - **From a moment with one minor pending and both teams at six** (8 games, 10 trials each, the team with the puck at
