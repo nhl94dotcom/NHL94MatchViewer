@@ -4443,6 +4443,30 @@ a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128
 speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
 why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
+### NOSE4Web's 3-on-3 overtime (a91a6f8), played (2026-11-12)
+
+nhl94_3on3_ot.bin (SHA-1 b00d6e60...) and CDL_Season_12_3on3_ot.bin (24882ae1..., regular season only),
+`gen_3on3_ot_check.py` (the computer on both sides, the third period run out at 0-0 into overtime, the away team's
+Aggression at 38 in overtime so penalties come; every 4 frames each team's skaters by position and tmap; each faceoff
+drop's players and spots; screenshots). Cases: line changes off (3 overtimes) and on (3), a home minor carried over
+from the third (2), regular season without the extra aggression (1), CDL regular season (2) and playoffs (1).
+- **3-on-3:** every overtime's opening draw and the draws after whistles at even strength were C, LW and RD a side
+  (both ROMs, line changes on and off; the units stayed C, LW, RD through the computer's changes), the C taking the
+  draw, LW and RD on either side (screenshots).
+- **Penalties:** one penalty 4-on-3 (the power-play team's LD comes on), two 5-on-3; at an expiry the released player
+  comes back (4-on-4, or 5-on-4 from 5-on-3) until the next whistle, then the count goes back (3-on-3 / 4-on-3). A minor
+  carried over from the third period: overtime opened 4-on-3. In play a team at tmap 4 also had a fourth skater (LD)
+  for 556 and 904 frames, most likely the extra attacker on a delayed call's goalie pull (not confirmed: the goalie
+  flag read was unreliable).
+- **A faceoff 4-on-2:** off seed 2, OT 6:32: the away team had three in the box (4, its line 1 C; 5, the line's extra
+  attacker; 18, its RD), tmap 4: on the ice its goalie, LW 8 and RD 21 (for 18), and no centre, although centre 6 (line
+  3) was on the bench and free (tmpdst $FFFE); 1,088 frames stopped, then the draw 4-on-2.
+- **The power-play clock:** right at 5-on-3 (1:30 shown), **0:00 at 4-on-3** (every 4-on-3 screenshot, the carried
+  penalty's too): GetLowestPen's `cmpi #6,tmap` (the power-play team at 6) as expected.
+- **CDL:** regular season 3-on-3 (all draws 3 a side); playoffs 5-on-5 (OT 5:00, the opening draw 5 a side, penalties
+  by the usual 6-based counts).
+- **Not tested:** a shootout (neither ROM has one), a person's goalie pull.
+
 ### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
 
 nhl94_delayed_calls.bin (SHA-1 8b27117b...; from nhl94.bin: `bra.w` at $13EC4 to the rts, the usual boot checksum
