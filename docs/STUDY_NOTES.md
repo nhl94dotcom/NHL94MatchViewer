@@ -4287,3 +4287,24 @@ loading the retail states; `snes_injury_risk_check.py` takes a count SPEC in BW-
   - At boot the game clears them. Junk (23) written at power-on over the L+R and injury counts, and at BW $40:F000,
     was still there after the first frame and gone (0) by Game Setup, on both five builds. So a stale count can't
     carry over from an earlier session's save memory.
+
+### Bot versions 58-59, and what 16 games can tell apart (2026-11-12)
+
+- **People's slot slapshots** (138 from 40-130 out): skating across 0.5+ a frame 26% scored, standing 15%. Aimed at a
+  post 20-29% (far 28%, near 29% for the moving ones: 29 and 49 shots), at the middle 0 of 20. The user: the best are
+  taken skating across, aimed at the far post. Their wind-up: C held a median 36 frames (quartiles 32-38), speed
+  23,600 at 35+ frames; by Shot Power 3 18,300, 4 22,100, 5 25,200. The bot's slapshot held Down (the low middle) and
+  wound up 20 frames.
+- **Version 58** = 57 with the slapshot aimed at the far post (aim code 2 is the +x post at the +y net, 6 the -x post;
+  the reverse at the -y net) when skating across, else at the post away from the goalie, and standing a third as often.
+  48 of its slapshots skating across went at the far post.
+- **Version 59** = 58 with a 36-frame wind-up, and the slapshot (people_carry's and in place of 32's wrist shot) with
+  the goalie square on 57's test only 30% as often.
+- **The noise.** Version 57's first 16 games scored 3.69 a game, its next 16 2.06; over 32 games each, version 57 2.81
+  ±0.38 goals and 3.33 ±0.25 xG a game, version 58 2.94 ±0.27 and 3.47 ±0.27, version 59 (16 games) 2.62 ±0.42 and
+  3.58 ±0.38. Goals vary by about 2 from game to game, so 16 games can't tell versions apart by half a goal, and the
+  "3.7" for version 57 above was mostly luck. Since version 54 the bot's goals against the computer have stayed at about
+  2.5-3.1 a game; the changes since have made it shoot more like people (by Shot Power, at the posts, with their
+  wind-up, when the goalie is pulled across), which the computer goalie, who saves nearly every long shot, doesn't
+  reward. **Version 59 is the default**: equal on results, the most like people. Further changes: compare on xG over
+  32-48 games a side, and on the user's games against it.
