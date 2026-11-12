@@ -3842,3 +3842,14 @@ C checks land 28%.
 
 Next (version 46): no 32-style slot passes (one-timers only from people_carry's offer), and the CB check thrown on
 purpose (B a few frames into the burst, as version 21 did) about as often as people throw it.
+
+### Version 46: no slot passes, the CB check on purpose (chunk 3, step 6)
+
+46 is 45 without 32's slot passes and the left-hander's bail-out pass (one-timer passes only from people_carry's
+offer) and with the CB check thrown on purpose, B 4 frames into the burst on 35% of bursts (DEF46). 8 games (the
+game's own counts; experts the 85-90% coaches): **passes 32.6, completed 19.9 (61%; experts 65%; 45: 43%)**; goals
+against 0.2 a game (7 of 8 won, 2.1 goals for); check attempts land as people's do (C 33%, CB 39% of 36; people 33%
+/ 43%). But **one-timer tries 0.9 (experts 5.0; 45: 4.8)**: the slot passes were where its one-timers came from;
+penalty minutes 5.0 (cross-checking 7 and roughing 6 of 20 calls: the knockdown's roll), checks 17.5 (experts 31),
+attack-zone time 411 s (experts 337). Next: one-timers set up as people make them (an offer whenever a teammate is
+open across the slot, not only when the carry's hold runs out), and fewer roughing / cross-checking calls.
