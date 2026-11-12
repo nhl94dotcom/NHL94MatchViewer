@@ -3945,3 +3945,127 @@ The full table of all 40 settings is in `runs/sweep1/report.md`; `python bot_swe
 - **Version 51** = 50 with the winner's settings (bot.py `SWEEP1`; an env override of any of them still wins). It is
   now `bot_run.py`'s default, replacing 32, so `bot_record.py` and `bot_run.py` play it unless NHL94_BOT_VERSION says
   otherwise. Its smoke game finished 2-1 with a one-timer goal.
+
+### Ron Barr's text editor, played (2026-11-12, NOSE4Web 6806a72; `scouting_script.py`, `scouting_text_check.py`, `scouting_hot_rate.py`)
+
+`scouting_script.py ROM [ROM2]` prints the script as a ROM holds it, found the way NOSE4Web finds it, and compares two
+ROMs. `scouting_text_check.py ROM OUT` plays the matchup screen and reads the text box from video memory every 6
+frames, through each ROM's own font map. It follows the box as it scrolls, so it gets the whole text as typed, row by
+row. It then looks for each shown line, with its stand-ins as wildcards, and draws the glyph each punctuation mark
+gets.
+- **The bytes.** On all three builds (nhl94_ronbarr.bin, NHL94_ronbarr.smc, nhl94snes_SA1_ronbarr.sfc) the script
+  starts and ends where the original's does: Genesis $4B5C0-$4B7A0, SNES $B88DC-$B8BBB. The rest of the room is filled
+  with $0D (48 and 83 more empty lines). Outside the room the only changes are the checksum (Genesis $18E, SNES $7FDC),
+  and on the Genesis NOSE4Web's usual removal of the boot checksum test ($300 `jsr $FFAC0` turned to nops, $FFAC0
+  `bra *`). Every league ROM in the folder has the same removal.
+- **Every line types out complete, in order, and wraps cleanly.** On all three builds each shown line was found whole
+  in the typed text, no row is longer than the box (Genesis 30, SNES 19 columns), and no word is cut at a row's end.
+  - The welcome line's added space works on both systems. On the Genesis it shows as a one-column indent
+    (" Montreal Forum is sold out ..."). The SNES drops spaces at a row's start (ScoutTypeWord), so there it doesn't
+    show.
+  - The Genesis goalies line (28) is empty and is never shown, as before.
+  - On the SNES builds the emptied team places (lines 0-27) change nothing: %H and %V still type the team's place
+    (GetTeamLongName reads TeamList, or LongNYI / LongNYR). So %H is the place name ("Montreal", or "New York
+    Islanders"), not city and nickname as NOSE4Web's label says.
+- **The punctuation, by font** (the glyphs drawn from video memory):
+  - Genesis (SmallFontMap): ! ? " - / : all show. ( and ) show as small angle brackets, like ⟨ ⟩.
+  - SNES (SmallFontMap+6; the same on 1 MB and SA-1): ! ? " ( ) - / : all show.
+  - On both, **& has no glyph** (font word 0, the space's), so it shows as a blank. On the SNES, an & that lands at a
+    row's start leaves the row indented, because it isn't a real space and isn't dropped ("  Los Angeles?").
+- **The screens after are unchanged.** The Genesis Game Setup screen (GameSetUpMap, still at $4B7A0) is identical to
+  the original's pixel for pixel. The SNES song after PregameText (SongRallyTime at 97:8BBB) decodes the same, byte
+  for byte, on all four SNES ROMs (`snes_song_streams.py`).
+- **CDL and the other ROMs with one line fewer** (CDL_Season_12, CDL_dynasty_03_FINAL, DPWM3RegularSeason, IDL5_v02,
+  RGDL_S01_FINAL: 35 lines, 27 and 28 merged; each keeps the original paragraph list).
+  - On CDL_Season_12, played, **the home team's hot / cold line (now line 29) is typed between every pair of
+    paragraphs**, six times in all.
+  - Every later paragraph is off by one. The home hot / cold slot shows the visitors' line, the visitors' slot the
+    crowd record, the crowd slot "Hit the start button ...", and the last slot shows "Lately California has been
+    playing well." even though no team was hotter that time.
+  - **Line 35 ("extremely well") is read past the script's end, and that freezes the game.** In a scratch copy with
+    CompareHotColdTotals replaced by `moveq #$23,d0`, the player read on into the Game Setup picture's data. It
+    typed blank rows and stray " and ! marks. Bytes of $80 and up are print's control codes (new attribute, map
+    and position), so letters were printed across the matchup screen outside the box. Then the game stopped: no
+    work RAM word changes from one frame to the next, START does nothing, and in the 600 frames (10 s real) after
+    it not one byte of work RAM changes. The unpatched CDL keeps running, and START leaves.
+  - **How often:** in 200 boots each with Game Setup's own teams (`scouting_hot_rate.py`), line 35 never came up,
+    and line 34 came up 1 time in 200 on CDL and 24 in 200 on retail. It needs the two teams' hot / cold totals
+    $BD apart, so it is rare, but on these five ROMs it hangs the game whenever it comes up.
+
+### NOSE4Web's SNES shootout on the SA-1 and 32-team builds, played (2026-11-12, add97a6)
+
+`snes_shootout_check.py` (now also on the 2 MB builds: the extra stats seeded at period 3's last second and read at
+the end, the fight state, and on the SA-1 BW-RAM $40:4800-$5FFF watched every 10 frames; `--pad` keeps pad 1 on its
+team) and `snes_shootout_lock_check.py` (now with the SA-1 builds' menus). ROMs: nhl94snes_SA1_shootout.sfc (after
+one overtime), nhl94snes_SA1_shootout_after_period_3.sfc, nhl94_2026_shootout.sfc (SA-1, 32 teams),
+nhl94snes_2026_shootout.sfc (LoROM, 32 teams).
+- **With a pad on a team (a person's game, as every league game is), all four pass.** A tied regular-season game goes
+  to the shootout (after overtime, or at once on the after-period-3 build). It plays to its end, the score is the tie
+  plus one (2-3), and the game ends normally.
+  - Lock check: Exit Shootout does nothing in both shootout menus, Start Shootout and Resume Shootout work, the
+    regular game's Exit Game still asks and leaves for Game Setup, and the mark is 0 in a regular game and after the
+    shootout.
+  - Untied games end at the horn and playoff ties go to overtime, with no shootout (all four builds, computer
+    only).
+  - The team stats and scoring summary put back: the words that differ from period 3's last second are an ordinary
+    game end's (touches, energies, box slots) and, after overtime, overtime's own play (a faceoff won, a check, a
+    pass, the crowd average).
+- **Computer on both sides, two builds crash in round 1.** The SA-1 after-period-3 build crashed 4 times out of 4
+  (also when reached through real period ends), and the LoROM 32-team build twice: the screen fills with junk tiles
+  as the first shooter's turn loads, and low RAM fills with repeated words (round 257 / 1664 / 17184, scores 32898-6
+  ...). **The unmodified nhl94snes_2026.sfc does the same in its own Shootout mode** (yesterday's RAM tour, computer
+  only: round 257 and junk scores in the first turn), so on the LoROM build it is not NOSE4Web's code. The SA-1
+  after-overtime build and the SA-1 32-team build played computer-only shootouts to the end, and the SA-1 base build
+  played three computer-only Shootout-mode games cleanly (2026-11-11). The hooks were ruled out as far as they could
+  be: the shared code after $9F:FF70 is byte for byte the after-overtime build's, the period-3 hook's test is sound,
+  and turning off the after-overtime build's other change ($9F:8CC0 `beq` to nops) in a scratch copy changes nothing.
+- **SA-1: BW-RAM $40:4800-$5FFF.** In every case only $40:4811-$40:5318 changed, at the frame the shootout began (the
+  saved blocks, $4810-$4F8F, $4F90-$5317 and lastperiod $5318). Nothing touched the room in untied or playoff games.
+- **The 2 MB builds' extra stats are lost in a shootout.** StartGame_go's ClearTeamStats calls ClearPlayerChecks
+  (players' checks for $E788 and against $E7BC, posts $E7F0) and ClearPlayerIceTime ($E800). The block isn't in the
+  saved ranges. Seeded at period 3's last second (153 checks for, 155 against, posts 3-4, 6,538 s of ice time), the
+  checks and posts read 0 at the game's end on all four builds (the 32-team SA-1 build kept the shootout's own post,
+  1-0), and the ice time 0 on the SA-1 builds. The LoROM build never changed $E800 in any case, so its ice time isn't
+  kept there. The fight
+  state (FightGameStart: fighton, ChkCnt, pchecks, fightinj) is cleared too. Fighting was Off in these games; at a
+  game's end that state no longer matters. Untied and playoff games keep everything.
+- **The LoROM 32-team build's RAM** (`snes_ram_use_check.py`, a whole game and a Shootout-mode game): work RAM never
+  written from $7E:F03F to $FFFF ($FC1), and $7E:E7F1-$EFFF, $7F:A7C0-$C7FF, $7F:F240-$FFFF. The mark $7E:F0F0 and the
+  saved blocks ($7E:F100-$F87F, $F880-$FC07, lastperiod $FC08) are inside that free room.
+
+### NOSE4Web's SNES bodycheck statistics, played (2026-11-12, 5c9609b; `snes_bodycheck_check.py`, `analysis/snes_bodycheck_recorded.py`)
+
+NHL94_bodychecks.smc (retail), SDL16_bodychecks.smc, nhl94snes_SA1_bodychecks.sfc.
+- **The bytes.** The counting routine (retail $9E:FFC8, 56 bytes) is NHL94_Classic's, byte for byte. FallDown's `lda
+  tmchecks,y` becomes `jsr $FFC8`. The display changes are the stats list's `lda ppenmin,x` to $168E, the heading PM
+  to Cf, the sort title "Penalties" to " Checks  ", and ComparePlayerStats' two reads to $168E. On SDL16, which already
+  had the Vault's display, only the compare changes. The SA-1 build has the same at +$6000.
+- **A whole computer game on each** (penalties on), watched every 2 frames: 50 checks (retail), 72 (SA-1) and 205
+  (SDL16). **Every check raised exactly one given byte, of a player of the checking team, and one taken byte, of the
+  other team's player**, the two 16-17 apart on median and 40 at most. At every sample the given sums equal the
+  team checks and the taken sums the other team's. No other write was ever made in $168E-$16F5.
+  - The team checks are the game's own, unchanged (`lda tmchecks,y` is done after the counting).
+  - On the SA-1 an idle object can keep an old pnum (two objects with pnum 17, one of them with SPA 0), so the check
+    takes the nearer.
+- **Player Stats** (the end-of-game menu, five down): the "Cf" column shows the checks given. Sorted by Checks, the
+  rows go by Cf: retail Montreal 8, 8, 5, 4, 3, 1, 0 and Los Angeles 7, 3, 3, 3, 3, 1, 1, every player's number his
+  roster place's byte (Muller and Desjardins 8 ... McSorley 7); SDL16 Toronto 35, 33, 27, 22, 21 and Vancouver 21,
+  16, 9, 8, 7, 4, 2.
+- **The counts start at 0:** at the first sample of play, and in the next game after a 50-check game (0 and 0 at 4:56
+  of its first period).
+- **pnum's high byte:** in play it is 0 for every object with a player, and $FFFF for an empty slot (a skater in the
+  box, a pulled goalie), in the 28 recorded league games (every 6th sample) and in all three test games. An empty slot
+  is never a checker or the player hit (no count went astray in 327 checks), so the word read is safe. Were $FFFF ever
+  read, `inc $168E,x` would land in bank $7F.
+- **The overlap with PenSum:** PenSum holds $41 entries of 4 bytes ($163E-$1741), and InProgress writes one at
+  4 x PenSumLength while that is below $41. The counts take entries 20-45. Nothing else in the disassembly names
+  $1680-$1700 (only PenSum and its two users, InProgress and FillPenaltyPage). A 21st penalty would write over the
+  first count bytes, and counted checks would change log entries 20 on. **No game has come near:** in 36,392 SNES
+  league games the most penalties in one game is 14 (mean 2.5); the 28 recordings reach 6 log entries, the test games
+  12 (SDL16).
+- **The recorded games** (Classic-based league ROM, the same code): in 28 of 29 recordings the given sums equal the
+  team checks and the taken sums the other team's at the end of the game. Matching by player against the converter's
+  knockdowns proves little: it finds 1,178 knockdowns against the game's 1,476 checks.
+- **Through a shootout:** $168E-$16F5 is inside the saved $15D3-$1D52, which StartGame_go clears and the shootout code
+  puts back. The shootout runs above found that block back as it was, apart from the game's own changes. No ROM has
+  both hacks, so it wasn't played.

@@ -13,6 +13,9 @@ team, not taken off afterwards: setting cont1team later doesn't let START pause)
 - then B every second until the game is over: the final score, gsp 4.
 Screenshots at each step (OUT/<step>.png); a JSON line of results.
 
+SA-1 builds (2026-11-12, NOSE4Web add97a6): the menus as snes_ot_goal_check.start goes through them; the mark stays in
+work RAM ($7E:F0F0), the rest through snes_60fps_cvc.Mem (low RAM in BW-RAM).
+
 python snes_shootout_lock_check.py ROM OUT"""
 import json
 import sys
@@ -44,7 +47,10 @@ def to_last(e, m):
 def person_start(rom, out):
     e = M.emulator(rom)
     m = Mem(e, rom)
-    M.play(e, "w1500 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", out)
+    if m.sa1:                                       # the SA-1 builds' menus (snes_ot_goal_check.start's presses)
+        M.play(e, "w1800 START w240", out)
+    else:
+        M.play(e, "w1500 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", out)
     M.play(e, "START w240 START w200 w2400", out)
     for _ in range(12):
         c = m.w(CLOCK)
