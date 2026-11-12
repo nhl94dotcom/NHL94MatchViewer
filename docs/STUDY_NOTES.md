@@ -3905,3 +3905,9 @@ default (setting cont1team after the start doesn't let START pause), the same on
   Down, B: no prompt, still paused in the shootout; Resume Shootout: play on.
 - **Then** B every second to the end: rounds 1 to 6, the score 2-3, the game over (gsp 4), the mark cleared.
 - The after-overtime builds needed START at overtime's start (a person's game waits for it), as in any game.
+- **50** (49 offering the one-timer 20% of the time, only with the goalie drawn 4+ toward the passer's side, as 15
+  required; PEOPLE50), 8 games: **one-timer tries 6.0, goals 1.0** (17% scoring; experts 5.0 / 1.8, 36%), **passes
+  tried 44.8** (experts 43.5), 51% credited, goals 3.4 to 1.2 (7 of 8 won), shots 18.4 (13.7), checks 23.1 (31),
+  penalty minutes 5.0 (2.4). The number of one-timers is near the experts' now; their finish is not: people's
+  one-timer passes scored 33% with receivers as covered, so the gap is likely in the strike (the C timing, ARRIVE 14
+  frames before the puck reaches him) rather than in the choice of pass.
