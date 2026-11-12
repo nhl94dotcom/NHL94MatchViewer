@@ -4443,6 +4443,27 @@ a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128
 speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
 why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
+### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
+
+nhl94_delayed_calls.bin (SHA-1 8b27117b...; from nhl94.bin: `bra.w` at $13EC4 to the rts, the usual boot checksum
+NOPs), `gen_delayed_calls_check.py`:
+- **Whole games** (the computer against itself, penalties On Except Off-sides, line changes off, 5-minute periods,
+  every skater's Aggression held at 38 so checks are often called): the build 6 games, 181 penalties, 2 called on a
+  team while the other's minor was pending (roughing, interference); retail on the same seeds 0 (2 games so far, 56
+  penalties). Both cross calls ended in a whistle with both teams sent off. The penalty log (PenSumLength / 4) equals
+  the teams' penalty counts in every game, both ROMs.
+- **From a moment with one minor pending and both teams at six** (8 games, 10 trials each, the team with the puck at
+  Aggression 38): the build called that team 4 times in 80 (cross-checking, slashing, charging, interference), retail
+  once (interference: goalie interference skips checkagr, as before). **The fouling team holding the puck: play
+  stopped the same frame (2 of 2); a loose puck: delayed, stopped 38 frames later when it was touched (2 of 2), as for
+  any delayed call. After the whistle 5 and 5 on the ice (4-on-4) in all 4**; the goalies back in after every trial
+  but one, the same on both ROMs. The pending call's goalie pull: frames with gmpendel up and a goalie out came for
+  both teams, as on retail.
+- **A goal with a penalty pending:** in the games, a goal against a full-strength team with its own penalty pending
+  wiped it (PenGoalStuff clears PenBuf), as retail does. The scoring team can't have one pending: it must hold the
+  puck to shoot, which calls its own pending penalty at once.
+- Not looked at: the referee's arm on screen (gmpendel is one bit, so it is raised once).
+
 ### Calls during a delayed penalty, and 3-on-3 overtime: code readings (2026-11-12, for NOSE4Web; nothing played)
 
 **Calls during a delayed penalty (known bug 12).**
