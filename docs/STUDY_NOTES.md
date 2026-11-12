@@ -3820,3 +3820,25 @@ long (was 220), less often (0.8 / 0.7 / 0.55 by zone, was 0.95 / 0.9 / 0.6), and
   burst does not land more; goals 2.4 to 2.0 (5 of 8 won).
 - **Next:** find why its passes fail (intercepted, missed, bobbled; the 8-way d-pad picks the receiver, not the bot)
   and why its bursts miss, from the recorded games, before changing more.
+
+### Why the bot's passes and checks fall short (chunk 3, diagnosis; `analysis/pass_diagnosis.py`, `bot_pass_probe.py`)
+
+**Passes.** By the converter (the team keeps the puck), the bot's skater completes 71% of its passes, as people's
+skaters do (71%; the computer 75%; 1,792 bot passes from versions 41-45, 2,819 people's): the same aim (median 13-14
+degrees off the nearest teammate's line), lane gaps (35 / 31) and pressure. **The game counts a pass completed only
+when the player who takes the puck is passReceiverPlayerNum** ($FFBEE0, the receiver the game chose when the pass
+left: collide94 puckglue), so its count is lower for everyone (people 54% against the converter's 69%; the bot 43%
+against 66%; one-timers are never "completed"). In the harness (`bot_pass_probe.py`, 2 games of 45, every pass the bot
+began): the game's target was the mate the bot meant in 53 of 64 (the 8-way d-pad is not the problem); **its
+people-style passes (40's people_carry) reached the meant mate 27 of 43 (63%; experts 65%), but 32's old passes from
+the slot (open_mate past 144 up the ice, on 41's looser limits) 4 of 28 (14%), 17 going to opponents (3 to the
+goalie).** 41 loosened open_mate for one-timers; those passes into covered lanes are what pull the count down.
+
+**Checks.** The converter's check attempts (by the team, per team-game): people 22.5, 29% landing; bot 41 26.8, 30%;
+bot 45 30.6, 24%. **People throw a quarter of their checks as CB (B pressed during the C burst: the game's computer
+checking formula decides the hit), and CB lands 43% against C's 33%.** 41's CB checks were its pokes pressed during
+a burst (81 of 161, 37% landing); 44 took the pokes out for the trips and with them every CB (45: 1 of 245), and its
+C checks land 28%.
+
+Next (version 46): no 32-style slot passes (one-timers only from people_carry's offer), and the CB check thrown on
+purpose (B a few frames into the burst, as version 21 did) about as often as people throw it.
