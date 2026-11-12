@@ -4443,6 +4443,43 @@ a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128
 speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
 why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
+### Where the computer decides to change lines (2026-11-12, for NOSE4Web; from the disassemblies, retail addresses)
+
+**Genesis** (logic94.asm; nhl94.bin):
+- **On the fly: `chk4lc` at $E1F4**, called at $E04E from the computer puck carrier's decisions (each time his decision
+  timer runs out, with `checkob` and before the shot checks). It changes lines only if all of these hold: sflags7
+  ($FFC2FC) bit 4 clear (bit 4 is Auto line changes: then never on the fly); the puck ($FFB75E pucky, negated so that
+  plus is toward the goal he attacks) between the red line and $58 (88) up the ice: **the computer's own carrier, in
+  the neutral zone past centre**; HVcount ($C00008) & 3 = 0 (a quarter of the checks); the carrier not in line change
+  mode (pflags2 +$63 bit 3); and **`AvgCline` ($12EF6) <= $C00** (`cmp.w #$C00,d0` at $E24C, `bhi` exit at $E250).
+  AvgCline is the **average** tmpde (team struct +$32, a word a roster player) of the team's six objects with position >
+  0: the skaters on the ice, goalie left out. Then `CompLine` ($F790), `setpersonel` ($15788), `printscores1` ($12C04)
+  and `bra CompShoot` ($E412): the carrier dumps the puck in.
+- **At every faceoff** (line changes On, OptLine $FFD058 = 0; or Auto for every team): `SetFaceoffComputerLine` ($F594)
+  runs `CompLine` whatever the energy.
+- **`CompLine` ($F790)**: with a man advantage or shorthanded, the fresher (by `getlinee`, $12EB4) of lines 3-4 (or
+  5-6); at even strength, the line the order table pairs with the other team's line (by period 3's score: tied,
+  leading, trailing), kept if its `getlinee` > $C00 ($F808, home only); else up to three lines in the away row's order,
+  the first > $C00 ($F86C), else the last tried. `getlinee` is also an **average** (the line's skaters, by tmap /
+  priolist, goalie out).
+
+**SNES** (NHL94SNES routines; NHL94.smc, LoROM, no header):
+- **`chk4lc` at $9F:DBD0**, called from `asspuckc` (the computer puck carrier, with chk4shot) after the breakaway
+  check: the same rule, except OptLine ($7E:34C6: 0 Off, 1 On, 2 Automatic) must be 1; pucky ($0DD3) 0 to $57 toward
+  the attacked goal; `seed` & 3 = 0; the team not in line change mode (tmflags bit 3); **`AvgCline` ($9F:DD19) < $C01**
+  (`cmp #$0C01 / bcs` at $9F:DC2B); no penalty shot. Then `CompLine` ($9F:DA53), `setpersonel` ($9F:D407),
+  `printscores1` ($9F:9B36), `jml CompShoot` ($9E:E10B).
+- **At faceoffs**: `puckfaceoff` runs `CompLine` for a team no pad plays.
+- **`CompLine` ($9F:DA53)**: as the Genesis, the paired line kept if `getlinee` ($9F:DF0C) >= $C01 ($9F:DB23); the
+  fallback loop asks **>= $F34 (95%)** ($9F:DBA7), stricter than the Genesis's $C00. `getlinee` reads the lines from the
+  team's data in ROM (TeamList, bank $83).
+
+**Why one drained skater stays out:** both decisions use averages. Four skaters at 4,096 and one at 0 average 3,277,
+above $C00 (3,072); and on the fly the computer only looks while its own carrier has the puck between the red line and
+the blue line it attacks, a quarter of the times it checks: a team defending, or holding the puck in either zone, never
+changes until the next faceoff, and there a line whose average is above 3/4 can be sent out with the drained skater on it.
+With skating and bursts free (the hits-only builds) the other four stay near full, so the average seldom drops.
+
 ### The user's two games against version 61, and versions 62 and 63 (2026-11-12)
 
 The user played version 61 twice (BOS against the bot's LA, PHI against the bot's CHI; `bot_live.py play`) and saw:
