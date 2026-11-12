@@ -4308,3 +4308,34 @@ loading the retail states; `snes_injury_risk_check.py` takes a count SPEC in BW-
   wind-up, when the goalie is pulled across), which the computer goalie, who saves nearly every long shot, doesn't
   reward. **Version 59 is the default**: equal on results, the most like people. Further changes: compare on xG over
   32-48 games a side, and on the user's games against it.
+
+### All-Star teams on the original SNES matchup screen (2026-11-12, for NOSE4Web: the commissioner's glitch was an empty team Name)
+
+Retail NHL94.smc, Game Setup's Home and Visitor stepped to the All-Star teams (26 East, 27 West; HomeTeam $1C98 /
+VisTeam $1C9A), screenshots of the matchup screen every 240 frames as the text types (`runs/allstar`): East against
+West, East at home to Montreal, Montreal at home to West. **No glitch in any of them.** The text types out whole from
+"Hi, I'm Ron Barr" to "Press Start to begin": "Welcome to a sold out Madison Square Garden. Tonight's National Hockey
+League game features the All Stars West and All Stars East.", "All Stars West has been playing extremely well
+recently.", "For All Stars East Kirk Muller, ...", "...features the Montreal Canadiens and All Stars East." The
+All-Star teams' empty name adds nothing and the box carries on (no stray text, the top of the screen as usual). So the
+original game types an All-Star matchup cleanly; the commissioner's empty name must differ from the All-Stars' in some
+way the text player cares about.
+
+### NOSE4Web's SA-1 fix (9ac24df), played: the failures stand (2026-11-12)
+
+The rebuilt nhl94snes_SA1_five.sfc / _maxboost.sfc and the SA-1 32-team nhl94_2026_five.sfc / _maxboost.sfc. The three
+references are fixed in the bytes (`sta $00A5` at the max boost site, `adc $00AF` at $DFFF2, `ldy $0091` at $F7FAC), the
+changed places the same as before. Played on nhl94snes_SA1_five / _maxboost (`snes_2mb_hacks_check.py`, the boot states
+made again from the new ROMs), **every result is as before the fix**:
+- L+R: 0 of 12 at every hold length. By hand: the count at BW $7EF0 goes to 24 on the first frame of L+R and down to 0,
+  and tmgoalie stays 0 in BW-RAM ($77AA) and work RAM ($17AA).
+- Edit Lines: 22 skaters a row, 4-5 of the 22 picks a row leaving a player on twice. The extra attacker isn't swapped:
+  picking him (4) at LD gives the home line in BW-RAM [1, 4, 17, 7, 3, 12, 4, 0], player 4 twice. Work RAM's $1CE4 stays
+  all zeros, so the game keeps its lines only in BW-RAM, and this isn't a read of the wrong memory.
+- Max boost: 41 of 88 cells right, the same cells and values as the unfixed build (the hot / cold rolls are the same each
+  boot here): every cold player shows his ordinary rating.
+- The injury counts work on both SA-1 builds. On nhl94_2026_five (BW $40:5400): $5A over them at Game Setup is 0 at play,
+  and counts of 7, 10 and 255 are 3, 5 and 127 after an intermission (read at the same addresses: by then the away object
+  holds another player, so reading by the object's player gave 0 for the away one).
+- Boot clears the counts on nhl94_2026_five as on the others ($40:7EF0-7EF3 and $40:5400-547F junk at power-on: 0 by
+  Game Setup).
