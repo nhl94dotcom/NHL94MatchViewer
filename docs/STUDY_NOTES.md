@@ -3503,6 +3503,39 @@ have the same code $1B later ($68 later for setInjuryType); found by byte patter
 - **The SA-1 build** (nhl94snes_SA1_penalty_time_30.sfc): minors 60 s, served 59-60, 2 minutes each, in three games;
   no major came up there (the same multiply as the 1 MB build's, whose majors served 150 s).
 
+### The long fall as NOSE4Web built it, played (5de49b8; `gen_long_fall_check.py`, `snes_long_fall_check.py`)
+
+Each build in a scratch copy with every knockdown of a puck carrier sent down the injury path (the fall-back, facing
+and random tests NOP'd; the clock test kept), the computer playing (Genesis: pad 1 home, standing still), 8-10
+minutes (real) of play.
+
+- **Genesis (nhl94_long_fall.bin, CDL_Season_12_long_fall.bin): the game hangs at the first long fall.** The branch at
+  $14450 is `60 00 00 46`, which lands at $14498, 4 bytes past .22 ($14494, `move.w #SFXcrowdcheer,-(sp)`): the sound's
+  word is never pushed, `move.w #SFXcrowdboo,(sp)` writes over the return address and `song` takes it off the stack,
+  so FallDown's `rts` goes astray. Seen: the clock stood at 537 and every skater kept the same animation for a minute
+  (real). **The right bytes are `60 00 00 42`** ($14494 - $14452). Both builds have the same bytes (CDL's FallDown is
+  at the same address).
+- **With `60 00 00 42` (scratch copies of both): as meant.** 14 long falls: 325-351 frames from the fall to skating
+  again (326 typical: 5.4 s real, 13.6 game s; one that turned mid-fall, 351), the sprite frames falling, lying,
+  getting up (SPFduck), then skating; play on (screen 0), the clock running, no penalty during the fall, InjCntDown
+  never set, the game-injury bit never set, tmpdst $FFFF (on the ice); never knocked down again while lying. Ordinary
+  knockdowns 134 frames, as always (the build changes only the injury lists, the branch, the boot check and the
+  checksum; CDL's long-fall build also moves two of CDL's own routines, $1E2B5A and $1E2B6E, byte for byte to $1ED032
+  / $1ED046, with all three calls repointed and no old address left).
+- **SNES (NHL94_injuries_long_fall.smc, nhl94snes_SA1_injuries_long_fall.sfc): as meant.** The jmp (at $9E:9E21 /
+  SA-1 $9E:9E3C) lands on .25 (`ldy a2 / lda SPA,y / cmp #SPAstumble`). 9 long falls on the 1 MB build, 15 on the
+  SA-1: 326-332 frames, lying and getting up (SPFduck, SPFduck+4), then skating; the clock running, no penalty,
+  InjCntDown never set, tmpdst $FFFF, never knocked down again. Back falls 134-139 frames, as always. The builds change
+  only the two lists, the call and the checksum.
+- **The crowd at the fall's end is the right team's** (the code): Genesis .22 pushes the cheer and turns it into the
+  boo when the faller is the home team's (pfteam clear): the home crowd boos its own player going down and cheers a
+  visitor going down, as after any knockdown. SNES .25: a home faller, sound 3 (the groan); a visitor, the crowd level
+  +$258 (the roar). The SNES injury path's StartBenchCheer (the faller's bench, before the jmp) stays. What the long
+  fall leaves out: setInjuryType's "oooh" and the camera lock (Genesis), and the extra crowd excitement of an injury.
+- **A lying player doesn't move:** the movement step skips a player in SPAinjuryfall (Genesis logic94.asm) /
+  SPAinjury1 (SNES updateplayers), so he stops where he was hit instead of sliding as an ordinary fall does. A look only, as the
+  injured player always did.
+
 ## McMarkis's SNES fighting as NOSE4Web puts it in, played (2026-11-11, b3f1510)
 
 NHL94_fighting.smc (bank $A0), NHL94_Classic_fighting.smc ($A0), SDL16_fighting.smc ($A3); the bonus word at the block's
