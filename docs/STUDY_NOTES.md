@@ -3710,3 +3710,30 @@ game.) 6 games against the computer, all pass check_matches; per team, 15 minute
   possession 441 game s (385), passes 55 (46), rebounds 1.7 (0.9).
 - It won all 6, 3.3 goals to 0.7 (40: 6.3 to 1.6; 32: 8.4 to 1.5): about a person's scoring against the computer's
   goalie.
+
+### Versions 42 and 43: penalties and big hits (chunk 3, step 3)
+
+**Where 41's penalties came from** (6 games, 21 calls, the bot's team): tripping 7, roughing 6, cross-checking 3,
+charging 2, slashing 2, hooking 1: the checks about half, the pokes (a poke that bumps him trips) most of the rest.
+The game rolls for a penalty on every check and doubles the chance within about 40 of the puck
+(GENESIS_MECHANICS 8.1); **people hit off the puck a third of the time** (36% of their skater's hits, 41's 17%).
+**People's big hits are cross-checks into the boards** (97 of their 163; 26 upended by a shoulder, 25 cross-checks
+into the bench): FallDown makes a board check only when the man hit touches the boards (wide of the crease, |x| >
+$68, or past a goal line) and the checker comes from the middle side, driving him outward; the bot chased from
+behind.
+
+- **42** (41 with off_puck_hit: a teammate nearer the carrier by 25, the nearest opponent without the puck in our
+  half within 90 of the bot's skater hit; the long burst only at a carrier near the boards; no poke from point-blank;
+  DEF42), 6 games: penalties 2.6 (41: 3.5; people 1.5: tripping 5, cross-check 3, charging 3, hooking 2, roughing 2,
+  slashing 1), off-puck hits 27% of its hits (people 36%), but big hits 0.3 (41: 1.5) and possession up to 482 game s
+  (people 385). Won all 6, 3.7 to 0.8.
+- **43** (42 with board_hit: a man past 95 across within the goal lines, skate to his inside, 30 nearer the middle,
+  then C at him outward once 6+ nearer the middle than him; DEF43), 6 games: **big hits 1.8** (42: 0.3; people 3.9;
+  its skater's: 5 into the bench, 4 into the boards), but penalties 4.0 (tripping 11, roughing 7, hooking 4,
+  slashing 2, cross-check 1), body checks 19.9 (people 26.3), giveaways 17.5 (12.7), possession 469 (385). Won all 6,
+  3.1 to 0.9. Six games a version give a penalty rate to about +-0.7 a game, so 42 and 43's penalties differ less
+  than they look; the tripping is the poke, still.
+
+So far 41 is the closest to people overall (shots, one-timers, shot kinds, chances, passing, checks); 43 the closest
+in big hits. Open: the bot's pokes (tripping: the most-called foul in every version), its long possession (it keeps
+the puck about 80-100 game s a game more than people), and its giveaways.
