@@ -56,6 +56,9 @@ whenever a teammate is open across the slot (a safer open_mate) and with fewer C
 slot pass (48: 9.1 one-timer tries a game, 1.2 goals; experts 5.0 / 1.8): the one-timer only from people_carry's offer.
 50 is 49 offering it less often and only with the goalie drawn toward the passer's side (PEOPLE50).
 51 is 50 with the overnight sweep's best settings (bot_sweep.py, sweep1, 2026-11-12: SWEEP1); the default.
+52 is 51 ramming the carrier on some approaches (no gap, no C: people's plain-contact knockdowns) and hitting off
+the puck from farther and more often (DEF52; check_profile.py): fewer checks (16.5 a game against 51's 20.4).
+53 is 51 with people's pokes: one B press per approach at a slow carrier coming at it (DEF53; knockdown_approach.py).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -176,6 +179,8 @@ if __import__("os").environ.get("NHL94_PEOPLE44"):
 # of the lane, the pass chances "pass"; the burst from "open_burst" every "every" frames closing at "rate"+ (no pokes)
 PEOPLE45 = {"pass": {"def": 0.8, "neu": 0.7, "att": 0.55}, "open": 40, "len": 170, "back": 30, "lane": 22}
 DEF45 = {"every": 10, "open_burst": 60, "rate": 0.8}
+if __import__("os").environ.get("NHL94_DEF45"):
+    DEF45.update(__import__("json").loads(__import__("os").environ["NHL94_DEF45"]))
 if __import__("os").environ.get("NHL94_PEOPLE45"):
     PEOPLE45.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE45"]))
 # version 46 (the diagnosis: 32's slot passes reached the meant mate 14%, people-style 63%; people's CB checks land
@@ -250,6 +255,26 @@ def dir_to(dx, dy):
 SWEEP1 = {"arrive": 17, "out": 100, "offer": 0.1, "drawn": 0, "cb": 0.3, "shoot": 0.4}
 
 
+# version 52 (check_profile.py, 2026-11-12: coaches rated 80%+ knock down 17.3 a game with the skater they control,
+# 3.9 of them by plain contact (no check animation) and 6.0 off the puck; the bot 12.4, 0.9 and 3.6): within "ram" of
+# the carrier and closing at "rate"+, on "share" of approaches, skate straight at where he will be ("lead" frames on),
+# no gap and no C; off_puck_hit with "reach", "zone" and "every" in place of DEF42's; env NHL94_DEF52 as JSON
+DEF52 = {"ram": 70, "rate": 1.0, "share": 0.5, "lead": 4, "reach": 130, "zone": 400, "every": 8}
+if __import__("os").environ.get("NHL94_DEF52"):
+    DEF52.update(__import__("json").loads(__import__("os").environ["NHL94_DEF52"]))
+
+
+# version 53 (knockdown_approach.py, 2026-11-12: coaches rated 80%+ knock down 3.4 a game with a B press, 4% of them
+# called; the poker in front of the man he trips, facing him (52 of 78), 26 away at the press (20 on the carrier), the
+# man slow; 44 and on never poke: 31-43 held B on and off every frame within dp "poke" of the carrier, many pokes an
+# approach, and tripping was 44 of their 148 penalties): within "poke" of the carrier, him slower than "slow" and moving
+# toward me (his heading within "facing" degrees of me), one B press, at most one every "gap" frames, on "share" of
+# approaches; env NHL94_DEF53 as JSON
+DEF53 = {"poke": 28, "slow": 1.6, "facing": 75, "gap": 60, "share": 0.6}
+if __import__("os").environ.get("NHL94_DEF53"):
+    DEF53.update(__import__("json").loads(__import__("os").environ["NHL94_DEF53"]))
+
+
 def use_sweep1():
     global ARRIVE
     env = __import__("os").environ
@@ -267,8 +292,10 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + version)   # version 40's draws
-        if version == 51:                           # 51: 50 with sweep1's settings (env overrides still win)
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53) else version))   # version 40's draws
+        self.v52 = version == 52
+        self.v53 = version == 53
+        if version in (51, 52, 53):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -776,17 +803,18 @@ class Bot:
         chance away from the puck): a teammate is nearer the carrier by DEF42 "margin": the nearest opponent skater
         without the puck within "reach" of me and within "zone" of our goal line: skate at him, C (the burst) when
         within "burst" and closing, every "every" frames. The buttons, or None."""
-        if min(dist_to_puck.values()) + DEF42["margin"] >= dc:
+        Q = dict(DEF42, reach=DEF52["reach"], zone=DEF52["zone"], every=DEF52["every"]) if self.v52 else DEF42
+        if min(dist_to_puck.values()) + Q["margin"] >= dc:
             return None
         m, best = P[me], None
         for o in self.theirs:
             a = P[o]
             if o == owner or a["pos"] in (0, 0xFF):
                 continue
-            if abs(own_net_y - a["y"]) > DEF42["zone"]:
+            if abs(own_net_y - a["y"]) > Q["zone"]:
                 continue
             d = math.hypot(a["x"] - m["x"], a["y"] - m["y"])
-            if d < DEF42["reach"] and (best is None or d < best[0]):
+            if d < Q["reach"] and (best is None or d < best[0]):
                 best = (d, o)
         if best is None:
             return None
@@ -799,7 +827,7 @@ class Bot:
         tx, ty = a["x"] + 6 * a["vx"], a["y"] + 6 * a["vy"]
         out = pad(dir_to(tx - m["x"], ty - m["y"]))
         rate = ((a["x"] - m["x"]) * (m["vx"] - a["vx"]) + (a["y"] - m["y"]) * (m["vy"] - a["vy"])) / max(1, d)
-        if d < DEF42["burst"] and rate > 0.5 and self.frame % int(DEF42["every"]) == 0:
+        if d < Q["burst"] and rate > 0.5 and self.frame % int(Q["every"]) == 0:
             out = ["C"] + out
             self.note("off-puck hit", on=o, d=round(d))
         return out
@@ -1050,6 +1078,31 @@ class Bot:
                     return hit
             closing = (c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"]) > 0
             rate = ((c["x"] - m["x"]) * (m["vx"] - c["vx"]) + (c["y"] - m["y"]) * (m["vy"] - c["vy"])) / max(1, math.hypot(c["x"] - m["x"], c["y"] - m["y"]))
+            if self.v53 and dc < DEF53["poke"]:
+                # version 53: one poke an approach, at a slow carrier coming at me
+                if self.frame - getattr(self, "poke_seen", -999) > 30:
+                    self.poke_pick = self.rng.random() < DEF53["share"]
+                self.poke_seen = self.frame
+                csp = math.hypot(c["vx"], c["vy"])
+                head = 180.0
+                if csp > 0.2:
+                    hx, hy = m["x"] - c["x"], m["y"] - c["y"]
+                    hd = math.hypot(hx, hy) or 1
+                    head = math.degrees(math.acos(max(-1.0, min(1.0, (c["vx"] * hx + c["vy"] * hy) / (csp * hd)))))
+                if (self.poke_pick and csp < DEF53["slow"] and head < DEF53["facing"]
+                        and self.frame - getattr(self, "poked", -999) > DEF53["gap"]):
+                    self.poked = self.frame
+                    self.note("poke", d=round(dc))
+                    return ["B"] + pad(dir_to(c["x"] - m["x"], c["y"] - m["y"]))
+            if self.v52 and dc < DEF52["ram"] and rate > DEF52["rate"]:
+                # version 52: ram him on DEF52 "share" of approaches (drawn once an approach starts)
+                if self.frame - getattr(self, "ram_seen", -999) > 30:
+                    self.ram_pick = self.rng.random() < DEF52["share"]
+                self.ram_seen = self.frame
+                if self.ram_pick:
+                    if self.frame % 30 == 0:
+                        self.note("ram", d=round(dc))
+                    return pad(dir_to(c["x"] + DEF52["lead"] * c["vx"] - m["x"], c["y"] + DEF52["lead"] * c["vy"] - m["y"]))
             if self.version == 35 and dc < dp["poke"] and rate > POKE35:
                 pass                                # version 35: closing on him fast: the bodies would meet
             elif self.version in (33, 42, 43) and dc < POKE33:

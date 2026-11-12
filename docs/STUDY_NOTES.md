@@ -4069,3 +4069,54 @@ NHL94_bodychecks.smc (retail), SDL16_bodychecks.smc, nhl94snes_SA1_bodychecks.sf
 - **Through a shootout:** $168E-$16F5 is inside the saved $15D3-$1D52, which StartGame_go clears and the shootout code
   puts back. The shootout runs above found that block back as it was, apart from the game's own changes. No ROM has
   both hacks, so it wasn't played.
+
+### NOSE4Web's fixes, played (2026-11-12, d6ce48d)
+
+- **Ron Barr's missing line put back** (CDL_Season_12_lines_fixed.bin, IDL5_v02_lines_fixed.bin; `scouting_script.py`,
+  `scouting_text_check.py`).
+  - Both scripts have 36 lines again: line 29 is empty, and the paragraphs are at 30-35 where the list reads them.
+    The room ends where it did ($4B7A0, the picture's bytes after it unchanged), and outside it only the checksum
+    changed.
+  - CDL's greeting padding is 21 spaces (22 before). IDL5's welcome line lost the double space after "sold out
+    ^.". The editor also rewrote the welcome line's `+` and `_` as `}` and `{`, which run the same code.
+  - Played, **each paragraph is typed once**, in order, with an empty row between: greeting, welcome, (the hotter
+    team when there is one: IDL5's run had "Lately Los Angeles has been playing well."), home hot / cold, visitors'
+    hot / cold, crowd record, "Hit the start button". Nothing repeats between them.
+  - **Line 35 forced** (scratch copies, CompareHotColdTotals replaced by `moveq #$23,d0`): "Lately San Jose / Houston
+    has been playing extremely well." in its place, everything after it as normal. The game runs on (work RAM
+    counting down every frame), and START leaves the screen.
+  - **CDL's greeting with 21 spaces:** "Ace here." alone on row 1, "Tonight's goalies are" starting row 2 with no
+    indent. (The 22-space version read the same way in this morning's run: no indent there either.)
+- **The 2 MB builds' stats through a shootout** (the four rebuilt shootout ROMs, `snes_shootout_check.py --pad tie`:
+  the extra stats seeded at period 3's last second). All four go to the shootout and end 2-3.
+  - **Checks for and against and posts come back exactly as seeded** (153, 155, 3-4) on all four.
+  - **Ice time:** SA-1 builds 6,526 s seeded. At the end it reads 6,622 s on the after-overtime builds and 6,562 s
+    on the after-period-3 build: the seeded time plus the regulation and overtime seconds played after it. The
+    untied runs earlier grew by 24-36 s in the same last seconds. The LoROM build has no ice time ($E800 unchanged).
+  - SA-1 BW-RAM: the bytes written run from $40:4811 to $40:53FE, only at the shootout's start. That includes the
+    new $40:5320-$53FF save, and nothing in untied or playoff games.
+
+### How people check, and bot versions 52-53 (2026-11-12; `analysis/check_profile.py`, `analysis/knockdown_approach.py`)
+
+The user: don't chase the experts' check count exactly; some top coaches pad it with checks after the whistle,
+which count in unmodified ROMs. So this is about how people knock players down, not a number to match.
+- **Who knocks players down** (people's Genesis recordings, sides matched to coach ratings; the bot's 8-game
+  recordings). Coaches rated 80%+ against an average coach (28 side-games): game's checks 29.5. The skater they
+  control knocks down 17.3 a game: 13.5 with a thrown check (shoulder, hip, cross-check), 3.9 without one; 11.4 on
+  the carrier, 6.0 off the puck. Teammates add 7.3. Under 80% (8 side-games): 19.6 and 10.8. Version 51: 20.4 and 11.0
+  (thrown 10.2, plain 0.8, off the puck 3.9), teammates 7.9, from 34.9 check attempts a game (people 23).
+- **The knockdowns without a check animation are pokes.** Of the strong coaches' 3.6 a game without a C press in the
+  1.5 s before, 3.3 follow a B press. 95 such knockdowns: the poker in front of the man (his heading within 60 degrees
+  of the poker in 52 of 78 with a heading, from the side 20, behind 6), 26 away at the press (20 on the carrier), the
+  man slow. Only 0.14 a game were followed by a penalty within 3 s (4%). The bot stopped poking in version 44 (trips);
+  versions 31-43 held B on and off every frame inside poke range, many pokes an approach.
+- **Thrown checks:** at the C press before a knockdown, strong coaches are 36.5 away (median) and closing at 1.6 a
+  frame; the bot 29.8 and 1.3.
+- **Version 52** (51 ramming the carrier without C on half its approaches, and off-puck hits from 130 away within 400
+  of our goal line, every 8 frames), 8 games: checks 16.5, plain-contact knockdowns still 0.8. Skating into the
+  carrier without C knocks nobody down, and the approaches spent ramming lost their C bursts. Dropped.
+- **Version 53** (51 with people's pokes: one B press per approach at a carrier within 28, slower than 1.6, heading
+  within 75 degrees of the bot, on 60% of approaches, at most one every 60 frames), 8 games: plain knockdowns 1.8
+  (0.8), thrown 8.9 (10.2), checks 19.4 (20.4), penalty minutes 1.8 (3.5; experts 2.4), 2.9 goals for and 1.4 against.
+- A sweep of 53's C timing (the closing rate needed, how often it may press: `NHL94_DEF45`) was stopped half done to
+  make room for NOSE4Web's retests.
