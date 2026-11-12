@@ -419,7 +419,9 @@ PLAY62 = {"goalie_wait": 10, "goalie_every": 16, "lane": 30, "close": 40, "cycle
 # forecheck): still for "goalie_wait" frames (unless an opponent comes within "rush"), then B toward the teammate
 # farthest up the ice whose lane from the goalie has no opponent within "lane" (the nearest-free one if none has).
 GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22, "drive_anyway": 0.25}
-# and its drive at the net (zone_hold) shoots only with the goalie off his line, or on "drive_anyway" of drives
+# and its drive at the net (zone_hold) shoots only with the goalie off his line, or on "drive_anyway" of drives.
+# Version 64: 63 still drove and shot 9.7 times a game (3 traced games; 62 14.7, 61 none; shots on goal 18.0, people
+# 11.4): only with the goalie off his line.
 if __import__("os").environ.get("NHL94_PLAY62"):
     PLAY62.update(__import__("json").loads(__import__("os").environ["NHL94_PLAY62"]))
 
@@ -441,20 +443,21 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63)
-        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63)
-        self.v57 = version in (57, 58, 59, 60, 61, 62, 63)
-        self.v58 = version in (58, 59, 60, 61, 62, 63)
-        self.v59 = version in (59, 60, 61, 62, 63)
-        self.v60 = version in (60, 61, 62, 63)
-        self.v61 = version in (61, 62, 63)
-        self.v62 = version in (62, 63)
-        self.v63 = version == 63
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64)
+        self.v58 = version in (58, 59, 60, 61, 62, 63, 64)
+        self.v59 = version in (59, 60, 61, 62, 63, 64)
+        self.v60 = version in (60, 61, 62, 63, 64)
+        self.v61 = version in (61, 62, 63, 64)
+        self.v62 = version in (62, 63, 64)
+        self.v63 = version in (63, 64)
+        self.v64 = version == 64
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -1017,7 +1020,8 @@ class Bot:
         if clear:
             if out > C["close"]:
                 return turn(dir_to(-0.4 * ax, NET_Y - 30 - ay))
-            if self.v63 and not self.goalie_open(P, me) and self.rng.random() >= GOALIE63["drive_anyway"]:
+            anyway = 0.0 if self.v64 else GOALIE63["drive_anyway"]     # version 64: never a forced drive shot
+            if self.v63 and not self.goalie_open(P, me) and self.rng.random() >= anyway:
                 # version 63: 62 shot from every clear drive (20.8 shots on goal a game, people 11.4, no more goals):
                 # the goalie set, a pass across if one is on, else on round the cycle
                 g = self.att_g

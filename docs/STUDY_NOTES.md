@@ -4535,6 +4535,15 @@ held Down, moving the menu. Measured (8 bot_record.py games a version against th
 - `bot_live.py` keeps the bot's own log of each play session (`%USERPROFILE%\NHL94_scoring_map\bot_live_logs`), and
   `tools/bot_games.py` counts a game as the bot's from 10 minutes before the session's start (the user's BOS-LA game
   began a minute before bot_live.py was started and was missed).
+- **Compared** (`bot_compare.py`, 32 paired games against the computer): 62 against 61 xG 5.11 against 3.30 (+1.81
+  ±0.52), goals 2.59 against 2.62 (-0.03 ±0.36), shots on goal 20.8 against 12.9; 63 against 62 goals 2.97 against 2.59
+  (+0.38 ±0.34), xG 5.58 (+0.47 ±0.48), shots on goal 21.6, xG against 2.29 and 2.30, penalties 1.97 and 1.59 (+0.38
+  ±0.34). Traced (3 games each, bot_run.py's seeds): shots on goal 14.7 (61), 25.0 (62), 18.0 (63); drive shots 0, 14.7,
+  9.7; carried back out of the zone 9.3, 0.7, 0.7 a game. Version 64 (the drive shot only with the goalie off his line)
+  still drove and shot 14.7 a game: in close the computer goalie is nearly always off the line from the shooter to the
+  middle of the net, so that gate does little; dropped. Shots on goal against the computer are no measure of
+  human-likeness: people's four recorded games against the computer had 4-59 (mean 34.8), and against the user version
+  61 had 10 and 13 (strong coaches against people 11.4). **Version 63 is the default.**
 
 ### NOSE4Web's c04618e (direct-page forms on the SA-1 builds), played: everything passes (2026-11-12)
 
