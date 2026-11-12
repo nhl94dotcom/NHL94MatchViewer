@@ -40,6 +40,10 @@ one-timer set-up (low on one side, across: LOW29), checked before the wrist shot
 teammate when a defender closes in ahead (RELIEF30). 39 is 32 passing out of a check (2026-11-07, CHECK39): when an
 opponent skater is bursting at him and due to reach him in 6-16 frames, a pass to an open teammate (relief_mate) at
 once, as check_pass_timing.py found best (B as the burst begins, the pass away 0.10-0.25 s real before contact).
+40 (2026-11-11, the user: a bot that plays like people, for simulations) is 32 carrying the puck as people do
+(people_carry, PEOPLE40; analysis/carry_profile.py): a hold time drawn from people's by zone, then a pass to an open
+teammate (the one-timer pass in the attacking zone), the slapshot from the slot or the point, the dump-in at their line;
+and it bursts in to check again.
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -125,6 +129,14 @@ CHECK39 = dict(dist=70, closing=1.2, tmin=6, tmax=16, ay=170)
 if __import__("os").environ.get("NHL94_CHECK39"):
     CHECK39 = dict(zip(("dist", "closing", "tmin", "tmax", "ay"),
                        map(float, __import__("os").environ["NHL94_CHECK39"].split(","))))
+# version 40: people's carry (people_carry): hold medians in frames by zone, pass chances by zone, the one-timer,
+# slapshot and dump-in chances, people_mate's limits; env NHL94_PEOPLE40 as JSON to override any of them
+# (first try, 1 game: pass 0.85 / 0.7 / 0.55, dump 0.5, open 30: own-zone carries 48% passes (people 74%), neutral
+# 27% (57%) with 50% ending in a shot or dump (19%): passes made likelier, a teammate open from 25, fewer dumps)
+PEOPLE40 = {"hold": {"def": 74, "neu": 94, "att": 53}, "pass": {"def": 0.95, "neu": 0.9, "att": 0.6}, "ot": 0.5,
+            "slap": 0.35, "dump": 0.25, "open": 25, "len": 220, "back": 40}
+if __import__("os").environ.get("NHL94_PEOPLE40"):
+    PEOPLE40.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE40"]))
 if __import__("os").environ.get("NHL94_RELIEF30"):
     RELIEF30 = dict(zip(("press", "from", "open", "len"),
                         map(float, __import__("os").environ["NHL94_RELIEF30"].split(","))))
@@ -160,6 +172,7 @@ def dir_to(dx, dy):
 
 class Bot:
     def __init__(self, team=0, version=32):
+        self.rng = __import__("random").Random(7919 * team + version)   # version 40's draws
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
         self.struck = -999
         self.deke = DEKE6 if version >= 6 else DEKE
@@ -352,6 +365,10 @@ class Bot:
                 self.phase, self.t = "clear", 0     # version 34: shorthanded in our half: clear it up the ice
                 self.note("clear start", ax=ax, ay=ay)
                 return ["C"] + pad(aview(0))
+            if self.version == 40:
+                act = self.people_carry(P, me, s, g, ax, ay, near, ahead)
+                if act is not None:
+                    return act
             low_mate = self.low_mate(P, me, s, g, ax, ay) if self.version == 29 else None
             relief = self.relief_mate(P, me, s, g) if self.version == 30 and near[0] < RELIEF30["press"] and ahead                 and ay > RELIEF30["from"] else None
             if self.version == 39 and ay < CHECK39["ay"] and self.checker_due(P, me, g):
@@ -487,6 +504,12 @@ class Bot:
                 return ["C"] + pad(near_side)
             self.note("shot", kind="close")
             return pad(near_side)
+        if self.phase == "dump":                    # version 40: the dump-in, C 3 frames at the corner
+            corner = aview(1 if ax < 0 else 7)
+            if self.t < 4:
+                return ["C"] + pad(corner)
+            self.note("shot", kind="dump")
+            return pad(corner)
         if self.phase == "clear":
             if self.t < PK34["hold"]:
                 return ["C"] + pad(aview(0))
@@ -587,6 +610,68 @@ class Bot:
             if closing >= CHECK39["closing"] and CHECK39["tmin"] <= (d - 18) / closing <= CHECK39["tmax"]:
                 return True
         return False
+
+    def people_carry(self, P, me, s, g, ax, ay, near, ahead):
+        """Version 40 (2026-11-11, chunk 3: a bot that plays like people; carry_profile.py): people's carriers hold the
+        puck a median 74 / 94 / 53 frames in their own / the neutral / the attacking zone and then most often pass
+        (74% / 57% / 44% of carries end in a pass; the bot's 32 almost never did). Each carry draws a hold time
+        (exponential, the zone's median); when it runs out: in the attacking zone the one-timer pass (open_mate) with
+        probability PEOPLE40 "ot", else a pass to an open teammate (people_mate) with the zone's "pass", else from the
+        slot or the point (90-175 up the ice) the slapshot ("slap"; people: a quarter of their shots); in the neutral
+        zone near their line (30+ up the ice) with an opponent within 40 ahead, the dump-in ("dump"); else carry on
+        (32's deke and wrist shot) and draw again. The buttons this frame, or None for 32's way."""
+        zone = "def" if ay < -89 else "att" if ay > 89 else "neu"
+        draw = lambda: max(8, int(PEOPLE40["hold"][zone] * -math.log(1 - self.rng.random()) / math.log(2)))
+        if self.t <= 1:
+            self.hold = draw()
+        if self.t < self.hold:
+            return None
+        self.hold = self.t + draw()
+        av = lambda d: d if s > 0 else (d + 4) % 8
+        if zone == "att":
+            mate = self.open_mate(P, me, s, g)
+            if mate is not None and self.rng.random() < PEOPLE40["ot"]:
+                self.mate, self.relief = mate, False
+                self.phase, self.t, self.passer = "pass", 0, me
+                self.note("pass start", ax=ax, ay=ay, people=True, onetimer=True)
+                return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
+        mate = self.people_mate(P, me, s, g)
+        if mate is not None and self.rng.random() < PEOPLE40["pass"][zone]:
+            self.mate, self.relief = mate, True
+            self.phase, self.t, self.passer = "pass", 0, me
+            self.note("pass start", ax=ax, ay=ay, people=True, relief=True)
+            return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
+        if zone == "att" and 90 < ay < 175 and self.rng.random() < PEOPLE40["slap"]:
+            self.phase, self.t = "slap", 0
+            self.note("slap start", ax=ax, ay=ay, people=True)
+            return ["C"] + pad(av(4))
+        if zone == "neu" and ay > 30 and near[0] < 40 and ahead and self.rng.random() < PEOPLE40["dump"]:
+            self.phase, self.t = "dump", 0
+            self.note("dump start", ax=ax, ay=ay)
+            return ["C"] + pad(av(1 if ax < 0 else 7))
+        return None
+
+    def people_mate(self, P, me, s, g):
+        """Version 40: an open teammate as people pass to (sideways 32%, forward 30%, diagonal forward 25%, back
+        13%): no opponent within PEOPLE40 "open" of him, none within 15 of the lane, the pass under "len", him no more
+        than "back" behind; the one farthest up the ice."""
+        m, best = P[me], None
+        for k in self.mine:
+            if k == me or P[k]["pos"] in (0, 0xFF):
+                continue
+            t = P[k]
+            L = math.hypot(t["x"] - m["x"], t["y"] - m["y"]) or 1
+            if L >= PEOPLE40["len"] or s * (t["y"] - m["y"]) < -PEOPLE40["back"]:
+                continue
+            if any(math.hypot(P[o]["x"] - t["x"], P[o]["y"] - t["y"]) < PEOPLE40["open"] for o in self.theirs if o != g):
+                continue
+            if any(0 < ((P[o]["x"] - m["x"]) * (t["x"] - m["x"]) + (P[o]["y"] - m["y"]) * (t["y"] - m["y"])) / L < L
+                   and abs((P[o]["x"] - m["x"]) * (t["y"] - m["y"]) - (P[o]["y"] - m["y"]) * (t["x"] - m["x"])) / L < 15
+                   for o in self.theirs):
+                continue
+            if best is None or s * t["y"] > s * P[best]["y"]:
+                best = k
+        return best
 
     def relief_mate(self, P, me, s, g):
         """Version 30: an open teammate for a relief pass: no opponent within RELIEF30["open"] of him, none within 15
@@ -726,12 +811,14 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
-            if self.version in (31, 32, 33, 34, 35, 36, 37, 38, 39):
+            if self.version in (31, 32, 33, 34, 35, 36, 37, 38, 39, 40):
                 # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
                 # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
                 # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
                 # charging, cross-checking)
-                dp = dict(dp, poke=0) if self.version == 31 else dict(dp, burst=0)   # 33-38: as 32
+                # 33-38: as 32; 40 (people's way) bursts in to check again: people hit (26 checks, 3.9 big hits a
+                # team-game; 32: 22 and 1.4)
+                dp = dict(dp, poke=0) if self.version == 31 else dp if self.version == 40 else dict(dp, burst=0)
             tx, ty = c["x"] + dp["gap"] * dx / L + 6 * c["vx"], c["y"] + dp["gap"] * dy / L + 6 * c["vy"]
             out_c = abs(own_net_y) - 4 - (-s) * c["y"]  # the carrier's distance out from our goal line
             if self.version == 36 and out_c < PK36["zone"] and L > PK36["hold"] + 15 and self.shorthanded(P):
@@ -768,7 +855,7 @@ class Bot:
             elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0:
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38, 39) and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38, 39, 40) and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])

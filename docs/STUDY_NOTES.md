@@ -3664,3 +3664,31 @@ minutes of play). **The bot beats the computer 8.4 goals to 1.5 a game** (every 
 So the bot is strong in a way of its own (one skater, the deke and close wrist shot), not a stand-in for a person. A
 bot that plays like people would add passing (and the one-timer that follows), slapshots from the point, dump-ins when
 the line is closed, and checking to knock down (the big hit) rather than to touch.
+
+### Version 40: the bot carrying the puck as people do (chunk 3, step 1; `analysis/carry_profile.py`)
+
+**People's carriers** (the person's skater, 4,374 carries in the recorded Genesis games): own zone a median 3.1
+game s, then 74% pass, 8% shoot or clear, 18% lost; neutral zone 3.9 s, 57% / 19% / 23%; attacking zone 2.2 s,
+44% / 30% / 26%. Passes sideways 32%, forward 30%, diagonal forward 25%, back 13%. Shots: wrist 67%, slapshots 26%
+(from the slot 15%, the point 9%). **Version 32's skater:** own zone 10.4 s (circling his net), 13% pass; neutral 1%
+pass; attacking 5% pass, 59% shoot; no slapshots. The computer's carriers are much like people's (70% / 51% / 38%
+pass).
+
+**Version 40** (bot.py people_carry, PEOPLE40): a hold time drawn from people's by zone, then a pass to an open
+teammate (pass chances 0.95 / 0.9 / 0.6 by zone; in the attacking zone the one-timer pass first, half the time), the
+slapshot from the slot or the point (35% when no pass), the dump-in when pressed at their line (25%); it bursts in to
+check again (32 never did, for its penalties). 7 games against the computer (the first with the first try's chances:
+0.85 / 0.7 / 0.55, dump 0.5), recorded and converted as people's (all pass check_matches); per team, 15 minutes:
+
+- **Now like people:** passes 43 (people 46; 32: 6), own-zone carries 2.8 s ending 57% in a pass; giveaways 12.7
+  (12.7); body checks 28 (26); possession 405 game s (385); median shot distance 78 (77); attacking-zone possession
+  136 (149); penalties 2.1 (1.5; 32: 2.8).
+- **Still not:** shot attempts 41 (people 18): 32's close-in wrist shot and deke still fire whenever he gets there, and
+  its rebounds (5.3, people 0.9); one-timers almost none (0.4 tries, people 4.6: the one-timer pass rarely finds an
+  open receiver in the slot); slapshots 9% (17%); big hits 1.3 (3.9: the burst at 45 every 30 frames touches rather
+  than flattens); pass completion 69% (55%: it only passes to open teammates); takeaways 20 (12).
+- **Still strong:** it won all 7, 6.3 goals to 1.6 (32: 8.4 to 1.5).
+
+Next steps for people's play: fewer, later shots (people shoot about once in three attacking-zone carries), the
+one-timer set-up as people make it (the receiver moving into the slot, the pass across), and the big hit (a burst
+from farther out at full speed).
