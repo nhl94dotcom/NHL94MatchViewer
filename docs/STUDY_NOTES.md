@@ -4457,7 +4457,11 @@ straight ahead of him, he skates backwards instead (pfrev) and doesn't turn.
 **Played (Genesis retail, the 16 bot start states, pad 1's skater: UP 50 frames then DOWN 60, and DOWN then UP):**
 every straight reversal of a left-hander turned clockwise (19), of a right-hander counter-clockwise (8); the one other
 turn started facing 6 (not a reversal: the short way). So **a left-handed LD and a right-handed RD turn toward the
-middle** when they turn around; the opposite hands turn toward the boards. The SNES code is the same (not played).
+middle** when they turn around; the opposite hands turn toward the boards. **SNES, played** (retail, the harness's
+live state, pad 1's skater at six moments, UP 50 frames then DOWN 70 and the reverse, with his own attribute and with
+$0800 flipped): every clean reversal of an unmirrored skater (left-handed: setplayer sets $0800 for right-handers)
+turned clockwise (7), of a mirrored one counter-clockwise (6); the rest weren't reversals (play stopped, the facing not
+straight back, or the goalie, whose turning is goalieacc's).
 
 ### Where the computer decides to change lines (2026-11-12, for NOSE4Web; from the disassemblies, retail addresses)
 
