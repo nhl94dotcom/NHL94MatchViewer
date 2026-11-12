@@ -20,7 +20,7 @@ RETAIL = WORK / "nhl94_retail.bin"
 SCORE = (0xC6DA, 0xCA3E)
 SHOTS = (0xC6CE, 0xCA32)
 MAX_FRAMES = 70000
-VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 59)     # bot.py's versions (the default 59 since 2026-11-12; 57, 55, 54, 51 that day, 32 before)
+VERSION = int(os.environ.get("NHL94_BOT_VERSION") or 61)     # bot.py's versions (the default 61 since 2026-11-12; 59, 57, 55, 54, 51 that day, 32 before)
 
 
 STATS = (0xC6CE, 0xCA32)                       # team stat blocks: +$02 PP goals, +$04 power plays, +$06 penalties, +$08 PIM

@@ -4405,3 +4405,8 @@ his reach; people shoot while he catches up.
     divided by 4.
   - So these routines run with D = $3000, not $0000: absolute $00xx operands (the 3-byte forms NOSE4Web's fixes used)
     miss the variables; direct-page operands follow D.
+- **Version 61 against 59** (`bot_compare.py 59 61 32`, paired): xG 3.30 against 3.62 a game (-0.32 ±0.27), goals 2.62
+  against 2.78 (-0.16 ±0.34), xG against 2.38 against 2.90 (-0.51 ±0.35): equal within the noise. Its cross-crease
+  (`scoring_moves.py`, 32 games): 1.22 a game (people 0.86), 13% scored, xG 0.187 a shot (59's shots that happened to
+  cross the middle: 0.53 a game, 12%, 0.174; people against the computer goalie 34%, 0.282). **Version 61 is the
+  default**: equal on results, the move strong coaches use about once a game in people's shape, aim and wind-up.
