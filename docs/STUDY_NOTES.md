@@ -4355,3 +4355,53 @@ made again from the new ROMs), **every result is as before the fix**:
   completed ones for both; one-timer passes 4.5 a game for both (never counted completed). The bot passes less (46 a
   game against 53), so the uncredited one-timers weigh more in its share: the game's counter 50% against 56%. It is
   intercepted more in the attacking zone (36% against 31%) and less in its own (15% against 25%). Left as it is.
+
+### The bot's cross-crease, diagnosed and rebuilt (2026-11-12, version 61)
+
+The user: improve the bot's cross-crease, after finding what fails. The move (GENESIS_GUIDE, GENESIS_SHOOTING 5.7):
+straight across the front of the net close in at full speed, the computer goalie trailing the puck's line by more than
+his reach; people shoot while he catches up.
+- **People's move, traced** (their 57 cross-crease shots, all recorded games, back 1.5 s, across measured in the
+  direction of travel): 1.5 s before, on the wing (-66 across, 164 out) coming at 1.29 toward the net and not across;
+  1.0 s -53, 124 out, 0.86 across; 0.6 s -27, 98 out, 1.28 across; 0.3 s at the middle, 74 out, 1.53 across; at the shot
+  +24, 51 out, 1.31 across and 1.28 toward the net. **A cut across the slot at speed, not a stop and a slide.** Against
+  the computer goalie (32 of the shots): 34% scored, xG 0.282, 57 out, 25 across, speed 12,000 (median), 21 aimed the way
+  they move, 17 high, the goalie 5.8 off the line; against a person in net (25) 28%.
+- **Version 60's play, traced** (the bot's own log, 8 games, 26 plans): down the wing straight at the net (about 2 a
+  frame), set up only 40 out, then across at 0.06-0.65 a frame while still carrying its speed in; 24 of 26 lost the
+  puck in the crease 25-35 out, before any shot.
+- **Version 61, step by step** (8-game recordings with the cross-crease on half the zone entries, its shots against
+  people's against the computer goalie):
+  - the d-pad held sideways: the speed toward the net carried on, the run slid to the goal line (shots 22 behind it);
+  - a stop near the dot, then steered by velocity (the d-pad toward the wanted velocity less his own, as version 8's EA
+    Special): held 39 out, but crossed at 0.8 a frame; the goalie kept up and the puck was lost;
+  - **people's cut**, steered by velocity, no stop: 1.5 across and 1.35 toward the net from the wing (35+ across,
+    95-175 out); its shots now 1.4 across a frame, but none of 60 scored;
+  - **the aim**: the wrist shot's own rule (the half away from the goalie) sent 36 of 58 back against the motion, all
+    mid height, xG 0.032 with the goalie 8 off the line; aimed high the way he moves (code 1 high +x at the +y net, 7 high
+    -x, reversed at the -y net): 50 of 55 so, 1 scored;
+  - **where it shoots**: deciding inside 60 out, the run had carried it 57 across (xG 0.066); deciding at the middle,
+    the puck leaves about 30 past it (the release ~20 frames after the decision);
+  - **the shot's speed**: on target (60 of 64 saved), but slow (9,300 against 12,000). C held 4 -> 8 -> 12 frames:
+    speed 10,700 -> 12,100, scored 5 of 60 -> 4 of 40, xG 0.102 -> 0.150. Deciding 10 before the middle with the long hold:
+    the goalie not yet pulled across (4.7 off the line), 2 of 38.
+- **Version 61's settings** (CROSS61): the cut above, the shot decided at the middle with the goalie off the line or 8
+  past it anyway, aimed high with the motion, C held 12 frames; drawn on 6% of zone entries (people about 0.9 a game).
+  The cross-crease went from 0% scored (xG 0.03) to about 10% (xG 0.15) of its shots; people 34% (0.28). Measured
+  against 59 with bot_compare.py (below).
+
+### NOSE4Web's 36d0a51 and the probes (2026-11-12)
+
+- **L+R pull, fixed**: nhl94snes_SA1_five.sfc and nhl94_2026_five.sfc pull at every hold from 2 frames to 120 (12 of 12),
+  a second press brings the goalie back, nothing in a stoppage, nothing after L+R in a whistle or a pause, and with both
+  pads on the home team only pad 1 has it, as on retail and the LoROM build.
+- **Probes** (scratch copies: the hook's jump sent to a probe in free ROM, $9B:CDFE and $9F:FC48, that saves registers
+  and direct-page bytes at BW $40:F000 up and goes on to NOSE4Web's code):
+  - the extra attacker code ($9B:FFBE) is reached, once a pick, with **D = $3000, S = $1FE9, DB = $9F**; dp $A5 (d0) =
+    $7CE5 (the line's LD slot) and a3 ($95-$97) = $00:7CE4, the line in BW-RAM; absolute $00A5 read through DB $9F
+    gives $0000;
+  - the max boost code ($9F:FFEF) is reached once a rating cell, with D = $3000, S = $1FC3, DB = $9F; **$16 is the hot /
+    cold byte** (Agility's 246, 247, 250 = -10, -9, -6, and 12, 1, 2 for players 16-23, as the table) and $14 its value
+    divided by 4.
+  - So these routines run with D = $3000, not $0000: absolute $00xx operands (the 3-byte forms NOSE4Web's fixes used)
+    miss the variables; direct-page operands follow D.
