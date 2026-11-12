@@ -423,6 +423,13 @@ PLAY62 = {"goalie_wait": 10, "goalie_every": 16, "lane": 30, "close": 40, "cycle
 # about 38 further. People's leave 19-42 across (quartiles; 24 shots, 33% scored). 65 decides before the middle:
 # with the goalie off the line 16 short of it ("past" -16), else 12 short ("anyway" -12).
 CROSS65 = {"past": -16, "anyway": -12}
+# version 66 (2026-11-12, 12 games with the bot's log stamped with the emulator frame): 22 of 39 shots counted as
+# cross-crease were 32's ordinary wrist shot fired while sliding across, decided late (44 across) and soft (shot speed
+# 9,700; people's 15,000), 0 of 22 scored; the planned cut released at 48 across, 23 frames after its decision. The
+# user: "if you wait until you're past the far post, that's too late". 66: no ordinary wrist shot while moving across
+# ("vx" or faster) once "late" past the middle the way he moves; before it, the cut's longer wind-up, high the way he
+# moves; the planned cut decides "past" / "anyway" short of the middle.
+CROSS66 = {"past": -24, "anyway": -20, "vx": 1.0, "late": 15}
 GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22, "drive_anyway": 0.25}
 # and its drive at the net (zone_hold) shoots only with the goalie off his line, or on "drive_anyway" of drives.
 # Version 64: 63 still drove and shot 9.7 times a game (3 traced games; 62 14.7, 61 none; shots on goal 18.0, people
@@ -448,22 +455,23 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65)
-        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65)
-        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65)
-        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65)
-        self.v59 = version in (59, 60, 61, 62, 63, 64, 65)
-        self.v60 = version in (60, 61, 62, 63, 64, 65)
-        self.v61 = version in (61, 62, 63, 64, 65)
-        self.v62 = version in (62, 63, 64, 65)
-        self.v63 = version in (63, 64, 65)
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
+        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66)
+        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66)
+        self.v60 = version in (60, 61, 62, 63, 64, 65, 66)
+        self.v61 = version in (61, 62, 63, 64, 65, 66)
+        self.v62 = version in (62, 63, 64, 65, 66)
+        self.v63 = version in (63, 64, 65, 66)
         self.v64 = version == 64
         self.v65 = version == 65
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v66 = version == 66
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -702,8 +710,11 @@ class Bot:
                 # a pad stack sliding to the middle (GENESIS_GUIDE 6: 37% when he dropped), released at his own side
                 self.phase, self.t = "close", 0
                 self.note("close start", ax=ax, ay=ay)
-            elif ((WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y)                     and self.may_shoot(P, me, g, s):
+            elif ((WRIST16["ay"] < ay < NET_Y - 10 and abs(ax) < WRIST16["mid"]) if self.version >= 16 else 200 < ay < NET_Y)                     and self.may_shoot(P, me, g, s) and not self.late_across(m):
                 self.phase, self.t = self.wrist_or_slap(P, me, ay), 0     # in close off the deke's line: a wrist shot away from the goalie
+                if self.v66 and self.phase == "wrist" and abs(m["vx"]) >= CROSS66["vx"]:
+                    self.cross_aim = 1 if m["vx"] * s > 0 else 7      # version 66: across, before the middle: the
+                                                                      # cut's wind-up, high the way he moves
                 self.note("wrist start", ax=ax, ay=ay)
             elif near[0] < PRESSURE and ahead and ay > (GATE[1] + 35 if self.version >= 4 else 90)                     and self.version < 16:          # version 16: no slapshot under pressure (about none went in)
                 self.phase, self.t = "slap", 0
@@ -909,7 +920,7 @@ class Bot:
 
     def cross_carry61(self, P, me, ax, ay, out, sa):
         """Version 61's cross-crease: people's cut across the slot at speed (CROSS61), steered by velocity."""
-        C = dict(CROSS61, **CROSS65) if self.v65 else CROSS61
+        C = dict(CROSS61, **CROSS65) if self.v65 else dict(CROSS61, past=CROSS66["past"], anyway=CROSS66["anyway"])             if self.v66 else CROSS61
         turn = lambda d: pad(d) if sa > 0 else pad((d + 4) % 8)
         vx, vy = sa * P[me]["vx"], sa * P[me]["vy"]           # the attacker's view: vy up the ice, toward the net
         steer = lambda wx, wy: [] if math.hypot(wx - vx, wy - vy) < 0.12 else turn(dir_to(wx - vx, wy - vy))
@@ -942,6 +953,11 @@ class Bot:
             self.note("cross shot", ax=round(ax), out=round(out), vx=round(vx, 2), open=self.goalie_open(P, me))
             self.plan = None
         return go
+
+    def late_across(self, m):
+        """Version 66: moving across the slot (CROSS66 "vx" a frame or faster) and already "late" past the middle the
+        way he moves: too late for the shot across."""
+        return self.v66 and abs(m["vx"]) >= CROSS66["vx"] and m["x"] * m["vx"] > 0 and abs(m["x"]) > CROSS66["late"]
 
     def goalie_pass(self, P, me):
         """Version 62: our goalie has the puck: still for PLAY62 "goalie_wait" frames, then B every "goalie_every"

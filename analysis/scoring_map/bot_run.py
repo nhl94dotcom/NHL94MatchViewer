@@ -69,7 +69,10 @@ def play(e, start, seed, frames_out=None, home=None, away=None):
             e.run(4, hold=["START"])                # waits for START (a faceoff waits only about 300)
             still = 0
             continue
+        n_log = len(bot.log)
         hold = bot.step(e)
+        for x in bot.log[n_log:]:                   # the emulator's own frame (bot_record.py's count when it records)
+            x["ef"] = getattr(e, "frame_no", f)
         hold2 = bot2.step(e) if bot2 else []
         e.run(1, hold=hold, hold2=hold2)
         ring = (ring + [snap(hold, hold2)])[-900:]

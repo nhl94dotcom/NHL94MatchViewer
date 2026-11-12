@@ -42,6 +42,7 @@ def one(n, out):
             for _ in range(k):
                 base(1, **kw)
                 state["frame"] += 1
+                e.frame_no = state["frame"]          # stamped on the bot's log entries (bot_run.play)
                 ms = state["frame"] * 1000 // FPS
                 fast.write(struct.pack("<q", ms) + b"".join(bytes(ram[s:s + z]) for s, z in genesis.BLOCKS))
                 state["count"] += 1
@@ -51,6 +52,10 @@ def one(n, out):
         r = bot_run.play(e, start, 0x9E3779B1 * (n + 1) & 0xFFFFFFFF)
         for _ in range(5 * FPS):
             run(1)
+    if r.get("log") is not None:                # NHL94_BOT_LOG=1 (2026-11-12): the bot's own log beside the matches
+        logs = out / "logs"
+        logs.mkdir(parents=True, exist_ok=True)
+        (logs / f"bot_genesis_{n:02d}.json").write_text(json.dumps(r["log"]))
     (folder / "capture.json").write_text(json.dumps({"blocks": [list(b) for b in genesis.BLOCKS],
                                                      "recorded_by": "bot_record", "system": genesis.NAME}))
     print(json.dumps({"game": n, "score": r["score"], "shots": r["shots"], "samples": state["count"],
