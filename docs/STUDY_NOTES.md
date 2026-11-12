@@ -4483,6 +4483,15 @@ why). The longest bench stints are skaters who played early and then sat (a whol
   floor `cmp.w #4,d1` at **$DA88** ($FA1A, $12404 ... are other compares). A 3-on-3 hook: tmap 4 for both at
   StartPer in overtime, and InProgress_ap counting from 4 in overtime (with the NHL's 4-on-3: the other team +1 per
   player off rather than the penalized team -1).
+- **The 3vs3 GENS ROM** (NHL94 3vs3 [Spring 2006 GENS].bin) against nhl94.bin: every change is below $10000 (the team
+  data: lines with LD and RW 0, ratings), plus the ROM name, the boot checksum call ($301 NOPs, its routine at $FFAC0
+  blanked) and one code word: ResetClock's regular-season overtime **10:00 -> 5:00** (`move.w #$258,d0` -> `#$12C` at
+  $782C). priolist, the faceoff table and InProgress_ap are as retail. So it is 3-on-3 all game by empty slots. A
+  reading (not played): a penalty takes tmap to 5, which drops the priolist's last place, RW, already empty, so **one
+  penalty costs the team no skater**; a second (tmap 4) drops LW (2 skaters). Emptying LD and RW in RAM at overtime
+  would play the same way, and leaves no player for a 4-on-3. **An overtime priority list** G, C, LW, RD, LD, RW,
+  extra (`0,4,3,2,1,5,6`; SetPlList's `movea.l #priolist,a0`) with tmap 4 gives the same three skaters with the lines
+  untouched (nothing to restore), and tmap 5 for the power-play team brings on its LD (4-on-3).
 - **Assumptions of six:** the faceoff formation table (`.apl`, logic94 before `.ptab`) has rows for 6, 5 and 4
   players only: tmap 3 (a penalized team 2-on-3) would read past it into `.ptab`; so 4-on-3 (5 against 4) is the safe
   way. `PenGoalStuff` (`cmpi #6,tmap(a1)` at $1284E) and `GetLowestPen` (`cmpi #6,tmap(a3)`) take 6 as full strength
