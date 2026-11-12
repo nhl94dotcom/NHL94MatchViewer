@@ -3798,3 +3798,16 @@ each case from the same state (period 3, 3 s left), the computer on both sides; 
   (held 8 frames: shorter presses were lost) starts it, and between shooters the menu comes and goes by itself. In an
   earlier run, B pressed again every 3 s whenever that menu was up sent the game back to Game Setup in the second
   round, the shootout's result lost; one press never did. The original game's own Shootout mode wasn't tried.
+
+### Version 45: fewer, safer passes, more checks tried (chunk 3, step 5)
+
+45 is 44 passing only to a teammate with no opponent within 40 (was 25), on a lane clear by 22 (was 15), under 170
+long (was 220), less often (0.8 / 0.7 / 0.55 by zone, was 0.95 / 0.9 / 0.6), and bursting from 60 in open ice (was
+45) every 10 frames (bot.py PEOPLE45, DEF45). 8 games (the game's own counts, against the 85-90% coaches'):
+- **Better:** penalty minutes 2.8 (experts 2.4; 44: 4.2), 1.4 penalties a team-game (people 1.5); passes tried 41.5
+  (experts 43.5; 44: 55.6); one-timer tries 4.8 (5.0); attack-zone time 326 (337).
+- **Worse or no better:** passes completed 17.9 of 41.5 (43%; experts 65%, 44: 49%): the safer choice of receiver did
+  not help, so the misses are not about how open he is; checks 16.4 (experts 31; 44: 17.8): the farther, more frequent
+  burst does not land more; goals 2.4 to 2.0 (5 of 8 won).
+- **Next:** find why its passes fail (intercepted, missed, bobbled; the 8-way d-pad picks the receiver, not the bot)
+  and why its bursts miss, from the recorded games, before changing more.
