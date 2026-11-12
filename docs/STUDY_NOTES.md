@@ -4443,6 +4443,26 @@ a skater below a third for 22 game s or more (most 44-233 on the Genesis, 22-128
 speed), where the originals had none past 61. Knockdowns rose by a third on both (more players worn down: not measured
 why). The longest bench stints are skaters who played early and then sat (a whole period and more on both ROMs).
 
+### The bot's cross-crease shots, sorted by the play behind them; versions 65 and 66 (2026-11-12)
+
+`bot_record.py` with NHL94_BOT_LOG=1 now keeps the bot's log beside the matches, each entry stamped with the emulator
+frame (`ef`), so a match file's shots can be tied to the bot's decision behind them. People's cross-crease shots
+(`scoring_moves.py`'s rule; coaches rated 80%+): 24, 33% scored; against the computer goalie 14, 29% (xG 0.31 a
+shot, 65 out, 35 across at release, shot speed 15,100, 36% slapshots), against a person's goalie 10, 40% (41 out, all
+wrist shots).
+- **Version 63's (32 games: 145, 7% scored, xG 0.111):** 47 across at release (the far post), speed 11,300. In 9
+  logged games 22 of 39 were 32's ordinary wrist shot fired while sliding across (decided at 44 across, speed 9,700, 0
+  scored), 10 the planned cut (48 across, 23 frames after its decision, 1 scored). The user: "if you wait until you're
+  past the far post, that's too late for the cross crease shot to be taken."
+- **Version 65** (the cut decided 12-16 short of the middle, CROSS65): against 63 goals -0.12 ±0.37, its
+  cross-crease shots 140, 5% scored, median 40 across: the timing of the planned cut alone changes little.
+- **Version 66** (CROSS66: no ordinary wrist shot while moving across 1.0+ a frame once 15 past the middle; before
+  it the cut's 12-frame wind-up, high the way he moves; the cut decided 20-24 short of the middle): against 63 (32
+  paired games) xG 5.07 against 5.58 (-0.52 ±0.53), goals 2.53 against 2.97 (-0.44 ±0.30), shots on goal -3.0 ±0.9.
+  Its cross-crease shots now in people's shape (94: 36 across, speed 14,100, 35% slapshots, 78% at the far post) but
+  **1 scored** (xG 0.117 a shot). **63 stays the default.** People's 29% against the computer goalie rests on 4 goals;
+  the xG model rates their shots 0.31 to the bot's 0.12 for reasons not in these measures.
+
 ### NOSE4Web's 3-on-3 overtime (a91a6f8), played (2026-11-12)
 
 nhl94_3on3_ot.bin (SHA-1 b00d6e60...) and CDL_Season_12_3on3_ot.bin (24882ae1..., regular season only),
