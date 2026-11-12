@@ -47,7 +47,8 @@ and it bursts in to check again. 41 is 40 shooting less (in the attacking zone o
 now and then: PEOPLE41), the one-timer pass more often and less narrowly, and the burst check from farther out (DEF41).
 42 is 41 hitting off the puck when a teammate is on the carrier, the long burst only near the boards, and no poke
 from point-blank (DEF42; for its penalties and people's big hits). 43 is 42 checking a man on the boards from his
-inside, outward, as the game's board check needs (DEF43, board_hit).
+inside, outward, as the game's board check needs (DEF43, board_hit). 44 is 43 without pokes, shooting once two
+holds in the attacking zone have run out, and dumping in more often (PEOPLE44).
 Without the puck: at a faceoff mash B with the d-pad toward his own net; otherwise skate at the carrier from his
 goal side (or at a loose puck's spot a few frames ahead), burst-check (C) when close and closing, poke (B) from
 POKE; B also switches when a teammate is much nearer the puck. The goalie is the computer's.
@@ -158,6 +159,11 @@ if __import__("os").environ.get("NHL94_DEF42"):
 DEF43 = {"wall": 95, "reach": 120, "inside": 30, "side": 6, "burst": 50, "every": 10}
 if __import__("os").environ.get("NHL94_DEF43"):
     DEF43.update(__import__("json").loads(__import__("os").environ["NHL94_DEF43"]))
+# version 44 (43's step 2: penalties and possession): no pokes; in the attacking zone the shot once "draws" holds
+# have run out with nothing on; the dump-in more often ("dump"); env NHL94_PEOPLE44 as JSON
+PEOPLE44 = {"draws": 2, "dump": 0.5}
+if __import__("os").environ.get("NHL94_PEOPLE44"):
+    PEOPLE44.update(__import__("json").loads(__import__("os").environ["NHL94_PEOPLE44"]))
 PEOPLE41 = {"shoot": 0.6, "ot": 0.8, "prime": (200, 40)}
 DEF41 = {"burst": 70, "every": 15, "rate": 1.0}
 if __import__("os").environ.get("NHL94_PEOPLE41"):
@@ -394,7 +400,7 @@ class Bot:
                 self.phase, self.t = "clear", 0     # version 34: shorthanded in our half: clear it up the ice
                 self.note("clear start", ax=ax, ay=ay)
                 return ["C"] + pad(aview(0))
-            if self.version in (40, 41, 42, 43):
+            if self.version in (40, 41, 42, 43, 44):
                 act = self.people_carry(P, me, s, g, ax, ay, near, ahead)
                 if act is not None:
                     return act
@@ -652,10 +658,11 @@ class Bot:
         zone = "def" if ay < -89 else "att" if ay > 89 else "neu"
         draw = lambda: max(8, int(PEOPLE40["hold"][zone] * -math.log(1 - self.rng.random()) / math.log(2)))
         av = lambda d: d if s > 0 else (d + 4) % 8
-        v41 = self.version in (41, 42, 43)
+        v41 = self.version in (41, 42, 43, 44)
         if self.t <= 1:
             self.hold = draw()
             self.shoot_ok = not v41
+            self.draws = 0
         if v41 and not self.shoot_ok and ay > PEOPLE41["prime"][0] and abs(ax) < PEOPLE41["prime"][1]:
             self.shoot_ok = True                    # a prime chance in close: people take it at once
         if self.t < self.hold:
@@ -678,13 +685,18 @@ class Bot:
             self.phase, self.t = "slap", 0
             self.note("slap start", ax=ax, ay=ay, people=True)
             return ["C"] + pad(av(4))
-        if zone == "neu" and ay > 30 and near[0] < 40 and ahead and self.rng.random() < PEOPLE40["dump"]:
+        dump = PEOPLE44["dump"] if self.version == 44 else PEOPLE40["dump"]
+        if zone == "neu" and ay > 30 and near[0] < 40 and ahead and self.rng.random() < dump:
             self.phase, self.t = "dump", 0
             self.note("dump start", ax=ax, ay=ay)
             return ["C"] + pad(av(1 if ax < 0 else 7))
         if v41 and zone == "att" and not self.shoot_ok:
             # version 41: the shot (32's deke or wrist shot) only now and then; else hold on and draw again
             self.shoot_ok = self.rng.random() < PEOPLE41["shoot"]
+            if self.version == 44:
+                # version 44: no holding on and on: the second hold out with nothing on, shoot
+                self.draws += 1
+                self.shoot_ok = self.shoot_ok or self.draws >= PEOPLE44["draws"]
         return None
 
     def off_puck_hit(self, P, me, owner, dist_to_puck, dc, own_net_y):
@@ -708,7 +720,7 @@ class Bot:
             return None
         d, o = best
         a = P[o]
-        if self.version == 43:
+        if self.version in (43, 44):
             hit = self.board_hit(P, me, o, d)
             if hit is not None:
                 return hit
@@ -829,7 +841,7 @@ class Bot:
                     continue
                 if self.version >= 14 and math.hypot(t["x"] - m["x"], t["y"] - m["y"]) >= 130:
                     continue                    # version 14: people's one-timer passes 130+ long scored 7 of 36
-                if self.version >= 15 and self.version not in (41, 42, 43) and (abs(tax) >= 40 or not (P[g]["x"] * m["x"] > 0 and abs(P[g]["x"]) >= 4)):
+                if self.version >= 15 and self.version not in (41, 42, 43, 44) and (abs(tax) >= 40 or not (P[g]["x"] * m["x"] > 0 and abs(P[g]["x"]) >= 4)):
                     continue                    # version 15: the receiver near the middle, the goalie drawn over
                                                 # to the passer's side (people's one-timers that scored)
             elif self.version >= 5:
@@ -900,17 +912,19 @@ class Bot:
             dx, dy = 0 - c["x"], own_net_y - c["y"]
             L = math.hypot(dx, dy) or 1
             dp = DEF22 if self.version >= 22 else dict(poke=POKE, burst=45, every=30, gap=14)
-            if self.version in (31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43):
+            if self.version in (31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44):
                 # 2026-11-01, penalties (BOT_PLAN): the bot's own skater takes 80% of its team's calls, a power play
                 # scores 61%; version 31 never pokes (B touching a carrier he faces always trips with penalties on:
                 # tripping 44 of its 148), 32 never bursts in to check (C and the CB check: roughing, slashing,
                 # charging, cross-checking)
                 # 33-38: as 32; 40 (people's way) bursts in to check again: people hit (26 checks, 3.9 big hits a
                 # team-game; 32: 22 and 1.4)
-                dp = dict(dp, poke=0) if self.version == 31 else dp if self.version in (40, 41, 42, 43) else dict(dp, burst=0)
-                if self.version in (41, 42, 43):
+                dp = dict(dp, poke=0) if self.version == 31 else dp if self.version in (40, 41, 42, 43, 44) else dict(dp, burst=0)
+                if self.version == 44:
+                    dp = dict(dp, poke=0)       # version 44: no pokes (the trips)
+                if self.version in (41, 42, 43, 44):
                     dp = dict(dp, **DEF41)
-                if self.version in (42, 43):
+                if self.version in (42, 43, 44):
                     # version 42: the long burst only at a carrier near the boards (people's big hits: into the
                     # boards); elsewhere 40's 45
                     near_wall = abs(c["x"]) > DEF42["wallx"] or abs(c["y"]) > DEF42["wally"]
@@ -938,11 +952,11 @@ class Bot:
                     tx, ty = a["x"] + COVER37["off"] * ex / el, a["y"] + COVER37["off"] * ey / el
                     self.covering = self.frame
                     return pad(dir_to(tx - m["x"], ty - m["y"]))
-            if self.version in (42, 43):
+            if self.version in (42, 43, 44):
                 hit = self.off_puck_hit(P, me, owner, dist_to_puck, dc, own_net_y)
                 if hit is not None:
                     return hit
-            if self.version == 43 and dc < DEF43["reach"]:
+            if self.version in (43, 44) and dc < DEF43["reach"]:
                 hit = self.board_hit(P, me, owner, dc)
                 if hit is not None:
                     return hit
@@ -956,10 +970,10 @@ class Bot:
                 self.b_down = not self.b_down
                 if self.b_down:
                     out.append("B")
-            elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0                     and (self.version not in (41, 42, 43) or rate > dp["rate"]):
+            elif dc < dp["burst"] and closing and self.frame % int(dp["every"]) == 0                     and (self.version not in (41, 42, 43, 44) or rate > dp["rate"]):
                 out.append("C")                     # burst into him
                 self.cb_at = self.frame + 4
-            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43) and getattr(self, "cb_at", -1) == self.frame:
+            if self.version >= 21 and self.version not in (32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44) and getattr(self, "cb_at", -1) == self.frame:
                 return ["B"]                        # version 21: the CB check (B mid-burst: the computer's checking
                                                     # formula decides the hit, not the person's weight bug)
         d = dir_to(tx - m["x"], ty - m["y"])

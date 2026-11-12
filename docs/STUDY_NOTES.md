@@ -3737,3 +3737,44 @@ behind.
 So far 41 is the closest to people overall (shots, one-timers, shot kinds, chances, passing, checks); 43 the closest
 in big hits. Open: the bot's pokes (tripping: the most-called foul in every version), its long possession (it keeps
 the puck about 80-100 game s a game more than people), and its giveaways.
+
+### Version 44, and an expert benchmark (chunk 3, step 4; `analysis/expert_profile.py`, `analysis/recorded_coaches.py`)
+
+**The user's goal (2026-11-11): a bot that plays as an expert human does: not perfect at everything, great at what
+people do most.** (A community bot that is near-perfect in goal by manual goalie control and weak in attack is the
+opposite.) The recorded games already lean expert: of the 18 Genesis games that match the league database
+(`recorded_coaches.py`: date, teams, score), 28 of 36 sides are coaches at 80%+ against an average coach. The wider
+benchmark is the league database's own counts for every game, by the coach's strength (`expert_profile.py`; Genesis, a
+side's game):
+
+| | 85-90% (14,593) | 80-85% (11,076) | 70-80% (32,088) | under 60% (78,986) |
+|---|---|---|---|---|
+| goals for / against | 5.1 / 3.3 | 4.4 / 3.6 | 4.1 / 3.6 | 3.3 / 4.0 |
+| shots | 13.7 | 12.0 | 12.4 | 11.3 |
+| one-timer tries (goals) | 5.0 (1.8) | 4.8 (1.7) | 4.3 (1.3) | 4.1 (1.2) |
+| checks | 31.0 | 26.1 | 26.0 | 24.1 |
+| penalty minutes | 2.4 | 2.2 | 2.1 | 2.2 |
+| passes tried / completed | 43.5 / 28.3 | 47.0 / 30.5 | 42.7 / 27.1 | 39.8 / 24.1 |
+| attack-zone time (s) | 337 | 328 | 321 | 315 |
+
+Experts shoot more, try and score more one-timers, check more, complete more passes (65% against 61%) without more
+penalties. On the SNES the bands differ less (experts score 5.5 to 4.0, the rest about alike).
+
+**Version 44** (43 without pokes, shooting once two holds in the attacking zone have run out, dumping in half the time
+when pressed at their line; 8 games): penalties 2.2 a team-game (43: 4.0; people 1.5; penalty minutes 4.2, experts
+2.4), possession 422 game s (people 385), one-timer tries 4.4 (experts 5.0), shots 14.8 (experts 13.7); but body
+checks 18 (the pokes' knockdowns gone; experts 31), giveaways 20 (people 13), pass completion 49% (experts 65%), and
+it lost 2 of 8 (3.0 goals to 1.6). Next: fewer, safer passes, and checks back up without the trips.
+
+## NOSE4Web's SNES fighting and injury risk together, played (2026-11-11, 87067a6: NHL94_fighting_injury_risk.smc, NHL94_Classic_fighting_injury_risk.smc)
+
+- **The chain, by its bytes (both builds):** $9E:9BD2 `jml $9E:FFF7`, the stub `ldy a2` / `jsr $FF4A` (the injury
+  risk's count) / `jml $A0:C2A8` (F_countcheck, the same target and the same code as NHL94_fighting.smc's). The count
+  code begins `phx` and ends `plx` / `lda #$78` / `rts`, so F_countcheck gets X as before (it indexes the per-player
+  fight meter $1464,x with it).
+- **The injury risk's counts** (`snes_injury_risk_check.py counts ... F034:40:2`): +1 for each knockdown of him (12:
+  10 falls, 2 by B, 5 of them injuries), nothing for the rest (55 misses, 16 hook flails): as on the injury-risk build.
+- **The fights' code runs on every counted check:** in 5 minutes (real) of a computer game, the fight meter ($147F and
+  $1464,x) changed 17 times on the chained build (25 on NHL94_fighting.smc: the games part ways), the injury-risk
+  counts reaching 2. No fight came up in 45 minutes (retail) or 60 (Classic) of computer games; fights in computer
+  games were as rare on the fighting-only build (2 of 3 games with none).
