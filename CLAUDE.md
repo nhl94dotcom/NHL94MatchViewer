@@ -141,7 +141,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
     step: Shot Power 1-6, one-timer Accuracy 1-6, Speed and Agility 1-6 skating, `skating_real` with the game's own skaters in lanes; RATING_VALUES).
   - The bot: `bot.py` (a scripted Genesis player, the user's scoring moves), `bot_run.py` (whole games against the
     computer), `bot_situations.py` / `bot_scenario.py` / `bot_scen_report.py` (from recorded situations; BOT_PLAN),
-    `bot_live.py` (controller 2 of the user's RetroArch by key presses while it has the focus; `test` and `play` only
+    `bot_record.py OUT GAMES [FIRST]` (the bot's games recorded and converted as people's are: `team_style_compare.py`), `bot_live.py` (controller 2 of the user's RetroArch by key presses while it has the focus; `test` and `play` only
     with the user there).
   - Replays with one thing changed: `check_pass_timing.py` / `snes_check_pass_timing.py` (the B timing),
     `check_pass_ratings.py` / `snes_check_pass_ratings.py` (one rating), `snes_period_cvc.py` (the SNES computer

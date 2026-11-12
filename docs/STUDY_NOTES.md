@@ -3644,3 +3644,23 @@ both sides (56 Genesis, 48 SNES team-games). Each team-game scaled to 15 minutes
   games, and goalies that stop nearly everything; effects that work through hits, close shots or holding the zone are
   understated there. A bot that plays like people carries the puck in and holds it in the zone, shoots from close,
   takes one-timers, and (Genesis) checks hard.
+
+### The scripted bot's team against people's and the computer's (chunk 3; `analysis/scoring_map/bot_record.py`)
+
+8 games of bot.py's default version (Montreal, Home, pad 1) against the computer (Los Angeles), recorded and converted
+as people's games are (all pass check_matches), compared by `team_style_compare.py CVC BOT` (Genesis; per team, 15
+minutes of play). **The bot beats the computer 8.4 goals to 1.5 a game** (every game won: 11-1, 10-2, 9-2, 9-1, 8-0,
+8-0, 6-3, 6-3), and it plays nothing like people:
+- **It skates the puck in and shoots, alone:** 6 passes a team-game (people 46, the computer 58), no passed entries,
+  97% carried; 42 shot attempts (people 18), 97% wrist shots (its dekes and close shots), almost no one-timers (1%,
+  people 25%) or slapshots (1%, people 17%); median distance 60 (people 77), 18 high-danger attempts (people 5), 6
+  rebounds (people 1); xG a shot 0.23, as people's.
+- **It holds the puck:** possession 436 game s (people 385), giveaways 9 (people 13), takeaways 19 (people 12; its
+  defence chases the carrier), more odd-man rushes (14 / 10).
+- **It hits less hard:** body checks 22 (people 26) but big hits 1.4 (people 3.9), and more penalties (2.8 / 1.5).
+- **Its opponent, the computer, against it:** 15.5 attempts, 81.6 game s in the bot's zone with the puck, xG 1.2: the
+  computer hardly gets set up.
+
+So the bot is strong in a way of its own (one skater, the deke and close wrist shot), not a stand-in for a person. A
+bot that plays like people would add passing (and the one-timer that follows), slapshots from the point, dump-ins when
+the line is closed, and checking to knock down (the big hit) rather than to touch.

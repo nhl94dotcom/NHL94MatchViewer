@@ -5,7 +5,10 @@ converted by the same converter (analysis/scoring_map/cvc_record.py), summarized
 summarize. Per team-game, scaled to 15 minutes (900 game seconds) of play; each measure's mean for people and for the
 computer, with standard errors, and the difference; per system. Names nobody.
 
-python analysis/team_style_compare.py CVC_MATCHES_FOLDER"""
+With BOT_MATCHES_FOLDER (analysis/scoring_map/bot_record.py: the scripted bot on Home against the computer, Genesis):
+three more columns, the bot's team, the bot against people, and the computer team it played.
+
+python analysis/team_style_compare.py CVC_MATCHES_FOLDER [BOT_MATCHES_FOLDER]"""
 import json
 import math
 import os
@@ -85,36 +88,50 @@ def people_rows(system):
     return rows
 
 
-def cvc_rows(folder, system):
+def cvc_rows(folder, system, prefix="cvc", side=None):
+    """side None: both teams; 0 / 1: only that team (the bot's games: 0 the bot, 1 the computer)."""
     rows = []
-    for f in sorted(Path(folder).glob(f"cvc_{system}_*.js")):
+    for f in sorted(Path(folder).glob(f"{prefix}_{system}_*.js")):
         m = season.load_match(f)
         d = season.summarize(m, f.stem)
         if (d.get("seconds") or 0) < 600:
             continue
-        rows += rows_of(d)
+        r = rows_of(d)
+        rows += r if side is None else [r[side]]
     return rows
 
 
 def main():
     folder = sys.argv[1]
+    bots = sys.argv[2] if len(sys.argv) > 2 else None
     for system in ("genesis", "snes"):
         P, C = people_rows(system), cvc_rows(folder, system)
+        B = cvc_rows(bots, system, "bot", 0) if bots else []
+        BC = cvc_rows(bots, system, "bot", 1) if bots else []
         if not P or not C:
             print(f"{system}: people {len(P)} team-games, computer {len(C)}: not enough")
             continue
-        print(f"\n=== {system}: people {len(P)} team-games, computer {len(C)} (a team, 15 minutes of play)")
-        print("| Measure | People | Computer | People - computer |")
-        print("|---|---|---|---|")
-        for key in P[0]:
-            a = [r[key] for r in P if r[key] is not None]
-            b = [r[key] for r in C if r[key] is not None]
-            if len(a) < 3 or len(b) < 3:
-                continue
+        print(f"\n=== {system}: people {len(P)} team-games, computer {len(C)}" + (f", bot {len(B)}" if B else "")
+              + " (a team, 15 minutes of play)")
+        print("| Measure | People | Computer | People - computer |"
+              + (" Bot | Bot - people | Computer against the bot |" if B else ""))
+        print("|---|---|---|---|" + ("---|---|---|" if B else ""))
+        vals = lambda R, key: [r[key] for r in R if r[key] is not None]
+
+        def diff(a, b):
             ma, mb = st.mean(a), st.mean(b)
             se = math.hypot(st.stdev(a) / len(a) ** 0.5, st.stdev(b) / len(b) ** 0.5)
-            flag = " **" if se and abs(ma - mb) > 2 * se else ""
-            print(f"| {key} | {ma:.2f} | {mb:.2f} | {ma - mb:+.2f} +- {se:.2f}{flag} |")
+            return f"{ma - mb:+.2f} +- {se:.2f}" + (" **" if se and abs(ma - mb) > 2 * se else "")
+        for key in P[0]:
+            a, b = vals(P, key), vals(C, key)
+            if len(a) < 3 or len(b) < 3:
+                continue
+            line = f"| {key} | {st.mean(a):.2f} | {st.mean(b):.2f} | {diff(a, b)} |"
+            if B:
+                c, d = vals(B, key), vals(BC, key)
+                line += (f" {st.mean(c):.2f} | {diff(c, a)} | {st.mean(d):.2f} |" if len(c) >= 3 and len(d) >= 3
+                         else " - | - | - |")
+            print(line)
 
 
 if __name__ == "__main__":
