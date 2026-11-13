@@ -125,8 +125,9 @@ PUCK_HOLDER = 0x0AE7              # the object that has the puck, 15 = nobody (s
 # Penalties (from the first SNES recording: Toronto's Interference in P1, both teams in P3, two penalty shots):
 PEN_BUFFER = 0x15DE   # (penalty number, object) byte pairs, 0 = free: an entry appears at the foul (play may go on,
                       # a delayed penalty), gets bit 7 of the object byte at the whistle, and is cleared once listed
-BOX_STATE = 0x1852    # a word per roster place, Home's 26 then Away's: $FFFE bench, $FFFF ice, $FFFD out, $FFFC no
-                      # player; else seconds left in the penalty box (120 for a minor)
+BOX_STATE = 0x1852    # a word per roster place, Home's 26 then Away's: $FFFE bench, $FFFF ice, $FFFD out for the
+                      # period, $FFFC out for the game (setInjuryType; also an empty roster place); else seconds left
+                      # in the penalty box (120 for a minor)
 PERIOD_LENGTH = 0x1C82  # seconds
 PENALTY_SHOT = 0x24   # the penalty number of a penalty shot (rule 18); its object is the player who fouled
 # Per-player stats: a byte per roster place, Home's 26 then Away's 26, in the Genesis order (checked on the first

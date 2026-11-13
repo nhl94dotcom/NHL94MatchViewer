@@ -37,9 +37,8 @@ record or check and what it will settle. Newest at the bottom of each section.
    confirm SNES_SHOOTING 4.10 in play); a recording of you trying SNES EA Specials (checks SCORING_SNES's EA section).
 7. **The EA Special defender test (Genesis, plan E)** needs four design answers from you: where the defender starts,
    whether a person controls him (checking, poking or both), his ratings, and one net or both (SCORING_GENESIS_EA).
-8. **An SNES game on a 2026 SA-1 build** (2 MB, 60 frames a second), with the helper running, if the league plays
-   them. *Settles:* that recording works in a real RetroArch session (so far only a headless test, the 32-team
-   build), and gives the SA-1 xG work (STUDY_NOTES, "SNES xG for SA-1 games") real shots to check against.
+8. **Games against the scripted bot (version 68)** with `analysis/scoring_map/bot_live.py play`. *Settles:* how
+   human-like it plays against a person; its last versions were judged only against the computer.
 
 ## Things to note when they happen
 
@@ -51,6 +50,9 @@ record or check and what it will settle. Newest at the bottom of each section.
    (a player in a boards fall, identical speeds, or a stacked burst head-on at extreme speed) don't fit the GIF.
 4. **Helper processes still running with its window closed.** Note how you last started the helper (double-click, a
    shortcut, at startup).
+5. **A SNES "shot that never fires" from an ordinary shot** (not a one-timer): the wind-up plays and the shooter keeps
+   the puck. Note the game and time, with video if you have it. *Settles:* which of the code's causes (the puck
+   knocked loose and regathered, a hold or hook, a bump) it was (SNES_SHOOTING 4.5).
 
 ## Questions only you or your league can answer
 
@@ -92,8 +94,22 @@ and our recordings agree with each other; the comments are the slips).
    check"; it's reached when the puck is *outside* ±$2C, and within it icing is cancelled.
 7. **NHL94SNES, routines/logic/puck/chk4shot.asm:** `cmp.w #$2711` ("distance^2 > 100*100?") has no branch after it, so the
    test does nothing (the Genesis branches with `bhi`).
+8. **NHL94SNES, routines/logic/offsides/puckIChk.asm:** calls bit 0 of iflags "icing called" / "call icing"; it marks
+   the loose puck crossing the goal line (the Genesis's ifcgl, as ram94s.asm names it). Icing is called later, by
+   a2touchpuck on the next touch.
+9. **NHL94SNES, routines/penalty/energy/reenergizeteam.asm:** `cmp.w #TMPDOUT / bne .nb / cmp.w #TMPDINJGAME / bne .nb`
+   always branches (no word is both), so "back to the bench" never runs: a code bug, harmless (PeriodOver puts the
+   period's injured back on the bench itself).
+10. **NHL94SNES, routines/collide/puckstick.asm and puckglue.asm:** the pass-completion and pickup code clears the
+    game-wide shot flag (`sfssdir`), so a shooter who loses the puck and gathers it back mid-wind-up never shoots
+    (SNES_SHOOTING 4.5): worth a comment where the flag is cleared.
 
 ## Done (where the answers are)
+
+- An SNES game on a 2026 SA-1 build with the helper running (since 2026-11-07): recorded and converted (PROJECT_NOTES
+  "SNES SA-1 and 2 MB builds"); SNES xG for SA-1 games is still to do.
+- The SNES one-timer that never fires (2026-11-13): explained and traced (SNES_SHOOTING 4.5); NOSE4Web's fix d045e26
+  under test.
 
 - A SNES flip (2026-10-30): 18 in the recorded games, 864 played in the game (SNES_MECHANICS 6.3).
 - Pucks through the goalie's legs (2026-10-19): the user's 2v2 game, three goals (GENESIS_SHOOTING 5.5); one going

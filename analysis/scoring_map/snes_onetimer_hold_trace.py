@@ -4,7 +4,8 @@ computer player's). Computer games (snes_ot_goal_check.start: penalties on, the 
 computer one-times on its own in the attacking zone), every frame for each object in a one-timer swing (SPA $11A3 =
 SPAonetimerf $EF6E / SPAonetimerb $F020) a trace row: SPAnum $11C3, SPAcnt $11E3, asscur $0B7D (asspassrec is $15),
 nopuck $1203, passwait $0BAD, pfalock $14E3, puckc $0AD9, onetimerreq $0BAB, onetimer $1E89, passReceiverPlayerNum $0D07,
-the puck (x, y, z) and the object (x, y). At the swing's end: "struck" (the team's tmOneTimers $17D6 rose), "held" (he
+the puck (x, y, z) and the object (x, y). Each swing also briefly: when the wait (asspassrec) ended while the swing
+was still on and at what SPAnum, the animation after it, and whether he has the puck then. At the swing's end: "struck" (the team's tmOneTimers $17D6 rose), "held" (he
 had the puck at some frame and no strike: also a carrier whose own shot, with this animation, he gathered again),
 "missed" (neither). Every held swing is kept whole (with the 30 frames before it); the others counted. (The first run,
 24 games, compared puckc with the object number; its rows were re-read offline with the object number x 2.)
@@ -39,12 +40,25 @@ COLS = ["f", "SPAnum", "SPAcnt", "asscur", "nopuck", "passwait", "pfalock", "puc
         "passReceiver", "puck", "player"]
 
 
+def layout_of(rom):
+    """The ROM's animation words for the two swings, and a translation back to retail's (the 2 MB / SA-1 builds move
+    the animations: tools/systems/snes_layout.py)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+    from systems import snes_layout
+    data = Path(rom).read_bytes()
+    data = data[512:] if len(data) % 0x8000 == 512 else data
+    lay = snes_layout.layout(data)
+    return tuple(lay.rom_spa(w) for w in (0xEF6E, 0xF020)), lay.spa
+
+
 def game(rom, n, tmp):
+    global SWINGS
+    SWINGS, to_retail = layout_of(rom)
     e, m = start(rom, n, tmp)
     hist = {k: [] for k in range(12)}
     swing = {}
     counts = {"struck": 0, "held": 0, "missed": 0}
-    held = []
+    held, brief = [], []
     f, still, last = 0, 0, None
     while m.w(GSP) < 3 and f < 60 * 60 * 40:
         if f % 300 == 0:
@@ -72,16 +86,22 @@ def game(rom, n, tmp):
                 s = swing[k]
                 if in_swing:
                     s["rows"].append(r)
+                    if s.get("exit") is None and m.w(ASSCUR + 2 * k) != 0x15 and s["rows"][-2][3] == 0x15:
+                        s["exit"] = [f - s["start"], m.w(SPANUM + 2 * k)]     # the wait ended, the swing still on
                     s["had"] |= s16(m.w(PUCKC)) == 2 * k          # puckc is the object number x 2
                 else:
                     struck = m.w(TMONETIMERS + 2 * s["team"]) != s["ot0"]
                     kind = "struck" if struck else "held" if s["had"] else "missed"
                     counts[kind] += 1
+                    brief.append([s["start"], f - s["start"], kind, s.get("exit"), f"{to_retail(m.w(SPA + 2 * k)):04X}",
+                                  s16(m.w(PUCKC)) == 2 * k])
                     if kind == "held":
                         s["rows"] += [row(m, k, f + i) for i in range(1)]
                         held.append({x: s[x] for x in ("k", "team", "start", "clock", "period")} | {"cols": COLS, "rows": s["rows"]})
                     del swing[k]
-    return {"game": n, "frames": f, "counts": counts, "held": held}
+    return {"game": n, "frames": f, "counts": counts, "held": held,
+            "swings": {"cols": ["start", "frames", "kind", "wait ended [frame, SPAnum]", "next SPA", "has the puck"],
+                       "rows": brief}}
 
 
 def main():
