@@ -33,4 +33,11 @@ python -m PyInstaller --noconfirm --clean --onefile --console --name "NHL94 Help
 if errorlevel 1 exit /b 1
 rem The package for testers and league members: the .exe and its read-me, zipped.
 copy /y "%ROOTDIR%\tools\tester_readme.txt" "%DIST%\Read me first.txt" >nul
-powershell -NoProfile -Command "Compress-Archive -Force -Path '%DIST%\NHL94 Helper.exe','%DIST%\Read me first.txt' -DestinationPath '%DIST%\NHL94 Helper.zip'"
+rem The stream mode (live stats for OBS) comes with the ordinary build only: its launcher and its guide.
+if /i "%~1"=="nobroadcast" (
+  powershell -NoProfile -Command "Compress-Archive -Force -Path '%DIST%\NHL94 Helper.exe','%DIST%\Read me first.txt' -DestinationPath '%DIST%\NHL94 Helper.zip'"
+) else (
+  copy /y "%ROOTDIR%\tools\stream_launcher.bat" "%DIST%\NHL94 Helper - Stream.bat" >nul
+  copy /y "%ROOTDIR%\docs\STREAMING_GUIDE.md" "%DIST%\Streaming guide.txt" >nul
+  powershell -NoProfile -Command "Compress-Archive -Force -Path '%DIST%\NHL94 Helper.exe','%DIST%\Read me first.txt','%DIST%\NHL94 Helper - Stream.bat','%DIST%\Streaming guide.txt' -DestinationPath '%DIST%\NHL94 Helper.zip'"
+)

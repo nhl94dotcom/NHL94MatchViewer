@@ -562,6 +562,26 @@ known gap). From them:
 Not changed: Stevens' P3 4:52 goal had xG 0.0 (a person in net, emulated as the computer goalie); CHI-LA's 13
 "lost it on the goalie" bumps are unreviewed.
 
+### The local live mode for a stream overlay (2026-11-13)
+
+For a league member streaming a Genesis series from OBS (as a netplay spectator): `nhl94_helper.py --live-local`
+("NHL94 Helper - Stream.bat" in the exe's zip, `tools/stream_launcher.bat`) runs the same Broadcaster into a
+FolderTarget at `<home>/live` (the helper's own server serves it: the live viewer at /live/index.html, told to unzip
+the gzipped data itself), and sets `after_send` to `live_overlay.write`. After every update (and the final one) that
+writes `live/stats.json` (both teams' numbers from season.summarize, so the same as the season page: shots, attempts,
+xG, shooting and save %, hits, knockdowns, faceoffs, passes, power play, penalties, PIM, attack-zone time,
+one-timers, breakaways, posts, takeaways, giveaways; and the events: goals with tags, tying / go-ahead and the score,
+big saves (saved shots of xG 0.30+), posts, big hits (upended, into the boards or the bench: about 7 a game; plain
+knockdowns, about 40, are their own kind "hit"), injuries, penalties, giveaways that led to a goal, fights,
+unanswered-goal streaks; the last 40 events but plain hits, and the last 10 of those) and `live/obs/*.txt` (one file
+per number and team, the names, the latest events, the last goal / big save / big hit / penalty), each written to a
+.tmp and renamed so a reader never sees half a file. `overlay.html` (bundled in the exe) reads stats.json every
+second: `layout` panel / bar / ticker, `stats=`, `events=`, `recent=`, `scale=`, `side=`, `demo=1`; transparent
+outside its box; new events highlighted 8 s. The streamer's step-by-step guide: `docs/STREAMING_GUIDE.md` (in the zip
+as "Streaming guide.txt"). `tests/live_overlay_replay.py CAPTURE OUT [SPEED]` feeds a recording (fast.bin.gz and the
+full-RAM snapshots, full.bin.gz, which the live converter also reads) into the pipeline at real speed and logs how far
+behind play each update and each event is.
+
 ## Quirky Events (2026-10-19)
 
 The user asked for the game's oddities in their own team-stats group, "Quirky Events" (viewer fillTeamStats, STAT_HELP,
