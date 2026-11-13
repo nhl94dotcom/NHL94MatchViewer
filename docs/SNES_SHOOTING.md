@@ -136,8 +136,9 @@ your d-pad points.** **Code**
   carries it through the rest of the swing: the shooting motion with the puck on his stick and no shot. Traced: 2 of
   1,043 swings (one a slow pass whose time ran out, picked up at the start of the downswing; one touched by a teammate
   on its way, who passed it straight back while the first swing still held); in the recorded games 1 of 503 swings
-  (Gilmour, CGY-TOR 2026-10-20, P2 3:20: the puck his 0.14 s into a 0.9 s swing). A person can cause it by pressing
-  B after A while the pass is coming. Pressing A again once he has the puck starts an ordinary shot.
+  (Gilmour, CGY-TOR 2026-10-20, P2 3:20: the puck his 0.14 s into a 0.9 s swing). From the code, not seen yet: a person
+  can cause it by pressing B after A while the pass is coming, and pressing A again once he has the puck (the lock is
+  cleared) should start an ordinary shot.
 - **The same look from an ordinary shot:** a wind-up that loses the game's shot-mode flag (`sfssdir`, one flag for
   the whole game) plays out with no shot: ShotMode, which fires it, runs only while the flag is set. It's cleared when
   the puck changes hands (puckglue), on a successful steal touch (puckstick, the puck knocked loose and gathered again)
