@@ -3,7 +3,8 @@ with TryAddPlayerToList's two calls traced: a scratch copy of the ROM, bsr.w Try
 jsr ($F400).w, a stub in work RAM logging (candidate d0, result d1, slot d4, team a2, flags) to a ring at
 $FFF480 (index $FFF47E; the boot ROM check NOPed on a retail copy). At any faceoff drop where a team has fewer
 skaters than its tmap: PlList / plpos, tmlines, tmpdst, tmboxlist, tmap, tmgoalie, the team's objects and the
-traced calls, and every change to the team's objects' position, newpos, newpnum and pnum in the 1,500 frames before. python gen_3on3_ot_trace.py ROM [CASE] [SEEDS] [FIRST]   (to %USERPROFILE%/NHL94_scoring_map/runs/ot3_trace)"""
+traced calls, every draw with three or more of a team's players sitting in the box
+with their objects (crowded_*.json), and every change to the team's objects' position, newpos, newpnum and pnum in the 1,500 frames before. python gen_3on3_ot_trace.py ROM [CASE] [SEEDS] [FIRST]   (to %USERPROFILE%/NHL94_scoring_map/runs/ot3_trace)"""
 import sys, json, struct
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -64,6 +65,7 @@ orig = M.on_ice
 dumps = []
 short = {0: 0, 1: 0}
 prev_stop = {0: False, 1: False}
+crowded = []
 def on_ice(e, t):
     r = orig(e, t)
     b = M.TEAMS[t]
@@ -73,6 +75,13 @@ def on_ice(e, t):
     stopped = bool(e.b(M.GMODE) & 1)
     drop = prev_stop[t] and not stopped                    # a faceoff drop
     prev_stop[t] = stopped
+    if drop:                                               # every draw with 3+ of this team's players in the box
+        boxed = [i + 1 for i in range(26) if 0 < e.w(b + 0x66 + 2 * i) < 0x8000]
+        held = [e.b(M.BASE + M.SZ * k + 0x66) + 1 for k in range(6 * t, 6 * t + 6)
+                if e.b(M.BASE + M.SZ * k + 0x35) == 0xFF and e.b(M.BASE + M.SZ * k + 0x66) + 1 in boxed]
+        if len(held) >= 3:
+            crowded.append({"team": t, "clock": e.w(M.CLOCK), "tmap": tm, "skaters": len(r), "goalie_on": gl,
+                            "boxed": boxed, "boxed_with_objects": held})
     if drop and len(r) < want and tm <= 6 and len(dumps) < 6:   # a team short of its tmap at the drop
         dumps.append({
             "team": t, "clock": e.w(M.CLOCK), "frame": frame["n"], "on_ice": r, "goalie_on": gl,
@@ -101,3 +110,4 @@ for seed in range(first, first + (int(sys.argv[3]) if len(sys.argv) > 3 else 1))
         d["seed"] = seed
     print(seed, r.get("score"), r.get("error"), r.get("gsp"), "short-handed beyond tmap:", len(dumps) - n0, flush=True)
     (OUT / f"dumps_{ROM.stem}_{case}.json").write_text(json.dumps(dumps, indent=1))
+    (OUT / f"crowded_{ROM.stem}_{case}.json").write_text(json.dumps(crowded, indent=1))

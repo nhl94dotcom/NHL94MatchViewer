@@ -4496,6 +4496,16 @@ from the third (2), regular season without the extra aggression (1), CDL regular
   position (`tst.w position(a3)` / `dbpl`), else the last free one; a boxed player's object counts as free too, so 5
   most likely went onto a boxed object. Retail, 12 overtimes the same way: no short draw (the even-strength case with
   C, EA and a D in the box at tmap 4 was not set up).
+- **The cause, caught again with every object tracked** (24 more overtimes; seeds don't replay: the core keeps some
+  state from game to game): seed 21, OT 8:12, the away team at tmap 4 with its goalie, LW 10 and RD 17 only.
+  SetPlList's centre slot refused 4, 5 and 6 (all in the box) and **accepted 15** (line 6's C); the LW slot took 10 for
+  the boxed 9. No object took 15: **all six away objects were in use**, the goalie, LW 10, RD 17 and three players
+  sitting in the box with their objects (18, 8 and 22; position $FFFF). The goalie, three skaters and three boxed
+  players make seven objects for six, so the third skater has none. The first catch had three in the box too (4, 5,
+  18); seed 11's had two and an empty object (not explained). With the overtime count the penalized team stays at
+  tmap 4 however many are in the box, so this comes up whenever three of a team's players sit at once. Retail, 12
+  overtimes with every draw counted: no draw with three of a team's players sitting in the box with objects (the 5-on-5
+  rules give the power play instead), so retail's own case is still untested.
 
 ### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
 
