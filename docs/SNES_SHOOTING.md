@@ -138,7 +138,12 @@ your d-pad points.** **Code**
   on its way, who passed it straight back while the first swing still held); in the recorded games 1 of 503 swings
   (Gilmour, CGY-TOR 2026-10-20, P2 3:20: the puck his 0.14 s into a 0.9 s swing). From the code, not seen yet: a person
   can cause it by pressing B after A while the pass is coming, and pressing A again once he has the puck (the lock is
-  cleared) should start an ordinary shot.
+  cleared) should start an ordinary shot. **The Genesis has no such flaw:** its one-timer (onetimer94.asm
+  `assonetimer`) ends through EndOneTimer, which always sets SPAglide; a cancel (anyone has the puck, or it isn't
+  coming) goes there at once, a struck one-timer only once its animation is over (`.chkdone`), so the follow-through
+  stays. NOSE4Web's SNES fix (d045e26) resets at the give-up, but asspassrec's strike also ends through `.6`, so its
+  first build cut every struck one-timer's follow-through to SPAglide (158 of 158 in 7 traced games; the swing 17
+  frames, retail 26.5): testing the `onetimer` flag ($1E89, set by the strike) would leave struck swings alone.
 - **The same look from an ordinary shot:** a wind-up that loses the game's shot-mode flag (`sfssdir`, one flag for
   the whole game) plays out with no shot: ShotMode, which fires it, runs only while the flag is set. It's cleared when
   the puck changes hands (puckglue), on a successful steal touch (puckstick, the puck knocked loose and gathered again)
