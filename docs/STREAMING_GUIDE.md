@@ -97,6 +97,7 @@ A5. Choose what the panel shows. Everything is set in its address. Open the sour
     - recent=4        how many event lines to show (newest at the top)
     - scale=1.2       bigger (or smaller, e.g. 0.8)
     - side=left       the panel at the top left instead of the top right
+    - score=0         hide the score (shown by default: at the top of the panel, at the start of the bar)
     New events are highlighted for 8 seconds. To move the panel anywhere else, drag the source in OBS.
 
     You can add the panel more than once with different addresses, for example a "bar" along the top and a
@@ -105,7 +106,8 @@ A5. Choose what the panel shows. Everything is set in its address. Open the sour
 A6. (Optional) Build your own layout from text files instead. While a game is on, the helper keeps a folder of small
     text files, one number in each:
           Documents\NHL94 Viewer\live\obs
-    For example home_shots.txt, away_shots.txt, home_xg.txt, away_xg.txt, home_abbr.txt (the team's short name),
+    For example score.txt (like "PHI 3 - 2 CHI"), home_shots.txt, away_shots.txt, home_xg.txt, away_xg.txt,
+    home_abbr.txt (the team's short name),
     last_goal.txt, last_big_save.txt, last_big_hit.txt, last_penalty.txt, event_last.txt (the latest event of any
     kind but hits) and events_recent.txt (the last five events, hits left out). The numbers are the ones listed in A5, with "home_" or
     "away_" in front.

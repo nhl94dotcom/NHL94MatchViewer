@@ -205,8 +205,10 @@ def write(folder, m, status="live"):
         put(obs / f"{side}_abbr.txt", team["abbr"] or "")
         for k, v in team["stats"].items():
             put(obs / f"{side}_{k}.txt", "" if v is None else str(v))
+    h, a = data["teams"]
+    put(obs / "score.txt", f"{h['abbr']} {h['stats']['goals']} - {a['stats']['goals']} {a['abbr']}")
     ev = data["events"]
-    quiet = [e for e in ev if e["kind"] not in ("hit", "big_hit")]   # hits (about 7 big and 40 plain a game) would fill
+    quiet =[e for e in ev if e["kind"] not in ("hit", "big_hit")]   # hits (about 7 big and 40 plain a game) would fill
     put(obs / "event_last.txt", quiet[-1]["text"] if quiet else "")    # these: only in last_big_hit.txt
     put(obs / "events_recent.txt", "\n".join(e["text"] for e in quiet[-RECENT:]))
     for kind in ("goal", "big_save", "big_hit", "penalty"):

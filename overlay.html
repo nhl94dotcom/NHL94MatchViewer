@@ -13,6 +13,7 @@
                   upended or sent into the boards, about 7 a game; hit for every knockdown, about 40)
     layout=panel | bar | ticker                          panel: numbers and events; bar: numbers in one row; ticker: events
     recent=4      events shown (newest first)            scale=1   size            side=left | right (panel)
+    score=0       hide the score (shown by default at the top of the panel and the start of the bar)
     src=live/stats.json   where the data is              demo=1    a made-up game, for setting OBS up
 -->
 <style>
@@ -31,6 +32,7 @@
   td.label { color: var(--muted); font-weight: 500; text-align: center; font-size: 14px; }
   td.num { font-variant-numeric: tabular-nums; min-width: 3.2em; font-size: 18px; }
   .teams th { color: var(--fg); font-size: 16px; }
+  .teams th.score { font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: .02em; text-transform: none; }
   .events { margin-top: 6px; max-width: 30em; }
   .ev { padding: 3px 4px; border-top: 1px solid var(--line); font-weight: 500; font-size: 14px; }
   .ev:first-child { border-top: 0; }
@@ -57,6 +59,7 @@ const STATS = (P.get('stats') || 'shots,xg,hits,faceoffs,power_play,save_pct').s
 const KINDS = new Set((P.get('events') || 'goal,big_save,post,injury,penalty,giveaway,fight,streak').split(','));
 const LAYOUT = P.get('layout') || 'panel';
 const RECENT = +(P.get('recent') || (LAYOUT === 'ticker' ? 1 : 4));
+const SCORE = P.get('score') !== '0';
 const SRC = P.get('src') || 'live/stats.json';
 const FRESH_MS = 8000;
 const wrap = document.getElementById('wrap');
@@ -100,6 +103,11 @@ function render(data) {
   const [h, a] = data.teams;
   if (LAYOUT === 'bar') {
     const bar = el('div', 'box bar');
+    if (SCORE) {
+      const s = el('div', 'stat');
+      s.append(el('span', 'num', h.abbr + ' ' + value(h.stats.goals, 'goals') + ' – ' + value(a.stats.goals, 'goals') + ' ' + a.abbr));
+      bar.append(s);
+    }
     for (const k of STATS) {
       const s = el('div', 'stat');
       s.append(el('span', 'label', LABELS[k] || k), el('span', 'num', h.abbr + ' ' + value(h.stats[k], k) + ' · ' + value(a.stats[k], k) + ' ' + a.abbr));
@@ -113,7 +121,9 @@ function render(data) {
     const box = el('div', 'box');
     const table = el('table');
     const head = el('tr', 'teams');
-    head.append(el('th', '', h.abbr), el('th', '', ''), el('th', '', a.abbr));
+    head.append(el('th', '', h.abbr),
+      el('th', 'score', SCORE ? value(h.stats.goals, 'goals') + ' – ' + value(a.stats.goals, 'goals') : ''),
+      el('th', '', a.abbr));
     table.append(head);
     for (const k of STATS) {
       const tr = el('tr');
