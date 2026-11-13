@@ -4518,6 +4518,17 @@ from the third (2), regular season without the extra aggression (1), CDL regular
   tmap 4 however many are in the box, so this comes up whenever three of a team's players sit at once. Retail, 12
   overtimes with every draw counted: no draw with three of a team's players sitting in the box with objects (the 5-on-5
   rules give the power play instead), so retail's own case is still untested.
+- **The fix (562f559: in overtime each team's tmap is at most 6 minus all its boxed players, at least 3; the faceoff
+  takes row 0)**, nhl94_3on3_ot.bin 8cd044d8...: 24 overtimes, **no short draw**; all 33 draws with three of a team's
+  players sitting in the box had tmap 3 with the goalie, C and LW on the ice. Seed 19 shows the return: G, C, LW from
+  OT 8:13; at 7:13 a boxed player came out and joined play (three skaters), and the next draw (7:10) was 3 skaters at
+  tmap 4. (The other crowded overtimes stayed crowded to their end: the away team at Aggression 38 is called all the
+  time.) The seed-11 variant (two boxed, an empty object) did not come up.
+- **The original game loses a skater the same way** (`gen_box_crowd_check.py`: retail, regulation, the away team at
+  Aggression 38, every draw): game 1, period 3 at 3:22, the away team at tmap 4 with three boxed players holding objects
+  (5, 17, 18; five boxed in all): on the ice the goalie, C and RD only, no LD; game 3, period 3 at 1:11, the same (4,
+  20, 22 sitting; eight boxed): C and RD only. tmap's floor of 4 (goalie and three) with three sitting needs seven
+  objects for six.
 
 ### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
 

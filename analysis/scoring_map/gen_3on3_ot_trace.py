@@ -66,6 +66,8 @@ dumps = []
 short = {0: 0, 1: 0}
 prev_stop = {0: False, 1: False}
 crowded = []
+cur_seed = {"n": 0}
+runs = []
 def on_ice(e, t):
     r = orig(e, t)
     b = M.TEAMS[t]
@@ -80,7 +82,8 @@ def on_ice(e, t):
         held = [e.b(M.BASE + M.SZ * k + 0x66) + 1 for k in range(6 * t, 6 * t + 6)
                 if e.b(M.BASE + M.SZ * k + 0x35) == 0xFF and e.b(M.BASE + M.SZ * k + 0x66) + 1 in boxed]
         if len(held) >= 3:
-            crowded.append({"team": t, "clock": e.w(M.CLOCK), "tmap": tm, "skaters": len(r), "goalie_on": gl,
+            crowded.append({"team": t, "clock": e.w(M.CLOCK), "tmap": tm, "skaters": len(r), "on_ice": r, "goalie_on": gl,
+                            "frame": frame["n"], "seed": cur_seed["n"],
                             "boxed": boxed, "boxed_with_objects": held})
     if drop and len(r) < want and tm <= 6 and len(dumps) < 6:   # a team short of its tmap at the drop
         dumps.append({
@@ -104,6 +107,7 @@ first = int(sys.argv[4]) if len(sys.argv) > 4 else 0
 for seed in range(first, first + (int(sys.argv[3]) if len(sys.argv) > 3 else 1)):
     calls.clear(); ring_seen["idx"] = 0; frame["n"] = 0; short[0] = short[1] = 0
     objlog["last"] = None; objlog["changes"].clear()
+    cur_seed["n"] = seed
     n0 = len(dumps)
     r = M.run_case(str(scratch), case, seed, OUT)
     for d in dumps[n0:]:
@@ -111,3 +115,5 @@ for seed in range(first, first + (int(sys.argv[3]) if len(sys.argv) > 3 else 1))
     print(seed, r.get("score"), r.get("error"), r.get("gsp"), "short-handed beyond tmap:", len(dumps) - n0, flush=True)
     (OUT / f"dumps_{ROM.stem}_{case}.json").write_text(json.dumps(dumps, indent=1))
     (OUT / f"crowded_{ROM.stem}_{case}.json").write_text(json.dumps(crowded, indent=1))
+    runs.append({"seed": seed, "score": r.get("score"), "segments": r.get("segments"), "faceoffs": r.get("faceoffs")})
+    (OUT / f"runs_{ROM.stem}_{case}.json").write_text(json.dumps(runs))
