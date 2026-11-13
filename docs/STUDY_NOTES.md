@@ -4547,6 +4547,22 @@ the shootout kept level to round 7-8; each turn's BA_Skater_Offset against the e
   two roster places, the saved tmpdst still box time, and both were skipped through round 8 (round 4 to entry 5, round
   1 and 6 to entry 2). All four cases right on both ROMs.
 
+### NOSE4Web's SNES shot wind-up fix 80f108e ("shotFix"), played (2026-11-13)
+
+puckglue's `.4` (lda #$000C / trb sflags, retail $9E:9AC6) made a jsl: after the clear, if the new carrier's SPA is in
+ShotMode's range ($ED4A-$F020: the two shot swings and the two one-timer swings) below SPAnum $18, sfssdir is set
+again. `snes_shot_windup_trace.py` (every shot wind-up by a carrier in computer games: fired, held after a regather,
+held without losing the puck, lost):
+- **Forced** (`--force-regather`: 3 frames into every wind-up the puck made loose at his stick, so he gathers it straight
+  back; 2 games each): retail 47 shots fired, 46 held with no shot; the fix 68 fired, 2 held.
+- **Natural** (12 games retail against the fix, the same seeds; 6 each on the 2 MB and SA-1 builds against their
+  unfixed builds): wind-ups 66-82 a game (SA-1 47-50), fired 88-93% on all six alike; a regathered wind-up came 0-3
+  times in 6-12 games on any build, so in computer play it barely arises; "held, kept" (holds and hooks, which keep
+  clearing the flag: holdcheck untouched) 10-26 on every build alike.
+- The range covers the one-timer swings too: a person whose one-timer was abandoned and who gathers the puck mid-swing
+  gets the flag back (a release of A then fires); with the one-timer fix on, the swing is reset to SPAglide the next
+  frame and ShotMode clears the flag itself.
+
 ### NOSE4Web's 1 MB fight-injury fix 84a3f6b, played (2026-11-13)
 
 McMarkis's 485ec28a (fightinj and FightInjuredKeep) on NOSE4Web's 1 MB fighting: fightinj at $7E:FE80-$FEB3,
