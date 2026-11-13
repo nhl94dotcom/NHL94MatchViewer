@@ -4547,6 +4547,25 @@ the shootout kept level to round 7-8; each turn's BA_Skater_Offset against the e
   two roster places, the saved tmpdst still box time, and both were skipped through round 8 (round 4 to entry 5, round
   1 and 6 to entry 2). All four cases right on both ROMs.
 
+### NOSE4Web's fighting penalty time e5238ca, played (2026-11-13)
+
+`fight_time_check.py genesis|snes` (computer games with fights; every box stay followed: its word, the seconds served
+by the clock, the penalty minutes before and after, both teams' tmap while in; a fight's two fighters paired by the
+clock when they went in). All builds at 120 s:
+- **Genesis** (nhl94_fight_time.bin 9 fights, the same with the injury roll forced 6, nhl94_fighting_blood.bin 12 as
+  the baseline): 120 s ($2078 -> $6078 coincidental -> $4078), served 120-125 by the clock (baseline 300, served
+  304-309), 5 PIM each, the teams' strength while they sit as with ordinary fights (mostly 6-on-6; 5-on-6 from other
+  penalties, as in the baseline). Minors 120 s, and 60 s on nhl94_fight_time_pt30.bin. No fight injury came up in
+  the forced games, so a loser's $1000 under the new time wasn't seen.
+- **SNES** (NHL94_fight_time.smc with every fighting rating at 14, nhl94snes_2026_fight_time.sfc, its pt30 copy, the
+  SA-1 build; nhl94snes_2026.sfc the baseline): 120 s, served 118-120 (baseline 300 / 299), 5 PIM each, minors 120 s
+  (60 s on pt30). **But on the 2 MB build fights no longer keep full strength:** the baseline's fighters sat with both
+  teams at tmap 6 (9 of 10 fights), the fight-time build's at 5 / 5 (4-on-4) and sometimes 4 / 5. McMarkis's
+  FightCoincidental (InProgress, after the store; SA-1 source e3398fc2) marks two fighting majors coincidental only
+  when the new word is $212C ((5*60)|$2000) and the other's time is 300, so a fight time of anything else never pairs.
+  Its two constants want the set seconds. The 1 MB fighting (McMarkis's d862d933, before e3398fc2) has no pairing at
+  all: its fights are 4-on-4 with or without the new time.
+
 ### NOSE4Web's Genesis shootout injury skip f4ad85d, played (2026-11-13)
 
 `gen_shootout_injury_check.py` on nhl94_shootout_injuries.bin (e43d7d4b...) and nhl94_shootout_injuries_fighting.bin
