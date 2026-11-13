@@ -13,6 +13,11 @@ the build should take. Cases:
   picked    home entry 2 replaced by another skater (as the lineup screen would put him) and him injured: round 2 -> 3
   unmarked  as default with the mark $7E:F0F0 cleared at the shootout's start: every listed shooter shoots (the
             original, as Shootout mode from the menu)
+  fight     (2 MB builds, NOSE4Web 20149ad: fightinj kept in a copy, $7E:FE00 LoROM / $40:5800 SA-1, before
+            StartGame_go clears it) home entries 1 and 4 hurt in a fight late in overtime, their majors still running
+            at its end: fightinj ($E74E + roster, +26 the visitors) and fightinjany ($E782) set, tmpdst ($1852) box
+            time $00B4 (not $FFFC), set when overtime's clock is put at 3 s; entry 1 and 4 skipped. Needs the lists
+            from an earlier case in the same run (default first).
 python snes_shootout_injury_check.py ROM OUT [case ...]"""
 import json
 import sys
@@ -26,6 +31,8 @@ from snes_shootout_check import set_score, two_mb
 SHOOTMODE, ROUND, BA_TEAM, BA_OBJ, BA_SKATER, SFLAGS = 0x1D81, 0x1D85, 0x1E91, 0x1E8D, 0x1E8F, 0x15D8
 LISTS = (0x1D71, 0x1D79)
 SAVED, MARK = 0xF37F, 0xF0F0
+FIGHTINJ, FIGHTINJANY, TMPDST = 0xE74E, 0xE782, 0x1852
+KNOWN = {}
 
 
 def list_of(m, t):
@@ -73,6 +80,13 @@ def run_case(e, m, base, case, pad):
             m.setw(CLOCK, 3)
             set_score(m, 2, 2)
             ot_set = True
+            if case == "fight":
+                for entry in (1, 4):
+                    r_ = KNOWN["lists"][0][entry] - 1
+                    buf, o = m.at(FIGHTINJ + r_)               # his fightinj byte (the home team's 26 first)
+                    buf[o] = 1
+                    m.setw(TMPDST + 2 * r_, 0x00B4)
+                m.setw(FIGHTINJANY, 1)
         c = m.w(CLOCK)
         still = still + 2 if c == last else 0
         last = c
@@ -88,7 +102,12 @@ def run_case(e, m, base, case, pad):
         mark_values.add(m.w(MARK))
         if not marked and list_of(m, 0)[1] and list_of(m, 1)[1]:
             lists = [list_of(m, 0), list_of(m, 1)]
-            if case == "picked":
+            if case == "fight":
+                injured = [{lists[0][1], lists[0][4]}, set()]
+                copy = [(m.bw[0x5800 + i] if m.sa1 else m.e.ram[0xFE00 + i]) for i in range(52)]
+                fight_seen = {"copy (bytes set)": [i for i, v in enumerate(copy) if v],
+                              "saved tmpdst": [f"{(m.bw[0x4A8F + 2 * (v - 1)] | m.bw[0x4A90 + 2 * (v - 1)] << 8) if m.sa1 else m.w(SAVED + 2 * (v - 1)):04X}" for v in sorted(injured[0])]}
+            elif case == "picked":
                 spare = next(v for v in range(2, 27) if v not in lists[0])
                 m.setw(LISTS[0] + 2, (m.w(LISTS[0] + 2) & 0xFF00) | spare)
                 lists[0][2] = spare
@@ -96,7 +115,7 @@ def run_case(e, m, base, case, pad):
             else:
                 injured = [{lists[0][1], lists[0][5]}, {lists[1][3]}]
             for t in (0, 1):
-                for v in injured[t]:
+                for v in injured[t] if case != "fight" else ():
                     saved_tmpdst(m, t, v, 0xFFFC)
             if case == "unmarked":
                 m.setw(MARK, 0)
@@ -111,7 +130,9 @@ def run_case(e, m, base, case, pad):
             if r >= 8:
                 break
     ok = bool(turns) and all(t["shooter"] == t["expected"] for t in turns)
-    res = {"case": case, "lists": lists, "injured (list bytes)": [sorted(s) for s in injured],
+    if lists:
+        KNOWN["lists"] = lists
+    res = {"case": case, "lists": lists, **({"fight": fight_seen} if case == "fight" and lists else {}), "injured (list bytes)": [sorted(s) for s in injured],
            "mark values in the shootout": sorted(mark_values), "turns": turns, "ok": ok}
     print(json.dumps(res), flush=True)
     return res
@@ -119,7 +140,7 @@ def run_case(e, m, base, case, pad):
 
 def main():
     rom, out = sys.argv[1], Path(sys.argv[2])
-    cases = sys.argv[3:] or ["default", "picked", "unmarked"]
+    cases = sys.argv[3:] or ["default", "picked", "unmarked"] + (["fight"] if two_mb(rom) else [])
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()
     pad = two_mb(rom)

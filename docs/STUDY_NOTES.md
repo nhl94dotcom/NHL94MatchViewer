@@ -4533,6 +4533,13 @@ the shootout kept level to round 7-8; each turn's BA_Skater_Offset against the e
 - **unmarked** (the mark $7E:F0F0 cleared at the shootout's start): every listed shooter shot, injured or not (the
   original, as in Shootout mode).
 - The recorder's shooter is BA_Skater_Offset, so it logs the stand-in.
+- **20149ad, fightinj kept** (copied to $7E:FE00 on the LoROM 2 MB build, $40:5800 on SA-1, by a hook on PlayShootout's
+  `jsl StartGame_go` while the mark is set; the skip passes a player whose copied byte is set): nhl94snes_SA1_
+  shootout_injuries.sfc (1d1e8f76...) and nhl94snes_2026_shootout_injuries.sfc (ad23ce98..., LoROM 2 MB), the three
+  cases above plus **fight**: home entries 1 and 4 hurt in a fight (fightinj and fightinjany set) with their majors
+  still running at the end of overtime (tmpdst box time $00B4, not $FFFC). At the shootout the copy held exactly those
+  two roster places, the saved tmpdst still box time, and both were skipped through round 8 (round 4 to entry 5, round
+  1 and 6 to entry 2). All four cases right on both ROMs.
 
 ### chaos's Genesis fight injury ($112C) over a game (2026-11-13, `gen_fight_injury_track.py`)
 
