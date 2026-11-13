@@ -14,7 +14,8 @@ drop (the clock starting again): both teams' players by position, their spots re
 power-play clock on the scoreboard). Until the overtime ends (gsp leaves 3) or 15,000 frames; then what follows (the
 shootout flag gmode2 $C2FA bit 0, and the skaters in it).
 
-python gen_3on3_ot_check.py ROM CASE OUT [SEEDS]
+python gen_3on3_ot_check.py ROM CASE OUT [SEEDS]   (NHL94_AGR_UNTIL_CROWDED=1: the aggression only until three of
+  a team are in the box, to see them come out)
   CASE: off | on | carry | playoff | reg   (off / on: line changes off / on, penalties in overtime; carry: a home
   minor carried over from the third period; playoff: OptPlayMode 2; reg: regular season, no extra aggression)"""
 import json
@@ -47,6 +48,14 @@ def cpu(e):
 def on_ice(e, t):
     return sorted(POS.get(e.b(BASE + SZ * k + 0x35), "?") for k in range(6 * t, 6 * t + 6)
                   if 1 <= e.b(BASE + SZ * k + 0x35) <= 6)
+
+
+UNTIL_CROWDED = bool(__import__("os").environ.get("NHL94_AGR_UNTIL_CROWDED"))
+
+
+def boxed_of(e, t):
+    """The team's players in the box (tmpdst, team struct +$66, a word a roster player: 1-$7FFF)."""
+    return [i + 1 for i in range(26) if 0 < e.w(TEAMS[t] + 0x66 + 2 * i) < 0x8000]
 
 
 def run_case(rom, case, seed, out):
@@ -97,6 +106,8 @@ def run_case(rom, case, seed, out):
     while f < 15000:
         if f % 60 == 0:
             cpu(e)
+        if pp and UNTIL_CROWDED and any(len(boxed_of(e, t)) >= 3 for t in (0, 1)):
+            pp = False                                      # three in one box: let them come out (the return)
         if pp:
             for k in range(6, 12):
                 if 1 <= e.b(BASE + SZ * k + 0x35) <= 6:
@@ -132,6 +143,7 @@ def run_case(rom, case, seed, out):
                 if 1 <= p <= 6:
                     spots[f"{'HA'[k // 6]}{POS[p]}"] = (sw(e.w(BASE + SZ * k)) - px, sw(e.w(BASE + SZ * k + 0x14)) - py)
             faceoffs.append({"f": f, "clock": e.w(CLOCK), "puck": (px, py), "home": h, "away": a, "tmap": tm,
+                             "boxed": [len(boxed_of(e, 0)), len(boxed_of(e, 1))],
                              "spots": spots})
             if len(faceoffs) <= 4:
                 e.screenshot(out / f"{case}_{seed}_faceoff{len(faceoffs)}.png")

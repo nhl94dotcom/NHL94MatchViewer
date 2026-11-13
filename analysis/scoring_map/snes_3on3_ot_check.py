@@ -28,6 +28,7 @@ OPTPEN, OPTLINE, PLAYMODE = 0x34C4, 0x34C6, 0x34BC
 TMAP, TMPDST, POSITION, PFTEAM, AGGRESS = 0x17A6, 0x1852, 0x0F43, 0x1503, 0x1443
 GOALS_P = 0x177E
 POS = {1: "LD", 2: "RD", 3: "LW", 4: "C", 5: "RW", 6: "EA"}
+UNTIL_CROWDED = bool(__import__("os").environ.get("NHL94_AGR_UNTIL_CROWDED"))
 AGR = int(__import__("os").environ.get("NHL94_AGR", "18"))   # (20 - Agr) x 16: 19 is the most that leaves a range
 
 
@@ -116,6 +117,8 @@ def run_case(rom, case, n, out):
     while f < 15000:
         if f % 300 == 0:
             cvc.computer_only(m)
+        if pp and UNTIL_CROWDED and any(len(boxed(m, t)) >= 3 for t in (0, 1)):
+            pp = False                                      # three in one box: let them come out (the return)
         if pp:
             for k in range(12):
                 if team_of(m, k) == 1:

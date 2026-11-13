@@ -4525,6 +4525,22 @@ by object (Genesis 0-5 / 6-11; SNES pfteam), goalies by position 0. A race to th
 (AddPenalty with PenIcing for icingPlayer, as the touch does); the icing team first: clear ifok (waved off). The
 short-handed exception stays in the arming (3-on-3 overtime's tmap counts included).
 
+### NOSE4Web's 3-on-3 overtime 92801c0 (each team at most the other's tmap + 2; the SNES code moved), played (2026-11-12)
+
+nhl94_3on3_ot.bin 2152ba0c..., CDL_Season_12_3on3_ot.bin 734dbe47..., NHL94_3on3_ot.smc 13e8077b...,
+nhl94snes_SA1_3on3_ot.sfc 46249978... `gen_3on3_ot_check.py` / `snes_3on3_ot_check.py` with NHL94_AGR_UNTIL_CROWDED=1
+(the away team's aggression stops once three of a team are in the box, so they can come out).
+- **Genesis, 6 overtimes:** 5-on-3 (tmap 6 against 4, two in the box) in four of them; **three in one box: 4-on-2**
+  (tmap 5 against 3: the other team's +2 now limited to the penalized team's tmap + 2), OT 7:52 and 6:59 in seed 5,
+  with 5-on-3 between them when one came out (7:40); from 5-on-3 back to 4-on-3 as the penalties ran out (seed 3). The
+  full return to 3-on-3 after a crowded box didn't come up before the runs' end (15,000 frames). No short draw.
+- **SNES (all its code moved; 4 retail, 3 SA-1 forced, 4 retail and 2 SA-1 ordinary):** 3-on-3 at every even
+  draw, 4-on-3 both ways on both ROMs, coincidental back to 3-on-3 and the return after a power play (SA-1 seed 2:
+  4-on-3, 3-on-3 with one in each box, 4-on-3 the other way, 3-on-3 at 1:14); a penalty shot (tmap 1 for both, 4 after);
+  the power-play clock counting down in step ("LA Pwr Play" 1:08 at OT 2:36, 0:53 at 2:21, SA-1). No 5-on-3 or three in
+  one box: the computer's SNES penalties barely respond to the Aggression held in RAM (seed 1 played the same at 18 and
+  19), so they don't pile up. No short draw.
+
 ### NOSE4Web's SNES 3-on-3 overtime (e95d330), played (2026-11-12)
 
 NHL94_3on3_ot.smc (SHA-1 3748ff0f..., every overtime) and nhl94snes_SA1_3on3_ot.sfc (31e6b645..., regular season
