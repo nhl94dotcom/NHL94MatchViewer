@@ -28,7 +28,7 @@ OPTPEN, OPTLINE, PLAYMODE = 0x34C4, 0x34C6, 0x34BC
 TMAP, TMPDST, POSITION, PFTEAM, AGGRESS = 0x17A6, 0x1852, 0x0F43, 0x1503, 0x1443
 GOALS_P = 0x177E
 POS = {1: "LD", 2: "RD", 3: "LW", 4: "C", 5: "RW", 6: "EA"}
-AGR = 18
+AGR = int(__import__("os").environ.get("NHL94_AGR", "18"))   # (20 - Agr) x 16: 19 is the most that leaves a range
 
 
 def team_of(m, k):

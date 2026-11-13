@@ -4475,6 +4475,41 @@ paired games): goals 3.00 against 2.97 (+0.03 ±0.48), xG 5.92 against 5.58 (+0.
 shots within 40 out 6.7 a game (63 11.2), 40-80 out 17.1 (10.8), one-timers tried 4.0 (3.6), one-timer shots 4.2 (3.7),
 slapshots 15% of ordinary shots. **Version 67 is the default**: equal on results, closer to people's attack.
 
+### How each game calls icing, for a hybrid icing option (2026-11-12, for NOSE4Web; code readings)
+
+**Genesis** (logic94.asm; nhl94.bin): iflags $FFBF80 (bit 0 ifcgl crossed, 1 ifdir must cross the top line, 2 ifok
+armed), icingPlayer the byte after it.
+- **Armed on every touch** (a2touchpuck's `.notice`, after the touch bookkeeping): iflags cleared, icingPlayer = the
+  toucher; ifdir set if he shoots up; armed (ifok) only if the puck is in his own half (y toward the goal he attacks
+  not positive) and his team isn't short-handed (its tmap not below the other's).
+- **The crossing** (`PuckIChk` at $10246, from pucknorm while nobody has the puck): armed and not yet crossed, the
+  loose puck past the far goal line (Blueline + goalline): **within 44 of the middle (|x| <= $2C) icing is waved off**
+  (the puck went at the net); outside it ifcgl is set.
+- **The call** (the same a2touchpuck code, next touch): crossed, and the toucher is a skater of the other team (not a
+  goalie): `move.w #PenIcing,d0 / bsr AddPenalty` at $101EE for icingPlayer. A touch by the icing team's skater or
+  either goalie re-arms from that touch instead (waved off). PenIcing ($C) is always called (AddPenalty skips the
+  penalties-off test), has no minutes, so checkfornewpen stops play at once (`Stop4Pen`): the faceoff y is +-600 by the
+  icing player's goal, clamped to the end-zone dot (y +-206, x +-70 on the puck's side), then `limitfo`.
+- **Also reads it:** the computer goalie (checkanim `.22`) goes out to a loose puck only when no icing is pending.
+  Cleared at every faceoff setup and period start.
+
+**SNES** (NHL94SNES routines; NHL94.smc): iflags $7E:0CF1, the same bits; icingPlayer its high byte.
+- Armed the same way (a2touchpuck, the same own-half and not-short-handed tests).
+- **The crossing** (`PuckIChk`, from pucknorm): **any** crossing of the far goal line ($108) sets ifcgl (`tsb` at
+  $9E:F783); no window in the middle.
+- **A wave-off the Genesis lacks** (`updateplayers`, $9F:88BD-$9F:88F0): before the crossing, a player of the team
+  that didn't ice within 30 of the puck while it is low (z < 13) and slow (|vy| < $2400) cancels it (he could have
+  played it).
+- The call, the faceoff spot (`Stop4Pen`: +-600 by the icing player's goal, then the dot) and the computer goalie
+  staying in while icing is pending (`assgoalie`) as on the Genesis; cleared at puckfaceoff2.
+
+**For hybrid icing:** the natural moment is the crossing (Genesis where `PuckIChk` sets ifcgl; SNES at $9E:F783). Every
+object's position and speed are there (Genesis +$00 / +$14, +$28 / +$2A; SNES $0D55 / $0DB7, $0EC3 / $0EE3), the teams
+by object (Genesis 0-5 / 6-11; SNES pfteam), goalies by position 0. A race to the dot on the puck's side (x +-70, y
++-206 at that end): the icing team's best time against the other team's; the other team first: call it then
+(AddPenalty with PenIcing for icingPlayer, as the touch does); the icing team first: clear ifok (waved off). The
+short-handed exception stays in the arming (3-on-3 overtime's tmap counts included).
+
 ### NOSE4Web's SNES 3-on-3 overtime (e95d330), played (2026-11-12)
 
 NHL94_3on3_ot.smc (SHA-1 3748ff0f..., every overtime) and nhl94snes_SA1_3on3_ot.sfc (31e6b645..., regular season
