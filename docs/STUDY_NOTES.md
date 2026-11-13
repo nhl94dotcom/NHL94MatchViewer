@@ -4627,6 +4627,26 @@ on every other frame, so a 1-frame tap can go unseen (held 4 frames: fixed).
 NOSE4Web's suggested fix (the choice landing on his own locked skater takes the next-best eligible one) makes B during
 his own burst or check switch control, which is what the Genesis does when locked (switches at once).
 
+### NOSE4Web's Genesis Time On Ice page 4526102, looked at (2026-11-13)
+
+Player Stats sort column 5 (game stats only) showing the team struct's +$136 word as m:ss. nhl94_toi.bin (SHA-1
+562d4922...) and nhl94_toi_checks.bin (9f680e19..., with the bodycheck counts). `analysis/scoring_map/
+gen_toi_page_check.py` (a computer game with line changes on, paused at P1 0:59; menu_shots' presses and
+screenshots from the saved state, on the build and on retail nhl94.bin from the same state):
+- **Getting there:** pause menu Player Stats (5 down), RIGHT: Goals, Assists, Points, Shots On Goal, Penalty Minutes,
+  Time On Ice; RIGHT on Time On Ice stays (its title has no right arrow). In playoffs the pre-game menu's Playoff
+  Stats (4 down; the pause menu has none) stops at Penalty Minutes: not reachable there.
+- **Layout:** "TOI" highlighted where SOG / PIM were; the times highlighted, each ending under the header's I, as PIM's
+  numbers do on its page. 241 s showed 4:01, 193 3:13, 48 0:48.
+- **Sorting, values:** Los Angeles: five at 4:01 (Hrudey the goalie among them, the full time played), Kurri 3:13,
+  Sandstrom 0:48, then 0:00; Montreal six at 4:01 (Roy among them), then 0:00. Scrolling to row 25 and A (both teams)
+  work; A keeps the scroll position, as retail does on Penalty Minutes.
+- **Other pages:** Goals to Shots On Goal pixel-identical to retail, in game and playoff stats; Penalty Minutes the
+  same but for an arrow at the title's right end (pointing on to Time On Ice). **But the arrow is there in Playoff
+  Stats too**, where RIGHT goes nowhere: retail shows none there (the "]" title change applies whatever d7 is).
+- **Checks build:** Chk in place on every page, page 5 Checks For (McSorley 2, Blake / Kurri / Gretzky 1), then Time On
+  Ice with the same times as the plain build's same game.
+
 ### NOSE4Web's SNES time on ice 981b836, played (2026-11-13)
 
 McMarkis's PlayerIceTime count placed for the original layout: updateplayers' loadTeamStruct call ($F8723) on the
