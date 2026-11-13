@@ -172,7 +172,7 @@ function fillRows(body, games) {
     const game = tr.insertCell(); game.className = 'game';
     const home = document.createElement('span'), away = document.createElement('span'), score = document.createElement('b'), info = document.createElement('small');
     home.textContent = g.home || 'Home'; away.textContent = g.away || 'Away';
-    score.textContent = g.score[0] + ' – ' + g.score[1];
+    score.textContent = g.score[0] + ' – ' + g.score[1] + (g.shootout ? ' SO' : '');
     info.textContent = (g.abbr ? g.abbr.join(' vs ') + ' · ' : '') + length(g.seconds) + ' recorded' + (romInfo[g.name] && romInfo[g.name].rom ? ' · ' + romInfo[g.name].rom : '');
     info.title = g.name;
     if (romInfo[g.name]) { const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = romInfo[g.name].system; info.prepend(badge); }
