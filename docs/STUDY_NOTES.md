@@ -4494,7 +4494,13 @@ scored 12 of 82 (68: 5 of 84), 72% on the forehand; on 64 goals +0.31 ±0.27 but
 position for the way back: not checked). **68 stays the default.** Checked (2026-11-13): 69's goals against don't follow
 its slapshots (1 of 84 within 6 s real of one; the other team's shots in the 15 s real after them 92 against 68's 107);
 the extra goals against were power-play goals (8 -> 18) and one-timers (20 -> 30). On 127 paired games: slapshot goals 44
-against 29 (xG 90 against 94), but goals +0.10 ±0.19, goals against +0.18 ±0.12 (xG against +0.12 ±0.10): even.
+against 29 (xG 90 against 94), but goals +0.10 ±0.19, goals against +0.18 ±0.12 (xG against +0.12 ±0.10): even. Where
+the goals against differ (paired, 127 games): the computer's breakaways are as many (3.04 against 3.06 a game) but
+scored more (0.17 against 0.10, +1.75 SE); the bot's penalties as many (1.98 / 1.93) but more power-play goals against
+(+0.12 ±0.06); one-timer xG against +0.12 ±0.05 (2.3 SE) with every other xG against equal (1.90 / 1.90), and those
+extra one-timers came away from the bot's shots (none within 10 s real: 238 against 208, xG 45.8 against 32.9; after
+its slapshots 13 against 18). Nothing ties them to 69's change (the wind-up only), so most likely chance across many
+measures; no defensive fix suggests itself.
 
 ### Icing options played: Genesis hybrid 82a9a22, SNES crease window and hybrid b98739a (2026-11-13)
 
