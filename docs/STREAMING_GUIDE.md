@@ -82,6 +82,23 @@ A5. Choose what the panel shows. Everything is set in its address. Open the sour
           takeaways      pucks taken from the other team
           giveaways      pucks given away
           goals          goals
+          corsi_pct      share of all shot attempts in the game (Corsi %)
+          fenwick_pct    the same without blocked attempts (Fenwick %)
+          pdo            shooting % + save % (x 100): around 100 is normal, far above means luck running hot
+          possession     time with the puck (game clock)
+          possession_pct share of the game's time with the puck (the rest is loose-puck "transition")
+          attack_zone_per_goal   attacking-zone time with the puck for each goal scored (lower = more dangerous)
+          zone_entries   times the puck was taken over the attacking blue line
+          zone_entries_kinds     those entries carried / passed / dumped
+          bobbled        passes that bounced off a teammate who could have taken them
+          checks_person  the person's check attempts (C bursts at a man), CB checks included
+          checks_person_hfw      those as hit / failed / whiff
+          checks_all     every check attempt, the computer's skaters' too
+          checks_all_hfw         those as hit / failed / whiff
+          cb_right       the person's checks where C or CB was the better choice for the two players' weights
+                         (Genesis with the original checking only: C into a man 2+ weight points heavier, CB
+                         otherwise), as right / judged
+          cb_right_pct   the same as a percentage
     - events=...      which events appear, separated by commas. Without it, all of these but big_hit and hit
                       appear. Choose from:
           goal       goals, with scorer, assists, type (one-timer, power play ...) and "tying goal" / "go-ahead goal"

@@ -1756,7 +1756,7 @@ CHECK_REACH, CHECK_CONE, CHECK_CONTACT, CHECK_NEAR, CHECK_RESULT_MS, CHECK_AFTER
 SNES_CHECK_ANIMS = {"f27a", "f2ac", "f2de", "f310"}       # the SNES check animations (snes_burst_contact_study.py)
 
 
-def find_check_attempts(m):
+def find_check_attempts(m, people=True):
     """A person's check attempts (2026-11-08, the user: failed and whiffed checks, and CB checks, in the viewer; the
     rules are analysis/check_outcomes.py's, which takes them from here). An attempt: the person's skater starts a burst
     (C on the Genesis, A on the SNES: the `lunge` animation) while the other team has the puck, an opposing skater
@@ -1801,66 +1801,77 @@ def find_check_attempts(m):
             out.append(sh)
         return out
 
+    def attempt(f, team, them, k):
+        """One burst by skater k at frame f: its target, result and what followed (appended to events)."""
+        x, y = P(f, k)
+        a = math.radians(45 * int(m["facing"][f * K + k]))
+        fx, fy = math.sin(a), math.cos(a)
+        target = None
+        for o in skaters(f, them):
+            dx, dy = P(f, o)[0] - x, P(f, o)[1] - y
+            d = math.hypot(dx, dy)
+            if d < CHECK_REACH and math.degrees(math.acos(max(-1, min(1, (fx * dx + fy * dy) / (d or 1))))) <= CHECK_CONE:
+                if target is None or o == owner[f] or d < target[0] and target[1] != owner[f]:
+                    target = (d, o)
+        if target is None:
+            return
+        e = own_end(m, f, team)
+        if e is None:
+            return
+        who = roster(f, k)
+        hit = next((h for h in m.get("hits", []) if h["team"] == team and h["by"] == who and 0 <= t[h["f"]] - t[f] <= CHECK_RESULT_MS), None)
+        thrown, closest, contact = False, 10 ** 9, None
+        q = f
+        while q < N and t[q] - t[f] <= CHECK_RESULT_MS:
+            thrown = thrown or (snes and an(q, k) in SNES_CHECK_ANIMS)
+            for o in skaters(q, them):
+                d = math.dist(P(q, k), P(q, o))
+                closest = min(closest, d)
+                if contact is None and d < 20 and t[q] - t[f] <= 600:
+                    contact = (q, o)
+            q += 1
+        if not (hit or thrown) and closest >= CHECK_NEAR:
+            return                                    # never got near anyone: a burst to reposition, not a check
+        result = "hit" if hit else "failed" if closest < CHECK_CONTACT or thrown else "whiff"
+        later = next((q for q in range(f, N) if t[q] - t[f] >= 1000), N - 1)
+        back = [o for o in skaters(f, team) if o != k and goal_side(f, o, e)]
+        sh = after(f, team)
+        goal = next((x for x in sh if x["result"] == "goal"), None)
+        ev = {"f": f, "team": team, "person": people, "by": who, "on": roster(f, target[1]), "carrier": target[1] == owner[f],
+              "result": result, "outcome": hit["outcome"] if hit else None, "thrown": thrown,
+              "zone": "own" if puck[3 * f + 1] * e >= 89 else "their" if puck[3 * f + 1] * e <= -89 else "neutral",
+              "last": not back, "back": len(back), "side0": goal_side(f, k, e), "side1": goal_side(later, k, e),
+              "won": any(has(q, team) for q in range(f, min(N, later + 60))), "shots": len(sh),
+              "xg": round(sum(x.get("xg") or 0 for x in sh if x["result"] != "blocked"), 3),
+              "goal_f": goal["f"] if goal else None, "late": bool(goal) and t[goal["f"]] - t[f] < CHECK_LATE_MS,
+              "goal": goal}
+        if people and not snes and contact is not None:
+            cq, o = contact
+            ev["cb"] = "C" if m["ctrl"][cq] >> k & 1 else "CB"
+            wc, wt = weight(team, who), weight(them, roster(cq, o))
+            if wc is not None and wt is not None:
+                ev["right"] = (ev["cb"] == "C") == (wt - wc >= 2)
+            ev["down"] = any(h["team"] == team and h["by"] == who and h["on"] == roster(cq, o) and -200 <= t[h["f"]] - t[cq] <= 900
+                             for h in m.get("hits", []))
+        events.append(ev)
+
     events = []
     for team in (0, 1):
         them = 1 - team
         for f in range(1, N - 1):
             if not has(f, them) or puck[3 * f + 2] < -100:
                 continue
-            k = next((j for j in range(team * 6, team * 6 + 6) if m["ctrl"][f] >> j & 1 and role[f * K + j] in "12345"), None)
-            if k is None or an(f, k) not in lunge or an(f - 1, k) in lunge:
-                continue
-            x, y = P(f, k)
-            a = math.radians(45 * int(m["facing"][f * K + k]))
-            fx, fy = math.sin(a), math.cos(a)
-            target = None
-            for o in skaters(f, them):
-                dx, dy = P(f, o)[0] - x, P(f, o)[1] - y
-                d = math.hypot(dx, dy)
-                if d < CHECK_REACH and math.degrees(math.acos(max(-1, min(1, (fx * dx + fy * dy) / (d or 1))))) <= CHECK_CONE:
-                    if target is None or o == owner[f] or d < target[0] and target[1] != owner[f]:
-                        target = (d, o)
-            if target is None:
-                continue
-            e = own_end(m, f, team)
-            if e is None:
-                continue
-            who = roster(f, k)
-            hit = next((h for h in m.get("hits", []) if h["team"] == team and h["by"] == who and 0 <= t[h["f"]] - t[f] <= CHECK_RESULT_MS), None)
-            thrown, closest, contact = False, 10 ** 9, None
-            q = f
-            while q < N and t[q] - t[f] <= CHECK_RESULT_MS:
-                thrown = thrown or (snes and an(q, k) in SNES_CHECK_ANIMS)
-                for o in skaters(q, them):
-                    d = math.dist(P(q, k), P(q, o))
-                    closest = min(closest, d)
-                    if contact is None and d < 20 and t[q] - t[f] <= 600:
-                        contact = (q, o)
-                q += 1
-            if not (hit or thrown) and closest >= CHECK_NEAR:
-                continue                                  # never got near anyone: a burst to reposition, not a check
-            result = "hit" if hit else "failed" if closest < CHECK_CONTACT or thrown else "whiff"
-            later = next((q for q in range(f, N) if t[q] - t[f] >= 1000), N - 1)
-            back = [o for o in skaters(f, team) if o != k and goal_side(f, o, e)]
-            sh = after(f, team)
-            goal = next((x for x in sh if x["result"] == "goal"), None)
-            ev = {"f": f, "team": team, "by": who, "on": roster(f, target[1]), "carrier": target[1] == owner[f],
-                  "result": result, "outcome": hit["outcome"] if hit else None, "thrown": thrown,
-                  "zone": "own" if puck[3 * f + 1] * e >= 89 else "their" if puck[3 * f + 1] * e <= -89 else "neutral",
-                  "last": not back, "back": len(back), "side0": goal_side(f, k, e), "side1": goal_side(later, k, e),
-                  "won": any(has(q, team) for q in range(f, min(N, later + 60))), "shots": len(sh),
-                  "xg": round(sum(x.get("xg") or 0 for x in sh if x["result"] != "blocked"), 3),
-                  "goal_f": goal["f"] if goal else None, "late": bool(goal) and t[goal["f"]] - t[f] < CHECK_LATE_MS,
-                  "goal": goal}
-            if not snes and contact is not None:
-                cq, o = contact
-                ev["cb"] = "C" if m["ctrl"][cq] >> k & 1 else "CB"
-                wc, wt = weight(team, who), weight(them, roster(cq, o))
-                if wc is not None and wt is not None:
-                    ev["right"] = (ev["cb"] == "C") == (wt - wc >= 2)
-                ev["down"] = any(h["team"] == team and h["by"] == who and h["on"] == roster(cq, o) and -200 <= t[h["f"]] - t[cq] <= 900
-                                 for h in m.get("hits", []))
-            events.append(ev)
+            # people=True: the person's skater (a CB check stays his: he started the burst); False (2026-11-13, the
+            # stream overlay's overall counts): the computer's skaters, each burst they start
+            if people:
+                cands = [next((j for j in range(team * 6, team * 6 + 6) if m["ctrl"][f] >> j & 1 and role[f * K + j] in "12345"), None)]
+            else:
+                cands = [j for j in range(team * 6, team * 6 + 6) if not m["ctrl"][f] >> j & 1 and role[f * K + j] in "12345"]
+            for k in cands:
+                if k is None or an(f, k) not in lunge or an(f - 1, k) in lunge:
+                    continue
+                attempt(f, team, them, k)
+
     return events
 
 
@@ -2488,7 +2499,10 @@ def analyse(match, system, cap, rom_path):
             goal["kinds"].append("EA Special")
     if match.get("hits") is not None and match.get("shotList") is not None:
         # The person's check attempts (hit / failed / whiff, and C or CB on the Genesis), after xG, which they sum
-        match["checkAttempts"] = [{k: v for k, v in ev.items() if k != "goal"} for ev in find_check_attempts(match)]
+        match["checkAttempts"] = [{k: v for k, v in ev.items() if k not in ("goal", "person")} for ev in find_check_attempts(match)]
+        # The computer's skaters' bursts at a man, the same way (2026-11-13: overall hit / failed / whiff counts)
+        match["cpuCheckAttempts"] = [{k: v for k, v in ev.items() if k not in ("goal", "person", "last", "back", "side0", "side1")}
+                                     for ev in find_check_attempts(match, people=False)]
         # Passing out of a check: each burst at a person's carrier, what he did (an index into CHECK_PASS_OUTCOMES), the
         # pass's lead on the contact (s real) and whether the checker was a person
         match["checkPasses"] = [{"f": ev["f"], "team": ev["team"], "by": ev["carrier"], "checker": ev["checker"],

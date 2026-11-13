@@ -52,7 +52,11 @@ const P = new URLSearchParams(location.search);
 const LABELS = { goals: 'Goals', shots: 'Shots', attempts: 'Attempts', xg: 'xG', hits: 'Hits', knockdowns: 'Knockdowns',
   faceoffs: 'Faceoffs', faceoff_pct: 'FO %', passes: 'Passes', pass_pct: 'Pass %', power_play: 'Power play',
   penalties: 'Penalties', pim: 'PIM', save_pct: 'Save %', shooting_pct: 'Shooting %', attack_zone: 'Attack zone',
-  one_timers: 'One-timers', breakaways: 'Breakaways', posts: 'Posts', takeaways: 'Takeaways', giveaways: 'Giveaways' };
+  one_timers: 'One-timers', breakaways: 'Breakaways', posts: 'Posts', takeaways: 'Takeaways', giveaways: 'Giveaways',
+  corsi_pct: 'Corsi %', fenwick_pct: 'Fenwick %', pdo: 'PDO', possession: 'Possession', possession_pct: 'Possession %',
+  attack_zone_per_goal: 'Zone time / goal', zone_entries: 'Zone entries', zone_entries_kinds: 'Entries C / P / D',
+  bobbled: 'Bobbled passes', checks_person: 'Checks (person)', checks_person_hfw: 'Hit / failed / whiff (person)',
+  checks_all: 'Checks (all)', checks_all_hfw: 'Hit / failed / whiff', cb_right: 'C or CB right', cb_right_pct: 'C or CB right %' };
 const KIND = { goal: 'GOAL', big_save: 'SAVE', big_miss: 'MISS', big_hit: 'HIT', hit: 'HIT', post: 'POST', injury: 'INJURY',
   penalty: 'PENALTY', giveaway: 'GIVEAWAY', fight: 'FIGHT', streak: 'STREAK' };
 const STATS = (P.get('stats') || 'shots,xg,hits,faceoffs,power_play,save_pct').split(',').filter(Boolean);

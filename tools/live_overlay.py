@@ -80,6 +80,51 @@ def team_stats(m, s, team):
         "posts": t.get("posts", 0),
         "takeaways": t.get("take", 0),
         "giveaways": t.get("give", 0),
+        **more_stats(m, s, team),
+    }
+
+
+def more_stats(m, s, team):
+    """The viewer's advanced and puck-control rows and the check attempts, the same way it works them out:
+    Corsi / Fenwick shares (all attempts / not blocked, all situations), PDO (shooting % + save % on shots on goal, x
+    100), possession (the season summary's game seconds; its share of every second the clock ticked off, transition
+    included), attack-zone possession per goal, zone entries, bobbled passes; the check attempts (the person's skater,
+    CB checks included, and the computer's: hit / failed / whiff) and, on the Genesis with the original checking, how
+    often the person chose C or CB right for the weights."""
+    t, o = s["teams"][team], s["teams"][1 - team]
+    shots = m.get("shotList", [])
+    att = lambda tm: sum(1 for x in shots if x["team"] == tm)
+    fen = lambda tm: sum(1 for x in shots if x["team"] == tm and x.get("result") not in ("blocked", "pending"))
+    share = lambda a, b: round(100 * a / (a + b)) if a + b else None
+    sog, sa, gf, ga = t.get("sog", 0), t.get("sa", 0), t.get("gf", 0), t.get("ga", 0)
+    pdo = round(100 * (gf / sog + 1 - ga / sa), 1) if sog and sa else None
+    poss = sum(t.get("possZones") or [0, 0, 0])
+    ticks = sum(season.clock_ticks(m)) or 0
+    goals = gf
+    per_goal = clock_text(round(t.get("possAtt", 0) / goals)) if goals and t.get("possZones") else None
+    entries = t.get("entries") or [0, 0, 0, 0]
+    person = [e for e in m.get("checkAttempts", []) if e["team"] == team]
+    cpu = [e for e in m.get("cpuCheckAttempts", []) if e["team"] == team]
+    hfw = lambda L: " / ".join(str(sum(1 for e in L if e.get("result") == r)) for r in ("hit", "failed", "whiff"))
+    original = m.get("system") != "snes" and not (m.get("romSettings") or {}).get("checkFix")
+    judged = [e for e in person if e.get("right") is not None] if original else []
+    right = sum(1 for e in judged if e["right"])
+    return {
+        "corsi_pct": share(att(team), att(1 - team)),
+        "fenwick_pct": share(fen(team), fen(1 - team)),
+        "pdo": pdo,
+        "possession": clock_text(round(poss)) if t.get("possZones") is not None else None,
+        "possession_pct": round(100 * poss / ticks) if ticks and t.get("possZones") is not None else None,
+        "attack_zone_per_goal": per_goal,
+        "zone_entries": entries[0],
+        "zone_entries_kinds": f"{entries[1]}/{entries[2]}/{entries[3]}",
+        "bobbled": t.get("bobbled", 0),
+        "checks_person": len(person),
+        "checks_person_hfw": hfw(person),
+        "checks_all": len(person) + len(cpu),
+        "checks_all_hfw": hfw(person + cpu),
+        "cb_right": f"{right}/{len(judged)}" if original else None,
+        "cb_right_pct": round(100 * right / len(judged)) if original and judged else None,
     }
 
 
