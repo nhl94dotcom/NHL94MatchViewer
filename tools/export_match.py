@@ -517,9 +517,14 @@ def find_shots(m, goals=None):
     # it reached the net or the goalie; for one found from a counted event, that event), and `resolved`, the frame
     # its result could first be known (the game's count, the post, the goalie's stop, the block, the goal line).
     keys = ('f', 'team', 'idx', 'x', 'y', 'speed', 'kind', 'type', 'result', 'goalie', 'gctl', 'rebound')
+    # Shots after the horn (2026-11-13): with the clock at 0 the period is over, but on the Genesis players skate on
+    # for a moment and the puck can be fired at a goalie already leaving his net (25 such "shots" in 17 of 35 recorded
+    # Genesis games, xG 5.1, none counted by the game). Left out unless the game counted it or it scored.
+    after_horn = lambda sh: m['clock'][sh['f']] == 0 and not sh.get('counted') and sh['result'] != 'goal'
     return [{**{key: sh[key] for key in keys}, 'counted': bool(sh.get('counted')),
              'known': sh.get('known', sh['f']), 'resolved': max(sh.get('resolved', sh['f']), sh.get('known', sh['f'])),
-             **({'after': sh['after']} if 'after' in sh else {}), **({'save': sh['save']} if 'save' in sh else {})} for sh in shots]
+             **({'after': sh['after']} if 'after' in sh else {}), **({'save': sh['save']} if 'save' in sh else {})}
+            for sh in shots if not after_horn(sh)]
 
 
 def find_failed_one_timers(m):

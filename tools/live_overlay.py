@@ -9,8 +9,8 @@ calls `write` after each update with the whole match converted so far. It writes
 
 The team numbers come from season.py's per-game summary (the same as the season page), the events from the converter's
 lists. Every event has its game time (period and clock), its kind and a line of text; the overlay or OBS picks which kinds
-to show. Kinds: goal, big_save, post, big_hit, hit, injury, penalty, giveaway (a giveaway that led to a goal), fight, streak.
-A big save is a saved shot of xG BIG_SAVE_XG or more.
+to show. Kinds: goal, big_save, big_miss, post, big_hit, hit, injury, penalty, giveaway (a giveaway that led to a goal), fight, streak.
+A big save is a saved shot of xG BIG_SAVE_XG or more; a big miss, one of those that went wide.
 
 python tools/live_overlay.py MATCH.js [OUT]   writes stats.json and obs/ for a finished match file (a test)."""
 import json
@@ -124,6 +124,14 @@ def events(m):
             add(s["f"], "big_save", 1 - team, f"BIG SAVE: {goalie} ({abbr(m, 1 - team)}) robs {who(m, team, s['idx'])}"
                 + f" (xG {s['xg']:.2f})")
 
+    # Big misses: shots of the same high expected-goal value that went wide, touched by no goalie or skater (posts are
+    # their own kind): the chances lost to the game's scatter (about 1.6 a game in the recorded Genesis games, 0.6 SNES).
+    for s in m.get("shotList", []):
+        if s.get("result") == "wide" and (s.get("xg") or 0) >= BIG_SAVE_XG:
+            team = s["team"]
+            add(s["f"], "big_miss", team, f"BIG MISS: {who(m, team, s['idx'])} ({abbr(m, team)}) misses the net"
+                + f" (xG {s['xg']:.2f})")
+
     # Posts: the shot just before each post.
     shots = sorted(m.get("shotList", []), key=lambda s: s["f"])
     for pf in m.get("posts", []) if isinstance(m.get("posts"), list) else []:
@@ -211,7 +219,7 @@ def write(folder, m, status="live"):
     quiet =[e for e in ev if e["kind"] not in ("hit", "big_hit")]   # hits (about 7 big and 40 plain a game) would fill
     put(obs / "event_last.txt", quiet[-1]["text"] if quiet else "")    # these: only in last_big_hit.txt
     put(obs / "events_recent.txt", "\n".join(e["text"] for e in quiet[-RECENT:]))
-    for kind in ("goal", "big_save", "big_hit", "penalty"):
+    for kind in ("goal", "big_save", "big_miss", "big_hit", "penalty"):
         last = [e for e in ev if e["kind"] == kind]
         put(obs / f"last_{kind}.txt", last[-1]["text"] if last else "")
     return data

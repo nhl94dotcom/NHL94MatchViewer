@@ -9,7 +9,7 @@
   writes live/stats.json through tools/live_overlay.py after each update of the game being played). The background is
   transparent. Everything is chosen in the address:
     stats=shots,xg,hits,faceoffs,power_play,save_pct     the numbers, in order (names as in live/stats.json)
-    events=goal,big_save,post,injury,penalty,giveaway,fight,streak   the kinds shown by default (add big_hit for players
+    events=goal,big_save,big_miss,post,injury,penalty,giveaway,fight,streak   the kinds shown by default (add big_hit for players
                   upended or sent into the boards, about 7 a game; hit for every knockdown, about 40)
     layout=panel | bar | ticker                          panel: numbers and events; bar: numbers in one row; ticker: events
     recent=4      events shown (newest first)            scale=1   size            side=left | right (panel)
@@ -53,10 +53,10 @@ const LABELS = { goals: 'Goals', shots: 'Shots', attempts: 'Attempts', xg: 'xG',
   faceoffs: 'Faceoffs', faceoff_pct: 'FO %', passes: 'Passes', pass_pct: 'Pass %', power_play: 'Power play',
   penalties: 'Penalties', pim: 'PIM', save_pct: 'Save %', shooting_pct: 'Shooting %', attack_zone: 'Attack zone',
   one_timers: 'One-timers', breakaways: 'Breakaways', posts: 'Posts', takeaways: 'Takeaways', giveaways: 'Giveaways' };
-const KIND = { goal: 'GOAL', big_save: 'SAVE', big_hit: 'HIT', hit: 'HIT', post: 'POST', injury: 'INJURY',
+const KIND = { goal: 'GOAL', big_save: 'SAVE', big_miss: 'MISS', big_hit: 'HIT', hit: 'HIT', post: 'POST', injury: 'INJURY',
   penalty: 'PENALTY', giveaway: 'GIVEAWAY', fight: 'FIGHT', streak: 'STREAK' };
 const STATS = (P.get('stats') || 'shots,xg,hits,faceoffs,power_play,save_pct').split(',').filter(Boolean);
-const KINDS = new Set((P.get('events') || 'goal,big_save,post,injury,penalty,giveaway,fight,streak').split(','));
+const KINDS = new Set((P.get('events') || 'goal,big_save,big_miss,post,injury,penalty,giveaway,fight,streak').split(','));
 const LAYOUT = P.get('layout') || 'panel';
 const RECENT = +(P.get('recent') || (LAYOUT === 'ticker' ? 1 : 4));
 const SCORE = P.get('score') !== '0';
@@ -78,7 +78,7 @@ function value(v, k) {
 function split(e) {
   const t = e.text || '', i = t.indexOf(' - ');
   let rest = i >= 0 ? t.slice(i + 3) : t;
-  rest = rest.replace(/^(GOAL|BIG SAVE|BIG HIT|HIT|OFF THE POST|INJURY|PENALTY|COSTLY GIVEAWAY|FIGHT!?):?\s*/, '');
+  rest = rest.replace(/^(GOAL|BIG SAVE|BIG MISS|BIG HIT|HIT|OFF THE POST|INJURY|PENALTY|COSTLY GIVEAWAY|FIGHT!?):?\s*/, '');
   return { time: e.period + ' ' + e.clock, rest };
 }
 
