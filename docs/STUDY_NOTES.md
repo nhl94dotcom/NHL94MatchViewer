@@ -4488,7 +4488,10 @@ splits slapshots into fast (forehand, the net straight ahead or up to 135 degree
 most 0.9). Against 67 (32 paired games): goals 3.41 against 3.00 (+0.41 ±0.39), xG equal, xG against -0.20 ±0.24; its
 slapshots from 40-130 out 68% on the forehand at the shot, median 19,500, 6% scored (5 of 84); the slapshot share still
 14%. **68 is the default.** **Version 69** (SLAP69): the aim held through the wind-up turns the skater (32% of 68's
-slapshots were backhands at the release): C alone, the aim only in the last 6 frames.
+slapshots were backhands at the release): C alone, the aim only in the last 6 frames. Against 68: on 32 paired games its slapshots from 40-130 out
+scored 12 of 82 (68: 5 of 84), 72% on the forehand; on 64 goals +0.31 ±0.27 but goals against +0.33 ±0.15 (xG against
++0.21 ±0.15), even overall (with no direction held through the wind-up the shooter stops skating, perhaps out of
+position for the way back: not checked). **68 stays the default.**
 
 ### How each game calls icing, for a hybrid icing option (2026-11-12, for NOSE4Web; code readings)
 
