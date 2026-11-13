@@ -4627,6 +4627,29 @@ on every other frame, so a 1-frame tap can go unseen (held 4 frames: fixed).
 NOSE4Web's suggested fix (the choice landing on his own locked skater takes the next-best eligible one) makes B during
 his own burst or check switch control, which is what the Genesis does when locked (switches at once).
 
+### NOSE4Web's SNES time on ice 981b836, played (2026-11-13)
+
+McMarkis's PlayerIceTime count placed for the original layout: updateplayers' loadTeamStruct call ($F8723) on the
+sflags3 $0020 tick also adds 1 to ptoi ($7E:E800, a word per roster player, visitors +$34, objects X < $18, capped
+5999); StartGame_scout's ScoutingReport call ($F8338) first zeroes $E800-$E867. NHL94_toi.smc (SHA-1 e42755e1...):
+against NHL94.smc only those two calls and the code at $DFFC5; NHL94_toi_shootout.smc (bacae1da...) adds the season
+shootout's bytes. `analysis/scoring_map/snes_toi_check.py` (snes_60fps_cvc's computer game, 5-minute periods,
+penalties on, OptLine $34C6 set at Game Setup, $E800-$E867 filled with $5A5A there; every frame who is on the ice and
+each ptoi word, each running game second counted by us):
+- **Line changes off:** every player's total = our count of the seconds he was on the ice when the clock ticked (+3 s
+  played before the watch began), difference 0 for every player; starters on all game 900; those boxed less, their
+  replacements the rest; each team's sum = 6 x game seconds less its short-handed seconds, exactly.
+- **Line changes on:** the home team, never short-handed, 5,400 (McMarkis's figure); the visitors 5,168 = 6 x seconds
+  less 232 short-handed seconds; the lines sharing it (340-564 a skater, about 900 a goalie); every player within 1 s
+  of our count (a change on the tick's own frame).
+- **Bench, box:** no ptoi ever grew on a frame its player wasn't on the ice, in either game.
+- **A new game:** the $5A5A fill was 0 by the opening faceoff (the clear at StartGame_scout).
+- **Season shootout** (`snes_shootout_check.py ... --toi tie`, now with `--toi`): all players' sum 144 at period 3's
+  last seconds (the saved game was early), 240 after them and overtime's, 240 when the shootout started, all through
+  it, when it ended and at the game's end.
+- **Memory:** the retail and Classic whole-game masks (`snes_ram_use_check.py`, 2026-11-11: every pause-menu screen,
+  Instant Replay, the intermissions, the end of the game, and a Shootout-mode game) never wrote $7E:E800-$E867.
+
 ### NOSE4Web's SNES lock fixes 139c219, played (2026-11-13)
 
 lockedChangeFix (findpc's .4: the pad's own skater a candidate only when unlocked, so a B during his own burst or check

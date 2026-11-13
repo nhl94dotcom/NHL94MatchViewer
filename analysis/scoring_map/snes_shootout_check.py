@@ -27,7 +27,9 @@ frames: each byte that changes, by when (before the shootout, in it, after it).
 2 MB builds' computer-only shootouts crashed in round 1 in this harness (the LoROM 32-team build's own Shootout mode
 too), with a pad on a team they play through.
 
-python snes_shootout_check.py ROM OUT [--pad] [case ...]   (default: tie untied playoff)"""
+--toi (2026-11-13): NOSE4Web's 1 MB time on ice: ptoi's sum through the case (see TOI).
+
+python snes_shootout_check.py ROM OUT [--pad] [--toi] [case ...]   (default: tie untied playoff)"""
 import json
 import sys
 from pathlib import Path
@@ -78,6 +80,8 @@ def set_score(m, h, a):
 
 
 PAD = False
+TOI = False      # --toi: NOSE4Web's 1 MB time on ice (ptoi $E800, 981b836): the real sums at period 3's last seconds,
+                 # when the shootout starts and ends, and at the game's end (the times must survive, the shootout add 0)
 
 
 def run_case(e, m, base, case, out, rom=None):
@@ -90,6 +94,9 @@ def run_case(e, m, base, case, out, rom=None):
     if big:
         seed_extra(m)
     e.run(2)
+    toi = (lambda: sum(m.w(PTOI + 2 * k) for k in range(52))) if TOI else None
+    toi_at = {"period 3's last seconds": toi()} if TOI else None
+    toi_in = []                                          # while the shootout plays
     before = snapshot(m)
     extra_before = extra(m) if big else None
     bwfree = m.bw if m.sa1 else None
@@ -106,6 +113,13 @@ def run_case(e, m, base, case, out, rom=None):
         if f % 3600 == 0:
             lowload.breathe()
         g, so = m.w(GSP), m.w(SHOOTMODE)
+        if TOI:
+            if so & 0xFF and "shootout starts" not in toi_at:
+                toi_at["shootout starts"] = toi()
+            if so & 0xFF:
+                toi_in.append(toi())
+            elif so_seen and "shootout ends" not in toi_at:
+                toi_at["shootout ends"] = toi()
         if so & 0xFF:
             so_seen, phase = True, "in the shootout"
         elif so_seen:
@@ -149,6 +163,9 @@ def run_case(e, m, base, case, out, rom=None):
             shots += 1
         if g >= 4 and over_at is None:
             over_at = f
+            if TOI:
+                toi_at["game over"] = toi()
+                toi_at["players with time"] = sum(1 for k in range(52) if m.w(PTOI + 2 * k))
             after = snapshot(m)
             extra_after = extra(m) if big else None
         if over_at is not None:
@@ -167,6 +184,9 @@ def run_case(e, m, base, case, out, rom=None):
            "changed": dict(list(changed.items())[:60])}
     if big:
         res["extra stats and fight state (period 3's last second, the game's end)"] = [extra_before, extra_after]
+    if TOI:
+        res["time on ice, all players' sum"] = toi_at
+        res["time on ice during the shootout (lowest, highest)"] = [min(toi_in), max(toi_in)] if toi_in else None
     if bw0 is not None:
         runs = []
         for i in sorted(bw_seen):
@@ -184,8 +204,10 @@ def main():
     rom, out = sys.argv[1], Path(sys.argv[2])
     global PAD
     args = sys.argv[3:]
+    global TOI
     PAD = "--pad" in args
-    cases = [c for c in args if c != "--pad"] or ["tie", "untied", "playoff"]
+    TOI = "--toi" in args
+    cases = [c for c in args if not c.startswith("--")] or ["tie", "untied", "playoff"]
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()
     if PAD:
