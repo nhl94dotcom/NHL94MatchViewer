@@ -4502,6 +4502,21 @@ extra one-timers came away from the bot's shots (none within 10 s real: 238 agai
 its slapshots 13 against 18). Nothing ties them to 69's change (the wind-up only), so most likely chance across many
 measures; no defensive fix suggests itself.
 
+### The bot's passes across the slot against people's (2026-11-13)
+
+After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
+`analysis/bot_onetimers.py` on recorded games only: version 68's 127 games against the computer (runs/cmp_v68, the bot
+home), the computer's side in them, and 64 people's side-games (the Genesis recordings with a person on both sides).
+Per 15 game minutes: one-timers tried bot 4.0, people 4.3 (computer 2.7); one-timer goals 34% / 37% of goals. Passes
+across the slot (coach_report's: attacking zone, crossing the middle, 40+ across, ending within 90 of the goal line)
+bot 2.8, people 3.8; completed 71% / 73%; a shot within 3 s of a completed one 91% / 65%; that shot's xG 0.27 / 0.42;
+goals from them 0.37 / 0.63. The shots after a completed one (bot 229, people 117): people's passes wider (36 ft median
+against 27), the goalie 5+ ft off the shot line 35% against 14% (people 24 goals of 41 such shots), the receiver in the
+same place (15 ft from the middle, 16-19 ft out), the shot as near (24 / 26 ft). So the bot's one-timer passes are too
+narrow: the goalie isn't dragged across. Its rule (PEOPLE48 "across" 30-130 units, 10-43 ft) allows any width; the
+2026-11-12 sweep only varied the goalie-drawn setting among six. The bot played the computer's defence, people each
+other: a caveat on every comparison here.
+
 ### Icing options played: Genesis hybrid 82a9a22, SNES crease window and hybrid b98739a (2026-11-13)
 
 `gen_hybrid_icing_check.py` / `snes_hybrid_icing_check.py` (computer games, penalties on, line changes on, the away
