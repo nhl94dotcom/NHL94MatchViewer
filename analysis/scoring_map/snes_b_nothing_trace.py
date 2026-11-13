@@ -15,7 +15,11 @@ playerpad $19D4, position, pfgoal) gives findpc's choice worked out the routine'
 B is held 4 frames (the retail game runs its logic on every other frame, so a 1-frame tap
 can go unseen: the first try's 'nothing' presses were mostly that), then 4 more: a switch (c1playernum $19EC changed), a poke (his SPA $F208) or nothing.
 
-python snes_b_nothing_trace.py OUT.jsonl [MINUTES of play, default 20] [SEED]   (gentle mode, one process)
+python snes_b_nothing_trace.py OUT.jsonl [MINUTES of play, default 20] [SEED] [--rom ROM]   (gentle mode, one process;
+  --rom: a build of the retail layout, e.g. NOSE4Web's lockedChangeFix, run from the same retail live state;
+  --boot: from power-on into a game on ROM (--rom), pad 1 a person: any build, the SA-1 / 2 MB ones too (their
+  animation words translated back to retail's); --buttons L,R: press L or R (take a defenceman, with the option defcontrol set on) instead of B: took D (control
+  went to a defenceman), switch, nothing)
 python snes_b_nothing_trace.py OUT.jsonl report"""
 import json
 import random
@@ -29,10 +33,13 @@ from lowload import breathe, gentle
 C1, PLAYERPAD, PUCKC, PUCKDIST, PUCKDIR = 0x19EC, 0x19D4, 0x0AD9, 0x0B1D, 0x0B5D
 SPA, PFALOCK, PFLAGS, POSITION, PFGOAL, PFTEAM = 0x11A3, 0x14E3, 0x1283, 0x0F43, 0x14C3, 0x1503
 SFLAGS, CLOCK = 0x15D8, 0x1632
+CLOCKSTOP = 0x15D6                  # nonzero while the clock is stopped
+DEFCONTROL = 0x1C94                 # defcontrol: "take a defenceman" with L / R, per team (word, team 0 / 2)
 TURNS = (0xEBB0, 0xEBE3)
 CHECKS = (0xF196, 0xF343)
 SWEEP = 0xF208
 B_FRAMES = 4
+PRESS = next((sys.argv[i + 1].split(",") for i, x in enumerate(sys.argv) if x == "--buttons"), ["B"])   # B, L, R
 NAMES = {0xEBB0: "turn left", 0xEBE2: "turn right", 0xF196: "cross-check", 0xF208: "poke", 0xF27A: "shoulder check l",
          0xF2AC: "shoulder check r", 0xF2DE: "hip check l", 0xF310: "hip check r", 0xF342: "burst",
          0xEC14: "stop", 0xEAFE: "glide?", 0xEA4C: "skate"}
@@ -43,8 +50,11 @@ def s16(v):
     return v - 0x10000 if v & 0x8000 else v
 
 
+SPA_BACK = None          # --boot on a 2 MB / SA-1 build: its animation words translated back to retail's
+
+
 def snapshot(e):
-    g = lambda a, k: e.w(a + 2 * k)
+    g = lambda a, k: (SPA_BACK(e.w(a + 2 * k)) if SPA_BACK and a == SPA else e.w(a + 2 * k))
     return {"puckc": s16(e.w(PUCKC)), "c1": e.w(C1) // 2,
             "obj": [{"x": s16(g(H.XPOS, k)), "y": s16(g(H.YPOS, k)), "spa": g(SPA, k), "lock": g(PFALOCK, k),
                      "flags": g(PFLAGS, k), "pad": s16(g(PLAYERPAD, k)), "pos": s16(g(POSITION, k)),
@@ -115,32 +125,77 @@ def defend_input(e, s, rng, state):
 
 def run(out, minutes, seed):
     rng = random.Random(seed)
-    h = H.Harness()
-    e = h.e
-    e.unserialize(h.base)
+    global SPA_BACK
+    rom = next((sys.argv[i + 1] for i, x in enumerate(sys.argv) if x == "--rom"), None)
+    if "--boot" in sys.argv:                  # any build, the SA-1 too: from power-on into a game, pad 1 a person
+        import tempfile
+        import menu_shots as M
+        from snes_60fps_cvc import CLOCK as CL, CLOCKSTOP, SEED, Mem
+        from snes_onetimer_hold_trace import layout_of
+        e = M.emulator(rom)
+        m = Mem(e, rom)
+        tmp = Path(tempfile.mkdtemp(prefix="bnt_"))
+        M.play(e, "w1853 START w240" if m.sa1 else "w1553 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", tmp)
+        M.play(e, "START w240 START w200 w2400", tmp)
+        for _ in range(12):                   # into live play (snes_ot_goal_check.start, without computer_only)
+            c = m.w(CL)
+            e.run(240)
+            if m.w(CL) != c and m.w(CLOCKSTOP) == 0:
+                break
+            e.run(4, hold=["START"])
+            e.run(60)
+        m.setw(SEED, (0x9E37 * (seed + 1)) & 0xFFFF or 1)
+        m.setw(SEED + 2, (0x7F4A * (seed + 3)) & 0xFFFF or 1)
+        _, back = layout_of(rom)
+        SPA_BACK = back
+    else:
+        if rom:                               # another build of the retail layout: the same live state, its code
+            from snes_emu import SnesEmu
+            h = H.Harness(emu=SnesEmu(rom=rom))
+        else:
+            h = H.Harness()
+        e = h.e
+        e.unserialize(h.base)
     gentle()
+    if any(b in PRESS for b in ("L", "R")):     # L / R need the "take a defenceman" option (defcontrol, both teams)
+        e.setw(DEFCONTROL, 1)
+        e.setw(DEFCONTROL + 2, 1)
     frames, f, next_b, state = int(minutes * 60 * 60), 0, 60, {}
     rows = []
     with open(out, "a") as fh:
         while f < frames:
             if f % 3600 == 0 and f:
                 breathe()
+            if e.w(C1) // 2 >= 12:                   # pad 1 has no skater (a penalty shot against its team)
+                e.run(1)
+                f += 1
+                continue
             s = snapshot(e)
             ours = s["puckc"] >= 0 and s["puckc"] // 2 < 6
             faceoff = e.w(SFLAGS) & 0x0100
+            if e.w(CLOCKSTOP):                        # play stopped (a whistle, a period start): hands off, or
+                e.run(1)                              # pad 1's skater, steered at the puck, can hold up the faceoff
+                f += 1                                # (the game waits for everyone at his spot)
+                continue
             hold = defend_input(e, s, rng, state)
             if f >= next_b and not ours and not faceoff and s["c1"] < 6:
                 choice = findpc_choice(s)
                 me = s["c1"]
+                button = PRESS[0] if len(PRESS) == 1 else rng.choice(PRESS)
                 after = []
                 for i in range(B_FRAMES + 4):            # B held B_FRAMES frames (the retail game reads the pad on
-                    e.run(1, hold=hold + (["B"] if i < B_FRAMES else []))   # every other frame: a 1-frame tap can be
-                    after.append(snapshot(e))            # missed altogether), then 4 more
+                    e.run(1, hold=hold + ([button] if i < B_FRAMES else []))   # every other frame: a 1-frame tap can
+                    after.append(snapshot(e))            # be missed altogether), then 4 more
                 f += B_FRAMES + 4
                 switched = any(a["c1"] != me for a in after)
                 poked = any(a["obj"][me]["spa"] == SWEEP for a in after)
                 m = s["obj"][me]
-                row = {"f": f, "me": me, "loose": s["puckc"] < 0, "result": "switch" if switched else "poke" if poked else "nothing",
+                if button == "B":
+                    result = "switch" if switched else "poke" if poked else "nothing"
+                else:                                    # L / R: take the left / right defenceman (position 1 / 2)
+                    took = any(a["c1"] < 12 and a["c1"] != me and a["obj"][a["c1"]]["pos"] in (1, 2) for a in after)
+                    result = "took D" if took else "switch" if switched else "nothing"
+                row = {"f": f, "me": me, "button": button, "loose": s["puckc"] < 0, "result": result,
                        "spa": m["spa"], "anim": NAMES.get(m["spa"], f"{m['spa']:04X}"), "locked": bool(m["lock"]),
                        "choice": choice, "chose_me": choice == me, "dist": m["dist"],
                        "new": after[0]["c1"] if switched else None}
@@ -155,6 +210,19 @@ def run(out, minutes, seed):
 
 def report(path):
     rows = [json.loads(l) for l in open(path)]
+    lr = [r for r in rows if r.get("button") in ("L", "R")]
+    if lr:
+        print(f"{len(lr)} L / R presses without the puck: " + ", ".join(f"{k} {v}" for k, v in
+                                                                      Counter(r["result"] for r in lr).most_common()))
+        for locked in (False, True):
+            sub = [r for r in lr if r["locked"] == locked]
+            print(f"  his skater {'locked' if locked else 'free'} ({len(sub)}):")
+            for anim, n in Counter(r["anim"] for r in sub).most_common(8):
+                rs = [r for r in sub if r["anim"] == anim]
+                print(f"    {anim}: {n}: " + ", ".join(f"{k} {v}" for k, v in Counter(r['result'] for r in rs).most_common()))
+        rows = [r for r in rows if r.get("button", "B") == "B"]
+        if not rows:
+            return
     c = Counter(r["result"] for r in rows)
     print(f"{len(rows)} B presses without the puck: " + ", ".join(f"{k} {v}" for k, v in c.most_common()))
     no = [r for r in rows if r["result"] == "nothing"]
@@ -172,9 +240,10 @@ def report(path):
 
 
 if __name__ == "__main__":
-    out = Path(sys.argv[1])
-    if len(sys.argv) > 2 and sys.argv[2] == "report":
+    args = [a for i, a in enumerate(sys.argv) if not a.startswith("--") and sys.argv[i - 1] not in ("--rom", "--buttons")]
+    out = Path(args[1])
+    if len(args) > 2 and args[2] == "report":
         report(out)
     else:
-        run(out, float(sys.argv[2]) if len(sys.argv) > 2 else 20, int(sys.argv[3]) if len(sys.argv) > 3 else 1)
+        run(out, float(args[2]) if len(args) > 2 else 20, int(args[3]) if len(args) > 3 else 1)
         report(out)

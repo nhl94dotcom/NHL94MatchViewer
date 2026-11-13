@@ -4627,6 +4627,28 @@ on every other frame, so a 1-frame tap can go unseen (held 4 frames: fixed).
 NOSE4Web's suggested fix (the choice landing on his own locked skater takes the next-best eligible one) makes B during
 his own burst or check switch control, which is what the Genesis does when locked (switches at once).
 
+### NOSE4Web's SNES lock fixes 139c219, played (2026-11-13)
+
+lockedChangeFix (findpc's .4: the pad's own skater a candidate only when unlocked, so a B during his own burst or check
+goes to the next-best) and lockedDefenceFix (doinput's locked branch .22: L / R take a defenceman as when free). Builds
+NHL94_lock.smc (SHA-1 34f64439..., against NHL94.smc: only the fixes' bytes, 6 runs) and nhl94snes_SA1_lock.sfc
+(0af777c4..., against nhl94snes_SA1.sfc, NOSE4Web's SA-1 base: 95 bytes in 7 runs; nhl94_2026.sfc is another SA-1 base).
+`snes_b_nothing_trace.py` gained `--rom` (a retail-layout build from the same live state), `--boot` (any build from
+power-on, pad 1 a person, the SA-1's animation words translated back), `--buttons L,R` (with defcontrol $1C94 set on)
+and hands-off while the clock is stopped (steering at the puck held up period starts: the game waits for everyone at
+his spot, retail the same from the same state with the same inputs).
+- **B during his own burst or check:** 1 MB, retail 20 of 37 bursts and 21 of 25 checks did nothing; the lock build
+  30 of 33 bursts and every check switched (1 burst nothing). SA-1: the original 11 of 19 bursts and nearly every
+  shoulder check nothing; the lock build bursts 8 of 11 and checks 7 of 7 switched. Shot wind-ups and falls switch on
+  all (not in findpc's eligible ranges).
+- **L / R while locked:** retail ignored them (shot wind-ups 35 of 35, falls 16 of 16, bursts 8 of 9, checks 6 of 6
+  nothing); the lock build took a defenceman (wind-ups 27 of 33, falls 8 of 10, bursts 5 of 8), about the rate when
+  free. SA-1: original 30 of 32 nothing; lock build 20 of 29 took a defenceman. Free, both builds alike.
+- **dopass / FaceoffPads** (findpc's other callers): dopass only after a pad's goalie passes (a goalie is never a
+  candidate); FaceoffPads hands the pads out again at a faceoff, the pad owning no skater then. From the same state with
+  no input the builds stayed identical until frame 922, where the lock build's game pass ran a frame later (d7 2
+  against 1: the added code's cycles), then drifted; no pad assignment differed before that.
+
 ### SNES presses lost between game passes, and a press latch (2026-11-13)
 
 NOSE4Web asked whether 1-frame B taps go unseen (my side note in the B trace), how often in real play, and whether a
