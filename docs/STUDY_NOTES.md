@@ -4527,6 +4527,13 @@ starts). 13 overtimes: retail line changes off (3, and 3 more for the bursts) an
   periods: about 30 game s): right.
 - **SA-1, playoffs:** 5-on-5 (the opening draw 5 a side; 5-on-4 and 5-on-3 power plays by the usual counts).
 - **No short draw** in any of them.
+- **Forced (Aggression 19 in overtime; 4 retail overtimes, 3 SA-1):** the cap (tmap at most 6 minus all a team's
+  boxed players, at least 3) works: retail seed 2, the away team with three in the box at six draws (OT 2:25 to 0:45),
+  each at tmap 3 with the goalie, C and LW. **At the same draws the home team was at tmap 6 (+2 for the away team's
+  penalties): five skaters against two, a 5-on-2** (the NHL keeps a team at three skaters at least, so 5-on-3 at most).
+  With one more home penalty, 4-on-2 (5 against 3 in tmap). A 5-on-3 proper (tmap 6 against 4) and the return to
+  3-on-3 after three in the box didn't come up (that overtime stayed crowded to its end). No short draw; the SA-1
+  build's overtimes 3-on-3 and 4-on-3 as before.
 
 ### NOSE4Web's 3-on-3 overtime (a91a6f8), played (2026-11-12)
 
