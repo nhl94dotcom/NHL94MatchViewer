@@ -902,6 +902,20 @@ has help; the season page's tabs; the repository and its whole history hold no b
 The disassemblies' new commits (Genesis 150+, SNES 100+ since our copies) are names and comments; none changes a
 mechanics finding, and three new comments disagree with their code (NEEDS_FROM_YOU).
 
+## SNES shootouts in a game (2026-11-12)
+
+NOSE4Web's season shootout (tied regular-season games, after overtime or after period 3; McMarkis's 32-team builds
+and retail): PeriodOver's hook saves the game, PlayShootout clears it and plays the rounds with shootoutmode ($1D81,
+in BW-RAM on the SA-1 builds: snes.View reads it from the recorded block) set, then the game comes back with the
+winners' goal added and PeriodOver ends it. Each round restarts a 25-second clock in period 0, which the helper took
+for a new game: the user's GER-USA game (32-team build) was split at every round and its pieces saved as games. Now
+`snes.View.shootout` is set during the rounds, `live` is false then, and `Recording.step` neither records nor splits;
+at the final horn after it the helper writes `shootout.json` ({"final": [home, away]}) beside the recording. The
+converter puts it in the match file (`shootout`), season.py (VERSION 34) takes that as the score with `shootout: true`
+(a shootout loss counts as an overtime loss), season.html shows SO, the viewer's clock "Final SO a-b" at the last
+frame. The rounds themselves aren't recorded. `tests/helper_snes_shootout.py` replays the user's game's end and its
+shootout pieces through `Recording.step`.
+
 ## SNES SA-1 and 2 MB builds (2026-11-07)
 
 The user's 2 MB SNES ROMs (nhl94_sa1_26teams, nhl94snes2026_sa-1: SA-1 cartridges; nhl94snes_2026 plain 2 MB) are
