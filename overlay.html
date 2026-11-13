@@ -9,7 +9,8 @@
   writes live/stats.json through tools/live_overlay.py after each update of the game being played). The background is
   transparent. Everything is chosen in the address:
     stats=shots,xg,hits,faceoffs,power_play,save_pct     the numbers, in order (names as in live/stats.json)
-    events=goal,big_save,big_hit,post,injury,penalty,giveaway,fight,streak   the kinds shown (hit: every knockdown)
+    events=goal,big_save,post,injury,penalty,giveaway,fight,streak   the kinds shown by default (add big_hit for players
+                  upended or sent into the boards, about 7 a game; hit for every knockdown, about 40)
     layout=panel | bar | ticker                          panel: numbers and events; bar: numbers in one row; ticker: events
     recent=4      events shown (newest first)            scale=1   size            side=left | right (panel)
     src=live/stats.json   where the data is              demo=1    a made-up game, for setting OBS up
@@ -53,7 +54,7 @@ const LABELS = { goals: 'Goals', shots: 'Shots', attempts: 'Attempts', xg: 'xG',
 const KIND = { goal: 'GOAL', big_save: 'SAVE', big_hit: 'HIT', hit: 'HIT', post: 'POST', injury: 'INJURY',
   penalty: 'PENALTY', giveaway: 'GIVEAWAY', fight: 'FIGHT', streak: 'STREAK' };
 const STATS = (P.get('stats') || 'shots,xg,hits,faceoffs,power_play,save_pct').split(',').filter(Boolean);
-const KINDS = new Set((P.get('events') || 'goal,big_save,big_hit,post,injury,penalty,giveaway,fight,streak').split(','));
+const KINDS = new Set((P.get('events') || 'goal,big_save,post,injury,penalty,giveaway,fight,streak').split(','));
 const LAYOUT = P.get('layout') || 'panel';
 const RECENT = +(P.get('recent') || (LAYOUT === 'ticker' ? 1 : 4));
 const SRC = P.get('src') || 'live/stats.json';
@@ -137,7 +138,7 @@ const DEMO = { status: 'live', game: 'demo', period: '2nd', clock: '4:12', teams
   events: [
     { id: 1, kind: 'goal', period: '1st', clock: '3:40', text: '1st 3:40 - GOAL PHI: #8 Mark Recchi (1), from Rod Brind\'Amour [one-timer] - PHI 1-0 CHI' },
     { id: 2, kind: 'penalty', period: '2nd', clock: '1:05', text: '2nd 1:05 - PENALTY CHI: #7 Chris Chelios, Roughing (2 min)' },
-    { id: 3, kind: 'big_hit', period: '2nd', clock: '3:20', text: '2nd 3:20 - BIG HIT: #5 Steve Smith (CHI) puts #8 Mark Recchi into the boards' },
+    { id: 3, kind: 'post', period: '2nd', clock: '3:20', text: '2nd 3:20 - OFF THE POST: #8 Mark Recchi (PHI)' },
     { id: 4, kind: 'big_save', period: '2nd', clock: '4:12', text: '2nd 4:12 - BIG SAVE: #30 Ed Belfour (CHI) robs #8 Mark Recchi (xG 0.56)' }] };
 
 async function tick() {

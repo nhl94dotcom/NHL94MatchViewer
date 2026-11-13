@@ -54,7 +54,7 @@ A4. Add the stats panel to OBS.
 A5. Choose what the panel shows. Everything is set in its address. Open the source's Properties (double-click it
     in "Sources") and change the URL. The address has this shape:
 
-          http://localhost:9494/overlay.html?layout=panel&stats=shots,xg,hits,faceoffs,power_play,save_pct&events=goal,big_save,big_hit,penalty&recent=4
+          http://localhost:9494/overlay.html?layout=panel&stats=shots,xg,hits,faceoffs,power_play,save_pct&events=goal,big_save,post,penalty&recent=4
 
     Parts you can change (separate them with "&"; no spaces anywhere):
     - layout=panel    numbers in a table with recent events under it (the default)
@@ -82,10 +82,11 @@ A5. Choose what the panel shows. Everything is set in its address. Open the sour
           takeaways      pucks taken from the other team
           giveaways      pucks given away
           goals          goals
-    - events=...      which events appear, separated by commas. Choose from:
+    - events=...      which events appear, separated by commas. Without it, all of these but big_hit and hit
+                      appear. Choose from:
           goal       goals, with scorer, assists, type (one-timer, power play ...) and "tying goal" / "go-ahead goal"
           big_save   a save on a chance worth 0.30 expected goals or more
-          big_hit    a player upended, or sent into the boards or the bench
+          big_hit    a player upended, or sent into the boards or the bench (about 7 a game)
           hit        every knockdown (there are about 40 a game: a lot for a stream)
           post       a shot off the post
           injury     an injured player, out for the period or the game
@@ -106,7 +107,7 @@ A6. (Optional) Build your own layout from text files instead. While a game is on
           Documents\NHL94 Viewer\live\obs
     For example home_shots.txt, away_shots.txt, home_xg.txt, away_xg.txt, home_abbr.txt (the team's short name),
     last_goal.txt, last_big_save.txt, last_big_hit.txt, last_penalty.txt, event_last.txt (the latest event of any
-    kind) and events_recent.txt (the last five events). The numbers are the ones listed in A5, with "home_" or
+    kind but hits) and events_recent.txt (the last five events, hits left out). The numbers are the ones listed in A5, with "home_" or
     "away_" in front.
     To show one:
     1. Under "Sources", click "+" and choose "Text (GDI+)".
