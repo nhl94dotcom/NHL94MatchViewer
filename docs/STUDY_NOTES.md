@@ -4600,7 +4600,32 @@ clock when they went in). All builds at 120 s:
   all: its fights are 4-on-4 with or without the new time.
 - **8c14f09 (FightCoincidental's two constants set to the fight time), rerun:** nhl94snes_2026_fight_time.sfc 10
   fights, its pt30 copy 7, the SA-1 build 5: every pair coincidental ($4000 on both), served 119.5-120 s, both teams at
-  tmap 6 while they sat in most stretches as in the 5:00 baseline (the other mixes from other penalties).
+  tmap 6 while they sat in most stretches as in the 5:00 baseline (the other mixes from other penalties). (Corrected 2026-11-13: the $4000
+  mark is on one word of each pair, the home fighter's as first seen, $4078 against $0078; both teams kept full strength.)
+- **FightCoincidental from the summed time (after all hacks: the fight time if on, else 5 x the penalty time, capped
+  at $7FF), played:** nhl94snes_2026_pt30.sfc (a5e75781..., Penalty time 30, no fight time), 3 computer games with
+  OptFights On (`fight_time_check.py snes ROM 3 OUT --option`; without --option this build has fighting off: no
+  fights in 3 games): 9 fights, every pair started at $4096 / $0096 (150 s, 2:30), served 148-151 s, both teams at
+  tmap 6 while they sat (5 / 6 only in stretches with another penalty running); one pair cut at the game's end.
+
+### SNES B on defence that does nothing (2026-11-13)
+
+NOSE4Web relayed a league member's report: B on defence sometimes does nothing, the skater stuck in an animation. Their
+reading: findpc can choose the pad's own skater while he's locked in a check, burst or turn (those stay eligible), and
+`.10` then skips the poke. `analysis/scoring_map/snes_b_nothing_trace.py` (retail ROM, snes_harness's live state, pad
+1 defending: steering at the puck, A near the carrier, reversing now and then, B held 4 frames at random moments
+without the puck; 20 minutes of play, seed 7, runs/b_nothing/s1.jsonl): 905 presses, 412 switch, 419 poke, 74
+nothing. The first try tapped B for one frame and half the presses did nothing at all: the retail game reads the pad
+on every other frame, so a 1-frame tap can go unseen (held 4 frames: fixed).
+- Locked and nothing: 45 (burst 20 of the 37 presses during his own burst; shoulder checks 16 of 19; hip checks 5 of
+  6; a few others), the worked-out choice his own skater in 41. Turns were never locked when B came, so they poked.
+- Locked in an animation outside findpc's two ranges (shot wind-ups $ED4A / $EE5C 102, falls $F49C / $F54E 27, flail):
+  switched, as the rule says.
+- Unlocked and nothing: 29, the pad on its goalie (goalie input ignores B: 8) or the same frozen moment repeated (play
+  stopped). Not the bug.
+- The worked-out choice agreed with switch / no switch in 854 of 905.
+NOSE4Web's suggested fix (the choice landing on his own locked skater takes the next-best eligible one) makes B during
+his own burst or check switch control, which is what the Genesis does when locked (switches at once).
 
 ### NOSE4Web's Genesis shootout injury skip f4ad85d, played (2026-11-13)
 

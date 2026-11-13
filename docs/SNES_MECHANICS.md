@@ -408,6 +408,16 @@ Different from the Genesis:
   other way round). Most misses are a predicted poke that didn't come, or the reverse, with the skater turning or
   gliding (animations $EBB0, $EBE2, $EAFE): the game's own distance figure (`puckdist`) and lock state aren't in the
   recordings.
+- **B that does nothing** (2026-11-13, a league member's report through NOSE4Web; `analysis/scoring_map/
+  snes_b_nothing_trace.py`: pad 1 defending against the computer in the retail ROM, steering at the puck, bursting and
+  checking near the carrier, B at random, 905 presses without the puck): 412 switches, 419 pokes, 74 nothing. The real
+  no-ops are the locked ones: in 45 his own skater was locked, in a **burst** (20 of the 37 presses made during his own
+  burst), a **shoulder check** (16 of 19) or a **hip check** (5 of 6), and the choice worked out from RAM was his own
+  skater in 41 of the 45. Those animations stay eligible while locked, his own skater is nearest the puck at the
+  moment he bursts or checks at it, so findpc picks him and `.10` skips the poke. Locked in anything else (a shot
+  wind-up $ED4A / $EE5C, a fall, a flail) he isn't eligible and control switches. The other 29 were the pad on its
+  goalie (B does nothing for a goalie) or play stopped. The worked-out choice agreed with switch / no switch in 854 of
+  905. A B tap of one frame can also go unseen: the retail game reads the pad on every other frame.
 
 - **X without the puck** (`doinput` `.17`) takes control of your goalie (`PadTakeGoalie`) when your team has manual
   goalies on; otherwise it does nothing. It never pokes. (On a modern pad RetroArch maps by position: the button
