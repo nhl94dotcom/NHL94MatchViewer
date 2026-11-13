@@ -74,6 +74,10 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `--live-local` keeps the live pipeline on this computer for a stream overlay: `<home>/live/` (the live viewer at
   /live/index.html), and `tools/live_overlay.py` writes `live/stats.json` (for `overlay.html`, an OBS Browser Source;
   stats, events and layout chosen in its address) and `live/obs/*.txt` (OBS Text sources) after every update.
+  Games already played, streamed from a video of the session (RetroArch's recording): `tools/video_sync.py` places
+  each recording in the video by the camera (a timeline), `tools/replay_pack.py` makes a pack (overlay.html's replay
+  mode as replay.html, replay_settings.js, replay_data.js, `docs/REPLAY_GUIDE.md`), following the video through OBS's
+  WebSocket; tests `tests/replay_pack_check.py`, `tests/replay_obs_ws.py` (VIEWER_NOTES "The replay overlay").
   `tools\build_helper.bat nobroadcast` builds `dist\nobroadcast\` for people who won't broadcast (no `live_broadcast`,
   and the viewer's Help without "Watching live", between `<!-- broadcast` markers).
 - `tools/export_match.py`: recording -> `matches/<name>.js` (`--live` worker mode for the broadcast). `analyse()` runs

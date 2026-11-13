@@ -582,6 +582,42 @@ as "Streaming guide.txt"). `tests/live_overlay_replay.py CAPTURE OUT [SPEED]` fe
 full-RAM snapshots, full.bin.gz, which the live converter also reads) into the pipeline at real speed and logs how far
 behind play each update and each event is.
 
+### The replay overlay: stats over a video of games already played (2026-11-13)
+
+The streamer wanted a "virtually live" stream of the user's BOS-CHI series (four games, one RetroArch recording of the
+session, 36:53, played at 100% from one press). The helper's recordings keep only live play, timed by their own clock,
+with no clock-of-day time, so a timer started with the video would drift at the first pause.
+
+- `tools/video_sync.py VIDEO MATCH ... --out timeline.json` finds each recording in the video by the camera. The
+  recordings keep the camera every sample (Genesis $BD18 vertical, $BD1C horizontal); the video's rink scroll is
+  measured frame to frame (phase correlation at 160x112, one ffmpeg pass, 55 s; cached beside the video as
+  `.scroll.npz`): half the units, $BD1C reversed. 10-second stretches of camera movement are matched by normalised
+  cross-correlation; each game is searched only where it can be (after the previous game, leaving room for the games
+  still to come), and a best path (Viterbi) picks one consistent placing: within a game the offset (video - recording)
+  only grows, each change costing 2 + 0.1 a second (camera pans after faceoffs look alike all over the video: shorter
+  stretches and cheaper changes let runs of false matches win). Each step is put where the camera matches best and
+  the video's left-out frames show the least ice; each run's offset is fitted as a line (the two clocks differ by
+  about 0.06%). The game's frame counter $B03E doesn't step once a frame, so it can't be used. Found: every game in
+  3-4 runs of 24-53 checks; the steps are 0.8 s at each period break (video frames the recording leaves out) and one
+  5.3-5.9 s pause in games 1 and 2. Checked: a still a quarter-second before each of the 27 goals shows the clock one
+  game second above the goal's and the pre-goal score.
+- `tools/replay_pack.py TIMELINE OUT` builds the pack. `cut(m, f)` is the match as it stood at sample f (per-sample
+  arrays cut; event lists kept once known: `known` / `resolved` / `f`; the game's stat snapshots; a season shootout
+  only in the final), so season.summarize and live_overlay.team_stats give the live numbers; events from
+  live_overlay.events of the whole match, each revealed when known (a big save or miss when the shot is resolved, a
+  costly giveaway at its goal). replay_data.js: per video second the game and both teams' values (`keys`), per game
+  the events with their video second. 2,210 seconds, 327 events, 770 KB, 50 s to build.
+- `overlay.html` replay mode (`replay=1`): reads replay_data.js by a script tag (works from a local file), shows the
+  state at the video time, `delay=` seconds behind, `offset=`. Video time from OBS's WebSocket 5 (`obs=` the Media
+  Source's name, `obspw=`: Hello / Identify with the SHA-256 challenge, GetMediaInputStatus 4 times a second, so pauses
+  and skips follow) or from the page's load (`t=` a start, for tests). Address choices are merged over
+  `window.NHL94_SETTINGS`: the pack's replay.html is overlay.html loading `replay_settings.js` first (OBS's "Local
+  file" Browser Source takes no address choices). The guide: `docs/REPLAY_GUIDE.md` ("Replay guide.txt").
+- Tests: `tests/replay_pack_check.py` (the cut against the game's own goal and shot counters through every game, the
+  final against the live build: 68 matches), `tests/replay_obs_ws.py PACK SECONDS:SCORE ...` (a stand-in OBS
+  WebSocket with a password; headless Edge driven through its debugging port, since a fast-forwarded --dump-dom races
+  the network; the overlay must follow position changes and refuse a wrong password).
+
 ## Quirky Events (2026-10-19)
 
 The user asked for the game's oddities in their own team-stats group, "Quirky Events" (viewer fillTeamStats, STAT_HELP,

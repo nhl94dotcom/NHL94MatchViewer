@@ -15,6 +15,15 @@
     recent=4      events shown (newest first)            scale=1   size            side=left | right (panel)
     score=0       hide the score (shown by default at the top of the panel and the start of the bar)
     src=live/stats.json   where the data is              demo=1    a made-up game, for setting OBS up
+  Replay (a series played back from video; tools/replay_pack.py makes replay_data.js beside this file):
+    replay=1      read replay_data.js instead of the live data
+    obs=NAME      follow the OBS Media Source called NAME through OBS's WebSocket (Tools > WebSocket Server Settings):
+                  pauses and skips included. obsport=4455, obspw=PASSWORD (if authentication is on)
+                  Without obs=, the video time counts from when the page loads (start the video at the same moment).
+    delay=0       seconds behind the video (3 or so looks like the live overlay)
+    offset=0      seconds added to the video time (nudge if the overlay runs early or late)
+    t=SECONDS     start at this video time (for testing without the video)
+  A replay pack's replay.html is this page with replay_settings.js loaded first: the same choices, in a file.
 -->
 <style>
   :root { --bg: rgba(12, 16, 22, 0.78); --fg: #f2f4f7; --muted: #a9b2bf; --line: rgba(255, 255, 255, 0.14);
@@ -48,7 +57,10 @@
 <body>
 <div id="wrap"></div>
 <script>
-const P = new URLSearchParams(location.search);
+// The address's choices, over replay_settings.js's (window.NHL94_SETTINGS: a replay pack's replay.html loads it, since
+// OBS's "Local file" Browser Source takes no address choices).
+const P = new URLSearchParams({ ...(window.NHL94_SETTINGS || {}), ...Object.fromEntries(new URLSearchParams(location.search)) });
+for (const [k, v] of [...P]) if (v === '' || v === null) P.delete(k);
 const LABELS = { goals: 'Goals', shots: 'Shots', attempts: 'Attempts', xg: 'xG', hits: 'Hits', knockdowns: 'Knockdowns',
   faceoffs: 'Faceoffs', faceoff_pct: 'FO %', passes: 'Passes', pass_pct: 'Pass %', power_play: 'Power play',
   penalties: 'Penalties', pim: 'PIM', save_pct: 'Save %', shooting_pct: 'Shooting %', attack_zone: 'Attack zone',
@@ -155,15 +167,85 @@ const DEMO = { status: 'live', game: 'demo', period: '2nd', clock: '4:12', teams
     { id: 3, kind: 'post', period: '2nd', clock: '3:20', text: '2nd 3:20 - OFF THE POST: #8 Mark Recchi (PHI)' },
     { id: 4, kind: 'big_save', period: '2nd', clock: '4:12', text: '2nd 4:12 - BIG SAVE: #30 Ed Belfour (CHI) robs #8 Mark Recchi (xG 0.56)' }] };
 
+// ---- Replay: the data for any second of the video, from replay_data.js (window.NHL94_REPLAY):
+//   keys       the stat names, in the order of each team's values
+//   games      [{game, abbr: [h, a], events: [{..., v: video second it is known}]}]
+//   seconds    one entry per video second: null (before the first game) or [game index, home values, away values]
+const REPLAY = P.get('replay') ? { delay: +(P.get('delay') || 0), offset: +(P.get('offset') || 0), start: performance.now(),
+  t0: +(P.get('t') || 0), obs: P.get('obs'), cursor: null, paused: false } : null;
+
+function replayData(v) {
+  const R = window.NHL94_REPLAY;
+  if (!R) return null;
+  const s = Math.floor(v / (R.step || 1));
+  const row = s < 0 ? null : R.seconds[Math.min(s, R.seconds.length - 1)];
+  if (!row) return null;
+  const g = R.games[row[0]];
+  const stats = vals => Object.fromEntries(R.keys.map((k, i) => [k, vals[i]]));
+  return { status: 'replay', game: g.game, teams: [{ abbr: g.abbr[0], stats: stats(row[1]) }, { abbr: g.abbr[1], stats: stats(row[2]) }],
+           events: g.events.filter(e => e.v <= v) };
+}
+
+function videoTime() {
+  if (REPLAY.obs) return REPLAY.cursor === null ? -1 : REPLAY.cursor / 1000;
+  return REPLAY.t0 + (performance.now() - REPLAY.start) / 1000;
+}
+
+// OBS WebSocket (version 5, built into OBS 28 and later): GetMediaInputStatus on the named Media Source, 4 times a second.
+async function sha256b64(text) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return btoa(String.fromCharCode(...new Uint8Array(d)));
+}
+function obsConnect() {
+  const ws = new WebSocket('ws://127.0.0.1:' + (P.get('obsport') || 4455));
+  let timer = null, id = 0;
+  ws.onmessage = async ev => {
+    const msg = JSON.parse(ev.data);
+    if (msg.op === 0) {
+      const ident = { rpcVersion: 1 };
+      const a = msg.d.authentication;
+      if (a) ident.authentication = await sha256b64(await sha256b64((P.get('obspw') || '') + a.salt) + a.challenge);
+      ws.send(JSON.stringify({ op: 1, d: ident }));
+    } else if (msg.op === 2) {
+      REPLAY.obsError = null;
+      timer = setInterval(() => ws.send(JSON.stringify({ op: 6, d: { requestType: 'GetMediaInputStatus',
+        requestId: String(++id), requestData: { inputName: REPLAY.obs } } })), 250);
+    } else if (msg.op === 7) {
+      const r = msg.d.requestStatus;
+      if (!r.result) { REPLAY.obsError = 'OBS: ' + (r.comment || 'no Media Source called "' + REPLAY.obs + '"'); return; }
+      REPLAY.obsError = null;
+      REPLAY.cursor = msg.d.responseData.mediaCursor;
+    }
+  };
+  ws.onclose = () => { clearInterval(timer); REPLAY.obsError = REPLAY.obsError || 'OBS WebSocket not connected (Tools > WebSocket Server Settings)'; setTimeout(obsConnect, 2000); };
+}
+
 async function tick() {
   if (P.get('demo')) { render(DEMO); return; }
+  if (REPLAY) {
+    if (!window.NHL94_REPLAY) { wrap.textContent = ''; wrap.append(el('div', 'box waiting', 'replay_data.js not found beside overlay.html')); return; }
+    const v = videoTime();
+    const data = replayData(v - REPLAY.delay + REPLAY.offset);
+    if (REPLAY.obsError && !data) { wrap.textContent = ''; wrap.append(el('div', 'box waiting', REPLAY.obsError)); return; }
+    render(data);
+    return;
+  }
   try {
     const r = await fetch(SRC + '?t=' + Date.now(), { cache: 'no-store' });
     render(r.ok ? await r.json() : null);
   } catch (e) { render(null); }
 }
-tick();
-if (!P.get('demo')) setInterval(tick, +(P.get('refresh') || 1000));
+function startUp() {
+  if (REPLAY && REPLAY.obs) obsConnect();
+  tick();
+  if (!P.get('demo')) setInterval(tick, +(P.get('refresh') || (REPLAY ? 250 : 1000)));
+}
+if (REPLAY) {   // replay_data.js beside this page (a script, so it loads from a local file too)
+  const s = document.createElement('script');
+  s.src = P.get('data') || 'replay_data.js';
+  s.onload = s.onerror = startUp;
+  document.head.append(s);
+} else startUp();
 </script>
 </body>
 </html>

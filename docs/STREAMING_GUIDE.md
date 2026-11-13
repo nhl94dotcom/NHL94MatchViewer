@@ -189,3 +189,9 @@ OTHER ROMS AND THE SNES
 -----------------------
 The same steps work for any NHL '94 ROM on either system, league ROMs included. On ROMs with fighting, the "fight"
 event appears too. A number the helper can't work out for a game shows as "-".
+
+
+REPLAYING GAMES FROM A VIDEO
+----------------------------
+To stream games already played, with the same panel in step with a video of them, ask whoever gave you the helper
+for a replay pack: it is made from that video and the games' recordings, and has its own guide.
