@@ -246,9 +246,15 @@ def tonight_panel(emu, system, rom_path, ids):
         # nothing until the lines are loaded (an SA-1 build loads them after its scouting screen)
         tonight_cache["panel"] = {"system": emu.system, "teams": out} if any(t["players"] for t in out) else None
         panel = tonight_cache["panel"]
-        # in the helper's window and activity log too: when first read, and again when it changes (a line edited)
-        if panel and json.dumps(panel) != tonight_cache.get("printed"):
-            tonight_cache["printed"] = json.dumps(panel)
+        # in the helper's window and activity log too: when first read, and again when it changes (a line edited).
+        # Only a panel read the same twice in a row (the menus show other lines for a moment) and not printed before
+        # for these teams (2026-11-13, the user: the same rolls printed again every time the in-game menu came up).
+        key = json.dumps(panel) if panel else None
+        seen = tonight_cache.setdefault("printed", {}).setdefault(tuple(ids), set())
+        steady = key is not None and key == tonight_cache.get("last_read")
+        tonight_cache["last_read"] = key
+        if steady and key not in seen:
+            seen.add(key)
             status.note("Tonight's rolls (line 1):" + "".join("\n  " + t["team"] + "  " + " | ".join(tonight_text(p) for p in t["players"])
                                                              for t in panel["teams"]))
     except Exception as ex:                  # the panel is a help, never a reason to stop recording: say it once
