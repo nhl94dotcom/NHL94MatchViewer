@@ -27,8 +27,8 @@ A1. Unzip the helper zip into a folder of its own, for example "NHL94 Helper" on
     Keep "NHL94 Helper.exe" and "NHL94 Helper - Stream.bat" in the same folder.
 
 A2. Double-click "NHL94 Helper - Stream.bat".
-    - If Windows says "Windows protected your PC": click "More info", then "Run anyway". (The program is new and not
-      signed; this only happens the first time.)
+    - If Windows says "Windows protected your PC": click "More info", then "Run anyway". If it shows "Open File -
+      Security Warning" instead: click "Run". (The program is new and not signed; this only happens the first time.)
     - If your antivirus objects: the helper reads RetroArch's memory to see the game. It only reads, never changes
       anything. Allow it, or tell whoever gave you the helper what the antivirus said.
     - A black window opens. Its first lines should include:
@@ -119,7 +119,8 @@ A7. A test game, before the series. This checks that recording works where you s
     1. Start the helper with "NHL94 Helper - Stream.bat" (if it isn't already open).
     2. Start RetroArch and join a netplay game as you will for the series (as a spectator if that's how you'll watch).
        Or just play a game against the computer.
-    3. Watch the black window: at the opening faceoff it says it is recording. The OBS panel switches from
+    3. Watch the black window: at the opening faceoff it shows a line like "Recording PHI vs CHI" (with your game's
+       teams; "joined during the game" is added if you joined late). The OBS panel switches from
        "Waiting for a game..." to the stats within a few seconds.
     4. At the end of the game, open http://localhost:9494/helper.html in your browser. The game should be in the
        list. Click "Watch": the score and the shots should match the game's own end-of-game stats.
@@ -156,8 +157,9 @@ Every game was recorded in full. To send them for analysis:
 C1. Open your Documents folder, then "NHL94 Viewer", then "captures".
 C2. Each game is a folder named by date, time and teams, for example 2026-11-20_2015_PHI-CHI. Select the folders
     of the series' games (or the whole "captures" folder).
-C3. Right-click > "Send to" > "Compressed (zipped) folder". A game is about 15 MB, so a seven-game series is about
-    100 MB.
+C3. Right-click the selection and choose "Compress to ZIP file" (Windows 11), or "Send to" > "Compressed (zipped)
+    folder" (Windows 10, or under "Show more options" on Windows 11). A game is about 15 MB, so a seven-game series is
+    about 100 MB.
 C4. Send the zip with Google Drive, Dropbox, WeTransfer or similar, and say which ROM the series used.
     Please don't send the "roms" folder: it holds copies of the game ROM, which can't be shared.
 

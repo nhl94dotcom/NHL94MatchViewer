@@ -67,8 +67,7 @@ let lastGame = null;
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 function value(v, k) {
   if (v === null || v === undefined) return '-';
-  if (k === 'save_pct' && typeof v === 'number') return v.toFixed(1);
-  if (k.endsWith('_pct') && typeof v === 'number') return v + '%';
+  if (k === 'save_pct' && typeof v === 'number') return v.toFixed(1);   // the labels carry the "%"
   return String(v);
 }
 // The text after the game time and the kind word ("2nd 4:12 - BIG SAVE: ..." -> time, rest).
@@ -137,7 +136,7 @@ const DEMO = { status: 'live', game: 'demo', period: '2nd', clock: '4:12', teams
     one_timers: '1/2', breakaways: '0/3', posts: 0, takeaways: 13, giveaways: 14, goals: 2 } }],
   events: [
     { id: 1, kind: 'goal', period: '1st', clock: '3:40', text: '1st 3:40 - GOAL PHI: #8 Mark Recchi (1), from Rod Brind\'Amour [one-timer] - PHI 1-0 CHI' },
-    { id: 2, kind: 'penalty', period: '2nd', clock: '1:05', text: '2nd 1:05 - PENALTY CHI: #7 Chris Chelios, Roughing (2:00)' },
+    { id: 2, kind: 'penalty', period: '2nd', clock: '1:05', text: '2nd 1:05 - PENALTY CHI: #7 Chris Chelios, Roughing (2 min)' },
     { id: 3, kind: 'big_hit', period: '2nd', clock: '3:20', text: '2nd 3:20 - BIG HIT: #5 Steve Smith (CHI) puts #8 Mark Recchi into the boards' },
     { id: 4, kind: 'big_save', period: '2nd', clock: '4:12', text: '2nd 4:12 - BIG SAVE: #30 Ed Belfour (CHI) robs #8 Mark Recchi (xG 0.56)' }] };
 

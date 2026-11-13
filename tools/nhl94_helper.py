@@ -815,6 +815,18 @@ def start_local_live():
     target = live_broadcast.FolderTarget(folder)
     b = live_broadcast.Broadcaster(target)
     b.after_send = lambda match, status: live_overlay.write(folder, match, status)
+    start_game = b.start_game
+
+    def start_and_tidy(name):
+        """A new game: the last games' live data (about 20 MB a game, written for the live viewer) is deleted, so a
+        series doesn't fill the folder; the recordings themselves are elsewhere (captures)."""
+        data = (folder / "data").resolve()
+        if data.is_dir() and data.parent == folder.resolve():
+            for old in data.iterdir():
+                if old.is_dir() and old.name != name and old.parent == data:
+                    shutil.rmtree(old, ignore_errors=True)
+        start_game(name)
+    b.start_game = start_and_tidy
     b.publish_page()
     broadcaster = b
     print(f"Local live mode ON. In OBS add a Browser Source: http://localhost:{PORT}/overlay.html", flush=True)

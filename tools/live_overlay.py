@@ -150,13 +150,15 @@ def events(m):
         t = i["team"]
         add(i["f"], "injury", t, f"INJURY: {who(m, t, i['idx'])} ({abbr(m, t)}) out for the {i.get('out', 'period')}")
 
+    # A penalty's name and minutes from the match's rules (by its code); its `secs` is the clock when it was called.
     rules = m.get("rules") or {}
     for p in m.get("penalties", []):
         rule = rules.get(str(p.get("code"))) or rules.get(p.get("code")) or {}
         name = rule.get("name", "Penalty") if isinstance(rule, dict) else "Penalty"
+        mins = rule.get("min") if isinstance(rule, dict) else None
         t = p["team"]
         add(p.get("called", p["f"]), "penalty", t, f"PENALTY {abbr(m, t)}: {who(m, t, p['idx'])}, {name}"
-            + (f" ({clock_text(p['secs'])})" if p.get("secs") else ""))
+            + (f" ({mins} min)" if mins else ""))
 
     for x in m.get("turnovers", []):
         if x.get("kind") == "giveaway" and x.get("goalAfter"):
@@ -168,9 +170,11 @@ def events(m):
         f = fgt.get("f", 0)
         add(f, "fight", None, "FIGHT!" + (f" {fgt['text']}" if fgt.get("text") else ""))
 
+    # Ids that stay the same from update to update (an event found late, a save known once the shot is over, must not
+    # move the others: the overlay highlights an id it hasn't seen).
     out.sort(key=lambda e: e["f"])
-    for i, e in enumerate(out):
-        e["id"] = i
+    for e in out:
+        e["id"] = f"{e['kind']}-{e['f']}-{e['team']}"
     return out
 
 
