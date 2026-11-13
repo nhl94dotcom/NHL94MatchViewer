@@ -4530,6 +4530,12 @@ from the third (2), regular season without the extra aggression (1), CDL regular
   20, 22 sitting; eight boxed): C and RD only. All 6 games: 8 draws with three of the away team sitting in the box,
   **all 8 a skater short** (tmap 4, the goalie, C and RD on the ice, no LD), in 4 of the 6 games. tmap's floor of 4
   (goalie and three) with three sitting needs seven objects for six.
+- **The ordinary stacked case** (NOSE4Web: the commissioner has never seen a team down to two skaters): the same tool,
+  8 retail games, the away team at Aggression 36, every draw with exactly three of a team's players in the box (two
+  serving, one waiting at a full 2:00, tmpdst $78): **25 such draws, none short**; every time tmap 4 with the goalie, C,
+  LD and RD on the ice. Of the three in the box at most two held a sort object (two in 17 draws, one in 6, none in 2),
+  and the one waiting sometimes held one and sometimes not. So the limit bites only in pile-ups where three boxed
+  players still hold objects (the Aggression 38 games: five or eight boxed over the game).
 
 ### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
 

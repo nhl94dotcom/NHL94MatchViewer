@@ -8,7 +8,8 @@ away team's skaters are held at Aggression AGR (default 38: checkagr's roll rang
 of the time) so its penalties pile up; the home team plays as rated. At every faceoff drop (the clock starting): for
 each team, the players in its box (tmpdst > 0), those of them holding an object (position $FF, pnum one of them), its
 tmap and the skaters on the ice; a "crowded" draw is one with three or more boxed players holding objects. Printed:
-per game the crowded draws and how many of them were a skater short (skaters on the ice < tmap - 1 with the goalie in).
+per game the crowded draws and how many of them were a skater short; also every draw with exactly three of a
+team's players in the box (their penalty clocks tmpdst, who holds an object, the skaters: the ordinary stacked case) (skaters on the ice < tmap - 1 with the goalie in).
 
 python gen_box_crowd_check.py ROM GAMES OUT.jsonl"""
 import json
@@ -48,7 +49,7 @@ def game(rom, n, tmp):
     if not G.into_play(e):
         return {"game": n, "error": "never reached play"}
     e.setl(SEED, (0x2545F491 * (n + 1)) & 0xFFFFFFFF or 1)
-    draws, crowded, f, was_stopped, still, last = 0, [], 0, True, 0, None
+    draws, crowded, three, f, was_stopped, still, last = 0, [], [], 0, True, 0, None
     while e.w(GSP) < 3 and f < 60 * 60 * 40:
         if f % 60 == 0:
             e.setw(CONT1, 0)
@@ -72,11 +73,17 @@ def game(rom, n, tmp):
             draws += 1
             for t in (0, 1):
                 st = team_state(e, t)
+                if len(st["boxed"]) == 3:                  # the ordinary stacked case: exactly three in the box
+                    want = st["tmap"] - 1 if st["goalie_on"] else st["tmap"]
+                    clocks = {p: hex(e.w(TEAMS[t] + TMPDST + 2 * (p - 1))) for p in st["boxed"]}
+                    three.append(dict(st, team=t, period=e.w(GSP), clock=e.w(CLOCK), penalty_clocks=clocks,
+                                      short=len(st["on_ice"]) < want))
                 if len(st["boxed_with_objects"]) >= 3:
                     want = st["tmap"] - 1 if st["goalie_on"] else st["tmap"]
                     crowded.append(dict(st, team=t, period=e.w(GSP), clock=e.w(CLOCK), short=len(st["on_ice"]) < want))
         was_stopped = stopped
-    return {"game": n, "draws": draws, "crowded": crowded, "crowded_short": sum(c["short"] for c in crowded)}
+    return {"game": n, "draws": draws, "crowded": crowded, "crowded_short": sum(c["short"] for c in crowded),
+            "three_boxed": three, "three_short": sum(c["short"] for c in three)}
 
 
 def main():
@@ -89,7 +96,8 @@ def main():
         r = game(rom, n, tmp)
         with out.open("a") as fh:
             fh.write(json.dumps(r) + "\n")
-        print(json.dumps({k: r.get(k) for k in ("game", "draws", "crowded_short", "error")},),
+        print(json.dumps({k: r.get(k) for k in ("game", "draws", "crowded_short", "three_short", "error")},),
+              "draws with exactly three boxed:", len(r.get("three_boxed", [])),
               "crowded draws:", len(r.get("crowded", [])), flush=True)
 
 
