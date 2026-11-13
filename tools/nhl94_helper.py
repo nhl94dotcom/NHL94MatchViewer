@@ -288,6 +288,11 @@ class Recording:
         now = time.perf_counter()
         elapsed, self.last_wall = (now - self.last_wall) * 1000, now
         old = self.view
+        # A shootout after a tied game (SNES, NOSE4Web's season shootout): the game is cleared while it plays and comes
+        # back with the winners' goal. Nothing recorded, no new game; the final result is kept for the converter.
+        if getattr(view, "shootout", False):
+            self.shootout_seen = True
+            return None
         if view.in_menus:
             self.menu_since = self.menu_since or now
             if now - self.menu_since > 3:
@@ -304,7 +309,8 @@ class Recording:
             return None
         # A new game started without the old one finishing (the clock going back up within a period, other than to
         # start a period).
-        if view.live and (view.period < old.period or (view.period == old.period == 0 and view.clock > old.clock + 5 and old.clock != 0)):
+        if view.live and not getattr(self, "shootout_seen", False) and (
+                view.period < old.period or (view.period == old.period == 0 and view.clock > old.clock + 5 and old.clock != 0)):
             return "new game"
         # The final horn: past the third period with the clock at 0 (and not tied, or later still). Checked whatever
         # the screen shows, in case the game takes the players off at the horn.
@@ -314,6 +320,8 @@ class Recording:
                 self.view = view
                 self.final_since = self.final_since or now
                 if now - self.final_since >= FINAL_WAIT_S:
+                    if getattr(self, "shootout_seen", False):   # the result after the shootout, for the converter
+                        (self.folder / "shootout.json").write_text(json.dumps({"final": list(view.score)}))
                     return "final"
             else:
                 self.final_since = None

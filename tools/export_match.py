@@ -40,6 +40,7 @@ class Capture:
     """Samples of work RAM: an 8-byte millisecond stamp, then one or more blocks of RAM in host byte order."""
 
     def __init__(self, folder, system=None):
+        self.folder = Path(folder)
         self.system = system or systems.of_capture(folder)
         full_size = 8 + self.system.RAM_SIZE  # one full.bin snapshot
         self.swap = self.system.BYTE_SWAP
@@ -2369,6 +2370,9 @@ def find_goals(match, rosters):
 def analyse(match, system, cap, rom_path):
     """Everything worked out from the samples (goals, shots, passes, ... expected goals), added to the match."""
     match["system"] = system.NAME
+    so = Path(getattr(cap, "folder", ".")) / "shootout.json"
+    if so.exists():                                     # decided in a shootout (the helper: nhl94_helper.Recording)
+        match["shootout"] = json.loads(so.read_text())
     if "puck" in match:
         steady_puck(match)
     if "stats" in match:

@@ -62,9 +62,12 @@ def check_folder(folder, v):
             bad(f"both teams are {s['abbr'][0]}: season.html adds this game to one row twice")
         T, shots = s["teams"], m.get("shotList", [])
         final = m["score"][-2:]
+        so = (m.get("shootout") or {}).get("final")      # decided in a shootout: the winners' goal is in the score only
+        if so:
+            final = so
         for side in (0, 1):
             t, o = T[side], T[1 - side]
-            goals = sum(1 for g in m.get("goals", []) if g["team"] == side)
+            goals = sum(1 for g in m.get("goals", []) if g["team"] == side) + (1 if so and so[side] > so[1 - side] else 0)
             # a recording begun mid-game (capture1, full_buttons): the score and the checks count from the start
             whole = s.get("fromStart", True)
             if t["gf"] != final[side] or whole and goals != t["gf"]:

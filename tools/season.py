@@ -19,7 +19,7 @@ from systems.common import ROOT, STAT_FIELDS  # noqa: E402
 import deserve  # noqa: E402
 from export_match import PASS_DIRS, PUCK_SPEED_SCALE, ZONES, clock_ticks, game_weights, own_end, zone_of  # noqa: E402
 
-VERSION = 33  # 33: games against the scripted bot (bot: side and version; that side not a person: tools/bot_games.py); 32: fights (team fights / instig / fightHurt, skater fights / fightHurt; SNES 2 MB games); 31: xG with the refitted goalie spread (Genesis 6, SNES 3.5); 30: fromStart needs the game's counts at 0 when the recording begins; 29: a turnover is a hit only with a counted check or a fall (else burst, or a giveaway); 28: pass shots have xG; SNES flips apart from passes (match file `flips`); 27: Genesis xG with a goalie held in his save move (locked); 26: Genesis xG with the goalie's stick (tools/xg.py, 2026-10-29); 25: SNES get-up glitch hooks apart (habits getUps); 24: SNES controller presses by the SNES button names (A, B, X, Y, L, R, Select); 23: missed tapestries (team tapMiss / tapMissA, skater tapMiss); 22: tapestries (team tap / tapA, skater tapG / tapIn); 21: posts (team posts / postsA, skater posts); 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
+VERSION = 34  # 34: games decided in a shootout (shootout, the final score with the winners' goal); 33: games against the scripted bot (bot: side and version; that side not a person: tools/bot_games.py); 32: fights (team fights / instig / fightHurt, skater fights / fightHurt; SNES 2 MB games); 31: xG with the refitted goalie spread (Genesis 6, SNES 3.5); 30: fromStart needs the game's counts at 0 when the recording begins; 29: a turnover is a hit only with a counted check or a fall (else burst, or a giveaway); 28: pass shots have xG; SNES flips apart from passes (match file `flips`); 27: Genesis xG with a goalie held in his save move (locked); 26: Genesis xG with the goalie's stick (tools/xg.py, 2026-10-29); 25: SNES get-up glitch hooks apart (habits getUps); 24: SNES controller presses by the SNES button names (A, B, X, Y, L, R, Select); 23: missed tapestries (team tapMiss / tapMissA, skater tapMiss); 22: tapestries (team tap / tapA, skater tapG / tapIn); 21: posts (team posts / postsA, skater posts); 20: the Deserve to Win meter (dtw); 19: checks a person threw (checksHuman); 18: screen sides by direction (sides); 17: expected goals (no xg key without xG); 16: expected goals (tools/xg.py); 15: where shots were aimed; 14: shot speeds, checks that paid off, goalie giveaway goals; 13: nets knocked off; 12: possession by zone (attacking-zone possession per goal); 11: puck time and carried entries by position; 10: passing by zone and direction, puck time by zone; 9: bobbled passes; 8: pucks lost skating into a goalie, apart; 7: pucks lost on body contact (bumps); 6: injuries; 5: person vs computer, controller habits, chance origins, odd-man rushes, wraparounds, pass pairs, shot maps; 4: high danger, shot assists, rebounds, flip rebounds, costly turnovers, zone entries; 2: advanced stats (on-ice Corsi, Fenwick, shots and goals, zone starts); 3: off-ice numbers as "bench"
 MATCHES = ROOT / "matches"
 PLAYERS = 12
 
@@ -207,6 +207,10 @@ def summarize(m, name, date=None):
     from_start = bool(n) and period[0] == 0 and m["score"][0] == m["score"][1] == 0 and fresh
     finished = last >= 4 or (last >= 3 and 3 not in periods and score[0] != score[1])
     overtime = 3 in periods
+    shootout = bool(m.get("shootout"))
+    if shootout:                                        # the result after the shootout (the winners' goal added)
+        score = list(m["shootout"]["final"])
+        finished = True
     seconds = sum(max(0, min(3, clock[i - 1] - clock[i])) for i in range(1, n) if period[i] == period[i - 1])
 
     st = m.get("stats") or {}
@@ -536,7 +540,7 @@ def summarize(m, name, date=None):
     return {
         "v": VERSION, "name": name, "date": date, "system": m.get("system", "genesis"), "rom": m.get("rom"),
         "names": [m.get("team1"), m.get("team2")], "abbr": m.get("abbr"), "score": score,
-        "overtime": overtime, "finished": finished, "fromStart": from_start, "seconds": seconds,
+        "overtime": overtime, **({"shootout": True} if shootout else {}), "finished": finished, "fromStart": from_start, "seconds": seconds,
         "humans": humans, "you": m.get("padTeam", -1), "teams": teams, "players": players,
         **({"bot": bot} if bot else {}),
     }

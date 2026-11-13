@@ -3262,6 +3262,9 @@ function gameClockText(f) {
   // "P2 3:16", or "Final" once the third period (or overtime) is over.
   const m = match, period = m.period[f], clock = m.clock[f];
   const over = period >= 2 && clock === 0 && m.score[2 * f] !== m.score[2 * f + 1] && f === m.t.length - 1;
+  // A game decided in a shootout (the SNES season shootout): the rounds aren't recorded; the final score with the
+  // winners' goal is the match file's shootout.final.
+  if (m.shootout && f === m.t.length - 1) return 'Final SO ' + m.shootout.final[0] + '–' + m.shootout.final[1];
   if (over || period > 3) return 'Final';
   return periodName(period) + ' ' + clockText(clock);
 }

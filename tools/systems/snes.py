@@ -413,6 +413,7 @@ def find_rom(capture):
 # on the SA-1 builds, moved back by Emulator.read). The retail game never uses that part of bank $7E.
 BLOCKS = [(0x0000, 0x4000), (0xE700, 0x168)]
 EXTRA = 0xE700                       # the 2 MB builds' block
+SHOOTOUT_MODE = 0x1D81               # shootoutmode: nonzero while a shootout plays (NOSE4Web's season shootout)
 FIGHTER = 0x0400                     # OBJ_FLAGS: fighting (pffight)
 POSTS, CHECKS_FOR, CHECKS_AGAINST, ICE_TIME, FIGHT_INJURED = 0xE7F0, 0xE788, 0xE7BC, 0xE800, 0xE74E
 
@@ -450,10 +451,15 @@ class View:
         self.in_menus = self.teams[0] >= top or self.teams[1] >= top or (self.teams == (0, 0) and self.score == (0, 0)
                                                                           and self.period == 0 and self.clock == 0)
         self.in_game = not self.in_menus and not self.screen & PAUSED
+        # NOSE4Web's shootout for tied regular-season games (2026-11-12, the user's game on McMarkis's 32-team build):
+        # PeriodOver saves the game, PlayShootout clears it and plays the rounds with shootoutmode ($1D81) set, then the
+        # game comes back with the winners' goal added. Each round restarts a 25-second clock in period 0, which the
+        # helper took for new games; it now keeps the game's recording open through it (and records no rounds).
+        self.shootout = block[SHOOTOUT_MODE] != 0
 
     @property
     def live(self):
-        return self.in_game and self.on_ice
+        return self.in_game and self.on_ice and not self.shootout
 
     def describe(self):
         return f"P{min(self.period, 2) + 1} {self.clock // 60}:{self.clock % 60:02d}, {self.score[0]}-{self.score[1]}"
