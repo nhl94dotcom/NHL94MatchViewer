@@ -4541,6 +4541,20 @@ the shootout kept level to round 7-8; each turn's BA_Skater_Offset against the e
   two roster places, the saved tmpdst still box time, and both were skipped through round 8 (round 4 to entry 5, round
   1 and 6 to entry 2). All four cases right on both ROMs.
 
+### NOSE4Web's Genesis shootout injury skip f4ad85d, played (2026-11-13)
+
+`gen_shootout_injury_check.py` on nhl94_shootout_injuries.bin (e43d7d4b...) and nhl94_shootout_injuries_fighting.bin
+(82650eed...): a tied overtime into the season shootout, kept level to round 7 (14 turns a case), each turn's
+BA_Skater_Offset against the expected entry, and the helper's reading (genesis.View, Recording.shootout_attempt)
+alongside. Home list (roster) 11, 2, 6, 16, 17; away 12, 3, 7, 17, 16. All right on both ROMs:
+- **default** (saved tmpdst: home 11 $FFFC, 17 $1000 (a served fight major); away 7 $512C (one running)): rounds 1 and 6
+  home 2 for 11; round 5 home 17 out, wraps past 11 to 2; away round 3 17 for 7.
+- **picked** (home entry 1 replaced by roster 3 and him $FFFC): rounds 2 and 7 took 6.
+- **mode** (Shootout mode from the menu, home 11 marked $FFFC): the original order, 11 shot.
+- **fight** (in overtime, before the save: home 11's live tmpdst $512C, 16's $1000): the saved words read $512C and
+  $1000, and both were skipped (11 by 2 in rounds 1 and 6, 16 by 17 in round 4).
+- The recorder's shooters were the stand-ins every turn. The fight words were set in RAM, not made by a fight.
+
 ### chaos's Genesis fight injury ($112C) over a game (2026-11-13, `gen_fight_injury_track.py`)
 
 nhl94_fighting_blood.bin, computer games, Fighting On, the fight ratings at 14 and (`--force`) every +$75 at $7F so the
