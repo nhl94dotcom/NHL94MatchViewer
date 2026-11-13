@@ -4527,8 +4527,9 @@ from the third (2), regular season without the extra aggression (1), CDL regular
 - **The original game loses a skater the same way** (`gen_box_crowd_check.py`: retail, regulation, the away team at
   Aggression 38, every draw): game 1, period 3 at 3:22, the away team at tmap 4 with three boxed players holding objects
   (5, 17, 18; five boxed in all): on the ice the goalie, C and RD only, no LD; game 3, period 3 at 1:11, the same (4,
-  20, 22 sitting; eight boxed): C and RD only. tmap's floor of 4 (goalie and three) with three sitting needs seven
-  objects for six.
+  20, 22 sitting; eight boxed): C and RD only. All 6 games: 8 draws with three of the away team sitting in the box,
+  **all 8 a skater short** (tmap 4, the goalie, C and RD on the ice, no LD), in 4 of the 6 games. tmap's floor of 4
+  (goalie and three) with three sitting needs seven objects for six.
 
 ### NOSE4Web's "Calls during a delayed penalty" (86e06ef), played (2026-11-12)
 
