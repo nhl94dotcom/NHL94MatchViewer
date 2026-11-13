@@ -5,7 +5,10 @@ password, GetMediaInputStatus answered with a video position held still, as if t
 headless Edge loading overlay.html?replay=1&obs=Video&obspw=... from a folder with a replay pack, in real time through
 its debugging port (a fast-forwarded --dump-dom snapshot races the network). The overlay must authenticate, ask for the
 right Media Source and show the score for the position (read from the page until it appears, 10 s at most). Then the
-stand-in moves the position on and the overlay must follow, and a wrong password must be refused.
+stand-in moves the position on and the overlay must follow, and a wrong password must be refused. Then again from a
+page that isn't a secure context (served over http from a made-up host name), as OBS's "Local file" Browser Source
+serves it (http://absolute/...): no crypto.subtle there, so the page's own SHA-256 must answer the challenge (the
+user's first try in OBS stayed on "Waiting for a game...": the hash threw, unseen).
 
 python tests/replay_obs_ws.py PACK_FOLDER SECONDS:HOME-AWAY ...   (e.g. 2150:2-2 2151.5:2-3; the folder holds
 replay_data.js; overlay.html is copied in from the repo). The seconds are checked in order, on one page."""
@@ -72,13 +75,34 @@ async def page_text(cdp, expr):
             return r["result"]["result"].get("value")
 
 
-async def run(folder, checks, password):
+def serve_insecure(folder):
+    """The folder over plain http from a made-up host name (mapped to this machine in Edge only): not a secure context,
+    so no crypto.subtle, as in OBS's "Local file" Browser Source (http://absolute/...)."""
+    import functools
+    import http.server
+    import threading
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(folder))
+    handler.log_message = lambda *a: None
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    return httpd
+
+
+async def run(folder, checks, password, insecure=False):
     obs = FakeObs()
     server = await websockets.serve(obs.handler, "127.0.0.1", 4455)
-    url = (folder / "overlay.html").as_uri() + f"?replay=1&obs=Video&obspw={password}&stats=shots"
+    query = f"?replay=1&obs=Video&obspw={password}&stats=shots"
+    extra, httpd = [], None
+    if insecure:
+        httpd = serve_insecure(folder)
+        url = f"http://replay-test.invalid:{httpd.server_address[1]}/overlay.html" + query
+        extra = ["--host-resolver-rules=MAP replay-test.invalid 127.0.0.1"]
+    else:
+        url = (folder / "overlay.html").as_uri() + query
     profile = tempfile.mkdtemp(prefix="replay_obs_")
     edge = subprocess.Popen([str(EDGE), "--headless=new", "--disable-gpu", f"--remote-debugging-port={PORT}",
-                             f"--user-data-dir={profile}", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                             f"--user-data-dir={profile}", *extra, url], stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
     ok = True
     try:
         target = None
@@ -92,6 +116,8 @@ async def run(folder, checks, password):
                 pass
             await asyncio.sleep(0.2)
         async with websockets.connect(target["webSocketDebuggerUrl"], max_size=None) as cdp:
+            secure = await page_text(cdp, "String(window.isSecureContext) + ' ' + String(!!(window.crypto && crypto.subtle))")
+            print(f"  page: secure context / crypto.subtle: {secure}")
             for seconds, want in checks:
                 obs.cursor_ms = int(seconds * 1000)
                 shown = None
@@ -107,6 +133,8 @@ async def run(folder, checks, password):
                 print(f"{seconds:8.1f} s: want {want or '(refused)'}: shows {shown!r}: {'OK' if good else 'FAILED'}")
     finally:
         edge.terminate()
+        if httpd:
+            httpd.shutdown()
         server.close()
         await server.wait_closed()
         shutil.rmtree(profile, ignore_errors=True)
@@ -121,6 +149,9 @@ def main():
     checks = [(float(a.split(":")[0]), a.split(":")[1]) for a in sys.argv[2:]]
     ok, log = asyncio.run(run(folder, checks, PASSWORD))
     ok &= bool(log) and log[0] == "auth ok"
+    print("not a secure context (as in OBS's Local file Browser Source: the page's own SHA-256):")
+    ok3, log3 = asyncio.run(run(folder, checks[:2], PASSWORD, insecure=True))
+    ok &= ok3 and bool(log3) and log3[0] == "auth ok"
     print("wrong password:")
     ok2, log2 = asyncio.run(run(folder, [(checks[0][0], "")], "not-the-password"))
     refused = bool(log2) and log2[0] == "auth WRONG" and not any("GetMediaInputStatus" in x for x in log2)

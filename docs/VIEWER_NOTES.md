@@ -617,6 +617,12 @@ with no clock-of-day time, so a timer started with the video would drift at the 
   final against the live build: 68 matches), `tests/replay_obs_ws.py PACK SECONDS:SCORE ...` (a stand-in OBS
   WebSocket with a password; headless Edge driven through its debugging port, since a fast-forwarded --dump-dom races
   the network; the overlay must follow position changes and refuse a wrong password).
+- OBS's "Local file" Browser Source serves the page as http://absolute/..., not a secure context, so `crypto.subtle`
+  is missing there (a page opened from a file in a browser has it): the user's first try in OBS stayed on "Waiting
+  for a game..." while the same page in Edge followed the video, the challenge's hash throwing unseen. The overlay now
+  has its own SHA-256 (checked against Node's on 308 strings and OBS's answer), shows "Connecting to OBS..." and any
+  connection error; `tests/replay_obs_ws.py` also runs the page from a made-up host over http (no secure context),
+  where the old page reproduces the stall. replay_pack.py keeps an existing replay_settings.js.
 
 ## Quirky Events (2026-10-19)
 

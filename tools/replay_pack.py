@@ -196,7 +196,8 @@ def write_pack(timeline, out, step=1.0, matches=None):
     at = page.index("<script>\n// The address's choices")
     page = page[:at] + tag + page[at:]
     (out / "replay.html").write_text(page, encoding="utf-8")
-    (out / "replay_settings.js").write_text(SETTINGS, encoding="utf-8")
+    if not (out / "replay_settings.js").exists():   # an existing one holds someone's choices and password
+        (out / "replay_settings.js").write_text(SETTINGS, encoding="utf-8")
     mmss = lambda v: f"{int(v // 60)}:{int(v % 60):02d}"
     lines = [f"This pack is for the video: {timeline.get('video', '?')} ({mmss(timeline['duration'])} long).", "",
              "The games in it (video time: first faceoff - final horn), home team first:"]
