@@ -22,6 +22,7 @@ the build should take. Cases:
 
 python snes_shootout_injury_check.py ROM OUT [case ...] [--fight]"""
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -101,6 +102,12 @@ def run_case(e, m, base, case, pad):
             e.run(30)
             e.run(8, hold=["B"])
             menu_pressed = True
+        if case == "fight" and os.environ.get("NHL94_DIAG") and (f % 600 == 0 or (so and not marked)):
+            fi = FIGHTINJ if KNOWN["two_mb"] else FIGHTINJ_1MB
+            rs = [KNOWN["lists"][0][e_] - 1 for e_ in (1, 4)]
+            print("diag f", f, "gsp", g, "so", so, "fightinj", [m.at(fi + r_)[0][m.at(fi + r_)[1]] for r_ in rs],
+                  "copy", [m.e.ram[0xFE00 + r_] for r_ in rs] if not m.sa1 else "-", "tmpdst", [f"{m.w(TMPDST + 2 * r_):04X}" for r_ in rs],
+                  "mark", m.w(MARK), "games started", m.w(0x347A), "shootoutmode", m.w(0x1D81) & 0xFF, flush=True)
         if not so:
             continue
         mark_values.add(m.w(MARK))
@@ -145,7 +152,9 @@ def run_case(e, m, base, case, pad):
 def main():
     rom, out = sys.argv[1], Path(sys.argv[2])
     args = [a for a in sys.argv[3:] if not a.startswith("--")]
-    KNOWN["two_mb"] = two_mb(rom)
+    # McMarkis's fightinj where the ROM's fight code keeps it: the 2 MB / SA-1 builds' $E74E, or (--fight, NOSE4Web's
+    # fighting on the 1 MB layout, though its file is 2 MB with the fight code in the second megabyte) $FE80.
+    KNOWN["two_mb"] = two_mb(rom) and "--fight" not in sys.argv
     cases = args or ["default", "picked", "unmarked"] + (["fight"] if two_mb(rom) or "--fight" in sys.argv else [])
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()

@@ -12,8 +12,8 @@ every player's fighting rating (+$74) 14; --force: +$75 at $7F so chaos's patch 
 SNES: snes_ot_goal_check.start, OptFights ($E708) 0 (On) where the build has the option (SA-1 / 2 MB: snes.SA1_MOVED).
 
 --fighters (SNES): every skater's fighting rating ($1463) held at 14 (McMarkis's 1 MB fights come from it).
---injure (SNES): every skater's Aggression ($1443) at 60, so the fight's loser is always hurt (F_fightfall: hurt when a
-random number under 60 is at most the winner's Aggression); a player who leaves the box at $FFFC is then followed to
+--injure (SNES): every skater's $1483 (McMarkis's "aggress", the 93S name; today's Checking) at 60, so the fight's loser
+is always hurt (F_fightfall: hurt when a random number under 60 is at most the winner's $1483); a player who leaves the box at $FFFC is then followed to
 the game's end ("after": every change of his word).
 Penalty minutes are compared with the sample before he went in (half a second earlier).
 
@@ -28,7 +28,7 @@ import lowload  # noqa: E402
 FORCE = "--force" in sys.argv
 OPTION = "--option" in sys.argv
 FIGHTERS = "--fighters" in sys.argv     # SNES: every skater's fighting rating ($1463) held at 14, so the 1 MB build fights
-INJURE = "--injure" in sys.argv         # SNES: every skater's Aggression ($1443) at 60, so F_fightfall's roll always hurts
+INJURE = "--injure" in sys.argv         # SNES: every skater's $1483 at 60, so F_fightfall's roll always hurts
 argv = [a for a in sys.argv if not a.startswith("--")]
 
 
@@ -99,12 +99,13 @@ class Snes:
 
     def frame(self, f):
         from snes_60fps_cvc import computer_only
-        if FIGHTERS or INJURE:
+        fighting = INJURE and any(self.m.w(self.PFLAGS + 2 * k) & 0x0400 for k in range(12))
+        if FIGHTERS or fighting:
             for k in range(12):
                 if FIGHTERS:
                     self.m.setw(0x1463 + 2 * k, 14)
-                if INJURE:
-                    self.m.setw(0x1443 + 2 * k, 60)
+                if fighting:                       # McMarkis's "aggress" (93S's name) is $1483, today's Checking:
+                    self.m.setw(0x1483 + 2 * k, 60)    # only while a fight is on (held always, there were no fights)
         if f % 300 == 0:
             computer_only(self.m)
             if OPTION:

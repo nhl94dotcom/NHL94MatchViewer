@@ -4547,6 +4547,23 @@ the shootout kept level to round 7-8; each turn's BA_Skater_Offset against the e
   two roster places, the saved tmpdst still box time, and both were skipped through round 8 (round 4 to entry 5, round
   1 and 6 to entry 2). All four cases right on both ROMs.
 
+### NOSE4Web's 1 MB fight-injury fix 84a3f6b, played (2026-11-13)
+
+McMarkis's 485ec28a (fightinj and FightInjuredKeep) on NOSE4Web's 1 MB fighting: fightinj at $7E:FE80-$FEB3,
+fightinjany $FEB4 (free on the 1 MB layout: retail never writes $7E:F033-$FFFF; the 1 MB fight code keeps to low RAM
+and $7E:35D0 / $35E0). NHL94_fight_injury.smc (f10ae3ba...) and NHL94_fight_injury_shootout.smc (d5ad768e...), both
+2 MB files with the 1 MB layout (the fight code in the second megabyte).
+- **Cleared at a game's start** (`snes_fightinj_clear_test.py`: $FE80-$FEB5 set to 1 at the setup screen): both
+  builds 0 of 54 left once play ran; NHL94_fight_time.smc (no fix) kept all 54.
+- **Out for the game** (`fight_time_check.py snes ... --fighters --injure`, McMarkis's "aggress" = $1483, today's
+  Checking, at 60 while a fight is on so the loser is hurt; held always it stopped the fights): 5 hurt losers, each
+  left the box at $FFFC and stayed there to the game's end; 3 after their full major, 2 earlier (109 and 163 s: a
+  power-play goal let them out, the 1 MB fights being unpaired, and FightInjuredKeep put them out again).
+- **The shootout** (`snes_shootout_injury_check.py ... default fight --fight`): two listed shooters with fightinj set
+  and their majors running at the end of overtime (tmpdst $00B4): the copy at $FE00 held both, the saved tmpdst still
+  box time, and both were skipped every turn. (A first run marked $E74E: the test took the 2 MB file for the 2 MB
+  layout; `--fight` now means the 1 MB addresses.)
+
 ### NOSE4Web's fighting penalty time e5238ca, played (2026-11-13)
 
 `fight_time_check.py genesis|snes` (computer games with fights; every box stay followed: its word, the seconds served
