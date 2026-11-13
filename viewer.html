@@ -3263,7 +3263,7 @@ function gameClockText(f) {
   const m = match, period = m.period[f], clock = m.clock[f];
   const over = period >= 2 && clock === 0 && m.score[2 * f] !== m.score[2 * f + 1] && f === m.t.length - 1;
   // A game decided in a shootout (the SNES season shootout): the rounds aren't recorded; the final score with the
-  // winners' goal is the match file's shootout.final.
+  // winners' goal is the match file's shootout.final (its attempts are listed under Scoring at the last frame).
   if (m.shootout && f === m.t.length - 1) return 'Final SO ' + m.shootout.final[0] + '–' + m.shootout.final[1];
   if (over || period > 3) return 'Final';
   return periodName(period) + ' ' + clockText(clock);
@@ -4794,6 +4794,22 @@ function fillScoring(f) {
     line.append(sub);
     box.append(line);
   }
+  // The shootout after a tied game (SNES season shootout; the helper logs each attempt, the rounds aren't recorded):
+  // listed at the game's last frame, each attempt with the shootout score after it.
+  const so = match.shootout;
+  if (so && so.attempts && so.attempts.length && f === match.t.length - 1) {
+    const h = document.createElement('h4');
+    h.textContent = 'Shootout (' + so.final[0] + '–' + so.final[1] + ' final)';
+    box.append(h);
+    for (const a of so.attempts) {
+      const line = document.createElement('div'), sub = document.createElement('small');
+      line.className = 'goal';
+      line.textContent = 'Round ' + a.round + ' · ' + (a.team ? match.team2 : match.team1) + ' · ' + playerName(a.team, a.shooter) + (a.goal ? ' scores' : ' stopped');
+      sub.textContent = (a.goalie !== null && a.goalie !== undefined ? 'Against ' + playerName(1 - a.team, a.goalie) + ' · ' : '') + 'shootout ' + a.score[0] + '–' + a.score[1];
+      line.append(sub);
+      box.append(line);
+    }
+  }
 }
 
 function draw() {
@@ -4911,6 +4927,10 @@ function draw() {
   $('clockTime').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
   $('clockPeriod').textContent = m.period[f] < 3 ? 'Period ' + (m.period[f] + 1) : m.period[f] === 3 ? 'Overtime' : 'Final';
   $('score1').textContent = m.score[2 * f]; $('score2').textContent = m.score[2 * f + 1];
+  if (m.shootout && f === m.t.length - 1) {          // decided in a shootout: its final score (the winners' goal added)
+    $('clockPeriod').textContent = 'Final SO';
+    $('score1').textContent = m.shootout.final[0]; $('score2').textContent = m.shootout.final[1];
+  }
   $('shots1').textContent = m.shots[2 * f] + ' shots'; $('shots2').textContent = m.shots[2 * f + 1] + ' shots';
   const t0 = m.t[0], t1 = m.t[m.t.length - 1];
   $('seek').value = Math.round(1000 * (now - t0) / Math.max(1, t1 - t0));

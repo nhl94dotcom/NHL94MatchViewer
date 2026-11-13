@@ -2,7 +2,8 @@
 shootout: recorded through overtime, then split into pieces at every shootout round). The recorded samples of a game's
 end and of its shootout pieces, in order, are fed to nhl94_helper.Recording.step as Views (snes.View over each sample,
 no emulator): it must not end the recording during the rounds (shootoutmode $1D81 set), must not record them, and must
-end with "final" once the game comes back with the winners' goal, writing shootout.json with that score.
+end with "final" once the game comes back with the winners' goal, writing shootout.json with that score and each
+attempt seen (round, team, shooter, goalie, goal, the shootout score after it).
 
 python tests/helper_snes_shootout.py [GAME_CAPTURE SHOOTOUT_CAPTURE ...]   (folders in Documents/NHL94 Viewer/captures;
 default the user's 2026-11-12 GER-USA game; the game's last 3,000 samples are used)"""
@@ -43,9 +44,10 @@ class Sample:
 
 samples = []
 for i, n in enumerate(names):
-    blocks = json.loads((GAMES / n / "capture.json").read_text())["blocks"]
+    folder = GAMES / n if (GAMES / n).is_dir() else GAMES.parent / "removed" / n   # the pieces, taken out of the season
+    blocks = json.loads((folder / "capture.json").read_text())["blocks"]
     size = 8 + sum(b[1] for b in blocks)
-    data = gzip.decompress((GAMES / n / "fast.bin.gz").read_bytes())
+    data = gzip.decompress((folder / "fast.bin.gz").read_bytes())
     count = len(data) // size
     first = max(0, count - 3000) if i == 0 else 0
     samples += [(blocks, data[k * size + 8:(k + 1) * size]) for k in range(first, count)]
@@ -67,6 +69,11 @@ rec.close() if hasattr(rec, "close") else None
 so = rec.folder / "shootout.json"
 print(f"{len(views)} samples, {in_shootout} in the shootout ({recorded_in_shootout} recorded); ended: {ended}")
 print("shootout.json:", so.read_text() if so.exists() else "none")
-ok = ended is not None and ended[1] == "final" and recorded_in_shootout == 0 and so.exists()
+so_data = json.loads(so.read_text()) if so.exists() else {}
+# The pieces kept hold two of the home team's turns: round 2 (roster 19, saved: 1-1) and round 5 (roster 7, a goal: 2-1).
+want = [{"round": 2, "team": 0, "shooter": 19, "goalie": 0, "goal": False, "score": [1, 1]},
+        {"round": 5, "team": 0, "shooter": 7, "goalie": 0, "goal": True, "score": [2, 1]}]
+ok = (ended is not None and ended[1] == "final" and recorded_in_shootout == 0 and so_data.get("final") == [3, 2]
+      and (sys.argv[1:] or so_data.get("attempts") == want))
 print("PASS" if ok else "FAIL")
 sys.exit(0 if ok else 1)

@@ -414,6 +414,11 @@ def find_rom(capture):
 BLOCKS = [(0x0000, 0x4000), (0xE700, 0x168)]
 EXTRA = 0xE700                       # the 2 MB builds' block
 SHOOTOUT_MODE = 0x1D81               # shootoutmode: nonzero while a shootout plays (NOSE4Web's season shootout)
+# The game's own shootout state (the SNES disassembly's ram94s.asm; PlayShootout runs the season shootout too): the
+# round (from 1), the shooting team (0 home, 2 visitors), the shooter's object (SCnum x 2, $FFFF between turns) and
+# roster index, and each team's list (bytes, roster index + 1: the goalie, then the shooters). The goals words hold the
+# shootout's own score while it plays.
+SO_ROUND, SO_TEAM, SO_SHOOTER_OBJ, SO_SHOOTER, SO_LISTS = 0x1D85, 0x1E91, 0x1E8D, 0x1E8F, (0x1D71, 0x1D79)
 FIGHTER = 0x0400                     # OBJ_FLAGS: fighting (pffight)
 POSTS, CHECKS_FOR, CHECKS_AGAINST, ICE_TIME, FIGHT_INJURED = 0xE7F0, 0xE788, 0xE7BC, 0xE800, 0xE74E
 
@@ -456,6 +461,12 @@ class View:
         # game comes back with the winners' goal added. Each round restarts a 25-second clock in period 0, which the
         # helper took for new games; it now keeps the game's recording open through it (and records no rounds).
         self.shootout = block[SHOOTOUT_MODE] != 0
+        # The turn under way (round, team 0 / 1, shooter's roster index, the other team's goalie), None between turns.
+        self.shootout_turn = None
+        if self.shootout and word(SO_SHOOTER_OBJ) != 0xFFFF:
+            team = 1 if word(SO_TEAM) else 0
+            goalie = block[SO_LISTS[1 - team]] - 1
+            self.shootout_turn = (word(SO_ROUND), team, word(SO_SHOOTER) & 0xFF, goalie if goalie >= 0 else None)
 
     @property
     def live(self):

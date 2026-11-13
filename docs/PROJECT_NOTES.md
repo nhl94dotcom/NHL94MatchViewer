@@ -916,6 +916,17 @@ converter puts it in the match file (`shootout`), season.py (VERSION 34) takes t
 frame. The rounds themselves aren't recorded. `tests/helper_snes_shootout.py` replays the user's game's end and its
 shootout pieces through `Recording.step`.
 
+**Each attempt (2026-11-13, for a league commissioner):** the game's own shootout state is in the recorded block
+(ram94s.asm): shootoutround $1D85 (from 1), BA_Team $1E91 (0 home, 2 visitors), BA_Sktr_SCnum $1E8D (the shooter's
+object x 2, $FFFF between turns), BA_Skater_Offset $1E8F (his roster index), homeshooters / awayshooters $1D71 /
+$1D79 (bytes, roster index + 1: the goalie, then the shooters); the goals words hold the shootout's own score while it
+plays. `snes.View.shootout_turn` = (round, team, shooter, the other team's goalie) during a turn;
+`Recording.shootout_attempt` keeps one attempt per turn (a goal when the shooting team's score rose during it) and
+shootout.json gets `attempts` [{round, team, shooter, goalie, goal, score}] (score: the shootout score after it). The
+viewer lists them under Scoring at the last frame, and its scoreboard reads "Final SO" with the final score there. In
+the user's game, the two pieces kept are the home team's turns of rounds 2 (saved, 1-1) and 5 (a goal, 2-1). The
+Genesis season shootout (NOSE4Web's) isn't handled by the helper yet.
+
 ## SNES SA-1 and 2 MB builds (2026-11-07)
 
 The user's 2 MB SNES ROMs (nhl94_sa1_26teams, nhl94snes2026_sa-1: SA-1 cartridges; nhl94snes_2026 plain 2 MB) are

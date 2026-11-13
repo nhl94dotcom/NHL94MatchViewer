@@ -4493,6 +4493,24 @@ scored 12 of 82 (68: 5 of 84), 72% on the forehand; on 64 goals +0.31 ±0.27 but
 +0.21 ±0.15), even overall (with no direction held through the wind-up the shooter stops skating, perhaps out of
 position for the way back: not checked). **68 stays the default.**
 
+### NOSE4Web's hybrid icing 82a9a22 (Genesis), read (2026-11-13)
+
+nhl94_hybrid_icing.bin (SHA-256 9f377e58...) and CDL_Season_12_hybrid_icing.bin (1e8bfbea...). Their reading of the
+icing code agrees with the one below. The bytes (capstone over each against its original):
+- **nhl94:** $102A0's `bset #ifcgl,(iflags).w` made `jsr $FFAC6` (the `rts` after it kept); the new code at
+  $FFAC6-$FFB6B over the boot checksum routine at $FFAC0, whose call at $300 is three NOPs (header checksum updated).
+- **CDL:** the same code, byte for byte, at $1ED0BC; an earlier hack's block moved from $1E2B5A to $1ED032 (the same
+  bytes, its one branch PC-relative) and its three jsrs ($1018C, $1494E, $F6CE8) moved with it, entry points $1ED032
+  and $1ED046.
+- **The code:** saves d0-d4/a0; the bset; the line y = +206 when ifdir (the top end) else -206; for each team (the
+  icing team by icingPlayer < 6: objects 0-5 home, else 6-11) its skaters' least distance to the line, in y only
+  (past it: 0), skipping `position` <= 0 (the word: goalie 0, off the ice negative, as the game's own loops test it) and
+  pf2unav (pflags2 +$63 bit 2); defender <= attacker: registers back, a3 = the icing player's record (pushed / popped),
+  `move.w #$C,d0 / jsr AddPenalty ($11F2C)`; else `bclr #ifok` and registers back. AddPenalty keeps d1/a0/a1 and only
+  queues it (PenBuf); checkfornewpen stops play on the next PenaltyManager pass. Ties go to the defenders (called).
+- **Points to watch in play:** the distance is y only (a skater on the far boards counts as near as one by the dot);
+  a skater already past the line counts 0 on either side, so a deep attacker ties a deep defender (called).
+
 ### How each game calls icing, for a hybrid icing option (2026-11-12, for NOSE4Web; code readings)
 
 **Genesis** (logic94.asm; nhl94.bin): iflags $FFBF80 (bit 0 ifcgl crossed, 1 ifdir must cross the top line, 2 ifok
@@ -4517,7 +4535,10 @@ armed), icingPlayer the byte after it.
   $9E:F783); no window in the middle.
 - **A wave-off the Genesis lacks** (`updateplayers`, $9F:88BD-$9F:88F0): before the crossing, a player of the team
   that didn't ice within 30 of the puck while it is low (z < 13) and slow (|vy| < $2400) cancels it (he could have
-  played it).
+  played it). (2026-11-13) The within-30 test runs for every object below $18 after the nearest-player bookkeeping,
+  which alone skips goalies, off-ice and unavailable players: so **a goalie counts** (the defending goalie by his net
+  with a slow, low puck coming waves it off). The crease: updateplayers keeps a goalie in it at x $FFD5-$2B and y
+  +-$E5 (`.t3x`), so the Genesis's +-$2C window fits the SNES too.
 - The call, the faceoff spot (`Stop4Pen`: +-600 by the icing player's goal, then the dot) and the computer goalie
   staying in while icing is pending (`assgoalie`) as on the Genesis; cleared at puckfaceoff2.
 

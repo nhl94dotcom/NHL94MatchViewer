@@ -284,6 +284,26 @@ class Recording:
         self.view, self.final_since, self.menu_since, self.joined_mid_game = view, None, None, not (view.period == 0 and view.clock >= 290)
         self.top_clock = view.clock  # the period length, as far as seen: a new game starts with its clock near it
 
+    def shootout_attempt(self, view):
+        """The shootout's attempts, one per turn (view.shootout_turn: round, team, shooter, goalie): a goal when the
+        shooting team's shootout score went up during the turn, else a miss; closed when the next turn starts or the
+        shootout ends (view None). Each keeps the shootout score after it."""
+        turn = getattr(view, "shootout_turn", None) if view is not None else None
+        cur = getattr(self, "so_turn", None)
+        if cur and (view is None or (turn and turn[:2] != cur["key"])):
+            a = cur["attempt"]
+            a["goal"] = cur["last"][a["team"]] > cur["start"][a["team"]]
+            a["score"] = list(cur["last"])
+            self.so_attempts = getattr(self, "so_attempts", []) + [a]
+            self.so_turn = cur = None
+        if view is None:
+            return
+        if turn and not cur:
+            self.so_turn = cur = {"key": turn[:2], "start": tuple(view.score), "last": tuple(view.score),
+                                  "attempt": {"round": turn[0], "team": turn[1], "shooter": turn[2], "goalie": turn[3]}}
+        if cur:
+            cur["last"] = tuple(view.score)
+
     def step(self, view):
         """One sample. Returns why it ended ('final', 'menus', 'new game') or None to carry on."""
         now = time.perf_counter()
@@ -293,7 +313,9 @@ class Recording:
         # back with the winners' goal. Nothing recorded, no new game; the final result is kept for the converter.
         if getattr(view, "shootout", False):
             self.shootout_seen = True
+            self.shootout_attempt(view)
             return None
+        self.shootout_attempt(None)                         # the shootout over: its last attempt
         if view.in_menus:
             self.menu_since = self.menu_since or now
             if now - self.menu_since > 3:
@@ -322,7 +344,8 @@ class Recording:
                 self.final_since = self.final_since or now
                 if now - self.final_since >= FINAL_WAIT_S:
                     if getattr(self, "shootout_seen", False):   # the result after the shootout, for the converter
-                        (self.folder / "shootout.json").write_text(json.dumps({"final": list(view.score)}))
+                        (self.folder / "shootout.json").write_text(json.dumps(
+                            {"final": list(view.score), "attempts": getattr(self, "so_attempts", [])}))
                     return "final"
             else:
                 self.final_since = None
