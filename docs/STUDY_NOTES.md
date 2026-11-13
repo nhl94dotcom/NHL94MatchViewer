@@ -4463,6 +4463,18 @@ wrist shots).
   **1 scored** (xG 0.117 a shot). **63 stays the default.** People's 29% against the computer goalie rests on 4 goals;
   the xG model rates their shots 0.31 to the bot's 0.12 for reasons not in these measures.
 
+### Bot version 67: the slot instead of the crease (2026-11-12)
+
+`analysis/bot_games_report.py --test` on version 63's 32 compared games against the coaches rated 80%+: ordinary
+shots 29.8 a game (people 12.6; the bot plays the computer), 11.2 of them from within 40 of the goal line (people 2.5),
+7% scored (18%), slapshots 13% of them (26%), one-timers tried 3.6 (5.0). In 9 logged games the drive at the net
+(version 62's zone_hold with a clear lane) shot 9.9 times a game from within 40 out and scored 3 of 89; the wrist
+shots from 40-80 out scored 8 of 77. **Version 67** (SLOT67): a clear lane takes the carrier to the slot (62 out);
+there an open teammate across gets the one-timer pass, else the shot (wrist or slapshot by Shot Power). Against 63 (32
+paired games): goals 3.00 against 2.97 (+0.03 ±0.48), xG 5.92 against 5.58 (+0.34 ±0.43), shots on goal +2.4 ±1.1;
+shots within 40 out 6.7 a game (63 11.2), 40-80 out 17.1 (10.8), one-timers tried 4.0 (3.6), one-timer shots 4.2 (3.7),
+slapshots 15% of ordinary shots. **Version 67 is the default**: equal on results, closer to people's attack.
+
 ### NOSE4Web's 3-on-3 overtime (a91a6f8), played (2026-11-12)
 
 nhl94_3on3_ot.bin (SHA-1 b00d6e60...) and CDL_Season_12_3on3_ot.bin (24882ae1..., regular season only),
