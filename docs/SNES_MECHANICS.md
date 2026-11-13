@@ -417,7 +417,16 @@ Different from the Genesis:
   moment he bursts or checks at it, so findpc picks him and `.10` skips the poke. Locked in anything else (a shot
   wind-up $ED4A / $EE5C, a fall, a flail) he isn't eligible and control switches. The other 29 were the pad on its
   goalie (B does nothing for a goalie) or play stopped. The worked-out choice agreed with switch / no switch in 854 of
-  905. A B tap of one frame can also go unseen: the retail game reads the pad on every other frame.
+  905.
+- **Presses the game never sees** (2026-11-13, `analysis/snes_short_presses.py`, 33 SNES recordings, about 30,000
+  presses): Multi5Bios writes PadRaw1-5 in the NMI every frame, but GetNewPresses (ReadPads, once per Gameloop pass)
+  sets padnew1 = PadRaw & (PadRaw ^ padlast1), and a pass comes every d7 frames (in the recordings 1 frame 34%, 2
+  frames 60%, 3 frames 6%; the retail game passes again as soon as a pass ends within a frame). A press with no pass
+  inside it never reaches padnew1, nor does a re-press after a release with no pass inside it (the button looked
+  held throughout). Lost: B 0.6% (123 of 20,077: 86 short presses, 37 short releases), A 1.1%, X 1.2%, Y 0.9%, L / R
+  none; about 4 B and 2-3 A presses a game. Judged from the pass frames the recordings keep (OldVcount $0D01 against
+  Vcount $83, which restarts during a game); padnew1 itself confirms it on pad 1 only roughly (the sampler misses a
+  one-frame padnew1).
 
 - **X without the puck** (`doinput` `.17`) takes control of your goalie (`PadTakeGoalie`) when your team has manual
   goalies on; otherwise it does nothing. It never pokes. (On a modern pad RetroArch maps by position: the button

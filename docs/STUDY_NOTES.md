@@ -4627,6 +4627,31 @@ on every other frame, so a 1-frame tap can go unseen (held 4 frames: fixed).
 NOSE4Web's suggested fix (the choice landing on his own locked skater takes the next-best eligible one) makes B during
 his own burst or check switch control, which is what the Genesis does when locked (switches at once).
 
+### SNES presses lost between game passes, and a press latch (2026-11-13)
+
+NOSE4Web asked whether 1-frame B taps go unseen (my side note in the B trace), how often in real play, and whether a
+latch (the NMI ORs PadRaw into free RAM; GetNewPresses takes padnew = (PadRaw | latch) & ~padlast and clears it) would
+break anything. `analysis/snes_short_presses.py` over the 33 SNES recordings: the passes' d7 1 frame 34%, 2 60%, 3 6%;
+lost B 0.6%, A 1.1%, X 1.2%, Y 0.9%, L / R 0 (SNES_MECHANICS 7.3). Two kinds: a press with no pass inside it, and a
+re-press after a release with no pass inside it (37 of B's 123, 50 of A's 84), which the proposed latch (OR of held
+bits, & ~padlast) wouldn't catch: latching rising edges (PadRaw & ~previous NMI's PadRaw) would.
+What would go wrong:
+- **The release.** ShotMode (the wind-up) and passmode fire on a change of the button (d2 = padchange = PadRaw ^
+  padlast), not on padnew. A latched tap reaches padnew with the button already up and padchange clear, so the release
+  never comes: a tap on A would become a full wind-up slapshot shot at the animation's end, a tap on B with the puck and
+  no direction would leave pass mode waiting for the next B. A latched press delivered with the button up needs its
+  release delivered too (padchange set for it on the next pass).
+- **Across screens.** Between ReadPads calls (fades, DMA waits, transitions) the latch keeps filling: a press during a
+  fade would fire on the next screen's first ReadPads. Latch only while Gameloop runs, or clear it where screens start.
+- **Direct readers** of PadRaw (held buttons: WaitNoButtons, WaitPadsRelease, PulseUntilRelease, assgoalie, assscore,
+  updateplayers' d3, the title and setup screens) are unaffected; padchange readers (updateplayers' d2, Readjoy1,
+  ReadjoyA, ReadAnyPad, SaveRegsStartHL2) get no release from the latch, as above.
+- **SA-1:** the NMI runs on the S-CPU and the game on the SA-1, so an OR in the NMI and a read-and-clear in the game can
+  race (a press lost or doubled) unless the clear is done safely (two latch slots swapped, or the game clearing only
+  the bits it read). Its game also passes every frame (60 a second), so it loses very few presses: leaving it out of
+  the option is reasonable.
+- Netplay and run-ahead are fine: the latch is RAM, in every saved state.
+
 ### NOSE4Web's Genesis shootout injury skip f4ad85d, played (2026-11-13)
 
 `gen_shootout_injury_check.py` on nhl94_shootout_injuries.bin (e43d7d4b...) and nhl94_shootout_injuries_fighting.bin
