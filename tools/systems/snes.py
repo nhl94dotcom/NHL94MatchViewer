@@ -25,7 +25,9 @@ ROM_GLOB = "*.smc"
 ACTIONS = {
     # $EF6E and $F020: one-timer swings (never with the puck; found from the user's review of bobbled passes in
     # 2026-10-16_1540_CHI-TOR, where every "led to a one-timer" pass met one; Larmer's $F020 there hit the post)
-    "shoot": {"ed4a", "ee5c", "f196", "ef6e", "f020"},
+    # (2026-11-13: $F196, here until then, is SPAcrosscheck, a check: CHECK_MOVES; 35 of 230 failed one-timers were
+    # cross-checks after a teammate's pass.) $ED4A SPAshotf, $EE5C SPAshotb, $EF6E / $F020 SPAonetimerf / b.
+    "shoot": {"ed4a", "ee5c", "ef6e", "f020"},
     "pass": {"ec66", "ecd8"},
     "goalie_pass": {"e34e"},
     "poke": {"f208"},
@@ -41,7 +43,9 @@ ACTIONS = {
 # wrong (a stick save read as a glove save, a pad stack as a stick save, the sprawls and butterfly missing).
 SAVE_MOVES = {"e1e2": "glove", "e214": "glove", "e246": "stick", "e278": "stick", "e2aa": "pad stack", "e2fc": "pad stack",
               "e862": "sprawl", "e7d0": "sprawl", "e73e": "butterfly", "e4b6": "dive"}
-CHECK_MOVES = {"f27a": "shoulder", "f2ac": "shoulder", "f2de": "hip", "f310": "hip"}
+# checkcheck's animation by the direction to the man hit (.4): straight ahead the cross-check, sometimes (seed) a
+# shoulder check instead; the checker must be in SPAburst ($F342, "lunge"), with the puck or not.
+CHECK_MOVES = {"f27a": "shoulder", "f2ac": "shoulder", "f2de": "hip", "f310": "hip", "f196": "cross-check"}
 HIT_OUTCOMES = {"f49c": "knocked down", "f54e": "knocked down", "f6c0": "upended"}
 CLOCK_STOPPED = 0x15D6  # gmclock: nonzero while the game clock is stopped (71% of stoppage samples, 1% of play)
 

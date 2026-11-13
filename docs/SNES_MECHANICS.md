@@ -484,6 +484,17 @@ him along in the direction he burst. **Recorded** (analysis/snes_burst_contact_s
 opponent after the animation had ended, 204 of 260 did nothing but shove; inside the 0.4 s a check came 936 times in
 1,180 (416 knockdowns). To check, burst from close: within about 0.4 s of skating of your man.
 
+**The cross-check with the puck (the user's "shot that never leaves his stick", 2026-11-13)**, **Code** (`checkcheck`
+`.4`), **Confirmed**. The check's animation comes from the direction of the man hit relative to the hitter's facing:
+straight ahead it's `SPAcrosscheck` ($F196, a stick swing that looks like a shot) about one time in four (`seed & $30`
+zero; a rarer test by the bottom end), else a shoulder check), else shoulder / hip checks. Nothing in it looks at the puck. A skater who bursts
+(A without the puck) and gets the puck during the 0.4 s burst, a pass or a pick-off reaching him, is a carrier in
+`SPAburst`; running into an opponent dead ahead, he plays the cross-check swing (about 0.4 s real) with the puck on his
+stick and no shot comes of it. **Recorded** (42 SNES games): 428 cross-checks, 5 with the puck (4 by people); in all 5
+the puck had reached him 0-255 ms before, and in 4 the burst began before the puck arrived (pressed to hit someone, then
+the pass or a loose pass came to him); he kept it in 3 and lost it at the end in 2. The match files called the swing a
+shot until 2026-11-13, so 35 of 230 SNES "failed one-timers" were cross-checks after a teammate's pass.
+
 **A check that lands but knocks nothing over** looks much the same, except that the hitter shows his check
 animation. The victim shows nothing: the game has no reaction for a failed knockdown, only the bump. The roll (7.1):
 the single contact must be worth 32+, then a random number below (120 + victim's weight - hitter's weight) / 2 - the
