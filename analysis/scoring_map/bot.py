@@ -436,6 +436,15 @@ CROSS66 = {"past": -24, "anyway": -20, "vx": 1.0, "late": 15}
 # 67: a clear lane takes him to the slot ("slot_out" out) instead; there, an open teammate across gets the one-timer
 # pass, else the shot (wrist or slapshot by Shot Power, wrist_or_slap).
 SLOT67 = {"slot_out": 62, "drive_to": 70}
+# version 68 (2026-11-12): strong coaches' slapshots from 40-130 out score 35% even against the computer goalie (54
+# shots), the bot's 4% (109); people's leave at 21,500 (median), the bot's at 17,200. A shot is a backhand, a quarter
+# weaker, when the net lies 45-180 degrees round to the backhand side of the shooter's facing (GENESIS_SHOOTING 4.3):
+# people took 16 of 70 slapshots that way, the bot 63 of 109 (median 15,000, 1 of 63 scored). 68 slaps only with the
+# net on the forehand side when C goes down (else the wrist shot), at "boost" times the chance (at most "cap").
+SLAP68 = {"boost": 2.0, "cap": 0.9}
+# version 69: 68's slapshots were still 32% backhands at the shot (forehand 68%, people 77%): the aim held on the
+# d-pad through the wind-up turns the skater. 69 holds C alone and presses the aim only in the last "aim_last" frames.
+SLAP69 = {"aim_last": 6}
 GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22, "drive_anyway": 0.25}
 # and its drive at the net (zone_hold) shoots only with the goalie off his line, or on "drive_anyway" of drives.
 # Version 64: 63 still drove and shot 9.7 times a game (3 traced games; 62 14.7, 61 none; shots on goal 18.0, people
@@ -461,24 +470,26 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67)
-        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67)
-        self.v61 = version in (61, 62, 63, 64, 65, 66, 67)
-        self.v62 = version in (62, 63, 64, 65, 66, 67)
-        self.v63 = version in (63, 64, 65, 66, 67)
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v61 = version in (61, 62, 63, 64, 65, 66, 67, 68, 69)
+        self.v62 = version in (62, 63, 64, 65, 66, 67, 68, 69)
+        self.v63 = version in (63, 64, 65, 66, 67, 68, 69)
         self.v64 = version == 64
         self.v65 = version == 65
         self.v66 = version == 66
-        self.v67 = version == 67
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v67 = version in (67, 68, 69)
+        self.v68 = version in (68, 69)
+        self.v69 = version == 69
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -855,6 +866,8 @@ class Bot:
         if self.phase == "slap":
             if self.v58 and getattr(self, "slap_aim", None) is not None:
                 if self.t < (PEOPLE59["windup"] if self.v59 else 20):
+                    if self.v69 and self.t < PEOPLE59["windup"] - SLAP69["aim_last"]:
+                        return ["C"]                    # version 69: no turning during the wind-up
                     return ["C"] + pad(self.slap_aim)   # version 58: wind up holding the far post
                 self.note("shot", kind="slap", aim=self.slap_aim)
                 return pad(self.slap_aim)          # released holding it (set again at the next slapshot)
@@ -944,7 +957,7 @@ class Bot:
             self.note("cross too close", ax=round(ax), out=round(out))
             return None
         go = steer(-sx * C["across"], C["in"])
-        if self.v62 and getattr(self, "cross_slap", False) and ax * sx < PLAY62["slap_at"] and out < C["shoot_out"] + 25:
+        if self.v62 and getattr(self, "cross_slap", False) and ax * sx < PLAY62["slap_at"] and out < C["shoot_out"] + 25                 and (not self.v68 or self.forehand(P, me)):
             # version 62: the strong shooter's slapshot across the slot, wound up before the middle, at the far post
             self.phase, self.t = "slap", 0
             self.slap_aim = 2 if P[me]["vx"] * sa > 0 else 6
@@ -1113,7 +1126,21 @@ class Bot:
         chance = chance if moving else chance * PEOPLE58["standing"]
         if self.v59 and not self.goalie_open(P, me):
             chance *= PEOPLE59["closed"]           # the goalie square: now and then anyway
+        if self.v68:
+            chance = min(SLAP68["cap"], chance * SLAP68["boost"]) if self.forehand(P, me) else 0.0
         return chance
+
+    def forehand(self, P, me):
+        """Version 68: the net (the one we attack) on the shooter's forehand side of his facing: straight ahead or up
+        to 135 degrees round toward the forehand (GENESIS_SHOOTING 4.3; in the recordings the same rule sorted fast
+        and slow slapshots). Facing 0 is up the ice (+y), clockwise; left-handers (+$76 bit 0) as measured, right-handers
+        mirrored."""
+        m = P[me]
+        sa = getattr(self, "att_s", 1)
+        a = math.degrees(math.atan2(-m["x"], sa * NET_Y - m["y"])) % 360
+        d = (int((a + 22.5) // 45) % 8 - m["face"]) % 8
+        rel = d if m["left"] else (8 - d) % 8
+        return rel in (0, 1, 2, 3)
 
     def wrist_or_slap(self, P, me, ay):
         """Version 56: 32's wrist shot becomes the slapshot by the shooter's class (PEOPLE55's chance, never above its

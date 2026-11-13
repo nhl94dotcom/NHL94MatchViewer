@@ -16,7 +16,7 @@ In the game's menus set controller 2 to the bot's team (the team setup screen), 
 python bot_live.py watch       read only: print what the bot would press, every half second (no keys sent)
 python bot_live.py test        press each of the bot's keys for a moment and check that controller 2's buttons in the
                                game's memory ($BEF1) answer (in a game, play running; it moves pad 2's skater a little)
-python bot_live.py play [ver]  play (version default bot_run.py's VERSION: 67 since 2026-11-12)
+python bot_live.py play [ver]  play (version default bot_run.py's VERSION: 68 since 2026-11-12)
 
 The bot's buttons reach the game a frame late (a key pressed during a frame is read at the next): it was tested with
 none. Penalties, line changes off, manual goalies: as in bot_run.py's games."""

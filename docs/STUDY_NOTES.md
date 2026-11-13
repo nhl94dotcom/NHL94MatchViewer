@@ -4475,6 +4475,21 @@ paired games): goals 3.00 against 2.97 (+0.03 ±0.48), xG 5.92 against 5.58 (+0.
 shots within 40 out 6.7 a game (63 11.2), 40-80 out 17.1 (10.8), one-timers tried 4.0 (3.6), one-timer shots 4.2 (3.7),
 slapshots 15% of ordinary shots. **Version 67 is the default**: equal on results, closer to people's attack.
 
+### Bot version 68: slapshots on the forehand (2026-11-12)
+
+The bot's slapshot share (13-15% of its ordinary shots; strong coaches 26%) mattered less than their quality: from
+40-130 out the coaches' slapshots scored 35% (54 against the computer goalie: 35%; xG 0.30), the bot's (67) 4% of 109
+(xG 0.17), at a median speed of 21,500 against 17,200. People hold C for a median 0.56 s (real) on a slapshot (the
+pads in the match files), the bot 36 frames: the same. A shot is a backhand, a quarter weaker, when the net lies
+45-180 degrees round to the backhand side of the shooter's facing (GENESIS_SHOOTING 4.3); in the recordings that rule
+splits slapshots into fast (forehand, the net straight ahead or up to 135 degrees round toward the forehand: about
+19,000-25,000) and slow (about 14,500-19,500). People took 54 of 70 on the forehand, the bot (67) 46 of 109. **Version
+68** (SLAP68) slaps only with the net on the forehand when C goes down (else the wrist shot), at twice the chance (at
+most 0.9). Against 67 (32 paired games): goals 3.41 against 3.00 (+0.41 ±0.39), xG equal, xG against -0.20 ±0.24; its
+slapshots from 40-130 out 68% on the forehand at the shot, median 19,500, 6% scored (5 of 84); the slapshot share still
+14%. **68 is the default.** **Version 69** (SLAP69): the aim held through the wind-up turns the skater (32% of 68's
+slapshots were backhands at the release): C alone, the aim only in the last 6 frames.
+
 ### How each game calls icing, for a hybrid icing option (2026-11-12, for NOSE4Web; code readings)
 
 **Genesis** (logic94.asm; nhl94.bin): iflags $FFBF80 (bit 0 ifcgl crossed, 1 ifdir must cross the top line, 2 ifok
