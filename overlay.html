@@ -254,6 +254,14 @@ function obsConnect() {
       REPLAY.obsError = null;
       const c = msg.d.responseData.mediaCursor;   // empty while the video is stopped or not started: keep the last
       if (typeof c === 'number') REPLAY.cursor = c;
+      // the pack is for one video: a different length means another file, or one cut or trimmed
+      const R = window.NHL94_REPLAY, md = msg.d.responseData.mediaDuration;
+      if (R && R.duration && typeof md === 'number' && md > 0) {
+        const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+        REPLAY.lengthWarn = Math.abs(md / 1000 - R.duration) > 3
+          ? 'This video is ' + mmss(md / 1000) + ' long; the pack was made for ' + (R.video || 'another video') + ' (' + mmss(R.duration) + ')'
+          : null;
+      }
     }
     } catch (err) { REPLAY.obsError = 'OBS connection: ' + (err && err.message || err); }
   };
@@ -279,6 +287,7 @@ async function tick() {
       return;
     }
     render(data);
+    if (REPLAY.lengthWarn) wrap.append(el('div', 'box waiting', REPLAY.lengthWarn));
     return;
   }
   try {

@@ -4,7 +4,8 @@ A small server speaking obs-websocket 5 (Hello with an authentication challenge,
 password, GetMediaInputStatus answered with a video position held still, as if the video were paused there) and
 headless Edge loading overlay.html?replay=1&obs=Video&obspw=... from a folder with a replay pack, in real time through
 its debugging port (a fast-forwarded --dump-dom snapshot races the network). The overlay must authenticate, ask for the
-right Media Source and show the score for the position (read from the page until it appears, 10 s at most). Then the
+right Media Source and show the score for the position (read from the page until it appears, 10 s at most), and warn
+exactly when the pack's video length differs from the 2209 s the stand-in reports (a wrong or cut file). Then the
 stand-in moves the position on and the overlay must follow, and a wrong password must be refused. Then again from a
 page that isn't a secure context (served over http from a made-up host name), as OBS's "Local file" Browser Source
 serves it (http://absolute/...): no crypto.subtle there, so the page's own SHA-256 must answer the challenge (the
@@ -130,6 +131,14 @@ async def run(folder, checks, password, insecure=False):
                         break
                 good = (shown == want or (want.startswith("~") and want[1:] in txt)
                         or (not want and not re.fullmatch(r"\d+-\d+", shown)))
+                if seconds is not None and re.fullmatch(r"\d+-\d+", want or ""):
+                    # the length check: OBS reports a 2209 s video; the pack warns when its own differs by over 3 s
+                    page = await page_text(cdp, "document.getElementById('wrap').innerText")
+                    warned = "pack was made for" in (page or "")
+                    should = abs(PACK_SECONDS - 2209) > 3
+                    good &= warned == should
+                    if warned != should:
+                        print(f"    length warning {'shown' if warned else 'missing'}: {page!r}")
                 ok &= good
                 at = "stopped" if seconds is None else f"{seconds:.1f} s"
                 print(f"{at:>9}: want {want or '(refused)'}: shows {shown!r}: {'OK' if good else 'FAILED'}")
@@ -145,8 +154,16 @@ async def run(folder, checks, password, insecure=False):
     return ok, obs.log
 
 
+PACK_SECONDS = 0.0
+
+
 def main():
+    global PACK_SECONDS
     folder = Path(sys.argv[1]).resolve()
+    data = (folder / "replay_data.js").read_text(encoding="utf-8")
+    PACK_SECONDS = float(json.loads(data[data.index("=") + 1:].rstrip().rstrip(";")).get("duration") or 2209)
+    print(f"  the pack's video: {PACK_SECONDS:.0f} s; the stand-in OBS reports 2209 s: a length warning "
+          f"{'expected' if abs(PACK_SECONDS - 2209) > 3 else 'not expected'}")
     shutil.copy(ROOT / "overlay.html", folder / "overlay.html")
     checks = [(float(a.split(":")[0]), a.split(":")[1]) for a in sys.argv[2:]]
     # a stopped video first (OBS reports no position): the page says it waits for the video, then the positions

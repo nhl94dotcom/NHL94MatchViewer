@@ -155,7 +155,8 @@ def build_pack(timeline, matches_dir, step=1.0):
                 keys = list(st["teams"][0]["stats"])
             cache[last] = [gi] + [[t["stats"].get(k) for k in keys] for t in st["teams"]]
         seconds.append(cache[last])
-    return {"keys": keys or [], "step": step, "games": out_games, "seconds": seconds}
+    return {"keys": keys or [], "step": step, "games": out_games, "seconds": seconds,
+            "video": timeline.get("video"), "duration": timeline.get("duration")}   # the overlay checks OBS's length
 
 
 SETTINGS = """// Settings for the replay overlay (replay.html). Change the text between the quotes and save; then in OBS
@@ -183,7 +184,7 @@ window.NHL94_SETTINGS = {
 """
 
 
-def write_pack(timeline, out, step=1.0, matches=None):
+def write_pack(timeline, out, step=1.0, matches=None, video_path=None):
     """The folder the streamer gets: replay.html (overlay.html loading replay_settings.js first), replay_settings.js,
     replay_data.js and the guide."""
     home = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
@@ -200,7 +201,10 @@ def write_pack(timeline, out, step=1.0, matches=None):
     if not (out / "replay_settings.js").exists():   # an existing one holds someone's choices and password
         (out / "replay_settings.js").write_text(SETTINGS, encoding="utf-8")
     mmss = lambda v: f"{int(v // 60)}:{int(v % 60):02d}"
-    lines = [f"This pack is for the video: {timeline.get('video', '?')} ({mmss(timeline['duration'])} long).", "",
+    vfile = video_path if video_path and Path(video_path).exists() else None
+    size = f", {Path(vfile).stat().st_size:,} bytes" if vfile else ""
+    lines = [f"This pack is for the video: {timeline.get('video', '?')} ({mmss(timeline['duration'])} long{size}).",
+             "Use that file as it is: the overlay warns if the video playing in OBS is a different length.", "",
              "The games in it (video time: first faceoff - final horn), home team first:"]
     for gi, g in enumerate(pack["games"]):
         segs = [s for s in timeline["segments"] if s[2] == gi]

@@ -648,6 +648,10 @@ with no clock-of-day time, so a timer started with the video would drift at the 
     make_replay notes it (the panel holds those seconds, then catches up) instead of refusing.
   Result: every game in 1-6 runs of 5-69 checks; the 25 goal stills all within a game second of the goal's time;
   the overlay followed the SNES pack through the stand-in OBS. The Genesis video gave the same checks as before.
+- **The video's length** (2026-11-13): the pack keeps its video's name and length (replay_data.js `video`,
+  `duration`); OBS reports the Media Source's length with every position (`mediaDuration`), and the overlay shows a
+  warning under the panel when they differ by more than 3 s (another file, or one cut or trimmed). "About this
+  pack.txt" gives the file's exact size too. tests/replay_obs_ws.py checks the warning both ways.
 
 ## Quirky Events (2026-10-19)
 

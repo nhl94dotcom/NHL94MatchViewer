@@ -139,6 +139,8 @@ IF SOMETHING ISN'T RIGHT
   "OBS refused the WebSocket password": the password in replay_settings.js must be exactly as "Show Connect Info"
   shows it. Then click "Refresh" on "NHL94 stats".
 - "Waiting for the video to start...": connected to OBS; press play on the video.
+- "This video is ... long; the pack was made for ...": the video in OBS isn't the file the pack was made for, or it
+  was cut or trimmed. Use the file named in "About this pack.txt", exactly as it came.
 - "OBS: no Media Source called ...": the video source's name in OBS must be exactly "NHL94 video" (or change obs: in
   replay_settings.js to your source's name).
 - "replay_data.js not found": keep replay.html, replay_data.js and replay_settings.js in the same folder.

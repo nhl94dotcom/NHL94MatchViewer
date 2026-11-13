@@ -32,6 +32,11 @@ reel), Game flow, and pointing at a player in the lineups for his card.
 - **Without Python**: build `dist\NHL94 Helper.exe` with `tools\build_helper.bat` (needs
   `python -m pip install pyinstaller`). It also writes `dist\NHL94 Helper.zip`, the exe with
   `tools/tester_readme.txt` as "Read me first.txt", which is what to hand to someone else.
+- **On a stream**: `NHL94 Helper - Stream.bat` keeps the live stats on the streamer's computer for an OBS overlay
+  (`overlay.html`); [the streaming guide](docs/STREAMING_GUIDE.md) is step by step.
+- **Games already played, from video**: `python tools/make_replay.py VIDEO` matches a RetroArch recording of the
+  session to the helper's recordings (Genesis or SNES) and makes a pack whose overlay follows the video in OBS, with
+  the stats and events as they happened; [the replay guide](docs/REPLAY_GUIDE.md) is the streamer's side.
 
 ## Not in this repository
 

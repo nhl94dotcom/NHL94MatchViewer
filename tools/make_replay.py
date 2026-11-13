@@ -175,7 +175,7 @@ def main():
             raise SystemExit("not packed (look at the problems; --force packs anyway)")
     else:
         print("checks: all games found, no left-out stretch looks like live play, goals in order")
-    replay_pack.write_pack(tl, pack)
+    replay_pack.write_pack(tl, pack, video_path=video)
     zpath = pack.parent / f"{title}.zip"
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(pack.iterdir()):
