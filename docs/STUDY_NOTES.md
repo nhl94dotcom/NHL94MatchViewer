@@ -4491,7 +4491,10 @@ slapshots from 40-130 out 68% on the forehand at the shot, median 19,500, 6% sco
 slapshots were backhands at the release): C alone, the aim only in the last 6 frames. Against 68: on 32 paired games its slapshots from 40-130 out
 scored 12 of 82 (68: 5 of 84), 72% on the forehand; on 64 goals +0.31 ±0.27 but goals against +0.33 ±0.15 (xG against
 +0.21 ±0.15), even overall (with no direction held through the wind-up the shooter stops skating, perhaps out of
-position for the way back: not checked). **68 stays the default.**
+position for the way back: not checked). **68 stays the default.** Checked (2026-11-13): 69's goals against don't follow
+its slapshots (1 of 84 within 6 s real of one; the other team's shots in the 15 s real after them 92 against 68's 107);
+the extra goals against were power-play goals (8 -> 18) and one-timers (20 -> 30). On 127 paired games: slapshot goals 44
+against 29 (xG 90 against 94), but goals +0.10 ±0.19, goals against +0.18 ±0.12 (xG against +0.12 ±0.10): even.
 
 ### NOSE4Web's hybrid icing 82a9a22 (Genesis), read (2026-11-13)
 
