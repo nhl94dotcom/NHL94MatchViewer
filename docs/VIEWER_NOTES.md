@@ -623,6 +623,14 @@ with no clock-of-day time, so a timer started with the video would drift at the 
   has its own SHA-256 (checked against Node's on 308 strings and OBS's answer), shows "Connecting to OBS..." and any
   connection error; `tests/replay_obs_ws.py` also runs the page from a made-up host over http (no secure context),
   where the old page reproduces the stall. replay_pack.py keeps an existing replay_settings.js.
+- `tools/make_replay.py VIDEO [MATCH ...]` does it all in one command (about a minute once the video's scroll is
+  cached, the first pass a minute more): the games from the video's name (RetroArch's -YYMMDD-HHMMSS, the recorded
+  Genesis games with match files that began while it ran) unless named; video_sync's timeline (<video>.timeline.json);
+  checks that stop it before the zip (each run at one offset backed by 5+ matched stretches, every left-out stretch
+  off the rink, the goals in order inside their games' stretches); a sheet of stills a quarter-second before each goal
+  to look at; the pack and the zip (always the blank replay_settings.js). On the BOS-CHI video it found the four games
+  and rebuilt the sent zip file for file; with a game from another day slipped in it refused (2 matched stretches,
+  the left-out stretches on the rink).
 
 ## Quirky Events (2026-10-19)
 
