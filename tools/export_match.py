@@ -2293,7 +2293,10 @@ def find_injuries(m):
     with everyone; the computer simply had not sent him back), out for the game never does. Whether the player comes
     back on the ice says nothing (the computer may keep him on the bench). The moment and the cause come from the
     injury animation (genesis ACTIONS "injury": $1AF4 injury1, $145C injuryfall) in the 3 s before the code turned
-    $FD, and the opponent whose hit he took in the 1.5 s before that.
+    $FD, and the opponent whose hit he took in the 1.5 s before that. Out for the game is $FC (both systems'
+    setInjuryType write it straight away one time in eight or so, and fights' injuries; until 2026-11-13 only $FD was
+    read, so those were missed); the SNES also uses $FFFC for an empty roster place, so only the team's real roster
+    places are looked at.
     Returns [{f, team, idx, by, out: 'period' | 'game', until (frame the code cleared, or None), atStart (already
     out when the recording began)}]."""
     st = m.get('stats') or {}
@@ -2307,17 +2310,19 @@ def find_injuries(m):
     out = []
     for team, side in enumerate(('home', 'away')):
         places = (len(st[side][0]) - n) // per if st[side] else 0
+        places = min(places, len((m.get('rosters') or [[], []])[team]) or places)
+        OUT = (0xFFFD, 0xFFFC)
         for idx in range(places):
             was = None
             for s_, fr in enumerate(frames):
                 c = code(side, s_, idx)
-                down = c == 0xFFFD
+                down = c in OUT
                 if down and was is None:
                     # Already out when the recording began (capture1: Desjardins, out through period 1): no moment or
                     # cause to show, but his line says so.
-                    until = next((frames[j] for j in range(s_ + 1, len(frames)) if code(side, j, idx) != 0xFFFD), None)
+                    until = next((frames[j] for j in range(s_ + 1, len(frames)) if code(side, j, idx) not in OUT), None)
                     out.append({'f': fr, 'team': team, 'idx': idx, 'by': None, 'atStart': True,
-                                'out': 'period' if until is not None else 'game', 'until': until})
+                                'out': 'period' if until is not None and c != 0xFFFC else 'game', 'until': until})
                 elif down and was is False:
                     # When and why: the injury animation in the 3 s before, and the hit he took just before that
                     f = fr
@@ -2330,9 +2335,9 @@ def find_injuries(m):
                                 f -= 1
                             break
                     hit = next((h for h in reversed(m.get('hits', [])) if h['f'] <= f and t[f] - t[h['f']] <= 1500 and h['team'] != team and h['on'] == idx), None)
-                    until = next((fr2 for c2, fr2 in ((code(side, j, idx), frames[j]) for j in range(s_ + 1, len(frames))) if c2 != 0xFFFD), None)
+                    until = next((fr2 for c2, fr2 in ((code(side, j, idx), frames[j]) for j in range(s_ + 1, len(frames))) if c2 not in OUT), None)
                     out.append({'f': f, 'team': team, 'idx': idx, 'by': hit['by'] if hit else None,
-                                'out': 'period' if until is not None else 'game', 'until': until})
+                                'out': 'period' if until is not None and c != 0xFFFC else 'game', 'until': until})
                 was = down
     return sorted(out, key=lambda e: e['f'])
 

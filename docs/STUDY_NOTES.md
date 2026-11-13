@@ -4496,6 +4496,61 @@ its slapshots (1 of 84 within 6 s real of one; the other team's shots in the 15 
 the extra goals against were power-play goals (8 -> 18) and one-timers (20 -> 30). On 127 paired games: slapshot goals 44
 against 29 (xG 90 against 94), but goals +0.10 ±0.19, goals against +0.18 ±0.12 (xG against +0.12 ±0.10): even.
 
+### Icing options played: Genesis hybrid 82a9a22, SNES crease window and hybrid b98739a (2026-11-13)
+
+`gen_hybrid_icing_check.py` / `snes_hybrid_icing_check.py` (computer games, penalties on, line changes on, the away
+skaters' Aggression raised; every frame the icing flags: each arming, each crossing with both teams' distances by the
+build's rule, the outcome, the stoppage and the faceoff spot), 19 Genesis games on the hybrid builds (11 nhl94, 8 CDL),
+2 retail; 11 SNES on NHL94_icing.smc, 8 on the SA-1 build, 4 retail. `snes_icing_crease_test.py`: the crease window
+forced.
+- **Calls (Genesis 11, SNES 20):** at the crossing (the clock stopped 0-1 frames later), the defenders as near or
+  nearer every time (ties called: 0-0, 36-36), the faceoff at the icing team's end-zone dot, but once: a delayed
+  penalty against the other team already in PenBuf ($1A on away object 10) when the icing went in, and the faceoff went
+  where that penalty put it (the neutral dot, y -65): the game's own handling of two stoppages, not the hack.
+- **Wave-offs (Genesis 9, SNES 7):** the attackers nearer every time; play went on (the next stoppage 94-2,646
+  frames later).
+- **"Open for a frame":** a crossing read with ifcgl set and ifok still set, decided the frame after (Genesis CDL once,
+  waved; SNES once, called): the games' logic isn't locked to the video frame, so a read can fall between the build's
+  bset and its decision. Both came out right.
+- **Short-handed:** no team was ever armed while short-handed. Once (CDL) a team at tmap 5 against 6 was called at
+  the crossing: equal when the puck was shot (the arming), a man came out of the box while it travelled.
+- **Line changes on, players in the box (tmap 5 cases), the goalie pulled (not seen):** nothing odd.
+- **The SNES crease window (forced, both builds and retail; a puck at x, sent fast across either goal line with
+  icing armed):** |x| 40 and 44 dropped (ifok cleared, no crossing), 46, 48 and 60 crossed; retail crossed at all of
+  them. Within |x| 20 the net and goalie stop the puck on all three. In play the window can't be told from
+  updateplayers' early wave-off (a defender or the goalie within 30 of a slow puck), which kills most SNES icings
+  before the line (about 35-60 a game in computer games, retail too).
+
+### NOSE4Web's SNES shootout injury skip 8212db9, played (2026-11-13)
+
+`snes_shootout_injury_check.py` on NHL94_shootout_injuries.smc and nhl94snes_SA1_shootout_injuries.sfc (the tied
+game into the season shootout after one overtime; listed shooters marked $FFFC in the saved tmpdst, $7E:F37F / $40:4A8F;
+the shootout kept level to round 7-8; each turn's BA_Skater_Offset against the entry the build should take):
+- **default** (home entries 1 and 5, away entry 3 injured): round 1 home took entry 2; round 5 entry 5 out, 1 out, so
+  2; round 6 (entry 1) 2; away round 3 and round 8 entry 4. Every turn as expected, both ROMs.
+- **picked** (home entry 2 replaced by another skater, as the lineup screen would, and him injured): rounds 2 and 7
+  took entry 3.
+- **unmarked** (the mark $7E:F0F0 cleared at the shootout's start): every listed shooter shot, injured or not (the
+  original, as in Shootout mode).
+- The recorder's shooter is BA_Skater_Offset, so it logs the stand-in.
+
+### chaos's Genesis fight injury ($112C) over a game (2026-11-13, `gen_fight_injury_track.py`)
+
+nhl94_fighting_blood.bin, computer games, Fighting On, the fight ratings at 14 and (`--force`) every +$75 at $7F so the
+patch's roll hurts the loser (4 normal games gave none). The patch puts the loser through setInjuryType ($FFFD / $FFFC)
+and overwrites his tmpdst with $112C ($1000: not counted against tmap; 300 s). Four fight injuries (P2 once, P3 three
+times, one into overtime), all alike: the fight's coincidental major goes on top at once ($712C: AddPenalty keeps bit
+$1000 of a word already in the box), $512C at the faceoff ($2000 "just called" cleared), counting down a second at a
+time with $4000 | $1000 kept; when the 300 s run out, updatepentime's coincidental path finds bit $1000 gone from the
+borrow ($5000 -> $4FFF) and sets **exactly $1000**, off the box list (an ordinary coincidental penalty borrows into
+$3FFF, finds the bit and clears the word to 0: back on the bench). $1000 stays across period breaks and into overtime;
+he never came back on the ice. Only at the end of the game ClearPenalties (clockcont_0 `.eog`) puts everyone at
+$FFFE. A tied regular-season overtime takes `.eog` too (`tst OptPlayMode / beq.s .eog` at $7C4C), which would clear
+every tmpdst before the shootout; NOSE4Web's season-shootout build NOPs that branch, so the words reach the shootout's
+save intact. Not seen: a fight major that isn't coincidental (it would count the whole word down past $1000 and leave
+the team a man short from $0FFF on). Nothing in the original code sets $1000 on a positive word except keeping it,
+so a positive word with $1000 set is chaos's fight injury.
+
 ### NOSE4Web's hybrid icing 82a9a22 (Genesis), read (2026-11-13)
 
 nhl94_hybrid_icing.bin (SHA-256 9f377e58...) and CDL_Season_12_hybrid_icing.bin (1e8bfbea...). Their reading of the
