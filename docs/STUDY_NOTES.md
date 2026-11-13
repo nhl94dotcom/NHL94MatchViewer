@@ -4559,6 +4559,14 @@ narrow: the goalie isn't dragged across. Its rule (PEOPLE48 "across" 30-130 unit
 2026-11-12 sweep only varied the goalie-drawn setting among six. The bot played the computer's defence, people each
 other: a caveat on every comparison here.
 
+**Version 70** (WIDE70: 68 with the one-timer pass only 100-160 units across; `bot_compare.py 68 70 32`, 18:09-18:39):
+goals 2.53 against 68's 3.25 (paired -0.88 ±0.35, -2.5 SE), xG -1.03 ±0.50, shots on goal, penalties and goals against
+even. Per 15 game minutes one-timers tried fell from 4.0 to 1.2 and passes across the slot from 2.8 to 1.3, and the
+wide ones it did make weren't better (the shot after them 0.24 xG). The bot seldom has a teammate that far across
+from the carrier: the filter removed passes rather than making them wider. People get the width by where the carrier
+is when he passes (out on one side), so the next try is the carrier's position, not the pass rule. **68 stays the
+default.**
+
 ### Icing options played: Genesis hybrid 82a9a22, SNES crease window and hybrid b98739a (2026-11-13)
 
 `gen_hybrid_icing_check.py` / `snes_hybrid_icing_check.py` (computer games, penalties on, line changes on, the away

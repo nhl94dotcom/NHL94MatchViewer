@@ -107,7 +107,8 @@ def main():
         bot.append(side_stats(m, 0))
         cpu.append(side_stats(m, 1))
     ppl = [side_stats(m, t) for m in people_games() for t in (0, 1)]
-    groups = [("bot (v68)", bot), ("computer", cpu), ("people", ppl)]
+    label = "bot (" + run.name.replace("cmp_", "") + ")"
+    groups = [(label, bot), ("computer", cpu), ("people", ppl)]
     print(f"Side-games: bot {len(bot)}, computer {len(cpu)}, people {len(ppl)}. Per 15 game minutes unless marked.\n")
     print("| | " + " | ".join(n for n, _ in groups) + " |\n|---|" + "---|" * len(groups))
     rows = [

@@ -442,6 +442,11 @@ SLOT67 = {"slot_out": 62, "drive_to": 70}
 # people took 16 of 70 slapshots that way, the bot 63 of 109 (median 15,000, 1 of 63 scored). 68 slaps only with the
 # net on the forehand side when C goes down (else the wrist shot), at "boost" times the chance (at most "cap").
 SLAP68 = {"boost": 2.0, "cap": 0.9}
+# version 70 (2026-11-13, analysis/bot_onetimers.py): after a completed pass across the slot people's shots were worth
+# 0.42 xG, 68's 0.27; the receivers stood alike, but people's passes went wider (36 ft median against 27), dragging the
+# goalie: 5+ ft off the shot line 35% of the time against 14%. 70 makes the one-timer pass only 100-160 units across
+# (68: PEOPLE48's 30-130), about people's median and up.
+WIDE70 = (100, 160)
 # version 69: 68's slapshots were still 32% backhands at the shot (forehand 68%, people 77%): the aim held on the
 # d-pad through the wind-up turns the skater. 69 holds C alone and presses the aim only in the last "aim_last" frames.
 SLAP69 = {"aim_last": 6}
@@ -470,26 +475,27 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v61 = version in (61, 62, 63, 64, 65, 66, 67, 68, 69)
-        self.v62 = version in (62, 63, 64, 65, 66, 67, 68, 69)
-        self.v63 = version in (63, 64, 65, 66, 67, 68, 69)
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v61 = version in (61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v62 = version in (62, 63, 64, 65, 66, 67, 68, 69, 70)
+        self.v63 = version in (63, 64, 65, 66, 67, 68, 69, 70)
         self.v64 = version == 64
         self.v65 = version == 65
         self.v66 = version == 66
-        self.v67 = version in (67, 68, 69)
-        self.v68 = version in (68, 69)
+        self.v67 = version in (67, 68, 69, 70)
+        self.v68 = version in (68, 69, 70)
         self.v69 = version == 69
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v70 = version == 70            # 70: 68 with the one-timer pass only when it goes WIDE70 across
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -1460,8 +1466,9 @@ class Bot:
                 # receiver within PEOPLE48's spot, open by "open", the lane clear by "lane"
                 tax, tay = s * t["x"], s * t["y"]
                 lo, hi = PEOPLE48["out"]
+                a_lo, a_hi = WIDE70 if self.v70 else PEOPLE48["across"]
                 if not (NET_Y - hi < tay < NET_Y - lo and abs(tax) < PEOPLE48["mid"]
-                        and PEOPLE48["across"][0] < abs(tax - s * m["x"]) < PEOPLE48["across"][1]
+                        and a_lo < abs(tax - s * m["x"]) < a_hi
                         and math.hypot(t["x"] - m["x"], t["y"] - m["y"]) < PEOPLE48["len"]):
                     continue
                 if self.version == 50 and not (P[g]["x"] * m["x"] > 0 and abs(P[g]["x"]) >= PEOPLE50["drawn"]):
