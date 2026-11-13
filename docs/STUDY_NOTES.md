@@ -4475,6 +4475,24 @@ paired games): goals 3.00 against 2.97 (+0.03 ±0.48), xG 5.92 against 5.58 (+0.
 shots within 40 out 6.7 a game (63 11.2), 40-80 out 17.1 (10.8), one-timers tried 4.0 (3.6), one-timer shots 4.2 (3.7),
 slapshots 15% of ordinary shots. **Version 67 is the default**: equal on results, closer to people's attack.
 
+### NOSE4Web's SNES 3-on-3 overtime (e95d330), played (2026-11-12)
+
+NHL94_3on3_ot.smc (SHA-1 3748ff0f..., every overtime) and nhl94snes_SA1_3on3_ot.sfc (31e6b645..., regular season
+only), `snes_3on3_ot_check.py` (snes_60fps_cvc's boot, the computer on both sides, the third period run out at 0-0
+into overtime, the away skaters' Aggression ($1443) at 18 in overtime so penalties come; every 4 frames each team's
+skaters by position, tmap $17A6 and its boxed players; each draw; screenshots, a burst of 8 when a power play
+starts). 13 overtimes: retail line changes off (3, and 3 more for the bursts) and on (3), a home minor carried over
+(1; a second run never reached overtime), SA-1 regular season (2), line changes off (2), playoffs (1).
+- **3-on-3:** every even-strength draw C, LW and RD a side, both ROMs, line changes on and off.
+- **Penalties:** 4-on-3 on both ROMs; at the expiry the released player comes on (4-on-4) until the next whistle. The
+  carried minor opened overtime 4-on-3. A penalty shot in overtime set tmap 1 for both and 4 again after; one went in
+  and ended the game. No 5-on-3 and no three in the box came up (penalties stack far less here than on the Genesis).
+- **The power-play clock:** the scoreboard alternates the overtime clock with the power-play display; at 4-on-3 it
+  read "MTL Pwr Play 0:09" at OT 1:38 for a penalty called at 2:02 and served until 1:31 (penalties scale with 5-minute
+  periods: about 30 game s): right.
+- **SA-1, playoffs:** 5-on-5 (the opening draw 5 a side; 5-on-4 and 5-on-3 power plays by the usual counts).
+- **No short draw** in any of them.
+
 ### NOSE4Web's 3-on-3 overtime (a91a6f8), played (2026-11-12)
 
 nhl94_3on3_ot.bin (SHA-1 b00d6e60...) and CDL_Season_12_3on3_ot.bin (24882ae1..., regular season only),
