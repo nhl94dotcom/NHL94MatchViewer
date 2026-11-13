@@ -4598,6 +4598,9 @@ clock when they went in). All builds at 120 s:
   when the new word is $212C ((5*60)|$2000) and the other's time is 300, so a fight time of anything else never pairs.
   Its two constants want the set seconds. The 1 MB fighting (McMarkis's d862d933, before e3398fc2) has no pairing at
   all: its fights are 4-on-4 with or without the new time.
+- **8c14f09 (FightCoincidental's two constants set to the fight time), rerun:** nhl94snes_2026_fight_time.sfc 10
+  fights, its pt30 copy 7, the SA-1 build 5: every pair coincidental ($4000 on both), served 119.5-120 s, both teams at
+  tmap 6 while they sat in most stretches as in the 5:00 baseline (the other mixes from other penalties).
 
 ### NOSE4Web's Genesis shootout injury skip f4ad85d, played (2026-11-13)
 
