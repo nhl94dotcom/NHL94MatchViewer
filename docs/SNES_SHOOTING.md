@@ -125,6 +125,25 @@ your d-pad points.** **Code**
   The game counts every swing too (`tmOneTimerSwings`). **Code.**
 - **Computer teams** one-time on their own only in the attacking zone (past their blue line), and quickly: a coin flip
   each frame while the pass comes.
+- **The swing that ends with the puck on his stick** (the user's "one-timer that never fires", 2026-11-13). **Code**
+  and **Confirmed** (`analysis/scoring_map/snes_onetimer_hold_trace.py`, every one-timer swing of 25 computer games
+  traced frame by frame). The waiting gives up (`asspassrec` `.6`) when the pass's time runs out (`passwait`: the
+  game's own estimate of the pass's travel plus 6 frames; a pass slowed by the passer's random spread arrives later),
+  when anyone else touches the puck first (a teammate's or opponent's stick on the way, a deflection), or on a B
+  press while waiting. That exit clears the one-timer request and the lock but **leaves the swing animation running**
+  (its wind-up frame holds up to 55 frames, about 0.9 s, then the downswing), and the stick no longer refuses the puck.
+  When the puck then reaches him (the late pass itself, or a teammate's second pass), he takes it the ordinary way and
+  carries it through the rest of the swing: the shooting motion with the puck on his stick and no shot. Traced: 2 of
+  1,043 swings (one a slow pass whose time ran out, picked up at the start of the downswing; one touched by a teammate
+  on its way, who passed it straight back while the first swing still held); in the recorded games 1 of 503 swings
+  (Gilmour, CGY-TOR 2026-10-20, P2 3:20: the puck his 0.14 s into a 0.9 s swing). A person can cause it by pressing
+  B after A while the pass is coming. Pressing A again once he has the puck starts an ordinary shot.
+- **The same look from an ordinary shot:** a wind-up that loses the game's shot-mode flag (`sfssdir`, one flag for
+  the whole game) plays out with no shot: ShotMode, which fires it, runs only while the flag is set. It's cleared when
+  the puck changes hands (puckglue), on a successful steal touch (puckstick, the puck knocked loose and gathered again)
+  and when the carrier is held or hooked (holdcheck). Recorded: Hecht, GER-USA 2026-11-12, P1 0:16 (the user's
+  video): A pressed and released within 0.14 s, two opponents' sticks within 16 of him, a 0.7 s wind-up with the
+  puck kept. The user's video of Gilmour, WPG-TOR 2026-11-02, P3 2:12: a bump in the wind-up.
 - **Confirmed timing** (5 SNES games, a person's A press): one-timers that connected struck 0-0.59 s after the press
   (median 0.20 s); swings that missed ended a median 0.47 s after it. **Press A no more than about 0.6 s before the pass
   arrives**; the Genesis allows about 0.9 s. In one recorded game: 7 one-timers plus 6 swings that missed, against the
