@@ -11,7 +11,13 @@ Genesis: gen_ot_check's boot, the computer on both sides, Fighting On ($FFF080 =
 every player's fighting rating (+$74) 14; --force: +$75 at $7F so chaos's patch hurts the loser (gen_fight_injury_track).
 SNES: snes_ot_goal_check.start, OptFights ($E708) 0 (On) where the build has the option (SA-1 / 2 MB: snes.SA1_MOVED).
 
-python fight_time_check.py genesis|snes ROM GAMES OUT.jsonl [--force] [--option]"""
+--fighters (SNES): every skater's fighting rating ($1463) held at 14 (McMarkis's 1 MB fights come from it).
+--injure (SNES): every skater's Aggression ($1443) at 60, so the fight's loser is always hurt (F_fightfall: hurt when a
+random number under 60 is at most the winner's Aggression); a player who leaves the box at $FFFC is then followed to
+the game's end ("after": every change of his word).
+Penalty minutes are compared with the sample before he went in (half a second earlier).
+
+python fight_time_check.py genesis|snes ROM GAMES OUT.jsonl [--force] [--option] [--fighters] [--injure]"""
 import json
 import sys
 from pathlib import Path
@@ -21,6 +27,8 @@ import lowload  # noqa: E402
 
 FORCE = "--force" in sys.argv
 OPTION = "--option" in sys.argv
+FIGHTERS = "--fighters" in sys.argv     # SNES: every skater's fighting rating ($1463) held at 14, so the 1 MB build fights
+INJURE = "--injure" in sys.argv         # SNES: every skater's Aggression ($1443) at 60, so F_fightfall's roll always hurts
 argv = [a for a in sys.argv if not a.startswith("--")]
 
 
@@ -91,6 +99,12 @@ class Snes:
 
     def frame(self, f):
         from snes_60fps_cvc import computer_only
+        if FIGHTERS or INJURE:
+            for k in range(12):
+                if FIGHTERS:
+                    self.m.setw(0x1463 + 2 * k, 14)
+                if INJURE:
+                    self.m.setw(0x1443 + 2 * k, 60)
         if f % 300 == 0:
             computer_only(self.m)
             if OPTION:
@@ -122,7 +136,7 @@ def game(system, rom, n, tmp):
     g = (Gen if system == "genesis" else Snes)(rom, n, tmp)
     if not g.ok:
         return {"game": n, "error": "never reached play"}
-    inbox, done, fought = {}, [], {}
+    inbox, done, fought, last_pim, watch = {}, [], {}, {}, {}
     f, still, last = 0, 0, None
     while g.gsp < 3 and f < 60 * 60 * 40:
         g.frame(f)
@@ -141,9 +155,11 @@ def game(system, rom, n, tmp):
                 key = (t, i)
                 pos = 0 < w < 0x8000
                 if pos and key not in inbox:
-                    inbox[key] = {"team": t, "roster": i, "in": [g.gsp, c], "first": f"{w:04X}", "words": [f"{w:04X}"],
-                                  "fight": f - fought.get(key, -10 ** 9) < 1800, "pim_before": g.pim(t, i),
+                    inbox[key] = {"team": t, "roster": i, "in": [g.gsp, c], "f": f, "first": f"{w:04X}", "words": [f"{w:04X}"],
+                                  "fight": f - fought.get(key, -10 ** 9) < 1800, "pim_before": last_pim.get(key, g.pim(t, i)),
                                   "tmaps": set(), "served": 0, "lastc": c, "lastp": g.gsp}
+                if key not in inbox:
+                    last_pim[key] = g.pim(t, i)
                 if key in inbox:
                     b = inbox[key]
                     if pos:
@@ -162,8 +178,15 @@ def game(system, rom, n, tmp):
                             del inbox[key]
                     else:
                         b["out"], b["left_word"], b["pim_after"] = [g.gsp, c], f"{w:04X}", g.pim(t, i)
+                        b["after"] = []
+                        if w == 0xFFFC:                    # out for the game: follow his word to the end
+                            watch[key] = b
                         done.append(b)
                         del inbox[key]
+                if key in watch and not pos:
+                    b = watch[key]
+                    if not b["after"] or b["after"][-1][2] != f"{w:04X}":
+                        b["after"].append([g.gsp, c, f"{w:04X}"])
         last = c
     for b in list(inbox.values()):
         b["out"], b["left_word"], b["pim_after"] = None, f"{g.word(b['team'], b['roster']):04X}", g.pim(b["team"], b["roster"])

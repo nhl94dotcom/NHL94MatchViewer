@@ -269,6 +269,11 @@ class Broadcaster:
             score = match.get("score") or [0, 0]
             self.manifest(status, {"teams": [match.get("team1"), match.get("team2")], "score": score[-2:],
                                    "seconds": round(match["t"][-1] / 1000)})
+        if getattr(self, "after_send", None):              # the local live mode's stream overlay (live_overlay.py)
+            try:
+                self.after_send(match, status)
+            except Exception as e:
+                print(f"Live overlay: update failed: {e}")
 
     def run_game(self, recording, record_size):
         """The update loop while `recording` is going (its folder's fast.bin.gz grows); stops on self.stop."""

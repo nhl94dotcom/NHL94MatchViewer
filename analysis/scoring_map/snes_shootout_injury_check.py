@@ -18,7 +18,9 @@ the build should take. Cases:
             at its end: fightinj ($E74E + roster, +26 the visitors) and fightinjany ($E782) set, tmpdst ($1852) box
             time $00B4 (not $FFFC), set when overtime's clock is put at 3 s; entry 1 and 4 skipped. Needs the lists
             from an earlier case in the same run (default first).
-python snes_shootout_injury_check.py ROM OUT [case ...]"""
+--fight runs the fight case on a 1 MB ROM too (NOSE4Web 84a3f6b: fightinj at $7E:FE80, fightinjany $FEB4).
+
+python snes_shootout_injury_check.py ROM OUT [case ...] [--fight]"""
 import json
 import sys
 from pathlib import Path
@@ -31,7 +33,8 @@ from snes_shootout_check import set_score, two_mb
 SHOOTMODE, ROUND, BA_TEAM, BA_OBJ, BA_SKATER, SFLAGS = 0x1D81, 0x1D85, 0x1E91, 0x1E8D, 0x1E8F, 0x15D8
 LISTS = (0x1D71, 0x1D79)
 SAVED, MARK = 0xF37F, 0xF0F0
-FIGHTINJ, FIGHTINJANY, TMPDST = 0xE74E, 0xE782, 0x1852
+FIGHTINJ, FIGHTINJANY, TMPDST = 0xE74E, 0xE782, 0x1852      # the 2 MB / SA-1 builds' (McMarkis's source)
+FIGHTINJ_1MB, FIGHTINJANY_1MB = 0xFE80, 0xFEB4                # NOSE4Web 84a3f6b's, on the 1 MB layout
 KNOWN = {}
 
 
@@ -81,12 +84,13 @@ def run_case(e, m, base, case, pad):
             set_score(m, 2, 2)
             ot_set = True
             if case == "fight":
+                fi, fany = (FIGHTINJ, FIGHTINJANY) if KNOWN["two_mb"] else (FIGHTINJ_1MB, FIGHTINJANY_1MB)
                 for entry in (1, 4):
                     r_ = KNOWN["lists"][0][entry] - 1
-                    buf, o = m.at(FIGHTINJ + r_)               # his fightinj byte (the home team's 26 first)
+                    buf, o = m.at(fi + r_)                     # his fightinj byte (the home team's 26 first)
                     buf[o] = 1
                     m.setw(TMPDST + 2 * r_, 0x00B4)
-                m.setw(FIGHTINJANY, 1)
+                m.setw(fany, 1)
         c = m.w(CLOCK)
         still = still + 2 if c == last else 0
         last = c
@@ -140,7 +144,9 @@ def run_case(e, m, base, case, pad):
 
 def main():
     rom, out = sys.argv[1], Path(sys.argv[2])
-    cases = sys.argv[3:] or ["default", "picked", "unmarked"] + (["fight"] if two_mb(rom) else [])
+    args = [a for a in sys.argv[3:] if not a.startswith("--")]
+    KNOWN["two_mb"] = two_mb(rom)
+    cases = args or ["default", "picked", "unmarked"] + (["fight"] if two_mb(rom) or "--fight" in sys.argv else [])
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()
     pad = two_mb(rom)

@@ -800,6 +800,27 @@ def start_broadcast():
     print(f"Live broadcast ON. Send your viewers this link: {target.url}", flush=True)
 
 
+def start_local_live():
+    """--live-local: the live pipeline kept on this computer, for a stream overlay (OBS). Each game is converted as it
+    is played into <home>/live (the live viewer at /live/index.html), and live_overlay writes live/stats.json (for
+    overlay.html, an OBS Browser Source) and live/obs/*.txt (for OBS Text sources) after every update."""
+    global broadcaster
+    try:
+        import live_broadcast
+        import live_overlay
+    except ImportError:
+        print("The local live mode isn't part of this build of the helper.", flush=True)
+        return
+    folder = ROOT / "live"
+    target = live_broadcast.FolderTarget(folder)
+    b = live_broadcast.Broadcaster(target)
+    b.after_send = lambda match, status: live_overlay.write(folder, match, status)
+    b.publish_page()
+    broadcaster = b
+    print(f"Local live mode ON. In OBS add a Browser Source: http://localhost:{PORT}/overlay.html", flush=True)
+    print(f"  or Text sources reading the files in {folder / 'obs'}", flush=True)
+
+
 def main():
     if "--convert" in sys.argv:
         return convert_folder(sys.argv[sys.argv.index("--convert") + 1])
@@ -829,6 +850,8 @@ def main():
         print(f"(Not listening on ::1: {e})", flush=True)
     if "--broadcast" in sys.argv:
         start_broadcast()
+    elif "--live-local" in sys.argv:
+        start_local_live()
     if (ROOT / "captures").exists():
         threading.Thread(target=convert_leftovers, daemon=True).start()
     page = f"http://localhost:{PORT}/helper.html"

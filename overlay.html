@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NHL '94 Overlay</title>
+<!--
+  A stream overlay for OBS (a Browser Source) fed by the helper's local live mode (nhl94_helper.py --live-local, which
+  writes live/stats.json through tools/live_overlay.py after each update of the game being played). The background is
+  transparent. Everything is chosen in the address:
+    stats=shots,xg,hits,faceoffs,power_play,save_pct     the numbers, in order (names as in live/stats.json)
+    events=goal,big_save,big_hit,post,injury,penalty,giveaway,fight,streak   the kinds shown (hit: every knockdown)
+    layout=panel | bar | ticker                          panel: numbers and events; bar: numbers in one row; ticker: events
+    recent=4      events shown (newest first)            scale=1   size            side=left | right (panel)
+    src=live/stats.json   where the data is              demo=1    a made-up game, for setting OBS up
+-->
+<style>
+  :root { --bg: rgba(12, 16, 22, 0.78); --fg: #f2f4f7; --muted: #a9b2bf; --line: rgba(255, 255, 255, 0.14);
+          --accent: #f5c542; --home: #e8eef6; --away: #e8eef6; --new: rgba(245, 197, 66, 0.28); }
+  html, body { margin: 0; background: transparent; color: var(--fg);
+               font: 600 16px/1.25 "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+  #wrap { position: absolute; top: 12px; transform-origin: top left; }
+  #wrap.right { right: 12px; transform-origin: top right; }
+  #wrap.left { left: 12px; }
+  .box { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .hidden { display: none; }
+  table { border-collapse: collapse; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  td, th { padding: 2px 8px; text-align: center; white-space: nowrap; }
+  td.label { color: var(--muted); font-weight: 500; text-align: center; font-size: 14px; }
+  td.num { font-variant-numeric: tabular-nums; min-width: 3.2em; font-size: 18px; }
+  .teams th { color: var(--fg); font-size: 16px; }
+  .events { margin-top: 6px; max-width: 30em; }
+  .ev { padding: 3px 4px; border-top: 1px solid var(--line); font-weight: 500; font-size: 14px; }
+  .ev:first-child { border-top: 0; }
+  .ev .k { color: var(--accent); font-weight: 700; margin-right: 4px; }
+  .ev.fresh { background: var(--new); border-radius: 4px; }
+  .bar { display: flex; gap: 14px; align-items: baseline; }
+  .bar .stat { display: flex; gap: 6px; align-items: baseline; }
+  .bar .stat .label { color: var(--muted); font-size: 13px; text-transform: uppercase; }
+  .ticker { font-size: 18px; max-width: 60em; }
+  .waiting { color: var(--muted); font-weight: 500; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="wrap"></div>
+<script>
+const P = new URLSearchParams(location.search);
+const LABELS = { goals: 'Goals', shots: 'Shots', attempts: 'Attempts', xg: 'xG', hits: 'Hits', knockdowns: 'Knockdowns',
+  faceoffs: 'Faceoffs', faceoff_pct: 'FO %', passes: 'Passes', pass_pct: 'Pass %', power_play: 'Power play',
+  penalties: 'Penalties', pim: 'PIM', save_pct: 'Save %', shooting_pct: 'Shooting %', attack_zone: 'Attack zone',
+  one_timers: 'One-timers', breakaways: 'Breakaways', posts: 'Posts', takeaways: 'Takeaways', giveaways: 'Giveaways' };
+const KIND = { goal: 'GOAL', big_save: 'SAVE', big_hit: 'HIT', hit: 'HIT', post: 'POST', injury: 'INJURY',
+  penalty: 'PENALTY', giveaway: 'GIVEAWAY', fight: 'FIGHT', streak: 'STREAK' };
+const STATS = (P.get('stats') || 'shots,xg,hits,faceoffs,power_play,save_pct').split(',').filter(Boolean);
+const KINDS = new Set((P.get('events') || 'goal,big_save,big_hit,post,injury,penalty,giveaway,fight,streak').split(','));
+const LAYOUT = P.get('layout') || 'panel';
+const RECENT = +(P.get('recent') || (LAYOUT === 'ticker' ? 1 : 4));
+const SRC = P.get('src') || 'live/stats.json';
+const FRESH_MS = 8000;
+const wrap = document.getElementById('wrap');
+wrap.className = P.get('side') === 'left' ? 'left' : 'right';
+wrap.style.transform = 'scale(' + (+(P.get('scale') || 1)) + ')';
+const seen = new Map();   // event id -> first time shown (for the highlight)
+let lastGame = null;
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+function value(v, k) {
+  if (v === null || v === undefined) return '-';
+  if (k === 'save_pct' && typeof v === 'number') return v.toFixed(1);
+  if (k.endsWith('_pct') && typeof v === 'number') return v + '%';
+  return String(v);
+}
+// The text after the game time and the kind word ("2nd 4:12 - BIG SAVE: ..." -> time, rest).
+function split(e) {
+  const t = e.text || '', i = t.indexOf(' - ');
+  let rest = i >= 0 ? t.slice(i + 3) : t;
+  rest = rest.replace(/^(GOAL|BIG SAVE|BIG HIT|HIT|OFF THE POST|INJURY|PENALTY|COSTLY GIVEAWAY|FIGHT!?):?\s*/, '');
+  return { time: e.period + ' ' + e.clock, rest };
+}
+
+function eventsBox(data) {
+  const evs = (data.events || []).filter(e => KINDS.has(e.kind)).slice(-RECENT).reverse();
+  const box = el('div', 'events');
+  const now = Date.now();
+  for (const e of evs) {
+    const key = data.game + ':' + e.id + ':' + e.kind;
+    if (!seen.has(key)) seen.set(key, lastGame === data.game ? now : 0);
+    const { time, rest } = split(e);
+    const line = el('div', 'ev' + (now - seen.get(key) < FRESH_MS ? ' fresh' : ''));
+    line.append(el('span', 'k', KIND[e.kind] || e.kind.toUpperCase()), el('span', '', rest + '  (' + time + ')'));
+    box.append(line);
+  }
+  return evs.length ? box : null;
+}
+
+function render(data) {
+  wrap.textContent = '';
+  if (!data || !data.teams) { wrap.append(el('div', 'box waiting', 'Waiting for a game…')); return; }
+  const [h, a] = data.teams;
+  if (LAYOUT === 'bar') {
+    const bar = el('div', 'box bar');
+    for (const k of STATS) {
+      const s = el('div', 'stat');
+      s.append(el('span', 'label', LABELS[k] || k), el('span', 'num', h.abbr + ' ' + value(h.stats[k], k) + ' · ' + value(a.stats[k], k) + ' ' + a.abbr));
+      bar.append(s);
+    }
+    wrap.append(bar);
+  } else if (LAYOUT === 'ticker') {
+    const box = eventsBox(data);
+    if (box) { box.classList.add('box', 'ticker'); wrap.append(box); }
+  } else {
+    const box = el('div', 'box');
+    const table = el('table');
+    const head = el('tr', 'teams');
+    head.append(el('th', '', h.abbr), el('th', '', ''), el('th', '', a.abbr));
+    table.append(head);
+    for (const k of STATS) {
+      const tr = el('tr');
+      tr.append(el('td', 'num', value(h.stats[k], k)), el('td', 'label', LABELS[k] || k), el('td', 'num', value(a.stats[k], k)));
+      table.append(tr);
+    }
+    box.append(table);
+    const ev = eventsBox(data);
+    if (ev) box.append(ev);
+    wrap.append(box);
+  }
+  lastGame = data.game;
+}
+
+const DEMO = { status: 'live', game: 'demo', period: '2nd', clock: '4:12', teams: [
+  { abbr: 'PHI', stats: { shots: 16, attempts: 21, xg: 2.35, hits: 18, knockdowns: 16, faceoffs: '10/17', faceoff_pct: 59,
+    passes: '30/48', pass_pct: 62, power_play: '1/2', save_pct: 84.6, shooting_pct: 19, penalties: 1, pim: 2, attack_zone: '4:58',
+    one_timers: '3/5', breakaways: '0/3', posts: 1, takeaways: 10, giveaways: 13, goals: 3 } },
+  { abbr: 'CHI', stats: { shots: 13, attempts: 22, xg: 1.76, hits: 23, knockdowns: 22, faceoffs: '7/17', faceoff_pct: 41,
+    passes: '21/41', pass_pct: 51, power_play: '0/1', save_pct: 81.3, shooting_pct: 15, penalties: 2, pim: 4, attack_zone: '5:30',
+    one_timers: '1/2', breakaways: '0/3', posts: 0, takeaways: 13, giveaways: 14, goals: 2 } }],
+  events: [
+    { id: 1, kind: 'goal', period: '1st', clock: '3:40', text: '1st 3:40 - GOAL PHI: #8 Mark Recchi (1), from Rod Brind\'Amour [one-timer] - PHI 1-0 CHI' },
+    { id: 2, kind: 'penalty', period: '2nd', clock: '1:05', text: '2nd 1:05 - PENALTY CHI: #7 Chris Chelios, Roughing (2:00)' },
+    { id: 3, kind: 'big_hit', period: '2nd', clock: '3:20', text: '2nd 3:20 - BIG HIT: #5 Steve Smith (CHI) puts #8 Mark Recchi into the boards' },
+    { id: 4, kind: 'big_save', period: '2nd', clock: '4:12', text: '2nd 4:12 - BIG SAVE: #30 Ed Belfour (CHI) robs #8 Mark Recchi (xG 0.56)' }] };
+
+async function tick() {
+  if (P.get('demo')) { render(DEMO); return; }
+  try {
+    const r = await fetch(SRC + '?t=' + Date.now(), { cache: 'no-store' });
+    render(r.ok ? await r.json() : null);
+  } catch (e) { render(null); }
+}
+tick();
+if (!P.get('demo')) setInterval(tick, +(P.get('refresh') || 1000));
+</script>
+</body>
+</html>
