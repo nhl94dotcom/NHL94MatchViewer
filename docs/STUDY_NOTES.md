@@ -4502,6 +4502,45 @@ extra one-timers came away from the bot's shots (none within 10 s real: 238 agai
 its slapshots 13 against 18). Nothing ties them to 69's change (the wind-up only), so most likely chance across many
 measures; no defensive fix suggests itself.
 
+### The puck out of play, for a delay-of-game option (2026-11-13)
+
+NOSE4Web's idea (the commissioner likes it): today's NHL minor for sending the puck directly out of play from the
+defending zone, as an option on both systems. `analysis/out_of_play_study.py [--snes]` finds each exit in the
+recordings (sfslock rising with the clock running in the sample before, the puck high at the boards; Genesis sflags
+and gmode are read as bytes: bset / btst on memory work on the byte at the address), its last toucher (ltplayer, and
+ltx / lty: where), his zone and whether the puck bounced off anything since the touch (a speed component reversing).
+- **How often:** Genesis 38 games, 10 in play (0.26 a game; 1 more after the whistle, left out): from the toucher's
+  own zone 5 (3 straight out, 2 off something first), the attacking zone 5 (shots over the end glass), none by a
+  goalie. SNES 30 games, 3 (0.10 a game): own zone 1 (straight out, the length of the ice), neutral 1, attacking 1.
+- **"Directly":** nothing records a board or glass contact since the last touch. wallcoll's puck branch (boards,
+  glass, and the net and posts through checkgoal) only clears sf2shot. A new flag would do: clear it in a2touchpuck,
+  set it in wallcoll's puck branch, test it at the out-of-play point.
+- **ltplayer:** set by a2touchpuck: the carrier each frame (pucknorm), a stick deflection (puckstick .stdef, a
+  goalie's too), the puck hitting a body (blocked shots, goalie body saves), a goalie's save frames; SNES also
+  asspassrec and Endfaceoff. Not by a poke (the poker never touches the puck), the boards or the net.
+- **Free penalty numbers:** Genesis: retail calls everything but $26 / $28 / $2A (the fight entries; $12 and $14 come
+  from the body-check code, $14 when the hitter is a goalie; $2C is the delayed-penalty signal). Every reader adds the
+  table's signed word offset (`adda.w 0(a1,d0.w)`), so a record must lie within 32 KB of Penaltylist ($18E0C in
+  nhl94.bin), and retail has no free run there: reuse a fight record (Fight Instigator's, $19112, has room for "Delay of
+  Game" and its 2 minutes) where fighting isn't patched in. SNES: $2A / $2C / $2E never called ($16 is FallDown's goalie
+  case); **$34 can't be used**: a buffer entry numbered $34 is the used-up marker that AddPenalty2, checkfornewpen and
+  chkprogress skip; the table can't grow (its records follow it); records are found in Penaltylist's bank (16-bit
+  offset), and bank $80 has 6,029 free bytes at $80:E773: a fight entry can point at a new record there.
+- **Readers of a record:** Genesis checkfornewpen (minutes, stop delay), chkprogress, InProgress (minutes, box, PIM,
+  the 5-minute flag), SetPA2 (the ref's frames: the string's length word to the frame list), prefmes (the text),
+  PenaltyShotBox, DisplayPenaltyEntry (Penalty Summary). SNES AddPenalty2, checkfornewpen, chkprogress, InProgress,
+  PenGoalStuff, prefmes, SetPA.
+- **Calling it there:** not instead of the out-of-play whistle: a penalty with minutes and a loose puck is a delayed
+  call (checkfornewpen .dc), and the out-of-play puck is locked, so play would wait for a touch that never comes.
+  Both: the minor through AddPenalty (it already skips a stopped clock, Penalties Off, a player already penalized),
+  then the PenOOP whistle, which stops play and turns the delayed minor into a called one on the following passes;
+  Stop4Pen puts PenOOP's faceoff at ltx / lty, where the offender touched it (his zone). Penalty shots run with the
+  clock stopped (skipped already). The SNES out-of-play call goes through ShootoutWonBy, which in a shootout turns it
+  into the whistle that ends the attempt: the hook must skip shootoutmode (NOSE4Web's season shootout sets it too);
+  the Genesis season shootout likewise ($FFF082).
+- **Goalies:** the games never box a goalie: the body-check code gives the no-text whistle instead when the hitter is a
+  goalie (Genesis $14, SNES $16). Exempting goalies follows that.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
