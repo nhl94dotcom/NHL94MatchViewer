@@ -12,9 +12,10 @@ each one game's frames) and then every second of the video gets the overlay's da
   reveal(e)    when an overlay event (live_overlay.events of the whole match) is known: a goal at the goal, a big save
                or miss when the shot is over, a costly giveaway at the goal it led to, the others at their own frame.
 
-The pack (replay_data.js beside replay.html) holds, per video second, the state index; states are stored once and
-reused while nothing changes. replay.html follows the video's position (OBS's WebSocket, or a start button) and shows
-the state for that second (less `delay` seconds, for the live feel).
+The pack (replay_data.js beside replay.html) holds, per video second, the game and both teams' numbers, and per game
+the events with the video second each is known. replay.html follows the video's position (OBS's WebSocket; without
+it, a clock started when the page loads) and shows the state for that second (less `delay` seconds, for the live
+feel).
 
 The pack's folder: replay.html (overlay.html with replay_settings.js loaded first: OBS's "Local file" Browser Source
 takes no address choices), replay_settings.js (the choices, edited in Notepad), replay_data.js and "Replay guide.txt"

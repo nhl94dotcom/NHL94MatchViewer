@@ -393,6 +393,9 @@ class Recording:
     def close(self):
         self.fast.close()
         self.full.close()
+        # tonight's rolls: printed once per panel per matchup within a game; the next game prints its own
+        tonight_cache.pop("printed", None)
+        tonight_cache.pop("last_read", None)
         # Named after the teams that played: the recording may have begun on a screen still showing others.
         if self.teams != self.named:
             name = f"{self.name[:15]}_{self.teams[0]}-{self.teams[1]}".replace(" ", "")

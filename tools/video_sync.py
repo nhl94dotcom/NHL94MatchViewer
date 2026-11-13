@@ -1,11 +1,12 @@
 """Where each helper recording's live play sits in a video of the session (2026-11-13; tools/replay_pack.py's timeline).
 
-The video is RetroArch's own recording (every emulator frame; Genesis so far). The helper's recordings keep only live
+The video is RetroArch's own recording (every emulator frame), Genesis or SNES. The helper's recordings keep only live
 play, timed by their own clock (`ms`), with no clock-of-day time, so they are found in the video by the camera: the
-recordings keep the camera position every sample (Genesis $BD18 vertical, $BD1C horizontal, rink units), and the
-video's rink scroll is measured frame to frame (phase correlation at half size, so half the units; $BD1C runs the
-other way). A stretch of play matches the video at one offset (video time - recording time); each pause, instant
-replay, intermission or menu in the video adds to the offset from there on.
+recordings keep the camera position every sample (SYSTEMS: Genesis $BD18 / $BD1C, SNES Vscroll / Hscroll), and the
+video's rink scroll is measured frame to frame (phase correlation at half size, so half the units). Both are averaged
+over SMOOTH frames (the retail SNES moves its picture on every other frame), and the directions are found by
+calibrate() (Genesis + / -, SNES - / -). A stretch of play matches the video at one offset (video time - recording
+time); each pause, instant replay, intermission or menu in the video adds to the offset from there on.
 
   1. measure     the video's scroll per frame (one ffmpeg pass at below-normal priority: about a minute for 37
                  minutes of video), saved beside the video as <video>.scroll.npz
@@ -15,14 +16,17 @@ replay, intermission or menu in the video adds to the offset from there on.
   3. path        one consistent placing (Viterbi): within a game the offset only grows, each change costing 2 + 0.1 a
                  second, since camera pans (after a faceoff ...) look alike all over a video and runs of false matches
                  win when changes are cheap; a stretch may be left out
-  4. segments    runs at one offset; between two runs the step goes where the camera matches best and the video's
-                 left-out frames show the least ice (a still camera matches anywhere; pauses and period breaks leave
-                 the rink); each run's offset is fitted as a line (the clocks differ by about 0.06%)
+  4. segments    runs at one offset; between two runs the step goes exactly at a clock jump if the recording has one
+                 there (clock_jumps: live play the recording missed), else where the camera matches best and the
+                 video's left-out frames look least like play (play_like) and show the least ice (a still camera matches
+                 anywhere; a Genesis period break is black, a SNES pause keeps the frozen rink); each run's offset is
+                 fitted as a line (the clocks differ by up to about 0.4%)
 
 The Genesis frame counter ($B03E) doesn't step once a frame, so it can't place a recording. Checked on the user's
 BOS-CHI series (2026-11-13, one 36:53 video, four games): every game in 3-4 runs of 24-53 checks, the steps 0.8 s at
 the period breaks and one 5-6 s pause; a still a quarter-second before each of the 27 goals shows the clock one game
-second above the goal's.
+second above the goal's. And the user's TOR-NYI SNES video (39 minutes, four games): 1-6 runs a game of 5-69 checks,
+all 25 goal stills within a game second; game 2's recording missed 3.5 s of play (its clock jumps P2 0:46 to 0:36).
 
 python tools/video_sync.py VIDEO MATCH_NAME ... --out TIMELINE.json
   (the recordings in <home>/captures, the home NHL94_HOME or Documents/NHL94 Viewer). Prints each segment and the
@@ -45,6 +49,7 @@ SYSTEMS = {"genesis": {"fps": 59.92, "cam": (0xBD18, 0xBD1C)},
            "snes": {"fps": 60.0988, "cam": (0x0D39, 0x0CED)}}
 FPS = SYSTEMS["genesis"]["fps"]
 SMOOTH = 8           # frames: both scroll series are averaged over this many (smooth())
+MEASURE_VERSION = 2  # measure()'s method: a cache made by another version (or of another file) is measured again
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 
 
@@ -60,9 +65,12 @@ def measure(video):
     """Per frame: the scroll from the previous frame (dy, dx at half size: 160x112 for the Genesis, 128x112 for the
     SNES) and the share of ice-coloured pixels (blue and green high, blue well above red: both systems' ice)."""
     cache = Path(str(video) + ".scroll.npz")
+    st = Path(video).stat()
+    stamp = np.array([st.st_size, int(st.st_mtime), MEASURE_VERSION])     # the video and the measure it was made with
     if cache.exists():
         d = np.load(cache)
-        return d["dy"].astype(float), d["dx"].astype(float), d["ice"]
+        if "stamp" in d.files and np.array_equal(d["stamp"], stamp):
+            return d["dy"].astype(float), d["dx"].astype(float), d["ice"]
     import imageio_ffmpeg
     vw, vh = video_size(video)
     W, H = vw // 2, vh // 2
@@ -92,7 +100,7 @@ def measure(video):
         dxs.extend(np.where(x > W // 2, x - W, x).tolist())
         prev = F[-1]
     p.wait()
-    np.savez(cache, dy=np.array(dys), dx=np.array(dxs), ice=np.array(ice))
+    np.savez(cache, dy=np.array(dys), dx=np.array(dxs), ice=np.array(ice), stamp=stamp)
     return np.array(dys, float), np.array(dxs, float), np.array(ice)
 
 

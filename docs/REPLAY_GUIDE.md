@@ -24,7 +24,8 @@ A2. Add the video to OBS.
     3. Name it exactly:   NHL94 video   (the panel finds the video by this name) and click OK.
     4. Tick "Local File", click "Browse" and pick the video.
     5. Untick "Loop". Untick "Restart playback when source becomes active". Click OK.
-    6. The video is small (320 x 224, the game's own size). Make it fill the screen: right-click the source >
+    6. The video is small (the game's own size: 320 x 224 on the Genesis, 256 x 224 on the SNES). Make it fill the
+       screen: right-click the source >
        Transform > Fit to screen. For sharp pixels: right-click the source > Scale Filtering > Point.
 
 A3. Turn on OBS's WebSocket (this lets the panel follow the video, even when you pause or skip).
@@ -134,8 +135,10 @@ start again.
 
 IF SOMETHING ISN'T RIGHT
 ------------------------
-- "OBS WebSocket not connected": Tools > WebSocket Server Settings: "Enable WebSocket server" ticked, port 4455, and
-  the password in replay_settings.js exactly as "Show Connect Info" shows it. Then click "Refresh" on "NHL94 stats".
+- "OBS WebSocket not connected": Tools > WebSocket Server Settings: "Enable WebSocket server" ticked, port 4455.
+  "OBS refused the WebSocket password": the password in replay_settings.js must be exactly as "Show Connect Info"
+  shows it. Then click "Refresh" on "NHL94 stats".
+- "Waiting for the video to start...": connected to OBS; press play on the video.
 - "OBS: no Media Source called ...": the video source's name in OBS must be exactly "NHL94 video" (or change obs: in
   replay_settings.js to your source's name).
 - "replay_data.js not found": keep replay.html, replay_data.js and replay_settings.js in the same folder.

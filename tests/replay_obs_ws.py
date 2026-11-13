@@ -62,7 +62,7 @@ class FakeObs:
                     "requestType": req["requestType"], "requestId": req["requestId"],
                     "requestStatus": {"result": True, "code": 100},
                     "responseData": {"mediaState": "OBS_MEDIA_STATE_PAUSED", "mediaDuration": 2209000,
-                                     "mediaCursor": self.cursor_ms}}}))
+                                     "mediaCursor": self.cursor_ms}}}))   # None: stopped, not started
         except websockets.ConnectionClosed:
             pass
 
@@ -119,18 +119,20 @@ async def run(folder, checks, password, insecure=False):
             secure = await page_text(cdp, "String(window.isSecureContext) + ' ' + String(!!(window.crypto && crypto.subtle))")
             print(f"  page: secure context / crypto.subtle: {secure}")
             for seconds, want in checks:
-                obs.cursor_ms = int(seconds * 1000)
+                obs.cursor_ms = None if seconds is None else int(seconds * 1000)
                 shown = None
                 for _ in range(40):
                     await asyncio.sleep(0.25)
                     txt = await page_text(cdp, "(document.querySelector('.score')||{}).textContent || "
                                                "(document.querySelector('.waiting')||{}).textContent || ''")
                     shown = "-".join(re.findall(r"\d+", txt)) or txt
-                    if shown == want or (not want and len(txt) > 30):
+                    if shown == want or (not want and len(txt) > 30) or (want.startswith("~") and want[1:] in txt):
                         break
-                good = shown == want or (not want and not re.fullmatch(r"\d+-\d+", shown))
+                good = (shown == want or (want.startswith("~") and want[1:] in txt)
+                        or (not want and not re.fullmatch(r"\d+-\d+", shown)))
                 ok &= good
-                print(f"{seconds:8.1f} s: want {want or '(refused)'}: shows {shown!r}: {'OK' if good else 'FAILED'}")
+                at = "stopped" if seconds is None else f"{seconds:.1f} s"
+                print(f"{at:>9}: want {want or '(refused)'}: shows {shown!r}: {'OK' if good else 'FAILED'}")
     finally:
         edge.terminate()
         if httpd:
@@ -147,14 +149,15 @@ def main():
     folder = Path(sys.argv[1]).resolve()
     shutil.copy(ROOT / "overlay.html", folder / "overlay.html")
     checks = [(float(a.split(":")[0]), a.split(":")[1]) for a in sys.argv[2:]]
-    ok, log = asyncio.run(run(folder, checks, PASSWORD))
+    # a stopped video first (OBS reports no position): the page says it waits for the video, then the positions
+    ok, log = asyncio.run(run(folder, [(None, "~Waiting for the video")] + checks, PASSWORD))
     ok &= bool(log) and log[0] == "auth ok"
     print("not a secure context (as in OBS's Local file Browser Source: the page's own SHA-256):")
     ok3, log3 = asyncio.run(run(folder, checks[:2], PASSWORD, insecure=True))
     ok &= ok3 and bool(log3) and log3[0] == "auth ok"
     print("wrong password:")
-    ok2, log2 = asyncio.run(run(folder, [(checks[0][0], "")], "not-the-password"))
-    refused = bool(log2) and log2[0] == "auth WRONG" and not any("GetMediaInputStatus" in x for x in log2)
+    ok2, log2 = asyncio.run(run(folder, [(checks[0][0], "~refused the WebSocket password")], "not-the-password"))
+    refused = ok2 and bool(log2) and log2[0] == "auth WRONG" and not any("GetMediaInputStatus" in x for x in log2)
     print(f"  refused: {'OK' if refused else 'FAILED'}")
     sys.exit(0 if ok and refused else 1)
 

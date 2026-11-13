@@ -245,17 +245,25 @@ function obsConnect() {
       ws.send(JSON.stringify({ op: 1, d: ident }));
     } else if (msg.op === 2) {
       REPLAY.obsError = null;
+      REPLAY.connected = true;
       timer = setInterval(() => ws.send(JSON.stringify({ op: 6, d: { requestType: 'GetMediaInputStatus',
         requestId: String(++id), requestData: { inputName: REPLAY.obs } } })), 250);
     } else if (msg.op === 7) {
       const r = msg.d.requestStatus;
       if (!r.result) { REPLAY.obsError = 'OBS: ' + (r.comment || 'no Media Source called "' + REPLAY.obs + '"'); return; }
       REPLAY.obsError = null;
-      REPLAY.cursor = msg.d.responseData.mediaCursor;
+      const c = msg.d.responseData.mediaCursor;   // empty while the video is stopped or not started: keep the last
+      if (typeof c === 'number') REPLAY.cursor = c;
     }
     } catch (err) { REPLAY.obsError = 'OBS connection: ' + (err && err.message || err); }
   };
-  ws.onclose = () => { clearInterval(timer); REPLAY.obsError = REPLAY.obsError || 'OBS WebSocket not connected (Tools > WebSocket Server Settings)'; setTimeout(obsConnect, 2000); };
+  ws.onclose = ev => {
+    clearInterval(timer);
+    REPLAY.connected = false;
+    REPLAY.obsError = ev.code === 4009 ? 'OBS refused the WebSocket password (obspw in replay_settings.js)'
+      : REPLAY.obsError || 'OBS WebSocket not connected (Tools > WebSocket Server Settings)';
+    setTimeout(obsConnect, 2000);
+  };
 }
 
 async function tick() {
@@ -265,7 +273,11 @@ async function tick() {
     const v = videoTime();
     const data = replayData(v - REPLAY.delay + REPLAY.offset);
     if (REPLAY.obsError && !data) { wrap.textContent = ''; wrap.append(el('div', 'box waiting', REPLAY.obsError)); return; }
-    if (REPLAY.obs && REPLAY.cursor === null) { wrap.textContent = ''; wrap.append(el('div', 'box waiting', 'Connecting to OBS…')); return; }
+    if (REPLAY.obs && REPLAY.cursor === null) {
+      wrap.textContent = '';
+      wrap.append(el('div', 'box waiting', REPLAY.connected ? 'Waiting for the video to start…' : 'Connecting to OBS…'));
+      return;
+    }
     render(data);
     return;
   }

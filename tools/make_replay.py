@@ -35,6 +35,7 @@ import video_sync  # noqa: E402
 from season import load_match  # noqa: E402
 
 MIN_CHECKS = 5          # matched stretches behind a run at one offset
+PACK_FILES = {"replay.html", "replay_data.js", "replay_settings.js", "Replay guide.txt", "About this pack.txt"}
 GAP_PLAY = 0.5          # the video's added frames shouldn't look like live play (video_sync.play_like) for more
 GAP_MIN = 1.0           # than half of them; steps under a second (a gap in the helper's own sampling) aren't judged
 
@@ -52,7 +53,6 @@ def games_in(video, seconds):
         if not t or not (video_sync.HOME / "matches" / f"{cap.name}.js").exists():
             continue
         began = datetime.strptime(t.group(1), "%Y-%m-%d_%H%M")
-        info = json.loads((cap / "capture.json").read_text()) if (cap / "capture.json").exists() else {}
         if start - timedelta(minutes=1) <= began <= end:
             found.append(cap.name)
     return found
@@ -148,7 +148,7 @@ def main():
     pos = [a for i, a in enumerate(args) if not a.startswith("--") and (i == 0 or args[i - 1] not in ("--out", "--name"))]
     video = Path(pos[0]).resolve()
     dy, _, _ = video_sync.measure(video)                       # the scroll measure, cached beside the video
-    seconds = len(dy) / video_sync.FPS
+    seconds = len(dy) / 59.9                                   # both systems' frame rates are within 0.3% of this
     names = pos[1:] or games_in(video, seconds)
     if not names:
         raise SystemExit("no recorded games began while the video ran: name them")
@@ -179,6 +179,8 @@ def main():
     zpath = pack.parent / f"{title}.zip"
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(pack.iterdir()):
+            if f.name not in PACK_FILES:                       # only the pack's own files, whatever else is there
+                continue
             if f.name == "replay_settings.js":
                 z.writestr("NHL94 Replay/replay_settings.js", replay_pack.SETTINGS.replace("\n", "\r\n"))
             else:
