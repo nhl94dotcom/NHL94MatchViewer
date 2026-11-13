@@ -4504,6 +4504,9 @@ measures; no defensive fix suggests itself.
 
 ### The puck out of play, for a delay-of-game option (2026-11-13)
 
+**Dropped** (the commissioner, 2026-11-13: too rare, and it would take a fight penalty slot). Kept for any future hack
+that needs a new penalty: the free numbers, the readers, and calling a minor alongside PenOOP.
+
 NOSE4Web's idea (the commissioner likes it): today's NHL minor for sending the puck directly out of play from the
 defending zone, as an option on both systems. `analysis/out_of_play_study.py [--snes]` finds each exit in the
 recordings (sfslock rising with the clock running in the sample before, the puck high at the boards; Genesis sflags
