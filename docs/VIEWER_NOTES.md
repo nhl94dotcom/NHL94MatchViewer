@@ -631,6 +631,23 @@ with no clock-of-day time, so a timer started with the video would drift at the 
   to look at; the pack and the zip (always the blank replay_settings.js). On the BOS-CHI video it found the four games
   and rebuilt the sent zip file for file; with a game from another day slipped in it refused (2 matched stretches,
   the left-out stretches on the rink).
+- **The SNES** (2026-11-13, the user's TOR-NYI video, NHL94_Classic, 39 minutes, four games): the camera is the rink's
+  scroll, Vscroll $0D39 / Hscroll $0CED (in the recorded RAM); Snes9x at 60.0988 frames a second, the video 256x224
+  (measured at 128x112). Three things the Genesis didn't need:
+  - The retail SNES moves its picture on every other frame (0, 2, 0, 2 ...): frame by frame the match found nothing
+    (scores flat over the four direction choices). Both series are now averaged over 8 frames (`smooth`), on both
+    systems (the Genesis scores rose from about 1.2 to 1.5, the same offsets).
+  - The directions are found, not assumed (`calibrate`: the four sign choices on the first game's stretches): SNES
+    (-, -); Genesis (+, -) as before.
+  - The SNES pause and "Period Over" keep the frozen rink on screen, so "left-out frames off the rink" misjudged
+    them. A step now goes where the video doesn't look like play (`play_like`: the rink on screen and scrolling
+    within a quarter-second) plus, among those, off the rink (the Genesis' black period break); make_replay's
+    check flags a left-out stretch only if it looks like play.
+  - The recording can miss live play: game 2's clock jumps P2 0:46 to 0:36 between two samples, its timer not
+    counting the 3.5 s either (the video has them). `clock_jumps` puts the step exactly at such a jump, and
+    make_replay notes it (the panel holds those seconds, then catches up) instead of refusing.
+  Result: every game in 1-6 runs of 5-69 checks; the 25 goal stills all within a game second of the goal's time;
+  the overlay followed the SNES pack through the stand-in OBS. The Genesis video gave the same checks as before.
 
 ## Quirky Events (2026-10-19)
 

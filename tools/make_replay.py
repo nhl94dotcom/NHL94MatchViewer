@@ -2,15 +2,15 @@
 
   python tools/make_replay.py VIDEO [MATCH_NAME ...] [--out FOLDER] [--name "NHL94 Replay - BOS-CHI series"]
 
-1. The games: the ones named, else the recorded Genesis games (a match file in <home>/matches) whose recordings began
+1. The games: the ones named, else the recorded games, Genesis or SNES (a match file in <home>/matches), whose recordings began
    while the video was running, read from the video's file name (RetroArch's recordings end in -YYMMDD-HHMMSS, the
    moment it started) and its length.
 2. tools/video_sync.py places each game in the video (the scroll measure is cached beside the video, so a second run
    takes seconds) and writes <video>.timeline.json.
 3. Checks, printed, any failure stops before the zip unless --force:
    - every game found, each stretch at one offset backed by at least MIN_CHECKS matched 10-second stretches;
-   - every stretch the video adds (a pause, a replay, a period break, the menus) on frames away from the rink (the
-     video's ice share low), else the step may sit in the wrong place;
+   - every stretch the video adds (a pause, a replay, a period break, the menus) not looking like live play (the rink
+     scrolling: video_sync.play_like), else the step may sit in the wrong place;
    - the goals in order through the video, each inside its game's stretches.
    Plus a sheet of stills a quarter-second before each goal (goals_check.png beside the pack): the on-screen clock should
    read one game second above each goal's time, with the score before the goal. Look at it before sending.
@@ -35,7 +35,8 @@ import video_sync  # noqa: E402
 from season import load_match  # noqa: E402
 
 MIN_CHECKS = 5          # matched stretches behind a run at one offset
-GAP_ICE = 0.25          # the video's added frames should be off the rink: mean ice share under this
+GAP_PLAY = 0.5          # the video's added frames shouldn't look like live play (video_sync.play_like) for more
+GAP_MIN = 1.0           # than half of them; steps under a second (a gap in the helper's own sampling) aren't judged
 
 
 def games_in(video, seconds):
@@ -52,9 +53,21 @@ def games_in(video, seconds):
             continue
         began = datetime.strptime(t.group(1), "%Y-%m-%d_%H%M")
         info = json.loads((cap / "capture.json").read_text()) if (cap / "capture.json").exists() else {}
-        if info.get("system", "genesis") == "genesis" and start - timedelta(minutes=1) <= began <= end:
+        if start - timedelta(minutes=1) <= began <= end:
             found.append(cap.name)
     return found
+
+
+def skipped(name, ms0, span=6000):
+    """Did the recording miss some live play near ms0: its game clock jumping 3+ game seconds from one sample to the next
+    while its timer barely moved? Then the video has play the recording hasn't, and the step is right where it is.
+    (2026-11-13: TOR-NYI game 2 on the SNES, P2 0:46 to 0:36 between two samples, about 4 s of play not recorded.)"""
+    import bisect
+    m = load_match(video_sync.HOME / "matches" / f"{name}.js")
+    t, clock, period = m["t"], m["clock"], m["period"]
+    i, j = max(1, bisect.bisect_left(t, ms0 - span)), bisect.bisect_right(t, ms0 + span)
+    return any(period[k] == period[k - 1] and clock[k - 1] - clock[k] >= 3 and t[k] - t[k - 1] < 500
+               for k in range(i, min(j, len(t))))
 
 
 def checks(tl, video):
@@ -68,12 +81,17 @@ def checks(tl, video):
         for s, c in mine:
             if c[0] < MIN_CHECKS:
                 problems.append(f"{name}: video {s[0]:.1f}-{s[1]:.1f} s rests on only {c[0]} matched stretches")
-    _, _, ice = video_sync.measure(video)
+    dy, dx, ice = video_sync.measure(video)
+    play = video_sync.play_like(dy, dx, ice)
     for a, b in zip(segs, segs[1:]):
         lo, hi = int(a[1] * video_sync.FPS), int(b[0] * video_sync.FPS) + 1
-        if hi > lo and float(np.mean(ice[lo:hi])) > GAP_ICE:
-            problems.append(f"video {a[1]:.1f}-{b[0]:.1f} s (left out of game {a[2] + 1}'s recording) shows the rink: "
-                            f"the step may be misplaced")
+        if hi - lo >= GAP_MIN * video_sync.FPS and float(np.mean(play[lo:hi])) > GAP_PLAY:
+            if a[2] == b[2] and skipped(tl["games"][b[2]], b[3]):
+                print(f"note: video {a[1]:.1f}-{b[0]:.1f} s is live play the recording missed (its game clock jumps "
+                      f"there): the panel holds for those seconds, then catches up")
+                continue
+            problems.append(f"video {a[1]:.1f}-{b[0]:.1f} s (left out of game {a[2] + 1}'s recording) looks like live "
+                            f"play: a replay, or a misplaced step (look at it)")
     goals, last = [], -1.0
     for gi, name in enumerate(tl["games"]):
         m = load_match(video_sync.HOME / "matches" / f"{name}.js")
@@ -98,25 +116,26 @@ def goal_sheet(video, goals, out):
     import imageio_ffmpeg
     from PIL import Image, ImageDraw
     ff = imageio_ffmpeg.get_ffmpeg_exe()
+    vw, vh = video_sync.video_size(video)
     tiles = []
     for gi, m, g, v in goals:
         p = subprocess.run([ff, "-hide_banner", "-loglevel", "error", "-threads", "1", "-ss", f"{max(0, v - 0.25):.3f}",
                             "-i", str(video), "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
                            capture_output=True, creationflags=getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0))
-        if len(p.stdout) < 320 * 224 * 3:
+        if len(p.stdout) < vw * vh * 3:
             continue
-        im = Image.frombytes("RGB", (320, 224), p.stdout[:320 * 224 * 3])
+        im = Image.frombytes("RGB", (vw, vh), p.stdout[:vw * vh * 3])
         d = ImageDraw.Draw(im)
-        d.rectangle([0, 0, 320, 12], fill=(0, 0, 0))
+        d.rectangle([0, 0, vw, 12], fill=(0, 0, 0))
         d.text((2, 1), f"G{gi + 1} P{g['period'] + 1} {g['clock'] // 60}:{g['clock'] % 60:02d} {m['abbr'][g['team']]} "
                        f"goal, video {v:.1f}s", fill=(255, 255, 0))
         tiles.append(im)
     if not tiles:
         return None
     cols = 6
-    sheet = Image.new("RGB", (cols * 320, -(-len(tiles) // cols) * 224))
+    sheet = Image.new("RGB", (cols * vw, -(-len(tiles) // cols) * vh))
     for i, im in enumerate(tiles):
-        sheet.paste(im, ((i % cols) * 320, (i // cols) * 224))
+        sheet.paste(im, ((i % cols) * vw, (i // cols) * vh))
     sheet.save(out)
     return out
 
@@ -132,7 +151,7 @@ def main():
     seconds = len(dy) / video_sync.FPS
     names = pos[1:] or games_in(video, seconds)
     if not names:
-        raise SystemExit("no recorded Genesis games began while the video ran: name them")
+        raise SystemExit("no recorded games began while the video ran: name them")
     print("games:", ", ".join(names))
     tl = video_sync.timeline(video, names)
     tl_path = video.with_suffix(video.suffix + ".timeline.json")
@@ -155,7 +174,7 @@ def main():
         if not force:
             raise SystemExit("not packed (look at the problems; --force packs anyway)")
     else:
-        print("checks: all games found, every left-out stretch off the rink, goals in order")
+        print("checks: all games found, no left-out stretch looks like live play, goals in order")
     replay_pack.write_pack(tl, pack)
     zpath = pack.parent / f"{title}.zip"
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
