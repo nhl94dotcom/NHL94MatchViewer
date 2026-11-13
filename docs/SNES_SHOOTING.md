@@ -143,7 +143,12 @@ your d-pad points.** **Code**
   coming) goes there at once, a struck one-timer only once its animation is over (`.chkdone`), so the follow-through
   stays. NOSE4Web's SNES fix (d045e26) resets at the give-up, but asspassrec's strike also ends through `.6`, so its
   first build cut every struck one-timer's follow-through to SPAglide (158 of 158 in 7 traced games; the swing 17
-  frames, retail 26.5): testing the `onetimer` flag ($1E89, set by the strike) would leave struck swings alone.
+  frames, retail 26.5): testing the `onetimer` flag ($1E89, set by the strike) would leave struck swings alone. **The rebuilt fix (2763ac8,
+  with that test), traced** (`snes_onetimer_hold_trace.py`, the same seeds): 1 MB 502 swings against retail's 483,
+  struck 64% both, the struck swing a median 27 frames both; pass receivers holding the puck through a long swing 1
+  against retail's 9 (2 MB build: 0 against 8 unfixed; SA-1: 0 against 4), the one left a swing whose wait ran out at
+  its follow-through (SPAnum $10, left alone by design: the whole swing had missed) and the late pass gathered in the
+  last 11 frames of it.
 - **The same look from an ordinary shot:** a wind-up that loses the game's shot-mode flag (`sfssdir`, one flag for
   the whole game) plays out with no shot: ShotMode, which fires it, runs only while the flag is set. It's cleared when
   the puck changes hands (puckglue), on a successful steal touch (puckstick, the puck knocked loose and gathered again)

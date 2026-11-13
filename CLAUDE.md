@@ -71,6 +71,9 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - `NHL94 Helper.bat` / `dist\NHL94 Helper.exe`: `tools/nhl94_helper.py` waits for RetroArch, records each game (live
   play only), converts it, serves http://localhost:9494/helper.html (games list, viewer, season page). Live broadcast:
   `--broadcast <channel> --bucket <bucket>` with `tools/live_broadcast.py` (user's launcher not in git).
+  `--live-local` keeps the live pipeline on this computer for a stream overlay: `<home>/live/` (the live viewer at
+  /live/index.html), and `tools/live_overlay.py` writes `live/stats.json` (for `overlay.html`, an OBS Browser Source;
+  stats, events and layout chosen in its address) and `live/obs/*.txt` (OBS Text sources) after every update.
   `tools\build_helper.bat nobroadcast` builds `dist\nobroadcast\` for people who won't broadcast (no `live_broadcast`,
   and the viewer's Help without "Watching live", between `<!-- broadcast` markers).
 - `tools/export_match.py`: recording -> `matches/<name>.js` (`--live` worker mode for the broadcast). `analyse()` runs
