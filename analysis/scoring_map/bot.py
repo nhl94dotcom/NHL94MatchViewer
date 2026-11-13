@@ -430,6 +430,12 @@ CROSS65 = {"past": -16, "anyway": -12}
 # ("vx" or faster) once "late" past the middle the way he moves; before it, the cut's longer wind-up, high the way he
 # moves; the planned cut decides "past" / "anyway" short of the middle.
 CROSS66 = {"past": -24, "anyway": -20, "vx": 1.0, "late": 15}
+# version 67 (2026-11-12; 63's play otherwise): 62's drive at the net from a clear lane shot 9.9 times a game from
+# within 40 of the goal line and scored 3 of 89 (9 logged games); strong coaches take 2.5 shots a game from there, their
+# offence the one-timer (5.0 tried a game, the bot 3.6) and slot shots (the bot's wrist shots 40-80 out: 8 of 77).
+# 67: a clear lane takes him to the slot ("slot_out" out) instead; there, an open teammate across gets the one-timer
+# pass, else the shot (wrist or slapshot by Shot Power, wrist_or_slap).
+SLOT67 = {"slot_out": 62, "drive_to": 70}
 GOALIE63 = {"goalie_wait": 45, "rush": 35, "lane": 22, "drive_anyway": 0.25}
 # and its drive at the net (zone_hold) shoots only with the goalie off his line, or on "drive_anyway" of drives.
 # Version 64: 63 still drove and shot 9.7 times a game (3 traced games; 62 14.7, 61 none; shots on goal 18.0, people
@@ -455,23 +461,24 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
-        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
-        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66)
-        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66)
-        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66)
-        self.v60 = version in (60, 61, 62, 63, 64, 65, 66)
-        self.v61 = version in (61, 62, 63, 64, 65, 66)
-        self.v62 = version in (62, 63, 64, 65, 66)
-        self.v63 = version in (63, 64, 65, 66)
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67)
+        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67)
+        self.v61 = version in (61, 62, 63, 64, 65, 66, 67)
+        self.v62 = version in (62, 63, 64, 65, 66, 67)
+        self.v63 = version in (63, 64, 65, 66, 67)
         self.v64 = version == 64
         self.v65 = version == 65
         self.v66 = version == 66
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        self.v67 = version == 67
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -1039,6 +1046,18 @@ class Bot:
             if u > 0 and math.hypot(ox - (ax + u * dx), oy - (ay + u * dy)) < C["lane"]:
                 clear = False
                 break
+        if clear and self.v67:
+            if out > SLOT67["drive_to"]:
+                return turn(dir_to(-0.4 * ax, NET_Y - SLOT67["slot_out"] - ay))
+            mate = self.open_mate(P, me, s, self.att_g)
+            if mate is not None:
+                self.mate, self.relief = mate, False
+                self.phase, self.t, self.passer = "pass", 0, me
+                self.note("pass start", ax=round(ax), ay=round(ay), slot=True, onetimer=True)
+                return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
+            self.phase, self.t = self.wrist_or_slap(P, me, ay), 0
+            self.note("slot shot", ax=round(ax), out=round(out), kind=self.phase)
+            return []
         if clear:
             if out > C["close"]:
                 return turn(dir_to(-0.4 * ax, NET_Y - 30 - ay))

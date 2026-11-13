@@ -3,7 +3,7 @@ with TryAddPlayerToList's two calls traced: a scratch copy of the ROM, bsr.w Try
 jsr ($F400).w, a stub in work RAM logging (candidate d0, result d1, slot d4, team a2, flags) to a ring at
 $FFF480 (index $FFF47E; the boot ROM check NOPed on a retail copy). At any faceoff drop where a team has fewer
 skaters than its tmap: PlList / plpos, tmlines, tmpdst, tmboxlist, tmap, tmgoalie, the team's objects and the
-traced calls. python gen_3on3_ot_trace.py ROM [CASE] [SEEDS]   (to %USERPROFILE%/NHL94_scoring_map/runs/ot3_trace)"""
+traced calls, and every change to the team's objects' position, newpos, newpnum and pnum in the 1,500 frames before. python gen_3on3_ot_trace.py ROM [CASE] [SEEDS] [FIRST]   (to %USERPROFILE%/NHL94_scoring_map/runs/ot3_trace)"""
 import sys, json, struct
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -28,6 +28,7 @@ STUB = bytes.fromhex(
 ring_seen = {"idx": 0}
 calls = []
 frame = {"n": 0}
+objlog = {"last": None, "changes": []}
 class TEmu(EMU.Emu):
     def run(self, n=1, hold=(), *a, **k):
         for _ in range(n):
@@ -35,6 +36,16 @@ class TEmu(EMU.Emu):
                 self.setb(0xF400 + i, byte)
             super().run(1, hold, *a, **k)
             frame["n"] += 1
+            # every object's position word (+$34), newpos (+$60), newpnum (+$61) and pnum (+$66): changes kept
+            st = tuple((self.w(M.BASE + M.SZ * k + 0x34), self.b(M.BASE + M.SZ * k + 0x60), self.b(M.BASE + M.SZ * k + 0x61),
+                        self.b(M.BASE + M.SZ * k + 0x66)) for k in range(12))
+            if st != objlog["last"]:
+                objlog["changes"].append({"fr": frame["n"], "objects": {k: {"position": hex(st[k][0]), "newpos": st[k][1],
+                                          "newpnum": st[k][2], "pnum": st[k][3]} for k in range(12)
+                                          if objlog["last"] is None or st[k] != objlog["last"][k]}})
+                objlog["last"] = st
+                if len(objlog["changes"]) > 4000:
+                    del objlog["changes"][:2000]
             idx = self.w(0xF47E) & 0x3FF
             guard = 0
             while ring_seen["idx"] != idx and guard < 120:       # the stub's own wrap: (idx + 10) & $3FF
@@ -73,12 +84,17 @@ def on_ice(e, t):
             "tmap": tm, "tmgoalie": hex(e.w(b + 0x26)),
             "objects": [{"k": k, "position": e.b(M.BASE + M.SZ * k + 0x35), "pnum+1": e.b(M.BASE + M.SZ * k + 0x66) + 1}
                         for k in range(6 * t, 6 * t + 6)],
-            "calls_last_3000": [c for c in calls if c["fr"] > frame["n"] - 3000 and c["team"] == t]})
+            "calls_last_3000": [c for c in calls if c["fr"] > frame["n"] - 3000 and c["team"] == t],
+            "object_changes_last_1500": [{"fr": c["fr"], "objects": {k: v for k, v in c["objects"].items()
+                                                                     if 6 * t <= k < 6 * t + 6}}
+                                         for c in objlog["changes"] if c["fr"] > frame["n"] - 1500]})
     return r
 M.on_ice = on_ice
 case = sys.argv[2] if len(sys.argv) > 2 else "off"
-for seed in range(int(sys.argv[3]) if len(sys.argv) > 3 else 1):
+first = int(sys.argv[4]) if len(sys.argv) > 4 else 0
+for seed in range(first, first + (int(sys.argv[3]) if len(sys.argv) > 3 else 1)):
     calls.clear(); ring_seen["idx"] = 0; frame["n"] = 0; short[0] = short[1] = 0
+    objlog["last"] = None; objlog["changes"].clear()
     n0 = len(dumps)
     r = M.run_case(str(scratch), case, seed, OUT)
     for d in dumps[n0:]:
