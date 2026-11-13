@@ -4627,6 +4627,27 @@ on every other frame, so a 1-frame tap can go unseen (held 4 frames: fixed).
 NOSE4Web's suggested fix (the choice landing on his own locked skater takes the next-best eligible one) makes B during
 his own burst or check switch control, which is what the Genesis does when locked (switches at once).
 
+### NOSE4Web's SNES Time On Ice page 6bc58af, looked at (2026-11-13)
+
+McMarkis's page placed for the original layout, column 6 of Player Stats, reading ptoi. NHL94_toi_page.smc (SHA-1
+25502d48...) and NHL94_toi_page_checks.smc (99592ddb...). `analysis/scoring_map/snes_toi_page_check.py` (a computer game
+paused in period 3 at 1:40, line changes on: skaters 0:25-7:25, goalies 13:20; and one with line changes off: skaters
+13:20; menu_shots' presses from the saved state, on the build and on retail NHL94.smc):
+- **Getting there:** pause menu Player Stats (5 down, B); RIGHT: Goals, Assists, Points, Shots, Penalties, Time On Ice;
+  RIGHT on it stays, LEFT back to Penalties.
+- **Sorting:** both teams in ptoi's order (Montreal 7:17 ... 0:38, 0:38, then 0:00; Los Angeles 7:25 ... 0:44 x 3).
+- **Alignment, highlight:** the times highlighted; 4-character (7:17, 0:00) and 5-character (13:20) times both end
+  under the header's I.
+- **Controls:** scrolling to the list's end; Y switches teams (the list from its top).
+- **Other pages:** Goals to Shots pixel-identical to retail; Penalties the same but for its title's new right arrow.
+  The Goalies page (LEFT of Goals) identical to retail for both teams, and RIGHT back to Goals.
+- **Checks build:** Cf in every page's last column; page 5 Checks (sorted by checks for), then Time On Ice; LEFT back.
+
+**The Genesis page's Playoff Stats fix (a05137d), rebuilt nhl94_toi.bin 4d3deb41..., nhl94_toi_checks.bin 7e082588...:**
+Penalty Minutes in game stats pixel-identical to the first build's (the "]" where it was, nothing shifted or left
+over), the Time On Ice page identical; Playoff Stats' Penalty Minutes now pixel-identical to retail; the checks build's
+Checks For the same (its "]" in game stats as before, none in Playoff Stats).
+
 ### NOSE4Web's Genesis Time On Ice page 4526102, looked at (2026-11-13)
 
 Player Stats sort column 5 (game stats only) showing the team struct's +$136 word as m:ss. nhl94_toi.bin (SHA-1
