@@ -161,9 +161,7 @@ def main():
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(pack.iterdir()):
             if f.name == "replay_settings.js":
-                z.writestr("NHL94 Replay/replay_settings.js", replay_pack.SETTINGS.replace("
-", "
-"))
+                z.writestr("NHL94 Replay/replay_settings.js", replay_pack.SETTINGS.replace("\n", "\r\n"))
             else:
                 z.write(f, "NHL94 Replay/" + f.name)
     print(f"\npack: {pack}\nzip:  {zpath} ({zpath.stat().st_size // 1024} KB)\nsend the zip and the video ({video.name}, "
