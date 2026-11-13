@@ -197,6 +197,11 @@ MENUS = (1, 15)
 PERIOD, CLOCK = 0xC466, 0xC468
 HOME_SCORE, AWAY_SCORE = 0xC6DA, 0xCA3E
 HOME_TEAM_ID, AWAY_TEAM_ID = 0xC6F7, 0xCA5B
+# The game's Shootout mode (ram94.asm): BA_Team (0 home, 1 visitors), the shooter's roster index BA_Skater_Offset;
+# homeshootgoals / awayshootgoals, shootoutround, the shooter lists (6 words: five shooters, then the goalie; homeshootnum
+# between them); NOSE4Web's season-shootout flag.
+BA_TEAM, BA_SHOOTER = 0xD404, 0xD40A
+SO_GOALS, SO_ROUND, SO_LISTS, SO_TEAM, SO_FLAG = 0xD574, 0xD578, (0xD57A, 0xD588), 0xD594, 0xF082
 
 
 class View:
@@ -217,10 +222,30 @@ class View:
         self.on_ice = any(r != 0xFF for r in rosters[:6]) and any(r != 0xFF for r in rosters[6:])
         self.in_menus = self.screen in MENUS
         self.in_game = self.screen == 0  # play, whistles, intermissions (not the pause menu or a replay)
+        # NOSE4Web's season shootout (a tied regular-season game, 2026-11-13): its flag $FFF082 set with gsp 3; it runs
+        # the game's own Shootout mode, whose goals also go to the score (put back with the winners' goal at the end,
+        # when gsp goes to 4). Read here, not recorded: the turn under way (round, team 0 / 1, shooter's roster index,
+        # the other team's goalie) and the shootout's own score (homeshootgoals / awayshootgoals).
+        flag = emu.read(SO_FLAG ^ 1, 1)
+        self.shootout = bool(flag and flag[0]) and self.period == 3
+        self.shootout_turn = None
+        if self.shootout:
+            d = self.blocks[3]
+            so = emu.read(SO_GOALS, 0x24) or bytes(0x24)
+            sw = lambda a: struct.unpack_from("<H", so, a - SO_GOALS)[0]
+            # The turn by shootoutteam, which CountShootoutGoals flips (and the round moves on) as an attempt ends;
+            # BA_Team and the shooter follow when NextShooter sets the next one up (until then the last turn's).
+            team = sw(SO_TEAM) & 1
+            goalie = sw((SO_LISTS[1 - team]) + 10)          # each list ends with the team's goalie (InitShooters)
+            shooter = word(d, BA_SHOOTER - 0xD400) & 0xFF if word(d, BA_TEAM - 0xD400) & 1 == team else None
+            self.score = (sw(SO_GOALS), sw(SO_GOALS + 2))
+            self.shootout_turn = (sw(SO_ROUND), team, shooter, goalie if goalie < 0x80 else None)
+        if self.period >= 4:      # past overtime (after a shootout the clock stands at overtime's start): over
+            self.clock = 0
 
     @property
     def live(self):
-        return self.in_game and self.on_ice
+        return self.in_game and self.on_ice and not self.shootout
 
     def describe(self):
         return f"P{min(self.period, 2) + 1} {self.clock // 60}:{self.clock % 60:02d}, {self.score[0]}-{self.score[1]}"

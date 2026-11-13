@@ -285,24 +285,37 @@ class Recording:
         self.top_clock = view.clock  # the period length, as far as seen: a new game starts with its clock near it
 
     def shootout_attempt(self, view):
-        """The shootout's attempts, one per turn (view.shootout_turn: round, team, shooter, goalie): a goal when the
-        shooting team's shootout score went up during the turn, else a miss; closed when the next turn starts or the
-        shootout ends (view None). Each keeps the shootout score after it."""
-        turn = getattr(view, "shootout_turn", None) if view is not None else None
+        """The shootout's attempts, one per turn (view.shootout_turn: round, team, shooter, goalie), opened when a turn
+        starts and closed when the next one does or the shootout ends (view None); each keeps the shootout score after
+        it. A rise in a team's shootout score is that team's goal: its open turn's, or, when the turn has already
+        moved on (the Genesis counts the goal after shootoutteam flips), its last attempt's."""
+        attempts = self.so_attempts = getattr(self, "so_attempts", [])
         cur = getattr(self, "so_turn", None)
+        if view is not None:
+            prev = getattr(self, "so_score", None) or tuple(view.score)
+            for t in (0, 1):
+                if view.score[t] > prev[t]:
+                    if cur and cur["attempt"]["team"] == t:
+                        cur["attempt"]["goal"], cur["last"] = True, tuple(view.score)
+                    else:
+                        last = next((a for a in reversed(attempts) if a["team"] == t), None)
+                        if last is not None:
+                            last["goal"], last["score"] = True, list(view.score)
+            self.so_score = tuple(view.score)
+        turn = getattr(view, "shootout_turn", None) if view is not None else None
         if cur and (view is None or (turn and turn[:2] != cur["key"])):
-            a = cur["attempt"]
-            a["goal"] = cur["last"][a["team"]] > cur["start"][a["team"]]
-            a["score"] = list(cur["last"])
-            self.so_attempts = getattr(self, "so_attempts", []) + [a]
+            cur["attempt"]["score"] = list(cur["last"])
+            attempts.append(cur["attempt"])
             self.so_turn = cur = None
         if view is None:
             return
         if turn and not cur:
-            self.so_turn = cur = {"key": turn[:2], "start": tuple(view.score), "last": tuple(view.score),
-                                  "attempt": {"round": turn[0], "team": turn[1], "shooter": turn[2], "goalie": turn[3]}}
+            self.so_turn = cur = {"key": turn[:2], "last": tuple(view.score), "attempt":
+                                  {"round": turn[0], "team": turn[1], "shooter": turn[2], "goalie": turn[3], "goal": False}}
         if cur:
             cur["last"] = tuple(view.score)
+            if turn and turn[:2] == cur["key"] and turn[2] is not None:   # the Genesis sets the shooter up as the
+                cur["attempt"].update(shooter=turn[2], goalie=turn[3])           # turn starts: the latest
 
     def step(self, view):
         """One sample. Returns why it ended ('final', 'menus', 'new game') or None to carry on."""

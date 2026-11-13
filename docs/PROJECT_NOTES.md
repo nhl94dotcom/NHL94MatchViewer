@@ -924,8 +924,19 @@ plays. `snes.View.shootout_turn` = (round, team, shooter, the other team's goali
 `Recording.shootout_attempt` keeps one attempt per turn (a goal when the shooting team's score rose during it) and
 shootout.json gets `attempts` [{round, team, shooter, goalie, goal, score}] (score: the shootout score after it). The
 viewer lists them under Scoring at the last frame, and its scoreboard reads "Final SO" with the final score there. In
-the user's game, the two pieces kept are the home team's turns of rounds 2 (saved, 1-1) and 5 (a goal, 2-1). The
-Genesis season shootout (NOSE4Web's) isn't handled by the helper yet.
+the user's game, the two pieces kept are the home team's turns of rounds 2 (saved, 1-1) and 5 (a goal, 2-1).
+
+**The Genesis season shootout (2026-11-13).** NOSE4Web's build runs the game's own Shootout mode in overtime (its flag
+$FFF082 set, gsp 3; its shootout goals go to the score too, put back with the winners' goal when gsp goes to 4). It isn't
+in the recorded blocks; `genesis.View` reads it directly: `shootout` (the flag with gsp 3: not live, so not recorded)
+and `shootout_turn` from shootoutteam $D594 (flipped, and the round $D578 moved on, by CountShootoutGoals as an attempt
+ends), BA_Team $D404 / BA_Skater_Offset $D40A (the shooter, once NextShooter has set the turn up: until then the last
+turn's, so None), the lists $D57A / $D588 (five shooters, then the goalie), homeshootgoals / awayshootgoals $D574 /
+$D576 as the score. A gsp of 4 reads as clock 0 (the game over). The Genesis counts a shootout goal after shootoutteam
+flips, so `Recording.shootout_attempt` gives a rise in a team's score to its open turn or else its last attempt.
+`tests/helper_genesis_shootout.py` plays retail Shootout mode headless (shown to the View as the season shootout) and,
+with `--season`, NOSE4Web's nhl94_season_shootout.bin through a whole Recording: a tied overtime, the shootout, "final"
+with shootout.json's final score and every attempt (shooters in list order, home first, the running score).
 
 ## SNES SA-1 and 2 MB builds (2026-11-07)
 
