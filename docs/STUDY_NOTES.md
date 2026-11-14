@@ -4843,6 +4843,20 @@ against the map. Results (three games on NHL94_skate_marks.smc, one on the 2026 
   second): NHL94_skate_marks.smc 7.7% (and 8.2% in the patient run) against NHL94.smc's 2.7%; the 2026 build 8.6%
   against 4.4%. Flat with the count (0-79 marks 7.8%, 80-159 7.0%, 160-239 8.1%): a cost every step, not per mark.
 
+**Second SNES build** (2026-11-14; MARK returns unless X = 0, the step's last object, then one player a step in turn
+(TURN $7F:F40E, 0-$16) rolls with 12 times the chance, a still player skipped, the gsp check once a step;
+NHL94_skate_marks.smc 4ef5a391..., nhl94snes_2026_skate_marks.sfc b4d132a8...):
+- **Slowdown** (frames of play in 3-frame steps): NHL94_skate_marks.smc 4.2% and 4.3% (seeds 0, 1) against NHL94.smc's
+  2.7% and 3.9%; the 2026 build 5.1% against 4.3%; a playoff game 5.3%. The first build's 7.7-9.0% is gone; what
+  remains (about 1 point) is within one game to the next on the original (2.7% / 3.9%).
+- **Counts** at a period's end: 230, 235, 216; 237, 240, 237; 240, 223, 234 (the cap reached twice).
+- **Highlights** (playoffs: OptPlayMode $34BC = 2 in RAM at Game Setup, `--playoffs=2 --patient`; 1 leads to the
+  password screen): four highlights of other games, the count and list unchanged through each, and the next period
+  fresh (count 0, the map plain). After each highlight 22-28 centre-ice logo cells (rows 44-45) hold the highlight
+  game's logo words until the next period's rebuild: the original does the same (the same 28 cells).
+- Every map check clean (66), every stats and replay round trip kept every mark; video strays only the scoreboard
+  view's own row 24.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),

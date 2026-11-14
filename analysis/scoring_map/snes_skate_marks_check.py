@@ -20,7 +20,7 @@ first 100 s (real) or the game's end. Checked:
 - slowdown: timestep ($0ADB, the frames a game step covers: 2 at the game's 30 steps a second) each frame of play.
 Run on the original too (--lag-only) for its timesteps.
 
-python snes_skate_marks_check.py ROM OUT [--lag-only] [--seed=N] [--patient] [--stop=FRAME] [--scoreboard-probe]"""
+python snes_skate_marks_check.py ROM OUT [--lag-only] [--seed=N] [--patient] [--stop=FRAME] [--scoreboard-probe] [--playoffs]"""
 import sys
 from collections import Counter
 from pathlib import Path
@@ -178,6 +178,8 @@ def main():
         M.play(e, f"w{1800 + 53 * seed} START w240", tmp)
     else:
         M.play(e, f"w{1500 + 53 * seed} START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", tmp)
+    if any(a.startswith("--playoffs") for a in sys.argv):                 # OptPlayMode: the SNES plays other games' highlights only in the
+        e.setw(0x34BC, int(next(a.split("=")[1] for a in sys.argv if a.startswith("--playoffs")) if any(a.startswith("--playoffs=") for a in sys.argv) else 1))  # playoffs (DoHiLights returns at once when it is 0)
     M.play(e, "START w240 START w200 w2400", tmp)
     for _ in range(12):
         c = e.w(CLOCK)
@@ -186,6 +188,7 @@ def main():
             break
         press(e, "START", 60)
     cvc.computer_only(m)
+    print(f"play mode {e.w(0x34BC)}", flush=True)
     teams = tuple(e.w(a) for a in TEAMS)
     print(f"in play: period {e.w(GSP) + 1} clock {e.w(CLOCK)} count {e.w(COUNT)} teams {teams}", flush=True)
     plain = rmap(e) if e.w(COUNT) == 0 else None
