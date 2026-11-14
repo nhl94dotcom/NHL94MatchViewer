@@ -12,7 +12,8 @@ Checked on nhl94_playoffs-261113-133619.mkv (four games): the four games and the
 same as the recordings' (team, period, clock within 1 s), none extra; every one of the 45 faceoffs during periods
 matched by a whistle at its clock, plus 5 a game more (the clock standing at period ends and at pauses).
 
-python analysis/vision/game_events.py VIDEO TEMPLATES.npz OUT.json [STEP]
+python analysis/vision/game_events.py VIDEO TEMPLATES.npz OUT.json [STEP]   (OUT also keeps the held readings:
+                                                        [frame, period, clock, visitors, home])
 python analysis/vision/game_events.py check OUT.json     (the goals against the recordings' match files, through
                                                         tools/video_sync.py's timeline beside the video)"""
 import json
@@ -122,7 +123,7 @@ def main():
     step = int(sys.argv[4]) if len(sys.argv) > 4 else 6
     rows = held(read_video(video, templates, step))
     games = events(rows, 59.92)
-    out.write_text(json.dumps({"video": str(video), "step": step, "games": games}, indent=1))
+    out.write_text(json.dumps({"video": str(video), "step": step, "games": games, "readings": rows}, indent=1))
     for g in games:
         print(f"game from frame {g['start_frame']} to {g['end_frame']}: final {g['final'][0]}-{g['final'][1]} (visitors-home), "
               f"{len(g['goals'])} goals, {len(g['whistles'])} whistles, periods {[p['period'] for p in g['periods']]}")

@@ -1206,5 +1206,13 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   recordings' (team, period, clock within 1 s), none extra; all 45 faceoffs in mid-period matched by a whistle, and
   about 5 more a game (period ends at 0:00, pauses). About 2 minutes for the whole video.
 
+- **The puck's ring** (`sprites.rings`): the flat puck is a dark ring about 6 x 3 (4 dark over dark ends and a light
+  middle over 4 dark); searched inside player groups too: 52.4% of loose pucks found, 0.31 false a frame. Of the
+  misses near players looked at, most were hidden under a player or the goalie.
+- **Zone time** (`zone_time.py`): the camera follows the puck (in the recordings the puck's Y = 0.97 x Vpos - 6 to
+  -11, spread 45), so each frame of live play (the score box's clock running) gets its zone from the camera alone.
+  BOS-CHI, home attacking / neutral / defending against the recorded puck's own: 38/21/41 vs 37/22/41, 38/21/40 vs
+  37/22/41, 43/22/35 vs 43/23/34, 49/18/33 vs 50/20/30; live play 913-921 game seconds a game (5-minute periods).
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

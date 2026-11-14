@@ -297,7 +297,8 @@ def players(rink, f, hpos, vpos, colours, static=None):
 
 
 # ---- the puck (2026-11-14) ----
-# A loose puck is a small dark sprite on its own, on the ice (camera_track.Rink.ice): a group of sprite pixels (no gap filling) of PUCK_MIN-PUCK_MAX pixels
+# A loose puck is a small dark sprite on its own, on the ice (camera_track.Rink.ice), or, beside or over a player,
+# the flat puck's ring shape (rings: found inside player groups too): a group of sprite pixels (no gap filling) of PUCK_MIN-PUCK_MAX pixels
 # with at least PUCK_DARK of them near black (every channel under DARK_MAX; the stars' outlines are dark blue). Its centre is the dark pixels' mean; on the rink the
 # recorded puck is at x = X - Hpos + 128, y = 107 - Y + Vpos - Z (+ PUCK_DY: the sprite sits that much lower).
 
@@ -323,4 +324,25 @@ def puck_candidates(rink, f, hpos, vpos, static=None):
         if not ice[int(cy), int(cx)]:
             continue
         out.append((cx, cy, n))
+    for cx, cy in rings(dark, fg & ice):                    # the flat puck's ring, on or beside a player
+        if all(abs(cx - x) > 4 or abs(cy - y) > 3 for x, y, _ in out):
+            out.append((cx, cy, 0))
     return out
+
+
+def rings(dark, where):
+    """The flat puck's shape (a 256-wide frame): a dark row of 4 over a row dark at both ends (x-2 or x-3, and x+3
+    or x+4) and light in its middle two (x, x+1), over a dark row of 4; the light middle in a sprite pixel. Returns
+    the middles' centres."""
+    H, W = dark.shape
+    d = np.zeros((H + 8, W + 8), bool)
+    d[4:-4, 4:-4] = dark
+
+    def at(dy, dx):
+        return d[4 + dy:4 + dy + H, 4 + dx:4 + dx + W]
+    top = at(-1, -1) & at(-1, 0) & at(-1, 1) & at(-1, 2)
+    bot = at(1, -1) & at(1, 0) & at(1, 1) & at(1, 2)
+    ends = (at(0, -2) | at(0, -3)) & (at(0, 3) | at(0, 4))
+    mid = ~at(0, 0) & ~at(0, 1)
+    ys, xs = np.nonzero(top & bot & ends & mid & where)
+    return [(float(x) + 0.5, float(y)) for y, x in zip(ys, xs)]
