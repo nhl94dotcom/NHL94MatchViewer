@@ -28,6 +28,7 @@ OLD_BLOCKS = [[0xB000, 0x900], [0xC400, 0x800]]  # fast.bin layout before captur
 BASE, SIZE = 0xB04A, 0x80  # record 0 start, record size
 PLAYERS, PUCK = 12, 14
 FRAME, X, Y, Z, ROLE, FACING, ANIM, FLAGS, ROSTER, HAND = 0x06, 0x1C, 0x20, 0x24, 0x35, 0x55, 0x58, 0x62, 0x66, 0x76
+SFLAGS2 = 0xC2EE            # sflags2 (its first byte): bit 4 sf2shot, a shot struck (doshot)
 NOPUCK = 0x5E              # a record's no-touch timer (nopuck): frames before he may touch the puck again
 OWNED, OWNER = 0x60, 0x61  # puck record: $00 while a player has it, and that player's record number
 # What the game sets in a player's record when he comes on the ice (setplayer): weight (rating x 8), working Agility,
@@ -476,6 +477,10 @@ class MatchReader:
         # more): [frame, stealer's record] when the carrier loses the puck and an opposing skater's timer has just jumped
         # to $14 or more. find_turnovers credits him a takeaway.
         self.match["steals"] = []
+        # Shots struck (2026-11-14): the samples where sflags2's sf2shot (bit 4 of $FFC2EE, set by doshot as the puck
+        # leaves the stick) comes on. A puck knocked off a carrier winding up flies like a shot but never sets it.
+        self.match["shotFlag"] = []
+        self.prev_shotflag = 0
         self.prev_nopuck, self.prev_carrier = None, -1
         self.last_work = [None] * PLAYERS
         self.aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
@@ -595,6 +600,10 @@ class MatchReader:
             if jumped:
                 self.match["steals"].append([len(self.match["t"]) - 1, jumped[0]])
         self.prev_nopuck, self.prev_carrier = nopuck, carrier
+        shotflag = cap.byte(i, SFLAGS2) & 0x10      # btst / bset on memory: a byte (the word's high byte)
+        if shotflag and not self.prev_shotflag:
+            self.match["shotFlag"].append(len(self.match["t"]) - 1)
+        self.prev_shotflag = shotflag
         # A post: the loose puck turns back out of the end zone right beside a post (about 20 units either side of
         # the middle, on the goal line). Found from a post shot the user saw in capture5_league30 at 2:57 of period 1;
         # across all captures the rule fires only three times.

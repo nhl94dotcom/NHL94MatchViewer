@@ -160,6 +160,28 @@ def steady_stats(m):
 STICK_NEAR = 14  # a one-timer strike: the puck this close to the swinging stick's blade (12-18 tried: 14 matches the game's own count, 130 vs 131 in 12 games)
 
 
+UNSTRUCK_NEAR = 10   # samples: a shot's release and doshot's flag (m['shotFlag']) together (304 of 307 the same sample)
+
+
+def drop_unstruck(shots, m):
+    """Genesis: a shot or one-timer the game didn't count and never struck (no sf2shot within UNSTRUCK_NEAR samples:
+    m['shotFlag']) is a puck knocked off a carrier winding up (a steal, the goalie), not a shot: left out (2026-11-14:
+    42 'shots' and 4 one-timers of that kind in 12 league games; every shot the game counted is kept, and pass shots
+    and deflections, which never set the flag, stay as they are)."""
+    flags = m.get("shotFlag")
+    if not flags:
+        return shots
+    import bisect
+    out = []
+    for sh in shots:
+        if sh.get("kind") in ("shot", "one-timer") and not sh.get("counted"):
+            j = bisect.bisect_left(flags, sh["f"] - UNSTRUCK_NEAR)
+            if not (j < len(flags) and flags[j] <= sh["f"] + UNSTRUCK_NEAR):
+                continue
+        out.append(sh)
+    return out
+
+
 def find_shots(m, goals=None):
     """Every shot, with where it was taken from and how it ended, for the viewer's shot map. The game keeps only
     totals, so shots are found from the animations:
@@ -1131,6 +1153,9 @@ def find_zone_entries(m):
 BURST_CONTACT = 18  # a burster this close to the carrier has reached him
 
 
+GOALIE_TOUCH = 20   # units: the opposing goalie this near the carrier as he lost the puck took it off him (find_turnovers)
+
+
 def find_turnovers(m):
     """Changes of possession from one team to the other with no whistle between, and why. Possession is the
     game's own (puck +$60/+$61: who has the puck). A shot losing the puck is not a turnover (blocked, saved or
@@ -1171,8 +1196,8 @@ def find_turnovers(m):
         lost = e1 + 1
         if m['period'][e1] != m['period'][a2] or any(P[3 * q + 2] < -100 for q in range(e1, a2 + 1)):
             continue  # a whistle between: the faceoff decides it
-        if any(sh['team'] == team(k1) and abs(sh['f'] - lost) <= 3 for sh in shots):
-            continue  # he shot it
+        if any(sh['team'] == team(k1) and lost - 3 <= sh['f'] <= a2 for sh in shots):
+            continue  # he shot it, or a teammate did before the other team had it (a one-timer off his pass: its rebound)
         ev = {'f': a2, 'lost': lost, 'from': team(k1), 'giver': idx(lost, k1), 'taker': idx(a2, k2),
               'x': P[3 * lost], 'y': P[3 * lost + 1]}
         window = [q for q in range(max(0, lost - 40), min(N, lost + 20)) if abs(t[q] - t[lost]) <= 500]
@@ -1192,6 +1217,16 @@ def find_turnovers(m):
                 ev.update(kind='giveaway', how='pass picked off')
             out.append(ev)
             continue
+        # The puck lost into the other team's goalie (him within GOALIE_TOUCH of the carrier as it went: his pads, stick
+        # or body knocked it off; NOSE4Web's count: the carrier's giveaway, no goalie takeaways): 13 of the 20 times the
+        # build's cause was the goalie he was this close; no skater-caused takeaway had him nearer than 23.
+        if cause is None:
+            near_g = [k for k in rivals if goalie(lost, k)]
+            if near_g and min(math.hypot(pos(q, near_g[0])[0] - pos(q, k1)[0], pos(q, near_g[0])[1] - pos(q, k1)[1])
+                              for q in range(max(0, lost - 6), min(N, lost + 2))) <= GOALIE_TOUCH:
+                ev.update(kind='giveaway', how='lost the puck')
+                out.append(ev)
+                continue
         for q in window if cause is None else []:
             for k in rivals:
                 a = anim(q, k)
@@ -2477,7 +2512,7 @@ def analyse(match, system, cap, rom_path):
             # The stick blades' HotList (ROM $A44C8: x, y bytes per sprite frame), for find_shots' one-timer test.
             rom = Path(rom_path).read_bytes()
             match["_hot"] = [struct.unpack_from(">bb", rom, 0xA44C8 + 2 * fr) for fr in range(846)]
-        match["shotList"] = find_shots(match, match.get("goals"))
+        match["shotList"] = drop_unstruck(find_shots(match, match.get("goals")), match)
         match.pop("_hot", None)
         match["turnovers"] = find_turnovers(match)
         match["failedOneTimers"] = find_failed_one_timers(match)

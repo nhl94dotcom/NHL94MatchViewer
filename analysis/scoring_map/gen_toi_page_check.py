@@ -59,6 +59,11 @@ def play(rom, out, seconds, playmode=0):
     for t, base in enumerate(TEAM):
         toi[t] = [e.w(base + TOI + 2 * p) for p in range(26)]
     (out / "toi.json").write_text(json.dumps(toi))
+    # NOSE4Web's giveaways / takeaways (2026-11-14 builds): a byte per roster place, 32 a team, home first
+    gt = {kind: {t: [e.b(0xFF0000 | (base + 32 * t + p)) for p in range(26)] for t in (0, 1)}
+          for kind, base in (("give", 0xE810), ("take", 0xE850))}
+    (out / "giveaways.json").write_text(json.dumps(gt))
+    print("giveaways home", gt["give"][0], "away", gt["give"][1], "takeaways home", gt["take"][0], "away", gt["take"][1])
     print("clock", e.w(CLOCK), "period", e.w(GSP), "toi home", toi[0], "away", toi[1])
 
 

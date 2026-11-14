@@ -4942,6 +4942,19 @@ turnovers (same team, kind and player within 1 s real).
   genesis.MatchReader: the carrier loses the puck as an opposing skater's no-touch timer, +$5E, jumps to $14 or more,
   which only puckstick's steal does), a takeaway 'stick steal'; then a pass that ended the possession is picked off
   (or a dump-in) whatever poke or hook was near; no goalie takeaways.
+- **The last differences, traced** (the build's LASTC / CAUSE every frame against the converter): (1) 19 of 22
+  converter takeaways the ROM counted as the carrier's giveaway had the goalie as the cause (his pads, stick or body:
+  the carrier knocked down by him, or the puck off him): the converter now calls it a giveaway when the opposing
+  goalie is within 20 units of the carrier as he loses it (13 of the 20 goalie causes were that near; no
+  skater-caused takeaway nearer than 23). (2) 14 picked-off passes the ROM didn't count: the receiver had struck a
+  one-timer (wide, saved, blocked) before the other team got the puck: its rebound, no turnover (a shot by the
+  passer's team between the loss and the pickup now ends it). (3) 11 ROM counts the converter missed: its own
+  "shots" (uncounted, blocked or wide) at the moment the puck was knocked off a carrier winding up, which doshot
+  never struck. The Genesis sets sflags2's sf2shot (bit 4 of the byte at $FFC2EE; btst / bset on memory are byte
+  operations) as a shot leaves the stick: in 12 league games it came on in the same sample as 304 of the 307
+  matched shots; 42 uncounted "shots" and 4 one-timers had none (3.5 a game). The converter now drops those
+  (m['shotFlag']; every shot the game counted kept; pass shots and deflections never set it). **Result: 137 of 142
+  (nhl94) and 125 of 134 (CDL) paired.** Season VERSION 38.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
