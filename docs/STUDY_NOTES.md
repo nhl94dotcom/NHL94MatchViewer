@@ -4745,6 +4745,39 @@ nhl94_toi.bin and NHL94_toi_page.smc:
 - **The Genesis cap (959b39c, nhl94_toi.bin 58c5e10f... SHA-256):** 5999, 6000, 6001 and 65000 s all printed 99:59
   (both teams; sorted with the 99:59s first), 754 still 12:34.
 
+### Skate marks: NOSE4Web's tile-level plan, from the code (2026-11-14)
+
+- **Genesis timing:** setvideo (video94) is main-loop code, once a game frame: it waits for dfok (cleared by the
+  vblank after DumpSprites sends the last list), then updatescroll queues each new rink row on DMAList (source,
+  words, VRAM address; 48 words a row) and the vblank sends them. A row built in RAM during setvideo is sent in the
+  next vblank before setvideo runs again: one buffer per queued row is enough; the copy costs main-loop time, the
+  vblank DMA is the same size. A jump (faceoffs: checkwindow run 101 times) queues up to 31 rows ($1F): 31 x 96 bytes,
+  or ROM rows for a jump and the marks painted back over the next frames.
+- **Free RAM:** Genesis $FFE000-$FFFEBF never written on nhl94, CDL Season 12, DPWM3, GDL Season 4, IDL5 and RGDL
+  (2026-11-11; the stack from $FFFEC0), less NOSE4Web's own ($FFF080, $FFF082, ...). SNES (retail and Classic):
+  $7E:E68C-$EFFF, $7E:F033-$FFFF and $7F:F3F6-$FFFF never written (less NOSE4Web's: $7E:E800-$E867 TOI, $7E:F100
+  shootout save, $7E:FE00-$FEB5 fights); $7F:F3F6 up is past rinkmapbuf ($7F:C800 + 6 + 48 x 113 x 2 = $7F:F25C).
+- **No new tiles:** the rinks already hold streak tiles. Genesis $8E (the one-pixel diagonal in palette 0's colour 2,
+  in 103 rink cells), $FB (6 px), $F4 (5 px), $A4 / $A5 (15-16 px), all colour 2 on plain ice; with the map word's
+  horizontal flip, several marks at no VRAM cost. SNES: the same diagonal is tile $BA (103 cells), colour 2 of its
+  palette, plain ice tile 0 (all colour 0). So the SNES's full BG2 range doesn't matter.
+- **Position to cell (both):** Genesis objects on screen at x = X - Hpos + 128 (the H32 picture), the anchor y = 111 -
+  Y + Vpos (- Z); the rink map at map x = screen x + Hpos + 64, map y = screen y - Vpos + 256 (updatescroll; checked
+  on video against the recordings); skater frames' bottom rows 3-8 below the anchor. SNES: find3d x = X - Hpos + $80,
+  y = $70 - Y + Vpos (- 1.5 Z); BG2HScroll = Hpos + $40, the map rows from (Vscroll + $170) / 8 with Vscroll = -Vpos -
+  $70. Both: column = (X + 192) / 8, row = (368 to 371 - Y) / 8 under the skates (48 columns, 113 rows).
+- **Reverse angle:** RevRinkTilelist is the rink mirrored left to right, the same rows (94% of pixels the same that
+  way against 92% as it is: the benches and boxes differ): a mark at column c goes at 47 - c. The horizontal
+  scoreboard has a 32 x 28 map of its own: no marks there.
+- **SA-1 / 2 MB:** BuildRinkMap unpacks to $7F:C800 there too, and ShowRinkRows (updatescroll_rows) streams it the
+  same way (64 + 32 bytes a row). The SA-1 can't reach $7E / $7F: the map edits on the S-CPU (where the row DMA is
+  queued) or the marks kept in BW-RAM ($40:4800-$5FFF free) and laid in from there.
+- **Hooks:** each skater's place and speed every frame of play: updateplayers (Genesis logic94, after the position
+  step; SNES updateplayers.asm .10 / .1xxx); it doesn't run in replays or pauses. Clearing: on a change of gsp seen in
+  that hook (period starts, overtime) rather than setupice, which also runs after pause screens' reloads (Genesis
+  ReloadRinkGraphics / ClrHor reload tiles, not the map; SNES ExitStatsScreen rebuilds rinkmapbuf: lay the marks back
+  in after BuildRinkMap).
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
