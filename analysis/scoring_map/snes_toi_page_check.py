@@ -68,7 +68,7 @@ def play(rom, out, stop_clock, lines=1, stop_period=2):
         if m.sa1:
             return m.bw[a] | m.bw[a + 1] << 8
         return e.ram[a] | e.ram[a + 1] << 8
-    gb, tb = (0x5504, 0x556C) if m.sa1 else (0xE690, 0xE6F8)
+    gb, tb = (0x5504, 0x556C) if m.sa1 else (0xFD14, 0xFD7C)     # $7E:FD10 + 4 / + $6C (E690 / E6F8 before)
     gt = {k: {t: [word(base + VIS * t + 2 * s) for s in range(26)] for t in (0, 1)} for k, base in (("give", gb), ("take", tb))}
     (out / "giveaways.json").write_text(json.dumps(gt))
     print("giveaways", gt["give"], "takeaways", gt["take"])

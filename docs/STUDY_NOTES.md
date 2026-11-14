@@ -4999,6 +4999,14 @@ BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNE
   `snes_ram_use_check.py` on nhl94snes_2026.sfc (a whole game): never written $7E:E7F1-$EFFF, $7E:F03F-$FFFF,
   $7F:A7C0-$C7FF, $7F:F240-$FFFF; $7E:F03F-$FFFF is free on retail and Classic too (NOSE4Web's shootout save from $F100
   and fights $FE00-$FEB5 inside it): $7E:FC00-$FCD7 suggested for every layout.
+- **The builds with the counts moved** (NOSE4Web: $7E:FD10-$FDEB on every build but the SA-1, between its shootout
+  save $F100-$FD0F and the fights; FallDown's injury path hooked too): nhl94snes_2026_giveaways.sfc a5f99eba... 71 of
+  82 counts paired (2 games), values sane. Season shootout (NHL94_giveaways_shootout.smc 509376d6...,
+  `snes_shootout_check.py ... tie --giveaways`, the count words only): a shootout of 6 rounds, no count changed in it;
+  the next game's start cleared them. Original layout pages (NHL94_giveaways.smc 90fe4af9..., with TOI and the
+  checks): Goals, Assists, Points, Shots, Checks, Giveaways, Takeaways, Time On Ice (last); arrows, highlights,
+  scrolling right; every skater's number the RAM word; a goalie's count (the home goalie's 2 giveaways, place 0)
+  shows on no page, since SNES Player Stats lists goalies only on the Goalies page.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 

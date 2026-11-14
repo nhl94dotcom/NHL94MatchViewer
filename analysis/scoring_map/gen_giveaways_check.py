@@ -36,6 +36,7 @@ LASTC, CAUSE, GIVE, TAKE = 0xE800, 0xE802, 0xE810, 0xE850
 TOTALS = {(0, "give"): 0xE900, (0, "take"): 0xE902, (1, "give"): 0xEC64, (1, "take"): 0xEC66}
 TEAMS, GMODE, GMODE2, SO_FLAG = (0xC6F7, 0xCA5B), 0xC2EA, 0xC2FA, 0xF082
 GSP, CLOCK, SCREEN = 0xC466, 0xC468, 0xFFF7
+GVBASE = 0xFD10        # NOSE4Web's SNES counts in bank $7E (not the SA-1): $E68C in the first builds, $FD10 since
 
 
 def counts(e):
@@ -80,13 +81,14 @@ class Watch:
 
 
 class SnesWatch(Watch):
-    """NOSE4Web's SNES build (2026-11-14): last carrier $7E:E68C, cause $E68E, giveaways $E690 and takeaways $E6F8 (a
+    """NOSE4Web's SNES build (2026-11-14; GVBASE: $7E:E68C in the first builds, $7E:FD10 since): last carrier +0, cause +2,
+    giveaways +4 and takeaways +$6C (a
     word per roster player, the visitors at +$34), totals $E760; on the SA-1 the same from BW-RAM $40:5500."""
     def __call__(self, e, frame, m):
         def raw(off, n):
             if m.sa1:
                 return bytes(m.bw[0x5500 + off:0x5500 + off + n])
-            return bytes(e.ram[0xE68C + off:0xE68C + off + n])
+            return bytes(e.ram[GVBASE + off:GVBASE + off + n])
         if self.ours is None and not m.w(0x15D8) & 0x0801:
             self.ours = (m.w(0x1C98), m.w(0x1C9A))
         lc = tuple(int.from_bytes(raw(o, 2), "little") for o in (0, 2)) + (m.w(0x0AD9),)
@@ -421,7 +423,7 @@ def snes_stats(rom, out, item=2):
             if m.sa1:
                 m.bw[0x55D4 + 2 * k], m.bw[0x55D4 + 2 * k + 1] = v, 0
             else:
-                e.ram[0xE760 + 2 * k], e.ram[0xE760 + 2 * k + 1] = v, 0
+                e.ram[GVBASE + 0xD4 + 2 * k], e.ram[GVBASE + 0xD4 + 2 * k + 1] = v, 0
         SK.press(e, "START", 90)
         for _ in range(40):
             if e.w(0x0D15) == item:

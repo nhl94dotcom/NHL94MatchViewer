@@ -102,8 +102,8 @@ def run_case(e, m, base, case, out, rom=None):
 
     def gblock():
         if m.sa1:
-            return bytes(m.bw[0x5500:0x5500 + 0xD8])
-        return bytes(e.ram[0xE68C:0xE68C + 0xD8])
+            return bytes(m.bw[0x5500:0x5500 + 0xDC])
+        return bytes(e.ram[0xFD10:0xFD10 + 0xDC])     # $7E:FD10 since 2026-11-14's last builds (E68C before)
     g_before, g_last, g_changes = gblock(), gblock(), []
     before = snapshot(m)
     extra_before = extra(m) if big else None
@@ -130,10 +130,10 @@ def run_case(e, m, base, case, out, rom=None):
                 toi_at["shootout ends"] = toi()
         if GIVE:
             gb = gblock()
-            if gb != g_last:
-                if so & 0xFF:
-                    g_changes.append(f)
-                g_last = gb
+            if gb[4:] != g_last[4:]:                 # the counts (not the last carrier and cause words)
+                g_changes.append((f, "in the shootout" if so & 0xFF else f"gsp {g} clock {m.w(CLOCK)}"))
+                print(f"giveaways: a count changed at f{f} ({g_changes[-1][1]})", flush=True)
+            g_last = gb
         if so & 0xFF:
             so_seen, phase = True, "in the shootout"
         elif so_seen:
@@ -200,7 +200,8 @@ def run_case(e, m, base, case, out, rom=None):
         res["extra stats and fight state (period 3's last second, the game's end)"] = [extra_before, extra_after]
     if GIVE:
         tot = lambda b: [b[0xD4 + 2 * k] | b[0xD5 + 2 * k] << 8 for k in range(4)]   # noqa: E731
-        res["giveaways: count changes while shootoutmode was on"] = len(g_changes)
+        res["giveaways: count changes while shootoutmode was on"] = sum(1 for _, ph in g_changes if ph == "in the shootout")
+        res["giveaways: every count change after period 3's last seconds"] = g_changes
         res["giveaways: totals (home give, visitors' give, home take, visitors' take) at period 3's last seconds, "
             "the game's end"] = [tot(g_before), tot(gblock())]
     if TOI:
