@@ -16,7 +16,8 @@ from pathlib import Path
 import numpy as np
 
 RINKTILELIST = 0x5605A
-LEVELS = np.array([0, 36, 73, 109, 146, 182, 219, 255], np.uint8)     # Genesis Plus GX's 3-bit levels
+LEVELS = np.array([0, 33, 66, 99, 140, 173, 206, 239], np.uint8)     # the 3-bit levels in RetroArch's recordings
+                                                                     # (Genesis Plus GX; measured, 2026-11-14)
 
 
 def colour(w):

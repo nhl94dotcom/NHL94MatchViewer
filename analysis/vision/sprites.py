@@ -149,3 +149,118 @@ if __name__ == "__main__":
     if sys.argv[1] == "check":
         check(Path(sys.argv[2]), sys.argv[3], int(sys.argv[4]) if len(sys.argv) > 4 else 0,
               int(sys.argv[5]) if len(sys.argv) > 5 else 20000)
+
+
+# ---- players by team (2026-11-14) ----
+# Each team's uniform palette from the ROM (tools/systems/genesis.read_teams: the home palette for the home team, the
+# away palette for the visitors, as the game loads them into lines 2 and 3), each slot weighted by how often the
+# player sprites use it (the colour indices of every tile in Spritetiles, $5DE84-$9E724 on retail: slots 11 and 12,
+# the jersey, most). Only the slots where the two palettes differ by more than OWN_GAP speak for a team. A sprite pixel
+# is a team's when that team's weight for its colour (slots within PIX_GAP) is at least RATIO times the other's; the
+# rest of each sprite blob (shared colours: skin, black, white on both) goes to its nearest labelled pixel. Each team's
+# part of a blob, grouped (gaps of TEAM_CLOSE filled), is a player (or a few of one team, together) when it has
+# TEAM_MIN pixels or more and at least SAT_MIN of its labelled pixels saturated (not grey: the nets and the referee
+# are grey and white). A group of n x PLAYER_PIXELS (rounded) is split into n players by k-means on its pixels'
+# places. The close-up faceoff box (a sprite block of 2,500+ pixels, at least 60% filled) is left out
+# first.
+
+OWN_GAP, PIX_GAP, RATIO, TEAM_CLOSE, TEAM_MIN, SAT_MIN, GREY = 60, 30, 2.0, 2, 120, 3, 40
+PLAYER_PIXELS = 316                # one player's part (median of 117 matched on nhl94_playoffs-261113-133619.mkv)
+SPRITETILES = (0x5DE84, 0x9E724)
+
+
+def video_rgb(hexcolour):
+    from rink_render import LEVELS
+    v = [int(hexcolour[i:i + 2], 16) for i in (1, 3, 5)]
+    return np.array([LEVELS[round(c * 7 / 255)] for c in v], np.int16)
+
+
+def slot_weights(rom_bytes):
+    t = np.frombuffer(rom_bytes[SPRITETILES[0]:SPRITETILES[1]], np.uint8)
+    c = np.bincount(np.concatenate([t >> 4, t & 15]), minlength=16).astype(float)
+    c[0] = 0
+    return c / c.sum()
+
+
+def team_colours(rom, home_abbr, away_abbr):
+    """[(slot colours (k, 3), weights (k,)) for home, visitors]: the slots where the two teams differ."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+    from systems import genesis
+    teams = {t["abbr"]: t for t in genesis.read_teams(Path(rom))}
+    w = slot_weights(Path(rom).read_bytes())
+    home = [video_rgb(c) for c in teams[home_abbr]["palettes"][0]]
+    away = [video_rgb(c) for c in teams[away_abbr]["palettes"][1]]
+    diff = [k for k in range(1, 16) if np.abs(home[k] - away[k]).sum() > OWN_GAP]
+    return [(np.array([pal[k] for k in diff]), w[diff]) for pal in (home, away)]
+
+
+def grow(m, k):
+    for _ in range(k):
+        p = np.pad(m, 1)
+        m = m | p[:-2, 1:-1] | p[2:, 1:-1] | p[1:-1, :-2] | p[1:-1, 2:]
+    return m
+
+
+def team_evidence(f, colours):
+    ev = []
+    for cols, w in colours:
+        near = np.abs(f[:, :, None, :] - cols[None, None, :, :]).sum(axis=3) <= PIX_GAP
+        ev.append((near * w).sum(axis=2))
+    return ev
+
+
+def kmeans(xs, ys, k, rounds=12):
+    """k centres of the points (x, y, count each), started evenly along the group's longer side."""
+    if k == 1:
+        return [(float(xs.mean()), float(ys.mean()), len(xs))]
+    pts = np.stack([xs, ys], axis=1).astype(float)
+    axis = 0 if np.ptp(xs) >= np.ptp(ys) else 1
+    order = np.argsort(pts[:, axis])
+    cen = np.array([pts[order[int((j + 0.5) * len(pts) / k)]] for j in range(k)])
+    for _ in range(rounds):
+        a = ((pts[:, None, :] - cen[None]) ** 2).sum(axis=2).argmin(axis=1)
+        cen = np.array([pts[a == j].mean(axis=0) if (a == j).any() else cen[j] for j in range(k)])
+    return [(float(cen[j, 0]), float(cen[j, 1]), int((a == j).sum())) for j in range(k)]
+
+
+def players(rink, f, hpos, vpos, colours):
+    """[(team 0 home / 1 visitors, x, y, pixels)]: each player group's centre, in screen pixels."""
+    fg = fg_mask(rink, f, hpos, vpos)
+    eh, ea = team_evidence(f, colours)
+    lab = np.full(fg.shape, -1, np.int8)
+    lab[fg & (eh > 0) & (eh >= RATIO * ea)] = 0
+    lab[fg & (ea > 0) & (ea >= RATIO * eh)] = 1
+    sat = (f.max(axis=2) - f.min(axis=2)) >= GREY
+    out = []
+    for ys, xs in label(close1(fg)):
+        w, h = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
+        if w * h >= 2500 and len(ys) >= 0.6 * w * h:          # the close-up faceoff box
+            continue
+        keep = fg[ys, xs]
+        ys, xs = ys[keep], xs[keep]
+        l = lab[ys, xs]
+        if not (l >= 0).any():
+            continue
+        known = np.flatnonzero(l >= 0)
+        if (l < 0).any():                                      # the rest to the nearest labelled pixel
+            unk = np.flatnonzero(l < 0)
+            d = (ys[unk, None] - ys[None, known]) ** 2 + (xs[unk, None] - xs[None, known]) ** 2
+            l = l.copy()
+            l[unk] = l[known[d.argmin(axis=1)]]
+        for team in (0, 1):
+            sel = l == team
+            if sel.sum() < TEAM_MIN:
+                continue
+            m = np.zeros(fg.shape, bool)
+            m[ys[sel], xs[sel]] = True
+            for gy, gx in label(grow(m, TEAM_CLOSE)):
+                inside = m[gy, gx]
+                py, px = gy[inside], gx[inside]
+                if len(py) < TEAM_MIN:
+                    continue
+                if (sat[py, px] & (lab[py, px] == team)).sum() < SAT_MIN:
+                    continue
+                k = max(1, round(len(py) / PLAYER_PIXELS))
+                for cx, cy, cn in kmeans(px, py, k):
+                    out.append((team, cx, cy, cn))
+    return out
