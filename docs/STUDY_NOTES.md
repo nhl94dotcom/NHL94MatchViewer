@@ -5035,7 +5035,17 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
   sets the teams). Retail: Regular Game, Rangers (14) vs Vancouver (23); W18 / W18p 25 vs 22. **Word 1** (retail 0, W18
   and W18p 1) is no row: set at start-up, read by game logic (`tst` / `cmpi #2` around $7F982-$7FA2A) and menu code
   ($CAAE = $B - word 1 at $8745E; word 1 = d0 - $CAAE at $879E8; `move #4` in the attract setup at $85D62); setting it
-  0-2 changes nothing on Game Setup. Not yet known.
+  0-2 changes nothing on Game Setup. Not yet known. (NOSE4Web's folder also holds a machine disassembly of a league
+  ROM, "1910.bin", at retail's addresses: the routine at $7F97E reads word 1 first, toggles $CC5E / $CC60 on pad input
+  and hands record 5 or 11, the goalies, to a pad through $AD80 / $AD8A: word 1 belongs to people taking the goalies.)
+- **W18 / W18p:** the long at $772 points to the moved table at $1A7300: 34 teams of 10 players, read the same way.
+- **Strip colours** (from a play state: each of the 16 entries of colour line 2, the home team's palette from team +$0C,
+  and line 3, the visitors' from +$2C, set to magenta in turn, the frame redrawn; Rangers and Vancouver): 0 ice
+  (transparent), 1 stick blade and skate blades, 2 helmet / body / leg (light), 3 helmet / body / leg (dark), 4 helmet /
+  body (the jersey's main colour), 5 face (light), 6 face (dark), 7 and 8 the goalie's pads and mask (light, dark;
+  8 also a few pixels of a skater's boot: provisional), 9 gloves and boots, 10 shoulders and sleeves (the yoke), 11
+  pants (light), 12 pants (dark), 13 the stripe (shoulders, waist), 14 stick shaft, 15 shadow. Not NHL '94's order
+  (there 2 gloves, 3-5 pants, 6-7 face, 11-13 the body ramp).
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
