@@ -1282,6 +1282,28 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
 - **The report** (`video_report.py VIDEO OUT`): camera, score boxes, static sprites and possession per game (that
   game's home and visitors), one step at a time in gentle mode, each kept in OUT; per game the teams, final, goals,
   zone shares, possession shares and attack-zone possession.
+- **The report against the recordings** (`video_report.py ... --check`, BOS-CHI, 2026-11-14; a fix first: the camera
+  track's own spacing, live play had been counted 4 times over): live play 875-883 game seconds against 906-907 (3%
+  short); zone shares within 3 points every game; attack-zone possession within 10 game seconds but for one (212 /
+  233); possession within 3.3 points, the home team high in 3 of 4 (by 2.4-3.3: game 2 put the wrong team ahead).
+  Intermission highlights: none got into live play (every live stretch continues the one before); the score box's
+  team reads are now kept and any stretch showing another game's teams left out.
+- **The puck, third version** (`puck.py` both scorings, `puck_eval.py --star --players` caches, `puck_tune.py`): the
+  partial scoring (a puck half hidden by a skater or the net) found the puck among its candidates in 92% / 98% of
+  carried / loose frames but with about 130 candidates a frame, and alone placed 26.8% (its rewrite had changed the
+  classic scoring too: put back exactly, 46.7%). The classic candidates hold the puck in 67% / 79%. What helped: the
+  partial candidates only within 20 px of the possession star (a carried puck is within about 18 px of it; the star is
+  under the carrier in 95% of carried frames) and a penalty for a candidate place that keeps coming back (the
+  goalies' pads and sticks in front of each net, the faceoff dots: the wrong picks were a median 46 px off, mostly
+  these). 46.7% -> 53.0% on the tuning stretch, 33.3% -> 39.4% on a stretch of another game (game 4): the same 6
+  points, but the level varies by stretch.
+- **Events from the sound, tried and dropped** (`audio_events.py`, `sfx_refs.py`): the video keeps the game's audio
+  (FLAC); the recordings' shots, checks and passes put on the video's timeline; templates learnt there, and clean
+  ones from our own emulator (every effect's start from lastsfx, $FFC016: the replay recorder sets bit 7 of its low
+  byte once a frame is saved, so a clear bit 7 is a new effect). Neither found shots, checks or passes even in the
+  clean audio (5 of 56 shots): at those effects' starts the loudness barely moves (checks 1.4 x the median before and
+  after, passes 0.3-0.4 x): the crowd and organ cover them. Clear: the whistle (4.7 x) and the goal horn (every goal
+  in the video found, offset 0.02 s), which the score box gives already.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
