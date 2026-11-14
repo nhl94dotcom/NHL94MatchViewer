@@ -9,7 +9,8 @@ Measured on that video's still-camera frames against the recordings: frame pixel
 The match: the share of sampled pixels above the score boxes (rows 0-185) within 60 (summed over R, G, B) of the
 render; the sprites, the centre-ice logo (a sprite) and the crowd's animation miss, the rink agrees. A frame is placed
 by a small search around the last frame's place (tracking), or, when that's lost (a share under LOST) or at the start,
-by a search over the whole rink (coarse, then the best few refined; while lost, only every RETRY frames). Frames that place nowhere (menus, the
+by a search over the whole rink (coarse, then the best few refined; while lost, only every RETRY frames; while
+tracking, every VERIFY frames as a check: a clearly better place wins). Only places the camera can be are tried. Frames that place nowhere (menus, the
 close-up faceoff box, intermissions, replays' panels) are kept as lost.
 
 python analysis/vision/camera_track.py VIDEO OUT.npz [--rom ROM] [--first N] [--count N] [--check TIMELINE]
@@ -30,6 +31,10 @@ NATIVE_W, H, HUD_TOP = 256, 224, 186
 OFF_X, OFF_Y = 63, 256            # rink-map pixel = frame pixel + (Hpos + OFF_X, OFF_Y - Vpos)
 PAD = 64                          # the render padded with black so a search can run past its edges
 LOST = 0.55                       # under this share a frame isn't placed
+STRUCT = False                    # half the score on the ice's markings: tried 2026-11-14 for a drifting YouTube video,
+                                  # worse (sprites cover markings; off-map windows have none)
+HPOS_RANGE, VPOS_RANGE = (-66, 66), (-230, 290)   # where the camera can be (Hpos -64..64, Vpos -200..256, with room)
+VERIFY = 60                       # while tracking, a whole-rink search every VERIFY frames: a better place wins
 RETRY = 10                        # while lost, a whole-rink search every RETRY frames (menus, breaks: most of a video)
 TOL = 60
 
@@ -94,6 +99,10 @@ class Rink:
         self.img = np.zeros((r.shape[0] + 2 * PAD, r.shape[1] + 2 * PAD, 3), np.int16)
         self.img[PAD:PAD + r.shape[0], PAD:PAD + r.shape[1]] = r
         self.h, self.w = self.img.shape[:2]
+        key = (self.img[:, :, 0].astype(np.int32) << 16) | (self.img[:, :, 1].astype(np.int32) << 8) | self.img[:, :, 2]
+        vals, counts = np.unique(key[PAD:-PAD, PAD:-PAD], return_counts=True)
+        self.struct = (key != vals[counts.argmax()]) & self.ice()   # the markings on the ice: lines, circles, creases,
+                                                                     # scratches (not plain ice, not the crowd)
 
     def ice(self):
         """The playing surface in the padded render: flooded from centre ice through the colours found on the ice
@@ -117,12 +126,22 @@ class Rink:
         return m
 
     def share(self, f, u, v, sub):
-        """u, v: the frame's top-left in the padded render."""
+        """u, v: the frame's top-left in the padded render (only where the camera can be)."""
         if u < 0 or v < 0 or u + NATIVE_W > self.w or v + HUD_TOP > self.h:
+            return -1.0
+        hpos, vpos = u - PAD - OFF_X, OFF_Y - (v - PAD)
+        if not (HPOS_RANGE[0] <= hpos <= HPOS_RANGE[1] and VPOS_RANGE[0] <= vpos <= VPOS_RANGE[1]):
             return -1.0
         a = f[:HUD_TOP:sub, ::sub]
         b = self.img[v:v + HUD_TOP:sub, u:u + NATIVE_W:sub]
-        return float((np.abs(a - b).sum(axis=2) < TOL).mean())
+        ok = np.abs(a - b).sum(axis=2) < TOL
+        if not STRUCT:
+            return float(ok.mean())
+        st = self.struct[v:v + HUD_TOP:sub, u:u + NATIVE_W:sub]
+        n = st.sum()                        # half on every pixel, half on the ice's markings that agree (plain ice
+        k = 30.0                            # agrees anywhere: a blurred video's wrong window scored as well), the
+        al = float(ok.mean())               # markings' share drawn toward the whole share by k samples, so windows
+        return 0.5 * al + 0.5 * (float((ok & st).sum()) + k * al) / (n + k)   # with few markings aren't favoured
 
     def local(self, f, u0, v0, reach=10):
         c = max(((u0 + du, v0 + dv) for du in range(-reach, reach + 1, 2) for dv in range(-reach, reach + 1, 2)),
@@ -132,15 +151,15 @@ class Rink:
         return best[0], best[1], self.share(f, best[0], best[1], 1)
 
     def full(self, f):
-        us = range(PAD - 8, PAD + 384 - NATIVE_W + 9, 4)          # the camera's whole range, with room
-        vs = range(PAD - 8, self.h - PAD - HUD_TOP + 8, 4)
-        cands = sorted(((self.share(f, u, v, 8), u, v) for u in us for v in vs), reverse=True)[:6]
+        us = range(PAD - 8, PAD + 384 - NATIVE_W + 9, 2)          # the camera's whole range, with room, every
+        vs = range(PAD - 8, self.h - PAD - HUD_TOP + 8, 2)        # 2nd pixel (on a blurred video the right place
+        cands = sorted(((self.share(f, u, v, 8), u, v) for u in us for v in vs), reverse=True)[:12]   # is a narrow peak)
         return max((self.local(f, u, v, reach=4) for _, u, v in cands), key=lambda r: r[2])
 
 
 def track(video, rom, first=0, count=None, step=1):
     rink = Rink(rom)
-    out, last, tried = [], None, -RETRY
+    out, last, tried, before = [], None, -RETRY, None
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
         import lowload
@@ -152,14 +171,24 @@ def track(video, rom, first=0, count=None, step=1):
         if lowload:
             lowload.breathe()
         r = rink.local(f, *last) if last else None
+        if last and before:                                  # and where its last move says it is now (a fast
+            pu, pv = 2 * last[0] - before[0], 2 * last[1] - before[1]   # pan on a 30-a-second video, every 3rd
+            if (pu, pv) != last:                             # frame, outruns a 10-pixel search)
+                q = rink.local(f, pu, pv)
+                if q[2] > r[2]:
+                    r = q
         if (r is None or r[2] < LOST) and n - tried >= RETRY:   # lost: the whole rink, every RETRY frames
             r, tried = rink.full(f), n
+        elif r is not None and n - tried >= VERIFY:         # tracking: now and then the whole rink too, so a
+            g, tried = rink.full(f), n                       # wrong lock (a blurred video's plain ice agrees
+            if g[2] > r[2] + 0.02:                           # almost anywhere) can't last
+                r = g
         if r is None or r[2] < LOST:
             out.append((n, 0, 0, r[2] if r else 0, 0))
-            last = None
+            last, before = None, None
             continue
         u, v, s = r
-        last = (u, v)
+        before, last = last, (u, v)
         hpos, vpos = u - PAD - OFF_X, OFF_Y - (v - PAD)
         out.append((n, hpos, vpos, s, 1))
         if n % 2000 == 0:

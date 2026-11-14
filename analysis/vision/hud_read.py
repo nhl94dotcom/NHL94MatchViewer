@@ -218,8 +218,9 @@ class Reader:
 
     def read_score(self, f, key, prev):
         """The score as one of prev, prev + 1 or 0 (a score only goes up by one; 0 at a new game), or None when even
-        the nearest is unlike the cells (more than 2 x the cut-off)."""
-        cands = sorted({prev, prev + 1, 0})
+        the nearest is unlike the cells (more than 2 x the cut-off). prev None (a video starting mid-game, or after a
+        gap): any score 0-19."""
+        cands = range(20) if prev is None else sorted({prev, prev + 1, 0})
         cost, v = min((self.value_cost(f, key, c), c) for c in cands)
         return v if cost <= 2 * (NATIVE_FAR if self.native else FAR) else None
 

@@ -57,10 +57,13 @@ def read_video(video, templates, step=6):
     if rd.native:
         print("template geometry (scale x, y, shift x, y, blur):", rd.fit(sample_frames(video)), flush=True)
     rows = []
-    prev = {"vis": 0, "home": 0}
-    for n, f in C.frames(video):
+    gap = 60 * C.video_fps(video)                        # a minute (real) with no reading: read freely again
+    prev = {"vis": None, "home": None}                   # read freely until a reading holds (a video may start
+    for n, f in C.frames(video):                         # mid-game), and again after a long gap (a break)
         if n % step:
             continue
+        if rows and n - rows[-1][0] > gap:
+            prev = {"vis": None, "home": None}
         r = rd.read(f)
         if r["period"] is None:
             continue
@@ -96,7 +99,7 @@ def events(rows, fps):
     games, cur, last = [], None, None
     for n, per, clock, vis, home in rows:
         new = cur is None or (per == 0 and vis == 0 and home == 0 and (last[1] > 0 or last[3] + last[4] > 0
-                                                                        or clock > last[2] + 5))
+                                                                        or clock > last[2] + 60))
         if not new and (vis < last[3] or home < last[4] or per < last[1] or vis > last[3] + 1 or home > last[4] + 1):
             continue                                         # a misread (a score can't fall or jump): skipped
         if new:
