@@ -4778,6 +4778,36 @@ nhl94_toi.bin and NHL94_toi_page.smc:
   ReloadRinkGraphics / ClrHor reload tiles, not the map; SNES ExitStatsScreen rebuilds rinkmapbuf: lay the marks back
   in after BuildRinkMap).
 
+### Skate marks: NOSE4Web's Genesis build, played (2026-11-14)
+
+`analysis/scoring_map/gen_skate_marks_check.py` on nhl94_skate_marks.bin (9ddd063c...) and the original: a computer
+game with 5-minute periods (setting 0), the pads let go every second. Every 30 s (real) the rink plane in video memory
+($C000) against the marks record ($FFF800, 2 bits a cell, the low bits first) and the ROM map; `--replay` the pause
+menu's Instant Replay. Results:
+- **Marks under the skaters, leaning their way:** every screen check of the game (19) had every marked plain-ice cell
+  on the plane showing $8E or $F4 (shown up to 100 at once, missing 0) and no mark tile anywhere else (stray 0, on
+  lines and circles 0); they stay through scrolling (the checks fall at every camera place the game takes).
+- **How many:** about 190-230 by the end of a 5-minute period (201, 230, 193 in the three; the cap of 240 not reached;
+  a 10-minute period reached it by 5:00 left). The rate is close to even through a period (26 by 4:32, 116 by 2:08).
+- **Fresh ice, with one hole:** the intermission highlight of another game (penalty94's highlight code) sets gsp to
+  that game's period (gsper - 1) and gmode to 1 << gmhl, plays it through updateplayers, and restores our game's
+  state at its end. The build sees each gsp change there: it clears at the highlight's start and marks the
+  highlight's skaters (the count 201, 14, 52, 3, 23, 32 through one intermission). Back in our game, if our new
+  period's gsp differs from the last highlight's, the build clears again at our faceoff (fresh ice: nhl94 periods 2
+  and 3, CDL period 2); if they're the same, it doesn't: **CDL period 3 started with the highlight's 11 marks** (the
+  count 11 at the faceoff, 14 five game seconds in). A fix: no marking or clearing while gmode's gmhl bit (4) is
+  set. Overtime not reached (both games ended in regulation).
+- **Pause and stats:** marks survive the pause menu's Player Stats and back (missing 0 after).
+- **Instant replay:** the record and count stay as they were through the replay, back and forward, normal angle (the
+  marks shown, missing 0) and reverse angle; in the reverse angle all 32 plane rows are RevRinkTilelist's own ($B5180,
+  updatescroll), with no mark tiles, and after the replay the marks are back (missing 0).
+- **Lag** (the frame counter $B03E moving by other than 1 a frame of play): 120 of 36,966 frames against the original's
+  102 of 37,860 (0.32% against 0.27%; different games, so the same order rather than a measured cost).
+- **CDL_Season_12_skate_marks.bin** (7edbdb02...): the same (18 screen checks: shown up to 109, missing 0, stray 0;
+  Player Stats round trip missing 0; the replay's record unchanged, the reverse angle RevRinkTilelist's rows only,
+  the marks back after). Counts 240 (the cap, reached in period 1), 209, 236. Lag 87 of 33,586 against CDL Season
+  12's 97 of 38,898 (0.26% / 0.25%).
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
