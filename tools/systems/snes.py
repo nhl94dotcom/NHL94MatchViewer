@@ -79,6 +79,9 @@ PASS_DIR = 0x0D03
 AIM_TABLE = [(0, 12), (15, 12), (15, 6), (15, 0), (0, 0), (-15, 0), (-15, 6), (-15, 12), (0, 6)]
 PUCK_Z, PUCK_Z_FRAC = 0x0DF9, 0x0DFD  # the puck's height (puckz) and its fraction, from the disassembly
 PUCK_VX, PUCK_VY = 0x0EDF, 0x0EFF
+SFLAGS_WORD = 0x15D8               # sflags and sflags2 as one word: $1000 sf2shot, a shot struck (doshot)
+STEAL_BACK = 5                     # samples kept to see a stealer's nopuck jump (MatchReader steals)
+OBJ_NOPUCK = 0x1203               # each object's no-touch timer (nopuck): frames before he may touch the puck again
 OBJ_POSITION = 0x0F43             # 0 G, 1 LD, 2 RD, 3 LW, 4 C, 5 RW, negative = off the ice (the Genesis codes)
 OBJ_FACING = 0x1163               # 0-7
 OBJ_ANIM = 0x11A3                 # current animation (offset into the animation data), as the Genesis +$58
@@ -774,6 +777,29 @@ class MatchReader:
         near = holder < 12 and math.hypot(sg(OBJ_X + 28) - sg(OBJ_X + 2 * holder),
                                           sg(OBJ_Y + 28) - sg(OBJ_Y + 2 * holder)) <= 30
         self.match["owner"].append(holder if near else -1)
+        # Stick steals, as the Genesis reader (2026-11-14; puckstick's steal sets the carrier's and the stealer's nopuck
+        # to makepde(stickhand) + $14): [frame, stealer's object] when the carrier loses the puck as an opposing
+        # skater's timer jumps to $14 or more.
+        # The timer is set a sample or two before the carrier byte changes: compared with STEAL_BACK samples before.
+        nopuck = [w(OBJ_NOPUCK + 2 * k) for k in range(12)]
+        carrier = self.match["owner"][-1]
+        hist = getattr(self, "steal_hist", None)
+        if hist is None:
+            hist = self.steal_hist = []
+        if hist and hist[-1][1] >= 0 and carrier != hist[-1][1]:
+            old = hist[0][0]
+            rivals = range(6, 12) if hist[-1][1] < 6 else range(6)
+            jumped = [k for k in rivals if 0x14 <= nopuck[k] < 0x8000 and nopuck[k] > old[k]
+                      and 0 < sg(OBJ_POSITION + 2 * k) < 6]
+            if jumped:
+                self.match.setdefault("steals", []).append([len(self.match["t"]) - 1, jumped[0]])
+        hist.append((nopuck, carrier))
+        del hist[:-STEAL_BACK]
+        # Shots struck (as the Genesis reader): sflags' sf2shot ($1000 of $7E:15D8, doshot) coming on.
+        shotflag = w(SFLAGS_WORD) & 0x1000
+        if shotflag and not getattr(self, "prev_shotflag", 0):
+            self.match.setdefault("shotFlag", []).append(len(self.match["t"]) - 1)
+        self.prev_shotflag = shotflag
         # Where a shot is aimed (passdir, the stick's screen direction the shot code reads), whenever it changes
         v = b(PASS_DIR)
         if not self.match["aim"] or self.match["aim"][-1][1] != v:

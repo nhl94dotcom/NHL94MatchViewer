@@ -80,6 +80,8 @@ def set_score(m, h, a):
 
 
 PAD = False
+GIVE = False     # --giveaways: NOSE4Web's giveaways / takeaways (2026-11-14): their block ($7E:E68C-$E763; SA-1 BW-RAM
+                 # $40:5500 up) read every 10 frames; any change while shootoutmode is on, and the totals before / after
 TOI = False      # --toi: NOSE4Web's 1 MB time on ice (ptoi $E800, 981b836): the real sums at period 3's last seconds,
                  # when the shootout starts and ends, and at the game's end (the times must survive, the shootout add 0)
 
@@ -97,6 +99,12 @@ def run_case(e, m, base, case, out, rom=None):
     toi = (lambda: sum(m.w(PTOI + 2 * k) for k in range(52))) if TOI else None
     toi_at = {"period 3's last seconds": toi()} if TOI else None
     toi_in = []                                          # while the shootout plays
+
+    def gblock():
+        if m.sa1:
+            return bytes(m.bw[0x5500:0x5500 + 0xD8])
+        return bytes(e.ram[0xE68C:0xE68C + 0xD8])
+    g_before, g_last, g_changes = gblock(), gblock(), []
     before = snapshot(m)
     extra_before = extra(m) if big else None
     bwfree = m.bw if m.sa1 else None
@@ -120,6 +128,12 @@ def run_case(e, m, base, case, out, rom=None):
                 toi_in.append(toi())
             elif so_seen and "shootout ends" not in toi_at:
                 toi_at["shootout ends"] = toi()
+        if GIVE:
+            gb = gblock()
+            if gb != g_last:
+                if so & 0xFF:
+                    g_changes.append(f)
+                g_last = gb
         if so & 0xFF:
             so_seen, phase = True, "in the shootout"
         elif so_seen:
@@ -184,6 +198,11 @@ def run_case(e, m, base, case, out, rom=None):
            "changed": dict(list(changed.items())[:60])}
     if big:
         res["extra stats and fight state (period 3's last second, the game's end)"] = [extra_before, extra_after]
+    if GIVE:
+        tot = lambda b: [b[0xD4 + 2 * k] | b[0xD5 + 2 * k] << 8 for k in range(4)]   # noqa: E731
+        res["giveaways: count changes while shootoutmode was on"] = len(g_changes)
+        res["giveaways: totals (home give, visitors' give, home take, visitors' take) at period 3's last seconds, "
+            "the game's end"] = [tot(g_before), tot(gblock())]
     if TOI:
         res["time on ice, all players' sum"] = toi_at
         res["time on ice during the shootout (lowest, highest)"] = [min(toi_in), max(toi_in)] if toi_in else None
@@ -207,6 +226,8 @@ def main():
     global TOI
     PAD = "--pad" in args
     TOI = "--toi" in args
+    global GIVE
+    GIVE = "--giveaways" in args
     cases = [c for c in args if not c.startswith("--")] or ["tie", "untied", "playoff"]
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()

@@ -4965,6 +4965,30 @@ turnovers (same team, kind and player within 1 s real).
   Playoff Stats (a playoff game played to its end): Goals to Checks For, RIGHT stops there, its title without the
   arrow; A stayed on the one team there (not compared with retail: that run took another path).
 
+### NOSE4Web's SNES giveaways and takeaways, stage 1 (2026-11-14)
+
+NHL94_giveaways.smc (21be23c2...), SDL16_giveaways.smc (15b6afca...), nhl94snes_SA1_giveaways.sfc (eff9bbe9...).
+`gen_giveaways_check.py snes_games / snes_stats / snes_highlights` (SnesWatch: last carrier $7E:E68C, cause $E68E,
+giveaways $E690, takeaways $E6F8, a word per roster player, the visitors +$34, totals $E760; SA-1 the same from
+BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNES games now overlay BW-RAM on the SA-1
+(Snes.MOVED, as the helper does) and hold periods to 5 minutes (the SA-1 build's defaults are 20).
+- **Counts against the converter** (paired on period and clock: the SNES converter closes up pauses): 1 MB 102 of
+  133 (3 games), SDL16 181 of 202 (2 games), SA-1 107 of 124 (2 games). The SNES reader now finds stick steals the
+  same way (puckstick sets both timers to makepde(stickhand) + $14; the timer is set a sample or two before $0AE7
+  changes: compared with 5 samples back). sf2shot ($1000 of sflags $15D8, doshot) is on for every converter shot and
+  one-timer in 10 league games: no false shots on the SNES.
+- **Game Stats:** the row fits: 17 rows (12 without penalties), 18 / 13 on the SA-1 build with Posts; "Give/Take"
+  last when scrolled down, values as set (visitors 9/11, home 12/7).
+- **Highlights:** a playoff game (Play Mode 2 in RAM), 772 frames of other games' highlights, no count changed.
+  **Season shootout:** NHL94_giveaways.smc has none (tied after overtime: the game ends); SDL16's Game Setup sends
+  the harness's presses to the password screen (not tested).
+- **From the code:** every hook's routine runs 16-bit (no sep / rep in puckglue, puckstick, FallDown, dopass,
+  assdumpin, doshot; StartGame_scout likewise). asspassrec's `stx puckc` is the one-timer: its strike is `jsl doshot`
+  (line 185), so harmless; a swing that ends with the puck held takes it through puckglue. In-play ways a carried
+  puck comes off on the SNES: the steal, FallDown (two places: .25 and the injury path, which counts down
+  InjCntDown 4 before the stoppage: not hooked), puckgoalie (no cause needed: a goalie's is the carrier's giveaway),
+  a pass, a shot; asspenalty, assscore and checkgoal's own-goal drop happen with play stopping.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),

@@ -1,7 +1,7 @@
 """NOSE4Web's SNES Time On Ice page (2026-11-13, 6bc58af: McMarkis's page placed for the original layout, reading the
 ptoi count of 981b836): NHL94_toi_page.smc and NHL94_toi_page_checks.smc (with the bodycheck counts' PM-column display).
 
-  play ROM OUT [STOP_CLOCK] [LINES 1|0]  a computer game (snes_toi_check's boot: 5-minute periods, penalties on, line changes on so
+  play ROM OUT [STOP_CLOCK] [LINES 1|0] [STOP_PERIOD 0-2]  a computer game (snes_toi_check's boot: 5-minute periods, penalties on, line changes on so
                              the times differ) played into the third period until the clock reads STOP_CLOCK (default
                              100: goalies past 10:00, so 5-character times too), then paused: OUT/paused.state and each
                              player's ptoi ($7E:E800, visitors +$34) in OUT/toi.json
@@ -19,10 +19,14 @@ from snes_60fps_cvc import CLOCK, CLOCKSTOP, GSP, OPTPEN, SEED, Mem, computer_on
 OPTLINE, PTOI, VIS = 0x34C6, 0xE800, 0x34
 
 
-def play(rom, out, stop_clock, lines=1):
+def play(rom, out, stop_clock, lines=1, stop_period=2):
     e = M.emulator(rom)
     m = Mem(e, rom)
-    M.play(e, "w1500 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", out)
+    if m.sa1:
+        M.play(e, "w1800 START w240", out)                  # the SA-1 build's defaults: 5 min, penalties On, No Offside
+    else:
+        M.play(e, "w1500 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", out)
+    m.setw(0x34BC, 0)                                       # regular season (a lost press can leave Password)
     m.setw(OPTLINE, lines)
     M.play(e, "START w240 START w200 w2400", out)
     for _ in range(12):
@@ -37,7 +41,7 @@ def play(rom, out, stop_clock, lines=1):
     m.setw(SEED, 0x9E37)
     m.setw(SEED + 2, 0x7F4A)
     frames, still, last = 0, 0, None
-    while not (m.w(GSP) == 2 and m.w(CLOCK) <= stop_clock and m.w(CLOCKSTOP) == 0) and frames < 250000:
+    while not (m.w(GSP) == stop_period and m.w(CLOCK) <= stop_clock and m.w(CLOCKSTOP) == 0) and frames < 250000:
         e.run(10)
         frames += 10
         if frames % 300 == 0:
@@ -50,12 +54,24 @@ def play(rom, out, stop_clock, lines=1):
             still = 0
         if frames % 36000 == 0:
             lowload.breathe()
+        if m.w(CLOCK) > 300 and m.w(GSP) < 3:
+            m.setw(CLOCK, 300)
     e.run(4, hold=["START"])
     e.run(90)
     (out / "paused.state").write_bytes(e.serialize())
     e.screenshot(out / "paused.png")
     toi = {t: [m.w(PTOI + VIS * t + 2 * s) for s in range(26)] for t in (0, 1)}
     (out / "toi.json").write_text(json.dumps(toi))
+    # NOSE4Web's giveaways / takeaways (2026-11-14): a word per player at stats index x 2 (visitors +$34); 1 MB and
+    # 2 MB $7E:E690 / $E6F8, the SA-1 BW-RAM $40:5504 / $556C
+    def word(a):
+        if m.sa1:
+            return m.bw[a] | m.bw[a + 1] << 8
+        return e.ram[a] | e.ram[a + 1] << 8
+    gb, tb = (0x5504, 0x556C) if m.sa1 else (0xE690, 0xE6F8)
+    gt = {k: {t: [word(base + VIS * t + 2 * s) for s in range(26)] for t in (0, 1)} for k, base in (("give", gb), ("take", tb))}
+    (out / "giveaways.json").write_text(json.dumps(gt))
+    print("giveaways", gt["give"], "takeaways", gt["take"])
     fmt = lambda v: f"{v // 60}:{v % 60:02d}"
     print("period", m.w(GSP), "clock", m.w(CLOCK))
     for t in (0, 1):
@@ -78,7 +94,8 @@ if __name__ == "__main__":
     out.mkdir(parents=True, exist_ok=True)
     lowload.gentle()
     if mode == "play":
-        play(rom, out, int(sys.argv[4]) if len(sys.argv) > 4 else 100, int(sys.argv[5]) if len(sys.argv) > 5 else 1)
+        play(rom, out, int(sys.argv[4]) if len(sys.argv) > 4 else 100, int(sys.argv[5]) if len(sys.argv) > 5 else 1,
+             int(sys.argv[6]) if len(sys.argv) > 6 else 2)
     else:
         sets = [tuple(int(v) for v in x.split(":")) for a in sys.argv[5:] if a.startswith("--set=")
                 for x in a.split("=")[1].split(",")]

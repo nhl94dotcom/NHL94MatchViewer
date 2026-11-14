@@ -79,7 +79,7 @@ def record_genesis(rom, n, folder, fast, full, watch=None):
     return genesis, count, (h, a)
 
 
-def record_snes(rom, n, folder, fast, full):
+def record_snes(rom, n, folder, fast, full, watch=None):
     import menu_shots as M
     from snes_60fps_cvc import CLOCK, CLOCKSTOP, GSP, OPTPEN, SEED, Mem, computer_only
     from systems import snes
@@ -112,6 +112,19 @@ def record_snes(rom, n, folder, fast, full):
     m.setw(SEED, (0x9E37 * (n + 1)) & 0xFFFF or 1)
     m.setw(SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)
     ram = memoryview(e.ram)
+    if m.sa1:                                    # the SA-1 builds keep low RAM in BW-RAM (faceoff_fix_test.Snes.MOVED):
+        from faceoff_fix_test import Snes        # laid over work RAM as the helper's snes.Emulator.read does (2026-11-14)
+
+        class Overlay:
+            def __getitem__(self, sl):
+                sl = slice(sl.start or 0, sl.stop)
+                out = bytearray(e.ram[sl])
+                for lo, hi, to in Snes.MOVED:
+                    a, b = max(lo, sl.start), min(hi, sl.stop)
+                    if a < b:
+                        out[a - sl.start:b - sl.start] = bytes(m.bw[to + a - lo:to + b - lo])
+                return bytes(out)
+        ram = Overlay()
     count = 0
     frame, still, last = 0, 0, None
     while frame < 60 * 60 * FPS:
@@ -122,6 +135,10 @@ def record_snes(rom, n, folder, fast, full):
         last = c
         e.run(1, hold=["START"] if still > 5 * FPS and frame % 60 < 4 else [])
         frame += 1
+        if m.w(CLOCK) > 300 and m.w(GSP) < 3:       # 5-minute periods whatever the menus left (the SA-1 build's
+            m.setw(CLOCK, 300)                       # defaults are 20), as snes_60fps_cvc
+        if watch:
+            watch(e, frame, m)
         ms = frame * 1000 // FPS
         fast.write(struct.pack("<q", ms) + b"".join(bytes(ram[s:s + k]) for s, k in snes.BLOCKS))
         count += 1
@@ -139,7 +156,7 @@ def one(system, rom, n, out, watch=None):
     folder.mkdir(parents=True, exist_ok=True)
     with gzip.open(folder / "fast.bin.gz", "wb", compresslevel=3) as fast,             gzip.open(folder / "full.bin.gz", "wb", compresslevel=3) as full:
         got = (record_genesis(rom, n, folder, fast, full, watch) if system == "genesis"
-               else record_snes(rom, n, folder, fast, full))
+               else record_snes(rom, n, folder, fast, full, watch))
     if not got:
         print(json.dumps({"game": n, "error": "never reached play"}))
         return

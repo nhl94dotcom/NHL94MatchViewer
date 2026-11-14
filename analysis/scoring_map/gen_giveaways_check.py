@@ -10,6 +10,7 @@ $FFEC64 / $FFEC66).
                             another game's highlight was on: the team ids, gmode's gmhl); each game converted, and
                             the ROM's counts compared with the converter's, per player, per team and event by event
                             (a ROM count and a converter turnover of the same kind, team and player within 1 s real)
+  snes_games ROM OUT N [FIRST]   the same on NOSE4Web's SNES build (SnesWatch; the SA-1 build's counts in BW-RAM)
   shootout ROM OUT          a game in play, regular season, overtime with 3 s left at 1-1 (gen_shootout_check's
                             'tie'): the counts through the season shootout (gmode2 $C2FA bit 0, the build's $FFF082)
   pair OUT ROM              the games already recorded in OUT converted again (today's converter) and paired again
@@ -78,6 +79,43 @@ class Watch:
         self.prev = now
 
 
+class SnesWatch(Watch):
+    """NOSE4Web's SNES build (2026-11-14): last carrier $7E:E68C, cause $E68E, giveaways $E690 and takeaways $E6F8 (a
+    word per roster player, the visitors at +$34), totals $E760; on the SA-1 the same from BW-RAM $40:5500."""
+    def __call__(self, e, frame, m):
+        def raw(off, n):
+            if m.sa1:
+                return bytes(m.bw[0x5500 + off:0x5500 + off + n])
+            return bytes(e.ram[0xE68C + off:0xE68C + off + n])
+        if self.ours is None and not m.w(0x15D8) & 0x0801:
+            self.ours = (m.w(0x1C98), m.w(0x1C9A))
+        lc = tuple(int.from_bytes(raw(o, 2), "little") for o in (0, 2)) + (m.w(0x0AD9),)
+        if lc != getattr(self, "lc", None):
+            self.lc = lc
+            self.trace.append((frame, *lc))
+        block = raw(4, 0xD0)
+        if block == self.raw:
+            return
+        self.raw = block
+        now = {}
+        for kind, off in (("give", 0), ("take", 0x68)):
+            for t in (0, 1):
+                for pl in range(26):
+                    v = block[off + 0x34 * t + 2 * pl] | block[off + 0x34 * t + 2 * pl + 1] << 8
+                    if v:
+                        now[(t, kind, pl)] = v
+        hl = self.ours is not None and ((m.w(0x1C98), m.w(0x1C9A)) != self.ours or m.w(0x15D4) & 0x10)
+        for key in set(now) | set(self.prev):
+            d = now.get(key, 0) - self.prev.get(key, 0)
+            if d:
+                ev = {"frame": frame, "period": m.w(0x1630), "clock": m.w(0x1632), "team": key[0], "kind": key[1],
+                      "place": key[2], "delta": d, "highlight": bool(hl), "shootout": False}
+                self.events.append(ev)
+                if hl or d < 0:
+                    self.bad.append(ev)
+        self.prev = now
+
+
 def converter_events(js):
     import season
     m = season.load_match(js)
@@ -85,21 +123,30 @@ def converter_events(js):
     for tv in m.get("turnovers", []):
         f = tv["f"]
         frame = round(m["t"][f] * 60 / 1000)
+        pc = {"period": m["period"][f], "clock": m["clock"][f]}
         if tv.get("kind") == "giveaway" and tv.get("giver", -1) >= 0:
-            out.append({"frame": frame, "team": tv["from"], "kind": "give", "place": tv["giver"], "how": tv.get("how")})
+            out.append({"frame": frame, "team": tv["from"], "kind": "give", "place": tv["giver"], "how": tv.get("how"), **pc})
         elif tv.get("kind") == "takeaway" and tv.get("by", -1) is not None and tv.get("by", -1) >= 0:
-            out.append({"frame": frame, "team": 1 - tv["from"], "kind": "take", "place": tv["by"], "how": tv.get("how")})
+            out.append({"frame": frame, "team": 1 - tv["from"], "kind": "take", "place": tv["by"], "how": tv.get("how"), **pc})
     other = Counter(tv.get("kind") for tv in m.get("turnovers", []))
     return out, other, m
 
 
-def pair(rom_ev, conv_ev, window=60):
-    """Each ROM count with the nearest unpaired converter event of the same team, kind and player within window."""
+def pair(rom_ev, conv_ev, window=60, by_clock=False):
+    """Each ROM count with the nearest unpaired converter event of the same team, kind and player within window
+    frames (by_clock: the same period and within 2 game seconds: the SNES converter closes up pauses in its times)."""
     used, matched, rom_only = set(), [], []
     for r in rom_ev:
         best = None
         for k, c in enumerate(conv_ev):
             if k in used or (c["team"], c["kind"], c["place"]) != (r["team"], r["kind"], r["place"]):
+                continue
+            if by_clock:
+                if c.get("period") != r.get("period") or abs(c["clock"] - r["clock"]) > 2:
+                    continue
+                d = abs(c["clock"] - r["clock"])
+                if best is None or d < best[0]:
+                    best = (d, k)
                 continue
             d = abs(c["frame"] - r["frame"])
             if d <= window and (best is None or d < best[0]):
@@ -117,7 +164,7 @@ def pair_again(out, rom):
     """Every game already recorded in OUT converted again (today's converter) and paired with its ROM events."""
     tot = Counter()
     how = Counter()
-    for ev_file in sorted(out.glob("cvc_genesis_*_rom_events.json")):
+    for ev_file in sorted(out.glob("cvc_*_rom_events.json")):
         name = ev_file.name.replace("_rom_events.json", "")
         folder = out / "captures" / name
         subprocess.run([sys.executable, str(ROOT / "tools" / "export_match.py"), str(folder), "--rom", rom,
@@ -127,7 +174,7 @@ def pair_again(out, rom):
         rom_ev = [dict(ev, delta=1) for ev in events if ev["delta"] > 0 and not ev["highlight"] and not ev["shootout"]
                   for _ in range(ev["delta"])]
         conv_ev, other, m = converter_events(out / "matches" / f"{name}.js")
-        matched, rom_only, conv_only = pair(rom_ev, conv_ev)
+        matched, rom_only, conv_only = pair(rom_ev, conv_ev, by_clock="snes" in name)
         print(f"{name}: ROM {len(rom_ev)}, converter {len(conv_ev)}; paired {len(matched)}, ROM only {len(rom_only)}, "
               f"converter only {len(conv_only)}", flush=True)
         tot.update(rom=len(rom_ev), conv=len(conv_ev), paired=len(matched), rom_only=len(rom_only), conv_only=len(conv_only))
@@ -139,14 +186,14 @@ def pair_again(out, rom):
         print(f"  {k}: {v}")
 
 
-def games(rom, out, n, first):
+def games(rom, out, n, first, system="genesis"):
     import cvc_record
     lowload.gentle()
     (out / "matches").mkdir(parents=True, exist_ok=True)
     tot = defaultdict(Counter)
     for g in range(first, first + n):
-        w = Watch()
-        folder = cvc_record.one("genesis", rom, g, out, w)
+        w = Watch() if system == "genesis" else SnesWatch()
+        folder = cvc_record.one(system, rom, g, out, w)
         if not folder:
             print(f"game {g}: never reached play")
             continue
@@ -159,7 +206,7 @@ def games(rom, out, n, first):
         rom_ev = [ev for ev in w.events if ev["delta"] > 0 and not ev["highlight"] and not ev["shootout"]]
         rom_ev = [dict(ev, delta=1) for ev in rom_ev for _ in range(ev["delta"])]
         conv_ev, other, m = converter_events(js)
-        matched, rom_only, conv_only = pair(rom_ev, conv_ev)
+        matched, rom_only, conv_only = pair(rom_ev, conv_ev, by_clock=system == "snes")
         final = w.prev
         per_team = {(t, k): sum(v for (tt, kk, _), v in final.items() if (tt, kk) == (t, k)) for t in (0, 1) for k in ("give", "take")}
         conv_team = Counter((c["team"], c["kind"]) for c in conv_ev)
@@ -296,10 +343,103 @@ def shootout_mode(rom, out):
         print("  ", ev)
 
 
+def snes_highlights(rom, out):
+    """A whole SNES playoff game (Play Mode 2 in RAM: other games' highlights play only in the playoffs), START only
+    after 150 s (real) at a stopped clock (the intermission's highlights come after its ticker), SnesWatch every frame:
+    any count change during a highlight (gmode's gmhl, or the score box's teams not ours)."""
+    import menu_shots as M
+    import snes_60fps_cvc as cvc
+    import snes_skate_marks_check as SK
+    out.mkdir(parents=True, exist_ok=True)
+    e = M.emulator(rom)
+    m = cvc.Mem(e, rom)
+    tmp = out / "_menu"
+    if m.sa1:
+        M.play(e, "w1800 START w240", tmp)
+    else:
+        M.play(e, "w1500 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", tmp)
+    m.setw(0x34BC, 2)
+    M.play(e, "START w240 START w200 w2400", tmp)
+    for _ in range(12):
+        c = m.w(0x1632)
+        e.run(240)
+        if m.w(0x1632) != c and m.w(0x15D6) == 0:
+            break
+        SK.press(e, "START", 60)
+    cvc.computer_only(m)
+    w = SnesWatch()
+    still, last, hl_frames = 0, None, 0
+    for f in range(60 * 60 * 45):
+        if f % 300 == 0:
+            cvc.computer_only(m)
+            if f % 3600 == 0:
+                lowload.breathe()
+        c = m.w(0x1632)
+        still = still + 1 if c == last else 0
+        last = c
+        e.run(1, hold=["START"] if still >= 9000 and f % 150 < 4 else [])
+        if m.w(0x1632) > 300 and m.w(0x1630) < 3:
+            m.setw(0x1632, 300)
+        w(e, f, m)
+        if w.ours and ((m.w(0x1C98), m.w(0x1C9A)) != w.ours or m.w(0x15D4) & 0x10):
+            hl_frames += 1
+        if m.w(0x1630) >= 4:
+            break
+    print(f"play mode {m.w(0x34BC)}; frames of another game's highlight {hl_frames}; count changes {len(w.events)}, "
+          f"in a highlight or negative {len(w.bad)}", flush=True)
+    for ev in w.bad[:10]:
+        print("  ", ev)
+
+
+def snes_stats(rom, out, item=2):
+    """SNES Game Stats with penalties on (OptPen $34C4 = 2) and off (0): the four totals set (home giveaways 12,
+    visitors' 9, home takeaways 7, visitors' 11), the pause menu's item ITEM, the top and, holding DOWN, the bottom."""
+    import menu_shots as M
+    import snes_60fps_cvc as cvc
+    import snes_skate_marks_check as SK
+    out.mkdir(parents=True, exist_ok=True)
+    for pen in (2, 0):
+        e = M.emulator(rom)
+        m = cvc.Mem(e, rom)
+        tmp = out / "_menu"
+        if m.sa1:
+            M.play(e, "w1800 START w240", tmp)
+        else:
+            M.play(e, "w1500 START w240 START w240 DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", tmp)
+        m.setw(0x34BC, 0)                          # Play Mode: regular season (a lost press can leave Password)
+        M.play(e, "START w240 START w200 w2400", tmp)
+        for _ in range(12):
+            c = m.w(0x1632)
+            e.run(240)
+            if m.w(0x1632) != c and m.w(0x15D6) == 0:
+                break
+            SK.press(e, "START", 60)
+        m.setw(0x34C4, pen)
+        cvc.computer_only(m)
+        e.run(300)
+        for k, v in enumerate((12, 9, 7, 11)):
+            if m.sa1:
+                m.bw[0x55D4 + 2 * k], m.bw[0x55D4 + 2 * k + 1] = v, 0
+            else:
+                e.ram[0xE760 + 2 * k], e.ram[0xE760 + 2 * k + 1] = v, 0
+        SK.press(e, "START", 90)
+        for _ in range(40):
+            if e.w(0x0D15) == item:
+                break
+            SK.press(e, "DOWN")
+        SK.press(e, "A", 300)
+        e.screenshot(out / f"stats_pen{pen}_top.png")
+        e.run(400, hold=["DOWN"])
+        e.run(60)
+        e.screenshot(out / f"stats_pen{pen}_bottom.png")
+        print(f"penalties {'on' if pen else 'off'}: done", flush=True)
+
+
 def main():
     mode = sys.argv[1]
-    if mode == "games":
-        games(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]) if len(sys.argv) > 5 else 0)
+    if mode in ("games", "snes_games"):
+        games(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]) if len(sys.argv) > 5 else 0,
+              "genesis" if mode == "games" else "snes")
     elif mode == "pair":
         pair_again(Path(sys.argv[2]), sys.argv[3])
     elif mode == "highlights":
@@ -308,6 +448,10 @@ def main():
         shootout_mode(sys.argv[2], Path(sys.argv[3]))
     elif mode == "shootout":
         shootout(sys.argv[2], Path(sys.argv[3]))
+    elif mode == "snes_highlights":
+        snes_highlights(sys.argv[2], Path(sys.argv[3]))
+    elif mode == "snes_stats":
+        snes_stats(sys.argv[2], Path(sys.argv[3]))
     elif mode == "stats":
         stats(sys.argv[2], Path(sys.argv[3]))
     else:
