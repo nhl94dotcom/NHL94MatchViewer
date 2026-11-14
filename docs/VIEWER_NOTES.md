@@ -1248,8 +1248,14 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   (dark, light; the pixels just outside not dark), weighted by the camera's lead (the puck near the screen's middle).
   On every frame of live play (carried or loose; 20,000 frames of BOS-CHI, every 4th): the estimate within 6 pixels
   of the recorded puck on 31%; the true puck among a frame's top five candidates on 58%, among none on 36% (hidden or
-  merged). The shadow's template was dropped (any sprite pixel matched inside every player). Following it over time
-  (`puck_track.py`, a Viterbi path) next.
+  merged). The shadow's template was dropped (any sprite pixel matched inside every player).
+- **The puck followed** (`puck_track.py`: the best path through all the frames' candidates at once, each candidate
+  earning a reward, moves costed by how far a puck goes in the time, hidden stretches drawn straight across): 46.7%
+  of live frames placed (31.3% frame by frame).
+- **Possession by team** (the team of the detected player nearest the puck): carried frames right 64.5% (from the
+  camera's middle alone 48.9%, chance). With the puck placed right 79.3%, otherwise 49.3%; with the true puck 82.5%
+  (the ceiling from team labels and missing detections). Smoothing over time didn't help (the errors come in
+  stretches). So the puck is what to improve, then the team labels.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

@@ -4,7 +4,7 @@ A video is read after the fact, so the puck's path is chosen over all its frames
 than frame by frame. Per looked-at frame, the candidates (puck.Finder: up to TOP, each with its weight: the
 template's match times the camera's lead) on the rink (X = x + Hpos - 128, Y = 107 + Vpos - y: the camera moves).
 A path goes from a candidate to one in a later frame, up to SKIP looked-at frames later; its cost:
-  -log(weight) for each candidate it takes,
+  -log(weight) - REWARD for each candidate it takes,
   the move: d^2 / (2 sigma^2) + log(sigma), sigma = SIGMA0 + SPEED x the frames between (a puck moves up to about 6
   units a frame: a hard shot; most of the time 1-3),
   GAP for each frame passed over (the puck hidden or merged into a player there),
@@ -12,12 +12,16 @@ and a path may start and end anywhere (START), and break into stretches (START a
 between: whistles, breaks). Frames passed over get the place drawn straight between the two it
 joins; frames before the first or after the last candidate on the path get none.
 
+Tuned on 8,000 frames of BOS-CHI (every 4th, the cache of puck_eval.py): every frame of live play placed within 6
+pixels 46.7% (frame by frame 31.3%).
+
 path(seq) -> {frame: (x, y) in screen pixels at that frame}, seq = [(frame, hpos, vpos, candidates)] in order."""
 import math
 
-TOP, SKIP = 8, 12
-SIGMA0, SPEED = 4.0, 2.5
-GAP, START, JUMP_GAP = 2.0, 6.0, 0.5
+TOP, SKIP = 16, 12
+SIGMA0, SPEED = 3.0, 4.0
+GAP, START, JUMP_GAP = 0.5, 6.0, 0.5
+REWARD = 5.0                      # each candidate taken earns this (else the shortest path is the cheapest)
 
 
 def path(seq):
@@ -25,7 +29,7 @@ def path(seq):
     for n, hpos, vpos, cands in seq:
         row = []
         for x, y, s, w, _ in cands[:TOP]:
-            row.append((x + hpos - 128, 107 + vpos - y, -math.log(max(w, 1e-6))))
+            row.append((x + hpos - 128, 107 + vpos - y, -math.log(max(w, 1e-6)) - REWARD))
         pts.append(row)
     best, back = [], []
     jump = (math.inf, None)                     # the cheapest place to have ended a stretch, less JUMP_GAP a frame
@@ -58,7 +62,7 @@ def path(seq):
     end, cend = None, math.inf
     for k in range(len(pts)):
         for a, c in enumerate(best[k]):
-            cc = c + START + GAP * 0.25 * (len(pts) - 1 - k)
+            cc = c
             if cc < cend:
                 cend, end = cc, (k, a)
     chosen, jumps = [], set()

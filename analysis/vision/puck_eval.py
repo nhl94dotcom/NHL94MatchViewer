@@ -6,9 +6,10 @@ to a fraction of a second), the puck carried or loose. The estimate: puck.Finder
 elsewhere), none (no estimate); by carried / loose; and how far off.
 
 --cache=FILE: the per-frame candidates and truth kept in FILE (written the first time, read after: tuning the tracker
-needs no video decoding). Gentle mode (lowload).
+needs no video decoding); --players=HOME,AWAY keeps each frame's player detections there too (sprites.players).
+Gentle mode (lowload).
 
-python analysis/vision/puck_eval.py VIDEO CAMERA_TRACK.npz STATIC.npz [FIRST] [COUNT] [STEP] [--track] [--cache=FILE]"""
+python analysis/vision/puck_eval.py VIDEO CAMERA_TRACK.npz STATIC.npz [FIRST] [COUNT] [STEP] [--track] [--cache=FILE] [--players=HOME,AWAY]"""
 import json
 import sys
 from collections import defaultdict
@@ -46,6 +47,10 @@ def main():
     cams = {int(r[0]): r for r in np.load(track)["rows"]}
     rom = Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
     finder = PK.Finder(rom)
+    teams = next((x.split("=", 1)[1].split(",") for x in sys.argv if x.startswith("--players=")), None)
+    if teams:
+        import sprites as S
+        colours = S.team_colours(rom, teams[0], teams[1])
     tally = defaultdict(lambda: defaultdict(int))
     errs = []
     P = 0xB04A + 0x80 * 14
@@ -63,7 +68,12 @@ def main():
             continue
         _, hpos, vpos = (int(x) for x in cams[n][:3])
         cands = finder.find(f, hpos, vpos, static=static)
-        seq.append((n, hpos, vpos, cands))
+        if teams:
+            import sprites as S
+            dets = S.players(finder.rink, f, hpos, vpos, colours, static)
+            seq.append((n, hpos, vpos, cands, dets))
+        else:
+            seq.append((n, hpos, vpos, cands))
         c, i = truth.caps[tl["games"][cam[3]]][0], cam[4]
         spots = []
         for j in range(max(0, i - WINDOW), min(c.count, i + WINDOW + 1)):
@@ -78,9 +88,9 @@ def main():
         cache.write_bytes(pickle.dumps((seq, frames_truth)))
     if use_track:
         import puck_track
-        est_at = puck_track.path(seq)
+        est_at = puck_track.path([q[:4] for q in seq])
     else:
-        est_at = {n: cands[0][:2] for n, _, _, cands in seq if cands}
+        est_at = {q[0]: q[3][0][:2] for q in seq if q[3]}
     for n, kind, spots in frames_truth:
         est = est_at.get(n)
         t = tally[kind]
