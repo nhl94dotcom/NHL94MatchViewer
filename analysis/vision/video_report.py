@@ -101,7 +101,7 @@ def main():
             if pairs:
                 (g["visitors"], g["home"]), _ = pairs.most_common(1)[0]
         ev_path.write_text(json.dumps({"video": str(video), "fps": fps, "crop": C.CROP, "games": games,
-                                       "readings": rows}, indent=1))
+                                       "readings": rows, "team_reads": G.TEAM_READS}, indent=1))
     ev = json.loads(ev_path.read_text())
 
     st_path = out / "static.npz"
@@ -114,6 +114,7 @@ def main():
     import possession as PO
     import zone_time as Z
     live = Z.live_frames(ev["readings"], fps)
+    team_reads = ev.get("team_reads") or []       # (frame, visitors, home) every few seconds (older events.json: none)
     report = []
     for k, g in enumerate(ev["games"]):
         if g["end_frame"] - g["start_frame"] < 60 * fps or not g.get("home"):
@@ -126,12 +127,28 @@ def main():
             pp.write_text(json.dumps({"frames": [s[0] for s in seq], "obs": obs}))
         pd = json.loads(pp.read_text())
         team = dict(zip(pd["frames"], PO.team_path(pd["obs"])))
+        # another game on screen (an intermission highlight shows its own teams in the score box): the stretches
+        # around a team read that isn't this game's pair are left out, to the next read of the right pair
+        others = [n for n, v, h in team_reads if g["start_frame"] <= n <= g["end_frame"] and (v, h) != (g["visitors"], g["home"])]
+        ours = sorted(n for n, v, h in team_reads if (v, h) == (g["visitors"], g["home"]))
+        import bisect
+        cut = []
+        for n in others:
+            i = bisect.bisect_left(ours, n)
+            a = ours[i - 1] if i > 0 else g["start_frame"]
+            b = ours[i] if i < len(ours) else g["end_frame"]
+            cut.append((a, b))
+        if cut:
+            print(f"  game {k + 1}: {len(others)} reads of other teams; {len(cut)} stretches left out", flush=True)
+
+        def other_game(n):
+            return any(a < n < b for a, b in cut)
         z = {"home att": 0, "neutral": 0, "home def": 0}
         poss = {0: 0, 1: 0}
         att_poss = {0: 0, 1: 0}
         n_live = 0
         for n, r in cams.items():
-            if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or not r[4]:
+            if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or not r[4] or other_game(n):
                 continue
             zz = Z.zone(r[2] + Z.OFFSET, live[n])
             z[{1: "home att", 0: "neutral", -1: "home def"}[zz]] += 1
