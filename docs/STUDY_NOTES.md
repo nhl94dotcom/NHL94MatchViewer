@@ -4799,7 +4799,7 @@ menu's Instant Replay. Results:
   set. Overtime not reached (both games ended in regulation).
 - **Second build (the fix: SMmark starts with btst #4,($C2EA).w / bne, the game's gmhl test;** nhl94 535c781b...,
   CDL 971b13c1...): four games (nhl94 and CDL, `--delay=0` and `37` for different highlights), the scores set level
-  with 3 s left in period 3. Through all 15 intermission highlights the count and record stood still, and the stored
+  with 3 s left in period 3. Through all 18 intermission highlights the count and record stood still, and the stored
   gsp ($FFFD4E) stayed ours. At every period's puck drop (periods 2, 3 and overtime, in all four) the count was 0
   and the record empty, including nhl94 delay 37's period 3, after two highlights of a third period (gsp 2, ours too)
   and its overtime after two more. Screen checks 0 or 1 missing (a mark made that frame goes to video memory in the
