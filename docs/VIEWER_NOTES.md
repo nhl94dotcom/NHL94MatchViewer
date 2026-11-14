@@ -1238,5 +1238,18 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   768, 544), the width 3 x 256 but the height 2.43 x 224 (the streamer squashed it; a search of heights confirmed
   544, rink match 0.74).
 
+- **The camera on the YouTube video, fixed:** at 30 frames a second, every 3rd frame, a pan moved the camera up to
+  about 30 pixels between looks, past the tracker's 10-pixel search, and it stayed behind (the zone times read the
+  home team in its attacking zone 50-63% of every game). The tracker now also searches where the camera's last move
+  puts it, checks itself with a whole-rink search every second (a clearly better place wins) and keeps to where the
+  camera can be. After it: the series' zone shares 35-47% home attacking, 16-22% neutral, both ends alike period by
+  period; BOS-CHI still exact on every still frame, moving frames all within 16 (98.5% within 4).
+- **The puck, second version** (`puck.py`, `puck_eval.py`): the ROM's ten puck frames as templates matched by class
+  (dark, light; the pixels just outside not dark), weighted by the camera's lead (the puck near the screen's middle).
+  On every frame of live play (carried or loose; 20,000 frames of BOS-CHI, every 4th): the estimate within 6 pixels
+  of the recorded puck on 31%; the true puck among a frame's top five candidates on 58%, among none on 36% (hidden or
+  merged). The shadow's template was dropped (any sprite pixel matched inside every player). Following it over time
+  (`puck_track.py`, a Viterbi path) next.
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
