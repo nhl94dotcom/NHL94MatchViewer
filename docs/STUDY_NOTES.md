@@ -4857,6 +4857,29 @@ NHL94_skate_marks.smc 4ef5a391..., nhl94snes_2026_skate_marks.sfc b4d132a8...):
 - Every map check clean (66), every stats and replay round trip kept every mark; video strays only the scoreboard
   view's own row 24.
 
+### Giveaways and takeaways in the ROM; the hat-trick hats (2026-11-14, NOSE4Web's questions, from the code)
+
+- **Where possession changes:** on both systems one routine gives a player the puck: `puckglue` (Genesis collide94,
+  retail $15284, `move.w d0,(puckc).w` with a2 the new carrier; SNES `puckglue.asm`, `sty.w puckc` at .1), reached
+  from puckstick's catch and puckgoalie. The faceoff win is known there (sflags3's sf3fo, cleared by the pickup that
+  wins it). The SNES also gives a pass's intended receiver the puck in his assignment (`asspassrec`, `stx.w puckc`):
+  same team, never a turnover. The old carrier: puckc is already loose when puckglue runs; `lastplayer` (Genesis
+  $FFBEDA, SNES $0CF3) is written by dopass, doshot, puckstick's steal and puckgoalie (SNES also assdumpin) but **not**
+  when FallDown knocks the puck loose (Genesis collide94 FallDown's `st (puckc).w`; SNES FallDown.asm's two `sta.w
+  puckc`) or checkgoal takes it: a hack keeps its own last carrier at puckglue and a "how lost" note at each site.
+- **Free RAM:** Genesis $FFE000-$FFE3FF, $FFF750-$FFF7FF and $FFFD5C-$FFFEBF (the never-written $FFE000-$FFFEBF less
+  NOSE4Web's $FFF000-$FFF74F and the skate marks). SNES (1 MB and 2 MB builds): $7E:E68C-$E787 (the 2 MB builds'
+  extra stats from $E788, TOI $E800); SA-1 (the game on the SA-1): BW-RAM $40:5319-$5FFF (the shootout's saved
+  blocks end at $5318).
+- **Hat-trick hats, home only on both** (Genesis ShowGoalBox: StartArenaAnim 0 on a home hat trick; SNES ShowGoalBox:
+  StartHatTrick only when a2, the team, is 0). Genesis: an arena animation (ArenaAnims 0, frames ArenaFrames8, 15
+  frames then ended), its sprites at fixed rink-map places, X 0-271 and Y -1 to 94 (map pixels: the top end, the
+  crowd and boards behind the top goal), drawn only where the view takes them in (AddArenaAnimSprite culls by
+  Hpos / Vpos), not in replays or the scoreboard view: seen only with the camera at the top end. SNES: ten hats in
+  screen coordinates (UpdateHatTrick: from the screen's left or right edge, landing at screen x 80-174, y 96-159),
+  seen wherever the camera is, until the next faceoff (puckfaceoff2 clears hattrick); not in the scoreboard view or
+  replays.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
