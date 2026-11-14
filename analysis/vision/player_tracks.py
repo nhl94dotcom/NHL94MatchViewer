@@ -6,7 +6,7 @@ taken as 0). Per team, each detection joins the nearest live track within GATE r
 pairs first), or starts a new track; a track not matched for KEEP frames ends. Tracks shorter than MIN_LEN frames (a
 split-off piece, a star, the crowd) are dropped.
 
-python analysis/vision/player_tracks.py check VIDEO CAMERA_TRACK.npz HOME AWAY [FIRST] [COUNT] [STEP]
+python analysis/vision/player_tracks.py check VIDEO CAMERA_TRACK.npz HOME AWAY [FIRST] [COUNT] [STEP] [STATIC.npz]
   the kept tracks' points on still-camera frames against the recorded players of their team: found, missed, extra,
   and the position error."""
 import json
@@ -53,7 +53,7 @@ def track(dets_by_frame):
     return {t: v for t, v in tracks.items() if len(v["pts"]) >= MIN_LEN}
 
 
-def check(video, track_npz, home, away, first, count, step):
+def check(video, track_npz, home, away, first, count, step, static_npz=None):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
     import rink_mosaic as RM
     rom = Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
@@ -62,13 +62,14 @@ def check(video, track_npz, home, away, first, count, step):
     cams = {int(r[0]): r for r in np.load(track_npz)["rows"]}
     rink = C.Rink(rom)
     cols = S.team_colours(rom, home, away)
+    static = np.load(static_npz)["mask"] if static_npz else None
     seq, raw = [], {}
     for n, f in C.frames(video, first, count):
         if n % step or n not in cams or not cams[n][4]:
             continue
         _, hpos, vpos = cams[n][:3]
         hpos, vpos = int(hpos), int(vpos)
-        dets = [(t, *to_rink(x, y, hpos, vpos)) for t, x, y, _ in S.players(rink, f, hpos, vpos, cols)]
+        dets = [(t, *to_rink(x, y, hpos, vpos)) for t, x, y, _ in S.players(rink, f, hpos, vpos, cols, static)]
         seq.append((n, dets))
         raw[n] = (hpos, vpos, dets)
     tracks = track(seq)
@@ -116,4 +117,4 @@ if __name__ == "__main__":
     if sys.argv[1] == "check":
         a = sys.argv[2:]
         check(Path(a[0]), a[1], a[2], a[3], int(a[4]) if len(a) > 4 else 0, int(a[5]) if len(a) > 5 else 3000,
-              int(a[6]) if len(a) > 6 else 2)
+              int(a[6]) if len(a) > 6 else 2, a[7] if len(a) > 7 else None)

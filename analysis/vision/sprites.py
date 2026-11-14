@@ -10,6 +10,7 @@ feet) are kept.
 Screen and rink: x = X - Hpos + 128, y = 107 - Y + Vpos - Z for a skater's body (fitted on 12 still-camera frames of
 nhl94_playoffs-261113-133619.mkv against the recordings); the feet a few pixels lower.
 
+python analysis/vision/sprites.py static VIDEO CAMERA_TRACK.npz OUT.npz   (learn_static: the nets and the logo)
 python analysis/vision/sprites.py check VIDEO CAMERA_TRACK.npz [FIRST] [COUNT]
   each recorded player on screen against the blobs: found (a blob's box within 3 px of his body point) or missed, by
   how crowded the spot was."""
@@ -27,12 +28,39 @@ MIN_PIXELS = 12
 MARGIN = 28                       # per channel: the emulators' colour levels differ by up to 16
 
 
-def fg_mask(rink, f, hpos, vpos):
+STATIC_SHARE = 0.6                # a rink pixel unlike the drawn rink in this share of the frames that show it: a
+                                  # sprite that stays put (the nets, the centre-ice logo), left out of every mask
+
+
+def learn_static(video, track_npz, rom, out, step=20):
+    """The static sprites: per rink pixel (the padded render's coordinates), how often it differs from the drawn rink
+    in the placed frames (every step-th); those at STATIC_SHARE or more saved as a mask."""
+    cams = {int(r[0]): r for r in np.load(track_npz)["rows"]}
+    rink = C.Rink(rom)
+    seen = np.zeros(rink.img.shape[:2], np.int32)
+    diff = np.zeros(rink.img.shape[:2], np.int32)
+    for n, f in C.frames(video):
+        if n % step or n not in cams or not cams[n][4]:
+            continue
+        _, hpos, vpos = (int(x) for x in cams[n][:3])
+        u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
+        m = fg_mask(rink, f, hpos, vpos)
+        seen[v:v + C.HUD_TOP - 2, u:u + C.NATIVE_W] += 1
+        diff[v:v + C.HUD_TOP - 2, u:u + C.NATIVE_W] += m[:C.HUD_TOP - 2]
+    mask = (seen >= 20) & (diff >= STATIC_SHARE * np.maximum(seen, 1))
+    np.savez_compressed(out, mask=mask, seen=seen, diff=diff)
+    print(f"static sprite pixels: {int(mask.sum())} ({out})")
+    return mask
+
+
+def fg_mask(rink, f, hpos, vpos, static=None):
     u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
     near = np.stack([rink.img[v:v + C.H, u + du:u + du + C.NATIVE_W] for du in (-1, 0, 1)])
     lo, hi = near.min(axis=0) - MARGIN, near.max(axis=0) + MARGIN
     m = ((f < lo) | (f > hi)).any(axis=2)
     m[C.HUD_TOP - 2:] = False
+    if static is not None:
+        m &= ~static[v:v + C.H, u:u + C.NATIVE_W]
     return m
 
 
@@ -146,7 +174,9 @@ def check(video, track, first=0, count=20000, step=15):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "check":
+    if sys.argv[1] == "static":
+        learn_static(Path(sys.argv[2]), sys.argv[3], Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin", sys.argv[4])
+    elif sys.argv[1] == "check":
         check(Path(sys.argv[2]), sys.argv[3], int(sys.argv[4]) if len(sys.argv) > 4 else 0,
               int(sys.argv[5]) if len(sys.argv) > 5 else 20000)
 
@@ -223,9 +253,9 @@ def kmeans(xs, ys, k, rounds=12):
     return [(float(cen[j, 0]), float(cen[j, 1]), int((a == j).sum())) for j in range(k)]
 
 
-def players(rink, f, hpos, vpos, colours):
+def players(rink, f, hpos, vpos, colours, static=None):
     """[(team 0 home / 1 visitors, x, y, pixels)]: each player group's centre, in screen pixels."""
-    fg = fg_mask(rink, f, hpos, vpos)
+    fg = fg_mask(rink, f, hpos, vpos, static)
     eh, ea = team_evidence(f, colours)
     lab = np.full(fg.shape, -1, np.int8)
     lab[fg & (eh > 0) & (eh >= RATIO * ea)] = 0
@@ -263,4 +293,34 @@ def players(rink, f, hpos, vpos, colours):
                 k = max(1, round(len(py) / PLAYER_PIXELS))
                 for cx, cy, cn in kmeans(px, py, k):
                     out.append((team, cx, cy, cn))
+    return out
+
+
+# ---- the puck (2026-11-14) ----
+# A loose puck is a small dark sprite on its own, on the ice (camera_track.Rink.ice): a group of sprite pixels (no gap filling) of PUCK_MIN-PUCK_MAX pixels
+# with at least PUCK_DARK of them near black (every channel under DARK_MAX; the stars' outlines are dark blue). Its centre is the dark pixels' mean; on the rink the
+# recorded puck is at x = X - Hpos + 128, y = 107 - Y + Vpos - Z (+ PUCK_DY: the sprite sits that much lower).
+
+PUCK_MIN, PUCK_MAX, PUCK_DARK, DARK_MAX = 3, 30, 0.2, 70
+PUCK_DY = 4
+
+
+def puck_candidates(rink, f, hpos, vpos, static=None):
+    """[(x, y, pixels)] in screen pixels."""
+    fg = fg_mask(rink, f, hpos, vpos, static)
+    dark = f.max(axis=2) < DARK_MAX                      # near black: not the stars' dark blue
+    u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
+    ice = rink.ice()[v:v + C.H, u:u + C.NATIVE_W]       # on the ice only: not the crowd's animation
+    out = []
+    for ys, xs in label(fg):
+        n = len(ys)
+        if not PUCK_MIN <= n <= PUCK_MAX:
+            continue
+        d = dark[ys, xs]
+        if d.mean() < PUCK_DARK:
+            continue
+        cx, cy = float(xs[d].mean()), float(ys[d].mean())
+        if not ice[int(cy), int(cx)]:
+            continue
+        out.append((cx, cy, n))
     return out

@@ -1188,5 +1188,17 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   player-sized: overlapping players given the other team's label, and pieces about 24 pixels above a teammate (not
   yet explained). 189 tracks in 3,000 frames: identities don't hold through crowds yet.
 
+- **Static sprites** (`sprites.py static`): the rink pixels unlike the drawn rink in 60% or more of the frames that
+  show them (the nets, the centre-ice logo, the players on the benches and in the box), learnt from the video and
+  left out of every sprite mask. With it (3,000 frames): found 95.4% (tracked 92.3%), extras 13.9% (tracked 10.7%).
+  The nets had read as two extra home players (Boston's grey jersey shade is the net's grey). Of the extras left: a
+  player of the other team labelled wrong where two overlap (about half), near a teammate (a third), alone.
+- **The puck** (`sprites.puck_candidates`, `puck_check.py`): a small group of sprite pixels (3-30) with a fifth or
+  more near black, on the ice (`camera_track.Rink.ice`: the drawn rink flooded from centre ice through the ice's
+  colours). Against the recorded puck within +-6 samples (20,000 frames, every 10th): 50.5% of loose pucks on screen
+  found, at about the recorded spot; 0.11 false a frame (the crowd's animation was 3.5 a frame before the ice limit).
+  Most of the misses are pucks within 12 units of a player (82 of 100 missed there): the puck joins the player's
+  sprite group. Next for it: a search for the puck's shape inside player groups.
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

@@ -77,6 +77,27 @@ class Rink:
         self.img[PAD:PAD + r.shape[0], PAD:PAD + r.shape[1]] = r
         self.h, self.w = self.img.shape[:2]
 
+    def ice(self):
+        """The playing surface in the padded render: flooded from centre ice through the colours found on the ice
+        between the blue lines (ice, lines, circles, scratches), stopping at the boards' kick plate and glass."""
+        if getattr(self, "_ice", None) is not None:
+            return self._ice
+        img = self.img
+        h, w = img.shape[:2]
+        cy, cx = h // 2, w // 2
+        key = (img[:, :, 0].astype(np.int32) << 16) | (img[:, :, 1].astype(np.int32) << 8) | img[:, :, 2]
+        inside = np.isin(key, np.unique(key[cy - 120:cy + 120, cx - 100:cx + 100]))
+        m = np.zeros((h, w), bool)
+        m[cy, cx] = True
+        while True:
+            p = np.pad(m, 1)
+            g = (m | p[:-2, 1:-1] | p[2:, 1:-1] | p[1:-1, :-2] | p[1:-1, 2:]) & inside
+            if (g == m).all():
+                break
+            m = g
+        self._ice = m
+        return m
+
     def share(self, f, u, v, sub):
         """u, v: the frame's top-left in the padded render."""
         if u < 0 or v < 0 or u + NATIVE_W > self.w or v + HUD_TOP > self.h:
