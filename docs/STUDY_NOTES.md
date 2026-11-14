@@ -4627,6 +4627,30 @@ runs/so3). All four natural endings were right:
 Not yet seen: 2-0 after two rounds, the mid-round ends, the shooters past the 5th, the SNES Shootout mode (1 MB and
 SA-1), saved records.
 
+### NOSE4Web's choppy ice 6847618, played (2026-11-14)
+
+`choppy_ice_check.py friction ROM OUT` (a computer game in play, then for each case the clock set to a share of the
+period gone and a loose puck put at 12 spots with speed (V + 37 k, 0); its slowing a frame over 30 frames, clean runs
+only). Against the start of period 1:
+
+| case | nhl94.bin | nhl94_choppy.bin | NHL94.smc | NHL94_choppy.smc | nhl94snes_SA1_choppy.sfc |
+|---|---|---|---|---|---|
+| 30% gone | 1.003 | 1.054 | 0.96 | 2.00 | 1.96 |
+| 55% gone | 0.991 | 1.123 | 0.97 | 1.93 | 1.96 |
+| 80% gone | 0.997 | 1.170 | 0.95 | 1.96 | 1.96 |
+| 90-97% gone | 0.994 | 1.224 (clock at 0) | 0.96 | 1.99 | 1.96 |
+| period 2 / OT start | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+
+- **Genesis: right.** 1.054 / 1.123 / 1.170 for one, two, three quarters gone (expected 1.0625 / 1.125 / 1.1875;
+  1.224 with the clock run to 0, L 4: 1.25), fresh at each period's start and overtime's, the original flat.
+- **SNES (1 MB and SA-1): double friction from the first quarter on.** The code takes one off the friction factor
+  when the low 4 bits of the puck's X fraction (Xfrac $0D77 + $1C) are below L. But updateplayers' `.10` adds Xvel x
+  velstep to Xfrac, and velstep is the frame time x 16: the fraction's low 4 bits never change (0 from the faceoff
+  on), so every update gets $FE ($FF less one: twice the slowing) once L is 1 or more. Varied speeds made no difference
+  (the first run's all-equal speeds gave the same). The Genesis dither works: its step is speed x 17 ($11).
+  A uniform choice: a counter of the hack's own, stepped each puck update (exactly L of every 16), or the fraction's
+  bits 8-11.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
@@ -4720,6 +4744,15 @@ held without losing the puck, lost):
 - The range covers the one-timer swings too: a person whose one-timer was abandoned and who gathers the puck mid-swing
   gets the flag back (a release of A then fires); with the one-timer fix on, the swing is reset to SPAglide the next
   frame and ShotMode clears the flag itself.
+- **Ordinary play (2026-11-14):** in the recorded people's SNES games (29, 1 MB ROMs; `analysis/snes_windup_regather.py`)
+  2 of 691 people's shot wind-ups lost the puck and gathered it back (about one every 15 games); 40 ended with the
+  puck kept and no shot (nearest opponent then: the goalie 11, nobody within 30 7, holding or hooking 7, turning or
+  gliding 6, checking 5). The fix's natural regathers, traced (`--watch`): on the SA-1 build the puck was loose for one
+  frame 10 frames into a computer shooter's swing, the fix set sfssdir again as he gathered it, his swing ran to its
+  last frame and held there 20 frames, and the computer never released (its shooting plan seemingly dropped when the
+  puck went loose; a person releasing would shoot); the unfixed build loses the same shot. On the 1 MB build one
+  regather came 37 frames into a 40-frame swing and the flag stayed clear (likely the SPAnum < $18 bound; SPAnum not
+  recorded in that run).
 
 ### NOSE4Web's 1 MB fight-injury fix 84a3f6b, played (2026-11-13)
 

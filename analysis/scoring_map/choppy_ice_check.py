@@ -4,7 +4,8 @@ puck; no random numbers drawn.
 
 friction ROM OUT: from a game in play (power-on, START into play, the computer on both sides), a saved state; for each
 case (a period, gsp, and a share of it gone, by setting gameclock from PerTimeTotal) the loose puck is put at 12
-spots in turn, each with speed (V, 0) on the ice, and its X speed read each frame for 30 frames (a run touched by
+spots in turn, each with speed (V + 37 k, 0) on the ice (k the run: the SNES build picks its updates by the puck's X fraction, which a
+round speed can freeze), and its X speed read each frame for 30 frames (a run touched by
 anyone, off the boards, in the air or with Y speed is dropped). Printed per case: the clean runs and the puck's
 slowing a frame (its share of the speed lost), against the first case's (period 1, 2% gone).
   Genesis: the puck's record 14 (X +$00, Y +$14, Z +$18, speeds +$28 / +$2A / +$2C, carrier byte +$60 $FF loose),
@@ -23,7 +24,7 @@ from pathlib import Path
 
 import lowload
 
-CASES = [(0, 0.02), (0, 0.30), (0, 0.55), (0, 0.80), (0, 0.97), (1, 0.02), (1, 0.97), (2, 0.97), (3, 0.02), (3, 0.97)]
+CASES = [(0, 0.02), (0, 0.30), (0, 0.55), (0, 0.80), (0, 0.90), (1, 0.02), (1, 0.90), (2, 0.90), (3, 0.02), (3, 0.90)]
 
 
 class Gen:
@@ -40,9 +41,9 @@ class Gen:
     def step(self, n):
         self.r.step(n)
 
-    def place(self, x, y):
+    def place(self, x, y, v0):
         e, p = self.e, self.PUCK
-        for off, v in ((0x00, x), (0x14, y), (0x18, 0), (0x28, self.V), (0x2A, 0), (0x2C, 0), (0x5E, 0)):
+        for off, v in ((0x00, x), (0x14, y), (0x18, 0), (0x28, v0), (0x2A, 0), (0x2C, 0), (0x5E, 0)):
             e.setw(p + off, v)
         e.setb(p + 0x60, 0xFF)
 
@@ -76,9 +77,9 @@ class Snes:
             if self.f % 600 == 0:
                 lowload.breathe()
 
-    def place(self, x, y):
+    def place(self, x, y, v0):
         m = self.m
-        for a, v in ((0x0D71, x), (0x0DD3, y), (0x0DF9, 0), (0x0E01, 0), (0x0EDF, self.V), (0x0EFF, 0), (0x0AD9, 0xFFFF)):
+        for a, v in ((0x0D71, x), (0x0DD3, y), (0x0DF9, 0), (0x0E01, 0), (0x0EDF, v0), (0x0EFF, 0), (0x0AD9, 0xFFFF)):
             m.setw(a, v & 0xFFFF)
 
     def read(self):
@@ -109,7 +110,7 @@ def slowing(g, case_runs=12):
     spots = [(x, y) for x in (-60, 0, 60) for y in (-150, -50, 50, 150)]
     lost, kept = [], 0
     for k in range(60):
-        g.place(*spots[k % len(spots)])
+        g.place(*spots[k % len(spots)], g.V + 37 * k)      # speeds not all multiples of a power of two
         sp = []
         for _ in range(30):
             g.step(1)
@@ -137,7 +138,7 @@ def friction(rom, out):
             base = s
         rel = f"{s / base:.3f}" if s and base else "-"
         print(f"period {gsp + 1 if gsp < 3 else 'OT'}, {gone:.0%} gone (clock {w(g, g.CLOCK)} of {total}): {n} clean runs, "
-              f"slowing a frame {s:.6f} if s else '-'; against the start {rel}", flush=True)
+              f"slowing a frame {s:.6f}; against the start {rel}", flush=True)
 
 
 def same(rom, out, frames):
