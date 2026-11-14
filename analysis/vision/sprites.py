@@ -253,6 +253,10 @@ def kmeans(xs, ys, k, rounds=12):
     return [(float(cen[j, 0]), float(cen[j, 1]), int((a == j).sum())) for j in range(k)]
 
 
+_NEAR_ICE = {}
+ICE_MARGIN = 20                   # a skater's height above the ice's edge: none of the crowd beyond it
+
+
 def near_ice(rink, hpos, vpos, margin=ICE_MARGIN):
     """The ice in this frame's view, grown by margin pixels (a skater at the boards shows over their edge)."""
     u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
@@ -261,9 +265,6 @@ def near_ice(rink, hpos, vpos, margin=ICE_MARGIN):
         _NEAR_ICE[key] = grow(rink.ice(), margin)
     return _NEAR_ICE[key][v:v + C.H, u:u + C.NATIVE_W]
 
-
-_NEAR_ICE = {}
-ICE_MARGIN = 20                   # a skater's height above the ice's edge: none of the crowd beyond it
 
 
 def players(rink, f, hpos, vpos, colours, static=None):
