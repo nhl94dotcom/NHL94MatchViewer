@@ -9,7 +9,8 @@ zone. Every step is one process at a time in gentle mode, and keeps its result i
   poss_<k>.json     possession per game, with that game's home and visitors
   report.json / report.md
 
-python analysis/vision/video_report.py VIDEO OUT [--crop=X,Y,W,H] [--rom=ROM] [--step=N]"""
+python analysis/vision/video_report.py VIDEO OUT [--crop=X,Y,W,H] [--rom=ROM] [--step=N] [--check]
+  --check: each game against its recording (tools/video_sync.py's timeline), side by side"""
 import json
 import sys
 from pathlib import Path
@@ -25,6 +26,43 @@ HERE = Path(__file__).resolve().parent
 
 def opt(name, default=None):
     return next((a.split("=", 1)[1] for a in sys.argv if a.startswith(f"--{name}=")), default)
+
+
+def check(video, report):
+    """Each game against its recording (the games tools/video_sync.py placed, in order): live play, zone shares from
+    the puck's own Y, possession by the last carrier's team (the puck's +$61: the star stays on him while it's loose)
+    and attack-zone possession, over the recording's live samples (play screen, the clock running)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+    import os
+    from export_match import Capture
+    import zone_time as Z
+    home_dir = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
+    tl = json.loads(Path(str(video) + ".timeline.json").read_text())
+    P = 0xB04A + 0x80 * 14
+
+    def s16(v):
+        return v - 65536 if v & 0x8000 else v
+    for name, r in zip(tl["games"], report):
+        c = Capture(home_dir / "captures" / name)
+        z, poss, att, n = {1: 0, 0: 0, -1: 0}, [0, 0], [0, 0], 0
+        for i in range(c.count):
+            if c.byte(i, 0xFFF7) != 0 or c.byte(i, 0xC2EA) & 1:
+                continue
+            n += 1
+            zz = Z.zone(s16(c.word(i, P + 0x14)), c.word(i, 0xC466))
+            z[zz] += 1
+            t = 0 if c.byte(i, P + 0x61) < 6 else 1
+            poss[t] += 1
+            if (t == 0 and zz == 1) or (t == 1 and zz == -1):
+                att[t] += 1
+        secs = c.ms(c.count - 1) / 1000 * 2.5 * n / c.count
+        per = secs / max(n, 1)
+        h, v = r["home"], r["visitors"]
+        r["recording"] = {"name": name, "live_game_seconds": round(secs),
+                          "zone_share": {h + " attacking": round(100 * z[1] / n, 1), "neutral": round(100 * z[0] / n, 1),
+                                         v + " attacking": round(100 * z[-1] / n, 1)},
+                          "possession_share": {h: round(100 * poss[0] / n, 1), v: round(100 * poss[1] / n, 1)},
+                          "attack_zone_possession_s": {h: round(att[0] * per), v: round(att[1] * per)}}
 
 
 def main():
@@ -47,6 +85,9 @@ def main():
         rows = C.track(video, rom, 0, None, step)
         np.savez_compressed(cam_path, rows=rows, step=np.array(step))
     cams = {int(r[0]): r for r in np.load(cam_path)["rows"]}
+    fr = sorted(cams)
+    cstep = int(np.median(np.diff(fr[:5000]))) if len(fr) > 1 else step   # each camera row stands for cstep frames
+    # (a track made elsewhere, as BOS-CHI's every-frame one, needn't have STEP's spacing: 2026-11-14 fix)
 
     ev_path = out / "events.json"
     if not ev_path.exists():
@@ -100,8 +141,11 @@ def main():
                 poss[t] += 1
                 if (t == 0 and zz == 1) or (t == 1 and zz == -1):
                     att_poss[t] += 1
-        secs = n_live * step / fps * 2.5
+        secs = n_live * cstep / fps * 2.5
         share = lambda x: round(100 * x / max(n_live, 1), 1)  # noqa: E731
+        n_poss = poss[0] + poss[1]                   # frames with a possession reading (every STEP-th frame)
+        pshare = lambda x: round(100 * x / max(n_poss, 1), 1)  # noqa: E731
+        pstep = n_live * cstep / max(n_poss, 1)      # the frames each possession reading stands for
         report.append({
             "game": len(report) + 1, "visitors": g["visitors"], "home": g["home"], "final": g["final"],
             "overtime": any(p["period"] == 3 for p in g["periods"]),
@@ -110,9 +154,11 @@ def main():
             "live_game_seconds": round(secs),
             "zone_share": {g["home"] + " attacking": share(z["home att"]), "neutral": share(z["neutral"]),
                            g["visitors"] + " attacking": share(z["home def"])},
-            "possession_share": {g["home"]: share(poss[0]), g["visitors"]: share(poss[1])},
-            "attack_zone_possession_s": {g["home"]: round(att_poss[0] * step / fps * 2.5),
-                                         g["visitors"]: round(att_poss[1] * step / fps * 2.5)}})
+            "possession_share": {g["home"]: pshare(poss[0]), g["visitors"]: pshare(poss[1])},
+            "attack_zone_possession_s": {g["home"]: round(att_poss[0] * pstep / fps * 2.5),
+                                         g["visitors"]: round(att_poss[1] * pstep / fps * 2.5)}})
+    if "--check" in sys.argv:
+        check(video, report)
     (out / "report.json").write_text(json.dumps(report, indent=1))
     lines = [f"# {video.name}: games read from the video", ""]
     for r in report:
@@ -121,14 +167,30 @@ def main():
         lines.append("")
         lines.append("Goals: " + ", ".join(f"{x['team']} P{x['period']} {x['clock']}" for x in r["goals"]))
         lines.append("")
-        lines.append("| | " + r["home"] + " | " + r["visitors"] + " |")
-        lines.append("|---|---|---|")
-        lines.append(f"| possession | {r['possession_share'][r['home']]}% | {r['possession_share'][r['visitors']]}% |")
-        lines.append(f"| in its attacking zone (share of live play) | {r['zone_share'][r['home'] + ' attacking']}% | "
-                     f"{r['zone_share'][r['visitors'] + ' attacking']}% |")
-        lines.append(f"| attack-zone possession (game seconds) | {r['attack_zone_possession_s'][r['home']]} | "
-                     f"{r['attack_zone_possession_s'][r['visitors']]} |")
-        lines.append(f"\nLive play {r['live_game_seconds']} game seconds; neutral zone {r['zone_share']['neutral']}%.\n")
+        rc = r.get("recording")
+        if rc:
+            lines.append(f"| | {r['home']} (video) | {r['visitors']} (video) | {r['home']} (recording) | "
+                         f"{r['visitors']} (recording) |")
+            lines.append("|---|---|---|---|---|")
+        else:
+            lines.append("| | " + r["home"] + " | " + r["visitors"] + " |")
+            lines.append("|---|---|---|")
+
+        def row(label, key, suffix=""):
+            a, b = r[key], rc[key] if rc else None
+            hk = r["home"] + (" attacking" if key == "zone_share" else "")
+            vk = r["visitors"] + (" attacking" if key == "zone_share" else "")
+            out = f"| {label} | {a[hk]}{suffix} | {a[vk]}{suffix} |"
+            if b:
+                out += f" {b[hk]}{suffix} | {b[vk]}{suffix} |"
+            lines.append(out)
+        row("possession", "possession_share", "%")
+        row("in its attacking zone (share of live play)", "zone_share", "%")
+        row("attack-zone possession (game seconds)", "attack_zone_possession_s")
+        lines.append(f"\nLive play {r['live_game_seconds']} game seconds"
+                     + (f" (recording {rc['live_game_seconds']})" if rc else "")
+                     + f"; neutral zone {r['zone_share']['neutral']}%"
+                     + (f" (recording {rc['zone_share']['neutral']}%)" if rc else "") + ".\n")
     (out / "report.md").write_text("\n".join(lines))
     print("\n".join(lines))
 
