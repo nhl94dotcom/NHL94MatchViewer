@@ -4899,6 +4899,8 @@ NHL94_skate_marks.smc 4ef5a391..., nhl94snes_2026_skate_marks.sfc b4d132a8...):
   colour 2 is (5,7,7) against (6,7,7) on CDL Season 12 (one step of red) and (4,7,7) against (6,7,7) on nhl94: hardly
   visible. Longer tiles ($A4 / $A5, $FB) or twice the marks change little; a darker colour 2 shows them but also the
   rink's own streak patterns. The user: the diagonal marks don't read as skating; the approach isn't working.
+- **Dropped** (NOSE4Web f964daa, the commissioner's decision; no free BG2 tiles on the SNES for better ones): the marks'
+  RAM is free again (Genesis $FFE400-$EFFF and $FFF800-$FD5B, SNES $7F:F400-$F5EF).
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
