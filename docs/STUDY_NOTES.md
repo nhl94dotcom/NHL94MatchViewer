@@ -4902,6 +4902,33 @@ NHL94_skate_marks.smc 4ef5a391..., nhl94snes_2026_skate_marks.sfc b4d132a8...):
 - **Dropped** (NOSE4Web f964daa, the commissioner's decision; no free BG2 tiles on the SNES for better ones): the marks'
   RAM is free again (Genesis $FFE400-$EFFF and $FFF800-$FD5B, SNES $7F:F400-$F5EF).
 
+### NOSE4Web's Genesis giveaways and takeaways, stage 1, against the converter (2026-11-14)
+
+`analysis/scoring_map/gen_giveaways_check.py` on nhl94_giveaways.bin (f8ec2808...) and CDL_Season_12_giveaways.bin
+(c7d671ca...): cvc_record's computer games (games 0-2 each), every frame's counts watched ($FFE810 / $FFE850, a byte a
+roster place; LASTC $FFE800, CAUSE $FFE802 traced), each game converted, the counts paired with the converter's
+turnovers (same team, kind and player within 1 s real).
+- **Agreement:** 103 of 188 (nhl94) and 96 of 174 (CDL) counts paired exactly; picked-off passes almost all (137 of
+  148), goalies' own included; checks (hits) 26; dump-ins (the goalie collecting a pass) neither in both.
+- **A bug: takeaways for the team that lost the puck** (8 a ROM in 3 games, 7-8 of them goalies'). puckgoalie's hook
+  sets CAUSE to the goalie whenever a carried puck touches him, his own teammate's too, and puckglue credits CAUSE
+  without checking its team: game 1 frames 1486-1520, home skater 3 carrying by his own net, the puck off his goalie
+  (CAUSE = record 5, the goalie), an away player picks it up: a takeaway for the home goalie (four times in 48 frames).
+- **Goalie takeaways in general:** 34 / 27 more (about 10 a game): an opponent carrying the puck into the goalie, the
+  goalie's team getting it. The converter credits goalies none: the carrier's giveaway ("lost the puck", 19) or a
+  skater's check or hook just before (21).
+- **The ROM sees stick steals the converter can't:** 20 ROM takeaways (puckstick's steal) where the converter, seeing
+  no poke, hook or check, says "lost the puck" (a giveaway).
+- **Causes the ROM doesn't hook:** converter takeaways by hook (14 + 12), poke (10 + 12) and burst that the ROM counts
+  as the carrier's giveaway or not at all: hooks / holds and bumps that knock the puck loose without a fall or a stick
+  steal.
+- **Highlights:** a whole game with START only after 5 s (real): 4,827 frames of other games' highlights, no count
+  changed; the counts cleared at the next game's start (the attract demo). **Faceoffs:** 88; no faceoff win counted
+  (the 7 counts within 1 s of a drop are the winner losing the puck again). **Season shootout:** nhl94_giveaways.bin
+  has none (overtime tied: the game ends); Shootout mode (Play Mode 4) not reached with the computer on both sides.
+- **Game Stats:** "Give/Takeaways" the last row, penalties on and off, both ROMs (values set: visitors 9/11, home
+  12/7, as set); scroll limits $80 / $40.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
