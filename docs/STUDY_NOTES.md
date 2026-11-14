@@ -4544,6 +4544,72 @@ ltx / lty: where), his zone and whether the puck bounced off anything since the 
 - **Goalies:** the games never box a goalie: the body-check code gives the no-text whistle instead when the hitter is a
   goalie (Genesis $14, SNES $16). Exempting goalies follows that.
 
+### Choppy ice, clutch and skate marks: NOSE4Web's three questions, from the code (2026-11-13)
+
+Read in both disassemblies (Genesis logic94 / collide94 / video94, SNES updateplayers.asm, setplayer.asm,
+updatescroll_rows.asm, BuildRinkMap.asm); the puck's flags read in the recordings; the rink maps read from the retail
+ROMs (Genesis Rinktilelist $5605A, a .map.jim: map at +$394A, 48 x 113 cells) and, on the SNES, from rinkmapbuf in a
+headless retail game (with its video memory).
+
+**Choppy ice (puck friction).**
+- Genesis: `updateplayers` (logic94.asm, the friction step) slows every object on the ice (none in the air):
+  v -= max(v >> d2, 1) each frame for X and Y, d2 = 6, or 9 with pfdoff (bit 0 of pflags, "deceleration off"). The
+  puck's pfdoff is set (record 14 +$62 bit 0 in 510 of 600 samples of a recording; the other values have bit 0 too), so
+  the puck slides at v >> 9 (1/512 a frame). Gliding skaters share it: pass receivers (asspassrec sets pfdoff),
+  fallen players (the board falls set it) and the runaway-speed quirk. NOSE4Web's friction option (byte $AC1D, 9 -> 8)
+  changes all of them, not only the puck.
+- SNES: `updateplayers.asm` `.9`/`.1xx`: Xvel and Yvel times a factor / 256 (Mul16x8HiXS) per update; the factor is
+  `.21` by timestep (normal) or `.22-1` by timestep with pfdoff (gliding): $FF,$FF,$FE,$FE,$FE,$FD,... The puck has
+  pfdoff set too (the recordings: object $1C's pflags 1 or 3), and only the puck skips friction in the air (`cpx
+  #puckscnum`, puckz). At the usual timestep (1-2) the puck loses 1/256 per update; the next step ($FE) is double.
+  No SNES friction option exists today.
+- Following the clock: Genesis 25% more is exactly v>>9 + v>>11; in steps, v>>9 + L x (v>>13) with L 0-4 from the
+  elapsed share of the period (GetPeriodTime and gameclock, both there). SNES: $FE on a share of the updates (none at
+  the faceoff, one in four by the period's end) gives 25% on average. Both only for the puck object (skaters keep
+  theirs), reset by the clock itself each period.
+- A wobble: the same place, a loose puck (puckc negative) on the ice (Z 0) with no receiver waiting (no skater on
+  asspassrec), a small random turn now and then (randomd0s / randomd0). It draws from the game's one random stream, so
+  everything after changes (still the same on both netplay machines).
+
+**Clutch (working ratings).**
+- Built in one place on each system: `setplayer` (Genesis collide94.asm; SNES routines/collide/setplayer.asm), from
+  forcepldata at every faceoff (both teams, all on the ice: so after every whistle and goal), assbench (line changes on
+  the fly) and releasepl (out of the box). Hot / cold is added there too (Genesis AttributeCalc: rating x 5 + hot/cold
+  / 3; SNES `.8`: rating x 5 / 2 + hot/cold / 4). Nothing else rebuilds them during play.
+- The bonuses (each set per player as he comes on; goalies get none): PP and PK (OfA, Stk, ShA; PP also Pas), home
+  (OfA, DfA, Stk, ShA, Pas), the third-period bonus +2 (OfA, Chk, and twice to the penalty-shot rating spodds): period
+  3 when the clock's left is at least half the period (the backwards test, both systems) or overtime, the player's team
+  tied or trailing. So in the last 2:00 of regulation it is never given today.
+- Scales and caps: Genesis 0-30 (5 a rating point; AttributeCalc clamps, ClampNibble again after the bonuses); SNES
+  0-15 (2.5 a point; `.8` clamps 0-15 after the bonuses; 6 and 7 both reach 15). aioff and aidef are stored inverted
+  ((30 - n/2)/2 Genesis, (15 - n + 15)/2 and 15 - n + 7 SNES): a +1 on the stored byte makes a player worse. Genesis
+  aggress is masked to 0-15 after AttributeCalc (the known wrap; it is also the goalie's GGSleft).
+- The cleanest hook: a ClutchBonus set beside ThirdPBonus (period 3, gameclock <= 120, |score difference| <= 1; gsp 3
+  overtime left out) and added with the other bonuses before each clamp (and before aioff / aidef's inversion). Every
+  faceoff rebuilds both teams, so a goal that ends it, or the next whistle, takes it off with no extra code. The one
+  gap is the 2:00 mark itself in play: one pass over the 12 on-ice objects when gameclock reaches 120, adding it the
+  same way (or the ratings half of setplayer split out: setplayer itself also inserts assignments and rewrites the
+  mirror bit, not for mid-play).
+
+**Skate marks (the rink map and video memory).**
+- Genesis: the rink map is in ROM (Rinktilelist, 48 x 113 cells, 10.8 KB). updatescroll queues each new row straight
+  from ROM onto the DMA list (plane B, a 32-row ring); the reverse-angle replay uses RevRinkTilelist, the horizontal
+  scoreboard its own map. Plain ice is one tile ($8F) in 1,201 of the 2,272 rink cells (rows 10-80, columns 8-39);
+  134 distinct tiles in the rink. Free video memory: the 28 tiles measured on 2026-11-08 ($294-$29F, $3EC-$3FB), 12
+  of them now NOSE4Web's score logos. Free work RAM $FFE000-$FFFEBF for a table.
+- SNES: the map is in RAM: BuildRinkMap unpacks IceRinkMap to rinkmapbuf $7F:C800 (48 x 113 words after a 6-byte
+  header, the centre-ice logo pasted in) and updatescroll_rows sends 32-word rows into BG2's ring. Plain ice is tile 0,
+  all colour 0, in 1,197 rink cells; 133 distinct tiles. BG2's tiles (from VRAM word $1000, up to $4FFF) are full:
+  4 blank tiles not in the rink map ($2B6, $2C2, $32A, $39F), one of them used by BG1. ExtraChars' free tiles are
+  beyond BG2's reach. ExitStatsScreen rebuilds the map after every pause screen; on SA-1 builds the map stays at
+  $7F:C800, which the SA-1 can't reach.
+- A workable shape: a few shared scratch tiles drawn once (not a tile per marked cell), and a mark table (a bit per
+  cell, 700 bytes); a marked cell's map word points at a scratch tile. Genesis: patch the marked cells into each row as
+  it is queued (copy the row to a RAM buffer first) and write the word to VRAM when a visible cell is marked; reload
+  the scratch tiles after ReloadRinkGraphics / ClrHor; skip marks in the reverse-angle replay. SNES: write the word into
+  rinkmapbuf and VRAM, re-apply the table after BuildRinkMap. Clear the table at each period. DMA per frame then is a
+  few map words, no tile copies. Not measured: vblank DMA time left on a busy frame.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
