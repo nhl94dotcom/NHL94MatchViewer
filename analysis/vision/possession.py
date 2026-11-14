@@ -109,6 +109,8 @@ def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
             continue
         _, hpos, vpos = (int(x) for x in cams[n][:3])
         fg = S.fg_mask(rink, f, hpos, vpos, static)
+        u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
+        fg = fg & rink.ice()[v:v + C.H, u:u + C.NATIVE_W]   # the star is under a skater's feet: on the ice
         seq.append((n, hpos, vpos, star_candidates(f, fg, pts, uniforms=uniforms)))
         dets_at[n] = S.players(rink, f, hpos, vpos, colours, static)
     path = puck_track.path(seq)
