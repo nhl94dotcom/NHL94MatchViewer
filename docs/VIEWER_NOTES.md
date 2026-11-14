@@ -1301,7 +1301,10 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   `--check` the same from the recordings' last carrier and the puck's own Y): per team about 40-50 wins a game on
   video against 37-41 recorded; defending-zone wins close (e.g. 24 / 31 against 27 / 28); attacking-zone wins high by
   2-5 a team (flips of the path, the camera for the puck's zone), the same team ahead in every game; neutral-zone
-  wins the weakest. Rough: not reported on its own yet.
+  wins the weakest. Rough: not reported on its own yet. Tuned offline from the cached readings: a stickier path for
+  this count (SWITCH 8: total error 74 -> 54 of 315 recorded wins); waiting for the new team to hold, or the camera's
+  place a moment later, changed little: the neutral-zone wins stay short (the camera, not the carrier, gives the
+  zone; the star's own place would need the possession pass run again).
 - **Events from the sound, tried and dropped** (`audio_events.py`, `sfx_refs.py`): the video keeps the game's audio
   (FLAC); the recordings' shots, checks and passes put on the video's timeline; templates learnt there, and clean
   ones from our own emulator (every effect's start from lastsfx, $FFC016: the replay recorder sets bit 7 of its low

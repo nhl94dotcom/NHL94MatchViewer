@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
 import camera_track as C  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
+WIN_SWITCH = 8.0                                     # possession's SWITCH for counting the puck won (see below)
 
 
 def opt(name, default=None):
@@ -168,11 +169,15 @@ def main():
         # the possession path in live play, the zone from the camera there
         wins = {t: {"attacking": 0, "neutral": 0, "defending": 0} for t in (0, 1)}
         prev_t = None
-        for n in sorted(team):
+        sw = PO.SWITCH                               # a stickier path for counting changes (BOS-CHI: total error 74 ->
+        PO.SWITCH = WIN_SWITCH                       # 54 of 315 recorded wins); the shares keep possession's own
+        team_w = dict(zip(pd["frames"], PO.team_path(pd["obs"])))
+        PO.SWITCH = sw
+        for n in sorted(team_w):
             if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or other_game(n) or n not in cams \
                     or not cams[n][4]:
                 continue
-            t = team[n]
+            t = team_w[n]
             if prev_t is not None and t != prev_t:
                 zz = Z.zone(cams[n][2] + Z.OFFSET, live[n]) * (1 if t == 0 else -1)
                 wins[t][{1: "attacking", 0: "neutral", -1: "defending"}[zz]] += 1
