@@ -4819,6 +4819,30 @@ menu's Instant Replay. Results:
   the marks back after). Counts 240 (the cap, reached in period 1), 209, 236. Lag 87 of 33,586 against CDL Season
   12's 97 of 38,898 (0.26% / 0.25%).
 
+### Skate marks: NOSE4Web's SNES builds, played (2026-11-14)
+
+`analysis/scoring_map/snes_skate_marks_check.py` on NHL94_skate_marks.smc (SHA-256 82869c19...) and
+nhl94snes_2026_skate_marks.sfc (dfdf3fe5...), with NHL94.smc and nhl94snes_2026.sfc for timing: computer games
+(snes_60fps_cvc's boot, 5-minute periods), the scores set level with 3 s left in period 3, into overtime. The map in
+RAM (rinkmapbuf) against the plain map, the build's count ($7F:F400) and list ($7F:F410, offsets from rinkmapbuf's
+start with its 6-byte header, bit 15 the flip), and video memory's rink rows (words $400 + 32 v and $800 + 32 v)
+against the map. Results (three games on NHL94_skate_marks.smc, one on the 2026 build):
+- **Marks:** every map check (23 a game) had every changed cell a mark (tile 0 to $BA, flip only), as many as the
+  count, the same cells as the list; no other cell changed. Counts at a period's end 192-240 (the cap reached once).
+- **Video:** every mark on a row in video memory shown, but for 0-1 a check on a row just off the screen (the 32-row
+  ring holds 3 rows the screen doesn't show; marked while off screen, the row is drawn again from the map, mark and
+  all, when it scrolls in). No stray $BA: the 4 the scoreboard view showed on its row 24 are the same on the
+  original (its own picture); the ice strip under the scoreboard shows the rink's marks as the map has them.
+- **Fresh ice:** the count 0 and the map plain at every puck drop (periods 2, 3 and overtime), the clear coming
+  250-1,500 frames before the drop; once 2 marks were made between the clear and the drop (skaters going to the dot).
+- **Stats screen and instant replay** (the pause menu's items 2 and 1, in period 2): every mark kept, the list and
+  count unchanged through the replay (back and forward).
+- **Intermission highlights of other games:** none came up in four games (START only after 150 s, real, of a
+  stopped clock, or none at all: the game resumed by itself), so the build's gmhl test wasn't exercised.
+- **Slowdown, a finding:** frames of play in 3-frame game steps (timestep $0ADB 3: the game behind its 30 steps a
+  second): NHL94_skate_marks.smc 7.7% (and 8.2% in the patient run) against NHL94.smc's 2.7%; the 2026 build 8.6%
+  against 4.4%. Flat with the count (0-79 marks 7.8%, 80-159 7.0%, 160-239 8.1%): a cost every step, not per mark.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
