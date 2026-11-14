@@ -24,7 +24,7 @@ import camera_track as C  # noqa: E402
 import puck_track  # noqa: E402
 import sprites as S  # noqa: E402
 
-TOP, SWITCH, ACC = 8, 3.0, 0.8
+TOP, SWITCH, ACC = 8, 5.0, 0.8          # SWITCH 5: a whole game's changes nearest the recording's (100 vs 94)
 FILL = (0x3, 0xD, 0xF)           # the star's inside: the joypad stars (390 / 391, the same shape) are outlines
 UNIFORM_GAP = 40                  # a pixel this near a team's colour isn't the star's
 STAR_DX, STAR_DY = 1, 5           # the star's frame offsets from the y = 107 - Y + Vpos rule (measured)

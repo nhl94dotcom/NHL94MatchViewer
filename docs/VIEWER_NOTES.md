@@ -1271,6 +1271,9 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   only the fill is searched (the home person's blue star had read as the home team carrying: 66-71% home); and
   Boston's jersey shading is a blue, so pixels near either team's colours are left out. With the star placed right
   the team was right 94.6%; the smoothing's settings hardly matter (81-85%).
+  **A whole game** (BOS-CHI game 2, every 4th frame, 5,367 live): right on 83.4% (each frame alone 85.7%); home's
+  share of live possession 51.6% against the recording's 49.4%; changes of possession 118 against 94 with SWITCH 3,
+  100 with SWITCH 5 (83.5% right: the default now).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
