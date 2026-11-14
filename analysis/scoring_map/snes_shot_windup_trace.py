@@ -4,6 +4,8 @@ games (snes_ot_goal_check.start; the computer's shots go through ShotMode and th
 object in SPAshotf / SPAshotb (the ROM's own words through tools/systems/snes_layout.py) while it is the carrier at
 the start: puckc ($0AD9, object x 2) and nopuck ($1203, doshot sets 16 for the shooter) each frame. Each wind-up ends:
   fired          doshot ran (the puck went loose with his nopuck at 16)
+  fired_regather the same after the puck left him and came back during the wind-up (2026-11-14: each listed with
+                 who had it meanwhile, and the shot flag, sflags bit 3, as he got it back and a frame later)
   held_regather  no shot, he has the puck at the end, and it left him and came back during the wind-up
   held_kept      no shot, he has the puck at the end and never lost it (a hold or hook clears the flag: holdcheck)
   lost           someone else has it, or it is loose, with no shot
@@ -13,7 +15,10 @@ otherwise unchanged.
 --force-regather: 3 frames into every wind-up the puck is made loose where it is (puckc $FFFF; nothing else changed),
 so he gathers it straight back through the ordinary pickup: retail loses the shot, the fix should keep it.
 
-python snes_shot_windup_trace.py ROM GAMES OUT.jsonl [FIRST] [--force-regather]"""
+--watch=START,FRAMES,OBJECT: every frame of that stretch printed for that object (puckc, SPA, SPAnum, SPAcnt, sflags,
+nopuck, pflags).
+
+python snes_shot_windup_trace.py ROM GAMES OUT.jsonl [FIRST] [--force-regather] [--watch=START,FRAMES,OBJECT]"""
 import json
 import sys
 from pathlib import Path
@@ -23,8 +28,9 @@ from snes_60fps_cvc import CLOCK, GSP, computer_only
 from snes_ot_goal_check import start
 from snes_onetimer_hold_trace import layout_of
 
-SPA, NOPUCK, PUCKC = 0x11A3, 0x1203, 0x0AD9
+SPA, NOPUCK, PUCKC, SFLAGS = 0x11A3, 0x1203, 0x0AD9, 0x15D8
 FORCE = "--force-regather" in sys.argv
+WATCH = next(([int(v) for v in a.split("=")[1].split(",")] for a in sys.argv if a.startswith("--watch=")), None)
 
 
 def s16(v):
@@ -42,7 +48,7 @@ def shot_words(rom):
 
 def game(rom, n, tmp, words):
     e, m = start(rom, n, tmp)
-    counts = {"fired": 0, "held_regather": 0, "held_kept": 0, "lost": 0}
+    counts = {"fired": 0, "fired_regather": 0, "held_regather": 0, "held_kept": 0, "lost": 0}
     cases = []
     open_ = {}
     f, still, last = 0, 0, None
@@ -58,6 +64,11 @@ def game(rom, n, tmp, words):
         e.run(1, hold=["START"] if still >= 8 and f % 60 < 4 else [])
         f += 1
         pc = s16(m.w(PUCKC))
+        if WATCH and WATCH[0] - 5 <= f <= WATCH[0] + WATCH[1]:
+            k = WATCH[2]
+            print(f"f{f} +{f - WATCH[0]}: puckc {pc} spa {m.w(SPA + 2 * k):04x} spanum {m.w(0x11C3 + 2 * k)} "
+                  f"spacnt {s16(m.w(0x11E3 + 2 * k))} sflags {m.w(SFLAGS):04x} nopuck {m.w(NOPUCK + 2 * k)} "
+                  f"pflags {m.w(0x1283 + 2 * k):04x}", flush=True)
         for k in range(12):
             in_w = m.w(SPA + 2 * k) in words
             if in_w and k not in open_ and pc == 2 * k:
@@ -73,17 +84,26 @@ def game(rom, n, tmp, words):
                         s["fired"] = True
                     elif not s["fired"]:
                         s["left"] = True
+                        s.setdefault("away", [])
+                        if not s["away"] or s["away"][-1] != pc:
+                            s["away"].append(pc)
+                elif s["left"] and "back" not in s:   # regathered: the shot flag (sflags bit 3, sfssdir) then and after
+                    s["back"] = {"at": f - s["start"], "spa": hex(m.w(SPA + 2 * k)), "spanum": m.w(0x11C3 + 2 * k),
+                                 "flag": bool(m.w(SFLAGS) & 8)}
+                elif "back" in s and "flag_next" not in s:
+                    s["flag_next"] = bool(m.w(SFLAGS) & 8)
                 if not in_w:
                     if s["fired"]:
-                        kind = "fired"
+                        kind = "fired_regather" if s["left"] else "fired"
                     elif pc == 2 * k:
                         kind = "held_regather" if s["left"] else "held_kept"
                     else:
                         kind = "lost"
                     counts[kind] += 1
-                    if kind.startswith("held"):
+                    if kind.startswith("held") or kind == "fired_regather":
                         cases.append({"kind": kind, "start": s["start"], "frames": f - s["start"], "period": s["period"],
-                                      "clock": s["clock"]})
+                                      "clock": s["clock"], "away": s.get("away"), "back": s.get("back"),
+                                      "flag_next": s.get("flag_next"), "shooter": k})
                     del open_[k]
     return {"game": n, "frames": f, "counts": counts, "held": cases}
 
