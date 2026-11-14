@@ -88,6 +88,23 @@ def main():
                 if k in OUTCOME or k in SKIP:
                     continue
                 flatten(k, v, out)
+            # decision ratios (2026-11-14): quality against quantity, and what checks and entries pay
+            tm = s["teams"][t]
+
+            def ratio(a, b):
+                return a / b if b else None
+            xg0 = (tm.get("xg") or [None])[0]
+            for key, val in (("ratio xG per attempt", ratio(xg0, tm.get("att", 0)) if xg0 is not None else None),
+                             ("ratio one-timers per attempt", ratio(tm.get("oneTimerTried", 0), tm.get("att", 0))),
+                             ("ratio entries leading to an attempt", ratio((tm.get("entries") or [0] * 5)[4],
+                                                                           (tm.get("entries") or [0])[0])),
+                             ("ratio passes completed (person)", ratio((tm.get("humanPasses") or [0, 0])[1],
+                                                                        (tm.get("humanPasses") or [0])[0])),
+                             ("ratio passes completed (all)", ratio(tm.get("passMade", 0), tm.get("passTried", 0))),
+                             ("ratio checks that paid off", ratio(tm.get("chkGain", 0), tm.get("checks", 0))),
+                             ("ratio giveaways per attempt", ratio(tm.get("give", 0), tm.get("att", 0)))):
+                if val is not None:
+                    out[key] = val
             for k, idx in DROP.items():
                 for i in idx:
                     out.pop(f"{k}.{i}", None)

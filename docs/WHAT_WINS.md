@@ -59,6 +59,24 @@ threw slightly fewer checks.
 **Read:** on the SNES the winner gets into the zone more and shoots off the rush; one-timers matter less than on the
 Genesis. Hitting again goes with losing more than winning.
 
+## Decisions: shoot or wait, check or hang back
+
+Ratios from the same summaries (what_wins.py's "ratio" rows), winner against loser:
+
+| | Genesis: winner higher | SNES: winner higher |
+|---|---|---|
+| xG per attempt (shot quality) | 81% (+0.10 a shot) | 72% (+0.06) |
+| one-timers per attempt | 73% | - |
+| passes completed by the person | 76% | 38% |
+| zone entries that led to an attempt | 69% | 60% |
+| checks that paid off (the puck, a shot or a goal) | 61% | 72% |
+| giveaways per attempt | 18% (the winner lower in 82%) | 40% |
+
+**Shoot or wait:** on the Genesis the winner takes better shots, not only more: more of them one-timers off a pass,
+and more of his passes reach their man; and he gives the puck away far less for each attempt he makes. Waiting for the
+better shot, usually through a pass, goes with winning. **Check or hang back:** winners don't throw more checks, but
+more of theirs win the puck or lead to a shot: picking the moment beats hitting a lot.
+
 ## Caveats
 
 - Small samples: 31 and 25 games, many of them the user's own, so the results lean toward how the user's games go.
