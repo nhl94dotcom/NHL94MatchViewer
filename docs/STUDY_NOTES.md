@@ -5052,6 +5052,17 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
   8 also a few pixels of a skater's boot: provisional), 9 gloves and boots, 10 shoulders and sleeves (the yoke), 11
   pants (light), 12 pants (dark), 13 the stripe (shoulders, waist), 14 stick shaft, 15 shadow. Not NHL '94's order
   (there 2 gloves, 3-5 pants, 6-7 face, 11-13 the body ramp).
+- **Entries 7 and 8 on a goalie** (the Rangers' goalie, side on, zoomed): 7 his leg pad (light), 8 the front of
+  his mask and the pad's dark edge: goalie equipment, light and dark.
+- **Retail's Penalties and Line Changes:** both show Off on Game Setup (words 7 = 0 and 8 = 1: the two rows' choices
+  run in opposite orders). Line Changes is below the visible rows (scrolled to with DOWN, a fresh boot: presses after
+  restoring a saved state at Game Setup were ignored).
+- **Rosters:** the team block holds 26 players, as NHL '94's (maxros 26: energy, box state, goals, assists, shots,
+  ice time and the 16-byte hot / cold rows; NHL '95's block $366, hot / cold at + $1A4). W18: 29 teams of exactly 10
+  (2 goalies, 8 skaters) and 5 placeholders named "-" with 5.
+- **The self-check:** retail `jsr $1A72C0` at $690; W18 has three NOPs there and `bra *` (a hang) at $1A72C0.
+- **Free room:** retail one run of $FF / $00, $1A7310-$1FFFFF (about 355 KB); W18 about 228 KB in runs of 4 KB or
+  more, the largest $1DADF2-$1FFFFF (about 145 KB), with W18's own team table at $1A7300.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
