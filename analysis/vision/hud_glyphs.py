@@ -4,7 +4,8 @@ every digit and period, not only those a learning video happened to show (a YouT
 A computer game in play on the ROM (analysis/scoring_map's headless Genesis Plus GX: 256 x 224 frames); for each
 case the period ($C466), clock ($C468) and scores ($CA3E visitors, $C6DA home) are set, the game paused and resumed
 (which redraws both boxes: printscores1), and each of hud_read.CELLS cut out with its label. Cases: periods 0-3,
-clocks covering every minute digit (and 10 / 20 minutes), every seconds digit, scores 0-19 each side.
+clocks covering every minute digit (and 10 / 20 minutes), every seconds digit, scores 0-19 each side; and every
+team's abbreviation, built from the font's tiles in video memory (keys abbr0 / abbr1 / abbr2 | ABBR, one per cell).
 
 python analysis/vision/hud_glyphs.py ROM OUT.npz"""
 import sys
@@ -16,6 +17,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
 import hud_read  # noqa: E402
+
+VRAM_AT = 74789                   # Genesis Plus GX's state: video memory here (gen_score_logo_check)
 
 
 def cases():
@@ -62,6 +65,45 @@ def main():
             kind = "per" if g == "per" else "clk" if g in ("min", "sec") else "score"
             sums[(kind, ch)] += hud_read.cell(f, rc)
             counts[(kind, ch)] += 1
+    # every team's abbreviation (3 cells, left-aligned) drawn from the font in video memory: the digit 0's tile
+    # (read from the clock box) + $10 is A; A-N, P-Z follow in order; O is the digit 0 (2026-11-14)
+    st = bytes(e.serialize())
+    vram = st[VRAM_AT:VRAM_AT + 0x10000]
+
+    def word(a):
+        return vram[a] | vram[a + 1] << 8
+
+    def tile_px(t):
+        rows = []
+        for y in range(8):
+            b = vram[t * 32 + y * 4:t * 32 + y * 4 + 4]
+            b = bytes([b[1], b[0], b[3], b[2]])
+            rows.append([(b[x // 2] >> (4 if x % 2 == 0 else 0)) & 15 for x in range(8)])
+        return np.array(rows)
+    m, s_ = divmod(e.w(0xC468), 60)
+    digits = {}
+    for rc, ch in ((hud_read.CELLS["min"][1], str(m % 10)), (hud_read.CELLS["sec"][0], str(s_ // 10)),
+                   (hud_read.CELLS["sec"][1], str(s_ % 10))):
+        t = word(0xE000 + 2 * (rc[0] * 64 + rc[1])) & 0x7FF
+        digits[ch] = t
+    ch, t = next(iter(digits.items()))
+    zero = t - int(ch)
+    a_tile = zero + 0x10
+    letters = {chr(65 + i): a_tile + i for i in range(14)}            # A-N
+    letters.update({chr(80 + i): a_tile + 14 + i for i in range(11)})  # P-Z
+    letters["O"] = zero
+    blank = word(0xE000 + 2 * (hud_read.CELLS["min"][0][0] * 64 + hud_read.CELLS["min"][0][1])) & 0x7FF
+    bgc = np.bincount(tile_px(blank).ravel(), minlength=16).argmax()
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+    from systems import genesis
+    for team in genesis.read_teams(Path(rom)):
+        ab = team["abbr"][:3].upper().ljust(3)
+        if any(c != " " and c not in letters for c in ab):
+            continue
+        for k, c in enumerate(ab):
+            px = np.zeros((8, 8)) if c == " " else (tile_px(letters[c]) != bgc) * 206.0
+            sums[(f"abbr{k}", team["abbr"])] = px
+            counts[(f"abbr{k}", team["abbr"])] = 1
     keys = sorted(sums)
     np.savez_compressed(out, keys=np.array(["|".join(k) for k in keys]),
                         tmpl=np.stack([sums[k] / counts[k] for k in keys]), counts=np.array([counts[k] for k in keys]),

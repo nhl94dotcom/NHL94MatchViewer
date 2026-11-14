@@ -232,6 +232,26 @@ class Reader:
         g = cell(f, rc)
         return {ch: float(np.abs(g - t).mean()) for ch, t in self.t[kind]}
 
+    def read_teams(self, f):
+        """(visitors, home): the abbreviations on the score box's rows whose three cells match best (templates
+        abbr0-2 | ABBR from hud_glyphs), or None for a row matching none within the cut-off."""
+        if "abbr0" not in self.t:
+            return None, None
+        teams = {ch for ch, _ in self.t["abbr0"]}
+        out = []
+        for row in (VIS_ROW, HOME_ROW):
+            best = None
+            for team in teams:
+                cost = 0.0
+                for k in range(3):
+                    t = dict(self.t[f"abbr{k}"])[team]
+                    g = around(f, (row, 24 + k)) if self.native else cell(f, (row, 24 + k))
+                    cost += slid(g, t) if self.native else float(np.abs(g - t).mean())
+                if best is None or cost < best[0]:
+                    best = (cost, team)
+            out.append(best[1] if best and best[0] <= 3 * (NATIVE_FAR if self.native else FAR) else None)
+        return tuple(out)
+
     def read_clock(self, f, prev=None, step_cost=6.0):
         """The clock as the valid value (0:00-20:00) whose four digit cells match best, each value's summed
         difference plus step_cost when it isn't prev or up to 3 below it (the clock only runs down; a new period

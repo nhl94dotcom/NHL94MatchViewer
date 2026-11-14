@@ -90,25 +90,17 @@ def team_path(obs):
     return path[::-1]
 
 
-def main():
-    a = [x for x in sys.argv[1:] if not x.startswith("--")]
-    video, track, static = Path(a[0]), a[1], np.load(a[2])["mask"]
-    home, away, out = a[3], a[4], Path(a[5])
-    first = int(a[6]) if len(a) > 6 else 0
-    count = int(a[7]) if len(a) > 7 else None
-    step = int(a[8]) if len(a) > 8 else 4
+def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
+    """The star's path and each looked-at frame's team: (seq, obs) for team_path."""
     try:
-        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
         import lowload
-        lowload.gentle()
     except ImportError:
         lowload = None
-    rom = Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
+    rom = Path(rom) if rom else Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
     rink = C.Rink(rom)
     pts = star_points(rom.read_bytes())
     colours = S.team_colours(rom, home, away)
     uniforms = uniform_colours(rom, home, away)
-    cams = {int(r[0]): r for r in np.load(track)["rows"]}
     seq, dets_at = [], {}
     for n, f in C.frames(video, first, count):
         if lowload:
@@ -128,8 +120,43 @@ def main():
             continue
         d = min(dets, key=lambda z: np.hypot(z[1] - p[0] + STAR_DX, z[2] - (p[1] - STAR_DY - 8)))
         obs.append(d[0] if np.hypot(d[1] - p[0], d[2] - p[1] + 8) < 30 else None)
+    return [(n, h, v, path.get(n)) for n, h, v, _ in seq], obs
+
+
+def which_home(video, cams, static, a, b, first, count, rom=None, samples=24):
+    """Which of two teams is home in a stretch of video: each assignment's player detections' pixels added over
+    `samples` frames (a team's home and away uniforms differ; the right assignment labels more)."""
+    rom = Path(rom) if rom else Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
+    rink = C.Rink(rom)
+    cols = {(a, b): S.team_colours(rom, a, b), (b, a): S.team_colours(rom, b, a)}
+    total = {k: 0 for k in cols}
+    every = max(1, count // samples)
+    for n, f in C.frames(video, first, count):
+        if n % every or n not in cams or not cams[n][4]:
+            continue
+        _, hpos, vpos = (int(x) for x in cams[n][:3])
+        for k, c in cols.items():
+            total[k] += sum(px for _, _, _, px in S.players(rink, f, hpos, vpos, c, static))
+    return max(total, key=total.get), total
+
+
+def main():
+    a = [x for x in sys.argv[1:] if not x.startswith("--")]
+    video, track, static = Path(a[0]), a[1], np.load(a[2])["mask"]
+    home, away, out = a[3], a[4], Path(a[5])
+    first = int(a[6]) if len(a) > 6 else 0
+    count = int(a[7]) if len(a) > 7 else None
+    step = int(a[8]) if len(a) > 8 else 4
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
+        import lowload
+        lowload.gentle()
+    except ImportError:
+        pass
+    cams = {int(r[0]): r for r in np.load(track)["rows"]}
+    seq, obs = run(video, cams, static, home, away, first, count, step)
     teams = team_path(obs)
-    res = {"frames": [n for n, *_ in seq], "star": [path.get(n) for n, *_ in seq], "team": teams, "obs": obs}
+    res = {"frames": [n for n, *_ in seq], "star": [p for *_, p in seq], "team": teams, "obs": obs}
     out.write_text(json.dumps(res))
     share = np.mean(np.array(teams) == 0)
     print(f"{len(seq)} frames: home's share of possession (the star's team) {share:.1%}")

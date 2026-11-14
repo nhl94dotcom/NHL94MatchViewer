@@ -1275,5 +1275,13 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   share of live possession 51.6% against the recording's 49.4%; changes of possession 118 against 94 with SWITCH 3,
   100 with SWITCH 5 (83.5% right: the default now).
 
+- **The teams from the score box** (hud_glyphs: every team's abbreviation built from the font's tiles in video
+  memory: the digit 0's tile + $10 is A, A-N and P-Z in order, O is the digit 0; `Reader.read_teams`): LA at PIT and
+  PIT at LA on the YouTube video, CHI at BOS and BOS at CHI on BOS-CHI, all right; game_events gives each game its
+  commonest pair (read every 5 s). (Uniform colours couldn't tell home from away: 44,987 against 44,300.)
+- **The report** (`video_report.py VIDEO OUT`): camera, score boxes, static sprites and possession per game (that
+  game's home and visitors), one step at a time in gentle mode, each kept in OUT; per game the teams, final, goals,
+  zone shares, possession shares and attack-zone possession.
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

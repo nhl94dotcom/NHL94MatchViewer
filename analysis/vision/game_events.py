@@ -6,6 +6,8 @@ read nothing or nonsense for a moment). From the held readings:
 - games: a new game at a reading of the 1st period at 0-0 after anything else (a score that falls, jumps by more
   than one or a period that goes back is a misread and skipped: on a YouTube video a 7 once read as 6 split a game);
 - goals: a score up by one (the team, the period and the clock of the last reading before it);
+- teams: the score box's abbreviations (Reader.read_teams: visitors above, home below) every 5 s, the commonest pair
+  in each game;
 - whistles: the clock standing still for WHISTLE seconds (real) or more while the boxes are read (a stoppage, a
   faceoff to follow); the clock's reading then; at 0:00 marked period_end.
 Checked on nhl94_playoffs-261113-133619.mkv (four games): the four games and their finals right; 27 of 27 goals the
@@ -29,6 +31,7 @@ import camera_track as C  # noqa: E402
 import hud_read  # noqa: E402
 
 HOLD, WHISTLE = 3, 2.0
+TEAM_READS = []
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 
 
@@ -57,6 +60,9 @@ def read_video(video, templates, step=6):
     if rd.native:
         print("template geometry (scale x, y, shift x, y, blur):", rd.fit(sample_frames(video)), flush=True)
     rows = []
+    global TEAM_READS
+    TEAM_READS = []                                      # (frame, visitors, home): the score box's abbreviations
+    team_every = round(5 * C.video_fps(video))           # every 5 s (real)
     gap = 60 * C.video_fps(video)                        # a minute (real) with no reading: read freely again
     prev = {"vis": None, "home": None}                   # read freely until a reading holds (a video may start
     for n, f in C.frames(video):                         # mid-game), and again after a long gap (a break)
@@ -67,6 +73,10 @@ def read_video(video, templates, step=6):
         r = rd.read(f)
         if r["period"] is None:
             continue
+        if n % team_every < step:
+            vt, ht = rd.read_teams(f)
+            if vt and ht:
+                TEAM_READS.append((n, vt, ht))
         clock = rd.read_clock(f, rows[-1][2] if rows else None)
         if clock is None:
             continue
@@ -169,10 +179,16 @@ def main():
     step = int(args[3]) if len(args) > 3 else max(1, round(fps / 10))
     rows = held(read_video(video, templates, step))
     games = events(rows, fps)
+    from collections import Counter
+    for g in games:                                      # each game's teams: the commonest pair read in it
+        pairs = Counter((v, h) for n, v, h in TEAM_READS if g["start_frame"] <= n <= g["end_frame"])
+        if pairs:
+            (g["visitors"], g["home"]), _ = pairs.most_common(1)[0]
     out.write_text(json.dumps({"video": str(video), "step": step, "fps": fps, "crop": C.CROP, "games": games,
                                "readings": rows}, indent=1))
     for g in games:
-        print(f"game from frame {g['start_frame']} to {g['end_frame']}: final {g['final'][0]}-{g['final'][1]} (visitors-home), "
+        print(f"game from frame {g['start_frame']} to {g['end_frame']}: {g.get('visitors', '?')} at {g.get('home', '?')}, "
+              f"final {g['final'][0]}-{g['final'][1]} (visitors-home), "
               f"{len(g['goals'])} goals, {len(g['whistles'])} whistles, periods {[p['period'] for p in g['periods']]}")
 
 
