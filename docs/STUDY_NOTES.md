@@ -4880,6 +4880,26 @@ NHL94_skate_marks.smc 4ef5a391..., nhl94snes_2026_skate_marks.sfc b4d132a8...):
   seen wherever the camera is, until the next faceoff (puckfaceoff2 clears hattrick); not in the scoreboard view or
   replays.
 
+### Room for a giveaways / takeaways row in the team stats; how the skate marks look (2026-11-14)
+
+- **Genesis Game Stats** (period94 StatsReport / DisplayStats): every TeamStatTextTbl row drawn at once into plane A
+  (64 x 32 cells), 2 rows each from row 0; the screen shows 8 rows and scrolls by matchupvis ($FFD59E: $70 for 15
+  rows, $30 for 11; OptPen $FFD056). `gen_game_stats_rows.py` (retail, penalties on, Game Stats from the pause menu,
+  scrolled to the bottom, then matchupvis + $10 and scrolled on): the 16th place (plane rows 30-31) shows blank under
+  Passing and nothing wraps into view. A 16th row: the table entry, `moveq #$F,d6` (and #$B without penalties) and
+  matchupvis $80 / $40. Values: `dc.w` offsets from tmstruct, the away team's + tmsize, so free RAM at $FFE000+ is an
+  offset of $1932 (a positive word).
+- **SNES Game Stats** (StatsReport / DisplayStats): TeamStatNames (16 rows; TeamStatNamesNoPen 11) and TeamStatSources
+  (kind word, home and away RAM words; kind's low nibble 0 a number, 1 "a/b", 2 a percentage, 3 a time; $10 set: shown
+  with penalties off too), listcount $10 / $0B, a scrolling list (listrows 6) printed into statspage ($7F:2780, $4D80
+  bytes): no screen limit on rows. Values read `lda.w $0000,y` in the program's data bank: low RAM only. The 2 MB /
+  SA-1 source (Mhopkinsinc NHL94SNES-SA1) already adds a 17th row, Posts (kind 4: `lda.l !GameRam7E<<16,x`, a word in
+  bank $7E on the 2 MB builds, $40 BW-RAM on the SA-1, where $E700-$E867 is kept), listcount $11 / $0C.
+- **Skate marks' looks** (`gen_skate_marks_looks.py`, mock-ups from one state): palette 0's ice against the streak
+  colour 2 is (5,7,7) against (6,7,7) on CDL Season 12 (one step of red) and (4,7,7) against (6,7,7) on nhl94: hardly
+  visible. Longer tiles ($A4 / $A5, $FB) or twice the marks change little; a darker colour 2 shows them but also the
+  rink's own streak patterns. The user: the diagonal marks don't read as skating; the approach isn't working.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
