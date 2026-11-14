@@ -1222,5 +1222,21 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   wants updatescroll's own 64 (the stretched recording's squeeze gave 63). Real Twitch / YouTube videos not tried
   yet (none in hand).
 
+- **A YouTube video** (a league finals series, seven games, 320 x 246 at 30 frames a second: the game's picture the
+  whole frame, stretched both ways; yt-dlp): found by stream_locate (the whole frame), camera placed on about 95% of
+  a 3,000-frame stretch (rink match median 0.77 against 0.83 on our recording: the compression). The score boxes
+  needed more than the templates learnt from our recording (a home 8 read as 6 or 0, splitting a game):
+  `hud_glyphs.py` draws every character in the emulator (the period, clock and scores set, the game paused and
+  resumed, which redraws the boxes), and hud_read fits them to each video (scale, offset, blur: `Reader.fit`), with
+  each character's own 8 x 8 compared, a pixel or two of slide, levels fitted per cell. Scores are read as the last
+  one, one more or 0, the clock as the valid time whose four cells match best, near the last reading (it only runs
+  down): all seven games read with their finals, two overtime winners among them (no recording to check against).
+  About 28 minutes for the 68-minute video. The camera on the whole video every 3rd frame (`camera_track.py --step`;
+  zone time scales by it).
+- **A Twitch stream** (a 15-minute stretch at 720p60 of a 1:52 broadcast: the game's picture at the left inside a
+  layout with two webcams, logos, the series score and player tables): stream_locate found the picture at (36, 24,
+  768, 544), the width 3 x 256 but the height 2.43 x 224 (the streamer squashed it; a search of heights confirmed
+  544, rink match 0.74).
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

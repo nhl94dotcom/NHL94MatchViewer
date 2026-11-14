@@ -138,7 +138,7 @@ class Rink:
         return max((self.local(f, u, v, reach=4) for _, u, v in cands), key=lambda r: r[2])
 
 
-def track(video, rom, first=0, count=None):
+def track(video, rom, first=0, count=None, step=1):
     rink = Rink(rom)
     out, last, tried = [], None, -RETRY
     try:
@@ -147,6 +147,8 @@ def track(video, rom, first=0, count=None):
     except ImportError:
         lowload = None
     for n, f in frames(video, first, count):
+        if n % step:
+            continue
         if lowload:
             lowload.breathe()
         r = rink.local(f, *last) if last else None
@@ -206,6 +208,7 @@ def main():
     ap.add_argument("--count", type=int)
     ap.add_argument("--check")
     ap.add_argument("--crop")
+    ap.add_argument("--step", type=int, default=1, help="every STEP-th frame only (zone time scales by it)")
     a = ap.parse_args()
     global CROP, OFF_X
     if a.crop:
@@ -218,8 +221,8 @@ def main():
         lowload.gentle()
     except ImportError:
         pass
-    rows = track(a.video, a.rom, a.first, a.count)
-    np.savez_compressed(a.out, rows=rows)
+    rows = track(a.video, a.rom, a.first, a.count, a.step)
+    np.savez_compressed(a.out, rows=rows, step=np.array(a.step))
     if a.check:
         check(rows, a.check)
 

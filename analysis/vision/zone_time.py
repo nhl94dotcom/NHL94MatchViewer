@@ -42,7 +42,9 @@ def live_frames(readings, fps=FPS):
 
 
 def main():
-    cams = np.load(sys.argv[1])["rows"]
+    d = np.load(sys.argv[1])
+    cams = d["rows"]
+    cstep = int(d["step"]) if "step" in d else 1         # camera_track --step: each placed frame stands for cstep
     ev = json.loads(Path(sys.argv[2]).read_text())
     fps = ev.get("fps", FPS)
     live = live_frames(ev["readings"], fps)
@@ -55,7 +57,7 @@ def main():
                 z.append(zone(vpos + OFFSET, live[n]))
         z = np.array(z)
         sh = [float(np.mean(z == k)) for k in (1, 0, -1)]
-        secs = len(z) / fps * 2.5
+        secs = len(z) * cstep / fps * 2.5
         games.append({"final": g["final"], "shares": sh, "home_attack_s": round(sh[0] * secs), "away_attack_s": round(sh[2] * secs),
                       "live_game_s": round(secs)})
         print(f"game {g['final'][0]}-{g['final'][1]}: live {secs:.0f} game s; home attacking {100 * sh[0]:.0f}%, neutral "
