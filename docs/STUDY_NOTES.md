@@ -4988,6 +4988,17 @@ BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNE
   puck comes off on the SNES: the steal, FallDown (two places: .25 and the injury path, which counts down
   InjCntDown 4 before the stoppage: not hooked), puckgoalie (no cause needed: a goalie's is the carrier's giveaway),
   a pass, a shot; asspenalty, assscore and checkgoal's own-goal drop happen with play stopping.
+- **Stage 2, the 2 MB and SA-1 Player Stats pages** (nhl94snes_SA1_giveaways.sfc 3cc77849..., nhl94snes_2026_giveaways.sfc
+  02e4e1cc...; `snes_toi_page_check.py play ... 60 1 0` then every page both teams, and the same script on McMarkis's
+  base ROM from the build's saved state): his pages pixel-identical but for the shortened last title (2 MB: page 6
+  Checks Agt, 37 pixels; SA-1: page 7 Ice Time, 195); the new pages after his (2 MB 7-8, SA-1 8-9), the last one's
+  title without an arrow, GV / TK highlighted on their own page, scrolling as his. SA-1: every number its BW-RAM word
+  ($40:5504 / $556C). **2 MB: the takeaways read 512, 256, 10 (shown as their last two digits) for players who hadn't
+  played: the takeaways array $7E:E6F8-$E75F lies over the 2 MB build's fight state from $E700** (fighton, ChkCnt,
+  OptFights, ...; FightGameStart). My free-RAM answer had given $E68C-$E787 for the 2 MB builds too: wrong there.
+  `snes_ram_use_check.py` on nhl94snes_2026.sfc (a whole game): never written $7E:E7F1-$EFFF, $7E:F03F-$FFFF,
+  $7F:A7C0-$C7FF, $7F:F240-$FFFF; $7E:F03F-$FFFF is free on retail and Classic too (NOSE4Web's shootout save from $F100
+  and fights $FE00-$FEB5 inside it): $7E:FC00-$FCD7 suggested for every layout.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
