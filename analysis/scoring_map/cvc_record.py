@@ -31,7 +31,7 @@ def teams_for(n):
     return h, (a + 1) % 26 if a == h else a
 
 
-def record_genesis(rom, n, folder, fast, full):
+def record_genesis(rom, n, folder, fast, full, watch=None):
     import gen_ot_check as G
     from emu import Emu
     from systems import genesis
@@ -58,6 +58,8 @@ def record_genesis(rom, n, folder, fast, full):
             last = c
         e.run(1, hold=["START"] if still >= 8 and frame % 60 < 4 else [])
         frame += 1
+        if watch:
+            watch(e, frame)
         ms = frame * 1000 // FPS
         fast.write(struct.pack("<q", ms) + b"".join(bytes(ram[s:s + k]) for s, k in genesis.BLOCKS))
         count += 1
@@ -68,9 +70,12 @@ def record_genesis(rom, n, folder, fast, full):
             for _ in range(5 * FPS):
                 e.run(1)
                 frame += 1
+                if watch:
+                    watch(e, frame)
                 fast.write(struct.pack("<q", frame * 1000 // FPS) + b"".join(bytes(ram[s:s + k]) for s, k in genesis.BLOCKS))
                 count += 1
             break
+    full.write(struct.pack("<q", frame * 1000 // FPS) + bytes(ram[:genesis.RAM_SIZE]))   # the last state, the game over
     return genesis, count, (h, a)
 
 
@@ -129,11 +134,12 @@ def record_snes(rom, n, folder, fast, full):
     return snes, count, (h, a)
 
 
-def one(system, rom, n, out):
+def one(system, rom, n, out, watch=None):
     folder = out / "captures" / f"cvc_{system}_{n:02d}"
     folder.mkdir(parents=True, exist_ok=True)
     with gzip.open(folder / "fast.bin.gz", "wb", compresslevel=3) as fast,             gzip.open(folder / "full.bin.gz", "wb", compresslevel=3) as full:
-        got = (record_genesis if system == "genesis" else record_snes)(rom, n, folder, fast, full)
+        got = (record_genesis(rom, n, folder, fast, full, watch) if system == "genesis"
+               else record_snes(rom, n, folder, fast, full))
     if not got:
         print(json.dumps({"game": n, "error": "never reached play"}))
         return
@@ -141,6 +147,7 @@ def one(system, rom, n, out):
     layout = {"blocks": [list(b) for b in mod.BLOCKS], "recorded_by": "cvc_record", "system": mod.NAME}
     (folder / "capture.json").write_text(json.dumps(layout))
     print(json.dumps({"game": n, "teams": teams, "samples": count, "folder": str(folder)}))
+    return folder
 
 
 def main():

@@ -33,7 +33,7 @@ IN_AIR = 0.9                      # the in-air shapes' scores scaled (a thin dar
 SHADOW = 394
 DARK, LIGHT, MIN_SCORE = 80, 450, 0.8
 SPREAD = (55.0, 60.0)
-PARTIAL = True                    # score the visible part only (2026-11-14); False: the whole picture must match
+PARTIAL = False                   # score the visible part only (2026-11-14); measured worse alone (26.8% against 46.7%)
 MIN_VISIBLE = 0.4                 # at least this share of the picture showing
 
 
@@ -68,54 +68,75 @@ class Finder:
         self.t = templates(Path(rom).read_bytes() if not isinstance(rom, C.Rink) else
                            (Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin").read_bytes())
 
-    def find(self, f, hpos, vpos, fg=None, static=None, partial=None):
-        """partial (PARTIAL by default): score only the visible part of each puck picture: its pixels that are sprite
-        pixels of another class are taken as covered (a skater, a stick, the net drawn over it) and left out; those
-        that are plain rink count against it (a puck pixel there would differ from the rink); at least MIN_VISIBLE
-        of the picture must show. The static sprites (the nets) are then not masked for the puck: it is found in the
-        crease and the net's mouth too."""
+    def find(self, f, hpos, vpos, fg=None, static=None, partial=None, both=False):
+        """Candidates [(x, y, score, weighted score, frame)], best first.
+        Classic scoring (2026-11-14 morning, 31% placed frame by frame, 46.7% tracked): each puck picture's pixels by
+        class, the ring just outside not dark, every matching pixel a sprite pixel (the static sprites, the nets,
+        masked out).
+        partial (PARTIAL; False by default since the evening's measurement): score only the visible part: pixels that
+        are sprite pixels of another class taken as covered and left out, plain rink counting against; at least
+        MIN_VISIBLE showing; the nets not masked (the crease and the net's mouth searched too).
+        both=True: {"classic": [...], "partial": [...]} from one pass (puck_eval caches both)."""
         import sprites as S
         partial = PARTIAL if partial is None else partial
-        if fg is None:
-            fg = S.fg_mask(self.rink, f, hpos, vpos, None if partial else static)
+        modes = ("classic", "partial") if both else ("partial",) if partial else ("classic",)
         u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
         ice = self.rink.ice()[v:v + C.H, u:u + C.NATIVE_W]
         H, W = C.HUD_TOP, C.NATIVE_W
         dark = f.max(axis=2) < DARK
-        classes = {"D": dark, "L": f.sum(axis=2) > LIGHT, "M": fg, "N": ~dark}       # by class, not exact colour:
-        cands = {}                                                                   # videos' levels differ
-        for n, pts in self.t:
-            total = sum(w for _, _, c, w in pts if c != "N")
-            matched = np.zeros((H, W))
-            against = np.zeros((H, W))
-            ringbad = np.zeros((H, W))
-            nring = sum(1 for _, _, c, _ in pts if c == "N")
-            for dy, dx, col, w in pts:
-                # template pixel (dy, dx) of an object at (y, x) is frame pixel (y + dy, x + dx)
-                ys0, ys1 = max(0, -dy), min(H, H - dy)
-                xs0, xs1 = max(0, -dx), min(W, W - dx)
-                if ys0 >= ys1 or xs0 >= xs1:
-                    continue
-                ok = classes[col][ys0 + dy:ys1 + dy, xs0 + dx:xs1 + dx]
-                sp = fg[ys0 + dy:ys1 + dy, xs0 + dx:xs1 + dx]
-                if col == "N":
-                    ringbad[ys0:ys1, xs0:xs1] += ~ok         # dark just outside: part of something bigger
-                    continue
-                matched[ys0:ys1, xs0:xs1] += w * (ok & sp)
-                if partial:
-                    against[ys0:ys1, xs0:xs1] += w * (~ok & ~sp)   # plain rink where the puck would show
+        light = f.sum(axis=2) > LIGHT
+        res = {}
+        for mode in modes:
+            fgm = fg if fg is not None else S.fg_mask(self.rink, f, hpos, vpos, static if mode == "classic" else None)
+            classes = {"D": dark, "L": light, "M": fgm, "N": ~dark}       # by class, not exact colour: levels differ
+            cands = {}
+            for n, pts in self.t:
+                if mode == "classic":
+                    total = sum(w for _, _, _, w in pts)
+                    score = np.zeros((H, W))
+                    onfg = np.zeros((H, W))
                 else:
-                    against[ys0:ys1, xs0:xs1] += w * ~(ok & sp)
-            visible = matched + against
-            sc = matched / np.maximum(visible + 0.5 * ringbad * total / max(nring, 1), 1e-6)
-            if partial:
-                sc = np.where(visible >= MIN_VISIBLE * total, sc * (0.6 + 0.4 * np.minimum(1.0, visible / (0.8 * total))), 0)
-            sc *= 1.0 if n in FLAT else IN_AIR
-            ys, xs = np.nonzero((sc >= MIN_SCORE * (0.75 if partial else 1)) & ice[:H])
-            for y, x in zip(ys, xs):
-                key = (y // 3, x // 3)
-                if key not in cands or sc[y, x] > cands[key][2]:
-                    cands[key] = (float(x), float(y), float(sc[y, x]), n)
+                    total = sum(w for _, _, c, w in pts if c != "N")
+                    matched = np.zeros((H, W))
+                    against = np.zeros((H, W))
+                    ringbad = np.zeros((H, W))
+                    nring = sum(1 for _, _, c, _ in pts if c == "N")
+                for dy, dx, col, w in pts:
+                    # template pixel (dy, dx) of an object at (y, x) is frame pixel (y + dy, x + dx)
+                    ys0, ys1 = max(0, -dy), min(H, H - dy)
+                    xs0, xs1 = max(0, -dx), min(W, W - dx)
+                    if ys0 >= ys1 or xs0 >= xs1:
+                        continue
+                    ok = classes[col][ys0 + dy:ys1 + dy, xs0 + dx:xs1 + dx]
+                    sp = fgm[ys0 + dy:ys1 + dy, xs0 + dx:xs1 + dx]
+                    if mode == "classic":
+                        score[ys0:ys1, xs0:xs1] += w * ok
+                        onfg[ys0:ys1, xs0:xs1] += w * (ok & (sp if col != "N" else True))
+                        continue
+                    if col == "N":
+                        ringbad[ys0:ys1, xs0:xs1] += ~ok         # dark just outside: part of something bigger
+                        continue
+                    matched[ys0:ys1, xs0:xs1] += w * (ok & sp)
+                    against[ys0:ys1, xs0:xs1] += w * (~ok & ~sp)   # plain rink where the puck would show
+                if mode == "classic":
+                    sc = np.minimum(score, onfg) / total
+                    floor = MIN_SCORE
+                else:
+                    visible = matched + against
+                    sc = matched / np.maximum(visible + 0.5 * ringbad * total / max(nring, 1), 1e-6)
+                    sc = np.where(visible >= MIN_VISIBLE * total,
+                                  sc * (0.6 + 0.4 * np.minimum(1.0, visible / (0.8 * total))), 0)
+                    floor = MIN_SCORE * 0.75
+                sc *= 1.0 if n in FLAT else IN_AIR
+                ys, xs = np.nonzero((sc >= floor) & ice[:H])
+                for y, x in zip(ys, xs):
+                    key = (y // 3, x // 3)
+                    if key not in cands or sc[y, x] > cands[key][2]:
+                        cands[key] = (float(x), float(y), float(sc[y, x]), n)
+            res[mode] = self._weigh(cands, hpos)
+        return res if both else res[modes[0]]
+
+    def _weigh(self, cands, hpos):
         cx, cy = 128 + 0.25 * hpos, 115.0
         out = []
         for x, y, s, n in cands.values():
