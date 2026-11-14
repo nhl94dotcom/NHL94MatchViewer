@@ -28,13 +28,14 @@ def zone(y, period):
     return 1 if yy > BLUE else -1 if yy < -BLUE else 0
 
 
-def live_frames(readings):
-    """{frame: period} for frames in stretches where the clock runs."""
+def live_frames(readings, fps=FPS):
+    """{frame: period} for frames in stretches where the clock runs (within 0.8 s real: a game second is 0.4)."""
     out = {}
+    near, gap = round(0.8 * fps), round(0.4 * fps)
     for k in range(len(readings) - 1):
         n, per, clock = readings[k][:3]
-        later = [r for r in readings[k + 1:k + 12] if r[0] - n <= 48]
-        if later and any(r[2] != clock for r in later) and readings[k + 1][0] - n <= 24:
+        later = [r for r in readings[k + 1:k + 12] if r[0] - n <= near]
+        if later and any(r[2] != clock for r in later) and readings[k + 1][0] - n <= gap:
             for f in range(n, readings[k + 1][0]):
                 out[f] = per
     return out
@@ -43,7 +44,8 @@ def live_frames(readings):
 def main():
     cams = np.load(sys.argv[1])["rows"]
     ev = json.loads(Path(sys.argv[2]).read_text())
-    live = live_frames(ev["readings"])
+    fps = ev.get("fps", FPS)
+    live = live_frames(ev["readings"], fps)
     games = []
     for g in ev["games"]:
         z = []
@@ -53,7 +55,7 @@ def main():
                 z.append(zone(vpos + OFFSET, live[n]))
         z = np.array(z)
         sh = [float(np.mean(z == k)) for k in (1, 0, -1)]
-        secs = len(z) / FPS * 2.5
+        secs = len(z) / fps * 2.5
         games.append({"final": g["final"], "shares": sh, "home_attack_s": round(sh[0] * secs), "away_attack_s": round(sh[2] * secs),
                       "live_game_s": round(secs)})
         print(f"game {g['final'][0]}-{g['final'][1]}: live {secs:.0f} game s; home attacking {100 * sh[0]:.0f}%, neutral "

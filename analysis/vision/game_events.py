@@ -3,8 +3,8 @@
 The score boxes are read every STEP frames (hud_read.Reader: period, clock, the visitors' and the home team's
 score); a reading counts once it has held for HOLD readings in a row (a box half covered, a fade, a replay's panel
 read nothing or nonsense for a moment). From the held readings:
-- games: a new game when the period goes back to the 1st with the clock at least as high as before, or the scores
-  fall;
+- games: a new game at a reading of the 1st period at 0-0 after anything else (a score that falls, jumps by more
+  than one or a period that goes back is a misread and skipped: on a YouTube video a 7 once read as 6 split a game);
 - goals: a score up by one (the team, the period and the clock of the last reading before it);
 - whistles: the clock standing still for WHISTLE seconds (real) or more while the boxes are read (a stoppage, a
   faceoff to follow); the clock's reading then; at 0:00 marked period_end.
@@ -12,7 +12,8 @@ Checked on nhl94_playoffs-261113-133619.mkv (four games): the four games and the
 same as the recordings' (team, period, clock within 1 s), none extra; every one of the 45 faceoffs during periods
 matched by a whistle at its clock, plus 5 a game more (the clock standing at period ends and at pauses).
 
-python analysis/vision/game_events.py VIDEO TEMPLATES.npz OUT.json [STEP]   (OUT also keeps the held readings:
+python analysis/vision/game_events.py VIDEO TEMPLATES.npz OUT.json [STEP] [--crop=X,Y,W,H]   (STEP: a tenth of a second
+                                                        by default; the frame rate from the video)   (OUT also keeps the held readings:
                                                         [frame, period, clock, visitors, home])
 python analysis/vision/game_events.py check OUT.json     (the goals against the recordings' match files, through
                                                         tools/video_sync.py's timeline beside the video)"""
@@ -31,16 +32,50 @@ HOLD, WHISTLE = 3, 2.0
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 
 
+def sample_frames(video, count=12):
+    """count frames spread over the video, as camera_track.frames would give them (for Reader.fit)."""
+    import stream_locate as L
+    from PIL import Image
+    w, h = C.video_size(video)
+    d = L.duration(video)
+    out = []
+    for k in range(count):
+        s = L.grab(video, d * (k + 0.5) / count, w, h)
+        if C.CROP:
+            x, y, cw, ch = C.CROP
+            s = np.array(Image.fromarray(s[y:y + ch, x:x + cw]).resize((C.NATIVE_W, C.H), Image.BOX))
+        elif (w, h) != (C.NATIVE_W, C.H):
+            s = np.array(Image.fromarray(s).resize((C.NATIVE_W, C.H), Image.BILINEAR))
+        out.append(s.astype(np.int16))
+    return out
+
+
 def read_video(video, templates, step=6):
+    """Readings (frame, period, clock, visitors, home). The scores are read as the last held value, one more, or 0
+    (Reader.read_score: a score only rises by one), which keeps an 8 from reading as a 6 or 0."""
     rd = hud_read.Reader(templates)
+    if rd.native:
+        print("template geometry (scale x, y, shift x, y, blur):", rd.fit(sample_frames(video)), flush=True)
     rows = []
+    prev = {"vis": 0, "home": 0}
     for n, f in C.frames(video):
         if n % step:
             continue
         r = rd.read(f)
-        if None in (r["period"], r["clock"], r["vis"], r["home"]):
+        if r["period"] is None:
             continue
-        rows.append((n, r["period"], r["clock"], r["vis"], r["home"]))
+        clock = rd.read_clock(f, rows[-1][2] if rows else None)
+        if clock is None:
+            continue
+        r["clock"] = clock
+        sc = {k: rd.read_score(f, k, prev[k]) for k in ("vis", "home")}
+        if None in sc.values():
+            continue
+        if sc["vis"] != prev["vis"] or sc["home"] != prev["home"]:
+            pass
+        rows.append((n, r["period"], r["clock"], sc["vis"], sc["home"]))
+        if len(rows) >= HOLD and all(q[3:] == rows[-1][3:] for q in rows[-HOLD:]):
+            prev = {"vis": sc["vis"], "home": sc["home"]}
     return rows
 
 
@@ -60,7 +95,10 @@ def held(rows):
 def events(rows, fps):
     games, cur, last = [], None, None
     for n, per, clock, vis, home in rows:
-        new = cur is None or (per < last[1]) or (per == last[1] and clock > last[2] + 5) or vis < last[3] or home < last[4]
+        new = cur is None or (per == 0 and vis == 0 and home == 0 and (last[1] > 0 or last[3] + last[4] > 0
+                                                                        or clock > last[2] + 5))
+        if not new and (vis < last[3] or home < last[4] or per < last[1] or vis > last[3] + 1 or home > last[4] + 1):
+            continue                                         # a misread (a score can't fall or jump): skipped
         if new:
             cur = {"start_frame": n, "goals": [], "whistles": [], "periods": []}
             games.append(cur)
@@ -119,11 +157,17 @@ def main():
         lowload.gentle()
     except ImportError:
         pass
-    video, templates, out = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
-    step = int(sys.argv[4]) if len(sys.argv) > 4 else 6
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    crop = next((a.split("=")[1] for a in sys.argv if a.startswith("--crop=")), None)
+    if crop:
+        C.CROP = tuple(int(v) for v in crop.split(","))
+    video, templates, out = Path(args[0]), args[1], Path(args[2])
+    fps = C.video_fps(video)
+    step = int(args[3]) if len(args) > 3 else max(1, round(fps / 10))
     rows = held(read_video(video, templates, step))
-    games = events(rows, 59.92)
-    out.write_text(json.dumps({"video": str(video), "step": step, "games": games, "readings": rows}, indent=1))
+    games = events(rows, fps)
+    out.write_text(json.dumps({"video": str(video), "step": step, "fps": fps, "crop": C.CROP, "games": games,
+                               "readings": rows}, indent=1))
     for g in games:
         print(f"game from frame {g['start_frame']} to {g['end_frame']}: final {g['final'][0]}-{g['final'][1]} (visitors-home), "
               f"{len(g['goals'])} goals, {len(g['whistles'])} whistles, periods {[p['period'] for p in g['periods']]}")

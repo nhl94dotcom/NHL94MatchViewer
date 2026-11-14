@@ -90,18 +90,169 @@ def learn(video, out, step=7, upto=None):
     print(f"{used} frames; templates: " + ", ".join(f"{k[0]}:{k[1]!r} {counts[k]}" for k in keys))
 
 
+BLURS = (0.0, 0.15, 0.25, 0.33)   # horizontal [a, 1 - 2a, a] tried on the game's own (crisp) templates
+NATIVE_FAR = 36.0                 # with the fitted levels and geometry, the most a read cell may differ (on
+                                  # average; a compressed video's cells run 20-35 against the right character)
+
+
+def blur(t, a):
+    """[a, 1 - 2a, a] across and down (a stretched picture resized back blurs both ways)."""
+    if not a:
+        return t
+    p = np.pad(t, ((0, 0), (1, 1)), mode="edge")
+    t = a * p[:, :-2] + (1 - 2 * a) * p[:, 1:-1] + a * p[:, 2:]
+    p = np.pad(t, ((1, 1), (0, 0)), mode="edge")
+    return a * p[:-2] + (1 - 2 * a) * p[1:-1] + a * p[2:]
+
+
+SHIFT = 2                         # the margin a native template is drawn in (scaled and shifted inside it)
+SLIDE = 2                         # and then tried up to this many pixels further off each way, per cell
+
+
+def around(f, rc, m=None):
+    m = SHIFT + SLIDE if m is None else m
+    r, c = rc
+    y0, x0 = r * 8 - m, c * 8 - m
+    g = f[max(0, y0):r * 8 + 8 + m, max(0, x0):c * 8 + 8 + m].mean(axis=2)
+    g = np.pad(g, ((max(0, -y0), 0), (max(0, -x0), 0)), mode="edge")
+    n = 8 + 2 * m
+    return np.pad(g, ((0, max(0, n - g.shape[0])), (0, max(0, n - g.shape[1]))), mode="edge")
+
+
+def slid(g, t):
+    """The best fitted difference of template t (8 + 2 SHIFT square) anywhere within SLIDE pixels in g, over the
+    character's own 8 x 8 only (the margin would take in the next character's edge: in a stretched video a pixel
+    or two away)."""
+    c = t[SHIFT:SHIFT + 8, SHIFT:SHIFT + 8]
+    return min(fitted(g[dy + SHIFT:dy + SHIFT + 8, dx + SHIFT:dx + SHIFT + 8], c)
+               for dy in range(2 * SLIDE + 1) for dx in range(2 * SLIDE + 1))
+
+
+def fitted(g, t):
+    """The mean difference after the template's levels are fitted to the cell (scale 0.7-1.3 and an offset: emulators
+    and videos draw the same colours a little differently)."""
+    tc, gc = t - t.mean(), g - g.mean()
+    v = (tc * tc).sum()
+    a = 1.0 if v < 1 else float(np.clip((tc * gc).sum() / v, 0.7, 1.3))
+    return float(np.abs(gc - a * tc).mean())
+
+
 class Reader:
+    """Templates learnt from a video (learn) or drawn by the game (hud_glyphs.py, native: blurred to fit the video,
+    the blur chosen by fit(), levels fitted per cell)."""
+
     def __init__(self, templates):
         d = np.load(templates)
-        self.t = defaultdict(list)
+        self.native = bool(d["native"]) if "native" in d else False
+        self.raw = defaultdict(list)
         for k, t in zip(d["keys"], d["tmpl"]):
             kind, ch = str(k).split("|", 1)
-            self.t[kind].append((ch, t))
+            self.raw[kind].append((ch, t))
+        self.set_blur(0.25 if self.native else 0.0)
+
+    def set_blur(self, a):
+        self.set_geometry((1.0, 1.0, 0.0, 0.0, a))
+
+    def set_geometry(self, geo):
+        """geo = (scale x, scale y, shift x, shift y, blur): each native template drawn into the cell's surroundings
+        (around: SHIFT pixels each side) scaled about the cell's corner, shifted, blurred."""
+        from PIL import Image
+        self.geo = geo
+        sx, sy, dx, dy, a = geo
+        n = 8 + 2 * SHIFT
+        self.t = {}
+        for k, v in self.raw.items():
+            out = []
+            for ch, t in v:
+                canvas = np.zeros((n, n), np.float32)
+                canvas[SHIFT:SHIFT + 8, SHIFT:SHIFT + 8] = t
+                if self.native:
+                    im = Image.fromarray(canvas, "F").transform(
+                        (n, n), Image.AFFINE, (1 / sx, 0, SHIFT - (SHIFT + dx) / sx, 0, 1 / sy, SHIFT - (SHIFT + dy) / sy),
+                        resample=Image.BILINEAR)
+                    out.append((ch, blur(np.array(im, np.float64), a)))
+                else:
+                    out.append((ch, blur(t, a)))
+            self.t[k] = out
+
+    def fit(self, frames):
+        """The geometry that matches these frames' score-box cells best (the mean of each cell's best difference):
+        blur first, then scale, then shift."""
+        cells = [(f, rc, kind) for f in frames for kind, rcs in
+                 (("clk", CELLS["min"] + CELLS["sec"]), ("score", CELLS["vis"] + CELLS["home"])) for rc in rcs]
+
+        def cost(geo):
+            self.set_geometry(geo)
+            return np.mean([self.best(f, rc, kind)[1] for f, rc, kind in cells])
+        sx, sy, dx, dy, a = 1.0, 1.0, 0.0, 0.0, 0.15
+        for _ in range(2):
+            a = min(BLURS, key=lambda v: cost((sx, sy, dx, dy, v)))
+            sx, sy = min(((x, y) for x in (1.0, 1.06, 1.12, 1.18) for y in (1.0, 1.06, 1.12, 1.18)),
+                         key=lambda q: cost((q[0], q[1], dx, dy, a)))
+            dx, dy = min(((x, y) for x in np.arange(-1.5, 1.6, 0.5) for y in np.arange(-1.5, 1.6, 0.5)),
+                         key=lambda q: cost((sx, sy, q[0], q[1], a)))
+        self.set_geometry((sx, sy, float(dx), float(dy), a))
+        return self.geo
+
+    def best(self, f, rc, kind):
+        if self.native:
+            g = around(f, rc)
+            return min(((ch, slid(g, t)) for ch, t in self.t[kind]), key=lambda c: c[1])
+        g = cell(f, rc)
+        return min(((ch, float(np.abs(g - t).mean())) for ch, t in self.t[kind]), key=lambda c: c[1])
+
+    def value_cost(self, f, key, v):
+        """How unlike a score of v the visitors' or home team's ("vis" / "home") score cells are (the two cells'
+        differences added)."""
+        want = (str(v // 10) if v >= 10 else " ", str(v % 10))
+        total = 0.0
+        for rc, ch in zip(CELLS[key], want):
+            t = dict(self.t["score"]).get(ch)
+            if t is None:
+                return 1e9
+            if self.native:
+                total += slid(around(f, rc), t)
+            else:
+                total += float(np.abs(cell(f, rc) - t).mean())
+        return total
+
+    def read_score(self, f, key, prev):
+        """The score as one of prev, prev + 1 or 0 (a score only goes up by one; 0 at a new game), or None when even
+        the nearest is unlike the cells (more than 2 x the cut-off)."""
+        cands = sorted({prev, prev + 1, 0})
+        cost, v = min((self.value_cost(f, key, c), c) for c in cands)
+        return v if cost <= 2 * (NATIVE_FAR if self.native else FAR) else None
+
+    def costs(self, f, rc, kind):
+        """Every template's difference from this cell: {char: difference}."""
+        if self.native:
+            g = around(f, rc)
+            return {ch: slid(g, t) for ch, t in self.t[kind]}
+        g = cell(f, rc)
+        return {ch: float(np.abs(g - t).mean()) for ch, t in self.t[kind]}
+
+    def read_clock(self, f, prev=None, step_cost=6.0):
+        """The clock as the valid value (0:00-20:00) whose four digit cells match best, each value's summed
+        difference plus step_cost when it isn't prev or up to 3 below it (the clock only runs down; a new period
+        jumps). None when even the best averages more than the cut-off a cell."""
+        c = [self.costs(f, rc, "clk") for rc in CELLS["min"] + CELLS["sec"]]
+        best = None
+        for v in range(0, 1201):
+            m, s_ = divmod(v, 60)
+            chars = (str(m // 10) if m >= 10 else " ", str(m % 10), str(s_ // 10), str(s_ % 10))
+            if any(ch not in c[i] for i, ch in enumerate(chars)):
+                continue
+            cost = sum(c[i][ch] for i, ch in enumerate(chars))
+            if prev is not None and not 0 <= prev - v <= 3:
+                cost += step_cost
+            if best is None or cost < best[0]:
+                best = (cost, v)
+        limit = 4 * (NATIVE_FAR if self.native else FAR)
+        return best[1] if best and best[0] <= limit else None
 
     def char(self, f, rc, kind):
-        g = cell(f, rc)
-        ch, t = min(self.t[kind], key=lambda ct: np.abs(g - ct[1]).mean())
-        return ch if np.abs(g - t).mean() <= FAR else None
+        ch, d = self.best(f, rc, kind)
+        return ch if d <= (NATIVE_FAR if self.native else FAR) else None
 
     def read(self, f):
         """{'period': 0-3, 'clock': seconds left, 'vis': n, 'home': n}, each None when unreadable."""

@@ -46,6 +46,15 @@ def video_size(video):
     raise ValueError("no video stream")
 
 
+def video_fps(video):
+    """Frames a second from the stream's header (RetroArch's recordings say 59.92-60; YouTube's often 30)."""
+    import imageio_ffmpeg
+    import re
+    p = subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-i", str(video)], capture_output=True, text=True)
+    m = re.search(r"([\d.]+) fps", p.stderr)
+    return float(m.group(1)) if m else 59.92
+
+
 CROP = None                       # (x, y, w, h): the game's picture inside a stream's layout (stream_locate.py)
 
 
