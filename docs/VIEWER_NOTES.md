@@ -1256,6 +1256,14 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   camera's middle alone 48.9%, chance). With the puck placed right 79.3%, otherwise 49.3%; with the true puck 82.5%
   (the ceiling from team labels and missing detections). Smoothing over time didn't help (the errors come in
   stretches). So the puck is what to improve, then the team labels.
+- **The puck-possession star** (NOSE4Web's note: uppads' pad objects at $FFBDB4, the first the possession star,
+  frame 392 (setup94's .listffo), Z $FFFF while hidden): in the recordings shown through almost all live play, on
+  the carrier in 92% of carried samples (1,411 of 1,538; loose, it stays on). On screen a filled star under the
+  carrier's feet (x = X - Hpos + 129, y = 112 - Y + Vpos), its points showing round him. `star_probe.py`: its shape
+  searched in star-coloured sprite pixels (blue well over red, green under the ice's): within 6 px of the recorded
+  star on 48.1% of 345 live frames, single frames, nothing smoothed; **possession by team from it right on 90.1%**
+  of carried frames (118 of 131; from the followed puck 64.5%). The carrier, and so the puck when hidden, from the
+  star.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
