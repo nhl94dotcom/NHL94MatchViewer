@@ -3,13 +3,14 @@
 Every STEP-th placed frame of live play: the recorded puck's screen spots over +-WINDOW samples (the timeline is good
 to a fraction of a second), the puck carried or loose. The estimate: puck.Finder's best-weighted candidate (or, with
 --track, puck_track's). Counted: placed (an estimate within NEAR pixels of a recorded spot), wrong (an estimate
-elsewhere), none (no estimate); by carried / loose; and how far off.
+elsewhere), none (no estimate); by carried / loose and by where (in the crease or the net's mouth, within 12 units of
+a player, free); and how far off. --whole: the first version's matching (the whole picture), for comparison.
 
 --cache=FILE: the per-frame candidates and truth kept in FILE (written the first time, read after: tuning the tracker
 needs no video decoding); --players=HOME,AWAY keeps each frame's player detections there too (sprites.players).
 Gentle mode (lowload).
 
-python analysis/vision/puck_eval.py VIDEO CAMERA_TRACK.npz STATIC.npz [FIRST] [COUNT] [STEP] [--track] [--cache=FILE] [--players=HOME,AWAY]"""
+python analysis/vision/puck_eval.py VIDEO CAMERA_TRACK.npz STATIC.npz [FIRST] [COUNT] [STEP] [--track] [--cache=FILE] [--players=HOME,AWAY] [--whole]"""
 import json
 import sys
 from collections import defaultdict
@@ -35,6 +36,8 @@ def main():
     video, track, static = Path(a[0]), a[1], np.load(a[2])["mask"]
     first, count, step = (int(a[3]) if len(a) > 3 else 0), (int(a[4]) if len(a) > 4 else None), (int(a[5]) if len(a) > 5 else 10)
     use_track = "--track" in sys.argv
+    if "--whole" in sys.argv:                        # the whole picture must match (the first version)
+        PK.PARTIAL = False
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
         import lowload
@@ -83,6 +86,10 @@ def main():
         if not (0 <= x0 < 256 and 0 <= y0 < C.HUD_TOP):
             continue
         kind = "loose" if c.byte(i, P + 0x60) == 0xFF else "carried"
+        X, Y = s16(c.word(i, P)), s16(c.word(i, P + 0x14))
+        near = min(abs(s16(c.word(i, 0xB04A + 0x80 * r)) - X) + abs(s16(c.word(i, 0xB04A + 0x80 * r + 0x14)) - Y)
+                   for r in range(12))
+        kind += ", crease / net" if abs(X) < 32 and abs(Y) > 225 else ", near a player" if near <= 12 else ", free"
         frames_truth.append((n, kind, spots))
     if cache and not cache.exists():
         cache.write_bytes(pickle.dumps((seq, frames_truth)))
