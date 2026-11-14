@@ -4742,6 +4742,8 @@ nhl94_toi.bin and NHL94_toi_page.smc:
   printer has two minute digits): out of reach (20-minute periods and a 10-minute overtime make 70 minutes).
 - **SNES:** 99:59, 59:59, 20:00, 19:59, 12:34, 10:00 and 9:59 printed right and lined up, longest first; the goalies
   aren't on this page. 6000 also ":0:00", but ptoi stops at 5999.
+- **The Genesis cap (959b39c, nhl94_toi.bin 58c5e10f... SHA-256):** 5999, 6000, 6001 and 65000 s all printed 99:59
+  (both teams; sorted with the 99:59s first), 754 still 12:34.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
