@@ -45,6 +45,8 @@ def check(video, report):
     for name, r in zip(tl["games"], report):
         c = Capture(home_dir / "captures" / name)
         z, poss, att, n = {1: 0, 0: 0, -1: 0}, [0, 0], [0, 0], 0
+        wins = {t: {"attacking": 0, "neutral": 0, "defending": 0} for t in (0, 1)}
+        prev_t = None
         for i in range(c.count):
             if c.byte(i, 0xFFF7) != 0 or c.byte(i, 0xC2EA) & 1:
                 continue
@@ -52,6 +54,9 @@ def check(video, report):
             zz = Z.zone(s16(c.word(i, P + 0x14)), c.word(i, 0xC466))
             z[zz] += 1
             t = 0 if c.byte(i, P + 0x61) < 6 else 1
+            if prev_t is not None and t != prev_t:
+                wins[t][{1: "attacking", 0: "neutral", -1: "defending"}[zz * (1 if t == 0 else -1)]] += 1
+            prev_t = t
             poss[t] += 1
             if (t == 0 and zz == 1) or (t == 1 and zz == -1):
                 att[t] += 1
@@ -62,6 +67,7 @@ def check(video, report):
                           "zone_share": {h + " attacking": round(100 * z[1] / n, 1), "neutral": round(100 * z[0] / n, 1),
                                          v + " attacking": round(100 * z[-1] / n, 1)},
                           "possession_share": {h: round(100 * poss[0] / n, 1), v: round(100 * poss[1] / n, 1)},
+                          "possession_won": {h: wins[0], v: wins[1]},
                           "attack_zone_possession_s": {h: round(att[0] * per), v: round(att[1] * per)}}
 
 
@@ -158,6 +164,19 @@ def main():
                 poss[t] += 1
                 if (t == 0 and zz == 1) or (t == 1 and zz == -1):
                     att_poss[t] += 1
+        # possession won, by the zone it was won in (the winner's attacking / neutral / defending zone): each change of
+        # the possession path in live play, the zone from the camera there
+        wins = {t: {"attacking": 0, "neutral": 0, "defending": 0} for t in (0, 1)}
+        prev_t = None
+        for n in sorted(team):
+            if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or other_game(n) or n not in cams \
+                    or not cams[n][4]:
+                continue
+            t = team[n]
+            if prev_t is not None and t != prev_t:
+                zz = Z.zone(cams[n][2] + Z.OFFSET, live[n]) * (1 if t == 0 else -1)
+                wins[t][{1: "attacking", 0: "neutral", -1: "defending"}[zz]] += 1
+            prev_t = t
         secs = n_live * cstep / fps * 2.5
         share = lambda x: round(100 * x / max(n_live, 1), 1)  # noqa: E731
         n_poss = poss[0] + poss[1]                   # frames with a possession reading (every STEP-th frame)
@@ -172,6 +191,7 @@ def main():
             "zone_share": {g["home"] + " attacking": share(z["home att"]), "neutral": share(z["neutral"]),
                            g["visitors"] + " attacking": share(z["home def"])},
             "possession_share": {g["home"]: pshare(poss[0]), g["visitors"]: pshare(poss[1])},
+            "possession_won": {g["home"]: wins[0], g["visitors"]: wins[1]},
             "attack_zone_possession_s": {g["home"]: round(att_poss[0] * pstep / fps * 2.5),
                                          g["visitors"]: round(att_poss[1] * pstep / fps * 2.5)}})
     if "--check" in sys.argv:
@@ -204,6 +224,13 @@ def main():
         row("possession", "possession_share", "%")
         row("in its attacking zone (share of live play)", "zone_share", "%")
         row("attack-zone possession (game seconds)", "attack_zone_possession_s")
+        for zname in ("attacking", "neutral", "defending"):
+            a = r["possession_won"]
+            line = f"| puck won in its {zname} zone | {a[r['home']][zname]} | {a[r['visitors']][zname]} |"
+            if rc:
+                b = rc["possession_won"]
+                line += f" {b[r['home']][zname]} | {b[r['visitors']][zname]} |"
+            lines.append(line)
         lines.append(f"\nLive play {r['live_game_seconds']} game seconds"
                      + (f" (recording {rc['live_game_seconds']})" if rc else "")
                      + f"; neutral zone {r['zone_share']['neutral']}%"

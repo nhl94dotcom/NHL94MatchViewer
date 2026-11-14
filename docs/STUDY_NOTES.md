@@ -4928,6 +4928,20 @@ turnovers (same team, kind and player within 1 s real).
   has none (overtime tied: the game ends); Shootout mode (Play Mode 4) not reached with the computer on both sides.
 - **Game Stats:** "Give/Takeaways" the last row, penalties on and off, both ROMs (values set: visitors 9/11, home
   12/7, as set); scroll limits $80 / $40.
+- **The second build** (nhl94 47525f9e..., CDL 01cb4475...; no goalie takeaways, the commissioner's choice; a
+  pass the other goalie collects neither, a carried puck he takes the carrier's giveaway): the counts paired with
+  the converter as changed the same day (below): **127 of 142 (nhl94) and 111 of 134 (CDL)**, against 103 / 96 the
+  first time; the stick steals 21 + 20 paired. Season shootout (nhl94_giveaways_shootout.bin bf98c3be..., a tie
+  after overtime): 12 rounds, 105 pickups by shooters and goalies, no count changed.
+- **Where the Genesis frees a carried puck** (every write of puckc in play): FallDown (a check or trip), puckstick's
+  steal (then deflect), puckgoalie, dopass, doshot, checkgoal. A hook, hold, poke or bump frees it only through
+  FallDown or a stick steal: in the first round's games, every converter takeaway by hook, poke or burst that the ROM
+  counted as a giveaway (18) or not at all (7) was a pass the carrier had just made; where he hadn't passed the ROM
+  had a takeaway (45). No more hooks needed.
+- **The converter changed to match** (find_turnovers; season.py VERSION 37): a stick steal first (m['steals'], from
+  genesis.MatchReader: the carrier loses the puck as an opposing skater's no-touch timer, +$5E, jumps to $14 or more,
+  which only puckstick's steal does), a takeaway 'stick steal'; then a pass that ended the possession is picked off
+  (or a dump-in) whatever poke or hook was near; no goalie takeaways.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 

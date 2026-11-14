@@ -1139,7 +1139,9 @@ def find_turnovers(m):
     opponent's burst that reached him with no check counted is 'burst'; a carrier relieved of
     the puck at once by an opponent on top of him is a takeaway too ('stolen'). Otherwise it is a giveaway by the
     player who lost it: a pass the other team picked off, or the puck simply lost. A pass the goalie collects is a
-    dump-in, counted as neither (as the NHL counts them).
+    dump-in, counted as neither (as the NHL counts them). Since 2026-11-14 (paired with NOSE4Web's giveaways build): a
+    stick steal (m['steals'], Genesis) is first, a takeaway ('stick steal'); then a pass that ended the possession is
+    picked off or a dump-in whatever was near; and no goalie takeaways (a puck lost into a goalie: the carrier's giveaway).
     Returns [{f (frame the other team has it), lost (frame it was lost), from (team that lost it), giver, taker, by
     (roster indices; by = who forced it, takeaways only), kind (giveaway, takeaway, dump-in), how, x, y}]."""
     act = actions(m)
@@ -1175,8 +1177,22 @@ def find_turnovers(m):
               'x': P[3 * lost], 'y': P[3 * lost + 1]}
         window = [q for q in range(max(0, lost - 40), min(N, lost + 20)) if abs(t[q] - t[lost]) <= 500]
         rivals = range(team(k2) * 6, team(k2) * 6 + 6)
-        cause = None
-        for q in window:
+        passed = any(anim(q, k1) in act['pass'] | act['goalie_pass'] for q in window if q <= lost + 2)
+        # 2026-11-14, NOSE4Web's giveaways build paired with this event by event: a stick steal (puckstick: the
+        # stealer's no-touch timer jumps as the carrier loses it; m['steals']) is a takeaway by the stealer; else a pass
+        # that ended the possession is picked off (a giveaway) or a dump-in, whatever poke or hook was near (the ROM
+        # frees a carried puck only by a fall, a steal, a pass, a shot or the goalie); and no goalie takeaways (the
+        # league's choice: a puck lost into a goalie is the carrier's giveaway).
+        steal = next((k for q, k in m.get('steals', []) if abs(q - lost) <= 4 and k in rivals and not goalie(lost, k)), None)
+        cause = ('stick steal', steal) if steal is not None else None
+        if cause is None and passed:
+            if goalie(a2, k2):
+                ev.update(kind='dump-in', how='to the goalie')
+            else:
+                ev.update(kind='giveaway', how='pass picked off')
+            out.append(ev)
+            continue
+        for q in window if cause is None else []:
             for k in rivals:
                 a = anim(q, k)
                 if a in causes and dist(q, k) < 35:
@@ -1204,14 +1220,15 @@ def find_turnovers(m):
                 if k is not None:
                     cause = ('burst', k)
                     break
-        passed = any(anim(q, k1) in act['pass'] | act['goalie_pass'] for q in window if q <= lost + 2)
+        if cause and cause[1] is not None and goalie(lost, cause[1]) and not counted:
+            cause = None                                 # a goalie's poke or check: the carrier's giveaway (no goalie takeaways)
         if cause:
             ev.update(kind='takeaway', how=cause[0], by=counted['by'] if counted else idx(lost, cause[1]))
         elif passed and goalie(a2, k2):
             ev.update(kind='dump-in', how='to the goalie')
         elif passed:
             ev.update(kind='giveaway', how='pass picked off')
-        elif t[a2] - t[lost] < 150 and dist(a2, k2) < 20:
+        elif t[a2] - t[lost] < 150 and dist(a2, k2) < 20 and not goalie(a2, k2):
             ev.update(kind='takeaway', how='stolen', by=idx(a2, k2))
         else:
             ev.update(kind='giveaway', how='lost the puck')

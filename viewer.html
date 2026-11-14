@@ -568,7 +568,7 @@ games between your team and one opponent, for the stats of one set; the Games ta
   <dt>Chances by xG</dt><dd>Attempts split by their expected goals: long or poor (under 0.1), middling (0.1 to 0.6) and great chances (0.6 and up), each with the goals from them. In the team stats under Expected goals.</dd>
   <dt>Leading, tied, trailing</dt><dd>Game time with each team ahead, level and behind, and its shot attempts and xG per 5 game minutes in each: how a team plays with a lead. In the team stats (Advanced), once someone has led.</dd>
   <dt>Breakaway</dt><dd>As the game counts it: the carrier crossing the blue line ahead of every defender.</dd>
-  <dt>Giveaway, takeaway</dt><dd>The puck changing teams without a whistle: a takeaway when the other team forced it (poke check, hook, check, a burst that reached him, or stolen), otherwise a giveaway (a pass picked off, the puck lost).</dd>
+  <dt>Giveaway, takeaway</dt><dd>The puck changing teams without a whistle: a takeaway when the other team forced it (a stick steal, poke check, hook, check, a burst that reached him, or stolen), otherwise a giveaway (a pass picked off, the puck lost). A pass that ends the possession is always a pass picked off, whatever poke or hook was near; a pass the other goalie collects is a dump-in, neither. Goalies get no takeaways: a puck lost into a goalie is the carrier's giveaway (the same rules as NOSE4Web's in-game count).</dd>
   <dt>Costly giveaway, turnovers &rarr; shot against</dt><dd>Giveaways (turnovers) the other team turned into a shot attempt within 12.5 game seconds.</dd>
   <dt>Shot assist, attempts off a pass</dt><dd>A pass that led straight to a teammate's shot attempt.</dd>
   <dt>Passing network</dt><dd>Completed passes between each pair of teammates, and the shot attempts off them.</dd>
@@ -2195,7 +2195,7 @@ function drawTurnovers(f, colours) {
   for (const team of [0, 1]) {
     if (only >= 0 && team !== only) continue;
     const t = tally[team], line = document.createElement('div');
-    const how = Object.entries(t.how).map(([k, n]) => n + ' ' + (n === 1 ? k : k === 'poke check' ? 'poke checks' : k === 'hook' ? 'hooks' : k === 'hit' ? 'hits' : k)).join(', ');
+    const how = Object.entries(t.how).map(([k, n]) => n + ' ' + (n === 1 ? k : k === 'poke check' ? 'poke checks' : k === 'hook' ? 'hooks' : k === 'hit' ? 'hits' : k === 'stick steal' ? 'stick steals' : k)).join(', ');
     line.textContent = names[team] + ': ' + t.give + ' giveaway' + (t.give === 1 ? '' : 's') + (t.give ? ' (' + t.pass + ' passes picked off, ' + t.lost + ' lost)' : '') +
       ' \u00b7 ' + t.take + ' takeaway' + (t.take === 1 ? '' : 's') + (how ? ' (' + how + ')' : '');
     box.append(line);
@@ -3396,7 +3396,7 @@ const STAT_HELP = {
   'Shot speed (avg / top mph)': 'The team’s shots and one-timers: average and hardest speed off the stick, in mph at the same scale as skating speeds.',
   'Saves: held / rebound / cleared': 'What became of the saves this team’s goalies made: held by the goalie (or play stopped), a rebound the shooting team got first, or cleared by his own team.',
   'Giveaways|· picked off / lost': 'Giveaways split: a pass the other team picked off, or the puck simply lost.',
-  'Takeaways|· hit / poke / hook / burst / steal': 'Takeaways split by how they were made: a check the game counted (or he went down), a poke check, a hook, a burst that reached him with no check counted, or the puck taken straight off his stick.',
+  'Takeaways|· hit / poke / hook / burst / steal': 'Takeaways split by how they were made: a check the game counted (or he went down), a poke check, a hook, a burst that reached him with no check counted, or a steal (a stick steal by the game, or the puck taken straight off his stick).',
   'Body checks|· shoulder / hip / cross-check': 'The checks that landed, by the checking animation: shoulder, hip or cross-check (checks whose animation was not seen are left out).',
   'Injuries caused': 'Opposing players this team injured with a check (out for the period or the game).',
   'Carried by D / C / W|· LD / RD': 'The defencemen\u2019s share split by side: the left and the right defenceman\u2019s shares of the team\u2019s time with the puck on a stick (they add up to the D share above).',
@@ -3418,7 +3418,7 @@ const STAT_HELP = {
   'Pass %': 'Passes completed divided by passes tried, as the game counts them.',
   'Bobbled passes': 'Passes that reached a teammate close enough to take them but bounced off him instead (not when he swung at it or passed it on).',
   'Giveaways': 'The team lost the puck to the other team with nobody forcing it: a pass picked off, or the puck simply lost.',
-  'Takeaways': 'The team took the puck from the other team: a poke check, hook or check within half a second, or a defender stripping the carrier.',
+  'Takeaways': 'The team took the puck from the other team: a stick steal, a poke check, hook or check within half a second, or a defender stripping the carrier (goalies get none).',
   'Icings': 'Touch-up icings: the puck shot from the team\u2019s own half over the far goal line untouched, then touched by a defender.',
   // ---- passing by zone and direction
   'From attacking / neutral / defensive': 'Passes made from each zone (the team\u2019s view).',
@@ -3518,7 +3518,7 @@ const STAT_HELP = {
   'Intercepted': 'His passes the other team picked off.',
   'card|Passes': 'His passes: completed (to a teammate or into a one-timer) / all his passes, including ones with no target.',
   'card|Giveaways': 'Times he lost the puck to the other team with nobody forcing it: a pass picked off, or the puck simply lost.',
-  'card|Takeaways': 'Times he took the puck from the other team: a poke check, hook or check, or stripping the carrier.',
+  'card|Takeaways': 'Times he took the puck from the other team: a stick steal, poke check, hook or check, or stripping the carrier.',
   'card|Bobbled passes': 'Passes to him that bounced off him instead of onto his stick.',
   'Passes att / neu / def': 'His passes made from the attacking, neutral and defensive zone.',
   'Pass direction': 'His passes going ahead (forward and diagonally forward), across (sideways) and back.',
@@ -3659,7 +3659,7 @@ function fillTeamStats(snap) {
   const afterSaves = team => ['held', 'rebound', 'cleared'].map(a => list.filter(sh => sh.team !== team && sh.result === 'save' && sh.after === a && sh.resolved <= f).length).join(' / ');
   // How the puck changed hands, from the converter's turnovers: giveaways picked off / lost, takeaways by how.
   const gaveHow = team => ['pass picked off', 'lost the puck'].map(h => turnovers.filter(e => e.from === team && e.kind === 'giveaway' && e.how === h).length).join(' / ');
-  const tookHow = team => ['hit', 'poke check', 'hook', 'burst', 'stolen'].map(h => turnovers.filter(e => e.from !== team && e.kind === 'takeaway' && e.how === h).length).join(' / ');
+  const tookHow = team => [['hit'], ['poke check'], ['hook'], ['burst'], ['stolen', 'stick steal']].map(hs => turnovers.filter(e => e.from !== team && e.kind === 'takeaway' && hs.includes(e.how)).length).join(' / ');
   const checkTypes = team => ['shoulder', 'hip', 'cross-check'].map(h => (match.hits || []).filter(e => e.f <= f && e.team === team && e.how === h).length).join(' / ');
   const injuriesCaused = team => (match.injuries || []).filter(e => !e.atStart && e.f <= f && e.team !== team).length;
   const anyInjuries = (match.injuries || []).some(e => !e.atStart && e.f <= f);

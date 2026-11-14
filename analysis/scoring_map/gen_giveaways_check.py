@@ -12,6 +12,7 @@ $FFEC64 / $FFEC66).
                             (a ROM count and a converter turnover of the same kind, team and player within 1 s real)
   shootout ROM OUT          a game in play, regular season, overtime with 3 s left at 1-1 (gen_shootout_check's
                             'tie'): the counts through the season shootout (gmode2 $C2FA bit 0, the build's $FFF082)
+  pair OUT ROM              the games already recorded in OUT converted again (today's converter) and paired again
   highlights ROM OUT        a whole computer game, START only after 5 s (real) at a menu (the intermission highlights
                             play): every count change, and any during another game's highlight
   stats ROM OUT             Game Stats from the pause menu with penalties on and off: the top and, scrolled to the
@@ -110,6 +111,32 @@ def pair(rom_ev, conv_ev, window=60):
             rom_only.append(r)
     conv_only = [c for k, c in enumerate(conv_ev) if k not in used]
     return matched, rom_only, conv_only
+
+
+def pair_again(out, rom):
+    """Every game already recorded in OUT converted again (today's converter) and paired with its ROM events."""
+    tot = Counter()
+    how = Counter()
+    for ev_file in sorted(out.glob("cvc_genesis_*_rom_events.json")):
+        name = ev_file.name.replace("_rom_events.json", "")
+        folder = out / "captures" / name
+        subprocess.run([sys.executable, str(ROOT / "tools" / "export_match.py"), str(folder), "--rom", rom,
+                        "--out", str(out / "matches")],
+                       capture_output=True, text=True)
+        events = json.loads(ev_file.read_text())
+        rom_ev = [dict(ev, delta=1) for ev in events if ev["delta"] > 0 and not ev["highlight"] and not ev["shootout"]
+                  for _ in range(ev["delta"])]
+        conv_ev, other, m = converter_events(out / "matches" / f"{name}.js")
+        matched, rom_only, conv_only = pair(rom_ev, conv_ev)
+        print(f"{name}: ROM {len(rom_ev)}, converter {len(conv_ev)}; paired {len(matched)}, ROM only {len(rom_only)}, "
+              f"converter only {len(conv_only)}", flush=True)
+        tot.update(rom=len(rom_ev), conv=len(conv_ev), paired=len(matched), rom_only=len(rom_only), conv_only=len(conv_only))
+        how.update("paired " + c["how"] for _, c in matched)
+        how.update("converter only " + c["how"] for c in conv_only)
+        how.update("ROM only " + r["kind"] for r in rom_only)
+    print("all:", dict(tot))
+    for k, v in sorted(how.items()):
+        print(f"  {k}: {v}")
 
 
 def games(rom, out, n, first):
@@ -273,6 +300,8 @@ def main():
     mode = sys.argv[1]
     if mode == "games":
         games(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]) if len(sys.argv) > 5 else 0)
+    elif mode == "pair":
+        pair_again(Path(sys.argv[2]), sys.argv[3])
     elif mode == "highlights":
         highlights(sys.argv[2], Path(sys.argv[3]))
     elif mode == "shootout_mode":

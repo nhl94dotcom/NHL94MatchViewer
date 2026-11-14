@@ -28,6 +28,7 @@ OLD_BLOCKS = [[0xB000, 0x900], [0xC400, 0x800]]  # fast.bin layout before captur
 BASE, SIZE = 0xB04A, 0x80  # record 0 start, record size
 PLAYERS, PUCK = 12, 14
 FRAME, X, Y, Z, ROLE, FACING, ANIM, FLAGS, ROSTER, HAND = 0x06, 0x1C, 0x20, 0x24, 0x35, 0x55, 0x58, 0x62, 0x66, 0x76
+NOPUCK = 0x5E              # a record's no-touch timer (nopuck): frames before he may touch the puck again
 OWNED, OWNER = 0x60, 0x61  # puck record: $00 while a player has it, and that player's record number
 # What the game sets in a player's record when he comes on the ice (setplayer): weight (rating x 8), working Agility,
 # Speed (0-30), aidef (his Defensive Awareness as a reaction time, 7-15 frames), Shot Power, Shot Accuracy. The
@@ -470,6 +471,12 @@ class MatchReader:
         # whistle (docs/FACEOFF_PLACEMENT.md); find_faceoffs takes the drop's position from it (the puck's first sample
         # after a stoppage can already be past it).
         self.match["foSpot"] = []
+        # Stick steals (2026-11-14, from NOSE4Web's giveaways build and the converter paired: puckstick's steal knocks the
+        # puck loose and sets both the carrier's and the stealer's no-touch timer (nopuck, +$5E) to $14 + Stk / 2 or
+        # more): [frame, stealer's record] when the carrier loses the puck and an opposing skater's timer has just jumped
+        # to $14 or more. find_turnovers credits him a takeaway.
+        self.match["steals"] = []
+        self.prev_nopuck, self.prev_carrier = None, -1
         self.last_work = [None] * PLAYERS
         self.aim_ok = getattr(cap, "offset", lambda a: 0)(AIM_DIR) is not None  # recorded (not in captures before $BEDC was kept)
         # Stat snapshots: whenever a counted stat changes, and once a second for ice time and energy.
@@ -579,6 +586,15 @@ class MatchReader:
                                 cap.fixed(i, light + Z), light_frame]
         owner = cap.byte(i, puck + OWNER)
         self.match["owner"].append(owner if cap.byte(i, puck + OWNED) == 0 and owner < PLAYERS else -1)
+        nopuck = [cap.byte(i, BASE + SIZE * k + NOPUCK) for k in range(PLAYERS)]
+        carrier = self.match["owner"][-1]
+        if self.prev_carrier >= 0 and carrier != self.prev_carrier and self.prev_nopuck is not None:
+            rivals = range(6, 12) if self.prev_carrier < 6 else range(6)
+            jumped = [k for k in rivals if nopuck[k] >= 0x14 and nopuck[k] > self.prev_nopuck[k]
+                      and cap.byte(i, BASE + SIZE * k + ROLE) not in (0, 0xFF)]
+            if jumped:
+                self.match["steals"].append([len(self.match["t"]) - 1, jumped[0]])
+        self.prev_nopuck, self.prev_carrier = nopuck, carrier
         # A post: the loose puck turns back out of the end zone right beside a post (about 20 units either side of
         # the middle, on the goal line). Found from a post shot the user saw in capture5_league30 at 2:57 of period 1;
         # across all captures the rule fires only three times.
