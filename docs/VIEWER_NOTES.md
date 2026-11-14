@@ -1264,6 +1264,13 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   star on 48.1% of 345 live frames, single frames, nothing smoothed; **possession by team from it right on 90.1%**
   of carried frames (118 of 131; from the followed puck 64.5%). The carrier, and so the puck when hidden, from the
   star.
+- **Possession over time** (`possession.py`: the star's filled inside searched in its pale blue, its path followed
+  like the puck's, the carrier's team from the detected player on it, a two-state team path): on 8,000 frames of
+  BOS-CHI (every 4th, 1,100 live): **the team with the puck right on 84.6%** (each frame alone 85.0%), home's share
+  47.0% against the recordings' 48.2%. Two traps on the way: the joypad stars (390 / 391) have the same outline, so
+  only the fill is searched (the home person's blue star had read as the home team carrying: 66-71% home); and
+  Boston's jersey shading is a blue, so pixels near either team's colours are left out. With the star placed right
+  the team was right 94.6%; the smoothing's settings hardly matter (81-85%).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
