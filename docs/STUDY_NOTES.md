@@ -4689,6 +4689,49 @@ and nobody left the box; at the game's own ratings none came in 4 games), 3 comp
 - **Instigator minors:** none came up in the 25 fights (every fighter +5 PIM only), so the instigator's power play
   isn't checked.
 
+### NOSE4Web's three-round shootout: the edge cases, forced (2026-11-14)
+
+Genesis (`gen_shootout_check.py ROM OUT mode4 --results=...`, nhl94_shootout3.bin's Shootout mode; each attempt's
+result forced once the shot is on its way: the puck put into the net or wide of it) and SNES
+(`snes_shootout_mode_check.py`, Shootout mode chosen on the main menu; NHL94_shootout3.smc, and with `--pad` the SA-1
+build, whose computer-only Shootout mode stops at the first attempt in this harness). Every ending as the rule says:
+- **2-0 after two rounds:** over before round 3 (Genesis: home G, M / visitors M, M; SNES: visitors G, G / home M, M).
+- **Beyond reach on the first team's third shot:** 1-0, then a goal: 2-0, over before the other team's third
+  (Genesis home; SNES visitors).
+- **Unable to tie after the first team's third miss:** 0-1, then a miss: over, the other team not shooting.
+- **Sudden death:** a tie after 3 went on one round at a time; on the Genesis 15 misses then a goal in round 8, the
+  shooters cycling (rounds 6, 7, 8 brought back rounds 1, 2, 3's: home #23, #11, #25; visitors #7, #99, #20); on the
+  SA-1 build (pad 1 idle: home always missed) to round 11, over after the visitors' goal and home's miss.
+- **The win message** ("Shootout won by ...") about a second after the deciding goal.
+
+### NOSE4Web's clutch fixes ec1bb2f, played (2026-11-14)
+
+nhl94_clutch.bin (1d48c906...), NHL94_clutch.smc (8160c3f9...), nhl94snes_SA1_clutch.sfc (3998aadd...), every case of
+`clutch_check.py` again: **SNES (both): the clock runs through 2:00** (122 -> 118 in 4 s), +1 at the tick and at
+faceoffs in a close last 2:00, and **removed**: at the faceoff after the lead became two, every rating the same as
+the original's. **Genesis: aggression untouched** at the rebuild (none above 15), the rest as before (+3, aioff /
+aidef one better at the rebuild, everything back at a two-goal lead's faceoff). Nothing in period 2, overtime, at 3-1
+or with 3:20 left on any.
+
+### NOSE4Web's shot fix, second version (person only), played (2026-11-14)
+
+NHL94_shot.smc (fe7f0cec...). `snes_person_regather_test.py` (pad 1's carrier holds A 14 frames; in a forced trial
+the puck is made loose at his stick 4 frames in): on the build 5 of 7 forced wind-ups that were regathered fired,
+each with the shot flag back; 2 held with it clear (likely gathered before his swing began; not checked); on the
+original none fired (4 held, 3 lost); plain wind-ups fired on both. Computer shooters
+(`snes_shot_windup_trace.py --force-regather`, 2 games): the flag clear at every one of 47 regathers; fired 49 of 131
+wind-ups (the original 47 of 116; the first version 68).
+
+### The instigator minor on the 1 MB fights (2026-11-14)
+
+Forced in scratch copies of NHL94_fight_pair_120.smc (checkfight's `.set`, file $1044B8: `cmp #$F27A` / `bne` after
+`cmp #$F310` / `beq`, the hitter's SPA tests):
+- **A home hitter only** (`cpx #$000C` / `bcs`), 6 fights: both fighters paired with each other ($4078); the home
+  teammate's minor kept $0078 (never $4000), the home team 5 on the ice: the visitors' one two-minute power play
+  (one minor cut short by a power-play goal); everyone released on time.
+- **Every fight** (`bne` as nops: both teams' teammates got a minor), 6 fights: all four words $4078, 6 on 6 (the two
+  minors marked coincidental with each other).
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),

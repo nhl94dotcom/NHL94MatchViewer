@@ -32,7 +32,13 @@ game (UpdateTeamRecord counts a win, loss or tie by the two teams' tmscore).
 --force: the first home shot of the shootout put into the net it was going at (shootoutteam $D594 = 0, the puck loose
 past y 150): for ROMs whose computer shooters never score (CDL Season 12, its own Shootout mode too).
 
-python gen_shootout_check.py ROM OUT CASE [--cdl] [--gmdir] [--end] [--records] [--force]"""
+--preset=R:T:H:A (2026-11-14, the three-round shootout's edge cases): when round R's attempt by team T (0 home, 1
+visitors; home shoots first) first comes up, the shootout's goals are set to H (home) and A; every attempt is logged
+(round, team, the counts, the shooter: the shooting team's one skater on the ice). --results=GM...: each attempt's result in turn (G goal, M miss, anything else as
+played): once the shot is on its way (the shooter has had the puck, and it is loose 150-250 from the middle), the puck is put into the net or
+wide of it. (--seed=N sets $D066 in Shootout mode; it made no difference.)
+
+python gen_shootout_check.py ROM OUT CASE [--cdl] [--gmdir] [--end] [--records] [--force] [--preset=R:T:H:A]"""
 import sys
 from pathlib import Path
 
@@ -78,8 +84,11 @@ def main():
         from gen_records_check import sram
         e.setw(OPTUSER, 0)
         s0 = sram(e)
+    seed = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--seed=")), None)
     if case == "mode4":
         e.setw(PLAYMODE, 4)
+        if seed is not None:
+            e.setl(0xD066, (0x2545F491 * (seed + 1)) & 0xFFFFFFFF or 1)      # the game's random seed
         for _ in range(4):
             e.run(4, hold=["START"])
             e.run(300)
@@ -99,6 +108,10 @@ def main():
     if cdl:
         print(f"before: fighting ${e.w(FIGHT):04X}, OptPen {e.w(OPTPEN)}, OptLine {e.w(OPTLINE)}, plus-minus "
               + bytes(e.b(PLUSMINUS + i) for i in range(64)).hex())
+    preset = next(([int(v) for v in a.split("=")[1].split(":")] for a in sys.argv if a.startswith("--preset=")), None)
+    preset_done, attempt, shooter_seen = False, None, False
+    results = next((a.split("=")[1] for a in sys.argv if a.startswith("--results=")), "")
+    n_attempt, attempt_f, decided, carried = -1, 0, False, False
     prev, last, still, shots_n = None, None, 0, 0
     so_start, started = None, False
     for f in range(60 * 60 * 40):
@@ -145,6 +158,39 @@ def main():
                 e.setw(pk + off, v & 0xFFFF)
             forced = True
             print(f"f{f}: the home shot put into the {'top' if end > 0 else 'bottom'} net", flush=True)
+        if e.b(GMODE2) & 1:                          # each attempt: who shoots, and the counts when it starts
+            at = (e.w(SOROUND), e.w(SOTEAM) & 1)
+            if at != attempt:
+                attempt, shooter_seen = at, False
+                n_attempt, attempt_f, decided, carried = n_attempt + 1, f, False, False
+                if preset and not preset_done and at == (preset[0], preset[1]):
+                    e.setw(HSO, preset[2])
+                    e.setw(ASO, preset[3])
+                    preset_done = True
+                    print(f"f{f}: preset: round {at[0]}, {'visitors' if at[1] else 'home'} to shoot, shootout set to "
+                          f"{preset[2]}-{preset[3]}", flush=True)
+                print(f"f{f}: attempt: round {at[0]}, {'visitors' if at[1] else 'home'} shooting, shootout "
+                      f"{e.w(HSO)}-{e.w(ASO)} (home-visitors)", flush=True)
+            if e.w(SOCLOCK) and e.w(PUCKC) < 0xFF00 and not carried:
+                carried = True                        # the shooter has the puck: name him (the skater nearest it)
+
+                def s16(v):
+                    return v - 0x10000 if v > 0x7FFF else v
+                px, py = s16(e.w(PUCK)), s16(e.w(PUCK + 0x14))
+                k = min(range(12), key=lambda k: abs(s16(e.w(BASE + SZ * k)) - px) + abs(s16(e.w(BASE + SZ * k + 0x14)) - py))
+                rec = BASE + SZ * k
+                print(f"f{f}:   shooter: record {k}, roster slot {e.b(rec + 0x66)}, number {e.b(rec + 0x6F):X}", flush=True)
+        want = results[n_attempt] if 0 <= n_attempt < len(results) else None
+        if want in ("G", "M") and carried and not decided and e.b(GMODE2) & 1 and e.w(SOCLOCK) and e.w(PUCKC) >= 0xFF00:
+            py = e.w(PUCK + 0x14) - (0x10000 if e.w(PUCK + 0x14) > 0x7FFF else 0)
+            if 150 < abs(py) < 250:                   # the shot on its way: into the net, or wide of it
+                end = 1 if py > 0 else -1
+                x, vx = (0, 0) if want == "G" else (110, 9000)
+                for off, v in ((0x00, x), (0x1C, x), (0x14, end * 262), (0x20, end * 256), (0x18, 0), (0x24, 0),
+                               (0x28, vx), (0x2A, end * 12000 if want == "G" else 0), (0x2C, 0)):
+                    e.setw(PUCK + off, v & 0xFFFF)
+                decided = True
+                print(f"f{f}:   result forced: {'goal' if want == 'G' else 'miss'}", flush=True)
         c = e.w(CLOCK)
         still = still + 1 if c == last else 0
         last = c
