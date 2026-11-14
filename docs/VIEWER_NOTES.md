@@ -1179,5 +1179,11 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   On still frames: 93% of the home team's and 91% of the visitors' players found, centres within about 4 pixels; about
   one detection in five extra (a player's split-off piece, the selected-player star).
 
-Next: tracking players over time (to drop the extras and keep identities), the puck, events from the clock and score
+- **Tracks** (`player_tracks.py`): detections on the rink, linked per team frame to frame (every 2nd frame; nearest
+  within 14 units, kept 8 frames unseen, tracks under 12 frames dropped). 3,000 frames: found 90.2% (raw 93.4%),
+  extras 18.8% of detections (raw 22.4%), position error median 4.9 units, 90% within 8.9. Most extras are
+  player-sized: overlapping players given the other team's label, and pieces about 24 pixels above a teammate (not
+  yet explained). 189 tracks in 3,000 frames: identities don't hold through crowds yet.
+
+Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
