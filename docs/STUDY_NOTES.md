@@ -5008,6 +5008,35 @@ BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNE
   scrolling right; every skater's number the RAM word; a goalie's count (the home goalie's 2 giveaways, place 0)
   shows on no page, since SNES Player Stats lists goalies only on the Goalies page.
 
+### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
+
+Retail NHL '95 (CRC E8EE917E), the WN95HL's W18.bin (C4DF4C20) and W18p.bin (7AC194B0), kept outside the repository.
+`analysis/nhl95/nhl95.py` reads the teams as NOSE does (team table at $772: a long per team; players as NHL '94's;
+NOSE4Web's overall). In the game (our Genesis Plus GX): the menus reach Game Setup after four STARTs from the title;
+the pre-game menu's INFO tab has Team Roster (columns chosen with RIGHT: Overall among them); player records at
+$FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
+- **Overall:** the game's CalcAttrib is at $7CF16 (NHL '94 $FA9F8) with NHL '94's masks (1FBA000A / 130F000A) and
+  weight lists ($7D08C / $7D09C, the same bytes), plus code that folds stick handling (the value at mask bit 5) through
+  a table at $83C9E: 0 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6, NOSE's fold, the same in W18 and W18p. The roster screen's
+  Overall includes the hot / cold table (team struct + $1A4; NHL '94 + $1A2; at $FFC288 + $1A4 and $FFC5EC + $1A4):
+  with it zeroed, all 22 Rangers and Vancouver overalls on screen are NOSE's formula exactly (Messier 78, Leetch 81,
+  Richter 78, Bure 94 ...); with it, they differ by hot / cold (Messier cold 77, Leetch hot 83).
+- **Handed:** setplayer ($83B7E area) copies bit 0 of the handed / fighting value to +$76 with no `eori` (NHL '94:
+  `andi #1` then `eori #1`): odd = shoots left in NHL '95, the reverse of NHL '94. The records agree (Bure, Courtnall,
+  Ronning, Lumme, Larmer, Graves, Messier, Leetch odd and 1; Jeff Brown even and 0), and of 461 skaters in both games
+  432 have the opposite parity in NHL '95. Both games set the sprite flip (attribute bit 3) when bit 0 is 1.
+- **Goalie's glove hand:** 1 for exactly Grant Fuhr, Tom Barrasso and Daren Puppa (right-catching goalies), 0 for the
+  other 51: 1 = catches right (glove on the right hand), 0 = catches left. puckgoalie swaps glove and stick sides for a
+  flipped goalie. (NHL '94's values don't follow that: Patrick Roy 1.)
+- **Stick handling in play:** setplayer folds it through the same table ($83BA4) before storing the working rating:
+  the 16 steps act as 7 (0 | 1-2 | 3-5 | 6-8 | 9-11 | 12-14 | 15); the table's only other use is the overall.
+- **Game Setup's words** ($86700 copied to $FFCC4C): Play Mode word 0, Team 1 word 2, Team 2 word 3, Per. Length 4,
+  Goalies 5, User Records 6, Penalties 7 (0-2), Line Changes 8: each row's RIGHT changes only its word (Play Mode also
+  sets the teams). Retail: Regular Game, Rangers (14) vs Vancouver (23); W18 / W18p 25 vs 22. **Word 1** (retail 0, W18
+  and W18p 1) is no row: set at start-up, read by game logic (`tst` / `cmpi #2` around $7F982-$7FA2A) and menu code
+  ($CAAE = $B - word 1 at $8745E; word 1 = d0 - $CAAE at $879E8; `move #4` in the attract setup at $85D62); setting it
+  0-2 changes nothing on Game Setup. Not yet known.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
