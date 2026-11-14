@@ -4650,6 +4650,28 @@ only). Against the start of period 1:
   (the first run's all-equal speeds gave the same). The Genesis dither works: its step is speed x 17 ($11).
   A uniform choice: a counter of the hack's own, stepped each puck update (exactly L of every 16), or the fraction's
   bits 8-11.
+- **SNES rebuilt (e0dd96b: bits 8-11 of Xfrac), played:** NHL94_choppy.smc 1.036 / 1.155 / 1.149 / 1.171 (30 / 55 / 80 /
+  90% gone; fewer updates a run at the 1 MB build's frame rate, so noisier), nhl94snes_SA1_choppy.sfc 1.064 / 1.130 /
+  1.172 / 1.172, the SA-1 original 1.000 throughout; every period's and overtime's start 1.000. The doubling is gone.
+
+### NOSE4Web's clutch time e0dd96b, played (2026-11-14)
+
+`clutch_check.py run ROM OUT` / `compare` (a computer game; the period, clock and score set; a whistle forced by
+putting the puck high at the side boards; the ratings of all 12 records before and after the 2:00 tick and each
+faceoff's rebuild). nhl94_clutch.bin, NHL94_clutch.smc, nhl94snes_SA1_clutch.sfc against their originals.
+- **The 2:00 tick, close third:** Genesis +3 on legstr, legspd, shotspd, shotacc, passacc, spodds, stickhand,
+  endurance, checking (less where it met 30), aioff / aidef / aggress unchanged; SNES (1 MB and SA-1) +1 on the 9
+  arrays (0 at 15). None at 3-1, in period 2 or in overtime; the originals unchanged throughout.
+- **The rebuild** (a faceoff at 1:55): the same boost, aioff / aidef one better; at 3-1, at 3:20 left and in overtime
+  the same as the original (where the original's comeback bonus moves aioff, spodds, checking, the build's moves them
+  alike). A two-goal lead's faceoff (Genesis, after the tick) put every rating back to its value before 2:00. The
+  Genesis tick adds after setplayer's bonuses and caps, the rebuild before: some ratings 1 lower after the rebuild.
+- **SNES: the clock runs out at 2:00.** Gameloop's tick loop (`ldx d7` ... `dex` / `bne .loop`) counts frames in X;
+  the hook's boost loop (`ldx #$16` ...) leaves X changed, so the loop goes on taking a frame's share off the clock:
+  121, 97, 69, 41, 12, 0 in five frames (1 MB; the SA-1 build the same). Wants phx / plx.
+- **Genesis: aggression is boosted at the rebuild.** The hook skips it by `cmpi.w #$F,($D6CC)`, but TempWord2 (the
+  attribute number setplayer passes) is $BF14 (`31FC 000F BF14` before jsr AttributeCalc): +2 / +3 on aggress at each
+  rebuild, and 13 wrapped to 0 by setplayer's andi #$F (for goalies the same byte is the glove save left).
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
@@ -4753,6 +4775,13 @@ held without losing the puck, lost):
   puck went loose; a person releasing would shoot); the unfixed build loses the same shot. On the 1 MB build one
   regather came 37 frames into a 40-frame swing and the flag stayed clear (likely the SPAnum < $18 bound; SPAnum not
   recorded in that run).
+- **The flag left set (2026-11-14, from the code):** puckstick's steal path clears sfssdir; assshoot, next run with it
+  clear, ends (assexit), so for a computer shooter nothing calls ShotMode again and its `.off` never clears the flag
+  the fix restores: it stays until the puck changes hands (puckglue, puckstick, puckgoalie, holdcheck, doshot, a line
+  change, a faceoff). Meanwhile assgoalie moves the computer goalie to his angle point at speed $1C instead of $14. A
+  later wind-up isn't affected (SetShotMode sets the flag itself; a person gaining the puck goes through puckglue,
+  which clears it, and a person's carrier reaches ShotMode, whose `.off` clears it). Setting it only for a person's
+  shooter (pflags bit 3) would avoid it: a computer's shot can't come back once assshoot has ended.
 
 ### NOSE4Web's 1 MB fight-injury fix 84a3f6b, played (2026-11-13)
 
