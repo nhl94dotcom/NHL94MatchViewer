@@ -4567,6 +4567,16 @@ from the carrier: the filter removed passes rather than making them wider. Peopl
 is when he passes (out on one side), so the next try is the carrier's position, not the pass rule. **68 stays the
 default.**
 
+Where the passer stands (completed passes across the slot): people 21 ft from the middle and 20 ft out (55% from 20+
+ft wide), 68 14 ft and 31 ft (21%); the receivers 19 / 13 ft against 15 / 19. **Version 71** (LOW71: with a clear lane
+the carrier goes to the low wing, 65 across and 60 out, before the one-timer pass or the shot, in place of 67's high
+slot drive; `bot_compare.py 68 71 32`): xG 3.99 against 5.52 (paired -1.94 ±0.39, -4.9 SE), goals -0.41 ±0.36, shots
+on goal -2.1 ±1.1, xG against +0.48 ±0.27. Its passers barely moved (16 ft from the middle, 32 out, 32% from 20+ ft
+wide): the clear-lane drive is a small part of how the bot sets up a pass across; passes across 3.2 per 15 minutes
+(68 2.8), their shots 0.29 xG (0.27), and the slot shots it gave up cost the xG. **68 stays the default.** Moving the
+passer would need the cycle and the carry (zone_hold's other branches, people_carry's offer) to work from the low wing,
+a larger change.
+
 ### Icing options played: Genesis hybrid 82a9a22, SNES crease window and hybrid b98739a (2026-11-13)
 
 `gen_hybrid_icing_check.py` / `snes_hybrid_icing_check.py` (computer games, penalties on, line changes on, the away

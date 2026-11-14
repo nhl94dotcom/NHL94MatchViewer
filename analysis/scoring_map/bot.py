@@ -447,6 +447,10 @@ SLAP68 = {"boost": 2.0, "cap": 0.9}
 # goalie: 5+ ft off the shot line 35% of the time against 14%. 70 makes the one-timer pass only 100-160 units across
 # (68: PEOPLE48's 30-130), about people's median and up.
 WIDE70 = (100, 160)
+# version 71 (2026-11-13): the passers' spot on a completed pass across the slot, people 21 ft from the middle and
+# 20 ft out (55% from 20+ ft wide), the bot (68) 14 ft and 31 ft (21%): with a clear lane the carrier goes to the low
+# wing on his side ("x" across, "out" from the goal line, within "near") before the one-timer pass or the shot
+LOW71 = {"x": 65, "out": 60, "near": 18}
 # version 69: 68's slapshots were still 32% backhands at the shot (forehand 68%, people 77%): the aim held on the
 # d-pad through the wind-up turns the skater. 69 holds C alone and presses the aim only in the last "aim_last" frames.
 SLAP69 = {"aim_last": 6}
@@ -475,27 +479,28 @@ def use_sweep1():
 
 class Bot:
     def __init__(self, team=0, version=32):
-        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70) else version))   # version 40's draws
+        self.rng = __import__("random").Random(7919 * team + (51 if version in (52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71) else version))   # version 40's draws
         self.v52 = version == 52
-        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v61 = version in (61, 62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v62 = version in (62, 63, 64, 65, 66, 67, 68, 69, 70)
-        self.v63 = version in (63, 64, 65, 66, 67, 68, 69, 70)
+        self.v53 = version in (53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v54 = version in (54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v55 = version in (55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v56 = version in (56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v57 = version in (57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v58 = version in (58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v59 = version in (59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v60 = version in (60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v61 = version in (61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v62 = version in (62, 63, 64, 65, 66, 67, 68, 69, 70, 71)
+        self.v63 = version in (63, 64, 65, 66, 67, 68, 69, 70, 71)
         self.v64 = version == 64
         self.v65 = version == 65
         self.v66 = version == 66
-        self.v67 = version in (67, 68, 69, 70)
-        self.v68 = version in (68, 69, 70)
+        self.v67 = version in (67, 68, 69, 70, 71)
+        self.v68 = version in (68, 69, 70, 71)
         self.v69 = version == 69
+        self.v71 = version == 71            # 71: 68 taking the puck to the low wing (LOW71) before the one-timer pass
         self.v70 = version == 70            # 70: 68 with the one-timer pass only when it goes WIDE70 across
-        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
+        if version in (51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71):                     # 51: 50 with sweep1's settings (env overrides still win); 52: DEF52
             use_sweep1()
             version = 50
         self.version = version                      # 1: the deke, slapshot and close-in shot only (bot1);
@@ -1065,6 +1070,23 @@ class Bot:
             if u > 0 and math.hypot(ox - (ax + u * dx), oy - (ay + u * dy)) < C["lane"]:
                 clear = False
                 break
+        if clear and self.v71:
+            # version 71: people pass across from low and wide (21 ft from the middle, 20 ft out, median), the bot
+            # (68) from the high slot (14 ft, 31 ft): to the low wing on the carrier's side first, then the one-timer
+            # pass if a teammate is open (68's rule), else the shot
+            side = 1 if ax >= 0 else -1
+            tx, ty = side * LOW71["x"], NET_Y - LOW71["out"]
+            if math.hypot(tx - ax, ty - ay) > LOW71["near"]:
+                return turn(dir_to(tx - ax, ty - ay))
+            mate = self.open_mate(P, me, s, self.att_g)
+            if mate is not None:
+                self.mate, self.relief = mate, False
+                self.phase, self.t, self.passer = "pass", 0, me
+                self.note("pass start", ax=round(ax), ay=round(ay), low=True, onetimer=True)
+                return ["B"] + pad(dir_to(P[mate]["x"] - P[me]["x"], P[mate]["y"] - P[me]["y"]))
+            self.phase, self.t = self.wrist_or_slap(P, me, ay), 0
+            self.note("low wing shot", ax=round(ax), out=round(out), kind=self.phase)
+            return []
         if clear and self.v67:
             if out > SLOT67["drive_to"]:
                 return turn(dir_to(-0.4 * ax, NET_Y - SLOT67["slot_out"] - ay))
