@@ -1200,5 +1200,11 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   Most of the misses are pucks within 12 units of a player (82 of 100 missed there): the puck joins the player's
   sprite group. Next for it: a search for the puck's shape inside player groups.
 
+- **Game events from the score boxes** (`game_events.py`): read every 6th frame, a reading kept once held 3 times;
+  a new game when the period goes back or a score falls; a goal when a score goes up one; a whistle when the clock
+  stands 2 s (real) or more. On the BOS-CHI video: the four games and finals right; all 27 goals the same as the
+  recordings' (team, period, clock within 1 s), none extra; all 45 faceoffs in mid-period matched by a whistle, and
+  about 5 more a game (period ends at 0:00, pauses). About 2 minutes for the whole video.
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
