@@ -4610,6 +4610,23 @@ headless retail game (with its video memory).
   rinkmapbuf and VRAM, re-apply the table after BuildRinkMap. Clear the table at each period. DMA per frame then is a
   few map words, no tile copies. Not measured: vblank DMA time left on a busy frame.
 
+### NOSE4Web's three-round shootout, first runs (2026-11-13, 0095e61)
+
+Computer games, no outcome forced (`gen_shootout_check.py`, `snes_shootout_check.py`; screenshots in
+runs/so3). All four natural endings were right:
+- **nhl94_shootout3.bin, Shootout mode:** 0-0 after three rounds, round 4 0-0, round 5 home missed and the visitors
+  scored: over at once, "Shootout won by Los Angeles".
+- **nhl94_shootout3_season.bin, tied after overtime** (`tie`): home 1-0 in round 1, no goals in rounds 2-3; over after
+  the visitors' third shot (not after round 2, when the visitors could still tie), "Shootout won by Montreal", the game
+  2-1, the home goals stat +1. (Tied after period 3, `tie3`: overtime as before; this build's shootout is after
+  overtime.)
+- **NHL94_shootout3_season.smc, tied after overtime:** 0-0 after three rounds; round 4 the visitors missed, the home
+  team scored: "Montreal Wins!" with the goal, the game 3-2.
+- **nhl94snes_SA1_shootout3.sfc:** a tie after overtime ends 2-2 with no shootout (this build has the three rounds in
+  Shootout mode only).
+Not yet seen: 2-0 after two rounds, the mid-round ends, the shooters past the 5th, the SNES Shootout mode (1 MB and
+SA-1), saved records.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
