@@ -1,7 +1,10 @@
 """NOSE4Web's Genesis skate marks, played (2026-11-14: nhl94_skate_marks.bin, CDL_Season_12_skate_marks.bin).
 
 A computer game (gen_ot_check's boot and into_play; 5-minute periods; both pads taken off every second; START at a
-waiting menu; other games' intermission highlights skipped by team ids): three periods, then into overtime. Logged:
+waiting menu; other games' intermission highlights told by team ids): three periods, the scores set level with 3 s
+left, overtime. Logged in another game's highlight: the count and record should not change (2026-11-14 second build:
+nothing marked or cleared while gmode's gmhl bit is set); at each period's faceoff (the clock's first tick) the count
+and record should be empty. Logged:
 - the mark count (the build's word at $FFFD4C) and gsp every 2 s (real), and at each change of period;
 - the rink plane in video memory (plane B, $C000, 64 x 32 cells; the state's VRAM, gen_score_logo_check's VRAM_AT)
   against the marks record ($FFF800, 2 bits a cell, 48 x 113 cells, the bit order found from the screen) and the ROM
@@ -13,7 +16,7 @@ waiting menu; other games' intermission highlights skipped by team ids): three p
 - --replay: at 3:20 left in period 1, the pause menu's Instant Replay instead (instant_replay), then stop.
 Run on the original too (--lag-only) for its lag.
 
-python gen_skate_marks_check.py ROM OUT [--lag-only | --replay]"""
+python gen_skate_marks_check.py ROM OUT [--lag-only | --replay] [--delay=FRAMES]"""
 import struct
 import sys
 from pathlib import Path
@@ -139,6 +142,8 @@ def main():
     rmap = rom_map(Path(rom).read_bytes())
     e = Emu(rom)
     G.to_setup(e, out)
+    delay = int(next((a.split("=")[1] for a in sys.argv if a.startswith("--delay=")), 0))
+    e.run(delay)                                # another game (the highlights drawn differ)
     e.setw(0xD050, 0)                           # 5-minute periods
     print("period length setting", e.w(0xD050), flush=True)
     if not G.into_play(e):
@@ -147,7 +152,9 @@ def main():
     G.OURS.append(tuple(e.b(a) for a in G.TEAMS))    # our teams: an intermission highlight of another game has its own
     order, last_gsp, last_ctr, lag, frames, shots = None, e.w(GSP), e.w(FRAMECTR), 0, 0, 0
     stats_done = False
+    lag_at, drops, stopped = [], [], 0
     still, last_clk = 0, None
+    in_hl, hl_rec, hl_count, fresh_pending, tied, started = False, None, None, False, False, 0
     for f in range(60 * 60 * 30):
         if f % 60 == 0:
             e.setw(CONT1, 0)
@@ -157,6 +164,12 @@ def main():
             if f % 3600 == 0:
                 lowload.breathe()
         clk = e.w(CLOCK)
+        if clk == last_clk:
+            stopped += 1
+        else:
+            if stopped >= 60 and e.b(SCREEN) == 0:
+                drops.append(f)                     # the clock starts after a stop: a puck drop
+            stopped = 0
         still = still + 1 if clk == last_clk else 0
         last_clk = clk
         e.run(1, hold=["START"] if still >= 300 and f % 150 < 4 and e.b(SCREEN) != 0 else [])   # a menu waiting
@@ -165,17 +178,43 @@ def main():
             frames += 1
             if (ctr - last_ctr) & 0xFFFF != 1:
                 lag += 1
+                lag_at.append((f, e.w(CLOCK), (ctr - last_ctr) & 0xFFFF))
         last_ctr = ctr
-        if not G.ours(e):
-            continue                                 # another game's highlight
+        if not G.ours(e):                            # another game's highlight: the marks should stand still
+            if not lag_only:
+                c = e.w(COUNT)
+                if not in_hl:
+                    hl_rec, in_hl = record(e)[0], True
+                    print(f"f{f}: highlight of another game starts: count {c}, stored gsp {e.w(0xFD4E)}, gsp {e.w(GSP)}",
+                          flush=True)
+                elif c != hl_count:
+                    print(f"f{f}:   in the highlight the count changed to {c}", flush=True)
+                hl_count = c
+            continue
+        if in_hl:
+            print(f"f{f}: highlight over: count {e.w(COUNT)}, record "
+                  f"{'unchanged' if record(e)[0] == hl_rec else 'CHANGED'}, stored gsp {e.w(0xFD4E)}", flush=True)
+            in_hl = False
         g = e.w(GSP)
         if g != last_gsp:
             print(f"f{f}: period {last_gsp + 1} -> {g + 1}: count before {count_before}, now {e.w(COUNT) if not lag_only else '-'}",
                   flush=True)
             last_gsp = g
-            if g >= 3:
+            if g >= 4:
                 break
             gsp_changed_at = f
+            fresh_pending = True
+        if fresh_pending and e.b(SCREEN) == 0 and clk is not None and clk >= 295 and e.w(CLOCK) == clk - 1                 and not lag_only:
+            print(f"f{f}: period {g + 1} faceoff (the clock starts): count {e.w(COUNT)}, record "
+                  f"{'empty' if not any(record(e)[0]) else 'NOT EMPTY'}", flush=True)
+            fresh_pending = False
+            started = g
+        if g == 2 and started == 2 and not tied and e.w(CLOCK) <= 3 and e.b(SCREEN) == 0:
+            e.setw(0xC6DA, e.w(0xCA3E))                 # a tie at the end of period 3: overtime
+            tied = True
+            print(f"f{f}: scores set level ({e.w(0xCA3E)}-{e.w(0xC6DA)}) for overtime", flush=True)
+        if g == 3 and f - gsp_changed_at >= 6000:
+            break                                        # enough overtime
         if g >= 1 and "gsp_changed_at" in locals() and f - gsp_changed_at in (1200, 2400) and not lag_only:
             print(f"f{f}: {f - gsp_changed_at} frames into period {g + 1}: count {e.w(COUNT)}, clock {e.w(CLOCK)}", flush=True)
         count_before = e.w(COUNT) if not lag_only else 0
@@ -209,6 +248,13 @@ def main():
             print(f"f{f}: Player Stats and back: before {before}, after {after}", flush=True)
             stats_done = True
     print(f"lag: {lag} of {frames} frames of play the frame counter moved by other than 1", flush=True)
+    import bisect
+    near = [x for x in lag_at if (i := bisect.bisect_right(drops, x[0] + 120)) and x[0] + 120 >= drops[i - 1] >= x[0] - 0]
+    print(f"  {len(drops)} puck drops; late frames within 120 frames before a drop (the faceoff's camera jump and "
+          f"setup): {len(near)}; elsewhere {lag - len(near)}", flush=True)
+    from collections import Counter
+    print(f"  late frames by the counter's step: {dict(Counter(x[2] for x in lag_at))}", flush=True)
+    print(f"  the first 40: {lag_at[:40]}", flush=True)
 
 
 if __name__ == "__main__":

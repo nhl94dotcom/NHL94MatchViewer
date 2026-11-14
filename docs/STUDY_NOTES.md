@@ -4797,12 +4797,23 @@ menu's Instant Replay. Results:
   and 3, CDL period 2); if they're the same, it doesn't: **CDL period 3 started with the highlight's 11 marks** (the
   count 11 at the faceoff, 14 five game seconds in). A fix: no marking or clearing while gmode's gmhl bit (4) is
   set. Overtime not reached (both games ended in regulation).
+- **Second build (the fix: SMmark starts with btst #4,($C2EA).w / bne, the game's gmhl test;** nhl94 535c781b...,
+  CDL 971b13c1...): four games (nhl94 and CDL, `--delay=0` and `37` for different highlights), the scores set level
+  with 3 s left in period 3. Through all 15 intermission highlights the count and record stood still, and the stored
+  gsp ($FFFD4E) stayed ours. At every period's puck drop (periods 2, 3 and overtime, in all four) the count was 0
+  and the record empty, including nhl94 delay 37's period 3, after two highlights of a third period (gsp 2, ours too)
+  and its overtime after two more. Screen checks 0 or 1 missing (a mark made that frame goes to video memory in the
+  next vblank), no strays.
 - **Pause and stats:** marks survive the pause menu's Player Stats and back (missing 0 after).
 - **Instant replay:** the record and count stay as they were through the replay, back and forward, normal angle (the
   marks shown, missing 0) and reverse angle; in the reverse angle all 32 plane rows are RevRinkTilelist's own ($B5180,
   updatescroll), with no mark tiles, and after the replay the marks are back (missing 0).
 - **Lag** (the frame counter $B03E moving by other than 1 a frame of play): 120 of 36,966 frames against the original's
   102 of 37,860 (0.32% against 0.27%; different games, so the same order rather than a measured cost).
+  *Correction (the second build's runs):* most of those "late" frames aren't slowdowns. The counter stands still
+  for 9 frames at a time in play (both ROMs alike) and jumps backwards at the intermission (clock 300). Frames where
+  it moved by 2, a frame the game missed: the marks build 4 of 42,617, the original 2 of 31,960 (`--delay=37`
+  `--lag-only`, each logged against the puck drops). No slowdown to speak of, at faceoffs or elsewhere.
 - **CDL_Season_12_skate_marks.bin** (7edbdb02...): the same (18 screen checks: shown up to 109, missing 0, stray 0;
   Player Stats round trip missing 0; the replay's record unchanged, the reverse angle RevRinkTilelist's rows only,
   the marks back after). Counts 240 (the cap, reached in period 1), 209, 236. Lag 87 of 33,586 against CDL Season
