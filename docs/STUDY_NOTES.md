@@ -4732,6 +4732,17 @@ Forced in scratch copies of NHL94_fight_pair_120.smc (checkfight's `.set`, file 
 - **Every fight** (`bne` as nops: both teams' teammates got a minor), 6 fights: all four words $4078, 6 on 6 (the two
   minors marked coincidental with each other).
 
+### Time on ice of 10:00 and more on the TOI pages (2026-11-14)
+
+`gen_toi_page_check.py` / `snes_toi_page_check.py shots ... --set=T:I:SECS,...` (from the saved games of 2026-11-13,
+chosen players' counts written before the pause menu: Genesis the team struct's +$136, SNES ptoi $7E:E800 / +$34),
+nhl94_toi.bin and NHL94_toi_page.smc:
+- **Genesis:** 10:00, 12:34, 19:59, 20:00, 59:59 and 99:59 printed right, the two-digit minute one character further
+  left, the last digit under the header's I as 4:01's; goalies listed too. 6000 s (100:00) printed ":0:00" (the clock
+  printer has two minute digits): out of reach (20-minute periods and a 10-minute overtime make 70 minutes).
+- **SNES:** 99:59, 59:59, 20:00, 19:59, 12:34, 10:00 and 9:59 printed right and lined up, longest first; the goalies
+  aren't on this page. 6000 also ":0:00", but ptoi stops at 5999.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),

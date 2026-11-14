@@ -5,7 +5,7 @@ seconds) but never shows it; the build adds Player Stats sort column 5 ("Time On
   play ROM OUT [SECONDS] [PLAYMODE]   (PLAYMODE 2: playoffs) a computer game (gen_ot_check's boot, line changes on so the times differ, 5-minute
                            periods) played SECONDS of game clock, then paused: OUT/paused.state, and each player's
                            +$136 word for both teams (OUT/toi.json)
-  shots ROM OUT SCRIPT     from OUT/paused.state, menu_shots' script (presses, waits, s / S:NAME screenshots)
+  shots ROM OUT SCRIPT [--set=T:I:SECS,...]     from OUT/paused.state, menu_shots' script (presses, waits, s / S:NAME screenshots)
 
 python gen_toi_page_check.py play|shots ..."""
 import json
@@ -62,10 +62,13 @@ def play(rom, out, seconds, playmode=0):
     print("clock", e.w(CLOCK), "period", e.w(GSP), "toi home", toi[0], "away", toi[1])
 
 
-def shots(rom, out, script):
+def shots(rom, out, script, sets=()):
+    """sets: (team 0 home / 1 visitors, roster index, seconds) written to the team struct's +$136 words first."""
     import menu_shots as M
     e = Emu(rom)
     e.unserialize((out / "paused.state").read_bytes())
+    for t, i, secs in sets:
+        e.setw(TEAM[t] + TOI + 2 * i, secs)
     M.play(e, script, out)
 
 
@@ -76,4 +79,6 @@ if __name__ == "__main__":
     if mode == "play":
         play(rom, out, int(sys.argv[4]) if len(sys.argv) > 4 else 240, int(sys.argv[5]) if len(sys.argv) > 5 else 0)
     else:
-        shots(rom, out, sys.argv[4])
+        sets = [tuple(int(v) for v in x.split(":")) for a in sys.argv[5:] if a.startswith("--set=")
+                for x in a.split("=")[1].split(",")]
+        shots(rom, out, sys.argv[4], sets)

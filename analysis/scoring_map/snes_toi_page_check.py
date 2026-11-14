@@ -5,7 +5,7 @@ ptoi count of 981b836): NHL94_toi_page.smc and NHL94_toi_page_checks.smc (with t
                              the times differ) played into the third period until the clock reads STOP_CLOCK (default
                              100: goalies past 10:00, so 5-character times too), then paused: OUT/paused.state and each
                              player's ptoi ($7E:E800, visitors +$34) in OUT/toi.json
-  shots ROM OUT SCRIPT       from OUT/paused.state, menu_shots' script (presses, waits, S:NAME screenshots)
+  shots ROM OUT SCRIPT [--set=T:I:SECS,...]       from OUT/paused.state, menu_shots' script (presses, waits, S:NAME screenshots)
 
 python snes_toi_page_check.py play|shots ..."""
 import json
@@ -62,9 +62,14 @@ def play(rom, out, stop_clock, lines=1):
         print("team", t, sorted(((fmt(v), s) for s, v in enumerate(toi[t]) if v), key=lambda x: -toi[t][x[1]]))
 
 
-def shots(rom, out, script):
+def shots(rom, out, script, sets=()):
+    """sets: (team 0 home / 1 visitors, roster index, seconds) written to ptoi ($7E:E800, visitors +$34) first."""
     e = M.emulator(rom)
     e.unserialize((out / "paused.state").read_bytes())
+    if sets:
+        m = Mem(e, rom)
+        for t, i, secs in sets:
+            m.setw(PTOI + (VIS if t else 0) + 2 * i, secs)
     M.play(e, script, out)
 
 
@@ -75,4 +80,6 @@ if __name__ == "__main__":
     if mode == "play":
         play(rom, out, int(sys.argv[4]) if len(sys.argv) > 4 else 100, int(sys.argv[5]) if len(sys.argv) > 5 else 1)
     else:
-        shots(rom, out, sys.argv[4])
+        sets = [tuple(int(v) for v in x.split(":")) for a in sys.argv[5:] if a.startswith("--set=")
+                for x in a.split("=")[1].split(",")]
+        shots(rom, out, sys.argv[4], sets)
