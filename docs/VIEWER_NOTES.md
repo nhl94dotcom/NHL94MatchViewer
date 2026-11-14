@@ -1297,6 +1297,11 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   goalies' pads and sticks in front of each net, the faceoff dots: the wrong picks were a median 46 px off, mostly
   these). 46.7% -> 53.0% on the tuning stretch, 33.3% -> 39.4% on a stretch of another game (game 4): the same 6
   points, but the level varies by stretch.
+- **Puck won, by zone** (`video_report.py`: each change of the possession path in live play, the zone from the camera;
+  `--check` the same from the recordings' last carrier and the puck's own Y): per team about 40-50 wins a game on
+  video against 37-41 recorded; defending-zone wins close (e.g. 24 / 31 against 27 / 28); attacking-zone wins high by
+  2-5 a team (flips of the path, the camera for the puck's zone), the same team ahead in every game; neutral-zone
+  wins the weakest. Rough: not reported on its own yet.
 - **Events from the sound, tried and dropped** (`audio_events.py`, `sfx_refs.py`): the video keeps the game's audio
   (FLAC); the recordings' shots, checks and passes put on the video's timeline; templates learnt there, and clean
   ones from our own emulator (every effect's start from lastsfx, $FFC016: the replay recorder sets bit 7 of its low
