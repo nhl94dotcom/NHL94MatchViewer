@@ -1169,7 +1169,10 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   Skater body point: x = X - Hpos + 128, y = 107 - Y + Vpos - Z.
 - **The camera from the picture** (`camera_track.py`): each frame matched against the drawn rink (tracked from the
   last frame; a whole-rink search when lost). On 3,000 frames: every one of 408 still-camera frames exact in Hpos and
-  Vpos; moving frames within 4 on 96.8% (the timeline's own error included); none lost in live play.
+  Vpos; moving frames within 4 on 96.8% (the timeline's own error included); none lost in live play. The whole video
+  (132,382 frames, the four games): 4,042 still-camera frames all exact; moving frames within 4 on 94.0%, within 16 on
+  98.2% (median 0); 90 frames of live play lost (the frames before a lost search's next try: it retries every 10);
+  602 frames placed where no recording runs (replays and breaks showing the rink).
 - **The score boxes** (`hud_read.py`): 8 x 8 cells on the fixed text layer, read with templates learnt where the
   recording gives the truth. Learnt on games 1-2, checked on games 3-4: period, clock, both scores right on 777 of 782
   frames. Missing: scores 8 and 9 and overtime (never in the learning games).
