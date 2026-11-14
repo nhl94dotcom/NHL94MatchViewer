@@ -5007,6 +5007,12 @@ BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNE
   checks): Goals, Assists, Points, Shots, Checks, Giveaways, Takeaways, Time On Ice (last); arrows, highlights,
   scrolling right; every skater's number the RAM word; a goalie's count (the home goalie's 2 giveaways, place 0)
   shows on no page, since SNES Player Stats lists goalies only on the Goalies page.
+- **The Goalies page's GV column** (NHL94_giveaways.smc 93328fb0..., nhl94snes_SA1_giveaways.sfc 0be611c6...; a
+  paused game, every giveaway word set to its index + 10, so the number shown names the word read): the header and
+  columns line up (GA, Sh, Ptg as on the base ROMs from the same state, a shutout's 100%), the other pages unchanged
+  (SA-1 pixel-identical; 1 MB only the checks build's Cf). **The first goalie row reads the wrong word:** 1 MB, the
+  visitors' first goalie shows word 0 (the home goalie's) instead of 26; SA-1, the home first goalie shows 0 (a word
+  outside the counts) and the visitors' first word 0. Every other row is its own word (1, 27, 28).
 
 ### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
 
