@@ -1153,3 +1153,31 @@ Season page (season.py VERSION 32): team `fights`, `instig` (instigator penaltie
 `fightHurt`, skater `fights` and `fightHurt`, for games with `fights` or `gameStats`; the Skaters and Team stats tables
 get a FIGHT column only when a listed game had a fight.
 
+
+## The video reader (Genesis; work in progress, 2026-11-13 / 14)
+
+The aim: the match viewer's kind of analysis from a video of a game alone (a RetroArch recording first, later a Twitch
+or YouTube VOD), with no recording of the game's memory. Built and checked on nhl94_playoffs-261113-133619.mkv (the
+BOS-CHI series, four games), whose recordings give the truth through `tools/video_sync.py`'s timeline. Scripts in
+`analysis/vision/`:
+
+- **The rink** (`rink_render.py`): drawn from the ROM (Rinktilelist: palette, 48 x 113 map, tiles), the exact
+  background apart from sprites (players, nets, the centre-ice logo, stars). Colours in the recording's levels (0, 33,
+  66, 99, 140, 173, 206, 239). `rink_mosaic.py` (stage 1, a background stitched from the video) is superseded by it.
+- **The screen**: the game plays 256 pixels wide (the rink 384, the camera's Hpos -64..64); this recording stretched it
+  to 320, so frames are squeezed back to 256. Frame pixel (x, y) = rink-map pixel (x + Hpos + 63, y - Vpos + 256).
+  Skater body point: x = X - Hpos + 128, y = 107 - Y + Vpos - Z.
+- **The camera from the picture** (`camera_track.py`): each frame matched against the drawn rink (tracked from the
+  last frame; a whole-rink search when lost). On 3,000 frames: every one of 408 still-camera frames exact in Hpos and
+  Vpos; moving frames within 4 on 96.8% (the timeline's own error included); none lost in live play.
+- **The score boxes** (`hud_read.py`): 8 x 8 cells on the fixed text layer, read with templates learnt where the
+  recording gives the truth. Learnt on games 1-2, checked on games 3-4: period, clock, both scores right on 777 of 782
+  frames. Missing: scores 8 and 9 and overtime (never in the learning games).
+- **Players by team** (`sprites.py`): pixels that differ from the drawn background (within the range of the
+  background's pixel and its horizontal neighbours, for the stretch's blends), labelled by the two uniform palettes
+  weighted by how often the sprites use each slot; each team's part of a blob split by size (316 pixels a player).
+  On still frames: 93% of the home team's and 91% of the visitors' players found, centres within about 4 pixels; about
+  one detection in five extra (a player's split-off piece, the selected-player star).
+
+Next: tracking players over time (to drop the extras and keep identities), the puck, events from the clock and score
+(goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

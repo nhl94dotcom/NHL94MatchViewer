@@ -9,7 +9,7 @@ Measured on that video's still-camera frames against the recordings: frame pixel
 The match: the share of sampled pixels above the score boxes (rows 0-185) within 60 (summed over R, G, B) of the
 render; the sprites, the centre-ice logo (a sprite) and the crowd's animation miss, the rink agrees. A frame is placed
 by a small search around the last frame's place (tracking), or, when that's lost (a share under LOST) or at the start,
-by a search over the whole rink (coarse, then the best few refined). Frames that place nowhere (menus, the
+by a search over the whole rink (coarse, then the best few refined; while lost, only every RETRY frames). Frames that place nowhere (menus, the
 close-up faceoff box, intermissions, replays' panels) are kept as lost.
 
 python analysis/vision/camera_track.py VIDEO OUT.npz [--rom ROM] [--first N] [--count N] [--check TIMELINE]
@@ -29,6 +29,7 @@ NATIVE_W, H, HUD_TOP = 256, 224, 186
 OFF_X, OFF_Y = 63, 256            # rink-map pixel = frame pixel + (Hpos + OFF_X, OFF_Y - Vpos)
 PAD = 64                          # the render padded with black so a search can run past its edges
 LOST = 0.55                       # under this share a frame isn't placed
+RETRY = 10                        # while lost, a whole-rink search every RETRY frames (menus, breaks: most of a video)
 TOL = 60
 
 
@@ -100,7 +101,7 @@ class Rink:
 
 def track(video, rom, first=0, count=None):
     rink = Rink(rom)
-    out, last = [], None
+    out, last, tried = [], None, -RETRY
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
         import lowload
@@ -110,10 +111,10 @@ def track(video, rom, first=0, count=None):
         if lowload:
             lowload.breathe()
         r = rink.local(f, *last) if last else None
+        if (r is None or r[2] < LOST) and n - tried >= RETRY:   # lost: the whole rink, every RETRY frames
+            r, tried = rink.full(f), n
         if r is None or r[2] < LOST:
-            r = rink.full(f)
-        if r[2] < LOST:
-            out.append((n, 0, 0, r[2], 0))
+            out.append((n, 0, 0, r[2] if r else 0, 0))
             last = None
             continue
         u, v, s = r
