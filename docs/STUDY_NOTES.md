@@ -4955,6 +4955,15 @@ turnovers (same team, kind and player within 1 s real).
   matched shots; 42 uncounted "shots" and 4 one-timers had none (3.5 a game). The converter now drops those
   (m['shotFlag']; every shot the game counted kept; pass shots and deflections never set it). **Result: 137 of 142
   (nhl94) and 125 of 134 (CDL) paired.** Season VERSION 38.
+- **Stage 2, the Player Stats pages** (nhl94_giveaways.bin efff811a... with Time On Ice and the checks;
+  nhl94_giveaways_no_toi.bin 7f2a7707...; CDL_Season_12_giveaways.bin 83db8358...; `gen_toi_page_check.py play` 240 s,
+  then every page right, A, back left, both teams): pages Goals, Assists, Points, Shots On Goal, Checks For (or
+  Penalty Minutes without the checks), Giveaways, Takeaways, Time On Ice; RIGHT on the last stays, LEFT ends at
+  Goalie Saves. GV / TK where SOG / Chk (PIM) stand, the page's own column yellow; titles' right arrows on every page
+  but the last (no-TOI and CDL: Takeaways last, no arrow). Every number on both teams' pages the RAM's byte for that
+  roster place (e.g. CDL visitors' giveaways 2/2/2 at places 6, 8, 9), goalies listed, sorted by the page's column.
+  Playoff Stats (a playoff game played to its end): Goals to Checks For, RIGHT stops there, its title without the
+  arrow; A stayed on the one team there (not compared with retail: that run took another path).
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
