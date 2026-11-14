@@ -1214,5 +1214,13 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   BOS-CHI, home attacking / neutral / defending against the recorded puck's own: 38/21/41 vs 37/22/41, 38/21/40 vs
   37/22/41, 43/22/35 vs 43/23/34, 49/18/33 vs 50/20/30; live play 913-921 game seconds a game (5-minute periods).
 
+- **Streams** (`stream_locate.py`; `camera_track.py --crop X,Y,W,H`): the game's picture found inside a stream's
+  layout (the largest area that changes over 48 frames spread through the video, checked against the drawn rink),
+  cut out and resized to 256 x 224. On a made-up stream (two minutes of the BOS-CHI video scaled to 896 x 672 in a
+  1280 x 720 frame, a moving webcam box beside it): found at exactly where it was put; the camera then placed on
+  6,900 of 7,200 frames and the same as the original video's on every still-camera frame (2,694). A clean resize
+  wants updatescroll's own 64 (the stretched recording's squeeze gave 63). Real Twitch / YouTube videos not tried
+  yet (none in hand).
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

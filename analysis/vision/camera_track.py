@@ -13,6 +13,7 @@ by a search over the whole rink (coarse, then the best few refined; while lost, 
 close-up faceoff box, intermissions, replays' panels) are kept as lost.
 
 python analysis/vision/camera_track.py VIDEO OUT.npz [--rom ROM] [--first N] [--count N] [--check TIMELINE]
+  [--crop X,Y,W,H]   (a stream: the game's picture, from stream_locate.py)
   --check: each placed frame's camera against the recordings' (tools/video_sync.py's timeline), printed."""
 import argparse
 import json
@@ -45,13 +46,21 @@ def video_size(video):
     raise ValueError("no video stream")
 
 
-def frames(video, first=0, count=None):
-    """(frame number, native-width RGB frame as int16) for every frame from `first`; ffmpeg does the squeeze."""
+CROP = None                       # (x, y, w, h): the game's picture inside a stream's layout (stream_locate.py)
+
+
+def frames(video, first=0, count=None, crop=None):
+    """(frame number, native-width RGB frame as int16) for every frame from `first`; ffmpeg does the squeeze (and,
+    for a stream, cuts the game's picture out first: crop, or the module's CROP)."""
     import imageio_ffmpeg
+    crop = crop or CROP
     w, h = video_size(video)
     cmd = [imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "fatal", "-threads", "1", "-i", str(video),
            "-an", "-fps_mode", "passthrough"]
-    if (w, h) != (NATIVE_W, H):
+    if crop:
+        cx, cy, cw, ch = crop
+        cmd += ["-vf", f"crop={cw}:{ch}:{cx}:{cy},scale={NATIVE_W}:{H}:flags=area"]
+    elif (w, h) != (NATIVE_W, H):
         cmd += ["-vf", f"scale={NATIVE_W}:{H}:flags=bilinear"]
     cmd += ["-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, creationflags=getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0))
@@ -187,7 +196,13 @@ def main():
     ap.add_argument("--first", type=int, default=0)
     ap.add_argument("--count", type=int)
     ap.add_argument("--check")
+    ap.add_argument("--crop")
     a = ap.parse_args()
+    global CROP, OFF_X
+    if a.crop:
+        CROP = tuple(int(v) for v in a.crop.split(","))
+        OFF_X = 64                    # a clean resize of a stream's picture: updatescroll's own 64 (checked on a
+                                      # synthetic stream: 63 left every frame 1 out)
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
         import lowload

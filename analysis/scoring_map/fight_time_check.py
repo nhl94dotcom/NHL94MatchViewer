@@ -11,7 +11,8 @@ Genesis: gen_ot_check's boot, the computer on both sides, Fighting On ($FFF080 =
 every player's fighting rating (+$74) 14; --force: +$75 at $7F so chaos's patch hurts the loser (gen_fight_injury_track).
 SNES: snes_ot_goal_check.start, OptFights ($E708) 0 (On) where the build has the option (SA-1 / 2 MB: snes.SA1_MOVED).
 
---fighters (SNES): every skater's fighting rating ($1463) held at 14 (McMarkis's 1 MB fights come from it).
+--fighters[=N] (SNES): every skater's fighting rating ($1463) held at 14, or N (McMarkis's 1 MB fights come from it;
+at 14 on a build with a fight bonus they come every few seconds and the clock hardly runs).
 --injure (SNES): every skater's $1483 (McMarkis's "aggress", the 93S name; today's Checking) at 60, so the fight's loser
 is always hurt (F_fightfall: hurt when a random number under 60 is at most the winner's $1483); a player who leaves the box at $FFFC is then followed to
 the game's end ("after": every change of his word).
@@ -27,7 +28,8 @@ import lowload  # noqa: E402
 
 FORCE = "--force" in sys.argv
 OPTION = "--option" in sys.argv
-FIGHTERS = "--fighters" in sys.argv     # SNES: every skater's fighting rating ($1463) held at 14, so the 1 MB build fights
+FIGHTERS = next((int(a.split("=")[1]) if "=" in a else 14 for a in sys.argv if a.startswith("--fighters")), None)
+# SNES: every skater's fighting rating ($1463) held at 14 (or --fighters=N), so the 1 MB build fights
 INJURE = "--injure" in sys.argv         # SNES: every skater's $1483 at 60, so F_fightfall's roll always hurts
 argv = [a for a in sys.argv if not a.startswith("--")]
 
@@ -103,7 +105,7 @@ class Snes:
         if FIGHTERS or fighting:
             for k in range(12):
                 if FIGHTERS:
-                    self.m.setw(0x1463 + 2 * k, 14)
+                    self.m.setw(0x1463 + 2 * k, FIGHTERS)
                 if fighting:                       # McMarkis's "aggress" (93S's name) is $1483, today's Checking:
                     self.m.setw(0x1483 + 2 * k, 60)    # only while a fight is on (held always, there were no fights)
         if f % 300 == 0:

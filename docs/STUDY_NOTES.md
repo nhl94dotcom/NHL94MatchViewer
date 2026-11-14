@@ -4673,6 +4673,22 @@ faceoff's rebuild). nhl94_clutch.bin, NHL94_clutch.smc, nhl94snes_SA1_clutch.sfc
   attribute number setplayer passes) is $BF14 (`31FC 000F BF14` before jsr AttributeCalc): +2 / +3 on aggress at each
   rebuild, and 13 wrapped to 0 by setplayer's andi #$F (for goalies the same byte is the glove save left).
 
+### NOSE4Web's 1 MB fight pairing 7285c21, played (2026-11-14)
+
+McMarkis's FightCoincidental in NOSE4Web's 1 MB fights (NHL94_fight_pair.smc, fights at 5:00, 6eabbe38... SHA-256;
+NHL94_fight_pair_120.smc, 2:00, 54052e63...). `fight_time_check.py snes ROM 3 OUT --fighters=9` (every skater's
+fighting rating held at 9: at 14, with the builds' fight bonus 8, fights came every few seconds, the clock hardly ran
+and nobody left the box; at the game's own ratings none came in 4 games), 3 computer games each:
+- **25 fights, every one paired:** both fighters at $4078 (2:00 build) or $412C (5:00), one marked as he goes in, the
+  other at the next look; 5 PIM each; served 118-121 / 299-300 s by the clock and released (or still in at the run's
+  end, 4 pairs); both teams at 6 while only the fighters sat (no power play from a fight).
+- **With other penalties running:** minors that overlapped a fight kept their own words ($0078, never $4xxx), gave
+  their power play (5-on-6 while they sat) and ended as usual; the fighters paired only with each other.
+- **Hurt fighters:** 8 fighters left the box at $FFFC (out for the game) after their full major and stayed $FFFC to
+  the game's end.
+- **Instigator minors:** none came up in the 25 fights (every fighter +5 PIM only), so the instigator's power play
+  isn't checked.
+
 ### The bot's passes across the slot against people's (2026-11-13)
 
 After the BOS-CHI series (all seven of the user's one-timer goals from a pass to a receiver open in the slot),
