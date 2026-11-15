@@ -1382,6 +1382,27 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   175); live play 739-860 game seconds against 906 (the camera loses more frames on the soft copy); the puck-won
   counts still rough. **The LA-PIT YouTube report** with it: possession LA 51-59% in six games, PIT 54% in game 3
   (was LA 100% in every game); no recordings to check it against.
+- **Live play on a soft copy** (2026-11-15; `game_events.CLOCK_TICKS` / `decode_clocks`, `zone_time.live_ticks`): the
+  soft copy's 739-860 game seconds of live play against 906 weren't the camera (it placed 89-93% of the recordings'
+  stretches) but the clock. Matched frame by frame with the recordings (their own timers on the timeline; the clean
+  video's readings agree), the clock was seen running only 80-92% of the time it ran: the blurred seconds read 8 for
+  3 and 9 for 4 (the units cell right on 59% of frames, the tens 88%), and with the reader's prior (within 3 below
+  the last reading) one wrong value held for seconds while the clock ran on. The box itself does change: the seconds
+  cells' pixels jump (a mean change of 13-30) about every 12 frames (one tick, 0.4 s real) and barely move between.
+  - **Ticks:** `read_video` now notes every frame where the two seconds cells change by more than 2 (0-255);
+    `live_ticks` merges ticks under 0.15 s apart, takes runs of at least 3 ticks at most 0.9 s apart as live from
+    0.2 s before the first to the last, where a score-box reading is near. Against the recordings: the clock seen
+    running 92-98% of the time (was 80-92%), stoppage frames taken as live 13-32 game seconds a game (13-33 before).
+    `video_report` uses the ticks alone with `--soft`, and either the ticks or the digits otherwise.
+  - **The clock as one path** (`decode_clocks`, Viterbi over each period's stretch of readings: holding or running
+    down at most one game second per 0.4 s real is free, any other change costs 150): the soft copy's clock within
+    1 s of the truth on 79-93% of frames (69-89% read one at a time). It can't fix a digit that misreads the same way
+    for seconds on end: a stopped 1:29 still reads 1:39 (2 read as 3, the tens cell's commonest confusion).
+  - **Result**, soft copy: live play 842 / 912 / 872 / 890 game seconds against 906 / 907 / 907 / 906 (was 739 / 860
+    / 787 / 808); goals 26 of 27 within 1 s (25), game 1's 1:29 the one off (1:39); possession and zone shares much
+    as before (home 59.2 / 48.1 / 55.4 / 55.5% against 53.4 / 49.4 / 47.9 / 50.1; neutral zone 2-4 points low, as
+    on the clean video). Clean recording: live play 883-896 (875-883), 27 of 27 goals, the rest within a point of
+    before. LA-PIT's report still has the older events.json (no ticks: the clock as read) until it is read again.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

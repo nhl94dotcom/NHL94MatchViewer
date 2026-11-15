@@ -28,6 +28,41 @@ def zone(y, period):
     return 1 if yy > BLUE else -1 if yy < -BLUE else 0
 
 
+def live_ticks(ticks, readings, fps=FPS, gap=0.9, least=3, lead=0.2, near=1.0):
+    """{frame: period} where the clock runs, from the ticks of its seconds cells (game_events.CLOCK_TICKS): ticks
+    under 0.15 s (real) apart are one (a change spread over two frames), ticks at most gap s apart form a run, and a
+    run of at least `least` ticks is live from lead s before its first tick (the clock was running before it first
+    changed; 0.2 s took in fewer stoppage frames than a whole tick, 0.4 s, for the same hits) to its last; only frames with a held score-box reading within near s (the
+    period from it). On a soft copy of BOS-CHI (2026-11-15) the clock read by its digits was seen running 80-92% of
+    the time it ran (live_frames: blurred seconds read 8 for 3 and 9 for 4 held one value for seconds)."""
+    import bisect
+    out = {}
+    if not ticks or not readings:
+        return out
+    t = []
+    for n in ticks:
+        if not t or n - t[-1] > 0.15 * fps:
+            t.append(n)
+    runs, cur = [], [t[0]]
+    for n in t[1:]:
+        if n - cur[-1] <= gap * fps:
+            cur.append(n)
+        else:
+            runs.append(cur)
+            cur = [n]
+    runs.append(cur)
+    rn = [r[0] for r in readings]
+    for run in runs:
+        if len(run) < least:
+            continue
+        for f in range(int(run[0] - lead * fps), run[-1] + 1):
+            i = bisect.bisect_left(rn, f)
+            j = min((k for k in (i - 1, i) if 0 <= k < len(rn)), key=lambda k: abs(rn[k] - f))
+            if abs(rn[j] - f) <= near * fps:
+                out[f] = readings[j][1]
+    return out
+
+
 def live_frames(readings, fps=FPS):
     """{frame: period} for frames in stretches where the clock runs (within 0.8 s real: a game second is 0.4)."""
     out = {}

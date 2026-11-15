@@ -112,7 +112,8 @@ def main():
             if pairs:
                 (g["visitors"], g["home"]), _ = pairs.most_common(1)[0]
         ev_path.write_text(json.dumps({"video": str(video), "fps": fps, "crop": C.CROP, "games": games,
-                                       "readings": rows, "team_reads": G.TEAM_READS}, indent=1))
+                                       "readings": rows, "team_reads": G.TEAM_READS, "ticks": G.CLOCK_TICKS},
+                                      indent=1))
     ev = json.loads(ev_path.read_text())
 
     st_path = out / "static.npz"
@@ -124,7 +125,13 @@ def main():
 
     import possession as PO
     import zone_time as Z
+    # live play: the clock as read, or its seconds cells ticking (zone_time.live_ticks); on a soft copy the ticks
+    # alone (its blurred digits hold one value for seconds while the clock runs; with them, twice the stoppage
+    # frames). An older events.json without ticks: the clock as read.
     live = Z.live_frames(ev["readings"], fps)
+    if ev.get("ticks"):
+        ticks = Z.live_ticks(ev["ticks"], ev["readings"], fps)
+        live = ticks if "--soft" in sys.argv else {**live, **ticks}
     team_reads = ev.get("team_reads") or []       # (frame, visitors, home) every few seconds (older events.json: none)
     report = []
     for k, g in enumerate(ev["games"]):

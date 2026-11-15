@@ -12,7 +12,9 @@ read nothing or nonsense for a moment). From the held readings:
   faceoff to follow); the clock's reading then; at 0:00 marked period_end.
 Against other screens (a soft copy, 2026-11-15): read_video's rink_at (frames with no rink skipped), fits (a new
 held score only when it can follow the game so far, or steady for NEW_GAME s), a goal only where the new score
-also wins read freely, and steady (a reading far from its neighbours' median clock dropped).
+also wins read freely, and steady (a reading far from its neighbours' median clock dropped); the clock decoded as
+one path per stretch (decode_clocks) and the seconds cells' ticks noted every frame (CLOCK_TICKS, for
+zone_time.live_ticks: a soft copy's blurred digits miss the clock running).
 Checked on nhl94_playoffs-261113-133619.mkv (four games): the four games and their finals right; 27 of 27 goals the
 same as the recordings' (team, period, clock within 1 s), none extra; every one of the 45 faceoffs during periods
 matched by a whistle at its clock, plus 5 a game more (the clock standing at period ends and at pauses).
@@ -36,6 +38,8 @@ import hud_read  # noqa: E402
 HOLD, WHISTLE = 3, 2.0
 NEW_GAME = 5.0                    # seconds (real) a new game's 0-0 must hold (fits)
 TEAM_READS = []
+CLOCK_TICKS = []                  # frames where the clock's seconds cells changed (read_video: every frame)
+TICK = 2.0                        # the mean change (0-255, over the two seconds cells) that counts as a tick
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 
 
@@ -66,14 +70,21 @@ def read_video(video, templates, step=6, rink_at=None):
     if rd.native:
         print("template geometry (scale x, y, shift x, y, blur):", rd.fit(sample_frames(video)), flush=True)
     rows = []
-    global TEAM_READS
-    TEAM_READS = []                                      # (frame, visitors, home): the score box's abbreviations
+    global TEAM_READS, CLOCK_TICKS
+    TEAM_READS, CLOCK_TICKS = [], []
+    (tr, tc0), (_, tc1) = hud_read.CELLS["sec"]
+    last_sec = None                                      # (frame, visitors, home): the score box's abbreviations
     team_every = round(5 * C.video_fps(video))           # every 5 s (real)
     gap = 60 * C.video_fps(video)                        # a minute (real) with no reading: read freely again
     good = None                                          # the last held reading that fit the game so far
     new_span = NEW_GAME * C.video_fps(video)
+    costs = []                                           # each row's clock cells' costs, for decode_clocks
     prev = {"vis": None, "home": None}                   # read freely until a reading holds (a video may start
     for n, f in C.frames(video):                         # mid-game), and again after a long gap (a break)
+        sec = f[tr * 8:tr * 8 + 8, tc0 * 8:tc1 * 8 + 8]   # the seconds cells change at every tick of a running
+        if last_sec is not None and float(np.abs(sec - last_sec).mean()) > TICK:   # clock, even where a soft
+            CLOCK_TICKS.append(n)                         # copy's blurred digits read wrong (zone_time.live_ticks)
+        last_sec = sec
         if n % step or (rink_at is not None and not rink_at(n)):
             continue
         if rows and n - rows[-1][0] > gap:
@@ -95,13 +106,75 @@ def read_video(video, templates, step=6, rink_at=None):
         if any(prev[k] is not None and sc[k] == prev[k] + 1 and rd.read_score(f, k, None) != sc[k] for k in sc):
             continue                     # a goal only where the new score also wins read freely (a faint box's 2,
                                          # fading at a faceoff on a soft copy, matched 3 better than 2 or 0)
-        if sc["vis"] != prev["vis"] or sc["home"] != prev["home"]:
-            pass
         rows.append((n, r["period"], r["clock"], sc["vis"], sc["home"]))
+        costs.append([rd.costs(f, rc, "clk") for rc in hud_read.CELLS["min"] + hud_read.CELLS["sec"]])
         if len(rows) >= HOLD and all(q[3:] == rows[-1][3:] for q in rows[-HOLD:]) and fits(rows, good, new_span):
             prev = {"vis": sc["vis"], "home": sc["home"]}
             good = rows[-1]
-    return rows
+    return decode_clocks(rows, costs, C.video_fps(video))
+
+
+CLOCK_JUMP = 150.0                # decode_clocks: the cost of a clock change the time between can't explain
+CLOCK_GAP = 2.0                   # seconds (real) without a reading that end a stretch
+_CLOCK_CHARS = None
+
+
+def _clock_chars():
+    """For every clock value 0-1200, the character each of the four cells shows (index into '0123456789 ')."""
+    global _CLOCK_CHARS
+    if _CLOCK_CHARS is None:
+        idx = np.zeros((4, 1201), int)
+        for v in range(1201):
+            m, s_ = divmod(v, 60)
+            for i, ch in enumerate((str(m // 10) if m >= 10 else " ", str(m % 10), str(s_ // 10), str(s_ % 10))):
+                idx[i, v] = "0123456789 ".index(ch)
+        _CLOCK_CHARS = idx
+    return _CLOCK_CHARS
+
+
+def decode_clocks(rows, costs, fps, jump=CLOCK_JUMP, gap=CLOCK_GAP):
+    """Each stretch of readings (one period, no gap over `gap` s real) decoded as one path (Viterbi): every reading's
+    clock the value whose digit cells match, the path paying nothing to hold or to run down at most one game second
+    per 0.4 s (real) since the reading before, plus one, and `jump` for any other change. Read one frame at a time, a
+    soft copy's blurred seconds (2 / 3 against 8 / 9) can win and the clock then stuck within 3 of a misread (the
+    reader's prior) while the true clock ran on (BOS-CHI's soft copy: the clock seen running 80-92% of the time)."""
+    if not rows or len(costs) != len(rows):
+        return rows
+    idx = _clock_chars()
+    per_s = 0.4 * fps
+    out, k = [], 0
+    while k < len(rows):
+        j = k + 1
+        while j < len(rows) and rows[j][1] == rows[k][1] and rows[j][0] - rows[j - 1][0] <= gap * fps:
+            j += 1
+        em = np.empty((j - k, 1201))
+        for t in range(k, j):
+            tab = np.array([[c.get(ch, 1e3) for ch in "0123456789 "] for c in costs[t]])
+            em[t - k] = tab[np.arange(4)[:, None], idx].sum(axis=0)
+        score = em[0].copy()
+        back = np.zeros((j - k, 1201), np.int32)
+        ar = np.arange(1201)
+        for t in range(1, j - k):
+            reach = int((rows[k + t][0] - rows[k + t - 1][0]) / per_s) + 1
+            best, arg = score.copy(), ar.copy()            # hold
+            for d in range(1, reach + 1):                  # run down d: from v + d
+                cand = np.full(1201, np.inf)
+                cand[:-d] = score[d:]
+                better = cand < best
+                best[better], arg[better] = cand[better], ar[better] + d
+            m = int(score.argmin())
+            jumped = score[m] + jump < best
+            best[jumped], arg[jumped] = score[m] + jump, m
+            score, back[t] = best + em[t], arg
+        v = int(score.argmin())
+        path = [v]
+        for t in range(j - k - 1, 0, -1):
+            v = int(back[t][v])
+            path.append(v)
+        path.reverse()
+        out += [(r[0], r[1], path[t - k]) + tuple(r[3:]) for t, r in enumerate(rows[k:j], k)]
+        k = j
+    return out
 
 
 def fits(rows, good, new_span):
@@ -252,7 +325,7 @@ def main():
         if pairs:
             (g["visitors"], g["home"]), _ = pairs.most_common(1)[0]
     out.write_text(json.dumps({"video": str(video), "step": step, "fps": fps, "crop": C.CROP, "games": games,
-                               "readings": rows}, indent=1))
+                               "readings": rows, "ticks": CLOCK_TICKS}, indent=1))
     for g in games:
         print(f"game from frame {g['start_frame']} to {g['end_frame']}: {g.get('visitors', '?')} at {g.get('home', '?')}, "
               f"final {g['final'][0]}-{g['final'][1]} (visitors-home), "
