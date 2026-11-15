@@ -16,7 +16,11 @@ ScoutingReport's two Create_HotCold_Table calls, SNES StartGame_scout's), and th
 START. Genesis SPEC = the gap wanted (away less home, e.g. 189, -189, 0); SNES SPEC = home:visitors table value
 (-12 ... 12 for every byte of that team's half).
 
-python scouting_pick_check.py ROM OUT RUNS [FIRST] [--teams=H:V,H:V,...] [--force=SPEC,SPEC,...]"""
+--coin (NOSE4Web 6943716, Ron Barr's pick by a coin flip): the named team should be the game's own pick (Genesis
+awayhotter, SNES hotterteam), never "extremely"; the totals' hotter team is kept as "hotter", to see that the picks
+don't follow it.
+
+python scouting_pick_check.py ROM OUT RUNS [FIRST] [--teams=H:V,H:V,...] [--force=SPEC,SPEC,...] [--coin]"""
 import json
 import re
 import struct
@@ -36,6 +40,7 @@ G_HOTCOLD, G_TMDATA = 0x1A2, 0x1E
 G_TW1, G_TW2, G_AWAYHOT = 0xBF12, 0xBF14, 0xBF50
 S_HOTTER, S_EXTREME, S_SUM, S_TABLE = 0x1E41, 0x1E43, 0x1E45, 0x1A12
 # Genesis "Lately X has been playing (extremely) well.", SNES "X has been playing (extremely) well recently."
+COIN = "--coin" in sys.argv       # NOSE4Web 6943716: Ron Barr's pick by a coin flip
 LATELY = re.compile(r"^(?:Lately )?(.+?) ha(?:s|ve) been playing (extremely )?well(?: recently)?\.$")
 
 
@@ -204,11 +209,20 @@ def one(rom, out, k, home, vis, force):
         res.update(game=game, mine=mine, gap=mine[1] - mine[0])
         res["expect"] = "visitors" if mine[1] >= mine[0] else "home"
         res["expect extremely"] = abs(mine[1] - mine[0]) >= 0xBD
+        res["hotter"] = res["expect"]
+        if COIN:                                  # the coin flip: the game's own pick (awayhotter), never extremely
+            res["expect"] = "visitors" if game.get("awayhotter") == 1 else "home"
+            res["expect extremely"] = False
     else:
         sums = [e.sw(S_SUM), e.sw(S_SUM + 2)]
         res.update(game={"hotterteam": e.w(S_HOTTER), "hotextreme": e.w(S_EXTREME), "sums": sums}, gap=sums[0] - sums[1])
         res["expect"] = "home" if sums[0] >= sums[1] else "visitors"
         res["expect extremely"] = abs(sums[0] - sums[1]) >= 8
+        res["hotter"] = res["expect"]
+        if COIN:                                  # the coin flip: the game's own pick (hotterteam), never extremely
+            hv = e.w(S_HOTTER)
+            res["expect"] = "home" if hv == teams[0] else "visitors" if hv == teams[1] else "?"
+            res["expect extremely"] = False
     res["rows text"] = kept
     return res
 
@@ -245,7 +259,7 @@ def side_named(named, home, vis):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    opts = dict(a[2:].split("=", 1) for a in sys.argv[1:] if a.startswith("--"))
+    opts = dict(a[2:].split("=", 1) for a in sys.argv[1:] if a.startswith("--") and "=" in a)
     rom, out, runs = args[0], Path(args[1]), int(args[2])
     first = int(args[3]) if len(args) > 3 else 0
     out.mkdir(parents=True, exist_ok=True)

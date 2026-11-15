@@ -5927,3 +5927,25 @@ dfbc78c7, 144c7e88, e4d69d25, as given), each against its original.
   after START on the Genesis (1,530 without it), 2,080-2,134 on the SNES (1,960-2,002). The box scrolled cleanly in
   every run (each row followed as it moved up, no other change), the last rows ("Hit the start button ..." / "Press
   Start to begin ...") were whole, and the screen waited for START after the text as before.
+
+### NOSE4Web's "Ron Barr's pick by a coin flip", played (2026-11-15, 6943716; `scouting_pick_check.py --coin`)
+
+nhl94_barrcoin.bin, NHL94_barrcoin.smc, nhl94snes_SA1_barrcoin.sfc, nhl94snes_2026_barrcoin.sfc (SHA-256 9a7e889e,
+d64dd511, 7025c158, da6132af, as given), each against its original.
+- **The bytes.** Genesis: $F7342-$F735B only (`move.w #2,d0` / `jsr randomd0` ($11086) / `move.w d0,(awayhotter).w` /
+  `move.w #$5E,d2` / four NOPs), the checksum and the usual boot test removal. SNES, all three: $0E82FE-$0E830E only
+  (`stz hotextreme` / `jsl RandomWord` / `bpl` to the `rtl` / `lda VisTeam` / `sta hotterteam` / `rtl` / `nop`) and the
+  checksum. randomd0 returns 0 or 1 here (range 2); with d2 = $5E the unchanged threshold always queues $22. RandomWord
+  ends with `adc seed`, so the `bpl` tests the word's bit 15.
+- **The data bank.** RandomWord reads `lda.w seed` through the data bank: $0792 on the 1 MB and 2 MB builds, and on the
+  SA-1 build its copy at $80:86AA reads the moved $6792, the same moved low RAM the patch's `stz $7E43` /
+  `sta $7E41` use. ScoutingReport's own `sta.w hotterteam` relies on the same bank, and in every run the pick
+  landed in hotterteam and was the team typed.
+- **24 games on each ROM** (8 matchups, each run a fresh power-on with its own wait): the line in all 96, never
+  "extremely". The typed team was the game's own pick (awayhotter / hotterteam) in all 90 where the text tells the
+  teams apart (the Genesis types both New York teams as "New York": 6 games). Picks: Genesis 12 home / 12
+  visitors, SNES retail 11 / 13, SA-1 10 / 14, 2 MB 11 / 13. The pick was the hotter team in 15, 10, 14 and 7 of 24
+  (46 of 96): it doesn't follow the totals. No two ROMs' pick sequences repeat a fixed pattern.
+- **"extremely" never comes:** 28 SNES games were 8 or more apart (hotextreme stayed 0 in all 72 SNES games);
+  Genesis gaps forced to +-189 and +-400 typed "well" (two of them naming the colder team).
+- Typing and scrolling as for the hotter-team version (text done 1,653-1,656 frames after START on the Genesis).
