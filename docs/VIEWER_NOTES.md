@@ -1414,6 +1414,15 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   against 83.4%), +-70 on a sharp recording (its track keeps closer to the puck; 78 put it 1-2.5 points high).
   Neutral zone, soft copy 22.2 / 21.2 / 22.8 / 19.9% against 21.9 / 22.5 / 23.0 / 19.9; recording 22.0 / 22.6 /
   23.4 / 19.1%. Tuned on the four games they were checked on: another series would test them.
+- **Where the soft copy's star path goes wrong** (2026-11-15, on the cached candidates of the two check stretches,
+  game 1 frames 4,500-10,500 and game 3 40,000-46,000; no code changed): the star placed within 8 px on 53% / 37% of
+  the frames it shows. The true star is among the 16 candidates on only 65% / 67% of them (the ceiling for any
+  path). The wrong places are other skaters, not open ice or a fixed spot on the rink: no true-star candidate at all
+  on 34% / 32%, the true one a candidate but another skater's taken on 12% / 30%. Neither the path's settings
+  (SIGMA0, SPEED, GAP, TOP: a plateau around today's) nor a candidate weight learnt from the score, its rank, its
+  margin over the frame's best and its place against the nearest skater (fitted on game 1) did better on game 3
+  (placed 37.5%, team 79% against 81%). Next for it: the candidate search itself (a third of frames with no true
+  candidate) and something that tells the carrier's star from the ice disturbed under other skaters.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
