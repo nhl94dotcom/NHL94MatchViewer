@@ -5146,6 +5146,19 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
   (`lsr.w #1,d0`) to E548 (`asl.w #2,d0`): 2|dy| against 4|dx|, NHL '94's test; it gives NHL '94's direction for every
   vector up to 2,000 either way. The other 35 callers (facing, the computer's decisions ...) would change back with it:
   not played yet.
+  Tried in the game (pad 1's skater given the puck, a teammate placed at each angle): NHL '95's controls differ from
+  NHL '94's: B and C taps did nothing at once, A held 6 frames released the puck, but always to the same place
+  whatever the pad held (passdir stayed the carrier's facing; pad 2 did nothing), so A is likely not the plain
+  directional pass (the one-timer pass's own target?). Not confirmed in play until NHL '95's controls are read.
+  **Then (2026-11-15):** the carrier's input ($84288 on) enters pass mode (setpassmode, $844C2: the pass direction from
+  the facing, $BEF2 bit 2) on the pad bit 4 change and passes (dopass) on its next change, as NHL '94; bit 6 goes
+  through $842C8, which can set $BF08 bit 1 (the pass a quarter as fast, kept flat) before pass mode. On retail with
+  its default controls, traced frame by frame in our Genesis Plus GX (the emu wrapper's "A" is Genesis A: libretro Y,
+  the core's default map): **Genesis A** sets pass mode on its release and the pass goes the next frame; B or C held
+  2-15 frames did nothing at once. So the pass goes where the carrier faces at the release (a direction held during
+  the press doesn't count; held long enough it turns him). The angle trials (a teammate set at 0-75 degrees from
+  straight left, every frame) weren't fair yet: moving the players every frame disturbed play (the puck went 40-70
+  degrees up whatever the angle, on both ROMs), so the fix is not yet confirmed in play.
 
 
 
