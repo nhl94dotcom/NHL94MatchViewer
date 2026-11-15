@@ -5896,3 +5896,34 @@ power-on to frame 12,000 in a copy of the core, a picture every 30 frames, and a
 - START at 1,500: Game Setup by frame 2,040 on every ROM, as the original.
 - bug: "NHL 94 LEAGUE" rests, then at the change to the second page the screen fills with garbage and freezes
   (unchanged from frame 1,170 to 12,000); START does nothing. So the test sees the crash, and the fix removes it.
+
+### NOSE4Web's "Ron Barr's pick every game", played (2026-11-15, ebd693c; `scouting_pick_check.py`)
+
+nhl94_barrpick.bin, NHL94_barrpick.smc, nhl94snes_SA1_barrpick.sfc, nhl94snes_2026_barrpick.sfc (SHA-256 35abc422,
+dfbc78c7, 144c7e88, e4d69d25, as given), each against its original.
+- **The bytes.** Genesis: $F7363 $5E -> $00 (CompareHotColdTotals' `cmp.w #$5E,d2`), the checksum, and the usual boot
+  checksum test removed ($300, $FFAC0). SNES, all three: $0E8325 $04 -> $00 (ScoutingReport's `cmp #$0004`) and the
+  checksum; nothing else.
+- **How it was checked.** `scouting_pick_check.py` picks a matchup on Game Setup, waits a different number of frames
+  each run (the rolls are random), reads the whole text as typed from video memory and finds the hotter-team
+  paragraph. Genesis: the starters' totals worked out again from the hot / cold tables and the team data's first line
+  set (bytes 3-15 but 9 and 13, each player's sum a byte), and the game's own TempWord1 / TempWord2 / awayhotter read
+  the frame the paragraph list is made: the two agreed in every run. SNES: the game's own hotcoldsum, hotterteam and
+  hotextreme. Forced totals: a scratch copy with the matchup screen's own re-roll skipped (Genesis ScoutingReport's two
+  Create_HotCold_Table calls, SNES StartGame_scout's) and the tables written into RAM first.
+- **Every game has the line, naming the hotter team.** 8 matchups on each ROM (St. Louis-Calgary both ways, the two
+  New York teams both ways, a team against itself, three more): the line in all 32, typed once, the named team the one
+  with the higher total every time; "extremely" exactly where the gap is $BD (Genesis) / 8 (SNES) or more. The same
+  runs on the originals: no line where the gap is under $5E / 4 (all 8 Genesis runs, 3 of 24 SNES), the rest as
+  before.
+- **Ties and the edges, forced.** Genesis (St. Louis at Calgary): gap 0 and +1 name the visitors, -1 the home team;
+  +-188 "well", +-189 "extremely". SNES (every byte of a team's half set): an exact tie (0 and 0, also with every byte
+  1, which the ratings round away) names the home team on all three builds; 18-21 and 146-369 apart "extremely" for
+  the right team.
+- **One naming caveat, not the change's:** on the Genesis the New York teams are both typed "New York" ("Lately New
+  York has been playing well."), so the line doesn't say which; the SNES types "NY Rangers have" / "NY Islanders
+  have". On the SNES the total is every player's rating less his base rating (the whole roster), not the starters'.
+- **Timing and scrolling.** The extra paragraph adds about 2 s (real) of typing: the text finished 1,653-1,665 frames
+  after START on the Genesis (1,530 without it), 2,080-2,134 on the SNES (1,960-2,002). The box scrolled cleanly in
+  every run (each row followed as it moved up, no other change), the last rows ("Hit the start button ..." / "Press
+  Start to begin ...") were whole, and the screen waited for START after the text as before.
