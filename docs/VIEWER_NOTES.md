@@ -1402,7 +1402,9 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
     / 787 / 808); goals 26 of 27 within 1 s (25), game 1's 1:29 the one off (1:39); possession and zone shares much
     as before (home 59.2 / 48.1 / 55.4 / 55.5% against 53.4 / 49.4 / 47.9 / 50.1; neutral zone 2-4 points low, as
     on the clean video). Clean recording: live play 883-896 (875-883), 27 of 27 goals, the rest within a point of
-    before. LA-PIT's report still has the older events.json (no ticks: the clock as read) until it is read again.
+    before. LA-PIT read again with both (and the zone edges below): the same seven games, finals and goals; live
+    play 912-1,142 game seconds a game (it never had the shortfall), most goal clocks a second earlier (as on
+    BOS-CHI, where that put them on the recordings), the neutral zone 1.5-2.7 points higher; no recordings to check.
 - **The neutral zone read low** (2026-11-15; `zone_time.zone_cam`, `CAM_BLUE` / `CAM_BLUE_SHARP`): both videos read
   it 2-4 points under the recordings. The camera is no stand-in for the puck to the unit: on the soft copy, matched
   frame by frame, the puck is 19 under the camera on median, the middle half from 50 under to 38 over. Read at the
