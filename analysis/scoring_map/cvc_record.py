@@ -1,7 +1,7 @@
 """Computer-against-computer games recorded as the helper records people's games (2026-11-11, the user: how a team the
 computer plays differs from one people play; for better simulations and the bot). Each game: power-on, Game Setup
 with the league's settings (5-minute periods, penalties on except offsides (Genesis) / On, No Offside (SNES), line
-changes off), a matchup of its own (game n: home team (7 n) mod 26, visitors (7 n + 11) mod 26, the two different), its
+changes off; NHL94_CVC_LINES=on turns line changes on), a matchup of its own (game n: home team (7 n) mod 26, visitors (7 n + 11) mod 26, the two different), its
 own random seed, the computer on both sides (pads taken off every second), START tapped through the screens that wait;
 recorded from the first frame of play to the end of the game (the final horn, or 60 minutes (real) at most): every
 frame a sample of the system's BLOCKS as the helper keeps them (an 8-byte millisecond stamp, then the blocks: the
@@ -12,6 +12,7 @@ process.
 python cvc_record.py genesis|snes ROM OUT GAMES [FIRST]   -> OUT/captures/<name>, OUT/matches/<name>.js"""
 import gzip
 import json
+import os
 import struct
 import subprocess
 import sys
@@ -23,6 +24,11 @@ sys.path.insert(0, str(ROOT / "tools"))
 import lowload  # noqa: E402
 
 FPS = 60
+LINES_ON = os.environ.get("NHL94_CVC_LINES") == "on"     # line changes on (2026-11-15: NOSE4Web's giveaways credit)
+# NHL94_CVC_DRAIN=on (Genesis, with line changes on): every second the skaters on the ice held at half energy (tmpde
+# $800, team struct +$32; tmpdst +$66 $FFFF on the ice), so the computer changes lines on the fly (chk4lc: its
+# carrier past centre, the line's average <= $C00, then a dump-in): lines changed while the puck is loose
+DRAIN = os.environ.get("NHL94_CVC_DRAIN") == "on"
 
 
 def teams_for(n):
@@ -39,7 +45,7 @@ def record_genesis(rom, n, folder, fast, full, watch=None):
     G.to_setup(e, folder)
     h, a = teams_for(n)
     # the matchup is HomeTeam / VisTeam ($C330 / $C332); Opt1team / Opt2team are the pads' sides
-    for addr, v in ((0xC330, h), (0xC332, a), (0xD050, 0), (0xD056, 2), (0xD058, 1)):
+    for addr, v in ((0xC330, h), (0xC332, a), (0xD050, 0), (0xD056, 2), (0xD058, LINES_ON and 0 or 1)):
         e.setw(addr, v)
     if not G.into_play(e):
         return None
@@ -53,6 +59,11 @@ def record_genesis(rom, n, folder, fast, full, watch=None):
             e.setw(0xC32A, 0)
             for k in range(12):
                 e.setb(0xB04A + 0x80 * k + 0x62, e.b(0xB04A + 0x80 * k + 0x62) & ~8)
+            if DRAIN:
+                for ts in (0xC6CE, 0xCA32):
+                    for s in range(26):
+                        if e.w(ts + 0x32 + 52 + 2 * s) == 0xFFFF and e.w(ts + 0x32 + 2 * s) > 0x800:
+                            e.setw(ts + 0x32 + 2 * s, 0x800)
             c = e.w(0xC468)
             still = still + 1 if c == last else 0
             last = c
@@ -99,6 +110,8 @@ def record_snes(rom, n, folder, fast, full, watch=None):
     if (m.w(0x1C98), m.w(0x1C9A)) != (h, a):
         return None
     M.play(e, "RIGHT*2 DOWN RIGHT*2 w30", folder)
+    if LINES_ON:
+        m.setw(0x34C6, 1)                        # OptLine (snes_energy_shifts); not the SA-1 build's moved RAM
     M.play(e, "START w240 START w200 w2400", folder)
     for _ in range(12):
         c = m.w(CLOCK)

@@ -5162,6 +5162,19 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
   the press doesn't count; held long enough it turns him). The angle trials (a teammate set at 0-75 degrees from
   straight left, every frame) weren't fair yet: moving the players every frame disturbed play (the puck went 40-70
   degrees up whatever the angle, on both ROMs), so the fix is not yet confirmed in play.
+  **Played (2026-11-15, W18 against a scratch copy with E548; nothing moved by hand):** 31 moments of one game where
+  pad 1's skater had the puck after skating a random direction for 45 frames, each played on both ROMs: hold the
+  direction, press B (or A) 6 frames (`runs/nhl95/passfix/run.py`). puckc ($FFB3C2) is a word in NHL '95 ($FF00
+  loose): the first runs read its high byte and were wrong. B released the puck 0-2 frames into the press in these
+  moments; the heading was the carrier's facing (passdir $BADA) within 10 degrees in 20 of 31 on both. **B: 26 of 31
+  the same heading on both ROMs; 5 differed, all as the cone change predicts:** facing right with a teammate 50 degrees
+  off, W18 went straight across, the fix to the teammate (he took it); facing a diagonal with a teammate 80-160 degrees
+  off the facing, W18 passed back to him (3 times, 54-108 degrees off the facing; 2 reached him), the fix went along
+  the facing. So the fix also takes away W18's passes far behind a diagonal facing. **A: 18 passes, all 18 the same
+  heading on both ROMs** (A's soft pass, released after the button, often 30-100 degrees off the facing toward a
+  teammate): A does not go through the changed test in these moments. The other callers: in 8 of the 26 B moments
+  with the same pass, who got the puck next differed between the ROMs (the computer chasing or turning differently),
+  so the 35 other callers do change play; not studied further.
 
 
 
@@ -5838,3 +5851,26 @@ made again from the new ROMs):
   value for the rating is negative. (The 32-team build's pick list reads 3 characters high with the SA-1 offset: its
   font sits 3 tiles further on; shifted back for the check.)
 - Injury counts (start at 0, halved at intermissions) and the boot clearing were already passing on both.
+
+### NOSE4Web's giveaways credit kept through a line change (7ad4a23), played (2026-11-15)
+
+The builds keep the roster number when the puck is picked up (Genesis $FFE804, record +$66) and the forcer's at the
+steal or FallDown ($FFE805); SNES $7E:FDEC / $FDEE (SA-1 $40:55DC / $55DE). Tested on nhl94_giveaways.bin (0fc860bf)
+and NHL94_giveaways.smc (6a643ce1), computer games with line changes on (`cvc_record.py`: NHL94_CVC_LINES=on;
+NHL94_CVC_DRAIN=on holds the Genesis skaters on the ice at half energy so the computer changes on the fly).
+- **From the code, both systems: a player can't change off or be moved while he carries the puck.** `check4bench`
+  returns for the puck carrier (Genesis `cmp.w (puckc).w,d0`, SNES `cpx.w puckc`); a skater headed for the bench is
+  pf2unav, and the stick-puck collision skips unavailable players (Genesis collide94, SNES checkpuckcoll_ccx); a
+  position change for the same player keeps his record and roster number. Saving at the pickup is enough.
+- **The computer changes on the fly only in a dump-in** (chk4lc: its carrier past centre, the line's average energy
+  <= $C00, then CompShoot). Genesis, lines on, 3 games: no change in running play (5-minute periods: energy never got
+  that low); counts paired 147 of 158 (the rest the usual hook / lost-puck splits between give and take). Energy held
+  low, 2 games: 5 changes in running play, 89 of 91 paired; the 4 turnovers with a change between the loss and the
+  pickup were credited right, but none of the changed players was the loser or forcer.
+- **Forced** (`runs/give_lines/forced/forced.py`): at a loss, a bench player put in the loser's record (+$66 and
+  tmpdst) before the pickup: 14 swaps, 9 giveaways all to the player who lost it, none to the one put in (4 were
+  takeaways). The forcer's record swapped the same way (3 periods): 7 takeaways, all 7 to the forcer.
+- **SNES, lines on, 2 games: 69 of 84 paired** (stage 1: 102 of 133). Two of the six stick steals were credited to
+  another skater of the same team on the ice (steal by roster 2, ROM 15; by 7, ROM 2), the puck loose 1-1.5 s
+  (real) before a teammate picked it up; the converter's stealer comes from the no-touch timer. Not settled which side
+  is right: a FallDown or steal between the loss and the pickup that writes the forcer again would do it.
