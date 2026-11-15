@@ -1333,6 +1333,55 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
     grey-blue star under the carrier's skates; drawn and degraded like the uniforms its colours are the blue lines'
     (rink colours 11, 13, 15), so a colour search lands on the lines and circles: it needs the star's shape and its
     place under a skater. Next: a shape search, or a template learnt from the video's own surest finds.
+  - **The star by its change to the ice** (2026-11-15; `possession.soft_star_candidates`, `star_soft_lr.npy`,
+    `possession.py --learn-star`): averaged over 279 frames at the recorded spot the star is there, under the
+    carrier, whose body covers its middle; its arms change the ice (140, 239, 239) to about (140, 167, 189): red
+    about the same, green and blue down, green more. Each pixel's change from the drawn rink (degraded as the video
+    is) is scored by a log-likelihood table, 12 bins a channel (the star's arms at the recorded spot against every
+    other changed pixel: learnt from frames of games 2-4 only, every 90th), and the arms' mean summed at each anchor
+    on the ice (the static sprites left out). On frames it wasn't learnt from: the true star the top pick 53%, among
+    the top 8 76% (the colour search 9% / 33%). A bonus for a detected skater just above a candidate made it worse
+    (dropped). The path's settings for these candidates (`SOFT_PATH`: REWARD 8, TOP 8; a weight reaching 1 at a mean
+    of 3.5), tuned on a game-1 stretch (frames 4,500-10,500) and checked on game 3 (40,000-46,000): the team right
+    72.5% -> 79.0% and 79.3% -> 81.4%.
+  - **The teams learnt from the video** (`sprites.soft_skaters`, `SoftTeams`): the 92.3% above was for games where
+    Boston was home (white and gold against Chicago's red). Where Chicago was (white, black and red against Boston's
+    black and gold) the labeller read most Boston players as Chicago: per game against the recorded players (every
+    90th frame), the pixel-vote labeller 85% / 85% / 65% / 66%, about 8.5 home and 3 visitors a frame. Now for a soft
+    video: skaters by the blobs' size alone; each one's team from the log ratio summed over a box on his body (8 x 12
+    either side); the cut between the teams where a game's skaters split evenly (the best cut was within a point of
+    it in every game); then each team's colours learnt from the video's surest skaters (the top and bottom 35%) and
+    the skaters labelled again, twice (more rounds drift on the hard pair): **90.2% / 91.6% / 79.4% / 80.3%**. The
+    even split assumes both teams equally on screen over the stretch read (a game, or the check's stretches).
+  - **Possession on the soft copy:** game 1's stretch right on 77.5% of 1,335 live frames (45% before; home's share
+    52.1% against 58.7%), game 3's 83.6% of 1,652 (54.6%: 52.5%). Our own recording: about 84%. With the star placed
+    right (within 8 px) the team was right 95%; the star's path is placed right on about half the frames, the
+    weak part still.
+- **The score boxes on a soft copy** (`game_events.py`; the copy had read as eight games with goals three to a team
+  within four seconds): the templates read the scores 99-100% right on live frames when read freely, so the reading
+  itself was fine; what broke it was other screens. (1) A break screen read as period 1 at 3:33 with one more goal,
+  often enough to hold: `video_report` now skips frames where the camera track found no rink (`read_video(...,
+  rink_at)`; the stray reads were all on such frames, 82% of all reads on placed ones). (2) Replays and stoppage
+  screens with the rink showing read as 3:33, 6:32, 13:33 in a 3rd period: a new held score is taken only when it
+  fits the game so far (`fits`: a later period, or the same period with the clock not run back up and at most one
+  goal on) or has held steadily for 5 s (real), the same period and score with the clock never going up (which is
+  also the only way in for a new game's 0-0: 0 is always a candidate score, and a break screen's 0-0 had reset a
+  game). (3) At a faceoff the boxes fade, and a faint 2 matched 3 better than 2 or 0: a goal is taken only where
+  the new score also wins read freely (0-19). (4) In the games built from the readings, a reading whose clock is more
+  than 15 game seconds from the median of its period's readings within 15 s (real) either side is dropped
+  (`steady`; comparing with the last reading alone let a stray low clock shut out every true reading after it).
+  (5) A goal's clock is the first reading with the new score (the clock stops at a goal; the reading before can be
+  a moment earlier where frames are skipped). Result on the soft copy: the four games, teams and finals right, all
+  27 goals found, 25 within 1 s (2 and 8 s off); our recording, read again with every rule and its camera track
+  (`game_events.py ... --camera=TRACK.npz`), 27 of 27 exactly; LA-PIT's seven finals and goal counts as before
+  (its score boxes' costs cached per frame and the rules replayed on them). The rules want the camera track: read
+  without it (the command line before `--camera`), LA-PIT's games split and lost goals.
+- **The soft copy's report against the recordings** (`video_report.py VIDEO OUT --soft --check`): possession within
+  1.8-8.1 points (BOS 59.9 / 53.4, 47.6 / 49.4, CHI 56.0 / 47.9, 54.6 / 50.1: game 3 puts the wrong team ahead);
+  zone shares within about 4 points; attack-zone possession within 22 game seconds but for two (130 / 212, 136 /
+  175); live play 739-860 game seconds against 906 (the camera loses more frames on the soft copy); the puck-won
+  counts still rough. **The LA-PIT YouTube report** with it: possession LA 51-59% in six games, PIT 54% in game 3
+  (was LA 100% in every game); no recordings to check it against.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

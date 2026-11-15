@@ -391,8 +391,75 @@ def soft_lr(rom, home_abbr, away_abbr, blur=(0.3, 0.25), chroma=True):
 
 
 def lr_image(f, table):
-    q = np.clip((f.astype(int) * SOFT_BINS) // 256, 0, SOFT_BINS - 1)
+    q = np.clip((f.astype(int) * table.shape[0]) // 256, 0, table.shape[0] - 1)
     return table[q[..., 0], q[..., 1], q[..., 2]]
+
+
+# ---- the teams in a soft video, learnt from the video itself (2026-11-15) ----
+# soft_lr's pixel votes split blobs by colour; on a soft copy of BOS-CHI that held where Boston was home (white and
+# gold against Chicago's red: 85% of skaters right) but not where Chicago was (white, black and red against Boston's
+# black and gold: 65%, most Boston players read as Chicago). So for a soft video: skaters found by the blobs' size
+# alone (as players() splits them), each skater's team from the summed log ratio over his body's box (BOX_X, BOX_Y);
+# the cut between the teams set where a game's skaters split evenly (both teams dress the same number); then each
+# team's colours learnt from the video's surest skaters (the top and bottom SURE_SHARE) and the skaters labelled
+# again, FIT_ROUNDS times. Per game against the recordings (about 60 frames each): 90.2% / 91.6% where Boston was
+# home, 79.4% / 80.3% where Chicago was (more rounds drift on the hard pair).
+BOX_X, BOX_Y, BOX_CLIP, SURE_SHARE, FIT_ROUNDS, FIT_BINS = 8, 12, 2.0, 0.35, 2, 16
+
+
+def soft_skaters(rink, f, hpos, vpos, static=None):
+    """[(x, y, box pixels' colours (n, 3))]: each skater-sized part of a blob."""
+    fg = fg_mask(rink, f, hpos, vpos, static) & near_ice(rink, hpos, vpos)
+    sat = (f.max(axis=2) - f.min(axis=2)) >= GREY
+    out = []
+    for ys, xs in label(close1(fg)):
+        w, h = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
+        if w * h >= 2500 and len(ys) >= 0.6 * w * h:          # the close-up faceoff box
+            continue
+        keep = fg[ys, xs]
+        ys, xs = ys[keep], xs[keep]
+        if len(ys) < TEAM_MIN or sat[ys, xs].sum() < SAT_MIN:
+            continue
+        for cx, cy, cn in kmeans(xs, ys, max(1, round(len(ys) / PLAYER_PIXELS))):
+            y0, y1, x0, x1 = int(max(0, cy - BOX_Y)), int(cy + BOX_Y + 1), int(max(0, cx - BOX_X)), int(cx + BOX_X + 1)
+            out.append((cx, cy, f[y0:y1, x0:x1][fg[y0:y1, x0:x1]]))
+    return out
+
+
+def box_evidence(px, table):
+    q = np.clip((px.astype(int) * table.shape[0]) // 256, 0, table.shape[0] - 1)
+    return float(np.clip(table[q[:, 0], q[:, 1], q[:, 2]], -BOX_CLIP, BOX_CLIP).sum())
+
+
+class SoftTeams:
+    """A soft video's two teams: fit on a sample of a game's frames, then label(skaters)."""
+
+    def __init__(self, lr):
+        self.table, self.cut = lr, 0.0
+
+    def fit(self, boxes):
+        """boxes: every skater's box colours from a sample of the game's frames."""
+        ev = np.array([box_evidence(px, self.table) for px in boxes])
+        self.cut = float(np.median(ev))
+        for _ in range(FIT_ROUNDS):
+            home = ev > self.cut
+            order = np.argsort(ev)
+            k = int(SURE_SHARE * len(ev))
+            sure = np.zeros(len(ev), bool)
+            sure[order[:k]] = sure[order[len(ev) - k:]] = True
+            hist = [np.ones((FIT_BINS,) * 3), np.ones((FIT_BINS,) * 3)]
+            for px, h, s in zip(boxes, home, sure):
+                if s and len(px):
+                    q = np.clip((px.astype(int) * FIT_BINS) // 256, 0, FIT_BINS - 1)
+                    np.add.at(hist[0 if h else 1], (q[:, 0], q[:, 1], q[:, 2]), 1)
+            self.table = np.log(hist[0] / hist[0].sum()) - np.log(hist[1] / hist[1].sum())
+            ev = np.array([box_evidence(px, self.table) for px in boxes])
+            self.cut = float(np.median(ev))
+        return self
+
+    def label(self, skaters):
+        """[(team, x, y, pixels)] as players() gives."""
+        return [(0 if box_evidence(px, self.table) > self.cut else 1, x, y, len(px)) for x, y, px in skaters]
 
 
 # ---- the puck (2026-11-14) ----

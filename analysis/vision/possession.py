@@ -10,7 +10,10 @@ chosen at once (puck_track.path: a star moves at skating speed); the carrier's t
 path (home, visitors) with SWITCH to change, each frame's team counting ACC.
 
 python analysis/vision/possession.py VIDEO CAMERA_TRACK.npz STATIC.npz HOME AWAY OUT.json [FIRST] [COUNT] [STEP]
-  [--check] [--soft] [--crop=X,Y,W,H]   (--soft: the players by the uniforms drawn as a soft copy shows them, sprites.soft_lr; --check: against the recordings' last carrier's team, through tools/video_sync.py's timeline)"""
+  [--check] [--soft] [--crop=X,Y,W,H]   (--soft: the players by the uniforms drawn as a soft copy shows them, sprites.soft_lr,
+  and the star by its change to the ice, STAR_LR; --check: against the recordings' last carrier's team, through tools/video_sync.py's timeline)
+python analysis/vision/possession.py --learn-star SOFT_VIDEO CAMERA_TRACK.npz [SKIP_FIRST SKIP_LAST]   (STAR_LR from a
+  soft copy with a timeline; the frames between SKIP_FIRST and SKIP_LAST left out)"""
 import json
 import math
 import sys
@@ -71,6 +74,109 @@ def star_candidates(f, fg, pts, top=TOP, uniforms=None):
     return out
 
 
+# ---- the star in a soft copy (YouTube: 4:2:0 colour, blurred; 2026-11-15) ----
+# There the star's pale blue fill blurs into the blue lines' colours and the carrier's body covers its middle, so the
+# colour search above finds it in a third of frames. What stays: how the star changes the ice under its arms
+# (beside and below the skater's feet): red about the same, green and blue down, green more. Each pixel's change from
+# the drawn rink (degraded as the video is) is scored by a log-likelihood table (STAR_LR: the star's arms against
+# every other changed pixel, learnt from a soft copy of BOS-CHI through the recordings: learn_star), and the star's
+# arms summed over it.
+STAR_LR = Path(__file__).with_name("star_soft_lr.npy")
+LR_BINS, LR_LO, LR_SPAN, LR_CLIP = 12, -160, 320, (-2.0, 4.0)
+STAR_SURE = 3.5                   # a candidate's mean log ratio at which its weight reaches 1
+SOFT_PATH = {"REWARD": 8.0, "TOP": 8}  # the path's settings for these candidates (tuned on a game 1 stretch of the
+                                        # soft BOS-CHI copy, checked on game 3: team right 72.5 -> 79.0%, 79.3 -> 81.4%)
+
+
+def star_arms(rom_bytes):
+    """The star's pixels the carrier's body leaves showing: its lower half and the side points."""
+    import extract_sprites as X
+    left, top, rows = X.compose(rom_bytes, 392)
+    pts = [(y + top, x + left) for y, r in enumerate(rows) for x, (s, c) in enumerate(r) if c]
+    return [(dy, dx) for dy, dx in pts if dy >= 0 or abs(dx) >= 6]
+
+
+def soft_background(rink, hpos, vpos, blur=SOFT_BLUR):
+    """The drawn rink at the camera, degraded as a soft copy shows it (the frame's own size)."""
+    u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
+    win = rink.img[v - 2:v + C.H + 2, u - 2:u + C.NATIVE_W + 2].astype(float)
+    return S.degrade(win, blur)[2:-2, 2:-2]
+
+
+def lr_bin(res):
+    return np.clip(((res - LR_LO) * LR_BINS / LR_SPAN).astype(int), 0, LR_BINS - 1)
+
+
+def soft_star_candidates(f, bg, table, arms, ice, top=TOP):
+    """[(x, y, score, weight, 392)]: the star's arms' summed change-likelihood at each anchor on the ice."""
+    q = lr_bin(f.astype(float) - bg)
+    L = np.clip(table[q[..., 0], q[..., 1], q[..., 2]], *LR_CLIP)
+    H, W, pad = C.HUD_TOP, C.NATIVE_W, 40
+    M = np.zeros((H + 2 * pad, W + 2 * pad))
+    M[pad:pad + H, pad:pad + W] = L[:H]
+    score = np.zeros((H, W))
+    for dy, dx in arms:
+        score += M[pad + dy:pad + dy + H, pad + dx:pad + dx + W]
+    score /= len(arms)
+    score[~ice[:H]] = -9
+    out = []
+    for idx in np.argsort(score.ravel())[::-1][:4000]:
+        y, x = divmod(int(idx), W)
+        if score[y, x] <= 0 or len(out) >= top:
+            break
+        if all(abs(x - a) > 8 or abs(y - b_) > 5 for a, b_, *_ in out):
+            w = min(1.0, math.exp(score[y, x] - STAR_SURE))
+            out.append((float(x), float(y), float(score[y, x]), w, 392))
+    return out
+
+
+def learn_star(video, cams, out, skip=(0, 0), step=90, rom=None, blur=SOFT_BLUR):
+    """The table from a soft copy whose recordings are on its timeline (VIDEO.timeline.json): every `step`th frame of
+    live play with the star shown, frames in skip (first, last) left out (the stretch a check runs on). The star's
+    arms (the recorded spot) against every changed pixel 14 / 20 or more away."""
+    import rink_mosaic as RM
+    rom = Path(rom) if rom else Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
+    rink = C.Rink(rom)
+    arms = star_arms(rom.read_bytes())
+    tl = json.loads(Path(str(video) + ".timeline.json").read_text())
+    truth = RM.Truth(tl)
+    star = np.ones((LR_BINS,) * 3)
+    other = np.ones((LR_BINS,) * 3)
+    used = 0
+    for n, f in C.frames(video):
+        if n % step or skip[0] <= n <= skip[1] or n not in cams or not cams[n][4]:
+            continue
+        cam = truth.camera(n / tl.get("fps", 59.92))
+        if not cam or not cam[6]:
+            continue
+        c, i = truth.caps[tl["games"][cam[3]]][0], cam[4]
+        if c.word(i, 0xBDB4 + 0x18) == 0xFFFF:
+            continue
+        _, h, v = (int(x) for x in cams[n][:3])
+        sx = int(S16(c.word(i, 0xBDB4)) - h + 129)
+        sy = int(112 - S16(c.word(i, 0xBDB4 + 0x14)) + v)
+        if not (20 < sx < C.NATIVE_W - 20 and 20 < sy < C.HUD_TOP - 20):
+            continue
+        q = lr_bin(f.astype(float) - soft_background(rink, h, v, blur))
+        for dy, dx in arms:
+            a = q[sy + dy, sx + dx]
+            star[a[0], a[1], a[2]] += 1
+        m = np.zeros(q.shape[:2], bool)
+        m[:C.HUD_TOP] = True
+        m[max(0, sy - 14):sy + 14, max(0, sx - 20):sx + 20] = False
+        a = q[m]
+        np.add.at(other, (a[:, 0], a[:, 1], a[:, 2]), 1)
+        used += 1
+    table = np.log(star / star.sum()) - np.log(other / other.sum())
+    np.save(out, table)
+    print(f"star table from {used} frames: {out}")
+    return table
+
+
+def S16(v):
+    return v - 65536 if v & 0x8000 else v
+
+
 def team_path(obs):
     """obs: per frame None or a team (0, 1): the cheapest two-state path."""
     cost, back = [0.0, 0.0], []
@@ -104,19 +210,39 @@ def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None, 
     colours = S.team_colours(rom, home, away)
     uniforms = uniform_colours(rom, home, away)
     lr = S.soft_lr(rom, home, away, soft) if soft else None
-    seq, dets_at = [], {}
+    table = np.load(STAR_LR) if soft else None
+    arms = star_arms(rom.read_bytes())
+    seq, dets_at, boxes_at = [], {}, {}
     for n, f in C.frames(video, first, count):
         if lowload:
             lowload.breathe()
         if n % step or n not in cams or not cams[n][4]:
             continue
         _, hpos, vpos = (int(x) for x in cams[n][:3])
-        fg = S.fg_mask(rink, f, hpos, vpos, static)
         u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
-        fg = fg & rink.ice()[v:v + C.H, u:u + C.NATIVE_W]   # the star is under a skater's feet: on the ice
-        seq.append((n, hpos, vpos, star_candidates(f, fg, pts, uniforms=uniforms)))
-        dets_at[n] = S.players(rink, f, hpos, vpos, colours, static, lr=lr)
-    path = puck_track.path(seq)
+        ice = rink.ice()[v:v + C.H, u:u + C.NATIVE_W]
+        if table is not None:
+            ice = ice & ~static[v:v + C.H, u:u + C.NATIVE_W]
+            seq.append((n, hpos, vpos, soft_star_candidates(f, soft_background(rink, hpos, vpos, soft), table, arms, ice)))
+        else:
+            fg = S.fg_mask(rink, f, hpos, vpos, static) & ice   # the star is under a skater's feet: on the ice
+            seq.append((n, hpos, vpos, star_candidates(f, fg, pts, uniforms=uniforms)))
+        if soft:
+            boxes_at[n] = S.soft_skaters(rink, f, hpos, vpos, static)
+        else:
+            dets_at[n] = S.players(rink, f, hpos, vpos, colours, static, lr=lr)
+    if soft:                                   # the teams learnt from this stretch's own skaters
+        teams = S.SoftTeams(lr).fit([px for sk in boxes_at.values() for _, _, px in sk])
+        dets_at = {n: teams.label(sk) for n, sk in boxes_at.items()}
+    keep = {k: getattr(puck_track, k) for k in SOFT_PATH}
+    if soft:
+        for k, val in SOFT_PATH.items():
+            setattr(puck_track, k, val)
+    try:
+        path = puck_track.path(seq)
+    finally:
+        for k, val in keep.items():
+            setattr(puck_track, k, val)
     obs = []
     for n, *_ in seq:
         p, dets = path.get(n), dets_at.get(n)
@@ -147,6 +273,17 @@ def which_home(video, cams, static, a, b, first, count, rom=None, samples=24):
 
 def main():
     a = [x for x in sys.argv[1:] if not x.startswith("--")]
+    if "--learn-star" in sys.argv:
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
+            import lowload
+            lowload.gentle()
+        except ImportError:
+            pass
+        cams = {int(r[0]): r for r in np.load(a[1])["rows"]}
+        skip = (int(a[2]), int(a[3])) if len(a) > 3 else (0, -1)
+        learn_star(Path(a[0]), cams, STAR_LR, skip)
+        return
     video, track, static = Path(a[0]), a[1], np.load(a[2])["mask"]
     home, away, out = a[3], a[4], Path(a[5])
     first = int(a[6]) if len(a) > 6 else 0

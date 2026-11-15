@@ -9,7 +9,8 @@ zone. Every step is one process at a time in gentle mode, and keeps its result i
   poss_<k>.json     possession per game, with that game's home and visitors
   report.json / report.md
 
-python analysis/vision/video_report.py VIDEO OUT [--crop=X,Y,W,H] [--rom=ROM] [--step=N] [--check]
+python analysis/vision/video_report.py VIDEO OUT [--crop=X,Y,W,H] [--rom=ROM] [--step=N] [--soft] [--check]
+  --soft: a soft copy (YouTube): possession's star and teams as possession.py --soft reads them
   --check: each game against its recording (tools/video_sync.py's timeline), side by side"""
 import json
 import sys
@@ -100,7 +101,10 @@ def main():
     if not ev_path.exists():
         print("score boxes ...", flush=True)
         import game_events as G
-        rows = G.held(G.read_video(video, templates, max(1, round(fps / 10))))
+        def rink_at(n):                          # the camera found the rink at or next to this frame
+            k = n - n % cstep
+            return any(m in cams and cams[m][4] for m in (k - cstep, k, k + cstep))
+        rows = G.held(G.read_video(video, templates, max(1, round(fps / 10)), rink_at))
         games = G.events(rows, fps)
         from collections import Counter
         for g in games:
@@ -130,7 +134,8 @@ def main():
         if not pp.exists():
             print(f"possession, game {k + 1} ({g['visitors']} at {g['home']}) ...", flush=True)
             seq, obs = PO.run(video, cams, static, g["home"], g["visitors"], g["start_frame"],
-                              g["end_frame"] - g["start_frame"] + 1, step, rom)
+                              g["end_frame"] - g["start_frame"] + 1, step, rom,
+                              soft=PO.SOFT_BLUR if "--soft" in sys.argv else None)
             pp.write_text(json.dumps({"frames": [s[0] for s in seq], "obs": obs}))
         pd = json.loads(pp.read_text())
         team = dict(zip(pd["frames"], PO.team_path(pd["obs"])))
