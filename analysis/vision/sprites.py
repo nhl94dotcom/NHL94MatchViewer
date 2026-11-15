@@ -15,6 +15,7 @@ python analysis/vision/sprites.py check VIDEO CAMERA_TRACK.npz [FIRST] [COUNT]
   each recorded player on screen against the blobs: found (a blob's box within 3 px of his body point) or missed, by
   how crowded the spot was."""
 import json
+import struct
 import sys
 from pathlib import Path
 
@@ -267,14 +268,19 @@ def near_ice(rink, hpos, vpos, margin=ICE_MARGIN):
 
 
 
-def players(rink, f, hpos, vpos, colours, static=None):
+def players(rink, f, hpos, vpos, colours, static=None, lr=None):
     """[(team 0 home / 1 visitors, x, y, pixels)]: each player group's centre, in screen pixels (only on or near the
     ice: the crowd's animation left out)."""
     fg = fg_mask(rink, f, hpos, vpos, static) & near_ice(rink, hpos, vpos)
-    eh, ea = team_evidence(f, colours)
     lab = np.full(fg.shape, -1, np.int8)
-    lab[fg & (eh > 0) & (eh >= RATIO * ea)] = 0
-    lab[fg & (ea > 0) & (ea >= RATIO * eh)] = 1
+    if lr is not None:                                         # a soft video: soft_lr's table (2026-11-15)
+        L = lr_image(f, lr)
+        lab[fg & (L > LR_SURE)] = 0
+        lab[fg & (L < -LR_SURE)] = 1
+    else:
+        eh, ea = team_evidence(f, colours)
+        lab[fg & (eh > 0) & (eh >= RATIO * ea)] = 0
+        lab[fg & (ea > 0) & (ea >= RATIO * eh)] = 1
     sat = (f.max(axis=2) - f.min(axis=2)) >= GREY
     out = []
     for ys, xs in label(close1(fg)):
@@ -309,6 +315,84 @@ def players(rink, f, hpos, vpos, colours, static=None):
                 for cx, cy, cn in kmeans(px, py, k):
                     out.append((team, cx, cy, cn))
     return out
+
+
+# ---- the teams' colours as a soft video shows them (2026-11-15) ----
+# Blur and half-resolution colour (4:2:0) turn a uniform's stripes into colours no palette slot has, and the ice
+# blends into every edge. So the two uniforms are drawn as the video would show them: every frame with team colours
+# (extract_sprites.compose, both facings) in each team's palette over the ice, blurred [a, 1 - 2a, a] across and down
+# (the video's own blur, fit_blur) and its colour averaged over 2 x 2 (YCbCr); the sprite pixels (unlike the ice by
+# MARGIN) give each team a colour histogram (SOFT_BINS levels a channel), and a video pixel's log likelihood ratio,
+# home against visitors, is soft_lr's table at its colour.
+
+SOFT_BINS, SOFT_ICE, LR_SURE = 8, (140, 239, 239), 0.7    # LR_SURE: a pixel's team when twice as likely
+
+
+def _ycc(img):
+    r, g, b = img[..., 0], img[..., 1], img[..., 2]
+    y = 0.299 * r + 0.587 * g + 0.114 * b
+    return y, 0.564 * (b - y), 0.713 * (r - y)
+
+
+def _rgb(y, cb, cr):
+    r = y + 1.403 * cr
+    b = y + 1.773 * cb
+    g = (y - 0.299 * r - 0.114 * b) / 0.587
+    return np.stack([r, g, b], axis=-1)
+
+
+def degrade(img, blur=(0.3, 0.25), chroma=True):
+    """img (h, w, 3) float: blurred [a, 1 - 2a, a] across then down, and its colour averaged over 2 x 2."""
+    ah, av = blur
+    p = np.pad(img, ((1, 1), (1, 1), (0, 0)), mode="edge")
+    hz = ah * p[:, :-2] + (1 - 2 * ah) * p[:, 1:-1] + ah * p[:, 2:]
+    out = av * hz[:-2] + (1 - 2 * av) * hz[1:-1] + av * hz[2:]
+    if chroma:
+        y, cb, cr = _ycc(out)
+        h, w = y.shape
+        for c in (cb, cr):
+            c2 = c[:h - h % 2, :w - w % 2].reshape(h // 2, 2, w // 2, 2).mean(axis=(1, 3))
+            c[:h - h % 2, :w - w % 2] = np.repeat(np.repeat(c2, 2, axis=0), 2, axis=1)
+        out = _rgb(y, cb, cr)
+    return np.clip(out, 0, 255)
+
+
+def soft_lr(rom, home_abbr, away_abbr, blur=(0.3, 0.25), chroma=True):
+    """(SOFT_BINS,) * 3 table: log P(colour | home) - log P(colour | visitors), from the uniforms drawn degraded."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
+    import extract_sprites as X
+    from systems import genesis
+    rb = Path(rom).read_bytes()
+    teams = {t["abbr"]: t for t in genesis.read_teams(Path(rom))}
+    rink_pal = [video_rgb("#%02x%02x%02x" % tuple(((w >> s) & 0xE) * 255 // 14 for s in (0, 4, 8)))
+                for w in (struct.unpack_from(">H", rb, X.RINK_PALETTE + 2 * i)[0] for i in range(32))]
+    pals = [[video_rgb(c) for c in teams[home_abbr]["palettes"][0]], [video_rgb(c) for c in teams[away_abbr]["palettes"][1]]]
+    hist = [np.ones((SOFT_BINS,) * 3), np.ones((SOFT_BINS,) * 3)]
+    ice = np.array(SOFT_ICE, float)
+    for n in range(1, X.FRAME_COUNT):
+        left, top, canvas = X.compose(rb, n)
+        slots = np.array([[sl for sl, v in row] for row in canvas]); vals = np.array([[v for sl, v in row] for row in canvas])
+        team_px = ((slots == 0) & (vals > 0)).sum()
+        if team_px < 0.3 * max(1, (vals > 0).sum()) or (vals > 0).sum() < 60:
+            continue
+        for t in (0, 1):
+            img = np.tile(ice, (vals.shape[0] + 6, vals.shape[1] + 6, 1))
+            for (j, i), v in np.ndenumerate(vals):
+                if v:
+                    sl = slots[j, i]
+                    img[j + 3, i + 3] = pals[t][v] if sl == 0 else rink_pal[(sl - 1) * 16 + v]
+            for im in (img, img[:, ::-1]):
+                d = degrade(im, blur, chroma)
+                fg = (np.abs(d - ice) > MARGIN).any(axis=2)
+                q = np.clip((d[fg] * SOFT_BINS / 256).astype(int), 0, SOFT_BINS - 1)
+                np.add.at(hist[t], (q[:, 0], q[:, 1], q[:, 2]), 1)
+    ph, pa = hist[0] / hist[0].sum(), hist[1] / hist[1].sum()
+    return np.log(ph) - np.log(pa)
+
+
+def lr_image(f, table):
+    q = np.clip((f.astype(int) * SOFT_BINS) // 256, 0, SOFT_BINS - 1)
+    return table[q[..., 0], q[..., 1], q[..., 2]]
 
 
 # ---- the puck (2026-11-14) ----

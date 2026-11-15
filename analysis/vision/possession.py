@@ -10,7 +10,7 @@ chosen at once (puck_track.path: a star moves at skating speed); the carrier's t
 path (home, visitors) with SWITCH to change, each frame's team counting ACC.
 
 python analysis/vision/possession.py VIDEO CAMERA_TRACK.npz STATIC.npz HOME AWAY OUT.json [FIRST] [COUNT] [STEP]
-  [--check]   (--check: against the recordings' last carrier's team, through tools/video_sync.py's timeline)"""
+  [--check] [--soft] [--crop=X,Y,W,H]   (--soft: the players by the uniforms drawn as a soft copy shows them, sprites.soft_lr; --check: against the recordings' last carrier's team, through tools/video_sync.py's timeline)"""
 import json
 import math
 import sys
@@ -26,6 +26,7 @@ import sprites as S  # noqa: E402
 
 TOP, SWITCH, ACC = 8, 5.0, 0.8          # SWITCH 5: a whole game's changes nearest the recording's (100 vs 94)
 FILL = (0x3, 0xD, 0xF)           # the star's inside: the joypad stars (390 / 391, the same shape) are outlines
+SOFT_BLUR = (0.3, 0.25)            # the YouTube video's blur against the drawn rink (2026-11-15)
 UNIFORM_GAP = 40                  # a pixel this near a team's colour isn't the star's
 STAR_DX, STAR_DY = 1, 5           # the star's frame offsets from the y = 107 - Y + Vpos rule (measured)
 
@@ -90,8 +91,9 @@ def team_path(obs):
     return path[::-1]
 
 
-def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
-    """The star's path and each looked-at frame's team: (seq, obs) for team_path."""
+def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None, soft=None):
+    """The star's path and each looked-at frame's team: (seq, obs) for team_path. soft: (blur across, blur down) of a
+    soft copy such as YouTube's: the players labelled by sprites.soft_lr (the uniforms drawn as such a video shows them)."""
     try:
         import lowload
     except ImportError:
@@ -101,6 +103,7 @@ def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
     pts = star_points(rom.read_bytes())
     colours = S.team_colours(rom, home, away)
     uniforms = uniform_colours(rom, home, away)
+    lr = S.soft_lr(rom, home, away, soft) if soft else None
     seq, dets_at = [], {}
     for n, f in C.frames(video, first, count):
         if lowload:
@@ -112,7 +115,7 @@ def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
         u, v = hpos + C.OFF_X + C.PAD, C.OFF_Y - vpos + C.PAD
         fg = fg & rink.ice()[v:v + C.H, u:u + C.NATIVE_W]   # the star is under a skater's feet: on the ice
         seq.append((n, hpos, vpos, star_candidates(f, fg, pts, uniforms=uniforms)))
-        dets_at[n] = S.players(rink, f, hpos, vpos, colours, static)
+        dets_at[n] = S.players(rink, f, hpos, vpos, colours, static, lr=lr)
     path = puck_track.path(seq)
     obs = []
     for n, *_ in seq:
@@ -156,7 +159,9 @@ def main():
     except ImportError:
         pass
     cams = {int(r[0]): r for r in np.load(track)["rows"]}
-    seq, obs = run(video, cams, static, home, away, first, count, step)
+    if "--crop" in " ".join(sys.argv):
+        C.CROP = tuple(int(v) for v in next(x for x in sys.argv if x.startswith("--crop=")).split("=")[1].split(","))
+    seq, obs = run(video, cams, static, home, away, first, count, step, soft=SOFT_BLUR if "--soft" in sys.argv else None)
     teams = team_path(obs)
     res = {"frames": [n for n, *_ in seq], "star": [p for *_, p in seq], "team": teams, "obs": obs}
     out.write_text(json.dumps(res))

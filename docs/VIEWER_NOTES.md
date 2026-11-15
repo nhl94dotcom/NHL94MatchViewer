@@ -1313,5 +1313,26 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   after, passes 0.3-0.4 x): the crowd and organ cover them. Clear: the whistle (4.7 x) and the goal horn (every goal
   in the video found, offset 0.02 s), which the score box gives already.
 
+- **The YouTube report, and a copy of BOS-CHI made as bad** (2026-11-14 / 15): the seven LA-PIT games read their
+  teams, finals and goals, but **possession came out LA 100% in every game**: the video is 4:2:0 colour at 39 kb/s,
+  blurred [0.3, 0.4, 0.3] across and [0.25, 0.5, 0.25] down against the drawn rink (our recording: 0.2 across, none
+  down), so PIT's white and gold stripes blur into the outlines and the ice and few pixels come near a palette slot;
+  LA's black took every label. To test without guessing, BOS-CHI made YouTube-like (`ffmpeg fps=30,
+  scale=320:246, yuv420p, x264 45 kb/s`, the recordings' timeline copied with fps 30): the same failure (the visitors
+  100% in every game), and the score reader split the series into eight games (a second thing to fix there).
+  - **The teams, fixed for a soft copy** (`sprites.soft_lr`, `players(..., lr=)`, `possession.py --soft`): every frame
+    with team colours drawn in each team's palette over the ice, degraded as the video is (`sprites.degrade`: the blur,
+    colour averaged over 2 x 2 in YCbCr), each team's sprite pixels a colour histogram; a video pixel is a team's when
+    twice as likely under it. Each skater's team (the sprite pixels in a box over his body) against the recording:
+    **92.3% right on the soft copy** (the palette-slot labeller 57.3%; blur 0.2 / 0.15: 91.0%). Tried first and
+    dropped: a blob's mean colour against the palettes' (the ice's blend moves every blob; carriers' blobs, 1,200 px at
+    the median, hold both teams).
+  - **The star is now the weak part:** possession with the new labels still only 45% right on a 200 s stretch, because
+    the possession star's search (its pale blue fill) finds the true star among its candidates in 33% of the soft
+    copy's frames (the path within 6 px 9%) against 84% / 70% on our recording. The star in the soft copy is a broad
+    grey-blue star under the carrier's skates; drawn and degraded like the uniforms its colours are the blue lines'
+    (rink colours 11, 13, 15), so a colour search lands on the lines and circles: it needs the star's shape and its
+    place under a skater. Next: a shape search, or a template learnt from the video's own surest finds.
+
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
