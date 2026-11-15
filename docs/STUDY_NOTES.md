@@ -5872,5 +5872,9 @@ NHL94_CVC_DRAIN=on holds the Genesis skaters on the ice at half energy so the co
   takeaways). The forcer's record swapped the same way (3 periods): 7 takeaways, all 7 to the forcer.
 - **SNES, lines on, 2 games: 69 of 84 paired** (stage 1: 102 of 133). Two of the six stick steals were credited to
   another skater of the same team on the ice (steal by roster 2, ROM 15; by 7, ROM 2), the puck loose 1-1.5 s
-  (real) before a teammate picked it up; the converter's stealer comes from the no-touch timer. Not settled which side
-  is right: a FallDown or steal between the loss and the pickup that writes the forcer again would do it.
+  (real) before a teammate picked it up. **The converter was wrong** (NOSE4Web asked for CAUSE $7E:FD12 at the steal
+  and the pickup): the watcher's trace has CAUSE 6 (object 3, roster 15) and 4 (object 2, roster 2) written at the
+  steal frame and unchanged to the pickup; the readers took the first opposing skater whose no-touch timer jumped
+  (`jumped[0]`, the lowest object), and here two had. Both readers now take the one whose timer equals the carrier's
+  (puckstick sets the two to one value), the SNES one then the nearest the puck: SNES 72 of 84 paired, 5 of 6 stick
+  steals; Genesis unchanged (147 / 89, every steal paired). Library re-converted, checks clean.

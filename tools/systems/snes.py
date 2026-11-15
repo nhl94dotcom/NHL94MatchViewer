@@ -791,6 +791,12 @@ class MatchReader:
             rivals = range(6, 12) if hist[-1][1] < 6 else range(6)
             jumped = [k for k in rivals if 0x14 <= nopuck[k] < 0x8000 and nopuck[k] > old[k]
                       and 0 < sg(OBJ_POSITION + 2 * k) < 6]
+            if len(jumped) > 1:
+                # more than one timer jumped (2026-11-15: NOSE4Web's forcer named another skater twice): puckstick
+                # sets the stealer's to the carrier's value; else the one nearest the puck
+                lost = nopuck[hist[-1][1]]
+                jumped.sort(key=lambda k: (nopuck[k] != lost, math.hypot(sg(OBJ_X + 28) - sg(OBJ_X + 2 * k),
+                                                                         sg(OBJ_Y + 28) - sg(OBJ_Y + 2 * k))))
             if jumped:
                 self.match.setdefault("steals", []).append([len(self.match["t"]) - 1, jumped[0]])
         hist.append((nopuck, carrier))

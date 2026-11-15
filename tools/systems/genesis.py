@@ -597,6 +597,8 @@ class MatchReader:
             rivals = range(6, 12) if self.prev_carrier < 6 else range(6)
             jumped = [k for k in rivals if nopuck[k] >= 0x14 and nopuck[k] > self.prev_nopuck[k]
                       and cap.byte(i, BASE + SIZE * k + ROLE) not in (0, 0xFF)]
+            if len(jumped) > 1:      # more than one jumped (2026-11-15, as the SNES reader): puckstick sets the
+                jumped.sort(key=lambda k: nopuck[k] != nopuck[self.prev_carrier])   # stealer's to the carrier's value
             if jumped:
                 self.match["steals"].append([len(self.match["t"]) - 1, jumped[0]])
         self.prev_nopuck, self.prev_carrier = nopuck, carrier
