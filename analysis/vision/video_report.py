@@ -128,6 +128,7 @@ def main():
     # live play: the clock as read, or its seconds cells ticking (zone_time.live_ticks); on a soft copy the ticks
     # alone (its blurred digits hold one value for seconds while the clock runs; with them, twice the stoppage
     # frames). An older events.json without ticks: the clock as read.
+    cam_blue = Z.CAM_BLUE if "--soft" in sys.argv else Z.CAM_BLUE_SHARP
     live = Z.live_frames(ev["readings"], fps)
     if ev.get("ticks"):
         ticks = Z.live_ticks(ev["ticks"], ev["readings"], fps)
@@ -169,7 +170,7 @@ def main():
         for n, r in cams.items():
             if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or not r[4] or other_game(n):
                 continue
-            zz = Z.zone(r[2] + Z.OFFSET, live[n])
+            zz = Z.zone_cam(r[2], live[n], cam_blue)
             z[{1: "home att", 0: "neutral", -1: "home def"}[zz]] += 1
             n_live += 1
             t = team.get(n)
@@ -191,7 +192,7 @@ def main():
                 continue
             t = team_w[n]
             if prev_t is not None and t != prev_t:
-                zz = Z.zone(cams[n][2] + Z.OFFSET, live[n]) * (1 if t == 0 else -1)
+                zz = Z.zone_cam(cams[n][2], live[n], cam_blue) * (1 if t == 0 else -1)
                 wins[t][{1: "attacking", 0: "neutral", -1: "defending"}[zz]] += 1
             prev_t = t
         secs = n_live * cstep / fps * 2.5

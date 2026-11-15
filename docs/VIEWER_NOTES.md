@@ -1403,6 +1403,15 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
     as before (home 59.2 / 48.1 / 55.4 / 55.5% against 53.4 / 49.4 / 47.9 / 50.1; neutral zone 2-4 points low, as
     on the clean video). Clean recording: live play 883-896 (875-883), 27 of 27 goals, the rest within a point of
     before. LA-PIT's report still has the older events.json (no ticks: the clock as read) until it is read again.
+- **The neutral zone read low** (2026-11-15; `zone_time.zone_cam`, `CAM_BLUE` / `CAM_BLUE_SHARP`): both videos read
+  it 2-4 points under the recordings. The camera is no stand-in for the puck to the unit: on the soft copy, matched
+  frame by frame, the puck is 19 under the camera on median, the middle half from 50 under to 38 over. Read at the
+  blue lines (+-64), the narrow neutral zone lost more frames than it gained (1,442 out, 906 in). Its velocity
+  doesn't help (the fit's own term small and the wrong way). The zones' edges for a camera's place are now
+  widened instead: +-78 on a soft copy (each game's shares within about 2 points, the frames' zones right 84.0%
+  against 83.4%), +-70 on a sharp recording (its track keeps closer to the puck; 78 put it 1-2.5 points high).
+  Neutral zone, soft copy 22.2 / 21.2 / 22.8 / 19.9% against 21.9 / 22.5 / 23.0 / 19.9; recording 22.0 / 22.6 /
+  23.4 / 19.1%. Tuned on the four games they were checked on: another series would test them.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.

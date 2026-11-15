@@ -8,7 +8,8 @@ within the next 48 frames (a game second is 24); the period from the readings.
 Per game: the share of live play in each zone, and each team's attack-zone time in game seconds (2.5 a real
 second).
 
-python analysis/vision/zone_time.py CAMERA_TRACK.npz EVENTS.json [--check]
+python analysis/vision/zone_time.py CAMERA_TRACK.npz EVENTS.json [--check] [--soft]   (--soft: a soft copy's zone
+  edges, CAM_BLUE; else CAM_BLUE_SHARP)
   --check: against the recordings' puck (the match file's names from tools/video_sync.py's timeline): the shares from
   the puck's own Y over the same games."""
 import json
@@ -20,12 +21,25 @@ import numpy as np
 
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 OFFSET, BLUE, FPS = -8, 64, 59.92
+CAM_BLUE = 78                     # the zones' edge for a camera's place (zone_cam): the camera is a spread +-45 off
+                                  # the puck, so read at the blue lines the narrow neutral zone lost more frames than it
+                                  # gained (BOS-CHI's soft copy against the recordings: neutral 18.1% against 21.9%,
+                                  # each game 3-4 points low); at +-78 each game's shares within about 2 points, and
+                                  # the frames' zones as often right (84.0% against 83.4%)
+CAM_BLUE_SHARP = 70               # the same for a sharp recording (video_report without --soft), whose camera track
+                                  # keeps closer to the puck: BOS-CHI's recording 1-2 points low at 64, 1-2.5 high at
+                                  # 78, within 0.1-0.8 at 70. Both tuned on the same four games they were checked on
 
 
-def zone(y, period):
+def zone(y, period, blue=BLUE):
     up = period % 2 == 0
     yy = y if up else -y
-    return 1 if yy > BLUE else -1 if yy < -BLUE else 0
+    return 1 if yy > blue else -1 if yy < -blue else 0
+
+
+def zone_cam(vpos, period, blue=None):
+    """The zone from the camera's Vpos alone (OFFSET; the edge CAM_BLUE, or blue)."""
+    return zone(vpos + OFFSET, period, CAM_BLUE if blue is None else blue)
 
 
 def live_ticks(ticks, readings, fps=FPS, gap=0.9, least=3, lead=0.2, near=1.0):
@@ -89,7 +103,7 @@ def main():
         for n, hpos, vpos, share, ok in cams:
             n = int(n)
             if ok and g["start_frame"] <= n <= g["end_frame"] and n in live:
-                z.append(zone(vpos + OFFSET, live[n]))
+                z.append(zone_cam(vpos, live[n], CAM_BLUE if "--soft" in sys.argv else CAM_BLUE_SHARP))
         z = np.array(z)
         sh = [float(np.mean(z == k)) for k in (1, 0, -1)]
         secs = len(z) * cstep / fps * 2.5
