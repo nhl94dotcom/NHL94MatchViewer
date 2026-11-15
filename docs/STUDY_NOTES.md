@@ -5154,8 +5154,11 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
   the facing, $BEF2 bit 2) on the pad bit 4 change and passes (dopass) on its next change, as NHL '94; bit 6 goes
   through $842C8, which can set $BF08 bit 1 (the pass a quarter as fast, kept flat) before pass mode. On retail with
   its default controls, traced frame by frame in our Genesis Plus GX (the emu wrapper's "A" is Genesis A: libretro Y,
-  the core's default map): **Genesis A** sets pass mode on its release and the pass goes the next frame; B or C held
-  2-15 frames did nothing at once. So the pass goes where the carrier faces at the release (a direction held during
+  the core's default map): Genesis A set pass mode on its release and the pass went the next frame; B or C held
+  2-15 frames did nothing at once. **Corrected the same day:** the user: B passes on the Genesis. On W18 with the
+  carrier left to skate 60 frames first, pad 1's B released the puck at the button's release, A a frame later (likely
+  the bit 6 path's soft pass) and C after a wind-up (the shot); retail answered no button in that run. The "A only"
+  reading was my harness (the moment tested, which skater the pad had), not the game. So the pass goes where the carrier faces at the release (a direction held during
   the press doesn't count; held long enough it turns him). The angle trials (a teammate set at 0-75 degrees from
   straight left, every frame) weren't fair yet: moving the players every frame disturbed play (the puck went 40-70
   degrees up whatever the angle, on both ROMs), so the fix is not yet confirmed in play.
