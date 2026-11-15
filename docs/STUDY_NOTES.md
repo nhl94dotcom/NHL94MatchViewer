@@ -5132,6 +5132,21 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
   code around it differs in most words and the stick hot points are new: none of NHL '94's HotList is in NHL '95),
   the shoulder-save bobble (no fix site to anchor on), repeated checks, the crowd bonus, uncounted stick deflections
   and the forwards' awareness slip (two NHL '94 sites matching one NHL '95 place, 55-61 of 66 against 54).
+- **NHL '95's passes going straight left or right past an open teammate** (2026-11-15; the user's experience in play):
+  the receiver choice (dopass at $84552) is NHL '94's (a teammate whose direction from the puck is the pad direction or
+  one step either side; the nearest wins; none, and the puck goes in the pad direction), except that NHL '95 dropped the
+  penalty for a teammate one step off (`add.l d0,d2`), so the nearest in the cone wins outright. The cause is `vtoa`
+  ($7C586, the vector to a direction 0-7, called from 36 places): one word differs from NHL '94's ($10676). After the
+  first slope test NHL '94 halves 2|dy| back and doubles |dx| (`lsr.w #1,d1`, `asl.w #1,d0`); NHL '95 has only
+  `lsr.w #1,d0` at $7C5B8, so its second test asks |dy| <= |dx| / 4, not |dy| <= 2|dx|. A vector is then across (left /
+  right) only within 14 degrees of the x axis, diagonal from 14 to 27, up / down beyond 27 (NHL '94: 27 / 63). The pass
+  cone: **left or right on the pad takes teammates within 26 degrees of straight across (NHL '94: 63)**, so a teammate
+  30-60 degrees off is passed by and the puck goes straight across; up / down 15-165 degrees (NHL '94 27-153), the
+  diagonals -14 to 153 (NHL '94 -26 to 116). W18 and W18p have the same routine. **A one-word fix:** $7C5B8 E248
+  (`lsr.w #1,d0`) to E548 (`asl.w #2,d0`): 2|dy| against 4|dx|, NHL '94's test; it gives NHL '94's direction for every
+  vector up to 2,000 either way. The other 35 callers (facing, the computer's decisions ...) would change back with it:
+  not played yet.
+
 
 
 ### The bot's passes across the slot against people's (2026-11-13)
