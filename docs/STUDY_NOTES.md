@@ -5114,6 +5114,25 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
     26 Team 1 steps, the faceoff, 50 game seconds of play) and the 12 records identical, also with the old block wiped;
     a New Playoffs game with Washington (Islanders at Washington: Controller Setup, the bracket, scouting, the faceoff,
     play) the same.
+- **NHL '94's Genesis glitches in NHL '95, from the code** (2026-11-15; the user's question; nothing played yet):
+  each of NOSE4Web's NHL '94 fix sites (the bytes it patches, with 32 bytes either side) slid over the whole NHL '95
+  ROM, the best place kept (a clear match scores 56-72 of 64-112 bytes against about 24 elsewhere), then read in its
+  disassembly. **The same code, so the glitch is there:** the three assist bugs (second assist $81476, one-timer
+  assist $82F28, regained puck $81464), the aggression bug ($83C7C), the backwards third-period bonus ($83A2C), the
+  one-timer open-net aim ($84ED2, all 70 bytes), the C-then-B check ($7B164, a RAM offset aside), the computer goalie
+  pull ($83674) and delayed-penalty sniping ($84CCC; both a branch distance aside), runaway speed (the boards fall's
+  and the one-timer switch's bset of deceleration-off, $A5C6 / $82F64; the exit site not checked), the penalty shot
+  flags ($9E64E). **The rocket pass:** the intercept code at $847BA is NHL '94's (the time in eighths of a second by
+  integer division, rounded down, clamped to 24, the speed as distance x 120 / time), with one addition: when $BF08
+  bit 1 is set (a mode not yet known) the time is multiplied by 4 and the pass kept flat. In ordinary play the same
+  rounding, so rocket passes. **Gone: the weight bug:** NHL '95's check ($7AE3E) starts from 120 as NHL '94's, but
+  takes 32 off for a person (NHL '94 doubles it) and then the checker's Checking rating ($75); no weight, so no byte
+  wrap; a new halving when the target is $B3C2's player; the roll against Checking / 2 after it as NHL '94's.
+  **Not settled from the code:** the butterfly's blind ring (the save test's call at $7B6B8 is NHL '94's, but the
+  code around it differs in most words and the stick hot points are new: none of NHL '94's HotList is in NHL '95),
+  the shoulder-save bobble (no fix site to anchor on), repeated checks, the crowd bonus, uncounted stick deflections
+  and the forwards' awareness slip (two NHL '94 sites matching one NHL '95 place, 55-61 of 66 against 54).
+
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
