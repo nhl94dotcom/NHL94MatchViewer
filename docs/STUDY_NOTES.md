@@ -5013,6 +5013,11 @@ BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNE
   (SA-1 pixel-identical; 1 MB only the checks build's Cf). **The first goalie row reads the wrong word:** 1 MB, the
   visitors' first goalie shows word 0 (the home goalie's) instead of 26; SA-1, the home first goalie shows 0 (a word
   outside the counts) and the visitors' first word 0. Every other row is its own word (1, 27, 28).
+  **Fixed** (NOSE4Web saves and restores the stats index around the save percentage's Div16U; NHL94_giveaways.smc
+  4f6d5d58..., nhl94snes_SA1_giveaways.sfc 515ce3e2...; the same test): every row its own word on both builds (home
+  10, 11; visitors 36, 37, 38: words 0, 1, 26-28), set values shown as set (7, 12, 3, 0), GA, Sh and Ptg the same as
+  the base ROMs' from the same state (a goalie with no shots 0%); the other pages pixel-identical on the SA-1, on the
+  1 MB build different only in the checks build's Cf column.
 
 ### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
 
@@ -5068,6 +5073,36 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
 - **The self-check:** retail `jsr $1A72C0` at $690; W18 has three NOPs there and `bra *` (a hang) at $1A72C0.
 - **Free room:** retail one run of $FF / $00, $1A7310-$1FFFFF (about 355 KB); W18 about 228 KB in runs of 4 KB or
   more, the largest $1DADF2-$1FFFFF (about 145 KB), with W18's own team table at $1A7300.
+- **Second answers (2026-11-15)**, from the code (NOSE4Web's machine disassembly of 1910.bin, at retail's addresses;
+  every routine below checked against retail's bytes) and in the game (scratch copies with the self-check call at
+  $690 NOPped, as NOSE4Web and W18 have it; with the check left in, any edited copy stops at boot. Without the
+  checksum pass the boot is shorter: three STARTs reach Game Setup, not four).
+  - **Goalie and forward counts:** NHL '94's routines byte for byte: the goalies from the team's +$A word (counted up
+    to the last non-zero nibble from the left, $7CB92), the forwards from the high nibble of team byte 3 ($7CC46), the
+    defence the rest. The goalie word's values are never read beyond that count. In the game (Rangers 2 G, 15 F, 7 D;
+    forwards set to 11): the Line Editor's LW list ends 4 players earlier (Glenn Anderson, not Steve Larmer) and wraps.
+    **Not in NHL '94:** both counts have a second source, chosen by $FFBF0C bit 6. Game Setup's reset sets it ($866DE);
+    the play-mode setup clears it and sets it again only for a Regular Game ($8680A-$8681A). With it clear the counts
+    come from save memory: $1B82 + team x $38 read through $9952; a routine at $963E4 builds those records from the
+    ROM for all teams (+$34 goalies, +$36 forwards, +$35 defence), a season's own copy. So in Season mode a ROM edit
+    to the counts reaches only a season started after it (not played through in the game).
+  - **Team ratings:** read at $839B4 (power play: byte 1 low nibble, the same low-nibble bug; penalty kill: byte 1 high
+    nibble, negated; home byte 2 high, visitors byte 2 low negated; the backwards third-period check after it) and
+    $88322 (byte 0's offence row, bits 4-6, and defence row, bits 0-2, for the other games' scores): NHL '94's code.
+  - **Playoff freeze:** the draw search at $879F2 is NHL '94's ($17D14) byte for byte: from a random one of the 32
+    draws at $5834 (16 teams each), on through them until one holds Team 1 ($CC50); none, and it loops forever. Team 1
+    above 25 searches as team 25 (`cmp #$19`; W18 / W18p `#$21` with all 34 teams in its draws). It runs whenever
+    New Playoffs is chosen or Team 1 changes in it. In the game: team 0 put in no draw (its places given to 26), Team 1
+    stepped to it in New Playoffs: the screen stops and no press is answered; team 1 on the same copy and team 0 on
+    retail fine. The menu's Team 1 wraps from 25 to 0 in New Playoffs (the All-Star teams not offered).
+  - **Add roster space**, built as NOSE4Web does it (expand.ts, space.ts): the team block $7E2-$5834 (20,562 bytes,
+    running up to the playoff draws) copied to $1A7314 (after the self-check's routine, which ends in its `bra *` at
+    $1A7304, plus the 4-byte gap), room to $1B0366, the table at $772 pointing there; and a second copy with the old
+    block filled with $FF. Against retail (self-check NOPped): Game Setup, Team 1 stepped through all 26 teams in New
+    Playoffs, the scouting report, the faceoff and 50 game seconds of computer play all pixel-identical, the 12
+    players' records ($80 bytes each) identical at the faceoff and after; the same with the old block wiped (nothing
+    still reads it). The NY name redirects ($8655E / $86570) point at built-in text at $86578 / $8658C, outside the
+    block.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
