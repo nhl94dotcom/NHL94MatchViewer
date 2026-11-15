@@ -5091,7 +5091,9 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
     $88322 (byte 0's offence row, bits 4-6, and defence row, bits 0-2, for the other games' scores): NHL '94's code.
   - **Playoff freeze:** the draw search at $879F2 is NHL '94's ($17D14) byte for byte: from a random one of the 32
     draws at $5834 (16 teams each), on through them until one holds Team 1 ($CC50); none, and it loops forever. Team 1
-    above 25 searches as team 25 (`cmp #$19`; W18 / W18p `#$21` with all 34 teams in its draws). It runs whenever
+    above 25 searches as team 25 (`cmp #$19`; W18 / W18p `#$21`). W18's 29 different draws hold all 34 teams; W18p's 32
+    draws are one draw repeated (16 00 03 15 19 1C 11 18 1B 05 17 06 0B 0C 10 07: NOSE4Web's reading; I had first said
+    all 34 for both): its other 18 teams are in none, and New Playoffs froze there when Team 1 stepped from 21 to 20. It runs whenever
     New Playoffs is chosen or Team 1 changes in it. In the game: team 0 put in no draw (its places given to 26), Team 1
     stepped to it in New Playoffs: the screen stops and no press is answered; team 1 on the same copy and team 0 on
     retail fine. The menu's Team 1 wraps from 25 to 0 in New Playoffs (the All-Star teams not offered).
@@ -5103,6 +5105,15 @@ $FFAC62, $80 each (roster index +$66, handedness +$76, as NHL '94).
     players' records ($80 bytes each) identical at the faceoff and after; the same with the old block wiped (nothing
     still reads it). The NY name redirects ($8655E / $86570) point at built-in text at $86578 / $8658C, outside the
     block.
+  - **NOSE4Web's own build** (NHL_95_roster_space.bin ffbb21ab...): the call at $690 NOPped, the header checksum
+    updated, the table pointing at $1A72C6-$1B0318 (from just past the `bra *` NOSE4Web keeps at $1A72C0), 27 teams
+    byte for byte as retail's and Washington (the last in the file) with the 16,384 bytes between its lines and its
+    roster (header +0 and +4 up $4000), its players and names the same. Retail's $1A72C0-$1A7305 is the self-check
+    routine (the checksum, then a red screen and its own `bra *` at $1A7304), written over by the move: harmless, since
+    the only reference to it is the NOPped `jsr` ($1A72C0, at $692). Against retail: the 29 screens (Game Setup, all
+    26 Team 1 steps, the faceoff, 50 game seconds of play) and the 12 records identical, also with the old block wiped;
+    a New Playoffs game with Washington (Islanders at Washington: Controller Setup, the bracket, scouting, the faceoff,
+    play) the same.
 
 ### The bot's passes across the slot against people's (2026-11-13)
 
