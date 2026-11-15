@@ -5878,3 +5878,21 @@ NHL94_CVC_DRAIN=on holds the Genesis skaters on the ice at half energy so the co
   (`jumped[0]`, the lowest object), and here two had. Both readers now take the one whose timer equals the carrier's
   (puckstick sets the two to one value), the SNES one then the nearest the puck: SNES 72 of 84 paired, 5 of 6 stick
   steals; Genesis unchanged (147 / 89, every steal paired). Library re-converted, checks clean.
+
+### NOSE4Web's Genesis credits pointer fix, played (2026-11-15, ff54174 / 3e8b621)
+
+The title prints the first credits page from `movea.l #Credits,a1` ($FF224) and the rest from a second `movea.l
+#CreditsPages,a1` ($FF290, the address at $FF292: $57B8 in the original, just past the first page's end); earlier
+NOSE4Web builds rewrote the text but not the second pointer. ROMs built from nhl94.bin with NOSE4Web's own
+openRom / buildRom (bundled from its source into a scratch folder; its folder left untouched): **short** (the first
+page one line, "NHL 94 LEAGUE": pointer $578A), **long** (a fourth line, "NHL 94 LEAGUE", on the first page:
+pointer $57C8; the original's credits fill their 934 bytes exactly, so NOSE4Web refused it until a page went: the
+"EA Hockey League Champion / Kevin Hogan" page was dropped), **bug** (short with only $FF295 put back: the pointer
+at $57B8, as an older build left it) and **repaired** (bug rebuilt unchanged: byte for byte short). Played from
+power-on to frame 12,000 in a copy of the core, a picture every 30 frames, and again with START pressed at frame 1,500:
+- short, long and repaired roll every page: each of the original's resting pages after the first (matched by the
+  text rows, 180-224) rests in the same order, to the menu (Game Setup) at frame 5,670 / 5,460 / 5,670 (the
+  original 5,790: shorter roll). The long first page shows its four lines, the fourth at the picture's bottom edge.
+- START at 1,500: Game Setup by frame 2,040 on every ROM, as the original.
+- bug: "NHL 94 LEAGUE" rests, then at the change to the second page the screen fills with garbage and freezes
+  (unchanged from frame 1,170 to 12,000); START does nothing. So the test sees the crash, and the fix removes it.
