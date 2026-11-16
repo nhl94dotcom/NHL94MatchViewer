@@ -242,7 +242,7 @@ def blind_ring_compare():
     (his reach, 14, lies inside the ±14 box)."""
     S, W = 6, 1260
     b = [ARROW]
-    b.append(text(W / 2, 28, "Through the legs: where a puck on the ice can pass through the goalie (Genesis)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 28, "Through the legs: where a puck on the ice can slide through the goalie (Genesis)", 17, anchor="middle", weight="bold"))
     b.append(text(W / 2, 48, "Seen from above, to scale. Each goalie faces down the page, his net behind him at the top. "
                   "Only a puck on the ice (height 5 or less, not rising) is affected.", 12, SOFT, "middle"))
     panels = [(30, "NHL '94: butterfly save", "frame 480"),
@@ -266,19 +266,21 @@ def blind_ring_compare():
     b.extend(sprite(480, cx, cy, S, opacity=0.55))
     b.append(circle(cx, cy, 13 * S, "none", BLUE, 2))
     b.append(circle(X, Y, 6, INK, "#ffffff", 2))
-    for i, s in enumerate(["A blind ring, 8-14 units from the stick blade.", "The blade is 9 units to his side, so the ring",
-                           "crosses his middle. Only a thin sliver of his", "body is checked in front of it."]):
+    for i, s in enumerate(["Blind ring: 8 to 14 units from the stick blade.", "The blade sits 9 units to his side, so the ring",
+                           "crosses his middle, with only a thin sliver of", "body checked in front of it. A puck that crosses",
+                           "the ring hits him from behind and bounces in."]):
         b.append(text(30, cy + 140 + i * 15, s, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
     # 2 and 3. NHL '95: his body reach, the ±14 stick box round the blade (square: the address bug) less the blade's 8,
     # over the game's own picture of the frame; dots: where the measured map left the puck untouched inside his reach
     for x0, rows, reach, blade, frame, tested, notes in (
             (440, NHL95_LEFT_STICK, 18, (10, 3), NHL95_FRAME_634, True,
-             ["A blind square, 14 units each way from the blade", "(a distance bug makes it square, not round). The",
-              "blade is 10 units to his side, so the square covers", "his middle back to the goal line. About 7 units",
-              "of his body are still checked in front of it."]),
+             ["Blind square: 14 units each way from the blade", "(a distance bug makes it square). The blade sits",
+              "10 units to his side, so the square covers his", "middle back to the goal line: a puck that reaches",
+              "it slides in untouched. About 7 units of his body", "in front of it are still checked."]),
             (850, NHL95_READY, 14, (-1, 2), NHL95_FRAME_610, False,
-             ["Standing, his body is never checked: all of it", "lies inside the blind square. Only the stick,",
-              "within 8 units of the blade, can stop the puck."])):
+             ["Standing: his body is never checked, since all", "of it lies inside the blind square. Only the stick",
+              "(within 8 units of the blade) stops a puck on the", "ice. In play he usually skates out and meets the",
+              "puck with his stick, so few get through."])):
         cx = x0 + 190
         P = lambda x, y: (cx + x * S, cy - y * S)
         gy = P(0, 17)[1]
@@ -306,7 +308,7 @@ def blind_ring_compare():
         c = x0 + 190
         b.append(line(c - 6, cy - 6, c + 6, cy + 6, INK, 2.5))
         b.append(line(c - 6, cy + 6, c + 6, cy - 6, INK, 2.5))
-    ly = cy + 236
+    ly = cy + 250
     leg = [("#cfe3f5", BLUE, "Body: a puck here hits him. Reach by Agility: NHL '94 12-15 (13 here), NHL '95 14-19 (18 here). Dashed: never checked"),
            (GREEN, GREEN, "Stick: within 8 units of the blade (white dot) the stick plays the puck"),
            (ORANGE, ORANGE, "Blind area: nothing is checked here, so the puck passes through him. NHL '94: a ring. NHL '95: a square"),
@@ -315,11 +317,13 @@ def blind_ring_compare():
         yy = ly + i * 20
         b.append(f"<rect x='30' y='{yy - 11}' width='26' height='13' fill='{f}' fill-opacity='0.6' stroke='{s}'/>")
         b.append(text(66, yy, label, 13))
-    b.append(text(30, ly + 92, "Red line: the goal line. Under the shapes, each game's own sprite for that frame. Lifted shots skip these checks"
-                  " and are saved by his body as usual, which is why through-the-legs goals are rare.", 12, SOFT))
-    b.append(text(30, ly + 108, "NHL '95's other poses (gloves, skating) have blind areas too; its dive has none. NOSE4Web's five-hole fix for"
-                  " NHL '95 makes the game check his body there, closing nearly all of them.", 12, SOFT))
-    return svg(W, ly + 122, b, "Blind ring: NHL '94 and NHL '95")
+    b.append(text(30, ly + 92, "In play: flat pucks shot at his middle during a kick or butterfly save went in 7% of the time in NHL '94 and 8%"
+                  " in NHL '95 (slip_save.py). Lifted shots skip these checks", 12, INK))
+    b.append(text(30, ly + 108, "and are saved by his body as usual, so through-the-legs goals need a flat pass, deflection or rebound."
+                  " Red line: the goal line. The sprites are each game's own.", 12, SOFT))
+    b.append(text(30, ly + 124, "NHL '95's glove and skating poses have blind areas too; its dive has none. NOSE4Web's five-hole fix for NHL '95"
+                  " makes the game check his body there, closing nearly all of them.", 12, SOFT))
+    return svg(W, ly + 138, b, "Blind ring: NHL '94 and NHL '95")
 
 
 # ---------------------------------------------------------------------------------------------- 3. the nine aim points
