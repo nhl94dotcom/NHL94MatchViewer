@@ -1,15 +1,15 @@
-<svg xmlns='http://www.w3.org/2000/svg' width='1260' height='604' viewBox='0 0 1260 604' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<svg xmlns='http://www.w3.org/2000/svg' width='1260' height='618' viewBox='0 0 1260 618' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
 <title>Blind ring: NHL '94 and NHL '95</title>
-<rect width='1260' height='604' fill='#ffffff'/>
+<rect width='1260' height='618' fill='#ffffff'/>
 <defs><marker id='arr' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' fill='#1f2933'/></marker></defs>
-<text x='630.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>Through the legs: NHL '94's blind ring and NHL '95's (Genesis)</text>
-<text x='630.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Seen from above, to scale. Each goalie faces down the page; his net is above him. Where a low puck gets no stick and no body test, it slides through him.</text>
-<text x='220.0' y='86.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '94: butterfly (frame 480)</text>
-<text x='220.0' y='104.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>the ring round the blade</text>
-<text x='630.0' y='86.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '95: left stick save (frame 634)</text>
-<text x='630.0' y='104.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>measured, one frame each spot</text>
-<text x='1040.0' y='86.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '95: standing (ready, frame 610)</text>
-<text x='1040.0' y='104.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>measured, one frame each spot</text>
+<text x='630.0' y='28.0' font-size='17' fill='#1f2933' text-anchor='middle' font-weight='bold'>Through the legs: where a puck on the ice can pass through the goalie (Genesis)</text>
+<text x='630.0' y='48.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Seen from above, to scale. Each goalie faces down the page, his net behind him at the top. Only a puck on the ice (height 5 or less, not rising) is affected.</text>
+<text x='220.0' y='86.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '94: butterfly save</text>
+<text x='220.0' y='104.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>frame 480</text>
+<text x='630.0' y='86.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '95: kick / butterfly save to his left</text>
+<text x='630.0' y='104.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>frame 634; dots measured in the game</text>
+<text x='1040.0' y='86.0' font-size='14' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '95: standing ready</text>
+<text x='1040.0' y='104.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>frame 610; dots measured in the game</text>
 <line x1='64.0' y1='152.0' x2='376.0' y2='152.0' stroke='#c94040' stroke-width='3' />
 <circle cx='220.0' cy='260.0' r='78.0' fill='#cfe3f5' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
 <path fill='#e8833a' fill-opacity='0.55' fill-rule='evenodd' stroke='#e8833a' stroke-width='1.5' d='M190,272 a84,84 0 1,0 168,0 a84,84 0 1,0 -168,0 z M226,272 a48,48 0 1,0 96,0 a48,48 0 1,0 -96,0 z'/>
@@ -414,10 +414,10 @@
 </g>
 <circle cx='220.0' cy='260.0' r='78.0' fill='none' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
 <circle cx='274.0' cy='272.0' r='6.0' fill='#1f2933' fill-opacity='1' stroke='#ffffff' stroke-width='2'/>
-<text x='30.0' y='410.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>A round ring, 8-14 from the blade:</text>
-<text x='30.0' y='425.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the blade is 9 to his side, so the ring</text>
-<text x='30.0' y='440.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>covers his middle: a fast low puck steps</text>
-<text x='30.0' y='455.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>over the sliver of body in front.</text>
+<text x='30.0' y='400.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>A blind ring, 8-14 units from the stick blade.</text>
+<text x='30.0' y='415.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>The blade is 9 units to his side, so the ring</text>
+<text x='30.0' y='430.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>crosses his middle. Only a thin sliver of his</text>
+<text x='30.0' y='445.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>body is checked in front of it.</text>
 <line x1='474.0' y1='158.0' x2='786.0' y2='158.0' stroke='#c94040' stroke-width='3' />
 <circle cx='630.0' cy='260.0' r='108.0' fill='#cfe3f5' fill-opacity='1' stroke='#3b82c4' stroke-width='2'/>
 <path fill='#e8833a' fill-opacity='0.55' fill-rule='evenodd' stroke='#e8833a' stroke-width='1.5' d='M606,158 h168 v168 h-168 z M642,242 a48,48 0 1,0 96,0 a48,48 0 1,0 -96,0 z'/>
@@ -965,9 +965,11 @@
 <circle cx='702.0' cy='320.0' r='1.6' fill='#1f2933' fill-opacity='0.7' stroke='#1f2933' stroke-width='0.5'/>
 <circle cx='714.0' cy='320.0' r='1.6' fill='#1f2933' fill-opacity='0.7' stroke='#1f2933' stroke-width='0.5'/>
 <circle cx='690.0' cy='242.0' r='6.0' fill='#1f2933' fill-opacity='1' stroke='#ffffff' stroke-width='2'/>
-<text x='440.0' y='410.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>A square box (the address bug): the blade</text>
-<text x='440.0' y='425.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>is 10 to his side, and the box reaches</text>
-<text x='440.0' y='440.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>his middle: a channel straight through him.</text>
+<text x='440.0' y='400.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>A blind square, 14 units each way from the blade</text>
+<text x='440.0' y='415.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>(a distance bug makes it square, not round). The</text>
+<text x='440.0' y='430.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>blade is 10 units to his side, so the square covers</text>
+<text x='440.0' y='445.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>his middle back to the goal line. About 7 units</text>
+<text x='440.0' y='460.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>of his body are still checked in front of it.</text>
 <line x1='884.0' y1='158.0' x2='1196.0' y2='158.0' stroke='#c94040' stroke-width='3' />
 <circle cx='1040.0' cy='260.0' r='84.0' fill='none' fill-opacity='1' stroke='#3b82c4' stroke-width='2' stroke-dasharray='6 4'/>
 <path fill='#e8833a' fill-opacity='0.55' fill-rule='evenodd' stroke='#e8833a' stroke-width='1.5' d='M950,164 h168 v168 h-168 z M986,248 a48,48 0 1,0 96,0 a48,48 0 1,0 -96,0 z'/>
@@ -1524,23 +1526,23 @@
 <circle cx='1064.0' cy='332.0' r='1.6' fill='#1f2933' fill-opacity='0.7' stroke='#1f2933' stroke-width='0.5'/>
 <circle cx='1076.0' cy='332.0' r='1.6' fill='#1f2933' fill-opacity='0.7' stroke='#1f2933' stroke-width='0.5'/>
 <circle cx='1034.0' cy='248.0' r='6.0' fill='#1f2933' fill-opacity='1' stroke='#ffffff' stroke-width='2'/>
-<text x='850.0' y='410.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>Standing, his body is never tested: his</text>
-<text x='850.0' y='425.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>reach, 14, lies inside the ±14 box, so only</text>
-<text x='850.0' y='440.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>the blade's 8 plays the puck.</text>
+<text x='850.0' y='400.0' font-size='12' fill='#1f2933' text-anchor='start' font-weight='bold'>Standing, his body is never checked: all of it</text>
+<text x='850.0' y='415.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>lies inside the blind square. Only the stick,</text>
+<text x='850.0' y='430.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>within 8 units of the blade, can stop the puck.</text>
 <line x1='214.0' y1='254.0' x2='226.0' y2='266.0' stroke='#1f2933' stroke-width='2.5' />
 <line x1='214.0' y1='266.0' x2='226.0' y2='254.0' stroke='#1f2933' stroke-width='2.5' />
 <line x1='624.0' y1='254.0' x2='636.0' y2='266.0' stroke='#1f2933' stroke-width='2.5' />
 <line x1='624.0' y1='266.0' x2='636.0' y2='254.0' stroke='#1f2933' stroke-width='2.5' />
 <line x1='1034.0' y1='254.0' x2='1046.0' y2='266.0' stroke='#1f2933' stroke-width='2.5' />
 <line x1='1034.0' y1='266.0' x2='1046.0' y2='254.0' stroke='#1f2933' stroke-width='2.5' />
-<rect x='30' y='471' width='26' height='13' fill='#cfe3f5' fill-opacity='0.6' stroke='#3b82c4'/>
-<text x='66.0' y='482.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>body reach: NHL '94 13 here (12-15 by Agility); NHL '95 18 in this save (14-19); dashed: never tested</text>
-<rect x='30' y='491' width='26' height='13' fill='#3f9d5c' fill-opacity='0.6' stroke='#3f9d5c'/>
-<text x='66.0' y='502.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>within 8 of the blade (white ring) the stick plays a low puck</text>
-<rect x='30' y='511' width='26' height='13' fill='#e8833a' fill-opacity='0.6' stroke='#e8833a'/>
-<text x='66.0' y='522.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>nothing is tested: NHL '94 a ring 8-14 from the blade; NHL '95 a square ±14 round it, less the 8</text>
-<rect x='30' y='531' width='26' height='13' fill='#1f2933' fill-opacity='0.6' stroke='#1f2933'/>
-<text x='66.0' y='542.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>NHL '95, measured: a slow low puck put there passed untouched (inside his reach)</text>
-<text x='30.0' y='574.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Red: the goal line. Under the shapes, each game's own picture of that frame (NHL '94 frame 480; NHL '95 634 and 610). NHL '95's dots: a slow puck at height 0 put at each spot 2 units apart,</text>
-<text x='30.0' y='590.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>one frame played (gen95_blind_ring_check.py). In both games only a puck at height 5 or less meets the stick test; NHL '95's other frames (gloves, skating) have holes too, its dive none.</text>
+<rect x='30' y='485' width='26' height='13' fill='#cfe3f5' fill-opacity='0.6' stroke='#3b82c4'/>
+<text x='66.0' y='496.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>Body: a puck here hits him. Reach by Agility: NHL '94 12-15 (13 here), NHL '95 14-19 (18 here). Dashed: never checked</text>
+<rect x='30' y='505' width='26' height='13' fill='#3f9d5c' fill-opacity='0.6' stroke='#3f9d5c'/>
+<text x='66.0' y='516.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>Stick: within 8 units of the blade (white dot) the stick plays the puck</text>
+<rect x='30' y='525' width='26' height='13' fill='#e8833a' fill-opacity='0.6' stroke='#e8833a'/>
+<text x='66.0' y='536.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>Blind area: nothing is checked here, so the puck passes through him. NHL '94: a ring. NHL '95: a square</text>
+<rect x='30' y='545' width='26' height='13' fill='#1f2933' fill-opacity='0.6' stroke='#1f2933'/>
+<text x='66.0' y='556.0' font-size='13' fill='#1f2933' text-anchor='start' font-weight='normal'>Measured in NHL '95: a puck placed here on the ice passed untouched</text>
+<text x='30.0' y='588.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>Red line: the goal line. Under the shapes, each game's own sprite for that frame. Lifted shots skip these checks and are saved by his body as usual, which is why through-the-legs goals are rare.</text>
+<text x='30.0' y='604.0' font-size='12' fill='#52606d' text-anchor='start' font-weight='normal'>NHL '95's other poses (gloves, skating) have blind areas too; its dive has none. NOSE4Web's five-hole fix for NHL '95 makes the game check his body there, closing nearly all of them.</text>
 </svg>
