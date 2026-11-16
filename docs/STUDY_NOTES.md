@@ -5956,6 +5956,44 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's SNES organ resume after a pause (8a0b31f), played (2026-11-16)
+
+NHL94_organ_resume.smc 9e43006c against NHL94.smc, nhl94snes_2026_organ_resume.sfc 63591bad against
+nhl94snes_2026.sfc (LoROM), nhl94_2026_organ_resume.sfc cbfbcdf8 against nhl94_2026.sfc (SA-1).
+
+**Read (the 1 MB build).** Pausemode's `jsl FadeOutSound` ($9F:9398) goes to $9B:FF55: SoundLock raised, MusicOn,
+TrackCount, DP $58 (the song's bank), SongPtr, TempoAcc / TempoTick, DP $34 and $0804-$08F1 (word by word from $EC
+down) to $7E:FF00-$FFF7, SoundLock back, `jml FadeOutSound`. Its `jsl SoundInit` ($9F:9426) goes to $9B:FFA1:
+SoundInit first, then, if the kept MusicOn is nonzero and DP $34 still equals the kept one, everything back with
+SoundLock up and MusicOn last, the kept MusicOn cleared; the two early exits skip only the SoundLock pair. Not kept:
+the echo settings ($07E7-$07EC, set by controllers $32-$35), which SoundInit's SeqCmd08Init resets; only a song using
+echo would notice.
+
+`analysis/scoring_map/snes_organ_resume_check.py OUT ORIGINAL BUILD`, from snes_assist_stick_test's live moment per
+ROM (the 2 MB builds boot their own), the same presses on both: a home goal's song 120 frames in (song $9C71 on the
+1 MB and LoROM ROMs, $BB80 on SA-1), paused, then Resume Game, Game Stats (START back), Instant Replay (400 frames of
+it, START back), each against the moment played on unpaused.
+
+- **The song carries on, all three builds, all three ways out:** MusicOn and the same SongPtr back the frame the
+  pause ends; track 0's next 30 pointers the unpaused game's, with the same timing (29 of 29; once 28); the music
+  voices sounding at those points the same counts as unpaused (4, 4, 4, 3 ...; SA-1's song 2, 2, 1, 4 ...) from the
+  second point on. At the same song positions the music tracks' instruments (TrackInst) are the unpaused game's and
+  $0804-$08F1 differs in 2-4 bytes. (In the Resume Game runs my sampling began after the first two checked
+  positions had passed, so only the third counts there; it matches.) Loudness after as unpaused. The originals: the
+  1 MB ROM silent after every pause; LoROM and SA-1 silent until the next faceoff's song ($90B0 / $B931) about 330
+  frames later.
+- **No song** (a pause in live play): the 1 MB pair identical but for the clock ticking a frame earlier or later at
+  11 moments (the same second at the end); no song started by the pause on any build. **Exit Game, Yes, then a new
+  game:** identical frame for frame on the 1 MB and LoROM pairs; on SA-1 the two ROMs' own boot moments differ from
+  the first frame, so only the outcome compares: the same new-game song ($C20C), no stuck voices.
+- **Many pauses** (30 in a row, Resume, Game Stats and Instant Replay in turn, then 1,800 frames): no crash, the clock
+  running, never left paused, no music voice sounding with no song on (stuck notes) on any ROM.
+- **The kept areas:** $7E:FF00-$FFF7 (1 MB, LoROM) and $40:5C00-$5CF7 (SA-1) never changed on the originals in any
+  case (about 37,000 frames each, every pause screen in the many-pauses run, Instant Replay, Exit Game and a new
+  game); on the builds every change came while paused (the save as Pausemode starts, the kept MusicOn cleared after
+  SoundInit).
+- Not exercised: a pause after the sample set changed (DP $34), a song that uses echo.
+
 ### NOSE4Web's NHL '95 organ resume after a pause (b1d6bee), played; SNES RAM for the same option (2026-11-16)
 
 NHL_95_organ_resume.bin ee4a1636 against NHL_95.bin, W18_organ_resume.bin ab93f093 against W18.bin.
