@@ -5930,6 +5930,23 @@ points, none of NHL '94's HotList); a skater's ±$12 (18), or ±$E outside a one
 - **Five-hole goals in NHL '95 games:** no NHL '95 recordings exist here (the helper reads NHL '94's memory only), so
   no count. Computer games of NHL '95 recorded with its RAM (the addresses are known) could count them.
 
+### NOSE4Web's NHL '95 five-hole fix, played (2026-11-16, d3fb794)
+
+NHL_95_five_hole.bin (d05de2c5) and W18_five_hole.bin (73d4e2fa). Bytes: the hook at $7B6B8 (`bsr.w puckstick` / `bra.w
+.exit` -> `jsr` to the code / `bne.s .exit`), the code (retail at $1A72C6, over the self-check routine; W18 at
+$1DADF6), the checksum, and on retail the NOPped self-check call. `gen95_blind_ring_check.py` with the goalie states
+saved from the original's run and loaded into the build (`--save-states` / `--load-states`), so both ROMs play the same
+frames, puck and grid (retail 33 frames, W18 its own 37):
+- **Untouched inside his reach:** retail 2,933 -> 549, W18 3,503 -> 647. Both stick saves 109 / 118 / 88 -> 0 (W18 0
+  too): the left stick save's channel through his middle is closed. Standing (ready) 72-97 -> 0-2 (a few transitional
+  frames more). The dive: none before, none after, unchanged.
+- **Nothing that played before plays differently:** every changed point went from untouched to held (retail 2,298,
+  W18 2,829) or deflected (245, 199); not one held or deflected point changed. So the stick's 8 and the body hits
+  outside the box are as before.
+- **Left untouched:** 0-22 points a frame inside the ±14 box, the rest outside it at the edge of his reach (the reach
+  here is the touched area's edge, so these are where his body test doesn't reach).
+- Highlights (gmode bit 4): not played (the grid is live play).
+
 ### NOSE4Web's NHL '95 aggression, comeback bonus and open-net fixes, played (2026-11-16, b9fa5f3)
 
 NHL_95_three_fixes.bin (7829c59c) against retail with the self-check call NOPped, W18_three_fixes.bin (a9c906a0)

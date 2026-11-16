@@ -9,7 +9,7 @@ within 8 of the blade's hot spot and otherwise does nothing; the goalie test (pu
    played: touched if he holds it (+$60 = 0, +$61 = 11) or its velocity changed by more than 15%.
 The map per state: where the puck is touched, and the untouched points inside the touched area (the blind spots).
 
-python gen95_blind_ring_check.py ROM STATE OUT"""
+python gen95_blind_ring_check.py ROM STATE OUT [--save-states=F] [--load-states=F]   (load: grid another ROM's frames)"""
 import json
 import math
 import sys
@@ -98,7 +98,16 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     e = Emu(rom)
     base = Path(state).read_bytes()
-    states = collect(e, base)
+    load = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--load-states=")), None)
+    save = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--save-states=")), None)
+    if load:                                     # the same goalie frames as another ROM's run (a fix's before / after)
+        import pickle
+        states = pickle.load(open(load, "rb"))
+    else:
+        states = collect(e, base)
+    if save:
+        import pickle
+        pickle.dump(states, open(save, "wb"))
     print(len(states), "goalie (animation, frame) states", flush=True)
     res = {}
     for key, st in sorted(states.items()):
