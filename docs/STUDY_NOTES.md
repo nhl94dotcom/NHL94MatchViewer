@@ -5948,6 +5948,15 @@ passed within 16 of his centre (on the ice for the real shots).
   give more goals (its goalie skating out met the puck with the blade). The dangerous case is a flat puck at his middle
   while he is in a stick save (the recordings: 3 of 218 NHL '94 goals; in the ANA-ATL 2-on-2 game 2 of 8 flat passes at
   a butterflying goalie in one period); not sampled here on purpose.
+- **That case, played** (`analysis/scoring_map/slip_save.py`: real shots make the goalie start a stick save, the game
+  kept at its first frame; from there a flat puck 60 in front of him in 17 lanes, 8 left of his centre to 8 right, at
+  10,000-24,000, straight at his net; NHL '94's two stick saves (SPAgstickr / l, frames 479 / 480: 204 pucks), NHL
+  '95's two, each kept at its start and one frame on (408)): **NHL '94 15 goals (7%), NHL '95 34 (8%).** The way in
+  differs: NHL '94's go in after a touch (1 untouched): the puck crosses the ring and his body test behind his centre
+  bounces it backward into the net (the recorded through-the-legs goals); NHL '95's slide in untouched (32 of 34) down
+  the channel to the goal line. Both only through his middle (NHL '94 lanes 4 left to the centre, the blade's side
+  clear; NHL '95 3 left to 3 right) and by speed (NHL '94 15,000-24,000; NHL '95 12,000-18,000, 22 of its 34 at
+  18,000, none at 21,000+: when the puck reaches him in the save's frames).
 
 ### NOSE4Web's NHL '95 five-hole fix, played (2026-11-16, d3fb794)
 
