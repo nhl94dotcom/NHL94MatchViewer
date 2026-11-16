@@ -214,6 +214,27 @@ NHL95_READY = [".................................", "...........................
                ".................................", ".................................", ".................................",
                "................................."]
 
+# NHL '95's goalie frames as the game draws them (composed from the ROM's sprite data: frame table $1318F4, tiles after
+# the header at $CA56A, each piece y / size / tile / x with the tile number's high bits in the size word's top nibble;
+# colours fitted to a screenshot of the standing frame, every pixel agreeing). (left, top, rows of colour indices).
+NHL95_GOALIE_PALETTE = {"3": "#202020", "14": "#cd8900", "10": "#eece00", "13": "#ee0000", "1": "#202020", "7": "#8b898b",
+                        "8": "#eeeeee", "12": "#202020", "15": "#8baaee", "4": "#202020", "9": "#ee8900", "2": "#202020",
+                        "11": "#414441"}
+NHL95_FRAME_634 = (-12, -20, ["............3443...............", "...........144441..............", ".........aa338833..............", ".......daaa187781a.............", "......44da98111189d............", "......443d9178871d4............", ".....dd432dd1111344............", ".....9add334444323d............", ".....34a923434432da............", "......344223434329927887.......", ".e....3331223332232788117......", "..e....117722222d278817187.....", "...ee1188871ddddc.17887788.....", "811bce777881ccbbbb..1788711....", "1778cb177777cbbbbcc7711117771..", "78817b788887cccc787cbcbb788771.", ".87881788887ccc7887cc7787188818", "...f7777888711c7887bc788877871.", "....f71777771ff787cb78777ffff..", ".....fc1111eeeef77bcc7ffee.....", "......f78887eeeeffffff111e.....", ".......f777ffeeeee..111111f....", "........ffffffeeee1111111f.....", "..............ff1111111ff......", "................f1111ff........", ".................ffff.........."])
+NHL95_FRAME_610 = (-15, -25, ["............3443.............", "...........148841............", ".......daa93877839aad........", "......daaa98111189aaad.......", ".....34daa91877819aad4.......", "e...ad44dd99188199dd33d......", "e.1177d233d999999d332d178777.", ".188871d222333333222d77771817", ".777881..2223333222.277817777", ".177777.ccd222222dcc.17877887", ".788887.cbbbddddbbbc..178877.", ".788887177bbcbbcbb77c..1177..", ".77888717887cccc7887c........", ".17777717788c..c8877bc.......", "..11111ebb87c..c778bbc.......", ".....ceeebbc....ccbb18c......", ".....c1eee7c....c81877c......", "....c878ee7c.ff.c781817c.....", "....c817eee.f..f.c81818c.....", "..f.17817eee.ffffc781871.f...", "...f.1111eeeffffff11111ff....", ".ff..ff8..e111111e.f8ff..ff..", "...ff..ff.11111111eff..ff....", ".....ff..f.1111111e..ff......", "...........fffffff..........."])
+
+
+def sprite95(frame, ox, oy, S, opacity=0.6):
+    left, top, rows = frame
+    out = [f"<g opacity='{opacity}' shape-rendering='crispEdges'>"]
+    for j, row in enumerate(rows):
+        for i, ch in enumerate(row):
+            if ch != ".":
+                out.append(f"<rect x='{ox + (left + i) * S:.1f}' y='{oy + (top + j) * S:.1f}' width='{S + 0.4:.1f}' "
+                           f"height='{S + 0.4:.1f}' fill='{NHL95_GOALIE_PALETTE[str(int(ch, 16))]}'/>")
+    out.append("</g>")
+    return out
+
 
 def blind_ring_compare():
     """NHL '94's butterfly blind ring next to NHL '95's, measured: in NHL '95 the stick box is square (the squared-distance
@@ -248,46 +269,55 @@ def blind_ring_compare():
     for i, s in enumerate(["A round ring, 8-14 from the blade:", "the blade is 9 to his side, so the ring", "covers his middle: a fast low puck steps",
                            "over the sliver of body in front."]):
         b.append(text(30, cy + 150 + i * 15, s, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
-    # 2 and 3. NHL '95, measured
-    for x0, rows, reach, notes in ((440, NHL95_LEFT_STICK, 18, ["A square box (the address bug), and in", "this save it sits on his middle: a channel",
-                                                               "through him, 0-4 units from his centre."]),
-                                   (850, NHL95_READY, 14, ["Standing, his body is never tested (his", "reach, 14, lies inside the ±14 box): only",
-                                                          "the blade's 8 plays the puck."])):
+    # 2 and 3. NHL '95: his body reach, the ±14 stick box round the blade (square: the address bug) less the blade's 8,
+    # over the game's own picture of the frame; dots: where the measured map left the puck untouched inside his reach
+    for x0, rows, reach, blade, frame, tested, notes in (
+            (440, NHL95_LEFT_STICK, 18, (10, 3), NHL95_FRAME_634, True,
+             ["A square box (the address bug): the blade", "is 10 to his side, and the box reaches",
+              "his middle: a channel straight through him."]),
+            (850, NHL95_READY, 14, (-1, 2), NHL95_FRAME_610, False,
+             ["Standing, his body is never tested: his", "reach, 14, lies inside the ±14 box, so only",
+              "the blade's 8 plays the puck."])):
         cx = x0 + 190
         P = lambda x, y: (cx + x * S, cy - y * S)
         gy = P(0, 17)[1]
         b.append(line(cx - 26 * S, gy, cx + 26 * S, gy, RED, 3))
+        b.append(circle(cx, cy, reach * S, "#cfe3f5" if tested else "none", BLUE, 2, None if tested else "6 4"))
+        X, Y = P(*blade)
+        b.append(f"<path fill='{ORANGE}' fill-opacity='0.55' fill-rule='evenodd' stroke='{ORANGE}' stroke-width='1.5' d='"
+                 f"M{X - 14 * S},{Y - 14 * S} h{28 * S} v{28 * S} h{-28 * S} z "
+                 f"M{X - 8 * S},{Y} a{8 * S},{8 * S} 0 1,0 {16 * S},0 a{8 * S},{8 * S} 0 1,0 {-16 * S},0 z'/>")
+        b.append(circle(X, Y, 8 * S, GREEN, GREEN, 1.5, None, 0.35))
+        b.extend(sprite95(frame, cx, cy, S, opacity=0.6))
+        b.append(circle(cx, cy, reach * S, "none", BLUE, 2, None if tested else "6 4"))
+        b.append(circle(X, Y, 8 * S, "none", GREEN, 2))
         for r, row in enumerate(rows):
             dy = 24 - 2 * r
             for c, ch in enumerate(row):
                 dx = -32 + 2 * c
-                if ch == "#":
-                    fill, op = BLUE, 0.75
-                elif math.hypot(dx, dy) <= reach:
-                    fill, op = ORANGE, 0.75
-                else:
-                    continue
-                px, py = P(dx - 1, dy + 1)
-                b.append(f"<rect x='{px:.1f}' y='{py:.1f}' width='{2 * S:.1f}' height='{2 * S:.1f}' fill='{fill}' fill-opacity='{op}' stroke='#ffffff' stroke-width='0.5'/>")
-        b.append(circle(cx, cy, reach * S, "none", INK, 1.2, "4 3"))
-        for i, s in enumerate(notes):
-            b.append(text(x0, cy + 150 + i * 15, s, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
+                if ch == "." and math.hypot(dx, dy) <= reach:
+                    qx, qy = P(dx, dy)
+                    b.append(circle(qx, qy, 1.6, INK, INK, 0.5, None, 0.7))
+        b.append(circle(X, Y, 6, INK, "#ffffff", 2))
+        for i, t in enumerate(notes):
+            b.append(text(x0, cy + 150 + i * 15, t, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
     for x0 in (30, 440, 850):
         c = x0 + 190
         b.append(line(c - 6, cy - 6, c + 6, cy + 6, INK, 2.5))
         b.append(line(c - 6, cy + 6, c + 6, cy - 6, INK, 2.5))
     ly = cy + 222
-    leg = [("#cfe3f5", BLUE, "NHL '94: body circle (reach 13 here; 12-15 by Agility)"),
-           (GREEN, GREEN, "NHL '94: within 8 of the blade the stick plays a low puck"),
-           (ORANGE, ORANGE, "NHL '94: 8-14 from the blade nothing is tested.  NHL '95: untouched inside his reach (dashed)"),
-           (BLUE, BLUE, "NHL '95: the puck held or deflected there")]
+    leg = [("#cfe3f5", BLUE, "body reach: NHL '94 13 here (12-15 by Agility); NHL '95 18 in this save (14-19); dashed: never tested"),
+           (GREEN, GREEN, "within 8 of the blade (white ring) the stick plays a low puck"),
+           (ORANGE, ORANGE, "nothing is tested: NHL '94 a ring 8-14 from the blade; NHL '95 a square ±14 round it, less the 8"),
+           (INK, INK, "NHL '95, measured: a slow low puck put there passed untouched (inside his reach)")]
     for i, (f, s, label) in enumerate(leg):
         yy = ly + i * 20
         b.append(f"<rect x='30' y='{yy - 11}' width='26' height='13' fill='{f}' fill-opacity='0.6' stroke='{s}'/>")
         b.append(text(66, yy, label, 13))
-    b.append(text(30, ly + 92, "Red: the goal line. NHL '95's maps: a slow puck (height 0) put at each spot 2 units apart, one frame played"
-                  " (gen95_blind_ring_check.py). In both games only a puck at height 5 or less meets the stick test.", 12, SOFT))
-    b.append(text(30, ly + 108, "NHL '95's stick saves, gloves and skating frames all have untouched holes inside the reach; its dive has none.", 12, SOFT))
+    b.append(text(30, ly + 92, "Red: the goal line. Under the shapes, each game's own picture of that frame (NHL '94 frame 480; NHL '95 634 and 610)."
+                  " NHL '95's dots: a slow puck at height 0 put at each spot 2 units apart,", 12, SOFT))
+    b.append(text(30, ly + 108, "one frame played (gen95_blind_ring_check.py). In both games only a puck at height 5 or less meets the stick test;"
+                  " NHL '95's other frames (gloves, skating) have holes too, its dive none.", 12, SOFT))
     return svg(W, ly + 122, b, "Blind ring: NHL '94 and NHL '95")
 
 
