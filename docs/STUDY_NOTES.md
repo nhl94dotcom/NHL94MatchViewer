@@ -5900,6 +5900,27 @@ dump-in, as before).
   2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
   shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
 
+### NHL '95's five-hole blind ring, from the code (2026-11-16, for NOSE4Web; not played)
+
+checkpuckcoll (collide95) runs `.ccx` on each object within $1D in y of a low puck (Z 5 or less, Zvel $200 or less).
+For a goalie (never in a one-timer) the stick box is ±$E (14) round his stick's hot spot (GetHot: NHL '95's own hot
+points, none of NHL '94's HotList); a skater's ±$12 (18), or ±$E outside a one-timer.
+- **The address bug makes the squared test always true:** the ROM has `move.l #$FFFFDC76,d1` ($7B6A2, retail and W18),
+  the address of ChkStickSqP, not its value ($C4 / $144). Unsigned it is 4,294,958,198; the no-touch `lsr.w #2` leaves
+  $FFFF371D; a squared distance inside the box is at most 2 x 18^2 = 648, so `cmp.l d1,d0 / bhi` never skips. The
+  stick reach is the whole square box, corners included, not a circle.
+- **The blind ring:** a puck inside the goalie's box goes to puckstick and, from there, never on to the goalie test
+  (`.ccx` exits after `bsr puckstick`). puckstick's first test for a goalie (`tst.w position(a2)`, `bne .0`) now
+  branches to the next instruction (NHL '94's highlight exit is gone); with the puck loose (`.nosteal`) a goalie takes
+  it only within 8 of the hot spot (`cmp.l #$40,d0`, 8^2 = 64), else `rtspuck`: nothing happens that frame. So a low
+  puck **more than 8 from the goalie's blade but within ±14 of it on both axes** gets no stick and no body test that
+  frame: 8 to 14 straight out, up to 19.8 at the box's corners (NHL '94: a circle, 8 to 14). puckgoalie (reach
+  .cbg 14-19 by Agility / 2, 12 in a one-timer) is tried only for a puck outside the box. Which spots round the
+  goalie that covers in a butterfly or kick save depends on where those frames put the blade (NHL '95's hot points):
+  not measured.
+- **Five-hole goals in NHL '95 games:** no NHL '95 recordings exist here (the helper reads NHL '94's memory only), so
+  no count. Computer games of NHL '95 recorded with its RAM (the addresses are known) could count them.
+
 ### NOSE4Web's NHL '95 aggression, comeback bonus and open-net fixes, played (2026-11-16, b9fa5f3)
 
 NHL_95_three_fixes.bin (7829c59c) against retail with the self-check call NOPped, W18_three_fixes.bin (a9c906a0)

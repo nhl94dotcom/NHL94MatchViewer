@@ -1521,6 +1521,14 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   came next (who took the puck, how soon, a stoppage) together in a logistic model (trained on three games, tested on
   the fourth): 52% of shots on goal found at 65% precision; per game 18 / 28 / 15 / 13 called against 23 / 30 / 12 /
   27. Not good enough to report. A puck detector that holds through lifts and near players is what it would take.
+- **A learnt puck detector** (2026-11-16; the clean recording; scratch scripts, not yet in the reader): every 15th frame
+  of live play, the true puck's 13 x 13 patch (frame and its change from the drawn rink; 5,459) against 20 other
+  puck-dark pixels a frame (114,540); a small net (32 hidden) per held-out game. Per spot: area under the curve
+  0.97-0.98, the puck above 1% of the other dark spots on 88-90%. Per frame (every dark pixel scored, the best 15
+  spots 5 px apart, each game by the net that never saw it): the puck the best spot on 70% / 72% of frames carried /
+  loose on the ice, 57% loose and up to 8 high, 12% higher (lifted pucks still mostly missed). **Shots** with it (the
+  line test on spots scoring 0.5+): 73% of shots on goal found at 74% precision (the finder's best: 52% at 65%);
+  stricter, 67% at 81%, 45% at 87%.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
