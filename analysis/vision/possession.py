@@ -261,6 +261,30 @@ def hold_path(obs):
     return out
 
 
+PAD_CONFIRM = 3                    # readings in a row of the other team before a change of possession is counted
+
+
+def confirm_path(obs, k=PAD_CONFIRM):
+    """For counting changes of possession from the joypad stars' readings: the team changes only after k readings in
+    a row of the other team (hold_path makes two false changes of every wrong reading). BOS-CHI's recording, the four
+    games: changes within 1 s (real) of the recording's, same team, 67-86% of the true found and 74-79% of the
+    video's real (hold_path 71-93% / 63-73%; the whole-picture star search 59-77% / 54-72%)."""
+    out, cur, run, cand = [], None, 0, None
+    for o in obs:
+        if o is not None:
+            if cur is None:
+                cur = o
+            elif o != cur:
+                run = run + 1 if o == cand else 1
+                cand = o
+                if run >= k:
+                    cur, run = o, 0
+            else:
+                run = 0
+        out.append(cur if cur is not None else 0)
+    return out
+
+
 def run_pads(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
     """Two people's game: (seq, obs) as run's, from the joypad stars (see PAD_COL)."""
     try:

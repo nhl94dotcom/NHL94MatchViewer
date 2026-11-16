@@ -1483,6 +1483,13 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   change (89.2% at best). On the soft YouTube-like copy the outlines don't survive (2-pixel lines blurred into the
   ice: found on 14-35% of frames even by learnt templates), so this is for sharp videos; the plan (the user's): get
   every part right on a large clean recording first, then blur in steps toward real streams.
+  **The four games** (`video_report.py --pads --check`): pads' teams by votes 589-75 / 693-5 down to 641-3 / 662-4;
+  the team with the puck right on 93.5 / 92.9 / 93.1 / 90.6% of live frames (the whole-picture search 88.1 / 83.5 /
+  86.3 / 84.7%); possession shares within 0.6-2.0 points of the recordings (before 0.6-3.3). Changes of possession
+  are counted from `confirm_path` (3 readings in a row of the other team; held readings make two false changes of
+  every wrong one): within 1 s (real) of the recording's, same team, 67-86% of the true found and 74-79% of the
+  video's real (the star search 59-77% / 54-72%; the soft copy 43% / 51%); their zones (from the camera) stay rough.
+  Faceoff winners right on 46 of 50 (38 before).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
