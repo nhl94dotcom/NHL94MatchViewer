@@ -5900,6 +5900,32 @@ dump-in, as before).
   2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
   shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
 
+### NOSE4Web's NHL '95 menu logos, played (2026-11-16)
+
+NHL_95_logos.bin (d13ece86) against retail with the self-check call NOPped, W18_logos.bin (39b3e8ef) against W18.bin
+(`runs/nhl95/logos/logo_check.py`, `logo_e.py`: the same presses on both ROMs, every screen screenshotted and compared
+pixel by pixel). The retail build rewrites the TeamLogoBitmaps table in place ($7D3F8 on: every team's pointer to its
+logo's new home from $1A72C0, each 1,238 bytes apart; the originals were packed at their own sizes) and two
+TeamLogoPalettes entries; W18's rewrites team 1's and team 22's bitmaps (1,152 bytes each) and palettes in place.
+Besides that only the header checksum (and on retail the NOPped call at $691) differs.
+- **The screens that draw team logos** (the disassembly: DrawSetupLogo, the setup team screen, records95's name entry,
+  scout95's matchup, trade95's evaluation, stats95's PeriodStatsScreen): Game Setup (Trade Players, both corners;
+  Team 1 and Team 2 stepped through every team), Evaluate Trade, the Scouting Report's matchup page, the pre-game
+  INFO tab's roster (both corners), Name Entry (User Records on) and the STATS tab's Period Stats. Game Stats, Player
+  Stats, the trade list, the GM decision and Sign Free Agents show none.
+- **Retail:** 152 + 21 screens; the 33 that differ are exactly the ones showing Boston or Toronto, each a logo's box.
+  Boston shows NHL '94's Hartford logo in Hartford's colours; Toronto the stripe test. Every other team's logo
+  pixel-identical everywhere, with each team at home and away.
+- **W18:** 164 + 21 screens; the differing ones are exactly those showing Barrie or Sumter (the default Team 2, so
+  its corner differs through the whole Team 1 sweep): Barrie Hartford, Sumter the stripes; every other team the same.
+  W18's trades can't be evaluated (its 10-player teams fail the game's 17-25 players rule, on W18 itself too), and
+  its Team 1 skips the team Team 2 holds.
+- **The stripe test's colours come out with red and blue swapped:** Toronto's palette words are 0E00 0E80 0EE0 00E0
+  00EE 000E 080E 0E0E 0888, which the Genesis (0BGR) draws as blue, sky blue, cyan, green, yellow, red, pink,
+  magenta, grey: a red, orange, yellow, green, cyan, blue, purple, magenta, grey rainbow written as 0RGB. Boston's
+  Hartford words are NHL '94's file's own, so they're right. And the 11 stripes 5 px wide (55 px) don't fit the
+  48-px logo (6 tiles): the last one, grey, never shows.
+
 ### NOSE4Web's Genesis credits pointer fix, played (2026-11-15, ff54174 / 3e8b621)
 
 The title prints the first credits page from `movea.l #Credits,a1` ($FF224) and the rest from a second `movea.l
