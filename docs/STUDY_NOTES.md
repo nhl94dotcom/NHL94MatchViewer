@@ -5985,6 +5985,17 @@ who takes the puck (followed 15 s for the slow passes).
   then nobody's. Where the slow pass arrives within about 2 s the cap helps; where it takes longer, the receiver
   standing still for 2 s and then leaving can do worse than giving up at once, as on W18 here.
 
+- **Rebuilt with a mixed wait** (5fb7d6e: NHL_95_rocket.bin e248ea8e, W18_rocket.bin 22611a56; where the
+  original's wait, whole eighths x 8 - 10 (x 4 slow), is over 127 it is stored as the original stores it, otherwise
+  the exact 64ths - 10 capped at 127): plain passes identical to the capped build case by case (velocity, lift,
+  taker, wait, no-touch: 142 / 142, 144 / 144). The slow waits follow the rule: where the original's byte is over 127
+  the mixed build's equals it (49 / 49 retail, 51 / 52 W18: one 181 against 182, a frame's countdown); where it is 127
+  or less, the capped build's (91 / 95, 85 / 92), the rest being originals whose 16-bit wait was over 127 and wrapped
+  to a small byte (20, 21, 52, 53), stored as the original's, as the rule says. Slow-pass receptions: **retail 71**
+  (original 75, capped 100; 100-140 units 25 of 48, original 27), **W18 87** (original 91, capped 77; 100-140 units
+  32 of 48, original 32). The few lost against the original: short slow passes (40-70 units) whose exact wait is
+  longer than the original's rounded one, and passes at the correct, slower speed.
+
 ### NOSE4Web's NHL '95 assist fixes, played (2026-11-16)
 
 NHL_95_assists.bin (e14af917; code after $1A72C6) against retail with the self-check call NOPped, W18_assists.bin
