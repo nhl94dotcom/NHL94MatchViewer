@@ -1490,13 +1490,20 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   every wrong one): within 1 s (real) of the recording's, same team, 67-86% of the true found and 74-79% of the
   video's real (the star search 59-77% / 54-72%; the soft copy 43% / 51%); their zones (from the camera) stay rough.
   Faceoff winners right on 46 of 50 (38 before).
-  **The zone of a puck won from the new carrier's spot** (2026-11-15, unfinished): the poss files keep each
-  reading's carrier spot (`star`), and a change's zone is where the new team's run of readings began (Y = 112 + Vpos
-  - y), else the camera's. Over the four games the per-zone counts hardly moved: the attacking zones a little nearer
-  (game 3 BOS 7 / CHI 2 against 4 / 3), the visitors' neutral-zone wins still short (3 / 12 / 4 / 5 against 7 / 16 /
-  4 / 9) and the defending zones long. Not yet looked at win by win: whether the first reading comes after the
-  carrier has skated out of the zone where he won it, or the counting differs from the recording's (each change of
-  the last carrier's team, by the puck's Y).
+  **The zone of a puck won, and a loose puck's star** (2026-11-16): each change's zone is where the new team's run
+  of readings began (the carrier's spot, Y = 112 + Vpos - y). Win by win against the recording (each change of the
+  last carrier's team, zone by the puck's Y) the zone was already right on 240 of 246 matched wins; the per-zone
+  totals were off because of which wins were counted. The cause: while the puck is loose the possession star stays
+  where the puck came loose ($BE78 nibble 0 = $E: the pad not moved; in two games' loose samples 2,841 on no skater,
+  317 on the other team), and the other person's skater crossing it read as his team carrying. PAD_CENTRE: the fill
+  must be centred on the outline (within 2 px): wrong readings 0.9% -> 0.2% carried, 4.1% -> 1.1% loose. Then the
+  held readings are best for everything (confirm_path no longer used for counting): the team with the puck right on
+  **94.0-96.3%** of live frames; changes 72 / 93 / 71 / 60 against the recordings' 71 / 94 / 71 / 70, 73-91% of the
+  true found within 1 s (real) and 85-92% of the video's real; over the four games 258 of 315 wins matched (within
+  -0.5 to +2 s), the zone right on 253, the change a median 0.06 s after the true one; 39 of the video's unmatched.
+  Of the 57 missed, 34 came while the video already showed the winner's team, though the loser's possession before
+  it had been read (512 right readings, 14 wrong): the video's change came over 0.5 s before the recording's (the
+  star and the last carrier not moving together; not followed further). Faceoff winners 45 of 50.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
