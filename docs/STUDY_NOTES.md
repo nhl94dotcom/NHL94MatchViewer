@@ -5900,6 +5900,28 @@ dump-in, as before).
   2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
   shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
 
+### NOSE4Web's NHL '95 assist fixes, played (2026-11-16)
+
+NHL_95_assists.bin (e14af917; code after $1A72C6) against retail with the self-check call NOPped, W18_assists.bin
+(f0d9f9a1; code from $1DADF6) against W18.bin. `analysis/scoring_map/gen95_assist_check.py`: NHL '94's plays
+(gen_assist_repro.py) ported to NHL '95, whose a2touchpuck is NHL '94's line for line (touch list at team struct +$18 /
++$1A / +$1C, tmflast bit 3 of +$30) and whose records lie $3E8 lower (SortCords $FFAC62, puckc $FFB3C2; home team
+struct $FFC288, the away one $366 after it; goals by roster place at +$B6, assists +$D0, shots +$EA). From a live state
+per ROM, the game's own code doing every pickup, pass, one-timer and goal (only a loose puck placed, everyone else
+parked); goals and assists read from the team structs at the goal.
+
+| Play | Retail | NHL_95_assists | W18 | W18_assists |
+|---|---|---|---|---|
+| Regain: A wins it back from the other team and passes to B (B scores) | no assist | A | no assist | A |
+| Control: teammate C wins it back and passes | C | C | C | C |
+| Give-and-go: A to C, C to B, B back to C (C scores) | B (A dropped) | A, B | B (A dropped) | A, B |
+| One-timer: A to C, C to B, B's one-timer | A, C | A, C | A, C | A, C |
+| One-timer with the receiver's touch first (B made the last touch as the swing starts) | none (list B, B, C) | A, C (B, C, A) | none (B, B, C) | A, C (B, C, A) |
+
+The one-timer cases count only goals where onetimershot ran (onetimerplayer $FFBB72 held B's record: on retail a
+caught pass shot in came first at some timings). The byte changes are only the three hooks ($81464, $81476, $82F28),
+the code in free room, the header checksum and (retail) the NOPped call.
+
 ### NOSE4Web's NHL '95 menu logos, played (2026-11-16)
 
 NHL_95_logos.bin (d13ece86) against retail with the self-check call NOPped, W18_logos.bin (39b3e8ef) against W18.bin
