@@ -1548,6 +1548,19 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   scores higher than round 1's (area under the curve 0.92-0.94, round 1 0.86 on the same patches), but on the shots it
   does worse: with spots scoring 0.9+, 52% of shots on goal at 51% precision (round 1: 63% at 55%); the real puck's
   scores fell with the hard spots' (shots' median line share 0.41, round 1 0.56). Round 1 stays.
+- **The sound track** (2026-11-16, scratch scripts audio_*.py; runs/vision/audio): the clean recording carries
+  lossless stereo sound (FLAC, 44.1 kHz). **It drifts against the picture: lag = 0.024 s + 0.224% of the video time**
+  (0.4 s in game 1 to 4.7 s in game 4; fitted from the onsets around the recordings' shots and hits, residuals 0.06 s).
+  Corrected, the onset strength (spectral flux, 10 ms) peaks 0.06 s before a recorded shot (1.48 against 0.34 at
+  random), less at passes and hits. The ROM's 11 PCM samples don't match the track at any playback rate (4-16 kHz,
+  in windows on the shots): the emulator's sample output is filtered and mixed, so the shot sound was learnt instead:
+  each onset's 24 log band levels over 0.18 s against the 0.5 s before, a small net, three games to train and the
+  fourth to test, live play only (the video reader's live frames; half the false calls were in replays and
+  intermissions). 111 of 120 live shots have an onset at the right moment, but the sound alone separates them only
+  so far: 45% at 55% precision, 35% at 71%. Added to step 1's video signs (the best shot score and hit score in the
+  0.2 s before to 0.8 s after the carrier's last sighting, and the loudest onset): **shots on goal 60% at 75%
+  precision (video alone 47% at 73%), 67% at 65% (65% at 61%)**. A help, not the answer; more games to learn from
+  would help the sound most (184 shot onsets).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
