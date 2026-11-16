@@ -5997,6 +5997,11 @@ a tie taken to a shootout after the first fight).
   through every fight (start and end the same) and play stopped 3 frames after each one ends. One skater outside the
   pair showed a fight frame ($3E2, a guard pose) for one sample in one fight of 48; the W18 case above came with
   pushed back-to-back fights. Neither worth a change.
+- **Fighting starts Off (58f1f21, W18_fighting_starts_off.bin f0c3c3f2):** against W18_fighting.bin only $1E0E37
+  (setup_defaults' `move.w #1,($FFCC62).w` -> `#0`) and the checksum. The row reads Off at power-on ($FFCC63 0);
+  RIGHT steps On, On - Arcade Mode, Off. A whole game left at the default with every skater's +$74 at 12 and the
+  tension pushed: no fight. On chosen (+$74 at 10, pushed): four fights in period 1, each with the winner's $28, both
+  5:00, play stopping 3 frames after; one also logged a Fight Instigator ($2A).
 - **Off:** no fight in whole games, fix applied and everything favouring fights (both ROMs).
 - **All-hacks (fixed copies):** a fight in period 1, then a tie taken through overtime to the after-overtime shootout in
   the same game, both ROMs: the fight engine's RAM ($FFE800-$FFE879) never changed while the shootout ran, and
