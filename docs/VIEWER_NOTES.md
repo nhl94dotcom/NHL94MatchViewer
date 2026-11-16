@@ -1439,6 +1439,17 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   not the counting rule. SWITCH 5 balances found and real (49% / 47%, the per-team-and-zone counts off by 78 in all
   against 102), higher SWITCH finds fewer; a minimum hold or a later frame for the zone changes little. So the counts
   stay rough on a soft copy until the star is placed better; the report keeps WIN_SWITCH 8 (tuned on the recording).
+- **The star's look learnt, tried** (2026-11-15; no gain, not kept): from the soft BOS-CHI copy, every 10th frame of
+  live play with the star shown inside the picture (1,126 frames; 298 more with it off the picture), each frame's top
+  24 candidates and the true spot as patches of the change from the drawn rink (26 x 28 px round the anchor). A
+  reranker (a small net over the patch and the candidate's score, softmax over each frame's candidates) learnt on
+  games 1, 2 and 4 and tested on game 3 picks the right candidate (within 6 px) on 8-16% of frames, against 15.7% for
+  the plain score: full patches overfit, pooled ones (4 or 7 px), stronger weight decay and mirrored copies only come
+  level. A single frame's top candidate is rarely the star (the path through the frames does the work), and a
+  frame's picture alone doesn't tell the carrier's star from the change under any other skater's feet: on a copy this
+  soft the star's fill is gone and what shows of its arms is the same blur as skates on ice. The puck isn't a way
+  round it either (placed on about half of frames even on the recording). So the soft copy's possession stays at
+  about 83% right; a sharper copy is what reads better (the recording's star search finds the fill: 90%).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
