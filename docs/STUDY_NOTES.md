@@ -5946,14 +5946,74 @@ through any screens; where a new overtime starts, a goal put in.
 | Regular game, third period ending 2-2 | overtime | overtime |
 | Regular game, third period ending 2-1 | game over | game over |
 
-The season flag was set in RAM on an exhibition game: standings after a real season game not played yet.
+The season flag was set in RAM on an exhibition game here; a real season game (below, `gen95_season_check.py`)
+recorded the overtime winner's win and the loser's loss in the standings.
 
 **Free work RAM** (`analysis/scoring_map/gen95_ram_use_check.py ROM OUT 120`: power-on to Game Setup, a whole Regular
 Game computer against computer with 2-minute periods, the pause menu and an instant replay opened twice, the end
 screens; every 4 frames all of work RAM against its copy at Game Setup, the core's byte-swapped RAM mapped back):
 on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own last variable below it, ChkStickSqP,
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
-it. Not yet run: a shootout, season mode's screens and the other menus.
+it. Settled with the shootout builds (below).
+
+### NOSE4Web's NHL '95 shootouts, played; season standings; 3-on-3 overtime read (2026-11-16)
+
+**The NHL shootout in Shootout mode** (4d3bdf2: NHL_95_nhl_shootout.bin 5c5f49fa, W18_nhl_shootout.bin e2c57fad;
+CountShootoutGoals' test at $9DD98 a `jsr` to new code, $1A72C6 / $1DADF6). The code: after the home shot of round r
+(1-3) the shootout ends when home - away > 4 - r (the away team's shots left) or away - home > 3 - r; after the away
+shot when the difference is beyond 3 - r; from round 4 only after the away shot, on any difference.
+`analysis/scoring_map/gen95_shootout_mode_check.py ROM OUT [RESULTS]` (setupvalues' play mode $C, the computer on both
+sides, each attempt forced: G the puck into the net, M kept out of the goal mouth; each run judged by the NHL rule on
+the goals actually scored, since a forced goal sometimes doesn't land): 16 runs, 8 cases a ROM, **every one ended
+exactly where the rule says**: 1-0 and 0-1 after three rounds; 2-0 either way after round 2 (ended after the away
+shot); 0-1 after the home team's third shot (W18: ended at once, the mid-round end); sudden death won in round 6, a
+home goal answered by the away team in round 4 (went on, then won in round 8), home goals in rounds 4 and 8 then the
+away miss. Shooters past the fifth: the list wraps to the first (indexes 0-4, then 0), as on the original. End
+screen "Shootout won by ...".
+
+**Shootouts for tied regular-season games** (e4790c2: NHL_95_shootout_after_ot.bin 2a5dd49c, W18_shootout_after_ot.bin
+716cc797, NHL_95_shootout_after_p3.bin 5d27da76, W18_shootout_after_p3.bin eb9a58d1). The code: PeriodOver's
+`move.w #4,(gsp).w` (after overtime; the p3 builds hook the tie test after period 3, checking the mode themselves)
+becomes a call that, for a tie, sets gmode2 bit 0 and the mark $FFF000, copies both team structs ($6CC bytes) and
+ScoreSumbytes to $FFF002 on, clears gmdir (`bclr #1,gmode`), calls ClearShootout and Create_HotCold_Table for both
+teams; NextShooter's `jmp ExitToOpening` becomes a call that, with the mark set, clears it, copies the structs and
+ScoreSumbytes back, adds a goal to the shootout's winner, clears gmode2's bits 0, 1, 3 with `andi.b`, sets gsp 4 and
+ends the period as PeriodOver does (forceblack, PeriodOver_sp). So NHL '94's three faults are avoided: gmdir cleared,
+the byte form, and the shootout's ordinary goals undone by the copy. `gen95_shootout_check.py ROM STATE OUT CASE
+[RESULTS]` (from a live state: two goals through the game's own Goal in the third period, so the summary and stats are
+real; an overtime cut to 3 s once its clock runs; a second overtime ended by a home goal): on all four builds the
+shootout starts after the tied overtime (ot builds) or straight after a tied third period (p3 builds), exhibition and
+season-flagged; the saved copy equals the structs the frame before; five rounds then sudden death (natural runs: one
+won in round 11, one 1-3 after five); the game over with the winner's goals +1, ScoreSumbytes and the scoring summary
+as before, the only struct bytes changed the winner's goals (the hot / cold table put back too); end screens with the
+shootout's winner. Playoffs (play mode 2 and season playoffs) go to further overtimes, untied games and overtime
+winners end as before. **Test trap:** the core's save states leave out save RAM, and ClearShootout's shooter lists come
+from it (InitShooters, SRLines): a state loaded into a fresh emulator gave every shooter $FE and the first attempt hung
+the game (the address-error vector is a bare `rts`); powering the ROM on first fixes it (not a fault of the builds).
+
+**A real season game** (`gen95_season_check.py ROM OUT [RESULTS]`: New Season from Game Setup, the day's first game
+marked for people, the computer playing it; the third period tied, overtime cut, the shootout forced): on
+W18/NHL_95_shootout_after_ot and _after_p3 the standings (save RAM $1AF6 on, wins / ties / losses) gave the shootout's
+winner a win and the loser a loss; on W18/NHL_95_overtime a second overtime's goal gave a win and a loss (item d).
+RecordTeamResult reads the struct's goals byte (+$D), so the restored score decides; NHL '95's standings have no
+overtime or shootout loss. AddSeasonGoals also counts the winner's added goal in the season goal total (used to scale
+simulated scores). RecordTeamResult uses shootoutteam's byte as its save RAM buffer (harmless after the shootout).
+
+**Free RAM, settled:** in every run above (whole games, shootouts in games and in Shootout mode, power-on through
+Season Setup, Games Today, simulated days and a season game on all five builds) $FFF000-$FFF6CF changed only while a
+shootout ran.
+
+**3-on-3 overtime, read (not played).** NHL '95 keeps NHL '94's pieces: tmap is the struct's +$24; `SetPlList`
+(`movea.l #priolist,a0` at $083790) fills tmap places in priolist order (priolist $083E16: 0 G, 1 LD, 2 RD, 4 C, 3 LW,
+5 RW, 6 extra; with the goalie pulled, struct +$26 negative, it starts one place on); `InProgress_ap` (in
+PenaltyManager) counts from 6 (`moveq #6,d1` at $089514) with the floor `cmp.w #4,d1` at $08953A; `restoreteams` sets
+tmap 6 ($083D4A); PenGoalStuff tests tmap 6 ($08C63C); the faceoff formation table (`.apl`) still has rows for 6, 5 and
+4 players only (tmap 3 would read into `.ptab`); overtime is `bset #1,(sflags7).w` before StartPer; ResetClock's
+regular-season overtime `move.w #$258,d0` ($08E71E). New in NHL '95: SetPlList fills an unavailable player from
+`sublist` instead of leaving the place empty, and priolist is also read by RemovePlayerFromList ($08966A) and the
+line-change code ($08A392). Addresses are the same on retail and W18. So NHL '94's approach fits: tmap 4 for both teams
+in overtime, InProgress_ap counting from 4 there (the other team +1 per player off: 4-on-3, 5-on-3), and an overtime
+priolist 0,4,3,2,1,5,6 (G, C, LW, RD, then LD, RW, extra) read by all three users while sflags7 bit 1 is set.
 
 ### Through the goalie: NHL '94 against NHL '95, played (2026-11-16, the user's question)
 
