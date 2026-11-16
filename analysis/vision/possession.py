@@ -10,7 +10,7 @@ chosen at once (puck_track.path: a star moves at skating speed); the carrier's t
 path (home, visitors) with SWITCH to change, each frame's team counting ACC.
 
 python analysis/vision/possession.py VIDEO CAMERA_TRACK.npz STATIC.npz HOME AWAY OUT.json [FIRST] [COUNT] [STEP]
-  [--check] [--soft] [--crop=X,Y,W,H]   (--soft: the players by the uniforms drawn as a soft copy shows them, sprites.soft_lr,
+  [--check] [--soft] [--pads] [--crop=X,Y,W,H]   (--pads: a game between two people, from the joypad stars (PAD_COL); --soft: the players by the uniforms drawn as a soft copy shows them, sprites.soft_lr,
   and the star by its change to the ice, STAR_LR; --check: against the recordings' last carrier's team, through tools/video_sync.py's timeline)
 python analysis/vision/possession.py --learn-star SOFT_VIDEO CAMERA_TRACK.npz [SKIP_FIRST SKIP_LAST]   (STAR_LR from a
   soft copy with a timeline; the frames between SKIP_FIRST and SKIP_LAST left out)"""
@@ -173,6 +173,52 @@ def learn_star(video, cams, out, skip=(0, 0), step=90, rom=None, blur=SOFT_BLUR)
     return table
 
 
+# ---- two people's games: the joypad stars (2026-11-15) ----
+# Each person's controlled skater stands on a joypad star outline (pad 1 frame 390 in navy, pad 2 frame 391 in
+# pink-red: $BE78's nibbles 1 / 2 hold the records), and the carrier is a person's controlled skater on 99.98% of
+# carried samples (BOS-CHI's four games, 64,699). So the possession star's fill is looked for only inside the two
+# outlines: the carrier is the person whose outline holds it. On the recording (1,425 frames, every 60th): each
+# outline placed within 4 px on 89-90% of frames where it's in the picture (a star off the picture scores 0.13-0.18,
+# a shown one 0.24 and up), the carrier the right one of the two on 98.4%; per frame the team read on 64% of frames,
+# right on 97% of those (the rest: the puck loose off both, a star off the picture). Each pad's team is learnt per run:
+# the detected players under its outline, by majority.
+PAD_COL = {1: (0, 0, 99), 2: (206, 69, 99)}
+PAD_TOL, PAD_MIN, PAD_FILL = 40, 0.2, 0.15
+
+
+def pad_shapes(rom_bytes):
+    import extract_sprites as X
+    out = {}
+    for k, fr in ((1, 390), (2, 391), (0, 392)):
+        left, top, rows = X.compose(rom_bytes, fr)
+        out[k] = [(y + top, x + left) for y, r in enumerate(rows) for x, (s, c) in enumerate(r)
+                  if c and (k or c in FILL)]
+    return out
+
+
+def _shape_sum(mask, ps, pad=24):
+    H, W = C.HUD_TOP, C.NATIVE_W
+    M = np.zeros((H + 2 * pad, W + 2 * pad))
+    M[pad:pad + H, pad:pad + W] = mask[:H]
+    s = np.zeros((H, W))
+    for dy, dx in ps:
+        s += M[pad + dy:pad + dy + H, pad + dx:pad + dx + W]
+    return s / len(ps)
+
+
+def pad_stars(f, shapes):
+    """{pad: (x, y, outline share, fill share)} for each joypad star found (absent: left out)."""
+    r, g, b = f[..., 0], f[..., 1], f[..., 2]
+    fill = _shape_sum((r >= 100) & (r <= 190) & (g >= 120) & (g <= 205) & (b >= 200), shapes[0])
+    out = {}
+    for k in (1, 2):
+        s = _shape_sum(np.abs(f.astype(int) - np.array(PAD_COL[k])).sum(2) < PAD_TOL, shapes[k])
+        y, x = np.unravel_index(np.argmax(s), s.shape)
+        if s[y, x] >= PAD_MIN:
+            out[k] = (int(x), int(y), float(s[y, x]), float(fill[y, x]))
+    return out
+
+
 def S16(v):
     return v - 65536 if v & 0x8000 else v
 
@@ -195,6 +241,68 @@ def team_path(obs):
         path.append(s)
         s = nb[s]
     return path[::-1]
+
+
+def hold_path(obs):
+    """The team path for the joypad stars' readings: a lone reading that disagrees with the readings either side of it
+    dropped, then each reading held to the next. (team_path's switching cost made it lag every change: on a stretch of
+    BOS-CHI's recording 89.2% at best against 93.1% for this; carried frames 97.8%, loose 82.3%: a loose puck's star
+    stays on the last carrier after his person has switched to another skater, off both outlines.)"""
+    idx = [k for k, o in enumerate(obs) if o is not None]
+    clean = list(obs)
+    for a, b, c in zip(idx, idx[1:], idx[2:]):
+        if obs[a] == obs[c] != obs[b]:
+            clean[b] = None
+    first = next((o for o in clean if o is not None), 0)
+    out, last = [], first
+    for o in clean:
+        last = o if o is not None else last
+        out.append(last)
+    return out
+
+
+def run_pads(video, cams, static, home, away, first=0, count=None, step=4, rom=None):
+    """Two people's game: (seq, obs) as run's, from the joypad stars (see PAD_COL)."""
+    try:
+        import lowload
+    except ImportError:
+        lowload = None
+    rom = Path(rom) if rom else Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin"
+    rink = C.Rink(rom)
+    shapes = pad_shapes(rom.read_bytes())
+    colours = S.team_colours(rom, home, away)
+    looked, votes = [], {1: [0, 0], 2: [0, 0]}
+    for n, f in C.frames(video, first, count):
+        if lowload:
+            lowload.breathe()
+        if n % step or n not in cams or not cams[n][4]:
+            continue
+        _, hpos, vpos = (int(x) for x in cams[n][:3])
+        stars = pad_stars(f, shapes)
+        if stars and n % (step * 8) == 0:          # the pads' teams: the players under the outlines, now and then
+            dets = S.players(rink, f, hpos, vpos, colours, static)
+            for k, (x, y, _, _) in stars.items():
+                near = [d for d in dets if np.hypot(d[1] - x, d[2] - (y - 8)) < 16]
+                if near:
+                    votes[k][min(near, key=lambda d: np.hypot(d[1] - x, d[2] - (y - 8)))[0]] += 1
+        looked.append((n, hpos, vpos, stars))
+    team = {k: int(np.argmax(v)) for k, v in votes.items()}
+    if team[1] == team[2]:                         # one person a team: the less sure pad takes the other
+        weaker = min((1, 2), key=lambda k: max(votes[k]) / max(1, sum(votes[k])))
+        team[weaker] = 1 - team[3 - weaker]
+    print(f"  pads' teams: pad 1 {'home' if team[1] == 0 else 'visitors'} (votes {votes[1]}), "
+          f"pad 2 {'home' if team[2] == 0 else 'visitors'} (votes {votes[2]})", flush=True)
+    seq, obs = [], []
+    for n, h, v, stars in looked:
+        car = [(fl, k) for k, (x, y, s, fl) in stars.items() if fl >= PAD_FILL]
+        if car:
+            fl, k = max(car)
+            seq.append((n, h, v, stars[k][:2]))
+            obs.append(team[k])
+        else:
+            seq.append((n, h, v, None))
+            obs.append(None)
+    return seq, obs
 
 
 def run(video, cams, static, home, away, first=0, count=None, step=4, rom=None, soft=None):
@@ -298,8 +406,11 @@ def main():
     cams = {int(r[0]): r for r in np.load(track)["rows"]}
     if "--crop" in " ".join(sys.argv):
         C.CROP = tuple(int(v) for v in next(x for x in sys.argv if x.startswith("--crop=")).split("=")[1].split(","))
-    seq, obs = run(video, cams, static, home, away, first, count, step, soft=SOFT_BLUR if "--soft" in sys.argv else None)
-    teams = team_path(obs)
+    if "--pads" in sys.argv:
+        seq, obs = run_pads(video, cams, static, home, away, first, count, step)
+    else:
+        seq, obs = run(video, cams, static, home, away, first, count, step, soft=SOFT_BLUR if "--soft" in sys.argv else None)
+    teams = hold_path(obs) if "--pads" in sys.argv else team_path(obs)
     res = {"frames": [n for n, *_ in seq], "star": [p for *_, p in seq], "team": teams, "obs": obs}
     out.write_text(json.dumps(res))
     share = np.mean(np.array(teams) == 0)

@@ -1466,6 +1466,23 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   winner 38 of 50 (2 none), zone 49 of 50** (the recording's star search often finds no star for the first second
   after the drop). Per game the counts are 10-18 against 11-18 and the winners within 1-2 a team. The report has
   faceoffs won by team and by zone; LA-PIT's seven games read 8-18 faceoffs each.
+- **Possession from the joypad stars** (`possession.py --pads`, `video_report.py --pads`, 2026-11-15; the user's
+  idea: in a game between two people the carrier is always a person's skater, and each person's skater stands on a
+  joypad star outline): in BOS-CHI's four games the carrier is a person-controlled record on 64,687 of 64,699 carried
+  samples. The outlines: pad 1 frame 390 in navy (0, 0, 99), pad 2 frame 391 in pink-red (206, 69, 99), drawn at the
+  skater's spot (x = X - Hpos + 129, y = 112 - Y + Vpos), the person's skater number and position in grey below;
+  $BE78's nibbles 1 / 2 hold the records they sit on (nibble 0 the possession star's). The possession star's fill
+  looked for only inside the two: on the recording (1,425 frames, every 60th) each outline placed within 4 px on
+  89-90% of frames where it's in the picture, the carrier the right one of the two on 98.4%, per frame a team on
+  64% of frames, right on 97%. A star can be missing (off the picture: often after a clear down the ice), so each is
+  found or ruled out on its own (outline share 0.2; off the picture 0.13-0.18). Each pad's team: the detected players
+  under its outline by majority (game 1: 161-20 and 194-3). On a stretch of game 1 (8,000 frames, every 4th, 1,612
+  live): **the team with the puck right on 93.1%** (carried 97.8%, loose 82.3%: a loose puck's star stays on the last
+  carrier after his person has switched skaters) against about 85% from the whole-picture star search; the team path
+  is the readings held (`hold_path`, a lone disagreeing reading dropped): team_path's switching cost lagged every
+  change (89.2% at best). On the soft YouTube-like copy the outlines don't survive (2-pixel lines blurred into the
+  ice: found on 14-35% of frames even by learnt templates), so this is for sharp videos; the plan (the user's): get
+  every part right on a large clean recording first, then blur in steps toward real streams.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.

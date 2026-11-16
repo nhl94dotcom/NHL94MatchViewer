@@ -10,7 +10,8 @@ its result in OUT (rerunning skips what exists):
   poss_<k>.json     possession per game, with that game's home and visitors
   report.json / report.md
 
-python analysis/vision/video_report.py VIDEO OUT [--crop=X,Y,W,H] [--rom=ROM] [--step=N] [--soft] [--check]
+python analysis/vision/video_report.py VIDEO OUT [--crop=X,Y,W,H] [--rom=ROM] [--step=N] [--soft] [--pads] [--check]
+  --pads: a game between two people: possession from the joypad stars (possession.run_pads)
   --soft: a soft copy (YouTube): possession's star and teams as possession.py --soft reads them
   --check: each game against its recording (tools/video_sync.py's timeline), side by side"""
 import json
@@ -204,12 +205,17 @@ def main():
         pp = out / f"poss_{k}.json"
         if not pp.exists():
             print(f"possession, game {k + 1} ({g['visitors']} at {g['home']}) ...", flush=True)
-            seq, obs = PO.run(video, cams, static, g["home"], g["visitors"], g["start_frame"],
-                              g["end_frame"] - g["start_frame"] + 1, step, rom,
-                              soft=PO.SOFT_BLUR if "--soft" in sys.argv else None)
-            pp.write_text(json.dumps({"frames": [s[0] for s in seq], "obs": obs}))
+            if "--pads" in sys.argv:
+                seq, obs = PO.run_pads(video, cams, static, g["home"], g["visitors"], g["start_frame"],
+                                       g["end_frame"] - g["start_frame"] + 1, step, rom)
+            else:
+                seq, obs = PO.run(video, cams, static, g["home"], g["visitors"], g["start_frame"],
+                                  g["end_frame"] - g["start_frame"] + 1, step, rom,
+                                  soft=PO.SOFT_BLUR if "--soft" in sys.argv else None)
+            pp.write_text(json.dumps({"frames": [s[0] for s in seq], "obs": obs, "pads": "--pads" in sys.argv}))
         pd = json.loads(pp.read_text())
-        team = dict(zip(pd["frames"], PO.team_path(pd["obs"])))
+        path_of = PO.hold_path if pd.get("pads") else PO.team_path
+        team = dict(zip(pd["frames"], path_of(pd["obs"])))
         # another game on screen (an intermission highlight shows its own teams in the score box): the stretches
         # around a team read that isn't this game's pair are left out, to the next read of the right pair
         others = [n for n, v, h in team_reads if g["start_frame"] <= n <= g["end_frame"] and (v, h) != (g["visitors"], g["home"])]
@@ -247,7 +253,7 @@ def main():
         prev_t = None
         sw = PO.SWITCH                               # a stickier path for counting changes (BOS-CHI: total error 74 ->
         PO.SWITCH = WIN_SWITCH                       # 54 of 315 recorded wins); the shares keep possession's own
-        team_w = dict(zip(pd["frames"], PO.team_path(pd["obs"])))
+        team_w = dict(zip(pd["frames"], path_of(pd["obs"])))
         PO.SWITCH = sw
         for n in sorted(team_w):
             if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or other_game(n) or n not in cams \
