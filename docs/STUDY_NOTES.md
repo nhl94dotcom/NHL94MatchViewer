@@ -5900,7 +5900,7 @@ dump-in, as before).
   2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
   shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
 
-### NHL '95's five-hole blind ring, from the code (2026-11-16, for NOSE4Web; not played)
+### NHL '95's five-hole blind ring, from the code and played (2026-11-16, for NOSE4Web)
 
 checkpuckcoll (collide95) runs `.ccx` on each object within $1D in y of a low puck (Z 5 or less, Zvel $200 or less).
 For a goalie (never in a one-timer) the stick box is ±$E (14) round his stick's hot spot (GetHot: NHL '95's own hot
@@ -5915,9 +5915,18 @@ points, none of NHL '94's HotList); a skater's ±$12 (18), or ±$E outside a one
   it only within 8 of the hot spot (`cmp.l #$40,d0`, 8^2 = 64), else `rtspuck`: nothing happens that frame. So a low
   puck **more than 8 from the goalie's blade but within ±14 of it on both axes** gets no stick and no body test that
   frame: 8 to 14 straight out, up to 19.8 at the box's corners (NHL '94: a circle, 8 to 14). puckgoalie (reach
-  .cbg 14-19 by Agility / 2, 12 in a one-timer) is tried only for a puck outside the box. Which spots round the
-  goalie that covers in a butterfly or kick save depends on where those frames put the blade (NHL '95's hot points):
-  not measured.
+  .cbg 14-19 by Agility / 2, 12 in a one-timer) is tried only for a puck outside the box.
+- **Played** (`analysis/scoring_map/gen95_blind_ring_check.py`, retail with the self-check off): real shots at the
+  computer goalie (home's skater shooting from 18 spots across the slot, everyone else parked) gave 33 of the goalie's
+  (animation, frame) states; from each, a slow low puck put at every point of a grid round him (2 units apart), one
+  frame played: held or deflected, or untouched. Untouched points inside his reach (the touched area's edge):
+  standing (ready, $1B7A / $1C54) 83-89 of 137 within 14, 6-13 from his centre: **a standing goalie's body is never
+  tested** (SPAgready / SPAgready2 take the smallest reach, 14, which lies inside the ±14 box), only the blade's 8
+  plays the puck; the stick saves (the kick / butterfly saves: SPAgstickr $1CEA frame 642, SPAgstickl $1D1C frame 634)
+  109 / 88 of about 225 within 18, **the left one a channel straight through his middle** (untouched from 0 to 4 units
+  across, 30 units front to back, between the stick's circle and his body's test outside the box); the gloves 81-97
+  of 293, skating 77-131, the high right 51-104; the dive ($1D4E) none. `docs/img/blind_ring_94_95.svg` draws NHL
+  '94's ring beside NHL '95's left stick save and standing goalie.
 - **Five-hole goals in NHL '95 games:** no NHL '95 recordings exist here (the helper reads NHL '94's memory only), so
   no count. Computer games of NHL '95 recorded with its RAM (the addresses are known) could count them.
 

@@ -191,6 +191,106 @@ def through_legs():
     return svg(880, ly + 116, b, "Through the legs")
 
 
+# NHL '95's touch maps (2026-11-16, analysis/scoring_map/gen95_blind_ring_check.py on retail with the self-check off):
+# a slow low puck put at each point of a grid round the goalie (2 units apart, dx -32..32 across, dy +24..-24 rows,
+# +dy toward his net), one frame played; '#' held or deflected, '.' untouched. The left stick save ($1D1C, frame 634)
+# and standing (the ready animation $1B7A, frame 610).
+NHL95_LEFT_STICK = [".................................", ".................................", ".................................",
+                    "................#................", "............##...................", "...........###...................",
+                    "..........####...................", ".........#####......###..........", "........######....#######........",
+                    "........######....#######........", "........######....#######........", "........######....#######........",
+                    ".......#######....#######........", "........######....#######........", "........######......###..........",
+                    "........######...................", "........######...................", ".........#####...................",
+                    "..........#############..........", "...........###########...........", "............#########............",
+                    "................#................", ".................................", ".................................",
+                    "................................."]
+NHL95_READY = [".................................", ".................................", ".................................",
+               ".................................", ".................................", ".................................",
+               ".................................", ".................................", ".............######..............",
+               ".............######..............", "............########.............", "............########.............",
+               "............########...#.........", ".............######..............", ".............######..............",
+               ".................................", ".................................", ".................................",
+               ".................................", "................#................", ".................................",
+               ".................................", ".................................", ".................................",
+               "................................."]
+
+
+def blind_ring_compare():
+    """NHL '94's butterfly blind ring next to NHL '95's, measured: in NHL '95 the stick box is square (the squared-distance
+    test compares against ChkStickSqP's address, so it always passes) and a standing goalie's body is never tested
+    (his reach, 14, lies inside the ±14 box)."""
+    S, W = 6, 1260
+    b = [ARROW]
+    b.append(text(W / 2, 28, "Through the legs: NHL '94's blind ring and NHL '95's (Genesis)", 17, anchor="middle", weight="bold"))
+    b.append(text(W / 2, 48, "Seen from above, to scale. Each goalie faces down the page; his net is above him. "
+                  "Where a low puck gets no stick and no body test, it slides through him.", 12, SOFT, "middle"))
+    panels = [(30, "NHL '94: butterfly (frame 480)", "the ring round the blade"),
+              (440, "NHL '95: left stick save (frame 634)", "measured, one frame each spot"),
+              (850, "NHL '95: standing (ready, frame 610)", "measured, one frame each spot")]
+    cy = 260
+    for x0, title, sub in panels:
+        b.append(text(x0 + 190, 86, title, 14, INK, "middle", "bold"))
+        b.append(text(x0 + 190, 104, sub, 12, SOFT, "middle"))
+    # 1. NHL '94: body circle 13, the blade at (9, -2), the 8-14 ring (as through_legs)
+    cx = 30 + 190
+    P = lambda x, y: (cx + x * S, cy - y * S)
+    gy = P(0, 18)[1]
+    b.append(line(cx - 26 * S, gy, cx + 26 * S, gy, RED, 3))
+    b.append(circle(cx, cy, 13 * S, "#cfe3f5", BLUE, 2))
+    X, Y = P(9, -2)
+    b.append(f"<path fill='{ORANGE}' fill-opacity='0.55' fill-rule='evenodd' stroke='{ORANGE}' stroke-width='1.5' d='"
+             f"M{X - 14 * S},{Y} a{14 * S},{14 * S} 0 1,0 {28 * S},0 a{14 * S},{14 * S} 0 1,0 {-28 * S},0 z "
+             f"M{X - 8 * S},{Y} a{8 * S},{8 * S} 0 1,0 {16 * S},0 a{8 * S},{8 * S} 0 1,0 {-16 * S},0 z'/>")
+    b.append(circle(X, Y, 8 * S, GREEN, GREEN, 1.5, None, 0.35))
+    b.extend(sprite(480, cx, cy, S, opacity=0.55))
+    b.append(circle(cx, cy, 13 * S, "none", BLUE, 2))
+    b.append(circle(X, Y, 6, INK, "#ffffff", 2))
+    for i, s in enumerate(["A round ring, 8-14 from the blade:", "the blade is 9 to his side, so the ring", "covers his middle: a fast low puck steps",
+                           "over the sliver of body in front."]):
+        b.append(text(30, cy + 150 + i * 15, s, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
+    # 2 and 3. NHL '95, measured
+    for x0, rows, reach, notes in ((440, NHL95_LEFT_STICK, 18, ["A square box (the address bug), and in", "this save it sits on his middle: a channel",
+                                                               "through him, 0-4 units from his centre."]),
+                                   (850, NHL95_READY, 14, ["Standing, his body is never tested (his", "reach, 14, lies inside the ±14 box): only",
+                                                          "the blade's 8 plays the puck."])):
+        cx = x0 + 190
+        P = lambda x, y: (cx + x * S, cy - y * S)
+        gy = P(0, 17)[1]
+        b.append(line(cx - 26 * S, gy, cx + 26 * S, gy, RED, 3))
+        for r, row in enumerate(rows):
+            dy = 24 - 2 * r
+            for c, ch in enumerate(row):
+                dx = -32 + 2 * c
+                if ch == "#":
+                    fill, op = BLUE, 0.75
+                elif math.hypot(dx, dy) <= reach:
+                    fill, op = ORANGE, 0.75
+                else:
+                    continue
+                px, py = P(dx - 1, dy + 1)
+                b.append(f"<rect x='{px:.1f}' y='{py:.1f}' width='{2 * S:.1f}' height='{2 * S:.1f}' fill='{fill}' fill-opacity='{op}' stroke='#ffffff' stroke-width='0.5'/>")
+        b.append(circle(cx, cy, reach * S, "none", INK, 1.2, "4 3"))
+        for i, s in enumerate(notes):
+            b.append(text(x0, cy + 150 + i * 15, s, 12, INK if i == 0 else SOFT, weight="bold" if i == 0 else "normal"))
+    for x0 in (30, 440, 850):
+        c = x0 + 190
+        b.append(line(c - 6, cy - 6, c + 6, cy + 6, INK, 2.5))
+        b.append(line(c - 6, cy + 6, c + 6, cy - 6, INK, 2.5))
+    ly = cy + 222
+    leg = [("#cfe3f5", BLUE, "NHL '94: body circle (reach 13 here; 12-15 by Agility)"),
+           (GREEN, GREEN, "NHL '94: within 8 of the blade the stick plays a low puck"),
+           (ORANGE, ORANGE, "NHL '94: 8-14 from the blade nothing is tested.  NHL '95: untouched inside his reach (dashed)"),
+           (BLUE, BLUE, "NHL '95: the puck held or deflected there")]
+    for i, (f, s, label) in enumerate(leg):
+        yy = ly + i * 20
+        b.append(f"<rect x='30' y='{yy - 11}' width='26' height='13' fill='{f}' fill-opacity='0.6' stroke='{s}'/>")
+        b.append(text(66, yy, label, 13))
+    b.append(text(30, ly + 92, "Red: the goal line. NHL '95's maps: a slow puck (height 0) put at each spot 2 units apart, one frame played"
+                  " (gen95_blind_ring_check.py). In both games only a puck at height 5 or less meets the stick test.", 12, SOFT))
+    b.append(text(30, ly + 108, "NHL '95's stick saves, gloves and skating frames all have untouched holes inside the reach; its dive has none.", 12, SOFT))
+    return svg(W, ly + 122, b, "Blind ring: NHL '94 and NHL '95")
+
+
 # ---------------------------------------------------------------------------------------------- 3. the nine aim points
 def aim_points(system):
     s, post, outer = (16, 20, 20) if system == "genesis" else (15, 17, 22)
@@ -1511,7 +1611,8 @@ def main():
              "puck_meets_skater.svg": puck_meets_skater(), "penalty_shot.svg": penalty_shot(),
              "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
              "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
-             "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence()}
+             "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence(),
+             "blind_ring_94_95.svg": blind_ring_compare()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)
