@@ -5956,6 +5956,42 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 fighting (Vancecookcobxin's patch, 540d453), played (2026-11-16)
+
+NHL_95_fighting.bin 80c2dca2, W18_fighting.bin 20697843, NHL_95_fighting_all_hacks.bin dbd7a038,
+W18_fighting_all_hacks.bin 70245e86. Changed against the originals: the 13 hooks, the 3,916 bytes at $1E0000, the
+header checksum (retail also the self-check call and $1A72C0, as NOSE4Web's other options).
+`analysis/scoring_map/gen95_fight_check.py ROM OUT menu|game ...` (the computer on both sides; `--push` holds the check
+tension $FFC028 at 40 or more; `--fgt=N` sets every skater's +$74; `--five` / `--perlen=V` the period length; `--tie`
+a tie taken to a shootout after the first fight).
+- **Boot and the row:** no red screen on either; Game Setup's ninth row "Fighting", On at power-on ($FFCC63 = 1 from
+  Game Setup on), RIGHT steps On, On - Arcade Mode, Off, On; W18 keeps "Home Team" / "Away Team".
+- **No fight can start on 5- or 10-minute periods (a register clobber).** The willingness test ($1E04F4) builds the
+  opponent's term in d1 (-2 x his hits, team block +$11E), then calls the band routine at $1E04D2 for the 8 / 16
+  lookup, and that routine begins `move.w $C026.w,d1` (the period length): d1 becomes the period length's low byte
+  plus 8 or 16, compared signed with the opponent's +$74. 5 minutes ($12C): $2C + 8 = 52; 10 minutes ($258): $58 + 16
+  = 104; both above any +$74 (0-14), so the test always fails; 20 minutes ($4B0): $B0 + 16 = $C0, -64, so it always
+  passes and hits play no part. Played: whole games with the tension pushed and every skater's +$74 at 10-12 gave no
+  fight on 5- and 10-minute periods (both ROMs); scratch copies counting at the hook (565 calls in 3 min), the test's
+  entry (286), the threshold passed (310) and the test passed (0) found the step; NOSE4Web's unchanged ROM with
+  20-minute periods fought at once (six fights in the first minute, pushed). **Fix:** the band routine on d2 (4 words:
+  $1E04D2 `3238` -> `3438`, $1E04D6 / $1E04E0 / $1E04EA `0C41` -> `0C42`; d2 isn't live in either caller there).
+  The patch's notes call +$74 "aggressiveness": it is NHL '95's `fighting` byte (the roster's Chk/Hnd low nibble & $E,
+  0-14; aggressiveness is +$73).
+- **W18's rosters can't fight:** its 34 teams of 10 have 0 in that nibble for every player (only the handedness bit),
+  so the test's "opponent's +$74 at least 2" fails for every pair, fix or not. Retail: 601 of 662 players 2 or more.
+- **With the fix (scratch copies; W18 with +$74 set to 10):** fights from checks on both ROMs: the sticks down, punches
+  (both sides' frames), a hit, the loser falling (once knocked flat, $3E7); the banner ("14 Geoff Courtnall VAN vs 11
+  Mark Messier NYR"); both fighters 5:00 ($412C / $612C, 300 s); at the end the winner's entry $28 (Fighting *) and the
+  loser's $26 in the list and in the penalty screen's copy ($FFDC82); the penalty screen "Fighting ✓ 14 G. Courtnall",
+  "Fighting 11 M. Messier". After a fight the clock runs a second or two (the delayed call) before the whistle; with
+  the tension pushed a second fight could start in it. Once a skater outside the pair showed hit and fall frames (W18,
+  not looked into).
+- **Off:** no fight in whole games, fix applied and everything favouring fights (both ROMs).
+- **All-hacks (fixed copies):** a fight in period 1, then a tie taken through overtime to the after-overtime shootout in
+  the same game, both ROMs: the fight engine's RAM ($FFE800-$FFE879) never changed while the shootout ran, and
+  $FFF000-$FFF6CF never changed outside it.
+
 ### NOSE4Web's NHL '95 shootouts, played; season standings; 3-on-3 overtime read (2026-11-16)
 
 **The NHL shootout in Shootout mode** (4d3bdf2: NHL_95_nhl_shootout.bin 5c5f49fa, W18_nhl_shootout.bin e2c57fad;
