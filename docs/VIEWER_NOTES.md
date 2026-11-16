@@ -1429,6 +1429,16 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
     boxes (x 72-184); ranked 17th-64th 6%; no positive score near it 5%; suppressed or on a static sprite 2%.
     Searching the bottom strip between the boxes (and the soft skaters there too) didn't pay: the team right 82.8%
     (candidates and skaters) and 83.5% (candidates only) against 83.6% on the same stretch; not kept.
+- **The puck won on the soft copy, measured** (2026-11-15; each change of the last carrier's team in the recordings,
+  frame by frame on the timeline, against each change of the video's team path in live play): 311 true wins in the
+  four games (70-94 a game, as the report's recording column), the video 259 (WIN_SWITCH 8). Within 1 s (real) and
+  to the same team 133 match: 43% of the true found, 51% of the video's real; within 2 s 58% / 69%. Where they match,
+  the zone agrees 91%. By how long the winner then kept the puck: under 0.5 s none found, 0.5-1 s 11%, 1-2 s 30%,
+  2-5 s 44%, 5 s and more 52%. Even for wins held 2 s+ the nearest video change to the same team is spread from
+  1.5 s early to 0.1 s late (the middle half; a tenth 1.7 s late or more, 9% none within 10 s): the star path's jitter,
+  not the counting rule. SWITCH 5 balances found and real (49% / 47%, the per-team-and-zone counts off by 78 in all
+  against 102), higher SWITCH finds fewer; a minimum hold or a later frame for the zone changes little. So the counts
+  stay rough on a soft copy until the star is placed better; the report keeps WIN_SWITCH 8 (tuned on the recording).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
