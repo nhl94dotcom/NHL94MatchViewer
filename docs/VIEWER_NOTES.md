@@ -1562,7 +1562,7 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   precision (video alone 47% at 73%), 67% at 65% (65% at 61%)**. A help, not the answer; more games to learn from
   would help the sound most (184 shot onsets).
 - **More clean Genesis sessions** (2026-11-16): the user's RetroArch recordings folder
-  (`%USERPROFILE%\RetroArch-1.17-Win64ecordings`, 124 videos since 2026-04-16) holds 11 sessions that overlap the
+  (`%USERPROFILE%\RetroArch-1.17-Win64\recordings`, 124 videos since 2026-04-16) holds 11 sessions that overlap the
   helper's match files (from 2026-10-16): 4 new Genesis ones (nhl94: BOS-DAL 10-17, five games; BOS-WPG 10-18, four;
   BOS-LA 10-23, three; BOS-TOR 11-01, four) beside BOS-CHI, and 7 SNES (the NHL94_Classic TOR series, the WCOH game).
   Chunk 1: `tools/video_sync.py` placed all 16 new games (3-10 stretches a game; timelines in
