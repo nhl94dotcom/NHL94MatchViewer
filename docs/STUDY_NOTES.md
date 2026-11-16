@@ -5956,6 +5956,54 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 organ resume after a pause (b1d6bee), played; SNES RAM for the same option (2026-11-16)
+
+NHL_95_organ_resume.bin ee4a1636 against NHL_95.bin, W18_organ_resume.bin ab93f093 against W18.bin.
+
+**Read.** Pausemode's `btst #sfpz` ($7E38C) calls $1A72C6: $FFF800 = -1, then, for a player's pause with sflags9 bit 5
+clear, the slot whose SndSeqId is PlayingSong ($32-$55) kept at $FFF800 (slot word, id, SndSeqPtr, SndSeqPos, Wait,
+Tempo, Frac, State: 22 bytes; interrupts off), returning the btst's flags. It runs before SoundOff. The last `move.w
+Vcount,OldVcount` ($7E4BC, after the driver reload and the fade-in) calls $1A735C: with the driver ready ($FFFDFC =
+$1234, cleared while it works) the slot back (its own or the first free), after the Z80 is sent the slot's $01FF
+reset and, walking the song from its start to the kept position as SndUpdate parses it (delta, running status, $9x
+note with its length, $Bx two bytes, $Cx / $Ex one, $FF the end), every $Bx (not $75), $Cx and $Ex event through
+SndPutZ80Cmd. The walk is linear, so after a song has looped, events between the loop target and the loop point would
+not be sent (none of the songs seen loops: $47, $4F, $51, $32).
+
+`analysis/scoring_map/gen95_organ_resume_check.py` (modes: the song cases and untouched cases, `period` the next
+period's opening song, `voice` the Z80's RAM), from gen95_assist_check's live states, the same presses on both ROMs:
+
+- **The song carries on.** A home goal's song ($47 NHL_95, $4F W18: channel 0 only, program 25), paused with the clock
+  running: Resume Game, Game Stats (START leaves it) and Instant Replay. The next period's opening song ($51 / $32:
+  channels 0 and 7, programs 25 and 12), the same three. On the builds the song was back in its own slot 26 frames
+  after the pause flag cleared (the fade-in) every time; the next 20-40 song positions the unpaused game's, the timing
+  the same from the second change on (the first comes early by the part of the wait already played). The originals:
+  no song after any pause. In a pause during the goal's stoppage the positions were the same, but on NHL_95 30 of the
+  39 later steps came at slightly different frames from the unpaused game's (W18: all the same; not looked into).
+- **The voices.** The Z80's RAM (Genesis Plus GX's state, after work RAM) at the same song positions, the unpaused
+  game against: the build after a pause; and the original with the slot written back by hand after the pause, nothing
+  sent (the lost program changes). Channel-7 songs: the build identical at most positions (0 bytes; 1-7 at others),
+  the hand-restored original 53-84 bytes off (outside $500-$5FF), nearly all in $61-$9C. The goal songs: the build
+  31-42 bytes off on NHL_95 (12 of them the command queue at $1D-$28), the hand-restored original 333-337. (Page
+  $500-$5FF, probably the sample-stream buffer, differs whenever a different sample is streaming, in both.)
+- **Unchanged:** sflags9 bit 5 set before the pause (no save, the song not stopped): the song, the pause flag and the
+  clock frame for frame as the original's (on NHL_95 one sound effect started 4 frames earlier). The intermission:
+  everything the same. Abort Game, then START into a new game: the same up to the new game's first pause (the
+  aborted game's song not brought back; the new game's opening song $51 / $32 as the original's).
+- **The no-pad timeout** (neither team on a pad, the pause left alone): Pausemode's $708 frames ran out and the pause
+  ended; the build then brought the song back (the save was taken, as the pause was a player's), the original did not.
+- **$FFF800-$FFF815** through every pause tab's items (about 16,000 frames, Instant Replay included): never written on
+  the originals; on the builds only by the hooks (the save as a pause starts, the -1 as it ends).
+- Not exercised: a restore into another free slot (the song's own slot was free every time), a looped song.
+
+**SNES, the 248 bytes.** The saved used-byte maps of `snes_ram_use_check.py` (2026-11-11/12: from the first frame of
+play, a whole computer game with every pause-menu screen, Instant Replay, the intermissions and the screens after
+the game; and a Shootout-mode run) on retail NHL94.smc, NHL94_Classic.smc, nhl94_2026.sfc, nhl94snes_SA1.sfc, the
+2026 LoROM and the LoROM 2 MB build: **$7E:FF00-$FFF7** never written in any of them (work RAM's never-written room
+runs $7E:F033/F03F-$FFFF); **$40:5C00-$5CF7** never written on either SA-1 build (nothing at all in $40:5800-$5FFF).
+Not covered: the front-end menus before the first frame of play (a byte the menus write and set back to 0 would not
+show) and NOSE4Web's own later additions (their list).
+
 ### NOSE4Web's NHL '95 group 1 fixes (a54ed4e) and the C-then-B check, played (2026-11-16)
 
 NHL '94's runaway, goalie-pull, sniping and penalty-shot fixes at NHL '95's places. NHL_95_group1_fixes.bin 03f77db1
