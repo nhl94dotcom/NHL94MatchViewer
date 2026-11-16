@@ -5900,6 +5900,39 @@ dump-in, as before).
   2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
   shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
 
+### NOSE4Web's NHL '95 aggression, comeback bonus and open-net fixes, played (2026-11-16, b9fa5f3)
+
+NHL_95_three_fixes.bin (7829c59c) against retail with the self-check call NOPped, W18_three_fixes.bin (a9c906a0)
+against W18.bin. `analysis/scoring_map/gen95_three_fixes_check.py` (modes agg, comeback, opennet; from
+gen95_assist_check's live states and plays).
+- **Bytes:** W18's build differs only at the three places ($83A2C `6E` -> `6D`; $83C7C `1743 0073 022B 000F` ->
+  `6100 000A E20B 1743`; $84ED2 `4240` -> `7008`) and the checksum. The retail build also has the self-check call at
+  $691 NOPped and the self-check routine at $1A72C0 replaced by `bra *` and $FF (78 bytes; nothing calls it). ClampNibble
+  at $83C88 is the original's, unchanged.
+- **Aggression** (a Regular Game for 7 team pairs, every player's working +$73 at the faceoff, 84 players, both ROMs):
+  every value fits the original's `d3 & 15` and the fix's `min(d3, 30) >> 1` for one rating d3. The fix rises with
+  the rating, 0-15 with no wrap; the original wraps at 16: ratings 16-23 played as 0-7 (a 22 as a 6, a 29 as a 13),
+  fixed 8-11 (29-30: 14-15). Goalies (14): six at 16 stored as 0, now 8.
+  **The goalie's glove byte has no effect on saves in NHL '95:** the reaching glove save line was dropped from NHL
+  '95's save code; its test stays (`cmpi.b #$B,aggress(a3)` / `blt.w`, $80612) but the `blt.w` lands on the next
+  instruction ($8061C) on retail and W18. So there is no reaching glove save to start at GvL 5 or 11.
+- **Comeback bonus** (a goal from live play, then during its celebration the period, clock and score set; Home's
+  skaters' working Checking after the faceoff, trailing minus leading): third period, first half: retail +1 / +2 on
+  every skater, fixed none; second half: retail none, fixed +1 / +2. W18 the same. Overtime (regulation run out tied
+  2-2, the overtime faceoff): both teams with the bonus on both ROMs, the values identical (a goal in overtime ends the
+  game, so only the opening faceoff was played).
+- **Open net** (gen95_assist_check's one-timer from 15 shooter spots across the slot, the away goalie left in place or
+  held wide of the far post on the goal line until the strike; passdir read after the strike):
+
+  | Goalie | Retail aim -> fixed | Goals, retail | Goals, fixed |
+  |---|---|---|---|
+  | In position (10 one-timers; W18 6) | 2 / 4 / 6, the same shot for shot | 0 | 0 |
+  | Out wide (10; W18 6) | 0 -> 8 on every one | 6 / 10 (W18 4 / 6) | 9 / 10 (W18 6 / 6) |
+
+  (passdir 4 among the in-position ones: written again by a later pass after the shot, alike on both.) Penalty
+  shots and shootouts, from the code: PSandSOpassdir, called after `.setpassdir` stores passdir, overwrites it from
+  sopathdir (turned by passdirlist for the bottom net), so the changed `d0` never reaches them; not played.
+
 ### NOSE4Web's NHL '95 rocket pass fix, played (2026-11-16, 4f1842a)
 
 NHL_95_rocket.bin (c601a947; code at $1A72C6) against retail with the self-check call NOPped, W18_rocket.bin
