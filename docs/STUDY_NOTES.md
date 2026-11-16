@@ -5956,6 +5956,94 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 group 1 fixes (a54ed4e) and the C-then-B check, played (2026-11-16)
+
+NHL '94's runaway, goalie-pull, sniping and penalty-shot fixes at NHL '95's places. NHL_95_group1_fixes.bin 03f77db1
+against NHL_95.bin, W18_group1_fixes.bin deaaf3b6 against W18.bin (the boot's ROM checksum call at $690 is NOPped
+and $1A72C0, the checksum routine, now holds the hooks). `analysis/scoring_map/gen95_group1_fixes_check.py MODE OUT ROM
+STATE ...`: NHL '94's tests (runaway_fix_test, goalie_pull_test, sniping_test, ps_table_test, ps_fixes_test) at NHL
+'95's addresses (ram95.asm's "94 $" notes), from gen95_assist_check's live state per ROM, each trial seeded so both
+ROMs play the same moments.
+
+- **Runaway speed.** NHL '95's deceleration-off (pfdoff) changes the friction shift from 5 to 9 (skate95), and NHL
+  '95's burst clears it, so bursts never stack: no build here showed NHL '94's runaway after bursts (0.6 s after the
+  second burst, about 7,500-10,400 on both ROMs, NHL '95's normal top speed). What a leak does in NHL '95 is a glide
+  that hardly slows.
+  - Taking over a pass receiver (pass, B again): retail's flag on 40 of 40, but NHL '95 clears it itself 5 frames
+    later; the build 0 of 40. Glide and bursts the same on both. (W18's state: the pass reached him every time, so not
+    measured there.)
+  - Up from a fall into the boards (pad 2's burst into a person's carrier near the boards; the flag is set with the
+    fall flag, collide95 .22): retail's flag still on as he got up 2 of 15 (NHL '95 mostly clears it during the fall),
+    once for 120 frames and more: released at 10,356, still 9,760 30 frames later (the build's median 2,957). W18 1 of
+    8 (2 frames). The builds 0 of 17 and 0 of 10.
+  - A missed one-timer (C 1, 4 or 8 frames after the pass, the receiver swinging long before the puck): the flag never
+    on, retail or build (0 of 40 each): NHL '95 doesn't leave it this way, so EndOneTimer's clear changes nothing seen.
+    Real one-timers: the puck leaves exactly the same on both ROMs, 40 of 40 (NHL_95 and W18).
+- **Computer goalie pull** (third period, 50 s left, Away the computer's with the puck in its attacking half, 40 seeds
+  per score): retail pulls only 2 down (31 of 40; W18 40); the build 1 down (32; W18 40) and 2 down (32; W18 40);
+  never tied or 3 down.
+- **Pulled-goalie sniping** (pad 1's shooter alone at 9 spots 94-174 from the aim point, 30 seeds each, the share
+  leaving at the spot's most common speeds): retail with the own goalie pulled 270 of 270 exact (in: 58%); the build
+  57% (in: 58%); W18 100% against 60%, its build 60%.
+- **Penalty-shot table** (1,500 breakaways per ROM: the computer's carrier, a chaser close behind, the computer's or
+  pad 2 pressing C, B or holding B; the foul's own code from the frame played again with "pending" set): retail gives
+  the wrong penalty shot every time, as NHL '94 did (charging -> slashing PS 30, slashing -> roughing 27, roughing ->
+  cross-checking 19, cross-checking -> hooking 9, tripping -> interference 16; W18 likewise); the build its own every
+  time (NHL_95 100 of 100, W18 104 of 104). No hooking came up in either; holding and interference give none.
+- **Penalty-shot fixes** (44 attempts per ROM): an out-of-play whistle 10-60 frames into the live attempt: retail
+  retook it from centre 37 of 43 (6 faceoffs; W18 35 of 39), the build went to a faceoff 44 of 44 (W18 40 of 40). The
+  puck given pfnc at the award whistle: still on as retail's attempt went live 44 of 44 (W18 42 of 42); the build
+  cleared it in SetupPenaltyShot every time (one W18 row showed it on: the shooter, object 6, already had the puck
+  during the stoppage, so the test read the flag 45 frames before SetupPenaltyShot ran, which then cleared it).
+- **C-then-B** (NHL '95's CCStart, $7AE3E: 120 for a computer's checker, 88 for a person's, minus the checker's
+  Checking and the impact: 0 or less knocks him down, else a roll of that range (halved on the carrier) at or under
+  Checking / 2; lower is stronger). Played: pad 1's skater bursts into the computer's carrier (150 moments per ROM),
+  each moment kept (his at contact), switched (control moved to a teammate as he closes, as B does) and with B
+  pressed. Same moments, a person's at contact against the computer's: NHL_95 30 of 90 knocked down against 21, W18
+  34 of 93 against 18 (the builds the same: 26 / 15 of 88, 31 / 15 of 91). Pressing B only switched in about a third of
+  the moments (control went to the nearest skater, often the checker). So switching away weakens the check in NHL
+  '95, the reverse of NHL '94: NOSE4Web's reading is right, and leaving NHL '94's C-then-B fix out is right.
+
+### NOSE4Web's organ resume after a pause (NHL '94 Genesis, 74cb94b), played (2026-11-16)
+
+nhl94_organ_resume.bin 53eb4f23 against nhl94.bin, CDL_Season_12_organ_resume.bin 5390f30f against CDL_Season_12.bin.
+The hooks, read: Pausemode's `jsr p_turnoff` ($7D0C) now goes to $FFAC6, which moves its return address 72 bytes down,
+finds the song's slot as stop_current_song does (the first of fm_track_slots $FFD3D4 whose pointer is at or past song
+$30's stream, signed, so free slots' $FFxxxxxx never match), saves the slot number (-1 none), pointer, delay and 8 voice
+rows of fm_voice_usage_table ($FFD1A4 + (7 - slot) x 8, every $40) with interrupts off, and jumps to p_turnoff. The
+last `move.w Vcount,OldVcount` ($7DC6) goes to $FFB34: the slot back if it is free, else the first free one (its
+voice rows by that slot), interrupts off, the 72 bytes dropped, then the replaced move. (The boot's checksum call is
+untouched; $18E is the header checksum.)
+
+`analysis/scoring_map/gen_organ_resume_check.py OUT ROM ...`: from one moment per ROM with a song playing in live play
+(Boston at home, the clock run out, the next period's first-faceoff song still on 60 frames into play), the same
+presses on each ROM, each case against that moment played on unpaused; the sound driver's slots every frame and the
+core's audio.
+
+- **A song carries on (check 1).** Resume Game, Game Stats (then B) and Instant Replay (300 frames of it): on both
+  builds the song was back in its own slot (slot 0) 26, 38 and 60 frames after the pause flag cleared (the end of
+  the fade, where the restore sits), its 8 voice rows exactly as before the pause, every time. The stream then
+  followed the unpaused game's: the next 60 pointer changes the same values, the timing the same from the second
+  change on (the first one comes early by the part of the note's delay already played: the delay word is restored as
+  it was). Loudness after it as the unpaused game's (RMS 2,870-3,560 against 2,760-3,130); the sound's 0.1 s spectra
+  correlate 0.63-0.89 with the unpaused game's (sound effects and the crowd fall at other moments after a pause),
+  against about 0.5 on the originals, where the song never came back (no song in any slot for 900 frames after).
+- **No song (check 2):** an away goal (no song), START 60 frames into the stoppage: no song started after the pause on
+  any ROM, as in the unpaused game.
+- **A delayed start pending (check 3):** a home goal (its song chosen with songdelay 120), START 40 frames later
+  (songdelay 41-42; it stays put through the pause): the goal's song started about 66 frames after the pause flag
+  cleared (the fade, then the 40 left), in a free slot, on the builds and the originals alike; nothing else started.
+- **Many pauses (check 4):** 40 pauses 30-200 frames apart, in turn Resume, Game Stats and Instant Replay, then 1,800
+  frames: no crash, never left paused, the clock running (65 / 44 ticks against the originals' 56 / 44: different
+  stoppages), a song playing at the end in slot 0. The stack's deepest word over 300 frames of play, before and
+  after the 40 pauses: $FFFF1C / $FFFF56 (nhl94 build), $FFFF3E / $FFFF24 (CDL build), the originals' $FFFF4A /
+  $FFFF16 and $FFFF3E / $FFFF74: the same tens of bytes either way, where 72 bytes a pause left behind would be 2,880.
+- **Sound effects (check 5):** in the stoppage cases the same effects start in the same order on the builds and the
+  originals, each the unpaused game's shifted by the pause's fade (24 frames); the crowd byte was not compared
+  between ROMs.
+- Not exercised: the restore into another free slot (the song's own slot was free every time: no effect took slot 0
+  during the pause screens).
+
 ### NOSE4Web's NHL '95 team banners (2ad82c0, 62c8eba), played (2026-11-16)
 
 NHL_95_banners.bin 86e80bf1 (Boston's three sets Toronto's, in place), W18_banners.bin a12cd45d (Barrie Dolts' in-game
