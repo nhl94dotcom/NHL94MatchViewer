@@ -1504,6 +1504,23 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   Of the 57 missed, 34 came while the video already showed the winner's team, though the loser's possession before
   it had been read (512 right readings, 14 wrong): the video's change came over 0.5 s before the recording's (the
   star and the last carrier not moving together; not followed further). Faceoff winners 45 of 50.
+- **Shots on goal from the video, tried** (2026-11-16; BOS-CHI's recording; not kept). The aim: shots, the stat that
+  best explains a result. From the recordings, 353 events (each possession that ended in its team's attacking zone,
+  and each shot; 92 shots on goal), each followed in the video for 1.25 s (`runs/vision/shot_frames.pkl`,
+  `shot_dark.pkl`). What doesn't separate shots: the carrier's sprite (shots and passes share their swing frames:
+  77 of the 105 frames seen in a shot animation also in a pass's; frames94's SPFswing "pass and shot swings"); how a
+  possession ends (shots end at a median 65 from the net, passes 106, lost pucks 81, with wide overlap); the
+  goalie's animation (no save animation: saves are geometry; his commonest one during shots, 05d0, is 27% of his
+  other samples). Following the puck (puck_track.path over each window, from the true start): the loose puck placed
+  on 23% of frames, shots on goal a median 3%: the finder's top 20 lack the puck on 24-44% of on-ice frames and
+  62-88% of lifted ones. A shot as a hypothesis (a straight line from the start to the goal mouth at 1.5-6 units a
+  frame, the share of frames with the puck at the predicted spot): on the finder's candidates 59% of shots on goal at
+  8% of passes / lost pucks called shots; on a puck-dark mask (dark pixels where the drawn rink is light: the true
+  puck 91% / 85% / 34% on the ice / up to 8 / higher, but 9.6% of random spots) 72% at a precision of 48%; keeping
+  only isolated dark pixels loses the puck beside skaters (59% kept at best) and does worse. Lines, distance and what
+  came next (who took the puck, how soon, a stoppage) together in a logistic model (trained on three games, tested on
+  the fourth): 52% of shots on goal found at 65% precision; per game 18 / 28 / 15 / 13 called against 23 / 30 / 12 /
+  27. Not good enough to report. A puck detector that holds through lifts and near players is what it would take.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
