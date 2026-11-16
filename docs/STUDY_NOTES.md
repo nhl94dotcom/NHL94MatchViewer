@@ -5984,9 +5984,19 @@ a tie taken to a shootout after the first fight).
   (both sides' frames), a hit, the loser falling (once knocked flat, $3E7); the banner ("14 Geoff Courtnall VAN vs 11
   Mark Messier NYR"); both fighters 5:00 ($412C / $612C, 300 s); at the end the winner's entry $28 (Fighting *) and the
   loser's $26 in the list and in the penalty screen's copy ($FFDC82); the penalty screen "Fighting ✓ 14 G. Courtnall",
-  "Fighting 11 M. Messier". After a fight the clock runs a second or two (the delayed call) before the whistle; with
-  the tension pushed a second fight could start in it. Once a skater outside the pair showed hit and fall frames (W18,
-  not looked into).
+  "Fighting 11 M. Messier". (A first reading, from back-to-back fights with the tension pushed, that the clock ran a
+  second or two after a fight before the whistle was wrong: the clock stands through a fight and play stops 3 frames
+  after it; the next pushed fight came after the faceoff.)
+- **NOSE4Web's rebuild with the fix (38c0d22: NHL_95_fighting.bin 334f6283, W18_fighting.bin 54c8aa5b,
+  NHL_95_fighting_all_hacks.bin 40178989, W18_fighting_all_hacks.bin 086ddfa8):** byte for byte the fixed copies
+  played here but the header checksum.
+- **How often, natural play** (the rebuilt retail ROM, 5-minute periods, nothing pushed, the computer on both sides, 60
+  games of random team pairs and seeds, `gen95_fight_check.py ROM OUT game 1 --five --teams=H,A --wait=N --noshots`;
+  22 s a game): **48 fights in 60 games, 0.8 a game**: 14 games none, 44 one, 2 two; 39 in the third period, 9 in the
+  second, none in the first (the tension builds through a game: it stood at 18-27 when a fight began). The clock stood
+  through every fight (start and end the same) and play stopped 3 frames after each one ends. One skater outside the
+  pair showed a fight frame ($3E2, a guard pose) for one sample in one fight of 48; the W18 case above came with
+  pushed back-to-back fights. Neither worth a change.
 - **Off:** no fight in whole games, fix applied and everything favouring fights (both ROMs).
 - **All-hacks (fixed copies):** a fight in period 1, then a tie taken through overtime to the after-overtime shootout in
   the same game, both ROMs: the fight engine's RAM ($FFE800-$FFE879) never changed while the shootout ran, and

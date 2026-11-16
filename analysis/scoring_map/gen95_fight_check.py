@@ -17,6 +17,8 @@ FIGHTING_ROM_PATCH.md beside the ROMs). Modes:
 python gen95_fight_check.py ROM OUT menu
 python gen95_fight_check.py ROM OUT game SETTING [--push] [--five] [--fgt=N] [--tie] [MAXFIGHTS]
   --perlen=V  the Per. Length row's value (0 5 min, 1 10 min, 2 20 min)
+  --teams=H,A  Game Setup's Team 1 / Team 2 values; --wait=N frames at Game Setup first (the game's seed);
+  --noshots    no screenshots
   --five   5-minute periods (the patch's bar for the opponent, 16 with 10-minute periods, is then 8, less twice his hits)
   --fgt=N  every skater's fighting byte (+$74, the roster's Chk/Hnd low nibble & $E, which the patch reads as
            "aggressiveness") set to N every second: W18's rosters have 0 for every player, so no fight can start there
@@ -66,8 +68,11 @@ def menu(e, out):
     e.screenshot(out / "top.png")
 
 
-def game(e, out, setting, push, tie, maxfights, five=False, fgt=None, perlen=None):
+def game(e, out, setting, push, tie, maxfights, five=False, fgt=None, perlen=None, teams=None, wait=0, shots_on=True):
     to_setup(e)
+    if teams:
+        e.setb(ROW + 1, teams[0]); e.setb(ROW + 2, teams[1])
+    e.run(wait)
     for i in range(8):
         e.run(6, hold=["DOWN"]); e.run(30)
     for _ in range(6):
@@ -86,6 +91,7 @@ def game(e, out, setting, push, tie, maxfights, five=False, fgt=None, perlen=Non
         e.run(6, hold=["START"]); e.run(300)
     print(f"setting $FFCC63 in the game: {e.b(SETTING)}")
     fights, f, still, last, cur, after = 0, 0, 0, None, None, None
+    tension_prev, gap = 0, None
     shots = 0
     tie_done, ot_cut, armed, cprev, so_on = False, False, False, None, False
     fram = None
@@ -101,18 +107,22 @@ def game(e, out, setting, push, tie, maxfights, five=False, fgt=None, perlen=Non
                     if k not in (5, 11):
                         e.setb(G.rec(k) + 0x74, fgt)
         on = bool(e.b(PUCKFLAGS) & 1)
+        if not on:
+            tension_prev = e.w(CHKCNT)
         if not on and cur is None and f % 4 == 0 and any(0x3CB <= frame_of(e, k) <= 0x3E7 for k in range(12)):
             print(f"  fight frames on a skater at frame {f} without the fight flag")
         if on and cur is None:
             fights += 1
-            cur = dict(start=f, frames={}, pen=None, gsp=e.w(GSP), clock=e.w(CLOCK))
-            print(f"fight {fights}: period {e.w(GSP) + 1}, clock {e.w(CLOCK)} s left")
+            cur = dict(start=f, frames={}, pen=None, gsp=e.w(GSP), clock=e.w(CLOCK), firsts={})
+            print(f"fight {fights}: period {e.w(GSP) + 1}, clock {e.w(CLOCK)} s left, tension before {tension_prev},"
+                  f" +$74 on the ice {[e.b(G.rec(k) + 0x74) for k in range(12) if k not in (5, 11)]}")
         if cur is not None:
             for k in range(12):
                 fr = frame_of(e, k)
                 if 0x3CA <= fr <= 0x3E7:
                     cur["frames"].setdefault(k, set()).add(fr)
-            if (f - cur["start"]) % 30 == 0 and f - cur["start"] <= 900:
+                    cur["firsts"].setdefault(k, f - cur["start"])
+            if shots_on and (f - cur["start"]) % 30 == 0 and f - cur["start"] <= 900:
                 e.screenshot(out / f"fight{fights}_{(f - cur['start']) // 30:02d}.png")
             if cur["pen"] is None and e.b(PENBUF):
                 cur["pen"] = [e.b(PENBUF + i) for i in range(12)]
@@ -127,12 +137,22 @@ def game(e, out, setting, push, tie, maxfights, five=False, fgt=None, perlen=Non
                     if frs & {0x3E7, 0x3E6}: kinds.append("flat out")
                     print(f"  record {k} ({team}, roster {e.b(G.rec(k) + 0x66)}): {', '.join(kinds)}; frames"
                           f" {' '.join(f'{x:X}' for x in sorted(frs))}")
-                print(f"  lasted {f - cur['start']} frames; PenBuf when play stopped: {cur['pen']}; at the end: PenBuf"
+                print(f"  lasted {f - cur['start']} frames, clock {cur['clock']} -> {e.w(CLOCK)}; PenBuf when play stopped: {cur['pen']}; at the end: PenBuf"
                       f" {[e.b(PENBUF + i) for i in range(8)]}, the penalty screen's copy $FFDC82 {[e.b(0xDC82 + i) for i in range(8)]}"
                       f" ($26 Fighting, $28 Fighting * for the winner)")
+                pair = [k for k, frs in cur["frames"].items() if frs & {0x3CB, 0x3CC, 0x3D8, 0x3D9}]
+                others = {k: cur["firsts"][k] for k in cur["frames"] if k not in pair}
+                if others:
+                    print(f"  outside the pair {pair}: records {sorted(others)} first showed fight frames at frame"
+                          f" {[others[k] for k in sorted(others)]} of {f - cur['start']}")
                 after = (f, cur)
+                gap = dict(clock=e.w(CLOCK), score=(e.w(S.HM), e.w(S.AW)), done=False)
                 cur = None
-        if after is not None and (f - after[0]) % 30 == 0 and f - after[0] <= 1200:
+        if after is not None and not gap["done"] and e.w(0xBEF0) & 0x100 and f - after[0] > 2:
+            gap["done"] = True
+            print(f"  after the fight: the clock stopped {f - after[0]} frames later, {gap['clock'] - e.w(CLOCK)} s run;"
+                  f" score {gap['score']} -> {(e.w(S.HM), e.w(S.AW))}; a fight running then: {bool(e.b(PUCKFLAGS) & 1)}")
+        if shots_on and after is not None and (f - after[0]) % 30 == 0 and f - after[0] <= 1200:
             e.screenshot(out / f"after{fights}_{(f - after[0]) // 30:02d}.png")
             if f - after[0] == 1200:
                 pens = []
@@ -203,7 +223,10 @@ def main():
         fgt = [int(a.split("=")[1]) for a in sys.argv if a.startswith("--fgt=")]
         game(e, out, int(sys.argv[4]), "--push" in sys.argv, "--tie" in sys.argv, int(nums[0]) if nums else 3,
              "--five" in sys.argv, fgt[0] if fgt else None,
-             ([int(a.split("=")[1]) for a in sys.argv if a.startswith("--perlen=")] or [None])[0])
+             ([int(a.split("=")[1]) for a in sys.argv if a.startswith("--perlen=")] or [None])[0],
+             ([tuple(int(x) for x in a.split("=")[1].split(",")) for a in sys.argv if a.startswith("--teams=")] or [None])[0],
+             ([int(a.split("=")[1]) for a in sys.argv if a.startswith("--wait=")] or [0])[0],
+             "--noshots" not in sys.argv)
 
 
 if __name__ == "__main__":
