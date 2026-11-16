@@ -5925,6 +5925,12 @@ Besides that only the header checksum (and on retail the NOPped call at $691) di
   magenta, grey: a red, orange, yellow, green, cyan, blue, purple, magenta, grey rainbow written as 0RGB. Boston's
   Hartford words are NHL '94's file's own, so they're right. And the 11 stripes 5 px wide (55 px) don't fit the
   48-px logo (6 tiles): the last one, grey, never shows.
+- **NOSE4Web's question: is ArenaGfxBank the centre-ice logo?** Yes. LoadHomeTeamGfx (with the rink's tiles, from
+  setupice and ClrHor) decompresses HomeTeam's block of it through TeamGfxList ($7DEC2 on retail: ArenaGfxBank $1A1A1A
+  plus $30A a team in the list's own order, Boston +$4BFA, the two All-Star teams sharing +$4F04). In a scratch copy
+  with Boston's entry given Toronto's address, a game at Boston shows another logo at centre ice in place of the B,
+  in Boston's colours: the bank holds tiles only, the colours come from the home team's palette. (Which palette lines
+  each screen uses for Teamblocksmap / PauseTeamBlocksMap: not looked at yet.)
 
 ### NOSE4Web's Genesis credits pointer fix, played (2026-11-15, ff54174 / 3e8b621)
 
