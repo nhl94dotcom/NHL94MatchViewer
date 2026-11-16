@@ -5956,6 +5956,35 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 3-on-3 overtime (5648d86), played (2026-11-16)
+
+NHL_95_3on3.bin 1ab53f6e and W18_3on3.bin 15f3bc13 (outside the playoffs), NHL_95_3on3_all.bin eb5607a4 (every
+overtime), W18_league_set.bin 0282c3cd (3-on-3, a shootout after overtime, the NHL shootout, Fighting starting Off).
+The overtime recount (the hook at $894C6 -> $1A7380 on retail) per team: tmap = min(4 + max(0, the other's counted
+penalties - its own), max(3, 6 - its own boxed)), counted = serving, not coincidental or bit 4, at most 2; then each at
+most the other's + 2. `analysis/scoring_map/gen95_3on3_check.py ROM CASE OUT [SEEDS] [MAXF]` (NHL '94's
+gen_3on3_ot_check at NHL '95's addresses: 5-minute periods, penalties On Except Off-sides, the computer on both sides,
+the third period run out at 0-0; in overtime the away skaters' Aggression held at 48 until two are boxed; every 4
+frames the skaters by position, tmap, the goalies pulled, the box) and `gen95_3on3_report.py` (the summary).
+25 overtimes, 101 faceoffs:
+- **3-on-3:** every even-strength stretch C, LW, RD a side, line changes off and on, both ROMs.
+- **Penalties:** one 4-on-3 (the power-play team's LD on), two counted 5-on-3 (tmap 6 / 4). After a 5-on-3 the
+  expiries give 5-on-4, then 5-on-5 in play, and 3-on-3 at the next stoppage; one expiry from 4-on-3 gives 4-on-4 in
+  play, recounted at the next stoppage. **Three or more of a team boxed: 4-on-2** (tmap 5 / 3: the cap's floor is 3,
+  two skaters, which stays in play after one penalty ends while two are still boxed), as on NHL '94's build. And since
+  an expiry adds 1 to tmap without the + 2 limit, a team held at 3 can face 6 (5-on-2): seen as 2-on-5 with an
+  unreal box (8-13 of one team after a burst at Aggression 48). A floor of 4 (the game's own outside overtime) keeps
+  three skaters and any lead at two.
+- **Carried penalties:** two home penalties from the third period opened overtime 5-on-3 (3 v 5).
+- **The power-play clock at 4-on-3** counts ("NYR Pwr Play 1:59" at OT 9:58), also at 5-on-3 and 4-on-2.
+- **Faceoffs:** every draw had each team's skaters at tmap - 1 (tmap with the goalie pulled): no short draw in 101;
+  each centre within 9 across of the puck.
+- **A pulled goalie** (the computer's delayed-penalty pull) at 3-on-3: four skaters (4 v 3 at tmap 4 / 4); at tmap 5,
+  five. (Setting tmgoalie in RAM at a stoppage didn't take.)
+- **Playoffs:** NHL_95_3on3 5-on-5 in play-mode 2 playoffs and season playoffs; NHL_95_3on3_all 3-on-3 in both.
+- **The shootout after a tied 3-on-3 overtime** (W18_league_set, the overtime cut to 40 s): the NHL shootout, three
+  rounds: 1-0 (the game 1-0) and 2-1 for the visitors in round 3 (the game 0-1).
+
 ### NOSE4Web's NHL '95 fighting (Vancecookcobxin's patch, 540d453), played (2026-11-16)
 
 NHL_95_fighting.bin 80c2dca2, W18_fighting.bin 20697843, NHL_95_fighting_all_hacks.bin dbd7a038,
