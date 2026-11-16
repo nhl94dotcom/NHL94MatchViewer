@@ -5956,6 +5956,21 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 centre-ice logos (62e10aa), played (2026-11-16)
+
+NHL_95_rink_logo.bin 9cb8b31a (Boston's centre-ice logo Toronto's), W18_rink_logo.bin 98236c10 (Barrie Dolts', team 1,
+Autobahn's, team 0). Bytes: only team 1's TeamGfxList block changed (retail list at $7DEC2 from `movea.l` at $7DEA6),
+the checksum, and on retail the usual self-check and $1A72C0. `analysis/scoring_map/gen95_rink_logo_check.py ORIGINAL
+BUILD OUT NTEAMS [--replay TEAM]`: every team at home, the opening faceoff screenshotted on both ROMs and compared
+pixel by pixel (retail against NHL_95_overtime.bin, which has the same boot change and leaves period 1 alone: the
+original's different boot timing plays a different game).
+- **Every team, both ROMs:** only team 1's game differs, within 42 x 28 pixels at centre ice; the other 25 (retail)
+  and 30 (W18) identical.
+- **The new logo** (players moved off in RAM for one frame): Toronto's leaf in Boston's black and gold; Autobahn's
+  logo in Barrie's navy (Autobahn's own is red). The red line stops at the logo's edge as at the original logos.
+- **The reverse-angle replay** (the replay banner with START, then C; sflags4 $FFBEFA bit 4 set): both new logos whole,
+  turned 180 degrees as the originals; the reverse angle's colours shift on the original ROMs too.
+
 ### NOSE4Web's NHL '95 3-on-3 overtime (5648d86), played (2026-11-16)
 
 NHL_95_3on3.bin 1ab53f6e and W18_3on3.bin 15f3bc13 (outside the playoffs), NHL_95_3on3_all.bin eb5607a4 (every
