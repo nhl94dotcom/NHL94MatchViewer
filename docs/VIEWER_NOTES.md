@@ -1542,6 +1542,12 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   logistic model (three games to train, the fourth to test): 65% found at 61% precision, or 47% at 73%; per game 22 /
   29 / 26 / 21 called against 23 / 30 / 12 / 27 (game 3, with few shots, doubled). Not yet reportable. What would
   help: a detector that holds in a crowd, and more training games (four games, 92 shots, is little).
+- **The puck detector, round 2: hard examples** (2026-11-16, not kept): 105,450 17 x 17 patches from 8,394 frames:
+  the true puck (7,893), the round-1 detector's false spots scoring 0.3+ (63,985: skates, pants, sticks in the slot)
+  weighted double, and random puck-dark pixels; a 64-hidden net per held-out game. Against the hard spots the puck
+  scores higher than round 1's (area under the curve 0.92-0.94, round 1 0.86 on the same patches), but on the shots it
+  does worse: with spots scoring 0.9+, 52% of shots on goal at 51% precision (round 1: 63% at 55%); the real puck's
+  scores fell with the hard spots' (shots' median line share 0.41, round 1 0.56). Round 1 stays.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.

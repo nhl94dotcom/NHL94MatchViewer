@@ -5930,6 +5930,31 @@ points, none of NHL '94's HotList); a skater's ±$12 (18), or ±$E outside a one
 - **Five-hole goals in NHL '95 games:** no NHL '95 recordings exist here (the helper reads NHL '94's memory only), so
   no count. Computer games of NHL '95 recorded with its RAM (the addresses are known) could count them.
 
+### NOSE4Web's NHL '95 overtime until a goal, played; NHL '95's free work RAM (2026-11-16, a961bb7)
+
+NHL_95_overtime.bin (3ce6ba97), W18_overtime.bin (792f1cdf): only PeriodOver's `move.w #4,(gsp).w` ($8CB9E) and
+clockcont_0's `beq.s .eog` ($8CCDA) made NOPs, the checksum, and (retail) the NOPped self-check call.
+`analysis/scoring_map/gen95_ot_check.py`: from a live state, the mode, period, clock (3 s left) and score set, played on
+through any screens; where a new overtime starts, a goal put in.
+
+| Case | Retail / W18 | Overtime builds |
+|---|---|---|
+| Exhibition regular game, overtime ending 1-1 | game over, 1-1 | another overtime (10:00; W18 5:00), the goal ends it |
+| Season regular-season game (GameFlags bit 3, playoff bit clear), overtime 1-1 | game over, 1-1 | another overtime, the goal ends it |
+| Season playoff game (SeasonDay+1 bit 5 set), overtime 1-1 | another overtime, the goal ends it | the same |
+| Exhibition playoff game (play mode 2), overtime 1-1 | another overtime, the goal ends it | the same |
+| Regular game, third period ending 2-2 | overtime | overtime |
+| Regular game, third period ending 2-1 | game over | game over |
+
+The season flag was set in RAM on an exhibition game: standings after a real season game not played yet.
+
+**Free work RAM** (`analysis/scoring_map/gen95_ram_use_check.py ROM OUT 120`: power-on to Game Setup, a whole Regular
+Game computer against computer with 2-minute periods, the pause menu and an instant replay opened twice, the end
+screens; every 4 frames all of work RAM against its copy at Game Setup, the core's byte-swapped RAM mapped back):
+on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own last variable below it, ChkStickSqP,
+at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
+it. Not yet run: a shootout, season mode's screens and the other menus.
+
 ### Through the goalie: NHL '94 against NHL '95, played (2026-11-16, the user's question)
 
 `analysis/scoring_map/slip_compare.py`, the same pucks at the computer goalie of the top net in both games (retail; NHL
