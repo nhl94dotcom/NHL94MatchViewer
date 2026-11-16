@@ -1423,6 +1423,12 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   margin over the frame's best and its place against the nearest skater (fitted on game 1) did better on game 3
   (placed 37.5%, team 79% against 81%). Next for it: the candidate search itself (a third of frames with no true
   candidate) and something that tells the carrier's star from the ice disturbed under other skaters.
+  - Why the true star isn't a candidate (game 3's stretch, every 3rd frame, 1,643 with it shown): a candidate (top
+    16) 66%; off the picture altogether 14% (above or below it: the game shows the star, nothing to find); in the
+    rows below the score boxes' top (186-223) 7%, where the search never looked though the ice shows between the
+    boxes (x 72-184); ranked 17th-64th 6%; no positive score near it 5%; suppressed or on a static sprite 2%.
+    Searching the bottom strip between the boxes (and the soft skaters there too) didn't pay: the team right 82.8%
+    (candidates and skaters) and 83.5% (candidates only) against 83.6% on the same stretch; not kept.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
