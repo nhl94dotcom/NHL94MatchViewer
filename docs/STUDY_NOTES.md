@@ -5900,6 +5900,46 @@ dump-in, as before).
   2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
   shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
 
+### NOSE4Web's NHL '95 rocket pass fix, played (2026-11-16, 4f1842a)
+
+NHL_95_rocket.bin (c601a947; code at $1A72C6) against retail with the self-check call NOPped, W18_rocket.bin
+(716e5b73; code at $1DADF6) against W18.bin. The byte changes are only those NOSE4Web lists: passtoa0's block
+($847BA-$84807, with $84804's `asl.w #3` gone), the two `asr.l #1` -> `#4` at $8481C / $8482C, `mulu.w #$78` -> `#$0F`
+($8483D), the code in free room, the header checksum and (retail) the NOPped call.
+`analysis/scoring_map/gen95_rocket_check.py`: from a live state (gen95_assist_check's play code), home A takes the
+puck and passes with B toward the receiver, put 40-220 units away in each of the 8 pad directions, standing, skating
+away or across (144 cases); again with GameFlags ($FFBF08) bit 1 set as B is pressed (the slow flat pass). At the
+release: passspeed, the puck's velocity and lift (puckvz), the receiver's wait (temp1) and the puck's no-touch; then
+who takes the puck (followed 15 s for the slow passes).
+
+| Passes | Speed / intended, median | Middle 80% | Over 1.3x | Lift values | To the receiver |
+|---|---|---|---|---|---|
+| Retail, plain (142) | 1.09 | 0.99-1.41 | 18 | 0-9 | 114 |
+| Fixed, plain | 0.99 | 0.96-1.03 | 0 | the same, case by case | 116 |
+| W18, plain (144) | 1.09 | 1.01-1.39 | 23 | 0-14 | 119 |
+| Fixed, plain | 1.01 | 0.99-1.05 | 0 | the same | 121 |
+| Retail, slow flat (144) | 0.33 | 0.26-0.43 | 0 | 0 on 99, else 3-8 | 75 |
+| Fixed, slow flat | 0.30 | 0.24-0.40 | 0 | 0 on 99, else 3-11 | 64 |
+| W18, slow flat (144) | 0.34 | 0.26-0.45 | 0 | 0 on 103, else 3-8 | 91 |
+| Fixed, slow flat | 0.31 | 0.25-0.42 | 0 | 0 on 103, else 3-11 | 88 |
+
+- **Targeted passes keep their speed** (NOSE4Web's question 1): as NHL '94's fix in its replay.
+- **The slow pass** (question 2): a quarter of the correct time's speed on the fixed builds (the original a quarter of
+  the rounded-down time's). It is flat only when its lift is capped (12 eighths or more: then cleared), as in the
+  original; shorter slow passes are lifted on both (the fixed ones a little higher: lift up to 11, the puck's Z up to
+  9 against 5, its times being the longer, correct ones).
+- **The receiver's wait and the no-touch** (question 3): the no-touch is the wait less 6 on both, as NHL '95's code
+  sets it; on plain passes the receiver takes the puck a median 3 frames after his wait runs out on both ROMs.
+  **The wait is a signed byte:** asspassrec counts it down with `sub.b d7,temp1(a3)` / `bpl`, so a wait over 127
+  (frames, the time less 10) is negative at once and the receiver gives up and skates off (the original game's
+  behaviour: any pass over about 2.3 s real). The slow pass multiplies the time by 4, so it reaches that early:
+  the original's rounded-down eighths keep its wait at 118 or less up to a plain time of 5/8 s, the fix's exact time
+  passes 127 from about 0.53 s. That is the drop in receptions (retail 75 -> 64: 11 passes of 100-140 units the
+  receiver abandoned at once, the puck sliding to a stop; W18 91 -> 88). Clamping the wait at 127 where passtoa0
+  stores it would keep the receiver waiting on every pass (both builds and the original game).
+- **Everything else** (question 4): the plain passes' lifts are the same case by case; the byte changes are only the
+  listed ones.
+
 ### NOSE4Web's NHL '95 assist fixes, played (2026-11-16)
 
 NHL_95_assists.bin (e14af917; code after $1A72C6) against retail with the self-check call NOPped, W18_assists.bin
