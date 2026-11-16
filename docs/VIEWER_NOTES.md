@@ -1529,6 +1529,19 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   loose on the ice, 57% loose and up to 8 high, 12% higher (lifted pucks still mostly missed). **Shots** with it (the
   line test on spots scoring 0.5+): 73% of shots on goal found at 74% precision (the finder's best: 52% at 65%);
   stricter, 67% at 81%, 45% at 87%.
+- **Shots from the video alone, step 1** (2026-11-16; scratch scripts vevents / puck_scan_v / shot_v_eval*): the
+  candidates are the video's own: each run of joypad-star readings of a team ending in its attacking zone (283 in the
+  four games; they catch 86 of the 92 shots on goal within 0.5 s before to 1.5 s after). The release is a median 1
+  frame after the last sighting (a quarter 11-29 later) but 19 units from the carrier's spot (the star is his feet,
+  the puck on his stick): so the line test starts from the learnt detector's spots within 30 of him, 0-24 frames on;
+  a line counts only while the shooting team isn't read with the puck again, at 2.5+ units a frame, and not in the
+  last 20 units before the goal line (the goalie's pads and the net score as pucks). Line share alone (spots scoring
+  0.9+): shots on goal median 0.56, other candidates 0.16; 52% of shots on goal found at 63% precision. The others
+  scoring high are mostly lost pucks, hits and steals in the slot and intercepted passes (a crowded slot gives the
+  detector skates and pants). With distance and what came next (who is read next and when, the clock stopping) in a
+  logistic model (three games to train, the fourth to test): 65% found at 61% precision, or 47% at 73%; per game 22 /
+  29 / 26 / 21 called against 23 / 30 / 12 / 27 (game 3, with few shots, doubled). Not yet reportable. What would
+  help: a detector that holds in a crowd, and more training games (four games, 92 shots, is little).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
