@@ -5879,6 +5879,27 @@ NHL94_CVC_DRAIN=on holds the Genesis skaters on the ice at half energy so the co
   (puckstick sets the two to one value), the SNES one then the nearest the puck: SNES 72 of 84 paired, 5 of 6 stick
   steals; Genesis unchanged (147 / 89, every steal paired). Library re-converted, checks clean.
 
+### NOSE4Web's giveaways credit through a line change on the other SNES builds, played (2026-11-15)
+
+nhl94snes_SA1_giveaways.sfc (1b8c6152; LASTP / CAUSEP $40:55DC / $55DE), nhl94snes_2026_giveaways.sfc (d1d52d22;
+$7E:FDEC / $FDEE), NHL94_giveaways_shootout.smc (14cd2b22). Computer games with line changes on (NHL94_CVC_LINES=on;
+138-189 player changes in a record a game, all but 0-5 at stoppages: the computer changes on the fly only in a
+dump-in, as before).
+- **Counts against the converter** (`gen_giveaways_check.py snes_games`, 2 games each): SA-1 93 of 106 paired, 2 MB
+  76 of 88, shootout build 69 of 77; none in a highlight, none negative. The unpaired are the usual give / take
+  splits at the same clock and goalies' giveaways (place 0), and one SA-1 pass picked off where the ROM credits
+  visitor place 22, the converter place 2: by the ROM's carrier trace place 22 held the puck 2 frames (869-871) after
+  place 2's pass and passed it on; the converter's carrier track missed the 2-frame touch (no line change near it).
+- **Forced** (`runs/give_lines2/forced_snes.py`, as the Genesis forced.py: at a loss, two frames on, the loser's or
+  the forcer's object (CAUSE) gets a bench player: pnum $12A3, tmpdst $1852 + $34 team; every third loss left
+  alone): SA-1 3 games, 2 MB 3, shootout build 3. Giveaways after the loser was swapped: 6 + 11, 19, 19, every one to
+  the player who lost it; takeaways after the forcer was swapped: 3 + 8, 8, 6, every one to the forcer; none to a
+  player swapped in. Unforced: 8 + 26, 36, 45 giveaways, all to the loser. The saved words held the loser's and the
+  forcer's roster numbers at the swap every time.
+- **Season shootout** (`snes_shootout_check.py ... tie --giveaways`, the script's own setup, line changes off): tied
+  2-2 with 3 s left, overtime (one count in it, at 0:01), a shootout of 6 rounds: no count changed while
+  shootoutmode was on; the totals then stayed until the next game's start cleared them (with the score).
+
 ### NOSE4Web's Genesis credits pointer fix, played (2026-11-15, ff54174 / 3e8b621)
 
 The title prints the first credits page from `movea.l #Credits,a1` ($FF224) and the rest from a second `movea.l
