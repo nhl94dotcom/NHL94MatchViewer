@@ -59,7 +59,7 @@ Missed tapestries (the user): the same chain ending in a shot attempt that did n
 "Missed tapestries", Help. Season VERSION 23: team tapMiss / tapMissA, skater tapMiss (TAP MISS columns). Documents
 games: 29 tapestry goals, 78 missed (55 saved, 10 wide, 7 blocked, 6 posts): about 27% finished.
 
-Super-fast passes and pucks past save moves (2026-10-19, the user, Genesis only). Passes: passtoa0 solves the meeting
+Rocket passes and pucks past save moves (2026-10-19, the user, Genesis only). Passes: passtoa0 solves the meeting
 time t in whole 1/8 s (truncating divs; 1-24) and sends v = distance x 65536 / (120 t) per axis (capped by divs
 overflow: an overflow leaves the puck nearly still); a receiver skating toward the passer 50-70 away gives t 1.x -> 1:
 27,000-32,000. analysis/fast_pass_study.py replays the word arithmetic from the sample before each targeted pass

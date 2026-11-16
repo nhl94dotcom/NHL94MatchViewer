@@ -259,7 +259,7 @@ Now and then a person's skater bursts and shoots off far past top speed, sliding
 - **The Passing rating sets pass speed** (160 + 2 x working Passing), **not accuracy.**
 - **Every targeted pass is aimed perfectly** at where the receiver will be if he keeps skating the same way, and lifted
   slightly according to how long it will travel.
-- **The super-fast pass (a bug).** A targeted pass's speed isn't simply its pass speed: `passtoa0` solves for the time t
+- **The rocket pass (a bug).** A targeted pass's speed isn't simply its pass speed: `passtoa0` solves for the time t
   when the puck can meet the receiver's stick if he keeps skating, in whole eighths of a second (1-24), then sets the
   puck's velocity to cover that distance in t. The division truncates, so a meeting due in 1.9 eighths becomes 1, and
   the puck is sent to cover the whole distance in an eighth of a second: nearly twice as fast. It happens when **the

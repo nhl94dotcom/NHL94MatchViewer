@@ -1,4 +1,4 @@
-"""Super-fast passes (Genesis; 2026-10-19, the user: now and then a person's pass comes out far faster than any
+"""Rocket passes (Genesis; 2026-10-19, the user: now and then a person's pass comes out far faster than any
 other). passtoa0 (input94.asm) aims a targeted pass at where the receiver's stick will be: it solves for the time t
 (1/8 s steps, 1-24) when a puck at the passer's pass speed meets him if he keeps skating, then sets the puck's velocity
 to cover that distance in t: v = distance x 65536 / (120 t), per axis. The solve is in 16-bit words, so this replays it
