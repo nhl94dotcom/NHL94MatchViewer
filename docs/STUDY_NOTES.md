@@ -5974,7 +5974,10 @@ frames the skaters by position, tmap, the goalies pulled, the box) and `gen95_3o
   two skaters, which stays in play after one penalty ends while two are still boxed), as on NHL '94's build. And since
   an expiry adds 1 to tmap without the + 2 limit, a team held at 3 can face 6 (5-on-2): seen as 2-on-5 with an
   unreal box (8-13 of one team after a burst at Aggression 48). A floor of 4 (the game's own outside overtime) keeps
-  three skaters and any lead at two.
+  three skaters and any lead at two. **Kept as it is (NOSE4Web, 813db9c):** the cap comes from NHL '94's seed-21 finding: boxed
+  players keep their sort objects, so with three of a team boxed only three of its objects are free, and a floor of 4
+  would ask for one more and lose a player again (as the centre was lost). Three boxed at once in overtime is rare; a
+  brief 4-on-2, or 5-on-2 after an expiry, is accepted.
 - **Carried penalties:** two home penalties from the third period opened overtime 5-on-3 (3 v 5).
 - **The power-play clock at 4-on-3** counts ("NYR Pwr Play 1:59" at OT 9:58), also at 5-on-3 and 4-on-2.
 - **Faceoffs:** every draw had each team's skaters at tmap - 1 (tmap with the goalie pulled): no short draw in 101;
