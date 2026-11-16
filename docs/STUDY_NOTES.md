@@ -5956,6 +5956,25 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 team banners (2ad82c0, 62c8eba), played (2026-11-16)
+
+NHL_95_banners.bin 86e80bf1 (Boston's three sets Toronto's, in place), W18_banners.bin a12cd45d (Barrie Dolts' in-game
+and pause sets Autobahn's), NHL_95_banners_full.bin 3bfb2384 (all three sets moved, every team's banners patterns of
+all-different tiles: about 616 / 616 / 672 tiles against 398 / 502 / 346). `analysis/scoring_map/gen95_banner_check.py
+ORIGINAL BUILD OUT NTEAMS [TEAMS]`: the same presses on two ROMs, screenshots compared pixel by pixel: per team (Team 1,
+the next team Team 2) Game Setup (menu set), Controller Setup, Game Statistics and the line editor (in-game set), the
+pause screen (pause set); once New Playoffs' tree, New Season's Games Today and NHL Standings (in-game set). Retail
+against NHL_95_overtime.bin (the same boot), W18 against W18.bin.
+- **In place, every team:** only the runs with team 1 differ, each screen in one banner-sized box (the playoff tree,
+  Games Today and W18's standings in team 1's slot only); W18's Game Setup unchanged for all 31 teams.
+- **Colours:** the in-game and pause sets match the donor's own (Toronto's blue in-game banner, Autobahn's); **the menu
+  set takes the slot's team colours:** Toronto's Game Setup banner in Boston's gold and black (Toronto's own is blue).
+- **The stress test:** every banner position on every screen drawn whole with its pattern, and nothing else changed on
+  Game Setup, Controller Setup, the pause screen, Game Statistics, the line editor, Games Today or the standings (the
+  only other differences: a body check more in the game the build played). **The playoff tree's top two tile rows
+  (y 0-15) are garbage** (pieces of other graphics where the original has plain background): the in-game set at its
+  full size runs over tiles that screen's background uses.
+
 ### NOSE4Web's NHL '95 centre-ice logos (62e10aa), played (2026-11-16)
 
 NHL_95_rink_logo.bin 9cb8b31a (Boston's centre-ice logo Toronto's), W18_rink_logo.bin 98236c10 (Barrie Dolts', team 1,
