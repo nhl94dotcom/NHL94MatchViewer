@@ -5974,6 +5974,11 @@ against NHL_95_overtime.bin (the same boot), W18 against W18.bin.
   only other differences: a body check more in the game the build played). **The playoff tree's top two tile rows
   (y 0-15) are garbage** (pieces of other graphics where the original has plain background): the in-game set at its
   full size runs over tiles that screen's background uses.
+- **8516612:** NHL_95_banners_limit.bin 7e2f2454 (the in-game set capped at $580 - 1 - the tree's other maps: 565 in
+  retail, 1,053 in W18; seven teams' in-game banners new, 558 tiles): the playoff tree's top clean (its differences only
+  in banner rows), the seven patterns whole, every other screen differing only in banner rows. NHL_95_banners.bin
+  9b108022 (Toronto's banner colours too, "Menu banner colours", TeamLogoPalettes colours 1 and 2): Boston's Game Setup
+  banner now Toronto's blue, as Toronto's own.
 
 ### NOSE4Web's NHL '95 centre-ice logos (62e10aa), played (2026-11-16)
 
