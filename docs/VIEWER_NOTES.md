@@ -1490,6 +1490,13 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   every wrong one): within 1 s (real) of the recording's, same team, 67-86% of the true found and 74-79% of the
   video's real (the star search 59-77% / 54-72%; the soft copy 43% / 51%); their zones (from the camera) stay rough.
   Faceoff winners right on 46 of 50 (38 before).
+  **The zone of a puck won from the new carrier's spot** (2026-11-15, unfinished): the poss files keep each
+  reading's carrier spot (`star`), and a change's zone is where the new team's run of readings began (Y = 112 + Vpos
+  - y), else the camera's. Over the four games the per-zone counts hardly moved: the attacking zones a little nearer
+  (game 3 BOS 7 / CHI 2 against 4 / 3), the visitors' neutral-zone wins still short (3 / 12 / 4 / 5 against 7 / 16 /
+  4 / 9) and the defending zones long. Not yet looked at win by win: whether the first reading comes after the
+  carrier has skated out of the zone where he won it, or the counting differs from the recording's (each change of
+  the last carrier's team, by the puck's Y).
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.

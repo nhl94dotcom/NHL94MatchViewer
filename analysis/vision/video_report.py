@@ -212,7 +212,8 @@ def main():
                 seq, obs = PO.run(video, cams, static, g["home"], g["visitors"], g["start_frame"],
                                   g["end_frame"] - g["start_frame"] + 1, step, rom,
                                   soft=PO.SOFT_BLUR if "--soft" in sys.argv else None)
-            pp.write_text(json.dumps({"frames": [s[0] for s in seq], "obs": obs, "pads": "--pads" in sys.argv}))
+            pp.write_text(json.dumps({"frames": [s[0] for s in seq], "obs": obs, "pads": "--pads" in sys.argv,
+                                      "star": [s[3] for s in seq] if "--pads" in sys.argv else None}))
         pd = json.loads(pp.read_text())
         path_of = PO.hold_path if pd.get("pads") else PO.team_path
         team = dict(zip(pd["frames"], path_of(pd["obs"])))
@@ -255,13 +256,38 @@ def main():
         PO.SWITCH = WIN_SWITCH                       # 54 of 315 recorded wins); the shares keep possession's own
         team_w = dict(zip(pd["frames"], (PO.confirm_path if pd.get("pads") else PO.team_path)(pd["obs"])))
         PO.SWITCH = sw
+        idx_of = {n: k for k, n in enumerate(pd["frames"])}
+
+        def won_at(n, t):
+            """(the carrier star's screen y, Vpos) at the first reading of team t's run that ends at frame n (joypad
+            stars only: the zone of a puck won from where the new carrier stood, not from the camera)."""
+            stars = pd.get("star")
+            if not stars:
+                return None
+            k, first = idx_of.get(n), None
+            while k is not None and k >= 0:
+                o = pd["obs"][k]
+                if o is not None and o != t:
+                    break
+                if o == t and stars[k]:
+                    first = k
+                k -= 1
+            if first is None:
+                return None
+            m = pd["frames"][first]
+            return (stars[first][1], int(cams[m][2])) if m in cams else None
+
         for n in sorted(team_w):
             if not (g["start_frame"] <= n <= g["end_frame"]) or n not in live or other_game(n) or n not in cams \
                     or not cams[n][4]:
                 continue
             t = team_w[n]
             if prev_t is not None and t != prev_t:
-                zz = Z.zone_cam(cams[n][2], live[n], cam_blue) * (1 if t == 0 else -1)
+                at = won_at(n, t)
+                if at is not None:                   # the new carrier's spot, where his team's run of readings began
+                    zz = Z.zone(112 + at[1] - at[0], live[n]) * (1 if t == 0 else -1)
+                else:
+                    zz = Z.zone_cam(cams[n][2], live[n], cam_blue) * (1 if t == 0 else -1)
                 wins[t][{1: "attacking", 0: "neutral", -1: "defending"}[zz]] += 1
             prev_t = t
         fos = [f for f in faceoffs(live, cams, pd, fps, g["start_frame"], g["end_frame"], cam_blue) if not other_game(f[0])]
