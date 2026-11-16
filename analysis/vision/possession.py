@@ -184,6 +184,9 @@ def learn_star(video, cams, out, skip=(0, 0), step=90, rom=None, blur=SOFT_BLUR)
 # the detected players under its outline, by majority.
 PAD_COL = {1: (0, 0, 99), 2: (206, 69, 99)}
 PAD_TOL, PAD_MIN, PAD_FILL = 40, 0.2, 0.15
+PAD_CENTRE = 2     # the fill's best spot within this of the outline's: a loose puck's star is left where the puck
+                   # came loose ($BE78 nibble $E: the pad not moved), and the other person's skater crossing it
+                   # read as his team carrying (BOS-CHI: wrong readings 0.9% -> 0.2% carried, 4.1% -> 1.1% loose)
 
 
 def pad_shapes(rom_bytes):
@@ -215,7 +218,10 @@ def pad_stars(f, shapes):
         s = _shape_sum(np.abs(f.astype(int) - np.array(PAD_COL[k])).sum(2) < PAD_TOL, shapes[k])
         y, x = np.unravel_index(np.argmax(s), s.shape)
         if s[y, x] >= PAD_MIN:
-            out[k] = (int(x), int(y), float(s[y, x]), float(fill[y, x]))
+            win = fill[max(0, y - 10):y + 11, max(0, x - 12):x + 13]
+            fy, fx = np.unravel_index(np.argmax(win), win.shape)
+            centred = abs(fx + max(0, x - 12) - x) <= PAD_CENTRE and abs(fy + max(0, y - 10) - y) <= PAD_CENTRE
+            out[k] = (int(x), int(y), float(s[y, x]), float(fill[y, x]) if centred else 0.0)
     return out
 
 

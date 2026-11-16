@@ -254,7 +254,7 @@ def main():
         prev_t = None
         sw = PO.SWITCH                               # a stickier path for counting changes (BOS-CHI: total error 74 ->
         PO.SWITCH = WIN_SWITCH                       # 54 of 315 recorded wins); the shares keep possession's own
-        team_w = dict(zip(pd["frames"], (PO.confirm_path if pd.get("pads") else PO.team_path)(pd["obs"])))
+        team_w = dict(zip(pd["frames"], path_of(pd["obs"])))
         PO.SWITCH = sw
         idx_of = {n: k for k, n in enumerate(pd["frames"])}
 
