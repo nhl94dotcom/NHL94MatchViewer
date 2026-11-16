@@ -1,8 +1,9 @@
 """A game report from a Genesis video alone (2026-11-14; the video reader's product so far).
 
 For each game in the video: the teams (the score box's abbreviations), the final, the goals (team, period, clock),
-zone time (from the camera) and possession (from the puck-possession star), with possession in each team's attacking
-zone. Every step is one process at a time in gentle mode, and keeps its result in OUT (rerunning skips what exists):
+zone time (from the camera), possession (from the puck-possession star), with possession in each team's attacking
+zone, and faceoffs (count, winner, zone: see FO_RUN). Every step is one process at a time in gentle mode, and keeps
+its result in OUT (rerunning skips what exists):
   camera.npz        camera_track (every STEP-th frame)
   events.json       game_events (games, teams, goals, whistles, the held readings)
   static.npz        sprites.learn_static (the nets, the logo, the benches)
@@ -24,6 +25,56 @@ import camera_track as C  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 WIN_SWITCH = 8.0                                     # possession's SWITCH for counting the puck won (see below)
+
+
+# Faceoffs (2026-11-15; BOS-CHI's soft copy and recording against the recordings' 53 faceoffs): a faceoff is the start
+# of a live run (the clock's ticks) of FO_RUN s (real) or more, after a stop of FO_STOP s or more, with the camera lost
+# (the game's close-up faceoff box covers the picture) between FO_BOX s before it; the other starts are breaks in the
+# ticks (most under 1.5 s long) and restarts after a pause. The winner: the possession star's team seen most 0.2-1.0 s
+# after the start, or 0.2-2.5 s if the star isn't seen in that (the recording's copy often finds no star for the first
+# second). Before 0.2 s the star is still on the last carrier from before the whistle; the first touch after the drop,
+# 0.2-0.5 s real, is the game's faceoff winner in all 53. The zone: the camera's place at the start, against cut-offs
+# of its own (FO_END): faceoffs are only at the nine dots, and at the drop the camera sat at -116 to -183 for the bottom
+# end zone's dots, 16 to 142 for the centre and neutral dots (one 200), 226 to 256 for the top end zone's; the zone
+# edges for play (zone_time, about +-78) put the neutral dots' 142 in an end zone.
+FO_RUN, FO_STOP, FO_BOX, FO_READ = 2.0, 2.5, (1.5, 6.0), (0.2, 1.0, 2.5)
+FO_END = (-60, 180)
+
+
+def faceoffs(live, cams, pd, fps, first, last, cam_blue):
+    """[(frame, period, zone from the home team's view (1 attacking, 0 neutral, -1 defending), winner 0 / 1 / None)]."""
+    import bisect
+    from collections import Counter
+    import zone_time as Z
+    lf = [n for n in sorted(live) if first <= n <= last]
+    cf = sorted(n for n in cams if first - 10 * fps <= n <= last)
+    runs = []
+    for n in lf:
+        if runs and n - runs[-1][1] <= fps:
+            runs[-1][1] = n
+        else:
+            runs.append([n, n, runs[-1][1] if runs else None])
+    pf, obs = pd["frames"], pd["obs"]
+    out = []
+    for a, b, before in runs:
+        if (b - a) / fps < FO_RUN or (before is not None and (a - before) / fps < FO_STOP):
+            continue
+        i0, i1 = bisect.bisect_left(cf, a - FO_BOX[1] * fps), bisect.bisect_right(cf, a - FO_BOX[0] * fps)
+        if not any(not cams[n][4] for n in cf[i0:i1]):
+            continue
+        j = bisect.bisect_left(pf, a)
+        seen = Counter()
+        for end in FO_READ[1:]:                    # the first window, then a longer one if the star wasn't seen in it
+            seen = Counter(o for f, o in zip(pf[j:j + 400], obs[j:j + 400])
+                           if a + FO_READ[0] * fps <= f <= a + end * fps and o is not None)
+            if seen:
+                break
+        k = bisect.bisect_left(cf, a)
+        at = next((cams[n] for n in cf[k:k + 20] if cams[n][4]), None)
+        v = at[2] if at is not None else 0
+        zone = 0 if FO_END[0] <= v <= FO_END[1] else Z.zone_cam(-1000 if v < FO_END[0] else 1000, live[a], cam_blue)
+        out.append((a, live[a], zone, seen.most_common(1)[0][0] if seen else None))
+    return out
 
 
 def opt(name, default=None):
@@ -62,6 +113,15 @@ def check(video, report):
             poss[t] += 1
             if (t == 0 and zz == 1) or (t == 1 and zz == -1):
                 att[t] += 1
+        fo_won, fo_zone, n_fo = {0: 0, 1: 0}, {z: {0: 0, 1: 0} for z in ("att", "neu", "def")}, 0
+        mp = home_dir / "matches" / f"{name}.js"
+        if mp.exists():
+            ms = mp.read_text(encoding="utf-8")
+            for fo in json.loads(ms[ms.index("{"):ms.rindex("}") + 1]).get("faceoffs", []):
+                n_fo += 1
+                if fo["won"] in (0, 1):
+                    fo_won[fo["won"]] += 1
+                    fo_zone[fo["zone"]][fo["won"]] += 1
         secs = c.ms(c.count - 1) / 1000 * 2.5 * n / c.count
         per = secs / max(n, 1)
         h, v = r["home"], r["visitors"]
@@ -70,7 +130,10 @@ def check(video, report):
                                          v + " attacking": round(100 * z[-1] / n, 1)},
                           "possession_share": {h: round(100 * poss[0] / n, 1), v: round(100 * poss[1] / n, 1)},
                           "possession_won": {h: wins[0], v: wins[1]},
-                          "attack_zone_possession_s": {h: round(att[0] * per), v: round(att[1] * per)}}
+                          "attack_zone_possession_s": {h: round(att[0] * per), v: round(att[1] * per)},
+                          "faceoffs": n_fo, "faceoffs_won": {h: fo_won[0], v: fo_won[1]},
+                          "faceoffs_by_zone": {zn: {h: fo_zone[z][0], v: fo_zone[z][1]} for zn, z in
+                                               ((h + " attacking", "att"), ("neutral", "neu"), (v + " attacking", "def"))}}
 
 
 def main():
@@ -195,6 +258,13 @@ def main():
                 zz = Z.zone_cam(cams[n][2], live[n], cam_blue) * (1 if t == 0 else -1)
                 wins[t][{1: "attacking", 0: "neutral", -1: "defending"}[zz]] += 1
             prev_t = t
+        fos = [f for f in faceoffs(live, cams, pd, fps, g["start_frame"], g["end_frame"], cam_blue) if not other_game(f[0])]
+        fo_won = {0: 0, 1: 0}
+        fo_zone = {z: {0: 0, 1: 0} for z in (1, 0, -1)}
+        for _, _, zz, w in fos:
+            if w is not None:
+                fo_won[w] += 1
+                fo_zone[zz][w] += 1
         secs = n_live * cstep / fps * 2.5
         share = lambda x: round(100 * x / max(n_live, 1), 1)  # noqa: E731
         n_poss = poss[0] + poss[1]                   # frames with a possession reading (every STEP-th frame)
@@ -211,7 +281,11 @@ def main():
             "possession_share": {g["home"]: pshare(poss[0]), g["visitors"]: pshare(poss[1])},
             "possession_won": {g["home"]: wins[0], g["visitors"]: wins[1]},
             "attack_zone_possession_s": {g["home"]: round(att_poss[0] * pstep / fps * 2.5),
-                                         g["visitors"]: round(att_poss[1] * pstep / fps * 2.5)}})
+                                         g["visitors"]: round(att_poss[1] * pstep / fps * 2.5)},
+            "faceoffs": len(fos), "faceoffs_won": {g["home"]: fo_won[0], g["visitors"]: fo_won[1]},
+            "faceoffs_by_zone": {name: {g["home"]: fo_zone[zz][0], g["visitors"]: fo_zone[zz][1]}
+                                 for name, zz in ((g["home"] + " attacking", 1), ("neutral", 0),
+                                                  (g["visitors"] + " attacking", -1))}})
     if "--check" in sys.argv:
         check(video, report)
     (out / "report.json").write_text(json.dumps(report, indent=1))
@@ -249,6 +323,19 @@ def main():
                 b = rc["possession_won"]
                 line += f" {b[r['home']][zname]} | {b[r['visitors']][zname]} |"
             lines.append(line)
+        if "faceoffs_won" in r:
+            a = r["faceoffs_won"]
+            line = f"| faceoffs won (of {r['faceoffs']}) | {a[r['home']]} | {a[r['visitors']]} |"
+            if rc and "faceoffs_won" in rc:
+                line += f" {rc['faceoffs_won'][r['home']]} (of {rc['faceoffs']}) | {rc['faceoffs_won'][r['visitors']]} |"
+            lines.append(line)
+            for zname, a in r["faceoffs_by_zone"].items():
+                where = "in the neutral zone" if zname == "neutral" else f"in the {zname} zone"
+                line = f"| faceoffs won {where} | {a[r['home']]} | {a[r['visitors']]} |"
+                if rc and "faceoffs_by_zone" in rc:
+                    b = rc["faceoffs_by_zone"][zname]
+                    line += f" {b[r['home']]} | {b[r['visitors']]} |"
+                lines.append(line)
         lines.append(f"\nLive play {r['live_game_seconds']} game seconds"
                      + (f" (recording {rc['live_game_seconds']})" if rc else "")
                      + f"; neutral zone {r['zone_share']['neutral']}%"

@@ -1450,6 +1450,22 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
   soft the star's fill is gone and what shows of its arms is the same blur as skates on ice. The puck isn't a way
   round it either (placed on about half of frames even on the recording). So the soft copy's possession stays at
   about 83% right; a sharper copy is what reads better (the recording's star search finds the fill: 90%).
+- **The clean recording's frame rate** (2026-11-15): RetroArch's mkv dumps say "62.50 fps, 59.94 tbr" and the frames
+  (decoded as stored) come at 59.92 a second (video_sync's fit); `camera_track.video_fps` took the 62.50, so every time
+  on BOS-CHI's recording read 4% short. It now takes tbr (YouTube's copies: 30 either way, unchanged). The recording's
+  report read again: live play 920-933 game seconds against 906-907 (883-896 before: part of what had been put down to
+  the camera was the rate); goals, possession and zones unchanged.
+- **Faceoffs from the video** (`video_report.py` FO_*, 2026-11-15): in the recordings the first touch after the drop
+  (0.2-0.5 s real) is always the faceoff winner (53 of 53), but by 1.5 s the winner still has it in only 31. A faceoff
+  is a start of the clock's live run lasting 2 s or more, after a stop of 2.5 s or more, with the camera lost 1.5-6 s
+  before it (the close-up faceoff box); the other run starts (twice as many) are breaks in the ticks, most under 1.5
+  s long. The winner: the star's team seen most 0.2-1.0 s after the start (0.2-2.5 s if none); before that the star is
+  still on the carrier from before the whistle. The zone: the camera's place at the start against cut-offs of its own
+  (-60, 180): the neutral dots' camera place (up to 142) is past the play zones' edge. Against the recordings, per
+  faceoff: **soft copy 51 of 53 found (1 false), winner right 44 of 51, zone 51 of 51; recording 50 of 53 (1 false),
+  winner 38 of 50 (2 none), zone 49 of 50** (the recording's star search often finds no star for the first second
+  after the drop). Per game the counts are 10-18 against 11-18 and the winners within 1-2 a team. The report has
+  faceoffs won by team and by zone; LA-PIT's seven games read 8-18 faceoffs each.
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
-(goals, whistles), the faceoff box and replays, and finding the game's picture inside a stream's layout for VODs.
+(goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.

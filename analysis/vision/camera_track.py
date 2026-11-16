@@ -52,12 +52,17 @@ def video_size(video):
 
 
 def video_fps(video):
-    """Frames a second from the stream's header (RetroArch's recordings say 59.92-60; YouTube's often 30)."""
+    """Frames a second from the stream's header (RetroArch's recordings say 59.92-60; YouTube's often 30). The frames
+    are decoded as stored (frames(): -fps_mode passthrough), so the rate they come at, ffmpeg's tbr, is the one to
+    use: RetroArch's mkv dumps say "62.50 fps, 59.94 tbr" and arrive at 59.92 a second (video_sync's fit of BOS-CHI;
+    with 62.5 every time on that video read 4% short, 2026-11-15)."""
     import imageio_ffmpeg
     import re
     p = subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-i", str(video)], capture_output=True, text=True)
-    m = re.search(r"([\d.]+) fps", p.stderr)
-    return float(m.group(1)) if m else 59.92
+    m = re.search(r"([\d.]+)(k?) tbr", p.stderr) or re.search(r"([\d.]+)(k?) fps", p.stderr)
+    if not m:
+        return 59.92
+    return float(m.group(1)) * (1000 if m.group(2) else 1)
 
 
 CROP = None                       # (x, y, w, h): the game's picture inside a stream's layout (stream_locate.py)
