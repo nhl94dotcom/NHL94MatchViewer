@@ -5940,6 +5940,18 @@ who takes the puck (followed 15 s for the slow passes).
 - **Everything else** (question 4): the plain passes' lifts are the same case by case; the byte changes are only the
   listed ones.
 
+- **Rebuilt with the wait capped at 127** (d66d414: NHL_95_rocket.bin d858b853, W18_rocket.bin d93c320c; the same
+  set, the slow passes followed 15 s): plain passes identical to the first build case by case (puck velocity, lift,
+  taker: 142 / 142 and 144 / 144); the only plain waits over 127 are 40-unit passes at 252-255 (time under 10
+  frames: the wait negative, as in the original; the cap limits only the top). No slow pass's wait over 127 (max
+  126 / 127). Slow-pass receptions: **retail 100** (original 75, first build 64; at 100-140 units 34 of 48, original
+  27), **W18 77** (original 91, first build 88; at 100-140 units 24 of 48, original 32). W18's lost ones were caught
+  in the original with waits of 148-245, i.e. given up at once: the receiver's own play then took him to the puck.
+  Capped, he waits up to 126 frames (2.1 s real) on the spot (asspassrec does nothing while the wait runs) while a
+  slow pass can take far longer, then leaves; with everyone else parked in the test, a pass that stops short is
+  then nobody's. Where the slow pass arrives within about 2 s the cap helps; where it takes longer, the receiver
+  standing still for 2 s and then leaving can do worse than giving up at once, as on W18 here.
+
 ### NOSE4Web's NHL '95 assist fixes, played (2026-11-16)
 
 NHL_95_assists.bin (e14af917; code after $1A72C6) against retail with the self-check call NOPped, W18_assists.bin
