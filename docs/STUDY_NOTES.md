@@ -5930,6 +5930,25 @@ points, none of NHL '94's HotList); a skater's ±$12 (18), or ±$E outside a one
 - **Five-hole goals in NHL '95 games:** no NHL '95 recordings exist here (the helper reads NHL '94's memory only), so
   no count. Computer games of NHL '95 recorded with its RAM (the addresses are known) could count them.
 
+### Through the goalie: NHL '94 against NHL '95, played (2026-11-16, the user's question)
+
+`analysis/scoring_map/slip_compare.py`, the same pucks at the computer goalie of the top net in both games (retail; NHL
+'94 from power-on to a Regular Game's faceoff, NHL '95 the live state of the NHL '95 checks; the teams are each game's
+defaults, so the goalies differ), everyone else parked. "Through him": a goal the goalie never touched, after the puck
+passed within 16 of his centre (on the ice for the real shots).
+- **Placed pucks** (15 spots 60-100 from the goal line, 5 aim points across the mouth, 12,000 / 18,000 / 24,000, about 3
+  to 6 units a frame; the goalie doesn't start a save move for them, so he stands or skates out): flat, NHL '94 14 goals
+  of 225 (6%), 6 through him (3%); NHL '95 5 (2%), 4 through him (2%). Lifted (rising at 4,000): NHL '94 6 goals, 5
+  through him; NHL '95 none. (A first run at 3,000-6,000, under 1.5 units a frame, scored nothing in either game: so
+  slow a puck always lands within 8 of the blade.)
+- **Real shots** (the skater shooting with C from 18 spots, three aims, two wind-ups: 108 a game; the goalie's own save
+  moves): NHL '94 7 goals, NHL '95 none; through him: none in either. Shots leave the stick lifted, so the stick test
+  never sees them and the body saves them.
+- So both games let a puck through only rarely, and only a flat one: in these runs NHL '95's bigger blind areas did not
+  give more goals (its goalie skating out met the puck with the blade). The dangerous case is a flat puck at his middle
+  while he is in a stick save (the recordings: 3 of 218 NHL '94 goals; in the ANA-ATL 2-on-2 game 2 of 8 flat passes at
+  a butterflying goalie in one period); not sampled here on purpose.
+
 ### NOSE4Web's NHL '95 five-hole fix, played (2026-11-16, d3fb794)
 
 NHL_95_five_hole.bin (d05de2c5) and W18_five_hole.bin (73d4e2fa). Bytes: the hook at $7B6B8 (`bsr.w puckstick` / `bra.w
