@@ -1678,3 +1678,27 @@ skater (within 3 pixels a frame of his velocity; the old test, 3 pixels of the b
 frames: the carried puck dribbles 5-15 pixels from the HotList point; a steady offset from the blade was no help).
 Left: false "lost the puck" turnovers where the carrier is off the screen or swapped to the other team (most at
 17000), shots read twice around the goal mouth, and the check attempts.
+
+**Stars and an out-of-view carrier (chunk 7, 2026-11-17).** The game draws a filled star (frame 392) under the puck
+carrier, and outline stars (390 / 391) under the skaters the people control, at the player's own sprite point
+(`inverse.read_stars`: each star's template matched within a pixel of every track's point, 60% of its pixels). The
+puck tracker now takes the possession star as the carrier (after a puck seen on the ice and a blade showing it), and
+keeps a carrier who goes out of the read area (under the score box, off a side) for up to 180 frames instead of
+handing the puck to the nearest visible stick (at 17000 that had given it to the other team for seconds). The joypad
+stars give the pseudo match's `ctrl`. Owner gaps of mixed kinds (another skater for a sample, then nobody) are filled
+when the same carrier comes back within 8 samples. The same two stretches:
+
+| | recorded | read | matched |
+|---|---|---|---|
+| hits | 15 | 15 | 15 |
+| passes | 28 | 24 | 21 |
+| zone entries | 12 | 12 | 11 |
+| shots | 6 | 8 | 5 |
+| faceoffs | 1 | 1 | 1 |
+| turnovers | 9 | 11 | 8 |
+| check attempts | 7 | 1 | 1 |
+
+Possession: 85% of the recording's carried samples read as carried (2,331 of 2,747), the team right in all but one.
+Check attempts start from the `lunge` (burst) animation, which draws the same sprite frames as plain skating, so the
+frame-to-anim table can't show it: it would take the skater's sudden speed. Left: the burst, shots read twice around
+the goal mouth, the score box (hud_read) joined in place of the recorded clock and score, and longer stretches.

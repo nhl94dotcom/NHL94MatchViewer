@@ -516,6 +516,36 @@ CARRY_FRAMES = {2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 17, 18, 19, 20, 22, 23,
                 35, 37, 39, 103, 109, 139, 626}
 
 
+STAR_FRAMES = (390, 391, 392)   # the joypad stars (pads 1 / 2: outline) and the possession star (filled), fixed colours
+
+
+def read_stars(reader, img, live, least=0.6):
+    """The stars the game draws at a player's feet (the same sprite point as his: offset 0, checked within a pixel):
+    {track id: set of star frames}. 392 is under the puck carrier (and the last carrier while the puck is loose);
+    390 / 391 under the skaters the people control."""
+    if not hasattr(reader, "_stars"):
+        reader._stars = {fr: reader.S.get(fr, 0, False) for fr in STAR_FRAMES}
+    H, W = img.shape
+    out = {}
+    for t in live:
+        for fr, tp in reader._stars.items():
+            if tp is None:
+                continue
+            ys, xs, cs = tp
+            best = 0.0
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    Y, X = ys + t.sy + dy, xs + t.sx + dx
+                    ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
+                    if ok.mean() < 0.9:
+                        continue
+                    best = max(best, float((img[Y[ok], X[ok]] == cs[ok]).mean()))
+            if best >= least:
+                out.setdefault(t.id, set()).add(fr)
+    return out
+
+
+OUT_OF_VIEW = 180                # frames a carrier gone out of the read area keeps the puck
 NEAR_BLADE, WITH_HIM = 10, 3     # a seen puck this near a blade (L1 pixels), moving with him (pixels a frame): carried
 
 
@@ -526,8 +556,10 @@ class PuckTracker:
        velocity from the last seen point;
     2. else a read player's blade showing half a flat puck (pixels in the puck's colours that no read sprite draws
        there itself): carried by him;
-    3. else a read player in a carry-only frame (CARRY_FRAMES): carried by him;
-    4. else the last carrier still read: carried by him (his blade);
+    3. else a read player standing on the possession star (frame 392, read_stars): carried by him; else one in a
+       carry-only frame (CARRY_FRAMES);
+    4. else the last carrier still read: carried by him (his blade); or gone out of the read area (under the score
+       box, off a side) for up to OUT_OF_VIEW frames: still his;
     5. else loose and unseen: carried on by its velocity (the game's loose puck keeps about 0.998 of its speed a frame)
        for up to `coast` frames, then given to the blade nearest that point within 16 pixels;
     6. else the blade nearest the last puck within 16 pixels.
@@ -537,6 +569,7 @@ class PuckTracker:
         self.R, self.coast = reader, coast
         self.mode, self.carrier, self.pos, self.vel, self.unseen = None, None, None, (0.0, 0.0), 0
         self.last_seen = None
+        self.out_of_view, self.stars = 0, {}
 
     @staticmethod
     def to_rink(sy, sx, cam):
@@ -547,6 +580,7 @@ class PuckTracker:
         return 112 - Y + cam[1], X + 128 - cam[0]
 
     def _carried(self, tr, cam, how, share=0.0):
+        self.out_of_view = 0
         t = (tr.team, tr.fr, tr.mir, tr.sy, tr.sx)
         by, bx = blade(self.R, t)
         self.mode, self.carrier, self.pos, self.vel, self.unseen = "carried", tr, self.to_rink(by, bx, cam), (0.0, 0.0), 0
@@ -616,6 +650,10 @@ class PuckTracker:
                             best = (share, tr)
         if best:
             return self._carried(best[1], cam, "on a stick", best[0])
+        self.stars = read_stars(R, img, live)
+        st = [t for t in live if 392 in self.stars.get(t.id, ())]
+        if st:                                          # the possession star under him
+            return self._carried(st[0], cam, "possession star")
         cf = [t for t in live if t.fr in CARRY_FRAMES]
         if cf:
             if self.carrier in cf:
@@ -625,6 +663,12 @@ class PuckTracker:
             return self._carried(cf[0], cam, "carry frame")
         if self.mode == "carried" and self.carrier in live:
             return self._carried(self.carrier, cam, "same carrier")
+        if self.mode == "carried" and self.carrier is not None and self.carrier not in live and self.out_of_view < OUT_OF_VIEW:
+            c = self.carrier                            # he went out of the read area (under the score box, off the
+            if c.sy > H_PLAY - 24 or c.sx < 16 or c.sx > 240 or c.sy < 16:   # side): he keeps it until it shows again
+                self.out_of_view += 1
+                by, bx = blade(R, (c.team, c.fr, c.mir, c.sy, c.sx))
+                return (by, bx, "carried", 0, 0.0, "out of view")
         if self.mode == "loose" and self.unseen < self.coast and pred is not None:
             self.unseen += 1
             self.vel = (self.vel[0] * 0.998, self.vel[1] * 0.998)
