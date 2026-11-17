@@ -5956,6 +5956,30 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 settings: any position (Edit Lines), played (2026-11-17)
+
+NHL_95_lines.bin 1dd94853 / W18_lines.bin ed34a857 against the originals (the change: $95312's `bgt.w` / `add.w
+d0,d1` NOPped, so a slot's list is every skater, where LD / RD listed the defencemen and the rest the forwards).
+`analysis/scoring_map/gen95_lines_check.py` (modes lists, centre, saveload). The editor: pause menu OPTIONS, Edit Lines;
+DOWN moves the slot ($D282 & 7), C opens its list ($D280 rows - 1, roster places from $BC1E), DOWN / C pick; START opens
+the exit box (Start leaves, A Set Original Lines; outside a Regular Game, sflags11 bit 6, also C Save / B Load Team
+Line, B only when the team's saved block is marked $64). A line slot holds the roster place + 1.
+
+- **Lists:** retail NHL_95 (New York): LD / RD the 7 defencemen, LW / C / RW the 15 forwards, line changes off and on;
+  the build every slot all 22 skaters, both ways. W18 (8 skaters a team): 3 / 5 against 8 everywhere.
+- **A defenceman at centre:** Jay Wells put at C on line 1, back to play, a whistle: at the faceoff the skater at C
+  (+$35 = 4) is Wells (NHL_95_lines, NHL_95_settings_all; W18_lines the same with its defenceman).
+- **Save, Set Original Lines, Load** (a New Playoffs game: SRSavedLines3 $5136, $39 bytes a team; save RAM byte n at
+  2n + 1): Save wrote 52 bytes (the team's block, the mark, the checksum); A put the original lines back exactly; B
+  brought the edited lines back with the defenceman at C. **On the unhacked ROM** (its own playoff game, the build's
+  saved block in its team's slot): B loaded the lines with the defenceman at C, and at the next faceoff he took it.
+  (On retail Game Setup comes later: the ROM self-check runs at boot.)
+- **A trade:** Trade Players (setup mode 8), Messier (New York) for Ronning (Vancouver), Execute: a Game With Trades
+  with New York (the scouting report shows Ronning there): every slot lists all 22 skaters. A New Season started
+  after the trade, a human game (Washington, line changes on: three lines): every slot lists all 21. (Not reached: a
+  season game with one of the two traded teams on the pad.)
+- "A = Set Original Lines" works on the build (above).
+
 ### NOSE4Web's NHL '95 group 2 fixes, played (2026-11-16)
 
 NHL_95_group2.bin / W18_group2.bin (only these four) and the _all_hacks builds, against NHL_95.bin / W18.bin.
