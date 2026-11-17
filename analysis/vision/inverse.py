@@ -361,6 +361,7 @@ class Reader:
                 if r and r[0] / max(1, r[6]) > tr.sc + 0.1 and (r[1], r[2]) != (tr.team, tr.fr):
                     _, tr.team, tr.fr, tr.mir, tr.sy, tr.sx, n = r
                     tr.sc = r[0] / n
+        self.drawn = drawn
         near = drawn.copy()
         for d in (-2, -1, 1, 2):                                    # pixels next to a drawn sprite: its stick, specks
             near |= np.roll(drawn, d, 0) | np.roll(drawn, d, 1)
@@ -376,3 +377,130 @@ class Reader:
             self.tracks = [t for t in self.tracks if not (t.miss and abs(sx - t.sx) < 12 and abs(sy - t.sy) < 12)]
             self.tracks.append(Track(team, fr, mir, sy, sx, best[0] / n))
         return [(t.team, t.fr, t.mir, t.sy, t.sx, t.sc) for t in self.tracks if t.miss == 0]
+
+
+def puck_templates(S):
+    """The puck's frames (395-404) and its shadow (394): (frame, ys, xs, codes), drawn in the rink's fixed palette."""
+    out = []
+    for fr in PUCK_FRAMES:
+        t = S.get(fr, 0, False)
+        if t is not None:
+            out.append((fr,) + t)
+    return out
+
+
+def _ring(ys, xs):
+    """The pixels touching a template but not in it (8-way)."""
+    inside = set(zip(ys.tolist(), xs.tolist()))
+    ring = {(y + dy, x + dx) for y, x in inside for dy in (-1, 0, 1) for dx in (-1, 0, 1)} - inside
+    r = np.array(sorted(ring))
+    return r[:, 0], r[:, 1]
+
+
+def read_puck(reader, img, bg, pred=None, R=3, near=12):
+    """The puck where no player sprite explains the pixels. Near the predicted point first (within `near`), else every
+    small leftover blob (2-40 pixels); each puck frame within R pixels of a candidate counts when 80% of its pixels
+    match exactly and at most 20% of the ring of pixels around it shows the puck's own colours (a puck is a small
+    separate thing: a dark sliver inside a skate or stick doesn't count). Its shadow (394) is then looked for
+    straight below, 0-60 rows down: the gap is the height (no shadow: on the ice, the shadow under the puck).
+    Returns (sy of the ice point, sx, frame, z, share matched) or None."""
+    if not hasattr(reader, "_puck"):
+        reader._puck = [(fr, ys, xs, cs) + _ring(ys, xs) for fr, ys, xs, cs in puck_templates(reader.S)]
+    drawn = getattr(reader, "drawn", np.zeros(img.shape, bool))
+    H, W = img.shape
+
+    def search(pts, rad):
+        best = None
+        for cy, cx in pts:
+            for fr, ys, xs, cs, ry, rx in reader._puck:
+                if fr == 394:
+                    continue
+                oy, ox = int(round(ys.mean())), int(round(xs.mean()))
+                grid = np.array([(cy - oy + dy, cx - ox + dx) for dy in range(-rad, rad + 1) for dx in range(-rad, rad + 1)])
+                Y = ys[None, :] + grid[:, :1]
+                X = xs[None, :] + grid[:, 1:]
+                ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
+                v = img[Y.clip(0, H - 1), X.clip(0, W - 1)]
+                m = ((v == cs) & ok & ~drawn[Y.clip(0, H - 1), X.clip(0, W - 1)]).sum(1) / len(cs)
+                RY = ry[None, :] + grid[:, :1]
+                RX = rx[None, :] + grid[:, 1:]
+                rv = img[RY.clip(0, H - 1), RX.clip(0, W - 1)]
+                ringbad = np.isin(rv, cs).mean(1)
+                m = np.where(ringbad <= 0.2, m, 0)
+                i = int(m.argmax())
+                if m[i] >= 0.8 and (best is None or m[i] > best[0]):
+                    best = (float(m[i]), int(grid[i][0]), int(grid[i][1]), fr, len(cs))
+        return best
+
+    best = search([pred], near) if pred is not None else None
+    if best is None:
+        res = (img != bg) & (img >= 0) & ~drawn
+        pts = []
+        for b in blobs(res, least=2):
+            if len(b) <= 40:
+                cy, cx = b.mean(0)
+                pts.append((int(round(cy)), int(round(cx))))
+        best = search(pts, R)
+    if best is None:
+        return None
+    share, py, px, fr, n = best
+    sh = next(t for t in reader._puck if t[0] == 394)
+    _, ys, xs, cs = sh[:4]
+    z = 0
+    for dz in range(1, 61):
+        for dx in (0, -1, 1):
+            Y, X = ys + py + dz, xs + px + dx
+            if Y.max() >= H or X.min() < 0 or X.max() >= W:
+                continue
+            if (img[Y, X] == cs).mean() >= 0.8:
+                z = dz
+                break
+        if z:
+            break
+    return (py + z, px, fr, z, share)
+
+
+def blade(reader, tr):
+    """The stick blade of a read sprite (team, frame, mirror, sy, sx): the ROM's HotList point of its frame ($A44C8,
+    a signed (x, y) byte pair a frame; x negated when mirrored, y up the rink so down the screen)."""
+    if not hasattr(reader, "_hot"):
+        rom = reader.S.rom
+        reader._hot = [struct.unpack_from(">bb", rom, 0xA44C8 + 2 * fr) for fr in range(846)]
+    team, fr, mir, sy, sx = tr[:5]
+    hx, hy = reader._hot[fr] if 0 < fr < 846 else (0, 0)
+    if mir:
+        hx = -hx
+    return sy + hy, sx + hx
+
+
+def read_puck_all(reader, img, bg, read, pred=None):
+    """The puck: loose and seen (read_puck), else on a carrier's stick: the read player whose blade point shows the
+    most of a flat puck (frames 395 / 399, 50% of its pixels matching within 1 pixel) or, if none shows it, whose
+    blade is nearest the last puck (within 16 pixels). Returns (sy, sx, frame or 'carried', z, how)."""
+    p = read_puck(reader, img, bg, pred)
+    if p:
+        return p + ("seen",)
+    if not hasattr(reader, "_puck"):
+        read_puck(reader, img, bg, None)
+    flat = [t for t in reader._puck if t[0] in (395, 399)]
+    H, W = img.shape
+    best = None
+    for tr in read:
+        by, bx = blade(reader, tr)
+        for fr, ys, xs, cs, _, _ in flat:
+            oy, ox = int(round(ys.mean())), int(round(xs.mean()))
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    Y, X = ys + by - oy + dy, xs + bx - ox + dx
+                    if Y.min() < 0 or Y.max() >= H or X.min() < 0 or X.max() >= W:
+                        continue
+                    share = float((img[Y, X] == cs).mean())
+                    if share >= 0.5 and (best is None or share > best[0]):
+                        best = (share, by, bx)
+    if best:
+        return (best[1], best[2], "carried", 0, best[0], "on a stick")
+    if pred is not None and read:
+        d, by, bx = min((abs(b[0] - pred[0]) + abs(b[1] - pred[1]), b[0], b[1]) for b in (blade(reader, tr) for tr in read))
+        if d <= 16:
+            return (by, bx, "carried", 0, 0.0, "nearest stick")
+    return None

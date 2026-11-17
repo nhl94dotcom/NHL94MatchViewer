@@ -1618,3 +1618,14 @@ frames, or at once when 250 sprite pixels are unexplained. The sprite's point is
 animation frame right in 100% of them, 0.09 extra sprites a frame, 1.7 frames a second** (first version: 64% found,
 3.9 extras a frame, 0.17 frames a second; fixed: a fixed-palette template locking onto a player, tracks lost in a
 pan, and the search's speed).
+
+**The puck (2026-11-17, `inverse.read_puck_all`).** Seen loose: each puck frame (395-404) where no player sprite
+explains the pixels, near the predicted point first, else at every small leftover blob; it counts when 80% of its
+pixels match exactly and at most 20% of the ring around it shows puck colours (a dark sliver inside a skate or a stick
+doesn't count: without this test frame 402 matched specks everywhere and only a third of reads were right); the shadow
+(394) straight below gives the height. Carried: the game keeps it at the carrier's stick blade, the ROM's HotList
+point of his frame ($A44C8, x negated when mirrored), so a read player's blade showing half a flat puck, or failing that
+the blade nearest the last puck (16 pixels), places it. Same 300 frames: the puck read in 82% of frames with it on
+screen and within 4 pixels of the recording in 72% (seen 83 of 91 right, on a stick 58 of 66, nearest stick 72 of 86),
+the height within 2 as well in 70.6%; in the air 18 of 25 right with their height. The screen point: sx = 128 + X -
+Hpos, sy = 112 - Y + Vpos (as the players').
