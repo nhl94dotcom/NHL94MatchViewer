@@ -6,7 +6,7 @@ its list (rows - 1 at $D280, the roster places from $BC1E), DOWN through the lis
 the exit box (Start leaves, A Set Original Lines, and outside a Regular Game (sflags11 bit 6) B Load / C Save Team Line).
 
 Modes (python gen95_lines_check.py MODE OUT ...):
-  lists ORIG BUILD STATE         every slot's list, line changes off ($CC5C 0) and on (1), both ROMs
+  lists ORIG BUILD STATE         every slot's list, line changes on ($CC5C 0) and off (1), both ROMs
   centre ROM STATE               the last defenceman put at C on line 1, back to play, a whistle: the skater at C
                                  (+$35 = 4) at the faceoff, his roster place (+$66), and the faceoff's takers"""
 import json
@@ -51,7 +51,7 @@ def lists(rom, state):
         ed = e.serialize()
         for slot in range(1, 6):
             e.unserialize(ed)
-            out[f"line changes {'on' if lc else 'off'}, slot {'.LD RD LW C  RW'.split()[0] if False else slot}"] = open_list(r, slot)
+            out[f"line changes {'off' if lc else 'on'}, slot {'.LD RD LW C  RW'.split()[0] if False else slot}"] = open_list(r, slot)
     return out
 
 

@@ -5980,6 +5980,52 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's NHL '95 settings: energy, goalies, skating; everything together, played (2026-11-17)
+
+NHL_95_play.bin 38ae0ac5 / W18_play.bin 86788ac0, NHL_95_settings_all.bin f0547500 / W18_settings_all.bin 9667f9a6
+against the originals. `analysis/scoring_map/gen95_play_check.py` (and gen95_rules_check / gen95_stats_check on the
+settings_all builds). NHL '95's energy: team struct +$34 + 2 x roster place (full $1000); OptLine 0 is line changes
+On.
+
+- **Energy** (a computer game, line changes on, 30000 frames; every change of every player's energy by where he
+  was): retail's drain steps on the ice -33 and smaller (mean 25.3 a step), bursts -204, the bench +9 a second, no
+  cost for hits. The build: drain -50 and smaller (mean 43.4), bursts -150, the bench +12, knockdowns -1365 (19 in
+  the game), holds -683 (13). settings_all and W18_play / W18_settings_all the same steps.
+- **Burst push:** pad 1's skater standing, UP and C: retail's push scales with energy (a speed jump of 7419 at full
+  energy, 3579 at half, 1693 at a quarter: energy / 128); the build's is fixed (9334-9380 at all three: 40 against
+  retail's 32 at full).
+- **Hockey stop** (full speed up the ice, then DOWN): retail median 38 frames (0.63 s real) and 44 px to a stop (7
+  clean runs), the build 42.5 frames (0.71 s real) and 45 px (6): 150 a frame slowing down to 120 adds little,
+  friction doing most of it.
+- **Puck friction and choppy ice:** the loose puck (pfdoff set) loses 0.78% of its speed a frame on retail (shift 7:
+  1/128, flat all period); the build 3.10% at the period's start (shift 5: 1/32, four times the slowing: a pass or
+  a dump-in goes about a quarter as far), then 1.063 / 1.122 / 1.187 times that with 30 / 55 / 80% of the period gone
+  (expected 1.0625 / 1.125 / 1.1875), the same at 95% (three quarters), fresh at the next period and overtime. W18 and
+  settings_all the same.
+- **Goalies** (pad 2 on the away goalie, manual):
+  - Switching to the goalie by holding B: 18 frames on retail (pad 2 19-20), 11 on the build (pad 2 12-13): the
+    $11 timer now $0A. Pads 3 and 4 (4-Way Play) use pad 2's byte ($BB05), reloaded from the same changed bytes: not
+    played.
+  - Holding the puck: the puck laid on his stick, nothing pressed: the whistle (code 8) 140 frames after he has it on
+    retail (2.3 s real, 5.8 game s), 300 on the build (5 s real, 12.5 game s).
+  - His box (placed moving outward, the pad held that way): retail lets him reach about x +-36 and y 231 from centre
+    ice; the build stops him at x +-30-34 and y 202 (31 further out).
+  - The whistle for a manual goalie out of range: retail at y 160 and 140 (inside 170), not 180; the build at 140,
+    not 160 or 180 (inside 150). W18 the same.
+- **Injury risk:** the counts ($FFF700, a byte a roster place, the away team +$20): 5A written at Game Setup read 0 at
+  the game's first frame; 7 and 10 halved to 3 and 5 at the next period. A hit that knocks the carrier down adds 1
+  (87 of 89; retail none). The roll on a scratch copy where every carrier knockdown reaches it (the animation and
+  facing tests NOPped, the roll kept), the carrier's count held at 6 (7 at the roll: +63 on the impact out of 400):
+  retail 13 injuries in 88 knockdowns (11.3 expected from the impacts), the build 29 in 89 (26.2 expected); at count
+  0 (1 at the roll: +13) 4 in 24 against retail's 2 in 23. Computer games (line changes on, three of 50000 frames,
+  about 35 game minutes each): retail 53 knockdowns, 1 injury; the build 69 knockdowns, 4 injuries (counts at most 2
+  at the injury). NHL '95's own rate in these: about one injury a 100 game minutes.
+- **Everything together** (settings_all, NHL '95 and W18): the energy steps, the burst, friction and choppy ice, the
+  goalie timer, hold, box and whistle, the injury counts, hybrid icing (27 of 27; NHL_95_rules and W18_settings_all
+  27 of 27 with the test puck kept moving to the line, as settings_all's friction needs), B-checks (40 and 37 of 40),
+  the shootout skip and the delayed-penalty block (home 20 / 21 calls, away 0: as the rules build) as on the single
+  builds; fights 120 s and minors 60 s; the statistics as in the statistics section.
+
 ### NOSE4Web's NHL '95 settings: rules, played (2026-11-17)
 
 NHL_95_rules.bin 6b3f4ec0 / W18_rules.bin 5227f0da (and settings_all where said) against the originals.

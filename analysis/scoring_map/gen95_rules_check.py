@@ -441,9 +441,10 @@ def icing_set(rom, state):
         for f in range(220):
             p.frame(held=["C", "UP"] if f < 3 and icer < 6 else [], held2=["C", "UP"] if f < 3 and icer >= 6 else [],
                     hold=[k for k in spots if k != icer])
-            if not sent and e.w(0xB3C2) >= 0x8000:       # the shot is away: sent on to the right corner instead
-                x, y = sw(e.w(rec(14))), sw(e.w(rec(14) + 0x14))
-                G1.put(e, 14, x, y, (100 - x) / ((0x10B + 10 - y) / 5.0), 5.0)
+            if e.w(0xB3C2) >= 0x8000 and crossed is None and not e.b(0xBB86) & 1:
+                x, y = sw(e.w(rec(14))), sw(e.w(rec(14) + 0x14))   # the shot is away: sent on to the right corner,
+                if y < 0x10B + 10:                                 # its speed kept up to the line (heavier friction)
+                    G1.put(e, 14, x, y, (100 - x) / ((0x10B + 10 - y) / 5.0), 5.0)
                 sent = True
             fl = e.b(0xBB86)
             if crossed is None and fl & 1:
