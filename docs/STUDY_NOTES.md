@@ -5980,6 +5980,42 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's NHL '95 settings: statistics, played (2026-11-17)
+
+NHL_95_stats.bin 126266e4 / W18_stats.bin 7e2486ea (and NHL_95_settings_all for fights, 3-on-3 and the shootout)
+against the originals. `analysis/scoring_map/gen95_stats_check.py` (modes game, scen, stumble, fights, ot). NHL '95's
+per-player stats are $1A-byte arrays in the team struct by roster place: goals +$B6, assists +$D0, shots +$EA, the old
+penalty-minutes column +$104 (now the bodychecks shown), the game's own checks +$11E, time on ice +$138 (words).
+
+- **Bodychecks** (a computer game from the live state, penalties on, 60-120 s periods, every frame watched): on the
+  build each of the game's checks (+$11E) shows at once at +$104 too, all with the clock running (80 of 80 in one
+  game, 20 of 20 in another; W18 21 of 21); no penalty adds to +$104; team penalty minutes (+$8) still go up by each
+  penalty's minutes (2 a penalty on NHL_95, 1 on W18: its own penalty time). Retail: +$104 is penalty minutes (+2 at
+  each penalty, clock stopped). The column reads "Chk", its sort page "Checks For".
+- **Three stars:** the ROM's star scores (ThreeStars $FFCAF8, 52 longs, home first) read a few frames after the stars
+  flag (gmode's high byte bit 7, at the end of game: ShowThreeStars), against the build's formula worked out from the
+  team structs (skaters: the goal difference + goals x 11000 + assists x 7000 + shots x 500 + the game's checks x 500;
+  goalies on the ice long enough with shots against: -11000 a goal against, 4000 a shot against (one fewer if
+  trailing), 16000 for a shutout, half the assists term): every slot equal on NHL_95 and W18 but three, which read 0:
+  the formula's top three, taken for the box. Checks decided one: two home skaters with the same goals, assists and
+  shots, the one with 4 checks a star.
+- **Time on ice:** Player Stats' sort pages on the build: Goals, Assists, Points, Shots On Goal, Checks For,
+  Giveaways, Takeaways, Time On Ice (retail: the first four and Penalty Minutes); a player's time on the page is his
+  +$138 word in game seconds (58 shown as 0:58).
+- **Giveaways and takeaways** (counts a byte a roster place at $FFEA10 / $FFEA50, 32 a team; team totals at struct
+  +$2878 / +$287A): in a computer game 84 changes, every giveaway to a player of the team that had just lost the puck
+  and every takeaway to one of the team that gained it, the team totals the sums of the players'. Set plays (12
+  each): a drop pass (A with the pad back; GameFlags bit 1) taken by the opponent behind: the passer's giveaway every
+  time; a fake shot (A released in the attacking zone; GameFlags bit 0) left the carrier word as it was, and the
+  poke that then took the puck gave the poker a takeaway; a shot into a skater who kept it: no count. Hits by pad 2's
+  burst (60): 23 knockdowns, each a takeaway for the hitter when his team got the puck; 33 stumbles that dropped the
+  puck (NHL '95's new path, hook $7B142): the hitter marked as the cause every time, a takeaway for him in the 25 where
+  he got the puck (none in the 8 where it went elsewhere). Fights (settings_all, Fighting On, 3 fights): no count
+  during a fight. 3-on-3 overtime (settings_all, 2 minutes): 49 changes, all to the right team. A shootout after it
+  (overtime cut to 3 s): no count during the shootout. Game Stats: a new last row "Give/Takeaways" (Vancouver 2/5 as
+  the RAM totals; retail ends at Passing).
+- Not checked: Player Stats without time on ice (no build has giveaways without it).
+
 ### NOSE4Web's NHL '95 group 2 fixes, played (2026-11-16)
 
 NHL_95_group2.bin / W18_group2.bin (only these four) and the _all_hacks builds, against NHL_95.bin / W18.bin.
