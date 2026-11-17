@@ -1,14 +1,14 @@
 """A match file from the video reader (inverse.py's tracks and PuckTracker), for the converter's own event finders,
 compared with the recorded match file event by event (2026-11-17, chunk 6 of the video reader).
 
-The pseudo match keeps the recorded file's samples in the stretch (t, period, clock, score, shots, stats and the goals:
-what the score box and clock show, read separately by hud_read) and replaces what the reader sees:
+The pseudo match keeps the recorded file's samples in the stretch (t, shots, stats and the goals) and replaces what
+the reader sees (the clock, period and score from the score box where the reader's rows carry hud_read's reading):
 - each track gets a record of its team: a goalie track (a frame goalies draw) record 5 / 11, skaters 0-4 / 6-10, a new
   track the free record whose last known spot is nearest; records with no live track keep their last spot;
 - pos from the sprite point (X = sx - 128 + Hpos, Y = 112 - sy + Vpos), frame / mirror as read, anim and facing the
   most common for that frame in the other recorded games, roles fixed (5 3 4 2 1 0 as the recordings list them);
 - the puck (X, Y, height) from PuckTracker, owner its carrier's record, puckV from its motion (speed x 4096 / 100);
-- ctrl from the joypad stars under the tracks (frames 390 / 391), the pads empty;
+- ctrl from the joypad stars (frames 390 / 391): each pad's skater the last track seen on its star, the pads empty;
 - the owner steadied (gaps under SHORT samples filled) and the puck hidden (height -256, as the game) where the
   clock has stood still for STOPPED samples and the puck isn't seen.
 Then export_match.analyse on both, the recorded slice's own event lists dropped first, and the events compared.
@@ -16,10 +16,16 @@ Then export_match.analyse on both, the recorded slice's own event lists dropped 
     build(match, vf, rows, maps) -> pseudo match;  compare(a, b) -> per event kind: matched / only recorded / only read
 """
 import copy
+
+import numpy as np
 from collections import Counter
 
 ROLES = "534210"
 SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
+LUNGE, LUNGE_BACK = "0c5e", 4   # the burst's anim word (Genesis ACTIONS lunge) and how far a read one is moved back
+Z_SCALE = (0.72, 0.8)       # game height from the read gap (rows): fitted on 264 airborne reads of BOS-CHI game 1
+SHOT, SHOT_SPEED, SHOT_MOUTH = "092e", 1.5, 40   # (and its line crossing the goal line within SHOT_MOUTH of the middle)
+VMAX = 9.0                  # pixels a frame: about the fastest shot (a puck at 23,000 moves 5.6)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
               "owner": 1, "pad": 1, "pad2": 1, "facing": 12, "roster": 12, "role": 12, "frame": 36, "puckFrame": 3,
@@ -76,7 +82,8 @@ def build(truth, vf, rows, maps, q0, q1):
     role = ROLES * 2 * n
     puck, puckV, owner, ctrl = list(m["puck"]), [0] * (2 * n), [-1] * n, [0] * n
     slot_of, last = {}, {k: (pos[2 * k], pos[2 * k + 1]) for k in range(12)}
-    prev_p = None
+    pad_track = {}
+    prev_p, hist = None, []
     for i in range(n):
         q = q0 + i
         r = by_fi.get(int(round(vf[q]))) if vf[q] == vf[q] else None
@@ -112,18 +119,57 @@ def build(truth, vf, rows, maps, q0, q1):
             pos[(i * 12 + k) * 2:(i * 12 + k) * 2 + 2] = [float(last[k][0]), float(last[k][1])]
         if r["puck"] is not None:
             sy, sx, z, how = r["puck"]
-            P = [float(sx - 128 + hpos), float(112 - sy + vpos), float(z)]
+            zz = Z_SCALE[0] * z + Z_SCALE[1] if z > 0 else 0.0   # the shadow gap in screen rows, as game height
+            P = [float(sx - 128 + hpos), float(112 - sy + vpos), round(zz, 1)]
             puck[3 * i:3 * i + 3] = P
-            if prev_p is not None:
-                dt = max(1, r["fi"] - prev_p[1])
-                puckV[2 * i:2 * i + 2] = [round((P[0] - prev_p[0][0]) / dt * 4096 / 100),
-                                          round((P[1] - prev_p[0][1]) / dt * 4096 / 100)]
+            if not hist or hist[-1][0] != r["fi"]:      # one point a video frame (samples can share one)
+                hist.append((r["fi"], P[0], P[1]))
+            hist[:] = [h for h in hist if r["fi"] - h[0] <= 4]
+            if len(hist) >= 2:                          # the slope over the last few read frames, capped at VMAX
+                fr_ = np.array([h[0] for h in hist], float)
+                vx = float(np.polyfit(fr_, [h[1] for h in hist], 1)[0])
+                vy = float(np.polyfit(fr_, [h[2] for h in hist], 1)[0])
+                sp = (vx * vx + vy * vy) ** 0.5
+                if sp > VMAX:
+                    vx, vy = vx * VMAX / sp, vy * VMAX / sp
+                puckV[2 * i:2 * i + 2] = [round(vx * 4096 / 100), round(vy * 4096 / 100)]
             prev_p = (P, r["fi"])
         elif i:
             puck[3 * i:3 * i + 3] = puck[3 * (i - 1):3 * i]
         if r.get("carrier") is not None and r["carrier"] in slot_of and (r["carrier"] in live or r["puck"] and r["puck"][3] == "out of view"):
             owner[i] = slot_of[r["carrier"]]
-        ctrl[i] = sum(1 << k for tid, k in live.items() if set(r.get("stars", {}).get(str(tid), ())) & {390, 391})
+        for tid_s, fr_s in r.get("stars", {}).items():          # each pad's skater: the last one seen on its star
+            for star in (390, 391):
+                if star in fr_s and int(tid_s) in slot_of:
+                    pad_track[star] = int(tid_s)
+        ctrl[i] = sum(1 << slot_of[tid] for tid in pad_track.values() if tid in slot_of)
+    # the clock, period and score from the score box where the reader read it (hud_read), carried forward over frames
+    # it couldn't read; the recorded values stay only where no read frame has come yet
+    clock, period, score = list(m["clock"]), list(m["period"]), list(m["score"])
+    got = None
+    for i in range(n):
+        r = by_fi.get(int(round(vf[q0 + i]))) if vf[q0 + i] == vf[q0 + i] else None
+        h = (r or {}).get("hud")
+        if h:
+            got = dict(clock=h["clock"] if h["clock"] is not None else (got or {}).get("clock"),
+                       period=h["period"] if h["period"] is not None else (got or {}).get("period"),
+                       home=h["home"] if h["home"] is not None else (got or {}).get("home"),
+                       vis=h["vis"] if h["vis"] is not None else (got or {}).get("vis"))
+        if got:
+            if got["clock"] is not None:
+                clock[i] = got["clock"]
+            if got["period"] is not None:
+                period[i] = got["period"]
+            if got["home"] is not None and got["vis"] is not None:
+                score[2 * i:2 * i + 2] = [got["home"], got["vis"]]
+    m.update(clock=clock, period=period, score=score)
+    # a burst backdated: its own frames (41, 46 ... 76) show a few samples into it, by when the pad has often switched
+    # to another skater, so a read burst starts LUNGE_BACK samples earlier
+    aw = lambda i, k: "".join(anim[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4])          # noqa: E731
+    starts = [(i, k) for k in range(12) for i in range(1, n) if aw(i, k) == LUNGE and aw(i - 1, k) != LUNGE]
+    for i, k in starts:
+        for j in range(max(0, i - LUNGE_BACK), i):
+            anim[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] = LUNGE
     # the owner steadied (the reader's carrier drops out for a frame or two behind a sprite)
     i = 1
     while i < n:                                     # any interruption (other owners, gaps, mixed) under SHORT samples
@@ -133,6 +179,25 @@ def build(truth, vf, rows, maps, q0, q1):
                 owner[i:back] = [owner[i - 1]] * (back - i)
                 i = back
         i += 1
+    # shots: a frame doesn't tell a wind-up from its release, nor a shot from a pass (they share frames), so where the
+    # read carrier loses the puck and it leaves fast (SHOT_SPEED pixels a frame within 6 samples) toward the net his
+    # team attacks (home up in periods 1 and 3), from his attacking half, its line through the goal mouth, his last
+    # samples are given the shot's anim
+    period_ = m["period"]
+    for i in range(2, n):
+        k = owner[i - 1]
+        if k < 0 or owner[i] == k:
+            continue
+        up = (k < 6) == (period_[i] % 2 == 0)
+        for j in range(i, min(n, i + 6)):
+            vx, vy = puckV[2 * j] * 100 / 4096, puckV[2 * j + 1] * 100 / 4096
+            px, py = puck[3 * j], puck[3 * j + 1]
+            gy = 264 if up else -264
+            aimed = vy != 0 and (gy - py) / vy > 0 and abs(px + vx * (gy - py) / vy) <= SHOT_MOUTH
+            if (vx * vx + vy * vy) ** 0.5 >= SHOT_SPEED and aimed and (py > 0) == up:
+                for jj in range(max(0, i - 3), i + 1):
+                    anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4] = SHOT
+                break
     # the puck hidden at a stoppage, as the game hides it: the clock (the score box's) unchanged for STOPPED samples and
     # the puck not seen
     clock = m["clock"]

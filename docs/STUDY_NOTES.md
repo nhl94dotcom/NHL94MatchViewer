@@ -5980,6 +5980,26 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music round 5, played (2026-11-17)
+
+Files in mv_review_2026-11-17/round5 (hashes checked).
+
+- **Loop cycles, corrected:** my round-4 search for the repeat only looked between 4,000 and 4,400 frames. Over
+  3,000-4,600, the original title (song 0) repeats every 3,841 frames (its $75 at 4,224 goes back to the $74 at
+  frame 384), song 2 every 3,920, song 3 every 4,224 on the scouting report screen (4,226 when played on the title
+  screen: the screen adds to it). Round 5, like for like: the scouting round trip 4,224 on the scouting report (NHL '95
+  and W18, as the originals there), the title made from the scouting export 4,226 on the title screen (as the original
+  scouting music played there), the end of period made from the title export 4,224 from its start (its $75 frame,
+  as every piece that loops from frame 0 here: song 2 at 3,920, song 3 at 4,224).
+- **Drums:** every hit the original sounds (the last-sent of two on one patch at once) is in the round trips, nothing
+  missing or extra: 962 (scouting, NHL '95 and W18, and the title made from it), 1,076 (end of period from the title).
+- **SNES playoff organ on the console:** sample 14 sounds on a centred voice (volume 37/37, 46/46) and a right-only
+  voice (0 / 20-32): the original leans right (3,761 R against 3,591 L). Round 4's organ tracks are the original's
+  (entries 31 and 47, the same velocities), so its narrower sound comes from the other paired entries the original
+  uses (50 / 51, 48 / 49, 45 / 46), which the round trip puts on other entries (18 / 39 / 50, 42 / 43, 17 / 20 / 25).
+- **Above 6 kHz:** 0.23% (title), 0.20% (menu), 0.44% (playoff) of the console's energy; the player's 0.6 x is a
+  2.2 dB dip in that band.
+
 ### NOSE4Web's music round 4, played (2026-11-17)
 
 Files in mv_review_2026-11-17/round4 (hashes checked).
