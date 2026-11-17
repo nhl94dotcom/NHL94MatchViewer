@@ -5997,6 +5997,10 @@ code room ($1A72C6-$1A74CB). `analysis/scoring_map/gen95_song_medley_check.py` (
   address as NOSE4Web's other NHL '95 code: NHL_95 $1A72C6 (the group 1 fixes $1A72C0-$1A7321, organ resume
   $1A72C0-$1A74CB), W18 $1DADF6 (group 1, organ resume, 3-on-3, shootout after period 3 all start there). Clear in
   these single-feature builds; combined with any of those it would overlap unless placed after them.
+  NOSE4Web's answer: in one ROM it claims room after what is already there (checked with every '95 option, both
+  orders). **Rebuilt (e53352e, notes held at once capped at 7, NHL '95's own songs' most, not NHL 94's 4):**
+  NHL_95 776dbc74, W18 a0c90d1e: all 255 of $3D's notes in the same order, the same length, the organ, $3D's pitch;
+  W18 played the whole 24.4 s, at most 7 notes pending.
 
 ### NOSE4Web's SNES organ resume after a pause (8a0b31f), played (2026-11-16)
 
