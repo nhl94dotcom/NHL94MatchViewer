@@ -44,8 +44,24 @@ def wait(d, p):
     return (v << 7) | d[p], p + 1
 
 
+def own_bank(rom):
+    """NOSE4Web's own bank of new songs (its list, which SndFindBankItem is pointed at: list = list + 16, the game's
+    bank, -1, -1, then the items), or None."""
+    import re
+    pat = re.compile(re.escape(bytes([0x48, 0xE7, 0x78, 0x60, 0x43, 0xF9])) + b"(?s:....)" + re.escape(bytes([0x34, 0x3C, 0x00, 0x03])))
+    m = pat.search(rom)
+    if not m:
+        return None
+    lst = struct.unpack_from(">I", rom, m.start() + 6)[0]
+    if lst + 16 > len(rom) or struct.unpack_from(">I", rom, lst)[0] != lst + 16:
+        return None
+    return lst + 16
+
+
 def stream(rom, song):
-    it = next(i for i in items(rom) if i["type"] == 3 and i["id"] == song)
+    own = own_bank(rom)
+    pool = (items(rom, own) if own else []) + items(rom)
+    it = next(i for i in pool if i["type"] == 3 and i["id"] == song)
     d = rom[it["at"]:it["at"] + it["size"]]
     nl = u16(d, 0)
     p = 2 + 2 * nl

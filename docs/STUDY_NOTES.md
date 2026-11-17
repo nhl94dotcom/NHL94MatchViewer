@@ -5980,6 +5980,54 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's MIDI-made NHL '95 and SNES game music, played (2026-11-17)
+
+Files in mv_review_2026-11-17/nhl95_replace and snes_replace (hashes checked). `gen95_music_check.py` reads NOSE4Web's
+own bank now (its list, which SndFindBankItem is pointed at); `gen95_replace_check.py` plays a piece and compares the
+Z80's voice tables with what the piece asks for each frame.
+
+NHL '95:
+- **On paper** (all five): at most 6 FM patches sounding (drums included), 3 square, 1 noise; at most 12 commands a
+  frame; at most 9 notes pending (10 in the title); no two notes overlapping on one FM patch; program changes at frame
+  0, $74 at frame 1, the header's loop point at it, $75 0 at the end. Every tuned note of the round trips is at the
+  original's frame and sounding pitch (title 1,711, end of period 1,352; dropped 315 and 152). Every drum moment kept,
+  but $13 at 108 became 120, $15 at 9 became the kick at 0, toms 17 / 19 became 18, $0E 55 / 57 became 56.
+- **Played:** end of period (between periods, from a live state): 31,380 of 31,383 FM note-frames and every square
+  note-frame where they should be, note list peak 8. Title (front end): clean in the first pass (28 note-frames off
+  in 70 s); the loop takes 2 frames more than looping to frame 1 (the second pass 2 frames late, the third 4): about
+  33 ms (real) of extra rest a loop. W18: the same (a 1-frame shift); W18's end of period from a state at the third
+  period's end lost 487 FM note-frames in its first pass only (the game-end screens, not checked further).
+- **Loudness** (RMS over 70 s): title (scouting export) 3,485 against the original scouting music's 3,566; end of
+  period (title export) 3,611 against the original title's 3,484 (and the original end-of-period music's 3,071).
+- **Each patch alone** (one long note): $11 a plucked bass (-13 dB at 1 s, -18 at 2 s); $18 swells for 2.4 s and holds,
+  bright (brass / strings swell); $1B holds (-6 dB at 3 s), dark (horn / pad); $0D decays fast (-18 dB at 1 s, -27 at
+  2 s: a mallet, no long notes); $1D holds and swells (sustained lead); $1C dips 11 dB then swells back (whistle /
+  flute); $14 flat. Drums: $15 at 0 a kick (73% below 200 Hz), at 18 a tom; $0E at 51 a thump with a crack (58% low),
+  at 56 a snare (5% low); $13 at 108 darker and more tonal (centroid 1,548 Hz, flatness 0.12) than at 120 (2,563 Hz,
+  0.31): 108 suits an open hat / crash, 120 a closed hat.
+- **Menu sounds:** none to hear: 16 moves through Game Setup start no sound-effect slot on retail either.
+- **Song 3:** the hand-made piece plays on the scouting report screen and the playoff screen; the Stanley Cup screen
+  wasn't reached.
+
+SNES:
+- **Repointed:** title 1 site, menu 4, playoff 4; the two "already playing?" compares hold the new addresses.
+- **Round trips** (lined up in time): 96% of each original's notes at the same code within a frame (title 1,633 of
+  1,695, menu 1,490 of 1,554, playoff 676 of 704), so code = MIDI note; tempo 157 (one tick a frame) where the
+  originals have 156 / 155 / 154: the title plays 0.65% faster, menu 0.25% slower, playoff 0.4% faster; the playoff
+  round trip has 590 notes against 704. All tracks end together.
+- **The organ:** the original playoff music doubles its organ line on entries 31 ($1F) and 47 ($2F), one tick apart
+  (102 notes each); the round trip has it on 47 only (95 + 2 notes), so it sounds from one side where the original
+  is centred.
+- **Played:** title from power-on (1349 to 6559, 5,210 frames; the original 5,202; then the menu piece, as the
+  original); menu loops every 4,190 frames (original 4,181), on through New Playoffs, Player Select and the matchups
+  without a restart; playoff piece (heard on Game Setup by repointing the menu's calls in a scratch copy) loops every
+  1,658 frames; the hand-made menu piece and the SA-1 build loop every 985 frames. Loudness (RMS): title 2,997 against
+  3,104, menu 3,361 against 3,287, playoff 3,451 against 3,690; none past 20,480.
+- **Hand-made file:** pitched parts on their MIDI notes; drums 36 -> 48, 38 -> 50, 42 -> 54, 49 -> 62.
+- **TitleScreen:** it calls SPCTitleToMenu (the title set becomes the menu set) right before MusicStart TitleSong, so
+  the title music plays on the menu set.
+- Not checked: the playoff breaks between periods; putting the original back (no file).
+
 ### NHL '95's sound driver: voices, stealing, controllers, the note list, long loops (2026-11-17, for NOSE4Web)
 
 For NOSE4Web's MIDI import of bank songs 0, 2 and 3. The 68000 side from sound95.asm; the Z80 side (not disassembled)
