@@ -5997,6 +5997,12 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   33 -> 57, 38 -> 62, 41 -> 65); $14 sounds as written from 46 up and an octave up below (40 -> 52, 43 -> 55; the square
   wave's lowest is about 110 Hz, MIDI 45): the end of period's 16 notes at 43 sound at 55 (its 8 at 46 as written; no
   other piece has $14 below 48).
+- **v3 (34b754f):** the MIDI files write $1C at +24 (48 of 48) and $14 below 46 at +12 (the end of period's 16 notes at
+  43 as 55; the rest as written). The title's chord after 10.9 s on the console (voice table): track 10 on voices 0
+  and 1 from 10.98 s (voice 0 taken by track 5 at 11.40 s, voice 1 to 12.58 s), tracks 6, 7, 8 11.00-12.45 s, track 2
+  11.00-11.78 s: the player's own timeline. So the "1.9 s ring" was my measure (each version's level against its own
+  onset peak), not a note: during the chord the player has about twice the console's 1-2.5 kHz, 0.7-0.8 of its
+  5-8 kHz and a third of its energy above 8 kHz.
 
 ### NOSE4Web's code-review fixes, played (2026-11-17: drum rolls, room given back, the SNES player, NHL '95's music as MIDI)
 
