@@ -6138,6 +6138,9 @@ NHL_95_rules.bin 6b3f4ec0 / W18_rules.bin 5227f0da (and settings_all where said)
   none), but **the away team still can't be called while a home penalty is pending (0 calls, both bits held 0;
   W18_rules 0 of 23)**: $89A10's bra covers the home checker only; the away checker's test at $89A1E
   (`btst #1,(sflags9).w / beq`) is as retail.
+  **Fixed (NHL_95_delayed_calls.bin e8609805, W18_delayed_calls.bin b1e6da8f: $89A1E also `6000 000C`), played:**
+  the same game with no pending bit, the home bit, the away bit and both held gives the same calls every time (NHL '95
+  17 home / 4 away, W18 8 / 15): a pending penalty no longer blocks either team's calls.
 - **B-checks with penalties off:** pad 2's sweep check (B) at a skater without the puck as he skates in (40 each):
   retail with penalties on 38 fell, off 6 (the roll randomd0($20 + Chk - legstr) >= $18); the build 40 on and 39 off
   (W18 0 off, W18_rules 38).
