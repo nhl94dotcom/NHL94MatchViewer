@@ -5980,6 +5980,53 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's MIDI title, end-of-period and scouting music, played (2026-11-17)
+
+nhl94_title_is_scouting.bin bd3b2c63 (the title $78 = the scouting report music re-imported), nhl94_title_roundtrip_
+eop_brass.bin c2ed6361 (the title re-imported from its own export; end of period $79 = Brass Bonanza on patch 14),
+against retail nhl94.bin. `analysis/scoring_map/gen_title_music_check.py` (`tour`, `patches`; streams with
+gen_song_streams.py).
+
+- **Where each piece plays** (retail and both builds alike): the title on the title screen and Game Setup; end of
+  period on the pre-game Start Game menu, the intermissions and the playoff tree; scouting on the Matchups screens;
+  nothing on the pause menu or in play (the organ there).
+- **Loops:** every new piece starts with a header event (`14 FF FF FF`) and loops to start + 4, as retail's $79 and $7A;
+  retail's title has no header and loops to its start. Played: each looped on its screen with the driver's pointer
+  staying inside the stream (the title once in 5,500 frames, the brass piece three times on the playoff tree), no
+  stray pointer, no note left on at a loop point, the game going on through every screen, sound effects starting in
+  play after the music as on retail.
+- **The end of a piece is cut:** the import ends the stream at the last note-off. The original title holds 120 frames
+  of rest after its last notes (ending at 4,241 of 4,361) before looping; the round trip loops at 4,241, so every loop
+  comes 2 s (real) early. Scouting as the title loses its 13-frame rest the same way. The notes and their timing are
+  otherwise the original's: of the round trip's 926 original notes 897 at the same start and pitch, 29 dropped by the
+  five-voice limit (ten more cut short where the limit took their voice); the scouting piece 1,013 of 1,032, its three
+  notes above 95 (96-98) moved down an octave.
+- **Voices and drums:** at most 5 notes on channels 0-6 at once in every new piece, the kick (patch 20, note 21,
+  channel 6) and the hit (sample $6A, note 76, channel 7) on the same notes as the originals.
+- **Sound** (60 s of each screen's audio): the round-trip title's share of energy below 120 Hz 41.5% (retail 34.8%):
+  the bass carries; loudness the same (RMS 3,470 against 3,618). **The brass end-of-period piece is 2.6 times as loud
+  as the original piece (RMS 8,580 against 3,276) and clips** (10,374 samples at full scale in a minute on the playoff
+  tree; the original none): every note at velocity 96-111 on patch 14, the loudest patch, where the game's pieces use
+  mostly 16-63.
+- **The FM patches, heard alone** (a scratch copy whose title is a test piece: C2-C5 at velocity 100, held 1.5 s;
+  each patch about 20 cents sharp of MIDI pitch, as the driver tunes all):
+  - 1 (alg 2): bright (centroid 3-5 times the pitch), quick decay (a quarter left after 1 s at C2, 3% at C5), short
+    release: a plucked or struck tone, clavinet / electric piano.
+  - 3 (alg 4): soft and near pure (the fundamental 65-72% of the energy), sustained (about 0.7 after 1 s), short
+    release: a mellow flute-like lead.
+  - 4 (alg 5): soft (1.4-2.7), holds (0.7-0.9), long release (0.5-0.8): a pad / soft strings.
+  - 5 (alg 0): very bright and buzzy (10-15 times, no fundamental to speak of), sustained, stops dead: a buzz /
+    sawtooth synth lead, sounding an octave below the note.
+  - 9 (alg 5): warm (about 2), sustained (0.5-1.0), release 0.3-0.45: a soft organ / string pad, the loudest of the
+    sustained ones.
+  - 10 (alg 0): bright (4-7), sustained, release 0.3-0.6: synth brass.
+  - 11 (the organ, alg 5): brightness 3, sustained, release about 0.5.
+  - 13 (alg 3): an octave below the note, bright (3), decaying (0.2 after 1 s), short release: the bass (plucked /
+    slap bass); retail's pieces have their bass lines on it.
+  - 14 (alg 5): an octave below the note, near pure (the fundamental 81-86%), the loudest patch (peaks 7,300-8,100),
+    decaying to about half in 1 s, stops dead: a round synth lead / whistle.
+  - 20 (the kick): gone within 0.25 s.
+
 ### NOSE4Web's NHL '95 settings: energy, goalies, skating; everything together, played (2026-11-17)
 
 NHL_95_play.bin 38ae0ac5 / W18_play.bin 86788ac0, NHL_95_settings_all.bin f0547500 / W18_settings_all.bin 9667f9a6
