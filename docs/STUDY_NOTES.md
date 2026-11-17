@@ -5980,6 +5980,23 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music round 6, played (2026-11-17)
+
+NHL94_all_three_roundtrip_grown.smc 95758572, nhl94_2026_all_three_roundtrip.sfc 0e45b23b (each track on its own
+entry, volumes as CC7). Played in Snes9x against the originals (the playoff piece on Game Setup by repointing the
+menu's calls in scratch copies; title from power-on, menu with the cursor moved now and then):
+
+| piece | side / mid (orig, new) | L / R original | L / R new | RMS orig, new | envelope corr |
+|---|---|---|---|---|---|
+| title | 0.060, 0.073 | 2,906 / 2,916 | 2,865 / 2,813 | 2,911, 2,839 | 0.974 |
+| menu | 0.101, 0.079 | 3,257 / 3,283 | 3,312 / 3,364 | 3,270, 3,338 | 0.908 |
+| playoff | 0.242, 0.143 | 3,589 / 3,759 | 3,455 / 3,515 | 3,675, 3,485 | 0.944 |
+
+(the 2026 build within 0.001 of the 1 MB one). The playoff is wider than round 4 (0.087) but not the console's 0.242
+(NOSE4Web's render: 0.225). Frames each sample sounds by side (the S-DSP's VOL L / R, 3 apart counts as a side),
+original against new playoff: the brass (sample 8) L 214 / R 200 / centre 0 against 179 / 175 / 48; the crash (7)
+centre 41 + R 35 against R 75; sample 3 R 6 against 0; every other sample within a few frames.
+
 ### NOSE4Web's music round 5, played (2026-11-17)
 
 Files in mv_review_2026-11-17/round5 (hashes checked).
