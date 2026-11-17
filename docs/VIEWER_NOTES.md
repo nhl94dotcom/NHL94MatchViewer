@@ -1651,3 +1651,30 @@ What's left: the last carrier kept after the puck left him unseen (a pass or ste
 frames right at 27000, 25 of 38 at 18000), coasting that goes wrong (14 of 26 at 18000), and a goalie's frozen puck a
 few pixels off. A learnt per-frame carry point was no help: the recordings aren't frame-locked, so the ROM's HotList
 point stays (where the puck shows at a blade it is right 99% of the time).
+
+**From the video to the converter's events (chunk 6, 2026-11-17; `analysis/vision/pseudo_match.py`).** The reader's
+tracks (now each with its own number) and PuckTracker over two 40-second stretches of BOS-CHI game 1 (video frames
+6200 and 17000, 2,400 each, 2-3 frames a second) made into a match file on the recorded file's samples: each track a
+record of its team (a goalie frame: record 5 / 11; a new track the free record nearest its last spot), positions, frames
+and mirroring as read, anim and facing the most common for the frame in games 2-4, the puck and its carrier's record as
+owner (gaps under 8 samples filled), the puck hidden where the clock has stood 90 samples and the puck isn't seen. The
+clock, score, period, stats and goals are the recorded file's (what the score box shows: hud_read reads them; not yet
+joined in). Then export_match.analyse on it and on the recorded slice, events matched by kind and team within 0.6 s:
+
+| | recorded | read | matched |
+|---|---|---|---|
+| hits | 15 | 15 | 15 |
+| passes | 28 | 22 | 19 |
+| zone entries | 12 | 11 | 10 |
+| shots | 6 | 8 | 5 |
+| faceoffs | 1 | 1 | 1 |
+| turnovers | 9 | 16 | 8 |
+| check attempts | 7 | 0 | 0 (they need the person-controlled skaters: the joypad stars, not joined in) |
+
+Possession: the recording's carried samples read as carried 78% (2,156 of 2,747), the team right 76%. Two changes got
+there: the owner steadied and the puck hidden at stoppages (possession 62% to 73%, the faceoff found, false
+turnovers 12 to 9), and a seen puck counted as carried when it is within 10 pixels of a blade and moving with that
+skater (within 3 pixels a frame of his velocity; the old test, 3 pixels of the blade, caught 65 of 576 carried
+frames: the carried puck dribbles 5-15 pixels from the HotList point; a steady offset from the blade was no help).
+Left: false "lost the puck" turnovers where the carrier is off the screen or swapped to the other team (most at
+17000), shots read twice around the goal mouth, and the check attempts.

@@ -516,10 +516,14 @@ CARRY_FRAMES = {2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 17, 18, 19, 20, 22, 23,
                 35, 37, 39, 103, 109, 139, 626}
 
 
+NEAR_BLADE, WITH_HIM = 10, 3     # a seen puck this near a blade (L1 pixels), moving with him (pixels a frame): carried
+
+
 class PuckTracker:
     """The puck from frame to frame, with memory (2026-11-17):
-    1. seen (read_puck, near the predicted point first): on the ice within 3 pixels of a read player's blade, carried by
-       him; else loose, its rink velocity from the last seen point;
+    1. seen (read_puck, near the predicted point first): on the ice within 3 pixels of a read player's blade, or within
+       NEAR_BLADE and moving with him (its velocity within WITH_HIM of his), carried by him; else loose, its rink
+       velocity from the last seen point;
     2. else a read player's blade showing half a flat puck (pixels in the puck's colours that no read sprite draws
        there itself): carried by him;
     3. else a read player in a carry-only frame (CARRY_FRAMES): carried by him;
@@ -532,6 +536,7 @@ class PuckTracker:
     def __init__(self, reader, coast=20):
         self.R, self.coast = reader, coast
         self.mode, self.carrier, self.pos, self.vel, self.unseen = None, None, None, (0.0, 0.0), 0
+        self.last_seen = None
 
     @staticmethod
     def to_rink(sy, sx, cam):
@@ -558,10 +563,18 @@ class PuckTracker:
             pred = self.to_screen(Y, X, cam)
             pred = (int(round(pred[0])), int(round(pred[1])))
         p = read_puck(R, img, bg, pred)
-        if p and p[3] == 0:                     # seen on the ice at a read player's blade (3 pixels): he has it
-            at = [(abs(b[0] - p[0]) + abs(b[1] - p[1]), t) for t in live
-                  for b in [blade(R, (t.team, t.fr, t.mir, t.sy, t.sx))]]
-            at = [x for x in at if x[0] <= 3]
+        if p and p[3] == 0:                     # seen on the ice at a read player's blade (3 pixels), or near it (10)
+            Yr, Xr = self.to_rink(p[0], p[1], cam)              # and moving with him (3 pixels a frame): he has it
+            pv = None
+            if self.last_seen is not None and R.n - self.last_seen[2] == 1:
+                pv = (-(Yr - self.last_seen[0]), Xr - self.last_seen[1])         # screen rows, columns a frame
+            self.last_seen = (Yr, Xr, R.n)
+            at = []
+            for t in live:
+                b = blade(R, (t.team, t.fr, t.mir, t.sy, t.sx))
+                d = abs(b[0] - p[0]) + abs(b[1] - p[1])
+                if d <= 3 or (d <= NEAR_BLADE and pv is not None and abs(pv[0] - t.vy) + abs(pv[1] - t.vx) <= WITH_HIM):
+                    at.append((d, t))
             if at:
                 tr = min(at, key=lambda x: x[0])[1]
                 self.mode, self.carrier, self.pos, self.vel, self.unseen = "carried", tr, self.to_rink(p[0], p[1], cam), (0.0, 0.0), 0

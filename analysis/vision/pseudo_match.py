@@ -8,7 +8,9 @@ what the score box and clock show, read separately by hud_read) and replaces wha
 - pos from the sprite point (X = sx - 128 + Hpos, Y = 112 - sy + Vpos), frame / mirror as read, anim and facing the
   most common for that frame in the other recorded games, roles fixed (5 3 4 2 1 0 as the recordings list them);
 - the puck (X, Y, height) from PuckTracker, owner its carrier's record, puckV from its motion (speed x 4096 / 100);
-- ctrl and the pads empty (the joypad stars are read separately: possession.py).
+- ctrl and the pads empty (the joypad stars are read separately: possession.py);
+- the owner steadied (gaps under SHORT samples filled) and the puck hidden (height -256, as the game) where the
+  clock has stood still for STOPPED samples and the puck isn't seen.
 Then export_match.analyse on both, the recorded slice's own event lists dropped first, and the events compared.
 
     build(match, vf, rows, maps) -> pseudo match;  compare(a, b) -> per event kind: matched / only recorded / only read
@@ -17,6 +19,8 @@ import copy
 from collections import Counter
 
 ROLES = "534210"
+SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
+STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
               "owner": 1, "pad": 1, "pad2": 1, "facing": 12, "roster": 12, "role": 12, "frame": 36, "puckFrame": 3,
               "mirror": 12, "anim": 48, "lights": 1}
@@ -119,6 +123,27 @@ def build(truth, vf, rows, maps, q0, q1):
             puck[3 * i:3 * i + 3] = puck[3 * (i - 1):3 * i]
         if r.get("carrier") is not None and r["carrier"] in live:
             owner[i] = live[r["carrier"]]
+    # the owner steadied: a gap (no owner) or another owner for fewer than SHORT samples between two spells of the same
+    # owner is that owner's (the reader's carrier drops out for a frame or two behind a sprite)
+    i = 0
+    while i < n:
+        j = i
+        while j < n and owner[j] == owner[i]:
+            j += 1
+        if i > 0 and j < n and owner[i - 1] == owner[j] and owner[j] >= 0 and j - i < SHORT:
+            owner[i:j] = [owner[j]] * (j - i)
+        i = j
+    # the puck hidden at a stoppage, as the game hides it: the clock (the score box's) unchanged for STOPPED samples and
+    # the puck not seen
+    clock = m["clock"]
+    still = 0
+    for i in range(n):
+        still = still + 1 if i and clock[i] == clock[i - 1] else 0
+        r = by_fi.get(int(round(vf[q0 + i]))) if vf[q0 + i] == vf[q0 + i] else None
+        seen = r is not None and r.get("puck") is not None and r["puck"][3] in ("seen", "seen at a stick")
+        if still >= STOPPED and not seen:
+            puck[3 * i + 2] = -256.0
+            owner[i] = -1
     m.update(pos=pos, frame="".join(frame), mirror="".join(mirror), anim="".join(anim), facing="".join(facing),
              role=role, puck=puck, puckV=puckV, owner=owner, ctrl=[0] * n)
     if "pad" in m:
