@@ -1572,3 +1572,34 @@ BOS-CHI series, four games), whose recordings give the truth through `tools/vide
 
 Next: the extras and identities through crowds, the puck, events from the clock and score
 (goals, whistles), replays, and finding the game's picture inside a stream's layout for VODs.
+
+### Inverse rendering: the screen as a function of the game's state (feasibility, 2026-11-16)
+
+A change of approach (the user approved a test): instead of learning to spot the puck in the pixels, find the state
+that draws the frame. A clean Genesis recording is the rink (drawn from the ROM at the camera), about 16 sprites
+(each a ROM animation frame in a team palette, mirrored or not) and the HUD in the ROM's font. Tested on
+nhl94_playoffs-261113-133619.mkv (BOS-CHI, game 1) against its match file (scratch scripts inv1-inv5):
+
+- **The recording is lossless and stretched nearest-neighbour** (H.264 High 4:4:4 Predictive, planar RGB, 320x224;
+  the game draws 256 wide): output column i is game column floor((i + 0.5) x 0.8 - 0.25), each game column whole, so
+  the game's own 256-wide frame comes back exactly by taking one video column per game column (the old bilinear
+  squeeze blurred neighbours). The ROM's rink at the tracked camera (rink-map pixel = (x + Hpos + 64, y - Vpos +
+  256)) matches 85-88% of the pixels exactly (the rest: sprites, the centre-ice logo, the crowd's animation, the HUD);
+  sprite colours match within 2 (the recording's green levels: 32 for 33, 138 for 140, 207 for 206).
+- **Every player's sprite identified from the video alone:** each on-screen player in 6 frames (25 players), every
+  ROM frame 1-845, both mirrorings, his team's palette, offsets within 10 pixels of his recorded spot, scored by the
+  template pixels matching the video less those that don't (a pixel left showing the rink exactly counts against):
+  the best was the frame the match file records for him (within 4 samples) **25 times of 25**, goalies included,
+  mirroring right; right frames score 0.56-0.80 a pixel, the best wrong full-size frame clearly lower. The animation
+  frame says what the player is doing (skating with the puck, shooting, passing, checking, falling), read directly.
+- **The puck and its height:** the puck's frames 395-404 found (score over 0.5) in 30 of 35 frames near its recorded
+  spot; on the ice its shadow (frame 394) is under it; in the air the shadow shows, and the gap between them read the
+  recorded height in the 3 frames where both were found (5 for 5, 3 for 1-4, 3 for 0-7 rising). Two high pucks
+  (heights 10 and 13) were missed: the search for an airborne puck was placed wrongly (to fix).
+- **Still loose:** the match file's samples are not frame-locked, so a recorded state lines up with the video within
+  a few samples and pixels (best offsets 0-6 samples, 1-4 pixels); the identification doesn't need it.
+
+Next (the plan): read whole frames without the match file (sprite blobs from the background, each identified; the
+puck and shadow; the HUD by the ROM's font), track the 12 skaters through frames (animation sequences and motion
+predict the next frame, so a search is small and fast), fill a hidden puck from the game's physics, and write a
+pseudo match file for the converter, then compare event by event with the 40 recorded games.
