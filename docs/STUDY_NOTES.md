@@ -5986,6 +5986,18 @@ code room ($1A72C6-$1A74CB). `analysis/scoring_map/gen95_song_medley_check.py` (
   in its slot 26 frames after the pause flag cleared, the next 40 positions and their timing the unpaused game's.
   The moved bank played correctly, so its internal offsets are relative.
 
+- **NOSE4Web's own builds (69d7284):** NHL_95_song4F_brass_nose4web.bin (SHA-256 05a38720; list $1A72C6, bank
+  $1A72D6) and W18_song3A_brass_nose4web.bin (8b100e09; $1DADF6): Brass Bonanza ($3D) exported to MIDI and read back.
+  Each override bank holds one item (type 3, the replaced id, 1,052 bytes); bank 0 untouched, so every other song and
+  effect is found where it was. Played from scratch copies with every period-start slot the new song (W18's table is
+  at $0C60, 34 teams; `gen95_song_medley_check.py replaced`): 252 notes on channel 0, program 25 (the organ),
+  velocity 105; against $3D's 255: the same notes in the same order but 3 (on ticks where $3D starts one or two
+  notes), the same length (1,409 ticks against 1,410), tempo $100; the whole song 24.4 s (W18; NHL_95's run was cut
+  by a whistle). Pitch: $3D's (best unshifted; an octave either way far worse). **Room:** the block starts at the same
+  address as NOSE4Web's other NHL '95 code: NHL_95 $1A72C6 (the group 1 fixes $1A72C0-$1A7321, organ resume
+  $1A72C0-$1A74CB), W18 $1DADF6 (group 1, organ resume, 3-on-3, shootout after period 3 all start there). Clear in
+  these single-feature builds; combined with any of those it would overlap unless placed after them.
+
 ### NOSE4Web's SNES organ resume after a pause (8a0b31f), played (2026-11-16)
 
 NHL94_organ_resume.smc 9e43006c against NHL94.smc, nhl94snes_2026_organ_resume.sfc 63591bad against

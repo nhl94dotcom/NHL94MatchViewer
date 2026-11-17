@@ -20,6 +20,7 @@ Modes (results printed, WAVs to OUT):
       repointed) and the period-start slots set: gen95_organ_resume_check's song cases (Resume, Game Stats, Instant
       Replay) on the medley."""
 import json
+from collections import Counter
 import struct
 import sys
 import wave
@@ -253,6 +254,124 @@ def resume(organ_rom, medley_rom, state, out):
         print("organ resume + medley", json.dumps(row), flush=True)
 
 
+def notes95(rom, ptr):
+    """(tick, note) of every note-on, and the most notes starting on one tick."""
+    s = rom[ptr:ptr + 0x8000]
+    d5 = ((s[0] << 8) | s[1]) * 2 + 2
+    st, t, out = 0, 0, []
+    for _ in range(20000):
+        v = 0
+        while s[d5] & 0x80:
+            v = (v << 7) | (s[d5] & 0x7F)
+            d5 += 1
+        v = (v << 7) | s[d5]
+        d5 += 1
+        t += v
+        if s[d5] & 0x80:
+            st = s[d5]
+            d5 += 1
+        c = st & 0xF0
+        if c == 0x90:
+            out.append((t, s[d5]))
+            d5 += 2
+            while s[d5] & 0x80:
+                d5 += 1
+            d5 += 1
+        elif c == 0xB0:
+            if s[d5] == 0x75:
+                break
+            d5 += 2
+        elif c in (0xC0, 0xE0):
+            d5 += 1
+        else:
+            break
+    per_tick = Counter(t for t, _ in out)
+    return out, max(per_tick.values()) if per_tick else 0
+
+
+def replaced(orig, build, song, state, out):
+    """A NOSE4Web-built replacement: a scratch copy of the build with every period-start slot `song`, played through
+    (whistles held off: PenBuf cleared each frame) into a WAV; its notes against the original's $3D (Brass
+    Bonanza), the pitch line-up of the two recordings."""
+    song = int(song, 16)
+    d = bytearray(Path(build).read_bytes())
+    table = TABLE95 if len(Path(orig).read_bytes()) and Path(orig).name.upper().startswith("NHL") else 0x0C60   # W18: $0C60
+    for t in range(28 if table == TABLE95 else 34):
+        d[table + 6 * t] = song
+    scratch = out / f"scratch_{Path(build).stem}_period_{song:02X}.bin"
+    scratch.write_bytes(bytes(d))
+    o = Path(orig).read_bytes()
+    lst = struct.unpack_from(">I", d, 0xBAD0)[0]
+    bank = struct.unpack_from(">I", d, lst)[0]
+    ptr = bank + 2 + 4 * struct.unpack_from(">H", d, bank)[0]
+    import struct as _s
+    # the original $3D's data: bank 0's item
+    def find(rom, typ, idn, b=0xD8EC):
+        n = _s.unpack_from(">H", rom, b)[0]
+        data = b + 2 + 4 * n
+        for i in range(n):
+            t, k, sz = rom[b + 2 + 4 * i], rom[b + 3 + 4 * i], _s.unpack_from(">H", rom, b + 4 + 4 * i)[0]
+            if (t, k) == (typ, idn):
+                return data
+            data += sz
+    p3d = find(o, 3, 0x3D)
+    a, amax = notes95(bytes(d), ptr)
+    b, bmax = notes95(o, p3d)
+    ka, kb = Counter(a), Counter(b)
+    both = sum((ka & kb).values())
+    print(f"notes: replacement {len(a)} (most on one tick {amax}), $3D {len(b)} (most on one tick {bmax}); the same tick and note "
+          f"{both}; only in $3D {sum((kb - ka).values())}, only in the replacement {sum((ka - kb).values())}", flush=True)
+    import difflib
+    sa = [n for _, n in sorted(a)]
+    sb = [n for _, n in sorted(b)]
+    sm = difflib.SequenceMatcher(None, sb, sa, autojunk=False)
+    print(f"  in order (notes only): {sum(x.size for x in sm.get_matching_blocks())} of $3D's {len(sb)} in the same order; "
+          f"ops {[(o, i2 - i1, j2 - j1) for o, i1, i2, j1, j2 in sm.get_opcodes() if o != 'equal']}; "
+          f"length in ticks {a[-1][0] if a else 0} / {b[-1][0] if b else 0}", flush=True)
+    dropped = [i for o, i1, i2, j1, j2 in sm.get_opcodes() if o in ("delete", "replace") for i in range(i1, i2)]
+    per_tick_b = Counter(t for t, _ in sorted(b))
+    print("  $3D notes not in the replacement, by notes starting on their tick in $3D:",
+          dict(Counter(per_tick_b[sorted(b)[i][0]] for i in dropped)), flush=True)
+    miss = Counter(t for t, n in (kb - ka).elements())
+    per_tick_3d = Counter(t for t, _ in b)
+    print("  $3D notes missing from the replacement, by how many $3D starts on that tick:",
+          dict(Counter(per_tick_3d[t] for t in miss.elements())), flush=True)
+    r = O.R(str(scratch), state)
+    e = r.e
+    e.unserialize(r.base)
+    e.setw(O.CLOCK, 2)
+    g0 = e.w(O.GSP)
+    for f in range(60 * 120):
+        r.frame(1, ["C"] if f % 120 < 4 else [])
+        if e.w(O.GSP) > g0 and O.song_slot(e) is not None:
+            break
+    k = O.song_slot(e)
+    fl = O.fields(e, k)
+    a0 = len(r.buf)
+    most = 0
+    for f in range(60 * 60):
+        e.setw(0xBFCE, 0)
+        r.frame(1)
+        most = max(most, e.w(NOTECOUNT))
+        if O.song_slot(e) != k:
+            break
+    pcm = r.buf[a0:]
+    path = out / f"{Path(build).stem}_{song:02X}.wav"
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100)
+        w.writeframes(struct.pack(f"<{len(pcm)}h", *pcm))
+    print(f"played: song {fl['id']:#x} from {fl['ptr']:#x}, {f} frames ({f / 59.92:.1f} s), most notes pending {most}; "
+          f"walk {walk(bytes(d), fl['ptr'])}", flush=True)
+    ref = out / "brass_bonanza_nhl95_3D.wav"
+    if ref.exists():
+        pa, pb = pitches(path), pitches(ref)
+        ha = np.histogram([p for p, _ in pa], bins=np.arange(20, 110))[0].astype(float)
+        hb = np.histogram([p for p, _ in pb], bins=np.arange(20, 110))[0].astype(float)
+        sc = {s: float(np.dot(ha, np.roll(hb, s))) for s in range(-24, 25)}
+        print(f"pitch against $3D: best shifts {sorted(sc.items(), key=lambda kv: -kv[1])[:3]}, an octave either way "
+              f"{sc[-12]:.0f} / {sc[12]:.0f}; medians {np.median([p for p, _ in pa]):.1f} / {np.median([p for p, _ in pb]):.1f}", flush=True)
+
+
 def main():
     mode = sys.argv[1]
     out = Path(sys.argv[-1])
@@ -267,6 +386,8 @@ def main():
         same(*a)
     elif mode == "pitch":
         pitch(*a, out)
+    elif mode == "replaced":
+        replaced(*a, out)
     elif mode == "resume":
         resume(*a, out)
 
