@@ -5956,6 +5956,36 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 replaced organ song prototypes, played (2026-11-16)
+
+NHL_95_song4F_medley.bin against NHL_95.bin, W18_song3A_medley.bin against W18.bin (Brass Bonanza then William Tell,
+461 notes; every team's period-start slot, the 6-byte team song table's slot 0 at $67A20 on NHL_95, set to the new
+song). Changes: $BAD0 (SndFindBankItem's list pointer) to a ROM list {override bank, $D8EC, -1, -1}, the list and
+bank (1,912 bytes; NHL_95 $1A7314, W18 $1DADF8), the song table, and (as in every NOSE4Web '95 build) the boot's ROM
+checksum call NOPped. Neither ROM has the organ-resume hooks, and NHL_95's list sits inside the organ-resume build's
+code room ($1A72C6-$1A74CB). `analysis/scoring_map/gen95_song_medley_check.py` (modes medley, same, pitch, resume).
+
+- **The medley at each period start:** played from the override bank ($1A732A NHL_95, $1DAE0E W18) at both period
+  starts on both ROMs; its events: 461 notes, all on channel 0, program 25 (the organ) twice, velocity 105; no
+  channel-7 notes, so no claps. Left alone it played its whole 42.7 s (2,561 frames) to its end; in plain play the game
+  cuts it at the next stoppage, as it cuts the originals' own period songs ($51 / $32). At most 9 notes pending
+  (SndNoteCount; SndNotes holds 32), none left 300 frames after.
+- **Everything else:** the RAM bank list (SndBanks) is only ever {$D8EC, -1, -1, -1}, so the ROM list finds what the
+  original finds. The same moment played on both ROMs: the same sound effects from the same data, but the game
+  drifts apart from about 3 s in (NHL_95: video frame 159, the build ran a game frame where the original skipped one;
+  NHL '95 skips about 13% of frames anyway), so later sounds and the crowd can't be compared frame for frame. The
+  same ROM twice is identical sample for sample. The title music: W18 the same slots throughout; NHL_95's starts
+  earlier only because the build skips the boot checksum.
+- **Pitch:** NHL '95's Brass Bonanza ($3D, Hartford's period-start song, played on a scratch copy with every
+  period-start slot $3D) against NHL '94's ($40, Hartford at home): the notes' pitches line up best unshifted (score
+  4,354 against about 1,550 an octave either way): the same pitch. The stored notes are 12 higher in NHL '95 (81 / 53,
+  79, 77, 74 against 69 / 41, 67, 65, 62), so NHL '95's driver plays a stored note an octave below NHL '94's. The
+  medley's Brass Bonanza sounds at $3D's pitch (best unshifted; medians 61.8 and 61.5).
+- **Organ resume with the medley** (a scratch copy of NHL_95_organ_resume.bin with the list and bank moved to
+  $1A8000, $BAD0 repointed, the period-start slots set): Resume Game, Game Stats and Instant Replay: the medley back
+  in its slot 26 frames after the pause flag cleared, the next 40 positions and their timing the unpaused game's.
+  The moved bank played correctly, so its internal offsets are relative.
+
 ### NOSE4Web's SNES organ resume after a pause (8a0b31f), played (2026-11-16)
 
 NHL94_organ_resume.smc 9e43006c against NHL94.smc, nhl94snes_2026_organ_resume.sfc 63591bad against
