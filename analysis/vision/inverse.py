@@ -139,8 +139,12 @@ def transitions(matches, K=12, steps=(1, 2, 3)):
 
 
 class Track:
+    _next = 0
+
     def __init__(self, team, fr, mir, sy, sx, sc):
         self.team, self.fr, self.mir, self.sy, self.sx, self.sc = team, fr, mir, sy, sx, sc
+        self.id = Track._next                       # a track's own number, kept while it lives
+        Track._next += 1
         self.vy = self.vx = 0.0
         self.miss = 0
 

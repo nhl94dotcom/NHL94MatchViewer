@@ -1,0 +1,169 @@
+"""A match file from the video reader (inverse.py's tracks and PuckTracker), for the converter's own event finders,
+compared with the recorded match file event by event (2026-11-17, chunk 6 of the video reader).
+
+The pseudo match keeps the recorded file's samples in the stretch (t, period, clock, score, shots, stats and the goals:
+what the score box and clock show, read separately by hud_read) and replaces what the reader sees:
+- each track gets a record of its team: a goalie track (a frame goalies draw) record 5 / 11, skaters 0-4 / 6-10, a new
+  track the free record whose last known spot is nearest; records with no live track keep their last spot;
+- pos from the sprite point (X = sx - 128 + Hpos, Y = 112 - sy + Vpos), frame / mirror as read, anim and facing the
+  most common for that frame in the other recorded games, roles fixed (5 3 4 2 1 0 as the recordings list them);
+- the puck (X, Y, height) from PuckTracker, owner its carrier's record, puckV from its motion (speed x 4096 / 100);
+- ctrl and the pads empty (the joypad stars are read separately: possession.py).
+Then export_match.analyse on both, the recorded slice's own event lists dropped first, and the events compared.
+
+    build(match, vf, rows, maps) -> pseudo match;  compare(a, b) -> per event kind: matched / only recorded / only read
+"""
+import copy
+from collections import Counter
+
+ROLES = "534210"
+PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
+              "owner": 1, "pad": 1, "pad2": 1, "facing": 12, "roster": 12, "role": 12, "frame": 36, "puckFrame": 3,
+              "mirror": 12, "anim": 48, "lights": 1}
+EVENT_LISTS = ("shotList", "turnovers", "failedOneTimers", "passes", "flips", "faceoffs", "icings", "zoneEntries", "hits",
+               "injuries", "bumps", "bobbles", "netsOff", "checkAttempts", "cpuCheckAttempts", "checkPasses", "habits",
+               "runaways", "steals", "fast", "posts", "delayed", "shotFlag", "foSpot")
+
+
+def learn_maps(matches):
+    """frame -> the most common anim word and facing, and the frames goalies draw, from recorded games."""
+    anim, face, goalie = {}, {}, Counter()
+    for m in matches:
+        N = len(m["t"])
+        for q in range(0, N, 2):
+            for k in range(12):
+                fr = int(m["frame"][(q * 12 + k) * 3:(q * 12 + k) * 3 + 3], 16)
+                anim.setdefault(fr, Counter())[m["anim"][(q * 12 + k) * 4:(q * 12 + k) * 4 + 4]] += 1
+                face.setdefault(fr, Counter())[m["facing"][q * 12 + k]] += 1
+                if m["role"][q * 12 + k] == "0":
+                    goalie[fr] += 1
+    return dict(anim={f: c.most_common(1)[0][0] for f, c in anim.items()},
+                facing={f: c.most_common(1)[0][0] for f, c in face.items()},
+                goalie={f for f, c in goalie.items() if c >= 5})
+
+
+def slice_match(m, q0, q1):
+    """The samples q0..q1 of a match (per-sample arrays cut by their stride; the stats snapshots and the goals in it
+    re-indexed; the event lists dropped)."""
+    out = {k: v for k, v in m.items() if k not in PER_SAMPLE and k not in EVENT_LISTS and k not in ("stats", "goals")}
+    N = len(m["t"])
+    for k, w in PER_SAMPLE.items():
+        if k in m and len(m[k]) == N * w:
+            out[k] = m[k][q0 * w:q1 * w]
+    st = m.get("stats")
+    if isinstance(st, dict) and "f" in st:
+        keep = [i for i, f in enumerate(st["f"]) if q0 <= f < q1]
+        out["stats"] = {k: ([v[i] for i in keep] if isinstance(v, list) and len(v) == len(st["f"]) else v) for k, v in st.items()}
+        out["stats"]["f"] = [st["f"][i] - q0 for i in keep]
+    out["goals"] = [dict(g, f=g["f"] - q0) for g in m.get("goals", []) if q0 <= g["f"] < q1]
+    for k, v in list(out.items()):                     # other lists of moments (penalties ...): those in the stretch
+        if isinstance(v, list) and v and isinstance(v[0], dict) and "f" in v[0]:
+            out[k] = [dict(e, f=e["f"] - q0) for e in v if q0 <= e["f"] < q1]
+    return out
+
+
+def build(truth, vf, rows, maps, q0, q1):
+    """The pseudo match over samples q0..q1: each sample takes the read frame nearest its video frame."""
+    by_fi = {r["fi"]: r for r in rows}
+    m = slice_match(truth, q0, q1)
+    n = q1 - q0
+    pos = list(m["pos"])
+    frame, mirror, anim, facing = list(m["frame"]), list(m["mirror"]), list(m["anim"]), list(m["facing"])
+    role = ROLES * 2 * n
+    puck, puckV, owner = list(m["puck"]), [0] * (2 * n), [-1] * n
+    slot_of, last = {}, {k: (pos[2 * k], pos[2 * k + 1]) for k in range(12)}
+    prev_p = None
+    for i in range(n):
+        q = q0 + i
+        r = by_fi.get(int(round(vf[q]))) if vf[q] == vf[q] else None
+        if r is None or r.get("cam") is None:
+            if i:
+                for arr, w in ((pos, 24), (frame, 36), (mirror, 12), (anim, 48), (facing, 12), (puck, 3)):
+                    arr[i * w:(i + 1) * w] = arr[(i - 1) * w:i * w]
+                owner[i] = owner[i - 1]
+            continue
+        hpos, vpos = r["cam"]
+        live = {}
+        for tid, team, fr, mir, sy, sx in r["tracks"]:
+            X, Y = sx - 128 + hpos, 112 - sy + vpos
+            if tid not in slot_of:
+                base = 6 * team
+                taken = set(slot_of[t] for t in live) | {slot_of[t] for t in slot_of if t in {x[0] for x in r["tracks"]}}
+                if fr in maps["goalie"]:
+                    cands = [base + 5]
+                else:
+                    cands = [base + k for k in range(5)]
+                free = [k for k in cands if k not in taken] or cands
+                slot_of[tid] = min(free, key=lambda k: abs(last[k][0] - X) + abs(last[k][1] - Y))
+            k = slot_of[tid]
+            if k in live.values():
+                continue
+            live[tid] = k
+            last[k] = (X, Y)
+            frame[(i * 12 + k) * 3:(i * 12 + k) * 3 + 3] = f"{fr:03x}"
+            mirror[i * 12 + k] = str(mir)
+            anim[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4] = maps["anim"].get(fr, "0000")
+            facing[i * 12 + k] = maps["facing"].get(fr, "0")
+        for k in range(12):
+            pos[(i * 12 + k) * 2:(i * 12 + k) * 2 + 2] = [float(last[k][0]), float(last[k][1])]
+        if r["puck"] is not None:
+            sy, sx, z, how = r["puck"]
+            P = [float(sx - 128 + hpos), float(112 - sy + vpos), float(z)]
+            puck[3 * i:3 * i + 3] = P
+            if prev_p is not None:
+                dt = max(1, r["fi"] - prev_p[1])
+                puckV[2 * i:2 * i + 2] = [round((P[0] - prev_p[0][0]) / dt * 4096 / 100),
+                                          round((P[1] - prev_p[0][1]) / dt * 4096 / 100)]
+            prev_p = (P, r["fi"])
+        elif i:
+            puck[3 * i:3 * i + 3] = puck[3 * (i - 1):3 * i]
+        if r.get("carrier") is not None and r["carrier"] in live:
+            owner[i] = live[r["carrier"]]
+    m.update(pos=pos, frame="".join(frame), mirror="".join(mirror), anim="".join(anim), facing="".join(facing),
+             role=role, puck=puck, puckV=puckV, owner=owner, ctrl=[0] * n)
+    if "pad" in m:
+        m["pad"] = [0] * n
+    if "pad2" in m:
+        m["pad2"] = [0] * n
+    return m
+
+
+def analyse(m, rom_path):
+    import types
+    import export_match
+    from systems import genesis
+    m = copy.deepcopy(m)
+    m.pop("pad", None)
+    m.pop("pad2", None)
+    export_match.analyse(m, genesis, types.SimpleNamespace(folder="."), rom_path)
+    return m
+
+
+def compare(a, b, kinds=("shotList", "passes", "turnovers", "hits", "faceoffs", "zoneEntries", "checkAttempts", "bobbles"),
+            ms=600):
+    """Events of a (recorded) against b (read): matched when the same kind and team within `ms` milliseconds."""
+    out = {}
+    for kind in kinds:
+        A, B = a.get(kind) or [], b.get(kind) or []
+        used, hit = set(), 0
+        for ev in A:
+            ta = a["t"][ev["f"]]
+            best = None
+            for j, ev2 in enumerate(B):
+                if j in used or ev2.get("team") != ev.get("team"):
+                    continue
+                d = abs(b["t"][ev2["f"]] - ta)
+                if d <= ms and (best is None or d < best[0]):
+                    best = (d, j)
+            if best:
+                used.add(best[1])
+                hit += 1
+        out[kind] = dict(recorded=len(A), read=len(B), matched=hit)
+    oa = [o >= 0 for o in a["owner"]]
+    ob = [o >= 0 for o in b["owner"]]
+    ta = [(o // 6) if o >= 0 else -1 for o in a["owner"]]
+    tb = [(o // 6) if o >= 0 else -1 for o in b["owner"]]
+    both = [i for i in range(len(oa)) if oa[i]]
+    out["possession"] = dict(samples_carried=len(both), carried_read_as_carried=sum(ob[i] for i in both),
+                             team_right=sum(ta[i] == tb[i] for i in both))
+    return out

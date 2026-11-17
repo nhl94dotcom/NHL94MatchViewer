@@ -5980,6 +5980,24 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's review fixes 00edaee (v2), played (2026-11-17)
+
+- **Drum hits ring** (nhl94_title_drum_roll_v2.bin 40e046da): all 96 snare key-ons on their frames over three loops;
+  each snare now sounds about 5.6 frames (to -13 dB) before the next hit (v1: 2-3 frames, cut by the key-off).
+- **The SNES player** (new WAVs against the same console recordings): no drift left (0.00 s in every 10 s window,
+  all eight pieces); no sample past 20,480 (the console's own ceiling); envelope correlation title 0.85 (was 0.42),
+  menu 0.88, playoff 0.93, Jaws 0.96, Blue Danube 0.95, Brass Bonanza 0.90, Hava Nagila 0.94, Drunken Sailor 0.69.
+  The hit at 10.8 s in the title: the console's voice table ($08F2 state: 2 playing, 4 releasing, 0 free; $08FA the
+  owning track) shows the chord at 10.68 s (tracks 2, 6, 7, 8: instruments 2, 17, 16, 25, notes of 0.13-0.15 s)
+  keyed off and its voices free within 1-2 frames (10.73-10.77 s), and track 5 taking track 10's voice 0 at 10.8 s:
+  nothing of it sounds after about 10.8 s. The S-DSP's key-off ramps a voice down in about 8 ms whatever its envelope.
+- **NHL '95 MIDI export v2:** every tuned part on the game's sounding octave ($18, $1B +12; $0D, $11, $14, $1D as
+  written), the drums by note ($15 0-9 as 36, 17-19 as 45; $0E 51 as 35, 55-57 as 38; $13 as 42). Played: $1C is a
+  tune, steady (flatness 0.15) and held (no fall within 0.8 s), sounding two octaves above the written note (31 -> 55,
+  33 -> 57, 38 -> 62, 41 -> 65); $14 sounds as written from 46 up and an octave up below (40 -> 52, 43 -> 55; the square
+  wave's lowest is about 110 Hz, MIDI 45): the end of period's 16 notes at 43 sound at 55 (its 8 at 46 as written; no
+  other piece has $14 below 48).
+
 ### NOSE4Web's code-review fixes, played (2026-11-17: drum rolls, room given back, the SNES player, NHL '95's music as MIDI)
 
 Files from NOSE4Web's mv_review_2026-11-17 (hashes checked). Tools: gen_title_music_check / gen_midi_song_check
