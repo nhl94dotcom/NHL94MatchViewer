@@ -5980,6 +5980,11 @@ the power-play / penalty-kill byte; W18's teams are all $00 or $22.
   the two centres about 13 pixels inside the dot (rink-fixed pink blobs at x -83.5 / +82.5 in two camera positions),
   while an end faceoff at (77, 215) sits on its circle's centre within about 2 pixels; retail's own limitfo already
   uses +-70.
+  **NOSE4Web's +-83 builds** (NHL_95_faceoff83 063b15ac, W18_faceoff83 7fd52f59 and their all-hacks builds 7f955bd9 /
+  ef0d3640; limitfo's x at $88F5C $46 -> $53): the faceoff check with neutral dots at +-83 (`NEUTRAL_X=83`), goals
+  added: every stoppage on a dot on all four (2,672 / 2,616 each), goals to (0, 0) 192 of 192, both teams penalised to
+  (+-83, 65), delayed penalties to the end dots (+-77, +-215) as before; a neutral faceoff at (83, 65) now covers the
+  drawn dot, an end faceoff still sits on its circle's centre.
 - **Computer forwards' awareness** (asswingo $80C2F, asscentero $80F37): awareness_test's reload count, 12,000 frames
   of computer play: retail NHL_95 matching aidef 1,427 / aioff 246, the build aidef 79 / aioff 883; W18 609 / 121
   against 33 / 416.

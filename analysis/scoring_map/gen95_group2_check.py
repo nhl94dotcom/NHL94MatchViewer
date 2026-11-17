@@ -82,10 +82,12 @@ def pppk(rom, state, home_name, away_name):
 
 LTX, LTY, FOX, FOY, GMODE = 0xBB82, 0xBB84, 0xBB9A, 0xBB9C, 0xBEF0
 OOP, GHOLD, WHISTLE, ICING, GOAL, OFFSIDE = 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10
-CODES = [OOP, GHOLD, WHISTLE, ICING, OFFSIDE, 0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24]
+CODES = [OOP, GHOLD, WHISTLE, ICING, OFFSIDE, GOAL, 0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24]
+import os
+NX = int(os.environ.get("NEUTRAL_X", "70"))     # the neutral dots' x: 70 (NHL '95's limitfo), 83 (as drawn: NOSE4Web's faceoff83 builds)
 PENALTIES = set(range(0x16, 0x2B))
 POSITIONS = [(x, y) for x in (-100, -40, 40, 100) for y in (-250, -190, -140, -110, -70, -30, 30, 70, 110, 140, 190, 250)]
-DOTS = {(0, 0)} | {(sx * 77, sy * 215) for sx in (-1, 1) for sy in (-1, 1)} | {(sx * 70, sy * 65) for sx in (-1, 1) for sy in (-1, 1)}
+DOTS = {(0, 0)} | {(sx * 77, sy * 215) for sx in (-1, 1) for sy in (-1, 1)} | {(sx * NX, sy * 65) for sx in (-1, 1) for sy in (-1, 1)}
 
 
 def sw(e, a):
@@ -99,6 +101,8 @@ def fo_expected(code, raw, pfgoal):
     side, in the neutral zone the nearest neutral dot (y 0 the top half); then limitfo for the entry's player (a spot
     past 86 toward the end he attacks moves to that side's neutral dot)."""
     x, y = raw
+    if code == GOAL:
+        return (0, 0)
     if code == ICING:
         y = -600 if pfgoal else 600
     sx = 1 if x >= 0 else -1
@@ -107,11 +111,11 @@ def fo_expected(code, raw, pfgoal):
     elif abs(y) >= 87:
         fx, fy = 77 * sx, (215 if y > 0 else -215)
     else:
-        fx, fy = 70 * sx, (65 if y >= 0 else -65)
+        fx, fy = NX * sx, (65 if y >= 0 else -65)
     if pfgoal and fy > 86:
-        fx, fy = 70 * sx, 65
+        fx, fy = NX * sx, 65
     elif not pfgoal and fy < -86:
-        fx, fy = 70 * sx, -65
+        fx, fy = NX * sx, -65
     return fx, fy
 
 
