@@ -504,3 +504,122 @@ def read_puck_all(reader, img, bg, read, pred=None):
         if d <= 16:
             return (by, bx, "carried", 0, 0.0, "nearest stick")
     return None
+
+
+# Frames drawn only for the puck carrier (97% or more of their appearances in BOS-CHI games 2-4 with the puck): the
+# skate-with-puck strides 2-39 (not their first frames, 1, 6, 11 ..., shared with plain skating) and four others.
+CARRY_FRAMES = {2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 17, 18, 19, 20, 22, 23, 24, 25, 27, 28, 29, 30, 32, 33, 34,
+                35, 37, 39, 103, 109, 139, 626}
+
+
+class PuckTracker:
+    """The puck from frame to frame, with memory (2026-11-17):
+    1. seen (read_puck, near the predicted point first): on the ice within 3 pixels of a read player's blade, carried by
+       him; else loose, its rink velocity from the last seen point;
+    2. else a read player's blade showing half a flat puck (pixels in the puck's colours that no read sprite draws
+       there itself): carried by him;
+    3. else a read player in a carry-only frame (CARRY_FRAMES): carried by him;
+    4. else the last carrier still read: carried by him (his blade);
+    5. else loose and unseen: carried on by its velocity (the game's loose puck keeps about 0.998 of its speed a frame)
+       for up to `coast` frames, then given to the blade nearest that point within 16 pixels;
+    6. else the blade nearest the last puck within 16 pixels.
+    Positions kept in rink units (X = sx - 128 + Hpos, Y = 112 - sy + Vpos) so a camera pan doesn't move them.
+    step(...) returns (sy, sx, frame or 'carried', z, share, how) or None."""
+    def __init__(self, reader, coast=20):
+        self.R, self.coast = reader, coast
+        self.mode, self.carrier, self.pos, self.vel, self.unseen = None, None, None, (0.0, 0.0), 0
+
+    @staticmethod
+    def to_rink(sy, sx, cam):
+        return 112 - sy + cam[1], sx - 128 + cam[0]
+
+    @staticmethod
+    def to_screen(Y, X, cam):
+        return 112 - Y + cam[1], X + 128 - cam[0]
+
+    def _carried(self, tr, cam, how, share=0.0):
+        t = (tr.team, tr.fr, tr.mir, tr.sy, tr.sx)
+        by, bx = blade(self.R, t)
+        self.mode, self.carrier, self.pos, self.vel, self.unseen = "carried", tr, self.to_rink(by, bx, cam), (0.0, 0.0), 0
+        return (by, bx, "carried", 0, share, how)
+
+    def step(self, img, bg, cam):
+        R = self.R
+        live = [t for t in R.tracks if t.miss == 0]
+        pred = None
+        if self.pos is not None:
+            Y, X = self.pos
+            if self.mode == "loose":
+                Y, X = Y + self.vel[0], X + self.vel[1]
+            pred = self.to_screen(Y, X, cam)
+            pred = (int(round(pred[0])), int(round(pred[1])))
+        p = read_puck(R, img, bg, pred)
+        if p and p[3] == 0:                     # seen on the ice at a read player's blade (3 pixels): he has it
+            at = [(abs(b[0] - p[0]) + abs(b[1] - p[1]), t) for t in live
+                  for b in [blade(R, (t.team, t.fr, t.mir, t.sy, t.sx))]]
+            at = [x for x in at if x[0] <= 3]
+            if at:
+                tr = min(at, key=lambda x: x[0])[1]
+                self.mode, self.carrier, self.pos, self.vel, self.unseen = "carried", tr, self.to_rink(p[0], p[1], cam), (0.0, 0.0), 0
+                return p + ("seen at a stick",)
+        if p:
+            Y, X = self.to_rink(p[0], p[1], cam)
+            if self.mode == "loose" and self.unseen == 0 and self.pos is not None:
+                self.vel = (0.5 * self.vel[0] + 0.5 * (Y - self.pos[0]), 0.5 * self.vel[1] + 0.5 * (X - self.pos[1]))
+            elif self.mode != "loose":
+                self.vel = (0.0, 0.0)
+            self.mode, self.carrier, self.pos, self.unseen = "loose", None, (Y, X), 0
+            return p + ("seen",)
+        if not hasattr(R, "_puck"):
+            read_puck(R, img, bg, None)
+        flat = [t for t in R._puck if t[0] in (395, 399)]
+        H, W = img.shape
+        synth = np.full(img.shape, -1)                  # the read sprites as drawn, back to front: a puck colour that
+        for t in sorted(live, key=lambda t: t.sy):      # a sprite draws there itself is no sign of the puck
+            tp = R.S.get(t.fr, t.team, t.mir)
+            if tp is None:
+                continue
+            Yy, Xx = R.place(img, tp, t.sy, t.sx)
+            ys, xs, cs = tp
+            ok = (ys + t.sy >= 0) & (ys + t.sy < H) & (xs + t.sx >= 0) & (xs + t.sx < W)
+            synth[(ys + t.sy)[ok], (xs + t.sx)[ok]] = cs[ok]
+        best = None
+        for tr in live:
+            by, bx = blade(R, (tr.team, tr.fr, tr.mir, tr.sy, tr.sx))
+            for fr, ys, xs, cs, _, _ in flat:
+                oy, ox = int(round(ys.mean())), int(round(xs.mean()))
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        Yy, Xx = ys + by - oy + dy, xs + bx - ox + dx
+                        if Yy.min() < 0 or Yy.max() >= H or Xx.min() < 0 or Xx.max() >= W:
+                            continue
+                        hit = (img[Yy, Xx] == cs) & (synth[Yy, Xx] != cs)
+                        share = float(hit.mean())
+                        if share >= 0.5 and (best is None or share > best[0]):
+                            best = (share, tr)
+        if best:
+            return self._carried(best[1], cam, "on a stick", best[0])
+        cf = [t for t in live if t.fr in CARRY_FRAMES]
+        if cf:
+            if self.carrier in cf:
+                return self._carried(self.carrier, cam, "carry frame")
+            if pred is not None:
+                cf.sort(key=lambda t: sum(abs(a - b) for a, b in zip(blade(R, (t.team, t.fr, t.mir, t.sy, t.sx)), pred)))
+            return self._carried(cf[0], cam, "carry frame")
+        if self.mode == "carried" and self.carrier in live:
+            return self._carried(self.carrier, cam, "same carrier")
+        if self.mode == "loose" and self.unseen < self.coast and pred is not None:
+            self.unseen += 1
+            self.vel = (self.vel[0] * 0.998, self.vel[1] * 0.998)
+            self.pos = (self.pos[0] + self.vel[0], self.pos[1] + self.vel[1])
+            near = [(sum(abs(a - b) for a, b in zip(blade(R, (t.team, t.fr, t.mir, t.sy, t.sx)), pred)), t) for t in live]
+            near = [x for x in near if x[0] <= 6]
+            if near:
+                return self._carried(min(near, key=lambda x: x[0])[1], cam, "caught")
+            return (pred[0], pred[1], "coasting", 0, 0.0, "coasting")
+        if pred is not None and live:
+            d, tr = min(((sum(abs(a - b) for a, b in zip(blade(R, (t.team, t.fr, t.mir, t.sy, t.sx)), pred)), t) for t in live),
+                        key=lambda x: x[0])
+            if d <= 16:
+                return self._carried(tr, cam, "nearest stick")
+        return None

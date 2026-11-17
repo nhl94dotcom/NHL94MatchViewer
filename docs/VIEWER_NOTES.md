@@ -1629,3 +1629,25 @@ the blade nearest the last puck (16 pixels), places it. Same 300 frames: the puc
 screen and within 4 pixels of the recording in 72% (seen 83 of 91 right, on a stick 58 of 66, nearest stick 72 of 86),
 the height within 2 as well in 70.6%; in the air 18 of 25 right with their height. The screen point: sx = 128 + X -
 Hpos, sy = 112 - Y + Vpos (as the players').
+
+**The puck with memory (2026-11-17, `inverse.PuckTracker`).** read_puck_all decided each frame alone; the tracker
+keeps the carrier and the loose puck's velocity (rink units, so a pan doesn't move them). In order: the puck seen on
+the ice within 3 pixels of a read player's blade is his; seen elsewhere it is loose (velocity from the last seen
+point); a blade showing half a flat puck counts only the puck-coloured pixels that no read sprite draws there itself
+(the old test took dark skate and stick pixels for a puck: at frame 27000, 36 of 67 such reads were the wrong skater,
+now 36 of 37); a skater in a carry-only frame (CARRY_FRAMES: 34 frames drawn with the puck 97% or more of the time in
+games 2-4, the skate-with-puck strides; they cover only 30% of carrying, the plain skating frames being shared); the
+last carrier while he is still read; a loose puck nobody sees coasts on its velocity (0.998 a frame) for up to 20
+frames and is given to a blade it reaches (6 pixels); last, the nearest blade (16). Puck within 4 pixels of the
+recording, BOS-CHI game 1, 300 frames each:
+
+| from frame | read before | within 4 px before | read now | within 4 px now |
+|---|---|---|---|---|
+| 6200 | 82.1% | 72.0% | 96.6% | 87.5% |
+| 18000 | 91.4% | 72.0% | 100% | 81.1% |
+| 27000 | 81.3% | 57.3% | 92.3% | 77.7% |
+
+What's left: the last carrier kept after the puck left him unseen (a pass or steal the reader missed: 15 of 47 such
+frames right at 27000, 25 of 38 at 18000), coasting that goes wrong (14 of 26 at 18000), and a goalie's frozen puck a
+few pixels off. A learnt per-frame carry point was no help: the recordings aren't frame-locked, so the ROM's HotList
+point stays (where the puck shows at a blade it is right 99% of the time).
