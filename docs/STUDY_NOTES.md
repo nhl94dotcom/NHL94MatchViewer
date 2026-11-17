@@ -5980,6 +5980,23 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music fixes 553371b, played (2026-11-17)
+
+nhl94_title_is_scouting_v3.bin 7c4a859c, nhl94_title_roundtrip_eop_brass_v3.bin 9a1d5569.
+
+- **The round-trip title on the original's channels and patches:** 13, 14, 4, 9 on channels 0-3, kick and hit on 6
+  and 7; every part on the original's written notes (bass 279 of 279, lead 260 of 267, channel 2 129 of 146, channel 3
+  34 of 39; the rest dropped by the voice limit, as before).
+- **Scouting as the title keeps its shapes:** bass, the patch-10 line and the patch-3 line on the original's notes and
+  patches; the patch-5 line (written 68-98) moved down 12 as a whole (133 of 137 at -12, 4 dropped by the voice limit).
+- **Notes above 95, confirmed in play:** patch 10 at notes 83, 84, 95 sounds about 2,000-2,100 Hz (its strongest
+  partial), at 96, 97, 98 about 25-28 Hz: the octave spills out of the block field, so retail's scouting notes 96-98
+  play as a deep rumble.
+- **Brass Bonanza on the organ (patch 11) at velocity 44:** RMS 3,502, peak 19,618 on the playoff tree (the original
+  piece 3,276 / 17,695), none at full scale; the intermission 3,340 / 21,823 (original 2,841 / 21,678). The titles
+  3,604 and 3,294 against 3,618.
+- Loops as v2 (4,361 and 5,213 frames), every piece looping on its screens with no stray pointer.
+
 ### NOSE4Web's music fixes a9d8bc6, played (2026-11-17)
 
 nhl94_title_is_scouting_v2.bin 3da1111b, nhl94_title_roundtrip_eop_brass_v2.bin e51fd880 (`gen_title_music_check.py
