@@ -5980,6 +5980,45 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's NHL '95 settings: rules, played (2026-11-17)
+
+NHL_95_rules.bin 6b3f4ec0 / W18_rules.bin 5227f0da (and settings_all where said) against the originals.
+`analysis/scoring_map/gen95_rules_check.py`.
+
+- **Penalty time and fights** (computer games, Fighting On, the check tension held up; W18 with every fighting byte
+  at 14): the box word as each player goes in. Retail NHL '95 120 s for a minor (W18 60: its 1-minute minors); the
+  build 60 (W18 30): minutes x 30 ($8942C). Fights ($26 / $28) 120 s on every build (NHL_95_rules 4, W18_rules 36,
+  settings_all 4); the instigator ($2A) 2 minutes x 30 = 60 s. The fighters' coincidental words count down 6078 ->
+  4078 -> 0 and they come back.
+- **Real-time clock:** a clock second takes 60 frames while it runs (retail 24): 432 of 439 seconds on NHL_95_rules,
+  397 of 405 on W18_rules, 381 of 389 on settings_all (the rest the stoppages' edges).
+- **4th period length:** Game Setup's Per. Length steps 5 / 10 / 20 Minutes / 30 Seconds and wraps (the build and
+  W18_rules; retail and the fighting build 3 choices); the Fighting row still wraps over its 3. The overtime clock as
+  it starts (a tied third period played out): 30 Seconds gives a 5:00 overtime in a regular game and a season game,
+  10:00 in season playoffs, 0:30 in the playoffs mode (its overtime is the period length, 5:00 / 10:00 / 20:00 as on
+  retail for the others); the other lengths as retail. Not played: the season setup's count ($8F786 3 -> 4).
+- **Injuries for the period:** a scratch copy where every carrier knockdown is an injury: retail 18 injuries, 11
+  $FFFD (back the next period) and 7 $FFFC (out for the game); the build 19, every one $FFFD, and each of the 17 that
+  reached the next period was on the ice again (the other two: the game ended).
+- **Delayed penalties** (every skater's aggression at 50, so checkagr calls each time; sflags9's pending bits held,
+  20000 frames): retail calls nobody on the home team while an away penalty is pending (0 against 12 with none) and
+  nobody away while a home one is. The build: home calls go on with an away penalty pending (11, the same as with
+  none), but **the away team still can't be called while a home penalty is pending (0 calls, both bits held 0;
+  W18_rules 0 of 23)**: $89A10's bra covers the home checker only; the away checker's test at $89A1E
+  (`btst #1,(sflags9).w / beq`) is as retail.
+- **B-checks with penalties off:** pad 2's sweep check (B) at a skater without the puck as he skates in (40 each):
+  retail with penalties on 38 fell, off 6 (the roll randomd0($20 + Chk - legstr) >= $18); the build 40 on and 39 off
+  (W18 0 off, W18_rules 38).
+- **Shootout skipping the injured** (a tie, overtime cut, the shootout kept level to round 8; the saved box words of
+  list entries marked): home entry 0 ($FFFC) and 4 ($1000) passed over, entry 1 ($FFFD, out for the period) shot;
+  away entry 2 ($203C, a penalty running) shot, entry 3 ($103C) passed over. In the played games no penalty left
+  $1000 behind (coincidental fight words end at 0), so no skater was passed over wrongly; on these builds every
+  injury is $FFFD, so only a season injury ($FFFC) or a $1000 word is ever skipped.
+- **Hybrid icing:** the shot sent on wide into the corner, a teammate and a defender held at distances from the dot
+  line (y +-$D7, the drawn end-zone dots: a call's faceoff dropped at y -215): 27 of 27 decided at the crossing as the
+  rule says, the defender's tie a call; retail left every one armed (called at a defender's touch). W18_rules 22 of 22
+  that reached the line. One computer game's icing: called, the faceoff in the icing team's end.
+
 ### NOSE4Web's NHL '95 settings: statistics, played (2026-11-17)
 
 NHL_95_stats.bin 126266e4 / W18_stats.bin 7e2486ea (and NHL_95_settings_all for fights, 3-on-3 and the shootout)
