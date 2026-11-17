@@ -5980,6 +5980,37 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music round 4, played (2026-11-17)
+
+Files in mv_review_2026-11-17/round4 (hashes checked).
+
+- **NHL '95 loop length, measured as the cycle itself** (the lag that best repeats the voice table's note starts over
+  two passes): the originals loop every 4,225 frames (song 0) and 4,226 (song 3); round 4's title (scouting export)
+  every 4,223 and end of period (title export) 4,222: 3 frames short. Round 3's scouting export had looped every 4,226,
+  the original's: my "2 frames late" was against my model of looping to frame 1, which the originals don't follow
+  either. So the $75 should go back (or the end rest follow the original's).
+- **NHL '95 drums:** every drum as the original but where two $15 hits fall together (the higher kept): 3 kicks in the
+  scouting round trip, 16 in the end of period. Played: end of period 31,698 of 31,704 FM note-frames, every square
+  note-frame; title clean in its first pass; note list peak 12.
+- **SNES loops:** menu and playoff loop from after their intro on the original's frames: menu at 6252, 10343, 14434,
+  18525 on both ROMs; playoff (heard on Game Setup by repointing in a scratch copy) at 3720, 5278, 6837, 8395 on both.
+  Envelope correlation with the original: title 0.97, menu 0.91, playoff 0.93; RMS 2,818 / 3,362 / 3,511 against
+  2,911 / 3,280 / 3,676. The playoff piece is narrower than the original: side (L-R) energy 0.087 of the middle
+  (L+R) against 0.242.
+- **SNES builds:** every grown ROM 2 MB, header $0B, checksum and complement valid; the put-back equals the original
+  but for the size byte and checksum, the added half $FF. Both fighting orders, SDL16 (as its original: no title
+  piece, the menu from frame 2204), the 2026 builds and the put-back play their pieces and loop on the original's
+  frames; each fighting build played a computer game with 4 fights. Save RAM: 128 KB on the 2026 builds, the same
+  1,021 non-zero bytes after boot as the original; none on the 1 MB game (as the original).
+- **The S-DSP at 11.5 s of the title** (Snes9x 1.60's state: the 128 registers after the 64 KB of APU RAM in its SND
+  block): brass (sample 8) on voices 2-4 at $07FC / $07FC / $0D70, volumes 13/13, 13/23, 14/8, ENVX 127; bass (sample
+  1) on voice 5 at $0983, volume 90; the distorted guitar (sample 13) on voice 1, ENVX 80, OUTX -11, volume 24/24,
+  sounding 10.98-12.58 s (1.6 s, not 0.2-0.4); MVOL 80 / 80, echo off. The core: Snes9x 1.60 c557884 at its defaults
+  (my frontend answers no option requests: Gaussian interpolation), 60.0988 frames a second, 32,040 Hz, written as is.
+- **The player's new WAVs against the console:** within about 10% below 6 kHz (the title's 1-2.5 kHz now 1.03), above
+  6 kHz 0.56-0.61 of the console on the pieces and 0.62-0.72 on the organ songs (whose console recordings have the
+  crowd's hiss in them).
+
 ### NOSE4Web's MIDI-made NHL '95 and SNES game music, played (2026-11-17)
 
 Files in mv_review_2026-11-17/nhl95_replace and snes_replace (hashes checked). `gen95_music_check.py` reads NOSE4Web's
