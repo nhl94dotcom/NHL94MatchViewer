@@ -5956,6 +5956,40 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 group 2 fixes, played (2026-11-16)
+
+NHL_95_group2.bin / W18_group2.bin (only these four) and the _all_hacks builds, against NHL_95.bin / W18.bin.
+`analysis/scoring_map/gen95_group2_check.py` (modes pppk, faceoff, aware, deflect), from gen95_assist_check's live
+states. NHL '95's team table is at $772 (long pointers; entry 0 is not a team): a team's data + its +8 word, byte 1
+the power-play / penalty-kill byte; W18's teams are all $00 or $22.
+
+- **Power play / penalty kill** (setplayer $839D8): the team structs' data pointers (+$1E) set to Ottawa ($02, home)
+  and Detroit ($21, away), an away skater with the puck called for hooking: at the faceoff with the power play on,
+  the build against retail: Ottawa's skaters 2 lower on shot accuracy (+$6D) and 1-2 on +$6E and stickhandling
+  (+$71) (+0 for +2), Detroit's 1 higher (-1 for -2); goalies and the boxed player unchanged; a stray +-1 on one
+  skater's +$6A each side (rounding). PPBonus / PKBonus as frames end are usually 0 (the last setplayer call is a
+  goalie's). W18 (Baytown $22, Autobahn $00): no difference. The all-hacks build: the same direction (aggression,
+  +$73, also differs: its aggression / fighting options).
+- **Faceoff spot** (Stop4Pen's hash-mark step $8907A; fox / foy $BB9A / $BB9C): each stoppage kind (out of play,
+  goalie hold, whistle, icing, offside, penalties $16-$24) at 48 spots, skaters of both teams: the build's spot on a
+  dot ((0, 0), (+-77, +-215), (+-70, +-65)) 2,480 of 2,480 on NHL_95 (W18 2,424 of 2,424, the all-hacks builds the
+  same), each the rule's (penalties to the offender's end dot on the puck's side, else past a blue line that end's
+  dot, the neutral zone's nearest neutral dot, then limitfo); retail 1,344 of 2,480 on a dot. Both teams penalised
+  at one whistle: limitfo moves it to a neutral dot (+-70, 65); a delayed penalty ends on an end dot every time.
+  **The drawn neutral-zone dots are about +-83, not +-70 or +-77:** screenshots of a neutral faceoff at (70, 65) put
+  the two centres about 13 pixels inside the dot (rink-fixed pink blobs at x -83.5 / +82.5 in two camera positions),
+  while an end faceoff at (77, 215) sits on its circle's centre within about 2 pixels; retail's own limitfo already
+  uses +-70.
+- **Computer forwards' awareness** (asswingo $80C2F, asscentero $80F37): awareness_test's reload count, 12,000 frames
+  of computer play: retail NHL_95 matching aidef 1,427 / aioff 246, the build aidef 79 / aioff 883; W18 609 / 121
+  against 33 / 416.
+- **Stick deflections as shots** (puckstick .stdef $7BA02): count_deflections_test's 300 shots (the home shooter at a
+  spot before the top net, C held 3-12 frames with an aim): the full build counted 21 more and 2 fewer, and play
+  differed in 61 of 300 from the first frames (its other fixes change the computer's play); a scratch copy with only
+  the deflection fix (the boot skip, $7BA05, the code block at $1A72C0): 21 more shots, each exactly one more on the
+  team's shots (+$001), the shooter's (+$0EC), the goalie's against (away +$0EA) and the period's (+$34D), and every
+  skater, the puck and the crowd the same as retail for 150 frames after every one of the 300 shots.
+
 ### NOSE4Web's NHL '95 replaced organ song prototypes, played (2026-11-16)
 
 NHL_95_song4F_medley.bin against NHL_95.bin, W18_song3A_medley.bin against W18.bin (Brass Bonanza then William Tell,
