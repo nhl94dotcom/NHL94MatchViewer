@@ -5980,6 +5980,37 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NHL '95's sound driver: voices, stealing, controllers, the note list, long loops (2026-11-17, for NOSE4Web)
+
+For NOSE4Web's MIDI import of bank songs 0, 2 and 3. The 68000 side from sound95.asm; the Z80 side (not disassembled)
+by test pieces in place of song 0 (front end) and song 2 (between periods) in scratch copies, its voice tables found
+in Z80 RAM and watched every frame, and the audio (`analysis/scoring_map/gen95_driver_check.py`).
+
+- **Voices:** 6 FM voices and 3 square-wave voices (the noise is its own channel). A piece gets all of them on the
+  front end and between periods: at the period's end the driver clears every voice before song 2 starts, and nothing
+  took one for the whole intermission or through 40 s of title and menu presses. In play the sound effects' patches
+  ($3E, $3F, $38) take FM voices from the organ ($19). The crowd noise is written by the 68000 straight to the PSG
+  (updatesound, every game frame: the noise channel, clocked by tone 3), not through the driver.
+- **One voice per FM patch:** a note on a patch already sounding goes into that patch's voice, ending the note there,
+  even with other voices free and on another MIDI channel. So two parts on one patch play as one, newest note wins.
+- **Too many notes:** a note with no free voice takes voice 0, every time (7 patches at once: the 7th took voice 0;
+  entering 20 frames apart, the 7th, 8th and 9th all took voice 0, so the newest of them was the one taken); the
+  square wave the same (a 4th note took square voice 0). A taken note never comes back: voice 0 stayed free after the
+  short stealer ended, though the notes it had taken had 60 frames and more to run.
+- **Controllers:** CC1 is vibrato on FM (a held note's pitch swing 18 cents at 0, 123 at 64, 227 at 127), none on
+  the square wave; CC7 is volume (64 about -12.6 dB, 0 silent, on both); CC10 (pan) does nothing (left = right).
+  Every controller but $75 goes to the Z80; $75 is the loop.
+- **Timing:** the 68000 queues at most 16 Z80 commands a frame (Z80_RAM+$C), a note on with its own program change
+  is two; past that the event waits a frame. 7 notes with program changes at once reached the voices over 3 frames.
+- **SndNotes** ($FFFE9E, 32 longs: each note's off timer, music and effects together) ends right before SndNoteCount
+  ($FFFF1E) and SndSeqIndex ($FFFF20), and SndAddNote doesn't check: a 33rd pending note writes over the count. A
+  taken note keeps its entry until its own off. The game's pieces peak at 12 (song 0 on the title), 11 (song 3), 9
+  (song 2 between periods), 7 in play with effects.
+- **Long pieces:** a 100 s test piece (a note a second) with controller $75 0 at the end looped to its first event
+  exactly on time (6,001 frames). Limits from the code: the loop points are 16-bit offsets into the event data and a
+  bank item's size is a word, so a piece's stream must stay under 64 KB; waits and note lengths are at most $3FFF
+  frames (14 bits).
+
 ### NOSE4Web's review fixes 00edaee (v2), played (2026-11-17)
 
 - **Drum hits ring** (nhl94_title_drum_roll_v2.bin 40e046da): all 96 snare key-ons on their frames over three loops;
