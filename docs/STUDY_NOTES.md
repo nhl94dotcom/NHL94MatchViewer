@@ -5980,6 +5980,50 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's code-review fixes, played (2026-11-17: drum rolls, room given back, the SNES player, NHL '95's music as MIDI)
+
+Files from NOSE4Web's mv_review_2026-11-17 (hashes checked). Tools: gen_title_music_check / gen_midi_song_check
+(Genesis), `snes_music_compare.py` (the SNES player against the console), `gen95_music_check.py` (NHL '95's pieces and
+patches), `midi_notes.py` (a small MIDI reader).
+
+- **Drum rolls** (nhl94_title_drum_roll.bin 185ceca5): the sound driver's PCM channel (struct $FFD3CC, ch_flags bit 0)
+  watched every frame over three loops: all 96 snare key-ons on their frames (6-7 frames apart in the rolls), the 24
+  kicks and 48 bass notes too. Each hit's off comes 3 frames after it (the MIDI's 60-tick drum notes), before the next
+  on; a key-off stops the PCM sample (StopPCMChannel), so each snare sounds about 3 frames.
+- **Room given back:** nhl94_replaced_then_put_back.bin 352b7145: the first MB is retail (ccc0298c) but for NOSE4Web's
+  base edits (the checksum routine's call at $2FE NOPped, its code at $FFAC0 cleared to the 60FE end mark and $FF), the
+  header checksum and the size byte; the sound table and every stream as retail; the title plays retail's stream,
+  looping every 4,361 frames (starting 106 frames sooner: no checksum pass at boot); song $31 plays retail's stream in
+  full at a period's start. nhl94_song2_replaced_three_times.bin c26777ee: one Brass Bonanza stream (at $FFAC0, then
+  the N4W1 mark and the end mark, $FF after), nothing left of the earlier two; it plays in full (1,481 frames) at a
+  period's start, the end-of-period and goal songs after it as usual.
+- **The SNES player against the console** (NHL94.smc in Snes9x; the organ songs played as Boston's power-play song in
+  a scratch copy with every player pinned, so only the crowd's ambience (RMS about 210) is under them; the playoff
+  music from Game Setup with its four menu-music calls pointed at $93:ED31, the same sample set):
+  - Organ songs: lengths within 0.06 s (Jaws ends at 35.6 s on both: no stray note), first pitches the same, Brass
+    Bonanza's opening A 420 Hz on both, envelope correlation 0.90-0.92 (Drunken Sailor 0.75), RMS within 5%, energy
+    below 2.5 kHz within 15%; above 6 kHz the player has 1.8-1.9 times the console's on Jaws, Blue Danube and Hava
+    Nagila.
+  - The pieces: loudness second by second within about 10% (title, menu, playoff); energy below 1 kHz within 6%; the
+    title has 1.3-1.4 times the console's 1-2.5 kHz, and all three about 0.55-0.6 of its energy above 6 kHz.
+  - Tempo: the player falls behind by about 0.016 s every 10 s on every piece (0.165%: 60 frames a second against
+    the SNES's 60.10).
+  - Peaks: the console never passes +-20,480 (32,767 x 80/128: the voices' sum held to 16 bits, then a main volume of
+    80); the player reaches 28,572 (title) and 32,767 with 4 samples at full scale (playoff).
+  - Cymbals: the title's crash at 14.8 s falls 20 dB in 3.1 s on the console, 2.7 s in the player; the hit at 10.8 s
+    sounds 1.9 s in the player, 0.1 s on the console.
+- **NHL '95's pieces as MIDI** (title 0, end of period 2, scouting 3: the sound bank at $D8EC decoded): every tuned
+  part is in the MIDI note for note on its own channel (title 1,452 of 1,452 tuned notes; scouting's channel 9, patch
+  $14, 363 notes, is MIDI channel 3), each written 12 below the stream. The drum-like patches go to MIDI channel 9: $0E
+  as 36, the noise $13 as 42, $15 as 45 (every $15 note on the one note 45). Each patch played alone in a scratch copy
+  (the boot's self-check call at $690 NOPped and the checksum redone, as NOSE4Web's builds; notes 24-72): $0D, $11,
+  $1D and the square wave $14 sound at the written note (A440 MIDI numbering; $14 no lower than 48), $18 and $1B an
+  octave above it, $1C at no steady pitch. So the MIDI parts on $0D, $11, $14 and $1D sound an octave below the game
+  and those on $18 and $1B two octaves below. $15 is a drum: noisy (spectral flatness 0.4-0.55), down 20 dB in 0.21-0.24
+  s at its notes 0-19, its pitch following the note; at note 0 three quarters of its energy is under 200 Hz (a kick),
+  at 17-19 its centroid is about 950 Hz (a tom). $0E is a short noise drum (down 20 dB in 0.1-0.16 s): at 51 (end of
+  period) mostly under 200 Hz, at 55-57 (scouting, title) almost none there (a snare-like crack).
+
 ### NOSE4Web's music fixes 553371b, played (2026-11-17)
 
 nhl94_title_is_scouting_v3.bin 7c4a859c, nhl94_title_roundtrip_eop_brass_v3.bin 9a1d5569.
