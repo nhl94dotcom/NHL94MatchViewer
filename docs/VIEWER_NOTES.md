@@ -1702,3 +1702,29 @@ Possession: 85% of the recording's carried samples read as carried (2,331 of 2,7
 Check attempts start from the `lunge` (burst) animation, which draws the same sprite frames as plain skating, so the
 frame-to-anim table can't show it: it would take the skater's sudden speed. Left: the burst, shots read twice around
 the goal mouth, the score box (hud_read) joined in place of the recorded clock and score, and longer stretches.
+
+**A full period, the score box joined (chunk 8, 2026-11-17).** The reader's runner now reads the score box every
+frame (hud_read on the reader's own native frames: clock, period and score right in 99 of 99 checked frames), and the
+pseudo match takes its clock, period and score from it (only the shots-on-goal counts, the stats snapshots and the
+goals' scorers still come from the recording). Also: each pad's skater is the last track seen on its joypad star (a
+star hidden for a frame no longer drops him); a read burst (its own frames, 41, 46 ... 76) is dated 4 samples earlier,
+since the pad has often switched to another skater by the time its frames show (check attempts in the two stretches
+from 2 of 7 to 4 of 7); the puck's height is the read shadow gap x 0.72 + 0.8 (the gap overstates it: fitted on 264
+airborne reads); the puck velocity is the slope over the last read frames, capped at 9 pixels a frame. A rule marking
+fast releases toward the goal mouth as shots was tried and left off: over the period it found no more shots, only
+false ones. BOS-CHI game 1's first period (video frames 2980-12044, about 2.5 minutes of play, 8,846 samples):
+
+| | recorded | read | matched |
+|---|---|---|---|
+| hits | 19 | 19 | 19 |
+| zone entries | 18 | 18 | 15 |
+| faceoffs | 3 | 6 | 3 |
+| passes | 36 | 32 | 24 |
+| shots | 13 | 20 | 10 |
+| turnovers | 14 | 18 | 8 |
+| check attempts | 14 | 10 | 4 |
+
+Possession: 79% of the recording's carried samples read as carried, the team right in all but 10. What's left: extra
+shots and turnovers (frames shared by shots and passes: a release would have to be judged by where the puck goes),
+extra faceoffs (stoppages read where the clock only paused), check attempts, and speed (the reader with the score box
+and stars runs at 1-2 frames a second: a period takes about 75 minutes in two workers).
