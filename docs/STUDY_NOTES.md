@@ -5980,6 +5980,28 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music fixes a9d8bc6, played (2026-11-17)
+
+nhl94_title_is_scouting_v2.bin 3da1111b, nhl94_title_roundtrip_eop_brass_v2.bin e51fd880 (`gen_title_music_check.py
+tour`, the streams by gen_song_streams.py, each original part matched to the export's channel and octave).
+
+- **Loop timing, right:** the round-trip title ends with the original's 120-frame rest and, played, loops every 4,361
+  frames as the original (the first pass 4,381: its 20-frame header wait); scouting as the title keeps its 13-frame
+  rest and loops every 5,213 frames as the original's loop. Every piece looped on its screens, no stray pointer, no
+  note left on.
+- **Loudness, right:** Brass Bonanza at velocity 44 throughout: RMS 3,555 and peak 21,185 on the playoff tree (the
+  original piece 3,276 / 17,695; the first build 8,580 and 10,374 samples clipped), none at full scale; the titles
+  as loud as the original's (RMS 3,327 / 3,503 against 3,618).
+- **Bass, right:** the bass (channel 0, patch 13) on the original's written notes, all 279 (round trip) and 257
+  (scouting).
+- **The round trip's lead is on another patch:** the original title's lead (channel 1, patch 14) now comes back on
+  channel 2, patch 10, written 12 lower, and its channel 2 part (patch 4) on channel 1, patch 14, written 12 higher.
+  Both sound at the original's pitch (14 an octave below its notes), but the two parts' instruments are swapped: in
+  the first build (and the original) the lead was on 14 and that part on 10 / 4.
+- **A part moved onto patch 14 jumps octaves:** scouting's patch-3 part (24 notes, written 82-89) on patch 14: 82 is
+  written 12 up (94) but 84, 87 and 89 stay as written (12 up would pass 95), so the line sounds mostly an octave
+  below the original with its 82s an octave above them.
+
 ### NOSE4Web's MIDI title, end-of-period and scouting music, played (2026-11-17)
 
 nhl94_title_is_scouting.bin bd3b2c63 (the title $78 = the scouting report music re-imported), nhl94_title_roundtrip_
