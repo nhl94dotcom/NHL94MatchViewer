@@ -1603,3 +1603,18 @@ Next (the plan): read whole frames without the match file (sprite blobs from the
 puck and shadow; the HUD by the ROM's font), track the 12 skaters through frames (animation sequences and motion
 predict the next frame, so a search is small and fast), fill a hidden puck from the game's physics, and write a
 pseudo match file for the converter, then compare event by event with the 40 recorded games.
+
+**Whole frames, tracked (chunk 4, 2026-11-16; `analysis/vision/inverse.py`).** The reader without the match file: the
+teams from the score box's abbreviations (hud_read, its geometry fitted to the video), their palettes from the ROM;
+the camera from camera_track; static sprites and the boards masked. New sprites front to back from seeds at the
+residual's lowest pixels: every player template's silhouette correlated with the sprite pixels by FFT (all offsets at
+once, about 0.2 s a search), the best 30 placements scored in full for both teams, the accepted sprite's pixels then
+occluded for those behind it. Templates without team colours (sticks, effects, frame 391) are left out. Tracks follow
+the rink (the camera's move shifts them), each next frame among those that follow the current one in recorded games
+(games 2-4), searched within 3 pixels; every 15 frames a track's identity is searched again; new sprites every 6
+frames, or at once when 250 sprite pixels are unexplained. The sprite's point is 8 rows above 120 - Y + Vpos
+(screen y = 112 - Y + Vpos). On BOS-CHI game 1, 300 frames from 6200 (a fast pan included), against the match file
+(a read of his team within 4 pixels of a recorded on-screen player): **95.3% of 1,597 player appearances found, the
+animation frame right in 100% of them, 0.09 extra sprites a frame, 1.7 frames a second** (first version: 64% found,
+3.9 extras a frame, 0.17 frames a second; fixed: a fixed-palette template locking onto a player, tracks lost in a
+pan, and the search's speed).
