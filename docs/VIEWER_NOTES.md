@@ -1803,3 +1803,11 @@ same length as game 1's period), with everything learnt (the reader's transition
 Hits, faceoffs, shots and possession hold on a game never seen; passes (59% matched against 75%), zone entries and
 false turnovers (10 against 7) are weaker there, so those rules carry some of game 1 in them. Next: why game 2's
 passes and entries are missed.
+
+Game 2's extra passes were mostly shots, three of them goals: the release was named a shot, but the shooter's
+follow-through frames (shared by shots and passes, read as a pass by default) made a second release, a "pass". The
+verdict now rewrites the follow-through too (up to FOLLOW = 24 samples while the frames are shot / pass frames). That
+cost two real passes, both into one-timers (the puck reached the net, so the pass was named a shot); now a loose puck
+that turns hard (over 60 degrees across 4 samples each side) within 25 of a teammate makes the release his pass.
+Game 1: passes 29 of 36 matched, 34 read (27, 35); shots 15 read, 11 matched. Game 2: passes 12 of 22, 21 read (13,
+24); shots 16 read, 10 matched. Everything else the same on both.

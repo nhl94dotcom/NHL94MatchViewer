@@ -31,6 +31,7 @@ LUNGE, LUNGE_BACK = "0c5e", 4   # the burst's anim word (Genesis ACTIONS lunge) 
 Z_SCALE = (0.72, 0.8)       # game height from the read gap (rows): fitted on 264 airborne reads of BOS-CHI game 1
 SHOT, SHOT_SPEED, SHOT_MOUTH = "092e", 99.0, 40  # off (99): over a full period it found no more shots, only false ones
 SHOOTS, PASSES, PASS = {"07fc", "092e"}, {"0718", "078a"}, "0718"   # Genesis ACTIONS shoot / pass anims
+FOLLOW = 24                  # samples after a release whose shot / pass frames are its follow-through
 WIDE = 60                   # a release whose line crosses the goal line this far from the middle is a pass
 RELEASE_LOOK = 90           # samples a release's outcome is looked for
 V_WINDOW = 12               # video frames the puck velocity's slope is taken over
@@ -289,6 +290,16 @@ def build(truth, vf, rows, maps, q0, q1):
             if o >= 0 and o != k:
                 verdict = "pass" if (o < 6) == (k < 6) else ("shot" if o % 6 == 5 else None)
                 break
+            # a one-timer: the loose puck turns hard beside a teammate (he never has it), so the release was his pass
+            if j >= i + 4 and j + 4 < n:
+                ax, ay = puck[3 * j] - puck[3 * (j - 4)], puck[3 * j + 1] - puck[3 * (j - 4) + 1]
+                bx, by_ = puck[3 * (j + 4)] - puck[3 * j], puck[3 * (j + 4) + 1] - puck[3 * j + 1]
+                na, nb = math.hypot(ax, ay), math.hypot(bx, by_)
+                if na > 4 and nb > 4 and (ax * bx + ay * by_) / (na * nb) < 0.5 and any(
+                        math.dist((pos[(j * 12 + t) * 2], pos[(j * 12 + t) * 2 + 1]), (puck[3 * j], puck[3 * j + 1])) <= 25
+                        for t in range(6 * (k // 6), 6 * (k // 6) + 6) if t != k):
+                    verdict = "pass"
+                    break
             if abs(puck[3 * j]) <= 30 and abs(puck[3 * j + 1] - gy) <= 14:
                 verdict = "shot"
                 break
@@ -302,8 +313,12 @@ def build(truth, vf, rows, maps, q0, q1):
                 verdict = "pass"                       # away from the net he attacks
         if verdict is None:
             continue
-        for jj in range(max(0, i - 4), i + 1):
+        # the release and its follow-through (its frames, shared by shots and passes, read as a pass by default: a
+        # shot's follow-through had made a second release, a "pass", on game 2's goals)
+        for jj in range(max(0, i - 4), min(n, i + FOLLOW)):
             a = "".join(anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4])
+            if jj > i and a not in SHOOTS and a not in PASSES:
+                break
             if verdict == "pass" and a in SHOOTS:
                 anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4] = PASS
             elif verdict == "shot" and a in PASSES:
