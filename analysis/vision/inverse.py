@@ -277,6 +277,38 @@ class Reader:
                     best = (float(sc[k]), team, fr, mir, int(pts[k][0]), int(pts[k][1]), int(n[k]))
         return best
 
+    LABEL = (438, 292)                              # the greys of the number and pad letter under a pad star
+
+    def feet_marks(self, img, bg):
+        """The stars at the live tracks' feet (390 / 391 a person's pad, 392 the puck carrier: drawn at the sprite's
+        point, checked within a pixel, 60% of their pixels right) and, under a pad star, the player's number and pad
+        letter (its greys in the box below it): explained, so they no longer read as a new sprite every frame."""
+        out = np.zeros(img.shape, bool)
+        if not hasattr(self, "_feet"):
+            self._feet = {fr: self.S.get(fr, 0, False) for fr in (390, 391, 392)}
+        H, W = img.shape
+        for tr in self.tracks:
+            if tr.miss:
+                continue
+            pts = np.array([(tr.sy + dy, tr.sx + dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1)])
+            for fr, t in self._feet.items():
+                if t is None:
+                    continue
+                sc, mt, n = score(img, bg, t, pts)
+                share = mt / np.maximum(1, len(t[0]))
+                k = int(share.argmax())
+                if share[k] < 0.6:
+                    continue
+                sy, sx = int(pts[k][0]), int(pts[k][1])
+                Y, X = t[0] + sy, t[1] + sx
+                ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
+                out[Y[ok], X[ok]] |= img[Y[ok], X[ok]] == t[2][ok]
+                if fr != 392:
+                    ya, yb, xa, xb = max(0, sy + 8), min(H, sy + 20), max(0, sx - 12), min(W, sx + 18)
+                    box = img[ya:yb, xa:xb]
+                    out[ya:yb, xa:xb] |= np.isin(box, self.LABEL) & (box != bg[ya:yb, xa:xb])
+        return out
+
     def place(self, img, t, sy, sx):
         Y, X = t[0] + sy, t[1] + sx
         ok = (Y >= 0) & (Y < img.shape[0]) & (X >= 0) & (X < img.shape[1])
@@ -365,6 +397,7 @@ class Reader:
                 if r and r[0] / max(1, r[6]) > tr.sc + 0.1 and (r[1], r[2]) != (tr.team, tr.fr):
                     _, tr.team, tr.fr, tr.mir, tr.sy, tr.sx, n = r
                     tr.sc = r[0] / n
+        drawn |= self.feet_marks(img, bg)
         self.drawn = drawn
         near = drawn.copy()
         for d in (-2, -1, 1, 2):                                    # pixels next to a drawn sprite: its stick, specks

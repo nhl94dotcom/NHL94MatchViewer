@@ -1751,4 +1751,11 @@ each score-box cell's template differences are kept by its exact pixels (a lossl
 clock changes), so the score box now costs under 1% of a frame; the puck search first tests n // 5 + 1 of a puck
 frame's n pixels at each placement (a placement matching 80% has at least one of them right) and skips the rest.
 Over 150 frames: puck search 40 s to 18 s, the whole run 113 s to 91 s, every row identical. The sprite search (the
-FFT silhouettes, about 57 s of the 91) is what's left.
+FFT silhouettes, about 57 s of the 91) is what's left. Most of that was searches for new players that found none: the unexplained pixels
+were over the reader's threshold every frame, nearly all of them the joypad and possession stars at the skaters' feet
+and the number and pad letter under a person's skater (two greys, codes 438 and 292). The tracker now marks those as
+explained (`Reader.feet_marks`: a star of frames 390-392 within a pixel of a live track's point, 60% of its pixels
+right; under a pad star, the label's greys in the box below). Over 150 frames, 214 searches instead of 792, finding
+the same 13 new players. The two 40 s stretches: every event count the same or better (one false shot fewer,
+possession 2,342 of 2,747 carried samples against 2,331), and the reader runs at about 4 frames a second (1.5-2
+before): a period in two workers takes about 20 minutes rather than 75.
