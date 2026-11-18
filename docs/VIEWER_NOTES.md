@@ -1814,4 +1814,7 @@ Game 1: passes 29 of 36 matched, 34 read (27, 35); shots 15 read, 11 matched. Ga
 read as an opponent "having" the puck for a single sample (a pick-off, then a takeaway): a possession under MIN_SPELL
 = 2 samples with the puck loose either side is now loose. Game 2: turnovers 14 read, 9 matched (19, 9); game 1:
 turnovers the same, passes 28 matched (29). 3-4 samples cost game 1 two more passes (quick touches). The rest of game
-2's false turnovers are the carrier given to a nearby player in a crowd.
+2's false turnovers are the carrier given to a nearby player in a crowd. A goalie frame is now one goalies draw 5+ times and
+mostly they (GOALIE_SHARE 80% of its uses): goalies skating out of the crease draw skaters' frames, which had put a
+carrier in the goalie's record again on game 2. Zone entries: game 2 12 of 14 (10), game 1 16 of 18 (15), 20 read;
+possession up a little on both; shots: game 1 10 matched (11), game 2 17 read (16).

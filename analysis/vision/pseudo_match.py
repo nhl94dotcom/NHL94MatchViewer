@@ -23,6 +23,7 @@ from collections import Counter
 
 ROLES = "534210"
 SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
+GOALIE_SHARE = 0.8          # a frame goalies draw this share of the time is a goalie's
 MIN_SPELL = 2               # samples: a shorter possession with the puck loose either side is the puck passing a stick
 FLICK = 24                  # samples (0.4 s real): the other team "having" the puck this briefly between two spells of
                             # one carrier is a misread scrum
@@ -60,9 +61,11 @@ def learn_maps(matches):
                 face.setdefault(fr, Counter())[m["facing"][q * 12 + k]] += 1
                 if m["role"][q * 12 + k] == "0":
                     goalie[fr] += 1
+    # a goalie frame is one goalies draw (5+ times) and mostly they (80% of its uses): a goalie skating out of his crease
+    # draws skaters' frames, which had made a carrier's skating frames "goalie" ones (game 2: a carrier in record 5)
     return dict(anim={f: c.most_common(1)[0][0] for f, c in anim.items()},
                 facing={f: c.most_common(1)[0][0] for f, c in face.items()},
-                goalie={f for f, c in goalie.items() if c >= 5})
+                goalie={f for f, c in goalie.items() if c >= 5 and c >= GOALIE_SHARE * sum(anim[f].values())})
 
 
 def slice_match(m, q0, q1):
