@@ -6011,6 +6011,51 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music round 8, played (2026-11-18)
+
+NHL94_all_three_roundtrip_grown.smc b86aa6cf, nhl94_2026_all_three_roundtrip.sfc 78e73f19 (SHA-256, first 8): the
+multi-voice entries (title dist #27-29, HORN #30, menu power guitar #41) and the one-entry instruments and drums pinned
+to the voice FindFreeVoice gives. Played as round 7; both loop on the original's frames (menu 6252, playoff 3720).
+
+| piece | side / mid (orig, new) | R lean (orig, new) | L / R new | RMS orig, new | envelope corr |
+|---|---|---|---|---|---|
+| title | 0.060, 0.060 | +0.3%, +0.3% | 2,927 / 2,937 | 2,911, 2,932 | 0.984 |
+| menu | 0.101, 0.100 | +0.8%, +1.3% | 3,291 / 3,335 | 3,270, 3,313 | 0.933 |
+| playoff | 0.242, 0.244 | +4.7%, +4.6% | 3,582 / 3,748 | 3,675, 3,666 | 0.995 |
+
+(the 2026 build within 0.001). Frames each sample sounds by side, every second frame (NOSE4Web's render counts every
+frame, about 2x these), original / 1 MB new; the 2026 build against nhl94_2026.sfc in brackets where it differs:
+
+| sample | title | menu |
+|---|---|---|
+| 0 C | 104 / 104 (78 / 78) | 360 / 360 |
+| 1 C | 259 / 259 (235 / 235) | 1,577 / 1,577 |
+| 2 C | 87 / 87 (88 / 88) | 400 / 400 |
+| 3 R | - | 33 / 33 |
+| 4 C | 88 / 88 (44 / 44) | 376 / 376 |
+| 5 C / L / R | - | 28 / 28, 50 / 50, 32 / 32 |
+| 6 C | 30 / 30 (26 / 26) | 128 / 141 |
+| 6 R | 25 / 24 (22 / 22) | 13 / 0 |
+| 7 C | 54 / 33 (53 / 32) | - |
+| 7 R | - | 319 / 319 |
+| 8 C | 85 / 85 (79 / 79) | 531 / 531 |
+| 8 L | 237 / 237 (229 / 229) | 287 / 287 |
+| 8 R | 186 / 186 (198 / 198) | 376 / 376 |
+| 9 C | 102 / 102 (109 / 109) | 408 / 408 |
+| 10 C | 24 / 24 (23 / 23) | 280 / 280 |
+| 11 R | - | 91 / 91 |
+| 12 R | 18 / 12 (17 / 11) | 105 / 105 |
+| 13 C | 329 / 304 (330 / 306) | 448 / 448 |
+| 13 L | 12 / 12 (10 / 10) | 553 / 553 |
+| 13 R | 6 / 12 (5 / 10) | 645 / 645 |
+| 15 C / L / R | - | 260 / 260, 133 / 133, 345 / 345 |
+
+- **Title:** the width and lean are the original's; sample 13 mostly centred again; the brass (8) exact. Left over:
+  sample 7 centred 33 against 54, sample 12 right-only 12 against 18, sample 13 right 12 against 6.
+- **Menu:** sample 15's left side back, every frame as the original; sample 6's 13 right-only frames still centred.
+- **Playoff:** as round 7 (brass L 214 / R 204 against 214 / 200, crash 41 / 35, sample 3 R 6, organ within 1); the
+  1 MB build has sample 2 right-only 5 frames (centred 229 against 234), the 2026 build not.
+
 ### NOSE4Web's music round 7, played (2026-11-18)
 
 NHL94_all_three_roundtrip_grown.smc d764828b, nhl94_2026_all_three_roundtrip.sfc 2515ac65 (SHA-256, first 8; built as
