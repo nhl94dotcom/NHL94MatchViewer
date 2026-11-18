@@ -1850,3 +1850,10 @@ close by failed the converter's facing cone: the read facing was 90 degrees off 
 frame). The game draws left- and right-facing poses as one frame, mirrored, and the map from frame to facing ignored
 the mirror. It is now keyed on both (frame x 2 + mirror; the other mirror, then 0, when unseen). Check attempts: game
 1 9 of 14 matched, 15 read (7, 13); game 2 10 of 12, 13 read (4, 7). Nothing else changed on either game.
+
+**A second game never tuned on: game 3 (2026-11-18).** CHI-BOS, the home side switched, its first 2.5 minutes of play
+(video frames 71797-80861), everything learnt from games 1, 2 and 4 (`TEST_GAME=2`), with all of the above: hits
+17 / 17 / 17 (recorded / read / matched), faceoffs 5 / 6 / 5 (first possession right 4 of 5), zone entries 17 / 17 / 15,
+possession 85% (team right 98%), passes 30 / 22 / 20, turnovers 15 / 21 / 11, shots 7 / 6 / 3, check attempts 16 / 8
+/ 5. Hits, faceoffs, entries and possession hold on all three games; shots and check attempts are weak here (and
+passes missed rather than false), so those are the next to look at on this game.
