@@ -6113,6 +6113,44 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music round 9 (percussion), played (2026-11-18)
+
+NHL94_music_roundtrip.smc 1bb97437 (against NHL94.smc) and SA1_music_roundtrip.sfc 613f24f1 (against
+nhl94_SA1_Original.sfc), SHA-256 first 8: percussion tracks carry each note's entry, volume and pitch in a text event,
+split parts back on one track. Played as rounds 7 and 8, one emulator at a time; each voice's sample, side, pitch and
+VOL L / R read every second frame from the S-DSP. Both loop on the original's frames (menu 6252, playoff 3720).
+
+| piece | side / mid (orig, new) | R lean (orig, new) | RMS orig, new | envelope corr | SA-1: side / mid, corr |
+|---|---|---|---|---|---|
+| title | 0.060, 0.060 | +0.3%, +0.3% | 2,911, 2,929 | 0.987 | 0.060, 0.988 |
+| menu | 0.101, 0.101 | +0.8%, +0.8% | 3,270, 3,270 | 0.999 | 0.101, 0.999 |
+| playoff | 0.242, 0.243 | +4.7%, +4.7% | 3,675, 3,669 | 0.995 | 0.244, 0.997 |
+
+- **Menu:** every sample's frames by side, pitch and mean volume as the original (both builds), sample 6's 13
+  right-only frames included (centred in round 8), but one thing: sample 15 (frames and sides exact) plays steady at
+  $0E41 / $1965 where the original bends up to about 2 semitones ($0E41-$0F9F, $1965-$1C9D: 47 of its 260 centred and
+  46 of its 345 right-only frames).
+- **Title** (frames every second frame, original / new; pitch, mean VOL L / R): everything as the original but
+
+| sample, side | original | new |
+|---|---|---|
+| 1 C | 260: $05FE 27, $0359 16 (rising through $0449-$05B1, 8 more) | 260: $05FE 51 |
+| 6 R | 25 | 24 |
+| 7 C ($05FE, 59 / 59) | 54 | 45 |
+| 12 R | 18: $050A 12, $03C6 6; 45 / 60 | 12: $050A 6, $03C6 6; 42 / 56 |
+| 13 C | 330 ($0480 90) | 311 ($0480 73) |
+| 13 R | 6 | 12 |
+
+  The brass (8) exact: C 86 / L 238 / R 187. SA-1 the same differences (sample 7 C 43 against 53, 12 R 11 against 17,
+  1 C $0359 lost).
+- **Playoff:** as round 8: brass L 214 / R 204 against 214 / 200, the organ (14) within 1, the rest exact (the
+  sample 2 right-only frames of round 8's 1 MB build gone).
+- **The .mid files** (Title 15 tracks, Menu 19, Playoff 14; format 1, division 60): valid SMF. Every track's length
+  matches its header and ends with End of Track, every note on has its off, data bytes under 128, one tempo each
+  (Menu and Playoff with a `loopStart` marker). The percussion tracks are on channel 10 with no program change, and
+  their "SNES notes ..." lists are Text meta events ($FF $01), which players skip. midi_notes.py reads 1,695 / 1,554 /
+  602 notes.
+
 ### NOSE4Web's music round 8, played (2026-11-18)
 
 NHL94_all_three_roundtrip_grown.smc b86aa6cf, nhl94_2026_all_three_roundtrip.sfc 78e73f19 (SHA-256, first 8): the
