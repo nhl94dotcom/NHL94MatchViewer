@@ -6891,6 +6891,10 @@ the same route on both ROMs, San Jose v New Jersey; on each screen the pixels dr
   scratch copy with $55270 = $0AA0: San Jose teal on the tree, the only pixels on that page using the colour (New
   Jersey's stripe teal there too, as in the game). The arena line's colours 1-15 are also copied at $4E2B8, $AF8DE,
   $B8A2A, $BDB06, $BEE54, $BF102, $BF68C and $ED81A (other screens' palettes, not checked here).
+- **The follow-up, nhl94_sanjose_teal_tree.bin c9f32a05:** 21bdc1ed with $55270 = $0AA0 and the checksum, nothing
+  else. The tree (San Jose put in, potree $FFCEF4): colour 11 is $0AA0 on lines 1 and 2, San Jose's block teal; the
+  page differs from 21bdc1ed in 712 pixels, exactly San Jose's stripe (464) and New Jersey's (248). Play and the pause
+  scoreboard pixel-identical to 21bdc1ed.
 
 ### NOSE4Web's NHL '95 team banners (2ad82c0, 62c8eba), played (2026-11-16)
 
