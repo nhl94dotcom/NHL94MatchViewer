@@ -6054,6 +6054,41 @@ on retail and W18 **$FFDC84-$FFFC03 (about 8 KB) never changed** (NHL '95's own 
 at $FFDC76; the stack above it); other unchanged runs are under 900 bytes. NOSE4Web's provisional $FFF000 on is inside
 it. Settled with the shootout builds (below).
 
+### NOSE4Web's NHL '95 Ratings options, played (2026-11-18)
+
+Clutch time, the hot / cold range and the base weight, ported from NHL '94 (mv_review_2026-11-18/ratings95:
+NHL_95_clutch_hot4_w144 cedfeb69, W18_clutch_hot4_w144 93330f89, NHL_95_hot0 a966e00d, W18_hot0 c740ae70), played
+against NHL_95.bin and W18.bin with `analysis/scoring_map/gen95_ratings_check.py` (from gen95_assist_check's live
+states; checksums valid).
+
+- **Bytes:** only the listed places differ: $7A392 (jsr) and $83D34 (jmp) with the code at $1A72C0 (NHL '95: over the
+  boot self-check, whose call stays NOPped; it starts with a bra.s to itself) or $1DADF6 (W18: free space); $83E93 4
+  or 0; $8566D and $99451 $8C to $90; the collisions' own 140 ($7ACE6, the instruction at $7ACE4) unchanged.
+- **Clutch, the tick:** at the frame the clock reaches 2:00, P3 tied or within one: +3 on Agl, Spd, ShP, ShA, Pas,
+  PS odds, Stk, End and Chk for all 12 records (+2 / +1 where held at 30); OfA, DfA, Agr and Fgt unchanged. Nothing
+  with a two-goal lead, in overtime or in P2. Both games.
+- **Clutch, rebuilds** (the faceoff after a goal, the score after it deciding; and line changes with energy drained):
+  P3 at 1:50, 3-2 or 3-3 after the goal: all 12 records +3 on Agl, End, PS odds and ShA, +2 (some +3) on the five
+  BoostAttribute raises (Spd, ShP, Chk, Stk, Pas); **OfA and DfA also improve at a rebuild** (their working values
+  aioff / aidef, lower = better, -1 on 7-9 of 12): the AttributeCalc path skips only attribute $F (aggression), so
+  awareness gets the +3 before setplayer's (30 - x / 2) / 2; the tick skips it. 4-2 or 5-2 after the goal, P2, P3 at
+  4:40: nothing. Both games.
+- **Clock and the 1:00 beep:** NHL '95: the clock identical every frame on both ROMs (2:00 at frame 96, 1:00 at 1,536),
+  SFXbeep2's sequence (id 29) starting the frame the clock reads 60 on both. W18: each running second 24 frames on
+  both (67 seconds each), the beep the frame it reads 60 on both; the stoppages fall elsewhere (the play differs).
+- **Hot / cold range** (three power-ons a ROM; the title wait doesn't change the table): retail -9 to 8; range 4 -4 to 3,
+  each value about 100 of the 832; range 0 all 832 values 0. On the ice, Agility and Endurance (no bonuses) are 5 x the
+  rating + the first value / 3 (divs) for every player read, on all six ROMs: at range 0 plain 5 x the rating.
+- **Base weight 144:** Create Player Wt. 204 to 208 (NHL '95 and W18), Team Roster's Weight column (INFO, Team Roster,
+  11 x RIGHT) Richter 196 to 200, Healy 180 to 184 (NHL '95), Hiller and the second goalie 196 to 200 (W18). A copy of
+  the originals with only the two weight words changed plays frame for frame as the original (2,400 frames of P1
+  computer play, every record's X / Y and weight byte, the team stats): the collisions are as before.
+- **The builds' play drifts from the originals** even with the clutch idle (P1): the clock hook alone from frame 148,
+  the AttributeCalc jump alone from frame 1,420, the hot / cold byte alone never. NHL '95's DoGameFrame moves the game
+  on by the vblanks since its last pass (d7), so a few dozen more cycles in the interrupt shift when a step is two
+  frames long (the SNES's beam-position drift, the same kind). No slowdown: over the same 2,400 frames the builds made
+  2,042 / 1,974 logic steps against the originals' 1,987 / 1,929.
+
 ### NOSE4Web's NHL '95 settings: any position (Edit Lines), played (2026-11-17)
 
 NHL_95_lines.bin 1dd94853 / W18_lines.bin ed34a857 against the originals (the change: $95312's `bgt.w` / `add.w
