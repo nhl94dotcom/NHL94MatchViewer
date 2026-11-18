@@ -6830,6 +6830,33 @@ core's audio.
 - Not exercised: the restore into another free slot (the song's own slot was free every time: no effect took slot 0
   during the pause screens).
 
+### NOSE4Web's in-game banner colour, played (2026-11-18)
+
+nhl94_sanjose_teal.bin 21bdc1ed against nhl94.bin: the arena's line 1 colour 11 (the word at $5995A, $020 dark green)
+set to teal $0AA0, San Jose's in-game banner (the TeamBlocks set) relettered SJ with its top stripe in that slot, San
+Jose's stripe pair $0000 / $0860 made $0AA0 / $0000 in both copies at $F90B6, and the boot self-check's call ($301)
+NOPped with its routine ($FFAC0) cleared. No shootout code (retail has none). `analysis/scoring_map/gen_banner_colour_check.py`:
+the same route on both ROMs, San Jose v New Jersey; on each screen the pixels drawn with colour memory entry 27 (line
+1 colour 11) found exactly (that entry set to a marker in the saved state and the frame drawn again).
+
+- **San Jose teal** wherever the in-game banners show: the pause screen's scoreboard, the screens before the opening
+  faceoff, Game Statistics (four banners), Scoring Summary, Penalty Summary, the line editor, Player Stats, Team
+  Roster, the penalty's horizontal rink (Charging, 2:00) and the intermission's menu. Entry 27 holds $0AA0 there.
+- **What else uses the slot:** New Jersey's banner stripe (234 pixels a banner: dark green before, teal now), and a
+  few crowd pixels (about 10-30 at the edge of the vertical rink beside the clock box, 30-60 in the penalty view's
+  stands). Nothing else on any screen checked: score box, clock and its EA logo, digits, player stars, referee (Period
+  Over, the faceoff, the penalty), the line-change box and its energy bars, the instant replay and its panel, the
+  zamboni (the intermission menu), the boot screens and the EA logo (the slot isn't used there). The net or puck
+  pixels NOSE4Web lists didn't show in the frames taken.
+- **Game Setup:** San Jose's menu banner shows the new stripes (teal over black, from $F90B6). The other setup
+  screens are identical.
+- **The playoff tree keeps dark green.** PlayoffScreen copies the palette of the jim at $54E24 (palettes at +$416:
+  $5523A) to lines 0-2; the team blocks use lines 1 and 2 (San Jose's on line 2, New Jersey's on line 1), whose
+  colour 11 is the word at $55270, still $0020. San Jose put into the tree (potree $FFCEF4) shows dark green. A
+  scratch copy with $55270 = $0AA0: San Jose teal on the tree, the only pixels on that page using the colour (New
+  Jersey's stripe teal there too, as in the game). The arena line's colours 1-15 are also copied at $4E2B8, $AF8DE,
+  $B8A2A, $BDB06, $BEE54, $BF102, $BF68C and $ED81A (other screens' palettes, not checked here).
+
 ### NOSE4Web's NHL '95 team banners (2ad82c0, 62c8eba), played (2026-11-16)
 
 NHL_95_banners.bin 86e80bf1 (Boston's three sets Toronto's, in place), W18_banners.bin a12cd45d (Barrie Dolts' in-game
