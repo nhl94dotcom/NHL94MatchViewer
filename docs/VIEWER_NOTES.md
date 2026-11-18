@@ -1759,3 +1759,11 @@ right; under a pad star, the label's greys in the box below). Over 150 frames, 2
 the same 13 new players. The two 40 s stretches: every event count the same or better (one false shot fewer,
 possession 2,342 of 2,747 carried samples against 2,331), and the reader runs at about 4 frames a second (1.5-2
 before): a period in two workers takes about 20 minutes rather than 75.
+
+**Faceoffs right (2026-11-18).** The full period's three extra faceoffs were three kinds of false stoppage: one
+split in two (the game stops the clock at the whistle but hides the puck a few seconds later; a stray sighting
+between, and a one-sample misread of the clock, 89 then 71 then 89, cut it), slivers of a few unseen samples just
+after a faceoff, and the period's end (0:00, the puck gone for the intermission; the recording has no stoppage there).
+Now a misread clock value that comes back within 12 samples is dropped, stoppages within 150 samples of each other
+with the clock unchanged are one, a stoppage under 60 samples is none, and none is made at 0:00. Faceoffs: 3 read, 3
+matched, 3 recorded (6 read before); every other count the same, the 40 s stretches unchanged.

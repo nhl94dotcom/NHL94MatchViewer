@@ -31,6 +31,8 @@ RELEASE_LOOK = 90           # samples a release's outcome is looked for
 V_WINDOW = 12               # video frames the puck velocity's slope is taken over
 VMAX = 9.0                  # pixels a frame: about the fastest shot (a puck at 23,000 moves 5.6)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
+MERGE = 150                 # samples (2.5 s real): stoppages this close, the clock unchanged between, are one
+MIN_STOP = 60               # samples (1 s real): a shorter stoppage is a sliver of unseen puck, not a whistle
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
               "owner": 1, "pad": 1, "pad2": 1, "facing": 12, "roster": 12, "role": 12, "frame": 36, "puckFrame": 3,
               "mirror": 12, "anim": 48, "lights": 1}
@@ -238,7 +240,13 @@ def build(truth, vf, rows, maps, q0, q1):
                 anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4] = SHOT
     # the puck hidden at a stoppage, as the game hides it: the clock (the score box's) unchanged for STOPPED samples and
     # the puck not seen
-    clock = m["clock"]
+    clock = list(m["clock"])
+    # a misread of the score box's clock for a sample or two (89, 71, 89) is dropped: the real clock steps down by one
+    # a game second (about 24 samples) and never comes back to a value it has left within 12 samples
+    for i in range(1, n):
+        if clock[i] != clock[i - 1] and any(clock[j] == clock[i - 1] for j in range(i + 1, min(n, i + 13))):
+            clock[i] = clock[i - 1]
+    m["clock"] = clock
     still = 0
     for i in range(n):
         still = still + 1 if i and clock[i] == clock[i - 1] else 0
@@ -247,6 +255,35 @@ def build(truth, vf, rows, maps, q0, q1):
         if still >= STOPPED and not seen:
             puck[3 * i + 2] = -256.0
             owner[i] = -1
+    # One whistle, one stoppage (each becomes a faceoff in the converter): stoppages a short sighting apart with the
+    # clock unchanged are one (the game hides the puck a few seconds after the clock stops, and a stray read in
+    # between had split it); one shorter than MIN_STOP samples is a sliver, not a whistle; none at 0:00 (the period
+    # is over: the recording has no faceoff there). Full first period of BOS-CHI game 1: 6 read for 3 recorded.
+    runs, i = [], 0
+    while i < n:
+        if puck[3 * i + 2] < -100:
+            j = i
+            while j < n and puck[3 * j + 2] < -100:
+                j += 1
+            runs.append([i, j])
+            i = j
+        else:
+            i += 1
+    merged = []
+    for a, b in runs:
+        if merged and a - merged[-1][1] <= MERGE and all(clock[x] == clock[a] for x in range(merged[-1][1] - 1, a + 1)):
+            merged[-1][1] = b
+        else:
+            merged.append([a, b])
+    for a, b in runs:
+        for x in range(a, b):
+            puck[3 * x + 2] = max(puck[3 * x + 2], 0.0) if puck[3 * x + 2] < -100 else puck[3 * x + 2]
+    for a, b in merged:
+        if b - a < MIN_STOP or clock[a] == 0:
+            continue
+        for x in range(a, b):
+            puck[3 * x + 2] = -256.0
+            owner[x] = -1
     m.update(pos=pos, frame="".join(frame), mirror="".join(mirror), anim="".join(anim), facing="".join(facing),
              role=role, puck=puck, puckV=puckV, owner=owner, ctrl=ctrl)
     if "pad" in m:
