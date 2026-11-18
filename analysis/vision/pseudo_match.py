@@ -89,7 +89,7 @@ def build(truth, vf, rows, maps, q0, q1):
     frame, mirror, anim, facing = list(m["frame"]), list(m["mirror"]), list(m["anim"]), list(m["facing"])
     role = ROLES * 2 * n
     puck, puckV, owner, ctrl = list(m["puck"]), [0] * (2 * n), [-1] * n, [0] * n
-    slot_of, last = {}, {k: (pos[2 * k], pos[2 * k + 1]) for k in range(12)}
+    slot_of, last, votes = {}, {k: (pos[2 * k], pos[2 * k + 1]) for k in range(12)}, {}
     pad_track = {}
     prev_p, hist = None, []
     for i in range(n):
@@ -114,7 +114,23 @@ def build(truth, vf, rows, maps, q0, q1):
                     cands = [base + k for k in range(5)]
                 free = [k for k in cands if k not in taken] or cands
                 slot_of[tid] = min(free, key=lambda k: abs(last[k][0] - X) + abs(last[k][1] - Y))
+            # a track's record follows what it draws: one first seen in a goalie-like frame that skates (or a goalie
+            # first seen in a skater's frame) moves once 10 of its frames say so, swapping with the record's holder
+            # (the full period's carrier had sat in the away goalie's record, so no check on him was an attempt)
+            v = votes.setdefault(tid, [0, 0])
+            v[0] += fr in maps["goalie"]
+            v[1] += 1
             k = slot_of[tid]
+            if v[1] >= 10 and ((k % 6 == 5 and v[0] < 0.3 * v[1]) or (k % 6 != 5 and v[0] > 0.7 * v[1])):
+                base = 6 * team
+                want = [base + 5] if k % 6 != 5 else sorted(range(base, base + 5), key=lambda j: abs(last[j][0] - X) + abs(last[j][1] - Y))
+                holders = {slot_of[t]: t for t in slot_of if t != tid}
+                to = next((j for j in want if j not in holders or votes.get(holders[j], [0, 0])[1] < 10
+                           or (j % 6 == 5) != (votes[holders[j]][0] > 0.5 * votes[holders[j]][1])), None)
+                if to is not None:
+                    if to in holders:
+                        slot_of[holders[to]] = k
+                    slot_of[tid] = k = to
             if k in live.values():
                 continue
             live[tid] = k

@@ -1770,4 +1770,8 @@ matched, 3 recorded (6 read before); every other count the same, the 40 s stretc
 puck changing hands back and forth (record 9, then 4 for 6 samples, then 9 again, with loose samples between) are
 smoothed: another team's spell under FLICK = 24 samples (0.4 s real) between two of the same carrier, loose gaps up
 to 24 on each side, is his. Full period: turnovers 17 read (19 before), the 9 matched kept, possession 3,904 of 4,920
-carried samples (3,886); 40 samples took real ones. The 40 s stretches unchanged.
+carried samples (3,886); 40 samples took real ones. The 40 s stretches unchanged. A track's record now follows what it
+draws: one first seen in a goalie-like frame that then skates (or a goalie first seen in a skater's frame) moves once
+10 of its frames say so, swapping with the record's holder. The away team's carrier had sat in its goalie's record
+(role 0), so no check on him could be an attempt. Full period: check attempts 6 of 14 matched (4), 12 read;
+turnovers 10 matched of 17 read; possession 3,937; zone entries 19 read (one more). The 40 s stretches unchanged.
