@@ -692,6 +692,9 @@ class PuckTracker:
         the mask hides."""
         R = self.R
         live = [t for t in R.tracks if t.miss == 0]
+        # the stars every frame (the pad stars say who each person has; they had been read only when the puck went
+        # unseen, so a pad's skater stayed stale for long stretches), on the unmasked frame where there is one
+        self.stars = read_stars(R, img if raw is None else raw, live)
         pred = None
         if self.pos is not None:
             Y, X = self.pos
@@ -753,7 +756,6 @@ class PuckTracker:
                             best = (share, tr)
         if best:
             return self._carried(best[1], cam, "on a stick", best[0])
-        self.stars = read_stars(R, img, live)
         st = [t for t in live if 392 in self.stars.get(t.id, ())]
         if st:                                          # the possession star under him
             return self._carried(st[0], cam, "possession star")

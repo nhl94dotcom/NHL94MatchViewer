@@ -1857,3 +1857,16 @@ the mirror. It is now keyed on both (frame x 2 + mirror; the other mirror, then 
 possession 85% (team right 98%), passes 30 / 22 / 20, turnovers 15 / 21 / 11, shots 7 / 6 / 3, check attempts 16 / 8
 / 5. Hits, faceoffs, entries and possession hold on all three games; shots and check attempts are weak here (and
 passes missed rather than false), so those are the next to look at on this game.
+
+**The people's skaters and the camera cut-off (2026-11-18).** The read had the right controlled skater only 36-68% of
+the time and none at all 15-48%. Three causes: (1) the pad stars were read only when the puck went unseen (the puck
+tracker returned before reading them), so a pad's skater stayed stale; they are now read every frame, on the unmasked
+frame (`PuckTracker.step`); (2) control wasn't carried over unread samples (it is now); (3) the runner left out every
+frame whose camera match was under 0.8 of the rink's pixels, but frames at 0.6-0.8 (many sprites on screen) have the
+camera as steady as the rest (2-5% of frames off their neighbours' line by more than 2 pixels, against 2%), and the
+cut-off had left out 48% of game 2, 28% of game 3 and 19% of game 1; it is 0.6 now (`CAM_LEAST` in the runner; below
+0.3 are the stoppage screens). Also, a person's team with the puck: its pad skater is the carrier (`CARRIER_CTRL`).
+Game 2: controlled skater right 55-59%, missing 3-4% (41-43%, 46-48%); possession 91% (86%); passes 15 of 22 (14),
+zone entries 13 of 14 (12), check attempts 11 of 12 (10). Game 3: controlled skater right 62-70%, missing 3% (54%,
+26-29%); zone entries 16 of 17 (15), faceoffs 4 of 5 (5), the rest the same. Read positions agree with the recording
+to under a unit (median), so the remaining misses are identity, not position.

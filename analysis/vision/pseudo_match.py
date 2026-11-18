@@ -23,6 +23,7 @@ from collections import Counter
 
 ROLES = "534210"
 SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
+CARRIER_CTRL = True         # a person's team with the puck: its pad skater is the carrier
 GOALIE_SHARE = 0.8          # a frame goalies draw this share of the time is a goalie's
 MIN_SPELL = 2               # samples: a shorter possession with the puck loose either side is the puck passing a stick
 FLICK = 24                  # samples (0.4 s real): the other team "having" the puck this briefly between two spells of
@@ -110,6 +111,7 @@ def build(truth, vf, rows, maps, q0, q1):
                 for arr, w in ((pos, 24), (frame, 36), (mirror, 12), (anim, 48), (facing, 12), (puck, 3)):
                     arr[i * w:(i + 1) * w] = arr[(i - 1) * w:i * w]
                 owner[i] = owner[i - 1]
+                ctrl[i] = ctrl[i - 1]                       # the pads' skaters carry over too
             continue
         hpos, vpos = r["cam"]
         live = {}
@@ -247,6 +249,15 @@ def build(truth, vf, rows, maps, q0, q1):
                 owner[a1:c0] = [pa] * (c0 - a1)
                 changed = True
                 break
+    # a person always has the carrier when his team has the puck: where the read has a carrier on a team a pad was seen
+    # on, that team's pad skater is him (the stars alone had the right skater only 36-68% of the time, none 15-48%)
+    if CARRIER_CTRL:
+        padded = {t for t in (0, 1) if any(ctrl[i] >> j & 1 for i in range(n) for j in range(t * 6, t * 6 + 6))}
+        for i in range(n):
+            o = owner[i]
+            if o >= 0 and o // 6 in padded and role[i * 12 + o] in "12345":
+                t = o // 6
+                ctrl[i] = (ctrl[i] & ~(0x3F << (6 * t))) | (1 << o)
     # bursts seen only in the skating: a burst's first frames are skating frames (its own frames come later or not at
     # all), so where a person's skater, the other team carrying within 70 of him, gains BURST_GAIN units a second of
     # speed over the next 6 samples against the 6 before, with no read burst within 8 samples, a burst starts there
