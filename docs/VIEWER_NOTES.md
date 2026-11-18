@@ -1784,3 +1784,22 @@ added one matched attempt for 6-9 false ones at gains of 50-90: the sprite point
 (`BURST_GAIN`, 0 = off). The full period re-read with the faster reader agrees with the runs above: shots 11 of 13
 matched (16 read), passes 27 (35 read), turnovers 10 (17 read), check attempts 6 (11 read), faceoffs 3 of 3,
 possession 4,000 of 4,920.
+
+**A game never tuned on (2026-11-18).** BOS-CHI game 2's first 2.5 minutes of play (video frames 35922-44986, the
+same length as game 1's period), with everything learnt (the reader's transitions, the frame-to-anim maps) from games
+1, 3 and 4 only (`TEST_GAME=1` in the scratch runners), read at about 6.6 frames a second:
+
+| | game 1 P1 (tuned on): recorded / read / matched | game 2 (never seen) |
+|---|---|---|
+| hits | 19 / 19 / 19 | 15 / 15 / 15 |
+| faceoffs | 3 / 3 / 3 | 8 / 8 / 8 |
+| shots | 13 / 16 / 11 | 13 / 17 / 10 |
+| passes | 36 / 35 / 27 | 22 / 24 / 13 |
+| turnovers | 14 / 17 / 10 | 11 / 19 / 9 |
+| zone entries | 18 / 19 / 15 | 14 / 10 / 10 |
+| check attempts | 14 / 11 / 6 | 12 / 7 / 4 |
+| possession (carried read as carried; team right) | 81%; ~100% | 81%; 97% |
+
+Hits, faceoffs, shots and possession hold on a game never seen; passes (59% matched against 75%), zone entries and
+false turnovers (10 against 7) are weaker there, so those rules carry some of game 1 in them. Next: why game 2's
+passes and entries are missed.
