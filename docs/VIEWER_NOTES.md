@@ -1728,3 +1728,20 @@ Possession: 79% of the recording's carried samples read as carried, the team rig
 shots and turnovers (frames shared by shots and passes: a release would have to be judged by where the puck goes),
 extra faceoffs (stoppages read where the clock only paused), check attempts, and speed (the reader with the score box
 and stars runs at 1-2 frames a second: a period takes about 75 minutes in two workers).
+
+**Releases judged by where the puck goes (chunk 9, 2026-11-18).** A release (a shot or pass frame, or the puck simply
+leaving its carrier) is now named by its destination within 90 samples: a teammate reached makes it a pass, the goal
+mouth or the other team's goalie makes it a shot, and otherwise the line the puck travels is followed to the goal
+line: crossing it within 60 of the middle is a shot, wider a pass (a rim or a dump). The puck velocity is the slope
+over the last 12 read frames. Same period:
+
+| | recorded | read | matched |
+|---|---|---|---|
+| passes | 36 | 36 | 27 |
+| shots | 13 | 17 | 10 |
+| turnovers | 14 | 19 | 9 |
+
+Passes found rise from 24 to 27, false shots fall from 10 to 7. Profiled over 150 frames: the score box's fit runs
+once at start (about 220 s), then the score box's clock read, the reader's full search and the puck search take most
+of each frame. Next: the fit cached once per video, a cheaper clock read, the false faceoffs at clock pauses (one
+found: the clock standing at 89 with the puck off screen) and the extra turnovers.

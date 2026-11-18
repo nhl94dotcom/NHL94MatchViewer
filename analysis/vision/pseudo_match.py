@@ -25,6 +25,10 @@ SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than 
 LUNGE, LUNGE_BACK = "0c5e", 4   # the burst's anim word (Genesis ACTIONS lunge) and how far a read one is moved back
 Z_SCALE = (0.72, 0.8)       # game height from the read gap (rows): fitted on 264 airborne reads of BOS-CHI game 1
 SHOT, SHOT_SPEED, SHOT_MOUTH = "092e", 99.0, 40  # off (99): over a full period it found no more shots, only false ones
+SHOOTS, PASSES, PASS = {"07fc", "092e"}, {"0718", "078a"}, "0718"   # Genesis ACTIONS shoot / pass anims
+WIDE = 60                   # a release whose line crosses the goal line this far from the middle is a pass
+RELEASE_LOOK = 90           # samples a release's outcome is looked for
+V_WINDOW = 12               # video frames the puck velocity's slope is taken over
 VMAX = 9.0                  # pixels a frame: about the fastest shot (a puck at 23,000 moves 5.6)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
@@ -124,7 +128,7 @@ def build(truth, vf, rows, maps, q0, q1):
             puck[3 * i:3 * i + 3] = P
             if not hist or hist[-1][0] != r["fi"]:      # one point a video frame (samples can share one)
                 hist.append((r["fi"], P[0], P[1]))
-            hist[:] = [h for h in hist if r["fi"] - h[0] <= 4]
+            hist[:] = [h for h in hist if r["fi"] - h[0] <= V_WINDOW]
             if len(hist) >= 2:                          # the slope over the last few read frames, capped at VMAX
                 fr_ = np.array([h[0] for h in hist], float)
                 vx = float(np.polyfit(fr_, [h[1] for h in hist], 1)[0])
@@ -198,6 +202,40 @@ def build(truth, vf, rows, maps, q0, q1):
                 for jj in range(max(0, i - 3), i + 1):
                     anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4] = SHOT
                 break
+    # releases judged by where the puck went (a frame doesn't say pass or shot: they share frames): the next skater to
+    # have it a teammate -> a pass (a shot anim at the release made the pass anim); the puck at the goal mouth the
+    # team attacks, or the other goalie's, first -> a shot (a pass anim made the shot anim)
+    for i in range(1, n):
+        k = owner[i - 1]
+        if k < 0 or owner[i] == k:
+            continue
+        up = (k < 6) == (period_[i] % 2 == 0)
+        gy = 264 if up else -264
+        verdict = None
+        for j in range(i, min(n, i + RELEASE_LOOK)):
+            o = owner[j]
+            if o >= 0 and o != k:
+                verdict = "pass" if (o < 6) == (k < 6) else ("shot" if o % 6 == 5 else None)
+                break
+            if abs(puck[3 * j]) <= 30 and abs(puck[3 * j + 1] - gy) <= 14:
+                verdict = "shot"
+                break
+        if verdict is None:                          # nobody had it and it never reached the mouth: its line decides
+            j2 = min(n - 1, i + 10)
+            dx, dy = puck[3 * j2] - puck[3 * i], puck[3 * j2 + 1] - puck[3 * i + 1]
+            if dy != 0 and (gy - puck[3 * i + 1]) / dy > 0:
+                cross = puck[3 * i] + dx * (gy - puck[3 * i + 1]) / dy
+                verdict = "pass" if abs(cross) > WIDE else None
+            elif abs(dx) + abs(dy) > 8:
+                verdict = "pass"                       # away from the net he attacks
+        if verdict is None:
+            continue
+        for jj in range(max(0, i - 4), i + 1):
+            a = "".join(anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4])
+            if verdict == "pass" and a in SHOOTS:
+                anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4] = PASS
+            elif verdict == "shot" and a in PASSES:
+                anim[(jj * 12 + k) * 4:(jj * 12 + k) * 4 + 4] = SHOT
     # the puck hidden at a stoppage, as the game hides it: the clock (the score box's) unchanged for STOPPED samples and
     # the puck not seen
     clock = m["clock"]
