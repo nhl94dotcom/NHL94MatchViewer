@@ -58,7 +58,9 @@ def learn_maps(matches):
             for k in range(12):
                 fr = int(m["frame"][(q * 12 + k) * 3:(q * 12 + k) * 3 + 3], 16)
                 anim.setdefault(fr, Counter())[m["anim"][(q * 12 + k) * 4:(q * 12 + k) * 4 + 4]] += 1
-                face.setdefault(fr, Counter())[m["facing"][q * 12 + k]] += 1
+                # facing by frame and mirror (key frame x 2 + mirror): the game draws left- and right-facing poses as
+                # one frame, mirrored, so the frame alone had read a mirrored pose 90 degrees off (3 for 5): no checks
+                face.setdefault(fr * 2 + int(m["mirror"][q * 12 + k] == "1"), Counter())[m["facing"][q * 12 + k]] += 1
                 if m["role"][q * 12 + k] == "0":
                     goalie[fr] += 1
     # a goalie frame is one goalies draw (5+ times) and mostly they (80% of its uses): a goalie skating out of his crease
@@ -146,7 +148,7 @@ def build(truth, vf, rows, maps, q0, q1):
             frame[(i * 12 + k) * 3:(i * 12 + k) * 3 + 3] = f"{fr:03x}"
             mirror[i * 12 + k] = str(mir)
             anim[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4] = maps["anim"].get(fr, "0000")
-            facing[i * 12 + k] = maps["facing"].get(fr, "0")
+            facing[i * 12 + k] = maps["facing"].get(fr * 2 + int(mir), maps["facing"].get(fr * 2 + 1 - int(mir), "0"))
         for k in range(12):
             pos[(i * 12 + k) * 2:(i * 12 + k) * 2 + 2] = [float(last[k][0]), float(last[k][1])]
         if r["puck"] is not None:

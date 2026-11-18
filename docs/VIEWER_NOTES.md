@@ -1844,3 +1844,9 @@ now gives Chicago's centre the puck from the draw, as recorded.
 | check attempts matched | 6 / 7 | 4 / 4 |
 | zone entries matched (read) | 16 (20) / 16 (18) | 12 (12) / 12 (12) |
 | shots matched (read) | 10 (15) / 10 (14) | 10 (17) / 10 (18) |
+
+**Facing by frame and mirror (2026-11-18).** The missed check attempts with a burst read and an opponent carrying
+close by failed the converter's facing cone: the read facing was 90 degrees off (3 for 5, on the very same sprite
+frame). The game draws left- and right-facing poses as one frame, mirrored, and the map from frame to facing ignored
+the mirror. It is now keyed on both (frame x 2 + mirror; the other mirror, then 0, when unseen). Check attempts: game
+1 9 of 14 matched, 15 read (7, 13); game 2 10 of 12, 13 read (4, 7). Nothing else changed on either game.
