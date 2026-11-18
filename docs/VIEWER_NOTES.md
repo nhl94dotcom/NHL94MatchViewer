@@ -1818,3 +1818,10 @@ turnovers the same, passes 28 matched (29). 3-4 samples cost game 1 two more pas
 mostly they (GOALIE_SHARE 80% of its uses): goalies skating out of the crease draw skaters' frames, which had put a
 carrier in the goalie's record again on game 2. Zone entries: game 2 12 of 14 (10), game 1 16 of 18 (15), 20 read;
 possession up a little on both; shots: game 1 10 matched (11), game 2 17 read (16).
+
+Crowds, looked at (2026-11-18). Trying the possession star before the nearest blade when a seen puck is at several
+sticks changed nothing on either game (one sample of possession each), so it was taken out. A case read frame by
+frame (game 2, samples 2403-2460: a faceoff at centre) shows the real cause: the two centres overlap at the dot and the
+reader keeps only one sprite (Boston's); Chicago's centre, who won the draw and carried it 30 samples, is never
+tracked, so when the puck shows it goes to the one player the reader has there, on the wrong team. Next: find a second
+player hidden behind a tracked one (at faceoffs above all, where two always stand together).
