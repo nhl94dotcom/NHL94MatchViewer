@@ -22,6 +22,8 @@ from collections import Counter
 
 ROLES = "534210"
 SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
+FLICK = 24                  # samples (0.4 s real): the other team "having" the puck this briefly between two spells of
+                            # one carrier is a misread scrum
 LUNGE, LUNGE_BACK = "0c5e", 4   # the burst's anim word (Genesis ACTIONS lunge) and how far a read one is moved back
 Z_SCALE = (0.72, 0.8)       # game height from the read gap (rows): fitted on 264 airborne reads of BOS-CHI game 1
 SHOT, SHOT_SPEED, SHOT_MOUTH = "092e", 99.0, 40  # off (99): over a full period it found no more shots, only false ones
@@ -185,6 +187,27 @@ def build(truth, vf, rows, maps, q0, q1):
                 owner[i:back] = [owner[i - 1]] * (back - i)
                 i = back
         i += 1
+    # a scrum read as the puck changing hands back and forth: a spell of another team's player under FLICK samples
+    # between two of the same carrier is his (the full period's turnovers had come in threes a few samples apart)
+    # (loose samples on either side of the other team's spell allowed, up to FLICK each)
+    changed = True
+    while changed and FLICK:
+        changed = False
+        spells, i = [], 0                                     # [start, end, owner] of each owned stretch
+        while i < n:
+            if owner[i] >= 0:
+                j = i
+                while j < n and owner[j] == owner[i]:
+                    j += 1
+                spells.append([i, j, owner[i]])
+                i = j
+            else:
+                i += 1
+        for (a0, a1, pa), (b0, b1, pb), (c0, c1, pc) in zip(spells, spells[1:], spells[2:]):
+            if (pa == pc and (pb < 6) != (pa < 6) and b1 - b0 < FLICK and b0 - a1 <= FLICK and c0 - b1 <= FLICK):
+                owner[a1:c0] = [pa] * (c0 - a1)
+                changed = True
+                break
     # shots: a frame doesn't tell a wind-up from its release, nor a shot from a pass (they share frames), so where the
     # read carrier loses the puck and it leaves fast (SHOT_SPEED pixels a frame within 6 samples) toward the net his
     # team attacks (home up in periods 1 and 3), from his attacking half, its line through the goal mouth, his last

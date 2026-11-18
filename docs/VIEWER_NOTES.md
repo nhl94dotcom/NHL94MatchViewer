@@ -1766,4 +1766,8 @@ between, and a one-sample misread of the clock, 89 then 71 then 89, cut it), sli
 after a faceoff, and the period's end (0:00, the puck gone for the intermission; the recording has no stoppage there).
 Now a misread clock value that comes back within 12 samples is dropped, stoppages within 150 samples of each other
 with the clock unchanged are one, a stoppage under 60 samples is none, and none is made at 0:00. Faceoffs: 3 read, 3
-matched, 3 recorded (6 read before); every other count the same, the 40 s stretches unchanged.
+matched, 3 recorded (6 read before); every other count the same, the 40 s stretches unchanged. Scrums read as the
+puck changing hands back and forth (record 9, then 4 for 6 samples, then 9 again, with loose samples between) are
+smoothed: another team's spell under FLICK = 24 samples (0.4 s real) between two of the same carrier, loose gaps up
+to 24 on each side, is his. Full period: turnovers 17 read (19 before), the 9 matched kept, possession 3,904 of 4,920
+carried samples (3,886); 40 samples took real ones. The 40 s stretches unchanged.
