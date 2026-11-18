@@ -1775,3 +1775,12 @@ draws: one first seen in a goalie-like frame that then skates (or a goalie first
 10 of its frames say so, swapping with the record's holder. The away team's carrier had sat in its goalie's record
 (role 0), so no check on him could be an attempt. Full period: check attempts 6 of 14 matched (4), 12 read;
 turnovers 10 matched of 17 read; possession 3,937; zone entries 19 read (one more). The 40 s stretches unchanged.
+
+Bursts from the skating, tried and left off (2026-11-18). A check burst's first frames are skating frames, so most
+missed check attempts are bursts the read never shows. On the recorded positions (games 3-4), where a check is
+possible (the person's skater, the other team carrying within 70), a speed gain of 70 units a second over 6 samples
+against the 6 before finds 71% of burst starts at 81% precision (60: 78% at 67%). On the video's read positions it
+added one matched attempt for 6-9 false ones at gains of 50-90: the sprite points move too unevenly
+(`BURST_GAIN`, 0 = off). The full period re-read with the faster reader agrees with the runs above: shots 11 of 13
+matched (16 read), passes 27 (35 read), turnovers 10 (17 read), check attempts 6 (11 read), faceoffs 3 of 3,
+possession 4,000 of 4,920.

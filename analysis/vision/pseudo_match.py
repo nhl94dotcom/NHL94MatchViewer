@@ -16,6 +16,7 @@ Then export_match.analyse on both, the recorded slice's own event lists dropped 
     build(match, vf, rows, maps) -> pseudo match;  compare(a, b) -> per event kind: matched / only recorded / only read
 """
 import copy
+import math
 
 import numpy as np
 from collections import Counter
@@ -24,6 +25,8 @@ ROLES = "534210"
 SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
 FLICK = 24                  # samples (0.4 s real): the other team "having" the puck this briefly between two spells of
                             # one carrier is a misread scrum
+BURST_GAIN = 0              # off: a burst seen in the skating (units a second gained over 6 samples); on the full period
+                            # read it found 1 more check attempt and 6-9 false ones at 50-90 (sprite points too jumpy)
 LUNGE, LUNGE_BACK = "0c5e", 4   # the burst's anim word (Genesis ACTIONS lunge) and how far a read one is moved back
 Z_SCALE = (0.72, 0.8)       # game height from the read gap (rows): fitted on 264 airborne reads of BOS-CHI game 1
 SHOT, SHOT_SPEED, SHOT_MOUTH = "092e", 99.0, 40  # off (99): over a full period it found no more shots, only false ones
@@ -224,6 +227,34 @@ def build(truth, vf, rows, maps, q0, q1):
                 owner[a1:c0] = [pa] * (c0 - a1)
                 changed = True
                 break
+    # bursts seen only in the skating: a burst's first frames are skating frames (its own frames come later or not at
+    # all), so where a person's skater, the other team carrying within 70 of him, gains BURST_GAIN units a second of
+    # speed over the next 6 samples against the 6 before, with no read burst within 8 samples, a burst starts there
+    # (on the recorded positions of games 3-4, at 70: 71% of the person's burst starts found, 81% of those flagged real;
+    # on the video's read positions it added 1 attempt for 6-9 false ones, so it is off)
+    if BURST_GAIN:
+        t_ = m["t"]
+        P_ = lambda i, k: (pos[(i * 12 + k) * 2], pos[(i * 12 + k) * 2 + 1])          # noqa: E731
+        last_flag = {}
+        for i in range(6, n - 6):
+            o = owner[i]
+            if o < 0 or puck[3 * i + 2] < -100:
+                continue
+            team = 1 - o // 6
+            k = next((j for j in range(team * 6, team * 6 + 6) if ctrl[i] >> j & 1 and role[i * 12 + j] in "12345"), None)
+            if k is None or math.dist(P_(i, k), P_(i, o)) > 70:
+                continue
+            dt, dt0 = (t_[i + 6] - t_[i]) / 1000, (t_[i] - t_[i - 6]) / 1000
+            if not (0 < dt < 0.2 and 0 < dt0 < 0.2):
+                continue
+            gain = math.dist(P_(i + 6, k), P_(i, k)) / dt - math.dist(P_(i, k), P_(i - 6, k)) / dt0
+            if gain < BURST_GAIN or i - last_flag.get(k, -99) <= 12:
+                continue
+            last_flag[k] = i
+            if any(aw(j, k) == LUNGE for j in range(max(0, i - 8), min(n, i + 9))):
+                continue
+            for j in range(i, min(n, i + 6)):
+                anim[(j * 12 + k) * 4:(j * 12 + k) * 4 + 4] = LUNGE
     # shots: a frame doesn't tell a wind-up from its release, nor a shot from a pass (they share frames), so where the
     # read carrier loses the puck and it leaves fast (SHOT_SPEED pixels a frame within 6 samples) toward the net his
     # team attacks (home up in periods 1 and 3), from his attacking half, its line through the goal mouth, his last
