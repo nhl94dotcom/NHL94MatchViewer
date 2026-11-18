@@ -36,7 +36,12 @@ $FFEC64 / $FFEC66).
                             pick-up and the counts; NHL '95 / W18 from gen95_assist_check's live STATE
   snespass ROM OUT N        the same on a SNES build (retail or SA-1)
 
-python gen_giveaways_check.py games|shootout|stats|build|passshot|snes_passshot|genpass|snespass ..."""
+  whistles 94|95 ROM OUT N [STATE]   pick-ups after a whistle (gmpen on the frame before), NHL94_WH_CASE end (a pass
+                            up the ice as the period ends) or ps (breakaways fouled until a penalty shot); every pick-up
+                            and count, the shooter's first touch
+  snes_whistles ROM OUT N   the period-end case on a SNES build (retail or SA-1)
+
+python gen_giveaways_check.py games|shootout|stats|build|passshot|snes_passshot|genpass|snespass|whistles|snes_whistles ..."""
 import json
 import math
 import os
@@ -827,6 +832,153 @@ def genpass(game, rom, out, n, state=None):
         print(f"  {k:3}  {a}, cleared: {c}, taken by {w}: {'a giveaway' if g else 'no count'}")
 
 
+# ------------------------------------------------- after the whistle (2026-11-18, NOSE4Web's version 4: gmpen)
+GAMES["94"].update(gmode=0xC2EA, period=0xC466, penbuf=0xC3A4, ba_ps=0xC2F2, optpen=0xD056)
+GAMES["95"].update(gmode=0xBEF0, period=0xC020, penbuf=0xBFCE, ba_ps=0xBEF8, optpen=0xCC5A)
+WH_CASE = os.environ.get("NHL94_WH_CASE", "end")    # end: a pass up the ice as the period ends; ps: a penalty shot
+
+
+def whistles(game, rom, out, n, state=None):
+    """Pick-ups after a whistle (gmpen: from Stop4Pen until InProgress hands the puck on), on a Genesis giveaways build.
+    'end': the home centre (pad 1) passes up the ice from centre with 1 game second left (P1 or P3: the final whistle),
+    the visitors spread up the ice to take it before or after the horn. 'ps': a breakaway (the computer's carrier,
+    a chaser on pad 2 hooking, holding or checking), played until a penalty shot is called and its shooter has had
+    the puck 3 game s. Per trial every pick-up (frame, who, gmpen on or off, the penalty shot under way) and every count,
+    so a count at a pick-up made while gmpen was on, or at the shooter's first touch, shows."""
+    import random
+    from emu import Emu
+    G = GAMES[game]
+
+    def rec(k):
+        return G["base"] + k * 0x80
+    out.mkdir(parents=True, exist_ok=True)
+    e = Emu(str(rom))
+    if game == "95":
+        e.run(1500)
+        base = Path(state).read_bytes()
+    else:
+        from paths import WORK
+        base = (WORK / "bot_live.state").read_bytes()
+    rng = random.Random(23)
+    results = []
+
+    def put(k, x, y, vy=0.0):
+        r = rec(k)
+        e.setw(r, round(x) & 0xFFFF); e.setw(r + 2, 0); e.setw(r + 0x14, round(y) & 0xFFFF); e.setw(r + 0x16, 0)
+        e.setw(r + 0x18, 0); e.setl(r + 0x1C, (round(x) & 0xFFFF) << 16); e.setl(r + 0x20, (round(y) & 0xFFFF) << 16)
+        e.setw(r + 0x28, 0); e.setw(r + 0x2A, round(vy * 4096) & 0xFFFF); e.setw(r + 0x2C, 0)
+    for t in range(n):
+        e.unserialize(base)
+        e.setl(G["seed"], rng.randrange(1 << 31))
+        roles = {k: e.b(rec(k) + 0x35) for k in range(12)}
+        me = next(k for k in range(6) if roles[k] == 4)
+        them = [k for k in range(6, 12) if roles[k] not in (0, 0xFF)]
+        mates = [k for k in range(6) if roles[k] not in (0, 0xFF, 4)]
+        for k in range(12):
+            if roles[k] == 0xFF:
+                continue
+            r = rec(k)
+            for a in range(0x2E, 0x34):
+                e.setb(r + a, 0)
+            e.setw(r + 0x5E, 0)
+            e.setb(r + 0x62, (e.b(r + 0x62) & 0xC0) | 0x02)
+        h2 = []
+        if WH_CASE == "end":
+            e.setw(G["period"], rng.choice((0, 2)))
+            e.setw(G["clock"], 1)
+            x0 = rng.choice((-20, 0, 20))
+            put(me, x0, 10)
+            for i, k in enumerate(them):
+                put(k, x0 + rng.choice((-30, -10, 10, 30)), 10 + rng.choice((60, 90, 120, 150, 180, 210)))
+            for i, k in enumerate(mates):
+                put(k, -80 + 50 * i, -60)
+            e.setb(rec(me) + 0x62, e.b(rec(me) + 0x62) | 8)
+            e.setw(G["cont"][0], 1); e.setw(G["cont"][1], 0); e.setw(G["c1p"], me)
+            pr = rec(14)
+            e.setw(pr, x0 & 0xFFFF); e.setw(pr + 0x14, 12); e.setw(pr + 0x18, 0)
+            e.setw(G["puckc"], me)
+            hold1 = lambda f: (["UP", "B"] if f < 3 else [])          # noqa: E731
+            shooter = None
+        else:
+            e.setw(G["clock"], 250)
+            e.setw(G["optpen"], 1)
+            e.setw(G["penbuf"], 0)
+            e.setw(G["ba_ps"], 0)
+            x0, y0 = rng.uniform(-50, 50), rng.uniform(55, 82)
+            put(me, x0, y0, 1.5)
+            chaser = rng.choice(them)
+            put(chaser, x0 + rng.uniform(-8, 8), y0 - rng.uniform(8, 22), 2.2)
+            for k in them:
+                if k != chaser:
+                    put(k, rng.uniform(-90, 90), y0 - rng.uniform(70, 160), 1.0)
+            for k in mates:
+                put(k, rng.uniform(-90, 90), y0 - rng.uniform(40, 140), 1.0)
+            for k in range(12):
+                e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
+            e.setw(G["cont"][0], 0); e.setw(G["cont"][1], 2); e.setw(G["c2p"], chaser)
+            e.setb(rec(chaser) + 0x62, e.b(rec(chaser) + 0x62) | 8)
+            pr = rec(14)
+            e.setw(pr, round(x0) & 0xFFFF); e.setw(pr + 0x14, round(y0 + 4) & 0xFFFF); e.setw(pr + 0x18, 0)
+            e.setw(G["puckc"], me)
+            mode = rng.choice(("C", "B", "Bhold"))
+            hold1 = lambda f: []                                          # noqa: E731
+            shooter = None
+
+            def chase(f):
+                cx, cy = e.sw(rec(me)), e.sw(rec(me) + 0x14)
+                kx, ky = e.sw(rec(chaser)), e.sw(rec(chaser) + 0x14)
+                d = [["UP"], ["UP", "RIGHT"], ["RIGHT"], ["DOWN", "RIGHT"], ["DOWN"], ["DOWN", "LEFT"], ["LEFT"], ["UP", "LEFT"]][
+                    round(math.degrees(math.atan2(cx - kx, cy - ky)) / 45) % 8]
+                return d + (["C"] if mode == "C" and f % 12 < 2 else ["B"] if mode == "B" and f % 10 < 2 else ["B"] if mode == "Bhold" else [])
+        e.setw(0xFF0000 | G["lastc"], me); e.setb(0xFF0000 | G["lastp"], e.b(rec(me) + 0x66))
+        e.setw(0xFF0000 | G["cause"], 0xFFFF)
+        for a in range(0x80):
+            e.setb(0xFF0000 | (G["give"] + a), 0)
+        prev = bytes(e.ram[G["give"]:G["give"] + 0x80])
+        picks, counts_ev, last_pc, whistle_at, ps_on, end = [], [], e.w(G["puckc"]), None, None, 900 if WH_CASE == "end" else 3000
+        pen = False
+        for f in range(end):
+            h2 = chase(f) if WH_CASE == "ps" and whistle_at is None else []
+            e.run(1, hold=hold1(f), hold2=h2)
+            was = pen                              # gmpen before this frame: a pick-up that calls the whistle is play's
+            pen = bool(e.b(G["gmode"]) & 4)
+            if pen and whistle_at is None:
+                whistle_at = f
+            under = bool(e.w(G["ba_ps"]) & 0x0400)
+            if under and ps_on is None:
+                ps_on = f
+            pc = e.w(G["puckc"])
+            if pc < 0x8000 and pc != last_pc:
+                k = pc & 0xFF
+                picks.append(dict(f=f, k=k, team="home" if k < 6 else "away", goalie=roles.get(k) == 0, gmpen=was and pen, ps=under))
+            last_pc = pc
+            raw = bytes(e.ram[G["give"]:G["give"] + 0x80])
+            if raw != prev:
+                counts_ev += [dict(f=f, kind="give" if i < 64 else "take", team=(i % 64) // 32, place=i % 32, gmpen=was and pen, ps=under)
+                              for i in range(0x80) if raw[i] > prev[i]]
+                prev = raw
+            if ps_on is not None and f > ps_on + 72 * 3:
+                break
+        first_ps = next((p for p in picks if p["ps"]), None)
+        at_ps = [c for c in counts_ev if first_ps and abs(c["f"] - first_ps["f"]) <= 2]
+        in_pen = [c for c in counts_ev if c["gmpen"]]
+        picks_pen = [p for p in picks if p["gmpen"]]
+        r = dict(trial=t, case=WH_CASE, whistle=whistle_at, ps=ps_on, picks=picks[:12], counts=counts_ev[:12],
+                 picks_while_stopped=len(picks_pen), counts_while_stopped=in_pen, counts_at_ps_start=at_ps,
+                 counts_after_ps=[c for c in counts_ev if ps_on is not None and c["f"] > (first_ps["f"] + 2 if first_ps else ps_on)])
+        results.append(r)
+        print(t, WH_CASE, "whistle", whistle_at, "ps", ps_on, "| pick-ups while stopped", len(picks_pen),
+              [(p["f"], p["team"]) for p in picks_pen][:4], "| counts while stopped", [(c["f"], c["kind"], c["team"]) for c in in_pen],
+              "| at the shooter's first touch", [(c["kind"], c["team"]) for c in at_ps],
+              "| all counts", [(c["f"], c["kind"], c["team"], "stopped" if c["gmpen"] else "") for c in counts_ev][:6], flush=True)
+    (out / f"whistles_{game}_{WH_CASE}.json").write_text(json.dumps(results, indent=1))
+    print("trials with a pick-up while stopped:", sum(r["picks_while_stopped"] > 0 for r in results), "of", len(results),
+          "| counts while stopped:", sum(len(r["counts_while_stopped"]) for r in results),
+          "| penalty shots:", sum(r["ps"] is not None for r in results),
+          "| counts at the shooter's first touch:", sum(len(r["counts_at_ps_start"]) for r in results),
+          "| counts later in the shot:", sum(len(r["counts_after_ps"]) for r in results))
+
+
 def snespass(rom, out, n):
     """genpass on a SNES giveaways build (retail or SA-1; snes_assist_stick_test.Game's live moments: pad 1 home, the
     two retail states attack the top and the bottom net, so both marks). The pad-1 skater has the puck; the cases and
@@ -985,6 +1137,81 @@ def snespass(rom, out, n):
         print(f"  {k:3}  {a}, cleared: {c}, taken by {w}: {'a giveaway' if gv_ else 'no count'}")
 
 
+def snes_whistles(rom, out, n):
+    """whistles' 'end' case on a SNES giveaways build (retail or SA-1): the pad-1 skater passes up the ice from centre with
+    1 game second left (P1 or P3), the other team spread up the ice; every pick-up with gmode's gmpen ($0004, $15D4)
+    and every count."""
+    import random
+    from snes_assist_stick_test import Game, POSITION, PUCKC, CARRIER2
+    out.mkdir(parents=True, exist_ok=True)
+    gm = Game(str(rom))
+    g, e = gm.g, gm.e
+    rng = random.Random(23)
+
+    def gv(off):
+        if g.sa1:
+            return g.bw[0x5500 + off] | g.bw[0x5501 + off] << 8
+        return e.ram[GVBASE + off] | e.ram[GVBASE + off + 1] << 8
+
+    def setgv(off, v):
+        if g.sa1:
+            g.bw[0x5500 + off], g.bw[0x5501 + off] = v & 0xFF, v >> 8
+        else:
+            e.ram[GVBASE + off], e.ram[GVBASE + off + 1] = v & 0xFF, v >> 8
+
+    def block():
+        return [gv(4 + 2 * i) for i in range(0x68)]
+    results = []
+    for t in range(n):
+        e.unserialize(g.bases[t % len(g.bases)])
+        me, team, s = gm.me()
+        gm.setw(0x1630, rng.choice((0, 2)))
+        gm.setw(0x1632, 1)
+        A = list(range(6 * team, 6 * team + 6))
+        D = [k for k in range(6 * (1 - team), 6 * (1 - team) + 6) if gm.w(POSITION + 2 * k) not in (0, 0xFFFF)]
+        x0 = rng.choice((-20, 0, 20))
+        gm.put(me, x0, 10 * s)
+        for k in D:
+            gm.put(k, x0 + rng.choice((-30, -10, 10, 30)), (10 + rng.choice((60, 90, 120, 150, 180, 210))) * s)
+        for i, k in enumerate(k for k in A if k != me and gm.w(POSITION + 2 * k) not in (0, 0xFFFF)):
+            gm.put(k, -80 + 50 * i, -60 * s)
+        gm.put(14, x0, 12 * s)
+        gm.setw(PUCKC, 2 * me)
+        gm.setw(CARRIER2, 2 * me)
+        setgv(0, 2 * me); setgv(2, 0xFFFF); setgv(0xDC, gm.w(0x12A3 + 2 * me))
+        gm.setw(0x15DC, gm.w(0x15DC) & ~0x10)
+        for i in range(0x68):
+            setgv(4 + 2 * i, 0)
+        prev = block()
+        picks, counts_ev, last_pc, whistle_at = [], [], gm.w(PUCKC), None
+        pad = ["UP"] if s > 0 else ["DOWN"]
+        for f in range(900):
+            gm.run(1, hold=(pad + ["B"]) if f < 3 else [])
+            pen = bool(gm.w(0x15D4) & 4)
+            if pen and whistle_at is None:
+                whistle_at = f
+            pc = gm.w(PUCKC)
+            if pc < 0x8000 and pc != last_pc:
+                k = pc // 2
+                picks.append(dict(f=f, k=k, team="his" if k in A else "theirs", gmpen=pen))
+            last_pc = pc
+            now = block()
+            if now != prev:
+                counts_ev += [dict(f=f, kind="give" if i < 52 else "take", team=(i % 52) // 26, gmpen=pen)
+                              for i in range(0x68) if now[i] > prev[i]]
+                prev = now
+        in_pen = [c for c in counts_ev if c["gmpen"]]
+        picks_pen = [p for p in picks if p["gmpen"]]
+        results.append(dict(trial=t, whistle=whistle_at, picks=picks[:12], counts=counts_ev[:12],
+                            picks_while_stopped=len(picks_pen), counts_while_stopped=in_pen))
+        print(t, "whistle", whistle_at, "| pick-ups while stopped", len(picks_pen), [(p["f"], p["team"]) for p in picks_pen][:4],
+              "| counts while stopped", [(c["f"], c["kind"], c["team"]) for c in in_pen],
+              "| all counts", [(c["f"], c["kind"], c["team"], "stopped" if c["gmpen"] else "") for c in counts_ev][:6], flush=True)
+    (out / "snes_whistles.json").write_text(json.dumps(results, indent=1))
+    print("trials with a pick-up while stopped:", sum(r["picks_while_stopped"] > 0 for r in results), "of", len(results),
+          "| counts while stopped:", sum(len(r["counts_while_stopped"]) for r in results))
+
+
 def snes_passshot(rom, out, n=24):
     """passshot on a SNES giveaways build (retail or SA-1: snes_assist_stick_test.Game's live play, pad 1 on the home
     side): the pad-1 skater with the puck (x -30..30, 175-215 toward the net he attacks), his teammates parked at the far
@@ -1128,6 +1355,12 @@ def main():
     elif mode == "genpass":
         lowload.gentle()
         genpass(sys.argv[2], sys.argv[3], Path(sys.argv[4]), int(sys.argv[5]), sys.argv[6] if len(sys.argv) > 6 else None)
+    elif mode == "whistles":
+        lowload.gentle()
+        whistles(sys.argv[2], sys.argv[3], Path(sys.argv[4]), int(sys.argv[5]), sys.argv[6] if len(sys.argv) > 6 else None)
+    elif mode == "snes_whistles":
+        lowload.gentle()
+        snes_whistles(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]))
     elif mode == "snespass":
         lowload.gentle()
         snespass(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]))

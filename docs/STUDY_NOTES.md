@@ -5117,6 +5117,31 @@ or back. Each trial is counted up to the pass's first pickup (after a goal: the 
     17 November version as that one, removed back to the original (NHL '95's code area, over the boot's self-check,
     left $FF: its call NOPped, as on every grown build).
 
+- **Version 4, after the whistle (2026-11-18):** nhl94_giveaways_whistle.bin (17d134b1), NHL94_giveaways_whistle.smc
+  (d7fc5dd5), nhl94snes_SA1_giveaways_whistle.sfc (ec7c6c87), NHL_95_giveaways_whistle.bin (25783764),
+  W18_giveaways_whistle.bin (67010c39). pucknorm goes on with its collisions after a whistle and puckglue never looks at
+  the clock, so a pick-up between the whistle and the ref's sequence was counted against the carrier from before it,
+  and so was a penalty shot's shooter's first touch. Now, while gmpen is set (gmode bit 2: Stop4Pen at every stoppage,
+  goals, icing, offside, period ends, penalties; InProgress clears it handing the puck on; Genesis $C2EA, NHL '95
+  $BEF0, SNES $15D4 mask $0004), each pick-up and each frame forget the carrier and cause, uncounted: the puckglue and
+  pucknorm hooks test it first.
+  - `whistles 94|95 ROM OUT N [STATE]` (NHL94_WH_CASE end: a pass up the ice with 1 game s left in P1 or P3, the other
+    team spread to take it before or after the horn; ps: breakaways fouled by pad 2 until a penalty shot) and
+    `snes_whistles ROM OUT N` (end). A pick-up counts as "while stopped" when gmpen was on the frame before (the
+    pick-up that ends a delayed call is play's). Period end: version 3 counted 15 (NHL '94), 18 (NHL '95), 16 (SNES)
+    and 13 (SA-1) pick-ups made after the horn; version 4 none (16, 20, 10 W18, 18 and 20 such pick-ups). Penalty shots:
+    version 3 charged a giveaway at the shooter's first touch in each one (1 of 1 NHL '94, 3 of 3 NHL '95); version 4
+    none (1, 4). The first pick-up after each faceoff counted nothing on either version (30, 22 and 34 faceoffs).
+  - Normal play: genpass / snespass again on the five builds, every case: every count as the rule (NHL '94, NHL '95,
+    W18 240 of 240; SNES 238 and SA-1 177, the same harness cases as version 3). The SA-1 trials played identically;
+    the others by a frame or two from version 3, as both games' step comes from the frames elapsed (pucknorm's d7 on
+    the Genesis, Vcount on the SNES), so any added time moves play.
+  - Upgrades (from nose-web's source and the builds): version 3's NHL '94 build reads as the earlier version, and its
+    code removed with the current laid in place gives the version-4 build but for the Player Stats pages' code (the
+    same 388 bytes 48 on, its five hooks pointed there) and the checksum, which the editor's pages step does; NHL '95 /
+    W18's version-4 code is version 3's (02b6053) with the two gmpen parts after it, the first entry and the tables' lea
+    words moved; SNES / SA-1 builds differ from version 3's only in the code area, the hooks into it and the checksum.
+
 ### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
 
 Retail NHL '95 (CRC E8EE917E), the WN95HL's W18.bin (C4DF4C20) and W18p.bin (7AC194B0), kept outside the repository.
