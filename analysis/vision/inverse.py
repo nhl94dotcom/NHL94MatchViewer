@@ -589,6 +589,63 @@ def read_stars(reader, img, live, least=0.6):
     return out
 
 
+STAR_CODES = (303, 311)          # two of the possession star's colours that little else draws
+LONE_STAR = 0.45                 # the star's share right where no read player stands (players overlap it: half shows)
+HIDDEN_LEAST = 0.25              # a hidden player's template: this share right, the read sprites' pixels left out
+
+
+def hidden_carrier(reader, img, bg, live):
+    """The possession star (392) drawn where no read player stands means its carrier is hidden behind another sprite
+    (2026-11-18: at a faceoff the two centres overlap and the reader had kept one; the winner, never read, carried the
+    puck and it went to the other). Candidates: specks of the star's colours that no read sprite draws; the star
+    template within 8 pixels, LONE_STAR right (the players over it hide half); then the best player template with its point on the star's (feet within 2),
+    the read sprites' pixels ignored, both teams. Returns a new Track or None."""
+    if not hasattr(reader, "_stars"):
+        reader._stars = {fr: reader.S.get(fr, 0, False) for fr in STAR_FRAMES}
+    tp = reader._stars.get(392)
+    if tp is None:
+        return None
+    drawn = getattr(reader, "drawn", np.zeros(img.shape, bool))
+    cand = np.isin(img, STAR_CODES) & ~drawn
+    if cand.sum() < 4:
+        return None
+    ys, xs, cs = tp
+    H, W = img.shape
+    oy, ox = int(round(ys.mean())), int(round(xs.mean()))
+    for b in blobs(cand, least=4):
+        # every placement over the blob's box (a star on a logo of its colours joins one big blob: its middle can be
+        # far from the star)
+        (y0, x0), (y1, x1) = b.min(0), b.max(0)
+        g = np.array([(sy, sx) for sy in range(y0 - ys.max() - 1, y1 - ys.min() + 2)
+                      for sx in range(x0 - xs.max() - 1, x1 - xs.min() + 2)])
+        Y, X = ys[None, :] + g[:, :1], xs[None, :] + g[:, 1:]
+        ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
+        v = img[Y.clip(0, H - 1), X.clip(0, W - 1)]
+        share = np.where(ok.mean(1) >= 0.9, ((v == cs[None, :]) & ok).sum(1) / len(cs), 0)
+        k = int(share.argmax())
+        if share[k] < LONE_STAR:
+            continue
+        sy, sx = int(g[k][0]), int(g[k][1])
+        if any(abs(t.sy - sy) <= 3 and abs(t.sx - sx) <= 3 for t in live):
+            continue                                    # a read player stands on it: read_stars' case
+        work = np.where(drawn, -1, img)
+        top = None
+        for team in (0, 1):
+            keys, tys, txs, tcs, valid, bot, fx = reader.bank(team)
+            for i, (fr, mir) in enumerate(keys):
+                t = reader.S.get(fr, team, mir)
+                pts = np.array([(sy + a, sx + c) for a in (-2, -1, 0, 1, 2) for c in (-2, -1, 0, 1, 2)])
+                sc, mt, n = score(work, bg, t, pts)
+                k = int(np.argmax(mt / np.maximum(1, len(t[0]))))
+                share = mt[k] / max(1, len(t[0]))
+                if top is None or share > top[0]:
+                    top = (share, team, fr, mir, int(pts[k][0]), int(pts[k][1]))
+        if top and top[0] >= HIDDEN_LEAST:
+            _, team, fr, mir, py, px = top
+            return Track(team, fr, mir, py, px, top[0])
+    return None
+
+
 OUT_OF_VIEW = 180                # frames a carrier gone out of the read area keeps the puck
 NEAR_BLADE, WITH_HIM = 10, 3     # a seen puck this near a blade (L1 pixels), moving with him (pixels a frame): carried
 
@@ -630,7 +687,9 @@ class PuckTracker:
         self.mode, self.carrier, self.pos, self.vel, self.unseen = "carried", tr, self.to_rink(by, bx, cam), (0.0, 0.0), 0
         return (by, bx, "carried", 0, share, how)
 
-    def step(self, img, bg, cam):
+    def step(self, img, bg, cam, raw=None):
+        """raw: the frame without the ignore mask (static sprites, off the ice), for the star at a faceoff dot, which
+        the mask hides."""
         R = self.R
         live = [t for t in R.tracks if t.miss == 0]
         pred = None
@@ -698,6 +757,10 @@ class PuckTracker:
         st = [t for t in live if 392 in self.stars.get(t.id, ())]
         if st:                                          # the possession star under him
             return self._carried(st[0], cam, "possession star")
+        hid = hidden_carrier(R, img if raw is None else raw, bg, live)  # the star where no read player stands: one hidden behind
+        if hid is not None:                             # another (a faceoff's two centres): found there, and his
+            R.tracks.append(hid)
+            return self._carried(hid, cam, "hidden on the star")
         cf = [t for t in live if t.fr in CARRY_FRAMES]
         if cf:
             if self.carrier in cf:

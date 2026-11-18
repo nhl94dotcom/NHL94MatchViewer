@@ -1825,3 +1825,22 @@ frame (game 2, samples 2403-2460: a faceoff at centre) shows the real cause: the
 reader keeps only one sprite (Boston's); Chicago's centre, who won the draw and carried it 30 samples, is never
 tracked, so when the puck shows it goes to the one player the reader has there, on the wrong team. Next: find a second
 player hidden behind a tracked one (at faceoffs above all, where two always stand together).
+
+**A carrier hidden behind another, found on his star (2026-11-18).** The game draws the possession star (392) under
+the carrier even when he is hidden; the reader only looked for it under players it tracked. `inverse.hidden_carrier`
+looks for it where no read player stands: specks of two of its colours (codes 303, 311) that no read sprite draws,
+every placement of the star over them (on the centre-ice logo, of the same pink, they join one big blob), LONE_STAR
+45% right (the players over it hide half); then the player template whose point is on the star's (within 2), the
+read sprites' pixels ignored, HIDDEN_LEAST 25% right, both teams: a new track, carrying the puck. It runs on the
+frame without the ignore mask (`PuckTracker.step(..., raw=)`): the mask hid the faceoff dot's star. The traced faceoff
+now gives Chicago's centre the puck from the draw, as recorded.
+
+| | game 1: before / now | game 2 (never tuned on): before / now |
+|---|---|---|
+| possession read as carried | 81% / 85% | 81% / 86% |
+| first possession after a faceoff, right team | 3 / 3 of 3 | 5 / 7 of 8 |
+| passes matched (read) | 28 (34) / 31 (36) | 12 (20) / 14 (22) |
+| turnovers matched (read) | 10 (17) / 11 (17) | 9 (14) / 9 (14) |
+| check attempts matched | 6 / 7 | 4 / 4 |
+| zone entries matched (read) | 16 (20) / 16 (18) | 12 (12) / 12 (12) |
+| shots matched (read) | 10 (15) / 10 (14) | 10 (17) / 10 (18) |
