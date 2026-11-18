@@ -5084,6 +5084,39 @@ or back. Each trial is counted up to the pass's first pickup (after a goal: the 
     y 180-230), which the converter counts as giveaways and the build now doesn't. Some may be goalie-stick deflections
     as in the trials.
 
+- **Version 3, the slot pick-off kept (2026-11-18):** nhl94_giveaways_slot.bin (d0563d1a; the 82fd8d72 ROM after "Put
+  in the current version" is the same byte for byte), NHL94_giveaways_slot.smc (0bde0851), nhl94snes_SA1_giveaways_slot.sfc
+  (e7377c79), NHL_95_giveaways.bin (df374ff6), W18_giveaways.bin (34bf26eb). At the release the rule marks the pass
+  (cause $FFFD toward the top net, $FFFC the bottom, by the puck's half) and keeps the passer; the mark is cleared at
+  the goal line (NHL '94 Genesis: a hook on pucknorm's call at $FF86; SNES: on the per-frame puck call at $F5D43,
+  goal line +/-$108; NHL '95 +/-$10B), by a goalie's touch (a2touchpuck's entry, goalies only: puckgoalie, the stick's
+  deflection, puckbody) and at the net (checkgoal's collflag, which only the puck reaches: players branch to
+  checkgoalp before it); puckglue reads $FFFC / $FFFD as a pass. The SNES per-frame hook's jml target takes no A or flags
+  in (it starts stz / lda #), the SA-1's three clears are the retail code at its own addresses. NHL '95: counts
+  $FFEA10 / $FFEA50, totals $EB00 / $EE66, blue line $56, and one more cause site at $7B142.
+  - `genpass 94|95 ROM OUT N [STATE]` and `snespass ROM OUT N` (both ends; cases net, slot, post, wide, zone, dump,
+    shot in NHL94_PASS_CASE): each trial the rule worked out at the release against the mark, where it was cleared, who
+    took the puck first and the counts, against the rule. Every count as the rule said: NHL '94 240 of 240, NHL '95 239
+    of 240 (the other picked up after a whistle: the clock ran 4 game s in 500 frames), W18 240 of 240, SNES 238 of 240
+    and SA-1 177 of 180 (the 5 the harness's: the goalie took the puck and lost it in one frame, so the next pick-up
+    was his team's or his own giveaway). The mark itself as the rule every time a pass was released (the few apart were
+    pucks lost into the goalie before the B, NHL '95's mark a frame after the release, and two W18 passes at 37 that
+    read 41 a frame later).
+  - Slot pick-offs (a defenceman between the passer and the net) gave giveaways on every build; passes off the
+    goalie (pads, glove, stick) and wide passes crossing the goal line, those back out off the end boards too, none.
+    Each clear alone (scratch copies with the other two hooks put back): the goalie touch alone cleared every pass off
+    him a defender then took (9); the goal line alone the wide ones; the net alone 5 passes at a post short of the line
+    (y 258-260), then the goalie's.
+  - Shots on goal: NHL '94 37 = 37, NHL '95 37 = 37 (1 goal each), W18 33 = 33, SA-1 37 = 37 (the same play). SNES
+    retail 56 / 53 on the same shots: the play drifted in 59 of 60 (the game's step comes from the beam count, so any
+    added time moves it), and the 4 uncounted reached the goalie, the stick / glove deflections the SNES never counts
+    (SNES_SHOOTING 4.6). No slowdown: game frames 6,271 / 6,268 in the same 4 x 90 s (real) of computer play, mean step
+    1.722 / 1.723.
+  - Upgrades (from nose-web's source, the detect / remove logic redone in Python): the NHL '94 upgrade made the new
+    build byte for byte; NHL '95 and W18 builds read as the current version (15 hooks at their entries), a ROM with the
+    17 November version as that one, removed back to the original (NHL '95's code area, over the boot's self-check,
+    left $FF: its call NOPped, as on every grown build).
+
 ### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
 
 Retail NHL '95 (CRC E8EE917E), the WN95HL's W18.bin (C4DF4C20) and W18p.bin (7AC194B0), kept outside the repository.
