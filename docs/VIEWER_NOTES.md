@@ -1745,3 +1745,10 @@ Passes found rise from 24 to 27, false shots fall from 10 to 7. Profiled over 15
 once at start (about 220 s), then the score box's clock read, the reader's full search and the puck search take most
 of each frame. Next: the fit cached once per video, a cheaper clock read, the false faceoffs at clock pauses (one
 found: the clock standing at 89 with the puck off screen) and the extra turnovers.
+
+Speed, the same answers (2026-11-18): the score box's fit is kept beside the video (VIDEO.hudfit.json) and reused;
+each score-box cell's template differences are kept by its exact pixels (a lossless video repeats a cell until the
+clock changes), so the score box now costs under 1% of a frame; the puck search first tests n // 5 + 1 of a puck
+frame's n pixels at each placement (a placement matching 80% has at least one of them right) and skips the rest.
+Over 150 frames: puck search 40 s to 18 s, the whole run 113 s to 91 s, every row identical. The sprite search (the
+FFT silhouettes, about 57 s of the 91) is what's left.

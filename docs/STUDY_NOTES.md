@@ -5019,6 +5019,37 @@ BW-RAM $40:5500); `snes_shootout_check.py ... tie --giveaways`. cvc_record's SNE
   the base ROMs' from the same state (a goalie with no shots 0%); the other pages pixel-identical on the SA-1, on the
   1 MB build different only in the checks build's Cf column.
 
+### Pass shots and NOSE4Web's giveaways (2026-11-18, a league member's report)
+
+The report: with the giveaways hack, "pass shots (even ones that score) count as a giveaway". No giveaway build was on
+hand, so `gen_giveaways_check.py build` lays the hack's current code (NOSE4Web's hacks.ts, read at run time) over
+retail as its apply() does, and `passshot` plays passes at the net from bot_live.state: the home centre on pad 1 in the
+slot (x -30 to 30, y 175-215), nobody to pass to, UP (or UP-LEFT / UP-RIGHT) and B, the visiting defencemen by the posts
+or back. Each trial is counted up to the pass's first pickup (after a goal: the first pickup after the next drop).
+- **From the code (Genesis):** dopass's hook sets CAUSE $FFFE (a pass) and keeps the passer as LASTC. puckglue then:
+  the other team's goalie takes it, nothing; one of its skaters takes it, a giveaway for the passer ("picked off").
+  puckgoalie's hook ($15548) runs only for a carried puck (after `move.w (puckc).w,d2 / bmi .chkanim`), so a loose
+  pass off the goalie leaves CAUSE $FFFE, and the defender who picks up the rebound "picks off" the pass.
+- **Played (40 trials):** the goalie took it 15 times (no count). It came off him and a visiting skater took it 5
+  times: a giveaway each time. It came off him to a home skater 2 times (no count). It went past the net through the
+  goal mouth and a visiting skater took it 2 times: a giveaway each time. 2 goals: no count (each faceoff after them is
+  skipped by sf3fo). The rest were plain passes picked off (12, giveaways, as meant) or kept (2).
+- **The converter** calls all of those pass shots (released 20+ in front of the goal line, its line within 40 of the
+  middle of the net, reaching the goal mouth or the goalie) and a shot by the passer's team ends the possession: no
+  turnover. In the 38 recorded Genesis games: 70 pass shots, 8 goals, 38 held by the goalie, and 11 that the other team's
+  skaters took (9 wide, 2 off the goalie): the hack's extra giveaways, about 0.3 a game.
+- **Goals:** neither the trials nor the recordings show a scoring pass shot counted. Of the 8 recorded pass-shot goals,
+  one (2026-10-19 ANA-ATL, P3 4:01) was caught by the goalie and bobbled into his own net: a pass the goalie collects,
+  no count. A giveaway seen "on a goal" is most likely an earlier pass shot of the same player's.
+- **A fix, played:** puckgoalie's `bclr #2,(sflags4).w` (retail $154EE, 6 bytes; every touch, holds included, before
+  the carried-puck test) as a jsr to `bclr #2,($C2F4).w / cmpi.w #$FFFE,($E802).w / bne.s +6 / move.w #$FFFF,($E800).w
+  / rts`: a pass the goalie touches is forgotten like a shot. The same 40 trials: no count after any goalie touch (6:
+  the 5, and one off him that the touch test had missed); goalie holds, goals and ordinary pick-offs as before. Left:
+  a pass shot past the net with no goalie touch (2), which needs the converter's line test at dopass's end.
+- **SNES (from the code, not played: no build here):** the same. The hack hooks puckglue, puckstick, FallDown (two),
+  dopass, assdumpin and doshot, not puckgoalie. There the every-save point is `.t2`'s `jsl ChkShotStat`
+  (puckgoalie.asm), before the carried-puck test at `.5`.
+
 ### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
 
 Retail NHL '95 (CRC E8EE917E), the WN95HL's W18.bin (C4DF4C20) and W18p.bin (7AC194B0), kept outside the repository.
@@ -5979,6 +6010,29 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   after the trade, a human game (Washington, line changes on: three lines): every slot lists all 21. (Not reached: a
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
+
+### NOSE4Web's music round 7, played (2026-11-18)
+
+NHL94_all_three_roundtrip_grown.smc d764828b, nhl94_2026_all_three_roundtrip.sfc 2515ac65 (SHA-256, first 8; built as
+the page's Replace does). Played as round 6 (the playoff on Game Setup by repointing the menu's four calls in scratch
+copies; title from power-on, menu with the cursor moved now and then). Both ROMs loop on the original's frames (menu
+6252, playoff 3720).
+
+| piece | side / mid (orig, new) | R lean (orig, new) | L / R original | L / R new | RMS orig, new | envelope corr |
+|---|---|---|---|---|---|---|
+| title | 0.060, 0.069 | +0.3%, +1.4% | 2,906 / 2,916 | 2,892 / 2,932 | 2,911, 2,912 | 0.985 |
+| menu | 0.101, 0.099 | +0.8%, +1.5% | 3,257 / 3,283 | 3,291 / 3,340 | 3,270, 3,315 | 0.932 |
+| playoff | 0.242, 0.245 | +4.7%, +4.6% | 3,589 / 3,759 | 3,582 / 3,748 | 3,675, 3,666 | 0.995 |
+
+(the 2026 build within 0.002 of the 1 MB one). Each sample's sounding frames by side (the S-DSP's VOL L / R, 3 apart
+counts as a side; counted every second frame, as round 6), original against new:
+- **Playoff:** every sample within 1 of the original but the brass (8): L 214 / R 204 against 214 / 200, none centred.
+  The crash (7) centre 41 + R 35, sample 3 R 6, the organ (14) 274 / 305 against 275 / 304: as the original.
+- **Menu:** the right-only samples (3, 7, 11, 12) the same frame for frame, the brass (8) C 531 / L 287 / R 376
+  exactly. Different: sample 15, L 133 / C 260 / R 345 against L 0 / C 333 / R 356 (its left side gone); sample 6's
+  13 right-only frames centred.
+- **Title:** sample 13 C 329 / L 12 / R 6 against C 123 / R 133 (much of it moved right: the wider, right-leaning
+  title); the brass (8) C 85 / R 186 against 55 / 215; crash (7) centre 54 against 45; the rest as the original.
 
 ### NOSE4Web's music round 6, played (2026-11-17)
 

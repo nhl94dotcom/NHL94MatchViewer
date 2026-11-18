@@ -421,6 +421,17 @@ def read_puck(reader, img, bg, pred=None, R=3, near=12):
                     continue
                 oy, ox = int(round(ys.mean())), int(round(xs.mean()))
                 grid = np.array([(cy - oy + dy, cx - ox + dx) for dy in range(-rad, rad + 1) for dx in range(-rad, rad + 1)])
+                # a cheap first test: a placement matching 80% of a puck frame's n pixels has at most n // 5 wrong,
+                # so at least one of any n // 5 + 1 of them right; placements with none right are skipped
+                k3 = min(len(cs), len(cs) // 5 + 1)
+                Y3 = ys[None, :k3] + grid[:, :1]
+                X3 = xs[None, :k3] + grid[:, 1:]
+                ok3 = (Y3 >= 0) & (Y3 < H) & (X3 >= 0) & (X3 < W)
+                Y3c, X3c = Y3.clip(0, H - 1), X3.clip(0, W - 1)
+                hit3 = ((img[Y3c, X3c] == cs[None, :k3]) & ok3 & ~drawn[Y3c, X3c]).any(1)
+                grid = grid[hit3]
+                if not len(grid):
+                    continue
                 Y = ys[None, :] + grid[:, :1]
                 X = xs[None, :] + grid[:, 1:]
                 ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)

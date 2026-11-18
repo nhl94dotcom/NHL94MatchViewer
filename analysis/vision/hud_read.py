@@ -158,6 +158,7 @@ class Reader:
         (around: SHIFT pixels each side) scaled about the cell's corner, shifted, blurred."""
         from PIL import Image
         self.geo = geo
+        self._memo = {}
         sx, sy, dx, dy, a = geo
         n = 8 + 2 * SHIFT
         self.t = {}
@@ -194,10 +195,20 @@ class Reader:
         self.set_geometry((sx, sy, float(dx), float(dy), a))
         return self.geo
 
+    def fit_cached(self, video, frames=None):
+        """fit() once per video: the geometry kept beside it (VIDEO.hudfit.json) and reused."""
+        p = Path(str(video) + ".hudfit.json")
+        if p.exists():
+            self.set_geometry(tuple(json.loads(p.read_text())))
+            return self.geo
+        geo = self.fit(frames if frames is not None else __import__("game_events").sample_frames(video))
+        p.write_text(json.dumps([float(x) for x in geo]))
+        return geo
+
     def best(self, f, rc, kind):
         if self.native:
-            g = around(f, rc)
-            return min(((ch, slid(g, t)) for ch, t in self.t[kind]), key=lambda c: c[1])
+            c = self.costs(f, rc, kind)
+            return min(c.items(), key=lambda kv: kv[1])
         g = cell(f, rc)
         return min(((ch, float(np.abs(g - t).mean())) for ch, t in self.t[kind]), key=lambda c: c[1])
 
@@ -211,7 +222,7 @@ class Reader:
             if t is None:
                 return 1e9
             if self.native:
-                total += slid(around(f, rc), t)
+                total += self.costs(f, rc, "score")[ch]
             else:
                 total += float(np.abs(cell(f, rc) - t).mean())
         return total
@@ -228,7 +239,13 @@ class Reader:
         """Every template's difference from this cell: {char: difference}."""
         if self.native:
             g = around(f, rc)
-            return {ch: slid(g, t) for ch, t in self.t[kind]}
+            key = (kind, rc, g.tobytes())             # a lossless video repeats a cell exactly until it changes
+            got = self._memo.get(key)
+            if got is None:
+                if len(self._memo) > 20000:
+                    self._memo.clear()
+                got = self._memo[key] = {ch: slid(g, t) for ch, t in self.t[kind]}
+            return got
         g = cell(f, rc)
         return {ch: float(np.abs(g - t).mean()) for ch, t in self.t[kind]}
 

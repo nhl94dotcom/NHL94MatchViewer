@@ -19,8 +19,15 @@ $FFEC64 / $FFEC66).
   stats ROM OUT             Game Stats from the pause menu with penalties on and off: the top and, scrolled to the
                             end, the bottom (screenshots), with the counts set to known values first
 
-python gen_giveaways_check.py games|shootout|stats ..."""
+  build RETAIL HACKS_TS OUT [--goalie-fix]   a scratch giveaways build: the hack's code from NOSE4Web's hacks.ts
+                            (its first GT_VERSIONS entry) laid over RETAIL as apply() does; --goalie-fix adds the
+                            suggested fix (a pass the goalie touches forgotten like a shot, at puckgoalie's $154EE)
+  passshot ROM OUT [N]      passes at the net with nobody to pass to (pass shots), N trials from bot_live.state: what
+                            became of each (goalie held, off the goalie, goal, picked off) and the counts it made
+
+python gen_giveaways_check.py games|shootout|stats|build|passshot ..."""
 import json
+import re
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -437,6 +444,155 @@ def snes_stats(rom, out, item=2):
         print(f"penalties {'on' if pen else 'off'}: done", flush=True)
 
 
+# ---------------------------------------------------------------- pass shots (2026-11-18, NOSE4Web's question)
+GT_HOOKS = ((0x15288, 0, 8), (0x151BC, 4, 6), (0x15548, 4, 6), (0x143FA, 8, 10), (0xC340, 0xC, 6), (0x77B8, 0x10, 8),
+            (0xFDE5E, 0x14, 6), (0xFDE6C, 0x18, 8), (0xBC6E, 0x1C, 10))
+GT_LIMITS = ((0xFDCBC, 0x80), (0xFDCCA, 0x40))
+
+
+GOALIE_TOUCH_FIX = bytes.fromhex("08B80002C2F4" "0C78FFFEE802" "6606" "31FCFFFFE800" "4E75")
+
+
+def lay_giveaways(retail, hacks_ts, out, at=0xFFB14, goalie_fix=False):
+    """A scratch build: NOSE4Web's giveaways code (the first GT_VERSIONS entry of its hacks.ts, given at run time) with
+    the ROM's two Game Stats tables and the new row after each, laid at `at` (free room in the retail ROM) and hooked
+    as its apply() does (jsr abs.l, the rest NOPs; the scroll limits)."""
+    import struct
+    rom = bytearray(Path(retail).read_bytes())
+    ts = Path(hacks_ts).read_text(encoding="utf-8")
+    m = re.search(r"const GT_VERSIONS[^=]*=\s*\[\s*\{ code: bytes\('([0-9A-Fa-f ]+)'\), tableA: (0x[0-9a-f]+), tableB: (0x[0-9a-f]+)", ts)
+    body, ta, tb = bytes.fromhex(m.group(1).replace(" ", "")), int(m.group(2), 16), int(m.group(3), 16)
+
+    def table(a, rows):
+        end = a
+        for _ in range(rows):
+            end += struct.unpack_from(">H", rom, end)[0] + 4
+        return bytes(rom[a:end])
+    row = struct.pack(">H", 16) + b"Give/Takeaways" + bytes.fromhex("22322234")
+    wp, np_ = table(0xFDFAA, 15), table(0xFE098, 11)
+    code = bytearray(body + wp + row + np_ + row)
+    struct.pack_into(">H", code, ta, len(body) - ta)
+    struct.pack_into(">H", code, tb, len(body) + len(wp) + len(row) - tb)
+    assert all(b in (0xFF,) for b in rom[at - 4:at + len(code)]), "no room"
+    rom[at:at + len(code)] = code
+    for site, entry, n in GT_HOOKS:
+        rom[site:site + 6] = bytes.fromhex("4EB9") + struct.pack(">I", at + entry)
+        for o in range(6, n, 2):
+            rom[site + o:site + o + 2] = bytes.fromhex("4E71")
+    for site, v in GT_LIMITS:
+        struct.pack_into(">H", rom, site, v)
+    if goalie_fix:      # the suggested fix: puckgoalie's bclr #2,(sflags4).w ($154EE, every touch, holds too): a pass
+        fx = at + len(code) + 4                  # the goalie touches is a shot (the carrier forgotten, as doshot's)
+        assert rom[0x154EE:0x154F4] == bytes.fromhex("08B80002C2F4") and all(b == 0xFF for b in rom[fx:fx + 24])
+        rom[fx:fx + len(GOALIE_TOUCH_FIX)] = GOALIE_TOUCH_FIX
+        rom[0x154EE:0x154F4] = bytes.fromhex("4EB9") + struct.pack(">I", fx)
+    Path(out).write_bytes(bytes(rom))
+    return out
+
+
+def passshot(rom, out, n=24):
+    """Passes at the net, played on a giveaways build: bot_live.state (open play, the home team attacking up), the
+    home centre with the puck in the slot on pad 1, a teammate behind the net in line with it, the other home
+    skaters back at their own blue line, two visiting defencemen by the posts; UP and B (a pass to the man behind the
+    net, through the crease), then up to 900 frames (after a goal on through the next faceoff and 600 frames more).
+    Per trial: what happened to the pass (the goalie's touches: his no-touch timer set to $A by puckgoalie; puckc;
+    the score), every LASTC / CAUSE / puckc change and every count change."""
+    from emu import Emu
+    from paths import WORK
+    from bot import rec
+    from bot_scenario import reset_ai
+    import random
+    out.mkdir(parents=True, exist_ok=True)
+    base = (WORK / "bot_live.state").read_bytes()
+    rng = random.Random(7)
+    e = Emu(str(rom))
+    results = []
+    for t in range(n):
+        e.unserialize(base)
+        e.setw(0xC468, 250)
+        e.setl(0xD066, rng.randrange(1 << 31))
+        cx, cy = rng.choice((-30, -15, 0, 15, 30)), rng.choice((175, 195, 215))
+        push = rng.choice((["UP"], ["UP"], ["UP", "LEFT"], ["UP", "RIGHT"]))   # at the net, or at a post
+        rx = rng.choice((-25, -10, 0, 10, 25))
+        near = t % 3 == 0                         # visiting defencemen by the posts (they take rebounds), or back
+        place = {2: (cx, cy), 0: (60, -40), 1: (-60, -40), 3: (40, -60), 4: (-40, -60),
+                 6: (-90, -20), 7: (90, -20), 8: (0, -10),
+                 9: (-28, 238) if near else (-35, 60), 10: (28, 238) if near else (35, 60)}
+        for k, (x, y) in place.items():
+            r = rec(k)
+            e.setw(r, x & 0xFFFF); e.setw(r + 2, 0); e.setw(r + 0x14, y & 0xFFFF); e.setw(r + 0x16, 0); e.setw(r + 0x18, 0)
+            e.setl(r + 0x1C, (x & 0xFFFF) << 16); e.setl(r + 0x20, (y & 0xFFFF) << 16)
+            e.setw(r + 0x28, 0); e.setw(r + 0x2A, 0); e.setw(r + 0x2C, 0)
+            e.setb(r + 0x55, 0)
+        for k in range(12):
+            role = str(e.b(rec(k) + 0x35))
+            if role in "012345":
+                reset_ai(e, k, role, k < 6, k == 2)
+        for k in range(6):
+            e.setb(rec(k) + 0x62, e.b(rec(k) + 0x62) & ~8)
+        e.setb(rec(2) + 0x62, e.b(rec(2) + 0x62) | 8)
+        e.setw(0xC320, 2)
+        pr = rec(14)
+        e.setw(pr, cx & 0xFFFF); e.setw(pr + 0x14, cy & 0xFFFF); e.setw(pr + 0x18, 0)
+        e.setw(0xB7AA, 2)
+        e.setw(0xFF0000 | LASTC, 2); e.setb(0xFF0000 | 0xE804, e.b(rec(2) + 0x66))
+        e.setw(0xFF0000 | CAUSE, 0xFFFF); e.setb(0xFF0000 | 0xE805, 0xFF)
+        for a in range(0x80):
+            e.setb(0xFF0000 | (GIVE + a), 0)
+        e.run(4, hold=["UP"])
+        score0 = (e.w(0xC6DA), e.w(0xCA3E))
+        w = Watch()
+        w.prev = counts(e)
+        trace, touches, goal_at, fo_at, end = [], [], None, None, 900
+        last = None
+        gnp = e.b(rec(11) + 0x5E)
+        mouth = None                               # the converter's test for a pass shot: it reached the goal mouth
+        for f in range(4000):
+            e.run(1, hold=push + ["B"] if f < 3 else [])
+            w(e, f)
+            st = (e.w(0xFF0000 | LASTC), e.w(0xFF0000 | CAUSE), e.w(0xB7AA))
+            if st != last:
+                trace.append((f, *[x if x < 0x8000 else x - 0x10000 for x in st]))
+                last = st
+            if mouth is None and e.sw(0xB7AA) < 0 and e.sw(rec(14) + 0x14) >= 250 and abs(e.sw(rec(14))) <= 30:
+                mouth = f
+            np_ = e.b(rec(11) + 0x5E)
+            if np_ == 0x0A and gnp != 0x0A:
+                touches.append(f)
+            gnp = np_
+            if goal_at is None and (e.w(0xC6DA), e.w(0xCA3E)) != score0:
+                goal_at, end = f, 4000
+            if goal_at is not None and fo_at is None and e.b(0xC2F0) & 0x10:
+                fo_at, end = f, f + 600
+            if f >= end:
+                break
+        first = next(((f, p) for f, _, _, p in trace[1:] if p >= 0), None)
+        if goal_at is not None and (first is None or first[0] > goal_at):
+            what = "goal"
+        elif first is None:
+            what = "unresolved"
+        else:
+            k = first[1]
+            who = ("home " if k < 6 else "visitors' ") + ("goalie" if e.b(rec(k) + 0x35) == 0 else "skater")
+            what = ("goalie touched, then " if any(x < first[0] for x in touches) else "") + who + " took it"
+        pshot = goal_at is not None and what == "goal" or (first is not None and (
+            (mouth is not None and mouth < first[0]) or any(x < first[0] for x in touches)))
+        if what == "goal":                          # up to the first pickup after the next faceoff's drop
+            resolved = next((f for f, _, _, p in trace if fo_at is not None and f >= fo_at and p >= 0), 4000)
+        else:                                      # up to the first pickup of the pass
+            resolved = first[0] if first else 4000
+        early = [(ev["frame"], ev["team"], ev["kind"], ev["place"]) for ev in w.events if ev["frame"] <= resolved + 2]
+        res = dict(trial=t, carrier=(cx, cy), near=near, what=what, pass_shot=pshot, counts_by_then=early, goal_at=goal_at, faceoff_drop_at=fo_at,
+                   goalie_touches=touches[:6], trace=trace[:40], counts=w.events)
+        results.append(res)
+        print(t, "defence near" if near else "defence back", (cx, cy), "->", what, "(a pass shot)" if pshot else "(not at the net)", "| counts by then:", early,
+              "| trace:", trace[:6], flush=True)
+    (out / "passshot.json").write_text(json.dumps(results, indent=1))
+    tally = Counter((r["what"], r["pass_shot"], bool(r["counts_by_then"])) for r in results)
+    for (what, ps, counted), c in sorted(tally.items()):
+        print(f"{c:3} {what}{' (a pass shot)' if ps else ''}: {'a count' if counted else 'no count'}")
+
+
 def main():
     mode = sys.argv[1]
     if mode in ("games", "snes_games"):
@@ -456,6 +612,11 @@ def main():
         snes_stats(sys.argv[2], Path(sys.argv[3]))
     elif mode == "stats":
         stats(sys.argv[2], Path(sys.argv[3]))
+    elif mode == "build":
+        lay_giveaways(sys.argv[2], sys.argv[3], sys.argv[4], goalie_fix="--goalie-fix" in sys.argv)
+    elif mode == "passshot":
+        lowload.gentle()
+        passshot(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]) if len(sys.argv) > 4 else 24)
     else:
         raise SystemExit(f"{mode}: not yet")
 
