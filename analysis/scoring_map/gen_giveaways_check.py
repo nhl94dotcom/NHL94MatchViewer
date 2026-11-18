@@ -25,8 +25,14 @@ $FFEC64 / $FFEC66).
   passshot ROM OUT [N]      passes at the net with nobody to pass to (pass shots), N trials from bot_live.state: what
                             became of each (goalie held, off the goalie, goal, picked off) and the counts it made
 
-python gen_giveaways_check.py games|shootout|stats|build|passshot ..."""
+                            NHL94_PASS_CASE=zone: passes up the middle from the passer's own end or the neutral zone
+                            with visitors in line; =dump: dump-ins from y 40-80 at the net, defencemen by the net
+  snes_passshot ROM OUT [N]  the same on a SNES giveaways build (retail or SA-1): what became of each pass, the counts,
+                            and NOSE4Web's at-the-net rule worked out at the release against what the build did
+
+python gen_giveaways_check.py games|shootout|stats|build|passshot|snes_passshot ..."""
 import json
+import os
 import re
 import subprocess
 import sys
@@ -490,6 +496,9 @@ def lay_giveaways(retail, hacks_ts, out, at=0xFFB14, goalie_fix=False):
     return out
 
 
+CASE = os.environ.get("NHL94_PASS_CASE", "net")     # passshot: net (passes at the net), zone, dump
+
+
 def passshot(rom, out, n=24):
     """Passes at the net, played on a giveaways build: bot_live.state (open play, the home team attacking up), the
     home centre with the puck in the slot on pad 1, a teammate behind the net in line with it, the other home
@@ -518,6 +527,16 @@ def passshot(rom, out, n=24):
         place = {2: (cx, cy), 0: (60, -40), 1: (-60, -40), 3: (40, -60), 4: (-40, -60),
                  6: (-90, -20), 7: (90, -20), 8: (0, -10),
                  9: (-28, 238) if near else (-35, 60), 10: (28, 238) if near else (35, 60)}
+        if CASE == "zone":      # a pass up the middle from the passer's own end or the neutral zone, two visitors in line
+            cx, cy = rng.choice((-10, 0, 10)), rng.choice((-150, -100, -40, 20, 60))
+            push = ["UP"]
+            place = {2: (cx, cy), 0: (-90, cy - 40), 1: (90, cy - 40), 3: (40, cy - 80), 4: (-40, cy - 80),
+                     6: (-100, cy + 30), 7: (100, cy + 30), 8: (cx, cy + 55), 9: (cx - 12, cy + 100), 10: (cx + 12, cy + 140)}
+        elif CASE == "dump":    # a dump-in from outside the zone (y 40-80, the blue line at 88) at the net, the visiting
+            cx, cy = rng.choice((-20, 0, 20)), rng.choice((40, 60, 80))     # defencemen by the net to collect it
+            push = rng.choice((["UP"], ["UP", "LEFT"], ["UP", "RIGHT"]))
+            place = {2: (cx, cy), 0: (-90, cy - 40), 1: (90, cy - 40), 3: (40, cy - 80), 4: (-40, cy - 80),
+                     6: (-100, cy - 20), 7: (100, cy - 20), 8: (0, cy - 30), 9: (-30, 215), 10: (30, 215)}
         for k, (x, y) in place.items():
             r = rec(k)
             e.setw(r, x & 0xFFFF); e.setw(r + 2, 0); e.setw(r + 0x14, y & 0xFFFF); e.setw(r + 0x16, 0); e.setw(r + 0x18, 0)
@@ -547,6 +566,8 @@ def passshot(rom, out, n=24):
         last = None
         gnp = e.b(rec(11) + 0x5E)
         mouth = None                               # the converter's test for a pass shot: it reached the goal mouth
+        pick = None                                # where the puck was when the pass was first picked up
+        path = []                                  # the puck every 4 frames until then
         for f in range(4000):
             e.run(1, hold=push + ["B"] if f < 3 else [])
             w(e, f)
@@ -554,8 +575,12 @@ def passshot(rom, out, n=24):
             if st != last:
                 trace.append((f, *[x if x < 0x8000 else x - 0x10000 for x in st]))
                 last = st
-            if mouth is None and e.sw(0xB7AA) < 0 and e.sw(rec(14) + 0x14) >= 250 and abs(e.sw(rec(14))) <= 30:
-                mouth = f
+            if mouth is None and e.sw(0xB7AA) < 0 and e.sw(rec(14) + 0x14) >= 264 and abs(e.sw(rec(14))) <= 40:
+                mouth = f                          # through the goal mouth: the goal line within PASS_MOUTH (40)
+            if pick is None and len(trace) > 1 and trace[-1][3] >= 0 and trace[-1][0] == f:
+                pick = (e.sw(rec(14)), e.sw(rec(14) + 0x14))
+            if pick is None and f % 4 == 0:
+                path.append((f, e.sw(rec(14)), e.sw(rec(14) + 0x14), e.sw(rec(14) + 0x18)))
             np_ = e.b(rec(11) + 0x5E)
             if np_ == 0x0A and gnp != 0x0A:
                 touches.append(f)
@@ -582,15 +607,134 @@ def passshot(rom, out, n=24):
         else:                                      # up to the first pickup of the pass
             resolved = first[0] if first else 4000
         early = [(ev["frame"], ev["team"], ev["kind"], ev["place"]) for ev in w.events if ev["frame"] <= resolved + 2]
-        res = dict(trial=t, carrier=(cx, cy), near=near, what=what, pass_shot=pshot, counts_by_then=early, goal_at=goal_at, faceoff_drop_at=fo_at,
+        res = dict(trial=t, carrier=(cx, cy), near=near, what=what, pass_shot=pshot, picked_up_at=pick, path=path, counts_by_then=early, goal_at=goal_at, faceoff_drop_at=fo_at,
                    goalie_touches=touches[:6], trace=trace[:40], counts=w.events)
         results.append(res)
-        print(t, "defence near" if near else "defence back", (cx, cy), "->", what, "(a pass shot)" if pshot else "(not at the net)", "| counts by then:", early,
+        print(t, "defence near" if near else "defence back", (cx, cy), "->", what, "(a pass shot)" if pshot else "(not at the net)", "at", pick, "| counts by then:", early,
               "| trace:", trace[:6], flush=True)
     (out / "passshot.json").write_text(json.dumps(results, indent=1))
     tally = Counter((r["what"], r["pass_shot"], bool(r["counts_by_then"])) for r in results)
     for (what, ps, counted), c in sorted(tally.items()):
         print(f"{c:3} {what}{' (a pass shot)' if ps else ''}: {'a count' if counted else 'no count'}")
+
+
+def snes_passshot(rom, out, n=24):
+    """passshot on a SNES giveaways build (retail or SA-1: snes_assist_stick_test.Game's live play, pad 1 on the home
+    side): the pad-1 skater with the puck (x -30..30, 175-215 toward the net he attacks), his teammates parked at the far
+    end, the visiting defencemen by the posts (every third trial) or at centre; B with UP (UP-LEFT / UP-RIGHT) toward that
+    net; the same cases as passshot (NHL94_PASS_CASE net / zone / dump). Counts read as SnesWatch reads them."""
+    import random
+    from snes_assist_stick_test import Game, POSITION, PUCKC, CARRIER2, GOALS
+    out.mkdir(parents=True, exist_ok=True)
+    gm = Game(str(rom))
+    g, e = gm.g, gm.e
+    rng = random.Random(7)
+    results = []
+
+    def gv(off):                                  # the hack's words (last carrier, cause)
+        if g.sa1:
+            return g.bw[0x5500 + off] | g.bw[0x5501 + off] << 8
+        return e.ram[GVBASE + off] | e.ram[GVBASE + off + 1] << 8
+
+    def setgv(off, v):
+        if g.sa1:
+            g.bw[0x5500 + off], g.bw[0x5501 + off] = v & 0xFF, v >> 8
+        else:
+            e.ram[GVBASE + off], e.ram[GVBASE + off + 1] = v & 0xFF, v >> 8
+    for t in range(n):
+        e.unserialize(g.bases[t % len(g.bases)])
+        gm.setw(0x1632, 250)
+        me, team, up = gm.me()
+        near = t % 3 == 0
+        cx, cy = rng.choice((-30, -15, 0, 15, 30)), rng.choice((175, 195, 215))
+        push = rng.choice((["UP"], ["UP"], ["UP", "LEFT"], ["UP", "RIGHT"]))
+        if CASE == "zone":
+            cx, cy, push = rng.choice((-10, 0, 10)), rng.choice((-150, -100, -40, 20, 60)), ["UP"]
+        elif CASE == "dump":
+            cx, cy = rng.choice((-20, 0, 20)), rng.choice((40, 60, 80))
+        if up < 0:
+            push = [{"UP": "DOWN", "LEFT": "LEFT", "RIGHT": "RIGHT"}[b] for b in push]
+        gm.park(me, up)
+        theirs = [k for k in range(6 * (1 - team), 6 * (1 - team) + 6) if gm.w(POSITION + 2 * k) not in (0, 0xFFFF)]
+        gk = next(k for k in range(6 * (1 - team), 6 * (1 - team) + 6) if gm.w(POSITION + 2 * k) == 0)
+        for i, k in enumerate(theirs):
+            if CASE == "zone":
+                x, y = (cx, cy + 55 + 45 * i) if i < 3 else (-100 + 200 * (i % 2), cy + 30)
+            elif CASE == "dump" or near:
+                x, y = ((-30, 215), (30, 215))[i] if i < 2 else (-100 + 200 * (i % 2), 0)
+            else:
+                x, y = (-35 + 70 * (i % 2), 60 - 30 * (i // 2))
+            gm.put(k, x, y * up)
+        gm.put(me, cx, cy * up)
+        gm.put(14, cx, cy * up)
+        gm.setw(PUCKC, 2 * me)
+        gm.setw(CARRIER2, 2 * me)
+        setgv(0, 2 * me)                          # the last carrier and his roster place (kept from his pickup)
+        setgv(2, 0xFFFF)
+        setgv(0xDC, gm.w(0x12A3 + 2 * me))
+        gm.setw(0x15DC, gm.w(0x15DC) & ~0x10)    # sf3fo: the saved moments still have the faceoff's (the puck put on
+                                                 # him here never went through puckglue, which clears it)
+        gm.run(2, hold=push)
+        w = SnesWatch()
+        w(e, 0, g)
+        w.events = []                             # the counts already in the saved moment (the SA-1's BW-RAM) aren't new
+        g0 = gm.w(GOALS + 2 * team)
+        trace, touches, goal_at, end, last, gnp = [], [], None, 900, None, gm.w(0x1203 + 2 * gk)
+        mouth = pick = rel = None
+        for f in range(3000):
+            gm.run(1, hold=push + ["B"] if f < 3 else [])
+            w(e, f, g)
+            st = (gv(0), gv(2), gm.w(PUCKC))
+            if st != last:
+                trace.append((f, *[x - 0x10000 if x >= 0x8000 else x for x in st]))
+                last = st
+            if rel is None and gm.w(PUCKC) >= 0x8000:     # the release: NOSE4Web's rule worked out here, against the build
+                s_ = 1 if gm.w(0x14C3 + 2 * me) else -1
+                x0, y0 = gm.sw(0x0D55 + 28), gm.sw(0x0DB7 + 28) * s_
+                vx0, vy0 = gm.sw(0x0EC3 + 28), gm.sw(0x0EE3 + 28) * s_
+                d = 264 - y0
+                exp = y0 >= 88 and vy0 > 0 and d >= 20 and abs(x0 + vx0 * d / vy0) <= 40
+                rel = dict(f=f, x=x0, y=y0, vx=vx0, vy=vy0, cross=round(x0 + vx0 * d / vy0, 1) if vy0 > 0 else None,
+                           rule=exp, cleared=gv(0) == 0xFFFF)
+            py, px = gm.sw(0x0DB7 + 28) * up, gm.sw(0x0D55 + 28)
+            if mouth is None and gm.w(PUCKC) >= 0x8000 and py >= 264:
+                mouth = (f, px)                    # where it crossed the goal line (Match Viewer: within 40)
+            if pick is None and gm.w(PUCKC) < 0x8000 and f > 3:
+                pick = (f, px, py)
+            np_ = gm.w(0x1203 + 2 * gk)
+            if np_ == 0x0A and gnp != 0x0A:
+                touches.append(f)
+            gnp = np_
+            if goal_at is None and gm.w(GOALS + 2 * team) != g0:
+                goal_at, end = f, 3000
+            if goal_at is not None and gm.w(0x15D6) == 0 and gm.w(PUCKC) < 0x8000 and f > goal_at + 60:
+                end = f
+            if f >= end:
+                break
+        first = next(((f, p) for f, _, _, p in trace[1:] if p >= 0), None)
+        if goal_at is not None and (first is None or first[0] > goal_at):
+            what, resolved = "goal", end
+        elif first is None:
+            what, resolved = "unresolved", 3000
+        else:
+            k = first[1] // 2
+            who = ("his team's " if k // 6 == team else "the other team's ") + ("goalie" if gm.w(POSITION + 2 * k) == 0 else "skater")
+            what = ("goalie touched, then " if any(x < first[0] for x in touches) else "") + who + " took it"
+            resolved = first[0]
+        early = [(ev["frame"], ev["team"], ev["kind"], ev["place"]) for ev in w.events if ev["frame"] <= resolved + 2]
+        mouthed = mouth is not None and abs(mouth[1]) <= 40 and (first is None or mouth[0] < first[0])
+        results.append(dict(trial=t, carrier=(cx, cy), near=near, what=what, through_mouth=mouthed, crossed=mouth, release=rel,
+                            picked=pick, counts=early, trace=trace[:30], touches=touches[:4]))
+        print(t, "defence near" if near else "defence back", (cx, cy), push, "->", what, "(through the mouth)" if mouthed else "",
+              "picked", pick, "| counts:", early, "| trace:", trace[:5], flush=True)
+    (out / "snes_passshot.json").write_text(json.dumps(results, indent=1))
+    rr = [r["release"] for r in results if r["release"]]
+    print(f"the rule at the release: {sum(r['rule'] == r['cleared'] for r in rr)} of {len(rr)} as worked out "
+          f"(at the net {sum(r['rule'] for r in rr)}, cleared {sum(r['cleared'] for r in rr)}); differing:",
+          [r for r in rr if r["rule"] != r["cleared"]][:6])
+    tally = Counter((r["what"], r["through_mouth"], bool(r["counts"])) for r in results)
+    for (what, mo, counted), c in sorted(tally.items()):
+        print(f"{c:3} {what}{' (through the mouth first)' if mo else ''}: {'a count' if counted else 'no count'}")
 
 
 def main():
@@ -614,6 +758,9 @@ def main():
         stats(sys.argv[2], Path(sys.argv[3]))
     elif mode == "build":
         lay_giveaways(sys.argv[2], sys.argv[3], sys.argv[4], goalie_fix="--goalie-fix" in sys.argv)
+    elif mode == "snes_passshot":
+        lowload.gentle()
+        snes_passshot(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]) if len(sys.argv) > 4 else 24)
     elif mode == "passshot":
         lowload.gentle()
         passshot(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]) if len(sys.argv) > 4 else 24)

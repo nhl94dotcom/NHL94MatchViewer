@@ -5050,6 +5050,40 @@ or back. Each trial is counted up to the pass's first pickup (after a goal: the 
   dopass, assdumpin and doshot, not puckgoalie. There the every-save point is `.t2`'s `jsl ChkShotStat`
   (puckgoalie.asm), before the carried-puck test at `.5`.
 
+- **NOSE4Web's fixed builds, played (2026-11-18):** nhl94_giveaways_passshot.bin (82fd8d72, Genesis, 2 MB),
+  NHL94_giveaways_passshot.smc (f89253e9), nhl94snes_SA1_giveaways_passshot.sfc (bae7130c). Genesis: the goalie-touch
+  hook at $154EE as suggested; dopass's .notgoalie ($BDD8) checks the line at the release (puck y past the blue line,
+  $58, toward the net the passer attacks, 20 or more before the goal line $108, moving toward it, its line within 40
+  of the middle: muls / divs) and clears the last carrier and the cause. The code sits from $FFAC6, over the boot's
+  ROM self-check, whose one call ($302) is NOPped. SNES: puckgoalie's `.t2` jsl ChkShotStat goes through new code (a
+  pass forgotten, then a jml to ChkShotStat), and dopass_swing's .2 checks the same line (|vx| and vy halved together
+  below 256 for an 8-bit-style multiply). The counts are at $7E:FD10 (totals $FDE4, read by the Game Stats row code)
+  and on the SA-1 at BW-RAM $40:5500 (low RAM moved +$6000).
+  - Genesis, the same 40 passes at the net (`passshot`): no count after any goalie touch (7) or for the 2 wide pass
+    shots; goalie holds (15) and goals (2) none, as before. 8 counts, all passes the rule doesn't call at the net.
+    Three uncounted pick-offs in front of the net (y 222-226) first bounced off something at y about 236 with no
+    puckgoalie call (likely the goalie's stick: the puck's path stops there and comes back), so the rule
+    rightly counts them as pass shots.
+  - The zone rule (`NHL94_PASS_CASE=zone`, `dump`, 20 each): passes up the middle from the passer's own end or the
+    neutral zone picked off by a skater all counted (9 of 9); dump-ins from y 40-80 collected by a defender all counted
+    (12 of 12). A goalie touch clears the pass wherever it came from (its hook has no zone test).
+  - SNES and SA-1 (`snes_passshot`, the same cases, snes_assist_stick_test.Game's live play; sf3fo cleared, as the
+    puck put on the carrier never goes through puckglue): the rule worked out at each release from the puck's
+    position and speed agreed with the build every time (40 of 40 retail, 30 of 30 SA-1). No count after a goalie
+    touch, through the mouth, on a goal or a goalie's hold; every pass the rule doesn't call at the net and a skater
+    picked off was counted (14 and 16). Zone and dump-in cases as on the Genesis (24 of 24 and 22 of 24, the other two
+    released past the blue line; SA-1 10 of 10 and 17 of 17). Shots on goal unchanged (`snes_assist_stick_test.py`,
+    the same shots: 56 = 56 retail, 37 = 37 SA-1, the SA-1 the same play throughout).
+  - The 2 MB Genesis ROM: power-on to the title, save RAM after power-on equal to retail's; a whole computer game
+    (`games`, cvc game 0): 43 counts, 45 converter turnovers, 37 paired, none in a highlight, shootout or negative.
+  - Upgrade (from nose-web's code, the detect / remove logic redone in Python on the 15 November scratch build): it
+    reads as that version (9 hooks; the two new places as the game has them), and removing it gives back retail byte
+    for byte, so the next apply puts the new version in.
+  - Left: the rule judges the pass at its release. In the 38 recorded Genesis games, 41 of the converter's 874
+    picked-off passes (about 1 a game) meet it: passes at the net picked off before the goal mouth (most taken at
+    y 180-230), which the converter counts as giveaways and the build now doesn't. Some may be goalie-stick deflections
+    as in the trials.
+
 ### NHL '95 (Genesis) for NOSE4Web: the first answers (2026-11-14)
 
 Retail NHL '95 (CRC E8EE917E), the WN95HL's W18.bin (C4DF4C20) and W18p.bin (7AC194B0), kept outside the repository.
