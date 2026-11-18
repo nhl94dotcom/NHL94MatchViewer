@@ -198,10 +198,12 @@ def tonight_text(p):
     return f"{name} {'per rating' if isinstance(hc, list) else f'{hc:+d}' if hc else '0'}"
 
 
-def tonight_panel(emu, system, rom_path, ids):
+def tonight_panel(emu, system, rom_path, ids, phase="play"):
     """Each team's line 1 with the hot / cold the game rolled for tonight (docs: SNES_MECHANICS 2.2, GENESIS_MECHANICS
     2.2): on the SNES the ratings the sign bug maxed and the receivers whose Stick Handling is 9 or less tonight (they
-    bobble about one pass in eight: RATING_VALUES); on the Genesis each player's one value. None when it can't be read."""
+    bobble about one pass in eight: RATING_VALUES); on the Genesis each player's one value. None when it can't be read.
+    phase: "pregame" (before a game: its menus and scouting screen), "play" (a game under way, not paused) or
+    "paused"; it decides what is printed (announce_tonight)."""
     now = time.monotonic()
     if now - tonight_cache["at"] < TONIGHT_S:
         return tonight_cache["panel"]
@@ -246,23 +248,55 @@ def tonight_panel(emu, system, rom_path, ids):
         # nothing until the lines are loaded (an SA-1 build loads them after its scouting screen)
         tonight_cache["panel"] = {"system": emu.system, "teams": out} if any(t["players"] for t in out) else None
         panel = tonight_cache["panel"]
-        # in the helper's window and activity log too: when first read, and again when it changes (a line edited).
-        # Only a panel read the same twice in a row (the menus show other lines for a moment) and not printed before
-        # for these teams (2026-11-13, the user: the same rolls printed again every time the in-game menu came up).
-        key = json.dumps(panel) if panel else None
-        seen = tonight_cache.setdefault("printed", {}).setdefault(tuple(ids), set())
-        steady = key is not None and key == tonight_cache.get("last_read")
-        tonight_cache["last_read"] = key
-        if steady and key not in seen:
-            seen.add(key)
-            status.note("Tonight's rolls (line 1):" + "".join("\n  " + t["team"] + "  " + " | ".join(tonight_text(p) for p in t["players"])
-                                                             for t in panel["teams"]))
+        announce_tonight(panel, phase)
     except Exception as ex:                  # the panel is a help, never a reason to stop recording: say it once
         if not tonight_cache.get("said"):
             tonight_cache["said"] = True
             status.note(f"Tonight's rolls can't be read on this ROM ({type(ex).__name__}: {ex})")
         tonight_cache["panel"] = None
     return tonight_cache["panel"]
+
+
+def announce_tonight(panel, phase):
+    """Tonight's rolls in the helper's window and activity log: in full once a game, as soon as they read the same twice
+    in a row (the menus show other lines for a moment), before the game or at its start; after that only line 1's
+    changes, one short line a team, printed once play goes on again, so the steps of a line edit in the pause menu
+    never print (2026-11-18, the user: the rolls printed again at every pause; the log showed each was a step of a line
+    edit, one half-made with the same player twice). A panel equal to the last game's (its final screen, before the
+    next game's rolls are made) is not this game's."""
+    key = json.dumps(panel) if panel else None
+    steady = key is not None and key == tonight_cache.get("last_read")
+    tonight_cache["last_read"] = key
+    if not steady or key == tonight_cache.get("last_game"):
+        return
+    shown = tonight_cache.get("announced")
+    if shown is None:
+        if phase == "paused":
+            return
+        tonight_cache["announced"] = panel
+        status.note("Tonight's rolls (line 1):" + "".join("\n  " + t["team"] + "  " + " | ".join(tonight_text(p) for p in t["players"])
+                                                         for t in panel["teams"]))
+        return
+    if phase != "play" or key == json.dumps(shown):
+        return
+    changes = []
+    for old, new in zip(shown["teams"], panel["teams"]):
+        before = {p["slot"]: p for p in old["players"]}
+        moved = [tonight_text(p) + (f" (was {before[p['slot']]['name'].split()[-1]})" if p["slot"] in before else "")
+                 for p in new["players"] if before.get(p["slot"], {}).get("name") != p["name"]]
+        if moved:
+            changes.append(f"{new['team']}  " + " | ".join(moved))
+    tonight_cache["announced"] = panel
+    if changes:
+        status.note("Line 1 changed:" + "".join("\n  " + c for c in changes))
+
+
+def tonight_new_game():
+    """A game has ended: the next one's rolls are printed in full again, and a panel equal to this game's isn't taken
+    for the next one's."""
+    tonight_cache["last_game"] = tonight_cache.get("last_read") or (json.dumps(tonight_cache["announced"]) if tonight_cache.get("announced") else None)
+    tonight_cache["announced"] = None
+    tonight_cache["last_read"] = None
 
 
 # --------------------------------------------------------------------------------------------------------- recording
@@ -393,9 +427,6 @@ class Recording:
     def close(self):
         self.fast.close()
         self.full.close()
-        # tonight's rolls: printed once per panel per matchup within a game; the next game prints its own
-        tonight_cache.pop("printed", None)
-        tonight_cache.pop("last_read", None)
         # Named after the teams that played: the recording may have begun on a screen still showing others.
         if self.teams != self.named:
             name = f"{self.name[:15]}_{self.teams[0]}-{self.teams[1]}".replace(" ", "")
@@ -468,7 +499,7 @@ def watch():
             view = View(emu)
             if not view.live:
                 # the scouting screen and the first faceoff: the rolls are made before the scouting screen
-                panel = tonight_panel(emu, systems.get(emu.system), rom_path, view.teams) if not view.in_menus else None
+                panel = tonight_panel(emu, systems.get(emu.system), rom_path, view.teams, "pregame") if not view.in_menus else None
                 status.set("ready", "NHL '94 is running; waiting for a game to start", {"tonight": panel} if panel else None)
                 time.sleep(0.25)
                 continue
@@ -488,7 +519,7 @@ def watch():
                     status.set("recording", f"Recording {rec.teams[0]} vs {rec.teams[1]}", {
                         "name": rec.name, "teams": rec.teams, "score": list(rec.view.score), "clock": rec.view.describe(),
                         "seconds": round(rec.live_ms / 1000), "paused": not view.in_game,
-                        "tonight": tonight_panel(emu, rec.system, rom_path, view.teams)}, say=False)
+                        "tonight": tonight_panel(emu, rec.system, rom_path, view.teams, "play" if view.in_game else "paused")}, say=False)
                     next_sample += SAMPLE_S
                     time.sleep(max(0.0, next_sample - time.perf_counter()))
             except ConnectionError:
@@ -499,6 +530,7 @@ def watch():
                     broadcaster.stop.set()  # before close(), which may rename the recording's folder
                 rec.close()
             threading.Thread(target=convert, args=(rec, why), daemon=True).start()
+            tonight_new_game()
             if why == "final":
                 # Wait for this game to be left behind (the menus, or a new game) before looking for the next one.
                 while emu is not None:
@@ -509,6 +541,9 @@ def watch():
                         break
                     if v.in_menus or (v.live and v.period == 0 and v.clock > 0 and v.score == (0, 0)):
                         break
+                    # a rematch straight from the final screen never passes the menus: the next game's rolls are
+                    # read here, before its first faceoff (they had shown only after it, 2026-11-17)
+                    tonight_panel(emu, rec.system, rom_path, v.teams, "pregame")
                     time.sleep(0.5)
         except ConnectionError:
             emu = None
