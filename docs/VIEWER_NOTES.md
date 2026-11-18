@@ -1810,4 +1810,8 @@ verdict now rewrites the follow-through too (up to FOLLOW = 24 samples while the
 cost two real passes, both into one-timers (the puck reached the net, so the pass was named a shot); now a loose puck
 that turns hard (over 60 degrees across 4 samples each side) within 25 of a teammate makes the release his pass.
 Game 1: passes 29 of 36 matched, 34 read (27, 35); shots 15 read, 11 matched. Game 2: passes 12 of 22, 21 read (13,
-24); shots 16 read, 10 matched. Everything else the same on both.
+24); shots 16 read, 10 matched. Everything else the same on both. Game 2's false turnovers were mostly a pass in flight
+read as an opponent "having" the puck for a single sample (a pick-off, then a takeaway): a possession under MIN_SPELL
+= 2 samples with the puck loose either side is now loose. Game 2: turnovers 14 read, 9 matched (19, 9); game 1:
+turnovers the same, passes 28 matched (29). 3-4 samples cost game 1 two more passes (quick touches). The rest of game
+2's false turnovers are the carrier given to a nearby player in a crowd.

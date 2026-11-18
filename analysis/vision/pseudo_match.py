@@ -23,6 +23,7 @@ from collections import Counter
 
 ROLES = "534210"
 SHORT = 8                   # samples (about 0.12 s): an owner gap shorter than this is filled
+MIN_SPELL = 2               # samples: a shorter possession with the puck loose either side is the puck passing a stick
 FLICK = 24                  # samples (0.4 s real): the other team "having" the puck this briefly between two spells of
                             # one carrier is a misread scrum
 BURST_GAIN = 0              # off: a burst seen in the skating (units a second gained over 6 samples); on the full period
@@ -207,6 +208,19 @@ def build(truth, vf, rows, maps, q0, q1):
                 owner[i:back] = [owner[i - 1]] * (back - i)
                 i = back
         i += 1
+    # a puck passing a stick: a spell of possession under MIN_SPELL samples with the puck loose before and after is
+    # loose (game 2's passes in flight had read an opponent "having" it for one sample: a pick-off and a takeaway)
+    i = 1
+    while i < n:
+        if owner[i] >= 0 and owner[i - 1] < 0:
+            j = i
+            while j < n and owner[j] == owner[i]:
+                j += 1
+            if j - i < MIN_SPELL and j < n and owner[j] < 0:
+                owner[i:j] = [-1] * (j - i)
+            i = j
+        else:
+            i += 1
     # a scrum read as the puck changing hands back and forth: a spell of another team's player under FLICK samples
     # between two of the same carrier is his (the full period's turnovers had come in threes a few samples apart)
     # (loose samples on either side of the other team's spell allowed, up to FLICK each)
