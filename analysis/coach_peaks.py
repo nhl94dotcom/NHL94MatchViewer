@@ -19,7 +19,10 @@ gets counts only.
   rating after each game, from the coach's 50th game on; and the single highest.
 - **All four:** a coach's rank on each measure among those ranked on all, and the mean of the four.
 
-python analysis/coach_peaks.py"""
+- **Both systems:** at each year's end, coaches with 50+ games on each system that year (150+ on each marked), by the
+  mean of their two Ratings in log odds (PEAKS_COMBINED.md).
+
+python analysis/coach_peaks.py [combined]   (combined: only the both-systems table)"""
 import json
 import math
 import sys
@@ -43,6 +46,7 @@ SYSTEMS = (("All_Games_GENS.csv", "GENESIS", "Genesis", 0), ("All_Games_SNES.csv
 MIN_CAREER, MIN_RECENT, TOP, LIST = 100, 20, 10, 25
 ELO_WINDOW, ELO_FROM = 30, 50
 FIRST_YEAR = 2013
+BOTH_LIST, BOTH_MIN = 50, 150    # games on each system in the year: listed, and the user's cut (bold)
 
 
 def pct(v):
@@ -255,12 +259,70 @@ def build(name, label, title, at, sets):
           f"{'used' if had_table else 'missing'}", flush=True)
 
 
+def combined(sets):
+    """Both systems at each year's end: coaches with BOTH_LIST+ games on each system that year and MIN_CAREER+ on each by
+    then, by the mean of the two Ratings in log odds (each a win chance against that system's average coach); those with
+    BOTH_MIN+ on each that year marked."""
+    data = []
+    for name, label, title, at in SYSTEMS:
+        fit = H.Fit(name, "all", at, sets)
+        last = int(fit.days.max())
+        years = list(range(FIRST_YEAR, date.fromordinal(last).year + 1))
+        ends = [min(date(y + 1, 1, 1).toordinal(), last + 1) for y in years]
+        at_end = ratings_over_time(fit, ends)
+        per_year = defaultdict(int)
+        rec = defaultdict(lambda: [0, 0, 0])
+        for g in fit.games:
+            yr = date.fromordinal(g["day"]).year
+            for q, mine, theirs in ((g["hp"], g["hs"], g["as"]), (g["ap"], g["as"], g["hs"])):
+                per_year[(q, yr)] += 1
+                rec[(q, yr)][0 if mine > theirs else 1 if mine < theirs else 2] += 1
+        data.append((title, dict(zip(years, ends)), at_end, per_year, rec, last))
+        breathe()
+    (g_t, g_end, g_at, g_n, g_rec, last), (s_t, s_end, s_at, s_n, s_rec, _) = data
+    lines = ["# Genesis and SNES together: the strongest at each year's end", "",
+             f"Private: names real people. Through {date.fromordinal(last).isoformat()}. Listed: coaches with {BOTH_LIST}+ games on each "
+             f"system that year and {MIN_CAREER}+ career games on each by then; **bold** those with {BOTH_MIN}+ on each that year. "
+             "Combined: the two year-end Ratings (each a win chance against that system's average coach, recent games counting "
+             "more) averaged in log odds. 2026 is to date.", ""]
+    shown = 0
+    for yr in sorted(g_end):
+        rows = []
+        for q in {q for (q, y) in g_n if y == yr}:
+            ng, ns = g_n.get((q, yr), 0), s_n.get((q, yr), 0)
+            if ng < BOTH_LIST or ns < BOTH_LIST:
+                continue
+            a, b = g_at[g_end[yr]].get(q), s_at[s_end[yr]].get(q)
+            if not a or not b or a[1] < MIN_CAREER or b[1] < MIN_CAREER:
+                continue
+            rows.append(((a[0] + b[0]) / 2, q, a[0], b[0], ng, ns))
+        rows.sort(reverse=True)
+        lines += [f"## {yr} ({len(rows)} listed, {sum(r[4] >= BOTH_MIN and r[5] >= BOTH_MIN for r in rows)} with {BOTH_MIN}+ on each)", ""]
+        if not rows:
+            lines += ["Nobody played enough on both systems.", ""]
+            continue
+        lines += ["| Rank | Coach | Combined | Genesis | SNES | Genesis games, record | SNES games, record |", "| --- | --- | --- | --- | --- | --- | --- |"]
+        for i, (c, q, a, b, ng, ns) in enumerate(rows[:LIST], 1):
+            def r(rec, n):
+                w, l, t = rec[(q, yr)]
+                return f"{n}, {w}-{l}" + (f"-{t}" if t else "")
+            name = f"**{q}**" if ng >= BOTH_MIN and ns >= BOTH_MIN else q
+            lines.append(f"| {i} | {name} | {pct(c):.1f}% | {pct(a):.1f}% | {pct(b):.1f}% | {r(g_rec, ng)} | {r(s_rec, ns)} |")
+        lines.append("")
+        shown += len(rows)
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "PEAKS_COMBINED.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"Both systems: {shown} coach-years listed", flush=True)
+
+
 def main():
     gentle()
     sets = H.settings()
     for name, label, title, at in SYSTEMS:
-        build(name, label, title, at, sets)
-        breathe()
+        if "combined" not in sys.argv:
+            build(name, label, title, at, sets)
+            breathe()
+    combined(sets)
 
 
 if __name__ == "__main__":
