@@ -1951,3 +1951,9 @@ mostly "loose": the goalie usually tracked in the right frame, but the puck lost
   matched -> 11 / 6, everything else the same. Stretch B's remaining misses are mostly "loose" with the carrier behind
   or beside a net (293 of 407 samples beyond |y| 250), lost before he went out of sight: next.
 - Not yet re-read: the four games in full (game 4 about 2.5 h on two gentle workers).
+- **Game 4 re-read whole with both changes** (2026-11-19, read_g4v2.json; nothing learnt from game 4: TEST_GAME=3,
+  which the first whole read's run hadn't set, so its transition table had learnt from game 4 itself): carrier team
+  right with the clock running 85% (was 86%), goalie holds 48% (was 57%), turnovers 67 read / 30 matched (was 60 /
+  27), passes 70 / 96, shots 22 / 26, hits 45 / 52, entries 35 / 40, faceoffs 10 / 17: about even overall, the
+  stretches' gain not carried to the whole game. The two reads differ in the leak too; a fair test is the old code
+  re-read with TEST_GAME=3 (about 2.5 h).
