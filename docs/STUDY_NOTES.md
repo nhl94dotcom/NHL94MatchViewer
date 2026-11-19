@@ -7976,3 +7976,9 @@ setplayer for a right-handed goalie) with NHL94_SMAP_SUBSET=slotcircles repeats 
   0.976 in goals with shots 0.989 is about 0.987 a shot: the slot and circles' 0.981 matches. People's aim habits per
   end look like the main SNES story (NOSE4Web agrees; pending the flipped-goalie and one-timer runs). Weight rates,
   not ratios: averaging per-passdir ratios gave NOSE4Web 0.94.
+- **The goalie flipped** (run smvg1_flip: the same 90 slot-and-circles spots, moments, seeds and goalie states as
+  smvg1, the goalie drawn as a right-handed one): % goals top / bottom by passdir 0-8: 4.6 / 4.0, 5.7 / 6.9, 6.6 / 9.1,
+  6.6 / 9.0, 6.9 / 7.0, 9.3 / 6.8, 9.0 / 6.0, 7.2 / 5.6, 6.1 / 6.3; all aims 6.89% / 6.74%; habits-weighted Down / Up
+  0.968 a shot (unflipped 0.981). The left / right swap between the nets stays: it doesn't follow the goalie's hand.
+  Still to try: the shooter's hand (the same shooter at both nets, screen x kept, so his forehand faces the other
+  screen side relative to the net at each end).
