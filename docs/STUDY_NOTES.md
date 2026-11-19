@@ -6250,6 +6250,31 @@ was put at +1.4% xG for shots going down (+3.7% from the side): about a goal in 
   half") read it the other way round. (+y is up the screen on the SNES in our coordinates: Home's period-1 shots at
   y +207, as Home attacks up.)
 
+**NOSE4Web's launches replayed at both nets (2026-11-18; `analysis/scoring_map/updown_replay.py`).** Their 1,308 doshot
+launches from our 38 captures (launches.json 77f08c93: ix, iy, dir, P, sha, top and the scatter drawn jx / jy / jz);
+the 1,115 exact ones with all three draws (60 more exact lack a jy or jz), on the scoring-map test ROM: each at its own
+net and mirrored (iy negated; jy mirrored and rescaled to the other net's depth range), and at the bottom net again
+without the halving; the goalie as in games (a recorded computer goalie's state, the same for a launch's replays), the
+same random state after the release. The rebuilt velocities are the launches' own: where they differ, by the `gap`
+frames between doshot and the sample (vz down 102 a frame, vx / vy about 0.2%). 1,051 launches replayed (64 set-ups
+gave no release); 1,024 with both nets:
+
+| | goals at the top | at the bottom | Down / Up | only at the bottom / only at the top |
+|---|---|---|---|---|
+| all (with the halving) | 123 | 134 | 1.09 | 98 / 87 (z +0.8) |
+| all, halving taken out | 123 | 134 | 1.09 | the same: no paired goal changed |
+| perfect (516) | 86 | 100 | 1.16 | 76 / 62 (z +1.2) |
+| not perfect (508) | 37 | 34 | 0.92 | 22 / 25 |
+| a person shooting (839) | 104 | 107 | 1.03 | 77 / 74 |
+| aimed right (dir 2, 357) | 43 | 61 | 1.42 | 44 / 26 (z +2.2) |
+| aimed left (dir 6, 386) | 65 | 47 | 0.72 | 32 / 50 (z -2.0) |
+| within 100 of the aim (620) | 93 | 112 | 1.20 | 85 / 66 |
+| 100-160 (262) | 28 | 20 | 0.71 | 12 / 20 |
+
+Unpaired, the halving moved one goal in 529 non-perfect bottom-net shots. The aim splits are the goalie's sides (the
+same screen side is his stick side at one net and his glove side at the other), so the end that comes out ahead
+depends on the mix of aims; a computer goalie here, not the people's manual goalies.
+
 **Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
 of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
 before the opening faceoff, the scouting report (Matchups, San Jose in it) among them, pixel-identical.
