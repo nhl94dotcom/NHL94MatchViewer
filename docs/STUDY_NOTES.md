@@ -7864,3 +7864,8 @@ The user: is the computer defenders' hook / hold lean in the box scores? The lea
   league's interference lean (1.125). So people's goalie positioning, which made no difference to goals, looks like
   the cause of the interference lean: running into a goalie standing deeper than 25 can't be called.
 - Tripping (Bcheck: a B-check that knocks a skater down, `checkagr` then $20) and the rest still to explain.
+- **Who hooks and who trips** (the user: people rarely hook or hold with A on defence; they use B and C): in the
+  recordings, computer defenders' hooks and holds lean Down at every position (D 183 / 128, 1.43; C 29 / 20; W 38 /
+  28), people's are few (25 in 38 games). B-poke trips (a fall with an opponent in the poke animation $0B24 within 32
+  in the 4 samples before) by people: 120 on Down attackers against 102 on Up (1.18, z +1.2); by the computer 30 / 35.
+  People's pokes lean the way the league's tripping calls do (1.09), the computer's don't.
