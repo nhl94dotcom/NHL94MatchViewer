@@ -6315,6 +6315,13 @@ Rerun (updown_replay.py, both goalie modes; `anatomy` for passdir 2 and 6):
   outside his reach": the standing goalie's reach covers less of the bottom net (a geometry lead for the manual-goalie
   leagues; not yet traced to the body circle or the blade).
 - Rebounds off the bottom goalie leave about 5% faster (the move.b low byte; NOSE4Web's estimate 4%).
+- **The standing goalie's depth (2026-11-19, NOSE4Web: recorded goalies stand 2.4-2.6 farther out at the bottom net):**
+  placed from the same recorded state at both nets, mirrored (harness.place_goalie: an offset from his set spot), he
+  stood 22.6 out at the top net and 22.5 at the bottom at the release (medians 23, 22), so the harness doesn't
+  reproduce that difference and depth isn't what the 1.23 picked up. Put 22 out at both (NHL94_UPDOWN_DEPTH=22): goals
+  267 top / 298 bottom paired, Down / Up 1.12 (179 / 148 one net only, z +1.7): a half-unit change took it from 1.23,
+  so the standing goalie's lean is fragile. Goals (passdir 2 / 6, 22 out) nearly all clean outside his reach, crossing
+  low (median height 5): aimed left 99 top / 147 bottom (crossing 15 / 24 to his side), aimed right 120 / 111.
 
 **Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
 of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
