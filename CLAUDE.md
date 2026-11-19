@@ -126,7 +126,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `%USERPROFILE%\NHL94_League_Data\All_Games_GENS.csv`, `All_Games_SNES.csv`. Scripts print or commit aggregates only:
   `league_home_study.py`, `league_momentum.py`, `direction_by_level.py`, `direction_crossing.py` (shots by end and team, where they cross the goal line), `goalie_by_end.py` (the goalie at each end: frame and blade where the shot reached him, where people stand him, goals by spot), `end_contact.py` (possession, zone time, hits, hooks / holds and penalties drawn by end, both systems) ...; `coach_rating.py` (a strength per coach;
   its named table, `coach_guide.py`'s coach pages, `coach_history.py` and `coach_movers.py` go to that private folder
-  only); handouts `classic_team_guide.py` (`docs/TEAM_GUIDE_*.md`), `classic_player_guide.py`
+  only); handouts `classic_team_guide.py` (`docs/TEAM_GUIDE_*.md`; `docs/CLASSIC_TEAMS_BRIEF.md` the short spoken version, charts by `make_elo_line.py`), `classic_player_guide.py`
   (`docs/PLAYER_GUIDE_*.md`), `classic_draft_guide.py` (`docs/DRAFT_GUIDE_CLASSIC.md`); `coach_team_levels.py`;
   `league_ratings.py` (`docs/LEAGUE_RATINGS.md`; method `docs/COACH_RATING.md`); `defence_value.py` / `defence_weight_bands.py` (both ends: each rating's goals for and against from the Classic games, coaches fixed; RATING_VALUES "Defence"); `league_value.py [genesis|snes]` (a 0-99 league
   value per player from the measured rating effects, checked on the teams' strength: RATING_VALUES chunk D). `classic_season_report.py LEAGUE COACH` (one coach's season against

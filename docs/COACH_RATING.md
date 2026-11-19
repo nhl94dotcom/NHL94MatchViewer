@@ -274,6 +274,10 @@ Rarely used teams are pulled toward the average team, as in section 5, with a pu
 
 ![SNES Classic teams on the same scale](img/elo_teams_snes.svg)
 
+![Both systems side by side on one scale](img/elo_teams_both.svg)
+
+A quick reference for talking about these: [CLASSIC_TEAMS_BRIEF](CLASSIC_TEAMS_BRIEF.md).
+
 **Whether they help.** Each year's adjustments were fitted on earlier years only, then used inside the running Elo to predict that year's Classic games (log loss, lower is better; 13,728 Genesis and 9,416 SNES games):
 
 | Share of the adjustment used | None | 25% | 50% | 75% | 100% |
