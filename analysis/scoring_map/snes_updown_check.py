@@ -12,16 +12,24 @@ changes by over 1,000 within 32 of him): the first one's rebound, its velocity i
 centre ice, "side" to the goalie's right looking out) and what came next: goal, held, back toward the goal line (the
 puck moving goalward within 60 of the line after the rebound), out of the zone, or loose.
 
+NHL94_SNES_UPDOWN_MIRROR=flip: the bottom net's set y-mirrored instead (the game's own convention: screen x kept, the
+aim mirrored top to bottom, d -> 4 - d), and only the bottom net played (the top net is the same in both).
+Each shot is tagged with its screen side (the spot's screen x) and the goalie's glove / stick side (SNES goalies are
+x-flipped by handedness: attribute $0800).
+
 python snes_updown_check.py OUT.jsonl [SEEDS]
 python snes_updown_check.py report RETAIL.jsonl [OTHER.jsonl ...]"""
 import json
 import math
+import os
 import sys
 from collections import Counter
 
 XS = (-60, -30, 0, 30, 60)
 DS = (40, 70, 100, 130, 160)
 GL = 264
+FLIP = os.environ.get("NHL94_SNES_UPDOWN_MIRROR") == "flip"
+ATTR = 0x0E03
 
 
 def run(out, seeds):
@@ -37,13 +45,20 @@ def run(out, seeds):
         for si, (x, d) in enumerate((x, d) for x in XS for d in DS):
             clock = 280 - (si * 7) % 40
             for net, h in hs.items():
+                if FLIP and net == "top":
+                    continue
                 sg = 1 if net == "top" else -1
                 for aim in range(9):
-                    a = aim if net == "top" or aim == 8 else (aim + 4) % 8
-                    h.setup(sg * x, sg * (GL - d), settle=90, clock=clock, seed=0x1234567 + si * 101)
+                    if net == "top" or aim == 8:
+                        a = aim
+                    else:
+                        a = (4 - aim) % 8 if FLIP else (aim + 4) % 8
+                    sx = x if (net == "top" or FLIP) else -x
+                    h.setup(sx, sg * (GL - d), settle=90, clock=clock, seed=0x1234567 + si * 101)
                     pre, f = h.shoot(a)
                     if pre is None:
                         continue
+                    gflip = bool(e.w(ATTR + o(GOALIE)) & 0x0800)
                     for s in range(seeds):
                         h.fire(pre, a, (0x9E3779B1 * (si * 97 + aim * 13 + s + 1)) & 0xFFFFFFFF or 1)
                         s0 = e.w(SCORE_HOME)
@@ -81,7 +96,9 @@ def run(out, seeds):
                             res = "loose"
                         if reb is not None:
                             reb["next"] = res if after is None else (after + (" and in" if res == "goal" else ""))
-                        fo.write(json.dumps(dict(net=net, x=x, d=d, aim=aim, seed=s, res=res, reb=reb)) + "\n")
+                        fo.write(json.dumps(dict(net=net, x=x, d=d, aim=aim, seed=s, res=res, reb=reb, screen_x=sx,
+                                                 screen_side="right" if sx > 0 else ("left" if sx < 0 else "middle"),
+                                                 goalie_flipped=gflip, mirror="flip" if FLIP else "turn")) + "\n")
             fo.flush()
             print("spot", si + 1, "of", len(XS) * len(DS), flush=True)
             lowload.breathe()
@@ -102,6 +119,13 @@ def report(paths):
                   f"moving out {sum(o_ > 0 for o_ in outs)}, back goalward {sum(o_ < 0 for o_ in outs)}, sideways "
                   f"{sum(o_ == 0 for o_ in outs)}")
             print(f"         after a rebound: {dict(nxt)}")
+            for side in ("left", "middle", "right"):
+                ss = [r for r in rs if r.get("screen_side") == side]
+                if ss:
+                    g = sum(r["res"] == "goal" for r in ss)
+                    flips = Counter(r.get("goalie_flipped") for r in ss)
+                    print(f"         shooter on the screen's {side}: {g} goals of {len(ss)} ({g / len(ss):.1%}); "
+                          f"goalie drawn flipped {flips[True]} / {len(ss)}")
     if len(paths) > 1:
         base = {(r["net"], r["x"], r["d"], r["aim"], r["seed"]): r for r in map(json.loads, open(paths[0]))}
         for p in paths[1:]:
