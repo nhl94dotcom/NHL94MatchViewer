@@ -8008,3 +8008,19 @@ has both sites at the same addresses).
   of 20 at the bottom, behind it never; his assignment never became assgoalietopuck (15).
 - **The recordings** (38 Genesis games, raw captures): computer goalies started assgoalietopuck 100 times at the top
   net, 124 at the bottom, none with the puck's vy = 0. The patch is correct and harmless; it changes nothing in play.
+
+### Down goal: people's defence by end (2026-11-19; `analysis/defence_by_end.py`)
+
+checkagr (the penalty roll for checks, holds and B-checks) is symmetric between the ends (the breakaway roll by
+|y|, the puck-distance halving, the team tests), so a penalty lean needs more contact. In the 38 Genesis recordings,
+the team defending each net, regulation, clock running:
+- **Chances and tries even:** a person-controlled defender within 20 of the carrier 16,340 / 16,296 samples (top /
+  bottom defenders); people's C checks 783 / 781; B pokes 1,344 / 1,356; poke trips 59 / 61.
+- **People's checks connect more at the bottom net:** hits 211 / 255 (26.9% / 32.7%, z +2.0), failed (contact,
+  nothing counted) 394 / 336; by team, home 30.9% / 33.0%, away 25.3% / 32.0%: within each team the bottom net is
+  higher. All hits (people and the computer alike) 1.09.
+- Penalties in these games (44 / 57) are too few to split by type or by who steered.
+- So: the checking calls' lean (about 1.05 in the league) is people's checks connecting more often when defending the
+  bottom net, with the same tries; tripping isn't explained (pokes even). Why the checks connect more is open: the
+  code (contact is resolved while each player moves, in update order) or people's timing against attackers coming
+  down the screen; a scripted check at both nets, mirrored, would tell.
