@@ -7952,3 +7952,20 @@ About 80 goals a net: retail '95's computer goalie shows no end lean beyond chan
 (`gen95_goalie_frames.py ROM ROM2`): the glove frames untouched (a caught puck stays on the drawn glove); facing down,
 634 and 642's new spots sit on the drawn blade, 633 near it, 641's (-9, 13, from stickl 631) on the side opposite the
 drawn blade (bottom right), where the same hand's 639 (0, 0) would sit nearer.
+
+### SNES: the aim habits by end against the map's goal rates (2026-11-19)
+
+NOSE4Web's per-end aim counts from the 34 SNES captures (aim.d at the release, kind "shot", 735 shots): top net
+passdir 0-8 = 5, 84, 53, 17, 22, 13, 84, 100, 11; bottom 16, 31, 111, 12, 4, 23, 111, 29, 9. Weighted by the
+smvg1 map's goal rates (goalie as in games, 24 moments x 4 seeds, shooter 13 / 13) per passdir at each net:
+
+| | slot and circles (abs(x) <= 80, 24-104 out) | all spots |
+|---|---|---|
+| wrist shots | 0.913 | 1.000 |
+| slapshots | 1.130 | 1.146 |
+| wrist + slap (the map's even mix) | 1.022 | 1.078 |
+
+The answer turns on the wrist / slap split per end, which the counts don't give. By passdir the map's rates swap
+sides between the nets (slot and circles: right-side aims 1-3 best at the bottom, left-side 5-7 at the top), with
+Montreal's goalie never flipped; `snes_map_run.py` NHL94_SNES_GOALIE_FLIP=1 (attribute $0800, handed $14A3 0, as
+setplayer for a right-handed goalie) with NHL94_SMAP_SUBSET=slotcircles repeats those spots flipped (run smvg1_flip).

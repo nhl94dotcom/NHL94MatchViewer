@@ -12,7 +12,8 @@ NHL94_SNES_GOALIES=<file> (xg_snes.goalie_states' output; 2026-11-07): the goali
 the Genesis: before each release seed he is moved off his spot as a recorded computer goalie was at a shot's release,
 relative to his set spot, and given that goalie's speed (as if at the top net; mirrored for the bottom). Validity is
 judged with him set, so the cells are the set-goalie map's. NHL94_SMAP_SUBSET=coarse: every other spot (x -100..100,
-y 100..240, steps of 20). NHL94_SMAP_MINUTES: stop after this long (a chunk; run again to carry on)."""
+y 100..240, steps of 20); =slotcircles: its slot and circles (|x| <= 80, y 160-240). NHL94_SNES_GOALIE_FLIP=1: the goalie
+drawn flipped as a right-handed one (attribute $0800 set, handed $14A3 0, as setplayer does). NHL94_SMAP_MINUTES: stop after this long (a chunk; run again to carry on)."""
 import json
 import os
 import random
@@ -45,6 +46,9 @@ def _init(shp, sha):
         e.unserialize(h.base)
         e.setw(H.SHOTSPD + H.o(H.SHOOTER), shp)
         e.setw(H.SHOTACC + H.o(H.SHOOTER), sha)
+        if os.environ.get("NHL94_SNES_GOALIE_FLIP"):        # the goalie as a right-handed one: attrxflip ($0800)
+            e.setw(0x0E03 + H.o(H.GOALIE), e.w(0x0E03 + H.o(H.GOALIE)) | 0x0800)   # set, handed 0 (setplayer)
+            e.setw(0x14A3 + H.o(H.GOALIE), 0)
         h.base = e.serialize()
         _h[net] = h
 
@@ -106,6 +110,8 @@ def main():
         jobs =[j for j in jobs if abs(j[1]) <= 60 and j[1] % 20 == 0 and 100 <= j[2] <= 180 and j[2] % 20 == 0]
     if SUBSET == "slapcore":                                # 9 spots in the middle, for many shooters
         jobs = [j for j in jobs if j[1] in (-40, 0, 40) and j[2] in (120, 140, 160)]
+    if SUBSET == "slotcircles":                             # the coarse grid's slot and circles (|x| <= 80, 24-104 out)
+        jobs = [j for j in jobs if j[1] % 20 == 0 and abs(j[1]) <= 80 and j[2] % 20 == 0 and 160 <= j[2] <= 240]
     if SUBSET == "coarse":                                  # every other spot
         jobs = [j for j in jobs if j[1] % 20 == 0 and abs(j[1]) <= 100 and j[2] % 20 == 0 and 100 <= j[2] <= 240]
     path = RUNS / run / "snes_map.json"
