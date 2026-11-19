@@ -7988,3 +7988,8 @@ setplayer for a right-handed goalie) with NHL94_SMAP_SUBSET=slotcircles repeats 
   goals a struck shot 34.8% / 32.5%; goals a swing 30.9% / 30.7% (Down / Up 0.99). By aim held, the top net's best
   are right-side (2, 3: 41%), the bottom's left-side (5, 6: 35-37%): the sides swap here too. One-timers are even
   between the nets a swing, so people's extra one-timers at the bottom net (195 against 136) don't push toward 0.976.
+- **The NHL '95 aim fix played** (`gen95_aim_fix_check.py`: shots launched by the game itself from the live states,
+  25 spots x 9 aims x 4 seeds a net, the clock and seeds the same at both nets; retail NHL_95.bin against a copy with
+  $84D40 E248 -> 4E71 and the header sum): top net 900 launches and results identical; bottom net 383 of 900
+  launches changed, 19 results: wide 17 -> 27 (1.9% -> 3.0%), goals 12 -> 13, saved 831 -> 822. About +1.1 points
+  of wides at the bottom net (NHL '94 +0.2 by the same method).
