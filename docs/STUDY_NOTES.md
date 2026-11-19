@@ -8041,3 +8041,18 @@ fix ($7B6F6 `move.w` -> `cmp.w (NegChkBodyP).w,d1`; $7B704 `cmp.l (ChkBodySqP).w
 The body fix makes skaters block (about 12 more a game, a couple fewer shots on goal); the stick fix (a true circle,
 the half reach for nopuck) cuts quick steals of loose pucks by about 40% and leaves teams more of their own loose
 pucks; goalies about the same.
+
+### The SNES instigator minor with no teammate qualifying (2026-11-19; `fight_time_check.py snes ... --noinstig`)
+
+NOSE4Web's F_SetInst (after checkfight's .set, the hitter in SPAshoulderchkl / r) walks the hitter's six team slots
+and skips the hitter, empty slots, the goalie and pflags & ($4000 | $1000). Forced on the 2026-11-14 copy of the 2:00
+build (NHL94_fight_pair_120.smc, 7285c21, with .set's hitter test forced for home hitters): home non-goalie skaters
+marked $4000 (only those without a real penalty), before a fight those with no opponent within 40, through the fight
+every one not fighting; 3 computer games, fighting ratings 9; an unflagged control on the same seeds.
+- **Control:** 9 fights, all by a home hitter, each with a home teammate's instigator minor ($0078, its own power
+  play) entering the box at the fight's game clock about 1,200 frames later; the fighters paired in all 9.
+- **Flagged:** 14 fights; in 8 every eligible teammate carried the flag at the fight's start and end, yet 6 of those
+  still gave a home minor (2 none); the fighters paired in all 14; nothing else changed (minors away from fights 8
+  against the control's 7, all released; the same game lengths). The flag holds from frame to frame (checked), so
+  this build's search doesn't skip pflags $4000 as described: probably older than the code NOSE4Web read. To be
+  repeated on NHL94_fight_default.smc (ed295509) when it arrives.

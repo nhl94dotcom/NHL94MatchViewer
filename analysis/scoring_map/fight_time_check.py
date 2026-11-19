@@ -13,9 +13,10 @@ SNES: snes_ot_goal_check.start, OptFights ($E708) 0 (On) where the build has the
 
 --fighters[=N] (SNES): every skater's fighting rating ($1463) held at 14, or N (McMarkis's 1 MB fights come from it;
 at 14 on a build with a fight bonus they come every few seconds and the clock hardly runs).
---noinstig (SNES): home skaters with no opponent within 40 marked pf2pen ($4000) each frame (none while a fight is
-on; a skater near an opponent cleared), so a shoulder-check fight's instigator has no teammate who qualifies;
-fights_at logs each fight's start with every home skater's state.
+--noinstig (SNES): home skaters marked pf2pen ($4000) so a shoulder-check fight's instigator has no teammate who
+qualifies: before a fight those with no opponent within 40 (the hitter stays clear), through the fight every home
+skater not fighting (the minor is handed out with the majors after the fight); fights_at logs each fight's start
+and end with every home skater's state.
 --injure (SNES): every skater's $1483 (McMarkis's "aggress", the 93S name; today's Checking) at 60, so the fight's loser
 is always hurt (F_fightfall: hurt when a random number under 60 is at most the winner's $1483); a player who leaves the box at $FFFC is then followed to
 the game's end ("after": every change of his word).
@@ -108,24 +109,34 @@ class Snes:
     fight_log = None
 
     def noinstig(self, f):
-        """Mark home non-goalie skaters with no opponent within 40 as penalised (pflags $4000), clearing it on those
-        who come near; none forced while a fight is on. At a fight's start, log each home skater's state."""
+        """Mark home non-goalie skaters as penalised (pflags $4000) so no teammate qualifies for an instigator minor:
+        before a fight, those with no opponent within 40 (the hitter stays clear); through a fight, every home skater not
+        fighting (the minor is handed out with the fighting majors, after the fight). Only skaters without a real
+        penalty are touched; all cleared once the fight is over. Each fight's start and end logged with every home
+        skater's state."""
         m = self.m
         if self.fight_log is None:
             self.fight_log, self.forced, self.was_fight = [], set(), False
         P = lambda k: (s16(m.w(0x0D55 + 2 * k)), s16(m.w(0x0DB7 + 2 * k)))  # noqa: E731
         fight = any(m.w(self.PFLAGS + 2 * k) & 0x0400 for k in range(12))
+        state = lambda: [dict(k=k, pos=m.w(0x0F43 + 2 * k), forced=k in self.forced,  # noqa: E731
+                              pen=bool(m.w(self.PFLAGS + 2 * k) & 0x5000), fighting=bool(m.w(self.PFLAGS + 2 * k) & 0x0400))
+                         for k in range(6)]
         if fight and not self.was_fight:
-            self.fight_log.append(dict(f=f, gsp=m.w(0x1630), clock=m.w(0x1632), home=[
-                dict(k=k, pos=m.w(0x0F43 + 2 * k), forced=k in self.forced, pen=bool(m.w(self.PFLAGS + 2 * k) & 0x5000),
-                     fighting=bool(m.w(self.PFLAGS + 2 * k) & 0x0400)) for k in range(6)]))
+            self.fight_log.append(dict(f=f, gsp=m.w(0x1630), clock=m.w(0x1632), home=state()))
+        if self.was_fight and not fight and self.fight_log:
+            self.fight_log[-1]["end"] = dict(f=f, home=state())
         self.was_fight = fight
         for k in range(6):
             pf = m.w(self.PFLAGS + 2 * k)
-            want = False
-            if not fight and m.w(0x0F43 + 2 * k) not in (0, 0xFFFF) and s16(m.w(0x0F43 + 2 * k)) > 0:
-                x, y = P(k)
-                want = all(abs(P(v)[0] - x) > 40 or abs(P(v)[1] - y) > 40 for v in range(6, 12))
+            skater = m.w(0x0F43 + 2 * k) not in (0, 0xFFFF) and s16(m.w(0x0F43 + 2 * k)) > 0
+            if fight:
+                want = skater and not pf & 0x0400 and (k in self.forced or not pf & 0x5000)
+            else:
+                want = False
+                if skater:
+                    x, y = P(k)
+                    want = all(abs(P(v)[0] - x) > 40 or abs(P(v)[1] - y) > 40 for v in range(6, 12))
             if want and not pf & 0x4000:
                 m.setw(self.PFLAGS + 2 * k, pf | 0x4000)
                 self.forced.add(k)
