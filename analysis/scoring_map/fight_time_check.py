@@ -13,6 +13,9 @@ SNES: snes_ot_goal_check.start, OptFights ($E708) 0 (On) where the build has the
 
 --fighters[=N] (SNES): every skater's fighting rating ($1463) held at 14, or N (McMarkis's 1 MB fights come from it;
 at 14 on a build with a fight bonus they come every few seconds and the clock hardly runs).
+--noinstig (SNES): home skaters with no opponent within 40 marked pf2pen ($4000) each frame (none while a fight is
+on; a skater near an opponent cleared), so a shoulder-check fight's instigator has no teammate who qualifies;
+fights_at logs each fight's start with every home skater's state.
 --injure (SNES): every skater's $1483 (McMarkis's "aggress", the 93S name; today's Checking) at 60, so the fight's loser
 is always hurt (F_fightfall: hurt when a random number under 60 is at most the winner's $1483); a player who leaves the box at $FFFC is then followed to
 the game's end ("after": every change of his word).
@@ -30,6 +33,8 @@ FORCE = "--force" in sys.argv
 OPTION = "--option" in sys.argv
 FIGHTERS = next((int(a.split("=")[1]) if "=" in a else 14 for a in sys.argv if a.startswith("--fighters")), None)
 # SNES: every skater's fighting rating ($1463) held at 14 (or --fighters=N), so the 1 MB build fights
+NOINSTIG = "--noinstig" in sys.argv    # SNES: home skaters away from the play marked pf2pen ($4000), so no teammate
+                                       # qualifies for an instigator minor (NOSE4Web's F_SetInst skips pflags $4000 / $1000)
 INJURE = "--injure" in sys.argv         # SNES: every skater's $1483 at 60, so F_fightfall's roll always hurts
 argv = [a for a in sys.argv if not a.startswith("--")]
 
@@ -99,8 +104,39 @@ class Snes:
         self.e, self.m = start(rom, n, tmp)
         self.ok = True
 
+    forced = ()
+    fight_log = None
+
+    def noinstig(self, f):
+        """Mark home non-goalie skaters with no opponent within 40 as penalised (pflags $4000), clearing it on those
+        who come near; none forced while a fight is on. At a fight's start, log each home skater's state."""
+        m = self.m
+        if self.fight_log is None:
+            self.fight_log, self.forced, self.was_fight = [], set(), False
+        P = lambda k: (s16(m.w(0x0D55 + 2 * k)), s16(m.w(0x0DB7 + 2 * k)))  # noqa: E731
+        fight = any(m.w(self.PFLAGS + 2 * k) & 0x0400 for k in range(12))
+        if fight and not self.was_fight:
+            self.fight_log.append(dict(f=f, gsp=m.w(0x1630), clock=m.w(0x1632), home=[
+                dict(k=k, pos=m.w(0x0F43 + 2 * k), forced=k in self.forced, pen=bool(m.w(self.PFLAGS + 2 * k) & 0x5000),
+                     fighting=bool(m.w(self.PFLAGS + 2 * k) & 0x0400)) for k in range(6)]))
+        self.was_fight = fight
+        for k in range(6):
+            pf = m.w(self.PFLAGS + 2 * k)
+            want = False
+            if not fight and m.w(0x0F43 + 2 * k) not in (0, 0xFFFF) and s16(m.w(0x0F43 + 2 * k)) > 0:
+                x, y = P(k)
+                want = all(abs(P(v)[0] - x) > 40 or abs(P(v)[1] - y) > 40 for v in range(6, 12))
+            if want and not pf & 0x4000:
+                m.setw(self.PFLAGS + 2 * k, pf | 0x4000)
+                self.forced.add(k)
+            elif not want and k in self.forced:
+                m.setw(self.PFLAGS + 2 * k, pf & ~0x4000)
+                self.forced.discard(k)
+
     def frame(self, f):
         from snes_60fps_cvc import computer_only
+        if NOINSTIG:
+            self.noinstig(f)
         fighting = INJURE and any(self.m.w(self.PFLAGS + 2 * k) & 0x0400 for k in range(12))
         if FIGHTERS or fighting:
             for k in range(12):
@@ -198,7 +234,7 @@ def game(system, rom, n, tmp):
         b["tmaps"] = sorted(b["tmaps"])
         b.pop("lastc", None)
         b.pop("lastp", None)
-    return {"game": n, "frames": f, "box": done}
+    return {"game": n, "frames": f, "box": done, "fights_at": getattr(g, "fight_log", None)}
 
 
 def main():
