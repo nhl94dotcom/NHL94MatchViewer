@@ -20,8 +20,8 @@ this page has the methods only. "Coach" means a league player. Every number come
   teams and no home edge. 75% means: against an average regular, on even teams, this coach wins about 3 of 4.
 - **"As of" a date** means the fit uses only the games played before that date, as the Rating would have read then.
 - **Who "average" is:** the average of every coach with 100+ games by then, retired ones included. Each table file
-  names real people at that point: at the top, the five active coaches closest to 50% now; under each year's top ten,
-  that year's five; in the combined table, the five closest to 50% across both systems each year. So "85% against an
+  names real people at that point: at the top, the five well-known regulars (300+ career games, a game in the last 90 days)
+  closest to 50% now; under each year's top ten, that year's five (300+ career games, 50+ that year); in the combined table, the five closest to 50% across both systems each year. So "85% against an
   average coach" can be said as "85% against someone like these five".
 
 **The league's Elo** (as on the league site): every game in date order from 1500, K 20, +7 for the home side, the
@@ -82,7 +82,7 @@ each of those 30 games, counted from the coach's 50th game on (so a hot start be
 count). It needs 80+ games. The table also shows the single highest Elo and when.
 - Talking point: the familiar number. Held over 30 games so one lucky night isn't a peak.
 - Elo has no 50% point (everyone starts at 1500), so the table names the typical active player now: the median Elo of
-  active players with 80+ games, and the five closest to it. 200 Elo above someone is about a 76% win chance, 400
+  regulars with 300+ games who played in the last 90 days, and the five closest to it. 200 Elo above someone is about a 76% win chance, 400
   above about 91%.
 
 ### 7. All four together

@@ -55,6 +55,7 @@ def pct(v):
 
 
 AVERAGE_N = 5
+AVG_CAREER, AVG_YEAR, AVG_DAYS = 300, 50, 90   # the 'average' examples: well-known regulars (300+ games), playing now
 
 
 def average_five(rows):
@@ -168,11 +169,16 @@ def build(name, label, title, at, sets):
     # ---- year's end
     firsts = defaultdict(list)
     top10s = defaultdict(int)
-    now_rows = [(v[0], p, f"{v[2]} games in the last year") for p, v in at_end[ends[-1]].items() if ok(v)]
+    last_game = defaultdict(int)
+    for g in fit.games:
+        for q in (g["hp"], g["ap"]):
+            last_game[q] = max(last_game[q], g["day"])
+    now_rows = [(v[0], p, f"{v[1]:,} games") for p, v in at_end[ends[-1]].items()
+                if v[1] >= AVG_CAREER and last_game[p] > last - AVG_DAYS]
     lines += ["## Who is \"average\"?", "",
               f"Every Rating here is a win chance against **the average coach**: the average of all coaches with {MIN_CAREER}+ games "
-              "(retired ones too), with even teams and no home edge. A 50% coach is that average. The coaches closest to it "
-              f"now (active: {MIN_CAREER}+ career games, {MIN_RECENT}+ in the last year), as of "
+              "(retired ones too), with even teams and no home edge. A 50% coach is that average. The well-known regulars "
+              f"closest to it now ({AVG_CAREER}+ career games, a game in the last {AVG_DAYS} days), as of "
               f"{date.fromordinal(last).isoformat()}:", "", "- " + average_five(now_rows), "",
               "Each year's table below names its own five, since the field changes.", ""]
     lines += ["## The top ten at each year's end", ""]
@@ -189,8 +195,9 @@ def build(name, label, title, at, sets):
             if rank == 1:
                 firsts[p].append(yr)
         if vals:
-            lines += ["", "Average that year (the qualified coaches closest to 50%): "
-                      + average_five([(v, p, f"{sum(rec[(p, yr)])} games") for v, p, _ in vals])]
+            lines += ["", f"Average that year (closest to 50% among coaches with {AVG_CAREER}+ career games and {AVG_YEAR}+ that year): "
+                      + average_five([(v, p, f"{sum(rec[(p, yr)])} games that year") for v, p, full in vals
+                                      if full[1] >= AVG_CAREER and sum(rec[(p, yr)]) >= AVG_YEAR] or [(v, p, "") for v, p, _ in vals])]
         lines.append("")
     # ---- peaks
     peak_rating, peak_z = {}, {}
@@ -262,13 +269,12 @@ def build(name, label, title, at, sets):
     for i, (p, (m, a, b, hi, hd)) in enumerate(sorted(peak_elo.items(), key=lambda kv: -kv[1][0])[:LIST], 1):
         lines.append(f"| {i} | {p} | {m:.0f} | {d(a)} | {d(b)} | {hi:.0f} | {d(hd)} |")
     end_day = max(dd for path in paths.values() for _, dd in path)
-    active = {p: path[-1][0] for p, path in paths.items()
-              if len(path) >= ELO_FROM + ELO_WINDOW and sum(1 for _, dd in path if dd > end_day - 365) >= MIN_RECENT}
+    active = {p: path[-1][0] for p, path in paths.items() if len(path) >= AVG_CAREER and path[-1][1] > end_day - AVG_DAYS}
     if active:
         med = float(np.median(list(active.values())))
         near = sorted(active, key=lambda p: abs(active[p] - med))[:AVERAGE_N]
         lines += ["", f"Elo has no 50% point: everyone starts at 1500. The typical active player now (the median of the {len(active)} with "
-                  f"{ELO_FROM + ELO_WINDOW}+ games and {MIN_RECENT}+ in the last year) is at **{med:.0f}**; the closest: "
+                  f"{AVG_CAREER}+ games and a game in the last {AVG_DAYS} days) is at **{med:.0f}**; the closest: "
                   + ", ".join(f"{p} ({active[p]:.0f})" for p in sorted(near, key=lambda p: -active[p]))
                   + ". A held peak of 400 above that is about a 91% win chance against that player, 200 above about 76%."]
     # ---- all four
