@@ -1841,6 +1841,122 @@ def goalie_stick_ends():
 HOT_READY = {419: (1, 6), 407: (0, -7), 416: (11, 4), 410: (4, -6), 422: (-7, 7), 428: (-6, -1)}   # retail HotList
 
 
+# ----------------------------------------------- where the two nets' goalies stop a low shot (Genesis, ready frames)
+def stick_cover_result(blade_x, blade_out, start, c, speed, phase, depth=19, body=13):
+    """One low shot (height 5 or less) from start (x, out) at the goal line point c, `speed` units a frame, by the
+    game's per-frame rule (xg.play_out): the blade within 8 stops it; 8-14 nothing that frame and the body skipped;
+    else the body circle. Returns 'stick', 'body', 'goal' or 'wide'."""
+    sx, so = start
+    L = math.hypot(c - sx, -so)
+    ux, uo = (c - sx) / L * speed, -so / L * speed
+    x, o = sx + ux * phase, so + uo * phase
+    for _ in range(400):
+        x, o = x + ux, o + uo
+        if o <= 0:
+            return "goal" if abs(c) <= 20 else "wide"
+        dx, do = blade_x - x, blade_out - o
+        if abs(dx) <= 14 and abs(do) <= 14:
+            if dx * dx + do * do <= 64:
+                return "stick"
+            if dx * dx + do * do <= 196:
+                continue
+        if x * x + (depth - o) ** 2 <= body * body:
+            return "body"
+    return "wide"
+
+
+def goalie_stick_cover():
+    """For each ready stance (square, turned to the screen's right, turned left: 419 / 407, 416 / 410, 422 / 428), the
+    share of low shots stopped at each point across the goal mouth, top net's goalie against the bottom's (the bottom
+    flipped top to bottom, screen x kept), the goalie still, 19 out, the shooter where the stance faces, averaged over
+    6 speeds (3-5.5 units a frame) and 8 starting phases."""
+    W, H = 1180, 830
+    UP, DN, TXT2 = "#2a78d6", "#eb6834", "#52514e"
+    HOT = {419: (1, 6), 407: (0, -7), 416: (11, 4), 410: (4, -6), 422: (-7, 7), 428: (-6, -1)}
+    cases = [("Square to the shot", 419, 407, (0, 110)), ("Turned to the screen's right", 416, 410, (70, 90)),
+             ("Turned to the screen's left", 422, 428, (-70, 90))]
+    depth = 19
+    b = [ARROW]
+    b.append(text(W / 2, 30, "Where each net's goalie stops a low shot (NHL '94 Genesis, ready stance)", 18, INK, "middle", "bold"))
+    b.append(text(W / 2, 52, "The goalie standing still 19 out, facing the shooter; both nets drawn as the top one (the bottom "
+                  "flipped top to bottom). Low shot = height 5 or less.", 11.5, SOFT, "middle"))
+    b.append(text(W / 2, 68, "The game's rule each frame: within 8 of the blade it's stopped; 8-14 from the blade it passes and his "
+                  "body isn't checked; anywhere else, his body decides.", 11.5, SOFT, "middle"))
+    colw = W / 3
+    S = 5.2
+    for i, (lab, ftop, fbot, start) in enumerate(cases):
+        cx, gl = colw * i + colw / 2, 170
+        X = lambda x: cx + x * S  # noqa: E731
+        Y = lambda o: gl + o * S  # noqa: E731
+        b.append(text(cx, 104, lab, 13, INK, "middle", "bold"))
+        b.append(f"<rect x='{X(-20)}' y='{gl - 10 * S}' width='{40 * S}' height='{10 * S}' fill='#f3f5f7' stroke='{INK}' stroke-width='2'/>")
+        b.append(line(X(-32), gl, X(32), gl, "#c94040", 2))
+        b.append(circle(X(0), Y(depth), 13 * S, "#f0efec", SOFT, 1.2))
+        for fr, col, top in ((ftop, UP, True), (fbot, DN, False)):
+            hx, hy = HOT[fr]
+            bx, bo = hx, depth + (hy if top else -hy)
+            b.append(circle(X(bx), Y(bo), 14 * S, "none", col, 1.4, "5 4"))
+            b.append(circle(X(bx), Y(bo), 8 * S, col, col, 1.4, opacity=0.16))
+            b.append(circle(X(bx), Y(bo), 3, col, "#ffffff", 1.5))
+        ang = math.atan2(start[0], start[1])
+        ax, ao = 34 * math.sin(ang), 34 * math.cos(ang)
+        b.append(line(X(ax * 1.0), Y(depth + ao), X(ax * 0.62), Y(depth + ao * 0.62), INK, 1.5, None, "marker-end='url(#arr)'"))
+        b.append(text(X(ax), Y(depth + ao) + 14, "shooter", 10.5, SOFT, "middle"))
+        # the strips: share stopped at each point across the mouth
+        sy = Y(depth + 40)
+        rows = []
+        for ci in range(-40, 40):
+            c = (ci + 0.5) / 2
+            share = {}
+            for fr, top in ((ftop, True), (fbot, False)):
+                hx, hy = HOT[fr]
+                n = stop = 0
+                for sp in (3.0, 3.5, 4.0, 4.5, 5.0, 5.5):
+                    for ph in range(8):
+                        r = stick_cover_result(hx, depth + (hy if top else -hy), start, c, sp, ph / 8)
+                        n += 1
+                        stop += r in ("stick", "body")
+                share[top] = stop / n
+            rows.append((c, share[True], share[False]))
+        for k, (name_, col, key) in enumerate((("Top net", UP, 1), ("Bottom net", DN, 2))):
+            yy = sy + k * 26
+            b.append(text(X(-20) - 8, yy + 13, name_, 10.5, col, "end", "bold"))
+            for row in rows:
+                c, v = row[0], row[key]
+                b.append(f"<rect x='{X(c - 0.25):.1f}' y='{yy:.1f}' width='{S * 0.5 + 0.3:.1f}' height='18' fill='{col}' fill-opacity='{0.08 + 0.85 * v:.2f}'/>")
+            b.append(f"<rect x='{X(-20)}' y='{yy}' width='{40 * S}' height='18' fill='none' stroke='{SOFT}' stroke-width='0.8'/>")
+        yy = sy + 52
+        b.append(text(X(-20) - 8, yy + 13, "Only one", 10.5, INK, "end", "bold"))
+        for c, t_, d_ in rows:
+            diff = t_ - d_
+            if abs(diff) >= 0.05:
+                col = UP if diff > 0 else DN
+                b.append(f"<rect x='{X(c - 0.25):.1f}' y='{yy:.1f}' width='{S * 0.5 + 0.3:.1f}' height='18' fill='{col}' fill-opacity='{min(1, 0.15 + abs(diff)):.2f}'/>")
+        b.append(f"<rect x='{X(-20)}' y='{yy}' width='{40 * S}' height='18' fill='none' stroke='{SOFT}' stroke-width='0.8'/>")
+        b.append(text(X(-20), yy + 32, "left post", 10, SOFT, "middle"))
+        b.append(text(X(20), yy + 32, "right post", 10, SOFT, "middle"))
+        tt = sum(r[1] for r in rows) / len(rows)
+        tb = sum(r[2] for r in rows) / len(rows)
+        b.append(text(cx, yy + 56, f"Stopped across the mouth: top {tt:.0%}, bottom {tb:.0%}", 12, INK, "middle", "bold"))
+    ly = 712
+    b.append(circle(40, ly, 8, UP, UP, 1.4, opacity=0.16))
+    b.append(text(56, ly + 4, "Blade: within 8, stopped", 11.5, INK))
+    b.append(circle(250, ly, 9, "none", INK, 1.4, "5 4"))
+    b.append(text(266, ly + 4, "8 to 14: passes, body not checked", 11.5, INK))
+    b.append(circle(500, ly, 9, "#f0efec", SOFT, 1.2))
+    b.append(text(516, ly + 4, "Body (13)", 11.5, INK))
+    b.append(text(640, ly + 4, "Strips: darker = more of the low shots aimed at that point stopped. \"Only one\": a gap of 5+ points,", 11.5, INK))
+    b.append(text(640, ly + 20, "blue where the top goalie stops more, orange where the bottom one does.", 11.5, INK))
+    notes_ = [
+        "Turned to the right, the bottom goalie's blade sits 4 to his right instead of 11: low shots aimed 2 to 4 right of centre beat him every time; the top goalie stops them all.",
+        "Turned to the left, his blade is almost level with his body (1 out instead of 7): low shots aimed just left of centre (0 to 2) beat him; the top goalie stops them.",
+        "Square to the shot, the bottom goalie is the better one, near the right post (12 to 16). A still goalie and low shots only; in play the computer goalie moves (replays: 1.03 -> 1.00 mirrored).",
+    ]
+    for k, s_ in enumerate(notes_):
+        b.append(text(20, 760 + 18 * k, s_, 11.5, TXT2))
+    return svg(W, H, b, "Where each net's goalie stops a low shot, NHL '94 Genesis")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -1855,7 +1971,7 @@ def main():
              "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
              "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
              "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence(),
-             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis(), "goalie_stick_ends.svg": goalie_stick_ends()}
+             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis(), "goalie_stick_ends.svg": goalie_stick_ends(), "goalie_stick_cover.svg": goalie_stick_cover()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

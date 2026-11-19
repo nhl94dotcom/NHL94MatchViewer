@@ -7869,3 +7869,16 @@ The user: is the computer defenders' hook / hold lean in the box scores? The lea
   28), people's are few (25 in 38 games). B-poke trips (a fall with an opponent in the poke animation $0B24 within 32
   in the 4 samples before) by people: 120 on Down attackers against 102 on Up (1.18, z +1.2); by the computer 30 / 35.
   People's pokes lean the way the league's tripping calls do (1.09), the computer's don't.
+
+### Where each net's goalie stops a low shot (2026-11-19)
+
+![Where each net's goalie stops a low shot](img/goalie_stick_cover.svg)
+
+`tools/make_diagrams.py` (`goalie_stick_cover`, `stick_cover_result`): low shots (height 5 or less) at every point
+across the goal mouth against a still goalie in each ready stance, 19 out, the shooter where the stance faces, by
+xg.play_out's per-frame rule (blade within 8 stops it; 8-14 passes and skips the body; else the body circle, 13),
+averaged over 6 speeds (3-5.5 units a frame) and 8 starting phases, both nets drawn as the top one. Stopped across
+the mouth, top / bottom: square 72% / 75%; turned to the screen's right 60% / 55% (aimed 2-4 right of centre: the top
+goalie stops them all, the bottom none); turned left 55% / 51% (aimed 0-2 left of centre the same); square, the
+bottom goalie better near the right post (12-16), the top near the left (14-16). The user's reading: turned right,
+the bottom goalie's stick is tucked into his body and covers less.
