@@ -27,7 +27,7 @@ from pathlib import Path
 from lowload import WORKERS, breathe
 from paths import RUNS
 
-MOMENTS = 32
+MOMENTS = int(__import__("os").environ.get("NHL94_OT_MOMENTS") or 32)   # NHL94_OT_MOMENTS: fewer moments a job
 SEEDS = {"genesis": 8, "snes": 4}
 AIMS = {"genesis": [None], "snes": list(range(9))}
 TIMINGS = ("early", "late")
