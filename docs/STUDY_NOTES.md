@@ -8024,3 +8024,20 @@ the team defending each net, regulation, clock running:
   bottom net, with the same tries; tripping isn't explained (pokes even). Why the checks connect more is open: the
   code (contact is resolved while each player moves, in update order) or people's timing against attackers coming
   down the screen; a scripted check at both nets, mirrored, would tell.
+
+### NHL '95 checkpuckcoll fixes in computer games (2026-11-19; `gen95_checkpuck_check.py`)
+
+NOSE4Web's stick-reach fix ($7B6A2 `move.l #ChkStickSqP,d1` -> `moveq #0,d1 / move.w (ChkStickSqP).w,d1`) and body
+fix ($7B6F6 `move.w` -> `cmp.w (NegChkBodyP).w,d1`; $7B704 `cmp.l (ChkBodySqP).w,d0` -> `cmp.w`), made by hand
+(c74fbee4, 5c9183b0, 7330ac2a, as theirs). 4 computer games each from the live state, the same seeds, penalties on,
+5-minute periods; per game, retail / stick / body / both:
+- body blocks (a loose puck faster than 12,000 turned by over 3,000 within 20 of a skater who doesn't take it):
+  16.2 / 21.8 / 27.8 / 28.5 (retail's are stick deflections: the body test is never reached there);
+- steals with the puck loose under 10 frames 32.5 / 19.8 / 31.0 / 23.8; direct 6.2 / 3.2 / 6.8 / 6.0;
+- pickups by the own team 103.8 / 111.5 / 110.8 / 119.0, the other team 75.8 / 71.0 / 79.2 / 70.8;
+- goalie touches deflected 35.8 / 36.2 / 35.2 / 36.2, held 19.5 / 21.5 / 19.2 / 18.2;
+- shots on goal 30.5 / 32.2 / 28.5 / 26.2; goals 1.8 / 2.8 / 1.8 / 0.8 (noise at 4 games);
+- stuck pucks (still 5 s, or one carrier 20 s): none on any.
+The body fix makes skaters block (about 12 more a game, a couple fewer shots on goal); the stick fix (a true circle,
+the half reach for nopuck) cuts quick steals of loose pucks by about 40% and leaves teams more of their own loose
+pucks; goalies about the same.
