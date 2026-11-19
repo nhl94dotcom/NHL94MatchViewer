@@ -7993,3 +7993,18 @@ setplayer for a right-handed goalie) with NHL94_SMAP_SUBSET=slotcircles repeats 
   $84D40 E248 -> 4E71 and the header sum): top net 900 launches and results identical; bottom net 383 of 900
   launches changed, 19 results: wide 17 -> 27 (1.9% -> 3.0%), goals 12 -> 13, saved 831 -> 822. About +1.1 points
   of wides at the bottom net (NHL '94 +0.2 by the same method).
+
+### NHL '94: the dead-still loose puck and the bottom goalie (2026-11-19; `loosepuck_check.py`)
+
+NOSE4Web: assgoalie .24 ($DB04) and assgoalietopuck ($DD7E) test the puck moving away with `eori #8,ccr` for the
+bottom goalie, so puckvy = 0 counts as moving away from him only; their patch (18 bytes at each: `move.w puckvy,d1 /
+btst / beq.s / neg.w d1 / tst.w d1 / nop`; nhl94_loosepuck, ef73440c, made here by hand: the same CRC; the test ROM
+has both sites at the same addresses).
+- **Unreachable for a still puck:** before .22, `.18` sends the goalie to .de5 when the puck's predicted goal-line
+  crossing is more than $22 frames away (`cmpi.w #$22,2(a0) / bhi .de5`); a puck with puckvy = 0 never crosses, so a
+  dead-still puck never reaches .24 at either net.
+- **The harness** (a still loose puck at 35 spots past the circles at each net, every skater parked far away, the
+  clock the same): retail and the patch identical: the goalie took it in front of the goal line 9 of 20 at the top, 7
+  of 20 at the bottom, behind it never; his assignment never became assgoalietopuck (15).
+- **The recordings** (38 Genesis games, raw captures): computer goalies started assgoalietopuck 100 times at the top
+  net, 124 at the bottom, none with the puck's vy = 0. The patch is correct and harmless; it changes nothing in play.
