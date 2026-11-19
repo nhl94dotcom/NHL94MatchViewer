@@ -7900,3 +7900,9 @@ From the raw captures (exact pflags bit 3), 38 Genesis games, regulation, play o
 - Bottom-net hooks listed (game, capture sample, period and clock, hooker, assignment, his animation before) in
   hook_opportunity.py's output for NOSE4Web's code search. Computer-against-computer games, retail against
   centreDefenceFix: `analysis/scoring_map/gen_hook_cvc.py`.
+- **Computer against computer** (`gen_hook_cvc.py`, 6 games each, same seeds, lines off, shortest periods): retail
+  opportunities 16,357 / 16,280 (0.995), hooks and holds 48 / 41, per opportunity Down / Up **0.86**; centreDefenceFix
+  (NHL '94 $D27A `add.w d2,d1; nop`) 1.065, 45 / 65, 1.36. About 90 hooks a ROM, so about +-40%; but retail's
+  computer-only games show no bottom-net lean where people's games show 1.45: the lean seems to need a person in the
+  game (something people's skaters do attacking down the screen draws more hooks). The fix can't be told from retail
+  at this size (about 25 games a ROM would).
