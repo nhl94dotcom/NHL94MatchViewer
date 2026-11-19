@@ -7929,3 +7929,6 @@ seed and release seeds the same at both nets; Montreal's goalie (attribute $0001
 - **The speed difference stays** (about 2,250 against 3,150 either way): the `inc d1` and the byte effect.
 - **box_even** changes the top net only (19 of 450: held and loose swapping), the bottom not at all; both = the two.
 - Goals are too few here to compare (this goalie stops nearly everything from these spots).
+- **The y-mirrored bottom set** (NOSE4Web's convention: screen x kept, the aim mirrored top to bottom; retail, 450
+  shots): goals 2, held 372, rebounds 94: 16 moving out, 78 back toward the goal line (2 of them in), median speed
+  2,911. The same as the turned set (112 rebounds: 27 out, 85 back): the rebound lean doesn't depend on the convention.
