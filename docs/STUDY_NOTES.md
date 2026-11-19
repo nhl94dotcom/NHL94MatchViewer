@@ -8132,3 +8132,27 @@ test ROMs hadn't come):
 - **Free RAM (question 7):** in 38 recorded Genesis games (2,122 full work-RAM snapshots), $FFE890-$FFE8CF,
   $FFE904-$E905 and $FFEC68-$EC69 were 0 in every snapshot; and nothing from $FFE000 to $FFFEBF was written on six
   league ROMs in whole games (Free work RAM, 2026-11-11).
+
+### Referee strictness in computer games (Genesis, 2026-11-19, for NOSE4Web's option; `gen_ref_cvc.py`)
+
+The option: checkagr's range multiplier (word $13E32, retail 13) and goalie interference's threshold (word $13CAA,
+retail 4). Builds on retail with only those words changed (`gen_ref_cvc.py build`: very lenient 26 / 2, lenient
+17 / 3, strict 9 / 6, very strict 6 / 10), the boot sum check's call at $300 made NOPs (ValidationRoutine: a changed
+ROM turns the screen red) and the header checksum set. 40 computer games each (5-minute periods, penalties On Except
+Off-sides, line changes off, seeds by game number); **the baseline is retail with only the $300 NOPs**: skipping the
+sum loop shifts the boot's timing, and on plain retail this runner's identical boots put a home charging call into
+the opening 30 s of nearly every game (40 of retail's 56 charging calls; none with the NOPs), an artifact of the runner.
+- **From the code:** checkagr rolls 0 to range - 1, range ((40 - Agr) / 2) x multiplier, doubled for a person's
+  player (after the multiplier), halved within $28 of the puck; a call when the roll is at or under the caller's
+  threshold (CCStart's check without a knockdown 4, charging or slashing by HVcount & 2; with a knockdown 3, roughing
+  or cross-checking; holdcheck 6, hooking or holding; Bcheck 4, tripping). So the chance is (threshold + 1) / range:
+  13 / m for every caller, a person's player the same. **Not scaled:** a breakaway carrier's checker (checkagr
+  replaces the range with 8 / 7 / 4 / 3 by distance), and goalie interference (randomd0($28 - Agr) <= 4, no
+  multiplier: thresholds 2 / 3 / 6 / 10 give 60 / 80 / 140 / 220%).
+- **Played, a game (all calls but roughing (injury), which is the injury's own and stays flat):** original 2.93;
+  very lenient 1.88 (**64% ± 9**, expected 50), lenient 2.73 (**93% ± 12**, 76), strict 4.13 (**141% ± 17**, 144),
+  very strict 7.08 (**242% ± 27**, 217): each within about 1.5 standard errors. By caller (each ± 15-50%): checks
+  without a knockdown 55 / 115 / 130 / 245%, with a knockdown 75 / 81 / 153 / 211%, holds and hooks 60 / 77 / 126 /
+  251%, trips 75 / 75 / 188 / 325%, goalie interference 0.12 a game (too few to judge). Goals a game 2.33 / 3.27 /
+  2.75 / 2.58 / 2.23.
+- People's players: the same ratio by the code (the doubling comes after the multiplier); not played.
