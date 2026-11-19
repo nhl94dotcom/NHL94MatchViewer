@@ -6176,6 +6176,45 @@ offence and the switch to asscentero are untouched code. Shots against at the en
 games a ROM (cvc_record) can't show it (the top net 61 shots, 6.4 xG on the original, 63, 5.1 on the fix; the other
 net 61, 9.8 and 84, 13.1: the games part at the first difference).
 
+**NOSE4Web's mirrored-end readings, item 4 (2026-11-18, read from the code; nothing built):**
+- **a) Goalie turning guard (AdjustFacingDirection, goalies only: the positioning code and goalieacc).** As read: the
+  test runs from facings 1 and 6 ($42); a half-turn (wanted - current = 4) always steps +1, so the top goalie (pfgoal
+  clear, forbidden 7, 0, 1) is guarded from 6 and the bottom one (pfgoal set, 3, 4, 5) needs 2, never tested; from 1
+  only a top goalie already inside his set is turned back out. Bytes: $42 at $DB89 (NHL '94), $80447 (NHL '95, W18:
+  033C 0042 6700 0022). Placed (`gen_goalie_turn_check.py case`: the bottom goalie in his crease facing 2, a loose puck
+  sliding right to left along or behind his goal line, 5 lines x 3 speeds, 120 frames): on retail the fast puck behind
+  the line (y -284, speed -16,000) turns him 2-3-4-5-6, facing his own net 9 frames; with $44 2-1-0-7-6; the other 14
+  cases the same. In whole computer games (8 a ROM, `live`) turns through the net are rare and mostly not this
+  routine (a goalie skating to a loose puck turns as a skater): bottom / top goalie, both ways, in 8 games: retail 9 /
+  4, $44 6 / 4, $46 9 / 1, $4E 8 / 18, with the facing-his-net frames swinging either way between masks as the games part; nothing there
+  measures a mask. Scratch copies need the boot ROM check NOPped ($300) as NOSE4Web's builds have it: the header sum
+  alone didn't boot.
+- **b) Scatter by end:** as GENESIS_SHOOTING 4.2 (and chaos's post): the Y scatter is halved when the aim's dy < 0, i.e.
+  every shot at the bottom net from in front of it and a shot at the top net from behind; not separately measured.
+- **c) assgoalietopuck:** `tst.w (puckvy)` then, for pfgoal set, `eori #8,ccr` flips N only: the bottom goalie quits on
+  vy >= 0 (a stopped puck too), the top one on vy < 0; at vy 0 only the bottom goalie gives up. As read.
+- **d) asspuckc .postab2 at the delayed offside signal:** indexed by position x 4 (0 G 1 LD 2 RD 3 LW 4 C 5 RW): LD to
+  (100, -20), RD (-120, 40), LW (20, 40), C (120, 40), RW (-20, 40) (his end's frame); by position - 1 a clean set
+  (LD -100,-20; RD 100,-20; LW -120,40; C 20,40; RW 120,40), the sixth entry (-20, 40) where a goalie entry would be if
+  goalies came last (an older position order?) rather than a missing one. Only a computer carrier during sf2offsig:
+  never in league play (offsides off).
+- **e) Defencemen at the blue line:** NHL '94 assdefd -> assdefo at lead y (y + max(vy / 64, 0)) >= $58 with his team
+  carrying, assdefo -> assdefd at raw y < $5D; each switch a new assignment (temp1 cleared: the other test the next
+  frame; temp2 8: skateto doesn't re-aim). `gen_centre_defence_check.py dflip`: 2 computer games, 50,000 frames: 3,601
+  switches, 175 runs of 3+ on consecutive frames (3,430 frames, the longest 136), the puck mostly 30-80 up his half (the
+  lead test, not just 88-93). NHL '95 (assdefd 7, assdefo $C): it loads pucky and then overwrites d1 with the carrier
+  (no $5D test): 1 run of 3 in 40,000 frames, W18 the same.
+- **f) CCStart's pf3wall is the checker's:** CCStart swaps a2 / a3 before wallcollduringcheck, which tests a2 (then
+  the checker: "Xpos of checking player") through checkcornercoll (bclr then set on corner circles and side walls, his
+  size + $17), and swaps back before `btst #pf3wall,pflags3(a3)`: a check with impact >= $14 by a checker within his
+  size + 23 of the side boards or a corner always knocks a skater down. **Shot ratings, played**
+  (`shot_ratings_check.py`, sniping_test's set-up, the working rating set every frame): the highest wind-up shot by
+  working ShP: 10: passspeed 249 (about 58 mph), 15: 269 (62), 16-17: 278 (64), 19: 288 (67), **20-21: 337 (78)**, 25:
+  359 (83), 30: 393 (91); roster 3 (working 12-17) tops at 62-64 mph, roster 4 (17-22) at 78 (64-67 when cold), roster
+  6 (27-32) about 91. Perfect shots within 200 by working ShA (9 spots 94-174 from the aim, 40 seeds each), measured
+  against (ShA + 1) / (ShA + 16): 0: 8.6 / 6.2%, 5: 32.2 / 28.6, 10: 44.7 / 42.3, 15: 51.4 / 51.6, 20: 58.9 / 58.3, 25:
+  64.2 / 63.4, 30: 67.8 / 67.4.
+
 **Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
 of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
 before the opening faceoff, the scouting report (Matchups, San Jose in it) among them, pixel-identical.
