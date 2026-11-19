@@ -1657,14 +1657,16 @@ def updown_genesis():
     """Where the bottom (Down) net's extra goals come from, NHL '94 Genesis: the asymmetries found in the code and in
     play, on a to-scale sketch of the two nets, and every measured Down / Up goal ratio with its 95% range (STUDY_NOTES,
     "Down goal"; LEAGUE_RESULTS). Colours: the dataviz reference palette's slots 1-3, validated (all pairs, light)."""
-    W, H = 1180, 720
+    W, H = 1180, 960
     S1, S2, S3, TXT2 = "#2a78d6", "#eb6834", "#1baf7a", "#52514e"
     b = [ARROW]
     b.append(text(W / 2, 30, "Why the bottom (Down) net concedes a few more goals: NHL '94 Genesis", 18, INK, "middle", "bold"))
     b.append(text(W / 2, 52, "Down / Up = goals at the bottom net / goals at the top net. Both teams defend each net over a game "
                   "(home attacks up in periods 1 and 3).", 12, SOFT, "middle"))
+    b.append(text(W / 2, 70, "The biggest factor is penalties: the bottom net's defenders are called 5.4% more often, so the team "
+                  "attacking down gets more power plays.", 12, INK, "middle", "bold"))
     # ---- left: the two nets, to scale
-    S, cx, cy = 0.8, 140, 380
+    S, cx, cy = 0.8, 140, 400
     Y = lambda y: cy - y * S  # noqa: E731
     Xp = lambda x: cx + x * S  # noqa: E731
     b.append(f"<rect x='{Xp(-120)}' y='{Y(300)}' width='{240 * S}' height='{600 * S}' rx='{40 * S}' fill='#f7f9fb' "
@@ -1692,21 +1694,26 @@ def updown_genesis():
             y += 24
         return y
     nx = 262
-    notes(nx, 108, [
+    notes(nx, 128, [
         ("Shoulder-save bobble (top only)", ["A held high shot sits behind the top goalie", "and can be knocked in."],
          "Adds Up goals: 2 of 218 recorded"),
         ("Low shots knocked away uncounted", ["League: going up, 6% more shots on goal", "counted but 3% fewer goals."],
          "Moves shot counts, not goals"),
+        ("Goalie interference called more here", ["Called only while the goalie is within 25 of", "his goal line. People stand the top goalie",
+                                                 "shallower (19.4 out against 24.7), inside it more."],
+         "Interference on attackers here: league 1.125"),
     ])
-    notes(nx, 392, [
+    notes(nx, 412, [
         ("Shots aimed down: scatter halved", ["doshot halves the depth scatter when the", "aim points down (bottom net only)."],
          "About 1 goal in 270 (NOSE4Web's aim fix)"),
         ("Goalie's stick spots not mirrored", ["The facing-up frames' blade points aren't", "the top goalie's mirror image."],
          "Computer goalie 1.03 -> 1.00 when mirrored"),
         ("Rebounds about 5% faster", ["A byte-handling quirk speeds rebounds", "off the bottom goalie."], "Bottom only"),
+        ("People trip attackers more here", ["People's B-pokes knock down attackers coming", "down the screen more (recorded 120 / 102)."],
+         "Tripping calls: league 1.092"),
     ])
     # ---- right: every Down / Up measurement
-    L, R, T = 800, 1050, 112
+    L, R, T = 800, 1050, 136
     lo, hi = 0.8, 1.4
     X = lambda v: L + (math.log(v) - math.log(lo)) / (math.log(hi) - math.log(lo)) * (R - L)  # noqa: E731
     rows = [
@@ -1743,6 +1750,30 @@ def updown_genesis():
     b.append(text(X(1.0), y + 4, "1.00: no difference", 10.5, SOFT, "middle"))
     b.append(text(X(0.86), y + 20, "more Up goals", 10.5, SOFT, "middle"))
     b.append(text(X(1.24), y + 20, "more Down goals", 10.5, SOFT, "middle"))
+    # ---- penalties by type (league)
+    T2 = y + 78
+    lo2, hi2 = 0.85, 1.20
+    X2 = lambda v: L + (math.log(v) - math.log(lo2)) / (math.log(hi2) - math.log(lo2)) * (R - L)  # noqa: E731
+    b.append(text((L + R) / 2, T2 - 26, "Penalties called on the bottom net's defenders / the top net's", 13, INK, "middle", "bold"))
+    for v in (0.85, 0.9, 1.0, 1.1, 1.2):
+        b.append(text(X2(v), T2 - 6, f"{v:.2f}".rstrip("0").rstrip("."), 10.5, SOFT, "middle"))
+    pens = [("All penalties (248,595)", 1.054, 1.046, 1.062, ""), ("Interference (goalie)", 1.125, 1.092, 1.159, ""),
+            ("Tripping", 1.092, 1.063, 1.121, ""), ("Injuring", 1.072, 1.047, 1.098, ""), ("Slashing", 1.054, 1.033, 1.076, ""),
+            ("Roughing", 1.053, 1.031, 1.075, ""), ("Cross-checking", 1.051, 1.029, 1.073, ""),
+            ("Charging", 1.042, 1.021, 1.063, ""), ("Hooking", 1.016, 0.995, 1.038, ""), ("Holding", 0.945, 0.893, 1.001, "")]
+    y2 = T2 + 6
+    pm = []
+    for lab, r_, a_, c_, note in pens:
+        b.append(text(L - 12, y2 + 4, lab, 11.5, INK, "end", "bold" if lab.startswith("All") else "normal"))
+        pm.append(line(X2(max(a_, lo2)), y2, X2(min(c_, hi2)), y2, S1, 2, None, "stroke-linecap='round'"))
+        pm.append(circle(X2(r_), y2, 5, S1, "#ffffff", 2))
+        b.append(text(R + 12, y2 + 4, f"{r_:.3f} ({a_:.3f}-{c_:.3f})" + (f"  {note}" if note else ""), 11, INK))
+        y2 += 26
+    b.append(line(X2(1.0), T2, X2(1.0), y2 - 14, SOFT, 1.5, "4 3"))
+    b.extend(pm)
+    b.append(text(X2(1.0), y2 + 2, "1.00: no difference", 10.5, SOFT, "middle"))
+    b.append(text(L - 240, y2 + 26, "League penalty lists, 87,273 games, regulation. Hooking and holding don't lean: the computer's extra", 10.5, SOFT))
+    b.append(text(L - 240, y2 + 40, "hooks at the bottom net (only in games with a person) seldom become calls. The SNES: 0.998.", 10.5, SOFT))
     ly = H - 58
     for i, (col, lab) in enumerate(((S1, "Real games"), (S2, "Harness, computer goalie"), (S3, "Harness, goalie standing still"))):
         lx = 470 + i * 220
