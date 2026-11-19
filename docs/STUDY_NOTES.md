@@ -7733,3 +7733,17 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
     mirrored; the games drift apart, so counts are noise at this size); the puck behind the goal line while held 39 /
     95 frames at the bottom, 97 / 68 at the top; goals within 3 s of a bottom goalie's release 0 / 2. Nothing broken,
     nothing settled: more games and a look at glove-frame holds would.
+- **Version 2 (glove frames paired across: 408 <- 421, 409 <- 420, 411 <- 418, 412 <- 417, 429 <- 424, 430 <- 423;
+  NOSE4Web's nhl94_blade_mirror_v2.bin, 065749b3, not yet here; a copy made by hand matches their table on all nine
+  frames), holding played:** 6 computer games each on retail and the copy (same seeds; the games drift apart after the
+  first difference), the goalie's sprite frame logged on every held frame.
+  - **Glove frames hardly hold the puck:** at the bottom net 408, 409, 411, 412 and 429 under 5 held frames each in
+    either ROM; 430 45 frames on v2, none with the puck behind the goal line.
+  - **The puck behind the goal line during a bottom hold:** 277 frames on v2, 39 on retail, all in frames the build
+    doesn't touch: 419 and 425 (the goalie turned to his own net), 491-494 (in both ROMs, every frame behind), 701.
+    The patched frames: 407 (7,292 held frames on v2, 8,031 on retail), 410 and 428 showed 0 / 9 / 0 behind on v2 and
+    0 / 2 / 0 on retail. So it comes from where the goalie skated in these games, not from the hot spots.
+  - **Held spot:** median +4 out at the bottom net on both (+7 at the top); the side +1 / +2.
+  - **Goals within 3 s of a bottom goalie's release:** 4 on v2, 0 on retail, none from a patched frame (447 / 448,
+    450 then 407 ending in a giveaway pass, 682 / 683 one-frame touches). Goals by net: v2 12 bottom / 7 top, retail
+    6 / 10: different games, about 16-19 goals a ROM, within chance.
