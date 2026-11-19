@@ -7717,3 +7717,19 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
   64 of 2,090 bottom-net replays changed, both ways. Paired goals (1,027 launches): top 133, bottom 134, **Down / Up
   1.01** (95 / 94 at one net only, z +0.1), against 132 / 136 (1.03, z +0.3) unpatched. The hot spots account for
   most of the small computer-goalie lean, which was within chance either way.
+- **All nine facing-up goalie frames mirrored** (NOSE4Web's build nhl94_blade_mirror.bin, 9c361244, wasn't here: an
+  equivalent made the same way, 407-409 <- 419-421, 410-412 <- 416-418, 428-430 <- 422-424, each the y-mirror (x,
+  -y), glove a from glove a): the replay gave exactly the ready-frames-only result (the same 64 bottom replays
+  changed; Down / Up 1.00, 133 / 133). The glove frames don't come into these shots.
+  - **Where a held puck sits** (the hot spot also places a puck the goalie holds): `goalie_hot_frames.py` draws frames
+    407-430 with retail's points (red) and the mirrored ones (blue): `docs/img/goalie_hot_spots.png`. The ready frames
+    move a pixel or two; the glove frames up to 11 (408: from his right hip to his left skate; 411, 429, 430 by 6-10).
+    "glover" / "glovel" are the goalie's own hands, so facing up and facing down they sit on opposite screen sides:
+    a screen mirror should probably pair glove a facing up with glove b facing down (retail's x signs: up 408 +7,
+    down 420 -4, 421 +4).
+  - **Holding and passing, played** (`gen_goalie_hold_check.py`: 3 computer games each on retail and the mirrored
+    retail copy, lines off; the copy's boot ROM check NOPped at $300 as NOSE4Web's builds do): the held puck's median
+    spot at the bottom net +4 out, +1-2 to the side on both; holds 24 / 38 at the bottom, 44 / 34 at the top (retail /
+    mirrored; the games drift apart, so counts are noise at this size); the puck behind the goal line while held 39 /
+    95 frames at the bottom, 97 / 68 at the top; goals within 3 s of a bottom goalie's release 0 / 2. Nothing broken,
+    nothing settled: more games and a look at glove-frame holds would.
