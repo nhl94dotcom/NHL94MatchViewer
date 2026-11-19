@@ -7658,3 +7658,29 @@ teams' players all black, players turning into #0 and skating slowly. The league
   defenceman, so lines saved on a ROM with bigger rosters point past these 12), and so can a save state made on another
   ROM (its team structs' lines and rosters). The all-black players weren't reproduced (a team or palette from such a
   save is a likely source).
+
+### Down goal: the one-timer target and the shoulder-save blade (2026-11-19)
+
+NOSE4Web's last two items for the Down-goal question.
+- **OneTimerTarget (onetimer94.asm) isn't the people's one-timer pass.** dopass calls it only with sflags5 bit 3 set:
+  a pass started by *releasing* A after a tap (under 15 frames; held longer it is a line change), or the computer's
+  clear when killing a penalty (chk4shot). It sends the puck to a spot, not a player, and sets no
+  passReceiverPlayerNum, so C after it starts no one-timer (the harness: three set-ups at each net, C pressed 2-38
+  frames after the tap, no strike; a crease target went to the goalie). People's one-timers come from B passes to a
+  teammate (passto).
+  - **The targets, played** (onetimertargetx / y $FFD414 / $D416, the test ROM): the far table (-5, $AB) flipped for
+    the bottom net, then randomd0(10) added: top (-5..4, 171..180), bottom (5..14, -171..-162), so mirrored the bottom
+    target sits about 9 to the side and 9 further out; a passer central and deep (|y| >= $8A, |x| <= $37) aims at the
+    crease (y +-$103). The "subtract 5" would leave the mirrored targets 1 apart.
+  - **In the recorded games:** 313 A taps by people in 38 Genesis games; 54 target passes (A released with the puck,
+    no B, the puck away within 2 samples): 44 from their own zone (clears), 6 from the neutral zone, 4 from the
+    attacking zone (1 Up, 3 Down). The team's next shot within 3 s real followed 6 of the 54: no goal. Taps with B
+    pressed alongside are B passes (the puck leaves before A is released): the 3 one-timers and 2 goals that first
+    looked like A passes were those.
+  - So the target's end difference can't move people's goals at either net; the captures' one-timer x means
+    (-5.5 Up, +3.0 Down) come from B passes and the auto-aim.
+- **The shoulder-save blade** is the shoulder-save bobble already traced (GENESIS_SHOOTING 5.3; the note above, "the
+  top net's shoulder-save bobble"): ghighr / ghighl hold points facing down (-10, +15) / (+10, +14), behind the top
+  goalie, so pucknorm draws the held puck to the net's front and checkgoal knocks it loose; facing up they are in
+  front. It agrees with NOSE4Web's 49% / 0% of high-save frames. It adds goals at the **Up** net (2 of 218 recorded
+  goals), so it works against the Down lean, not for it.
