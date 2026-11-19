@@ -7762,3 +7762,7 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
   nets, the seed set just before the doshot frame): top net 900 launches and results identical; bottom net 364 of
   900 launches changed (the aims with dy < 0), 16 results: wide 24 -> 26 (2.7% -> 2.9%), goals 9 -> 8, saved 838 ->
   837. As the replays: a few tenths of a point more wides at the bottom net, not 1%.
+- **CDL_Season_12 with the stick fix, holding played** (4 computer games each, plain and stick): bottom holds 50 / 48,
+  the held puck +5 out on both; the puck behind the goal line during a bottom hold 125 / 124 frames, in the patched
+  frames 0 / 1 of 4,660 / 5,388 (407) and 0 / 1 (428); the glove frames under 5 held frames each; no goal within 3 s of
+  a goalie's release on either; goals 13 / 11. Plays as retail with the copy did.
