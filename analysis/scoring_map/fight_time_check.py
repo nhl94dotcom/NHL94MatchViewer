@@ -17,6 +17,11 @@ at 14 on a build with a fight bonus they come every few seconds and the clock ha
 qualifies: before a fight those with no opponent within 40 (the hitter stays clear), through the fight every home
 skater not fighting (the minor is handed out with the majors after the fight); fights_at logs each fight's start
 and end with every home skater's state.
+--noinstig2 (SNES): every home non-goalie skater flagged every frame except one in a shoulder-check animation (SPA
+$F27A / $F310, the hitter checkfight's .set tests), the fighters ($0400) and those with real penalties.
+--noinstig3 (SNES): every home non-goalie skater flagged every frame but the one nearest an opponent (the likely
+hitter), the fighters and those with real penalties (--noinstig2 stopped fights altogether: the hitter is flagged
+until his shoulder check is under way).
 --injure (SNES): every skater's $1483 (McMarkis's "aggress", the 93S name; today's Checking) at 60, so the fight's loser
 is always hurt (F_fightfall: hurt when a random number under 60 is at most the winner's $1483); a player who leaves the box at $FFFC is then followed to
 the game's end ("after": every change of his word).
@@ -34,7 +39,11 @@ FORCE = "--force" in sys.argv
 OPTION = "--option" in sys.argv
 FIGHTERS = next((int(a.split("=")[1]) if "=" in a else 14 for a in sys.argv if a.startswith("--fighters")), None)
 # SNES: every skater's fighting rating ($1463) held at 14 (or --fighters=N), so the 1 MB build fights
-NOINSTIG = "--noinstig" in sys.argv    # SNES: home skaters away from the play marked pf2pen ($4000), so no teammate
+NOINSTIG2 = "--noinstig2" in sys.argv  # SNES: every home non-goalie skater flagged every frame except a shoulder-checker,
+                                       # the fighters and real penalties (NOSE4Web: the search runs at checkfight .set)
+NOINSTIG3 = "--noinstig3" in sys.argv  # SNES: every home non-goalie skater flagged every frame but the one nearest an opponent
+                                       # (the likely hitter), the fighters and real penalties
+NOINSTIG = "--noinstig" in sys.argv or NOINSTIG2 or NOINSTIG3    # SNES: home skaters away from the play marked pf2pen ($4000), so no teammate
                                        # qualifies for an instigator minor (NOSE4Web's F_SetInst skips pflags $4000 / $1000)
 INJURE = "--injure" in sys.argv         # SNES: every skater's $1483 at 60, so F_fightfall's roll always hurts
 argv = [a for a in sys.argv if not a.startswith("--")]
@@ -127,10 +136,25 @@ class Snes:
         if self.was_fight and not fight and self.fight_log:
             self.fight_log[-1]["end"] = dict(f=f, home=state())
         self.was_fight = fight
+        nearest = None
+        if NOINSTIG3:
+            best = None
+            for k in range(6):
+                if not (m.w(0x0F43 + 2 * k) not in (0, 0xFFFF) and s16(m.w(0x0F43 + 2 * k)) > 0):
+                    continue
+                x, y = P(k)
+                d = min(abs(P(v)[0] - x) + abs(P(v)[1] - y) for v in range(6, 12))
+                if best is None or d < best:
+                    best, nearest = d, k
         for k in range(6):
             pf = m.w(self.PFLAGS + 2 * k)
             skater = m.w(0x0F43 + 2 * k) not in (0, 0xFFFF) and s16(m.w(0x0F43 + 2 * k)) > 0
-            if fight:
+            if NOINSTIG3:
+                want = skater and k != nearest and not pf & 0x0400 and (k in self.forced or not pf & 0x5000)
+            elif NOINSTIG2:
+                shoulder = m.w(0x11A3 + 2 * k) in (0xF27A, 0xF310)   # SPAshoulderchkl / r: the hitter at .set
+                want = skater and not shoulder and not pf & 0x0400 and (k in self.forced or not pf & 0x5000)
+            elif fight:
                 want = skater and not pf & 0x0400 and (k in self.forced or not pf & 0x5000)
             else:
                 want = False

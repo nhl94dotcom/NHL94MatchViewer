@@ -8053,9 +8053,21 @@ every one not fighting; 3 computer games, fighting ratings 9; an unflagged contr
   play) entering the box at the fight's game clock about 1,200 frames later; the fighters paired in all 9.
 - **Flagged:** 14 fights; in 8 every eligible teammate carried the flag at the fight's start and end, yet 6 of those
   still gave a home minor (2 none); the fighters paired in all 14; nothing else changed (minors away from fights 8
-  against the control's 7, all released; the same game lengths). The flag holds from frame to frame (checked), so
-  this build's search doesn't skip pflags $4000 as described: probably older than the code NOSE4Web read. To be
-  repeated on NHL94_fight_default.smc (ed295509) when it arrives.
+  against the control's 7, all released; the same game lengths). **Explained by the timing, not the search**
+  (below).
+- **The search is there:** the 2026-11-14 copy has NOSE4Web's teammate loop 8 bytes before the current build's
+  ($1044D1, not $1044D9: `lda $1283,x / bit #$5000 / bne` at $1044E1, `lda #$2E / sta Fd0 / jsl AddPenalty2` at
+  $1044E9). **The only source:** with that jsl made NOPs ($1044EE, a scratch copy), 6 fights in 2 games gave no minor.
+- **Flagged at .set** (`--noinstig3`; NOSE4Web: the search runs at checkfight .set, which can come before what was
+  logged as the fight's start; a teammate unflagged then could be picked): every home non-goalie skater marked every
+  frame except the one nearest an opponent (the likely hitter), the fighters and real penalties: **10 fights, every
+  teammate flagged at each, no instigator minor** (control 9 of 9). Other minors 13 against the control's 7 in about
+  the same play (within chance). (`--noinstig2`, every skater flagged but one already in SPAshoulderchkl / r, gave no
+  fight in 3 games: probably a skater carrying $4000 doesn't start the shoulder check, so with every one flagged
+  nobody could; not traced.) **F_SetInst skips pf2pen as written.**
+
+### The same body check at both nets, scripted (Genesis, 2026-11-19; the bottom net's defenders' penalties)
+
 - **The same check scripted at both nets** (`gen_check_ends.py`: the pad-1 home skater checks an away carrier driven
   straight at him at skating speed, the top net the bottom one turned half a circle; 3 spots x 2 depths x 5 approach
   angles x 5 press timings x 3 phases = 450 trials a net; the same random seed a trial at both nets; the same players
@@ -8065,3 +8077,34 @@ every one not fighting; 3 computer games, fighting ratings 9; an unflagged contr
   how people play. (Without the per-trial seed each net's state replayed one fixed random stream: 29.6% against 18.7%,
   a false lean; with the computer steering the carrier, pad 2 not taking him, the two states' carriers moved
   differently: also false.)
+
+### Fight momentum: where chaos's fights pick a winner, free RAM, the boost's code (Genesis, 2026-11-19, for NOSE4Web)
+
+From chaos's source (github.com/Chaos81/nhl94-patches, `94_fight/scripts/fight_patch.asm`, MIT) and the Genesis
+disassembly; not played yet.
+- **The winner:** `chkhit` (a3 the puncher, a0 the one he aims at) swaps them at `.hithigh` / `.hitlow`
+  (`exg a0,a3`: a3 the one hit) and takes 1 from the hit one's strength (temp3, +$44); below 0 it goes to
+  `.FightFall`, where **a0 is the winner and a3 the loser**: the loser falls (SetSPA on a3: SPAbfall, or SPAffall and a
+  fight injury when the roll against a0's +$75 says so) and the crowd cheers when the loser is away
+  (`btst #6,$62(a3)`, pfteam) and boos when he's home. `.FightFall` is the only end with a winner: a fight that
+  ends any other way (none was seen) has none.
+- **The hook:** `.FightFall`'s `move.w #$FFFF,$44(a0)` (317C FFFF 0044, 6 bytes), after the PenBuf loop and before the
+  injury branch, so on both the plain fall and the injury path: at **$2007E4** in chaos's v1.01 ROM and in NOSE4Web's
+  nhl94_fighting builds (one copy each). A `jsr` there can do that move and set the team from `btst #6,$62(a0)`.
+- **Free RAM:** nothing from $FFE000 to $FFFEBF was ever written on nhl94, CDL Season 12, DPWM3, GDL Season 4, IDL5
+  and RGDL (whole games, the pause menu, replays, the playoff tree, a shootout, fights on the fighting builds: Free
+  work RAM, 2026-11-11). NOSE4Web's own blocks there: $FFF000-$F03F (injury risk counts), $FFF040-$F062 (the lines),
+  $FFF080 (fighting), $FFF082 (the season shootout's mark), $FFF084-$F74D (the shootout's saved team structs and
+  summary). Left: $FFF064-$F07F and **$FFF750 up**: the team word at $FFF750, the timer at $FFF752. Begin's clearing
+  loop stops at $FFDF02 (chaos's), so these must be cleared at the start of each game, or a game won't start clean.
+- **The boost code** is `playeracc` (logic94.asm), not updateplayers: `.incagl` adds 2 to the acceleration sum
+  (64 - weight/4 + legstr) **before the goalie's doubling**, so a hook there gives the goalie the boost too unless
+  it tests `position(a3)`; `.incspd` adds 2 to legspd and then clamps it at $1E. **The momentum +2 must come before
+  that clamp**: past 31 the speed index (2 x speed, `andi.w #$3F`) wraps to the slowest MaxSpeed entry (the speed
+  wrap). Both boosts also go on with sflags8 bit 1.
+- **The timer:** updatepentime returns at once while the clock is stopped (`btst #gmclock,(gmode).w`) and sets
+  sf3icetime once a game second (24 frames) with it running, so a count there starts only when play resumes after the
+  fight and stops at every whistle: 90 ticks = 90 game seconds. The boost itself would run through the stoppage after
+  the fight (the skaters skating to the faceoff) unless it tests the clock too. To decide: the intermission (the
+  timer just waits there, carrying into the next period), a second fight (overwrites the team and restarts), and the
+  winner being in the box for his major meanwhile (his team still boosted).
