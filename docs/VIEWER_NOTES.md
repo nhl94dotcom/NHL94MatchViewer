@@ -1957,3 +1957,8 @@ mostly "loose": the goalie usually tracked in the right frame, but the puck lost
   27), passes 70 / 96, shots 22 / 26, hits 45 / 52, entries 35 / 40, faceoffs 10 / 17: about even overall, the
   stretches' gain not carried to the whole game. The two reads differ in the leak too; a fair test is the old code
   re-read with TEST_GAME=3 (about 2.5 h).
+- **The fair comparison** (game 4 re-read with the old read area, `NHL94_INV_AREA=old`, and TEST_GAME=3 too:
+  read_g4old.json): old / whole screen: goalie holds 44% / 48%, hits matched 41 / 45 (48 / 52 read), turnovers
+  matched 27 / 30 (63 / 67 read), the person's skater 71-73% / 72-76%, carrier team with the clock running 86% / 85%,
+  passes, shots, entries and faceoffs the same. A small gain: kept. The first whole read's 57% goalie holds was the
+  leak (its transitions had learnt from game 4).
