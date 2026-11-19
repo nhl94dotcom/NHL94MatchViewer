@@ -7932,3 +7932,23 @@ seed and release seeds the same at both nets; Montreal's goalie (attribute $0001
 - **The y-mirrored bottom set** (NOSE4Web's convention: screen x kept, the aim mirrored top to bottom; retail, 450
   shots): goals 2, held 372, rebounds 94: 16 moving out, 78 back toward the goal line (2 of them in), median speed
   2,911. The same as the turned set (112 rebounds: 27 out, 85 back): the rebound lean doesn't depend on the convention.
+
+### NHL '95: the launches replayed at both nets, retail and the stick variants (2026-11-19; `gen95_updown.py`)
+
+NOSE4Web's 1,308 recorded launches (NHL '94's captures; shotport.launch), own net and mirrored, the computer goalie,
+from live states of retail NHL_95.bin (period 1, top net; period 2, bottom net, made from it: runs/nhl95/updown).
+NHL '95 has no hooked test ROM: the pad's skater shoots (C), and on the frame the puck comes loose it gets the launch's
+spot and velocity, the post seed, the goalie moved as a recorded computer goalie; whistles by the clock stopping (the
+play-mode word reads $0000 in period 1 and $0200 in period 2).
+
+| | paired goals top / bottom | Down / Up | one net only top / bottom |
+|---|---|---|---|
+| retail | 85 / 77 | 0.91 | 65 / 57 (z -0.7) |
+| C (ready, crouch, stick saves facing down from facing up; gloves kept; 8fb6002f) | 83 / 77 | 0.93 | 62 / 56 |
+| B (every facing-down frame from facing up; b77e37b0) | 82 / 77 | 0.94 | 62 / 57 |
+
+Only the top net changes (C 21 of 1,101 top replays, B 25; the bottom none); each costs the top goalie a goal or two.
+About 80 goals a net: retail '95's computer goalie shows no end lean beyond chance here. C against the art
+(`gen95_goalie_frames.py ROM ROM2`): the glove frames untouched (a caught puck stays on the drawn glove); facing down,
+634 and 642's new spots sit on the drawn blade, 633 near it, 641's (-9, 13, from stickl 631) on the side opposite the
+drawn blade (bottom right), where the same hand's 639 (0, 0) would sit nearer.
