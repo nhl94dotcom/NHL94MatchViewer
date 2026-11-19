@@ -7796,3 +7796,33 @@ the stick there?
 - **NOSE4Web's variants A (bottom from top) and B (top from bottom)**, made by hand from retail by their rule (24
   frames: ready 606 / 607 / 613, crouch 904-909 and 919-921, glove and stick frames from the other hand's, facings
   0-4, 1-3, 7-5; crouch slots 0-5 are facings 0, 1, 3, 4, 5, 7): CRC32 6d47638e and b77e37b0, as theirs.
+
+### Down goal: contact by end in the recorded games, and the framing (2026-11-19; `analysis/end_contact.py`)
+
+NOSE4Web, from the league database: Genesis teams attacking the Down net draw 5.4% more penalties a period (every type
+about 1.05, tripping and interference about 1.10); goals a power play lean only about 1.03, so the power-play lean
+(1.054 x 1.03) is the penalties; the SNES 1.000.
+- **The recorded games** (38 Genesis, 34 SNES; each team attacking each end once a period; clock running):
+
+| | Genesis Down / Up | SNES Down / Up |
+|---|---|---|
+| possession | 1.021 (50.5% / 49.5%) | 0.989 |
+| offensive zone time | 0.999 (35.3% / 35.3%) | 1.051 |
+| hits drawn | 1.087 (976 / 898) | 1.067 |
+| knockdowns drawn | 1.086 | 1.026 |
+| hooks and holds drawn | **1.349** (259 / 192) | 0.954 |
+| penalties drawn | 1.295 (57 / 44) | 1.051 (41 / 39) |
+
+- **Who hooks and holds** (the catcher: the opponent in a hold or hook animation within 40 samples before the
+  flail): Genesis computer defenders hooked 222 times on Down attackers against 160 on Up attackers (1.39) and held
+  28 / 16; people's defenders 9 / 16 together. SNES computer hooks 150 / 147, holds 133 / 145. So the Genesis lean is
+  in the computer defenders' hooks, about 3 standard errors.
+- **Code read so far, all symmetric:** setSlotBit (cards94: y flipped for the bottom goal, x within +-$47, past the
+  blue line), check4check's range and facing test, vtoa (sign bits and slope tests; its table maps every direction to
+  its half-turn), Acheck's hook or hold choice. What's left: how often and where the computer defenders reach
+  check4check (assnearest, assfwatch, asswingd; the assdefd / assdefo thresholds found earlier).
+- **The framing** (`docs/img/end_framing.png`: the carrier at the goal line, 40 to the side, both systems, both ends):
+  the same on both systems. Genesis Vpos stops at 256 at the top and -200 at the bottom; the top view runs from the
+  crowd to just past the circles, the bottom from above the circles to the net at the screen's bottom edge between
+  the score boxes; neither shows the blue line there. The SNES frames both ends the same way and shows no lean, and
+  the extra contact is the computer's, which doesn't see the screen: the camera isn't the cause.

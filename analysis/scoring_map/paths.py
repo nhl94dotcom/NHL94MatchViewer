@@ -8,7 +8,7 @@ DISASM = Path.home() / "NHL94_disasm" / "NHL94Genesis"          # the clone; nev
 RETROARCH = Path.home() / "RetroArch-1.17-Win64"
 CORE_SOURCE = RETROARCH / "cores" / "genesis_plus_gx_libretro.dll"
 CORE = WORK / "core" / "genesis_plus_gx_libretro.dll"           # a copy: RetroArch's own file is left alone
-ROM = Path(os.environ.get("NHL94_SMAP_ROM") or WORK / "smap94.bin")   # NHL94_SMAP_ROM: a patched copy                                         # the test ROM (build.py)
+ROM = Path(os.environ.get("NHL94_SMAP_ROM") or WORK / "smap94.bin")   # the test ROM (build.py); NHL94_SMAP_ROM: a patched copy
 BUILD = WORK / "g94"                                              # the copy of the disassembly it is built from
 LISTING = BUILD / "output" / "build" / "nhl94 .lst"
 STATE_TOP = WORK / "live.state"                                   # period 1: home shoots at the top net
@@ -18,7 +18,7 @@ RUNS = WORK / "runs"
 # The SNES map (snes_*.py): the retail ROM (no test ROM needed) and Snes9x. The disassembly stopped tracking its copy
 # (lst/nhl94snes.sfc, 2026-10-28): put one in the work folder (from the disassembly's history:
 # git show e1aab8d4^:lst/nhl94snes.sfc > WORK/nhl94snes.sfc); the old place is still tried
-SNES_ROM = WORK / "nhl94snes.sfc"
+SNES_ROM = Path(os.environ.get("NHL94_SNES_ROM") or WORK / "nhl94snes.sfc")   # NHL94_SNES_ROM: a patched copy
 if not SNES_ROM.exists():
     SNES_ROM = Path.home() / "NHL94_disasm" / "NHL94SNES" / "lst" / "nhl94snes.sfc"
 SNES_CORE_SOURCE = RETROARCH / "cores" / "snes9x_libretro.dll"
