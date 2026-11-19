@@ -6138,6 +6138,39 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's music round 10 (bends, cut notes, loop state), played (2026-11-18)
+
+NHL94_music_roundtrip10.smc a83334ff and SA1_music_roundtrip10.sfc cee1f573 (SHA-256, first 8; title, menu and
+playoff from fresh exports). Every frame from power-on, each sounding voice's sample, pitch, VOL L / R and ENVX read
+from the S-DSP and compared voice by voice with the original's (nhl94_SA1_Original.sfc for the SA-1 build): the title
+left running from power-on, the menu after START, and the playoff on the menu screen (the menu's four song loads
+repointed in scratch copies: the original's menu $90:C20C, playoff $93:ED31). The menu's demo countdown (setoptions
+d6, $12C0, at $00BD; on the SA-1 build the direct page is in I-RAM, $30BD, written through the saved state's FillRAM
+block) was held in our copies so the pieces run past it.
+
+| piece | frames compared (loops) | 1 MB: differing voice-frames | SA-1 |
+|---|---|---|---|
+| title | 5,209 (2.7 of 1,920) | 0 | 0 |
+| menu | 14,628 (2.3 of 6,252) | 0 | 12 (one note) |
+| playoff | 11,228 (3.0 of 3,720) | 0 | 0 |
+
+(Round 9: 2,030 / 626 / 1,527 by NOSE4Web's own player.) Each point NOSE4Web asked about, per loop,
+the same frames, pitches and mean volumes as the original: menu sample 15's bend ($0E43-$10F3, centred and right:
+186, 237 frames above $0E41 in loops 1 and 2); title sample 1 at $0359 (48 frames each full loop), crash 7 at $05FE
+(245, 275), sample 12 at $050A (24, 24), dist 13 at $0480 (240, 227); menu sample 3 (94 frames at 60 / 74, then 73 at
+83 / 103); playoff brass (sample 8) L / R and the organ (14: 3,096, 2,704, 2,527 frames) frame for frame.
+
+- **SA-1's one note:** menu voice 2, sample 8 at $10F3 / $10EF, 12 frames (5305-5316): VOL L 21 on the SA-1 original
+  against 20 on the new build. The 1 MB original plays it at 20, and the menu song's bytes are the same in both
+  originals: the SA-1 engine works this one volume out a step differently from the original data, not from NOSE4Web's.
+- **Game flow, not music:** the title hands over to the next screen a frame earlier on the new build (6562 against
+  6563); after that frame the music is the same. The random seed ($0792) parts at frame 1521, on the title, so the demo after an idle menu picks other teams (15 v 3 against 20 v 25), and its screens fade the menu
+  out 130 frames later. The countdown itself is the same on both (set at 2212, out at 7133).
+- **The .mid files:** valid SMF (format 1, division 60; Title 15 tracks, Menu 19, Playoff 14): every track's length
+  matches its header and ends with End of Track, every note on has its off, data bytes under 128, one tempo each.
+  Pitch bends: Title 268 on 2 tracks, both with RPN 0 = 12 semitones; Menu 192 on 3 tracks (range 2, no RPN); Playoff
+  none. Notes 1,695 / 1,554 / 602 (as round 9).
+
 ### NOSE4Web's music round 9 (percussion), played (2026-11-18)
 
 NHL94_music_roundtrip.smc 1bb97437 (against NHL94.smc) and SA1_music_roundtrip.sfc 613f24f1 (against

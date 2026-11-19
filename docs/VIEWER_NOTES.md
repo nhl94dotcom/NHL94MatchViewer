@@ -1869,4 +1869,7 @@ cut-off had left out 48% of game 2, 28% of game 3 and 19% of game 1; it is 0.6 n
 Game 2: controlled skater right 55-59%, missing 3-4% (41-43%, 46-48%); possession 91% (86%); passes 15 of 22 (14),
 zone entries 13 of 14 (12), check attempts 11 of 12 (10). Game 3: controlled skater right 62-70%, missing 3% (54%,
 26-29%); zone entries 16 of 17 (15), faceoffs 4 of 5 (5), the rest the same. Read positions agree with the recording
-to under a unit (median), so the remaining misses are identity, not position.
+to under a unit (median), so the remaining misses are identity, not position. Game 1 (where the rules were tuned)
+holds: controlled skater right 75-80%, missing 4% (66-70%, 15-16%); possession 85%, passes 31 of 36, turnovers 11 of
+14 (18 read, 17 before), check attempts 9 of 14 (15 read, now 14), entries 16 of 18, hits and faceoffs all, as before;
+shots 11 of 13 with 13 read (10, 14 read).
