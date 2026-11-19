@@ -1,0 +1,151 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='900' height='660' viewBox='0 0 900 660' font-family='Segoe UI, Helvetica, Arial, sans-serif'>
+<title>NHL '95 stick and body fixes in computer games</title>
+<rect width='900' height='660' fill='#ffffff'/>
+<text x='450.0' y='30.0' font-size='18' fill='#1f2933' text-anchor='middle' font-weight='bold'>NHL '95's stick and body fixes, in computer games</text>
+<text x='450.0' y='52.0' font-size='12' fill='#52606d' text-anchor='middle' font-weight='normal'>Two bugs in checkpuckcoll, where a skater meets a loose puck: the stick's reach test always passes, and the body test is never reached.</text>
+<text x='450.0' y='70.0' font-size='12' fill='#1f2933' text-anchor='middle' font-weight='bold'>With the body fix skaters block about 12 more pucks a game; the stick fix cuts quick steals of loose pucks by about 40%.</text>
+<text x='70.0' y='116.0' font-size='14' fill='#1f2933' text-anchor='start' font-weight='bold'>Body blocks, a game</text>
+<line x1='70.0' y1='300.0' x2='440.0' y2='300.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='304.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>0</text>
+<line x1='70.0' y1='257.5' x2='440.0' y2='257.5' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='261.5' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>10</text>
+<line x1='70.0' y1='215.0' x2='440.0' y2='215.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='219.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>20</text>
+<line x1='70.0' y1='172.5' x2='440.0' y2='172.5' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='176.5' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>30</text>
+<line x1='70.0' y1='130.0' x2='440.0' y2='130.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='134.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>40</text>
+<line x1='70.0' y1='300.0' x2='440.0' y2='300.0' stroke='#52606d' stroke-width='1' />
+<path d='M82.0,300.0 V235.2 Q82.0,231.2 86.0,231.2 H146.5 Q150.5,231.2 150.5,235.2 V300.0 Z' fill='#8a8984'><title>Original: 16.2 a game (standard error 2.3)</title></path>
+<line x1='112.2' y1='221.4' x2='120.2' y2='221.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='112.2' y1='240.9' x2='120.2' y2='240.9' stroke='#1f2933' stroke-width='1.2' />
+<line x1='116.2' y1='221.4' x2='116.2' y2='240.9' stroke='#1f2933' stroke-width='1.2' />
+<text x='116.2' y='215.4' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>16.2</text>
+<text x='116.2' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Original</text>
+<path d='M174.5,300.0 V211.3 Q174.5,207.3 178.5,207.3 H239.0 Q243.0,207.3 243.0,211.3 V300.0 Z' fill='#2a78d6'><title>Stick fix: 21.8 a game (standard error 0.6)</title></path>
+<line x1='204.8' y1='204.8' x2='212.8' y2='204.8' stroke='#1f2933' stroke-width='1.2' />
+<line x1='204.8' y1='209.9' x2='212.8' y2='209.9' stroke='#1f2933' stroke-width='1.2' />
+<line x1='208.8' y1='204.8' x2='208.8' y2='209.9' stroke='#1f2933' stroke-width='1.2' />
+<text x='208.8' y='198.8' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>21.8</text>
+<text x='208.8' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Stick fix</text>
+<path d='M267.0,300.0 V185.8 Q267.0,181.8 271.0,181.8 H331.5 Q335.5,181.8 335.5,185.8 V300.0 Z' fill='#eb6834'><title>Body fix: 27.8 a game (standard error 2.5)</title></path>
+<line x1='297.2' y1='171.2' x2='305.2' y2='171.2' stroke='#1f2933' stroke-width='1.2' />
+<line x1='297.2' y1='192.5' x2='305.2' y2='192.5' stroke='#1f2933' stroke-width='1.2' />
+<line x1='301.2' y1='171.2' x2='301.2' y2='192.5' stroke='#1f2933' stroke-width='1.2' />
+<text x='301.2' y='165.2' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>27.8</text>
+<text x='301.2' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Body fix</text>
+<path d='M359.5,300.0 V182.9 Q359.5,178.9 363.5,178.9 H424.0 Q428.0,178.9 428.0,182.9 V300.0 Z' fill='#1baf7a'><title>Both fixes: 28.5 a game (standard error 2.3)</title></path>
+<line x1='389.8' y1='169.1' x2='397.8' y2='169.1' stroke='#1f2933' stroke-width='1.2' />
+<line x1='389.8' y1='188.7' x2='397.8' y2='188.7' stroke='#1f2933' stroke-width='1.2' />
+<line x1='393.8' y1='169.1' x2='393.8' y2='188.7' stroke='#1f2933' stroke-width='1.2' />
+<text x='393.8' y='163.1' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>28.5</text>
+<text x='393.8' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Both fixes</text>
+<text x='510.0' y='116.0' font-size='14' fill='#1f2933' text-anchor='start' font-weight='bold'>Quick steals of a loose puck, a game</text>
+<line x1='510.0' y1='300.0' x2='880.0' y2='300.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='304.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>0</text>
+<line x1='510.0' y1='257.5' x2='880.0' y2='257.5' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='261.5' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>10</text>
+<line x1='510.0' y1='215.0' x2='880.0' y2='215.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='219.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>20</text>
+<line x1='510.0' y1='172.5' x2='880.0' y2='172.5' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='176.5' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>30</text>
+<line x1='510.0' y1='130.0' x2='880.0' y2='130.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='134.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>40</text>
+<line x1='510.0' y1='300.0' x2='880.0' y2='300.0' stroke='#52606d' stroke-width='1' />
+<path d='M522.0,300.0 V165.9 Q522.0,161.9 526.0,161.9 H586.5 Q590.5,161.9 590.5,165.9 V300.0 Z' fill='#8a8984'><title>Original: 32.5 a game (standard error 2.2)</title></path>
+<line x1='552.2' y1='152.5' x2='560.2' y2='152.5' stroke='#1f2933' stroke-width='1.2' />
+<line x1='552.2' y1='171.2' x2='560.2' y2='171.2' stroke='#1f2933' stroke-width='1.2' />
+<line x1='556.2' y1='152.5' x2='556.2' y2='171.2' stroke='#1f2933' stroke-width='1.2' />
+<text x='556.2' y='146.5' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>32.5</text>
+<text x='556.2' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Original</text>
+<path d='M614.5,300.0 V219.8 Q614.5,215.8 618.5,215.8 H679.0 Q683.0,215.8 683.0,219.8 V300.0 Z' fill='#2a78d6'><title>Stick fix: 19.8 a game (standard error 3.4)</title></path>
+<line x1='644.8' y1='201.4' x2='652.8' y2='201.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='644.8' y1='230.3' x2='652.8' y2='230.3' stroke='#1f2933' stroke-width='1.2' />
+<line x1='648.8' y1='201.4' x2='648.8' y2='230.3' stroke='#1f2933' stroke-width='1.2' />
+<text x='648.8' y='195.4' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>19.8</text>
+<text x='648.8' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Stick fix</text>
+<path d='M707.0,300.0 V172.2 Q707.0,168.2 711.0,168.2 H771.5 Q775.5,168.2 775.5,172.2 V300.0 Z' fill='#eb6834'><title>Body fix: 31.0 a game (standard error 1.8)</title></path>
+<line x1='737.2' y1='160.6' x2='745.2' y2='160.6' stroke='#1f2933' stroke-width='1.2' />
+<line x1='737.2' y1='175.9' x2='745.2' y2='175.9' stroke='#1f2933' stroke-width='1.2' />
+<line x1='741.2' y1='160.6' x2='741.2' y2='175.9' stroke='#1f2933' stroke-width='1.2' />
+<text x='741.2' y='154.6' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>31</text>
+<text x='741.2' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Body fix</text>
+<path d='M799.5,300.0 V202.8 Q799.5,198.8 803.5,198.8 H864.0 Q868.0,198.8 868.0,202.8 V300.0 Z' fill='#1baf7a'><title>Both fixes: 23.8 a game (standard error 1.6)</title></path>
+<line x1='829.8' y1='192.1' x2='837.8' y2='192.1' stroke='#1f2933' stroke-width='1.2' />
+<line x1='829.8' y1='205.7' x2='837.8' y2='205.7' stroke='#1f2933' stroke-width='1.2' />
+<line x1='833.8' y1='192.1' x2='833.8' y2='205.7' stroke='#1f2933' stroke-width='1.2' />
+<text x='833.8' y='186.1' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>23.8</text>
+<text x='833.8' y='316.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Both fixes</text>
+<text x='70.0' y='381.0' font-size='14' fill='#1f2933' text-anchor='start' font-weight='bold'>Own team's loose pucks picked up, a game</text>
+<line x1='70.0' y1='565.0' x2='440.0' y2='565.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='569.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>0</text>
+<line x1='70.0' y1='512.7' x2='440.0' y2='512.7' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='516.7' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>40</text>
+<line x1='70.0' y1='460.4' x2='440.0' y2='460.4' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='464.4' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>80</text>
+<line x1='70.0' y1='408.1' x2='440.0' y2='408.1' stroke='#d9e2ec' stroke-width='1' />
+<text x='64.0' y='412.1' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>120</text>
+<line x1='70.0' y1='565.0' x2='440.0' y2='565.0' stroke='#52606d' stroke-width='1' />
+<path d='M82.0,565.0 V433.3 Q82.0,429.3 86.0,429.3 H146.5 Q150.5,429.3 150.5,433.3 V565.0 Z' fill='#8a8984'><title>Original: 103.8 a game (standard error 3.9)</title></path>
+<line x1='112.2' y1='424.2' x2='120.2' y2='424.2' stroke='#1f2933' stroke-width='1.2' />
+<line x1='112.2' y1='434.4' x2='120.2' y2='434.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='116.2' y1='424.2' x2='116.2' y2='434.4' stroke='#1f2933' stroke-width='1.2' />
+<text x='116.2' y='418.2' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>103.8</text>
+<text x='116.2' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Original</text>
+<path d='M174.5,565.0 V423.2 Q174.5,419.2 178.5,419.2 H239.0 Q243.0,419.2 243.0,423.2 V565.0 Z' fill='#2a78d6'><title>Stick fix: 111.5 a game (standard error 7.2)</title></path>
+<line x1='204.8' y1='409.8' x2='212.8' y2='409.8' stroke='#1f2933' stroke-width='1.2' />
+<line x1='204.8' y1='428.6' x2='212.8' y2='428.6' stroke='#1f2933' stroke-width='1.2' />
+<line x1='208.8' y1='409.8' x2='208.8' y2='428.6' stroke='#1f2933' stroke-width='1.2' />
+<text x='208.8' y='403.8' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>111.5</text>
+<text x='208.8' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Stick fix</text>
+<path d='M267.0,565.0 V424.1 Q267.0,420.1 271.0,420.1 H331.5 Q335.5,420.1 335.5,424.1 V565.0 Z' fill='#eb6834'><title>Body fix: 110.8 a game (standard error 3.4)</title></path>
+<line x1='297.2' y1='415.7' x2='305.2' y2='415.7' stroke='#1f2933' stroke-width='1.2' />
+<line x1='297.2' y1='424.6' x2='305.2' y2='424.6' stroke='#1f2933' stroke-width='1.2' />
+<line x1='301.2' y1='415.7' x2='301.2' y2='424.6' stroke='#1f2933' stroke-width='1.2' />
+<text x='301.2' y='409.7' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>110.8</text>
+<text x='301.2' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Body fix</text>
+<path d='M359.5,565.0 V413.4 Q359.5,409.4 363.5,409.4 H424.0 Q428.0,409.4 428.0,413.4 V565.0 Z' fill='#1baf7a'><title>Both fixes: 119.0 a game (standard error 4.6)</title></path>
+<line x1='389.8' y1='403.4' x2='397.8' y2='403.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='389.8' y1='415.4' x2='397.8' y2='415.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='393.8' y1='403.4' x2='393.8' y2='415.4' stroke='#1f2933' stroke-width='1.2' />
+<text x='393.8' y='397.4' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>119</text>
+<text x='393.8' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Both fixes</text>
+<text x='510.0' y='381.0' font-size='14' fill='#1f2933' text-anchor='start' font-weight='bold'>Shots on goal, a game</text>
+<line x1='510.0' y1='565.0' x2='880.0' y2='565.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='569.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>0</text>
+<line x1='510.0' y1='522.5' x2='880.0' y2='522.5' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='526.5' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>10</text>
+<line x1='510.0' y1='480.0' x2='880.0' y2='480.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='484.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>20</text>
+<line x1='510.0' y1='437.5' x2='880.0' y2='437.5' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='441.5' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>30</text>
+<line x1='510.0' y1='395.0' x2='880.0' y2='395.0' stroke='#d9e2ec' stroke-width='1' />
+<text x='504.0' y='399.0' font-size='10' fill='#52606d' text-anchor='end' font-weight='normal'>40</text>
+<line x1='510.0' y1='565.0' x2='880.0' y2='565.0' stroke='#52606d' stroke-width='1' />
+<path d='M522.0,565.0 V439.4 Q522.0,435.4 526.0,435.4 H586.5 Q590.5,435.4 590.5,439.4 V565.0 Z' fill='#8a8984'><title>Original: 30.5 a game (standard error 2.2)</title></path>
+<line x1='552.2' y1='426.0' x2='560.2' y2='426.0' stroke='#1f2933' stroke-width='1.2' />
+<line x1='552.2' y1='444.7' x2='560.2' y2='444.7' stroke='#1f2933' stroke-width='1.2' />
+<line x1='556.2' y1='426.0' x2='556.2' y2='444.7' stroke='#1f2933' stroke-width='1.2' />
+<text x='556.2' y='420.0' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>30.5</text>
+<text x='556.2' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Original</text>
+<path d='M614.5,565.0 V432.1 Q614.5,428.1 618.5,428.1 H679.0 Q683.0,428.1 683.0,432.1 V565.0 Z' fill='#2a78d6'><title>Stick fix: 32.2 a game (standard error 3.6)</title></path>
+<line x1='644.8' y1='412.8' x2='652.8' y2='412.8' stroke='#1f2933' stroke-width='1.2' />
+<line x1='644.8' y1='443.4' x2='652.8' y2='443.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='648.8' y1='412.8' x2='648.8' y2='443.4' stroke='#1f2933' stroke-width='1.2' />
+<text x='648.8' y='406.8' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>32.2</text>
+<text x='648.8' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Stick fix</text>
+<path d='M707.0,565.0 V447.9 Q707.0,443.9 711.0,443.9 H771.5 Q775.5,443.9 775.5,447.9 V565.0 Z' fill='#eb6834'><title>Body fix: 28.5 a game (standard error 2.5)</title></path>
+<line x1='737.2' y1='433.2' x2='745.2' y2='433.2' stroke='#1f2933' stroke-width='1.2' />
+<line x1='737.2' y1='454.5' x2='745.2' y2='454.5' stroke='#1f2933' stroke-width='1.2' />
+<line x1='741.2' y1='433.2' x2='741.2' y2='454.5' stroke='#1f2933' stroke-width='1.2' />
+<text x='741.2' y='427.2' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>28.5</text>
+<text x='741.2' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Body fix</text>
+<path d='M799.5,565.0 V457.6 Q799.5,453.6 803.5,453.6 H864.0 Q868.0,453.6 868.0,457.6 V565.0 Z' fill='#1baf7a'><title>Both fixes: 26.2 a game (standard error 1.7)</title></path>
+<line x1='829.8' y1='446.4' x2='837.8' y2='446.4' stroke='#1f2933' stroke-width='1.2' />
+<line x1='829.8' y1='460.9' x2='837.8' y2='460.9' stroke='#1f2933' stroke-width='1.2' />
+<line x1='833.8' y1='446.4' x2='833.8' y2='460.9' stroke='#1f2933' stroke-width='1.2' />
+<text x='833.8' y='440.4' font-size='11' fill='#1f2933' text-anchor='middle' font-weight='bold'>26.2</text>
+<text x='833.8' y='581.0' font-size='11' fill='#52606d' text-anchor='middle' font-weight='normal'>Both fixes</text>
+<text x='70.0' y='636.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>4 computer games a build from the same start and seeds, penalties on, 5-minute periods; the whiskers are one standard error.</text>
+<text x='70.0' y='652.0' font-size='11' fill='#52606d' text-anchor='start' font-weight='normal'>Goals (0.8-2.8 a game) are too few to compare. Goalies' touches were about the same in all four.</text>
+</svg>

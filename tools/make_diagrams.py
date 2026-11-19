@@ -1988,6 +1988,128 @@ def goalie_stick_cover():
     return svg(W, H, b, "Where each net's goalie stops a low shot, NHL '94 Genesis")
 
 
+# ------------------------------------------------------------------------------------- NHL '95: the five-hole, played
+SLIP_GRIDS = {   # goals by speed (rows, 10,000-24,000) and lane (-8..8 across his centre); "u": a goal nobody touched
+    "94": (2, ["0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+               "0 0 0 0 1 1 1 2 2 0 0 0 0 0 0 0 0", "0 0 0 0 0 1 2 1 0 0 0 0 0 0 0 0 0",
+               "0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 1 1u 0 0 0 0 0 0 0 0"]),
+    "95": (4, ["0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 2u 2u 2u 0 0 0 0 0 0 0",
+               "0 0 0 0 0 0 0 1u 1u 1u 2u 1 0 0 0 0 0", "0 0 0 0 0 2u 2u 4u 4u 2u 4u 4u 0 0 0 0 0",
+               "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"]),
+}
+SLIP_SPEEDS = (10000, 12000, 15000, 18000, 21000, 24000)
+
+
+def slip_save_95():
+    """A flat puck at a goalie already in a stick save, NHL '94 against NHL '95 (STUDY_NOTES "Through the goalie: NHL '94
+    against NHL '95", analysis/scoring_map/slip_save.py): 17 lanes x 6 speeds, NHL '94's two stick saves (2 pucks a
+    cell), NHL '95's two, each at its start and one frame on (4 a cell). Sequential blue (the dataviz reference ramp,
+    steps 250-650 from light) by the share of pucks in."""
+    W, H = 800, 660
+    ramp = {0: "#f0efec", 1: "#86b6ef", 2: "#5598e7", 3: "#256abf", 4: "#104281"}
+    b = []
+    b.append(text(W / 2, 30, "Through the goalie in a stick save: NHL '94 against NHL '95", 18, INK, "middle", "bold"))
+    b.append(text(W / 2, 52, "A flat puck sent at a computer goalie who has just started a stick save, in 17 lanes across his "
+                  "middle, at six speeds.", 12, SOFT, "middle"))
+    b.append(text(W / 2, 70, "NHL '94: 15 of 204 in (7%), all but one after he touched it. NHL '95: 34 of 408 in (8%), "
+                  "32 of them untouched.", 12, INK, "middle", "bold"))
+    cw, ch, x0 = 36, 26, 150
+    for pi, (game, title, note) in enumerate((
+            ("94", "NHL '94 Genesis", "In after a touch: the puck crosses the stick's blind ring and his body bounces it back into the net."),
+            ("95", "NHL '95 Genesis", "In untouched: the puck slides down a channel through his middle to the goal line."))):
+        n, rows = SLIP_GRIDS[game]
+        y0 = 125 + pi * 250
+        b.append(text(x0, y0 - 22, title, 15, INK, weight="bold"))
+        b.append(text(x0, y0 - 6, note, 12, SOFT))
+        for ri, row in enumerate(rows):
+            y = y0 + 6 + ri * ch
+            b.append(text(x0 - 10, y + ch / 2 + 4, f"{SLIP_SPEEDS[ri]:,}", 11, SOFT, "end"))
+            for li, cell in enumerate(row.split()):
+                k = int(cell.rstrip("u"))
+                share = round(4 * k / n)
+                x = x0 + li * cw
+                b.append(f"<rect x='{x + 1}' y='{y + 1}' width='{cw - 2}' height='{ch - 2}' rx='3' fill='{ramp[share]}'>"
+                         f"<title>lane {li - 8:+d}, speed {SLIP_SPEEDS[ri]:,}: {k} of {n} in"
+                         f"{', untouched' if cell.endswith('u') else ''}</title></rect>")
+                if k:
+                    b.append(text(x + cw / 2, y + ch / 2 + 4, f"{k}/{n}", 10, "#ffffff" if share >= 2 else INK, "middle", "bold"))
+                if cell.endswith("u"):
+                    b.append(circle(x + cw - 6, y + 6, 2.5, "#ffffff", INK, 1))
+        yb = y0 + 6 + 6 * ch
+        for li in range(17):
+            if (li - 8) % 4 == 0:
+                b.append(text(x0 + li * cw + cw / 2, yb + 14, f"{li - 8:+d}" if li != 8 else "0", 11, SOFT, "middle"))
+        b.append(text(x0 + 8.5 * cw, yb + 30, "lane: units across from his centre", 11, SOFT, "middle"))
+        ym = y0 + 6 + 3 * ch
+        b.append(f"<text x='{x0 - 78}' y='{ym}' font-size='11' fill='{SOFT}' text-anchor='middle' "
+                 f"transform='rotate(-90 {x0 - 78} {ym})'>puck speed</text>")
+    ly = H - 56
+    lx = x0
+    b.append(text(lx, ly, "Share of pucks in:", 12, INK))
+    for i, (share, lab) in enumerate(((0, "none"), (1, "a quarter"), (2, "half"), (3, "three quarters"), (4, "all"))):
+        x = lx + 118 + i * 112
+        b.append(f"<rect x='{x}' y='{ly - 12}' width='24' height='16' rx='3' fill='{ramp[share]}'/>")
+        b.append(text(x + 30, ly, lab, 12, INK))
+    b.append(circle(lx + 6, ly + 22, 2.5, "#ffffff", INK, 1))
+    b.append(text(lx + 16, ly + 26, "a goal the goalie never touched", 12, INK))
+    b.append(text(lx, ly + 46, "Both games stop every puck outside their middle lanes. A person's goalie wasn't tested.", 11, SOFT))
+    return svg(W, H, b, "Through the goalie in a stick save, NHL '94 and NHL '95")
+
+
+CHECKPUCK_95 = {  # a game: mean and standard error over 4 computer games (STUDY_NOTES "NHL '95 checkpuckcoll fixes")
+    "Body blocks": [(16.2, 2.3), (21.8, 0.6), (27.8, 2.5), (28.5, 2.3)],
+    "Quick steals of a loose puck": [(32.5, 2.2), (19.8, 3.4), (31.0, 1.8), (23.8, 1.6)],
+    "Own team's loose pucks picked up": [(103.8, 3.9), (111.5, 7.2), (110.8, 3.4), (119.0, 4.6)],
+    "Shots on goal": [(30.5, 2.2), (32.2, 3.6), (28.5, 2.5), (26.2, 1.7)],
+}
+
+
+def checkpuck_95():
+    """NOSE4Web's NHL '95 checkpuckcoll fixes in computer games (gen95_checkpuck_check.py: 4 games a build, the same
+    seeds): four small multiples, each on its own scale from zero; the builds in the dataviz reference palette (retail
+    neutral, then slots 1-3, validated: all checks pass, the aqua's contrast warning met by direct labels)."""
+    W, H = 900, 660
+    builds = (("Original", "#8a8984"), ("Stick fix", "#2a78d6"), ("Body fix", "#eb6834"), ("Both fixes", "#1baf7a"))
+    b = []
+    b.append(text(W / 2, 30, "NHL '95's stick and body fixes, in computer games", 18, INK, "middle", "bold"))
+    b.append(text(W / 2, 52, "Two bugs in checkpuckcoll, where a skater meets a loose puck: the stick's reach test always "
+                  "passes, and the body test is never reached.", 12, SOFT, "middle"))
+    b.append(text(W / 2, 70, "With the body fix skaters block about 12 more pucks a game; the stick fix cuts quick steals "
+                  "of loose pucks by about 40%.", 12, INK, "middle", "bold"))
+    pw, ph = 370, 170
+    for i, (name, vals) in enumerate(CHECKPUCK_95.items()):
+        px = 70 + (i % 2) * (pw + 70)
+        py = 130 + (i // 2) * (ph + 95)
+        top = math.ceil(max(m + 2 * se for m, se in vals) / 10) * 10
+        step = 10 if top <= 50 else 20 if top <= 100 else 40
+        b.append(text(px, py - 14, f"{name}, a game", 14, INK, weight="bold"))
+        for t in range(0, top + 1, step):
+            yy = py + ph - ph * t / top
+            b.append(line(px, yy, px + pw, yy, GRID, 1))
+            b.append(text(px - 6, yy + 4, str(t), 10, SOFT, "end"))
+        b.append(line(px, py + ph, px + pw, py + ph, SOFT, 1))
+        bw = pw / 4
+        for j, ((bn, col), (m, se)) in enumerate(zip(builds, vals)):
+            x = px + j * bw + 12
+            w = bw - 24
+            top_y = py + ph - ph * m / top
+            b.append(f"<path d='M{x:.1f},{py + ph:.1f} V{top_y + 4:.1f} Q{x:.1f},{top_y:.1f} {x + 4:.1f},{top_y:.1f} "
+                     f"H{x + w - 4:.1f} Q{x + w:.1f},{top_y:.1f} {x + w:.1f},{top_y + 4:.1f} V{py + ph:.1f} Z' "
+                     f"fill='{col}'><title>{bn}: {m} a game (standard error {se})</title></path>")
+            cx = x + w / 2
+            y1, y2 = py + ph - ph * (m + se) / top, py + ph - ph * max(m - se, 0) / top
+            for a, c_ in ((cx, y1), (cx, y2)):
+                b.append(line(a - 4, c_, a + 4, c_, INK, 1.2))
+            b.append(line(cx, y1, cx, y2, INK, 1.2))
+            b.append(text(cx, y1 - 6, f"{m:g}", 11, INK, "middle", "bold"))
+            b.append(text(cx, py + ph + 16, bn, 11, SOFT, "middle"))
+    b.append(text(70, H - 24, "4 computer games a build from the same start and seeds, penalties on, 5-minute periods; the whiskers "
+                  "are one standard error.", 11, SOFT))
+    b.append(text(70, H - 8, "Goals (0.8-2.8 a game) are too few to compare. Goalies' touches were about the same in all four.", 11, SOFT))
+    return svg(W, H, b, "NHL '95 stick and body fixes in computer games")
+
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -2002,7 +2124,8 @@ def main():
              "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
              "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
              "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence(),
-             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis(), "goalie_stick_ends.svg": goalie_stick_ends(), "goalie_stick_cover.svg": goalie_stick_cover()}
+             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis(), "goalie_stick_ends.svg": goalie_stick_ends(), "goalie_stick_cover.svg": goalie_stick_cover(),
+             "slip_save_94_95.svg": slip_save_95(), "checkpuck_95.svg": checkpuck_95()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

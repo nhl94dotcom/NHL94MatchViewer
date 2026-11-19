@@ -7393,6 +7393,9 @@ passed within 16 of his centre (on the ice for the real shots).
   the channel to the goal line. Both only through his middle (NHL '94 lanes 4 left to the centre, the blade's side
   clear; NHL '95 3 left to 3 right) and by speed (NHL '94 15,000-24,000; NHL '95 12,000-18,000, 22 of its 34 at
   18,000, none at 21,000+: when the puck reaches him in the save's frames).
+- **Figures** (2026-11-19): `docs/img/slip_save_94_95.svg` (both games' goals by lane and speed, `tools/make_diagrams.py`);
+  `docs/img/slip_save_94.gif` and `slip_save_95.gif` (one goal each, played again a frame at a time at a third of the
+  game's speed: `analysis/scoring_map/slip_gif.py GAME ROM STATE OUT.gif`).
 
 ### NOSE4Web's NHL '95 five-hole fix, played (2026-11-16, d3fb794)
 
@@ -8041,6 +8044,7 @@ fix ($7B6F6 `move.w` -> `cmp.w (NegChkBodyP).w,d1`; $7B704 `cmp.l (ChkBodySqP).w
 The body fix makes skaters block (about 12 more a game, a couple fewer shots on goal); the stick fix (a true circle,
 the half reach for nopuck) cuts quick steals of loose pucks by about 40% and leaves teams more of their own loose
 pucks; goalies about the same.
+Figure: `docs/img/checkpuck_95.svg` (`tools/make_diagrams.py`: the four builds side by side, a standard error each).
 
 ### The SNES instigator minor with no teammate qualifying (2026-11-19; `fight_time_check.py snes ... --noinstig`)
 
