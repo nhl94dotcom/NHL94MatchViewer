@@ -54,6 +54,15 @@ def pct(v):
     return 100 / (1 + math.exp(-v))
 
 
+AVERAGE_N = 5
+
+
+def average_five(rows):
+    """rows: (log odds, name, extra text). The AVERAGE_N closest to 50%, as 'name (50.4%, extra)'."""
+    near = sorted(rows, key=lambda r: abs(r[0]))[:AVERAGE_N]
+    return ", ".join(f"{p} ({pct(v):.1f}%{', ' + x if x else ''})" for v, p, x in sorted(near, key=lambda r: -r[0]))
+
+
 def ratings_over_time(fit, days_wanted):
     """{day: {coach: (log odds, games by then, games in the 365 days before)}}."""
     out = {}
@@ -159,6 +168,13 @@ def build(name, label, title, at, sets):
     # ---- year's end
     firsts = defaultdict(list)
     top10s = defaultdict(int)
+    now_rows = [(v[0], p, f"{v[2]} games in the last year") for p, v in at_end[ends[-1]].items() if ok(v)]
+    lines += ["## Who is \"average\"?", "",
+              f"Every Rating here is a win chance against **the average coach**: the average of all coaches with {MIN_CAREER}+ games "
+              "(retired ones too), with even teams and no home edge. A 50% coach is that average. The coaches closest to it "
+              f"now (active: {MIN_CAREER}+ career games, {MIN_RECENT}+ in the last year), as of "
+              f"{date.fromordinal(last).isoformat()}:", "", "- " + average_five(now_rows), "",
+              "Each year's table below names its own five, since the field changes.", ""]
     lines += ["## The top ten at each year's end", ""]
     for yr, day in zip(years, ends):
         vals = sorted(((v[0], p, v) for p, v in at_end[day].items() if v[1] >= MIN_CAREER and sum(rec[(p, yr)]) >= MIN_RECENT),
@@ -172,6 +188,9 @@ def build(name, label, title, at, sets):
             top10s[p] += 1
             if rank == 1:
                 firsts[p].append(yr)
+        if vals:
+            lines += ["", "Average that year (the qualified coaches closest to 50%): "
+                      + average_five([(v, p, f"{sum(rec[(p, yr)])} games") for v, p, _ in vals])]
         lines.append("")
     # ---- peaks
     peak_rating, peak_z = {}, {}
@@ -242,6 +261,16 @@ def build(name, label, title, at, sets):
               "| Rank | Coach | Held | From | To | Highest | When |", "| --- | --- | --- | --- | --- | --- | --- |"]
     for i, (p, (m, a, b, hi, hd)) in enumerate(sorted(peak_elo.items(), key=lambda kv: -kv[1][0])[:LIST], 1):
         lines.append(f"| {i} | {p} | {m:.0f} | {d(a)} | {d(b)} | {hi:.0f} | {d(hd)} |")
+    end_day = max(dd for path in paths.values() for _, dd in path)
+    active = {p: path[-1][0] for p, path in paths.items()
+              if len(path) >= ELO_FROM + ELO_WINDOW and sum(1 for _, dd in path if dd > end_day - 365) >= MIN_RECENT}
+    if active:
+        med = float(np.median(list(active.values())))
+        near = sorted(active, key=lambda p: abs(active[p] - med))[:AVERAGE_N]
+        lines += ["", f"Elo has no 50% point: everyone starts at 1500. The typical active player now (the median of the {len(active)} with "
+                  f"{ELO_FROM + ELO_WINDOW}+ games and {MIN_RECENT}+ in the last year) is at **{med:.0f}**; the closest: "
+                  + ", ".join(f"{p} ({active[p]:.0f})" for p in sorted(near, key=lambda p: -active[p]))
+                  + ". A held peak of 400 above that is about a 91% win chance against that player, 200 above about 76%."]
     # ---- all four
     measures = [{p: v[0] for p, v in peak_rating.items()}, {p: v[0] for p, v in prime.items()},
                 {p: v[0] for p, v in peak_z.items()}, {p: v[0] for p, v in peak_elo.items()}]
@@ -327,7 +356,7 @@ def combined(sets):
                 return f"{n}, {w}-{l}" + (f"-{t}" if t else "")
             name = f"**{q}**" if ng >= BOTH_MIN and ns >= BOTH_MIN else q
             lines.append(f"| {i} | {name} | {pct(c):.1f}% | {pct(a):.1f}% | {pct(b):.1f}% | {r(g_rec, ng)} | {r(s_rec, ns)} |")
-        lines.append("")
+        lines += ["", "Closest to 50% combined that year: " + average_five([(c, q, f"{pct(a):.0f}% / {pct(b):.0f}%") for c, q, a, b, _, _ in rows]), ""]
         shown += len(rows)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "PEAKS_COMBINED.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
