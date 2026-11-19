@@ -6138,6 +6138,52 @@ Line, B only when the team's saved block is marked $64). A line slot holds the r
   season game with one of the two traded teams on the pad.)
 - "A = Set Original Lines" works on the build (above).
 
+### NOSE4Web's computer centres' defence fix, played (2026-11-18)
+
+nhl94_centre_defence.bin b5c60f90, NHL_95_centre_defence.bin 701f9341, W18_centre_defence.bin 2f359081 (SHA-256,
+first 8; chaos's forum topic "Player Assignments - Center"). **The code:** asscenterd (NHL '94 logic94.asm; NHL '95
+logic95.asm, asstab entry $A) puts pucky flipped to the centre's end in d2 and tests the zone with it (right), then
+with the puck outside his zone adds the raw (pucky) to his slot (-128; NHL '95 -126) and halves it, negating for a
+pfgoal-clear centre: his target is (128 - pucky) / 2 where (128 + pucky) / 2 is meant, mirrored about y 64. x
+(puckx / 2) and the in-zone slot are right. `add.w (pucky).w,d1` -> `add.w d2,d1; nop` (D278 B75E / D278 B376 ->
+D242 4E71; NHL '94 $D27A, NHL '95 / W18 $80E14) is the whole of it: d2 isn't used after. The bytes: W18 differs from
+W18.bin in those 4 and the checksum; NHL '94 and NHL '95 also carry NOSE4Web's usual boot checksum jsr NOPped ($300 /
+$690) and its routine's room cleared ($FFAC0 / $1A72C0). **NHL '95 differs:** with someone carrying the puck its
+asscenterd takes `.cover` (HmDefMode / AwDefMode, set to 1 by Opening2 and never changed), which handles both ends
+itself, so the fixed line runs only while the puck is loose.
+
+`analysis/scoring_map/gen_centre_defence_check.py live 94|95 FRAMES GAMES ROM STATE ...`: the computer on both sides,
+every frame from RAM, a centre on asscenterd (asslist +$38 at assnum +$36: 94 assignment 5, 95 $A) with the other team
+carrying or the puck loose and outside his zone; in his own end's frame the fixed target (slot + p) / 2 and the bug's
+(slot - p) / 2. He never settles (the target moves with the puck; skateto re-aims every 12 frames), so the measure is
+which way he skates (|Yvel| > 1000) when the two targets lie either side of him: toward the fixed one, by the end he
+attacks. NHL '94: 2 games a ROM from power-on (cvc_record's matchups 0-1, 25,000 frames each); NHL '95 / W18: 40,000
+frames from gen95_assist_check's live states.
+
+| | pfgoal clear (the bug's end): carried / loose | pfgoal set: carried / loose |
+|---|---|---|
+| NHL '94 original | 12% (1,090) / 13% (432) | 62% / 65% |
+| NHL '94 fix | 74% (676) / 51% (281) | 68% / 70% |
+| NHL '95 original | 86% (.cover) / 24% (267) | 96% / 59% (59) |
+| NHL '95 fix | 77% (.cover) / 41% (169) | 65% / 97% (32) |
+| W18 original | 79% (.cover) / 57% (28) | 77% / 70% (20) |
+| W18 fix | 97% (.cover) / 83% (36) | 76% / 66% (146) |
+
+On the original a pfgoal-clear centre skates hard up the ice toward the mirrored target (e.g. the puck carried from
+y -223 to -110: he goes from -206 to -28 still accelerating, the fixed target -47 to 9, the bug's 176 to 119). In his
+own zone he holds the slot on both (median 12-26 from it on NHL '94, 37-48 on NHL '95 / W18, original and fix alike);
+offence and the switch to asscentero are untouched code. Shots against at the end that was wrong: 3 recorded computer
+games a ROM (cvc_record) can't show it (the top net 61 shots, 6.4 xG on the original, 63, 5.1 on the fix; the other
+net 61, 9.8 and 84, 13.1: the games part at the first difference).
+
+**Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
+of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
+before the opening faceoff, the scouting report (Matchups, San Jose in it) among them, pixel-identical.
+
+**Giveaways at an icing or a delayed call (the converter):** in the 31 icings of the Genesis recordings the puck is
+loose up to the sample the whistle hides it (the touch that ices it is never a possession sample before it), so no
+icing made a turnover; no turnover in the 0.5 s before any of 104 penalty calls.
+
 ### NOSE4Web's music round 10 (bends, cut notes, loop state), played (2026-11-18)
 
 NHL94_music_roundtrip10.smc a83334ff and SA1_music_roundtrip10.sfc cee1f573 (SHA-256, first 8; title, menu and
