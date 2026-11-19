@@ -7747,3 +7747,9 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
   - **Goals within 3 s of a bottom goalie's release:** 4 on v2, 0 on retail, none from a patched frame (447 / 448,
     450 then 407 ending in a giveaway pass, 682 / 683 one-frame touches). Goals by net: v2 12 bottom / 7 top, retail
     6 / 10: different games, about 16-19 goals a ROM, within chance.
+- **NOSE4Web's options (d4eba36): goalieBladeFix (the nine frames, as v2) and shotScatterFix (doshot's `lsr.w #1,d0`
+  at $C492 a nop).** The replays' "no-lsr" runs are the aim fix modelled (each bottom-net launch again with the depth
+  scatter not halved; computer goalie, 1,063 bottom-net replays): wide 8.2% -> 8.6%, out of play 0.8% -> 0.8%, "other"
+  6.1% -> 5.4%, goals 147 -> 146; 47 results changed. So about +0.4 points of wides at the bottom net (NOSE4Web
+  expected about 1); the top net has no halving. Their test ROMs (nhl94 / CDL_Season_12 _stick, _aim, _stick_aim)
+  not here yet.
