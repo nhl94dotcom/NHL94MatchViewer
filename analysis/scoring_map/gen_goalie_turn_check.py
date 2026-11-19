@@ -8,13 +8,15 @@ fix $42 -> $44 (NHL '94 $DB89, NHL '95 / W18 $80447).
   make ROM OUT          a scratch copy with the byte at $44, the header checksum made good and (NHL '94) the boot's
                         ROM check jsr at $300 NOPped as in NOSE4Web's builds (the sum alone didn't boot)
   case ROM ...          the case read from the code, placed: the bottom goalie facing 2 (right) and a loose puck
-                        sliding right to left along or behind his goal line (5 lines x 3 speeds): his facings
+                        sliding right to left along or behind his goal line (5 lines x 3 speeds): his facings; and the
+                        top goalie's mirror (facing 6, the puck sliding left to right behind the top line)
+  loose ROM ...         (c): a loose puck in front of each goalie, at rest or creeping, everyone else away: does he take it
   live 94|95 FRAMES GAMES ROM STATE [ROM STATE ...]   the computer on both sides (gen_centre_defence_check's set-up:
                         NHL '94 STATE - from power-on, cvc_record's matchups; NHL '95 / W18 a live state); every frame each
                         goalie (position 0) not controlled by a pad: his facing (+$55) and end; a turn through his own
                         net = a run of forbidden facings entered from one side (2 or 6) and left to the other
 
-python gen_goalie_turn_check.py case ROM ... | make ROM OUT [MASK hex, default 44] | live 94|95 FRAMES GAMES ROM STATE ..."""
+python gen_goalie_turn_check.py case|loose ROM ... | make ROM OUT [MASK hex, default 44] | live 94|95 FRAMES GAMES ROM STATE ..."""
 import struct
 import sys
 from collections import Counter
@@ -99,7 +101,7 @@ def live(game, rom, state, frames, n=0):
     return out
 
 
-def case(rom, out_rows=None):
+def case(rom, out_rows=None, top=False):
     """The case read from the code, placed (bot_scenario's live state, period 1: the home goalie defends the bottom
     net, pfgoal set): every skater parked at centre ice, the home goalie in his crease (0, -248) facing 2 (right), a
     loose puck sliding right to left (x +100 -> -100) at Y along or behind the bottom goal line (-264), speed VX; each
@@ -114,7 +116,8 @@ def case(rom, out_rows=None):
         for vx in (-8000, -12000, -16000):
             e.unserialize(base)
             e.setw(0xC468, 250)
-            g = next(k for k in range(6) if e.b(rec(k) + 0x35) == 0)
+            g = next(k for k in (range(6, 12) if top else range(6)) if e.b(rec(k) + 0x35) == 0)
+            yy, sx, start = (-y, -vx, -100) if top else (y, vx, 100)   # the top goalie: his line mirrored, the puck from the left
             seq = []
             for f in range(120):
                 for k in range(12):
@@ -125,38 +128,105 @@ def case(rom, out_rows=None):
                             e.setw(rec(k) + off, 0)
                 if f == 0:
                     e.setw(rec(g), 0)
-                    e.setw(rec(g) + 0x14, -248 & 0xFFFF)
-                    e.setw(rec(g) + 0x54, 2)
-                    e.setw(rec(14), 100)
-                    e.setw(rec(14) + 0x14, y & 0xFFFF)
+                    e.setw(rec(g) + 0x14, (248 if top else -248) & 0xFFFF)
+                    e.setw(rec(g) + 0x54, 6 if top else 2)
+                    e.setw(rec(14), start & 0xFFFF)
+                    e.setw(rec(14) + 0x14, yy & 0xFFFF)
                     e.setw(rec(14) + 0x18, 0)
-                    e.setw(rec(14) + 0x28, vx & 0xFFFF)
+                    e.setw(rec(14) + 0x28, sx & 0xFFFF)
                     e.setw(rec(14) + 0x2A, 0)
                     e.setw(rec(14) + 0x2C, 0)
                     e.setw(PUCKC, 0xFFFF)
                 e.run(1)
                 seq.append(e.b(rec(g) + 0x55) & 7)
-            first6 = next((i for i, v in enumerate(seq) if v == 6), None)
-            via = seq[:first6] if first6 is not None else seq
-            through = any(v in (3, 4, 5) for v in via) and first6 is not None
+            bad, goal_side, want = ({7, 0, 1}, "7-0-1", 2) if top else ({3, 4, 5}, "3-4-5", 6)
+            first = next((i for i, v in enumerate(seq) if v == want), None)
+            via = seq[:first] if first is not None else seq
+            through = any(v in bad for v in via) and first is not None
             tot["cases"] += 1
-            tot["reached 6 through 3-5 (his net)"] += through
-            tot["reached 6 by 1-0-7"] += first6 is not None and not through
-            tot["frames facing 3-5"] += sum(v in (3, 4, 5) for v in seq)
+            tot[f"reached {want} through {goal_side} (his net)"] += through
+            tot[f"reached {want} the other way"] += first is not None and not through
+            tot[f"frames facing {goal_side}"] += sum(v in bad for v in seq)
             if out_rows is not None:
                 out_rows.append((y, vx, "".join(map(str, seq))))
     return tot
 
 
+def loose(rom):
+    """NOSE4Web's (c), assgoalietopuck: for the bottom goalie (pfgoal set) `eori #8,ccr` flips only N, so he gives up on
+    vy >= 0, a puck at rest too; the top goalie on vy < 0. Placed (period 1's live state, every skater at centre ice):
+    a loose puck beside / behind each net (10-30 past the goal line), at the crease (20 out) or deep in the far end, at
+    rest or creeping toward or away from him (vy +/-300);
+    150 frames: did he take it, and how far out did he go."""
+    from bot import rec, PUCKC
+    from bot_scenario import live_state
+    from emu import Emu
+    import math
+    e = Emu(rom)
+    base = live_state(e, 0)
+    out = Counter()
+    # the skate-out is inserted (logic94 ~3773) only with the puck past the circles (|y| > 224, either end), both
+    # teams' nearest skaters 70 / 50 away, moving more along y than x, and the same N-only direction test
+    for top in (False, True):
+        for d, xs in ((-10, (-80, -50, 50, 80)), (-30, (-80, -50, 50, 80)), (20, (-40, 0, 40)), (-510, (-80, 0, 80))):
+            for x in xs:
+                for creep in ("at rest", "toward him", "away"):
+                    e.unserialize(base)
+                    e.setw(0xC468, 250)
+                    g = next(k for k in (range(6, 12) if top else range(6)) if e.b(rec(k) + 0x35) == 0)
+                    gy = 248 if top else -248
+                    py = gy - d if top else gy + d
+                    vy = {"at rest": 0, "toward him": 300 if top else -300, "away": -300 if top else 300}[creep]
+                    took, far = False, 0
+                    for f in range(150):
+                        for k in range(12):
+                            if e.b(rec(k) + 0x35) != 0:
+                                e.setw(rec(k), (-60 + 11 * k) & 0xFFFF)
+                                e.setw(rec(k) + 0x14, 0)
+                                for off in (0x28, 0x2A, 0x2C):
+                                    e.setw(rec(k) + off, 0)
+                        if f == 0:
+                            e.setw(rec(g), 0)
+                            e.setw(rec(g) + 0x14, gy & 0xFFFF)
+                            e.setw(rec(14), x & 0xFFFF)
+                            e.setw(rec(14) + 0x14, py & 0xFFFF)
+                            e.setw(rec(14) + 0x18, 0)
+                            e.setw(rec(14) + 0x28, 0)
+                            e.setw(rec(14) + 0x2A, vy & 0xFFFF)
+                            e.setw(rec(14) + 0x2C, 0)
+                            e.setw(PUCKC, 0xFFFF)
+                        e.run(1)
+                        far = max(far, abs(e.sw(rec(g) + 0x14) - gy))
+                        if e.w(PUCKC) == g:
+                            took = True
+                            break
+                    where = "the far end" if d < -300 else "behind / beside his net" if d < 0 else "at his crease"
+                    key = f"{'top' if top else 'bottom'} goalie, {where}, puck {creep}"
+                    out[key + ": cases"] += 1
+                    out[key + ": took it"] += took
+                    out[key + ": out 20+ from his line"] += far >= 20
+    return out
+
+
 def main():
     import lowload
+    if sys.argv[1] == "loose":
+        for rom in sys.argv[2:]:
+            t = loose(rom)
+            print("==", Path(rom).name, flush=True)
+            for k in sorted(t):
+                print("  ", k, t[k], flush=True)
+        return
     if sys.argv[1] == "case":
         for rom in sys.argv[2:]:
-            rows = []
-            t = case(rom, rows)
-            print("==", Path(rom).name, dict(t), flush=True)
-            for r in rows[:15]:
-                print("  ", r)
+            for top in (False, True):
+                rows = []
+                t = case(rom, rows, top)
+                print("==", Path(rom).name, "top goalie (facing 6, the puck from the left)" if top else
+                      "bottom goalie (facing 2, the puck from the right)", dict(t), flush=True)
+                for r in rows[:15]:
+                    if any(c not in "26" for c in r[2]):
+                        print("  ", r)
         return
     if sys.argv[1] == "make":
         make(sys.argv[2], sys.argv[3], int(sys.argv[4], 16) if len(sys.argv) > 4 else 0x44)

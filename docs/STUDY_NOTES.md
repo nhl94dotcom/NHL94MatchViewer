@@ -6215,6 +6215,41 @@ net 61, 9.8 and 84, 13.1: the games part at the first difference).
   against (ShA + 1) / (ShA + 16): 0: 8.6 / 6.2%, 5: 32.2 / 28.6, 10: 44.7 / 42.3, 15: 51.4 / 51.6, 20: 58.9 / 58.3, 25:
   64.2 / 63.4, 30: 67.8 / 67.4.
 
+**NOSE4Web's Down-goal question (2026-11-18).** The leagues' own databases already show it (SHOOTING_STUDY "The
+leagues' own results", 86,735 Genesis games): going up a team gets 6.2% more shots on goal counted and scores 3.0% fewer
+goals (goals per counted shot 30.5% up, 33.6% down; SNES the other way, goals up x 1.024); the leading explanation
+there is counting (low shots going down knocked away by the goalie's stick, uncounted), and the halved depth scatter
+was put at +1.4% xG for shots going down (+3.7% from the side): about a goal in 300 shots.
+- **The recordings by end and team** (`analysis/direction_crossing.py`; 38 Genesis games, regulation): Down 626
+  attempts, 449 on goal, 138 goals (30.7% of shots on goal, 22.0% of attempts); Up 653, 471, 139 (29.5%, 21.3%); Away
+  going down 32.5%, Home going down 28.0%, Away up 29.1%, Home up 29.7%. Attempts that cross the goal line untouched
+  (35% at each end): within 20 of the middle 68% / 69%, within 40 93% / 90%, x spread (sd) 24.3 down against 29.5 up;
+  speed 54.7 / 54.1 mph. SNES (34 games): Down 29.5%, Up 32.0% of shots on goal (Away up 19.7%, Home up 38.1%: the
+  people in these games, not the end). Too few to settle anything.
+- **The same shot at both ends** (`shot_ratings_check.py ends`; working ShA 15, ShP 20; the same shooter and the same
+  goalie: period 1's live state for the top net, the same game run on into period 2 for the bottom, where that goalie
+  defends it; flipping pfgoal by hand left the goalie not defending: perfect shots all went in). 10 spots x 3 aims
+  (none, Left, Right) x 15 seeds a net. Wrist shots (C 3 frames) from 219-271 out (never perfect): wide 94 up / 63
+  down, saves 275 / 305, crossing within 20 of the middle 28% / 35% of those untouched, x sd 43 / 40, **speed sd 1,319
+  up / 641 down**. Slapshots (C 20 frames): from 219-271 out wide 156 / 95, **out of the rink 14 / 80 and a whistle 35
+  / 116** (far slapshots end the play far more at the bottom end: not followed up), speed sd 4,146 / 2,055; from the
+  slot, **not perfect: goals 2 of 243 (0.8%) up, 11 of 286 (3.8%) down**; perfect: 25 of 207 (12.1%) up, 4 of 164
+  (2.4%) down (the nets' own geometry: SCORING_MAP finds single shots favouring either net).
+- **(a) at each end:** the bottom goalie's placed case as above (2-3-4-5-6 on retail, 2-1-0-7-6 with $44); the top
+  goalie's mirror (facing 6, the puck sliding left to right behind the top line) turns 6-5-4-3-2 on both, as the guard
+  from 6 has it.
+- **(c):** the skate-out is inserted (logic94 ~3773, `move.l #$F,d0; bra assinsert`) only with the puck past the
+  circles (|y| > 224, either end), both teams' nearest 70 / 50 away, moving more along y than x, through the same
+  N-only test, so the insertion is as one-sided as the quit. Placed (each goalie, the puck beside or behind his net,
+  at his crease, or deep in the far end; at rest or creeping toward or away, vy +/-300; everyone else at centre ice):
+  both took a puck creeping toward them 5 of 11, neither went out for one at rest or creeping away: the asymmetry
+  didn't show here (the insertion's other tests, perhaps his own team's nearest being himself, kept both home).
+- **NHL '95** has the same `tst.w 4(sp); bpl; lsr.w #1,d0` (input95.asm ~1100; its sideways cap $98). **SNES**
+  (doshot.asm 159-162): `lda 5,s; bpl; lsr d0` with 5,s = goal line y ($108 at the top for pfgoal) - pucky, the same
+  dy as the Genesis, so it too halves shooting at the bottom net; the disassembly's comments ("down: full error / up:
+  half") read it the other way round. (+y is up the screen on the SNES in our coordinates: Home's period-1 shots at
+  y +207, as Home attacks up.)
+
 **Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
 of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
 before the opening faceoff, the scouting report (Matchups, San Jose in it) among them, pixel-identical.
