@@ -8160,3 +8160,21 @@ the opening 30 s of nearly every game (40 of retail's 56 charging calls; none wi
   251%, trips 75 / 75 / 188 / 325%, goalie interference 0.12 a game (too few to judge). Goals a game 2.33 / 3.27 /
   2.75 / 2.58 / 2.23.
 - People's players: the same ratio by the code (the doubling comes after the multiplier); not played.
+
+### Blocked shots, played (Genesis, 2026-11-19, for NOSE4Web's option; `gen_blocks_check.py`)
+
+NOSE4Web's three test builds, made here from its source (b518dac and later; every CRC as theirs): nhl94_blocks
+(b38a10ca), nhl94_blocks_giveaways_toi (b6be72a4), CDL_Season_12_blocks (955db19d). Computer games, 5-minute periods,
+penalties On Except Off-sides, seeds by game number: 30, 10 and 10 games. Every frame: shots (sf2shot rising, shotplayer),
+puckbody's hits (the puck's speed after the frame 256 x its offset from the skater, Zvel 0, the skater within the
+body's reach: checkpuckcoll's .chkbody calls puckbody only within 8 in x and y and distance squared $40; the stick
+reaches further and a stick deflection leaves the same signature), and every change of the 64 counts and two totals.
+- **Every count was a real block:** 82 counts in the first 40 games, each the skater nearest the puck, within the
+  body's reach, not a goalie, with the other team's shot in flight (5 in the same frame as the shot, point-blank).
+- **None missed:** with the body's reach required (10 games), 22 hits on the other team's shot, 22 counted; teammates'
+  shots (4 hits) and goalies' stops (hundreds) never counted. The two "uncounted" hits of the first run were stick
+  deflections 18+ units out (traced: the puck 18-22 in front of the skater as it turned).
+- **Totals:** each game's 64 player counts summed to the two team totals, and all were 0 at the start (power-on).
+- **Rate:** 1.0-2.9 blocks a game in computer games.
+- Not yet: replays and a second game in a row (the clear at StartGame), shootouts, the Player Stats page and Game
+  Stats row on screen.
