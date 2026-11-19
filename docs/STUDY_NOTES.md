@@ -7969,3 +7969,10 @@ The answer turns on the wrist / slap split per end, which the counts don't give.
 sides between the nets (slot and circles: right-side aims 1-3 best at the bottom, left-side 5-7 at the top), with
 Montreal's goalie never flipped; `snes_map_run.py` NHL94_SNES_GOALIE_FLIP=1 (attribute $0800, handed $14A3 0, as
 setplayer for a right-handed goalie) with NHL94_SMAP_SUBSET=slotcircles repeats those spots flipped (run smvg1_flip).
+- **Split by shot type** (NOSE4Web's "type" counts, 34 SNES captures, kind "shot": wrist 645 of 735, slap 90; wrist
+  top 0-8 = 5, 82, 50, 14, 16, 7, 75, 96, 6, bottom 14, 27, 100, 9, 3, 12, 98, 27, 4; slap top 0, 2, 3, 3, 6, 6, 9, 4,
+  5, bottom 2, 4, 11, 3, 1, 11, 13, 2, 5), each net's map rate per passdir and type times its own counts: slot and
+  circles top 5.53% a shot, bottom 5.42%, **Down / Up 0.981 a shot**; all spots 3.42% / 3.81%, 1.114. The league's
+  0.976 in goals with shots 0.989 is about 0.987 a shot: the slot and circles' 0.981 matches. People's aim habits per
+  end look like the main SNES story (NOSE4Web agrees; pending the flipped-goalie and one-timer runs). Weight rates,
+  not ratios: averaging per-passdir ratios gave NOSE4Web 0.94.
