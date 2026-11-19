@@ -7775,3 +7775,24 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
 measured Down / Up goal ratio with its 95% range. The league's: 650,136 goals, 1.031 (1.026-1.036), from period goals
 (home attacks up in periods 1 and 3; the up factor's log variance from the four period totals). The paired replays'
 ranges come from the launches that scored at one net only (Wilson), turned back into a ratio.
+
+### NHL '95's goalie hot spots against its art (2026-11-19; `gen95_goalie_frames.py`)
+
+NOSE4Web: in NHL '95 every goalie hot spot points up the screen (GetHot, $7C686, negates y unless attribute bit 4,
+never set for goalies), so the top goalie's glove and stick spots sit 2-20 behind him; does the facing-down art draw
+the stick there?
+- **NHL '95's sprites, from the ROM** (new): found through the same code as NHL '94's (`movea.l #SprTbl,a2 / adda.l
+  4(a2),a2`, $79DCC): SprTbl $CA56A, the frame table $1318F4 (1,056 frames), tile t at SprTbl + 10 + 32t. A piece is
+  a VDP sprite entry (y, size byte, pattern word, x), and the size byte's high nibble carries the tile number's bits
+  11-14 (the tile bank was found from frames 610 and 634 as captured in the game: bases 2 and 3 x $10000 on).
+- **The sheet** (`docs/img/goalie_hot_spots_95.png`: ready, glove and stick frames facing down beside facing up,
+  retail's spot red):
+  - Glove frames facing down (618, 626): the spot is on the glove, drawn raised above his shoulder. The art and the
+    spot agree, but up the screen there is the glove's height in the air; the game reads it as rink depth, so it
+    lands behind the top goalie (and in front of the bottom one).
+  - Stick frames facing down (634, 642): the blade is drawn 4-6 pixels in front of (below) the spot: the top goalie's
+    stick spots are behind the stick the art shows.
+  - Facing up (606, 630, 638): the spots sit on the drawn stick and pads.
+- **NOSE4Web's variants A (bottom from top) and B (top from bottom)**, made by hand from retail by their rule (24
+  frames: ready 606 / 607 / 613, crouch 904-909 and 919-921, glove and stick frames from the other hand's, facings
+  0-4, 1-3, 7-5; crouch slots 0-5 are facings 0, 1, 3, 4, 5, 7): CRC32 6d47638e and b77e37b0, as theirs.
