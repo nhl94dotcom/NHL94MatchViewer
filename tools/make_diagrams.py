@@ -1633,6 +1633,136 @@ def slot_defence():
     return svg(W, B + 66, b, "Keep them out of your slot")
 
 
+# ------------------------------------------------------------------------------- the Down goal (Genesis NHL '94)
+def paired_ratio(both, top_only, bottom_only):
+    """Down / Up goals from paired replays (the same launch at both nets) and a 95% range: the bottom-only share of the
+    launches that scored at one net only (Wilson), turned back into the ratio."""
+    n = top_only + bottom_only
+    p = bottom_only / n
+    z = 1.96
+    mid = (p + z * z / (2 * n)) / (1 + z * z / n)
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
+    ratio = lambda q: (both + q * n) / (both + (1 - q) * n)  # noqa: E731
+    return (both + bottom_only) / (both + top_only), ratio(mid - half), ratio(mid + half)
+
+
+def rate_ratio(g_down, n_down, g_up, n_up):
+    """Down / Up goals per shot on goal and a 95% range (log rate ratio)."""
+    r = (g_down / n_down) / (g_up / n_up)
+    se = math.sqrt(1 / g_down - 1 / n_down + 1 / g_up - 1 / n_up)
+    return r, r * math.exp(-1.96 * se), r * math.exp(1.96 * se)
+
+
+def updown_genesis():
+    """Where the bottom (Down) net's extra goals come from, NHL '94 Genesis: the asymmetries found in the code and in
+    play, on a to-scale sketch of the two nets, and every measured Down / Up goal ratio with its 95% range (STUDY_NOTES,
+    "Down goal"; LEAGUE_RESULTS). Colours: the dataviz reference palette's slots 1-3, validated (all pairs, light)."""
+    W, H = 1180, 720
+    S1, S2, S3, TXT2 = "#2a78d6", "#eb6834", "#1baf7a", "#52514e"
+    b = [ARROW]
+    b.append(text(W / 2, 30, "Why the bottom (Down) net concedes a few more goals: NHL '94 Genesis", 18, INK, "middle", "bold"))
+    b.append(text(W / 2, 52, "Down / Up = goals at the bottom net / goals at the top net. Both teams defend each net over a game "
+                  "(home attacks up in periods 1 and 3).", 12, SOFT, "middle"))
+    # ---- left: the two nets, to scale
+    S, cx, cy = 0.8, 140, 380
+    Y = lambda y: cy - y * S  # noqa: E731
+    Xp = lambda x: cx + x * S  # noqa: E731
+    b.append(f"<rect x='{Xp(-120)}' y='{Y(300)}' width='{240 * S}' height='{600 * S}' rx='{40 * S}' fill='#f7f9fb' "
+             f"stroke='{SOFT}' stroke-width='1.5'/>")
+    for y in (264, -264):
+        b.append(line(Xp(-110), Y(y), Xp(110), Y(y), "#c94040", 1.5))
+    for y in (88, -88):
+        b.append(line(Xp(-120), Y(y), Xp(120), Y(y), "#7aa7d6", 3))
+    b.append(line(Xp(-120), Y(0), Xp(120), Y(0), "#c94040", 2, "6 4"))
+    for y in (264, -264):
+        top_edge = Y(y + 14) if y > 0 else Y(y)
+        b.append(f"<rect x='{Xp(-20)}' y='{top_edge}' width='{40 * S}' height='{14 * S}' fill='#ffffff' stroke='{INK}' "
+                 f"stroke-width='2'/>")
+    for y, d, lab in ((264, 19.4, "19.4 out"), (-264, 24.7, "24.7 out")):
+        gy = y - d if y > 0 else y + d
+        b.append(circle(Xp(0), Y(gy), 13 * S, "#ffffff", INK, 1.5))
+        b.append(line(Xp(32), Y(y), Xp(32), Y(gy), INK, 1.2))
+        b.append(text(Xp(36), (Y(y) + Y(gy)) / 2 + 4, lab, 11, INK))
+    b.append(text(Xp(0), Y(300) - 10, "UP (top net)", 13, INK, "middle", "bold"))
+    b.append(text(Xp(0), Y(-300) + 20, "DOWN (bottom net)", 13, INK, "middle", "bold"))
+    b.append(text(Xp(-118), Y(-300) + 38, "Circles: where people stand", 11, SOFT))
+    b.append(text(Xp(-118), Y(-300) + 52, "their goalie (median depth)", 11, SOFT))
+
+    def notes(x, y, rows):
+        for head, lines, effect in rows:
+            b.append(text(x, y, head, 12.5, INK, "start", "bold"))
+            y += 16
+            for ln in lines:
+                b.append(text(x, y, ln, 11.5, TXT2))
+                y += 15
+            b.append(text(x, y, effect, 11.5, INK, "start", "bold"))
+            y += 24
+        return y
+    nx = 262
+    notes(nx, 108, [
+        ("Shoulder-save bobble (top only)", ["A held high shot sits behind the top goalie", "and can be knocked in."],
+         "Adds Up goals: 2 of 218 recorded"),
+        ("Low shots knocked away uncounted", ["League: going up, 6% more shots on goal", "counted but 3% fewer goals."],
+         "Moves shot counts, not goals"),
+    ])
+    notes(nx, 392, [
+        ("Shots aimed down: scatter halved", ["doshot halves the depth scatter when the", "aim points down (bottom net only)."],
+         "About 1 goal in 270 (NOSE4Web's aim fix)"),
+        ("Goalie's stick spots not mirrored", ["The facing-up frames' blade points aren't", "the top goalie's mirror image."],
+         "Computer goalie 1.03 -> 1.00 when mirrored"),
+        ("Rebounds about 5% faster", ["A byte-handling quirk speeds rebounds", "off the bottom goalie."], "Bottom only"),
+        ("People stand their goalie deeper", ["24.7 out against 19.4 (recorded games)."], "Same goal rate at both: 38%"),
+    ])
+    # ---- right: every Down / Up measurement
+    L, R, T = 800, 1050, 112
+    lo, hi = 0.8, 1.4
+    X = lambda v: L + (math.log(v) - math.log(lo)) / (math.log(hi) - math.log(lo)) * (R - L)  # noqa: E731
+    rows = [
+        ("Real games", None),
+        ("League, every game since 2013", (S1, (1.031, 1.0257, 1.0363), "650,136 goals")),
+        ("Our 38 recorded games, per shot", (S1, rate_ratio(135, 492, 137, 526), "135 / 137 goals")),
+        ("Harness: computer goalie (paired)", None),
+        ("Retail", (S2, paired_ratio(38, 94, 98), "136 / 132 goals")),
+        ("Aim fix (scatter not halved)", (S2, paired_ratio(39, 93, 96), "135 / 132")),
+        ("Stick fix (blade spots mirrored)", (S2, paired_ratio(39, 94, 94), "133 / 133")),
+        ("Harness: goalie standing still", None),
+        ("Placed as people place him", (S3, paired_ratio(135, 118, 175), "310 / 253")),
+        ("Both 22 out from the goal line", (S3, paired_ratio(119, 148, 179), "298 / 267")),
+    ]
+    b.append(text((L + R) / 2, T - 26, "Down / Up goals, with 95% ranges", 13, INK, "middle", "bold"))
+    for v in (0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4):
+        b.append(text(X(v), T - 6, f"{v:.1f}", 10.5, SOFT, "middle"))
+    marks, y = [], T
+    for label, row in rows:
+        if row is None:
+            y += 14
+            b.append(text(L - 240, y + 4, label, 12.5, INK, "start", "bold"))
+            y += 22
+            continue
+        col, (r, a, c), note = row
+        b.append(text(L - 12, y + 4, label, 11.5, INK, "end"))
+        marks.append(line(X(max(a, lo)), y, X(min(c, hi)), y, col, 2, None, "stroke-linecap='round'"))
+        marks.append(circle(X(r), y, 5, col, "#ffffff", 2))
+        b.append(text(R + 12, y + 1, f"{r:.2f} ({a:.2f}-{c:.2f})", 11.5, INK))
+        b.append(text(R + 12, y + 14, note, 10, SOFT))
+        y += 36
+    b.append(line(X(1.0), T, X(1.0), y - 12, SOFT, 1.5, "4 3"))
+    b.extend(marks)
+    b.append(text(X(1.0), y + 4, "1.00: no difference", 10.5, SOFT, "middle"))
+    b.append(text(X(0.86), y + 20, "more Up goals", 10.5, SOFT, "middle"))
+    b.append(text(X(1.24), y + 20, "more Down goals", 10.5, SOFT, "middle"))
+    ly = H - 58
+    for i, (col, lab) in enumerate(((S1, "Real games"), (S2, "Harness, computer goalie"), (S3, "Harness, goalie standing still"))):
+        lx = 470 + i * 220
+        b.append(circle(lx, ly, 5, col, "#ffffff", 2))
+        b.append(text(lx + 10, ly + 4, lab, 11.5, INK))
+    b.append(text(W / 2, H - 32, "Harness: NOSE4Web's 1,308 recorded shot launches replayed at both nets with the same clock, goalie "
+                  "and random draws (paired).", 10.5, SOFT, "middle"))
+    b.append(text(W / 2, H - 16, "Ranges: the league and recorded games from goal counts; the replays from the launches that scored "
+                  "at one net only. Sources: STUDY_NOTES, \"Down goal\".", 10.5, SOFT, "middle"))
+    return svg(W, H, b, "The Down goal, NHL '94 Genesis")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -1647,7 +1777,7 @@ def main():
              "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
              "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
              "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence(),
-             "blind_ring_94_95.svg": blind_ring_compare()}
+             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

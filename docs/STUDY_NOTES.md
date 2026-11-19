@@ -7766,3 +7766,12 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
   the held puck +5 out on both; the puck behind the goal line during a bottom hold 125 / 124 frames, in the patched
   frames 0 / 1 of 4,660 / 5,388 (407) and 0 / 1 (428); the glove frames under 5 held frames each; no goal within 3 s of
   a goalie's release on either; goals 13 / 11. Plays as retail with the copy did.
+
+### The Down goal in one picture (2026-11-19)
+
+![The Down goal, NHL '94 Genesis](img/updown_genesis.svg)
+
+`tools/make_diagrams.py` (`updown_genesis`): the asymmetries found, on a to-scale sketch of the two nets, and every
+measured Down / Up goal ratio with its 95% range. The league's: 650,136 goals, 1.031 (1.026-1.036), from period goals
+(home attacks up in periods 1 and 3; the up factor's log variance from the four period totals). The paired replays'
+ranges come from the launches that scored at one net only (Wilson), turned back into a ratio.
