@@ -9,7 +9,8 @@ kept: shotsets' x offsets don't depend on the end; jy mirrored and rescaled to t
 and, when the shot goes at the bottom net in either, that one again with the bottom net's depth range not halved (the
 lsr after `tst.w 4(sp)` taken out). The scatter's depth draw as a share of its range: u = jy / range at the own net
 (range = min(adj, 60), halved when dy = goal line - iy < 0); at another net or variant jy = u x that range.
-The shooter (home record 2) is set at the puck spot and settles 60 frames with it; the wrist shot's doshot frame is
+The shooter (home record 2) is set at the puck spot and settles 60 frames with it, the period clock the same at
+both nets (a random value a launch: checkanim's wind-up rule runs only while bit 1 of the seconds is clear); the wrist shot's doshot frame is
 taken over (harness.fire: the velocity shotport.launch gives for these inputs; the puck put at ix, iy); the goalie
 first set where a recorded computer goalie was at a release (GOALIES json "cpu", the same one for every replay of a
 launch, mirrored at the bottom net), the random state after the release the same for each replay. Then 150 frames:
@@ -17,7 +18,12 @@ goal (either score), save (the goalie took it or it turned within 30 of him), ou
 clock stopped), wide (across the goal line beyond 24 of the middle), other.
 
 python updown_replay.py LAUNCHES.json GOALIES.json OUT.jsonl [MINUTES]   (resumable: done replays skipped)
-python updown_replay.py report OUT.jsonl"""
+python updown_replay.py report OUT.jsonl
+python updown_replay.py anatomy LAUNCHES.json GOALIES.json OUT.jsonl [MINUTES]   passdir 2 and 6 only; each goal's type
+    (goal_types.classify), where it crossed, the goalie's save frame, facing and the blade (HotList, flipped by his
+    attribute bit 3) in front of / to the right of him where the puck passed closest; each first touch's rebound speed
+NHL94_UPDOWN_GOALIE=person: the goalie placed from the people's recorded goalie states and pad-controlled with nothing
+    pressed (pflags bit 3 held), so the computer doesn't position him, as league games' manual goalies"""
 import json
 import math
 import random
@@ -35,12 +41,28 @@ def ranges(L, top, halved=True):
     return full // 2 if (halved and dy < 0) else full
 
 
-def replay(h, L, top, jx, jy, jz, goalie, post_seed):
+HOT = None
+
+
+def hot(rom_path):
+    global HOT
+    if HOT is None:
+        import struct
+        from paths import ROM
+        rom = open(ROM, "rb").read()
+        HOT = [struct.unpack_from(">bb", rom, 0xA44C8 + 2 * fr) for fr in range(846)]
+    return HOT
+
+
+PERSON = __import__("os").environ.get("NHL94_UPDOWN_GOALIE") == "person"   # the goalie pad-controlled, nothing pressed
+
+
+def replay(h, L, top, jx, jy, jz, goalie, post_seed, detail=False, clock=None):
     from harness import fire, rec, SHOOTER, GOALIE, PUCK, PUCKC
     from shotport import launch
     e = h.e
     x, y = L["ix"], L["iy_net"]
-    h.setup(x, y, settle=60)
+    h.setup(x, y, settle=60, clock=clock)
     pre, f = h.shoot(8, 3)
     if pre is None:
         return None
@@ -52,19 +74,35 @@ def replay(h, L, top, jx, jy, jz, goalie, post_seed):
     inp = dict(px=x, py=y, top=top, dir=L["dir"], pout=L["P"], sha=L["sha"], vz0=0, gspa=en["gspa"])
     perfect = jx == 0 and jy == 0 and jz == 0
     v = launch(inp, perfect, jx, jy, jz)
+    if PERSON:
+        e.unserialize(pre)
+        e.setb(rec(GOALIE) + 0x62, e.b(rec(GOALIE) + 0x62) | 8)
+        pre = e.serialize()
     fire(h, pre, v, goalie=goalie, post_seed=post_seed)
     s0 = (e.w(0xC6DA), e.w(0xCA3E))
+    path, reb = [], None
+    sgn = 1 if top else -1
     gy = GL if top else -GL
     prev, touched, cross = None, False, None
     result = None
     for f in range(150):
         h.park(keep_shooter=False)
+        if PERSON:
+            e.setb(rec(GOALIE) + 0x62, e.b(rec(GOALIE) + 0x62) | 8)
         e.run(1)
         if (e.w(0xC6DA), e.w(0xCA3E)) != s0:
             result = "goal"
             break
         px, py = e.sw(PUCK), e.sw(PUCK + 0x14)
         vx, vy = e.sw(PUCK + 0x28), e.sw(PUCK + 0x2A)
+        if detail:
+            g = rec(GOALIE)
+            fr = e.w(g + 0x06)
+            hx, hy = hot(None)[fr] if 0 < fr < 846 else (0, 0)
+            if e.w(g + 0x04) & 8:
+                hx = -hx
+            path.append((px, py, e.sw(PUCK + 0x18), vx, vy, e.sw(g), e.sw(g + 0x14), e.w(g + 0x58), e.w(PUCKC) == GOALIE,
+                         fr, e.b(g + 0x55) & 7, hx, -hy))
         if abs(py) > 300 or abs(px) > 140:
             result = "out"
             break
@@ -73,23 +111,45 @@ def replay(h, L, top, jx, jy, jz, goalie, post_seed):
             break
         gx, gyy = e.sw(rec(GOALIE)), e.sw(rec(GOALIE) + 0x14)
         if e.w(PUCKC) == GOALIE or (prev and math.hypot(vx - prev[2], vy - prev[3]) > 3000 and math.hypot(px - gx, py - gyy) < 30):
+            if not touched and e.w(PUCKC) != GOALIE:
+                reb = dict(speed=round(math.hypot(vx, vy)), vy_out=vy * sgn, lowx=e.w(PUCK + 0x28) & 0xFF, lowy=e.w(PUCK + 0x2A) & 0xFF)
             touched = True
         if prev and cross is None and not touched and (prev[1] - gy) * (py - gy) <= 0 and py != prev[1]:
             cross = prev[0] + (px - prev[0]) * (gy - prev[1]) / (py - prev[1])
         prev = (px, py, vx, vy)
     if result is None:
         result = "save" if touched else ("wide" if cross is not None and abs(cross) > 24 else "other")
-    return dict(result=result, v=list(v))
+    out = dict(result=result, v=list(v), gspa=en["gspa"])
+    if reb:
+        out["rebound"] = reb
+    if detail and result == "goal" and path:
+        import goal_types as GT
+        t, anim, dmin, pz = GT.classify("genesis", [st[:9] for st in path] + [path[-1][:9]], "top" if top else "bottom")
+        near = min(path, key=lambda st: (st[0] - st[5]) ** 2 + (st[1] - st[6]) ** 2)
+        a, b = path[-2] if len(path) > 1 else path[-1], path[-1]
+        cross = None
+        for q, r_ in zip(path, path[1:]):
+            if (q[1] - (GL if top else -GL)) * (r_[1] - (GL if top else -GL)) <= 0 and q[1] != r_[1]:
+                cross = round(q[0] + (r_[0] - q[0]) * ((GL if top else -GL) - q[1]) / (r_[1] - q[1]), 1)
+                break
+        bx, by = near[11], near[12]                      # the blade from the goalie, screen units
+        front, right = by * (-1 if top else 1), bx * (-1 if top else 1)
+        blade = (near[5] + bx, near[6] + by)
+        out["goal"] = dict(type=t, save=anim, dmin=dmin, z=pz, cross=cross, frame=near[9], facedir=near[10],
+                           blade_front=front, blade_right=right,
+                           puck_blade=round(math.hypot(near[0] - blade[0], near[1] - blade[1]), 1),
+                           puck_rel=(round((near[0] - near[5]) * (-1 if top else 1)), round((near[1] - near[6]) * (-1 if top else 1))))
+    return out
 
 
-def run(launches, goalies, out, minutes):
+def run(launches, goalies, out, minutes, dirs=None, detail=False):
     from harness import Harness
     from paths import STATE_TOP, STATE_BOTTOM
     import lowload
     lowload.gentle()
     L_all = [L for L in json.loads(Path(launches).read_text())
              if L.get("exact") and None not in (L["jx"], L["jy"], L["jz"])]   # 60 exact ones lack a jy or jz
-    G = json.loads(Path(goalies).read_text())["cpu"]
+    G = json.loads(Path(goalies).read_text())["person" if PERSON else "cpu"]
     done = set()
     if Path(out).exists():
         for line in open(out):
@@ -100,12 +160,17 @@ def run(launches, goalies, out, minutes):
     t0 = time.time()
     with open(out, "a") as fo:
         for n, L in enumerate(L_all):
+            if dirs is not None and L["dir"] not in dirs:
+                continue
             if time.time() - t0 > minutes * 60:
                 print("time up", flush=True)
                 break
             rng = random.Random(n)
             goalie = G[rng.randrange(len(G))]
             post = rng.getrandbits(32) or 1
+            # the period clock, the same at both nets (2026-11-18: the states' own clocks sat on opposite phases of
+            # checkanim's wind-up rule, bit 1 of the seconds, so the bottom goalie never made the early pad stack)
+            clock = rng.randrange(120, 290)
             own_top = bool(L["top"])
             Lown = dict(L, iy_net=L["iy"])
             Lmir = dict(L, iy_net=-L["iy"])
@@ -120,7 +185,7 @@ def run(launches, goalies, out, minutes):
             for kind, top, LL, jy in jobs:
                 if (n, kind) in done:
                     continue
-                r = replay(hs[top], LL, top, L["jx"], jy, L["jz"], goalie, post)
+                r = replay(hs[top], LL, top, L["jx"], jy, L["jz"], goalie, post, detail, clock)
                 if r is None:
                     continue
                 row = dict(n=n, kind=kind, top=top, exact_v=None, perfect=L["jx"] == L["jy"] == L["jz"] == 0, human=L.get("human"), **r)
@@ -169,5 +234,7 @@ def report(out):
 if __name__ == "__main__":
     if sys.argv[1] == "report":
         report(sys.argv[2])
+    elif sys.argv[1] == "anatomy":                   # anatomy LAUNCHES GOALIES OUT [MINUTES]: passdir 2 / 6 only, goal detail
+        run(sys.argv[2], sys.argv[3], sys.argv[4], float(sys.argv[5]) if len(sys.argv) > 5 else 1e9, dirs=(2, 6), detail=True)
     else:
         run(sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4]) if len(sys.argv) > 4 else 1e9)

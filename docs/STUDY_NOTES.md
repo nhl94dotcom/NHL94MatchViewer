@@ -6292,6 +6292,30 @@ mid height, never toward the net).
   high bytes; the low bytes stay): a leftover low byte adds to a positive speed and takes from a negative one, so
   rebounds up the screen (off the bottom goalie) gain and down the screen lose. Not measured.
 
+**The launch replays corrected: the period clock (2026-11-18 night).** The top net's state (period 1) and the bottom's
+(period 2) had their own period clocks, on opposite phases of checkanim's wind-up rule (it runs only while bit 1 of the
+seconds is clear: GENESIS_SHOOTING 5.6), so the bottom goalie never made the early pad stack: at the release 30% of
+the top net's shots found the goalie stacking, 0 of 1,071 the bottom's. The recordings have it at both ends (within 60
+of the goal line: 19% of 300 shots at the top net, 17% of 271 at the bottom; farther out 1-2%). Every replay now sets
+the same random clock at both nets for a launch. **The earlier "Down / Up 1.09" (paired) and "1.13 / 1.15" (aim
+weighted) were this artefact; so are earlier scoring-map comparisons of the two nets from these states (SCORING_MAP's
+per-net differences need the same check).**
+
+Rerun (updown_replay.py, both goalie modes; `anatomy` for passdir 2 and 6):
+
+| goalie | pad stack at the release, top / bottom | paired goals top / bottom (Down / Up) | without the halving | aim-weighted Down / Up (own mix; pooled) | rebound speed paired, Down / Up |
+|---|---|---|---|---|---|
+| computer, as in games | 16.0% / 13.7% | 132 / 136 (1.03; 98 / 94 only one net, z +0.3) | 132 / 135 (1.02) | 1.07; 1.08 | 3,238 / 3,066 (1.056, 249 launches) |
+| standing (pad-controlled, nothing pressed; the people's goalie states) | 16.5% / 14.4% | 253 / 310 (1.23; 175 / 118, z +3.3) | 253 / 312 | 1.23; 1.25 | 3,581 / 3,402 (1.052) |
+
+- The computer goalie: no end difference beyond chance; the halving is worth about 1 goal in 270. Its goals at passdir
+  2 / 6 were mostly clean (outside his reach), with stick or butterfly saves where the puck passed closest; pad-stack
+  goals at both nets (top 7 + 17, bottom 6 + 5 of the passdir 2 / 6 goals).
+- A goalie who doesn't move is beaten more at the bottom net (30.5% of shots against 24.6%), nearly all "clean:
+  outside his reach": the standing goalie's reach covers less of the bottom net (a geometry lead for the manual-goalie
+  leagues; not yet traced to the body circle or the blade).
+- Rebounds off the bottom goalie leave about 5% faster (the move.b low byte; NOSE4Web's estimate 4%).
+
 **Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
 of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
 before the opening faceoff, the scouting report (Matchups, San Jose in it) among them, pixel-identical.
