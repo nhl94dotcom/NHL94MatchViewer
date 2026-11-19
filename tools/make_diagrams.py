@@ -1763,6 +1763,92 @@ def updown_genesis():
     return svg(W, H, b, "The Down goal, NHL '94 Genesis")
 
 
+# --------------------------------------------------------------------- the goalie's stick at the two ends (Genesis)
+def goalie_stick_ends():
+    """The ready frames' stick blades at the two nets (HotList $A44C8; NHL '94 Genesis), and what the blade decides: a low
+    puck within 8 of it is played (caught or deflected), 8-14 from it passes untouched and skips the body test (the
+    blind ring), beyond that the body circle (13 here) decides. Top: the sprites as on screen; bottom: both nets drawn
+    as the top one (the bottom net flipped top to bottom, the game's own mirror: screen x kept), the goalie 19 out."""
+    import struct
+    W, H = 1180, 900
+    UP, DN, TXT2 = "#2a78d6", "#eb6834", "#52514e"      # validated categorical slots 1-2 (light)
+    rom = None
+    for p in (Path.home() / "NHL94_scoring_map" / "nhl94_retail.bin",):
+        if p.exists():
+            rom = p.read_bytes()
+    hot = lambda f: struct.unpack_from(">bb", rom, 0xA44C8 + 2 * f) if rom else HOT_READY[f]  # noqa: E731
+    b = [ARROW]
+    b.append(text(W / 2, 30, "The goalie's stick isn't the same at the two nets (NHL '94 Genesis)", 18, INK, "middle", "bold"))
+    b.append(text(W / 2, 52, "Where his stick blade is comes from a table, one point per sprite frame. The bottom goalie faces up the "
+                  "screen and uses different frames, and their points aren't the top goalie's mirror image.", 12, SOFT, "middle"))
+    cases = [("Square to the shot", 419, 407), ("Turned to the screen's right", 416, 410), ("Turned to the screen's left", 422, 428)]
+    colw = W / 3
+    # ---- row 1: the sprites as on screen
+    S = 3
+    b.append(text(20, 92, "1. As drawn on screen (red dot: the blade point the game uses)", 13, INK, "start", "bold"))
+    for i, (lab, ftop, fbot) in enumerate(cases):
+        cx = colw * i + colw / 2
+        b.append(text(cx, 118, lab, 12.5, INK, "middle", "bold"))
+        for j, (fr, who, col) in enumerate(((ftop, "Top net (faces down)", UP), (fbot, "Bottom net (faces up)", DN))):
+            ox, oy = cx - 85 + 170 * j, 230
+            b.extend(sprite(fr, ox, oy, S, opacity=0.9))
+            hx, hy = hot(fr)
+            b.append(circle(ox + hx * S, oy + hy * S, 4, "#e34948", "#ffffff", 1.5))
+            b.append(text(ox, 272, who, 11, col, "middle", "bold"))
+            b.append(text(ox, 287, f"frame {fr}", 10.5, SOFT, "middle"))
+    # ---- row 2: both nets as the top one
+    T = 330
+    b.append(text(20, T, "2. Both nets drawn the same way (the bottom one flipped top to bottom), goalie 19 out, to scale", 13, INK,
+                  "start", "bold"))
+    S2, depth = 4.2, 19
+    for i, (lab, ftop, fbot) in enumerate(cases):
+        cx, gl = colw * i + colw / 2, T + 75
+        X = lambda x: cx + x * S2  # noqa: E731
+        Y = lambda out: gl + out * S2  # noqa: E731
+        b.append(f"<rect x='{X(-20)}' y='{gl - 12 * S2}' width='{40 * S2}' height='{12 * S2}' fill='#f3f5f7' stroke='{INK}' stroke-width='2'/>")
+        b.append(line(X(-48), gl, X(48), gl, "#c94040", 2))
+        b.append(circle(X(0), Y(depth), 13 * S2, "#f0efec", SOFT, 1.2))
+        b.append(text(X(0), Y(depth) + 4, "body", 10.5, SOFT, "middle"))
+        for fr, col, top in ((ftop, UP, True), (fbot, DN, False)):
+            hx, hy = hot(fr)
+            side, out = hx, (hy if top else -hy)            # out from him toward the shooter; side = screen x
+            bx, by = X(side), Y(depth + out)
+            b.append(circle(bx, by, 14 * S2, "none", col, 1.5, "5 4"))
+            b.append(circle(bx, by, 8 * S2, col, col, 1.5, opacity=0.18))
+            b.append(circle(bx, by, 3, col, "#ffffff", 1.5))
+        b.append(text(cx, Y(depth + 33), lab, 12, INK, "middle", "bold"))
+        for k, (fr, col, top, who) in enumerate(((ftop, UP, True, "Top"), (fbot, DN, False, "Bottom"))):
+            hx, hy = hot(fr)
+            out = hy if top else -hy
+            b.append(text(cx, Y(depth + 33) + 18 + 15 * k, f"{who}: blade {out} out, {abs(hx)} to the {'right' if hx > 0 else 'left' if hx < 0 else 'middle'}",
+                          11, col, "middle", "bold"))
+    # legend for row 2
+    ly = 720
+    b.append(circle(40, ly, 8, UP, UP, 1.5, opacity=0.18))
+    b.append(text(56, ly + 4, "within 8 of the blade: a low puck is caught or knocked away", 11.5, INK))
+    b.append(circle(470, ly, 9, "none", INK, 1.5, "5 4"))
+    b.append(text(486, ly + 4, "8 to 14 from the blade: the blind ring, a low puck passes untouched and his body isn't checked", 11.5, INK))
+    b.append(text(40, ly + 24, "Low puck = height 5 or less, not rising. Blue: the top net's goalie; orange: the bottom net's. "
+                  "Points for a goalie drawn as stored; one drawn mirrored (by his hand) flips the side at both nets alike.", 11, TXT2))
+    # ---- why it matters
+    y0 = 772
+    b.append(text(20, y0, "3. Why it matters", 13, INK, "start", "bold"))
+    lines_ = [
+        "The blade decides which low shots he stops, and the blind ring beside it lets some through. With the two nets' blades in "
+        "different spots, the same low shot can be stopped at one end and slip through at the other.",
+        "Measured: NOSE4Web's recorded shots replayed at both nets against the computer goalie (1,027 paired): Down/Up 1.03 on retail,",
+        "1.00 with the bottom goalie's points mirrored from the top's (NOSE4Web's \"Bottom goalie's stick fix\").",
+        "A small effect, about 3% more goals at the bottom net, within chance on its own; in the league it is one of several "
+        "small asymmetries behind the 1.03 Down lean (docs/img/updown_genesis.svg).",
+    ]
+    for k, s_ in enumerate(lines_):
+        b.append(text(20, y0 + 22 + 18 * k, s_, 11.5, TXT2))
+    return svg(W, H, b, "The goalie's stick at the two nets, NHL '94 Genesis")
+
+
+HOT_READY = {419: (1, 6), 407: (0, -7), 416: (11, 4), 410: (4, -6), 422: (-7, 7), 428: (-6, -1)}   # retail HotList
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {"saves_reach.svg": saves(), "through_the_legs_goalie.svg": through_legs(), "aim_points_genesis.svg": aim_points("genesis"),
@@ -1777,7 +1863,7 @@ def main():
              "snes_saves.svg": snes_saves(), "snes_saves_bottom.svg": snes_saves("bottom"),
              "genesis_saves.svg": genesis_saves(), "genesis_saves_bottom.svg": genesis_saves("bottom"), "snes_shot_scatter.svg": snes_scatter(), "snes_hot_cold.svg": snes_hot_cold(),
              "snes_goalie_hold.svg": snes_goalie_hold(), "slot_defence.svg": slot_defence(),
-             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis()}
+             "blind_ring_94_95.svg": blind_ring_compare(), "updown_genesis.svg": updown_genesis(), "goalie_stick_ends.svg": goalie_stick_ends()}
     for name, body in files.items():
         (OUT / name).write_text(body, encoding="utf-8")
         print(OUT / name)

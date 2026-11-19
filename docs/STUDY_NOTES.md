@@ -7826,3 +7826,12 @@ about 1.05, tripping and interference about 1.10); goals a power play lean only 
   crowd to just past the circles, the bottom from above the circles to the net at the screen's bottom edge between
   the score boxes; neither shows the blue line there. The SNES frames both ends the same way and shows no lean, and
   the extra contact is the computer's, which doesn't see the screen: the camera isn't the cause.
+
+### The goalie's stick at the two nets, in one picture (2026-11-19)
+
+![The goalie's stick at the two nets](img/goalie_stick_ends.svg)
+
+`tools/make_diagrams.py` (`goalie_stick_ends`): the ready frames (square, turned right, turned left: 419 / 407, 416 /
+410, 422 / 428) as drawn, with HotList's blade point, and both nets drawn as the top one (the bottom flipped top to
+bottom, screen x kept) with the blade's 8-unit play circle and its 8-14 blind ring, the goalie 19 out; the replays'
+1.03 -> 1.00 with the points mirrored.
