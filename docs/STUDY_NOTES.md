@@ -8056,3 +8056,12 @@ every one not fighting; 3 computer games, fighting ratings 9; an unflagged contr
   against the control's 7, all released; the same game lengths). The flag holds from frame to frame (checked), so
   this build's search doesn't skip pflags $4000 as described: probably older than the code NOSE4Web read. To be
   repeated on NHL94_fight_default.smc (ed295509) when it arrives.
+- **The same check scripted at both nets** (`gen_check_ends.py`: the pad-1 home skater checks an away carrier driven
+  straight at him at skating speed, the top net the bottom one turned half a circle; 3 spots x 2 depths x 5 approach
+  angles x 5 press timings x 3 phases = 450 trials a net; the same random seed a trial at both nets; the same players
+  and ratings in both states): a check counted 81 at the top (18.0%), 65 at the bottom (14.4%); paired, counted at one
+  net only 70 top / 54 bottom (z +1.4 the other way, within chance). checkcx's impact is a dot product (half-turn
+  symmetric). **The game handles the check alike at both ends**: people's checks connecting more at the bottom net is
+  how people play. (Without the per-trial seed each net's state replayed one fixed random stream: 29.6% against 18.7%,
+  a false lean; with the computer steering the carrier, pad 2 not taking him, the two states' carriers moved
+  differently: also false.)
