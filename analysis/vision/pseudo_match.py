@@ -39,6 +39,8 @@ WIDE = 60                   # a release whose line crosses the goal line this fa
 RELEASE_LOOK = 90           # samples a release's outcome is looked for
 V_WINDOW = 12               # video frames the puck velocity's slope is taken over
 VMAX = 9.0                  # pixels a frame: about the fastest shot (a puck at 23,000 moves 5.6)
+AIM_SHOT = 0                # tried 30-60 (2026-11-18): no shot gained on the three games, a pass lost in each; a release's line this close to the net's middle at the goal line: a shot (0 off)
+AIM_LOOK = 10               # samples after a release that give its line
 GOAL_HOLD = 24              # samples a read score rise must last to be a goal
 UNSEEN_CARRY = 6           # samples a record not drawn keeps its last frame and anim (then none)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
@@ -230,7 +232,7 @@ def build(truth, vf, rows, maps, q0, q1):
         for team in (0, 1):
             if score[2 * i + team] == score[2 * (i - 1) + team] + 1 and all(
                     score[2 * j + team] >= score[2 * i + team] for j in range(i, min(n, i + GOAL_HOLD))):
-                m["goals"].append(dict(f=i, team=team, scorer=-1, assists=[], kinds=[]))
+                m["goals"].append(dict(f=i, team=team, scorer=None, assists=[], kinds=[]))
     # a burst backdated: its own frames (41, 46 ... 76) show a few samples into it, by when the pad has often switched
     # to another skater, so a read burst starts LUNGE_BACK samples earlier
     aw = lambda i, k: "".join(anim[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4])          # noqa: E731
@@ -347,7 +349,15 @@ def build(truth, vf, rows, maps, q0, q1):
         up = (k < 6) == (period_[i] % 2 == 0)
         gy = 264 if up else -264
         verdict = None
-        for j in range(i, min(n, i + RELEASE_LOOK)):
+        # aimed at the net he attacks, from his attacking half (the line over AIM_LOOK samples crossing the goal line
+        # within AIM_SHOT of the middle): a shot, whoever gets it next (a wide shot a teammate picked up had read as a
+        # pass; on the recordings this rule is 102 of 110 attacking-half shots against 14 of 174 passes)
+        j2 = min(n - 1, i + AIM_LOOK)
+        px, py = puck[3 * i], puck[3 * i + 1]
+        dx, dy = puck[3 * j2] - px, puck[3 * j2 + 1] - py
+        if AIM_SHOT and (py > 0) == up and dy != 0 and (gy - py) / dy > 0 and abs(px + dx * (gy - py) / dy) <= AIM_SHOT                 and math.hypot(dx, dy) > 8:
+            verdict = "shot"
+        for j in (range(i, min(n, i + RELEASE_LOOK)) if verdict is None else ()):
             o = owner[j]
             if o >= 0 and o != k:
                 verdict = "pass" if (o < 6) == (k < 6) else ("shot" if o % 6 == 5 else None)

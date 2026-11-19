@@ -1897,3 +1897,19 @@ converter's HIT_OUTCOMES) with an opponent within HIT_REACH (24) in the HIT_BEFO
 fall. On the recordings themselves it finds 19 of 19 (22 found), 15 of 15 (15), 17 of 17 (20); a check animation near
 a man that didn't put him down was mostly no hit the game counted (42 found for game 1's 19). On the reads the misses
 are falls the reader didn't see (a fallen skater's frames under another sprite, or not tracked).
+
+**Goals and shots from the video only (2026-11-18).** The score box's goals are every goal of the three stretches (10
+of 10, the right team, within 0.4 s real); given with no scorer (`scorer` None: -1 had read as a named player with no
+shot, so each goal had made a second, `other`, shot). Shots now 8 of 13 (8 read), 9 of 13 (12), 3 of 7 (3): few
+false, a third missed. The misses: a wrong carrier at the release (another teammate's track at the puck, the
+shooter's track lost), the puck lost, a blocked shot with the carrier kept, wide shots from near the goal line that
+go nowhere near the net. Tried and left off:
+- **Aimed at the net, a shot whoever gets it next** (`AIM_SHOT`, the release's line within 30-60 of the middle at the
+  goal line): on the recordings 102 of 110 attacking-half shots against 14 of 174 passes, but on the reads no shot
+  gained and a pass lost in each game (the misses aren't mis-named aimed releases).
+- **Speed and frames:** the puck leaves a shot at 1-6 units a sample, a pass at 3-5 (the median 3.9): no line; of 56
+  frames shots and passes draw, none is a pass's alone and 3 a shot's (1 of 26 shots showed one).
+- **The sound at a known release** (the game plays SFXshotfh / SFXshotbh against SFXpass; `audio_events` templates,
+  one game left out in turn, 529 releases of the four games): AUC 0.76; shot minus pass score above 0.14 keeps 60 of
+  123 shots and 46 of 406 passes; among releases aimed at the net it splits nothing a direction doesn't (75 of 102
+  shots kept to drop 11 of 14 passes).
