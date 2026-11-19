@@ -339,3 +339,10 @@ rebuilt from the goals before it (regulation, 5-minute periods, simulated games 
 - The same team in the same game is called 12-13% more often while leading than while trailing, but that is the
   penalties' own doing: a penalty often leads to a power-play goal against, which ends a lead, so penalties come just
   before trailing spells. It isn't a sign of the game favouring the trailing team.
+
+## Penalties by end (2026-11-19)
+
+Called on the team defending the bottom (Down) net against the top, regulation, real games (STUDY_NOTES "Down goal:
+penalties by type in the league data"): Genesis all 1.054 (1.046-1.062), interference 1.125, tripping 1.092,
+injuring 1.072, hooking 1.016, holding 0.945, the rest about 1.05; SNES all 0.998. Genesis interference is goalie
+interference in the crease window, and people stand the bottom goalie deeper, outside it more often.

@@ -7835,3 +7835,32 @@ about 1.05, tripping and interference about 1.10); goals a power play lean only 
 410, 422 / 428) as drawn, with HotList's blade point, and both nets drawn as the top one (the bottom flipped top to
 bottom, screen x kept) with the blade's 8-unit play circle and its 8-14 blind ring, the goalie 19 out; the replays'
 1.03 -> 1.00 with the points mirrored.
+
+### Down goal: penalties by type in the league data (2026-11-19)
+
+The user: is the computer defenders' hook / hold lean in the box scores? The league databases' penalty lists
+([period, seconds, team, player, name, type, minutes]; the team the penalized one), regulation, real games only;
+"Down" = called on the team defending the bottom net (home in periods 1 and 3):
+
+| Genesis (87,273 games) | Down / Up (95%) | | SNES (36,364) | Down / Up |
+|---|---|---|---|---|
+| all | **1.054** (1.046-1.062) | | all | 0.998 |
+| hooking | 1.016 (0.995-1.038) | | hooking | 0.94 |
+| holding | 0.945 (0.893-1.001) | | holding | 0.93 |
+| interference | **1.125** (1.092-1.159) | | interference | 0.99 |
+| tripping | **1.092** (1.063-1.121) | | tripping | 0.97 |
+| injuring | 1.072 | | injuring | 1.08 |
+| slashing, charging, cross-check, roughing | 1.04-1.05 each | | | |
+
+- **No hooking or holding excess in the box scores**: the captures' computer hook animations (1.39) don't show up as
+  hooking calls (`$1E` after SPAhook2). The excess is interference, tripping, injuring and about 5% on the rest.
+- **Interference is goalie interference only** (collide94 `checkint`): called on the skater who runs into the goalie
+  (impact over $1E), and only while the goalie is in his crease window (y $EF-$10A toward his goal: 25 out to 2
+  behind the line, x within +-$14). "By the Down net's defenders" is those players attacking the top net: the extra
+  calls are at the top crease.
+- **Where the goalie stands decides that window.** In the 38 Genesis recordings (clock running) the goalie is outside
+  it 5.2% of the time at the top and 6.2% at the bottom; when a person controls him 36.4% and 43.4% (people stand the
+  bottom goalie deeper: median 24.7 out against 19.4). Inside the window: 63.6% against 56.6%, a ratio of 1.12, the
+  league's interference lean (1.125). So people's goalie positioning, which made no difference to goals, looks like
+  the cause of the interference lean: running into a goalie standing deeper than 25 can't be called.
+- Tripping (Bcheck: a B-check that knocks a skater down, `checkagr` then $20) and the rest still to explain.
