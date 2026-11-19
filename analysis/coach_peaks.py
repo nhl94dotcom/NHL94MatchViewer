@@ -5,7 +5,8 @@ gets counts only.
 
 - **Year's end:** the published Rating (coach_rating.py's final fit: all leagues, recent games counting more, team
   terms in the Classic leagues) as it stood on 31 December, from the games played by then (coach_history.Fit), as a win
-  chance against an average coach (one with 100+ games). Listed: coaches with 100+ games by then and 20+ in that year.
+  chance against an average coach (one with 100+ games). Listed: coaches with 100+ games by then and 20+ in that
+  calendar year.
   2026 is to the last game in the data.
 - **1. Peak Rating:** the highest of that Rating at the first of any month, with the same two conditions (20+ games in the
   year before that day).
@@ -114,6 +115,9 @@ def elo_paths(name, label):
     R = defaultdict(lambda: LE.START)
     path = defaultdict(list)
     for g in games:
+        g["hp"], g["ap"] = g["hp"].strip().lower(), g["ap"].strip().lower()   # as the Rating reads them (league_flow_study.load)
+        if not g["hp"] or not g["ap"] or g["hp"] == g["ap"]:
+            continue
         gap = R[g["hp"]] - R[g["ap"]] + LE.HOME
         if table and g["wide"]:
             gap += table.get(g["ht"], 0) - table.get(g["at"], 0)
@@ -157,7 +161,8 @@ def build(name, label, title, at, sets):
     top10s = defaultdict(int)
     lines += ["## The top ten at each year's end", ""]
     for yr, day in zip(years, ends):
-        vals = sorted(((v[0], p, v) for p, v in at_end[day].items() if ok(v)), reverse=True)
+        vals = sorted(((v[0], p, v) for p, v in at_end[day].items() if v[1] >= MIN_CAREER and sum(rec[(p, yr)]) >= MIN_RECENT),
+                      reverse=True)
         when = "to date" if day == last + 1 else "31 December"
         lines += [f"### {yr} ({when}; {len(vals)} coaches qualified)", "", "| Rank | Coach | Rating | Games, career | Year's record |",
                   "| --- | --- | --- | --- | --- |"]
@@ -252,6 +257,20 @@ def build(name, label, title, at, sets):
     for i, p in enumerate(sorted(both, key=lambda p: mean_rank[p])[:LIST], 1):
         lines.append(f"| {i} | {p} | {mean_rank[p]:.1f} | {ranks[0][p]} | {ranks[1][p]} | {ranks[2][p]} | {ranks[3][p]} | "
                      f"{len(firsts.get(p, []))} | {top10s.get(p, 0)} |")
+    names = ("Peak Rating", "Prime", "Field", "Peak Elo")
+    missing = [p for p in sorted(peak_rating, key=lambda p: -peak_rating[p][0]) if p not in both][:LIST]
+    lines += ["", "## Strong coaches not ranked on all four (by Peak Rating), and why", "",
+              "| Coach | Peak Rating | Best year | Prime | Field | Peak Elo | Missing |", "| --- | --- | --- | --- | --- | --- | --- |"]
+    for p in missing:
+        why = []
+        if p not in prime:
+            yrs = sorted(ys.get(p, {}))
+            why.append(f"no three years in a row with {CG.MIN_YEAR}+ decided games (qualifying years: {', '.join(map(str, yrs)) or 'none'})")
+        if p not in peak_elo:
+            why.append(f"under {ELO_FROM + ELO_WINDOW} games for the held Elo")
+        lines.append(f"| {p} | {pct(peak_rating[p][0]):.1f}% | " + (f"{pct(best_year[p][0]):.1f}% ({best_year[p][1]})" if p in best_year else "—")
+                     + " | " + (f"{pct(prime[p][0]):.1f}%" if p in prime else "—") + f" | {peak_z[p][0]:+.2f} | "
+                     + (f"{peak_elo[p][0]:.0f}" if p in peak_elo else "—") + f" | {'; '.join(why)} |")
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / f"PEAKS_{label}.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"{title}: {len(fit.games):,} games to {date.fromordinal(last)}; {len(years)} year-end tables; peaks for "
