@@ -7882,3 +7882,21 @@ the mouth, top / bottom: square 72% / 75%; turned to the screen's right 60% / 55
 goalie stops them all, the bottom none); turned left 55% / 51% (aimed 0-2 left of centre the same); square, the
 bottom goalie better near the right post (12-16), the top near the left (14-16). The user's reading: turned right,
 the bottom goalie's stick is tucked into his body and covers less.
+
+### Down goal: computer hooks per opportunity (2026-11-19; `analysis/hook_by_end.py`, `analysis/hook_opportunity.py`)
+
+From the raw captures (exact pflags bit 3), 38 Genesis games, regulation, play only:
+- **Who:** the computer's hooks and holds (Up / Down attackers' side: 184 / 268) come from defencemen on assdefd (110 /
+  167, 1.52) and anyone on assnearest (74 / 99, 1.34); the hooker faced his target exactly (facedir == vtoa) in 80%
+  (146 / 220); by zone, position and spot relative to the target's travel all about 1.4-1.5; the victim seldom the
+  carrier (23 / 33).
+- **Per opportunity** (a computer defender within +-30 of an opponent and facing him exactly, every 2nd sample): Up
+  100,774, Down 101,344 (1.006); hooks per 1,000: 1.83 / 2.64, **Down / Up 1.45**; against the carrier only 5,807 /
+  6,680 opportunities, 1.30. The chances are even; the computer turns more of them into hooks at the bottom net.
+- **Bursts** (computer skaters entering SPAburst $0C5E): 1,212 / 1,286 (1.06); while facing an opponent within 40:
+  1,124 / 1,207 (1.07). Hooks' share of (bursts + hooks) facing an opponent: 14.1% top, 18.2% bottom. Both more
+  actions (about 1.13) and a larger hook share at the bottom net; check4check's burst / hook split is `HVcount & 3`
+  (the VDP counter, not the random generator), and bursts come from other paths too.
+- Bottom-net hooks listed (game, capture sample, period and clock, hooker, assignment, his animation before) in
+  hook_opportunity.py's output for NOSE4Web's code search. Computer-against-computer games, retail against
+  centreDefenceFix: `analysis/scoring_map/gen_hook_cvc.py`.
