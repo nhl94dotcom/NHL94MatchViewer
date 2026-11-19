@@ -29,7 +29,39 @@ import rink_render  # noqa: E402
 import extract_sprites as XS  # noqa: E402
 
 LV = rink_render.LEVELS.astype(int)
-H_PLAY = 186                                   # rows above the score boxes
+H_PLAY = 224                                   # rows read: the whole screen (was 186, above the score boxes)
+SCORE_BOXES = ((186, 224, 3, 71), (186, 224, 187, 247))   # the clock and score boxes (rows, columns): masked, the
+                                                           # ice between them read (2026-11-19: a goalie holding the
+                                                           # puck low on the screen had been out of the read area)
+
+
+def box_mask(shape):
+    """True over the score boxes in a frame of `shape` (rows, columns)."""
+    m = np.zeros(shape, bool)
+    for y0, y1, x0, x1 in SCORE_BOXES:
+        m[y0:min(y1, shape[0]), x0:min(x1, shape[1])] = True
+    return m
+
+
+NET_Y, NET_NEAR = 268, 40      # the nets' rink Y; a carrier this near one (screen pixels) can be hidden by it
+
+
+def near_net(sy, sx, cam):
+    """A screen point within NET_NEAR of either net (the ignore mask hides the nets, and a carrier behind one)."""
+    if cam is None:
+        return False
+    for Y in (NET_Y, -NET_Y):
+        nsy, nsx = 112 - Y + cam[1], 128 - cam[0]
+        if abs(sx - nsx) <= NET_NEAR and abs(sy - nsy) <= NET_NEAR:
+            return True
+    return False
+
+
+def out_of_read(sy, sx):
+    """A sprite point where its player can't be read: under a score box or at the screen's edges."""
+    if sy < 16 or sx < 16 or sx > 240 or sy > H_PLAY - 8:
+        return True
+    return any(y0 - 24 <= sy and x0 - 8 <= sx < x1 + 8 for y0, y1, x0, x1 in SCORE_BOXES)
 FIRST = np.array([int(np.nonzero(np.floor((np.arange(320) + 0.5) * 0.8 - 0.25).astype(int) == j)[0][0]) for j in range(256)])
 PUCK_FRAMES = tuple(range(394, 405))            # 394 the shadow, 395-404 the puck
 
@@ -719,6 +751,9 @@ class PuckTracker:
                 tr = min(at, key=lambda x: x[0])[1]
                 self.mode, self.carrier, self.pos, self.vel, self.unseen = "carried", tr, self.to_rink(p[0], p[1], cam), (0.0, 0.0), 0
                 return p + ("seen at a stick",)
+        if p and self.mode == "carried" and self.carrier is not None and self.carrier not in live                 and near_net(p[0], p[1], cam) and self.out_of_view < OUT_OF_VIEW:
+            self.out_of_view += 1                       # seen by a net while its carrier is hidden there: still his
+            return (p[0], p[1], "carried", 0, 0.0, "out of view")
         if p:
             Y, X = self.to_rink(p[0], p[1], cam)
             if self.mode == "loose" and self.unseen == 0 and self.pos is not None:
@@ -774,7 +809,7 @@ class PuckTracker:
             return self._carried(self.carrier, cam, "same carrier")
         if self.mode == "carried" and self.carrier is not None and self.carrier not in live and self.out_of_view < OUT_OF_VIEW:
             c = self.carrier                            # he went out of the read area (under the score box, off the
-            if c.sy > H_PLAY - 24 or c.sx < 16 or c.sx > 240 or c.sy < 16:   # side): he keeps it until it shows again
+            if out_of_read(c.sy, c.sx) or near_net(c.sy, c.sx, cam):   # side, behind a net): he keeps it until it shows again
                 self.out_of_view += 1
                 by, bx = blade(R, (c.team, c.fr, c.mir, c.sy, c.sx))
                 return (by, bx, "carried", 0, 0.0, "out of view")

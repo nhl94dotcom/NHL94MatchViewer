@@ -1933,3 +1933,21 @@ good: joined plainly the second half read the right team 35% of the time), score
 
 Possession, passes, entries and hits hold over a whole game about as on the short stretches; shots find 59% with few
 false; turnovers (33 false) and faceoffs (7 false stoppages) are the weak counts, and period 3 the weakest period.
+
+**Game 4's false turnovers, and the read area (2026-11-19).** Of game 4's 60 read turnovers, 32 had no recorded one: 19
+in period 3; 15 with one team carrying throughout (the read swapped teams); 15 within 44 of a goal line (|y| > 220);
+7 with the goalie the true carrier. Goalie holds were read right in about half their samples, and the misses were
+mostly "loose": the goalie usually tracked in the right frame, but the puck lost by him.
+- **The read area was the top 186 rows.** The Genesis's clock and score boxes take only the bottom corners (columns
+  5-68 and 189-244, rows 188-221); the ice between them was never read, so a goalie holding the puck low on the screen
+  (the longest misread hold: rows 186-203) was out of it, and the coasting puck drifted on below. Now the whole 224
+  rows are read with only the boxes masked (`inverse.SCORE_BOXES`, `box_mask`, `out_of_read`; run_reader /
+  track_test's view adds the mask).
+- **A carrier hidden by a net keeps the puck** for up to OUT_OF_VIEW frames (`inverse.near_net`: within 40 pixels of
+  either net, which the ignore mask hides), and a puck seen there while he is hidden stays his.
+- **Tested on two stretches of game 4** (video frames 115500-117500 with the long goalie hold; 125500-128700 in
+  period 3), scored against the recording with the clock running (the build clears the owner at whistles): stretch A
+  carrier team 93% -> 95%, goalie holds 0% -> 52%; stretch B 82% -> 82% (the net rule +1), turnovers 13 read / 4
+  matched -> 11 / 6, everything else the same. Stretch B's remaining misses are mostly "loose" with the carrier behind
+  or beside a net (293 of 407 samples beyond |y| 250), lost before he went out of sight: next.
+- Not yet re-read: the four games in full (game 4 about 2.5 h on two gentle workers).
