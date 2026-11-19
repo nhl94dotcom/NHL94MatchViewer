@@ -1873,3 +1873,27 @@ to under a unit (median), so the remaining misses are identity, not position. Ga
 holds: controlled skater right 75-80%, missing 4% (66-70%, 15-16%); possession 85%, passes 31 of 36, turnovers 11 of
 14 (18 read, 17 before), check attempts 9 of 14 (15 read, now 14), entries 16 of 18, hits and faceoffs all, as before;
 shots 11 of 13 with 13 read (10, 14 read).
+
+**The test had kept the recording's counts (2026-11-18): every figure above for hits, and part of the shots, came
+from the recording, not the video.** `build` began the read match as a copy of the recorded one and wrote over what the
+video gave, so the read kept the game's stats snapshots (the converter's `find_hits` credits hits from the per-player
+check counts, and faceoff winners from the faceoff counts), its goals, shots-on-goal counts (which turn a release into
+a counted shot, and add an `other` shot where a goal or save had none: the read's "other goal" shots), the goal light,
+penalties, aim and nets, and the anims, frames and facing of skaters the reader never saw. Now the read has only what
+the video shows: those are gone; a skater not drawn keeps his look UNSEEN_CARRY (6) samples, then has none; positions
+start at centre ice, the puck too until seen; clock, period and score before the first read are the first read's; the
+rosters stay as at the start (the lineups are on the matchup screen); goals come from the score box (a team's score up
+one and still up GOAL_HOLD, 24, samples later). Re-scored (game 1 / 2 / 3):
+
+| | before | from the video only |
+|---|---|---|
+| hits | 19 of 19, 15 of 15, 17 of 17 (the game's counts) | 0 (no counts), then `video_hits`: 11 of 19 (14 read), 10 of 15 (10), 11 of 17 (13) |
+| shots | 11 of 13, 9 of 13, 3 of 7 | 8 of 13 (10 read), 9 of 13 (17), 3 of 7 (4) |
+
+Passes within one of before (30 of 36, 13 of 22, 20 of 30), turnovers the same matched (11 of 14 with 20 read, 9 of 11
+with 15, 11 of 15 with 22). Zone entries, check attempts, faceoffs (when), possession and the controlled skater as before: those were the video's.
+`video_hits` (pseudo_match): a skater starting a fall (knocked down, upended, into the boards or bench: the
+converter's HIT_OUTCOMES) with an opponent within HIT_REACH (24) in the HIT_BEFORE (6) samples up to it, one hit a
+fall. On the recordings themselves it finds 19 of 19 (22 found), 15 of 15 (15), 17 of 17 (20); a check animation near
+a man that didn't put him down was mostly no hit the game counted (42 found for game 1's 19). On the reads the misses
+are falls the reader didn't see (a fallen skater's frames under another sprite, or not tracked).

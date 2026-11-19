@@ -39,6 +39,8 @@ WIDE = 60                   # a release whose line crosses the goal line this fa
 RELEASE_LOOK = 90           # samples a release's outcome is looked for
 V_WINDOW = 12               # video frames the puck velocity's slope is taken over
 VMAX = 9.0                  # pixels a frame: about the fastest shot (a puck at 23,000 moves 5.6)
+GOAL_HOLD = 24              # samples a read score rise must last to be a goal
+UNSEEN_CARRY = 6           # samples a record not drawn keeps its last frame and anim (then none)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
 MERGE = 150                 # samples (2.5 s real): stoppages this close, the clock unchanged between, are one
 MIN_STOP = 60               # samples (1 s real): a shorter stoppage is a sliver of unseen puck, not a whistle
@@ -96,11 +98,23 @@ def build(truth, vf, rows, maps, q0, q1):
     by_fi = {r["fi"]: r for r in rows}
     m = slice_match(truth, q0, q1)
     n = q1 - q0
-    pos = list(m["pos"])
-    frame, mirror, anim, facing = list(m["frame"]), list(m["mirror"]), list(m["anim"]), list(m["facing"])
+    # Only what the video shows (2026-11-18: the read had kept the recording's stats snapshots, goals, shots-on-goal
+    # counts, goal light, penalties, aim, nets and the anims of skaters it never saw, and the converter credits hits,
+    # faceoff winners and counted shots from those): the recording's own counts and moments go, a skater not seen
+    # yet has no anim, and the teams' rosters stay as at the start (the lineup is on the matchup screen)
+    for k in ("stats", "aim", "locked", "work", "nets", "penalties"):
+        m.pop(k, None)
+    m["goals"] = []
+    m["shots"] = [0] * (2 * n)
+    m["lights"] = [0] * len(m.get("lights", []))
+    m["roster"] = m["roster"][:12] * n
+    m["puckFrame"] = "000" * n
+    pos = [0.0] * (24 * n)
+    frame, mirror, anim, facing = ["0"] * (36 * n), ["0"] * (12 * n), ["0"] * (48 * n), ["0"] * (12 * n)
+    unseen = [UNSEEN_CARRY + 1] * 12              # samples since each record was last drawn
     role = ROLES * 2 * n
-    puck, puckV, owner, ctrl = list(m["puck"]), [0] * (2 * n), [-1] * n, [0] * n
-    slot_of, last, votes = {}, {k: (pos[2 * k], pos[2 * k + 1]) for k in range(12)}, {}
+    puck, puckV, owner, ctrl = [0.0] * (3 * n), [0] * (2 * n), [-1] * n, [0] * n
+    slot_of, last, votes = {}, {k: (0.0, 0.0) for k in range(12)}, {}
     pad_track = {}
     prev_p, hist = None, []
     for i in range(n):
@@ -151,7 +165,12 @@ def build(truth, vf, rows, maps, q0, q1):
             mirror[i * 12 + k] = str(mir)
             anim[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4] = maps["anim"].get(fr, "0000")
             facing[i * 12 + k] = maps["facing"].get(fr * 2 + int(mir), maps["facing"].get(fr * 2 + 1 - int(mir), "0"))
+        drawn = set(live.values())
         for k in range(12):
+            unseen[k] = 0 if k in drawn else unseen[k] + 1
+            if k not in drawn and i and unseen[k] <= UNSEEN_CARRY:   # a skater hidden for a moment keeps his look
+                for arr, w in ((frame, 3), (mirror, 1), (anim, 4), (facing, 1)):
+                    arr[(i * 12 + k) * w:(i * 12 + k) * w + w] = arr[((i - 1) * 12 + k) * w:((i - 1) * 12 + k) * w + w]
             pos[(i * 12 + k) * 2:(i * 12 + k) * 2 + 2] = [float(last[k][0]), float(last[k][1])]
         if r["puck"] is not None:
             sy, sx, z, how = r["puck"]
@@ -198,7 +217,20 @@ def build(truth, vf, rows, maps, q0, q1):
                 period[i] = got["period"]
             if got["home"] is not None and got["vis"] is not None:
                 score[2 * i:2 * i + 2] = [got["home"], got["vis"]]
+    # before the first read the first read values (not the recording's)
+    first_read = next((i for i in range(n) if (by_fi.get(int(round(vf[q0 + i]))) if vf[q0 + i] == vf[q0 + i] else None)
+                       and by_fi[int(round(vf[q0 + i]))].get("hud")), None)
+    if first_read is not None:
+        for i in range(first_read):
+            clock[i], period[i] = clock[first_read], period[first_read]
+            score[2 * i:2 * i + 2] = score[2 * first_read:2 * first_read + 2]
     m.update(clock=clock, period=period, score=score)
+    # goals from the score box: a team's score up by one and still up GOAL_HOLD samples later
+    for i in range(1, n):
+        for team in (0, 1):
+            if score[2 * i + team] == score[2 * (i - 1) + team] + 1 and all(
+                    score[2 * j + team] >= score[2 * i + team] for j in range(i, min(n, i + GOAL_HOLD))):
+                m["goals"].append(dict(f=i, team=team, scorer=-1, assists=[], kinds=[]))
     # a burst backdated: its own frames (41, 46 ... 76) show a few samples into it, by when the pad has often switched
     # to another skater, so a read burst starts LUNGE_BACK samples earlier
     aw = lambda i, k: "".join(anim[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4])          # noqa: E731
@@ -415,7 +447,18 @@ def analyse(m, rom_path):
     m = copy.deepcopy(m)
     m.pop("pad", None)
     m.pop("pad2", None)
-    export_match.analyse(m, genesis, types.SimpleNamespace(folder="."), rom_path)
+    real = export_match.find_hits
+    if not (m.get("stats") or {}).get("f"):          # a video's match: no game counts, so hits from the falls seen
+        def from_video(mm):
+            ro = mm["roster"]
+            return [dict(f=h["f"], team=h["team"], by=int(ro[h["f"] * 12 + h["k"]], 36), on=int(ro[h["f"] * 12 + h["on"]], 36),
+                         x=round(mm["pos"][(h["f"] * 12 + h["on"]) * 2]), y=round(mm["pos"][(h["f"] * 12 + h["on"]) * 2 + 1]),
+                         how="check", outcome="knocked down") for h in video_hits(mm)]
+        export_match.find_hits = from_video
+    try:
+        export_match.analyse(m, genesis, types.SimpleNamespace(folder="."), rom_path)
+    finally:
+        export_match.find_hits = real
     return m
 
 
@@ -446,4 +489,34 @@ def compare(a, b, kinds=("shotList", "passes", "turnovers", "hits", "faceoffs", 
     both = [i for i in range(len(oa)) if oa[i]]
     out["possession"] = dict(samples_carried=len(both), carried_read_as_carried=sum(ob[i] for i in both),
                              team_right=sum(ta[i] == tb[i] for i in both))
+    return out
+
+
+HIT_MOVES = ("0b96", "0bc8", "0bfa", "0c2c", "1ac2")   # Genesis CHECK_MOVES: shoulder, hip, cross-check
+HIT_FALLS = ("0dd8", "0d26", "136a", "1776", "17e8", "185a", "18cc", "193e", "1a00")   # HIT_OUTCOMES
+HIT_REACH = 24                 # game units between the checker and the man, at most, in the samples before his fall
+HIT_BEFORE = 6                 # samples before the fall looked through for the checker
+
+
+def video_hits(m, reach=HIT_REACH, before=HIT_BEFORE):
+    """Hits from what a video shows (the converter's find_hits needs the game's per-player check counts): a skater
+    starting a fall (knocked down, upended, into the boards or bench: the converter's HIT_OUTCOMES) with a skater of
+    the other side within `reach` in the `before` samples up to it; the checker the nearest, one hit a fall. On the
+    recordings a check animation near a man that didn't put him down was mostly no hit the game counted (game 1: 42
+    found for its 19), and every hit it counted there put the man down. Returns [{f, team (the checker's), k, on}]."""
+    pos, A, n = m["pos"], m["anim"], len(m["t"])
+    an = lambda i, k: A[(i * 12 + k) * 4:(i * 12 + k) * 4 + 4]      # noqa: E731
+    d = lambda i, a, b: math.dist((pos[(i * 12 + a) * 2], pos[(i * 12 + a) * 2 + 1]),   # noqa: E731
+                                  (pos[(i * 12 + b) * 2], pos[(i * 12 + b) * 2 + 1]))
+    out = []
+    for i in range(1, n):
+        for v in range(12):
+            if v % 6 == 5 or an(i, v) not in HIT_FALLS or an(i - 1, v) in HIT_FALLS:
+                continue
+            if any(h["on"] == v and i - h["f"] <= 30 for h in out):
+                continue
+            near = min(((d(j, k, v), k, j) for j in range(max(0, i - before), i + 1)
+                        for k in range(6 * (1 - v // 6), 6 * (1 - v // 6) + 6) if k % 6 != 5), default=None)
+            if near and near[0] <= reach:
+                out.append(dict(f=i, team=near[1] // 6, k=near[1], on=v))
     return out
