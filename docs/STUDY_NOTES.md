@@ -8108,3 +8108,27 @@ disassembly; not played yet.
   the fight (the skaters skating to the faceoff) unless it tests the clock too. To decide: the intermission (the
   timer just waits there, carrying into the next period), a second fight (overwrites the team and restarts), and the
   winner being in the box for his major meanwhile (his team still boosted).
+
+### Blocked shots: the code, and the RAM in the recorded games (Genesis, 2026-11-19, for NOSE4Web's option)
+
+NOSE4Web counts at puckbody's first instruction ($153CA) when puckbody's real-hit test passes, sf2shot is set, not
+gmhl or a shootout, a2 not a goalie, and shotplayer ($FFBED8) on the other team. From the disassembly (not played: the
+test ROMs hadn't come):
+- **Low shots through a skater (question 2):** puckbody returns at once for a skater in a one-timer (pf3onetimer);
+  otherwise a puck at Zpos 8 or lower is a hit only when the low four bits of d0 (the distance squared, from
+  checkpuckcoll) are 0, roughly 1 contact in 16. The rest pass through him with no bounce, sound or touch: the game
+  itself treats them as no contact, so leaving them uncounted matches what happens to the puck. They will show in the
+  viewer as a puck crossing a skater's sprite.
+- **Fast high shots (question 3):** a puck above 8 is always a hit; a2touchpuck, the bounce, then FallDown when
+  Zpos > $C and speed squared > $9000000 (else SPAcatch on a slower one). All after the hit: a real block by the
+  game's own rules.
+- **shotplayer and sf2shot (question 4):** doshot writes shotplayer for every shot, one-timers included, and sets
+  sf2shot. sf2shot is cleared by a2touchpuck (every skater's touch: a pickup, a stick deflection, a body hit),
+  ChkShotStat (the goalie's saves and deflections) and the puck meeting the boards (collide94's wall bounce). So a
+  rebound off the goalie, the boards or a stick is never "a shot" when it hits someone, and the shot's own shooter
+  is always the one in shotplayer. One edge: doshot writes shotplayer **before** its whiff test (a shooter who no
+  longer has the puck): a whiff while another shot is in flight changes shotplayer without setting sf2shot, so that
+  shot's block would be judged against the whiffer's team. Rare; not seen yet.
+- **Free RAM (question 7):** in 38 recorded Genesis games (2,122 full work-RAM snapshots), $FFE890-$FFE8CF,
+  $FFE904-$E905 and $FFEC68-$EC69 were 0 in every snapshot; and nothing from $FFE000 to $FFFEBF was written on six
+  league ROMs in whole games (Free work RAM, 2026-11-11).
