@@ -21,7 +21,10 @@ working rating set every frame.
                     goal (the score, rebounds too), save (the goalie took it or the puck turned within 30 of him),
                     else where it crossed the goal line (wide past 24) or other; how fast it left
 
-python shot_ratings_check.py acc|power|ends ROM [SEEDS]"""
+  aims ROM [SEEDS]  as ends, with each of the 9 d-pad directions held (harness.DIRPAD) and the game's passdir ($BEDC)
+                    read at the release (NHL94_AIMS_OUT: the shots as JSON)
+
+python shot_ratings_check.py acc|power|ends|aims ROM [SEEDS]"""
 import math
 import random
 import sys
@@ -131,6 +134,7 @@ def end_shot(e, base, x, y, seed, bottom, aim=()):
     score0 = (e.w(HOME_SCORE), e.w(0xCA3E))
     gy = -264 if bottom else 264
     rel, vel, cross, goal, touched, out = None, None, None, False, False, False
+    pdir = None
     prev = None
     for f in range(210):
         e.setb(rec(SHOOTER) + SHA, 15)
@@ -143,6 +147,7 @@ def end_shot(e, base, x, y, seed, bottom, aim=()):
             if pc >= 0x8000:
                 rel, vel = f, (vx, vy, e.sw(rec(14) + 0x2C))
                 prev = (px, py, vx, vy)
+                pdir = e.w(0xBEDC)
             continue
         if (e.w(HOME_SCORE), e.w(0xCA3E)) != score0:       # either score: the game may credit the net's usual team
             goal = True
@@ -161,7 +166,7 @@ def end_shot(e, base, x, y, seed, bottom, aim=()):
         prev = (px, py, vx, vy)
     result = ("goal" if goal else "save" if touched else out if out
               else ("wide" if cross is not None and abs(cross) > 24 else "other"))
-    return rel, vel, cross, result
+    return rel, vel, cross, result, pdir
 
 
 def main():
@@ -169,6 +174,41 @@ def main():
     seeds = int(sys.argv[3]) if len(sys.argv) > 3 else 30
     e = Emu(rom)
     base = live_state(e, 0)
+    if mode == "aims":                                   # every d-pad direction at both nets, by passdir
+        from harness import DIRPAD
+        table = {}
+        for bottom in (False, True):
+            b = period2_state(e, base) if bottom else base
+            for x, y in END_SPOTS:
+                for d in range(9):
+                    pad = tuple(DIRPAD[d])
+                    shots = [end_shot(e, b, x, y, random.Random(f"{x},{y},{d},{sd}").getrandbits(32), bottom, pad)
+                             for sd in range(seeds)]
+                    shots = [r for r in shots if r[0] is not None]
+                    if not shots:
+                        continue
+                    modal = Counter(r[1] for r in shots).most_common(1)[0]
+                    for r in shots:
+                        perfect = y >= 100 and r[1] == modal[0] and modal[1] > 1
+                        band = "far" if y < 100 else "slot perfect" if perfect else "slot not perfect"
+                        table.setdefault((band, d, bottom), []).append(r)
+        import json as _j
+        Path_out = __import__("pathlib").Path(os.environ.get("NHL94_AIMS_OUT", "aims.json"))
+        Path_out.write_text(_j.dumps({f"{k[0]}|{k[1]}|{int(k[2])}": [[r[3], r[4]] for r in v] for k, v in table.items()}))
+        for band in ("far", "slot not perfect", "slot perfect"):
+            print("==", band, flush=True)
+            for d in range(9):
+                cells = []
+                for bottom in (False, True):
+                    rows = table.get((band, d, bottom), [])
+                    c = Counter(r[3] for r in rows)
+                    n = max(len(rows), 1)
+                    pd = Counter(r[4] for r in rows).most_common(1)[0][0] if rows else None
+                    cells.append(f"{'Down' if bottom else 'Up  '} pad {d} passdir {pd}: {len(rows):3d} shots, goals {c['goal']:3d} ({c['goal'] / n:5.1%}), "
+                                 f"saves {c['save']:3d}, wide {c['wide']:3d}, out {c['out of the rink']:3d}, whistle {c['whistle']:3d}")
+                for c_ in cells:
+                    print("   " + c_, flush=True)
+        return
     if mode == "ends":
         for bottom in (False, True):
             by_band = {}

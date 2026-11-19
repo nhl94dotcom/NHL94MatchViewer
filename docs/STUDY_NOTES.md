@@ -6275,6 +6275,23 @@ Unpaired, the halving moved one goal in 529 non-perfect bottom-net shots. The ai
 same screen side is his stick side at one net and his glove side at the other), so the end that comes out ahead
 depends on the mix of aims; a computer goalie here, not the people's manual goalies.
 
+**NOSE4Web's second Down-goal pass, tested (2026-11-18).** `shot_ratings_check.py aims` (the both-ends set-up, slapshots:
+C 20 frames, each of the 9 d-pad directions, 20 spots x 8 seeds a net, the game's passdir read at the release:
+passdir is the direction held, 8 with none; the earlier `ends` test held none / Left / Right, passdir 8 / 6 / 2, all
+mid height, never toward the net).
+- **The glass (wallcollb $14BCC):** far slapshots out of the rink + whistle, all aims: top 97 (41 + 56), bottom 321
+  (121 + 200); with $14BE0 0C6B 0118 -> 0C6B 7FFF (a scratch copy) the top 318 (132 + 186): level with the bottom.
+- **Per aim** (shots a net and aim 20-60, small): far shots scored 6 in 1,440; perfect slot shots aimed 4 (Down: flat
+  at either net) 8 of 31 at the top against 2 of 28 at the bottom.
+- **Aim habits weighted** (updown_replay's replays, own and mirrored, every launch; the aim mix from all 1,308
+  launches: the top net 5 / 14 / 28 / 1 / 3 / 1 / 36 / 9 / 3% for passdir 0-8, the bottom 4 / 3 / 39 / 3 / 6 / 3 / 35 /
+  3 / 3%): goals per shot by aim at the top 0/42, 7/83, 45/363, 1/17, 0/40, 0/11, 66/395, 7/60, 0/36; at the bottom
+  4/43, 16/86, 67/376, 0/16, 1/40, 1/12, 51/401, 6/61, 1/36. Each net's own mix: Up 11.7%, Down 13.2% (Down / Up
+  1.13); one pooled mix at both: 1.15 (a computer goalie).
+- **Rebounds:** puckbody and puckgoalie set the puck's speed with `move.b d0,Xvel(a3)` / `move.b d1,Yvel(a3)` (the
+  high bytes; the low bytes stay): a leftover low byte adds to a positive speed and takes from a negative one, so
+  rebounds up the screen (off the bottom goalie) gain and down the screen lose. Not measured.
+
 **Banner colours on the tree, the scouting report:** gen_banner_colour_check's route on 21bdc1ed against c9f32a05:
 of 41 screens only the nine playoff-tree pages differ (712 pixels each, San Jose's and New Jersey's stripes); the six
 before the opening faceoff, the scouting report (Matchups, San Jose in it) among them, pixel-identical.
