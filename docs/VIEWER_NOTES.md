@@ -1913,3 +1913,23 @@ go nowhere near the net. Tried and left off:
   one game left out in turn, 529 releases of the four games): AUC 0.76; shot minus pass score above 0.14 keeps 60 of
   123 shots and 46 of 406 passes; among releases aimed at the net it splits nothing a direction doesn't (75 of 102
   shots kept to drop 11 of 14 passes).
+
+**A whole game never tuned on: BOS-CHI game 4 (2026-11-19).** CHI-BOS, video frames 102071-131058 (28,987, 481 s real
+of play), read overnight by two gentle workers (halves from 102071 and 116564, 3.3 frames a second each, 1 h 14 min),
+joined with `join_reads.py` (each reader numbers its tracks from 0 and the pseudo match keeps a track id's player for
+good: joined plainly the second half read the right team 35% of the time), scored against the recording (TEST_GAME=3):
+
+| | found (read in all) |
+|---|---|
+| possession, the right team | 81% (periods 1 / 2 / 3: 88 / 84 / 72%) |
+| the controlled skater | 71-74% (1% none) |
+| passes | 71 of 90 (97) |
+| zone entries | 36 of 47 (42) |
+| hits | 44 of 65 (51) |
+| shots | 23 of 39 (27) |
+| check attempts | 24 of 46 (36) |
+| faceoffs | 10 of 11 (17) |
+| turnovers | 27 of 37 (60) |
+
+Possession, passes, entries and hits hold over a whole game about as on the short stretches; shots find 59% with few
+false; turnovers (33 false) and faceoffs (7 false stoppages) are the weak counts, and period 3 the weakest period.

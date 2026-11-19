@@ -22,6 +22,7 @@ python updown_replay.py report OUT.jsonl
 python updown_replay.py anatomy LAUNCHES.json GOALIES.json OUT.jsonl [MINUTES]   passdir 2 and 6 only; each goal's type
     (goal_types.classify), where it crossed, the goalie's save frame, facing and the blade (HotList, flipped by his
     attribute bit 3) in front of / to the right of him where the puck passed closest; each first touch's rebound speed
+NHL94_UPDOWN_DEPTH=D: the goalie put D units out from the goal line at either net after his placement (his x kept)
 NHL94_UPDOWN_GOALIE=person: the goalie placed from the people's recorded goalie states and pad-controlled with nothing
     pressed (pflags bit 3 held), so the computer doesn't position him, as league games' manual goalies"""
 import json
@@ -55,6 +56,8 @@ def hot(rom_path):
 
 
 PERSON = __import__("os").environ.get("NHL94_UPDOWN_GOALIE") == "person"   # the goalie pad-controlled, nothing pressed
+DEPTH = __import__("os").environ.get("NHL94_UPDOWN_DEPTH")                   # units out from the goal line, both nets
+DEPTH = int(DEPTH) if DEPTH else None
 
 
 def replay(h, L, top, jx, jy, jz, goalie, post_seed, detail=False, clock=None):
@@ -74,11 +77,17 @@ def replay(h, L, top, jx, jy, jz, goalie, post_seed, detail=False, clock=None):
     inp = dict(px=x, py=y, top=top, dir=L["dir"], pout=L["P"], sha=L["sha"], vz0=0, gspa=en["gspa"])
     perfect = jx == 0 and jy == 0 and jz == 0
     v = launch(inp, perfect, jx, jy, jz)
+    from harness import place_goalie
+    e.unserialize(pre)
+    if goalie is not None:
+        place_goalie(h, goalie)
     if PERSON:
-        e.unserialize(pre)
         e.setb(rec(GOALIE) + 0x62, e.b(rec(GOALIE) + 0x62) | 8)
-        pre = e.serialize()
-    fire(h, pre, v, goalie=goalie, post_seed=post_seed)
+    if DEPTH is not None:                          # the goalie at the same depth at both nets (NHL94_UPDOWN_DEPTH)
+        e.setw(rec(GOALIE) + 0x14, ((GL - DEPTH) if top else -(GL - DEPTH)) & 0xFFFF)
+    g_at = (e.sw(rec(GOALIE)), e.sw(rec(GOALIE) + 0x14))
+    pre = e.serialize()
+    fire(h, pre, v, goalie=None, post_seed=post_seed)
     s0 = (e.w(0xC6DA), e.w(0xCA3E))
     path, reb = [], None
     sgn = 1 if top else -1
@@ -119,7 +128,7 @@ def replay(h, L, top, jx, jy, jz, goalie, post_seed, detail=False, clock=None):
         prev = (px, py, vx, vy)
     if result is None:
         result = "save" if touched else ("wide" if cross is not None and abs(cross) > 24 else "other")
-    out = dict(result=result, v=list(v), gspa=en["gspa"])
+    out = dict(result=result, v=list(v), gspa=en["gspa"], g_x=g_at[0] * (1 if top else 1), g_depth=GL - abs(g_at[1]))
     if reb:
         out["rebound"] = reb
     if detail and result == "goal" and path:
@@ -135,7 +144,14 @@ def replay(h, L, top, jx, jy, jz, goalie, post_seed, detail=False, clock=None):
         bx, by = near[11], near[12]                      # the blade from the goalie, screen units
         front, right = by * (-1 if top else 1), bx * (-1 if top else 1)
         blade = (near[5] + bx, near[6] + by)
-        out["goal"] = dict(type=t, save=anim, dmin=dmin, z=pz, cross=cross, frame=near[9], facedir=near[10],
+        zc = None
+        for q, r_ in zip(path, path[1:]):
+            if (q[1] - (GL if top else -GL)) * (r_[1] - (GL if top else -GL)) <= 0 and q[1] != r_[1]:
+                zc = r_[2]
+                gxc = r_[5]
+                break
+        out["goal"] = dict(type=t, save=anim, dmin=dmin, z=pz, cross=cross, cross_z=zc,
+                           cross_rel=(round(cross - gxc, 1) if cross is not None and zc is not None else None), frame=near[9], facedir=near[10],
                            blade_front=front, blade_right=right,
                            puck_blade=round(math.hypot(near[0] - blade[0], near[1] - blade[1]), 1),
                            puck_rel=(round((near[0] - near[5]) * (-1 if top else 1)), round((near[1] - near[6]) * (-1 if top else 1))))
