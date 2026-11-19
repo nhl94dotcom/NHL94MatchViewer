@@ -7710,3 +7710,10 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
   people take the goalie in the dangerous moments.
 - **Goal rate by depth, person-controlled** (top / bottom): 10-16 out 5/17, 4/7; 16-20 11/29, 8/16; 20-24 6/15, 5/17;
   24-30 5/13, 6/29; 30+ 7/16, 14/30. Too few to read a shape.
+- **The ready-frame hot spots mirrored, replayed** (NOSE4Web's test): the test ROM with the facing-up ready frames'
+  HotList points set to the y-mirror of their facing-down partners (407 <- 419: (0, -7) -> (1, -6); 410 <- 416:
+  (4, -6) -> (11, -4); 428 <- 422: (-6, -1) -> (-7, -7); `NHL94_SMAP_ROM` points the harness at the copy), the computer
+  goalie, the same launches, clocks and seeds as the corrected run. Every top-net result repeated (1,061 of 1,061);
+  64 of 2,090 bottom-net replays changed, both ways. Paired goals (1,027 launches): top 133, bottom 134, **Down / Up
+  1.01** (95 / 94 at one net only, z +0.1), against 132 / 136 (1.03, z +0.3) unpatched. The hot spots account for
+  most of the small computer-goalie lean, which was within chance either way.
