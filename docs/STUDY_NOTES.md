@@ -7982,3 +7982,9 @@ setplayer for a right-handed goalie) with NHL94_SMAP_SUBSET=slotcircles repeats 
   0.968 a shot (unflipped 0.981). The left / right swap between the nets stays: it doesn't follow the goalie's hand.
   Still to try: the shooter's hand (the same shooter at both nets, screen x kept, so his forehand faces the other
   screen side relative to the net at each end).
+- **SNES one-timers at both nets** (`ot_run.py snes ratings`, NHL94_OT_MOMENTS=8: cross-slot receivers in front 30 and
+  55 out and 30 either side, passes from either side 60 and 120 away, both nets with screen x kept; early and late
+  presses; all 9 aims held; 4 seeds a strike; the set computer goalie): swings that connect top 88.8%, bottom 94.5%;
+  goals a struck shot 34.8% / 32.5%; goals a swing 30.9% / 30.7% (Down / Up 0.99). By aim held, the top net's best
+  are right-side (2, 3: 41%), the bottom's left-side (5, 6: 35-37%): the sides swap here too. One-timers are even
+  between the nets a swing, so people's extra one-timers at the bottom net (195 against 136) don't push toward 0.976.
