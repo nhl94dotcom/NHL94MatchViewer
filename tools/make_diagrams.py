@@ -1678,15 +1678,8 @@ def updown_genesis():
         top_edge = Y(y + 14) if y > 0 else Y(y)
         b.append(f"<rect x='{Xp(-20)}' y='{top_edge}' width='{40 * S}' height='{14 * S}' fill='#ffffff' stroke='{INK}' "
                  f"stroke-width='2'/>")
-    for y, d, lab in ((264, 19.4, "19.4 out"), (-264, 24.7, "24.7 out")):
-        gy = y - d if y > 0 else y + d
-        b.append(circle(Xp(0), Y(gy), 13 * S, "#ffffff", INK, 1.5))
-        b.append(line(Xp(32), Y(y), Xp(32), Y(gy), INK, 1.2))
-        b.append(text(Xp(36), (Y(y) + Y(gy)) / 2 + 4, lab, 11, INK))
     b.append(text(Xp(0), Y(300) - 10, "UP (top net)", 13, INK, "middle", "bold"))
     b.append(text(Xp(0), Y(-300) + 20, "DOWN (bottom net)", 13, INK, "middle", "bold"))
-    b.append(text(Xp(-118), Y(-300) + 38, "Circles: where people stand", 11, SOFT))
-    b.append(text(Xp(-118), Y(-300) + 52, "their goalie (median depth)", 11, SOFT))
 
     def notes(x, y, rows):
         for head, lines, effect in rows:
@@ -1711,7 +1704,6 @@ def updown_genesis():
         ("Goalie's stick spots not mirrored", ["The facing-up frames' blade points aren't", "the top goalie's mirror image."],
          "Computer goalie 1.03 -> 1.00 when mirrored"),
         ("Rebounds about 5% faster", ["A byte-handling quirk speeds rebounds", "off the bottom goalie."], "Bottom only"),
-        ("People stand their goalie deeper", ["24.7 out against 19.4 (recorded games)."], "Same goal rate at both: 38%"),
     ])
     # ---- right: every Down / Up measurement
     L, R, T = 800, 1050, 112
@@ -1726,7 +1718,7 @@ def updown_genesis():
         ("Aim fix (scatter not halved)", (S2, paired_ratio(39, 93, 96), "135 / 132")),
         ("Stick fix (blade spots mirrored)", (S2, paired_ratio(39, 94, 94), "133 / 133")),
         ("Harness: goalie standing still", None),
-        ("Placed as people place him", (S3, paired_ratio(135, 118, 175), "310 / 253")),
+        ("Started from recorded goalie spots", (S3, paired_ratio(135, 118, 175), "310 / 253")),
         ("Both 22 out from the goal line", (S3, paired_ratio(119, 148, 179), "298 / 267")),
     ]
     b.append(text((L + R) / 2, T - 26, "Down / Up goals, with 95% ranges", 13, INK, "middle", "bold"))
