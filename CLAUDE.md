@@ -124,7 +124,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   `momentum_study.py` (shooting by shot order in the recorded games); `carry_profile.py BOT CVC [genesis|snes]` (how carries end by zone: people, the bot, the computer); `team_style_compare.py CVC_MATCHES` (a people's team against a computer's team, per 15 minutes: the computer games from `scoring_map/cvc_record.py genesis|snes ROM OUT GAMES [FIRST]`, recorded and converted as people's are).
 - League databases (every league game since 2013, both systems, real players' names, so never in the repo):
   `%USERPROFILE%\NHL94_League_Data\All_Games_GENS.csv`, `All_Games_SNES.csv`. Scripts print or commit aggregates only:
-  `league_home_study.py`, `league_momentum.py`, `direction_by_level.py`, `direction_crossing.py` (shots by end and team, where they cross the goal line) ...; `coach_rating.py` (a strength per coach;
+  `league_home_study.py`, `league_momentum.py`, `direction_by_level.py`, `direction_crossing.py` (shots by end and team, where they cross the goal line), `goalie_by_end.py` (the goalie at each end: frame and blade where the shot reached him, where people stand him, goals by spot) ...; `coach_rating.py` (a strength per coach;
   its named table, `coach_guide.py`'s coach pages, `coach_history.py` and `coach_movers.py` go to that private folder
   only); handouts `classic_team_guide.py` (`docs/TEAM_GUIDE_*.md`), `classic_player_guide.py`
   (`docs/PLAYER_GUIDE_*.md`), `classic_draft_guide.py` (`docs/DRAFT_GUIDE_CLASSIC.md`); `coach_team_levels.py`;

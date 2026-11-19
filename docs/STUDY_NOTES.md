@@ -7689,3 +7689,24 @@ NOSE4Web's last two items for the Down-goal question.
   goalie, so pucknorm draws the held puck to the net's front and checkgoal knocks it loose; facing up they are in
   front. It agrees with NOSE4Web's 49% / 0% of high-save frames. It adds goals at the **Up** net (2 of 218 recorded
   goals), so it works against the Down lean, not for it.
+
+### Down goal: the goalie at each end in the recorded games (2026-11-19; `analysis/goalie_by_end.py`)
+
+NOSE4Web's hot-spot lead (the HotList blade isn't y-mirrored between the facing-up and facing-down ready frames:
+407 + 3 x dir; straight out bottom (0, +7) against top (+1, +6), up-right (+4, +6) against down-right (+11, +4), up-left
+(-6, +1) against down-left (-7, +7), as x / out) and the user's question of where people stand their goalie. 38 Genesis
+games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
+- **Goals / shots on goal:** Up 137 / 526 (26.0%), Down 135 / 492 (27.4%): Down / Up 1.05. By the shooter's screen
+  side: left 25.6% / 26.4%, right 26.5% / 28.6% (Up / Down). Low at the goalie (z <= 5): 27.9% / 29.5%. About 135
+  goals an end: none of these differences is beyond chance.
+- **The goalie's frame where the puck reached him** (goals and low saves): the straight-out ready frame (419 at the top,
+  407 at the bottom) took 7 goals and 36 low saves at the top, 6 and 35 at the bottom; screen-right shooters there 26 /
+  14. No bottom excess in the ready frames. Most goals beat him in moving frames (top 479 / 480, bottom 471 / 472: 18 +
+  15 and 18 + 13 goals).
+- **Where people stand their goalie** (the goalie person-controlled at the release, 90 shots at the top, 105 at the
+  bottom): **deeper out at the Down net**, median 24.7 from the goal line against 19.4 (quartiles 19-31 against 18-27),
+  the side about central at both (+2.0 / +0.3). Goals 38.1% against 37.8%: the same. The computer-controlled goalie
+  (the person on a skater) stands 19.3 / 18.2. The person-controlled rate (38%) is above the computer's (24%) because
+  people take the goalie in the dangerous moments.
+- **Goal rate by depth, person-controlled** (top / bottom): 10-16 out 5/17, 4/7; 16-20 11/29, 8/16; 20-24 6/15, 5/17;
+  24-30 5/13, 6/29; 30+ 7/16, 14/30. Too few to read a shape.
