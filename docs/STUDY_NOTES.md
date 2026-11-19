@@ -7753,3 +7753,12 @@ games, 1,018 shots on goal in regulation (5 with no goalie in the net left out).
   6.1% -> 5.4%, goals 147 -> 146; 47 results changed. So about +0.4 points of wides at the bottom net (NOSE4Web
   expected about 1); the top net has no halving. Their test ROMs (nhl94 / CDL_Season_12 _stick, _aim, _stick_aim)
   not here yet.
+- **The options' bytes made by hand** (NOSE4Web's spec, from retail nhl94.bin and CDL_Season_12.bin: HotList at $A44C8
+  in both, found through GetHot's `movea.l #HotList,a1` at $106F4; frame 407's 12 bytes and frame 428's 6; $C492
+  E248 -> 4E71; the header sum; retail's boot ROM check NOPped at $300, CDL's already is): nhl94_stick is byte for
+  byte my v2 copy; CDL's nine frames held retail's values, so the replays' result (1.03 -> 1.00) is CDL's too.
+- **The aim fix played** (`gen_aim_fix_check.py`: wrist shots launched by the game itself, the test ROM against it
+  with the lsr at $C48E (retail's $C492) a nop; 25 spots x 9 aims x 4 seeds at each net, the clock the same at both
+  nets, the seed set just before the doshot frame): top net 900 launches and results identical; bottom net 364 of
+  900 launches changed (the aims with dy < 0), 16 results: wide 24 -> 26 (2.7% -> 2.9%), goals 9 -> 8, saved 838 ->
+  837. As the replays: a few tenths of a point more wides at the bottom net, not 1%.
