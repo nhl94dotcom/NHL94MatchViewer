@@ -7631,3 +7631,30 @@ d64dd511, 7025c158, da6132af, as given), each against its original.
 - **"extremely" never comes:** 28 SNES games were 8 or more apart (hotextreme stayed 0 in all 72 SNES games);
   Genesis gaps forced to +-189 and +-400 typed "well" (two of them naming the colder team).
 - Typing and scrolling as for the hotter-team version (text done 1,653-1,656 frames after START on the Genesis).
+
+### A franchise ROM's odd behaviour, played (2026-11-19; `gen_team_play_check.py`)
+
+A league member's report on "Franchise Mode 2002 Season Final Rom V1.0.bin" (the copy here: CRC32 12c2dde3, 2 MB,
+header -30 and checksum $1463 valid; the member's 8863689d may be another file): Richmond couldn't be chosen, both
+teams' players all black, players turning into #0 and skating slowly. The league plays with line changes off.
+- **The code differences NOSE4Web couldn't name** (the disassembly's listing): $18033 GetRandomUnusedTeam's
+  NumPlayoffTeams 26 -> 20 (the random playoff tree); $F73E7 / $F73EF GameSetUp's random teams after a demo, NumTeams
+  28 -> 20; $2C721 SongPointerTable, song $36 pointed at a new stream; $FEE19 the title's second picture
+  (MarkLesserMap) drawn with palette lines 0-3 (`moveq #$F,d5`) instead of none; $FF295 CreditsList moved ($57B8 ->
+  $57A4). Also OptionLimits ($F791E / $F7930): the team lines 28 -> 20 and Period Length 3 -> 4 choices. None touches
+  play.
+- **Picking Richmond (team 17) works:** RIGHT on Team 1 and Team 2 at Game Setup steps 0-19 and wraps; Richmond came
+  up on both lines. 30 teams in the ROM, 12 players each (2 goalies), none numbered 0; the lines the game loads for
+  Richmond use players 1-12 only.
+- **Four full games, Richmond against Richmond, computer on both sides, penalties on** (one with line changes on, three
+  off): every skater on the ice each second was a real Richmond player with his own number and working Speed 20-29;
+  colours normal (blue at home, white away). Lines off: the first line all game, the power-play and penalty-kill units
+  at penalties, nothing else.
+- **The "#0, slow" reproduced by lines pointing past the roster:** after a 12th player the roster's next record is the
+  team's name block, read as a player with an empty name, number byte 0 and ratings from the name's text. Line
+  slots set to players 13-16 put skaters with working Speed 0 on the ice when that line came on: top speed about 5,400
+  against 8,000-9,300 for the rest. A ROM's own lines don't do this here; lines loaded from save RAM can
+  (DecodeTeamLines, the line editor's Load: a team byte, then a nibble per slot counted from the first forward or
+  defenceman, so lines saved on a ROM with bigger rosters point past these 12), and so can a save state made on another
+  ROM (its team structs' lines and rosters). The all-black players weren't reproduced (a team or palette from such a
+  save is a likely source).
