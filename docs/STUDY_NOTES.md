@@ -7906,3 +7906,26 @@ From the raw captures (exact pflags bit 3), 38 Genesis games, regulation, play o
   computer-only games show no bottom-net lean where people's games show 1.45: the lean seems to need a person in the
   game (something people's skaters do attacking down the screen draws more hooks). The fix can't be told from retail
   at this size (about 25 games a ROM would).
+
+### SNES: the same shots at both nets, NOSE4Web's box and rebound patches (2026-11-19; `snes_updown_check.py`)
+
+Retail and NOSE4Web's one-byte test ROMs made by hand (NHL94_box_even 93d614cf: `cmp #$000B` -> `#$000C` at file
+$F191D; NHL94_rebound_plain a18b0173: `bmi` -> `bra` at file $F71AF; both 707c3fcb; CRCs as theirs). 25 spots (x
+-60..60, 40-160 out) x 9 aims x 2 release seeds a net, the bottom net's set turned half a circle, the clock, settling
+seed and release seeds the same at both nets; Montreal's goalie (attribute $0001 at both nets: never drawn flipped).
+
+| | retail top | retail bottom | rebound_plain top | rebound_plain bottom |
+|---|---|---|---|---|
+| goals (of 450) | 5 | 1 | 2 | 0 |
+| held | 359 | 373 | 329 | 336 |
+| rebounds | 138 | 112 | 133 | 112 |
+| moving out | 79 | 27 | 115 | 98 |
+| back toward the goal line | 55 | 85 | 18 | 14 |
+| median rebound speed | 2,313 | 3,052 | 2,251 | 3,152 |
+
+- **The rebound rule:** on retail three in four bottom-net rebounds head back toward the goal line (two in five at the
+  top); with the plain rule they go out at both nets alike. Those goalward rebounds are mostly held after, so the plain
+  rule turns about 35 a net from held into loose pucks (second chances).
+- **The speed difference stays** (about 2,250 against 3,150 either way): the `inc d1` and the byte effect.
+- **box_even** changes the top net only (19 of 450: held and loose swapping), the bottom not at all; both = the two.
+- Goals are too few here to compare (this goalie stops nearly everything from these spots).
