@@ -7658,6 +7658,11 @@ teams' players all black, players turning into #0 and skating slowly. The league
   defenceman, so lines saved on a ROM with bigger rosters point past these 12), and so can a save state made on another
   ROM (its team structs' lines and rosters). The all-black players weren't reproduced (a team or palette from such a
   save is a likely source).
+- **Save states and save files from the older franchise ROM** ("Franchise Mode 1990 Final Exi.bin", 9f081fc9: also
+  30 teams of 12, the same menu limits): a state made in play on it and loaded on the 2002 ROM kept its players and
+  colours, then stopped about 30 s (real) later on an ADDRESS ERROR screen; a state made at Game Setup and carried over
+  played normally (the teams are built from the 2002 ROM at the start). The 1990 ROM's save file on this machine is
+  blank (no saved lines). All-black players still not reproduced.
 
 ### Down goal: the one-timer target and the shoulder-save blade (2026-11-19)
 
