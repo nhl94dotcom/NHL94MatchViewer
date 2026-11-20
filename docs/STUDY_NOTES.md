@@ -2154,6 +2154,35 @@ the 7 lines to RAM and, with Line Changes Off, copies line 1 over Scoring 1; Edi
 Retail Toronto, checked in the game: Best Line LD Gill, RD Ellett; Ken Baumgartner (place 16, the last of the 14
 forwards, so in the forward lists) at RD on Scoring 1, Pwr. Play 1 and Pen. Kill 2.
 
+## NOSE4Web's SNES open net shot fix, played, and the "maybe" readings (2026-11-19)
+
+**The builds** (from NOSE4Web's source, openNetFix on): NHL94.smc afa2b978, nhl94snes_SA1.sfc 75d643ec,
+nhl94_2026.sfc 434586ad (their message had the two SA-1 CRCs swapped). Retail: $F6094 `22 F8 FF 9B` (jsl $9B:FFF8),
+$DFFF8 `A6 95 A9 08 00 85 A5 6B` (ldx a3 / lda #8 / sta d0 / rtl), header $7FDC `B4 68 4B 97`; both SA-1 builds the
+same jsl at $F6117.
+**Played** (`analysis/scoring_map/snes_open_net_check.py`): 60 retail computer games (both sides the computer, 5-minute
+periods, penalties on, a seed a game), every computer shot caught as sf2shot turns on; an open-net shot is aim 0 with
+the defending goalie on the ice (shotdiradj's own test). 3,348 computer shots, 37 at an open net (0.6 a game; 40 more
+at a pulled goalie, aim 8 on both ROMs), mostly close in (median 27 from the net's front). Each kept as the state the
+frame before and replayed on retail (all 37 repeated the game exactly) and on the fix (all 37 aimed 8):
+- height at the net's front: retail mostly 10-13 (the high aim), the fix 5-6;
+- over the bar 1 -> 0; goals 12 -> 14 (the over-the-bar one and one the goalie had touched became goals); touched 14
+  -> 13; wide 7, in 2, post 1 on both.
+So it works as meant and changes little: in computer games about 0.03 goals a game. The SA-1 builds weren't played
+(the same hook, CRCs as theirs).
+**The "maybe" items, read:**
+- **Extra attacker in Edit Lines: not on the Genesis.** SetLineSlot (NHL '94 stats94, NHL '95 stats95: the same
+  code) searches all six skater places of the line, the extra attacker's (byte 6) included, and swaps.
+- **The one-timer that never fires: not on the Genesis.** assonetimer (onetimer94 / logic95) ends every way out
+  (someone has the puck, the clock stopped, the swing done) in EndOneTimer, which sets SPAglide: what the SNES fix adds.
+- **The wind-up with no shot: probably on both Genesis games.** ShotMode runs only while sfssdir is set; it is cleared
+  by holdcheck when the held man has the puck, by the stick steal, puckglue and puckbody (NHL '95: the same places), so
+  a carrier who keeps or gathers the puck again mid wind-up plays it out with no shot. From the code; not seen yet.
+- **B during one's own burst or check: not on NHL '94, on NHL '95.** NHL '94's chgplayer skips every locked skater
+  (the pad's own included), so B switches to the next-best. NHL '95's exempts the pad's own skater from the lock test
+  (`beq.w` past `btst #5,$62(a0)`), so he stays the pick and the press becomes a sweep check: NHL_95.bin $AC0A and $AD08
+  (two copies of the routine; `67 00 00 0C`; a NOP pair at each would make it as NHL '94's).
+
 ## NOSE4Web's Genesis fixes, looked for on the SNES (2026-11-19, for NOSE4Web; reading only)
 
 From the NHL94SNES disassembly (retail, built byte for byte with its symbol file; addresses bank:address, then the
