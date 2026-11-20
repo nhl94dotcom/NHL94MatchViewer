@@ -7896,6 +7896,45 @@ The user: is the computer defenders' hook / hold lean in the box scores? The lea
   in the 4 samples before) by people: 120 on Down attackers against 102 on Up (1.18, z +1.2); by the computer 30 / 35.
   People's pokes lean the way the league's tripping calls do (1.09), the computer's don't.
 
+### The save moves at the two nets (2026-11-19; `analysis/scoring_map/gen_save_frames_ends.py`)
+
+The user: do the save animations differ between the Up and the Down net the way the ready stances do? The goalie's body
+test is a circle of 12-15 by Agility round his centre, the same at both nets, so a save move can only differ by its
+stick point (HotList). goaliesave picks the side from the direction to where the puck will cross his goal line against
+his facing, so for a puck to the same screen side the bottom goalie (facing up) plays his right-hand move and the top
+goalie his left-hand one (the pad stack's side comes from his end, his side of the net and his hand, the same way
+round). Every save move's frames, bottom against its top partner, both nets laid as the top one (mirror: screen x
+kept; and rotate: the rink turned half round, each wing on its own side), with the share of low shots stopped across
+the goal mouth (still goalie 19 out, the shooter where the stance faces):
+
+| Move | Blades apart, mirror / rotate | Goal mouth stopped at one net only, mirror / rotate |
+|---|---|---|
+| Ready stance | 4.9 / 3.5 | 4.7% / 4.7% |
+| Glove (blocker, glove) | 5.0 / 3.8 | 11.6% / 7.2% |
+| Kick / butterfly (gstickr / l) | 15.4 / 7.4 | 4.3% / 3.6% |
+| Pad stack | 7.9 / 5.6 | 8.4% / 9.5% |
+| High shoulder | 27.0 / 27.7 | 13.3% / 12.5% |
+| Stick save (gstick2r / l) | 6.8 / 5.4 | 12.3% / 4.6% |
+| Dive | 9.5 / 9.3 | 16.8% / 16.8% |
+
+- **In the ROM the save moves are more lopsided than the stances**: the blades sit up to 15-28 units apart (the high
+  shoulder saves put the stick up the screen at both nets: in front of the bottom goalie, behind the top one). The
+  body covers most of the mouth whatever the blade does, so the coverage gaps are smaller than the distances suggest,
+  and they lean both ways (the top goalie covers more in some frames, the bottom in others).
+- **Which frames are in play** (the 38 recordings, the goalie's frame when the puck reached him, low shots, Up / Down):
+  ready 46% / 46%, kick / butterfly 22% / 23%, pad stack 15% / 14%, high shoulder 3% / 4%, glove 2% / 3%, dive 3% / 3%,
+  stick save 0% / 1%. Low-shot goals by move, Up / Down: ready 25 / 22, kick / butterfly 16 / 20, pad stack 11 / 13.
+- **Played** (`updown_replay.py`, the 1,000-odd recorded launches, computer goalie; the test ROM with every bottom save
+  frame's point set from its top partner by the mirror pairing: 51 frames, the stance and glove frames byte for byte
+  NOSE4Web's stick fix; `gen_save_frames_ends.py mirror-rom`): the baseline rerun matched the earlier run replay for
+  replay. Goals in the 1,028 paired launches, top / bottom: retail 132 / 136 (Down / Up 1.030), stances mirrored 133 /
+  134 (1.008), every save frame mirrored 132 / 133 (1.008). Over the stances fix, the 42 further frames changed 31 of
+  2,126 bottom replays (12 saves became goals, 9 goals saves; net +3 goals): the save moves' differences come up, but
+  cancel. The top net's replays were identical throughout.
+- **Answer:** the save moves differ between the nets in the ROM, more than the stances, but in play they make no Up /
+  Down difference; the stances were the whole of the computer goalie's small lean. Not played: the rotation pairing,
+  and person-controlled goalies' save moves (league goalies are manual).
+
 ### Where each net's goalie stops a low shot (2026-11-19)
 
 ![Where each net's goalie stops a low shot](img/goalie_stick_cover.svg)
