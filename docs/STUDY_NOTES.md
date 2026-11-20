@@ -2154,6 +2154,37 @@ the 7 lines to RAM and, with Line Changes Off, copies line 1 over Scoring 1; Edi
 Retail Toronto, checked in the game: Best Line LD Gill, RD Ellett; Ken Baumgartner (place 16, the last of the 14
 forwards, so in the forward lists) at RD on Scoring 1, Pwr. Play 1 and Pen. Kill 2.
 
+## NOSE4Web's NHL '95 "B button while your skater is down" fix, played (2026-11-19, 55ec4f0)
+
+$AC0A `67 00 00 0C` -> `4E 71 4E 71` (chgplayer's skip of the lock test for the pad's own skater). From NOSE4Web's
+source: NHL_95.bin 9f7c8e3b, W18.bin a02c525e, as theirs (their "from" CRCs are the originals after the editor's
+opening changes: the folder's NHL_95.bin is e8ee917e, W18.bin c4df4c20).
+- **Reading:** `.pass2` runs only when the pad has no player (`tst.w (a1,d4.w) / bpl .found` first), so its own-skater
+  branch can't be taken: leaving $AD08 is right. With nobody choosable `.found` compares d6 with the pad's player;
+  from doinput d6 is that player (updatepadinput is called with d6 = SCnum and runs doinput only when the pad's
+  player is d6), so `.same` returns (locked: no sweep check) and nothing changes: the press is lost, as in NHL '94.
+  setcplayer itself doesn't check d0. The other callers (logic95's line-change path, the unreferenced AssignPads) are
+  unchanged unless the pad's own skater is locked there.
+- **Played** (`analysis/scoring_map/gen95_bswitch_check.py`, the group 1 live states, 30 seeds a case, the same on both
+  ROMs; pad 1's skater nearest the puck; B 2 frames while he is locked, then c1playernum and 120 frames more):
+
+| Case | NHL_95 retail / fix: switched | W18 retail / fix: switched |
+|---|---|---|
+| burst (B 2-8 frames into SPAburst2) | 0 / **30** of 30 | 0 / **30** of 30 |
+| his own check (B 0-4 frames into it) | 4 / 23 of 30 | 6 / 27 of 30 |
+| down (B 4-30 frames into a fall after pad 2's check) | 1 / **15** of 15 | 0 / 3 of 5 |
+| nobody choosable (every teammate locked) | 0 / 0 of 30 | 0 / 1 of 30 |
+| two teammates off the ice (position word $FFFF), the third free | 11 / **30** of 30 | 7 / **30** of 30 |
+| the same, the third locked | 0 / 0 of 30 | 0 / 1 of 30 |
+
+  - Every press on the fix that kept him (7 checks NHL_95, 3 checks and 2 falls W18) was with him holding the puck,
+    where B is a pass. Retail's switches are trials where a teammate was nearer the puck. The W18 1-in-30s in the
+    "nobody" cases are the harness (locks set by hand before each frame; the game can clear one first).
+  - Nothing odd: pad 1 on a home record on the ice in every frame of every trial (the goalie when he takes the puck).
+  - Penalty shot / shootout: not reached in play. The awarded shots come from the computer's breakaways, pad 1 then
+    holds the home goalie, and a goalie is never locked, saves included; the no-candidate path there is the same
+    `.found` / `.same` as the cases above. Shootout mode from Game Setup didn't start on retail in this harness.
+
 ## NOSE4Web's SNES open net shot fix, played, and the "maybe" readings (2026-11-19)
 
 **The builds** (from NOSE4Web's source, openNetFix on): NHL94.smc afa2b978, nhl94snes_SA1.sfc 75d643ec,
