@@ -8074,6 +8074,33 @@ has both sites at the same addresses).
 - **The recordings** (38 Genesis games, raw captures): computer goalies started assgoalietopuck 100 times at the top
   net, 124 at the bottom, none with the puck's vy = 0. The patch is correct and harmless; it changes nothing in play.
 
+### Down goal: goals by strength, and how much the penalties add (2026-11-19)
+
+The league databases' goal lists (each goal's period and strength), regulation, real games only. Down / Up is taken
+balanced: home goals in period 2 against periods 1 and 3 (halved), away the other way round, the two ratios'
+geometric mean, so the home edge and the periods' own scoring cancel (a plain total leans Up from the home edge, 1.024).
+Penalties by the team that drew them (the attacking team at the other net).
+
+| Genesis (87,608 games) | n | Down / Up (95%) |
+|---|---|---|
+| all goals | 651,113 | **1.031** (1.026-1.036) |
+| even strength | 541,148 | **1.027** (1.022-1.033) |
+| power play (PP / PP2) | 59,706 / 6,074 | 1.085 (1.067-1.103) / 1.146 |
+| short-handed | 41,954 | 0.993 (0.974-1.013) |
+| penalties drawn | 248,856 | 1.054 (1.046-1.063) |
+
+SNES (36,474 games): all goals 0.976, even strength 0.980, power play 0.974, penalties 1.000.
+- **The penalties are a small part of the goal lean.** The power play leans 1.085 = 5.4% more power plays x about 3%
+  more goals per power play, the same per-chance lean as even strength. Power-play goals are 29% of the extra Down
+  goals, an upper bound on what the penalties add: each extra power play also gives the other side short-handed
+  chances (short-handed goals lean 0.993, i.e. about 1.05 per short-handed chance against 5.4% more of them) and
+  replaces even-strength time. With the penalties made even and every per-chance rate kept, Down / Up would be about
+  1.029. So about 0.2-0.9 of the 3.1 points come from the extra penalties; the rest is an even-strength scoring lean
+  of about 2.7%. (This corrects "driven mostly by penalties" said earlier.)
+- Penalties by type, Genesis: interference 1.108, tripping 1.091, injuring 1.056, cross-checking, roughing and
+  slashing 1.054, charging 1.049, hooking 1.025, holding 0.960. About 0.075 more calls a game on the Down net's
+  defenders (one more Down power play every 13 games or so).
+
 ### Down goal: people's defence by end (2026-11-19; `analysis/defence_by_end.py`)
 
 checkagr (the penalty roll for checks, holds and B-checks) is symmetric between the ends (the breakaway roll by
