@@ -8181,7 +8181,8 @@ The balanced Down / Up (as above), even-strength goals, by the coaches' Rating a
   weaker-half coaches. SNES: Q1 0.966 ... Q4 0.994, but the halves 0.986 (0.952-1.023): no skill trend.
 - **So:** on the Genesis the lean is larger for established, lower-rated coaches and small for the top ones, but not
   for newcomers (under 100 games: 1.016), so it isn't inexperience; on the SNES it is about the same at every level.
-  Not yet ruled out: lower-rated coaches play mostly in lower leagues (other ROMs or settings).
+  (League ROMs: the user, 2026-11-19, weaker players don't play in leagues with radically different ROMs, so
+  league tier isn't pursued as a cause.)
 - **Steady:** Genesis every year since 2013 about 1.02-1.04 at even strength (2017 1.085 and 2019 1.085 on small
   years, 2018 0.994); Classic 1.034 and other leagues 1.030 (all goals); playoffs 1.045, regular season 1.029.
 - **Shots on goal** lean Up on the Genesis by about 6% at every level (the uncounted low shots at the bottom net), so
