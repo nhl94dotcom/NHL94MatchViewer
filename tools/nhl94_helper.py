@@ -822,7 +822,8 @@ def start_broadcast():
     global broadcaster
     try:
         import live_broadcast
-    except ImportError:                                      # built without it (build_helper.bat nobroadcast)
+        import live_s3                                       # left out of the packaged helper (build_helper.bat)
+    except ImportError:
         print("Live broadcast isn't part of this build of the helper.", flush=True)
         return
     i = sys.argv.index("--broadcast")
@@ -831,7 +832,7 @@ def start_broadcast():
         print("Live broadcast is OFF: say which S3 bucket to use (--bucket NAME).", flush=True)
         return
     bucket = sys.argv[sys.argv.index("--bucket") + 1]
-    target = live_broadcast.S3Target(bucket, f"live/{channel}")
+    target = live_s3.S3Target(bucket, f"live/{channel}")
     b = live_broadcast.Broadcaster(target)
     try:
         print("Live broadcast: putting the page up\u2026", flush=True)

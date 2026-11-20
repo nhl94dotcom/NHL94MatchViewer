@@ -28,8 +28,8 @@ reel), Game flow, and pointing at a player in the lineups for his card.
 The helper is a Windows program: download `NHL94 Helper.zip` from the
 [latest release](https://github.com/nhl94dotcom/NHL94MatchViewer/releases/latest), unzip it anywhere, and follow
 "Read me first.txt". Nothing else to install. Windows may say "Windows protected your PC" because the program isn't
-signed: "More info", then "Run anyway". `NHL94 Helper (no broadcast).zip` is the same helper without the live
-broadcast to a website.
+signed: "More info", then "Run anyway". It sends nothing off your computer: the stream mode ("NHL94 Helper -
+Stream.bat") keeps live stats on your computer for an OBS overlay.
 
 ## Use it
 

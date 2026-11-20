@@ -54,8 +54,9 @@ emu = FakeEmu()
 H.systems.attach = lambda: emu
 H.PORT = 9496
 import live_broadcast as LB
+import live_s3
 OUT = os.path.join(tempfile.gettempdir(), 'nhl94_livetest_helper')
-LB.S3Target = lambda bucket, prefix: LB.FolderTarget(OUT)
+live_s3.S3Target = lambda bucket, prefix: LB.FolderTarget(OUT)
 sys.argv += ['--no-browser', '--broadcast', 'test', '--bucket', 'x']
 threading.Thread(target=H.main, daemon=True).start()
 seen = []

@@ -43,7 +43,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 ## After changes
 
 - Viewer / season page changed: copy `viewer.html` and `season.html` to `Documents\NHL94 Viewer`; upload the live page
-  (live_broadcast `S3Target` + the index.html transform with `window.NHL94_LIVE = 'live.json'`; never `publish_page`,
+  (`live_s3.S3Target` + the index.html transform with `window.NHL94_LIVE = 'live.json'`; never `publish_page`,
   which resets the manifest); rebuild the exe (`cmd /c "tools\build_helper.bat < nul"`) if the helper isn't running;
   remake `samples/` (`share_game.make_game_file`) when the change is worth showing.
 - Converter changed: `python tools/reconvert.py` re-converts the recordings in both game folders (only those that
@@ -80,11 +80,13 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   WebSocket; tests `tests/replay_pack_check.py`, `tests/replay_obs_ws.py` (VIEWER_NOTES "The replay overlay").
   All in one command: `python tools/make_replay.py VIDEO` (finds the games, checks, goal stills to look at, the zip;
   Genesis and SNES).
-  `tools\build_helper.bat nobroadcast` builds `dist\nobroadcast\` for people who won't broadcast (no `live_broadcast`,
-  and the viewer's Help without "Watching live", between `<!-- broadcast` markers); its zip is
-  `NHL94 Helper (no broadcast).zip`. Releases: the user uploads both zips to a GitHub release by hand (README's
-  Download points at releases/latest); before each, rebuild with the helper closed, start each exe once against an
-  empty `NHL94_HOME`, and scan both exes (inflated too) for the leak check's strings. Licence: MIT (`LICENSE`).
+  The exe is the public build (the only one): it can't broadcast to a website (`tools/live_s3.py`, the S3 upload,
+  is left out; the viewer's Help without "Watching live", between `<!-- broadcast` markers), but keeps the local
+  stream mode (`--live-local`). Broadcasting is the user's alone, from Python (their git-ignored live launcher).
+  Releases: the user uploads `dist\NHL94 Helper.zip` to a GitHub release by hand (README's Download points at
+  releases/latest); before each, rebuild with the helper closed, start the exe once against an empty `NHL94_HOME`
+  (and `--broadcast` must say it isn't part of this build), and scan the exe (inflated too) for the leak check's
+  strings and any S3 code. Licence: MIT (`LICENSE`).
 - `tools/export_match.py`: recording -> `matches/<name>.js` (`--live` worker mode for the broadcast). `analyse()` runs
   every finder after the system's `read_match` (shots, passes, turnovers, hits, check attempts, passing out of a
   check, entries, xG ...).
