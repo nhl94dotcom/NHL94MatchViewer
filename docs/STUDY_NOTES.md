@@ -8424,3 +8424,48 @@ periods, penalties on).
   learnt from his own edits (by example, 7x7 neighbourhoods: 73% of his changes predicted, 80% found, about his own
   consistency) and proposed for chaos's fight frames 846-869 (38 bytes) and the faceoff close-up (FaceOffSprites,
   retail $A78AE packed, CDL Season 12 $11EA88 plain and identical; 81 bytes, checked in a CDL faceoff).
+
+### NOSE4Web's third star weights, the dive-catch hold with a person's goalie, and save states after the season shootout (2026-11-20; `snes_gen_settings_check.py`, `gen_dive_hold_check.py pad`, `shootout_savestate_check.py`)
+
+- **SNES three stars at 900 / 1,170 a shot faced:** a goalie first star 9 of 20 on both (the original 9 of 20), goalie
+  places 13 and 15 of 60 (the original 11). The same 20 seeds as before, every game the same (goals, shots); the box
+  in all 40. The two earlier versions (4,000 / 4,500 and 1,500 / 1,700) read as earlier versions and, updated, equal
+  fresh builds byte for byte.
+- **Dive-catch hold, a pad-1 goalie, NHL '94 and '95** (originals, 30, 120, goalie hold 0 with 30 and 120): a loose
+  puck slid at him from the side (40 to his side, 60 out, $1800 a frame) and A with a direction 8 frames in (doinput's
+  goalie dive: SPAgdive, nopuck 8). A dive catch is always a stick catch (puckstick -> puckglue): a loose puck on a
+  diving goalie's body bounces off (puckgoalie .chkanim), so the earlier forced test never caught one. He stands up
+  47 frames after the catch on NHL '94, 56 on NHL '95; the whistle then comes count + 1 frames after he stands (6, 31,
+  121): the count starts when the dive ends (pf2aip). Goalie hold 0: never whistled, either dive hold. B passes on
+  every build (the puck leaves when B is released); C does nothing, as for any goalie holding the puck (doinput_ispc:
+  C starts a shot only for a skater).
+- **Save states after the season shootout** (a league keeping save states of its shootout games; NHL '94 seasonTies
+  shootout / shootoutNow with plus-minus, time on ice, giveaways, blocked shots and bodychecks; NHL '95 seasonShootout /
+  seasonShootoutNow; SNES seasonShootout 2 with time on ice). Computer games until one went into the shootout by
+  itself (NHL '94 1-1 after period 3, 41 rounds; NHL '95 2-2 after period 3 and 2-2 after overtime, from
+  gen95_assist_check's live state; SNES 2-2 after period 3), the stats read every frame and compared with the frame
+  before the shootout began:
+  - **During the shootout, and through the winner's banner** ("SHOOTOUT WON BY ...", "LOS ANGELES WINS!": about 300
+    frames, 5 s real, on all three), the team structs hold the shootout's own play: its goals in the score, the
+    scorers' and goalies' stats, shots, the scoring summary.
+  - **From the frame NOSE4Web's end code runs** (the mark cleared, the banner gone; the Genesis games' gsp 4 the same
+    frame, the SNES's winners' goal one frame later), every stat equals the game before the shootout with the winners'
+    score one more: team and player stats, lines, time on ice, plus-minus, bodychecks (SNES $168E / $16C2 too), the
+    scoring summary within its length. It stays so through the post-game menu. Left over: the shootout goals' entries
+    past the restored lengths of the scoring summary (both Genesis games) and NHL '94's plus-minus log (a reader that
+    goes by the length doesn't see them), NOSE4Web's giveaway tracker's working bytes ($FFE804 / $FFE805, not counts),
+    and the players' on-ice status words (tmpdst) the game itself changes at every game's end.
+  - No three-stars screen on the way out: the Genesis games go from the banner to the post-game menu; on the SNES the
+    three stars (a PenBuf entry shown by InProgress) never came up after the shootout (100 s with START presses)
+    though the same build shows them after an untied game.
+  - In these computer-only games the Genesis post-game menu went to Game Setup by itself after 32-36 s with nothing
+    pressed (the stats cleared then); the SNES's waited.
+- **A crash for NOSE4Web: the visitors a man short when the season shootout starts.** NHL '94 after overtime, a
+  natural game: overtime ended with a visitors' penalty running (their tmap $24 = 5), and the first attempt ended in
+  an ADDRESS ERROR at $15B9E (setplayer walking the team's data from a wrong pointer). The same state with tmap set to
+  6 plays on; the penalty box words alone don't matter; every build crashes (the shootout alone too). On the
+  after-period-3 build the home team a man short played a 41-round shootout, the visitors a man short (forced) crash
+  the same way. NHL '95 (both builds, from a state): the visitors a man short hang on a black screen at the first
+  attempt, the home team a man short plays. Our first NHL '95 runs (games set up from the menus) hung the same way.
+  The SNES plays the same shootout with either team's tmap ($17A6 / $17A8) set to 5 (PlayShootout's StartGame_go
+  sets the teams up afresh).

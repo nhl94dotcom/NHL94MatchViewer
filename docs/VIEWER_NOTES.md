@@ -1962,3 +1962,24 @@ mostly "loose": the goalie usually tracked in the right frame, but the puck lost
   matched 27 / 30 (63 / 67 read), the person's skater 71-73% / 72-76%, carrier team with the clock running 86% / 85%,
   passes, shots, entries and faceoffs the same. A small gain: kept. The first whole read's 57% goalie holds was the
   leak (its transitions had learnt from game 4).
+
+**Games 1-3 read whole with today's reader (2026-11-20).** BOS-CHI games 1, 2 and 3 each read in full (each with
+TEST_GAME set to itself: nothing learnt from the game read), one gentle reader at a time, halves joined with
+`join_reads.py`, scored against the recordings. Found of recorded (read in all):
+
+| | game 1 | game 2 | game 3 | game 4 (above) |
+|---|---|---|---|---|
+| possession, the right team (carried samples) | 80% | 81% | 84% | 85% (clock running) |
+| the controlled skater | 75-76% | 65-68% | 75-76% | 72-76% |
+| passes | 87 of 113 (105) | 83 of 108 (114) | 68 of 95 (86) | 70 of 96 |
+| zone entries | 50 of 56 (57) | 46 of 53 (53) | 51 of 55 (57) | 35 of 40 |
+| hits | 46 of 71 (57) | 39 of 67 (48) | 34 of 54 (44) | 45 of 52 |
+| shots | 25 of 38 (27) | 31 of 48 (35) | 14 of 27 (17) | 22 of 26 |
+| check attempts | 37 of 54 (44) | 41 of 57 (50) | 33 of 55 (46) | |
+| faceoffs | 13 of 13 (16) | 18 of 18 (21) | 10 of 11 (11) | 10 of 17 |
+| turnovers | 41 of 46 (74) | 58 of 68 (90) | 43 of 54 (71) | 30 of 67 |
+
+(Game 4's column is its fair re-read, written as matched of read where the recorded count isn't to hand.) Over four
+whole games the reader keeps possession at 80-85%, passes and entries at about 75-90%, and finds about two shots in
+three with few false; turnovers stay the weak count (a third or more of those read are false), hits under-read by
+about a third.

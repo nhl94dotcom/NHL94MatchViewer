@@ -7,13 +7,15 @@ assgoalie counts temp5 down by the frames (d7) while he holds and no animation r
   shortest periods, penalties on. Every goalie pickup: temp5 on the first frame he has the puck (the value puckglue
   set, less a frame or two), his animation word (+$58), the frames he keeps it, and how it ends: the whistle (gmode's
   gmclock bit set while he still has it) or a release (a pass, a drop).
-- `person ROM OUT [SPA]`: the home goalie made pad 1's (cont1team, c1playernum, the person flag), the others parked, the
-  puck put on his stick while he's in a dive (SPA set to SPAgdive, its first frame, locked: the dive plays out),
-  then: no buttons (the frames to the whistle, and from the dive's end), or the pass button (B) pressed a number of
-  frames after the dive ends (released before the whistle?). A normal catch (no dive) as the control. SPA: SPAgdive's
-  value (from the cvc rows' dive pickups); NHL '94 only (from its live state).
+- `pad ROM STATE OUT`: from a live state (NHL '94: paths.STATE_TOP; NHL '95: a live state, the ROM powered on
+  first), the home goalie made pad 1's (cont1team, c1playernum, the person flag), the others parked up the ice, a
+  loose puck sliding at him from the side; pad 1 dives with A and a direction (doinput's goalie dive: SPAgdive,
+  nopuck 8) and the puck reaches his stick in the dive (puckstick -> puckglue: a loose puck on the body of a diving
+  goalie bounces off, puckgoalie's .chkanim, so a dive catch is always a stick catch). Then: nothing pressed (the
+  frames from the catch to standing up, pfalock and pf2aip clear, and from standing up to the whistle), and B or C
+  pressed 5, 25 or 100 frames after he stands up (released? who has the puck next).
 
-python gen_dive_hold_check.py cvc ROM GAMES OUT [FIRST] | person ROM OUT SPA | report OUT ..."""
+python gen_dive_hold_check.py cvc ROM GAMES OUT [FIRST] | pad ROM STATE OUT | report OUT ..."""
 import json
 import sys
 from collections import Counter
@@ -23,8 +25,6 @@ import lowload
 from emu import Emu
 
 TEMP5, SPA, POS, PFLAGS = 0x48, 0x58, 0x35, 0x62
-import os
-BUTTON = os.environ.get("PASS_BUTTON", "B")
 G94 = dict(BASE=0xB04A, PUCKC=0xB7AA, GMODE=0xC2EA, GSP=0xC466, CLOCK=0xC468, CONT=(0xC328, 0xC32A), SCREEN=0xFFF7)
 G95 = dict(BASE=0xAC62, PUCKC=0xB3C2, GMODE=0xBEF0, GSP=0xC020, CLOCK=0xC022, CONT=(0xBF4C, 0xBF4E), SCREEN=None)
 SZ = 0x80
@@ -100,59 +100,115 @@ def cvc_game(rom, n):
             "frames": frame}
 
 
-def person(rom, out, spa):
-    """NHL '94, from its live state."""
-    from paths import STATE_TOP
-    A = G94
+def pad_setup(e, base, A, dx, dy, vy):
+    """From the live state: the home goalie made pad 1's (cont1team, c1playernum, the person flag), the others parked
+    up the ice, the puck loose and sliding at him: dx to his side, dy out from him, vy toward the goal line."""
     B = A["BASE"]
-    rows = []
-    for case in [("dive", None), ("dive", 2), ("dive", 10), ("dive", 20), ("dive", 28), ("dive", 40), ("normal", None)]:
+    e.unserialize(base)
+    k = next(j for j in range(6) if e.b(B + SZ * j + POS) == 0)
+    e.setw(A["CONT"][0], 1)
+    e.setw(A["CONT"][1], 0)
+    e.setw(A["C1P"], k)
+    for j in range(12):
+        e.setb(B + SZ * j + PFLAGS, (e.b(B + SZ * j + PFLAGS) & ~8) | (8 if j == k else 0))
+    gx, gy = e.sw(B + SZ * k), e.sw(B + SZ * k + 0x14)
+    own = 1 if gy > 0 else -1
+    for j in range(12):
+        if j != k and e.b(B + SZ * j + POS) != 0xFF:
+            e.setw(B + SZ * j, (-100 + 18 * (j % 6)) & 0xFFFF)
+            e.setw(B + SZ * j + 0x14, (-own * 150) & 0xFFFF)
+    P = B + SZ * 14
+    e.setw(A["PUCKC"], 0xFFFF)
+    e.setb(P + 0x60, 0xFF)
+    e.setw(P, (gx + dx) & 0xFFFF); e.setw(P + 0x14, (gy - own * dy) & 0xFFFF); e.setw(P + 0x18, 0)
+    e.setw(P + 0x28, 0); e.setw(P + 0x2A, (own * vy) & 0xFFFF); e.setw(P + 0x2C, 0)
+    return k
+
+
+def pad_trial(e, base, A, setup, button=None, after=None, frames=900):
+    """setup (dx, dy, vy, press): pad 1 holds RIGHT / LEFT (toward the puck's side) and presses A at frame press: the
+    dive (SPAgdive). Then from the catch: when he stands up (the animation lock, pfalock, and pf2aip clear), the
+    whistle (gmode's gmclock bit) or, with a button (B or C) pressed `after` frames after he stands up, the release
+    and who has the puck next."""
+    B = A["BASE"]
+    dx, dy, vy, press = setup
+    k = pad_setup(e, base, A, dx, dy, vy)
+    r = B + SZ * k
+    d = "RIGHT" if dx > 0 else "LEFT"
+    dive_spa, caught, up, whistle, released, nxt, t5 = None, None, None, None, None, None, None
+    for f in range(frames):
+        hold = []
+        if caught is None:
+            if press - 2 <= f < press + 10:
+                hold.append(d)
+            if press <= f < press + 2:
+                hold.append("A")
+        elif up is not None and button and after is not None and up + after <= f < up + after + 4:
+            hold.append(button)
+        if released is None:
+            e.setw(A["C1P"], k)
+        e.run(1, hold=hold)
+        if f == press + 3:
+            dive_spa = e.w(r + SPA)
+        pc = e.w(A["PUCKC"])
+        if caught is None:
+            if pc == k:
+                caught, t5, spa_at = f, e.sw(r + TEMP5), e.w(r + SPA)
+                if spa_at != dive_spa:
+                    return dict(dive=False, spa_at_catch=hex(spa_at), dive_spa=hex(dive_spa or 0))
+            elif f > press + 120:
+                return dict(dive=None)
+            continue
+        if up is None and not (e.b(r + PFLAGS) & 0x20) and not (e.b(r + PFLAGS + 1) & 0x02):
+            up = f
+        if released is None:
+            if e.w(A["GMODE"]) & 0x100:
+                whistle = f
+                break
+            if pc != k:
+                released = f
+        elif pc < 12 and nxt is None:
+            nxt = dict(rec=pc, team="own" if (pc < 6) == (k < 6) else "other", frames=f - released)
+            break
+        elif released is not None and f - released > 120:
+            break
+    rel = lambda v: None if v is None or up is None else v - up
+    return dict(dive=True, temp5_at_catch=t5, up_after_catch=None if up is None else up - caught,
+                whistle_after_up=rel(whistle), released_after_up=rel(released), next=nxt,
+                button=button, pressed_after_up=after)
+
+
+def pad(rom, state, out):
+    """NHL '94 (its live state, paths.STATE_TOP) or NHL '95 (a live state; powered on first): pad 1's goalie catches
+    a sliding puck in a dive. The first set-up that gives a dive catch on this ROM, then: nothing pressed, and B or C
+    pressed some frames after he stands up."""
+    if is95(rom):
+        A = dict(G95, C1P=0xBF44)
         e = Emu(rom)
-        e.unserialize(open(STATE_TOP, "rb").read())
-        k = next(j for j in range(6) if e.b(B + SZ * j + POS) == 0)
-        for j in range(12):
-            e.setb(B + SZ * j + PFLAGS, e.b(B + SZ * j + PFLAGS) & ~8)
-        e.setb(B + SZ * k + PFLAGS, e.b(B + SZ * k + PFLAGS) | 8)
-        e.setw(0xC328, 1)                       # cont1team: home
-        e.setw(0xC32A, 0)
-        e.setw(0xC320, k)                       # c1playernum
-        gy = e.sw(B + SZ * k + 0x14)
-        own = 1 if gy > 0 else -1
-        for j in range(12):                     # the others far away
-            if j != k and e.b(B + SZ * j + POS) != 0xFF:
-                e.setw(B + SZ * j, (-100 + 18 * (j % 6)) & 0xFFFF)
-                e.setw(B + SZ * j + 0x14, (-own * 150) & 0xFFFF)
-        gx = e.sw(B + SZ * k)
-        if case[0] == "dive":
-            e.setw(B + SZ * k + SPA, spa)
-            e.setw(B + SZ * k + 0x5A, 0)                                  # SPAnum: its first frame
-            e.setb(B + SZ * k + PFLAGS, e.b(B + SZ * k + PFLAGS) | 0x20)  # locked while it plays
-            e.setb(B + SZ * k + PFLAGS + 1, e.b(B + SZ * k + PFLAGS + 1) | 0x01)
-        P = B + SZ * 14
-        e.setw(P, gx & 0xFFFF); e.setw(P + 0x14, (gy - own * 4) & 0xFFFF); e.setw(P + 0x18, 0)
-        e.setw(P + 0x28, 0); e.setw(P + 0x2A, 0)
-        picked, t5, dive_end, whistle, released, f = None, None, None, None, None, 0
-        for f in range(600):
-            if picked is None and (f < 30 or e.b(B + SZ * k + PFLAGS) & 0x20):   # on his stick until he has it
-                e.setw(P, e.w(B + SZ * k)); e.setw(P + 0x14, (e.sw(B + SZ * k + 0x14) - own * 4) & 0xFFFF)
-            press = picked is not None and dive_end is not None and case[1] is not None and f == dive_end + case[1]
-            press = press or (picked is not None and dive_end is not None and case[1] is not None and dive_end + case[1] <= f < dive_end + case[1] + 4)
-            e.run(1, hold=[BUTTON] if press else [])
-            pc = e.w(A["PUCKC"])
-            if picked is None and pc == k:
-                picked, t5 = f, e.sw(B + SZ * k + TEMP5)
-            if picked is not None:
-                if dive_end is None and not (e.b(B + SZ * k + PFLAGS) & 0x20):
-                    dive_end = f
-                if e.w(A["GMODE"]) & 0x100:
-                    whistle = f
-                    break
-                if pc != k and released is None:
-                    released = f
-                    break
-        rows.append(dict(rom=Path(rom).name, case=case[0], press_after_dive_end=case[1], picked=picked, temp5=t5,
-                         dive_end=dive_end, whistle=whistle, released=released))
-        print(rows[-1], flush=True)
+        e.run(1500)
+        base = Path(state).read_bytes()
+    else:
+        A = dict(G94, C1P=0xC320)
+        e = Emu(rom)
+        base = Path(state).read_bytes()
+    found = None
+    for setup in [(40, 60, 0x1800, 8), (40, 40, 0x1000, 8), (40, 60, 0x1000, 12), (30, 90, 0x2400, 20),
+                  (-40, 60, 0x1800, 8), (40, 90, 0x1800, 12), (22, 60, 0x1800, 8)]:
+        r = pad_trial(e, base, A, setup, frames=200)
+        if r.get("dive"):
+            found = setup
+            break
+    rows = []
+    if found is None:
+        rows.append(dict(rom=Path(rom).name, error="no dive catch"))
+    else:
+        cases = [(None, None)] + [(b, a) for b in ("B", "C") for a in (5, 25, 100)]
+        for b, a in cases:
+            r = pad_trial(e, base, A, found, b, a)
+            r.update(rom=Path(rom).name, setup=found)
+            rows.append(r)
+            print(json.dumps(r), flush=True)
+            lowload.breathe()
     with open(out, "a") as fh:
         for r in rows:
             fh.write(json.dumps(r) + "\n")
@@ -182,8 +238,8 @@ def main():
         report(sys.argv[2:])
         return
     lowload.gentle()
-    if sys.argv[1] == "person":
-        person(sys.argv[2], sys.argv[3], int(sys.argv[4], 0))
+    if sys.argv[1] == "pad":
+        pad(sys.argv[2], sys.argv[3], sys.argv[4])
         return
     rom, games, out = sys.argv[2], int(sys.argv[3]), Path(sys.argv[4])
     first = int(sys.argv[5]) if len(sys.argv) > 5 else 0
