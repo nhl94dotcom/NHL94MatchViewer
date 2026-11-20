@@ -2154,6 +2154,29 @@ the 7 lines to RAM and, with Line Changes Off, copies line 1 over Scoring 1; Edi
 Retail Toronto, checked in the game: Best Line LD Gill, RD Ellett; Ken Baumgartner (place 16, the last of the 14
 forwards, so in the forward lists) at RD on Scoring 1, Pwr. Play 1 and Pen. Kill 2.
 
+## NOSE4Web's Genesis fixes, looked for on the SNES (2026-11-19, for NOSE4Web; reading only)
+
+From the NHL94SNES disassembly (retail, built byte for byte with its symbol file; addresses bank:address, then the
+offset in the 1 MB ROM). Adds three to the 2026-11-08 tables above; the rest as there.
+- **Open-net one-timer: the same aim, computer shooters only.** shotdiradj ($9E:DFF7, $F5FF7) runs only for computer
+  players (playerpad negative), so a person's one-timers follow the d-pad. For a computer shooter, no goalie found
+  gives aim 8 (middle, mid-height), but a goalie whose sightline misses the net reaches `stz d0` at $9E:E096 ($F6096,
+  `64 A5`) and aim 0, which doshot_shotsets makes (0, 12): high middle, as the Genesis's `clr.w d0`. The fix needs
+  d0 = 8 there (5 bytes for 2: a small hook).
+- **One-timer assist: not there.** Only a2touchpuck ($9E:C4F3) writes tmtouch1-3 in play (puckglue, faceoffs, the
+  penalty shot and the setup clear the rest); the SNES one-timer code doesn't push the shooter itself. (a2touchpuck's
+  same-player exit, "Assists that disappear", is on both.)
+- **Repeated checks: not there.** FallDown ($9E:9B52) has no same-pair test.
+- **NHL '95's two checkpuckcoll bugs: not there.** checkpuckcoll_ccx ($9E:97DD): the skater's stick reach is the value
+  196 (`lda #$00C4`, 14 squared) against dx^2 + dy^2; the goalie's comes from the save frame, squared; the skater body
+  (within 9 on x and y, then dx^2 + dy^2 < $41) and the goalie's 11-unit box ($9E:98FB) both compare (`cmp`) x and y.
+- Addresses for the earlier "no"s: doshot $9E:E220 (the highlight flag and distance only before the accuracy roll),
+  CPgoalie $9E:D130 (1 or 2 behind already), dopass $9E:E9BF, checkagr $9E:C124, PenShotChk $9E:C042.
+- **The SNES-only fixes on the Genesis, from what's known:** L / R defenceman pick, no (no such buttons); B during
+  one's own burst or check, no for NHL '94 (a locked skater's B switches at once), '95 not read; the extra attacker in
+  Edit Lines, maybe (the Genesis editor never reaches his slot; a pick of him elsewhere unchecked); the one-timer swing
+  and the wind-up that end with no shot, maybe (both games have a one-timer wait and a shot-mode flag; not read).
+
 ## The Genesis one-timer assist bug (2026-11-09, for NOSE4Web)
 
 onetimershot (onetimer94.asm) pushes the shooter onto his team's touch list (tmtouch1 / 2 / 3, team struct +$18 /
