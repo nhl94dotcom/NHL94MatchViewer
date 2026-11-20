@@ -8527,3 +8527,20 @@ periods, penalties on).
   at 41 come in either order); on the shootout's own stats the formula picks others. From the end code every stat
   equals the game before the shootout with the winners' goal (one frame later on the after-period-3 builds, the same
   frame after overtime); only the game's running state differs (gsp, gmode, the clocks, the pause menu, tmpdst).
+- **NOSE4Web's 15dfee5 (the tape and eye records in Clockwise's sprite edit), checked** (scratch nosebuilds/cw2, the
+  editor's own unpacker `unpackTiles` and locator `faceoffAnim`):
+  - The close-up (FaceOffSprites): retail $A78AE packed, 3vs3 and 1on1 $A78AE packed, CDL Season 12 and GDL Season 4
+    $11EA88 plain: unpacked, exactly the 81 record bytes change on each, nothing else; ROM size unchanged. In the game
+    (the opening faceoff, every frame of the close-up), against a Clockwise build made before 15dfee5: only the
+    centres' blades where they meet change (34 pixels retail, 43 CDL), taped black; 3vs3 and 1on1 the same.
+  - The fight frames (chaos's patch, retail and CDL, fighting on, and with head bleeding): all 28 records in. One fight
+    in the game (retail, fighting and bleeding on, every player's fighting rating 14) played from a kept state on the
+    build and on the same build with the 28 records taken out: the same fight (sprite frames identical every frame),
+    the screens differ in 432 of 750 frames by up to 17 pixels: the dropped sticks' blades taped. That fight drew
+    frames 847-861; 862-869 (the overhand punch among them) didn't come.
+  - Off again: retail, 3vs3, 1on1 and GDL give back the build that never had it, byte for byte (with fighting and
+    bleeding too). CDL Season 12 doesn't: 3 bytes at $7C44D-$7C44F (tile 3886, CDL's own nets) go from CDL's 3A AA AA
+    to 17 77 77, where CDL's art equals Clockwise's patched bytes, so the take-out writes retail's original over it;
+    with head bleeding too, 268 bytes (the bleeding hooks point to its code at another address).
+  - Built before 15dfee5 with Clockwise on (retail, CDL, retail with fighting and more): applied again, each equals a
+    fresh build.
