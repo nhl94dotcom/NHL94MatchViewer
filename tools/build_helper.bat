@@ -35,7 +35,7 @@ rem The package for testers and league members: the .exe and its read-me, zipped
 copy /y "%ROOTDIR%\tools\tester_readme.txt" "%DIST%\Read me first.txt" >nul
 rem The stream mode (live stats for OBS) comes with the ordinary build only: its launcher and its guide.
 if /i "%~1"=="nobroadcast" (
-  powershell -NoProfile -Command "Compress-Archive -Force -Path '%DIST%\NHL94 Helper.exe','%DIST%\Read me first.txt' -DestinationPath '%DIST%\NHL94 Helper.zip'"
+  powershell -NoProfile -Command "Compress-Archive -Force -Path '%DIST%\NHL94 Helper.exe','%DIST%\Read me first.txt' -DestinationPath '%DIST%\NHL94 Helper (no broadcast).zip'"
 ) else (
   copy /y "%ROOTDIR%\tools\stream_launcher.bat" "%DIST%\NHL94 Helper - Stream.bat" >nul
   copy /y "%ROOTDIR%\docs\STREAMING_GUIDE.md" "%DIST%\Streaming guide.txt" >nul

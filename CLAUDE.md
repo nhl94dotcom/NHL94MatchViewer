@@ -81,7 +81,10 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   All in one command: `python tools/make_replay.py VIDEO` (finds the games, checks, goal stills to look at, the zip;
   Genesis and SNES).
   `tools\build_helper.bat nobroadcast` builds `dist\nobroadcast\` for people who won't broadcast (no `live_broadcast`,
-  and the viewer's Help without "Watching live", between `<!-- broadcast` markers).
+  and the viewer's Help without "Watching live", between `<!-- broadcast` markers); its zip is
+  `NHL94 Helper (no broadcast).zip`. Releases: the user uploads both zips to a GitHub release by hand (README's
+  Download points at releases/latest); before each, rebuild with the helper closed, start each exe once against an
+  empty `NHL94_HOME`, and scan both exes (inflated too) for the leak check's strings. Licence: MIT (`LICENSE`).
 - `tools/export_match.py`: recording -> `matches/<name>.js` (`--live` worker mode for the broadcast). `analyse()` runs
   every finder after the system's `read_match` (shots, passes, turnovers, hits, check attempts, passing out of a
   check, entries, xG ...).

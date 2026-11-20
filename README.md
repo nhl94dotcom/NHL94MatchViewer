@@ -23,6 +23,14 @@ and use "Download raw file") and double-click it: it opens in your browser with 
 Things to try: Play, the Map menu (shot map, heat maps, goalie report), Highlights (three stars and a highlight
 reel), Game flow, and pointing at a player in the lineups for his card.
 
+## Download
+
+The helper is a Windows program: download `NHL94 Helper.zip` from the
+[latest release](https://github.com/nhl94dotcom/NHL94MatchViewer/releases/latest), unzip it anywhere, and follow
+"Read me first.txt". Nothing else to install. Windows may say "Windows protected your PC" because the program isn't
+signed: "More info", then "Run anyway". `NHL94 Helper (no broadcast).zip` is the same helper without the live
+broadcast to a website.
+
 ## Use it
 
 - **With Python 3**: double-click `NHL94 Helper.bat` and leave its window open while you play. Games are listed at
@@ -37,6 +45,11 @@ reel), Game flow, and pointing at a player in the lineups for his card.
 - **Games already played, from video**: `python tools/make_replay.py VIDEO` matches a RetroArch recording of the
   session to the helper's recordings (Genesis or SNES) and makes a pack whose overlay follows the video in OBS, with
   the stats and events as they happened; [the replay guide](docs/REPLAY_GUIDE.md) is the streamer's side.
+
+## Licence
+
+MIT: see [LICENSE](LICENSE). It covers this project's own code and documents, not NHL '94 itself: the ROMs, and the
+sprites, sounds and rink pictures that come from them, belong to their owners.
 
 ## Not in this repository
 
