@@ -232,7 +232,7 @@ def cvc_game(rom, n):
     if m.sa1:
         M.play(e, f"w{1800 + 53 * n} START w240", tmp)
     else:
-        po = "RIGHT*2 w30 " if os.environ.get("PLAYOFFS") == "1" else ""       # Play Mode: Playoffs
+        po = "RIGHT*2 w30 " if os.environ.get("PLAYOFFS") == "1" else "LEFT w30 " if os.environ.get("SHOOTOUT") == "1" else ""       # Play Mode: Playoffs
         M.play(e, f"w{1500 + 53 * n} START w240 START w240 {po}DOWN*3 RIGHT*2 DOWN RIGHT*2 w30", tmp)
     M.play(e, "START w240 START w200 w2400", tmp)
     for _ in range(12):
@@ -243,7 +243,9 @@ def cvc_game(rom, n):
         e.run(4, hold=["START"])
         e.run(60)
     m.setw(C.OPTPEN, 2)
-    C.computer_only(m)
+    shootout = os.environ.get("SHOOTOUT") == "1"
+    if not shootout:
+        C.computer_only(m)
     m.setw(C.SEED, (0x9E37 * (n + 1)) & 0xFFFF or 1)
     m.setw(C.SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)
     for a in range(STARS, STARS + 6, 2):
@@ -255,6 +257,7 @@ def cvc_game(rom, n):
     last_clock, last_tick, frame, still, prev_period = m.w(CLOCK), 0, 0, 0, None
     last_armed = 0
     stars_at = None
+    pp_ticks, ps, ps_cur = [0, 0], [], None    # clock ticks with a team a man up (tmap $17A6); penalty shots
     while frame < 400000:
         e.run(1)
         frame += 1
@@ -265,6 +268,10 @@ def cvc_game(rom, n):
             prev_period = per
         if c == last_clock - 1:
             ticks[(state, min(frame - last_tick, 999))] += 1
+            if state == "play":
+                ta, tb = m.w(0x17A6), m.w(0x17A8)
+                if ta != tb:
+                    pp_ticks[0 if ta > tb else 1] += 1
             last_tick = frame
             if clutch and per == 2 and c == 150:
                 s = m.w(TMSCORE)
@@ -294,8 +301,18 @@ def cvc_game(rom, n):
                     box_open[t] = (nib, frame, c, per) if nib else None
                 elif nib > (o[0] if o else 0):
                     box_open[t] = (nib, frame, c, per)
+        psa = m.w(0x163A)                       # PenShotActive: pstimer's start and how long the shot ran
+        if psa and ps_cur is None:
+            ps_cur = dict(start=frame, timer0=m.w(0x1E9F), shooter=m.w(0x1E8D), person=None)
+            sh = m.w(0x1E8D)
+            if sh < 24:
+                ps_cur["person"] = bool(m.w(PFLAGS + sh) & 8)
+        elif not psa and ps_cur is not None:
+            ps_cur["frames"] = frame - ps_cur.pop("start")
+            ps.append(ps_cur)
+            ps_cur = None
         if frame % 600 == 0:
-            if per < 3:
+            if per < 3 and not shootout:
                 h = hashlib.md5(bytes(m.e.ram[0:0x2000]) + bytes(m.e.ram[0x2000:0x4000])).hexdigest()[:8] if not m.sa1 else None
                 hashes.append(h)
                 C.computer_only(m)
@@ -331,7 +348,11 @@ def cvc_game(rom, n):
         buf, o = m.at(0x168E + x)
         checks.append(buf[o])
     per = lambda base, t: sum(m.w(base + 4 * q + 2 * t) for q in range(4))
-    return dict(checks168e=checks, game=n, rom=Path(rom).name, frames=frame, ticks=[[k[0], k[1], v] for k, v in ticks.items()],
+    toi = []
+    for x in range(52):                         # NOSE4Web's / McMarkis's time on ice: a word a player at $7E:E800
+        buf, o = m.at(0xE800 + 2 * x)
+        toi.append(buf[o] | buf[o + 1] << 8)
+    return dict(pp_time=[m.w(0x1756), m.w(0x1758)], pp_ticks=pp_ticks, toi=toi, penalty_shots=ps, checks168e=checks, game=n, rom=Path(rom).name, frames=frame, ticks=[[k[0], k[1], v] for k, v in ticks.items()],
                 period_start=period_start, boxes=boxes, icing_armed=armed, icing_calls=icing_calls,
                 stars=stars, star_scores=scores, stars_frame=stars_at, players=players,
                 goals=[per(GOALS_P, t) for t in (0, 1)], shots=[per(SHOTS_P, t) for t in (0, 1)],

@@ -8399,3 +8399,28 @@ periods, penalties on).
 - **Puck friction:** a loose puck keeps 0.87 of its speed a second (9), 0.93 (10), 0.97 (11), 0.98 (12), 0.14 (5),
   0 (1); a pass receiver's glide follows it (0.86, 0.92, 0.98). On the SA-1 build (60 updates a second) the
   original keeps 0.79 and 10-12 give 0.89, 0.94, 0.97.
+
+### NOSE4Web's second SNES versions and the dive-catch hold, played (2026-11-20; `snes_gen_settings_check.py`, `gen_dive_hold_check.py`)
+
+- **Real-time clock, second version** (box reload $3C at F3F66, penalty-shot limit 2,500 at FB062; nothing else
+  changed): full minors now end at 119-120 clock seconds (about 8,100-8,500 frames); the game's power-play time
+  matches man-up clock seconds counted from the boxes (within 1-3 s a game, both versions); time on ice counts clock
+  seconds (6 x 900 a team in regulation, more in overtime). Penalty shots start at 2,500 in play and in Shootout mode
+  (PlayShootout -> StartPenaltyShot -> puckfaceoff2 -> SetupPenaltyShot), 1,000 on the original; computer shooters
+  shot within about 600 frames, so none ran to the limit. An earlier real-time ROM reads as an earlier version and,
+  updated (applySnesHacks' update flag), equals a fresh build byte for byte.
+- **Three stars at 1,500 / 1,700 a shot faced:** a goalie first star 16/20 (the original 9/20), goalie places 26-27 of
+  60 (11). Rescored from the same games' player stats (the formula reproduces the build's scores exactly): about 800
+  a shot gives 40% first stars and 18% of places, the original's; 1,000 gives 45% and 25%. (20 games: the same seeds
+  play the same on every build, as only the game's end differs.)
+- **Dive-catch hold** (30 on NHL '94, NHL '95 and the SNES): the amount lands at puckglue's pickup (temp5 30). SNES,
+  a pad-1 goalie: the whistle 5 -> 33 frames after a dive catch, never with hold 0; normal catches unchanged.
+  Computer dive catches are rare (one in 15 NHL '94 games, none in 15 NHL '95 or 12 SNES original games); the NHL '94
+  one was passed away at 78 frames on every build. The SNES counts during no dive: a dive sets pfalock 150 (assgoalie
+  .t4) and updateplayers runs no assignment while it is set (the Genesis gates assgoalie's count on pf2aip instead).
+  Not tested: a person's goalie after a dive catch on the Genesis (a forced dive doesn't take the puck: catches come
+  from the save code).
+- **Clockwise's sprite edit beyond the IPS** (for NOSE4Web, records and pictures outside the repo): his tape and eyes
+  learnt from his own edits (by example, 7x7 neighbourhoods: 73% of his changes predicted, 80% found, about his own
+  consistency) and proposed for chaos's fight frames 846-869 (38 bytes) and the faceoff close-up (FaceOffSprites,
+  retail $A78AE packed, CDL Season 12 $11EA88 plain and identical; 81 bytes, checked in a CDL faceoff).
