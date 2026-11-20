@@ -26,6 +26,8 @@ python gen95_bswitch_check.py ps OUT ROM STATE [ROM STATE ...] [N]   (a real pen
     the puck, when nobody may be picked: only the shooter and
     the goalie are allowed (BA_PS_flags bit 2) and the first pass skips goalies; c1playernum followed 90 frames)
 python gen95_bswitch_check.py OUT ROM STATE [ROM STATE ...] [N]
+python gen95_bswitch_check.py shootout OUT ROM [ROM ...]   (Shootout mode; see shootout(): use the editor-opened ROMs,
+    whose boot skips the ROM check, so the menu presses land as gen95_shootout_mode_check expects)
 """
 import json
 import math
@@ -174,32 +176,93 @@ def live(out, pairs, n):
         del e
 
 
+def home_award(e, base, rnd):
+    """gen95_group1_fixes_check's breakaway turned round: pad 1's home carrier (the home centre) across the blue line,
+    the away chaser close behind, pressing C or B (pad 2) or the computer's, until a penalty shot is awarded to home."""
+    for _ in range(80):
+        e.unserialize(base)
+        e.setw(G.CLOCK, 250)
+        e.setl(G.SEED, rnd.getrandbits(32))
+        e.setw(G.OPTPEN, 1)
+        e.setw(G.PENBUF, 0)
+        e.setw(G.BA_PS, 0)
+        roles = {k: e.b(G.rec(k) + G.POS) for k in range(12)}
+        carrier = next(k for k in range(6) if roles[k] == 4)
+        up = 1 if e.b(G.rec(carrier) + G.PFL) & 0x80 else -1
+        face = 0 if up > 0 else 4
+        x0, y0 = rnd.uniform(-60, 60), up * rnd.uniform(55, 82)
+        v = rnd.uniform(1.0, 2.0)
+        G.put(e, carrier, x0, y0, 0, up * v, face)
+        them = [k for k in range(6, 12) if roles[k] not in (0, 0xFF)]
+        chaser = rnd.choice(them)
+        G.put(e, chaser, x0 + rnd.uniform(-10, 10), y0 - up * rnd.uniform(8, 28), 0, up * (v + rnd.uniform(0.3, 1.2)), face)
+        for k in them:
+            if k != chaser:
+                G.put(e, k, rnd.uniform(-90, 90), y0 - up * rnd.uniform(70, 160), 0, up * 1.0, face)
+        for k in range(6):
+            if roles[k] not in (0, 0xFF, 4):
+                G.put(e, k, rnd.uniform(-90, 90), y0 - up * rnd.uniform(40, 140), 0, up * 1.0, face)
+        for k in range(12):
+            if roles[k] <= 5:
+                G.fresh(e, k)
+        mode = rnd.choice(("cpu", "C", "B"))
+        G.control(e, 1, carrier, 1)
+        G.control(e, 2, chaser if mode != "cpu" else None, 2 if mode != "cpu" else 0)
+        G.put(e, 14, x0, y0 + up * 4)
+        e.setw(G.PUCKC, carrier)
+        before = G.penbuf(e)
+        for f in range(150):
+            cx, cy = G.pos(e, carrier)
+            kx, ky = G.pos(e, chaser)
+            h2 = [] if mode == "cpu" else G.pad(G.dir_to(cx - kx, cy - ky)) + ([mode] if f % 12 in (0, 1) else [])
+            e.run(1, hold=["UP" if up > 0 else "DOWN"], hold2=h2)
+            new = [v for v in G.penbuf(e) if v not in before]
+            if new:
+                if new[0] >> 8 >= 0x2E:
+                    return carrier
+                break
+            if G.stopped(e):
+                break
+    return None
+
+
 def ps_real(e, base, seed):
+    """A penalty shot for pad 1's team: pad 1 on the shooter (as the game gives it) shoots (C toward the net), and B in
+    his follow-through, locked and without the puck, when only he (and the goalie, never taken in the first pass) may be
+    picked: nothing should change."""
     rnd = random.Random(seed)
-    r = G.award(e, base, rnd)
-    if r is None:
+    if home_award(e, base, rnd) is None:
         return dict(res="no award")
     if G.run_until(e, lambda: e.w(G.BA_PS) & G.UNDERWAY, 3000) is None:
         return dict(res="no attempt")
-    shooter, goalie = e.w(G.BA_SKTR), e.w(0xD00C)
-    for f in range(900):                              # the pads as the game sets them for the attempt
-        c = e.w(C1P)
-        if not e.w(G.BA_PS) & G.UNDERWAY:
-            return dict(res="attempt over, no locked moment", shooter=shooter, goalie=goalie)
-        if c < 12 and locked(e, c) and e.w(G.PUCKC) != c:
+    shooter = e.w(G.BA_SKTR)
+    for f in range(1500):                              # pad 1 skates to the puck at centre
+        if e.w(G.PUCKC) == shooter:
             break
-        near = c < 12 and math.dist(G.pos(e, c), G.pos(e, 14)) < 70
-        e.run(1, hold=["C"] if near and f % 8 < 2 else [])     # pad 1's goalie: a save move as the shooter comes in
+        sx, sy = G.pos(e, shooter)
+        px, py = G.pos(e, 14)
+        e.run(1, hold=G.pad(G.dir_to(px - sx, py - sy)) if e.w(C1P) == shooter else [])
     else:
-        return dict(res="no locked moment")
+        return dict(res="no carry", shooter=shooter, c1p=e.w(C1P))
+    if e.w(C1P) != shooter:
+        return dict(res="pad 1 not on the shooter", shooter=shooter, c1p=e.w(C1P))
+    sx, sy = G.pos(e, shooter)
+    gy = 264 if e.b(G.rec(shooter) + G.PFL) & 0x80 else -264
+    toward = G.pad(G.dir_to(-sx, gy - sy))
+    for f in range(160):
+        e.run(1, hold=toward + (["C"] if 40 <= f < 44 else []))
+        if e.w(G.PUCKC) != shooter and locked(e, shooter):
+            break
+    else:
+        return dict(res="no shot", shooter=shooter)
     before, flags = e.w(C1P), e.b(G.BA_PS)
     odd = 0
     for f in range(92):
         e.run(1, hold=["B"] if f < 2 else [])
         c = e.w(C1P)
         odd += c >= 12 or bool(e.w(G.rec(c) + 0x34) & 0x8000)
-    return dict(res="ok", shooter=shooter, goalie=goalie, before=before, after=e.w(C1P), ps_flag=bool(flags & 4),
-                odd=odd, still_attempt=bool(e.w(G.BA_PS) & G.UNDERWAY))
+    return dict(res="ok", shooter=shooter, before=before, after=e.w(C1P), ps_flag=bool(flags & 4), odd=odd,
+                still_attempt=bool(e.w(G.BA_PS) & G.UNDERWAY))
 
 
 def ps(out, pairs, n):
@@ -215,12 +278,74 @@ def ps(out, pairs, n):
         (out / f"ps_{name}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
         ok = [r for r in rows if r["res"] == "ok"]
         print(f"== {name} penalty shots: {len(ok)} presses in the shooter's follow-through (flag set {sum(r['ps_flag'] for r in ok)});"
-              f" pad 1 on {dict(Counter(('shooter' if r['before'] == r['shooter'] else 'goalie' if r['before'] == r['goalie'] else 'other') for r in ok))}, kept {sum(r['after'] == r['before'] for r in ok)}, switched {sum(r['after'] != r['before'] for r in ok)};"
+              f" kept the shooter {sum(r['after'] == r['shooter'] for r in ok)}, other {sum(r['after'] != r['shooter'] for r in ok)};"
               f" odd frames {sum(r['odd'] for r in ok)}; not run {dict(Counter(r['res'] for r in rows if r['res'] != 'ok'))}")
         del e
 
 
+def shootout(out, roms):
+    """Shootout mode from Game Setup (gen95_shootout_mode_check's way in: play mode $C); in each home attempt the game
+    gives pad 1 the shooter (BA_Sktr_SCnum): he skates to the puck, carries it toward the net, shoots (C), and B is
+    pressed in his follow-through (locked, without the puck): nothing should change. Away attempts: pad 1 holds the
+    home goalie, nothing pressed. Until the shootout ends (gmode2 bit 3) or 60 attempts' worth of frames."""
+    import gen95_shootout_mode_check as S
+    for rom in roms:
+        e = Emu(rom)
+        e.run(1500)
+        for _ in range(3):
+            e.run(6, hold=["START"]); e.run(200)
+        e.setb(S.SETUP, 0xC); e.run(30)
+        e.run(6, hold=["START"]); e.run(300)
+        e.run(6, hold=["START"]); e.run(400)
+        rows, f, key, done, shot_at, phase = [], 0, None, False, None, "skate"
+        while f < 60 * 60 * 20 and e.b(S.GMODE2) & 1 and not e.b(S.GMODE2) & 8:
+            k2 = (e.w(S.ROUND), e.w(S.TEAMW))
+            if k2 != key:
+                key, done, phase = k2, False, "skate"
+            sh = e.w(G.BA_SKTR)
+            hold = []
+            live_ = e.w(G.BA_PS) & G.UNDERWAY
+            if live_ and k2[1] == 0 and not done and sh < 6 and e.w(C1P) == sh:
+                sx, sy = G.pos(e, sh)
+                if phase == "skate":
+                    px, py = G.pos(e, 14)
+                    hold = G.pad(G.dir_to(px - sx, py - sy))
+                    if e.w(G.PUCKC) == sh:
+                        phase, shot_at = "carry", f + 50
+                elif phase == "carry":
+                    gy = 264 if e.b(G.rec(sh) + G.PFL) & 0x80 else -264
+                    hold = G.pad(G.dir_to(-sx, gy - sy)) + (["C"] if shot_at <= f < shot_at + 4 else [])
+                    if e.w(G.PUCKC) != sh and locked(e, sh):
+                        before, flags = e.w(C1P), e.b(G.BA_PS)
+                        odd = 0
+                        for g in range(92):
+                            e.run(1, hold=["B"] if g < 2 else [])
+                            c = e.w(C1P)
+                            odd += c >= 12 or bool(e.w(G.rec(c) + 0x34) & 0x8000)
+                        f += 92
+                        rows.append(dict(round=k2[0], shooter=sh, before=before, after=e.w(C1P), ps_flag=bool(flags & 4),
+                                         odd=odd))
+                        done = True
+                        continue
+                    if f > shot_at + 200:
+                        done = True
+            e.run(1, hold=hold or (["START"] if f % 300 == 10 and not live_ else []))
+            f += 1
+        name = Path(rom).stem
+        (out / f"shootout_{name}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+        ended = "the end (gmode2 bit 3)" if e.b(S.GMODE2) & 8 else "the frame limit" if f >= 60 * 60 * 20 else "the title"
+        print(f"== {name} shootout: {len(rows)} home attempts with B in the shooter's follow-through (flag set "
+              f"{sum(r['ps_flag'] for r in rows)}); kept the shooter {sum(r['after'] == r['shooter'] for r in rows)}, other "
+              f"{sum(r['after'] != r['shooter'] for r in rows)}; odd frames {sum(r['odd'] for r in rows)}; ran to {ended}")
+        del e
+
+
 def main():
+    if sys.argv[1] == "shootout":
+        out = Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
+        lowload.gentle()
+        shootout(out, sys.argv[3:])
+        return
     if sys.argv[1] == "ps":
         out = Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
         args = sys.argv[3:]

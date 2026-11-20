@@ -2181,9 +2181,16 @@ opening changes: the folder's NHL_95.bin is e8ee917e, W18.bin c4df4c20).
     where B is a pass. Retail's switches are trials where a teammate was nearer the puck. The W18 1-in-30s in the
     "nobody" cases are the harness (locks set by hand before each frame; the game can clear one first).
   - Nothing odd: pad 1 on a home record on the ice in every frame of every trial (the goalie when he takes the puck).
-  - Penalty shot / shootout: not reached in play. The awarded shots come from the computer's breakaways, pad 1 then
-    holds the home goalie, and a goalie is never locked, saves included; the no-candidate path there is the same
-    `.found` / `.same` as the cases above. Shootout mode from Game Setup didn't start on retail in this harness.
+  - **Penalty shots** (`gen95_bswitch_check.py ps`: the breakaway turned round, pad 1's home carrier fouled from behind
+    by the away chaser until a penalty shot is awarded to home; pad 1 skates to the puck, carries, shoots, and B in his
+    follow-through, locked and without the puck, with BA_PS_flags bit 2 set): NHL_95 retail / fix 20 / 20 kept the
+    shooter, W18 17 / 17; nothing odd. (When the computer shoots, pad 1 holds the home goalie, never locked, saves
+    included.)
+  - **Shootout mode** (`shootout`: play mode $C from Game Setup, on the editor-opened ROMs, whose boot skips the ROM
+    check so the menu presses land; the raw retail file boots later): in every home attempt the game gives pad 1 the
+    shooter; skate, carry, shoot, B in the follow-through: NHL_95 retail / fix 5 / 5 kept, both to the shootout's end;
+    W18 3 / 5 kept (retail ran to the frame limit in a long sudden death); nothing odd. Retail and the fix the same:
+    the shooter alone may be picked, so the press does nothing, as NOSE4Web expected.
 
 ## NOSE4Web's SNES open net shot fix, played, and the "maybe" readings (2026-11-19)
 
