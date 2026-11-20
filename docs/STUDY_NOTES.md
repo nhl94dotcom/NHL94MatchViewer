@@ -8570,3 +8570,20 @@ the end of the third, home and away winning, and natural games with the losers' 
 away). All four: the three stars the winners', every star score equal to the formula on the stats (margin sign right
 for both sides, the 32-bit sums and the hi / lo split right, the team names on the screen right). Not reproduced; the
 LoROM 2 MB build not played (its 20-minute periods ran past the harness's limit), same source.
+
+## Clockwise's tape, NOSE4Web d9b39cb: a league user's three reports checked (2026-11-20)
+
+- Faceoff close-up: d9b39cb tapes all of each centre's blade (both rows, ~12 px, and the heel bend). Clockwise's own
+  skater tape is at the toe end with the heel side left in stick colour (his 719 taped frames: runs of 2-3 px reaching
+  the toe, the heel pixel(s) orange). New records tape the toe-end 60% of each blade in frames 1-6 of FaceOffSprites
+  (11 frames; 7-10 the referee and puck): 22 records, 50 bytes, all inside the old tape; they fit the close-up tiles of
+  nhl94, CDL Season 12, GDL Season 4, 3vs3 and 1on1, and were seen in the game on a CDL copy (plain tiles at $11EA92).
+  The retail ROM's packed stream needs re-encoding again (NOSE4Web's FACEOFF_PACKED_TAPE).
+- Fights (chaos's patch, 12 computer fights on a fighting + Clockwise build of nhl94.bin): frames 847-861 shown, 846
+  and 862-869 never as a player's frame. Every fight frame is drawn facing right and flipped by the hardware to face
+  left: no separate right-facing frames. The eye (colour 13 -> 2) is in each standing punch, 849-861; not in 862-863
+  (knocked back). Colour 13 is grey in every home palette but the away palette's (black for LA, BOS, DAL ...; dark red
+  or orange for PHI, WSH, CGY, DET), so on an away fighter the eye often changes nothing visible.
+- Dropped sticks: the fight code draws frame 846's pieces itself (stick tile 8412, 4 x 1, once flipped; glove 8487),
+  not as a player frame. The stick piece is taped (the VRAM tile is the taped one), but its blade end lies 15-20 px from
+  the fighter, under his skates, which are drawn on top: in one fight 1 tape pixel showed on one stick, 9 on the other.
