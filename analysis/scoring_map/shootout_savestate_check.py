@@ -363,6 +363,46 @@ def run(sysobj, out, first, games):
     return None
 
 
+FORCE = __import__("os").environ.get("SOSAVE_FORCE", "")
+TIE = __import__("os").environ.get("SOSAVE_TIE", "") == "1"   # with FORCE: tie the deciding period's last 10 s
+
+
+def force(S, done):
+    """SOSAVE_FORCE (Genesis): in a tied third period or overtime, 'away5': the visitors' tmap 5 in the last 2 s (a
+    man short as the shootout starts); 'pull': gmode's gmpendel (a delayed penalty) set once with 30 s left, so the
+    computer's ChkGoalies pulls the goalie of the team with the puck (tmgoalie $FFFF); logged when it happens."""
+    e = S.e
+    if S.mark():
+        return                       # the shootout's start code has run: leave what it set
+    g, c = S.gsp(), S.clock()
+    h, a = S.score()
+    running = c < done.get("last_clock", -1)            # the clock moved down since the last frame
+    if TIE and g == 3 and 10 < c < done.get("last_clock", 0) and (3, "cut") not in done:
+        e.setw(S.CLOCK, 10)                              # overtime's clock running: 10 s left (sudden death)
+        done[(3, "cut")] = True
+        print(f"overtime clock {c} cut to 10", flush=True)
+        c = 10
+    done["last_clock"] = c
+    if FORCE == "pull" and g >= 2 and 0 < c <= 30 and running and (g, "pull") not in done:
+        gm = 0xC2EA if S.GMODE2 == 0xC2FA else 0xBEF0
+        e.setb(gm, e.b(gm) | 8)                          # a delayed penalty: whatever the score
+        done[(g, "pull")] = True
+        print(f"gsp {g} clock {c}: gmpendel set", flush=True)
+    if FORCE == "pull" and (g, "pulled") not in done and 0xFFFF in [e.w(t + 0x26) for t, _ in S.TM]:
+        done[(g, "pulled")] = True
+        print(f"gsp {g} clock {c}: a goalie pulled, tmgoalie {['%04X' % e.w(t + 0x26) for t, _ in S.TM]}", flush=True)
+    if TIE and g >= 2 and c <= 10 and h != a:
+        e.setw(S.HM if h < a else S.AW, max(h, a))      # tied with 10 s left (the team score words only)
+        if (g, "tie") not in done:
+            done[(g, "tie")] = True
+            print(f"gsp {g} clock {c}: score {h}-{a} made {max(h, a)}-{max(h, a)}", flush=True)
+        h = a = max(h, a)
+    if g < 2 or h != a:
+        return
+    if FORCE == "away5" and c <= 2:
+        e.setw(S.TM[1][0] + 0x24, 5)
+
+
 def one_game(S, out, n):
     e = S.e
     pre, pre_info, before, base_score = None, None, None, None
@@ -372,6 +412,7 @@ def one_game(S, out, n):
     f, over_at, end_at, last_att, last_goal_f, next_press = 0, None, None, None, None, None
     cur_key = None
     was_in = False
+    pre_tm, forced = [], {}
     prev_scr = None
     while f < 60 * 60 * 40:
         if f % 60 == 0 and over_at is None:
@@ -399,8 +440,15 @@ def one_game(S, out, n):
         still = still + 1 if c == last_clock else 0
         last_clock = c
         now = S.read()
+        if before is None and hasattr(S, "TM") and FORCE:
+            force(S, forced)
         if before is None:
             if S.mark():
+                if hasattr(S, "TM") and not isinstance(S, Snes):
+                    events.append((f, "before the shootout (the frame before): tmap / tmgoalie "
+                                   + ", ".join(f"{side} {v[0]} / {v[1]:04X}" for side, v in pre_tm)
+                                   + "; now " + ", ".join(f"{side} {e.w(t + 0x24)} / {e.w(t + 0x26):04X}" for t, side in S.TM)))
+                    print(events[-1][1], flush=True)
                 before, base_score = pre, pre_info
                 np.save(out / f"g{n}_before_shootout.npy", before)
                 states["first frame of the shootout (the mark set)"] = (f, e.serialize())
@@ -410,6 +458,8 @@ def one_game(S, out, n):
                 return None
             else:
                 pre, pre_info = now, S.score()
+                if hasattr(S, "TM") and not isinstance(S, Snes):
+                    pre_tm = [(side, (e.w(t + 0x24), e.w(t + 0x26))) for t, side in S.TM]
                 continue
         # in or after the shootout
         if end_at is None:

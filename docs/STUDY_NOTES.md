@@ -8469,3 +8469,25 @@ periods, penalties on).
   attempt, the home team a man short plays. Our first NHL '95 runs (games set up from the menus) hung the same way.
   The SNES plays the same shootout with either team's tmap ($17A6 / $17A8) set to 5 (PlayShootout's StartGame_go
   sets the teams up afresh).
+- **NOSE4Web's fix (11b5e39: tmap 6 for both teams at the shootout's start), played** (NHL '94 and '95, both
+  builds each; the season's earlier builds' games don't replay on the new ones, so ties forced: the team score words
+  made level in the deciding period's last 10 s, overtime cut to 10 s; `shootout_savestate_check.py` SOSAVE_TIE /
+  SOSAVE_FORCE). The visitors a man short (tmap 5, or 4) as the shootout starts: the start code sets 6, the shootout
+  plays through on all four builds (39 attempts on NHL '94 after overtime), and from the end code every stat equals
+  the game before the shootout with the winners' goal (left over as before: summary and plus-minus entries past
+  their lengths, the giveaway tracker's working bytes; and tmap now reads 6, not the 5 it was).
+  - **Still a crash: a player in the penalty box as the shootout starts.** From a fixed build's shootout start, one
+    player put in the box (tmpdst >= 0, the box list): NHL '94 home player (a listed shooter or not) ADDRESS ERROR at
+    $15B9E (as in a forced-penalty game that reached it by itself), visitors' listed shooter ADDRESS ERROR at $12E20
+    (address $FFFFCA9B); a visitors' player not on the list plays. NHL '95: either team's player in the box hangs at
+    the first attempt. The box emptied as well (every tmpdst >= 0 set to $FFFE, the box lists ended at once): every
+    case plays (NHL '94 to round 6, NHL '95 to round 4).
+  - **A pulled goalie** (tmgoalie $FFFF for either team at the shootout's start): plays on both games (the
+    shootout's goalie comes from the shooter list's sixth entry). gmode's gmpendel alone set late in a game never made
+    the computer pull its goalie (ChkGoalies), so the pulled goalie was set directly.
+- **SNES three stars after the season shootout, traced:** the stars are the game-over stoppage PenEOG ($04, record
+  $D434 PenDataEOG) shown by InProgress, which calls ShowThreeStars. clockcont_0 queues it (AddPenalty2) in its game
+  over path (.7) only when the score isn't tied as the clock ends; tied, it takes .8 and queues PenEOP ($02, period
+  over). Played: period 3 ending 3-2, PenBuf gets $04 and the stars are worked out; 2-2, PenBuf gets $02, no stars.
+  After the shootout the build puts the game back and runs PeriodOver (gsp 4, Intermission, GameOver), so clockcont_0's
+  .7 never runs: the entry is never queued (not wiped by the restore).
