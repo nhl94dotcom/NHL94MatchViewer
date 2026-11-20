@@ -152,6 +152,26 @@ def report(name):
         w(f"| {k} | {v[0]} | {v[1]} |")
     w("\nPDO near 100 is normal; well above it means the bounces (shooting and goaltending) went that team's way.\n")
 
+    # the season shootout (NOSE4Web's, SNES): the helper logs each attempt (shootout.json); the rounds themselves aren't
+    # recorded, so this is who shot, against whom, and how it went
+    so = m.get("shootout")
+    if so and so.get("attempts"):
+        w("## Shootout\n")
+        w(f"Decided in a shootout: {ab[0]} {so['final'][0]} - {so['final'][1]} {ab[1]} with the winners' goal. The attempts "
+          "aren't recorded frame by frame (the helper keeps who shot, the goalie and the result).\n")
+        w("| Round | Shooting | Shooter | Goalie | Result | Shootout score |\n|---|---|---|---|---|---|")
+        for a in so["attempts"]:
+            st_ = a["team"]
+            w(f"| {a['round']} | {ab[st_]} | {G.name_of(st_, a['shooter'])} | {G.name_of(1 - st_, a['goalie'])} | "
+              f"{'goal' if a['goal'] else 'stopped'} | {a['score'][0]}-{a['score'][1]} |")
+        w("")
+        for st_ in (0, 1):
+            mine = [a for a in so["attempts"] if a["team"] == st_]
+            if mine:
+                w(f"- **{ab[st_]}**: {sum(a['goal'] for a in mine)} of {len(mine)}; "
+                  f"{G.name_of(1 - st_, mine[0]['goalie'])} stopped {sum(not a['goal'] for a in mine)}.")
+        w("")
+
     # 2. the game's story
     w("## 2. The game's story\n")
     w("| Period | " + " | ".join(f"{a} goals / xG / attempts" for a in ab) + " |\n|---|---|---|")
