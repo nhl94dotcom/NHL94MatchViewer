@@ -8544,3 +8544,17 @@ periods, penalties on).
     with head bleeding too, 268 bytes (the bleeding hooks point to its code at another address).
   - Built before 15dfee5 with Clockwise on (retail, CDL, retail with fighting and more): applied again, each equals a
     fresh build.
+
+## NOSE4Web's postsFix (e224658), 2026-11-20
+
+McMarkis's 2 MB builds count posts (tmposts $7E:E7F0) in PostCount, called from checkgoal's post branch. It read the team
+of `lastplayer` ($0CF3, SA-1 $6CF3) as an object offset, but every writer stores an object number (after `lsr a`), so it
+credited the object at half the number: in the user's CZE-FIN game, Finland's three posts went to the Czechs. The two
+posts the converter saw and the game didn't count never took the post branch (no $12C crowd rise): the puck came off
+the net by wallcoll or a touch, not posts in the game's terms. NOSE4Web's fix: a jsl to `lda lastplayer / asl a / tax /
+cpx #$18 / rtl` (19 bytes, the rest the checksum). `analysis/scoring_map/snes_posts_check.py ROM OUT GAMES`: computer
+games, every counter rise against the shooter's team (`shotplayer` $0D29, with sflags bit $1000 the shot in flight) and
+the last toucher's. 3 games each on nhl94snes_2026 (LoROM 2 MB, 20-minute periods) and nhl94snes_SA1: 18 posts, all to
+the right team (16 on a shot in flight, all the shooter's team; 2 after a touch, the toucher's team). Off gives every ROM
+back byte for byte (nhl94snes_2026, nhl94snes_SA1, nhl94_2026); retail NHL94.smc refuses it (no PostCount). The crowd
+mark ($12C) isn't a clean post marker: other events add the same, and near the crowd's cap it adds less (2 of 18).
