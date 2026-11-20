@@ -2513,6 +2513,13 @@ def analyse(match, system, cap, rom_path):
             rom = Path(rom_path).read_bytes()
             match["_hot"] = [struct.unpack_from(">bb", rom, 0xA44C8 + 2 * fr) for fr in range(846)]
         match["shotList"] = drop_unstruck(find_shots(match, match.get("goals")), match)
+        if match.get("shootout"):
+            # NOSE4Web's season shootout: its end code gives the winners one goal in the game's count, which the shot
+            # finder takes for a scramble goal at the last frame (kind 'other', no xG). It isn't a shot: dropped, so
+            # attempts, goals by period and the shot map stay on the game's play (2026-11-20, CZE-FIN).
+            gf = [g["f"] for g in match.get("goals", [])]
+            match["shotList"] = [s for s in match["shotList"]
+                                 if not (s["result"] == "goal" and not any(abs(s["f"] - f) <= 300 for f in gf))]
         match.pop("_hot", None)
         match["turnovers"] = find_turnovers(match)
         match["failedOneTimers"] = find_failed_one_timers(match)

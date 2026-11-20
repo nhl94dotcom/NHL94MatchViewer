@@ -259,7 +259,7 @@ def main(name):
                                      f"{', by ' + G.name(1 - e['from'], e.get('by')) if e.get('by') is not None else ''}) "
                                      f"{G.where(e['f'], e['from'], e['x'], e['y'])} -> {'GOAL' if e.get('goalAfter') else 'a good chance'}"]))
     for p in m.get("penalties", []):
-        moments.append((max(0, p["f"]), [f"PENALTY {G.clock(max(0, p['f']))} {G.ab[p['team']]} {G.full(p['team'], p['idx'])} code {p['code']}"]))
+        moments.append((max(0, p["f"]), [f"PENALTY {G.clock(max(0, p['f']))} {G.ab[p['team']]} {G.full(p['team'], p['idx'])} {((G.m.get('rules') or {}).get(str(p['code'])) or {}).get('name') or 'code ' + str(p['code'])}"]))
     for b in m.get("bobbles", []):
         if any(s["team"] == 1 - b["team"] and 0 <= G.t[s["f"]] - G.t[b["f"]] <= 5000 and (s.get("xg") or 0) >= 0.25 for s in shots):
             moments.append((b["f"], [f"BOBBLE {G.clock(b['f'])} {G.ab[b['team']]} {G.name(b['team'], b['idx'])} bobbled {G.name(b['team'], b['by'])}'s pass, the other team got a chance"]))

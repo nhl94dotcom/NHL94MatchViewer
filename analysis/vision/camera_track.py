@@ -106,6 +106,11 @@ class Rink:
         self.h, self.w = self.img.shape[:2]
         key = (self.img[:, :, 0].astype(np.int32) << 16) | (self.img[:, :, 1].astype(np.int32) << 8) | self.img[:, :, 2]
         vals, counts = np.unique(key[PAD:-PAD, PAD:-PAD], return_counts=True)
+        # the render as palette indices (57 colours on the retail rink): a place's score is then a lookup per sample
+        # (which colours each of the frame's samples is within TOL of), the same numbers with no colour arithmetic
+        self.pal, inv = np.unique(key.ravel(), return_inverse=True)
+        self.pidx = inv.reshape(key.shape).astype(np.uint8 if len(self.pal) <= 256 else np.uint16)
+        self.palrgb = np.stack([(self.pal >> 16) & 255, (self.pal >> 8) & 255, self.pal & 255], 1).astype(np.int16)
         self.struct = (key != vals[counts.argmax()]) & self.ice()   # the markings on the ice: lines, circles, creases,
                                                                      # scratches (not plain ice, not the crowd)
 
@@ -148,23 +153,100 @@ class Rink:
         al = float(ok.mean())               # markings' share drawn toward the whole share by k samples, so windows
         return 0.5 * al + 0.5 * (float((ok & st).sum()) + k * al) / (n + k)   # with few markings aren't favoured
 
+    def shares(self, f, us, vs, sub, chunk=1500):
+        """share() for many places at once (2026-11-20: the same numbers, one array operation instead of a Python call
+        per place; the tracker had spent nearly all its time in those calls). us, vs: int arrays."""
+        us, vs = np.asarray(us), np.asarray(vs)
+        hpos, vpos = us - PAD - OFF_X, OFF_Y - (vs - PAD)
+        ok = ((us >= 0) & (vs >= 0) & (us + NATIVE_W <= self.w) & (vs + HUD_TOP <= self.h)
+              & (HPOS_RANGE[0] <= hpos) & (hpos <= HPOS_RANGE[1]) & (VPOS_RANGE[0] <= vpos) & (vpos <= VPOS_RANGE[1]))
+        out = np.full(len(us), -1.0)
+        idx = np.nonzero(ok)[0]
+        if not len(idx) or STRUCT:
+            if STRUCT:
+                return np.array([self.share(f, int(u), int(v), sub) for u, v in zip(us, vs)])
+            return out
+        a = f[:HUD_TOP:sub, ::sub]
+        ry, rx = np.arange(0, HUD_TOP, sub), np.arange(0, NATIVE_W, sub)
+        nh, nw = len(ry), len(rx)
+        M = (np.abs(a.reshape(-1, 1, 3) - self.palrgb[None]).sum(axis=2) < TOL)       # [sample, colour]
+        k_idx = np.arange(nh * nw).reshape(nh, nw)
+        for k in range(0, len(idx), chunk):
+            j = idx[k:k + chunk]
+            b = self.pidx[(vs[j][:, None] + ry[None, :])[:, :, None], (us[j][:, None] + rx[None, :])[:, None, :]]
+            good = M[k_idx[None], b]
+            out[j] = good.reshape(len(j), -1).mean(axis=1)
+        return out
+
+    def shares_grid(self, f, us, vs, sub):
+        """shares() over the grid us x vs (both stepping evenly), as an array [u, v]: for each sub-pixel phase the
+        places' samples are windows of one subsampled copy of the render (a strided view, nothing gathered)."""
+        from numpy.lib.stride_tricks import sliding_window_view
+        a = f[:HUD_TOP:sub, ::sub]
+        nh, nw = a.shape[:2]
+        lookup = len(us) * len(vs) > len(self.pal)          # a table per sample pays only with more places than colours
+        if lookup:
+            M = (np.abs(a.reshape(-1, 1, 3) - self.palrgb[None]).sum(axis=2) < TOL)   # [sample, colour]
+            k_idx = np.arange(nh * nw).reshape(nh, nw)
+        at = a.transpose(2, 0, 1)[None, None]
+        out = np.full((len(us), len(vs)), -1.0)
+        du, dv = int(us[1] - us[0]), int(vs[1] - vs[0])
+        for pu in range(0, sub, du):
+            for pv in range(0, sub, dv):
+                iu = np.nonzero((us - us[0]) % sub == pu)[0]
+                iv = np.nonzero((vs - vs[0]) % sub == pv)[0]
+                if not len(iu) or not len(iv):
+                    continue
+                u0, v0 = int(us[iu[0]]), int(vs[iv[0]])
+                if u0 < 0 or v0 < 0:
+                    continue
+                if lookup:                                           # sample (r, c) = render (v0 + r*sub, u0 + c*sub)
+                    win = sliding_window_view(self.pidx[v0::sub, u0::sub], (nh, nw))   # [i, j, nh, nw]
+                else:
+                    win = sliding_window_view(self.img[v0::sub, u0::sub], (nh, nw), axis=(0, 1))   # [i, j, 3, nh, nw]
+                ni, nj = min(len(iv), win.shape[0]), min(len(iu), win.shape[1])   # the place (u0 + j*sub, v0 + i*sub)
+                if ni <= 0 or nj <= 0:
+                    continue
+                if lookup:
+                    good = M[k_idx, win[:ni, :nj]]                                           # [i, j, nh, nw]
+                else:
+                    good = np.abs(win[:ni, :nj] - at).sum(axis=2) < TOL
+                sh = good.reshape(ni, nj, -1).mean(axis=2)                                   # [v index, u index]
+                out[np.ix_(iu[:nj], iv[:ni])] = sh.T
+        uu, vv = np.meshgrid(us, vs, indexing="ij")
+        hpos, vpos = uu - PAD - OFF_X, OFF_Y - (vv - PAD)
+        valid = ((uu >= 0) & (vv >= 0) & (uu + NATIVE_W <= self.w) & (vv + HUD_TOP <= self.h)
+                 & (HPOS_RANGE[0] <= hpos) & (hpos <= HPOS_RANGE[1]) & (VPOS_RANGE[0] <= vpos) & (vpos <= VPOS_RANGE[1]))
+        out[~valid] = -1.0
+        return out
+
     def local(self, f, u0, v0, reach=10):
-        c = max(((u0 + du, v0 + dv) for du in range(-reach, reach + 1, 2) for dv in range(-reach, reach + 1, 2)),
-                key=lambda p: self.share(f, p[0], p[1], 4))
-        best = max(((c[0] + du, c[1] + dv) for du in range(-2, 3) for dv in range(-2, 3)),
-                   key=lambda p: self.share(f, p[0], p[1], 2))
+        d = np.arange(-reach, reach + 1, 2)
+        s = self.shares_grid(f, u0 + d, v0 + d, 4).ravel()       # du outer, dv inner: max()'s order
+        k = int(s.argmax())                                       # argmax: the first best, as max() took
+        c = (u0 + int(d[k // len(d)]), v0 + int(d[k % len(d)]))
+        d2 = np.arange(-2, 3)
+        s = self.shares_grid(f, c[0] + d2, c[1] + d2, 2).ravel()
+        k = int(s.argmax())
+        best = (c[0] + int(d2[k // 5]), c[1] + int(d2[k % 5]))
         return best[0], best[1], self.share(f, best[0], best[1], 1)
 
     def full(self, f):
-        us = range(PAD - 8, PAD + 384 - NATIVE_W + 9, 2)          # the camera's whole range, with room, every
-        vs = range(PAD - 8, self.h - PAD - HUD_TOP + 8, 2)        # 2nd pixel (on a blurred video the right place
-        cands = sorted(((self.share(f, u, v, 8), u, v) for u in us for v in vs), reverse=True)[:12]   # is a narrow peak)
-        return max((self.local(f, u, v, reach=4) for _, u, v in cands), key=lambda r: r[2])
+        us = np.arange(PAD - 8, PAD + 384 - NATIVE_W + 9, 2)       # the camera's whole range, with room, every
+        vs = np.arange(PAD - 8, self.h - PAD - HUD_TOP + 8, 2)     # 2nd pixel (on a blurred video the right place
+        U, V = np.repeat(us, len(vs)), np.tile(vs, len(us))        # is a narrow peak); u outer, v inner
+        s = self.shares_grid(f, us, vs, 8).ravel()                  # (u, v) order, as U, V
+        order = np.lexsort((-V, -U, -s))[:12]                      # sorted((share, u, v), reverse=True)'s order
+        return max((self.local(f, int(U[i]), int(V[i]), reach=4) for i in order), key=lambda r: r[2])
 
 
-def track(video, rom, first=0, count=None, step=1):
+def track(video, rom, first=0, count=None, step=1, only=None):
+    """only: (first frame, last frame) ranges to track (2026-11-20: live play from a sync timeline, for the reader);
+    every other frame is kept as lost without a search, and tracking starts afresh (a whole-rink search) in each."""
     rink = Rink(rom)
     out, last, tried, before = [], None, -RETRY, None
+    ranges = sorted(only) if only else None
+    ri = 0
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scoring_map"))
         import lowload
@@ -173,6 +255,13 @@ def track(video, rom, first=0, count=None, step=1):
     for n, f in frames(video, first, count):
         if n % step:
             continue
+        if ranges is not None:
+            while ri < len(ranges) and n > ranges[ri][1]:
+                ri += 1
+            if ri >= len(ranges) or n < ranges[ri][0]:
+                out.append((n, 0, 0, 0, 0))
+                last, before, tried = None, None, -RETRY
+                continue
         if lowload:
             lowload.breathe()
         r = rink.local(f, *last) if last else None

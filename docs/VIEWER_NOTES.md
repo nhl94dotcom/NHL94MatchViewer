@@ -1983,3 +1983,14 @@ TEST_GAME set to itself: nothing learnt from the game read), one gentle reader a
 whole games the reader keeps possession at 80-85%, passes and entries at about 75-90%, and finds about two shots in
 three with few false; turnovers stay the weak count (a third or more of those read are false), hits under-read by
 about a third.
+
+**Season-shootout games: the winners' goal (2026-11-20, the user's CZE-FIN on a 2 MB SNES build).** NOSE4Web's end
+code gives the shootout's winners one goal in the game's own count, which no player scored on a shot. Three places
+took it for a real goal and are fixed: the converter's shot finder made it a scramble goal at the last frame (kind
+'other', no xG: an extra attempt and an overtime "goal"; `analyse` now drops a goal shot matching none of the game's
+goals in a shootout game); the viewer's team stats (`teamStats`: goals for shooting %, save % and PDO are the real
+goals; the score keeps it, "Final SO"); match_report's result table (rates on real goals, "2 (1 in the shootout)").
+`tests/check_matches.py` allows for it (only where the count has it: the 11-12 GER-USA build's didn't). The 2 MB
+builds' own post count (gameStats.posts, $E7F0, PostCount) goes to the team of `lastplayer`, the last player to touch
+the puck, not the shooter's: in CZE-FIN it gave the Czechs 3 for three Finnish shots a Czech player got a piece of; its
+row is now "Posts, by last touch (the game's count)". play_by_play names penalties from the game's rules.

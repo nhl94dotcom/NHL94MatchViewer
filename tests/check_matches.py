@@ -30,9 +30,17 @@ def check(m):
     abbr = m.get("abbr") or ["H", "A"]
     goals = m.get("goals", [])
     shots = m.get("shotList", [])
+    # A game decided in NOSE4Web's season shootout: its end code gives the winners one goal in the team's count that no
+    # player scored and no goal event records (the rounds aren't recorded; shootout.json has the final)
+    so = m.get("shootout") or {}
+    so_win = None
+    if so.get("final"):
+        f0, f1 = so["final"][0], so["final"][1]
+        so_win = 0 if f0 > f1 else 1 if f1 > f0 else None
     for team in (0, 1):
         row, ab = last[team], abbr[team]
-        g_game = row[F["goals"]]
+        g_list0 = sum(1 for g in goals if g["team"] == team)
+        g_game = row[F["goals"]] - (1 if team == so_win and row[F["goals"]] > g_list0 else 0)
         g_list = sum(1 for g in goals if g["team"] == team)
         if g_list != g_game:
             problems.append(f"{ab} goals: list {g_list}, game {g_game}")

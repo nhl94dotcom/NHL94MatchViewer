@@ -3017,6 +3017,12 @@ function statSnapshot(f) {
 function teamStats(snap, team) {
   const v = match.stats[team ? 'away' : 'home'][snap], out = {};
   TEAM_FIELDS.forEach((name, i) => { out[name] = v[i]; });
+  // A season shootout's winners get one goal in the game's count that nobody scored on a shot: left out here, so
+  // shooting %, save % and PDO are on real goals (the score shown keeps it: 'Final SO').
+  if (match.shootout && match.goals) {
+    const real = match.goals.filter(g => g.team === team).length;
+    if (out.goals > real) out.goals = real;
+  }
   return out;
 }
 function playerStats(snap, team, idx) {
@@ -3456,7 +3462,7 @@ const STAT_HELP = {
   'Fights': 'Fights so far (SNES 2 MB builds with the Fighting option on): each involves one player of each team, so both columns are the same. On a card: the fights he was in. With Fighting On a fight can start on a hard collision once enough players have been knocked down since the last one (willing players first: 2 × Fighting + Aggression); with After Whistle, on checks after the whistle.',
   'Fights|· instigator penalties': 'Instigator penalties the game gave the team (2 minutes, served by a teammate on the ice, so a power play): the fighter caught in a shoulder check, or one time in 4 the more willing fighter.',
   'Fights|· hurt in a fight (whole game)': 'The team’s players the game put out for the rest of the game after losing a fight (the game’s own list, at the end of the recording).',
-  'Posts (the game’s count)': 'Shots off the post or crossbar as the 2 MB builds count them themselves, for the whole game (the Posts row above is the viewer’s own, from the shots).',
+  'Posts, by last touch (the game’s count)': 'The 2 MB builds’ own count of the puck hitting a post or the crossbar, for the whole game. It goes to the team of the last player to touch the puck, not the shooter’s: a shot a defender or the goalie got a piece of counts for the defending team (2026-11-20, CZE-FIN: three Finnish posts counted for the Czechs). The Posts row under Shooting is by the shooter.',
   'Checks for / against': 'Body checks the team’s players gave / took, as the 2 MB builds count them themselves, for the whole game.',
   'Game: checks for / ag.': 'Checks he gave / took, as the 2 MB builds count them themselves, for the whole game.',
   'Game: ice time': 'His time on the ice as the 2 MB builds count it themselves, for the whole game (game minutes and seconds).',
@@ -3889,7 +3895,7 @@ function fillTeamStats(snap) {
       ...(match.gameStats && match.gameStats.fightInjured ? [['· hurt in a fight (whole game)', fightHurt(0), fightHurt(1)]] : [])] : []),
     // What the 2 MB builds count themselves (at the end of the recording: the whole game)
     ...(match.gameStats ? [section('The game’s own counts (whole game)'),
-      ...(match.gameStats.posts ? [['Posts (the game’s count)', match.gameStats.posts[0], match.gameStats.posts[1]]] : []),
+      ...(match.gameStats.posts ? [['Posts, by last touch (the game’s count)', match.gameStats.posts[0], match.gameStats.posts[1]]] : []),
       ...(match.gameStats.checksFor ? [['Checks for / against', ...[0, 1].map(t => sumOf(match.gameStats.checksFor[t]) + ' / ' + sumOf(match.gameStats.checksAgainst ? match.gameStats.checksAgainst[t] : []))]] : [])] : []),
     ...playRows(f, list, 'people'),
     ...(ends && possession ? [section('Screen sides'),

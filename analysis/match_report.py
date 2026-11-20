@@ -134,13 +134,15 @@ def report(name):
         sog = m["shots"][2 * (N - 1) + team] - m["shots"][team]
         xs = [s for s in mine if s.get("xg") is not None and s["result"] != "blocked"]
         xga = [s for s in theirs if s.get("xg") is not None and s["result"] != "blocked"]
-        goals = final[team]
-        rows["Goals"].append(goals)
+        # a season shootout's winners' goal is in the final score but nobody scored it on a shot: rates on real goals
+        goals = sum(1 for g in m.get("goals", []) if g["team"] == team) if m.get("shootout") else final[team]
+        rows["Goals"].append(f"{final[team]} (1 in the shootout)" if final[team] > goals else goals)
         rows["Shots on goal / attempts"].append(f"{sog} / {len(mine)}")
         rows["Expected goals (xG)"].append(f"{sum(s['xg'] for s in xs):.1f}")
         rows["Goals from xG shots vs xG"].append(f"{sum(s['result'] == 'goal' for s in xs)} vs {sum(s['xg'] for s in xs):.1f}")
         rows["Goaltending: goals against vs xG against"].append(f"{sum(s['result'] == 'goal' for s in xga)} vs {sum(s['xg'] for s in xga):.1f}")
-        sv = 1 - (final[1 - team] / max(1, m["shots"][2 * (N - 1) + 1 - team] - m["shots"][1 - team]))
+        against = sum(1 for g in m.get("goals", []) if g["team"] == 1 - team) if m.get("shootout") else final[1 - team]
+        sv = 1 - (against / max(1, m["shots"][2 * (N - 1) + 1 - team] - m["shots"][1 - team]))
         sh = goals / max(1, sog)
         rows["Shooting % / save %"].append(f"{100 * sh:.0f}% / {100 * sv:.0f}%")
         rows["PDO (shooting % + save %)"].append(f"{100 * (sh + sv):.0f}")
