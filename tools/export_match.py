@@ -455,7 +455,13 @@ def find_shots(m, goals=None):
         for team in (0, 1):
             sh = latest(team, min(N - 1, p + 3), 2000, False)  # point-blank: the post can register a sample before the release
             # the game counts a shot off the post as a shot on goal, so it may already read 'save'
-            if sh and sh['result'] in ('miss', 'save') and (P[3 * p + 1] > 0) == (sh['y'] > 0):  # shot from that end
+            # Not when a defending player (goalie or skater) had possession between the shot and the post (the game's
+            # carrier, owner): a save the goalie held and then fumbled into his own post is no post for the shooter (the
+            # user's rule, 2026-11-20; 12 goalie fumbles and 3 skaters' in the recorded games). A puck that only bounced
+            # off him (no possession) still counts.
+            held = sh and any(o is not None and 0 <= o < 12 and (o < 6) != (team == 0)
+                              for o in m['owner'][sh['f'] + 1:p])
+            if sh and not held and sh['result'] in ('miss', 'save') and (P[3 * p + 1] > 0) == (sh['y'] > 0):  # shot from that end
                 sh['result'], sh['resolved'] = 'post', max(p, sh.get('resolved', p))
     # A shot the game did not count is judged from the play: saved if the other goalie got the puck, or it changed
     # course beside him, before anyone else touched it. The game does not count every stopped shot: pass shots never

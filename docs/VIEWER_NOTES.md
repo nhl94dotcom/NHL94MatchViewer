@@ -1994,3 +1994,13 @@ goals; the score keeps it, "Final SO"); match_report's result table (rates on re
 builds' own post count (gameStats.posts, $E7F0, PostCount) goes to the team of `lastplayer`, the last player to touch
 the puck, not the shooter's: in CZE-FIN it gave the Czechs 3 for three Finnish shots a Czech player got a piece of; its
 row is now "Posts, by last touch (the game's count)". play_by_play names penalties from the game's rules.
+
+## Posts: a held puck isn't the shooter's post (2026-11-20)
+
+The user's rule: a shot that only bounces off a defending skater or the goalie and then hits the post is a post; if a
+defending player had possession (the game's carrier, `owner`) between the shot and the post, it isn't. The converter
+(`find_shots`) now leaves such a post off the shot. In the recorded games that took 16 posts out of 131 (12 goalie
+saves held at his feet for 0.2-1.5 s (real) and fumbled into his own post, 3 defending skaters'; one game counted in
+both folders). A team's own post with no shot before it was never counted (11 in the recordings). The 2 MB SNES build's
+own count credits the last toucher at either net (own posts and goalie touches included): the viewer's separate "by last
+touch" row.
