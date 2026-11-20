@@ -143,6 +143,9 @@ class G94:
     def clock(self):
         return self.e.w(self.CLOCK)
 
+    def setw(self, a, v):
+        self.e.setw(a, v)
+
     def drive(self):
         return False
 
@@ -264,7 +267,8 @@ class Snes(G94):
             e.run(60)
         m.setw(OPTPEN, 2)
         m.setw(self.PLAYMODE, 0)
-        computer_only(m)
+        if not PAD:
+            computer_only(m)
         m.setw(SEED, (0x9E37 * (n + 1)) & 0xFFFF or 1)
         m.setw(SEED + 2, (0x7F4A * (n + 3)) & 0xFFFF or 1)
         self.menu_pressed = False
@@ -331,12 +335,56 @@ class Snes(G94):
 
     def computer(self):
         from snes_60fps_cvc import computer_only
-        computer_only(self.m)
+        if not PAD:
+            computer_only(self.m)
+
+    def setw(self, a, v):
+        self.m.setw(a, v)
 
     def want_start(self, still, f, so, started):
         """As snes_shootout_check: START when the clock has stood 15 s (real), never in the shootout (its menus go on
         by themselves, or by B: drive)."""
         return still >= 900 and still % 900 == 0 and not so
+
+    def stats(self):
+        m = self.m
+        return ([m.w(0x18EE + i) & 0xFF for i in range(52)], [m.w(0x1922 + i) & 0xFF for i in range(52)],
+                [m.w(0x1956 + i) & 0xFF for i in range(52)], self.score())
+
+    @staticmethod
+    def star_formula(st, thr=7):
+        """The original ShowThreeStars' scores (skaters: margin + goals x 11,000 + assists x 10,100 + shots x 10;
+        goalies, the two listed first: margin + 32,000 under 3% against with enough shots, + 75,000 a shutout)."""
+        g, a, s, (h, v) = st
+        out = []
+        for i in range(52):
+            margin = (h - v) if i < 26 else (v - h)
+            if i % 26 < 2:
+                val = margin
+                if s[i] >= thr and g[i] * 100 // max(s[i], 1) < 3:
+                    val += 32000 + (75000 if g[i] == 0 else 0)
+            else:
+                val = margin + g[i] * 11000 + a[i] * 10100 + s[i] * 10
+            out.append((val, i % 26))
+        out.sort(reverse=True)
+        return out[:3]
+
+    def watch_stars(self, f, over_at, out, n, events):
+        """After the end code: the frame the stars are worked out (star1 $1E2B changed from the $7777 set when the
+        shootout began), the game's three against the formula on the stats then, screenshots through the wait."""
+        m = self.m
+        if not hasattr(self, "_stars"):
+            self._stars = None
+        if self._stars is None and m.w(0x1E2B) != 0x7777:
+            self._stars = f
+            st = self.stats()
+            game = [(m.w(0x1E31 + 4 * i) + 32768 * m.w(0x1E33 + 4 * i), m.w(0x1E2B + 2 * i)) for i in range(3)]
+            events.append((f, f"stars worked out {f - over_at} frames after the end code, gsp {self.gsp()}, score "
+                              f"{st[3]}: the game's {game}; the formula on the stats now {self.star_formula(st)}; "
+                              f"on the shootout's {self.star_formula(self._shootout_stats) if getattr(self, '_shootout_stats', None) else None}"))
+            print(events[-1][1], flush=True)
+        if self._stars is not None and f - self._stars in (10, 90, 175, 200):
+            self.e.screenshot(out / f"g{n}_stars_{f - self._stars:03d}.png")
 
     def drive(self):
         """The shootout's opening menu (sflags $0400) waits for pad 1's B, held 8 frames (snes_shootout_check)."""
@@ -364,7 +412,8 @@ def run(sysobj, out, first, games):
 
 
 FORCE = __import__("os").environ.get("SOSAVE_FORCE", "")
-TIE = __import__("os").environ.get("SOSAVE_TIE", "") == "1"   # with FORCE: tie the deciding period's last 10 s
+TIE = __import__("os").environ.get("SOSAVE_TIE", "") == "1"
+PAD = __import__("os").environ.get("SOSAVE_PAD", "") == "1"    # SNES: pad 1 left on its team (the SA-1 builds)   # with FORCE: tie the deciding period's last 10 s
 
 
 def force(S, done):
@@ -378,7 +427,7 @@ def force(S, done):
     h, a = S.score()
     running = c < done.get("last_clock", -1)            # the clock moved down since the last frame
     if TIE and g == 3 and 10 < c < done.get("last_clock", 0) and (3, "cut") not in done:
-        e.setw(S.CLOCK, 10)                              # overtime's clock running: 10 s left (sudden death)
+        S.setw(S.CLOCK, 10)                              # overtime's clock running: 10 s left (sudden death)
         done[(3, "cut")] = True
         print(f"overtime clock {c} cut to 10", flush=True)
         c = 10
@@ -392,7 +441,7 @@ def force(S, done):
         done[(g, "pulled")] = True
         print(f"gsp {g} clock {c}: a goalie pulled, tmgoalie {['%04X' % e.w(t + 0x26) for t, _ in S.TM]}", flush=True)
     if TIE and g >= 2 and c <= 10 and h != a:
-        e.setw(S.HM if h < a else S.AW, max(h, a))      # tied with 10 s left (the team score words only)
+        S.setw(S.HM if h < a else S.AW, max(h, a))      # tied with 10 s left (the team score words only)
         if (g, "tie") not in done:
             done[(g, "tie")] = True
             print(f"gsp {g} clock {c}: score {h}-{a} made {max(h, a)}-{max(h, a)}", flush=True)
@@ -468,6 +517,9 @@ def one_game(S, out, n):
                     print(events[-1][1], flush=True)
                 before, base_score = pre, pre_info
                 np.save(out / f"g{n}_before_shootout.npy", before)
+                if isinstance(S, Snes):
+                    S.m.setw(0x1E2B, 0x7777)
+                    S._stars = None
                 states["first frame of the shootout (the mark set)"] = (f, e.serialize())
                 events.append((f, f"shootout starts (the mark set), score {base_score[0]}-{base_score[1]}, gsp {S.gsp()}"))
                 print(f"game {n} f{f}: shootout starts at {base_score}", flush=True)
@@ -485,6 +537,8 @@ def one_game(S, out, n):
             if was_in and not ina:
                 states["right after the last attempt"] = (f, e.serialize())
             was_in = ina
+            if isinstance(S, Snes) and S.mark():
+                S._shootout_stats = S.stats()
             if a != last_att:
                 if last_att is not None and a[2:] != last_att[2:]:
                     last_goal_f = f
@@ -501,6 +555,8 @@ def one_game(S, out, n):
                 states["first frame after the end code"] = (f, e.serialize())
                 over_at = f
                 next_press = f + 240
+        if over_at is not None and isinstance(S, Snes):
+            S.watch_stars(f, over_at, out, n, events)
         if over_at is not None:
             scr = (S.gsp(), S.screen())
             if scr != prev_scr:

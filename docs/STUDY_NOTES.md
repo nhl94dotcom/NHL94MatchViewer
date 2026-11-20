@@ -8516,3 +8516,14 @@ periods, penalties on).
   restored stats: in a natural 2-2 game the three (visitors' 11, home 2 and 17; 22,061, 21,149, 21,109) are exactly
   the formula (margin + goals x 11,000 + assists x 10,100 + shots x 10; goalies' 32,000 / 75,000) on the stats after
   the restore; on the shootout's own stats it gives other players.
+- **NOSE4Web's 3f2ba28 (the SNES season shootout shows the Stars of the Game after it), played** on the retail and
+  SA-1 builds, both choices (built from the source; the c169516-era builds read as earlier versions and, updated,
+  equal fresh builds). A computer game each (the SA-1 builds with pad 1 left on its team, SOSAVE_PAD: their
+  computer-only shootouts crash in this harness), tied in the deciding period's last 10 s (the score words), through
+  the shootout to 60 s after the end code: on all four the stars are worked out one frame after the restore,
+  "Stars of the Game" shows over the rink for the 180 frames (screenshots at 10, 90, 175; fading with PeriodOver's
+  fade by 200), gsp 4 about 330 frames after the end code and the FINAL post-game menu, as an untied game ends. The
+  game's three stars and their scores equal ShowThreeStars' formula on the stats after the restore (two players tied
+  at 41 come in either order); on the shootout's own stats the formula picks others. From the end code every stat
+  equals the game before the shootout with the winners' goal (one frame later on the after-period-3 builds, the same
+  frame after overtime); only the game's running state differs (gsp, gmode, the clocks, the pause menu, tmpdst).
