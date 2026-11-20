@@ -8587,3 +8587,15 @@ LoROM 2 MB build not played (its 20-minute periods ran past the harness's limit)
 - Dropped sticks: the fight code draws frame 846's pieces itself (stick tile 8412, 4 x 1, once flipped; glove 8487),
   not as a player frame. The stick piece is taped (the VRAM tile is the taped one), but its blade end lies 15-20 px from
   the fighter, under his skates, which are drawn on top: in one fight 1 tape pixel showed on one stick, 9 on the other.
+
+## The rest of Clockwise's tape: records for the frames he left untaped (2026-11-20)
+
+Clockwise's stick tape learned from his own 540 taped skater frames: team colour 14 (and 13, his stick shading) -> 2,
+on the stick piece's end farther from the body (85% of his sticks), 1-4 steps along it for colour 14 and 2-3 for 13,
+the tip pixel itself mostly left (8%). Against his own frames that rule finds 81% of his tape pixels, 73% of its pixels
+his. Frames with a stick (6+ colour-14 pixels) and none of his tape on any stick piece: 35 goalie frames and 7 skater
+frames (the first report's "about 156 and 60" counted frames whose largest piece was untaped while another piece had his
+tape). Goalie sticks are colour 14 alone (13 is pad shading). The eyes of 168, 615, 627 by his eye rule (grey 11 with
+5+ skin neighbours, 6 or 7). 128 bytes in 47 tiles, none a byte he changed, no tile shared with a frame he changed
+(one tile pair also in goalie frame 541). Review sheets drawn; 489, 490, 673, 205, 721, 809 flagged as uncertain (stick
+across the body or held up). Not seen in the game. Work files in the scoring_map runs folder (nosebuilds/tape2).
