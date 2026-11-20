@@ -401,6 +401,19 @@ def force(S, done):
         return
     if FORCE == "away5" and c <= 2:
         e.setw(S.TM[1][0] + 0x24, 5)
+    if FORCE.startswith("box:") and c <= 2:
+        side, k = FORCE.split(":")[1], int(FORCE.split(":")[2])     # box:home|away:roster index
+        tm = S.TM[0 if side == "home" else 1][0]
+        dst, lst = (0x66, 0x9A) if isinstance(S, G95) is False else (0x68, 0x9C)
+        e.setw(tm + dst + 2 * k, 100)                    # in the box, 100 s to serve
+        e.setb(tm + lst, k)
+        e.setb(tm + lst + 1, 0xFF)
+        e.setw(tm + 0x24, 5)                             # a man short
+        recs = range(6) if side == "home" else range(6, 12)
+        for r in recs:                                   # and off the ice, as a penalty takes him
+            rec = S.BASE + 0x80 * r
+            if e.b(rec + 0x66) == k and e.b(rec + 0x35) != 0xFF and e.b(rec + 0x35) != 0:
+                e.setb(rec + 0x35, 0xFF)
 
 
 def one_game(S, out, n):
@@ -448,6 +461,10 @@ def one_game(S, out, n):
                     events.append((f, "before the shootout (the frame before): tmap / tmgoalie "
                                    + ", ".join(f"{side} {v[0]} / {v[1]:04X}" for side, v in pre_tm)
                                    + "; now " + ", ".join(f"{side} {e.w(t + 0x24)} / {e.w(t + 0x26):04X}" for t, side in S.TM)))
+                    print(events[-1][1], flush=True)
+                    dst = 0x68 if isinstance(S, G95) else 0x66
+                    events.append((f, "in the box at the start code: " + ", ".join(
+                        f"{side} {[k for k in range(26) if e.sw(t + dst + 2 * k) >= 0]}" for t, side in S.TM)))
                     print(events[-1][1], flush=True)
                 before, base_score = pre, pre_info
                 np.save(out / f"g{n}_before_shootout.npy", before)

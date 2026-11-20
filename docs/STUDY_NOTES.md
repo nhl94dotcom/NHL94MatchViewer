@@ -8491,3 +8491,28 @@ periods, penalties on).
   over). Played: period 3 ending 3-2, PenBuf gets $04 and the stars are worked out; 2-2, PenBuf gets $02, no stars.
   After the shootout the build puts the game back and runs PeriodOver (gsp 4, Intermission, GameOver), so clockcont_0's
   .7 never runs: the entry is never queued (not wiped by the restore).
+- **NOSE4Web's c169516 (the box emptied too: every tmpdst >= 0 to $FFFE, the box lists ended), played** (all four
+  Genesis builds, built from the source; each 11b5e39 build reads as an earlier version, shootoutOutdated /
+  nhl95ShootoutOutdated, and updated equals a fresh build byte for byte). Per build one computer game to 3 s before
+  the deciding period's end, tied (kept as a state: `analysis/scoring_map` runs folder sosave3/box_cases.py), then a
+  player put in the box there (tmpdst, the box list, tmap 5; SOSAVE_FORCE=box:side:index) and the game played on
+  through the shootout. Ten cases (NHL '94 home 2 and visitors 20 not on the list, both builds; NHL '95 home 2,
+  visitors' listed 2 and visitors 20, both builds): the start code empties the box (nobody in it on its frame), the
+  shootout plays through (10 to 94 attempts) and from the end code every stat equals the game before the shootout
+  with the winners' goal (left over as before; the home tmap reads 6 after it, not 5).
+  - **Not tested: an NHL '94 visitors' listed shooter in the box.** In these games every listed visitor was on the
+    ice, and flagging one in the box while on the ice (or also setting his record's position to $FF) crashes play
+    itself at $1296C (address $FFFFCA9B) before the shootout: the harness's doing, not the game's. The earlier
+    "visitors' listed shooter in the box: ADDRESS ERROR at $12E20, $FFFFCA9B" (11b5e39) was set up the same way,
+    with the player on the ice: not a sound result. The home crash at $15B9E stands (a forced-tie game reached it
+    with the game's own penalty).
+- **SNES three stars after the season shootout: a way that works** (scratch patches, not committed). In the end
+  code's RUN, after the restore and the winners' goal, its last instruction `jml PeriodOver` sent to new code:
+  `rep #$30 / jsl ShowThreeStars / jsl QueueTextDMA / ldx #180 / ldy #1 / jsl WaitFrames / jml PeriodOver` (retail
+  $9C9BAB, $9FBF75, $80858F, $9F8CB1; the SA-1 build $9C9C7D, $9FC035, $8085E1, $9F8CEF). ShowThreeStars prints into
+  the text map and returns at once; the play loop's QueueTextDMA is what gets the text map to video memory, and
+  without it nothing showed. With it, "Stars of the Game" shows over the rink, with the winner's banner, for 3 s,
+  then PeriodOver fades out and the game ends as before (retail and SA-1). The stars are worked out from the
+  restored stats: in a natural 2-2 game the three (visitors' 11, home 2 and 17; 22,061, 21,149, 21,109) are exactly
+  the formula (margin + goals x 11,000 + assists x 10,100 + shots x 10; goalies' 32,000 / 75,000) on the stats after
+  the restore; on the shootout's own stats it gives other players.
