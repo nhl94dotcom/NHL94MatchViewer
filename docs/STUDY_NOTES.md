@@ -8361,3 +8361,41 @@ reaches further and a stick deflection leaves the same signature), and every cha
 - **Rate:** 1.0-2.9 blocks a game in computer games.
 - Not yet: replays and a second game in a row (the clear at StartGame), shootouts, the Player Stats page and Game
   Stats row on screen.
+
+### NOSE4Web's ten Genesis settings on the SNES, played (2026-11-20; `snes_gen_settings_check.py`)
+
+Built from NOSE4Web's source on NHL94.smc (and nhl94snes_SA1.sfc for the stars and puck friction), each setting alone
+against the editor-opened original, and all ten together (their added code stacks down from the end of bank $9B,
+DFD20-DFFFF on retail, all $FF before). Hands-on parts from the retail live states; the rest computer games (5-minute
+periods, penalties on).
+
+- **Real-time clock:** a tick every 60 frames (+-1) alone, with clutch time and with all ten, against 24; periods
+  start at 5:00. **But the penalty box keeps its own second:** `updatepentime` reloads `Penaltytimer` with
+  `adc #$0018` (retail F3F65, operand F3F66), unchanged, so a minor still takes about 3,100 frames and ends with only
+  48 clock seconds gone (every full minor in the real-time games stopped at 48). $3C there lets stays run past it
+  (scratch copy: 52-77 clock s before power-play goals). `chkatop` (attack-zone time) and `updatePPTeamTime` tick
+  on the same timer. Intermission highlights (DoHiLights, playoffs only) didn't come up in a New Playoffs game.
+- **No icing:** 0 armed, 0 called in 10 games (the original: 20 calls in 20).
+- **Three stars (choices 1 and 2):** the box came up in all 109 games (retail and SA-1); no goalie who never played
+  was named; $168E reads 0 without the bodycheck counts. But a goalie is first star in every game (20/20 retail,
+  8/8 SA-1; the original 9/20) and goalies fill about two of the three places (39-40 of 60; the original 11): at
+  4,000 a shot faced and 11,000 a goal, 30 shots outweigh a hat trick, and a goalie losing 2-0 on 11 shots outranked
+  the scorer of both goals. (ShowThreeStars' places lose the visitors' +$1A when printed: goalie or not is readable,
+  which team is not.) The original's backup-goalie case can't happen: 0 shots gives Div_Overflow's $7FFF, which
+  fails "under 3%".
+- **Goalie hold** (a person's goalie on pad 1, taking the puck himself): 140 on the original (142 frames), 300 gives
+  301; 0 gives no whistle deep, the line and a dive catch (5) still whistle. A non-zero hold also changes the
+  computer's goalie (puckglue's 140 is everyone's): at 300 he keeps the puck about 250 frames before passing,
+  against 63-96. At 0 his count runs as before.
+- **Whistle line:** 100 and 210 move the instant whistle exactly to the new depth (|y| below the line).
+- **Goalie range:** narrower (16) and nearer (240) work (he is skated back); wider (100) and further out (150) do
+  nothing: `updateplayers` clamps every goalie without the puck at the crease edge (x +-43, depth 229) whatever the
+  box. The "up the ice" number is his least distance from centre ice, so bigger is less room (255: he can't leave
+  his net).
+- **Stopping and turning:** reversing the pad from full speed, 0 speed in 50 frames (112), 42 (150), 31 (225);
+  letting go of the pad is unaffected.
+- **Speed burst:** the original's push scales with energy (6,835 fresh, 3,320 at half; a fixed $1000 with automatic
+  line changes); 35 gives 6,835 at any energy, 95 gives 18,554; the energy cost unchanged (line changes on only).
+- **Puck friction:** a loose puck keeps 0.87 of its speed a second (9), 0.93 (10), 0.97 (11), 0.98 (12), 0.14 (5),
+  0 (1); a pass receiver's glide follows it (0.86, 0.92, 0.98). On the SA-1 build (60 updates a second) the
+  original keeps 0.79 and 10-12 give 0.89, 0.94, 0.97.
