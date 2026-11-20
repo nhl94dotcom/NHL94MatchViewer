@@ -8101,6 +8101,29 @@ SNES (36,474 games): all goals 0.976, even strength 0.980, power play 0.974, pen
   slashing 1.054, charging 1.049, hooking 1.025, holding 0.960. About 0.075 more calls a game on the Down net's
   defenders (one more Down power play every 13 games or so).
 
+### Down goal: by skill, year and league (2026-11-19; `analysis/updown_by_skill.py`)
+
+The balanced Down / Up (as above), even-strength goals, by the coaches' Rating as of 1 January of each game's year
+(quartiles of rated coach-games; "new" = under 100 games by then):
+
+| Even-strength goals | Genesis, by the scoring coach | by the conceding coach | SNES, by the scoring coach | by the conceding coach |
+|---|---|---|---|---|
+| Q1 (weakest) | **1.044** (1.029-1.059) | 1.033 | **0.966** (0.946-0.987) | 0.987 |
+| Q2 | **1.061** (1.047-1.076) | 1.029 | 0.981 | 0.974 |
+| Q3 | 1.018 | 1.017 | 0.982 | 0.984 |
+| Q4 (strongest) | **1.011** (0.999-1.024) | 1.017 | **0.994** (0.975-1.012) | 0.998 |
+| new | 1.016 | 1.035 | 0.977 | 0.970 |
+
+- **The lean is the weaker players'.** On both systems it is largest when a weaker coach scores (Genesis Q1-Q2 about
+  1.05, Q4 1.01; the halves differ by about 4 standard errors) and fades to nearly nothing at the top; the conceding
+  coach's strength shows the same, more weakly. The two systems lean opposite ways (the bottom net concedes more on
+  the Genesis, the top on the SNES), so it isn't one screen habit common to both: each game's quirks meet the habits
+  of less experienced players.
+- **Steady:** Genesis every year since 2013 about 1.02-1.04 at even strength (2017 1.085 and 2019 1.085 on small
+  years, 2018 0.994); Classic 1.034 and other leagues 1.030 (all goals); playoffs 1.045, regular season 1.029.
+- **Shots on goal** lean Up on the Genesis by about 6% at every level (the uncounted low shots at the bottom net), so
+  goals per counted shot lean Down 1.08-1.11 throughout; shot counts don't separate the levels.
+
 ### Down goal: people's defence by end (2026-11-19; `analysis/defence_by_end.py`)
 
 checkagr (the penalty roll for checks, holds and B-checks) is symmetric between the ends (the breakaway roll by
