@@ -8558,3 +8558,15 @@ the last toucher's. 3 games each on nhl94snes_2026 (LoROM 2 MB, 20-minute period
 the right team (16 on a shot in flight, all the shooter's team; 2 after a touch, the toucher's team). Off gives every ROM
 back byte for byte (nhl94snes_2026, nhl94snes_SA1, nhl94_2026); retail NHL94.smc refuses it (no PostCount). The crowd
 mark ($12C) isn't a clean post marker: other events add the same, and near the crowd's cap it adds less (2 of 18).
+
+## Three stars after a lopsided game, McMarkis's 2 MB SNES build (2026-11-20)
+
+NOSE4Web passed on a league report: a 10-0 win over the computer gave all three stars to the losers (the league ROM,
+SA-1, threeStars off: the build's own ShowStars `.17`, the same code as retail's ShowThreeStars: margin + goals x 11,000
++ assists x 10,100 + shots x 10; goalies, below stargoalieend, + 32,000 under 3% against with shots >= period seconds
+/ 40, + 75,000 a shutout; +750,000 for the overtime scorer read from the fixed word at ScoreSum-6 = $3136, as retail).
+`analysis/scoring_map/snes_stars_lopsided.py` on the league ROM (3ee9b464, SA-1), computer games: a 10-0 written in at
+the end of the third, home and away winning, and natural games with the losers' net empty all game (15-1 home, 14-1
+away). All four: the three stars the winners', every star score equal to the formula on the stats (margin sign right
+for both sides, the 32-bit sums and the hi / lo split right, the team names on the screen right). Not reproduced; the
+LoROM 2 MB build not played (its 20-minute periods ran past the harness's limit), same source.
