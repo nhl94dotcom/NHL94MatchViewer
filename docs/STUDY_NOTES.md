@@ -8599,3 +8599,41 @@ tape). Goalie sticks are colour 14 alone (13 is pad shading). The eyes of 168, 6
 5+ skin neighbours, 6 or 7). 128 bytes in 47 tiles, none a byte he changed, no tile shared with a frame he changed
 (one tile pair also in goalie frame 541). Review sheets drawn; 489, 490, 673, 205, 721, 809 flagged as uncertain (stick
 across the body or held up). Not seen in the game. Work files in the scoring_map runs folder (nosebuilds/tape2).
+
+## The benches and penalty boxes in the rink maps: NHL '94 Genesis, NHL '95 Genesis, NHL '94 SNES (2026-11-20)
+
+For NOSE4Web's bench picture editor. Read from the retail ROMs (Genesis maps and tiles in ROM; the SNES map from
+rinkmapbuf and BG2's tiles and palbuffer in a headless retail game) and the disassemblies. Cells are (row, column) of
+the 48-column rink map; Away sits on the upper bench, Home on the lower; the penalty boxes are across the ice.
+- **NHL '94 Genesis** (Rinktilelist $5605A: palette lines 0-1 at $59924, 454 plain tiles from $56064 (count word
+  $1C6 at $56062, bit 15 clear), map 48 x 113 at $599A8; RAM nothing, streamed from ROM by updatescroll). Benches
+  rows 28-42 and 44-60, columns 2-6; the players rows 30-41 (Away, line 3) and 47-58 (Home, line 2), columns 4-5:
+  23 cells each from the same 12 tiles ($101-$107, $10C-$10F, $112; several repeat down the bench), so both benches
+  always show the same art in their own team line, using all 16 colours. Penalty boxes rows 36-42 (Away, line 3) and
+  48-53 (Home, line 2), columns 42-44, timekeeper 43-47: no players, a panel of one tile ($10B, colour 14 only, 3 cells
+  each, shared). 48 tiles in the bench and box areas, 22 used nowhere else; the rest are boards, glass posts and
+  plain ice ($08F), or tiles also in the stands. Other copies: the reverse-angle replay has its own map and tiles
+  (RevRinkTilelist $B5180, 452 plain tiles from $B518A), the benches mirrored to columns 42-43 with mirrored copies of
+  the same tiles, and **its palette lines swapped**: the upper bench in line 2 (Home), the lower in line 3. Arena
+  animations 6 (RandomFaceoffAnim's, a faceoff on the bench side) and 7 (FallDown, a check into the bench) draw sprite
+  players over both benches (rows 29-57, columns 3-6, lines 2 and 3; 10 frames, 50 plain tiles at $ED1BA). The
+  horizontal scoreboard rink (IceRinkHorMap $BC05C) shows empty boxes, no benches. LoadHomeTeamGfx overwrites the last
+  24 rink tiles in VRAM (the centre-ice logo), not the bench tiles. Free VRAM in play: the 28 tiles above, 12 now the
+  score logos.
+- **NHL '95 Genesis** (Rinktilelist $C4A7C: palette at $C8506, 468 plain tiles from $C4A86, map 48 x 85 at $C858A;
+  RevRinkTilelist $16060E is a bare map, 48 x 85, using the same tiles). Benches rows 28-42 and 43-58, columns 0-3;
+  players rows 30-41 (Away, line 3) and 45-56 (Home, line 2), columns 1-2: 24 cells each from the same 9 tiles
+  ($11F, $120, $123, $124, $129, $12A, $130, $131, $143), colours 1-13 but 5. Boxes rows 33-42 and 43-53, columns 44-46:
+  line 0 only (the orange panels), no team colours. 30 tiles in the areas, 26 only there. Reverse angle: the same
+  tiles mirrored at columns 45-46, lines not swapped. No arena animations in '95 (display95). Free VRAM not measured.
+- **NHL '94 SNES** (IceRinkTiles $81:8000, LZ-packed, 613 tiles unpacked to BG2 from VRAM word $1000; IceRinkMap
+  $92:E053, LZ-packed, 48 x 113, unpacked by BuildRinkMap to $7F:C800 with the centre-ice logo pasted). The same cells
+  as NHL '94 Genesis: players rows 30-41 (Away, BG palette 3) and 47-58 (Home, palette 2), columns 4-5, 23 cells each;
+  here each cell its own tile ($12A-$135, $139-$13E, $141-$144, $147), the same 23 tiles on both benches; colours 1-14.
+  SetTeamColors puts Home's uniform palette in rows 2 and 12, Away's in 3 and 13. Boxes (columns 42-44) palette 0 only,
+  no players; the timekeeper box has its own figure (15 tiles). 73 tiles in the areas, 48 only there. BG2's range is
+  full (4 blank tiles). The benches cheer (StartBenchCheer: goals, FallDown) as sprites drawn by setsortcords
+  (SpriteFrames 917-928, 6 a bench) over the map; no code changes the bench cells (rinkmapbuf is written by
+  BuildRinkMap and NOSE4Web's skate marks only). No reverse angle; the horizontal scoreboard and replay panel use rows
+  85+ of the same map.
+Work files in the scoring_map runs folder (bench/).
