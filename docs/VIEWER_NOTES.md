@@ -1991,9 +1991,12 @@ took it for a real goal and are fixed: the converter's shot finder made it a scr
 goals in a shootout game); the viewer's team stats (`teamStats`: goals for shooting %, save % and PDO are the real
 goals; the score keeps it, "Final SO"); match_report's result table (rates on real goals, "2 (1 in the shootout)").
 `tests/check_matches.py` allows for it (only where the count has it: the 11-12 GER-USA build's didn't). The 2 MB
-builds' own post count (gameStats.posts, $E7F0, PostCount) goes to the team of `lastplayer`, the last player to touch
-the puck, not the shooter's: in CZE-FIN it gave the Czechs 3 for three Finnish shots a Czech player got a piece of; its
-row is now "Posts, by last touch (the game's count)". play_by_play names penalties from the game's rules.
+builds' own post count (gameStats.posts, $E7F0, PostCount) reads `lastplayer` (an object number) as an offset, so
+**it credits every post to the home team** (STUDY_NOTES "NOSE4Web's postsFix"; corrected 2026-11-20 night: I had first
+put it down to the last touch). The league ROM (216b4903) has no fix: CZE-FIN 3-0 to the Czechs (home) for posts by
+shooter CZE 1, FIN 3; FIN-GER 2-0 to Finland (home) for 1 and 1, with nobody touching Doucet's shot on its way to the
+post. With NOSE4Web's posts fix it is the team of the last player to touch the puck. The viewer's row is labelled
+"Posts, by last touch (the game's count)": right only on a fixed ROM. play_by_play names penalties from the game's rules.
 
 ## Posts: a held puck isn't the shooter's post (2026-11-20)
 
