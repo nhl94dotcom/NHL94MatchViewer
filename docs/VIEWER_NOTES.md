@@ -2037,3 +2037,8 @@ maps from the four BOS-CHI games; track_test's NHL94_INV_* settings, pseudo_run_
   game 4 (the earlier game never tuned on): possession 81%, shots 23 of 39, entries 36 of 47, checks 24 of 46,
   turnovers 27 of 37 with 60 read. So the reader carries over to another session, ROM and recording size as well as
   or better than to an unseen game of its own session.
+- **The reader moved into the repo** (2026-11-21: `analysis/vision/reader/`, track_test, run_reader, join_reads,
+  pseudo_run_any, ctrl_acc_any, track_play; until then only in the scoring-map work folder). track_test now measures
+  the rink line-up at the start (RINK_DX: 30 placed frames of the stretch, each shift 61-66 scored by the share of
+  pixels matching the drawn rink) and warns under 0.85 or with the next shift within 0.03: BOS-TOR 63 (0.937, the next
+  0.852), BOS-CHI 64 (0.891, the next 0.800), both as fitted by hand. NHL94_INV_DX still overrides.
