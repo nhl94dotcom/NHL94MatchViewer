@@ -2009,3 +2009,14 @@ saves held at his feet for 0.2-1.5 s (real) and fumbled into his own post, 3 def
 both folders). A team's own post with no shot before it was never counted (11 in the recordings). The 2 MB SNES build's
 own count credits the last toucher at either net (own posts and goalie touches included): the viewer's separate "by last
 touch" row.
+
+**A second session for the reader, tried (2026-11-21 night: the user's 2026-11-01 BOS-TOR, Genesis, ROM 9438f5dd, never
+read before).** video_sync placed all four games (24-30 checks a game, steps at the pauses and breaks); track_play's
+every-frame camera placed 125,225 of 153,841 frames (75 min, gentle). Nothing learnt from that session (transitions and
+maps from the four BOS-CHI games; track_test's NHL94_INV_* settings, pseudo_run_any.py). Two things stopped it:
+- The video is RetroArch's native 256 x 224 (BOS-CHI's is stretched to 320): track_test's frame reader read 320-wide
+  frames regardless, so the first read was garbage. Fixed there (the width from ffmpeg; inverse.native already takes 256).
+- Read right, the reader still found only about 3.7 skaters a frame (one team mostly), at 0.9 frames a second against
+  3.3 on BOS-CHI: this ROM's rink is drawn with large shine marks over the ice (the camera, matching the ROM's own
+  render, places frames at shares about 0.9; the sprite reader, built and tuned on BOS-CHI, doesn't cope). Not read
+  whole: the reader needs work on this look first (to plan with the user).
