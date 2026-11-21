@@ -2016,9 +2016,16 @@ every-frame camera placed 125,225 of 153,841 frames (75 min, gentle). Nothing le
 maps from the four BOS-CHI games; track_test's NHL94_INV_* settings, pseudo_run_any.py). Two things stopped it:
 - The video is RetroArch's native 256 x 224 (BOS-CHI's is stretched to 320): track_test's frame reader read 320-wide
   frames regardless, so the first read was garbage. Fixed there (the width from ffmpeg; inverse.native already takes 256).
-- Read right, the reader still found only about 3.7 skaters a frame (one team mostly), at 0.9 frames a second against
-  3.3 on BOS-CHI. Not the ice: the sparkle and shine marks are retail NHL '94's own rink, the same in BOS-CHI's video
-  (ROM 7a7a876f), which the reader copes with (an earlier version of this note blamed them, wrongly). Untested
-  candidates: the scale (the reader was built and tuned on BOS-CHI's 320-wide stretch, so any size or shape limit in
-  pixels is about 20% off on native 256-wide video), then the retail ROM's sprites and colours. Not read whole: a
-  short test on a stretch comes first (to plan with the user).
+- Read with the width right, the reader still did badly (0.9 frames a second against 3.3 on BOS-CHI). Not the ice
+  (the sparkles are retail NHL '94's own rink, in BOS-CHI's video too; an earlier version of this note blamed them),
+  and not the scale (the reader already works at 256: INV.native picks a 320 stretch's columns back out). **The
+  background was one pixel off** (2026-11-21): track_test drew the rink from column hpos + 64, fitted on BOS-CHI's
+  stretched video; native video lines up at hpos + 63 (camera_track's OFF_X). The share of pixels whose coded colour
+  equals the drawn rink's, 40 frames each: BOS-TOR 0.792 at 64, 0.915 at 63; BOS-CHI 0.908 at 64, 0.832 at 63. Colours
+  were never the problem (every pixel within 3 of the Genesis levels in both). Fixed in the scratch reader
+  (RINK_DX: 64 on a 320-wide video, 63 on 256; NHL94_INV_DX overrides).
+- The 800-frame smoke stretch scored against the recording (each skater and goalie on screen found by a track of his
+  team within 12 px), on the 500 frames both reads share: before the fix home 66%, away 67%, 14% of tracks matching
+  nobody; after, 96% and 99%, 17%; the whole 790 frames 94% and 94%, 13%; 2.4 frames a second. BOS-CHI's game 1 by
+  the same measure (new_6200.json, a tuned-on game): 96% and 96%, 11%. A step to keep for any new source: check the
+  background's line-up first (share by shift), before blaming the look.
