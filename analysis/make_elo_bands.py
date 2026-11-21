@@ -13,7 +13,32 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import league_team_study as L  # noqa: E402
 import snes_logos  # noqa: E402
-from make_elo_line import FONT, GRID, INK, MARGIN, MARK, MIN_SHOWN, MUTED, ROOT, ROUGH, SURFACE, TITLES, WIDTH, minus, place  # noqa: E402
+from make_elo_line import FONT, GRID, INK, MARK, MIN_SHOWN, MUTED, ROOT, ROUGH, SURFACE, TITLES  # noqa: E402
+
+# The line chart's layout, kept here since make_elo_line.py became ranked rows (2026-11-19) and dropped these
+# (2026-11-21: the rebuild failed on the import).
+WIDTH, MARGIN = 1400, 34
+
+
+def place(values, width):
+    """{team: level}, levels +1, -1, +2, -2 ... away from the line, so no two labels overlap."""
+    last, out = {}, {}
+    for t, v in sorted(values.items(), key=lambda kv: kv[1]):
+        level = 1
+        while t not in out:
+            for s in (level, -level):
+                if v - last.get(s, -1e9) >= width:
+                    out[t], last[s] = s, v
+                    break
+            level += 1
+    return out
+
+
+def minus(text):
+    """The old make_elo_line.minus (on text): a lone +0 / -0 as 0, hyphens as minus signs."""
+    import re
+    return re.sub(r"[-+]0$", "0", text).replace("-", "−")
+
 from make_elo_line_logos import png  # noqa: E402
 
 OUT = Path.home() / "Documents" / "NHL94 Viewer" / "team_graphics"
