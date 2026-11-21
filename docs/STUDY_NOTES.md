@@ -8689,7 +8689,13 @@ $FDFA (SA-1 $40:55E8); a count byte per roster place at $7E:FE40 (visitors +$1A)
 - **The timer:** 90 drops from a knockout to 0; a drop a clock second (the "skipped" and "doubled" seconds pair off:
   updatepentime's own second against the clock word); carried over the intermission (78 on the 2 MB build); a second
   fight hands it on and restarts 90 (22 times). 3 drops on a frame the clock was marked stopped (2 MB 2, SA-1 1):
-  not traced (perhaps the whistle's own frame). Values written into the RAM at the pre-game menus were 0 at the first frame of play (the clear
+  the whistle's own frame, from the code (traced 2026-11-21, retail and SA-1 source alike): the frame runs Gameloop's
+  game clock tick, then DoGameFrame's periodicevents (PenaltyManager first: updatepentime tests gmclock, still 0, and
+  ticks), then updateplayers, where every stop (Stop4Pen from FallDown / puckfaceoff, checkfornewpen just after
+  updatepentime, clockcont at the period's end) sets gmclock; the harness read gmclock after the frame. So no tick
+  while the clock is stopped. Rate: the clock's second is $10000 / $0AAA = 24.006 frames, the box's 24 (both by d7,
+  both held by gmclock, pause and a penalty shot), so 90 momentum seconds end about half a frame before 90 clock
+  seconds; the phase between the two seconds (0-23 frames) is what pairs "skipped" and "doubled" seconds. Values written into the RAM at the pre-game menus were 0 at the first frame of play (the clear
   at StartGame_go).
 - **The lift:** from one saved moment (retail), the timer 90 for home: home's five skaters move differently from
   frames 0-6, the visitors' only from frame 21 (reacting); for the visitors: their five skaters at frame 0. Neither
