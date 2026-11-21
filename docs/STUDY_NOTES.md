@@ -8675,3 +8675,35 @@ e8f53072, W18_momentum_blocks.bin fdecf4be). `gen_fight_momentum_check.py`, `gen
   pass-through rule: a low puck only hits a body at a few exact offsets and otherwise slides through, so counting
   what it lets through counts exactly the pucks the body stopped. A high fast shot that knocks a skater down was still
   stopped by his body (a2touchpuck, the bounce) before FallDown: a block.
+
+## Fight momentum and blocked shots, played: NOSE4Web's SNES ports (2026-11-20, 87d2c57)
+
+NHL94_momentum_blocks.smc (38a42b40), NHL94_momentum_blocks_allpages.smc (25954f6c), nhl94snes_2026_momentum_blocks.sfc
+(c2c212dd), nhl94snes_SA1_momentum_blocks.sfc (7336837f). `snes_momentum_blocks_check.py` (games with every skater's
+fighting rating $1463 at 14, `boost`, `screens`). RAM as sneshacks.ts: the team word (0 / 1) and timer at $7E:FDF8 /
+$FDFA (SA-1 $40:55E8); a count byte per roster place at $7E:FE40 (visitors +$1A), totals +$34 / +$36 (SA-1 $40:5600).
+- **The knockout:** 21 of 21 readable knockouts gave the team word the winner's (retail 1, 2 MB 14, SA-1 6; the loser
+  ends on frame 994, knocked down; 3 more never showed it). McMarkis's builds' own fights ($89) as well as NOSE4Web's.
+  Many fights end in a breakup with no winner; those set nothing.
+- **The timer:** 90 drops from a knockout to 0; a drop a clock second (the "skipped" and "doubled" seconds pair off:
+  updatepentime's own second against the clock word); carried over the intermission (78 on the 2 MB build); a second
+  fight hands it on and restarts 90 (22 times). 3 drops on the frame the clock was marked stopped (2 MB 2, SA-1 1):
+  the whistle's frame. Values written into the RAM at the pre-game menus were 0 at the first frame of play (the clear
+  at StartGame_go).
+- **The lift:** from one saved moment (retail), the timer 90 for home: home's four skaters move differently from
+  frames 0-6, the visitors' only from frame 21 (reacting); for the visitors: their five skaters at frame 0. Neither
+  goalie of the lifted team ever differed. Agility 16 is safe: playeracc's factor $20 - weight / 8 + 1.5 x Agility
+  (24 instead of 22 for the legstr part) goes into Mul8XS, an 8 x 8 multiply, at 56 or less.
+- **Blocks:** 8 counts in the three games, every one on the other team's shot in flight; those the body-hit signature
+  could check (4) were a skater's body, the rest high pucks (puckz 9, 14: puckbody rescales a high puck's speed, so
+  the signature doesn't fit them). Goalies, teammates and pucks with no shot never counted; the players' counts equal
+  the totals at each end. **A post clears sf2shot**: checkgoal's post branch calls ChkShotStat (`trb sflags`), so a
+  shot off the post that then hits a skater is no block.
+- **RAM watch:** over the three games nothing but the knockouts, the timer and the counts changed the two areas; the
+  pause menu's Instant Replay and Game Stats changed nothing (the timer fell exactly the clock seconds played).
+- **Player Stats:** retail Goals, Assists, Points, Shots, Penalties, Blocks; allpages ... Penalties, Giveaways,
+  Takeaways, Blocks, Time On Ice (TOI sorted and shown right); 2 MB ... Checks For, Checks Agt, Blocks; SA-1 ... Checks
+  Agt, Ice Time, Blocks. BLK sorted, every number the RAM's byte.
+- **Game Stats: the "Blocked Shots" row shows the wrong numbers on every build:** 65535 / 65535 on retail, allpages and
+  2 MB, 0 / 0 on SA-1, with the totals 21 / 21 (and 21 / 7) in RAM; with penalties on and off alike.
+- Not tested: the season shootout (these builds' own), highlights (playoffs only on the SNES).
