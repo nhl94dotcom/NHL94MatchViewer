@@ -284,8 +284,16 @@ def game(rom, out, n, mc, hot=False):
                     if d != 1:
                         c["count changes other than +1"] += 1
                     if not who:
+                        objs = [k for k in range(12) if (k >= 6) == (tm == 1) and m.w(PNUM + o(k)) == slot]
+                        k = objs[0] if objs else None
                         note(what="count without a body hit", game=n, team=tm, slot=slot, d=d, clock=clk, gsp=gsp,
-                             shot=prev_shot, shooter=shooter, puckz=sw(m.w(PUCKZ)), gmode=m.w(GMODE))
+                             shot=prev_shot, shooter=shooter, puckz=sw(m.w(PUCKZ)), gmode=m.w(GMODE),
+                             puck=[sw(m.w(XPOS + p)), sw(m.w(YPOS + p))], puck_before=list(pb), v=[vx, vy, vz],
+                             skater=k, skater_pos=None if k is None else [sw(m.w(XPOS + o(k))), sw(m.w(YPOS + o(k)))],
+                             skater_before=None if k is None else list(before[k]),
+                             nopuck=None if k is None else m.w(NOPUCK + o(k)),
+                             recent_hits=[h[:4] for h in hits if frames - h[0] <= 10])
+                        e.screenshot(out / f"g{n}_unmatched_{frames}.png")
             explained.add("counts")
         if tot != prev_tot:
             explained.add("totals")

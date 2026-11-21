@@ -207,9 +207,12 @@ def games(rom, out, n, push, fgt):
                             h[4] = True
                             who = h
                     c["counts: " + (("matched to a body hit: " + who[3]) if who else "NO body hit matched")] += 1
-                    if not who:
-                        note(what="count without a body hit", game=game, team=tm, slot=slot, d=d, clock=clk, gsp=gsp,
-                             shot=prev_shot, shooter=shooter, z=e.sw(p + 0x18), gmode=e.w(GMODE))
+                    if not who or "no shot" in who[3]:
+                        sp_now = e.w(SHOTPLAYER)
+                        note(what="count without a body hit" if not who else "count, no shot in flight the frame before",
+                             game=game, team=tm, slot=slot, d=d, clock=clk, gsp=gsp, shot_before=prev_shot,
+                             shot_now=shot, shotplayer_now=sp_now if sp_now < 12 else None, shooter=shooter,
+                             z=e.sw(p + 0x18), gmode=e.w(GMODE), puckc=e.w(PUCKC))
         prev_counts, prev_tot, prev_shot = counts, tot, shot
     for h in hits:
         c[f"body hits: {h[3]}: {'counted' if h[4] else 'not counted'}"] += 1

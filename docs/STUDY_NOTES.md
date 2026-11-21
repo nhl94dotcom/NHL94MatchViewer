@@ -8714,3 +8714,20 @@ $FDFA (SA-1 $40:55E8); a count byte per roster place at $7E:FE40 (visitors +$1A)
   (6a232800), nhl94snes_2026_blocks_row.sfc (3e62eda4), nhl94snes_SA1_blocks_row.sfc (f5f41ef1): the Game Stats row
   shows the RAM totals (21 / 21 with penalties on and off on all three; 21 home / 7 visitors on retail, each under
   its team).
+
+### Blocked shots, more games (2026-11-20 night; the same harnesses)
+
+Natural computer games (no fights pushed): NHL_95_momentum_blocks (4) and W18_momentum_blocks (4); NHL94_blocks_row,
+nhl94snes_2026_blocks_row, nhl94snes_SA1_blocks_row (3 each, the f07eab7 builds).
+- **NHL '95 / W18:** 8 counts matched a skater's body and the other team's shot; every game's counts equal its totals,
+  0 at the next game. 5 more not matched by the body-hit signature: 3 high pucks (z 9), and 2 in one game that a rerun
+  (same seeds, the frames identical) showed came on the very frame of a new shot: shotplayer had just changed to a new
+  shooter of the other team, and doshot's sf2shot, puckbody's count and a2touchpuck's clear all fell inside one frame,
+  so a once-a-frame read never sees the flag (point-blank blocks, counted right). Also on NHL '95: a timer at 58 at a
+  game's end was 0 before the next game's play (the clear at a new game, not seen before).
+- **SNES:** 30 counts, every game's counts equal its totals and 0 at the next start. 26 matched the body-hit signature
+  on the other team's shot. The other 4: three high pucks (puckz 9-13; one with the skater's nopuck at 120, a high
+  shot that knocked him down: counted as a block, as designed), and one low puck on the SA-1 build with the skater's
+  nopuck at 8 (puckbody's mark) but the puck already moved a step by the sample (SA-1, 60 updates a second): a body
+  hit. That explains the two low unmatched counts of the earlier games too. Goalies, teammates' shots and pucks with no
+  shot never counted. (These builds have no momentum code: the words at $FDF8 kept what was written there.)
