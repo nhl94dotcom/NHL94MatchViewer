@@ -2029,3 +2029,11 @@ maps from the four BOS-CHI games; track_test's NHL94_INV_* settings, pseudo_run_
   nobody; after, 96% and 99%, 17%; the whole 790 frames 94% and 94%, 13%; 2.4 frames a second. BOS-CHI's game 1 by
   the same measure (new_6200.json, a tuned-on game): 96% and 96%, 11%. A step to keep for any new source: check the
   background's line-up first (share by shift), before blaming the look.
+- **BOS-TOR game 1 read whole** (2026-11-21, bostor_game.sh 0: two gentle workers, transitions and maps from the four
+  BOS-CHI games, nothing from this session), scored against its recording: possession team right 90% (13,981 of
+  15,509 carried samples); shots 32 of 42 found (37 read); passes 71 of 97 (90 read); zone entries 52 of 55 (53);
+  hits 40 of 53 (46); check attempts 32 of 46 (38); faceoffs 10 of 10 (11); turnovers 36 of 39 but 62 read (the
+  false turnovers again the weak count); bobbles 0 of 4; the person's skater within 15 79% and 80%. Against BOS-CHI's
+  game 4 (the earlier game never tuned on): possession 81%, shots 23 of 39, entries 36 of 47, checks 24 of 46,
+  turnovers 27 of 37 with 60 read. So the reader carries over to another session, ROM and recording size as well as
+  or better than to an unseen game of its own session.
