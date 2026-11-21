@@ -8141,6 +8141,20 @@ has both sites at the same addresses).
 - **The recordings** (38 Genesis games, raw captures): computer goalies started assgoalietopuck 100 times at the top
   net, 124 at the bottom, none with the puck's vy = 0. The patch is correct and harmless; it changes nothing in play.
 
+### Down goal: holding Up toward the top net, over the bar? (2026-11-21, the user's podcast question)
+
+The d-pad aims in screen terms (Up high), so attacking the top net, pushing toward it aims high. In the 36 Genesis
+people's games (shotList, a person shooting, kind "shot"; the miss classed by where the puck crossed the goal line
++-264: over the bar = within 20 of the middle at height 13+): an Up component held (passdir 0, 1, 7) at the top net
+34% of shots, at the bottom 15%; over the bar with Up held 4.8% (7 of 145) at the top, 6.6% (4 of 61) at the bottom,
+without it 0.0% (0 of 292) and 0.6% (2 of 324). **Over the bar per shot: top 1.6% (7 of 437), bottom 1.6% (6 of 385)**:
+the habit is there but these games show no extra over-the-bar misses at the top net. Misses at the top net are more
+(wide 18.3% against 15.3%), mostly shots that never reached the goal line within 2 s (12.6% against 8.1%, z about 2):
+48 of the top's 55 rose above 13 on the way, 46 of the 55 with no Up held: the scatter's lift, not the d-pad; where
+they ended (the glass, the end boards, a touch the shot list doesn't name) not traced. With the launch replays' aim
+weighting (each net's own aim mix against one pooled mix: computer goalie 1.07 against 1.08) the aim habits don't
+move the goal lean either.
+
 ### Down goal: goals by strength, and how much the penalties add (2026-11-19)
 
 The league databases' goal lists (each goal's period and strength), regulation, real games only. Down / Up is taken
