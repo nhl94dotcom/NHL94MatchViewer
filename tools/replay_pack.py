@@ -132,6 +132,19 @@ def build_pack(timeline, matches_dir, step=1.0):
                 e["v"] = round(seg[0] + (ms - seg[3]) / 1000 * (1 + rate(seg)), 2)
         out_games.append({"game": m.get("name"), "abbr": [live_overlay.abbr(m, 0), live_overlay.abbr(m, 1)],
                           "events": [{k: v for k, v in e.items() if k not in ("reveal", "f")} for e in ev]})
+    # The series as it stands (2026-11-21, a streamer's ask: "EDM 3 - 2 TOR" in games won): each game's winner by the
+    # last score in its match file, and the video second its last stretch ends; the overlay adds a game's win from then.
+    wins = {}
+    for gi, (m, og) in enumerate(zip(games, out_games)):
+        og["series"] = [[a, wins.get(a, 0)] for a in og["abbr"]]
+        sc = m.get("score") or []
+        n = len(m.get("t") or [])
+        h, w = (sc[-2], sc[-1]) if n and len(sc) == 2 * n else (None, None)
+        og["winner"] = og["abbr"][0] if h is not None and h > w else og["abbr"][1] if h is not None and w > h else None
+        ends = [s[1] for s in segs if s[2] == gi]
+        og["end"] = round(max(ends), 2) if ends else None
+        if og["winner"]:
+            wins[og["winner"]] = wins.get(og["winner"], 0) + 1
     seconds, last, cache = [], None, {}
     n = int(timeline["duration"] / step) + 1
     for i in range(n):
@@ -173,6 +186,7 @@ window.NHL94_SETTINGS = {
   side: "right",        // right or left
   scale: "1",           // bigger: 1.3, smaller: 0.8
   score: "1",           // 0 hides the score
+  series: "1",          // 0 hides the series line ("Series: EDM 3 - 2 TOR", games won so far)
   // Following the video through OBS's WebSocket (recommended): the name of the Media Source playing the video,
   // exactly as in OBS's Sources list, and the WebSocket password (OBS: Tools > WebSocket Server Settings >
   // Show Connect Info). With obs: "" the overlay's clock starts when the page loads instead.

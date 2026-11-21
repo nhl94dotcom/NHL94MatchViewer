@@ -108,6 +108,9 @@ A6. Choose what the panel shows: in replay_settings.js (Notepad, as in A3). Afte
     - layout: "panel" (numbers and events), "bar" (numbers in one row) or "ticker" (events only).
     - recent: how many event lines. side: "right" or "left". scale: bigger or smaller (1.3, 0.8).
       score: "0" hides the score.
+    - series: "0" hides the series line under the score ("Series: EDM 3 – 2 TOR", games won so far, counting the
+      pack's games in order; a game's win is added when the video reaches its end). Shown when the pack holds more
+      than one game.
     - delay: "0" shows each goal, save or penalty the moment it happens in the video. "3" holds everything back 3
       seconds, which is how the live overlay feels during a real game (it needs a moment to work things out).
     You can add the panel more than once with different choices: copy the pack's folder, change that copy's

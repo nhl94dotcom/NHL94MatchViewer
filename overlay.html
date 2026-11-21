@@ -14,6 +14,7 @@
     layout=panel | bar | ticker                          panel: numbers and events; bar: numbers in one row; ticker: events
     recent=4      events shown (newest first)            scale=1   size            side=left | right (panel)
     score=0       hide the score (shown by default at the top of the panel and the start of the bar)
+    series=0      replay: hide the series line (games won so far; shown when the pack has more than one game)
     src=live/stats.json   where the data is              demo=1    a made-up game, for setting OBS up
   Replay (a series played back from video; tools/replay_pack.py makes replay_data.js beside this file):
     replay=1      read replay_data.js instead of the live data
@@ -41,6 +42,7 @@
   td.label { color: var(--muted); font-weight: 500; text-align: center; font-size: 14px; }
   td.num { font-variant-numeric: tabular-nums; min-width: 3.2em; font-size: 18px; }
   .teams th { color: var(--fg); font-size: 16px; }
+  tr.series td { text-align: center; padding-bottom: 6px; }
   .teams th.score { font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: .02em; text-transform: none; }
   .events { margin-top: 6px; max-width: 30em; }
   .ev { padding: 3px 4px; border-top: 1px solid var(--line); font-weight: 500; font-size: 14px; }
@@ -76,6 +78,7 @@ const KINDS = new Set((P.get('events') || 'goal,big_save,big_miss,post,injury,pe
 const LAYOUT = P.get('layout') || 'panel';
 const RECENT = +(P.get('recent') || (LAYOUT === 'ticker' ? 1 : 4));
 const SCORE = P.get('score') !== '0';
+const SERIES = P.get('series') !== '0';
 const SRC = P.get('src') || 'live/stats.json';
 const FRESH_MS = 8000;
 const wrap = document.getElementById('wrap');
@@ -124,6 +127,11 @@ function render(data) {
       s.append(el('span', 'num', h.abbr + ' ' + value(h.stats.goals, 'goals') + ' – ' + value(a.stats.goals, 'goals') + ' ' + a.abbr));
       bar.append(s);
     }
+    if (SERIES && data.series) {
+      const s = el('div', 'stat');
+      s.append(el('span', 'label', 'Series'), el('span', 'num', data.series[0][0] + ' ' + data.series[0][1] + ' – ' + data.series[1][1] + ' ' + data.series[1][0]));
+      bar.append(s);
+    }
     for (const k of STATS) {
       const s = el('div', 'stat');
       s.append(el('span', 'label', LABELS[k] || k), el('span', 'num', h.abbr + ' ' + value(h.stats[k], k) + ' · ' + value(a.stats[k], k) + ' ' + a.abbr));
@@ -141,6 +149,13 @@ function render(data) {
       el('th', 'score', SCORE ? value(h.stats.goals, 'goals') + ' – ' + value(a.stats.goals, 'goals') : ''),
       el('th', '', a.abbr));
     table.append(head);
+    if (SERIES && data.series) {
+      const tr = el('tr', 'series');
+      const td = el('td', 'label', 'Series: ' + data.series[0][0] + ' ' + data.series[0][1] + ' – ' + data.series[1][1] + ' ' + data.series[1][0]);
+      td.colSpan = 3;
+      tr.append(td);
+      table.append(tr);
+    }
     for (const k of STATS) {
       const tr = el('tr');
       tr.append(el('td', 'num', value(h.stats[k], k)), el('td', 'label', LABELS[k] || k), el('td', 'num', value(a.stats[k], k)));
@@ -182,8 +197,15 @@ function replayData(v) {
   if (!row) return null;
   const g = R.games[row[0]];
   const stats = vals => Object.fromEntries(R.keys.map((k, i) => [k, vals[i]]));
+  // The series line: games won before this one, plus this one's once the video reaches its end (replay_pack's series,
+  // winner, end); only when the pack holds more than one game.
+  let series = null;
+  if (g.series && R.games.length > 1) {
+    const done = g.winner && g.end !== null && v >= g.end;
+    series = g.series.map(([abbr, w]) => [abbr, w + (done && g.winner === abbr ? 1 : 0)]);
+  }
   return { status: 'replay', game: g.game, teams: [{ abbr: g.abbr[0], stats: stats(row[1]) }, { abbr: g.abbr[1], stats: stats(row[2]) }],
-           events: g.events.filter(e => e.v <= v) };
+           events: g.events.filter(e => e.v <= v), series };
 }
 
 function videoTime() {

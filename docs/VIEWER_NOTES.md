@@ -653,6 +653,15 @@ with no clock-of-day time, so a timer started with the video would drift at the 
   warning under the panel when they differ by more than 3 s (another file, or one cut or trimmed). "About this
   pack.txt" gives the file's exact size too. tests/replay_obs_ws.py checks the warning both ways.
 
+**The series line (2026-11-21, a streamer's ask for a TOR-EDM seven-game series):** replay_pack gives each game the
+series before it (games won by each abbreviation, the pack's games in order), its winner (the last score in its match
+file) and `end` (the video second its last stretch ends); the overlay shows "Series: EDM 3 – 2 TOR" under the score
+(in the bar a "Series" item), in the current game's home / away order, adding the game's win once the video reaches its
+end; only with more than one game; `series=0` hides it. The same session's pack needed one hand edit: video_sync had
+put game 7's period break 19.7 s late (the stretch edge at the recording's 164.7 s, period 2 starting at 145.0 s), so
+Klima's goal at P2 4:38 showed over the first period's 0:00; the timeline was split at the period start (the stills
+then right). Six other goal stills (games 2, 3, 6) show the goal a second early: the panel about a second late there.
+
 ## Quirky Events (2026-10-19)
 
 The user asked for the game's oddities in their own team-stats group, "Quirky Events" (viewer fillTeamStats, STAT_HELP,
