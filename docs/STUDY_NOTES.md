@@ -8637,3 +8637,41 @@ the 48-column rink map; Away sits on the upper bench, Home on the lower; the pen
   BuildRinkMap and NOSE4Web's skate marks only). No reverse angle; the horizontal scoreboard and replay panel use rows
   85+ of the same map.
 Work files in the scoring_map runs folder (bench/).
+
+## Fight momentum and blocked shots, played: NHL '94 Genesis and the NHL '95 ports (2026-11-20, for NOSE4Web)
+
+NHL '94 builds of 2026-11-19 (nhl94_fight_momentum.bin 004f3de6, CDL_Season_12_fight_momentum.bin 1a7301ec; the blocks
+builds b38a10ca, b6be72a4, 955db19d: the ones played on 11-19) and the NHL '95 ports (b174169: NHL_95_momentum_blocks.bin
+e8f53072, W18_momentum_blocks.bin fdecf4be). `gen_fight_momentum_check.py`, `gen95_momentum_blocks_check.py`,
+`gen_blocks_screens.py`.
+- **The knockout (NHL '94):** the hook at chaos's `.FightFall` ($2007E4 `jsr $FFB5E`: move.b $62(a0) to $FFF750,
+  andi #$40, 90 to $FFF752, then the place's own move) is right: 16 knockouts on the two builds, the team byte the
+  winner's each time (the loser told by his knocked-down frames 862-869). The team is a byte ($00 / $40), not a word.
+  With every fighting rating 14 (`--hot`) the fighters' strength (+$44, from the rating) runs down so slowly that the
+  fights ended without a knockout and no winner (8 of 8); the runs set both strengths low (3 and 5) once a fight
+  starts, the knockout then natural. NHL '95 (Vancecookcobxin's engine): 4 natural knockouts in four games and 55 with
+  the check tension pushed, every team byte right; W18 with every fighting byte 14.
+- **The timer:** -1 a clock second (711 drops in CDL's two games, 360 in NHL '95's four; the few "two drops in a second / a second
+  without one" are the drop landing a frame or two either side of the tick); kept through every intermission
+  (77, 67, 84, 42 carried into the next period); a second fight while it runs gives the team to the new winner and
+  90 again (3 on '94, 52 on '95); a timer left at 23 at a game's end was 0 before the next game's play.
+- **The boost** (both systems' Genesis builds): from one saved moment the timer set to 90 for home, then for the
+  visitors: in the first frames only that team's skaters move differently (records 1 and 4 at frame 0 for home, 6, 7
+  and 10 for the visitors; NHL '95 alike), never a goalie; the other team only later, reacting.
+- **Blocks, NHL '95:** 3 counts in 4 natural games, each a skater's body and the other team's shot in flight; 3 such
+  hits, 3 counted; goalies' stops (831), pucks with no shot in flight (31) and a teammate's shot (1) not counted.
+  Two counts in the pushed runs weren't matched by the body-hit test (the other team's shot in flight, the puck 5 and
+  10 up). Each game's counts equal its totals; 0 at each next game's start (2-1 carried in, 0 after).
+- **The second game (NHL '94 blocks):** counts and totals set non-zero, the game played out and the next one started
+  from the end screens: all 0 at its first faceoff. Replays: they play recorded positions back and never run
+  updateplayers (pucknorm, checkpuckcoll, puckbody), so they can't count.
+- **On screen:** Player Stats has the Blocked Shots page on every build (NHL '94 plain: after Penalty Minutes, last;
+  with giveaways and TOI: after Takeaways, before Time On Ice; NHL '95 and W18: after Penalty Minutes, last), sorted by
+  the count, every number the RAM's byte. **The page's last column keeps the previous page's heading over an empty
+  column** (NHL '94: TK coming from Takeaways, TOI coming back from Time On Ice, PIM on the plain build; NHL '95 and
+  W18: PIM, highlighted). Game Stats: a "Blocked Shots" row at the end (21 / 21 as set) on the builds without
+  giveaways; on the giveaways build the Give/Takeaways row is there instead.
+- **Item 3, the two carried-over cases:** puckbody's low-puck test (`and #$F` on the distance squared) is the game's own
+  pass-through rule: a low puck only hits a body at a few exact offsets and otherwise slides through, so counting
+  what it lets through counts exactly the pucks the body stopped. A high fast shot that knocks a skater down was still
+  stopped by his body (a2touchpuck, the bounce) before FallDown: a block.
