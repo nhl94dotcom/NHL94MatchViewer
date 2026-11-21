@@ -1373,8 +1373,10 @@ C-then-B check, and the weight bug for computer checkers too.
 **NOSE4Web's bug fixes.** Since 2026-11 NOSE4Web also offers fixes for many of the bugs in this document (its
 "recommended fixes" among them): the weight bug and C-then-B check, the rocket pass, runaway speed, the blind ring,
 the penalty-shot bugs and table, the goalie pull, faceoffs, the power-play bonus, sniping, comeback, awareness, crowd
-and aggression fixes, the second assist, stick-shot counting and the one-timer assist fix. Each was played in the game against the original before it
-was offered (STUDY_NOTES, the "NOSE4Web's ..." sections); the viewer reads the fixes a ROM has
+and aggression fixes, the second assist, stick-shot counting and the one-timer assist fix. Most were played in the game against the
+original (STUDY_NOTES, the "NOSE4Web's ..." sections); on NHL '94 the weight bug / C-then-B, power-play, comeback and
+aggression fixes were read from the code only (the last three played on NHL '95, the comeback on the SNES too:
+corrected 2026-11-21, which had said every one was played). The viewer reads the fixes a ROM has
 (`tools/systems/genesis_settings.py`) and leaves the bugs a fix removes out of its counts.
 
 ---
