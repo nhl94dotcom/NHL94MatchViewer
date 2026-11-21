@@ -1995,8 +1995,10 @@ builds' own post count (gameStats.posts, $E7F0, PostCount) reads `lastplayer` (a
 **it credits every post to the home team** (STUDY_NOTES "NOSE4Web's postsFix"; corrected 2026-11-20 night: I had first
 put it down to the last touch). The league ROM (216b4903) has no fix: CZE-FIN 3-0 to the Czechs (home) for posts by
 shooter CZE 1, FIN 3; FIN-GER 2-0 to Finland (home) for 1 and 1, with nobody touching Doucet's shot on its way to the
-post. With NOSE4Web's posts fix it is the team of the last player to touch the puck. The viewer's row is labelled
-"Posts, by last touch (the game's count)": right only on a fixed ROM. play_by_play names penalties from the game's rules.
+post. With NOSE4Web's posts fix it is the team of the last player to touch the puck. **The user's decision (2026-11-20
+night): the viewer counts posts itself (by the shooter, `find_shots`) and that is the only post count shown, in the viewer,
+the season stats and every analysis, whatever the ROM's own count says.** The "game's count" row is gone from the team
+stats (gameStats.posts stays in the match file, unused). play_by_play names penalties from the game's rules.
 
 ## Posts: a held puck isn't the shooter's post (2026-11-20)
 
