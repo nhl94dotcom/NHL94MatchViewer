@@ -8633,7 +8633,7 @@ the 48-column rink map; Away sits on the upper bench, Home on the lower; the pen
   SetTeamColors puts Home's uniform palette in rows 2 and 12, Away's in 3 and 13. Boxes (columns 42-44) palette 0 only,
   no players; the timekeeper box has its own figure (15 tiles). 73 tiles in the areas, 48 only there. BG2's range is
   full (4 blank tiles). The benches cheer (StartBenchCheer: goals, FallDown) as sprites drawn by setsortcords
-  (SpriteFrames 917-928, 6 a bench) over the map; no code changes the bench cells (rinkmapbuf is written by
+  (SpriteFrames 917-928: two sets of 6, setsortcords picking the set by cheer number and the bench by its Y) over the map; no code changes the bench cells (rinkmapbuf is written by
   BuildRinkMap and NOSE4Web's skate marks only). No reverse angle; the horizontal scoreboard and replay panel use rows
   85+ of the same map.
 Work files in the scoring_map runs folder (bench/).
@@ -8657,7 +8657,8 @@ e8f53072, W18_momentum_blocks.bin fdecf4be). `gen_fight_momentum_check.py`, `gen
   90 again (3 on '94, 52 on '95); a timer left at 23 at a game's end was 0 before the next game's play.
 - **The boost** (both systems' Genesis builds): from one saved moment the timer set to 90 for home, then for the
   visitors: in the first frames only that team's skaters move differently (records 1 and 4 at frame 0 for home, 6, 7
-  and 10 for the visitors; NHL '95 alike), never a goalie; the other team only later, reacting.
+  and 10 for the visitors; NHL '95 alike), never the boosted team's goalie; the other team only later, reacting (on
+  NHL '95 the other goalie from frame 5).
 - **Blocks, NHL '95:** 3 counts in 4 natural games, each a skater's body and the other team's shot in flight; 3 such
   hits, 3 counted; goalies' stops (831), pucks with no shot in flight (31) and a teammate's shot (1) not counted.
   Two counts in the pushed runs weren't matched by the body-hit test (the other team's shot in flight, the puck 5 and
@@ -8682,21 +8683,21 @@ NHL94_momentum_blocks.smc (38a42b40), NHL94_momentum_blocks_allpages.smc (25954f
 (c2c212dd), nhl94snes_SA1_momentum_blocks.sfc (7336837f). `snes_momentum_blocks_check.py` (games with every skater's
 fighting rating $1463 at 14, `boost`, `screens`). RAM as sneshacks.ts: the team word (0 / 1) and timer at $7E:FDF8 /
 $FDFA (SA-1 $40:55E8); a count byte per roster place at $7E:FE40 (visitors +$1A), totals +$34 / +$36 (SA-1 $40:5600).
-- **The knockout:** 21 of 21 readable knockouts gave the team word the winner's (retail 1, 2 MB 14, SA-1 6; the loser
+- **The knockout:** 22 of 22 readable knockouts gave the team word the winner's (retail 1, 2 MB 14, SA-1 7; the loser
   ends on frame 994, knocked down; 3 more never showed it). McMarkis's builds' own fights ($89) as well as NOSE4Web's.
   Many fights end in a breakup with no winner; those set nothing.
 - **The timer:** 90 drops from a knockout to 0; a drop a clock second (the "skipped" and "doubled" seconds pair off:
   updatepentime's own second against the clock word); carried over the intermission (78 on the 2 MB build); a second
-  fight hands it on and restarts 90 (22 times). 3 drops on the frame the clock was marked stopped (2 MB 2, SA-1 1):
-  the whistle's frame. Values written into the RAM at the pre-game menus were 0 at the first frame of play (the clear
+  fight hands it on and restarts 90 (22 times). 3 drops on a frame the clock was marked stopped (2 MB 2, SA-1 1):
+  not traced (perhaps the whistle's own frame). Values written into the RAM at the pre-game menus were 0 at the first frame of play (the clear
   at StartGame_go).
-- **The lift:** from one saved moment (retail), the timer 90 for home: home's four skaters move differently from
+- **The lift:** from one saved moment (retail), the timer 90 for home: home's five skaters move differently from
   frames 0-6, the visitors' only from frame 21 (reacting); for the visitors: their five skaters at frame 0. Neither
   goalie of the lifted team ever differed. Agility 16 is safe: playeracc's factor $20 - weight / 8 + 1.5 x Agility
   (24 instead of 22 for the legstr part) goes into Mul8XS, an 8 x 8 multiply, at 56 or less.
-- **Blocks:** 8 counts in the three games, every one on the other team's shot in flight; those the body-hit signature
-  could check (4) were a skater's body, the rest high pucks (puckz 9, 14: puckbody rescales a high puck's speed, so
-  the signature doesn't fit them). Goalies, teammates and pucks with no shot never counted; the players' counts equal
+- **Blocks:** 8 counts in the three games, every one on the other team's shot in flight; 4 matched the body-hit signature
+  (a skater's body); of the other 4, two were high pucks (puckz 9, 14: puckbody rescales a high puck's speed, so the
+  signature doesn't fit them) and two low (puckz 5), not traced. Goalies, teammates and pucks with no shot never counted; the players' counts equal
   the totals at each end. **A post clears sf2shot**: checkgoal's post branch calls ChkShotStat (`trb sflags`), so a
   shot off the post that then hits a skater is no block.
 - **RAM watch:** over the three games nothing but the knockouts, the timer and the counts changed the two areas; the
