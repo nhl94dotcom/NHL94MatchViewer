@@ -8708,3 +8708,9 @@ $FDFA (SA-1 $40:55E8); a count byte per roster place at $7E:FE40 (visitors +$1A)
 - **Game Stats: the "Blocked Shots" row shows the wrong numbers on every build:** 65535 / 65535 on retail, allpages and
   2 MB, 0 / 0 on SA-1, with the totals 21 / 21 (and 21 / 7) in RAM; with penalties on and off alike.
 - Not tested: the season shootout (these builds' own), highlights (playoffs only on the SNES).
+- **NOSE4Web's fixes (f07eab7), checked the same day:** nhl94_blocks_pages (31a0ee30), nhl94_blocks_gv_toi (3316be21) and
+  NHL_95_blocks_pages (15ac08e7, with giveaways and TOI): the Blocked Shots page shows "BLK" alone, arriving from
+  Takeaways, back from Time On Ice and on the plain build; the other pages' headings as before. NHL94_blocks_row.smc
+  (6a232800), nhl94snes_2026_blocks_row.sfc (3e62eda4), nhl94snes_SA1_blocks_row.sfc (f5f41ef1): the Game Stats row
+  shows the RAM totals (21 / 21 with penalties on and off on all three; 21 home / 7 visitors on retail, each under
+  its team).
