@@ -8599,6 +8599,14 @@ tape). Goalie sticks are colour 14 alone (13 is pad shading). The eyes of 168, 6
 5+ skin neighbours, 6 or 7). 128 bytes in 47 tiles, none a byte he changed, no tile shared with a frame he changed
 (one tile pair also in goalie frame 541). Review sheets drawn; 489, 490, 673, 205, 721, 809 flagged as uncertain (stick
 across the body or held up). Not seen in the game. Work files in the scoring_map runs folder (nosebuilds/tape2).
+- The six looked at enlarged (2026-11-21): 489 fits (the tape on the blade at the ice). Not the others: 490's tape sits
+  by the glove at the top of the shaft (the blade is at the ice); 673's stick has an orange piece at either end and
+  which is the blade isn't clear; 205's tape is mid-shaft by the hands; 721's two pixels are on the back of the helmet
+  (colours 13 / 11, not the stick); 809's covers 6 of the stick's 8 pixels. So 489 kept, five left out.
+- NOSE4Web's toe-end build (88c8168: nhl94_clockwise_toe c1c9458a, CDL_clockwise_toe 693f2d97), the opening faceoff's
+  close-up in the game (faceoff_shots.py, nosebuilds/fotoe): on both, each centre's blade taped at the toe (the two
+  toes meeting at the puck), the heel and bend in stick colour, home and away alike; the rest of the close-up as the
+  originals. The opening faceoff only.
 
 ## The benches and penalty boxes in the rink maps: NHL '94 Genesis, NHL '95 Genesis, NHL '94 SNES (2026-11-20)
 
