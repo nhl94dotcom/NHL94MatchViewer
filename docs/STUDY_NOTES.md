@@ -8038,6 +8038,18 @@ From the raw captures (exact pflags bit 3), 38 Genesis games, regulation, play o
   computer-only games show no bottom-net lean where people's games show 1.45: the lean seems to need a person in the
   game (something people's skaters do attacking down the screen draws more hooks). The fix can't be told from retail
   at this size (about 25 games a ROM would).
+- **30 games a ROM** (2026-11-21, NOSE4Web's follow-up; `gen_hook_cvc.py`'s "x" counts; retail as nhl94_retail_nop
+  dda26c42, the fix ROM f176aa49 with its startup check removed the same way, so the two differ only at $D27A; same
+  seeds; Down / Up with 95% ranges from resampling games). Retail: hook and hold starts 756 Up / 708 Down, **0.94
+  (0.85-1.04)**; by defencemen 0.94, on assdefd 0.94, on assnearest 0.93; per chance (any defender within 30 facing an
+  opponent) 0.95 (0.87-1.05); chances 84,014 / 83,027 (0.99), assdefd's 0.97, assnearest's 0.98; time on assdefd /
+  assnearest 0.99 / 0.99; defending bursts 1.03; penalties drawn 44 / 53 (1.21, 0.78-1.88: too few). The fix: hook
+  starts 0.91 (0.82-1.01), defencemen 0.88, per chance 0.92, chances 0.99, defending bursts 1.02, penalties 55 / 44.
+  Hook share of hook starts and facing defending bursts: retail 43.6% top / 41.6% bottom, the fix 42.5% / 40.4%
+  (HVcount's split shows no end lean). Hooks from behind 54-56% at both nets on both ROMs. **So the computer on its
+  own has no Down lean, with or without the fix, and the fix moves nothing by end beyond chance**: the people's games'
+  lean needs a person in the game, and the centre's slip isn't its cause (NOSE4Web's own grouping of the captures
+  said the same).
 
 ### SNES: the same shots at both nets, NOSE4Web's box and rebound patches (2026-11-19; `snes_updown_check.py`)
 
