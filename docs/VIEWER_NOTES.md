@@ -2051,3 +2051,23 @@ maps from the four BOS-CHI games; track_test's NHL94_INV_* settings, pseudo_run_
   the rink line-up at the start (RINK_DX: 30 placed frames of the stretch, each shift 61-66 scored by the share of
   pixels matching the drawn rink) and warns under 0.85 or with the next shift within 0.03: BOS-TOR 63 (0.937, the next
   0.852), BOS-CHI 64 (0.891, the next 0.800), both as fitted by hand. NHL94_INV_DX still overrides.
+
+**A fresh look (2026-11-22): two tests, both negative.** The reader's team-level counts add little to the league's
+box score (the user's point), so two ways to more were tried on the games already read.
+- **The game replayed in the emulator** (`analysis/vision/reader/emu_replay_oracle.py`; the idea: steer the headless
+  game by the controllers so its picture follows the video, then keep its memory as a recording). With a true memory
+  snapshot and the recorded controller bytes (BOS-TOR game 1): every record exact for about 10 frames; then the
+  computer's skaters leave one by one (steps 11, 21, 37, 54: speeds first, positions after), at the same steps whichever
+  way the pads are aligned; 10 units off after a second, another game after five (the clock stays exact). Choosing the
+  pads each frame to match the recording (one frame or ten ahead) doesn't hold it: two pads steer two of twelve
+  skaters. The computer's choices take the random seed and the beam counter, which depend on machine state outside
+  work RAM: not reproducible from a recording's memory, so not from a video. The emulator stays an exact predictor
+  over about 10 frames (5,000 frames a second; a state loaded and stepped in 0.6 ms).
+- **xG from the read** (`analysis/vision/reader/xg_from_read.py`: tools/xg.py on the pseudo match, team-mean ratings,
+  the aim's side from the puck's flight and its height averaged). Four games, recorded xG / from video by team: BOS-TOR
+  game 1 3.61 / 1.41 and 6.06 / 1.54; game 2 5.95 / 2.40 and 2.32 / 1.01; BOS-CHI game 4 3.13 / 2.16 and 3.61 /
+  0.28; game 2 5.29 / 2.42 and 8.01 / 2.68. The shots the reader misses are the dangerous ones (BOS-TOR game 1: the
+  13 missed of 41 hold 4.9 of 10.3 xG, the six highest among them; 3 of 6 goals read as shots): close in, in a crowd.
+  On matched shots: correlation 0.63-0.82, mean difference 0.07-0.15 a shot, the goalie's controller always right, his
+  offset from the line sometimes far off (6 read as 15), one-timers read as plain shots. Not usable: the totals are
+  low by half or more and can point the wrong way.
