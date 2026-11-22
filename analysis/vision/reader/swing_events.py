@@ -7,7 +7,8 @@ A swing here: a skater's frame coming onto 100 + 6d after 3+ samples off it. Wha
 from recorded games only (their match files hold the same things a read does: positions, frames, the puck, the
 carrier): each swing labelled by the recording's own shot and pass lists, described by FEATURES (where he is from the
 net he attacks, the puck's speed and line after the release, whether it was his before, who has it next), and a
-boosted set of one-feature thresholds (numpy; no other package) fitted to shot or not. A one-timer: a shot whose
+boosted set of one-feature thresholds (numpy; no other package) fitted to shot or not (two-level trees since the same day: one-feature thresholds alone
+missed combinations). A one-timer: a shot whose
 swinger hadn't the puck before it.
 
 python swing_events.py train OUT.json [--skip NAME_PART ...]     recorded Genesis games in <home>/matches, bot games
@@ -26,7 +27,7 @@ SWING = {f for f in range(96, 144) if (f - 96) % 6}      # the swing frames: six
 FAST = 2.2                                               # units a sample: a puck released, not carried
 AFTER, BEFORE = 45, 10
 FEATURES = ["dist_net", "off_centre", "to_line", "speed_after", "aim_error", "cross_x", "cross_ok", "speed_before",
-            "carried_before", "next_owner", "next_owner_t", "deepest", "nearest_net", "puck_gap", "heading_net", "swing_len"]
+            "carried_before", "next_owner", "next_owner_t", "deepest", "nearest_net", "puck_gap", "heading_net", "swing_len", "released"]
 
 
 def frame_of(m, i, k):
@@ -47,18 +48,25 @@ def attacks_top(m, i, team):
     return (team == 0) == (per in (0, 2))
 
 
-def release(m, i0, k, look=40):
-    """The sample the puck leaves the swinger: the first from the swing's start with the puck moving at FAST or more
-    over the next 3 samples and farther from him at their end; none within `look`: 5 samples in."""
+def release2(m, i0, k, look=40):
+    """(sample, found): the sample the puck leaves the swinger: the first from the swing's start with the puck moving
+    at FAST or more over the next 3 samples and 5 or more units farther from him at their end (a skater gliding with
+    the puck through a slapshot's wind-up keeps it at his stick: no release yet); none within `look`: 5 samples in,
+    not found (a swing cut short, or a swing at a puck that never came)."""
     n = len(m["t"])
     P = m["puck"]
     for i in range(i0, min(n - 4, i0 + look)):
         sp = math.hypot(P[3 * (i + 3)] - P[3 * i], P[3 * (i + 3) + 1] - P[3 * i + 1]) / 3
         x, y = xy(m, i, k)
         x3, y3 = xy(m, i + 3, k)
-        if sp >= FAST and math.hypot(P[3 * (i + 3)] - x3, P[3 * (i + 3) + 1] - y3) > math.hypot(P[3 * i] - x, P[3 * i + 1] - y) + 3:
-            return i
-    return min(n - 1, i0 + 5)
+        g0 = math.hypot(P[3 * i] - x, P[3 * i + 1] - y)
+        if sp >= FAST and g0 <= 30 and math.hypot(P[3 * (i + 3)] - x3, P[3 * (i + 3) + 1] - y3) >= g0 + 5:
+            return i, True
+    return min(n - 1, i0 + 5), False
+
+
+def release(m, i0, k, look=40):
+    return release2(m, i0, k, look)[0]
 
 
 def swings(m):
@@ -81,7 +89,7 @@ def swings(m):
 def features(m, i0, k):
     n = len(m["t"])
     P, owner = m["puck"], m["owner"]
-    i = release(m, i0, k)
+    i, got = release2(m, i0, k)
     team = k // 6
     gl = 264 if attacks_top(m, i, team) else -264
     sg = 1 if gl > 0 else -1
@@ -117,59 +125,84 @@ def features(m, i0, k):
     face = math.radians(90 - 45 * d)
     heading_net = abs((math.degrees(face - math.atan2(gl - y, -x)) + 180) % 360 - 180)
     return [math.hypot(x, gl - y), abs(x), sg * (gl - y), sp, aim_error, min(abs(cross_x), 200.0), float(abs(cross_x) <= 26),
-            sb, carried, nxt, nt, deep, near, math.hypot(x - px, y - py), heading_net, i - i0]
+            sb, carried, nxt, nt, deep, near, math.hypot(x - px, y - py), heading_net, i - i0, float(got)]
 
 
 def labels(m, sw, before=4, after=40):
-    """Each swing's label from the recording's lists: 2 one-timer, 1 shot, 0 pass or nothing."""
+    """Each swing's label from the recording's lists: 2 one-timer, 1 shot, 0 a pass or nothing. A recorded shot labels
+    one swing: the shooter's, starting up to `after` samples before it, whose release estimate is nearest its sample
+    (a wind-up cut short just before the shot is its own swing, and no shot)."""
     ro = m["roster"]
-    ev = []
+    out = [0] * len(sw)
+    rel = {}
     for s in m.get("shotList", []):
-        if s["kind"] in ("shot", "one-timer") and s.get("team") in (0, 1):
-            ev.append((s["f"], s["team"], s["idx"], 2 if s["kind"] == "one-timer" else 1))
-    out = []
-    for i, k in sw:
-        idx = int(ro[i * 12 + k], 36)
-        lab = 0
-        for f, team, sidx, kind in ev:
-            if team == k // 6 and sidx == idx and -before <= f - i <= after:
-                lab = kind
-        out.append(lab)
+        if s["kind"] not in ("shot", "one-timer") or s.get("team") not in (0, 1):
+            continue
+        cand = [j for j, (i, k) in enumerate(sw) if k // 6 == s["team"] and m["role"][i * 12 + k] not in "0x"
+                and int(ro[i * 12 + k], 36) == s["idx"] and -before <= s["f"] - i <= after]
+        if cand:
+            for j in cand:
+                if j not in rel:
+                    rel[j] = release(m, *sw[j])
+            best = min(cand, key=lambda j: abs(rel[j] - s["f"]))
+            out[best] = 2 if s["kind"] == "one-timer" else 1
     return out
 
 
-# ---- a small boosted model: one-feature thresholds, logistic loss
-def fit(X, y, rounds=300, rate=0.1):
+# ---- a small boosted model: two-level trees (a threshold, then one on each side), logistic loss; numpy only
+def _best_split(X, g, h, idx, cuts):
+    best = None
+    G, H = g[idx].sum(), h[idx].sum()
+    for j, cs in enumerate(cuts):
+        col = X[idx, j]
+        for c in cs:
+            left = col <= c
+            gl_, hl = g[idx][left].sum(), h[idx][left].sum()
+            gain = gl_ * gl_ / (hl + 1) + (G - gl_) ** 2 / (H - hl + 1)
+            if best is None or gain > best[0]:
+                best = (gain, j, float(c))
+    return best
+
+
+def fit(X, y, rounds=250, rate=0.1, w=None):
     X = np.asarray(X, float)
     y = np.asarray(y, float)
+    w = np.ones(len(y)) if w is None else np.asarray(w, float)
     F0 = math.log(max(y.mean(), 1e-6) / max(1 - y.mean(), 1e-6))
     F = np.full(len(y), F0)
-    cuts = [np.unique(np.quantile(X[:, j], np.linspace(0.03, 0.97, 32))) for j in range(X.shape[1])]
-    stumps = []
+    cuts = [np.unique(np.quantile(X[:, j], np.linspace(0.04, 0.96, 24))) for j in range(X.shape[1])]
+    trees = []
+    every = np.arange(len(y))
     for _ in range(rounds):
         p = 1 / (1 + np.exp(-F))
-        g = y - p
-        h = p * (1 - p) + 1e-6
-        best = None
-        for j, cs in enumerate(cuts):
-            for c in cs:
-                left = X[:, j] <= c
-                gl_, hl = g[left].sum(), h[left].sum()
-                gr, hr = g[~left].sum(), h[~left].sum()
-                gain = gl_ * gl_ / (hl + 1) + gr * gr / (hr + 1)
-                if best is None or gain > best[0]:
-                    best = (gain, j, float(c), gl_ / (hl + 1), gr / (hr + 1))
-        _, j, c, a, b = best
-        F += rate * np.where(X[:, j] <= c, a, b)
-        stumps.append((j, c, rate * a, rate * b))
-    return dict(base=F0, stumps=stumps, features=FEATURES)
+        g = w * (y - p)
+        h = w * (p * (1 - p) + 1e-6)
+        _, j, c = _best_split(X, g, h, every, cuts)
+        tree = [j, c]
+        for side in (X[:, j] <= c, X[:, j] > c):
+            idx = every[side]
+            if len(idx) < 40:
+                v = rate * g[idx].sum() / (h[idx].sum() + 1)
+                tree.append([0, 1e18, v, v])
+                F[idx] += v
+                continue
+            _, j2, c2 = _best_split(X, g, h, idx, cuts)
+            l2 = X[idx, j2] <= c2
+            a = rate * g[idx][l2].sum() / (h[idx][l2].sum() + 1)
+            b = rate * g[idx][~l2].sum() / (h[idx][~l2].sum() + 1)
+            tree.append([j2, c2, a, b])
+            F[idx] += np.where(l2, a, b)
+        trees.append(tree)
+    return dict(base=F0, trees=trees, features=FEATURES)
 
 
 def predict(model, X):
     X = np.asarray(X, float)
     F = np.full(len(X), model["base"])
-    for j, c, a, b in model["stumps"]:
-        F += np.where(X[:, j] <= c, a, b)
+    for j, c, left, right in model["trees"]:
+        side = X[:, j] <= c
+        F += np.where(side, np.where(X[:, left[0]] <= left[1], left[2], left[3]),
+                      np.where(X[:, right[0]] <= right[1], right[2], right[3]))
     return 1 / (1 + np.exp(-F))
 
 
@@ -200,6 +233,7 @@ def train(out, skip):
         shots = sum(1 for s in m.get("shotList", []) if s["kind"] in ("shot", "one-timer"))
         print(p.stem, "swings", len(sw), "labelled shots", sum(l > 0 for l in lab), "of", shots, flush=True)
     X, y = np.array(X), np.array(y)
+    np.savez_compressed(str(out).replace(".json", "_data.npz"), X=X, y=y)
     model = fit(X, y > 0)
     pr = predict(model, X)
     model["games"] = games
@@ -208,9 +242,11 @@ def train(out, skip):
         hit = pr >= thr
         print(f"training fit at {thr}: shots found {int((hit & (y > 0)).sum())} of {int((y > 0).sum())}, false {int((hit & (y == 0)).sum())} (of {int((y == 0).sum())} other swings)")
     use = np.zeros(len(FEATURES))
-    for j, c, a, b in model["stumps"]:
-        use[j] += abs(a - b)
-    print("weight by feature:", {FEATURES[j]: round(float(use[j]), 2) for j in np.argsort(-use)})
+    for j, c, left, right in model["trees"]:
+        use[j] += 1
+        use[left[0]] += 0.5
+        use[right[0]] += 0.5
+    print("splits by feature:", {FEATURES[j]: float(use[j]) for j in np.argsort(-use)})
 
 
 def test(model_path, read_path):
@@ -232,7 +268,9 @@ def test(model_path, read_path):
     pm = PM.build(m, vf, rows, maps, q0, q1)
     pm["frame"] = "".join(pm["frame"]) if not isinstance(pm["frame"], str) else pm["frame"]
     name = Path(read_path).stem
-    T = [s for s in truth.get("shotList", []) if s["kind"] in ("shot", "one-timer")]
+    # the truth: the match file's own shots in this stretch (its xG, aim and all; the slice analysed again without the
+    # pads lists about a fifth more "shots" that the real file doesn't have)
+    T = [dict(s, f=s["f"] - q0) for s in m.get("shotList", []) if s["kind"] in ("shot", "one-timer") and s.get("team") in (0, 1) and q0 <= s["f"] < q1]
     # the upper bound: the same finder on the recording's own slice
     for label, mm in (("recording", tm), ("video", pm)):
         sw = swings(mm)
@@ -250,7 +288,7 @@ def test(model_path, read_path):
                 if found and any(k2 == k and abs(r2 - r) <= 30 for r2, k2, _ in found):
                     continue
                 found.append((r, k, p))
-            used, hit, hi_hit = set(), 0, 0
+            used, hit, hi_hit, pair = set(), 0, 0, {}
             for s in T:
                 ta = truth["t"][s["f"]]
                 best = None
@@ -262,11 +300,51 @@ def test(model_path, read_path):
                         best = (d, j)
                 if best:
                     used.add(best[1])
+                    pair[best[1]] = s
                     hit += 1
                     hi_hit += (s.get("xg") or 0) >= 0.3
+            if label == "video":                              # why each recorded shot was missed
+                import collections
+                why = collections.Counter()
+                matched_t = set()
+                used2 = set()
+                for s in T:
+                    ta = truth["t"][s["f"]]
+                    best = None
+                    for j, (i, k, p) in enumerate(found):
+                        if j in used2 or k // 6 != s["team"]:
+                            continue
+                        d = abs(mm["t"][i] - ta)
+                        if d <= 500 and (best is None or d < best[0]):
+                            best = (d, j)
+                    if best:
+                        used2.add(best[1])
+                        continue
+                    f = s["f"]
+                    shk = next((k for k in range(s["team"] * 6, s["team"] * 6 + 6) if tm["role"][f * 12 + k] != "x"
+                                and int(tm["roster"][f * 12 + k], 36) == s["idx"]), None)
+                    tx, ty = xy(tm, f, shk) if shk is not None else (s["x"], s["y"])
+                    near = [j for j, (i, k) in enumerate(sw) if k // 6 == s["team"] and -45 <= f - i <= 10
+                            and math.hypot(xy(mm, min(len(mm["t"]) - 1, max(i, f)), k)[0] - tx, xy(mm, min(len(mm["t"]) - 1, max(i, f)), k)[1] - ty) <= 15]
+                    if not near:
+                        why["no swing read near the shooter"] += 1
+                    else:
+                        j = max(near, key=lambda j: pr[j])
+                        r, got = release2(mm, *sw[j])
+                        why[("release found" if got else "no release found") + (", timing right" if abs(r - f) <= 4 else ", timing off") + f", scored {'0.3-0.5' if pr[j] >= 0.3 else 'under 0.3'}"] += 1
+                print(f"{name} video misses:", dict(why))
+                Path(read_path.replace(".json", "_swingwhy.json")).write_text(json.dumps(dict(why)))
             hi = sum((s.get("xg") or 0) >= 0.3 for s in T)
             print(f"{name} {label}: swings {len(sw)}, called shots {len(found)}; recorded shots found {hit} of {len(T)} (xG 0.3+: {hi_hit} of {hi}), false {len(found) - len(used)}")
         if label == "video":
+            lab = np.zeros(len(sw), int)                     # each recorded shot labels the nearest swing of its team
+            rels = [release(mm, i, k) for i, k in sw]        # within 0.5 s (the cross-validated training's video part)
+            for s in T:
+                ta = truth["t"][s["f"]]
+                c = [(abs(mm["t"][rels[j]] - ta), j) for j, (i, k) in enumerate(sw) if k // 6 == s["team"] and abs(mm["t"][rels[j]] - ta) <= 500]
+                if c:
+                    lab[min(c)[1]] = 1
+            np.savez_compressed(read_path.replace(".json", "_swingdata.npz"), X=X, y=lab)
             res = dict(name=name, shots=len(T), found=hit, called=len(found), false=len(found) - len(used), hi=hi, hi_found=hi_hit)
             # xG by team, as xg_from_read: team-mean ratings, the aim's side from the flight, heights averaged
             first = {}
@@ -284,7 +362,8 @@ def test(model_path, read_path):
             P = pm["puck"]
             tot = [0.0, 0.0]
             n = len(pm["t"])
-            for i, k, p in found:
+            per = []
+            for jf, (i, k, p) in enumerate(found):
                 team = k // 6
                 f = min(n - 1, i)
                 la = XG.launched(pm, f)
@@ -308,14 +387,33 @@ def test(model_path, read_path):
                     XG.add_expected_goals(dict(pm, work=sorted(w2), shotList=[one]), stick_rom=rom_bytes, lock=True)
                     v += wgt * (one.get("xg") or 0.0)
                 tot[team] += v
+                per.append(dict(video=round(v, 3), rec=(pair[jf].get("xg") if jf in pair else None), matched=jf in pair,
+                                kind=sh["kind"], rec_kind=pair[jf]["kind"] if jf in pair else None))
             rec = [sum(s.get("xg") or 0 for s in T if s["team"] == t and s["result"] != "blocked") for t in (0, 1)]
             print(f"{name} xG by team: recorded {rec[0]:.2f} / {rec[1]:.2f}, from video {tot[0]:.2f} / {tot[1]:.2f}")
-            res.update(xg_rec=rec, xg_video=tot)
+            res.update(xg_rec=rec, xg_video=tot, per=per,
+                       missed_xg=round(sum((s.get("xg") or 0) for s in T if not any(v is s for v in pair.values()) and s["result"] != "blocked"), 2))
             Path(read_path.replace(".json", "_swingshots.json")).write_text(json.dumps(res))
 
 
+def cv(data_npz, out_prefix, reads, weight=3.0):
+    """A model for each read, from the recordings' swings and the other reads' (weighted): READ_swingdata.npz files."""
+    base = np.load(data_npz)
+    D = {r: np.load(r.replace(".json", "_swingdata.npz")) for r in reads}
+    for held in reads:
+        X = np.concatenate([base["X"]] + [D[r]["X"] for r in reads if r != held])
+        y = np.concatenate([base["y"] > 0] + [D[r]["y"] > 0 for r in reads if r != held])
+        w = np.concatenate([np.ones(len(base["y"]))] + [np.full(len(D[r]["y"]), weight) for r in reads if r != held])
+        model = fit(X, y, w=w)
+        out = f"{out_prefix}_{Path(held).stem}.json"
+        Path(out).write_text(json.dumps(model))
+        print("model for", Path(held).stem, "from", len(y), "swings", flush=True)
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "train":
+    if sys.argv[1] == "cv":
+        cv(sys.argv[2], sys.argv[3], sys.argv[4:])
+    elif sys.argv[1] == "train":
         skip = [sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--skip"]
         train(sys.argv[2], skip)
     else:

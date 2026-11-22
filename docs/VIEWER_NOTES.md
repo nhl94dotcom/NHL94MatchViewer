@@ -2097,3 +2097,17 @@ box score (the user's point), so two ways to more were tried on the games alread
   of 52.1 in all (the old shot finder's reads gave about 40%), the side with more xG right in 4 games of 6, a team's
   total off by 1.5 on average. Next, in order: the classifier on recordings (81% of shots there: the ceiling), then
   each shot's inputs from video (release, speed, the goalie's offset).
+- **Shots from swings, second pass** (the same day; `swing_miss.py`). Corrections: the first pass's "220 recorded
+  shots" came from analysing each recording's slice again without the pads, which lists about a fifth more shots than
+  the match file; scored now against the match files' own 185. The swing frames are 96-143 less each facing's first
+  (the stance, shown by skating all game: 550 false swings a game with it in). The release: the puck moving at 2.2 a
+  sample and 5 units farther from the swinger 3 samples on (a glide through a slapshot's wind-up had passed the
+  first test). A recorded shot labels one swing (a wind-up cut short just before it is another swing, no shot). The
+  model: 250 two-level trees. On the six test games' recordings: **173 of 185 shots, 60 of 63 at xG 0.3+**, 26 false
+  (mostly swings the recording lists as neither shot nor pass: long clears). **From the video reads, each game by a
+  model that never saw it (the 30 recordings plus the other five reads' swings, weighted 3): 143 of 185, 51 of 63 at xG
+  0.3+, 20 false.** The 42 missed: 13 with no swing read near the shooter, 14 with the release found on time but scored
+  under 0.5, the rest mistimed or with no release found. xG: recorded 48.5, from video 37.8; a team's total off by 1.4
+  on average, the side with more right in 4 games of 6. Where it goes: the missed shots hold 10.6; the 143 matched
+  read 33.5 for 38.5 (0.12 a shot apart on average, correlation 0.72, the kind right for 140; the worst are sure goals
+  read as nothing: 0.91 as 0.03, 1.00 as 0.14); the false shots add 4.2.
