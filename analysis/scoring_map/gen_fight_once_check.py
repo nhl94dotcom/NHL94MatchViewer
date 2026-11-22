@@ -13,8 +13,14 @@ The mark bytes are set to $FF at Game Setup before the first game (StartGame mus
   ($26 / $28) and instigator minors ($2A).
 Run on the build and on a fighting build without the option (the control: repeats expected there).
 
-python gen_fight_once_check.py ROM OUT GAMES"""
+--shootout (nhl94_fight_once_shootout.bin D4C9C257, 2026-11-22: the season shootout after a tied period 3): Regular
+Season (OptPlayMode $D048 = 0), and with 8 s left in period 3 the score levelled (the higher goals word lowered) if it
+isn't tied: the shootout follows; logged as it goes: the build's shootout flag ($FFF082), the round ($D578), each side's
+shootout goals ($D574 / $D576), the marks; the fighting ratings left alone while the flag is set. Then the next game.
+
+python gen_fight_once_check.py ROM OUT GAMES [--shootout]"""
 import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -44,7 +50,10 @@ def penalties(e):
     return n, out
 
 
-def run(rom, out, n):
+HMGOALS, AWGOALS, PLAYMODE, SOFLAG, SOROUND, SOHOME, SOAWAY = 0xC6DA, 0xCA3E, 0xD048, 0xF082, 0xD578, 0xD574, 0xD576
+
+
+def run(rom, out, n, shootout=False):
     lowload.gentle()
     out.mkdir(parents=True, exist_ok=True)
     e = Emu(rom)
@@ -52,6 +61,8 @@ def run(rom, out, n):
     e.setw(OPTPEN, 2)
     e.setw(OPTLINE, 1)
     e.setw(PERLEN, 0)
+    if shootout:
+        e.setw(PLAYMODE, 0)                          # Regular Season
     for i in range(8):
         e.setb(MARKS + i, 0xFF)                     # StartGame must clear these
     if not G.into_play(e):
@@ -71,6 +82,7 @@ def run(rom, out, n):
     prev_marks = marks(e)
     tally = Counter()
     pen_seen = 0
+    levelled, so_state, so_frames = False, None, 0
     while game <= n and frame < 60 * 60 * 60 * n:
         mine = tuple(e.b(a) for a in G.TEAMS) == ours
         if frame % 60 == 0:
@@ -80,10 +92,49 @@ def run(rom, out, n):
             last_clk = c
             if frame % 3600 == 0:
                 lowload.breathe()
-        if fight_at is None:
+        if fight_at is None and not (shootout and e.b(SOFLAG)):
             for k in range(12):
                 e.setb(rec(k) + 0x74, 14)
-        e.run(1, hold=["START"] if still >= 8 and e.b(SCREEN) not in (0, 0x80) and frame % 60 < 4 else [])
+        if shootout and mine and not levelled and e.w(GSP) == 2 and e.b(SCREEN) == 0 and 0 < e.w(CLOCK) <= 8:
+            h, a = e.w(HMGOALS), e.w(AWGOALS)
+            if h != a:
+                e.setw(HMGOALS, min(h, a))
+                e.setw(AWGOALS, min(h, a))
+            levelled = True
+            note(what="levelled for the shootout", game=game, was=[h, a], now=[e.w(HMGOALS), e.w(AWGOALS)],
+                 fights_this_game=sorted(fought), marks=marks(e))
+        if shootout:
+            st = (e.b(SOFLAG), e.w(SOROUND), e.w(SOHOME), e.w(SOAWAY))
+            if st != so_state:
+                note(what="shootout", game=game, flag=st[0], round=st[1], home=st[2], away=st[3], gsp=e.w(GSP),
+                     screen=e.b(SCREEN), score=[e.w(HMGOALS), e.w(AWGOALS)], marks=marks(e))
+                so_state = st
+            if st[0]:                                # a look at it every 15 s (real), and a stop if it never ends
+                so_frames += 1
+                if so_frames % 900 == 1 and so_frames < 900 * 40 and os.environ.get("NHL94_SO_SHOTS", "1") == "1":
+                    e.screenshot(out / f"so_g{game}_{so_frames // 900:02d}.png")
+                    note(what="shootout look", game=game, frames=so_frames, clock=e.w(CLOCK), gsp=e.w(GSP),
+                         screen=e.b(SCREEN), box=[e.b(rec(k) + 0x35) for k in range(12)])
+                if os.environ.get("NHL94_SO_EARLY") == str(game) and so_frames % 120 == 1 and so_frames < 120 * 50:
+                    e.screenshot(out / f"so_g{game}_early_{so_frames // 120:02d}.png")   # its first 100 s (real) closely
+                    note(what="early look", n=so_frames // 120, clock=e.w(CLOCK), gsp=e.w(GSP), screen=e.b(SCREEN),
+                         score=[e.w(HMGOALS), e.w(AWGOALS)], teams=[e.b(a) for a in G.TEAMS], state=st)
+                if so_frames > 30000:
+                    note(what="shootout not finished after 30000 frames", game=game, round=st[1], marks=marks(e))
+                    (out / f"so_g{game}_stuck.state").write_bytes(e.serialize())
+                    for i in range(8):               # what it is doing: a screenshot every 5 s (real)
+                        e.screenshot(out / f"so_g{game}_stuck_{i}.png")
+                        note(what="stuck look", i=i, clock=e.w(CLOCK), gsp=e.w(GSP), screen=e.b(SCREEN),
+                             score=[e.w(HMGOALS), e.w(AWGOALS)], teams=[e.b(a) for a in G.TEAMS], state=st)
+                        e.run(300)
+                    break
+            else:
+                so_frames = 0
+        # the build's menu before the shootout ("Start Shootout", shown with screen 0) waits for START; left alone the
+        # intermission's highlights of other games go round for ever (2026-11-22: a 0-0 game sat there 2 hours)
+        waiting = shootout and e.b(SOFLAG) and so_frames > 600 and so_state is not None and so_state[1:] == (1, 0, 0)
+        e.run(1, hold=["START"] if (waiting and frame % 120 < 4)
+              or (still >= 8 and e.b(SCREEN) not in (0, 0x80) and frame % 60 < 4) else [])
         frame += 1
         gsp = e.w(GSP)
         now = {k for k in range(12) if e.b(rec(k) + 0x63) & 1}
@@ -125,7 +176,7 @@ def run(rom, out, n):
                 late = True
             if gsp == 0 and late:
                 game += 1
-                late = False
+                late, levelled = False, False
                 fought = set()
                 if game > n:
                     break
@@ -136,4 +187,4 @@ def run(rom, out, n):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1], Path(sys.argv[2]), int(sys.argv[3]))
+    run(sys.argv[1], Path(sys.argv[2]), int(sys.argv[3]), "--shootout" in sys.argv)

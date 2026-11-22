@@ -8665,6 +8665,45 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
   being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
+## One fight a game with the season shootout, and the SNES power-play pair's totals (2026-11-22, for NOSE4Web)
+
+**The builds:** nhl94_fight_once_shootout.bin (D4C9C257) and NHL94_fight_once_shootout.smc (1E13AF1A);
+`gen_fight_once_check.py` / `snes_fight_once_check.py` with `--shootout` (fighting ratings held at 14, the score
+levelled with 8 s left in period 3 when it isn't tied).
+- **The Genesis build doesn't boot as delivered.** Its power-on check ($300: `jsr $FFAC0`; the longs of
+  $0-$FFABF added, $18C left out) wants $8AB9F121; the ROM's add to $25D71712, so it sets the colours and stops
+  (`bra` to itself; 2 bytes of work RAM ever written). The earlier fight-once build has no such call. Played on a
+  scratch copy with that one call made NOPs.
+- **Genesis, five games** (18 fights: 3, 6, 3, 3 and 3; no fighter twice in a game). Four went through the
+  shootout: 5 rounds (home 1-0), 12 rounds (away 1-0), 15 rounds (away 1-0), 5 rounds (home 1-0); each ended with the
+  build's flag ($FFF082) cleared, gsp 4 and the tied score plus one for the winner. **The marks ($FFF754-$F75B) stood
+  unchanged from the last fight through every shootout, and were cleared at the next game's start** (the first
+  sample of its period 1).
+- **The fifth, a 0-0 game, sat 2 hours without a shootout: the harness, not the build.** After period 3 the build
+  shows its menu (Start Shootout, Shootout SetUp, Team Roster, Player Cards) and waits for START, with the screen byte
+  0, where the harness pressed nothing; the intermission's highlights of other games went round (their teams and
+  scores in RAM meanwhile). The harness now presses START there. (The other games' menus had been passed by presses
+  meant for something else: not looked into.)
+- **SNES, two games** (4 fights, no fighter twice): both shootouts played (6 and 8 rounds), the final score the tied
+  score plus one. **Here the marks ($7E:FEC0-$FEC7) are cleared when the shootout starts** (the first sample with
+  shootoutmode set and the game's own start run again: FightGameStart), not kept through it; nobody can fight in a
+  shootout, and the game is over after it, so nothing shows. Each SNES game is a fresh power-on, the marks set to $FF
+  before it: 0 at the first sample of play.
+
+**The SNES power-play pair** (NHL94_pp_base 68EF88FF, NHL94_pp_fix DBD55F09; every team's byte $20: high nibble 2,
+low 0), 11 computer games each, `snes_untested_fixes_check.py report ... pppk` (a fresh skater's rating at a
+power-play faceoff less his usual at even strength; "clamped": at 0 or 15, unreadable):
+| | base: stickhand | base: shotacc | fix: stickhand | fix: shotacc |
+|---|---|---|---|---|
+| penalty killers -2 (the high nibble) | 19 | 10 | 0 | 0 |
+| penalty killers 0 (the low nibble) | 0 | 0 | 18 | 14 |
+| power play 0 (the low nibble) | 3 | 2 | 0 | 0 |
+| power play +2 (the high nibble) | 0 | 0 | 0 | 1 |
+| clamped | 1 | 11 | 3 | 6 |
+Every readable case is as the fix says (the original: power play the low nibble, penalty kill the high; the fix the
+other way round), none against. The power-play side rests on one +2 case (the rest at the 15 limit); the penalty
+kill's on 29 against 32.
+
 ## The benches and penalty boxes in the rink maps: NHL '94 Genesis, NHL '95 Genesis, NHL '94 SNES (2026-11-20)
 
 For NOSE4Web's bench picture editor. Read from the retail ROMs (Genesis maps and tiles in ROM; the SNES map from

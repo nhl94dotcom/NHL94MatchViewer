@@ -12,7 +12,11 @@ $1503; roster index: pnum $12A3) and whether either had fought earlier that game
 penalties called (the buffer at $15DE, as snes_60fps_cvc): fighting majors $2A / $2C, instigator $2E.
 Run on the build and on the same layout's fighting build without the option (the control).
 
-python snes_fight_once_check.py ROM OUT GAMES [on|whistle] [--mc]   (--mc: McMarkis's fights, OptFights set)"""
+--shootout (NHL94_fight_once_shootout.smc 1E13AF1A, 2026-11-22: the season shootout after a tied period 3): with 8 s
+left in period 3 the score levelled (goals words $178E / $1790 to the lower; boot sets Regular Season, $34BC = 0); the
+shootout (shootoutmode $1D81, round $1D85, the score) and the marks logged as they change, played to the game's end.
+
+python snes_fight_once_check.py ROM OUT GAMES [on|whistle] [--mc] [--shootout]   (--mc: McMarkis's fights, OptFights set)"""
 import json
 import sys
 from collections import Counter
@@ -31,7 +35,10 @@ def marks_buf(e, m):
     return (m.bw, 0x5840) if m.sa1 else (e.ram, 0xFEC0)
 
 
-def run(rom, out, games, mode, mc):
+SCORE, SOMODE, SOROUND = 0x178E, 0x1D81, 0x1D85
+
+
+def run(rom, out, games, mode, mc, shootout=False):
     lowload.gentle()
     out.mkdir(parents=True, exist_ok=True)
     log = open(out / "fight_once.jsonl", "a")
@@ -56,7 +63,21 @@ def run(rom, out, games, mode, mc):
         note(what="start of play", game=n, marks=marks(), mode=mode)
         prev_marks, fought, fight, frames, still, last, seen = marks(), set(), None, 0, 0, None, set()
         c = Counter()
-        while m.w(GSP) < 3 and frames < 60 * 60 * 50:
+        levelled, so_state = False, None
+        while (m.w(GSP) < 3 or (shootout and m.w(GSP) < 4)) and frames < 60 * 60 * 50:
+            if shootout and not levelled and m.w(GSP) == 2 and m.w(CLOCKSTOP) == 0 and 0 < m.w(CLOCK) <= 8:
+                h, a = m.w(SCORE), m.w(SCORE + 2)
+                if h != a:
+                    m.setw(SCORE, min(h, a))
+                    m.setw(SCORE + 2, min(h, a))
+                levelled = True
+                note(what="levelled for the shootout", game=n, was=[h, a], fights_this_game=sorted(fought), marks=marks())
+            if shootout:
+                st = (m.w(SOMODE), m.w(SOROUND), m.w(GSP))
+                if st != so_state:
+                    note(what="shootout", game=n, mode=st[0], round=st[1], gsp=st[2],
+                         score=[m.w(SCORE), m.w(SCORE + 2)], marks=marks())
+                    so_state = st
             if frames % 60 == 0:
                 cvc.computer_only(m)
                 if mc:
@@ -64,7 +85,7 @@ def run(rom, out, games, mode, mc):
                 for k in range(12):
                     if m.w(POSITION + o(k)) != 0:
                         m.setw(FIGHTING + o(k), 14)
-                if m.w(CLOCK) > 300:
+                if m.w(CLOCK) > 300 and m.w(GSP) < 3:
                     m.setw(CLOCK, 300)
                 sig = m.w(CLOCK)
                 still = still + 1 if sig == last else 0
@@ -109,4 +130,4 @@ def run(rom, out, games, mode, mc):
 
 if __name__ == "__main__":
     a = [x for x in sys.argv[1:] if not x.startswith("--")]
-    run(a[0], Path(a[1]), int(a[2]), a[3] if len(a) > 3 else "on", "--mc" in sys.argv)
+    run(a[0], Path(a[1]), int(a[2]), a[3] if len(a) > 3 else "on", "--mc" in sys.argv, "--shootout" in sys.argv)
