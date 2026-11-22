@@ -8672,6 +8672,40 @@ the 48-column rink map; Away sits on the upper bench, Home on the lower; the pen
   85+ of the same map.
 Work files in the scoring_map runs folder (bench/).
 
+## NOSE4Web's older options, played at last: checkFix, ppPkFix, aggressionFix, comebackFix, SNES hotColdFix (2026-11-21)
+
+NOSE4Web's single-option builds (mv_review_2026-11-21/untested: nhl94_checkFix 04770d90, nhl94_ppPkFix 8af32bde,
+nhl94_aggressionFix 32db7b56, nhl94_comebackFix fb7a9a7b, NHL94_ppPkFix.smc f11bfd81, NHL94_hotColdFix.smc 631af74b)
+against the originals with the same checksum changes (Genesis nhl94_retail_nop: only the fix differs) or NHL94.smc,
+the same games and seeds. setplayer builds a player's working ratings only when he comes on (a line change, a box exit,
+the period's start), so the situational tests read only skaters who came on at that faceoff ("fresh"). Scripts:
+`gen_untested_fixes_check.py` (NHL '94: computer games, line changes on, penalties on, every faceoff's ratings; with
+`--comeback` each whistle sets period 3, the clock at 90% / 20% of the period and Home one down or up, on the whistle's
+own frame (gmode $C2EA bit 0), and drains the home skaters on the ice (tmpde, team struct +$32) so CompLine brings a
+fresh line), `snes_untested_fixes_check.py`, `gen_check_fix_check.py` (gen_check_ends' scripted pad-1 check at the
+bottom net, weights set; the test ROM and a copy with the same NOP). The team pair set in RAM at Game Setup didn't take:
+every NHL '94 game was the same two teams, as was every SNES game (Montreal and Los Angeles).
+- **comebackFix** (`bgt` -> `blt` at $15B70): trailing home skaters coming on in period 3, Checking against the same
+  skater's with no bonus: original +2 in the first half (30 of 30; no fresh second-half case came up), fix +0 in the
+  first half (12) and +2 in the second (4).
+- **ppPkFix, Genesis:** Stickhandling on the power play / penalty kill against the same player at even strength, matched
+  to the team byte's nibbles: original PP the low nibble (14 only the low fits, 13 both), PK minus the high (8); fix PP
+  the high (34), PK minus the low (7). The nibbles swap, as built.
+- **aggressionFix:** roster Aggression -> working value at every faceoff: original 3 -> 0, 1 and 13-15, 4 -> 2, 3, 5,
+  6 -> 14 (the & $F wrap at 16); fix 3 -> 6-8, 4 -> 9-10, 6 -> 15 (rising, no wrap: min(value, 30) / 2).
+- **checkFix** ($13D70 `asl.w #1,d0` -> NOP: everyone checks from 120): a person's check that made contact, the
+  carrier down: equal weights (60 / 60) C 17% of 24 original, 55% of 22 fix; heavy into light (80 / 40) C 26% of 19,
+  71% of 21; C then B 62% / 64% on both (the computer's 120 either way), so CB no longer beats C. Light into heavy
+  (40 / 80): 2 and 6 contacts, too few to read.
+- **hotColdFix (SNES):** every bonus-free working rating (legstr, legspd, shotspd, checking, endurance, spodds,
+  aggress) against its 3-bit roster value x 5 / 2 plus the player's hot / cold byte / 4, clamped 0-15: original cold
+  bytes 2,445 as the bug (the unsigned shift: 15), 17 where both rules agree, none other; fix cold 831 as the signed
+  division, none other; hot and zero bytes agree on both.
+- **ppPkFix (SNES):** thin. Stickhandling and Shot Accuracy (both take PP / PK) are often at the 15 cap (cold ratings
+  maxed), and Montreal's byte $11 can't tell the nibbles apart: original PP the low nibble 1 case, fix PK minus the low
+  3 cases, the rest clamped or either nibble. The bytes agree: the build moves the four `lsr` from the PK path to the PP
+  path ($FCFA4-$FCFB4; $FCF9E the branch's distance): PP the high nibble, PK the low, the Genesis fix's way.
+
 ## Fight momentum and blocked shots, played: NHL '94 Genesis and the NHL '95 ports (2026-11-20, for NOSE4Web)
 
 NHL '94 builds of 2026-11-19 (nhl94_fight_momentum.bin 004f3de6, CDL_Season_12_fight_momentum.bin 1a7301ec; the blocks
