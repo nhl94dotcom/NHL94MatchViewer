@@ -2111,3 +2111,10 @@ box score (the user's point), so two ways to more were tried on the games alread
   on average, the side with more right in 4 games of 6. Where it goes: the missed shots hold 10.6; the 143 matched
   read 33.5 for 38.5 (0.12 a shot apart on average, correlation 0.72, the kind right for 140; the worst are sure goals
   read as nothing: 0.91 as 0.03, 1.00 as 0.14); the false shots add 4.2.
+- **The shot's inputs, tried and left** (the same day). The 13 matched shots 0.3 or more apart (6.1 recorded, 3.0 from
+  video) show a release a few samples late (the spot then 20-30 units down the flight), a speed from 50 ms of flight
+  and the aim's side from the same. Taking them from the whole flight instead (`shot_inputs`: the line traced back to
+  the swinger, the fastest 3-sample stretch, the side from the line or its first 5 samples; NHL94_SHOT_INPUTS picks
+  which, default none) helped nothing: matched xG 33.5 of 38.5 with the old inputs; the time alone 33.1, the spot 31.8,
+  the speed 35.2 with more shots far apart, the side 27.4; a share of the weight to the other two sides
+  (NHL94_SHOT_SOFT) 31.2 at 0.3, 29.7 at 0.5. The old inputs stay.

@@ -17,6 +17,7 @@ python swing_events.py test MODEL.json READ.json                 a read (NHL94_I
     the shots it finds against the recording's (same team within 0.5 s), and xG by team (xg_from_read's way)"""
 import json
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -67,6 +68,44 @@ def release2(m, i0, k, look=40):
 
 def release(m, i0, k, look=40):
     return release2(m, i0, k, look)[0]
+
+
+def shot_inputs(m, r, k, gl):
+    """A found shot's start for the xG model, from the whole flight (2026-11-22: taken at the release sample alone, a
+    release marked a few samples late put the spot 20-30 units down the flight, beside the goalie, and the speed and
+    the aim's side came from 50 ms of it): (sample, spot x, spot y, speed in velocity words, side -1 / 0 / 1).
+    The flight: from r while the puck moves at FAST or more a sample, up to 14 samples, short of the goal line. Its
+    line is traced back to the point nearest the swinger, at the last sample the puck was at his stick (within 16)
+    or else at r; the speed is the fastest 3-sample stretch; the side is where the line crosses the goal line."""
+    n = len(m["t"])
+    P = m["puck"]
+    sg = 1 if gl > 0 else -1
+    pts = [(r, P[3 * r], P[3 * r + 1])]
+    for q in range(r + 1, min(n, r + 15)):
+        x, y = P[3 * q], P[3 * q + 1]
+        if math.hypot(x - pts[-1][1], y - pts[-1][2]) / (q - pts[-1][0]) < FAST or sg * y > abs(gl) - 2:
+            break
+        pts.append((q, x, y))
+    f0 = next((q for q in range(r, max(0, r - 12), -1)
+               if math.hypot(P[3 * q] - xy(m, q, k)[0], P[3 * q + 1] - xy(m, q, k)[1]) <= 16), r)
+    if len(pts) < 3:
+        la_speed = math.hypot(P[3 * min(n - 1, r + 3)] - P[3 * r], P[3 * min(n - 1, r + 3) + 1] - P[3 * r + 1]) / 3 * 4096
+        return f0, P[3 * f0], P[3 * f0 + 1], max(4000, round(la_speed)), 0
+    dx, dy = pts[-1][1] - pts[0][1], pts[-1][2] - pts[0][2]
+    L = math.hypot(dx, dy) or 1.0
+    ux, uy = dx / L, dy / L
+    sx, sy = xy(m, f0, k)
+    t = (sx - pts[0][1]) * ux + (sy - pts[0][2]) * uy          # the flight line's point nearest the swinger
+    x0, y0 = pts[0][1] + min(t, 0.0) * ux, pts[0][2] + min(t, 0.0) * uy
+    speed = max(math.hypot(pts[j + 3][1] - pts[j][1], pts[j + 3][2] - pts[j][2]) / (pts[j + 3][0] - pts[j][0])
+                for j in range(len(pts) - 3)) if len(pts) > 3 else L / (pts[-1][0] - pts[0][0])
+    side = 0
+    e = pts[min(len(pts) - 1, 5)]                           # the side from the flight's first 5 samples only (the whole
+    ex, ey = e[1] - pts[0][1], e[2] - pts[0][2]             # of it runs on past the goalie or a deflection)
+    if ey * sg > 0.5:
+        cx = pts[0][1] + ex * (gl - pts[0][2]) / ey
+        side = 1 if cx > 8 else -1 if cx < -8 else 0
+    return f0, x0, y0, round(speed * 4096), side
 
 
 def swings(m):
@@ -365,30 +404,56 @@ def test(model_path, read_path):
             per = []
             for jf, (i, k, p) in enumerate(found):
                 team = k // 6
-                f = min(n - 1, i)
-                la = XG.launched(pm, f)
+                gl = 264 if XG.attacks_top(pm, min(n - 1, i), team) else -264
+                f, x0, y0, speed, side = shot_inputs(pm, min(n - 1, i), k, gl)
+                use = os.environ.get("NHL94_SHOT_INPUTS", "")   # which of the flight's: t time, p spot, v speed, s side
+                fo = min(n - 1, i)
+                la = XG.launched(pm, fo)
+                if "t" not in use:
+                    f = fo
+                if "p" not in use:
+                    x0, y0 = P[3 * f], P[3 * f + 1]
+                if "v" not in use:
+                    speed = round(math.hypot(la[0], la[1])) if la else 12000
+                if "s" not in use:
+                    side = 0
+                    if la and la[1] and (gl - P[3 * fo + 1]) / la[1] > 0:
+                        cx = P[3 * fo] + la[0] * (gl - P[3 * fo + 1]) / la[1]
+                        side = 1 if cx > 8 else -1 if cx < -8 else 0
                 carried = sum(pm["owner"][q] == k for q in range(max(0, i - BEFORE - 12), i + 1))
-                sh = dict(f=f, team=team, idx=int(pm["roster"][f * 12 + k], 36), x=P[3 * f], y=P[3 * f + 1],
-                          speed=round(math.hypot(la[0], la[1])) if la else 12000, kind="shot" if carried >= 3 else "one-timer",
-                          result="save", human=bool(pm["ctrl"][f] >> k & 1))
+                sh = dict(f=f, team=team, idx=int(pm["roster"][f * 12 + k], 36), x=x0, y=y0, speed=speed,
+                          kind="shot" if carried >= 3 else "one-timer", result="save", human=bool(pm["ctrl"][f] >> k & 1))
                 gk = next((q for q in range((1 - team) * 6, (1 - team) * 6 + 6) if pm["role"][f * 12 + q] == "0"), None)
                 w2 = [r for r in work if r[1] != gk]
                 if gk is not None and grow.get(1 - team):
                     w2.append([0, gk, *grow[1 - team]])
-                side = 0
-                gl = 264 if XG.attacks_top(pm, f, team) else -264
-                if la and la[1] and (gl - P[3 * f + 1]) / la[1] > 0:
-                    cx = P[3 * f] + la[0] * (gl - P[3 * f + 1]) / la[1]
-                    side = 1 if cx > 8 else -1 if cx < -8 else 0
+                puck2 = list(P)                              # the model starts the puck from the match's puck array
+                puck2[3 * f:3 * f + 2] = [float(x0), float(y0)]
                 v = 0.0
-                for d, wgt in HEIGHTS[side]:
-                    one = dict(sh, aim={"d": d})
-                    XG._CACHE.clear()
-                    XG.add_expected_goals(dict(pm, work=sorted(w2), shotList=[one]), stick_rom=rom_bytes, lock=True)
-                    v += wgt * (one.get("xg") or 0.0)
+                soft = float(os.environ.get("NHL94_SHOT_SOFT", "0"))   # this share of the weight to the other two sides
+                sides = [(side, 1.0)] if not soft else [(sd, 1 - soft if sd == side else soft / 2) for sd in (-1, 0, 1)]
+                for sd_, sw_ in sides:
+                    for d, wgt0 in HEIGHTS[sd_]:
+                        one = dict(sh, aim={"d": d})
+                        XG._CACHE.clear()
+                        XG.add_expected_goals(dict(pm, work=sorted(w2), shotList=[one], puck=puck2), stick_rom=rom_bytes, lock=True)
+                        v += wgt0 * sw_ * (one.get("xg") or 0.0)
                 tot[team] += v
-                per.append(dict(video=round(v, 3), rec=(pair[jf].get("xg") if jf in pair else None), matched=jf in pair,
-                                kind=sh["kind"], rec_kind=pair[jf]["kind"] if jf in pair else None))
+                d = dict(video=round(v, 3), rec=(pair[jf].get("xg") if jf in pair else None), matched=jf in pair,
+                         kind=sh["kind"], rec_kind=pair[jf]["kind"] if jf in pair else None)
+                if jf in pair:                               # each input beside the recording's
+                    t = pair[jf]
+                    tf = t["f"]
+                    tg = next((q for q in range((1 - team) * 6, (1 - team) * 6 + 6) if tm["role"][tf * 12 + q] == "0"), None)
+                    d.update(dt=f - tf, spot=[round(sh["x"]), round(sh["y"])], rec_spot=[round(t["x"]), round(t["y"])],
+                             speed=sh["speed"], rec_speed=t["speed"], human=sh["human"], rec_human=bool(t.get("human")),
+                             goalie=[round(c) for c in xy(pm, f, gk)] if gk is not None else None,
+                             rec_goalie=[round(c) for c in xy(tm, tf, tg)] if tg is not None else None,
+                             gctl=bool(gk is not None and pm["ctrl"][f] >> gk & 1), rec_gctl=t.get("gctl") == "human",
+                             side=side, rec_aim=(t.get("aim") or {}).get("d"), result=t["result"],
+                             gframe=frame_of(pm, f, gk) if gk is not None else None,
+                             rec_gframe=frame_of(tm, tf, tg) if tg is not None else None, game=name)
+                per.append(d)
             rec = [sum(s.get("xg") or 0 for s in T if s["team"] == t and s["result"] != "blocked") for t in (0, 1)]
             print(f"{name} xG by team: recorded {rec[0]:.2f} / {rec[1]:.2f}, from video {tot[0]:.2f} / {tot[1]:.2f}")
             res.update(xg_rec=rec, xg_video=tot, per=per,
