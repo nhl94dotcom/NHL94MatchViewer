@@ -8571,6 +8571,25 @@ periods, penalties on).
   - Built before 15dfee5 with Clockwise on (retail, CDL, retail with fighting and more): applied again, each equals a
     fresh build.
 
+**SNES save states for a site that reads them (2026-11-22; `analysis/scoring_map/snes_savestate_samples.py`).** The
+league site's PHP reads RetroArch Snes9x states at fixed positions and fails on the newer ROMs. A computer game played
+to its end on retail, NHL94_Classic, the 2 MB build and the SA-1 build, each saved in RetroArch 1.17's layout
+("RASTATE" 01, "MEM " + a 32-bit length + the core's state padded to 8 bytes, "END " + 0: one of the user's own
+states wrapped again by the script comes out byte for byte the same), and each stat read back from the file's bytes.
+- **The file:** Snes9x's blocks are named ("RAM:" + a 6-digit length + ":"), in the same order and at the same
+  places on all four: work RAM's data at file offset 68,521 (131,072 bytes), the cartridge RAM's ("SRA") at 199,604
+  (524,288). Retail, Classic and the 2 MB build: 823,440 bytes. The SA-1 build: 823,536 (two more blocks at the end,
+  "SA1" and "SAR").
+- **Retail, Classic, 2 MB:** a stat at $7E:xxxx is at 68,521 + xxxx (the score words $178E at 74,551).
+- **SA-1:** the game's low RAM is in BW-RAM, which Snes9x saves as the cartridge RAM: $0100-$1FFF at 199,604 + $6000
+  + the address (the score at 230,210), $30F4-$47F3 and $E700-$E867 at 199,604 + the address (the scoring summary
+  $313A at 212,206). Work RAM at the fixed positions holds none of it: this is why the site fails.
+- **Per-player checks:** Classic $168E given / $16C2 taken (sums equal the team checks, 30 / 12 and 12 / 30); retail
+  keeps none (zeros); the 2 MB and SA-1 builds keep theirs at $E788 for / $E7BC against (pchf / pcha in the SA-1
+  repository's ram94snes.asm; sums 18 / 23 and 29 / 28, the team checks), a byte per roster place, the home team's 26
+  first, and $168E / $16C2 read 0 there (that range is the penalty summary's entries 20 on, as on retail).
+
+
 ## NOSE4Web's postsFix (e224658), 2026-11-20
 
 McMarkis's 2 MB builds count posts (tmposts $7E:E7F0) in PostCount, called from checkgoal's post branch. It read the team
