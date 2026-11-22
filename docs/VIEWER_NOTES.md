@@ -2071,3 +2071,14 @@ box score (the user's point), so two ways to more were tried on the games alread
   On matched shots: correlation 0.63-0.82, mean difference 0.07-0.15 a shot, the goalie's controller always right, his
   offset from the line sometimes far off (6 read as 15), one-timers read as plain shots. Not usable: the totals are
   low by half or more and can point the wrong way.
+- **Goals backward** (`goal_diag.py`, `goals_back.py`, `goal_trace_read.py`; the same day): each score-box goal
+  traced back along the read to its shot. At the true release of the 40 goals in the six games read whole, the read has
+  the shooter within 8 px 35 times, the goalie 37, the puck 34. Four rules for finding the release from the read
+  alone: the scoring team's last carrier (a phantom catch at the net mouth misleads it; one-timers go to the passer:
+  1 of 16 recognised); the last shooting animation (passes share its frames, and the frame-to-animation table
+  mislabels swings); the two together; the read puck's final fast straight run, on samples and on video frames. Each
+  gets the release within 6 samples and 12 units for 12-14 of the 40; the kind right for about 28; the goals' xG off
+  by 0.2-0.3 a goal on average (recorded 23.1 over the 40, from video 15-19 by rule), very sensitive to the release
+  sample (a few samples early and the puck is still on the stick: a slow shot, xG near 0). Where the read is clean
+  the trace is exact (release +0, spot within 5 units, xG 0.65 against 0.50); it isn't clean often enough. Stopped
+  here.
