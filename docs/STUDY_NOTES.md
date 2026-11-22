@@ -8652,6 +8652,18 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   close-up in the game (faceoff_shots.py, nosebuilds/fotoe): on both, each centre's blade taped at the toe (the two
   toes meeting at the puck), the heel and bend in stick colour, home and away alike; the rest of the close-up as the
   originals. The opening faceoff only.
+- **The 37 more taped frames in play** (2026-11-22, NOSE4Web 4cf109b: nhl94_clockwise_more_tape 91FC2E1C,
+  CDL_Season_12_clockwise_more_tape 8D82CFD4; `gen_frame_edit_check.py`). From one play state, every frame number
+  0-840 given to every skater (the frame word, set three frames running: the screen is built a frame behind; goalies
+  left alone: a goalie given another frame goes into a save move of his own), the screen against the same from
+  Clockwise's own edit (retail + his IPS; it fails the checksum test at power-on, so retail plays into the state).
+  **Exactly the 37 listed frames show a change, and 541** (the goalie frame that shares a tile pair with one of them:
+  the same 4 pixels of tape). Every skater on the screen shows the same pixels for a frame (3 for 89, 4 for most
+  goalie frames, 5 for 461, 6 for 754 and 786, 7 for 489, 8 for 305 and 678; 1 for the eyes of 168, 615, 627), all
+  black, on the stick; nothing anywhere else on the screen. The CDL build against CDL Season 12 (which has none of
+  Clockwise's edit: 755 frames change): the same counts for the 37. Looked at enlarged: the goalie frames' tape is
+  on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
+  being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
 ## The benches and penalty boxes in the rink maps: NHL '94 Genesis, NHL '95 Genesis, NHL '94 SNES (2026-11-20)
 
