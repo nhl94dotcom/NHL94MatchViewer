@@ -1,0 +1,139 @@
+"""NOSE4Web's "one fight per game" (Genesis NHL '94 on chaos's fights, 2026-11-21: nhl94_fight_once.bin D8E3BDA0,
+nhl94_fight_once_momentum.bin 82631D1D). Once a player has fought he can't fight again that game: checkfight's test
+at $20025E takes .exit when either player's bit is set; the mark at $20030C sets both fighters' bits; StartGame clears
+them ($77D8). RAM $FFF754-$F75B: a bit per roster index, the home team's 4 bytes first.
+
+Computer games one after another in one session (gen_fight_momentum_check's boot, 5-minute periods, penalties On
+Except Off-sides, line changes off), every skater's fighting rating (+$74) held at 14 between fights (with it nearly
+every hard hit is a fight on the plain build), the fighters' strengths set low once a fight is on (it ends sooner).
+The mark bytes are set to $FF at Game Setup before the first game (StartGame must clear them). Logged:
+- each fight: the two fighters (team, roster index), and whether either had fought earlier that game (a repeat);
+- the mark bytes at every change, and at each game's start;
+- each period's penalty summary ($C5DC: a count byte, then 4 bytes: time, team | rule, roster index): fighting majors
+  ($26 / $28) and instigator minors ($2A).
+Run on the build and on a fighting build without the option (the control: repeats expected there).
+
+python gen_fight_once_check.py ROM OUT GAMES"""
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+import gen_ot_check as G
+import lowload
+from emu import Emu
+from gen_fight_momentum_check import CLOCK, GSP, SCREEN, computer, rec, OPTPEN, OPTLINE, PERLEN, SEED
+
+MARKS = 0xF754
+PENSUM = 0xC5DC
+
+
+def marks(e):
+    return [e.b(MARKS + i) for i in range(8)]
+
+
+def penalties(e):
+    """The summary as gen_fight_check reads it: a word, its length in bytes; then 4 bytes each from +2: the time word,
+    team | rule, roster index."""
+    n = e.w(PENSUM)
+    out = []
+    if 0 < n <= 240:
+        for i in range(n // 4):
+            code = e.b(PENSUM + 4 + 4 * i)
+            out.append((code & 0x7F, code >> 7, e.b(PENSUM + 5 + 4 * i)))   # rule, team (high bit), roster index
+    return n, out
+
+
+def run(rom, out, n):
+    lowload.gentle()
+    out.mkdir(parents=True, exist_ok=True)
+    e = Emu(rom)
+    G.to_setup(e, out)
+    e.setw(OPTPEN, 2)
+    e.setw(OPTLINE, 1)
+    e.setw(PERLEN, 0)
+    for i in range(8):
+        e.setb(MARKS + i, 0xFF)                     # StartGame must clear these
+    if not G.into_play(e):
+        raise SystemExit("never reached play")
+    e.setl(SEED, 0x2545F491)
+    ours = tuple(e.b(a) for a in G.TEAMS)
+    log = open(out / "fight_once.jsonl", "w")
+
+    def note(**k):
+        log.write(json.dumps(k) + "\n")
+        log.flush()
+        print(k, flush=True)
+
+    game, frame, still, last_clk = 1, 0, 0, None
+    note(what="game start", game=game, marks=marks(e))
+    fought, fight_at, fighters, nfights, prev_gsp, late = set(), None, set(), 0, e.w(GSP), False
+    prev_marks = marks(e)
+    tally = Counter()
+    pen_seen = 0
+    while game <= n and frame < 60 * 60 * 60 * n:
+        mine = tuple(e.b(a) for a in G.TEAMS) == ours
+        if frame % 60 == 0:
+            computer(e)
+            c = e.w(CLOCK)
+            still = still + 1 if c == last_clk else 0
+            last_clk = c
+            if frame % 3600 == 0:
+                lowload.breathe()
+        if fight_at is None:
+            for k in range(12):
+                e.setb(rec(k) + 0x74, 14)
+        e.run(1, hold=["START"] if still >= 8 and e.b(SCREEN) not in (0, 0x80) and frame % 60 < 4 else [])
+        frame += 1
+        gsp = e.w(GSP)
+        now = {k for k in range(12) if e.b(rec(k) + 0x63) & 1}
+        if now and fight_at is None:
+            fight_at, fighters = frame, set(now)
+        if fight_at is not None:
+            fighters |= now
+            if frame - fight_at == 12 and len(fighters) == 2:
+                lo, hi = sorted(fighters)
+                e.setw(rec(lo) + 0x44, 3)
+                e.setw(rec(hi) + 0x44, 5)
+            if frame - fight_at == 13:
+                ids = sorted((0 if k < 6 else 1, e.b(rec(k) + 0x66)) for k in fighters)
+                rep = [i for i in ids if i in fought]
+                nfights += 1
+                tally["fights"] += 1
+                tally["repeats"] += bool(rep)
+                note(what="fight", game=game, gsp=gsp, clock=e.w(CLOCK), fighters=ids, repeat=rep,
+                     already=sorted(fought))
+                fought |= set(ids)
+            if not now and frame - fight_at > 60:
+                fight_at = None
+        if frame % 30 == 0:
+            cnt, pens = penalties(e)
+            if len(pens) < pen_seen:
+                pen_seen = 0
+            for rule, team, who in pens[pen_seen:]:
+                kind = "fighting" if rule in (0x26, 0x28) else "instigator" if rule == 0x2A else "other"
+                tally[kind] += 1
+                note(what="penalty", game=game, gsp=gsp, clock=e.w(CLOCK), rule=hex(rule), team=team, roster=who,
+                     kind=kind)
+            pen_seen = len(pens)
+        m = marks(e)
+        if m != prev_marks:
+            note(what="marks", game=game, gsp=gsp, clock=e.w(CLOCK), marks=m, was=prev_marks)
+            prev_marks = m
+        if mine and gsp != prev_gsp:
+            if gsp >= 2:
+                late = True
+            if gsp == 0 and late:
+                game += 1
+                late = False
+                fought = set()
+                if game > n:
+                    break
+                note(what="game start", game=game, marks=marks(e))
+        if mine:
+            prev_gsp = gsp
+    note(what="end", **tally, frames=frame)
+
+
+if __name__ == "__main__":
+    run(sys.argv[1], Path(sys.argv[2]), int(sys.argv[3]))

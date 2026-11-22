@@ -8672,6 +8672,27 @@ the 48-column rink map; Away sits on the upper bench, Home on the lower; the pen
   85+ of the same map.
 Work files in the scoring_map runs folder (bench/).
 
+## NOSE4Web's "one fight a game", played (2026-11-21; fightonce builds)
+
+nhl94_fight_once.bin D8E3BDA0, nhl94_fight_once_momentum.bin 82631D1D, NHL_95_fight_once.bin 573CE0DC,
+NHL94_fight_once.smc 04429DE9, nhl94snes_2026_fight_once.sfc 94208CDB, nhl94_2026_fight_once.sfc 6F67F456, each against
+a fighting build of its layout without the option (nhl94_fight_momentum.bin; NHL_95_fighting.bin; the 11-20 momentum /
+blocks SNES ports). `gen_fight_once_check.py` (Genesis: games back to back in one session, every fighting rating 14),
+`gen95_fight_once_check.py` (the check tension held at 40+, +$74 at 12), `snes_fight_once_check.py` (ratings 14; on
+McMarkis's builds OptFights 0 or 2, whistle). Computer games only; the mark bytes set to $FF before the first game.
+- **No repeats on any build: 0 in 214 fights** (NHL '95 68, Genesis 9 + 5, SNES 1 MB 6, 2 MB 43, SA-1 43 + 1). The
+  controls: NHL '95 115 of 157 fights had a fighter who had fought already, 2 MB 14 of 52, SA-1 18 of 60, Genesis 1 of
+  8 (1 MB 3 fights, none).
+- **The marks:** cleared at the start (from $FF) on every build; on the Genesis (games back to back) cleared again at
+  each next game's start. Each of the 160 mark changes on the SNES and NHL '95 builds added exactly the next fight's two
+  fighters (byte i bit j = roster index 8i + j, home first), nothing else wrote the eight bytes in whole games. NHL '95:
+  the pflags team bit agreed with the record number in 68 of 68 fights.
+- **Penalties:** Genesis fighting majors exactly two a fight on both (18 for 9, 16 for 8): no major without a fight;
+  instigator minors only with fights. (The SNES penalty-buffer count runs high on build and control alike, about 2.5 a
+  fight: not exact enough to show the same.)
+- **Not shown:** whistle mode (the computer made no after-whistle fights on the 2 MB build or its control; one on the
+  SA-1 build); the pause menu, replays and a shootout during these games; a person's fights.
+
 ## NOSE4Web's older options, played at last: checkFix, ppPkFix, aggressionFix, comebackFix, SNES hotColdFix (2026-11-21)
 
 NOSE4Web's single-option builds (mv_review_2026-11-21/untested: nhl94_checkFix 04770d90, nhl94_ppPkFix 8af32bde,
