@@ -2082,3 +2082,18 @@ box score (the user's point), so two ways to more were tried on the games alread
   sample (a few samples early and the puck is still on the stick: a slow shot, xG near 0). Where the read is clean
   the trace is exact (release +0, spot within 5 units, xG 0.65 against 0.50); it isn't clean often enough. Stopped
   here.
+- **Shots from swings** (`swing_diag.py`, `swing_events.py`; the same day, the first step that gained). Every shot
+  and pass shows a swing: the skater's sprite on his shooting frames (96-143, six a facing; the first of each six is
+  the plain stance, in the skating animations all game, so left out). The six reads show a swing frame by the right
+  skater at 91% of recorded shots (168 of 185; xG 0.3+ 57 of 63; goals 35 of 40). A swing's release: the first sample
+  from its start with the puck leaving him at 2.2 units a sample (within 3 samples of the recording's for about 80%;
+  the swing can start 20 samples before). Shot or pass is learnt from recorded games (30 Genesis games, the two test
+  sessions left out: 3,561 swings, 953 of them shots; 16 features of the spot, the puck's flight after, who had it
+  before and next; 300 boosted one-feature thresholds in numpy): on its own games 863 of 953 shots at 0.5 with 95
+  false. On the six test games: from the recordings' own slices 178 of 220 shots (xG 0.3+ 61 of 70), 21 false; **from
+  the video reads 155 of 220 (xG 0.3+ 54 of 70), 28 false**. xG by team, recorded / from video (xg_from_read's
+  ratings and aim): BOS-TOR game 1 3.61, 6.06 / 2.10, 3.45; game 2 5.95, 2.32 / 5.64, 0.88; BOS-CHI game 1 5.86, 2.70 /
+  4.60, 3.52; game 2 5.29, 8.01 / 4.19, 3.77; game 3 0.51, 5.04 / 2.37, 3.30; game 4 3.13, 3.61 / 4.66, 2.87: 41.3
+  of 52.1 in all (the old shot finder's reads gave about 40%), the side with more xG right in 4 games of 6, a team's
+  total off by 1.5 on average. Next, in order: the classifier on recordings (81% of shots there: the ceiling), then
+  each shot's inputs from video (release, speed, the goalie's offset).
