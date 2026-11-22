@@ -2118,3 +2118,15 @@ box score (the user's point), so two ways to more were tried on the games alread
   which, default none) helped nothing: matched xG 33.5 of 38.5 with the old inputs; the time alone 33.1, the spot 31.8,
   the speed 35.2 with more shots far apart, the side 27.4; a share of the weight to the other two sides
   (NHL94_SHOT_SOFT) 31.2 at 0.3, 29.7 at 0.5. The old inputs stay.
+- **Why the reads are slow, and twice as fast** (the same day; a profile of 150 frames, `python -m cProfile` on
+  run_reader.py). At full speed the reader did about 1 frame a second, of which: 55% `full_search` (a new or
+  re-checked sprite: every template's silhouette against the window by FFT, 274 searches in 150 frames, 40% of all
+  the time in the inverse transform of 1,400 80 x 80 arrays), 23% `score` (the tracker: 25 likely frames, both ways
+  round, at 49 points for each of 12 tracks every frame), 7% the hidden carrier, 5% colour coding, 3% decoding.
+  Changed, the output identical row for row: the search wants each template only at the few rows and 11 columns
+  where its feet sit on the seed, so the template's own offset goes into its stored transform as a phase and only
+  those rows are transformed back (a product, then one short inverse); `score` skips clipping for sprites wholly on
+  the screen. Now about 2 frames a second at full speed. (A cache of searches by window pixels hit 15 times in 274:
+  dropped.) The rest of the wait is the quiet mode itself: throttling (about 4x), each worker resting as long as it
+  works (2x), two workers. Not done: a compiled inner loop (needs a compiler or numba installed), reading every other
+  frame (the tracker's reach and the swing frames' length would need testing).

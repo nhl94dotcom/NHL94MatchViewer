@@ -125,15 +125,22 @@ def score(img, bg, tpl, pts):
     """Scores of a template at screen points pts (n, 2: sy, sx) in a coded frame: (score, matched, pixels)."""
     ys, xs, cs = tpl
     H, W = img.shape
-    Y = ys[None, :] + pts[:, :1]
-    X = xs[None, :] + pts[:, 1:]
-    ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
-    Yc, Xc = Y.clip(0, H - 1), X.clip(0, W - 1)
-    v, b = img[Yc, Xc], bg[Yc, Xc]
-    ok &= v >= 0                                  # pixels marked -1 (static sprites, off the ice) count neither way
-    match = ((v == cs) & ok).sum(1)
-    bgm = ((v == b) & (cs != b) & ok).sum(1)
-    n = ok.sum(1)
+    py, px = pts[:, 0], pts[:, 1]
+    if len(ys) and ys.min() + py.min() >= 0 and ys.max() + py.max() < H and xs.min() + px.min() >= 0 and xs.max() + px.max() < W:
+        # wholly on the screen (most): one flat index, no clipping (2026-11-22: a third of the reader's time was here)
+        lin = (ys * W + xs)[None, :] + (py * W + px)[:, None]
+        v, b = img.take(lin), bg.take(lin)
+        ok = v >= 0
+    else:
+        Y = ys[None, :] + pts[:, :1]
+        X = xs[None, :] + pts[:, 1:]
+        ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
+        Yc, Xc = Y.clip(0, H - 1), X.clip(0, W - 1)
+        v, b = img[Yc, Xc], bg[Yc, Xc]
+        ok &= v >= 0                              # pixels marked -1 (static sprites, off the ice) count neither way
+    match = np.count_nonzero((v == cs) & ok, axis=1)
+    bgm = np.count_nonzero((v == b) & (cs != b) & ok, axis=1)
+    n = np.count_nonzero(ok, axis=1)
     return match - 0.5 * (n - match) - bgm, match, n
 
 
@@ -267,7 +274,17 @@ class Reader:
                 yy, xx = y - top[i], x - lef[i]
                 k = (yy < S) & (xx < S)
                 masks[i, yy[k], xx[k]] = 1
-            self._sil = (np.fft.rfft2(masks), masks.sum((1, 2)), top, lef)
+            # each template's correlation is wanted only where its lowest pixels sit at the seed: the same few rows
+            # and columns for every seed once the template's own offset is taken out. That shift goes into the
+            # transform here (a phase), stored (kx, template, ky) for full_search's product.
+            F = np.fft.rfft2(masks)
+            bu = (S - 4 - bot + top).astype(np.float64)
+            bv = (S // 2 - fx + lef).astype(np.float64)
+            ky = np.arange(S)[None, :, None]
+            kx = np.arange(S // 2 + 1)[None, None, :]
+            ph = np.exp(2j * np.pi * (ky * bu[:, None, None] + kx * bv[:, None, None]) / S)
+            Fs = np.ascontiguousarray((np.conj(F) * ph).transpose(2, 0, 1).astype(np.complex64))
+            self._sil = (Fs, masks.sum((1, 2)), top, lef)
         return self._sil
 
     def full_search(self, img, bg, seed, teams=(0, 1), dys=(-2, -1, 0, 1, 2), keep=30):
@@ -288,16 +305,16 @@ class Reader:
         sub = img[ya:yb, xa:xb]
         win[ya - r0:yb - r0, xa - c0:xb - c0] = ((sub != bg[ya:yb, xa:xb]) & (sub >= 0))
         known[ya - r0:yb - r0, xa - c0:xb - c0] = (sub >= 0)
-        # correlation: hits[i, u, v] = sprite pixels under template i with its top-left at (u, v)
-        hits = np.fft.irfft2(np.conj(F) * np.fft.rfft2(win)[None], s=(S, S))
-        # the placements allowed: lowest row at the seed's row + dy, foot within 5 columns
+        # correlation: h[i, a, b] = sprite pixels under template i with its lowest row at the seed's + dys[a] and its
+        # foot at the seed's column + b - 5. Only those rows are transformed back (2026-11-22: the whole 80 x 80
+        # inverse for every template was 40% of the reader's time): the y inverse as a product at the rows wanted,
+        # then the x inverse. The counts are whole numbers, rounded to them.
         dyr = np.array(dys)
         dxr = np.arange(-5, 6)
-        u = (sy0 - bot[:, None] + top[:, None] + dyr[None, :]) - r0          # (P, len(dys))
-        v = (sx0 - fx[:, None] + lef[:, None] + dxr[None, :]) - c0           # (P, 11)
-        U = np.broadcast_to(u[:, :, None], (len(keys), len(dyr), len(dxr))) % S
-        V = np.broadcast_to(v[:, None, :], (len(keys), len(dyr), len(dxr))) % S
-        h = hits[np.arange(len(keys))[:, None, None], U, V]
+        Wt = np.fft.rfft2(win).T.astype(np.complex64)                                   # (kx, ky)
+        E = np.exp(2j * np.pi * np.arange(S)[:, None] * dyr[None, :] / S).astype(np.complex64) / S   # (ky, rows)
+        R = np.matmul(F, Wt[:, :, None] * E[None])                                        # (kx, P, rows)
+        h = np.rint(np.fft.irfft(R.transpose(1, 2, 0), n=S, axis=-1)[:, :, dxr % S])
         sil = (1.5 * h - 0.5 * size[:, None, None]) / size[:, None, None]
         flat = sil.reshape(len(keys), -1)
         bi = flat.argmax(1)
