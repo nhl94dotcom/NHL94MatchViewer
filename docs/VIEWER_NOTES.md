@@ -2157,3 +2157,12 @@ box score (the user's point), so two ways to more were tried on the games alread
   little now. lowload's defaults are 8 workers and 35%; the game scripts split a read into NHL94_READ_PARTS (8)
   stretches. A game should take about an hour and a half (35,600 frames at 8 x 0.9 a second), not 13. More parts
   mean more cold starts of the tracker (7 joins a game for 1): watched in the first read's score.
+- **A second fresh game, and eight workers in practice** (2026-11-23). BOS-TOR game 4: its last 9,630 frames read
+  by eight workers under the new settings in 57 minutes (2.8 frames a second together: 0.36-0.48 each, a quarter of
+  a core apiece with the cores at two thirds of their speed: the fan test's fresh 0.9 doesn't last), joined after
+  the 26,000 the two old workers had read (10 pieces, 9 cold starts). A whole game is then about 3.5 hours, not 13.
+  The shot finder, as on game 3 (fitted on the recordings and the six first reads): **23 of 33 shots, 10 of 13 at xG
+  0.3+, 8 false; xG by team 5.02 / 2.27 for the recorded 5.29 / 2.31** (off by 0.27 and 0.04). The two fresh games
+  together: 49 of 66 shots (74%), 19 of 25 dangerous, 16 false, the four team totals off by 0.24, 0.57, 0.27, 0.04.
+  The older event reads on game 4: passes 73 of 99, hits 44 of 68, zone entries 46 of 53, faceoffs 15 of 16,
+  turnovers 45 of 50 with 79 read; possession's team right on 87% of carried samples.
