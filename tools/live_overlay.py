@@ -13,11 +13,13 @@ to show. Kinds: goal, big_save, big_miss, post, big_hit, hit, injury, penalty, g
 A big save is a saved shot of xG BIG_SAVE_XG or more; a big miss, one of those that went wide.
 
 python tools/live_overlay.py MATCH.js [OUT]   writes stats.json and obs/ for a finished match file (a test)."""
+import bisect
 import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import deserve  # noqa: E402
 import season  # noqa: E402
 
 BIG_SAVE_XG = 0.30
@@ -51,8 +53,9 @@ def abbr(m, team):
     return (m.get("team1"), m.get("team2"))[team] or ("HOME", "AWAY")[team]
 
 
-def team_stats(m, s, team):
-    """The numbers for one team from season.summarize's team summary (and the other team's, for save %)."""
+def team_stats(m, s, team, final=False):
+    """The numbers for one team from season.summarize's team summary (and the other team's, for save %). final: the
+    game is over (deserve-to-win then counts the overtime that wasn't played)."""
     t, o = s["teams"][team], s["teams"][1 - team]
     pct = lambda a, b: round(100 * a / b) if b else None
     xg = t.get("xg") or [0, 0, 0, 0]
@@ -81,6 +84,7 @@ def team_stats(m, s, team):
         "takeaways": t.get("take", 0),
         "giveaways": t.get("give", 0),
         **more_stats(m, s, team),
+        **story_stats(m, s, team, final),
     }
 
 
@@ -125,6 +129,66 @@ def more_stats(m, s, team):
         "checks_all_hfw": hfw(person + cpu),
         "cb_right": f"{right}/{len(judged)}" if original else None,
         "cb_right_pct": round(100 * right / len(judged)) if original and judged else None,
+    }
+
+
+def game_seconds(m, i):
+    """Game seconds played up to sample i (the clock's own count, period by period)."""
+    period, clock = m["period"], m["clock"]
+    total = 0
+    for p in range(period[i]):
+        a, b = bisect.bisect_left(period, p), bisect.bisect_left(period, p + 1)
+        if b > a:
+            total += max(0, clock[a] - clock[b - 1])
+    a = bisect.bisect_left(period, period[i])
+    return total + max(0, clock[a] - clock[i])
+
+
+def story_stats(m, s, team, final=False):
+    """Who is really ahead, and how (2026-11-22, the user: more stats for the stream):
+    deserve_pct       the chance this team wins on the chances so far (tools/deserve.py, the viewer's "deserved to
+                      win"; during a game the two don't add to 100: the rest is level)
+    big_chances       attempts worth BIG_SAVE_XG or more, as goals / chances
+    xg_per_shot       expected goals per attempt that has one (the quality of the average look)
+    shot_kinds        attempts as shots / one-timers / pass shots
+    manual_goalie     shots on goal faced with a person on the goalie, as saves / faced
+    check_passes      bursts at the person's carrier answered with a pass that reached a teammate, as passed / bursts
+    lead_time         game time spent ahead
+    turnovers_to_shots   this team's turnovers that became a shot against within 5 s (real), and goals: shots / goals"""
+    t = s["teams"][team]
+    shots = [x for x in m.get("shotList", []) if x["team"] == team and x.get("kind") in ("shot", "one-timer", "pass shot")]
+    rated = [x for x in shots if x.get("xg") is not None]
+    big = [x for x in rated if x["xg"] >= BIG_SAVE_XG]
+    faced = [x for x in m.get("shotList", []) if x["team"] == 1 - team and x.get("gctl") == "human"
+             and x.get("result") in ("save", "goal")]
+    bursts = [e for e in m.get("checkPasses", []) if e["team"] == team]
+    try:
+        last = len(m["t"]) - 1
+        d = deserve.deserve(m, None if final else max(0, last - 1)) if rated or any(
+            x.get("xg") is not None for x in m.get("shotList", [])) else None
+    except Exception:
+        d = None
+    lead, at, diff = 0, 0, 0
+    if m.get("t"):
+        for g in sorted(m.get("goals", []), key=lambda g: g["f"]):
+            if g.get("team") not in (0, 1) or g["f"] >= len(m["t"]):
+                continue
+            now = game_seconds(m, g["f"])
+            if diff * (1 if team == 0 else -1) > 0:
+                lead += now - at
+            at, diff = now, diff + (1 if g["team"] == 0 else -1)
+        if diff * (1 if team == 0 else -1) > 0:
+            lead += game_seconds(m, len(m["t"]) - 1) - at
+    to_shot = t.get("toShot") or [0, 0]
+    return {
+        "deserve_pct": round(100 * d["win"][team]) if d else None,
+        "big_chances": f"{sum(1 for x in big if x.get('result') == 'goal')}/{len(big)}" if rated else None,
+        "xg_per_shot": round(sum(x["xg"] for x in rated) / len(rated), 2) if rated else None,
+        "shot_kinds": "/".join(str(sum(1 for x in shots if x["kind"] == k)) for k in ("shot", "one-timer", "pass shot")),
+        "manual_goalie": f"{sum(1 for x in faced if x['result'] == 'save')}/{len(faced)}",
+        "check_passes": f"{sum(1 for e in bursts if e.get('out') == 0)}/{len(bursts)}" if "checkPasses" in m else None,
+        "lead_time": clock_text(round(lead)),
+        "turnovers_to_shots": f"{to_shot[0]}/{to_shot[1]}",
     }
 
 
@@ -238,7 +302,7 @@ def build(m, status="live"):
     ev = events(m)
     return {"status": status, "game": m.get("name"), "system": m.get("system"),
             "period": per, "clock": clock_text(c),
-            "teams": [{"name": (m.get("team1"), m.get("team2"))[t], "abbr": abbr(m, t), "stats": team_stats(m, s, t)}
+            "teams": [{"name": (m.get("team1"), m.get("team2"))[t], "abbr": abbr(m, t), "stats": team_stats(m, s, t, status == "final")}
                       for t in (0, 1)],
             "events": sorted([e for e in ev if e["kind"] != "hit"][-KEEP:] + [e for e in ev if e["kind"] == "hit"][-10:],
                              key=lambda e: e["f"])}

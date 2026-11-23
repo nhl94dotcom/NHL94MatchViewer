@@ -70,7 +70,10 @@ const LABELS = { goals: 'Goals', shots: 'Shots', attempts: 'Attempts', xg: 'xG',
   corsi_pct: 'Corsi %', fenwick_pct: 'Fenwick %', pdo: 'PDO', possession: 'Possession', possession_pct: 'Possession %',
   attack_zone_per_goal: 'Zone time / goal', zone_entries: 'Zone entries', zone_entries_kinds: 'Entries C / P / D',
   bobbled: 'Bobbled passes', checks_person: 'Checks (person)', checks_person_hfw: 'Hit / failed / whiff (person)',
-  checks_all: 'Checks (all)', checks_all_hfw: 'Hit / failed / whiff', cb_right: 'C or CB right', cb_right_pct: 'C or CB right %' };
+  checks_all: 'Checks (all)', checks_all_hfw: 'Hit / failed / whiff', cb_right: 'C or CB right', cb_right_pct: 'C or CB right %',
+  deserve_pct: 'Deserve to win %', big_chances: 'Big chances (goals / chances)', xg_per_shot: 'xG per shot',
+  shot_kinds: 'Shots / one-timers / pass shots', manual_goalie: 'Manual goalie (saves / faced)',
+  check_passes: 'Passed out of a check', lead_time: 'Time leading', turnovers_to_shots: 'Turnovers to shot / goal' };
 const KIND = { goal: 'GOAL', big_save: 'SAVE', big_miss: 'MISS', big_hit: 'HIT', hit: 'HIT', post: 'POST', injury: 'INJURY',
   penalty: 'PENALTY', giveaway: 'GIVEAWAY', fight: 'FIGHT', streak: 'STREAK' };
 const STATS = (P.get('stats') || 'shots,xg,hits,faceoffs,power_play,save_pct').split(',').filter(Boolean);
@@ -172,10 +175,12 @@ function render(data) {
 const DEMO = { status: 'live', game: 'demo', period: '2nd', clock: '4:12', teams: [
   { abbr: 'PHI', stats: { shots: 16, attempts: 21, xg: 2.35, hits: 18, knockdowns: 16, faceoffs: '10/17', faceoff_pct: 59,
     passes: '30/48', pass_pct: 62, power_play: '1/2', save_pct: 84.6, shooting_pct: 19, penalties: 1, pim: 2, attack_zone: '4:58',
-    one_timers: '3/5', breakaways: '0/3', posts: 1, takeaways: 10, giveaways: 13, goals: 3 } },
+    one_timers: '3/5', breakaways: '0/3', posts: 1, takeaways: 10, giveaways: 13, goals: 3, deserve_pct: 52, big_chances: '2/4',
+    xg_per_shot: 0.11, shot_kinds: '14/5/2', manual_goalie: '3/4', check_passes: '6/15', lead_time: '9:20', turnovers_to_shots: '4/1' } },
   { abbr: 'CHI', stats: { shots: 13, attempts: 22, xg: 1.76, hits: 23, knockdowns: 22, faceoffs: '7/17', faceoff_pct: 41,
     passes: '21/41', pass_pct: 51, power_play: '0/1', save_pct: 81.3, shooting_pct: 15, penalties: 2, pim: 4, attack_zone: '5:30',
-    one_timers: '1/2', breakaways: '0/3', posts: 0, takeaways: 13, giveaways: 14, goals: 2 } }],
+    one_timers: '1/2', breakaways: '0/3', posts: 0, takeaways: 13, giveaways: 14, goals: 2, deserve_pct: 31, big_chances: '1/3',
+    xg_per_shot: 0.08, shot_kinds: '17/4/1', manual_goalie: '5/6', check_passes: '4/12', lead_time: '2:05', turnovers_to_shots: '5/2' } }],
   events: [
     { id: 1, kind: 'goal', period: '1st', clock: '3:40', text: '1st 3:40 - GOAL PHI: #8 Mark Recchi (1), from Rod Brind\'Amour [one-timer] - PHI 1-0 CHI' },
     { id: 2, kind: 'penalty', period: '2nd', clock: '1:05', text: '2nd 1:05 - PENALTY CHI: #7 Chris Chelios, Roughing (2 min)' },

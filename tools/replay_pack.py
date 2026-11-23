@@ -90,7 +90,7 @@ def state(m, f, all_events, status="live"):
     return {"status": status, "game": m.get("name"), "system": m.get("system"), "period": per,
             "clock": live_overlay.clock_text(clk),
             "teams": [{"name": (m.get("team1"), m.get("team2"))[t], "abbr": live_overlay.abbr(m, t),
-                       "stats": live_overlay.team_stats(c, s, t)} for t in (0, 1)],
+                       "stats": live_overlay.team_stats(c, s, t, f >= len(m["t"]) - 1)} for t in (0, 1)],
             "events": [{k: v for k, v in e.items() if k != "reveal"} for e in keep]}
 
 

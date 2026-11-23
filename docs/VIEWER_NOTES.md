@@ -582,6 +582,18 @@ as "Streaming guide.txt"). `tests/live_overlay_replay.py CAPTURE OUT [SPEED]` fe
 full-RAM snapshots, full.bin.gz, which the live converter also reads) into the pipeline at real speed and logs how far
 behind play each update and each event is.
 
+### Eight more overlay stats (2026-11-22)
+
+The user, streaming a replay pack: more numbers on the panel. `live_overlay.story_stats` (live and replay alike; OBS
+text files too): `deserve_pct` (tools/deserve.py on the chances so far: not final during a game, so the two sides don't
+add to 100; final at the game's end: `team_stats(..., final)`, from build's status and the pack's last sample),
+`big_chances` (attempts of xG 0.30+, goals / chances), `xg_per_shot`, `shot_kinds` (shots / one-timers / pass shots),
+`manual_goalie` (shots on goal faced with a person on the goalie, saves / faced), `check_passes` (bursts at the
+person's carrier answered by a pass that reached a teammate / bursts), `lead_time` (game time ahead, from the goals
+and `game_seconds`), `turnovers_to_shots` (the summary's toShot: shots / goals against within 5 s (real) of a
+turnover). Labels in overlay.html; both guides list them. tests/replay_pack_check.py now compares the pack's last
+state with the finished game's build (82 of 82).
+
 ### The replay overlay: stats over a video of games already played (2026-11-13)
 
 The streamer wanted a "virtually live" stream of the user's BOS-CHI series (four games, one RetroArch recording of the

@@ -99,6 +99,16 @@ A5. Choose what the panel shows. Everything is set in its address. Open the sour
                          (Genesis with the original checking only: C into a man 2+ weight points heavier, CB
                          otherwise), as right / judged
           cb_right_pct   the same as a percentage
+          deserve_pct    the chance of winning on the chances created so far ("deserved to win"; during a game the
+                         two sides don't add to 100: the rest is "level")
+          big_chances    chances worth 0.30 expected goals or more, as goals / chances
+          xg_per_shot    expected goals per attempt (how good the average look was)
+          shot_kinds     attempts as shots / one-timers / pass shots
+          manual_goalie  shots faced with the person on the goalie, as saves / faced
+          check_passes   times a checker came at the person's puck carrier and he got a pass away to a teammate,
+                         as passed / times
+          lead_time      game time spent in the lead
+          turnovers_to_shots   turnovers that became a shot against within 5 seconds, and goals: shots / goals
     - events=...      which events appear, separated by commas. Without it, all of these but big_hit and hit
                       appear. Choose from:
           goal       goals, with scorer, assists, type (one-timer, power play ...) and "tying goal" / "go-ahead goal"

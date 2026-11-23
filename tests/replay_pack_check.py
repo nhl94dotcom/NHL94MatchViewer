@@ -34,7 +34,7 @@ def check(path):
             got, game = got[2:], game[2:]   # the final carries the shootout's winning goal; the counter doesn't
         if got != game:
             bad.append(f"sample {f} ({st['period']} {st['clock']}): goals/shots {got}, the game's {game}")
-    full, last = live_overlay.build(m), replay_pack.state(m, n - 1, ev)
+    full, last = live_overlay.build(m, "final"), replay_pack.state(m, n - 1, ev)   # the last state is the finished game
     if full["teams"] != last["teams"]:
         bad.append("last state's numbers differ from the live build")
     if [e["id"] for e in full["events"]] != [e["id"] for e in last["events"]]:

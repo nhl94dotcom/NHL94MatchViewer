@@ -2,7 +2,7 @@
 computer plays differs from one people play; for better simulations and the bot). Each game: power-on, Game Setup
 with the league's settings (5-minute periods, penalties on except offsides (Genesis) / On, No Offside (SNES), line
 changes off; NHL94_CVC_LINES=on turns line changes on), a matchup of its own (game n: home team (7 n) mod 26, visitors (7 n + 11) mod 26, the two different), its
-own random seed, the computer on both sides (pads taken off every second), START tapped through the screens that wait;
+own random seed (NHL94_CVC_MATCHUPS="17-15,19-17": the matchups, home-visitors by team number, game n the n-th), the computer on both sides (pads taken off every second), START tapped through the screens that wait;
 recorded from the first frame of play to the end of the game (the final horn, or 60 minutes (real) at most): every
 frame a sample of the system's BLOCKS as the helper keeps them (an 8-byte millisecond stamp, then the blocks: the
 Genesis words in the emulator's host order, as RetroArch shows them), a full RAM snapshot every 10 s, capture.json.
@@ -32,6 +32,10 @@ DRAIN = os.environ.get("NHL94_CVC_DRAIN") == "on"
 
 
 def teams_for(n):
+    if os.environ.get("NHL94_CVC_MATCHUPS"):                 # "17-15,19-17": game n takes the n-th (round again)
+        pairs = os.environ["NHL94_CVC_MATCHUPS"].split(",")
+        h, a = pairs[n % len(pairs)].split("-")
+        return int(h), int(a)
     h = (7 * n) % 26
     a = (7 * n + 11) % 26
     return h, (a + 1) % 26 if a == h else a
