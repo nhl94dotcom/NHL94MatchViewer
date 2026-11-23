@@ -104,7 +104,9 @@ def record_snes(rom, n, folder, fast, full, watch=None):
     # Game Setup: row 1 Home, row 2 Visitor (RIGHT until HomeTeam $1C98 / VisTeam $1C9A read the team, as
     # snes_logo_spill_check; writing Opt1team / Opt2team didn't take), then rows 3 and 4 as snes_60fps_cvc sets them
     # (from 1765 frames of intro on, the presses land before Game Setup: the waits of games 0-4 again)
-    M.play(e, f"w{1500 + 53 * (n % 5)} START w240 START w240 DOWN w20", folder)
+    # (2026-11-23: 40 a step, not 53: NOSE4Web's season ROMs reach the title a little sooner than retail, and at
+    # 1,712 frames their presses came before Game Setup: game 4 of every five never started)
+    M.play(e, f"w{1500 + 40 * (n % 5)} START w240 START w240 DOWN w20", folder)
     for addr, team in ((0x1C98, h), (0x1C9A, a)):
         for _ in range(40):
             if m.w(addr) == team:

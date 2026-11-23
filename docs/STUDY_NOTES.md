@@ -8665,6 +8665,45 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
   being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
+## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
+
+A league's report on its 1996 World Cup of Hockey ROM (1996 World Cup of Hockey (update).smc, 2E8759F1, 2 MB): a
+player injured for the game in a fight came out of the box when his penalty ended, played on and scored.
+`analysis/scoring_map/snes_fight_injury_return.py` (computer games, fights pushed, the loser always hurt; each hurt
+fighter's tmpdst at every change, whether he is on the ice (an object of his team with his pnum, a position 0-5, not
+parked at x -240: an idle object keeps its last pnum, which first read as 120 s "on the ice" in the box), his shifts
+after the box, his points).
+
+- **The ROM.** An SA-1 build (header map $23), within about 550 bytes of McMarkis's current SA-1 build
+  (nhl94snes_SA1.sfc ACEC52BA) over the first 640 KB; it has his fix of 2026-10-18 (485ec28a): fightinj is read at
+  $40:E74E (4 places) and fightinjany at $40:E782 (3): BW-RAM, not bank $7E. The older World Cup ROM (216B4903) differs
+  from it by 6 bytes of code. Its fight penalty is 2:00 (the league's choice), its own default has line changes on.
+- **What happens** (6 games, 3 with line changes on and 3 off: 14 fighters hurt, 12 through their penalty by the
+  final horn). Each one's tmpdst: $FFFC at the fight, $0078 (2:00, no flags) counting down, **$FFFC again the moment
+  it reaches 0, and $FFFC to the game's end**: FightInjuredKeep does its work. **And all 12 skated**: on the ice at
+  the frame the penalty ended, 5-224 game seconds (lines on: 5, 13, 36, 96, 113, 224; off: 32, 68, 70, 83, 97, 103).
+  None on the ice during the penalty; none scored in these games.
+  - Followed shift by shift (10 of the 12): he comes on at the box door (x 136, y -60 home / +60 visitors) with the
+    clock running, at a wing (position 3 or 5 whatever his own), plays **one shift** and never another; it ends at
+    the next stoppage (8 of 10; all 4 with line changes off) or at a line change on the fly (2, lines on): 10 to 94
+    s (real).
+- **The cause: FightCoincidental tests for exactly 5 minutes.** (NHL94SNES-SA1 src/routines/fights/FightHelpers.asm:
+  `cmp.w #(5*60)|$2000` on the penalized player's time, then an opponent whose box time `and #$07FF` is `5*60`.)
+  Only then are the two fighters' penalties made coincidental ($4000). At 2:00 neither test passes: the fighters sit
+  two ordinary penalties, and an ordinary penalty's end puts the player on the ice from the box; FightInjuredKeep
+  then marks him $FFFC, but nothing takes a player off the ice before the players are next set.
+  - McMarkis's current SA-1 build (5:00, $412C): 2 hurt fighters through their majors, 0 s on the ice after.
+  - NOSE4Web's 1 MB fights with the fix (NHL94_fight_once.smc 04429DE9; marks at $7E:FE80 / $FEB4; 5:00, $412C): 3
+    through, 0 s on the ice after. (NOSE4Web's fight-time option kept the flag at 2:00, $4078, in the 2026-11-13 runs.)
+  - **Proved on a scratch copy of the World Cup ROM**, two values changed and nothing else: file $1C3657 `2C 21` ->
+    `78 20` (`cmp #$2078`: 120 s | $2000) and $1C3680 `2C 01` -> `78 00` (`cmp #$0078`). The same games: the
+    fighters' words are $4078, and **5 of 5 hurt fighters through their penalty stayed off the ice** (0 s; the first,
+    who had skated 5 s on the league's ROM, among them). The same two instructions are at the same file offsets in
+    McMarkis's current build.
+- **Not seen, likely with it:** without the flag the penalties are not paired, so a power-play goal could let a
+  fighter out early and the two could count against their teams' strength; here both went in together and every one
+  served his full 119-120 s. An ordinary injury followed by a penalty wasn't tested.
+
 ## NOSE4Web's real-season ROMs, played: 1992-93 and 1985-86, Genesis and SNES (2026-11-22 / 23)
 
 genesis_nhl94_season_1992-93 (2CC9F301), genesis_nhl94_season_1985-86 (FF026A95, then 92E55748: Coffey's Offensive
