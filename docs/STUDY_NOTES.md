@@ -8665,6 +8665,55 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
   being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
+## NOSE4Web's real-season ROMs, played: 1992-93 and 1985-86, Genesis and SNES (2026-11-22 / 23)
+
+genesis_nhl94_season_1992-93 (2CC9F301), genesis_nhl94_season_1985-86 (FF026A95, then 92E55748: Coffey's Offensive
+Awareness 4 -> 5), snes_nhl94_season_1992-93 (63D40118), snes_nhl94_season_1985-86 (DC3220E7, then 649BE891), against
+retail on the 1992-93 matchups. Computer games recorded and converted as people's are (`cvc_record.py` with
+NHL94_CVC_MATCHUPS: 5-minute periods, penalties on, line changes off, so a team plays its first line, its special
+units and its starter), summed by `analysis/season_rom_report.py`. 9 games a ROM (8 on the two SNES season ROMs: game
+4 never left the menus, the harness's presses landing before Game Setup at its 1,712-frame wait; the ROMs' intro runs
+a few frames differently from retail's; not a fault). 1992-93 and retail: Pittsburgh-Ottawa (x2), San Jose-Pittsburgh,
+Chicago-Edmonton, Ottawa-Detroit, Boston-San Jose, Edmonton-Pittsburgh, Pittsburgh-Chicago, Detroit-Ottawa. 1985-86:
+Edmonton-Detroit (x2), New Jersey-Edmonton, Philadelphia-Los Angeles, Detroit-Philadelphia, Edmonton-Pittsburgh,
+Toronto-Edmonton, Islanders-Edmonton, Pittsburgh-New Jersey.
+
+- **Everything played.** 52 games to the final horn, every one converted: names, numbers, roster places, goalies and
+  lines read as the ROM has them; the same two harmless flags of the check (a pulled goalie, an empty record) on
+  retail as on the season ROMs. Not looked at: the menus, Edit Lines and the stats screens.
+- **Goals and saves a game** (both teams; the game's own counts):
+  | | goals | shots on goal | save % |
+  |---|---|---|---|
+  | Genesis retail | 3.3 | 25.9 | 87.1 |
+  | Genesis 1992-93 | 3.0 | 24.6 | 87.8 |
+  | Genesis 1985-86 | 3.8 | 27.6 | 86.3 |
+  | SNES retail | 2.7 | 34.1 | 92.2 |
+  | SNES 1992-93 | 3.9 | 35.4 | 89.0 |
+  | SNES 1985-86 | 3.4 | 34.1 | 90.1 |
+  Genesis 1992-93 is retail's. SNES 1992-93 gives up 1.2 goals a game more than SNES retail on the same matchups (31
+  in 8 games against 24 in 9): not settled by this many games.
+- **The stars.** The team's leading scorer was one of its three best-rated skaters on the ice for 6 of 7 teams
+  (Genesis 1992-93), 5 of 6 (SNES 1992-93), 7 of 8 and 6 of 6 (1985-86); retail 2 of 6 and 6 of 6. Points a game by
+  rating rank fall off after the third (Genesis 1985-86: 1.06, 0.78, 0.89, then 0.28, 0.33, 0.39).
+  - Edmonton 1985-86, first line Gretzky, Kurri, Anderson, Coffey, Huddy (Messier, rated 91, is on a lower line and
+    never plays with line changes off): Gretzky 4 goals and 2 assists in 6 Genesis games, 8 and 1 in 5 SNES games;
+    Anderson 5 and 0, 2 and 1; Kurri 2 and 2, 1 and 0. **Gretzky leads the team in goals, not in assists** (the
+    computer's centre shoots): Huddy has the most assists on both (3).
+  - Pittsburgh 1992-93, first line Lemieux, Stevens, Tocchet (retail's has Jagr, who is not among the season ROM's
+    five best): Stevens 5 goals, Lemieux 2 and 2 (Genesis); Tocchet 4 and 3, Stevens 3 and 3, Lemieux 2 and 1 (SNES).
+- **Coffey against the other defencemen** (the rebuilt ROMs' games in with the first: 6 Genesis, 5 SNES): Genesis 1.0
+  attempts, 0.26 xG, 0.33 assists a game (Huddy 0.7, 0.11, 0.50; Flyers' McCrimmon 2.5 attempts and 0.70 xG in 2
+  games); SNES 3.2 attempts a game, the most of any defenceman there, 0.09 xG, no points (Huddy 2.0, 0.08, 1 goal and
+  3 assists). No sign yet that he creates more than a good defenceman; too few games to tell 5 from 4.
+- **Team strength:** too few games. Edmonton 1985-86 won 2 of 6 (Genesis) and 3 of 5 (SNES); Pittsburgh 1992-93 4 of
+  5 and 2 of 5 (retail 3 of 5 and 4 of 5); Ottawa 1992-93 1 of 4 and 2 of 4 (retail 1 of 4 and 0 of 4).
+- **Goalies:** starters by the ROM's first goalie: Edmonton 1985-86 Moog (rated 70; Fuhr 57), San Jose 1992-93
+  Hackett (40; retail Irbe 50), Pittsburgh 1992-93 Barrasso 92 (retail 74), Edmonton 1992-93 Ranford 51 (retail 66).
+  Save % by goalie is a few dozen shots each: no pattern by rating yet (Froese, rated 95: 88.5 and 92.9; Hrudey, 96:
+  13 of 13 and 8 of 10; Stefan, 42: 76.5 and 93.0).
+- **Seen in the lists:** the 1985-86 ROMs keep retail's Anaheim, Florida, Ottawa, San Jose and Tampa Bay rosters and
+  the 1993 All-Star teams.
+
 ## One fight a game with the season shootout, and the SNES power-play pair's totals (2026-11-22, for NOSE4Web)
 
 **The builds:** nhl94_fight_once_shootout.bin (D4C9C257) and NHL94_fight_once_shootout.smc (1E13AF1A);
