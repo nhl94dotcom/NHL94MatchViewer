@@ -2148,3 +2148,12 @@ box score (the user's point), so two ways to more were tried on the games alread
   the recorded 2.82 / 5.17** (off by 0.24 and 0.57; the side with more right). From the recording's own slice the
   finder gets 28 of 33 and 11 of 12 here, 8 false. The 7 missed from video: 3 with no swing read near the shooter, 2
   timed right but scored low, 2 mistimed. One game: the six before averaged 1.4 off a team.
+- **Quiet mode was mostly waiting; now eight workers** (2026-11-23). The user's fan test: 2, then 4, then 8 more
+  half-time workers for 5 minutes each on top of two readers and a game: no fan at any. And the test's workers read
+  0.9-1.0 frames a second where the two on game 4 read 0.37: those had used 20% of a core each over 7.5 hours, not
+  the 50% the rests allow. The wait on a busy machine (over 10%: 2026-11-22) was the cause: three or four of our own
+  one-thread jobs are 12% of 32 threads, so the readers and the season games waited on the day's test games (up to
+  60 s a rest). Per frame the readers use 0.57 s of processor, the full-speed figure: the power throttling costs
+  little now. lowload's defaults are 8 workers and 35%; the game scripts split a read into NHL94_READ_PARTS (8)
+  stretches. A game should take about an hour and a half (35,600 frames at 8 x 0.9 a second), not 13. More parts
+  mean more cold starts of the tracker (7 joins a game for 1): watched in the first read's score.

@@ -37,9 +37,10 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
 - Durations in reports, write-ups and docs are game seconds (the game clock: 1 game second = 24 frames = 0.4 s of real
   time, both systems; `tools/gametime.py`). Windows keep their real length and are labelled in game seconds (5 s real =
   12.5 game s). Split-second timings (button presses, a pass's lead, air time, reactions) stay real seconds, marked (real).
-- Long emulator runs and batch jobs in gentle mode (`analysis/scoring_map/lowload.py`: at most 2 workers at idle
-  priority, each resting as long as it works, and resting on while the whole machine is over 10% busy, e.g. NOSE4Web
-  working on the same computer; Windows' power throttling left on: quiet; the user's fan).
+- Long emulator runs and batch jobs in gentle mode (`analysis/scoring_map/lowload.py`: at most 8 workers at idle
+  priority, each resting as long as it works, and resting on while the whole machine is over 35% busy, e.g. NOSE4Web
+  working on the same computer; Windows' power throttling left on: quiet; the user's fan, which stayed off through 10
+  such workers in their test of 2026-11-23. If the fan comes on in a long run, step down to 6).
 
 ## After changes
 
