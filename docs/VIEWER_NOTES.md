@@ -2142,3 +2142,9 @@ box score (the user's point), so two ways to more were tried on the games alread
   dropped.) The rest of the wait is the quiet mode itself: throttling (about 4x), each worker resting as long as it
   works (2x), two workers. Not done: a compiled inner loop (needs a compiler or numba installed), reading every other
   frame (the tracker's reach and the swing frames' length would need testing).
+- **A fresh game** (2026-11-23): BOS-TOR game 3 (2026-11-01, never read before; the reader's own set-up from the
+  BOS-CHI session) read whole by the faster reader, then the shot finder fitted on the 30 recordings and all six
+  earlier reads (nothing from this game). **26 of 33 shots, 9 of 12 at xG 0.3+, 8 false; xG by team 3.06 / 4.60 for
+  the recorded 2.82 / 5.17** (off by 0.24 and 0.57; the side with more right). From the recording's own slice the
+  finder gets 28 of 33 and 11 of 12 here, 8 false. The 7 missed from video: 3 with no swing read near the shooter, 2
+  timed right but scored low, 2 mistimed. One game: the six before averaged 1.4 off a team.
