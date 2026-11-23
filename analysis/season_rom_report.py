@@ -9,6 +9,8 @@ For each folder:
   in these games, so a team plays its first line, its power-play and penalty-kill units and its starting goalie);
 - each team: games, goals for and against, shots, and its skaters who played, by points: goals, assists, the ROM's
   overall rating and where that ranks among the team's skaters (1 = the team's best);
+- the defencemen (those who played LD / RD): attempts, shots on goal, xG, goals and assists a game, with their overall
+  rating and Offensive Awareness (for one defenceman against the others);
 - across the folder: how the top-rated skater on the ice did against his team mates (was the team's leading scorer
   one of its three best-rated who played?), the points of the players by rating rank, and the goalies: shots on goal
   faced, goals, save %.
@@ -32,7 +34,7 @@ def report(folder):
     files = [f for f in files if not f.name.startswith("season")]
     print(f"\n=== {Path(folder).name}: {len(files)} games")
     team = defaultdict(lambda: dict(gp=0, gf=0, ga=0, sf=0, sa=0, w=0, players=defaultdict(lambda: [0, 0]), on=Counter(),
-                                    roster=None, goalie=Counter()))
+                                    roster=None, goalie=Counter(), dmen=Counter(), shots=defaultdict(lambda: [0, 0, 0.0])))
     odd = Counter()
     goalies = defaultdict(lambda: [0, 0])
     for f in files:
@@ -71,6 +73,8 @@ def report(folder):
                             odd["a skater in goal"] += 1
                     else:
                         T["on"][idx] += 1
+                        if r in "12":
+                            T["dmen"][idx] += 1
                         if p.get("g"):
                             odd["a goalie skating"] += 1
                     if idx in seen and seen[idx] != "0" and r != "0":
@@ -85,6 +89,12 @@ def report(folder):
             T["players"][g["scorer"]][0] += 1
             for a in g.get("assists", []):
                 T["players"][a[0]][1] += 1
+        for s in m.get("shotList", []):
+            if s.get("team") in (0, 1) and s.get("idx") is not None and s.get("kind") in ("shot", "one-timer", "pass shot"):
+                v = team[names[s["team"]]]["shots"][s["idx"]]
+                v[0] += 1
+                v[1] += bool(s.get("counted"))
+                v[2] += s.get("xg") or 0.0
         for s in m.get("shotList", []):
             if s.get("counted") and s.get("result") in ("save", "goal") and s.get("goalie") is not None:
                 key = (names[1 - s["team"]], s["goalie"])
@@ -118,6 +128,17 @@ def report(folder):
         for i, c in T["goalie"].most_common():
             sa, ga = goalies[(name, i)]
             print(f"    in goal: {R[i]['name']} (rated {R[i].get('ovr')}): {sa} shots on goal, {ga} goals" + (f", save % {100 * (sa - ga) / sa:.1f}" if sa else ""))
+    print("  defencemen (those on the ice at LD / RD), a game: attempts, shots on goal, xG, goals, assists")
+    for name, T in sorted(team.items()):
+        R = T["roster"]
+        for i, c in T["dmen"].most_common():
+            if c * 30 / 60 < 120 or i >= len(R):          # under 2 minutes (real) at the position: a fill-in
+                continue
+            a, sog, xg = T["shots"][i]
+            g, ast = T["players"][i]
+            n = T["gp"]
+            print(f"    {name[:12]:12s} {R[i]['name']:20s} rated {R[i].get('ovr'):>3}  OfA {R[i]['a'][3] if len(R[i].get('a', [])) > 3 else '?'}   "
+                  f"{a / n:.1f} att  {sog / n:.1f} SOG  {xg / n:.2f} xG  {g / n:.2f} G  {ast / n:.2f} A   ({n} games)")
     print(f"  the team's leading scorer was one of its three best-rated skaters who played: {lead_top3} of {lead_n} teams")
     print("  points a game by rating rank among the skaters who played (1 = best):",
           ", ".join(f"{k + 1}: {v[0] / v[1]:.2f}" for k, v in sorted(by_rank.items())[:6] if v[1]))
