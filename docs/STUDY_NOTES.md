@@ -8700,6 +8700,22 @@ after the box, his points).
     fighters' words are $4078, and **5 of 5 hurt fighters through their penalty stayed off the ice** (0 s; the first,
     who had skated 5 s on the league's ROM, among them). The same two instructions are at the same file offsets in
     McMarkis's current build.
+- **NOSE4Web's fix, played** (88cb854: syncFightPairing sets FightCoincidental's two values from the fight's minutes
+  in the ROM's own penalty table, Penaltylist's $2A entry; the league's ROM has 05 -> 02 at file $578A and $57AA).
+  1996_World_Cup_of_Hockey_update_fight_pairing.smc (3E287D42): 8 bytes from the league's ROM (the two values and the
+  header checksum), the scratch copy but for the checksum.
+  - **Hurt fighters:** 15 in 6 games (3 with line changes on, 3 off), 13 through their penalty, **none on the ice
+    after**; their words $4078 (the first listed reads $0078 until his opponent is listed), $FFFC at the end and on.
+  - **Fighters not hurt** (`--all`, 3 games, 5 through): $4078 for the full 2:00, then $4000, then the bench and the
+    ice by turns ($FFFE / $FFFF): 1 to 4 shifts each afterwards (21-266 game seconds), the first at a faceoff (4) or
+    a line change in play (1); not from the box door.
+  - **Strength** (fight_time_check's tmap while each sat, the same three games on both ROMs): the league's ROM 5
+    against 5 of 6 (both a man short: 4 on 4) through a fight's penalties; the fixed ROM 6 against 6 (full strength).
+    Every fighter served 118-121 s on both; ordinary penalties still ended early at a power-play goal on both (stays
+    of 5, 11, 18, 74, 77 s). No goal fell while fighters sat.
+  - **Nothing else:** two games with nothing pushed, the same seeds on both ROMs: the same players penalized at the
+    same times for the same stays up to each game's first fight (the computer fights by itself on this ROM), different
+    after it as the strength differs.
 - **Not seen, likely with it:** without the flag the penalties are not paired, so a power-play goal could let a
   fighter out early and the two could count against their teams' strength; here both went in together and every one
   served his full 119-120 s. An ordinary injury followed by a penalty wasn't tested.

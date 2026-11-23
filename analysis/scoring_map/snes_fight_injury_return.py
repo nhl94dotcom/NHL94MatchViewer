@@ -19,7 +19,7 @@ $FFFC after it, points scored after he was hurt.
 His shifts after the box are listed: where and when he comes on, and at each end whether the clock was stopped (a
 whistle) and how many team mates left the ice with him (a line change).
 
-python snes_fight_injury_return.py ROM OUT GAMES [FIRST] [--lines] [--fight=N] [--nose]   (--nose: NOSE4Web's 1 MB fights)"""
+python snes_fight_injury_return.py ROM OUT GAMES [FIRST] [--lines] [--fight=N] [--nose] [--all]   (--nose: NOSE4Web's 1 MB fights; --all: every fighter, hurt or not)"""
 import json
 import sys
 from pathlib import Path
@@ -33,6 +33,7 @@ PNUM, PFTEAM, PFLAGS, FIGHTING, AGGRESS = 0x12A3, 0x1503, 0x1283, 0x1463, 0x1483
 GOALS, ASSISTS, OPTLINE, FIGHTER, OPTFIGHTS = 0x18EE, 0x1922, 0x34C6, 0x0400, 0xE708
 LINES = "--lines" in sys.argv
 FIGHT = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--fight=")), 9)
+ALL = "--all" in sys.argv          # follow every fighter, hurt or not (injured: his fightinj byte)
 NOSE = "--nose" in sys.argv        # NOSE4Web's 1 MB fights: the marks at $7E:FE80 (fightinjany $FEB4), no OptFights
 if NOSE:
     FIGHTINJ, FIGHTINJANY = 0xFE80, 0xFEB4
@@ -84,7 +85,10 @@ def run(rom, out, games, first):
             if on and not fighting:
                 fights += 1
             fighting = on
-            ice = {}
+            ice, infight = {}, set()
+            for k in range(12):
+                if m.w(PFLAGS + o(k)) & FIGHTER and (m.w(PNUM + o(k)) & 0xFF) < 26:
+                    infight.add((1 if m.w(PFTEAM + o(k)) else 0) * 26 + (m.w(PNUM + o(k)) & 0xFF))
             for k in range(12):
                 p = m.w(PNUM + o(k)) & 0xFF
                 role = m.w(0x0F43 + o(k))             # on the ice: a position 0-5 and not parked at x -240 (an idle
@@ -95,8 +99,8 @@ def run(rom, out, games, first):
             for j in range(52):
                 w = m.w(TMPDST + 2 * j)
                 if j not in hurt:
-                    if byte(FIGHTINJ + j):
-                        hurt[j] = dict(game=n, slot=j, team=j // 26, roster=j % 26, marked=[m.w(GSP), m.w(CLOCK)],
+                    if byte(FIGHTINJ + j) or (ALL and j in infight):
+                        hurt[j] = dict(game=n, slot=j, injured=bool(byte(FIGHTINJ + j)), team=j // 26, roster=j % 26, marked=[m.w(GSP), m.w(CLOCK)],
                                        words=[[m.w(GSP), m.w(CLOCK), f"{w:04X}"]], boxed=False, freed=None,
                                        ice_before=0, ice_in_box=0, ice_after=0, pts=[byte(GOALS + j), byte(ASSISTS + j)],
                                        not_out_after=0, stints=[], on=False)
@@ -104,6 +108,8 @@ def run(rom, out, games, first):
                              word=f"{w:04X}")
                     continue
                 h = hurt[j]
+                if byte(FIGHTINJ + j):
+                    h["injured"] = True
                 if f"{w:04X}" != h["words"][-1][2]:
                     box_now = w < 0x8000 and (w & 0x07FF)
                     if not (box_now and h["words"][-1][2][0] in "0124567" and len(h["words"]) > 3 and abs(int(h["words"][-1][2], 16) - w) <= 2
