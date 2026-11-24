@@ -2166,3 +2166,11 @@ box score (the user's point), so two ways to more were tried on the games alread
   together: 49 of 66 shots (74%), 19 of 25 dangerous, 16 false, the four team totals off by 0.24, 0.57, 0.27, 0.04.
   The older event reads on game 4: passes 73 of 99, hits 44 of 68, zone entries 46 of 53, faceoffs 15 of 16,
   turnovers 45 of 50 with 79 read; possession's team right on 87% of carried samples.
+- **A third fresh game, another session** (2026-11-23). BOS-WPG game 1 (the 2026-10-18 video, never read; set-up
+  from the four BOS-CHI games; 30,040 frames in 12 pieces, six workers: eight brought the user's fan on a little
+  after a reboot, six were silent). The shot finder, unchanged: **18 of 24 shots, 6 of 7 at xG 0.3+, 3 false; xG by
+  team 2.96 / 1.45 for the recorded 4.02 / 1.59** (off by 1.06 and 0.14: the largest miss of the six team totals;
+  five of the six missed shots had their release found and timed right but scored under the line). Three fresh
+  games: 67 of 90 shots (74%), 25 of 32 dangerous, 19 false. The older event reads: passes 60 of 77 (66 read), hits
+  40 of 56, zone entries 47 of 52, faceoffs 12 of 12 (20 read), turnovers 35 of 46 (64 read), check attempts 38 of
+  58; possession's team right on 83% of carried samples.
