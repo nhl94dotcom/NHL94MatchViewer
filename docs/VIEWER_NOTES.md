@@ -2256,6 +2256,12 @@ box score (the user's point), so two ways to more were tried on the games alread
     new reads. The other seven reads are as they were.
   - **A whole game's read now takes about 1 h 10 min on six gentle workers** (1.1-1.3 frames a second each since the
     computer's restart on 2026-11-23; 0.4 before it), the star pass half an hour more on one.
+- **Where the video's xG goes missing** (2026-11-24, the nine reads' `_swingshots.json` under the star's carriers:
+  recorded 69.7, from video 56.5). Shots not found: 13.5 xG (59 shots, 0.23 each: about as dangerous as the found
+  ones). Shots called that weren't: +5.6 (35). The 216 found: 50.9 for the recorded 56.9, each off by 0.12 on
+  average, 13 under by 0.3+ and 8 over; one-timers read as one-timers 15.9 for 19.3, shots as shots 34.3 for 35.5;
+  with a person in goal (41 shots) 3.5 low, the computer's goalie (153) 2.5 low. So finding the missing fifth of the
+  shots is worth twice what valuing the found ones better is.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
