@@ -2174,3 +2174,20 @@ box score (the user's point), so two ways to more were tried on the games alread
   games: 67 of 90 shots (74%), 25 of 32 dangerous, 19 false. The older event reads: passes 60 of 77 (66 read), hits
   40 of 56, zone entries 47 of 52, faceoffs 12 of 12 (20 read), turnovers 35 of 46 (64 read), check attempts 38 of
   58; possession's team right on 83% of carried samples.
+- **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
+  frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
+  logo; no recording: the league database has the game's totals).
+  - stream_locate's box (68, 100, 440, 312; rink match 0.81) was a few pixels off: the rink's lines missed.
+    `reader/fit_crop.py` fits the box against the drawn rink's lines from 12 placed frames at full size: 63, 98,
+    447.5 x 313.75 (1.748 x 1.401 the console's picture); the camera's share on a test stretch 0.807 -> 0.832.
+    The camera placed 16,097 of 18,452 frames with the rough box; the score-box clock read.
+  - The reader's set-up takes a stream now: `NHL94_INV_CROP=X,Y,W,H` (`NHL94_INV_SCALE` the resize: area, neighbor,
+    bicubic and lanczos alike), and a timeline with no games reads with nothing to score against.
+  - **The reader found no player** (200 frames, any resize, the fitted box, colours snapped to the scene's palette or
+    not): the coded picture agrees with the drawn rink on 76-77% of pixels (recordings 89-94%), and the best
+    template at a lone skater scores -0.45 where 0.45 is needed. Every pixel of a streamed sprite is a blend of its
+    neighbours; exact colour codes can't match it.
+  - **A soft match does find him**: each template drawn over the rink at the camera, blurred (Gaussian, sigma 0.9
+    screen pixels), compared with the video in RGB: a lone Calgary skater's best is his own team, the pose and place
+    right by eye, residual 23.1 against 28.6 for the next template and 51 for the median (45.7 with no sprite). So a
+    stream needs the reader's scoring rebuilt on blurred RGB templates, not a tolerance.

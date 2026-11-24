@@ -70,8 +70,18 @@ st = np.pad(static, 1)
 st = st[:-2, :-2] | st[1:-1, 1:-1] | st[2:, 2:] | st[:-2, 2:] | st[2:, :-2]
 
 
+# A stream (2026-11-23, a Twitch video with no recording): NHL94_INV_CROP=X,Y,W,H (stream_locate.py) cuts the game's
+# picture out and resizes it to 256 x 224, as camera_track does; a timeline with no games ({"fps": 30, "games": [],
+# "segments": []}) reads with nothing to score against (transitions from NHL94_INV_TRANS_GAMES).
+CROP = [int(v) for v in os.environ["NHL94_INV_CROP"].split(",")] if os.environ.get("NHL94_INV_CROP") else None
+if CROP:
+    C.CROP = CROP
+_VF = ["-vf", ("crop={2}:{3}:{0}:{1},scale=256:224:flags=" + os.environ.get("NHL94_INV_SCALE", "area")).format(*CROP)] if CROP else []
 VW = 320                                            # the video's width (2026-11-21: a 256-wide recording was read as 320)
 try:
+    if CROP:
+        VW = 256
+        raise KeyError
     import re as _re
     _p = subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-i", str(VIDEO)], capture_output=True)
     VW = int(_re.search(rb"Video:.*?, (\d{3,4})x224", _p.stderr).group(1))
@@ -81,7 +91,7 @@ except Exception:
 
 def frames(first, count):
     cmd = [imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "fatal", "-threads", "1", "-i", str(VIDEO),
-           "-an", "-fps_mode", "passthrough", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
+           "-an", "-fps_mode", "passthrough", *_VF, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     n = 0
     try:
@@ -112,7 +122,7 @@ def measure_dx(n=30, near=3):
     shares = {dx: [] for dx in range(61, 67)}
     for fi in picks:
         cmd = [imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-loglevel", "fatal", "-threads", "1", "-ss",
-               f"{fi / FPS:.4f}", "-i", str(VIDEO), "-an", "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
+               f"{fi / FPS:.4f}", "-i", str(VIDEO), "-an", "-frames:v", "1", *_VF, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
         b = subprocess.run(cmd, capture_output=True).stdout
         if len(b) < VW * 224 * 3:
             continue
@@ -161,8 +171,8 @@ trans = INV.transitions([load(n) for n in _pool] if _pool else [load(n) for i, n
 print("transitions from", len(trans), "frames", flush=True)
 
 # the truth: video frame per sample of game 1
-m = load(tl["games"][TEST_GAME])
-N = len(m["t"])
+m = load(tl["games"][TEST_GAME]) if tl["games"] else None      # None: a video with no recording
+N = len(m["t"]) if m else 0
 vf = np.full(N, np.nan)
 for sg in tl["segments"]:
     if sg[2] != TEST_GAME:
