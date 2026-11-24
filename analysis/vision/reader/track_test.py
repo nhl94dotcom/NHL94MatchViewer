@@ -58,6 +58,18 @@ if BEHIND_ROWS:
     lower = np.zeros_like(ice)
     lower[ice.shape[0] // 2:, cx - BEHIND_HALF:cx + BEHIND_HALF] = True     # the bottom end only
     ICE_READ = ice | (grown & lower)
+# NHL94_INV_GROW=N (2026-11-24): the read area grown N pixels past the ice's edge all round (a skater knocked down at
+# the boards or behind a net is drawn over them: of ten missed falls in BOS-WPG game 1, nine lay a quarter or more
+# outside the ice)
+GROW = int(os.environ.get("NHL94_INV_GROW", "0"))
+if GROW:
+    _g = ICE_READ.copy()
+    for _k in range(1, GROW + 1):
+        _g[_k:] |= ICE_READ[:-_k]
+        _g[:-_k] |= ICE_READ[_k:]
+        _g[:, _k:] |= ICE_READ[:, :-_k]
+        _g[:, :-_k] |= ICE_READ[:, _k:]
+    ICE_READ = _g
 # NHL94_INV_LEARNT=learnt_bottom.npz (learn_bg.py): read the strip behind the bottom net only where the video shows one
 # clear colour there (60%+ of the frames of the other games); the flickering net mesh and posts stay unread
 LEARNT = os.environ.get("NHL94_INV_LEARNT")

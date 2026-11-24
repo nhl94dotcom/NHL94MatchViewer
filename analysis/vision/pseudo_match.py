@@ -47,7 +47,7 @@ STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: 
 LONG_MISREAD = 600          # samples a misread of the clock may last (10 s real)
 import os as _os
 STAR2 = _os.environ.get("NHL94_STAR2", "1") != "0"     # the second pass's possession star decides the carrier
-STAR2_SHARE, STAR2_VISIBLE = 0.6, 8
+STAR2_SHARE, STAR2_VISIBLE = float(_os.environ.get("NHL94_STAR2_SHARE", "0.5")), int(_os.environ.get("NHL94_STAR2_VISIBLE", "6"))
 # no star seen and the puck tracker's carrier rests on one of these: loose (nine reads, such samples against the
 # recordings: "same carrier" truly loose 4,389, the read's team 1,967, the other team 280; "caught" 195 / 57 / 2;
 # "nearest stick" 65 / 36 / 7; "seen at a stick" 842 / 503 / 80)
