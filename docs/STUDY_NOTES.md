@@ -8747,6 +8747,11 @@ Toronto-Edmonton, Islanders-Edmonton, Pittsburgh-New Jersey.
   | SNES 1985-86 | 3.4 | 34.1 | 90.1 |
   Genesis 1992-93 is retail's. SNES 1992-93 gives up 1.2 goals a game more than SNES retail on the same matchups (31
   in 8 games against 24 in 9): not settled by this many games.
+- **The SNES 1992-93 goals gap didn't hold** (2026-11-23: 30 more games each on SNES retail and the new SNES
+  1992-93 ROM E0CEDD74, the same matchups and seeds, game for game; `cvc_record.py`'s menu waits shortened so no
+  fifth game is lost). Goals a game 2.40 (season) against 3.00 (retail): the season ROM 0.60 lower, standard error
+  0.35 over the 30 pairs; shots on goal 35.7 against 37.3 (1.6 lower, s.e. 1.8); save % 93.3 against 91.9. The first
+  batch's 3.9 against 2.7 was eight and nine games.
 - **The stars.** The team's leading scorer was one of its three best-rated skaters on the ice for 6 of 7 teams
   (Genesis 1992-93), 5 of 6 (SNES 1992-93), 7 of 8 and 6 of 6 (1985-86); retail 2 of 6 and 6 of 6. Points a game by
   rating rank fall off after the third (Genesis 1985-86: 1.06, 0.78, 0.89, then 0.28, 0.33, 0.39).
