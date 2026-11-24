@@ -112,6 +112,9 @@ def shot_inputs(m, r, k, gl):
     return f0, x0, y0, round(speed * 4096), side
 
 
+HOLD = int(os.environ.get("NHL94_SWING_HOLD", "0"))     # samples between looks at a held wind-up (0: off)
+
+
 def swings(m):
     """[(swing start, record)]: each skater's frame coming onto his shooting frames after 3+ samples off them."""
     n = len(m["t"])
@@ -125,6 +128,14 @@ def swings(m):
             on = frame_of(m, i, k) in SWING
             if on and off >= 3:
                 out.append((i, k))
+                held = 0
+            elif on and HOLD:
+                # 2026-11-24: a wind-up held (a one-timer waited for, a long slapshot) is looked at again every HOLD
+                # samples: the release is sought within 40 of a swing's start, and 7 of the nine reads' 59 missed
+                # shots (3.6 xG) had their shooter on his frames from more than 45 samples before the shot
+                held += 1
+                if held % HOLD == 0:
+                    out.append((i, k))
             off = 0 if on else off + 1
     return sorted(out)
 
@@ -459,7 +470,7 @@ def test(model_path, read_path):
                         XG.add_expected_goals(dict(pm, work=sorted(w2), shotList=[one], puck=puck2), stick_rom=rom_bytes, lock=True)
                         v += wgt0 * sw_ * (one.get("xg") or 0.0)
                 tot[team] += v
-                d = dict(video=round(v, 3), rec=(pair[jf].get("xg") if jf in pair else None), matched=jf in pair,
+                d = dict(f=int(f), team=team, video=round(v, 3), rec=(pair[jf].get("xg") if jf in pair else None), matched=jf in pair,
                          kind=sh["kind"], rec_kind=pair[jf]["kind"] if jf in pair else None)
                 if jf in pair:                               # each input beside the recording's
                     t = pair[jf]
