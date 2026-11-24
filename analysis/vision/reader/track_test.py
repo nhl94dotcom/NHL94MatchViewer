@@ -61,7 +61,7 @@ if BEHIND_ROWS:
 # NHL94_INV_GROW=N (2026-11-24): the read area grown N pixels past the ice's edge all round (a skater knocked down at
 # the boards or behind a net is drawn over them: of ten missed falls in BOS-WPG game 1, nine lay a quarter or more
 # outside the ice)
-GROW = int(os.environ.get("NHL94_INV_GROW", "0"))
+GROW = int(os.environ.get("NHL94_INV_GROW", "10"))    # 10 since 2026-11-24 (0: the ice alone, as the nine first reads)
 if GROW:
     _g = ICE_READ.copy()
     for _k in range(1, GROW + 1):

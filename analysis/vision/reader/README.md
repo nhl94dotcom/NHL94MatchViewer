@@ -18,7 +18,7 @@ against the game's recording. History and results: `docs/VIEWER_NOTES.md` (the v
 Settings (environment): `NHL94_INV_VIDEO`, `NHL94_INV_ROM`, `NHL94_INV_CAM` (from track_play), `NHL94_INV_TIMELINE`,
 `NHL94_INV_STATIC`, `NHL94_INV_TRANS_GAMES` (the games the transitions are learnt from, comma-separated),
 `NHL94_INV_MAPS`, `TEST_GAME` (the timeline's game read: never learnt from), `NHL94_INV_DX` (the rink line-up, to
-override the measurement). `NHL94_INV_CROP` (a stream: the game's picture, X,Y,W,H; a timeline with no games reads a video that has no recording). Unset, they default to the BOS-CHI session (2026-11-13). Work files (camera tracks, HUD
+override the measurement). `NHL94_INV_GROW` (pixels read past the ice's edge, 10; 0 as the first nine reads), `NHL94_INV_CROP` (a stream: the game's picture, X,Y,W,H; a timeline with no games reads a video that has no recording). Unset, they default to the BOS-CHI session (2026-11-13). Work files (camera tracks, HUD
 templates, masks, reads) stay in `%USERPROFILE%\NHL94_scoring_map\runs\vision`.
 
 A new session, whole: `video_sync.py` (timeline) -> `track_play.py` (camera) -> `run_reader.py` per half on two

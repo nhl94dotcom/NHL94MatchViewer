@@ -2241,6 +2241,21 @@ box score (the user's point), so two ways to more were tried on the games alread
   - Tried before it and dropped: short carries by one team between two of the other's removed (by length alone, each
     step lost a real turnover for every four false ones; only those without the old star evidence: 100 fewer false
     turnovers for 29 real ones and 5 shots).
+- **Hits: the falls at the boards** (2026-11-24). Nine reads: 392 of 574 hits matched (468 read, 76 with no
+  recorded hit). The 182 missed: the victim read at his spot but no fall frame 112, no skater of his team read there
+  45, a fall read but no checker within reach 22. Followed frame by frame in BOS-WPG game 1 (ten of the 112): all
+  at the side boards or behind a net, the track lost as he goes down: a skater knocked down there is drawn over the
+  boards, outside the ice the reader reads (nine of the ten a quarter or more outside it; behind the nets 70-78%).
+  - `NHL94_INV_GROW=N` (track_test): the read area grown N pixels past the ice's edge. The ten falls read again
+    (150 frames each): 1 read at 0, 4 at 10, 5 (more weakly) at 16; tracks in all +2%. Still missed: the three behind
+    a net (the nets' own mask) and three at the side boards.
+  - Two whole games read again at 10 (six workers, the star pass after), each beside its first read: BOS-WPG game 1
+    hits 40 -> 44 of 56 (46 -> 50 read), passes 63 -> 60, turnovers 37 -> 38, the carrier's team 86.6% -> 85.5%;
+    BOS-TOR game 2 hits 37 -> 39 of 52 (46 -> 47 read), passes 84 -> 84, turnovers 52 -> 53, 88.1% -> 87.8%. A
+    small gain for hits (77 -> 83 of 108, the read's extra hits real), nothing clearly lost: 10 is the default for
+    new reads. The other seven reads are as they were.
+  - **A whole game's read now takes about 1 h 10 min on six gentle workers** (1.1-1.3 frames a second each since the
+    computer's restart on 2026-11-23; 0.4 before it), the star pass half an hour more on one.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
