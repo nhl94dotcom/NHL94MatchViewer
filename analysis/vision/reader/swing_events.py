@@ -28,7 +28,11 @@ SWING = {f for f in range(96, 144) if (f - 96) % 6}      # the swing frames: six
 FAST = 2.2                                               # units a sample: a puck released, not carried
 AFTER, BEFORE = 45, 10
 FEATURES = ["dist_net", "off_centre", "to_line", "speed_after", "aim_error", "cross_x", "cross_ok", "speed_before",
-            "carried_before", "next_owner", "next_owner_t", "deepest", "nearest_net", "puck_gap", "heading_net", "swing_len", "released"]
+            "carried_before", "next_owner", "next_owner_t", "deepest", "nearest_net", "puck_gap", "heading_net", "swing_len", "released",
+            # 2026-11-23: the flight looked for around the release, not only at it (a video's release estimate a few
+            # samples off the recording's turned the aim round in a third of the shots only the recording found):
+            # the 6-sample move best aimed at the net among starts -2..+8 from the release, the puck moving
+            "best_aim", "best_cross", "best_speed", "best_off"]
 
 
 def frame_of(m, i, k):
@@ -163,8 +167,19 @@ def features(m, i0, k):
     d = (f - 96) // 6                                        # facing 0-7, 0 up the screen
     face = math.radians(90 - 45 * d)
     heading_net = abs((math.degrees(face - math.atan2(gl - y, -x)) + 180) % 360 - 180)
+    best = (180.0, 200.0, 0.0, 9.0)
+    for st in range(max(0, i - 2), min(n - 7, i + 8) + 1):
+        ax, ay = P[3 * st], P[3 * st + 1]
+        wx, wy = (P[3 * st + 18] - ax) / 6, (P[3 * st + 19] - ay) / 6
+        ws = math.hypot(wx, wy)
+        if ws <= 1.0:
+            continue
+        ae = abs((math.degrees(math.atan2(wy, wx) - math.atan2(gl - ay, -ax)) + 180) % 360 - 180)
+        if ae < best[0]:
+            cx = ax + wx * (gl - ay) / wy if wy * sg > 0.2 else 999.0
+            best = (ae, min(abs(cx), 200.0), ws, float(st - i))
     return [math.hypot(x, gl - y), abs(x), sg * (gl - y), sp, aim_error, min(abs(cross_x), 200.0), float(abs(cross_x) <= 26),
-            sb, carried, nxt, nt, deep, near, math.hypot(x - px, y - py), heading_net, i - i0, float(got)]
+            sb, carried, nxt, nt, deep, near, math.hypot(x - px, y - py), heading_net, i - i0, float(got), *best]
 
 
 def labels(m, sw, before=4, after=40):
@@ -318,6 +333,11 @@ def test(model_path, read_path):
             continue
         X = np.array([features(mm, i, k) for i, k in sw])
         pr = predict(model, X)
+        # both sides' swings kept for swing_gap.py (2026-11-23: which inputs differ where the video scores a shot low)
+        np.savez_compressed(read_path.replace(".json", f"_swing_{label}.npz"), X=X, pr=pr, sw=np.array(sw),
+                            rel=np.array([release(mm, i, k) for i, k in sw]),
+                            owner=np.array(mm["owner"]), puck=np.array(mm["puck"], float),
+                            shots=np.array([[s["f"], s["team"], round(1000 * (s.get("xg") or 0))] for s in T]).reshape(-1, 3))
         for thr in (0.5,):
             found = []
             for (i, k), p in zip(sw, pr):                    # one call a swing: a second within 30 samples is the same

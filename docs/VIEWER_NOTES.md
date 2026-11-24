@@ -2174,6 +2174,26 @@ box score (the user's point), so two ways to more were tried on the games alread
   games: 67 of 90 shots (74%), 25 of 32 dangerous, 19 false. The older event reads: passes 60 of 77 (66 read), hits
   40 of 56, zone entries 47 of 52, faceoffs 12 of 12 (20 read), turnovers 35 of 46 (64 read), check attempts 38 of
   58; possession's team right on 83% of carried samples.
+- **Nine reads cross-checked, and the flight looked for around the release** (2026-11-23/24).
+  - *A correction:* the model that tested BOS-WPG game 1 above had that session's recordings in its base (only the
+    BOS-CHI and BOS-TOR sessions were left out), so that game was not wholly fresh. The base is now fitted with all
+    three read sessions left out (`--skip` by date: 3,065 swings, 796 shots), and each read tested by a model from the
+    base and the other eight reads' swings (weighted 3).
+  - Nine reads, 275 recorded shots: **from video 209 found (xG 0.3+: 75 of 95), 34 false; from the recordings' own
+    slices 248, 32 false** (the base alone on video: 207, 48 false: the reads' swings in the training cut false
+    calls, not misses). Team xG off by 1.00 on average (18 totals, 0.04 to 3.3); the video's sum 57.8 for 69.7.
+    BOS-WPG game 1 under it: 19 of 24, 7 of 7, 3 false, xG 3.90 / 1.45 for 4.02 / 1.59.
+  - `swing_gap.py` (each recorded shot's swing on both sides, the inputs compared): of the 39 shots only the
+    recording's side calls, the shooter's spot and swing agree (6-11 differ much), the puck's flight doesn't (aim
+    error median 12 against 78 degrees, the line to the goal line found against none, 21-28 differ). Yet the puck
+    track was within 12 of the recorded puck 6 samples after the shot in 24 of the 39 (kept on a carrier 8, loose and
+    wrong 7): the video's release estimate sits a few samples off the recording's, and the 6-sample move measured
+    from it turned round (140-180 degrees) in about a third of those; the others scored 0.3-0.4 on near-equal inputs.
+  - Four inputs added: the 6-sample move best aimed at the net among starts -2..+8 from the release (its aim error,
+    crossing, speed, offset). The same check: **217 of 275 found (79%), 80 of 95 at xG 0.3+ (84%), 33 false**; the
+    recordings' side 252, 25 false; team xG off by 0.92 on average (max 3.7), the video's sum 59.2 for 69.7. A video
+    swing labelled by a recorded shot exists for 266 of the 275; a lower cut-off buys little (0.4: 5 more shots, 13
+    more false, by swing).
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
