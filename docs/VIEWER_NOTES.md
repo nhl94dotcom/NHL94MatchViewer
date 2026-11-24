@@ -2208,6 +2208,27 @@ box score (the user's point), so two ways to more were tried on the games alread
   The nine reads' other events now: passes 689 of 913 (872 read), turnovers 383 of 455 (659 read), hits 392 of 574
   (468), zone entries 435 of 493 (475), check attempts 336 of 501 (412); the carrier's team right on 84% of carried
   samples.
+- **The possession star, looked for properly** (2026-11-24; `reader/star_pass.py`, `pseudo_match.build`'s STAR2).
+  - What the nine reads' puck sightings are worth (each sample's kind against the recording): the carrier's team was
+    right in 99% of the samples read as carried with the puck seen or the star under him, but "same carrier" (nothing
+    seen, the last carrier kept) was truly loose or the other team's in 18% of 31,964; and the larger loss ran the
+    other way: about 16,000 truly carried samples read as loose (the puck "seen" alone 5,846, coasting 5,331, none
+    5,048). The reads had the star (frame 392) under a player on about 18% of frames: `inverse.read_stars` wants 60%
+    of all its pixels, and the carrier stands on it.
+  - `star_pass.py`: each frame decoded again, the read's own tracks drawn (no search: 13-16 frames a second for a
+    gentle worker, a game in about half an hour), and only the star pixels no read sprite covers compared: a star
+    with 8+ visible pixels, 60% of them right. Seen on 47-53% of the frames with tracks in every game, under two
+    players at once almost never. A 3,000-frame stretch against the recording: under the true carrier's team in 1,310
+    of 1,413 carried samples, the other team's in none, and in 19 of 655 loose samples: on this ROM the star says
+    carried, and by whom.
+  - The match builder takes the carrier from it where it is seen (merged into the rows as `star2`;
+    `NHL94_STAR2=0` turns it off). **Nine reads, before -> after: the carrier's team right on 84.3% -> 89.2% of
+    carried samples (every game up 4-7 points), passes 689 -> 741 of 913 (930 read), check attempts 336 -> 353 of
+    501, turnovers 383 -> 392 of 455 (659 -> 641 read), zone entries 435 -> 439, shots (the old finder) 216 -> 217;
+    hits and faceoffs the same.**
+  - Tried before it and dropped: short carries by one team between two of the other's removed (by length alone, each
+    step lost a real turnover for every four false ones; only those without the old star evidence: 100 fewer false
+    turnovers for 29 real ones and 5 shots).
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).

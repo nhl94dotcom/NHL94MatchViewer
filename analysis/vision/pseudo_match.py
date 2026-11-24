@@ -45,6 +45,9 @@ GOAL_HOLD = 24              # samples a read score rise must last to be a goal
 UNSEEN_CARRY = 6           # samples a record not drawn keeps its last frame and anim (then none)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
 LONG_MISREAD = 600          # samples a misread of the clock may last (10 s real)
+import os as _os
+STAR2 = _os.environ.get("NHL94_STAR2", "1") != "0"     # the second pass's possession star decides the carrier
+STAR2_SHARE, STAR2_VISIBLE = 0.6, 8
 MERGE = 150                 # samples (2.5 s real): stoppages this close, the clock unchanged between, are one
 MIN_STOP = 60               # samples (1 s real): a shorter stoppage is a sliver of unseen puck, not a whistle
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
@@ -196,6 +199,14 @@ def build(truth, vf, rows, maps, q0, q1):
             puck[3 * i:3 * i + 3] = puck[3 * (i - 1):3 * i]
         if r.get("carrier") is not None and r["carrier"] in slot_of and (r["carrier"] in live or r["puck"] and r["puck"][3] == "out of view"):
             owner[i] = slot_of[r["carrier"]]
+        # 2026-11-24: the possession star from the second pass (reader/star_pass.py, merged into the rows as "star2":
+        # [track, team, visible star pixels, share right, pixels right]): the skater standing on it has the puck,
+        # whatever the puck tracker said (a stretch of BOS-WPG game 1: seen under the true carrier's team in 1,310 of
+        # 1,413 carried samples, never under the other team, and in 19 of 655 loose ones)
+        if STAR2:
+            s2 = [f for f in r.get("star2", ()) if f[3] >= STAR2_SHARE and f[2] >= STAR2_VISIBLE and f[0] in live]
+            if s2:
+                owner[i] = slot_of[max(s2, key=lambda f: f[4])[0]]
         for tid_s, fr_s in r.get("stars", {}).items():          # each pad's skater: the last one seen on its star
             for star in (390, 391):
                 if star in fr_s and int(tid_s) in slot_of:

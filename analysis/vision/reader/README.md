@@ -10,6 +10,7 @@ against the game's recording. History and results: `docs/VIEWER_NOTES.md` (the v
 | `track_test.py` | the reader's set-up (video, ROM, camera, the transitions learnt from other games) and the per-frame read; at the start it measures the rink line-up (`RINK_DX`) and warns when nothing lines up |
 | `fit_crop.py [N]` | a stream's game picture fitted exactly against the drawn rink's lines (after `stream_locate.py` and a first camera track); the box goes in `NHL94_INV_CROP` |
 | `run_reader.py FIRST COUNT OUT.json` | the reader over a stretch of video frames, one gentle worker |
+| `star_pass.py FIRST COUNT READ.json OUT.json` | a fast second pass: the possession star under each read player, counting only the star pixels no sprite covers; merged into the read's rows as `star2`, it decides the carrier in `pseudo_match.build` |
 | `join_reads.py A.json B.json ... OUT.json` | stretches read by separate workers joined (track ids kept apart) |
 | `pseudo_run_any.py READ.json` | the read turned into a match and its events compared with the recording's |
 | `ctrl_acc_any.py READ.json` | how often the person's skater was read in the right place |
