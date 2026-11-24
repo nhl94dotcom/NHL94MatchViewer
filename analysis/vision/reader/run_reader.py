@@ -48,7 +48,7 @@ for fi, fr in T.frames(first, count):
     img_m = np.where(ign, -1, img)
     reader.step(img_m, bg, cam=(hpos, vpos))
     reader.max_new = 6
-    pk = pt.step(img_m, bg, (hpos, vpos), raw=img)
+    pk = pt.step(np.where(T.view_puck(fi), -1, img) if T.GROW else img_m, bg, (hpos, vpos), raw=img)
     live = [t for t in reader.tracks if t.miss == 0]
     # NHL94_INV_RAW=1 (2026-11-20, the learning plan): the read's own confidences kept too: the camera's match share,
     # each live track's match score and speed, tracks hidden for a few frames, the puck tracker's state

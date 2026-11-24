@@ -2262,6 +2262,16 @@ box score (the user's point), so two ways to more were tried on the games alread
   average, 13 under by 0.3+ and 8 over; one-timers read as one-timers 15.9 for 19.3, shots as shots 34.3 for 35.5;
   with a person in goal (41 shots) 3.5 low, the computer's goalie (153) 2.5 low. So finding the missing fifth of the
   shots is worth twice what valuing the found ones better is.
+- **The 59 missed shots, one by one** (2026-11-24; the nine reads, each shot the cross-checked finder didn't call).
+  The shooter's swing was read, its release within 6 samples of the shot, and scored under 0.5: 36 (about half of
+  them shots worth under 0.1); the release late or early: 11; the shooter on his shooting frames from more than 45
+  samples before the shot, so no swing started near it: 7 (3.6 xG); the shooter not read, or without shooting
+  frames: 5. The read has the shooter's frames right in 54 of the 59: nothing for another pass over the video to
+  find.
+  - A held wind-up looked at again every 30 samples (`NHL94_SWING_HOLD`, off): 208 found for 216, 73 of 95 for 78,
+    false 25 for 35: the 565 extra swings in the fit made it warier. Not kept.
+  - The release sought for as long as he stays on his shooting frames (`NHL94_SWING_LOOK`, 240 samples; the 40 it
+    had stopped at): **221 of 275 found, 78 of 95, 35 false, team xG off by 0.93** (216, 78, 35, 1.02). Kept.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).

@@ -60,6 +60,11 @@ def release2(m, i0, k, look=40):
     not found (a swing cut short, or a swing at a puck that never came)."""
     n = len(m["t"])
     P = m["puck"]
+    if LONG_LOOK:                                   # 2026-11-24: a wind-up held past `look` (a one-timer waited for, a
+        e = i0                                      # long slapshot): the release sought until he leaves his frames
+        while e < min(n - 1, i0 + LONG_LOOK) and frame_of(m, e, k) in SWING:
+            e += 1
+        look = max(look, e - i0 + 6)
     for i in range(i0, min(n - 4, i0 + look)):
         sp = math.hypot(P[3 * (i + 3)] - P[3 * i], P[3 * (i + 3) + 1] - P[3 * i + 1]) / 3
         x, y = xy(m, i, k)
@@ -112,6 +117,7 @@ def shot_inputs(m, r, k, gl):
     return f0, x0, y0, round(speed * 4096), side
 
 
+LONG_LOOK = int(os.environ.get("NHL94_SWING_LOOK", "240"))   # the longest held wind-up followed (samples; 0: off)
 HOLD = int(os.environ.get("NHL94_SWING_HOLD", "0"))     # samples between looks at a held wind-up (0: off)
 
 
@@ -204,7 +210,7 @@ def labels(m, sw, before=4, after=40):
         if s["kind"] not in ("shot", "one-timer") or s.get("team") not in (0, 1):
             continue
         cand = [j for j, (i, k) in enumerate(sw) if k // 6 == s["team"] and m["role"][i * 12 + k] not in "0x"
-                and int(ro[i * 12 + k], 36) == s["idx"] and -before <= s["f"] - i <= after]
+                and int(ro[i * 12 + k], 36) == s["idx"] and -before <= s["f"] - i <= (max(after, LONG_LOOK) if LONG_LOOK else after)]
         if cand:
             for j in cand:
                 if j not in rel:

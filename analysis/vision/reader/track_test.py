@@ -62,7 +62,8 @@ if BEHIND_ROWS:
 # the boards or behind a net is drawn over them: of ten missed falls in BOS-WPG game 1, nine lay a quarter or more
 # outside the ice)
 GROW = int(os.environ.get("NHL94_INV_GROW", "10"))    # 10 since 2026-11-24 (0: the ice alone, as the nine first reads)
-if GROW:
+ICE_PUCK = ICE_READ                 # the puck is looked for on the ice alone (view_puck): past its edge the nets' and
+if GROW:                            # corners' pixels read as pucks (BOS-WPG game 1: 13,227 "seen" for 7,590, shots 12 of 24 for 21)
     _g = ICE_READ.copy()
     for _k in range(1, GROW + 1):
         _g[_k:] |= ICE_READ[:-_k]
@@ -174,6 +175,14 @@ def view(fi):
     ign = st[v:v + INV.H_PLAY, u:u + 256] | ~ICE_READ[v:v + INV.H_PLAY, u:u + 256]
     ign = ign | INV.box_mask(ign.shape)
     return hpos, vpos, bg, ign
+
+
+def view_puck(fi):
+    """The ignore mask for the puck: as view's, with the ice not grown."""
+    hpos, vpos = int(cam[fi][1]), int(cam[fi][2])
+    u, v = hpos + RINK_DX + C.PAD, 256 - vpos + C.PAD
+    ign = st[v:v + INV.H_PLAY, u:u + 256] | ~ICE_PUCK[v:v + INV.H_PLAY, u:u + 256]
+    return ign | INV.box_mask(ign.shape)
 
 
 # the teams from colour coverage (the first frame with blobs)
