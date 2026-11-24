@@ -48,6 +48,10 @@ LONG_MISREAD = 600          # samples a misread of the clock may last (10 s real
 import os as _os
 STAR2 = _os.environ.get("NHL94_STAR2", "1") != "0"     # the second pass's possession star decides the carrier
 STAR2_SHARE, STAR2_VISIBLE = 0.6, 8
+# no star seen and the puck tracker's carrier rests on one of these: loose (nine reads, such samples against the
+# recordings: "same carrier" truly loose 4,389, the read's team 1,967, the other team 280; "caught" 195 / 57 / 2;
+# "nearest stick" 65 / 36 / 7; "seen at a stick" 842 / 503 / 80)
+STAR2_LOOSE = tuple(x for x in _os.environ.get("NHL94_STAR2_LOOSE", "same carrier,caught,nearest stick,seen at a stick").split(",") if x)
 MERGE = 150                 # samples (2.5 s real): stoppages this close, the clock unchanged between, are one
 MIN_STOP = 60               # samples (1 s real): a shorter stoppage is a sliver of unseen puck, not a whistle
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
@@ -207,6 +211,8 @@ def build(truth, vf, rows, maps, q0, q1):
             s2 = [f for f in r.get("star2", ()) if f[3] >= STAR2_SHARE and f[2] >= STAR2_VISIBLE and f[0] in live]
             if s2:
                 owner[i] = slot_of[max(s2, key=lambda f: f[4])[0]]
+            elif "star2" in r and r["puck"] is not None and r["puck"][3] in STAR2_LOOSE:
+                owner[i] = -1                               # no star, and the carrier only assumed: loose
         for tid_s, fr_s in r.get("stars", {}).items():          # each pad's skater: the last one seen on its star
             for star in (390, 391):
                 if star in fr_s and int(tid_s) in slot_of:

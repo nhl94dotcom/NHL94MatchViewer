@@ -2226,6 +2226,18 @@ box score (the user's point), so two ways to more were tried on the games alread
     carried samples (every game up 4-7 points), passes 689 -> 741 of 913 (930 read), check attempts 336 -> 353 of
     501, turnovers 383 -> 392 of 455 (659 -> 641 read), zone entries 435 -> 439, shots (the old finder) 216 -> 217;
     hits and faceoffs the same.**
+  - **No star, and a carrier only assumed: loose.** Over the nine reads the star, where seen, is under the true
+    carrier's team in 97.5% of samples (loose 2.2%, the other team 0.2%); a sample read as carried with no star was
+    truly loose in 55% (the read's team 41%), whatever the time since the star was last seen, and by the tracker's
+    reason: "same carrier" loose 4,389 / the read's team 1,967, "seen at a stick" 842 / 503, "caught" 195 / 57,
+    "nearest stick" 65 / 36 ("on a stick", "seen", "carry frame" and "out of view" mostly right or even: kept).
+    Those four are now loose when the star pass saw no star (`STAR2_LOOSE`). **Nine reads, the star alone -> with
+    it: turnovers 392 -> 409 of 455 matched, 641 -> 524 read (false 249 -> 115); shots (the old finder) 217 -> 224;
+    zone entries 439 -> 445; passes 741 -> 727 of 913 (930 -> 912 read); check attempts 353 -> 350.** Without
+    "seen at a stick": turnovers 403 / 559, passes 735. Still out of reach: about 11,400 truly carried samples with
+    no star seen and the puck read loose.
+  - The shot finder cross-checked again on the star's carriers: 216 of 275, 35 false, team xG off by 1.02 (217, 33,
+    0.92 before): no change beyond noise; it rests on the swing and the flight.
   - Tried before it and dropped: short carries by one team between two of the other's removed (by length alone, each
     step lost a real turnover for every four false ones; only those without the old star evidence: 100 fewer false
     turnovers for 29 real ones and 5 shots).
