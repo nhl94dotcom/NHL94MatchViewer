@@ -44,6 +44,7 @@ AIM_LOOK = 10               # samples after a release that give its line
 GOAL_HOLD = 24              # samples a read score rise must last to be a goal
 UNSEEN_CARRY = 6           # samples a record not drawn keeps its last frame and anim (then none)
 STOPPED = 90                # samples (about 1.4 s real) of an unchanged clock: a stoppage
+LONG_MISREAD = 600          # samples a misread of the clock may last (10 s real)
 MERGE = 150                 # samples (2.5 s real): stoppages this close, the clock unchanged between, are one
 MIN_STOP = 60               # samples (1 s real): a shorter stoppage is a sliver of unseen puck, not a whistle
 PER_SAMPLE = {"t": 1, "clock": 1, "period": 1, "score": 2, "shots": 2, "puck": 3, "puckV": 2, "pos": 24, "ctrl": 1,
@@ -403,6 +404,22 @@ def build(truth, vf, rows, maps, q0, q1):
     for i in range(1, n):
         if clock[i] != clock[i - 1] and any(clock[j] == clock[i - 1] for j in range(i + 1, min(n, i + 13))):
             clock[i] = clock[i - 1]
+    # 2026-11-24: a longer misread (the close-up faceoff box over the clock read as 0:71 for a few seconds; a 9 read
+    # as a 3): the clock leaves its value by more than a game second, or rises, and the value it left (or one less)
+    # is read again within LONG_MISREAD samples: it never left. A period's end (2, 0, 300) doesn't come back.
+    i = 1
+    while i < n:
+        c0 = clock[i - 1]
+        if clock[i] > c0 or clock[i] < c0 - 1:
+            j = next((j for j in range(i + 1, min(n, i + LONG_MISREAD)) if clock[j] in (c0, c0 - 1)), None)
+            # ... and only when what was read meanwhile is one or two values (a covered box: 71, 70), not a clock
+            # running down to it (then the value left was the misread: a 276 read as 266 for its second)
+            if j is not None and len(set(clock[i:j])) <= 2:
+                for x in range(i, j):
+                    clock[x] = c0
+                i = j
+                continue
+        i += 1
     m["clock"] = clock
     still = 0
     for i in range(n):
@@ -429,6 +446,12 @@ def build(truth, vf, rows, maps, q0, q1):
     merged = []
     for a, b in runs:
         if merged and a - merged[-1][1] <= MERGE and all(clock[x] == clock[a] for x in range(merged[-1][1] - 1, a + 1)):
+            merged[-1][1] = b
+        elif merged and a - merged[-1][1] <= LONG_MISREAD and clock[merged[-1][0]] - 1 <= clock[min(n - 1, b)] <= clock[merged[-1][0]]:
+            # 2026-11-24: the clock at this drop is the clock at the earlier stoppage's start: no play between them,
+            # one stoppage (BOS-WPG game 1: 20 faceoffs read for 12, each extra the first part of a real stoppage)
+            # (and no further apart than a misread lasts: 5:00 at one period's start and the next's had joined a
+            # whole period into one stoppage)
             merged[-1][1] = b
         else:
             merged.append([a, b])

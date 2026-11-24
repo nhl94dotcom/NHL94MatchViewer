@@ -2194,6 +2194,20 @@ box score (the user's point), so two ways to more were tried on the games alread
     recordings' side 252, 25 false; team xG off by 0.92 on average (max 3.7), the video's sum 59.2 for 69.7. A video
     swing labelled by a recorded shot exists for 266 of the 275; a lower cut-off buys little (0.4: 5 more shots, 13
     more false, by swing).
+- **Faceoffs read once each** (2026-11-24, `pseudo_match.py`). The nine reads had 148 faceoffs for 124 recorded
+  (120 matched). Each extra was the first part of a real stoppage: the close-up faceoff box covers the score box's
+  clock, which then reads 0:71 or 0:70 for a few seconds (or a 9 reads as a 3), so the unchanged-clock run broke in
+  two. Now: a clock that leaves its value by more than a game second, or rises, and is back at it (or one less)
+  within 600 samples, having read only one or two values meanwhile, never left (a clock running down to it means the
+  value left was the misread); and two stoppages no more than 600 samples apart, the clock at the second's drop the
+  clock at the first's start, are one. **124 read, 121 matched**; the other events as before (shots 217 -> 216,
+  turnovers 384 -> 383, entries 436 -> 435 of the old finders' matches; passes, hits and checks the same).
+  Without the 600-sample limit, 5:00 at one period's start and the next's had joined a whole period of BOS-TOR game
+  4 into one stoppage (passes 73 -> 44): caught by scoring all nine reads before and after
+  (`run_score9.sh` in the work folder).
+  The nine reads' other events now: passes 689 of 913 (872 read), turnovers 383 of 455 (659 read), hits 392 of 574
+  (468), zone entries 435 of 493 (475), check attempts 336 of 501 (412); the carrier's team right on 84% of carried
+  samples.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
