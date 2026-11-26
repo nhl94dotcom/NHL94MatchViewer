@@ -8786,6 +8786,25 @@ now reads those two weights from the ROM and prints the top three by the first b
   given $7FFFFFFF (CalcStarScores), so he is first star whatever his score (one game where that put a fourth-best
   score among the three).
 
+#### NHL '95's three stars at 900 / 1,170 a shot faced (2026-11-26)
+
+NOSE4Web's NHL_95_stars_lines_off.bin (8E1F7B6C) and _lines_on.bin (0DA55F11): retail with CalcTeamStarScores
+($95C8A) at the weights 7,000 / 500 / 11,000 / 500 / 16,000 / -11,000 / 900 an assist, shot, goal, check, shutout,
+goal against and shot faced, and 9,100 / 650 / 14,300 / 650 / 20,800 / -11,000 / 1,170 (words from $95CAC).
+`gen95_stars_check.py`: 20 computer games a ROM, 10-minute periods, line changes off on the first and on on the
+second, played through overtime to the stars box (about 33 shots faced a goalie, 3-4 goals a game).
+
+- **Every score equals the formula in all 40 games** (two goalie places a team, no ice-time bar met short), and the
+  three cleared are its top three in 39.
+- **Goalies**: lines off, first star in 7 of 20 and among the three in 10 (12 of the 60 places); lines on, first in
+  14 and among in 18 (24 of 60). At 4,000 / 4,500 on the same games: first in all 40, both goalies among the three in
+  all 40. Lines on has more because its games had 10 shutouts for 6 and fewer goals (3.25 a game for 4.2): all 16
+  shutout goalies were stars.
+- **Overtime**: 11 games went to overtime, 8 decided there: the winner's scorer among the three every time, once
+  ahead of the formula's third (the original's last-goal rule, as on NHL '94). Three games ended tied: the box came
+  up as usual. **No shots faced**: the 80 backup places only (their score the goal difference alone: never a star); no
+  starter without a shot came up.
+
 ### Chunk 3 (2026-11-25): the SNES options, hands-on
 
 Builds from NHL94.smc (and the SA-1 build for the goalie line), each against the original. `snes_gen_settings_check.py`
