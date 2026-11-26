@@ -2320,6 +2320,11 @@ box score (the user's point), so two ways to more were tried on the games alread
     "coasting" far more than after a found one: seen in under half those samples in 12 of 21 missed shots, 13 of 63
     found ones. Its place is close (median 4-13 units off); its direction is what's lost. That is the puck tracker
     in the reader: the next work, and it needs frames read again.
+  - **Tried and taken out: the shot's line from its two ends** (four inputs: from the puck at the release to where it
+    is first 25 units clear of the shooter, for a puck unseen in flight and seen again at the goalie; base9n, cv9n):
+    the nine earlier reads 217 of 275 with 33 unmatched (223 and 31 without), the fresh games 65 of 84 with 7 (63 and
+    9): nothing either way. The finder is at about four shots in five on any fit; the recording's own data gives it
+    nine in ten.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
