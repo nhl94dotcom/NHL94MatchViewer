@@ -8,6 +8,9 @@ against the game's recording. History and results: `docs/VIEWER_NOTES.md` (the v
 |---|---|
 | `track_play.py VIDEO TIMELINE ROM OUT.npz [FIRST COUNT]` | the every-frame camera track of the live play (needs `tools/video_sync.py`'s timeline) |
 | `track_test.py` | the reader's set-up (video, ROM, camera, the transitions learnt from other games) and the per-frame read; at the start it measures the rink line-up (`RINK_DX`) and warns when nothing lines up |
+| `video_report.py READ.json HOME AWAY` | a game's report from its video alone, no recording: the read fills a blank match made from the ROM (`pseudo_match.blank`), and the measures that held up against recordings are printed (goals from the score box, possession, zone time, passes, pucks lost, hits, entries; shots as a rough count; no xG) |
+| `puck_replay.py READ.json OUT.json` | the puck tracked again over a finished read (the players from its rows), for trying changes to the puck tracker |
+| `xg_calib.py READ_swingshots.json ...` | where the video's xG error comes from, and a calibrated xG tried against it (no better) |
 | `fit_crop.py [N]` | a stream's game picture fitted exactly against the drawn rink's lines (after `stream_locate.py` and a first camera track); the box goes in `NHL94_INV_CROP` |
 | `run_reader.py FIRST COUNT OUT.json` | the reader over a stretch of video frames, one gentle worker |
 | `star_pass.py FIRST COUNT READ.json OUT.json` | a fast second pass: the possession star under each read player, counting only the star pixels no sprite covers; merged into the read's rows as `star2`, it decides the carrier in `pseudo_match.build` |

@@ -2354,6 +2354,15 @@ box score (the user's point), so two ways to more were tried on the games alread
     game left out in turn) is no better: a shot's error sd 0.21 for 0.24, the same three games wrong. **So xG and
     "deserve to win" from video stay unreported; possession, zone time, passes, entries and hits never put the
     wrong side ahead in the fresh games.**
+  - **A report from the video alone** (`reader/video_report.py READ.json HOME AWAY`; `pseudo_match.blank`: a match
+    header from the ROM, as the converter gives a recorded game, and one empty sample a video frame, filled by
+    `build`). No recording is used anywhere in it. On the three fresh games: **the goals from the score box are the
+    real results (8-2, 4-3, 3-6;** the highest score held two seconds: a misread digit had made 11 of 8); possession,
+    zone time, passes, completion, pucks lost, hits and entries are the pseudo match's own (59 / 41, 54 / 29, 19 /
+    33 ... as the comparison above had them); shots are the finder's calls, a count to within a few (11 / 10 for the
+    game's own 10 / 8; 9 / 16 for 10 / 9; 15 / 9 for 17 / 10). 3 seconds a game once the read exists. What a game
+    with no recording still needs first: its camera track and read (about two hours of quiet running), the ROM,
+    and the frame maps learnt from recorded games of that ROM's sprites.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).

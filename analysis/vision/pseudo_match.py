@@ -157,6 +157,54 @@ def flight_fill(puck, owner, how, n, gap=24, back=20, jump=12.0):
             owner[j] = -1
 
 
+def blank(rom_path, home, away, n, fps=60.0, name="video"):
+    """A match with nothing in it, for a video that has no recording (2026-11-26): the header the converter gives a
+    recorded game (teams, rosters, palettes, rules, the ROM's settings and animation table, from the ROM alone: as
+    systems.genesis MatchReader.result) and n empty samples, one a video frame. `home` / `away`: team abbreviations
+    as the score box shows them, or team numbers. build(blank, np.arange(first, first + n), rows, maps, 0, n) fills
+    it from a read. Each team's six records stand for its goalie and its first five skaters: who is who isn't read."""
+    import struct
+    import zlib
+    from pathlib import Path
+    from systems import genesis, genesis_settings
+    rom_path = Path(rom_path)
+    rom = rom_path.read_bytes()
+    teams = genesis.read_teams(rom_path)
+
+    def find(t):
+        if isinstance(t, int):
+            return t
+        return next(i for i, tm in enumerate(teams) if tm["abbr"][:3].upper().ljust(3) == t[:3].upper().ljust(3))
+    hi, ai = find(home), find(away)
+    m = dict(version=21, name=name, positions=["G", "LD", "RD", "LW", "C", "RW"], system="genesis",
+             team1=teams[hi]["name"], team2=teams[ai]["name"], abbr=[teams[hi]["abbr"], teams[ai]["abbr"]],
+             rosters=[teams[hi]["players"], teams[ai]["players"]], palettes=[teams[hi]["palettes"][0], teams[ai]["palettes"][1]],
+             rom=f"{zlib.crc32(rom):08x}", anims=genesis.animation_table(rom), nets=[[0, 0.0, 268.0, 0.0, -268.0]], goals=[])
+    rules = {}
+    for number in range(1, 31):
+        at = genesis.RULES + struct.unpack_from(">H", rom, genesis.RULES + 2 * number)[0]
+        length = struct.unpack_from(">H", rom, at + 2)[0]
+        if 2 < length < 30:
+            rules[2 * number] = {"name": rom[at + 4:at + 2 + length].decode("latin-1").rstrip("\x00"), "min": rom[at + 1] if rom[at + 1] <= 10 else 0}
+    m["rules"] = rules
+    settings = genesis_settings.rom_settings(rom)
+    if settings:
+        m["romSettings"] = settings
+    if teams[hi].get("logo"):
+        m["logo"] = teams[hi]["logo"]
+    line = ""
+    for tm in (hi, ai):                                    # records in ROLES' order (RW LW C RD LD G): five skaters, a goalie
+        pl = teams[tm]["players"]
+        sk = [i for i, p_ in enumerate(pl) if not p_.get("g")][:5]
+        gk = next((i for i, p_ in enumerate(pl) if p_.get("g")), 0)
+        line += "".join("0123456789abcdefghijklmnopqrstuvwxyz"[i] for i in sk + [gk])
+    m.update(t=[round(i * 1000 / fps) for i in range(n)], clock=[0] * n, period=[0] * n, score=[0] * (2 * n), shots=[0] * (2 * n),
+             puck=[0.0] * (3 * n), puckV=[0] * (2 * n), pos=[0.0] * (24 * n), ctrl=[0] * n, owner=[-1] * n, pad=[0] * n, pad2=[0] * n,
+             lights=[], facing="0" * (12 * n), roster=line * n, role=ROLES * 2 * n, frame="0" * (36 * n), puckFrame="000" * n,
+             mirror="0" * (12 * n), anim="0" * (48 * n))
+    return m
+
+
 def build(truth, vf, rows, maps, q0, q1):
     """The pseudo match over samples q0..q1: each sample takes the read frame nearest its video frame."""
     by_fi = {r["fi"]: r for r in rows}

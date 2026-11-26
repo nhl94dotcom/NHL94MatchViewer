@@ -24,6 +24,7 @@ import game_events as GE
 hud = hud_read.Reader(Path.home() / "NHL94_scoring_map/runs/vision/hud_native.npz")
 t_fit = time.time(); hud.fit_cached(T.VIDEO); print("hud fit", hud.geo, round(time.time() - t_fit), "s", flush=True)
 reader, rows, t0, prev_clock = None, [], time.time(), None
+TEAMS_READ = None
 for fi, fr in T.frames(first, count):
     lowload.breathe()
     nat = INV.native(fr)
@@ -41,6 +42,7 @@ for fi, fr in T.frames(first, count):
             vis_ab, home_ab = hud.read_teams(sq)
         by_abbr = {t["abbr"][:3].upper().ljust(3): i for i, t in enumerate(T.teams)}
         home, away = by_abbr[home_ab], by_abbr[vis_ab]
+        TEAMS_READ = [home_ab, vis_ab]                 # kept in the first read row: video_report.py's HOME / AWAY
         S = INV.Sprites(T.ROM, T.teams[home]["palettes"][0], T.teams[away]["palettes"][1])
         reader = INV.Reader(S, T.trans)
         reader.max_new = 40
@@ -59,7 +61,11 @@ for fi, fr in T.frames(first, count):
                puck_x=dict(mode=pt.mode, unseen=int(pt.unseen), out_of_view=int(getattr(pt, "out_of_view", 0)),
                            pos=None if pt.pos is None else [round(float(v), 1) for v in pt.pos],
                            vel=[round(float(v), 2) for v in pt.vel])) if RAW else {}
-    rows.append(dict(fi=fi, cam=(hpos, vpos), hud=hudrow, tracks=[(t.id, t.team, t.fr, int(t.mir), int(t.sy), int(t.sx)) for t in live],
+    if TEAMS_READ:
+        raw_teams, TEAMS_READ = dict(teams=TEAMS_READ), None
+    else:
+        raw_teams = {}
+    rows.append(dict(fi=fi, cam=(hpos, vpos), hud=hudrow, **raw_teams, tracks=[(t.id, t.team, t.fr, int(t.mir), int(t.sy), int(t.sx)) for t in live],
                      **raw,
                      stars={str(k): sorted(v) for k, v in pt.stars.items()},
                      puck=None if pk is None else (int(pk[0]), int(pk[1]), int(pk[3]) if isinstance(pk[3], (int, np.integer)) else 0, pk[5]),
