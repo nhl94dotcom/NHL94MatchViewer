@@ -15,6 +15,7 @@ on its box). Teams: the two palettes (home, away) that explain the first frames 
 
 Screen <-> rink: sx = 128 + X - Hpos, sy = 120 - Y + Vpos (the record's position; the sprite's pieces are offsets
 from it)."""
+import os
 import struct
 import sys
 from collections import Counter, defaultdict
@@ -490,12 +491,20 @@ def _ring(ys, xs):
     return r[:, 0], r[:, 1]
 
 
-def read_puck(reader, img, bg, pred=None, R=3, near=12):
+# Off by default: tried on the three fresh games (puck_replay.py, 2026-11-26) it saw the puck in a fifth more frames
+# and found fewer shots (59 of 84 for 62 without it, dangerous 19 for 23): VIEWER_NOTES
+PUCK_EDGE = os.environ.get("NHL94_INV_PUCK_EDGE", "0") == "1"
+
+
+def read_puck(reader, img, bg, pred=None, R=3, near=12, raw=None):
     """The puck where no player sprite explains the pixels. Near the predicted point first (within `near`), else every
     small leftover blob (2-40 pixels); each puck frame within R pixels of a candidate counts when 80% of its pixels
     match exactly and at most 20% of the ring of pixels around it shows the puck's own colours (a puck is a small
     separate thing: a dark sliver inside a skate or stick doesn't count). Its shadow (394) is then looked for
     straight below, 0-60 rows down: the gap is the height (no shadow: on the ice, the shadow under the puck).
+    raw (2026-11-26, PUCK_EDGE, off by default): the frame without the puck's ignore mask. A puck half or more on the read area is
+    matched on all its pixels, the ignored ones taken from raw (a puck sliding along the boards, or raised near them,
+    lies partly over them: 8 of its 12 pixels counted, under the 80% it needs, and a shot's flight went unseen).
     Returns (sy of the ice point, sx, frame, z, share matched) or None."""
     if not hasattr(reader, "_puck"):
         reader._puck = [(fr, ys, xs, cs) + _ring(ys, xs) for fr, ys, xs, cs in puck_templates(reader.S)]
@@ -517,7 +526,7 @@ def read_puck(reader, img, bg, pred=None, R=3, near=12):
                 X3 = xs[None, :k3] + grid[:, 1:]
                 ok3 = (Y3 >= 0) & (Y3 < H) & (X3 >= 0) & (X3 < W)
                 Y3c, X3c = Y3.clip(0, H - 1), X3.clip(0, W - 1)
-                hit3 = ((img[Y3c, X3c] == cs[None, :k3]) & ok3 & ~drawn[Y3c, X3c]).any(1)
+                hit3 = (((img[Y3c, X3c] == cs[None, :k3]) | ((raw[Y3c, X3c] == cs[None, :k3]) if raw is not None and PUCK_EDGE else False)) & ok3 & ~drawn[Y3c, X3c]).any(1)
                 grid = grid[hit3]
                 if not len(grid):
                     continue
@@ -525,6 +534,9 @@ def read_puck(reader, img, bg, pred=None, R=3, near=12):
                 X = xs[None, :] + grid[:, 1:]
                 ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
                 v = img[Y.clip(0, H - 1), X.clip(0, W - 1)]
+                if raw is not None and PUCK_EDGE:
+                    on = (v != -1).mean(1) >= 0.5
+                    v = np.where((v == -1) & on[:, None], raw[Y.clip(0, H - 1), X.clip(0, W - 1)], v)
                 m = ((v == cs) & ok & ~drawn[Y.clip(0, H - 1), X.clip(0, W - 1)]).sum(1) / len(cs)
                 RY = ry[None, :] + grid[:, :1]
                 RX = rx[None, :] + grid[:, 1:]
@@ -758,7 +770,7 @@ class PuckTracker:
                 Y, X = Y + self.vel[0], X + self.vel[1]
             pred = self.to_screen(Y, X, cam)
             pred = (int(round(pred[0])), int(round(pred[1])))
-        p = read_puck(R, img, bg, pred)
+        p = read_puck(R, img, bg, pred, raw=raw)
         if p and p[3] == 0:                     # seen on the ice at a read player's blade (3 pixels), or near it (10)
             Yr, Xr = self.to_rink(p[0], p[1], cam)              # and moving with him (3 pixels a frame): he has it
             pv = None

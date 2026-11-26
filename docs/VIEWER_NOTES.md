@@ -2325,6 +2325,17 @@ box score (the user's point), so two ways to more were tried on the games alread
     the nine earlier reads 217 of 275 with 33 unmatched (223 and 31 without), the fresh games 65 of 84 with 7 (63 and
     9): nothing either way. The finder is at about four shots in five on any fit; the recording's own data gives it
     nine in ten.
+  - **The puck tracked again over a finished read** (`reader/puck_replay.py`: each frame's players from the read's
+    rows, only the puck tracker run; NHL94_REPLAY_SWINGS=1 the stretches around swings alone, about a quarter of a
+    game). Unchanged, it gives the read's puck state in 96% of the frames and the same shots but one (62 of 84, 8
+    unmatched, the dangerous 23). It is no fast road: the puck search is the reader's slow part (1.9 frames a
+    second in quiet mode, a game's swing stretches in 75 minutes).
+  - **A cause seen, and a cure that didn't work.** In a missed shot along the top boards the puck is in plain view
+    for ten frames while the tracker coasts: its upper pixels lie over the boards, which the puck search leaves out
+    (the ice alone), so 8 of its 12 pixels count and it falls under the 80% it needs. Counting a puck that is half
+    or more on the ice from the unmasked frame (NHL94_INV_PUCK_EDGE=1) finds it in those frames, and the puck is
+    "seen" in a fifth more frames of the swing stretches; but the shots get worse: **59 of 84 found for 62, the
+    dangerous 19 for 23, 10 unmatched for 8**. Left off. What else it lets in at the ice's edge wasn't looked at.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
