@@ -8665,6 +8665,54 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
   being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
+## NOSE4Web's options not yet played: the round of 2026-11-25, chunk 1 (Genesis NHL '94, hands-on)
+
+25 ROMs, each the original with only the options named (CRCs in NOSE4Web's crc.txt, all read back).
+`analysis/scoring_map/gen_options_round.py clock|skating|goalie|ratings ROM` plays a ROM from power-on into a game
+and runs the same test on it as on the original; `gen_frame_edit_check.py` for the sprite frames; Edit Lines' list
+pages through `gen_forum_options_test.to_play`.
+
+- **The extra stick tape's working ROM** (nhl94_clockwise_more_tape 230D30EA; 91FC2E1C doesn't boot, it kept the
+  power-on self-check): the 37 frames and 541 show, the eyes of 168, 615, 627, nothing else. Kept: the goalie
+  frames (the tape on the free end of the shaft past the blocker: a taped knob). Taken out by NOSE4Web (623105d):
+  frame 89, whose three pixels fall on the shoulder's white.
+- **Clockwise's edit with chaos's fighting** (nhl94_clockwise_fighting 71728B4E) against a fighting ROM without the
+  edit, frames 0-869 on the skaters: every stance and punch frame 849-861 shows one black pixel (the eye), the
+  overhand punch among them; 847 and 848 their tape and eyes; 866 and 869 five pixels of tape; 862-865, 867, 868
+  (down on the ice) nothing. Confirmed.
+- **Skating** (nhl94_skating E555DF6E): a burst's push 6,320 -> 3,121 (velocity units, the same skater standing, UP
+  held, C); a stop from full speed 41 frames and 41 units -> 92 frames and 75 units. Confirmed.
+- **Goalie limits** (nhl94_goalie_limits BF8FFB1D), pad 1 on the home goalie: the puck held 141-142 frames until the
+  whistle -> 601-602 (10 s); LEFT / RIGHT held: 42-43 from the net's middle -> 82; skating out without the puck: to
+  222 from centre ice -> 119; with it: the whistle at 169 -> 59. Confirmed, all four. (The pad moves him little
+  until the first stoppage in this set-up; the figures are from after it.)
+- **Real-time clock** (nhl94_real_time AF5CDB50): 24 frames a clock second -> 60 (575 seconds seen, the computer on
+  both sides). A game with penalties (gen_penalty_time_check): each 2:00 minor served out took 120-125 clock seconds
+  (one behind another penalty 211; one ended at a goal after 14): the box runs with the clock, so 2 real minutes.
+  **The penalty-shot clock was not found**: three awarded penalty shots on each ROM (ps_fixes_test's award), no
+  word in $B000-$D3FF counts down during an attempt on either; the game clock is stopped all through one. Asked
+  NOSE4Web what the option changes there.
+- **Wide ratings** (nhl94_wide_ratings 3D1CA0E2): the roster's nibbles run 0-15 (the original's 4 is 10, 3 is 8, 5
+  is 13, 6 is 15); the working ratings step by 2 a point where the original's step by 5 (a value 8 gives 16 where
+  the original's 3 gave 15; 13 gives 26 for 25): compared with nhl94_base_weight_120, which drew the same hot /
+  cold. Edit Lines shows them on the 0-99 scale with the bonus (Desjardins: Agility 75, Speed 63; the original 71,
+  47) and new overalls (the first six defencemen 73, 60, 56, 44, 49, 63; the original 68, 66, 52, 45, 52, 60): the
+  figures given to NOSE4Web to hold against its formulas.
+- **Base weight 120** (72742CAA): Edit Lines shows 120 + 8 a step (Desjardins 216 lb, Schneider 200, Haller 192; the
+  original 212, 196, 188: each rounded up to the next step); the roster's weight nibbles are 3 higher (2 for some,
+  a 14 becomes 15: the top is 240) and the working weight (+$67, what checking reads) is 8 x the new nibble
+  (Bellows 88 for 64, McSorley 120 for 112). A check between two players wasn't played.
+- **Hot / cold bonuses**, each ROM's on-ice working ratings less 5 x the nibble, against Edit Lines' Agility and
+  Speed for the same players:
+  - none (28C287FC): 0 on the ice for everyone; Edit Lines plain (72 for a 4, 54 for a 3).
+  - hidden (514B04E3): on the ice one value a player for every rating, as the original (+2, -2, -1 ...); Edit
+    Lines plain.
+  - players match Edit Lines (3CC46B13): on the ice a different value a rating (Desjardins Agility +1, Speed +2;
+    Schneider -2, 0); Edit Lines 77 and 61, 48 and 73: +5, +7, -6, +1 on its scale, the same values at 3.6 a point.
+  - Edit Lines matches players (3259E8DC): on the ice one value a player (Desjardins -1, Schneider 0); Edit Lines
+    shows that one value on every rating (Desjardins 69, 51, 51, 69: -3 each).
+  All four confirmed.
+
 ## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
 
 A league's report on its 1996 World Cup of Hockey ROM (1996 World Cup of Hockey (update).smc, 2E8759F1, 2 MB): a
