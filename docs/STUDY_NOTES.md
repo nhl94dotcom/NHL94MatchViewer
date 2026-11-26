@@ -8665,6 +8665,35 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
   being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
+## Clockwise's edit on another build of chaos's fight patch, and the shorter faceoff tape (2026-11-26)
+
+NOSE4Web's GLHL_clockwise_fixed.bin (1C37230E: a league ROM with chaos's own build of the fight patch, the hacks
+applied again) and nhl94_fighting_clockwise.bin (CC7AB3C8). By bytes: the nhl94 build is yesterday's
+nhl94_clockwise_fighting but for the faceoff stream ($A8265-$A8784) and 5 tile bytes; the league ROM holds the same
+bytes as it at every one of the 6,099 places the edit changes. References made as scratch copies: each ROM with
+retail's faceoff stream; each with fighting and Clockwise's own IPS only (NOSE4Web's touches, 144 bytes outside the
+stream, put back). Work scripts in the runs folder (nosebuilds/glhl: closeup_grab / closeup_cmp, fight_state /
+fight_cmp: a real fight's state kept at its first frame and played on both ROMs, the same fight pixel for pixel).
+
+- **The close-up, every frame** (the opening faceoff, 223 frames on the nhl94 build, 343 on the league ROM): against
+  the same ROM with retail's stream, only 14-25 pixels differ in any frame, all at the blades (rows 85-93, columns
+  46-65 of the picture): the rest of the close-up is retail's in every frame. The tape: 10 black pixels (5 x 2) on
+  the lower blade at the same place through every pose, 8 on a lifted blade, 15-23 where the blades cross; against
+  the toe build of 2026-11-20 it is the same less 4 pixels (2 columns) at the toe end. **Also there, and in the toe
+  build: 2-5 stick pixels drawn as the background** (row 91, columns 60-61 in every pose seen, 46-47 too in one):
+  a gap where a shaft meets its blade. Two single frames differ more on the league ROM (the fade-in's and the
+  close-up's last): the two runs a frame apart there, the pictures the same a frame later.
+- **Fight frames, forced on every skater** (gen_frame_edit_check, 0-869): the same 18 frames show the touches on both
+  ROMs: 846 (9 pixels a stick), 847 and 848 (8 of tape and the eye), 849-861 (the eye, 1 pixel), 866 and 869 (5);
+  862-865, 867, 868 none.
+- **In real fights** (four on each ROM, 6,000 frames each): the eye pixel changes on screen on every stance and punch
+  frame a fighter was on, 849-861 (the home fighter in 98% of 5,052 screens on the nhl94 build; both fighters on the
+  league ROM, 97% of 9,200); the tape in the glove drops (847-849: 8-9 pixels a stick). Where the palette's colour 13
+  is already near black (the away side on the nhl94 build's game: dark red) the change can't be seen.
+- **The league ROM otherwise**: Game Setup's eight lines; its three period lengths play as 5, 7 and 10
+  minutes; fights and fighting majors with Fighting on (rule $26; instigators $2A), none in a whole game with
+  $FFDF00 set to 0.
+
 ## NOSE4Web's options not yet played: the round of 2026-11-25, chunk 1 (Genesis NHL '94, hands-on)
 
 25 ROMs, each the original with only the options named (CRCs in NOSE4Web's crc.txt, all read back).
