@@ -8800,6 +8800,26 @@ that runs in play, not for code that runs at a game's start (those booted throug
 - **Puck friction 8** (NHL94_puck_friction_8.smc): a loose puck keeps 0.79 of its speed a second (the original's 9:
   0.87).
 
+### Chunk 4 (2026-11-25): referee strictness, NOSE4Web's builds (SNES, SA-1, NHL '95, W18)
+
+20 computer games a ROM, each build beside its base (the original as the editor opens it; the builds differ from it
+only in the option's bytes: the SNES range x 16 made x 7 or x 32 through a routine at $9BFFF3 and the goalie
+interference threshold, NHL '95 / W18 the two words). `snes_60fps_cvc.py` + `snes_ref_report.py`, `gen95_ref_cvc.py`.
+Calls with minutes a game, the build as a share of its base (± one standard error):
+
+| | base | very strict | very lenient |
+|---|---|---|---|
+| SNES (NHL94.smc) | 2.60 | 4.65 (179% ± 31; by the code 229) | 1.60 (62% ± 14; 50) |
+| SNES SA-1 | 3.05 | 5.70 (187% ± 30) | |
+| NHL '95 | 3.90 | 10.85 (278% ± 37; 217) | 2.80 (72% ± 13; 50) |
+| W18 | 4.15 | 10.05 (242% ± 32) | |
+
+Every build moves the right way and within about two standard errors of the code's ratio; no rule goes the wrong
+way beyond its error (the single rules are 0.05-1 a game: each ± 40% or more). Goals a game unchanged (1.75-2.65).
+The SA-1 pair's first game was the same game call for call (the others differ); a scratch copy with the range forced
+to 1 gave 87 calls for 15, so the patched code is the live one. Penalty shots do come up in these SNES games (1 in
+the base's 20, 7 in very strict's): the place to try the rules build's "no penalty shots".
+
 ## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
 
 A league's report on its 1996 World Cup of Hockey ROM (1996 World Cup of Hockey (update).smc, 2E8759F1, 2 MB): a
