@@ -8681,7 +8681,10 @@ fight_cmp: a real fight's state kept at its first frame and played on both ROMs,
   the lower blade at the same place through every pose, 8 on a lifted blade, 15-23 where the blades cross; against
   the toe build of 2026-11-20 it is the same less 4 pixels (2 columns) at the toe end. **Also there, and in the toe
   build: 2-5 stick pixels drawn as the background** (row 91, columns 60-61 in every pose seen, 46-47 too in one):
-  a gap where a shaft meets its blade. Two single frames differ more on the league ROM (the fade-in's and the
+  a gap where a shaft meets its blade. (Followed up the same day: it is in the tiles the game unpacks, not the sprite
+  list. Line 91 has 6 sprites, 128 pixels; the pixels are the blade sprites' own, tile 1517 at (0,3) and (1,3):
+  colour 14 on retail, 0 on the build. Video memory's tiles 1440-1529 differ from retail's in 61 pixels: 52 of 14
+  to 2, the tape, and 9 of 14 to 0, two in tile 1517 and seven in 1513.) Two single frames differ more on the league ROM (the fade-in's and the
   close-up's last): the two runs a frame apart there, the pictures the same a frame later.
 - **Fight frames, forced on every skater** (gen_frame_edit_check, 0-869): the same 18 frames show the touches on both
   ROMs: 846 (9 pixels a stick), 847 and 848 (8 of tape and the eye), 849-861 (the eye, 1 pixel), 866 and 869 (5);
