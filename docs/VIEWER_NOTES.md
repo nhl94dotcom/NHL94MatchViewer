@@ -2354,6 +2354,19 @@ box score (the user's point), so two ways to more were tried on the games alread
     game left out in turn) is no better: a shot's error sd 0.21 for 0.24, the same three games wrong. **So xG and
     "deserve to win" from video stay unreported; possession, zone time, passes, entries and hits never put the
     wrong side ahead in the fresh games.**
+  - **Two more tries at a single game's xG, and what a series gives** (the same day).
+    - A smooth xG (`reader/xg_smooth.py`: distance, angle, kind, speed, the goalie against the shot's line, fitted on
+      842 recorded shots of 26 games outside the test sessions). On held-out recordings' own exact shots it is 0.8 a
+      team a game from the game's xG (the margin sd 1.1, the wrong side in 1 of 11): the game's xG holds the aim, which
+      nothing smooth has. On the video's calls: a team's error sd 1.3, the wrong side in 3 of 11, as before; against
+      the recording's own smooth figure 2 of 10. So the value model isn't what fails; the calls are.
+    - The goalie's reaction as inputs to the finder (samples off his eight ready frames, 86% of a goalie's time, in the
+      40 from the release; the puck's nearest approach to him): the nine earlier reads 219 of 275 with 32 unmatched
+      (223, 31), the fresh games 62 of 84 with 8 (63, 9), and no better on the recordings themselves (751 of 797 for
+      753). Taken out.
+    - **Over a four-game series the video's xG has the right side ahead in all three** (a game: Boston +1.29 on
+      Winnipeg by the recordings, +1.86 by video; +0.43 on Toronto, +0.10; +1.28 on Chicago, +0.58; all twelve +1.00,
+      +0.85). The size is loose (the video about 0.5 a team a game low); the single game stays unreported.
   - **A report from the video alone** (`reader/video_report.py READ.json HOME AWAY`; `pseudo_match.blank`: a match
     header from the ROM, as the converter gives a recorded game, and one empty sample a video frame, filled by
     `build`). No recording is used anywhere in it. On the three fresh games: **the goals from the score box are the

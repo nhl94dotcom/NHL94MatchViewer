@@ -10,6 +10,7 @@ against the game's recording. History and results: `docs/VIEWER_NOTES.md` (the v
 | `track_test.py` | the reader's set-up (video, ROM, camera, the transitions learnt from other games) and the per-frame read; at the start it measures the rink line-up (`RINK_DX`) and warns when nothing lines up |
 | `video_report.py READ.json HOME AWAY` | a game's report from its video alone, no recording: the read fills a blank match made from the ROM (`pseudo_match.blank`), and the measures that held up against recordings are printed (goals from the score box, possession, zone time, passes, pucks lost, hits, entries; shots as a rough count; no xG) |
 | `puck_replay.py READ.json OUT.json` | the puck tracked again over a finished read (the players from its rows), for trying changes to the puck tracker |
+| `xg_smooth.py fit OUT.json` / `test MODEL.json READ_swingshots.json ...` | a smooth xG fitted on recorded shots, tried on the video's calls (no better for a single game) |
 | `xg_calib.py READ_swingshots.json ...` | where the video's xG error comes from, and a calibrated xG tried against it (no better) |
 | `fit_crop.py [N]` | a stream's game picture fitted exactly against the drawn rink's lines (after `stream_locate.py` and a first camera track); the box goes in `NHL94_INV_CROP` |
 | `run_reader.py FIRST COUNT OUT.json` | the reader over a stretch of video frames, one gentle worker |
