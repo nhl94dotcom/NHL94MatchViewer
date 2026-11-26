@@ -8762,6 +8762,44 @@ menu's own settings (10-minute periods, penalties Off, line changes Off) but whe
   30 a game second for 9 (every quartile 30). Shifts' median 74 game seconds for 163; players reached 0 in the first
   period (the original's lowest 1,571).
 
+### Chunk 3 (2026-11-25): the SNES options, hands-on
+
+Builds from NHL94.smc (and the SA-1 build for the goalie line), each against the original. `snes_gen_settings_check.py`
+(`skate`, `puck`, and `cvc` with AGG=1: every skater's Aggression held at 15) and one-off scripts in the work folder.
+The live-state harness (snes_assist_stick_test.Game) loads the original's states on a LoROM build: right for code
+that runs in play, not for code that runs at a game's start (those booted through the menus).
+
+- **Rules** (NHL94_rules.smc):
+  - One-minute minors: 40 box stays in 8 computer games, none longer than 60 clock seconds (5 of exactly 60); the
+    original's run to 119-120 (8 of them in 8 games).
+  - 30-second periods: the menu's Period line goes 10 Minutes, 20 Minutes, 30 Seconds, 5 Minutes (Optperlen 1, 2, 3,
+    0; the original 1, 2, 0); played, periods 2 and 3 start at 0:30 and overtime at 5:00.
+  - No goal posts: a loose puck slid straight at the goal line with everyone parked: a goal for x -17..17 on the
+    original and back off the post outside it; on the build a goal for x -22..22 (the posts' five units a side).
+  - No icing: iflags' armed bit came up 157-419 times a game on the original (5 calls in 8 games), never on the
+    build (8 games, three of them 10-minute periods). The goalie's play of such a puck not looked at.
+  - No penalty shots: not seen in play. The change is PenShotChk's second branch ($9EC07E D0 03 -> D0 08: a
+    breakaway now also returns 0), so Bcheck and checkcheck go on to their ordinary penalty rolls. No penalty shot
+    came up on either ROM in the 16 games, and a forced case (a person's defenceman checking a carrier alone in front
+    of him, `breakaway` held at 1) gave none on the original either, so there was nothing to compare.
+  - The menu presses of the `cvc` set-up (RIGHT x 2 on the Period line) land on 30 Seconds on this build: five of
+    its eight games were 90 seconds long.
+- **Start** (NHL94_start.smc), from power-on with nothing pressed: 4 seconds of black, then Game Setup. The EA
+  Sports logo and the flying pucks are gone, **and with the pucks the title screen** (NHL 94, the NHLPA logo, "1993
+  Electronic Arts, licensed by Nintendo"): the original reaches that at 17-24 s. Defence control: $1C94 / $1C96 read
+  0 / 0 in play on the original and 1 / 1 on the build (booted through the menus).
+- **Goalie line 60** (NHL94_goalie_line.smc, nhl94snes_SA1_goalie_line.sfc): pad 1's goalie given the puck, the hold
+  count kept topped up, the pad held up the ice: the whistle at depth 185 on the original (the line 187), **54 on
+  the LoROM build and 58 on the SA-1 build** (his first frame inside 60). The stock hold test (the puck slid to him at
+  set depths) agrees on the LoROM build (held 141 frames at depths 180-90, at once on the original) and doesn't work
+  on the SA-1 build (he doesn't take the puck).
+- **Skating** (NHL94_skating.smc): the burst 3,320 at any energy and with line changes on or off (the original
+  6,835 fresh, 3,320 at half, 1,562 at a quarter). Turn rate 40: the pad reversed at full speed, 0 speed after 91
+  frames and 81 units (the original 52 and 50); let go, the glide is the same on both. (The stock test's "38 frames"
+  was the side boards.)
+- **Puck friction 8** (NHL94_puck_friction_8.smc): a loose puck keeps 0.79 of its speed a second (the original's 9:
+  0.87).
+
 ## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
 
 A league's report on its 1996 World Cup of Hockey ROM (1996 World Cup of Hockey (update).smc, 2E8759F1, 2 MB): a

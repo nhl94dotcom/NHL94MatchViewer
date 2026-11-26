@@ -25,7 +25,7 @@
   three stars (star1-3 $1E2B, scores $1E31) with each player's goals, assists, shots (goalies: against) and whether
   the box came up, and a work RAM hash each 600 frames (`same` compares two ROMs' runs: where they first differ).
   PLAYOFFS=1: Play Mode set to New Playoffs on the menu (RIGHT x 2) (intermission highlights: DoHiLights, ticks counted as
-  'highlight' while sflags3 bit 3 is set). CLUTCH=1: in the third period the scores are set level when the clock reaches 2:30 (clutch time's case).
+  'highlight' while sflags3 bit 3 is set). AGG=1: every skater's Aggression ($1443) held at 15 (more penalties). CLUTCH=1: in the third period the scores are set level when the clock reaches 2:30 (clutch time's case).
 
 python snes_gen_settings_check.py goalie|skate|puck OUT ROM [ROM ...]
 python snes_gen_settings_check.py cvc ROM GAMES OUT [FIRST]   |   dive ROM GAMES OUT (dive catches, computer games)   |   same A.jsonl B.jsonl   |   report OUT.jsonl ..."""
@@ -251,6 +251,7 @@ def cvc_game(rom, n):
     for a in range(STARS, STARS + 6, 2):
         m.setw(a, 0x7777)
     clutch = os.environ.get("CLUTCH") == "1"
+    agg = os.environ.get("AGG") == "1"
     ticks = Counter()               # (state, frames since the last tick) -> count
     period_start, boxes, box_open = [], [], {}
     armed, icing_calls, seen, hashes = 0, 0, set(), []
@@ -311,6 +312,10 @@ def cvc_game(rom, n):
             ps_cur["frames"] = frame - ps_cur.pop("start")
             ps.append(ps_cur)
             ps_cur = None
+        if agg and frame % 300 == 0:                         # AGG=1: every skater's Aggression at 15, for penalties
+            for k in range(12):
+                if m.w(0x0F43 + 2 * k) not in (0, 0xFFFF):
+                    m.setw(0x1443 + 2 * k, 15)
         if frame % 600 == 0:
             if per < 3 and not shootout:
                 h = hashlib.md5(bytes(m.e.ram[0:0x2000]) + bytes(m.e.ram[0x2000:0x4000])).hexdigest()[:8] if not m.sa1 else None
