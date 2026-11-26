@@ -8844,6 +8844,13 @@ The SA-1 pair's first game was the same game call for call (the others differ); 
 to 1 gave 87 calls for 15, so the patched code is the live one. Penalty shots do come up in these SNES games (1 in
 the base's 20, 7 in very strict's): the place to try the rules build's "no penalty shots".
 
+**No penalty shots, played (2026-11-26).** NOSE4Web's NHL94_no_penalty_shots_very_strict.smc (0054F57D: the very
+strict build with $9EC063's one byte and the checksum) on the same 20 seeds: **no penalty shot in 20 games (7 in the
+very strict build's)**. 14 games are the very strict build's call for call; the other six are the six that had a
+penalty shot, each the same up to its first one and different from there. What came in its place: a minor (tripping)
+once, and five times no call (the next call a faceoff three times, a goal twice): the foul goes on to its ordinary
+roll, which mostly fails. Calls with minutes 79 for 93 (the 93 count the 7 penalty shots), goals 48 for 53.
+
 ## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
 
 A league's report on its 1996 World Cup of Hockey ROM (1996 World Cup of Hockey (update).smc, 2E8759F1, 2 MB): a
