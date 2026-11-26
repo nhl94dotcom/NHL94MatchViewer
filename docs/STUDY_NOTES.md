@@ -8732,6 +8732,14 @@ nosebuilds/season8788); `scouting_text_check.py` on both.
 - Not the ROM's: the Genesis pause menu's Player Cards gives ADDRESS ERROR $11DB8 in the harness's game with no
   person on a pad, and does so on retail nhl94.bin too.
 
+- **The Genesis v2** (nhl94_1987_88_v2.bin A7AA527C, 2 MB: a moved team's banners lettered with its city):
+  Minnesota's banner reads MINNESOTA on Game Setup (home and visitor), the pause screen and the playoff tree; the
+  Stars logo stays. Against the first build, screen for screen (`team_move_check.py` with nothing mirrored, 13
+  pairings: every team once, Minnesota on both sides; Game Setup with its cards, three matchup screens, the opening
+  faceoff): only Minnesota's banner box differs (357 pixels on Game Setup, 393 on the matchup screen); every other
+  screen pixel for pixel but one faceoff where the two games had already played apart (its centre-ice logo right
+  on both). The draw table as before.
+
 #### The music editor's SNES v2 (2026-11-26)
 
 NHL94_music_editor_v2.smc (9D39627E; the playoff song now at 80:F080): the parts are back on the original's
