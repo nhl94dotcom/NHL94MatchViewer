@@ -8684,7 +8684,11 @@ fight_cmp: a real fight's state kept at its first frame and played on both ROMs,
   a gap where a shaft meets its blade. (Followed up the same day: it is in the tiles the game unpacks, not the sprite
   list. Line 91 has 6 sprites, 128 pixels; the pixels are the blade sprites' own, tile 1517 at (0,3) and (1,3):
   colour 14 on retail, 0 on the build. Video memory's tiles 1440-1529 differ from retail's in 61 pixels: 52 of 14
-  to 2, the tape, and 9 of 14 to 0, two in tile 1517 and seven in 1513.) Two single frames differ more on the league ROM (the fade-in's and the
+  to 2, the tape, and 9 of 14 to 0, two in tile 1517 and seven in 1513.) NOSE4Web's cause: its unpacker
+  read a long backwards copy from its whole output, the game's through a 256-byte ring. **The v2 ROMs** (F9113B25,
+  32A1073A; only the stream differs from the first pair): tiles 1440-1529 differ from retail's in the 52 tape pixels
+  alone at three frames, no pixel to 0; the close-up's frames differ from the no-tape reference in 10-23 pixels
+  (14-18 on the league ROM), every one black on the build; the shafts join the blades. Two single frames differ more on the league ROM (the fade-in's and the
   close-up's last): the two runs a frame apart there, the pictures the same a frame later.
 - **Fight frames, forced on every skater** (gen_frame_edit_check, 0-869): the same 18 frames show the touches on both
   ROMs: 846 (9 pixels a stick), 847 and 848 (8 of tape and the eye), 849-861 (the eye, 1 pixel), 866 and 869 (5);
