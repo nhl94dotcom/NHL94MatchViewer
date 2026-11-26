@@ -2291,6 +2291,23 @@ box score (the user's point), so two ways to more were tried on the games alread
     near it (0.76); one a second call 200 samples before a real one-timer (0.33). And the home team's 11 missed shots
     (5 with no swing read near the shooter) took 1.9 from its side. So one game's xG verdict can turn on two or
     three calls: the team totals are safe to within about 2, not closer.
+- **The fresh games' misses by cause, and two fixes** (2026-11-26; reads on disk, `swing_events.py test` 16 s for
+  the three games). The 26 missed shots: 19 the finder calls on the recording's data and not on the video's, 5 it
+  calls on neither (three of them from 330+ units: counted by the game, worth no xG), 2 with no swing read. Of the 19:
+  4 measured from the wrong net (a goalie read at the wrong end for that sample: "dist_net" 400-500 for 40-190), 3
+  with the release put at the start of the wind-up by one or two misread puck positions (the real release 16-30
+  samples later never looked at), about 10 with the puck's path after the release lost (the read's puck drifts on
+  its old line or stops: no crossing of the goal line, aim 80-160 degrees off), 2 just under the line (0.46-0.49).
+  The 9 unmatched calls: 4 the finder calls on the recording too (a goal the recording lists as "other" with no xG,
+  two dump-ins from 485-510, a close swing with no release that the game didn't count), 2 where the video had the
+  wrong team-mate carrying (a second call for one play; a one-timer whiff's pass going on at the net), 1 with the
+  wrong team carrying (0.76 xG out of nothing), 2 small.
+  - **The ends by period** (`attacks_top`: each period's commonest answer from the goalies, for all of it) and **a
+    release that comes back isn't one** (`release2`: the puck within his own gap of the swinger again 5-16 samples
+    later: the search goes on): **shots found 63 of 84 (58), the dangerous 23 of 26 (20), unmatched calls 9 (9)**;
+    game 1's xG 4.99 / 2.26 for the recording's 5.72 / 1.53 (4.06 / 2.14 before). Game 2 still reads the wrong team
+    ahead (2.40 / 4.83 for 4.23 / 2.54): its errors are the read's (who has the puck, the puck in flight), not the
+    finder's. The model is the same one (not fitted again); the nine earlier reads not scored again yet.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).

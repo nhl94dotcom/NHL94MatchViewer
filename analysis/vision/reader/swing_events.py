@@ -43,7 +43,7 @@ def xy(m, i, k):
     return m["pos"][(i * 12 + k) * 2], m["pos"][(i * 12 + k) * 2 + 1]
 
 
-def attacks_top(m, i, team):
+def _attacks_top_raw(m, i, team):
     """As xg.attacks_top: the other team's goalie is at the net this team attacks."""
     for side, sign in ((team, -1), (1 - team, 1)):
         for k in range(side * 6, side * 6 + 6):
@@ -51,6 +51,28 @@ def attacks_top(m, i, team):
                 return (xy(m, i, k)[1] > 0) == (sign > 0)
     per = m["period"][i] if isinstance(m.get("period"), list) else 0
     return (team == 0) == (per in (0, 2))
+
+
+PERIOD_DIR = True
+
+
+def attacks_top(m, i, team):
+    """The net a team attacks: the goalies' ends, settled a period at a time (2026-11-26: sample by sample, a goalie
+    read at the wrong end put 4 of the fresh games' 26 missed shots 400+ units from "their" net; the ends only change
+    with the period, so each period's commonest answer stands for all of it)."""
+    if not PERIOD_DIR or not isinstance(m.get("period"), list):
+        return _attacks_top_raw(m, i, team)
+    d = m.get("_dirs")
+    if d is None:
+        tally = {}
+        for q in range(0, len(m["t"]), 5):
+            key = m["period"][q]
+            tally[key] = tally.get(key, 0) + (1 if _attacks_top_raw(m, q, 0) else -1)
+        d = m["_dirs"] = {key: v > 0 for key, v in tally.items()}
+    top0 = d.get(m["period"][i])
+    if top0 is None:
+        return _attacks_top_raw(m, i, team)
+    return top0 if team == 0 else not top0
 
 
 def release2(m, i0, k, look=40):
@@ -65,14 +87,36 @@ def release2(m, i0, k, look=40):
         while e < min(n - 1, i0 + LONG_LOOK) and frame_of(m, e, k) in SWING:
             e += 1
         look = max(look, e - i0 + 6)
+    first = None
     for i in range(i0, min(n - 4, i0 + look)):
         sp = math.hypot(P[3 * (i + 3)] - P[3 * i], P[3 * (i + 3) + 1] - P[3 * i + 1]) / 3
         x, y = xy(m, i, k)
         x3, y3 = xy(m, i + 3, k)
         g0 = math.hypot(P[3 * i] - x, P[3 * i + 1] - y)
         if sp >= FAST and g0 <= 30 and math.hypot(P[3 * (i + 3)] - x3, P[3 * (i + 3) + 1] - y3) >= g0 + 5:
-            return i, True
+            if BACK and _comes_back(m, i, k, max(12, g0 + 4)):
+                first = i if first is None else first  # 2026-11-26: a misread puck or two in a wind-up looks like a release
+                continue                            # (4 of the fresh games' missed shots): he has it again right after,
+            return i, True                          # so the search goes on; no later release: this one stands
+    if first is not None:
+        return first, True
     return min(n - 1, i0 + 5), False
+
+
+BACK = True
+
+
+def _comes_back(m, i, k, near=12):
+    """The puck within `near` of the swinger (his gap when it "left", and a little) on two samples running, 5-16
+    samples after a release at i."""
+    P, n = m["puck"], len(m["t"])
+    run = 0
+    for q in range(i + 5, min(n, i + 17)):
+        x, y = xy(m, q, k)
+        run = run + 1 if math.hypot(P[3 * q] - x, P[3 * q + 1] - y) <= near else 0
+        if run >= 2:
+            return True
+    return False
 
 
 def release(m, i0, k, look=40):
@@ -441,7 +485,7 @@ def test(model_path, read_path):
             per = []
             for jf, (i, k, p) in enumerate(found):
                 team = k // 6
-                gl = 264 if XG.attacks_top(pm, min(n - 1, i), team) else -264
+                gl = 264 if attacks_top(pm, min(n - 1, i), team) else -264
                 f, x0, y0, speed, side = shot_inputs(pm, min(n - 1, i), k, gl)
                 use = os.environ.get("NHL94_SHOT_INPUTS", "")   # which of the flight's: t time, p spot, v speed, s side
                 fo = min(n - 1, i)
