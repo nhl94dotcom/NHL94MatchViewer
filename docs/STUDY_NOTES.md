@@ -8665,6 +8665,48 @@ across the body or held up). Not seen in the game. Work files in the scoring_map
   on the thin end of the stick away from the body (seen from behind that is the top of the shaft, a knob, the blade
   being at the ice); 89's three pixels sit by the shoulder, where that frame's stick is held up.
 
+## NOSE4Web's music editor: an organ song and a game piece edited on each system (2026-11-26)
+
+nhl94_music_editor.bin (C629D501), NHL_95_music_editor.bin (770D4ABF), NHL94_music_editor.smc (94AEFF93): the organ
+song a whole tone up and 20% faster, the game piece with one part deleted and 10% slower, each with the MIDI that
+went in. Streams decoded and matched note for note (pitch, start and length, a start offset allowed) against the
+original's and the MIDI's (gen_song_streams, gen95_music_check, snes_song_streams; work scripts in the runs folder,
+nosebuilds/musiced), then played (gen_midi_song_check, gen_title_music_check, gen95_replace_check; the SNES pieces
+recorded in the game and on the playoff tree screen, playoffRoundIdx $7E35D4 set to 2: PlayoffScreen starts the
+song from the finals on).
+
+- **Nothing else changed** on any of the three: beside the two streams, the checksum and the pointers to them
+  (NHL '94: two table entries, the header's size byte and 5 bytes at $301; the other 121 songs' events the same.
+  NHL '95: the bank pointer at $BAD0 and an own bank at $1A72C6 holding songs 0 and 51. SNES: one song-table entry
+  and the four places that load the playoff song's pointer).
+- **Organ songs**: NHL '94 song $31: 120 of the 132 notes, the 12 gone each among the lowest of more than four
+  sounding at once; NHL '95 song 51: all 311; SNES: all 112. Every one 2 semitones up, at 1 / 1.2 the time (within a
+  frame), the right length, and the MIDI's. Played: NHL '94's starts at a period's first faceoff, one stream unit a
+  frame, and is cut by play at 777 of its 934 frames (the original's at 884 of 1,121); the SNES's plays 686 frames
+  for 823 and ends itself, its pitch 2.0 semitones up by ear measure. **SNES: 28 of the 56 notes of the left
+  instrument (#11) are on the right one (#12)**: left / right loudness 2,804 / 2,751 becomes 2,319 / 3,164; only 9
+  of 112 velocities are the original's.
+- **NHL '94 title** ($78): the part gone is stream channel 2 (146 notes, mean pitch 67; channel 1 is the higher
+  one, mean 75, highest 87); of the other 780 notes one is missing (channel 1, note 70, the original's frame 3,803:
+  one of a six-note chord; the build sounds 6 at once at most, the original 9); times 1 / 0.9 (4,866 frames for
+  4,361 with a 20-frame lead-in); the end event loops to the stream's start + 4; on the title screen 5,573 frames
+  played with a loop, no stray pointer, the other pieces as before.
+- **NHL '95 title** (song 0): the part gone is channel 5, patch 13 (481 notes, the highest melodic part); times
+  1 / 0.9 (4,694 frames for 4,224), the loop controller at the end. **149 more notes are missing: the five channels
+  that held chords play one note at a time** (286 notes -> 182, 83 -> 79, 48 -> 24, 285 -> 269, 69 -> 68; the
+  original up to 3 at once in a channel; 116 of the missing are the lowest of their chord); the MIDI has them
+  (2,099 notes, the stream 1,966). Two channels' patch numbers differ (24 -> 27, 20 -> 29). Played from power-on:
+  the first pass's notes sound (11 frames of 4,694 short); the tool could not line up the second pass.
+- **SNES playoff music**: the part gone is "bsec (R) #45" (43 notes, the highest); 659 of the other 661 notes
+  are there (the one "crshbkwd #4" note and one more not), times 1 / 0.9, all 14 tracks loop over the same 1,706
+  ticks; on the playoff screen it loops every 28.87 s for 25.99. Voices read every frame: 655 notes start in the
+  first loop, 654 and 650 in the next two (the original 700 in each); all 8 voices busy on 14 frames a loop for 1-5.
+  **Instrument numbers differ from the original's**: the guitars' #50 / #51 are 38, 33 and 34 an octave up, #48 /
+  #49 are 33 / 34, the brass's #46 is 17 and 20, three crash hits moved to the drum track's note 62 (from 61);
+  drums on track 9 as before (the track that picks its instrument by the note). Loudness about the same (RMS 3,356
+  for 3,676), the bands above 800 Hz 30% down (the deleted part); whether those instruments sound as the
+  original's was not settled by measurement.
+
 ## Clockwise's edit on another build of chaos's fight patch, and the shorter faceoff tape (2026-11-26)
 
 NOSE4Web's GLHL_clockwise_fixed.bin (1C37230E: a league ROM with chaos's own build of the fight patch, the hacks
