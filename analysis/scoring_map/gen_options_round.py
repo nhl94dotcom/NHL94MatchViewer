@@ -16,7 +16,11 @@ Each test plays the ROM from power-on into a game (gen_ot_check.to_setup / into_
   ratings ROM          every on-ice record's roster place and working bytes +$67..$75 (weight first), and the same
         players' rating nibbles in the ROM's roster (tools/systems/genesis.read_teams).
 
-python gen_options_round.py clock|skating|goalie|ratings ROM [...]"""
+  stars ROM OUT [WAIT] [agg]   a computer game: the plus-minus log's entry at every goal, the three stars' scores
+        against the formula, the log at a second game's start (see stars()).
+  energy ROM [PERIODS] line changes On: energy lost a game second on the ice, gained on the bench (see energy()).
+
+python gen_options_round.py clock|skating|goalie|ratings|stars|energy ROM [...]"""
 import json
 import statistics
 import sys
@@ -277,10 +281,213 @@ def ratings(rom):
     print(json.dumps(dict(rom=Path(rom).name, teams=[teams[i]["abbr"] for i in ids], rows=rows)), flush=True)
 
 
+STARSCORES, PMLEN, PMLOG = 0xCF36, 0xDEF4, 0xDEF6
+VALUES = {"linesOff": dict(goal=11000, assist=7000, shot=500, check=500, ga=-11000, sa=4000, shutout=16000),
+          "linesOn": dict(goal=14300, assist=9100, shot=650, check=650, ga=-11000, sa=4500, shutout=20800)}
+
+
+def star_formula(st, v):
+    """NOSE4Web's CalcTeamStarScores (its bytes at $1867E read): every slot starts at the goal difference; a skater
+    adds goals, assists, shots and checks; a goalie with shots against and the ice time adds half an assist's value
+    an assist, the shutout, goals against, and the shots faced (one fewer for the losers)."""
+    out = []
+    for t in (0, 1):
+        s = st[t]
+        margin = st[t]["score"] - st[1 - t]["score"]
+        for i in range(26):
+            val = margin
+            if i >= s["goalies"]:
+                val += s["g"][i] * v["goal"] + s["a"][i] * v["assist"] + s["s"][i] * v["shot"] + s["c"][i] * v["check"]
+            elif s["s"][i] and s["ice"][i] >= st[0]["need"]:
+                val += s["a"][i] * v["assist"] // 2 + (v["shutout"] if s["g"][i] == 0 else 0) + s["g"][i] * v["ga"]
+                val += (s["s"][i] - (1 if margin < 0 else 0)) * v["sa"]
+            out.append(val)
+    return out
+
+
+def stars(rom, out, wait=0, agg=False, lines="linesOff"):
+    """A computer game from power-on (WAIT more frames on Game Setup first: another game). Every goal: the skaters
+    on the ice (records 0-11 not parked at x $FF10, their roster places) against the plus-minus log's new entry (14
+    bytes from $FFDEF6 + the length word at $FFDEF4: a flag byte, a byte left alone, the 12 places). At the Stars of
+    the Game box (gmode bit 7): the 52 scores at $FFCF36 against the formula on the team blocks (the three taken
+    are cleared). Then START back to the menus and into a second game: the log's length and old entries. AGG: every
+    skater's Aggression held at 15, for penalties (the formula's "checks" are the bytes at +$102: penalty minutes
+    on a ROM without the bodycheck count, ROM $12302 = D532 0000)."""
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    e = Emu(rom)
+    G.to_setup(e, out)
+    e.run(wait)
+    if agg:
+        e.setw(0xD056, 1)                                    # OptPen: On (Off as the menu comes up)
+    if not G.into_play(e):
+        raise SystemExit("never reached play")
+    print("log length at the first frame of play", e.w(PMLEN), "OptLine", e.w(OPTLINE), flush=True)
+
+    def on_ice():
+        return [0xFF if e.w(rec(k)) == 0xFF10 else e.b(rec(k) + 0x66) for k in range(12)]
+
+    def team_stats():
+        st = []
+        for t in TEAMS:
+            st.append(dict(score=e.w(t + 0xC), g=[e.b(t + 0xB4 + i) for i in range(26)], a=[e.b(t + 0xCE + i) for i in range(26)],
+                           s=[e.b(t + 0xE8 + i) for i in range(26)], c=[e.b(t + 0x102 + i) for i in range(26)],
+                           ice=[e.w(t + 0x136 + 2 * i) for i in range(26)]))
+        return st
+
+    goals, res, f, still, last, score = [], None, 0, 0, None, (0, 0)
+    prev_ice, prev_len = on_ice(), e.w(PMLEN)
+    mine, was_mine, drops = (e.b(0xC6F7), e.b(0xCA5B)), True, []
+    while f < 60 * 60 * 40:
+        computer(e)
+        if agg:
+            for k in range(12):
+                if e.b(rec(k) + POS) not in (0, 0xFF):
+                    e.setb(rec(k) + 0x73, 15)
+        e.run(1, hold=["START"] if still > 900 and f % 240 == 0 else [])
+        f += 1
+        c = e.w(CLOCK)
+        still = still + 1 if c == last else 0
+        last = c
+        now = (e.w(TEAMS[0] + 0xC), e.w(TEAMS[1] + 0xC))
+        n = e.w(PMLEN)
+        is_mine = (e.b(0xC6F7), e.b(0xCA5B)) == mine
+        if not (is_mine and was_mine):                       # an intermission highlight of another game: only the log watched
+            if n != prev_len or is_mine != was_mine:
+                drops.append(dict(f=f, gsp=e.w(GSP), clock=c, len=(prev_len, n), ours=is_mine, score=now))
+                print(f"  {'our game again' if is_mine else 'another game (intermission highlight)'}: the log's length {prev_len} -> {n}, "
+                      f"score shown {now}", flush=True)
+            prev_len, was_mine, prev_ice = n, is_mine, on_ice()
+            if is_mine:
+                score = now
+            continue
+        if now != score or n != prev_len:
+            entry = [e.b(PMLOG + prev_len + i) for i in range(max(n - prev_len, 0))]
+            goals.append(dict(f=f, gsp=e.w(GSP), clock=c, score=now, was=score, ice_before=prev_ice, ice=on_ice(), len=(prev_len, n),
+                              entry=entry, sflags4=e.b(0xC2F4), gmode2=e.b(0xC2FA), skaters=[sum(1 for x in on_ice()[a:a + 6] if x != 0xFF) for a in (0, 6)]))
+            g = goals[-1]
+            away = now[1] > score[1]
+            ok = len(entry) == 14 and entry[2:] == prev_ice and bool(entry[0] & 0x80) == away
+            print(f"goal {g['was']} -> {now} period {g['gsp'] + 1} clock {c}: on the ice {prev_ice}; entry {entry}; "
+                  f"{'agrees' if ok else 'DIFFERS'}; on the ice a side {g['skaters']}", flush=True)
+            score, prev_len = now, n
+        prev_ice = on_ice()
+        if res is None and e.w(GMODE) & 0x8000:
+            e.run(2)                                         # ShowThreeStars sets the bit, then waits a frame before the scores
+            f += 2
+            st = team_stats()
+            got = [e.l(STARSCORES + 4 * i) for i in range(52)]
+            got = [x - (1 << 32) if x & 0x80000000 else x for x in got]
+            from systems import genesis
+            teams = genesis.read_teams(Path(rom))
+            ids = [e.b(0xC6F7), e.b(0xCA5B)]
+            best = None
+            for goalies in ((2, 2), (3, 3), (2, 3), (3, 2), (1, 1)):
+                for need in (0, 1, 100000):
+                    for t in (0, 1):
+                        st[t]["goalies"] = goalies[t]
+                    st[0]["need"] = need
+                    want = star_formula(st, VALUES[lines])
+                    bad = [i for i in range(52) if got[i] != want[i] and got[i] != 0]
+                    if best is None or len(bad) < len(best[0]):
+                        best = (bad, want, goalies, need)
+            bad, want, goalies, need = best
+            taken = [i for i in range(52) if got[i] == 0 and want[i] != 0]
+            order = sorted(range(52), key=lambda i: (-want[i], i))[:3]
+
+            def who(i):
+                t = teams[ids[i // 26]]
+                p = t["players"][i % 26] if i % 26 < len(t["players"]) else {}
+                s = st[i // 26]
+                return f"{t['abbr']} {p.get('name')} (G {s['g'][i % 26]} A {s['a'][i % 26]} S {s['s'][i % 26]} +$102 {s['c'][i % 26]}, score {want[i]})"
+            res = dict(f=f, gsp=e.w(GSP), score=now, bad=bad, taken=taken, top3=order, goalies=goalies, need=need,
+                       names=[who(i) for i in order], taken_names=[who(i) for i in taken])
+            print(f"stars: final {now}, period word {e.w(GSP)}; scores other than the three taken that differ from the formula: {len(bad)} "
+                  f"(goalie slots {goalies}, ice-time rule {need}); cleared slots {taken}; the formula's top three {order}", flush=True)
+            for i in order:
+                print("   ", who(i), flush=True)
+            for i in bad:
+                print("    differs:", i, got[i], want[i], who(i), flush=True)
+            print("    bodycheck count in this ROM:", Path(rom).read_bytes()[0x12302:0x12306].hex() == "4e714e71",
+                  "; players with a count at +$102:", [who(i) for i in range(52) if st[i // 26]["c"][i % 26]], flush=True)
+            e.run(30)
+            e.screenshot(out / "stars.png")
+        if res is not None and f > res["f"] + 600:
+            break
+    # a second game from the same power-on: the log cleared
+    old = e.w(PMLEN)
+    for _ in range(40):
+        e.run(4, hold=["START"])
+        e.run(90)
+        if e.b(SCREEN) != 0:
+            break
+    ok2 = G.into_play(e)
+    after = [e.b(PMLOG + i) for i in range(old)]
+    print(f"second game reached {ok2}: the log's length {old} -> {e.w(PMLEN)}, old entries' bytes not zero {sum(1 for x in after if x)}; "
+          f"scores {e.w(TEAMS[0] + 0xC)}-{e.w(TEAMS[1] + 0xC)}", flush=True)
+    (out / "stars.json").write_text(json.dumps(dict(rom=Path(rom).name, goals=goals, stars=res, highlights=drops)))
+
+
+def energy(rom, periods=1):
+    """Line changes On (OptLine $D058 = 0 on Game Setup), the computer on both sides, PERIODS periods. Every 60
+    frames each roster place's energy (team block +$32, words) and where he is (+$66: $FFFF the ice, $FFFE the
+    bench). Over pairs of samples a clock second or more apart with him in the same place: energy lost a game second
+    on the ice, gained on the bench (below the top), and the shifts' lengths."""
+    e = Emu(rom)
+    G.to_setup(e, Path(rom).parent)
+    e.setw(OPTLINE, 0)
+    if not G.into_play(e):
+        raise SystemExit("never reached play")
+    log, f, still, last = [], 0, 0, None
+    while e.w(GSP) < periods and f < 60 * 60 * 25:
+        computer(e)
+        e.run(60, hold=["START"] if still >= 5 else [])
+        f += 60
+        c = e.w(CLOCK)
+        still = still + 1 if c == last else 0
+        last = c
+        if e.b(SCREEN) == 0:
+            log.append((e.w(GSP), c, [[(e.w(t + 0x32 + 2 * s), e.w(t + 0x66 + 2 * s)) for s in range(26)] for t in TEAMS]))
+        if f % 3600 == 0:
+            lowload.breathe()
+    ice, bench, top, steps = [], [], 0, {}
+    shifts = []
+    for t in (0, 1):
+        for s in range(26):
+            run = None
+            for a, b in zip(log, log[1:]):
+                (en0, w0), (en1, w1) = a[2][t][s], b[2][t][s]
+                top = max(top, en0)
+                secs = a[1] - b[1]
+                if w0 == 0xFFFF:
+                    run = (run or 0) + max(secs, 0)
+                elif run:
+                    shifts.append(run)
+                    run = None
+                if a[0] != b[0] or secs < 1 or w0 != w1:
+                    continue
+                if w0 == 0xFFFF and en1 > 0 and en0 != 0x1000 + 9:
+                    if en0 != en1 or s >= 3:                 # a goalie's never moves: left out
+                        ice.append((en0 - en1) / secs)
+                        steps[en0 - en1] = steps.get(en0 - en1, 0) + 1
+                elif w0 == 0xFFFE and en1 < 0x1000 and en0 < 0x1000:
+                    bench.append((en1 - en0) / secs)
+    q = lambda v: [round(x, 1) for x in statistics.quantiles(v, n=4)] if len(v) > 3 else v
+    print(json.dumps(dict(rom=Path(rom).name, optline=e.w(OPTLINE), samples=len(log), top_energy=top,
+                          ice_pairs=len(ice), ice_lost_a_second_quartiles=q(ice), ice_lost_mean=round(statistics.mean(ice), 2) if ice else None,
+                          bench_pairs=len(bench), bench_gained_quartiles=q(bench), bench_gained_mean=round(statistics.mean(bench), 2) if bench else None,
+                          commonest_ice_steps=sorted(steps.items(), key=lambda kv: -kv[1])[:8], shifts=len(shifts), shift_seconds_quartiles=q(shifts),
+                          lowest_energy=min(min(x[0] for x in tm) for _, _, tms in log for tm in tms))), flush=True)
+
+
 if __name__ == "__main__":
     lowload.gentle()
     mode, rom = sys.argv[1], sys.argv[2]
     if mode == "clock":
         clock(rom, int(sys.argv[3]) if len(sys.argv) > 3 else 40000)
+    elif mode == "stars":
+        stars(rom, sys.argv[3], int(sys.argv[4]) if len(sys.argv) > 4 else 0, len(sys.argv) > 5)
+    elif mode == "energy":
+        energy(rom, int(sys.argv[3]) if len(sys.argv) > 3 else 1)
     else:
         {"skating": skating, "goalie": goalie, "ratings": ratings}[mode](rom)

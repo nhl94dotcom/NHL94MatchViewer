@@ -8722,6 +8722,45 @@ pages through `gen_forum_options_test.to_play`.
   57, 64: Haller 45 for 41.** And the single ratings it shows aren't 7 a point throughout: a stored 10 shows 70 and
   8 shows 56, but 5 shows 42 and 3 shows 35 (Haller's Agility and Speed 5: 42; his Shot Power and Stickhandling 3:
   35). Given to NOSE4Web. No goalie checked.
+  (NOSE4Web: the display is by design, a rating below 50 shown as half + 25; Haller's 45 = 41 / 2 + 25.) The goalie
+  overall: the Game Setup screen left alone cycles the twelve starters' cards (C skips), each a number, a name and a
+  photo, no rating: not checked there.
+
+### Chunk 2 (2026-11-25): three stars and plus-minus, unlimited stamina, energy rates (computer games)
+
+`gen_options_round.py stars ROM OUT [WAIT] [agg]` and `energy ROM [PERIODS]`; Montreal at home to Los Angeles, the
+menu's own settings (10-minute periods, penalties Off, line changes Off) but where said.
+
+- **Three stars, lines off** (nhl94_stars_plusminus; the routine's bytes at $1867E read: every roster place starts
+  at the goal difference; a skater adds goals x 11,000, assists x 7,000, shots x 500 and the byte at +$102 x 500; a
+  goalie with shots against adds half an assist's value an assist, 16,000 for a shutout, -11,000 a goal against and
+  4,000 a shot faced, one shot fewer for the losers). **Eleven games: the 52 scores at $FFCF36 equal that formula on
+  the team blocks in every game, and the three cleared (taken for the box) are its top three**, the names on the
+  screen right (the scores are worked out a frame after gmode's stars bit goes on).
+  - **The "checks" are penalty minutes on this ROM.** +$102 holds a player's penalty minutes unless the bodycheck
+    count is in (ROM $12302 = 4E71 4E71; here D532 0000). With penalties On: +2 there with every minor, as he went to
+    the box (four penalties followed); a count put there by hand made a benched defenceman a star. So a minor is
+    worth two shots, unless the option brings the bodycheck count with it.
+  - **Both goalies were among the three stars in all eleven games, a goalie first in every one**: 4,000 a shot faced
+    outweighs the skaters at these games' 17-43 shots (a goalie beaten 5 times on 43 shots, a 5-1 loss: 112,996 and
+    first star; the game's best skater 37,504). At a league game's 10-15 shots it would weigh a third as much.
+- **The plus-minus log** ($FFDEF4 a length word, 14 bytes a goal from $FFDEF6: a flag byte, a byte left alone, the
+  roster places of records 0-11, $FF for one not on the ice). **60 goals in 11 games: every entry the twelve on the
+  ice the frame before, bit 7 the away team's goal**; the low bits read 2 at even strength and 3 on all three goals
+  scored with a side a man short (penalties On); bit 6 (the penalty-shot flag, sflags4 bit 5) never came up. Length
+  0 at each game's first frame, and at a second game's from the same power-on, the old entries zeroed.
+  - **An intermission highlight of another game wipes it.** In 2 of the 11 games the intermission showed other
+    games' highlights (the helper's team-id case): each highlight sets the length to 0 (the hacked clear at $17132
+    runs for it) and writes its own goal; back in our game the log holds that goal and no earlier one (56 bytes, four
+    goals, gone in one game; the entry left is the highlight's players). The team blocks come back; the log
+    doesn't. Given to NOSE4Web.
+- **Unlimited stamina** (nhl94_stamina, line changes On, a period): no player's energy left 4,096 in 2,904 pairs of
+  samples on the ice (the original: down to 1,571), and **no line change ever came**: the six who start play the period.
+- **Energy rates** (nhl94_energy_rates, the same): on the ice the commonest steps 99, and 88-92 for 22-26 on the
+  original, where it has 33: the Endurance allowance (Endurance / 2 back while above $C00) isn't scaled, so a fresh
+  skater tires 3.5 to 4 times as fast and one below $C00 3 times; mean lost a game second 23.6 for 8.8. On the bench
+  30 a game second for 9 (every quartile 30). Shifts' median 74 game seconds for 163; players reached 0 in the first
+  period (the original's lowest 1,571).
 
 ## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
 
