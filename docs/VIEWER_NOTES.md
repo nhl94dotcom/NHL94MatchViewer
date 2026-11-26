@@ -2307,7 +2307,19 @@ box score (the user's point), so two ways to more were tried on the games alread
     later: the search goes on): **shots found 63 of 84 (58), the dangerous 23 of 26 (20), unmatched calls 9 (9)**;
     game 1's xG 4.99 / 2.26 for the recording's 5.72 / 1.53 (4.06 / 2.14 before). Game 2 still reads the wrong team
     ahead (2.40 / 4.83 for 4.23 / 2.54): its errors are the read's (who has the puck, the puck in flight), not the
-    finder's. The model is the same one (not fitted again); the nine earlier reads not scored again yet.
+    finder's.
+  - **Fitted again, no better** (base9m, cv9m, model_all9m: the base and every read's swings worked out again with
+    the two changes). The nine earlier reads, each scored by a model that never saw it: 223 of 275 shots found (221
+    before), the dangerous 80 of 103 (78), unmatched calls 31 (35). The three fresh games by the new all-in model: 61
+    of 84 with 9 unmatched, for 63 by the old model with the changes: the old model (model_all9l) stays.
+  - **The xG verdict over all twelve games**: the wrong team ahead in three (the recording's margins 2.0, 1.7 and
+    0.6) and in one more that the recording has level (0.2): about one game in four, so not yet to be reported.
+  - **What is left is the read's puck, not the swing.** The shooter's swing frames are read at his spot in nearly
+    every missed shot (two quick four-sample swings read as other frames; two shooters not read at all). In the 12
+    samples after a missed shot's release the read has the puck "same carrier" (still with the shooter, unseen) or
+    "coasting" far more than after a found one: seen in under half those samples in 12 of 21 missed shots, 13 of 63
+    found ones. Its place is close (median 4-13 units off); its direction is what's lost. That is the puck tracker
+    in the reader: the next work, and it needs frames read again.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
