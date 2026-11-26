@@ -8707,6 +8707,39 @@ song from the finals on).
   for 3,676), the bands above 800 Hz 30% down (the deleted part); whether those instruments sound as the
   original's was not settled by measurement.
 
+## "Offer only these teams in the menu" on the 1987-88 season ROMs: menus and screens (2026-11-26)
+
+NOSE4Web's nhl94_1987_88.bin (ECFEC0B4) and NHL94_1987_88.smc (362330E9): the 21 teams of 1987-88 as teams 0-20,
+All Stars East and West 21-22, the five others moved to 23-27 and not offered. `gen_offer_teams_check.py
+teams|draws|screens` (Genesis); the SNES by one-off scripts on team_move_check's and menu_shots' pieces (runs folder,
+nosebuilds/season8788); `scouting_text_check.py` on both.
+
+- **Team lines**, both systems: RIGHT and LEFT 50 times on the Home and the Visitor line: the team word steps by one
+  through 0-22 and wraps, never 23 or more. Each choice's banner and logo are its team's, but **Minnesota's (team 4):
+  the banner reads DALLAS and the logo is the Stars'** on Game Setup and on the playoff tree, both systems (the menu
+  line, the scores list and the scouting text say Minnesota).
+- **Playoff draws**: the ROM's table (Genesis $005576, SNES file $0E6D59: 32 rows of 16 team numbers) is NOSE4Web's
+  list row for row; every row 16 different teams of 0-20, the All Stars in none. New Playoffs started: a tree of 16
+  different offered teams on each (the Genesis one the list's draw 29, in order).
+- **Edit Lines, Team Roster, Player Stats, Game Stats**, from a paused game: the season's names and numbers
+  (Genesis Los Angeles: Duchesne 28, Wells, Robitaille, Nicholls, Carson 12; Montreal's 25 by number, Hayward 1 to
+  Corson 72. SNES Edmonton's best line S. Smith 55, Huddy 22, Messier 11, Gretzky 99, Kurri 17; Calgary Suter 20,
+  MacInnis 2, Bullard 22, Loob 12, Nieuwendyk 25), as the ROM's rosters hold them; Game Stats' rows as retail's.
+  Other Scores lists offered teams only.
+- **Scouting report**: every script line the game shows is found in the typed text, no row too long, the names the
+  season's (Genesis: "For Montreal Bobby Smith is on a hot streak, but Chris Chelios is off his game"; SNES three
+  names a side).
+- Not the ROM's: the Genesis pause menu's Player Cards gives ADDRESS ERROR $11DB8 in the harness's game with no
+  person on a pad, and does so on retail nhl94.bin too.
+
+#### The music editor's SNES v2 (2026-11-26)
+
+NHL94_music_editor_v2.smc (9D39627E; the playoff song now at 80:F080): the parts are back on the original's
+instruments: #50 / #51 18 notes each, #48 / #49 19 each, #46 34 of the 43 brass notes (2 on #17 and 7 on #20), the
+organ's #31 / #47 100 and 101 of 102. 658 notes for the 661 wanted; times 1 / 0.9 as before. On the playoff screen
+654, 653 and 649 notes start in the first three loops (the original 700 in each), all 8 voices busy on 15-16 frames a
+loop (the original 1-5): as the first build. The organ song as before (686 frames, ends itself).
+
 ## Clockwise's edit on another build of chaos's fight patch, and the shorter faceoff tape (2026-11-26)
 
 NOSE4Web's GLHL_clockwise_fixed.bin (1C37230E: a league ROM with chaos's own build of the fight patch, the hacks
