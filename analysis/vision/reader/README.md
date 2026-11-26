@@ -27,3 +27,5 @@ templates, masks, reads) stay in `%USERPROFILE%\NHL94_scoring_map\runs\vision`.
 
 A new session, whole: `video_sync.py` (timeline) -> `track_play.py` (camera) -> `run_reader.py` per half on two
 workers -> `join_reads.py` -> `pseudo_run_any.py` and `ctrl_acc_any.py`.
+
+**Status (2026-11-26): discontinued.** A game's xG from video has the wrong team ahead in about one game in four; the attempts and what a new one should start from are in docs/VIEWER_NOTES.md.

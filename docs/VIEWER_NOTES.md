@@ -2367,6 +2367,11 @@ box score (the user's point), so two ways to more were tried on the games alread
     - **Over a four-game series the video's xG has the right side ahead in all three** (a game: Boston +1.29 on
       Winnipeg by the recordings, +1.86 by video; +0.43 on Toronto, +0.10; +1.28 on Chicago, +0.58; all twelve +1.00,
       +0.85). The size is loose (the video about 0.5 a team a game low); the single game stays unreported.
+  - **Stopped here (2026-11-26, the user's decision).** Without a reliable xG for each game the analysis is
+    incomplete, and a series-level figure doesn't make up for it: the video reader is discontinued until there is
+    a stronger way to attempt it. Nothing is removed; the last run (the boards rule narrowed to off-ice pixels,
+    replayed on the fresh games) was stopped half way and has no result. A new attempt should start at the reader
+    (who has the puck, the goalie at the shot, the shot's aim), not at the shot finder or the xG model.
   - **A report from the video alone** (`reader/video_report.py READ.json HOME AWAY`; `pseudo_match.blank`: a match
     header from the ROM, as the converter gives a recorded game, and one empty sample a video frame, filled by
     `build`). No recording is used anywhere in it. On the three fresh games: **the goals from the score box are the
