@@ -103,6 +103,60 @@ def slice_match(m, q0, q1):
     return out
 
 
+FLIGHT_FILL = _os.environ.get("NHL94_PM_FLIGHT", "0") == "1"   # off: tried on twelve games, nothing either way (VIEWER_NOTES)
+HELD = ("same carrier", "nearest stick", "carry frame", "possession star")     # the puck put at a blade, not seen there
+
+
+def flight_fill(puck, owner, how, n, gap=24, back=20, jump=12.0):
+    """The puck's path through the samples the tracker didn't see it (2026-11-26). The reads have the puck within 8
+    pixels of the truth in 83-87% of a shot's first 12 samples, but in the gaps it stands still: "coasting" from one
+    sighting has no speed yet, and a puck not seen leaving stays "with" its carrier. So:
+    - a run of coasting / unread samples between two loose sightings (up to `gap` samples) lies on the line between them;
+    - a loose sighting `jump` units or more from a puck held (unseen) at a blade the sample before: the puck left
+      earlier. Its speed from the next loose sighting (within 4 samples), run backwards up to `back` samples to
+      where that line passes nearest the held puck: from there on the puck is on the line and nobody has it."""
+    loose = [h == "seen" for h in how]
+    i = 0
+    while i < n:
+        if how[i] in ("coasting", None) and i and loose[i - 1]:
+            j = i
+            while j < n and how[j] in ("coasting", None) and j - i < gap:
+                j += 1
+            if j < n and loose[j]:
+                a, b = i - 1, j
+                for q in range(i, j):
+                    t = (q - a) / (b - a)
+                    puck[3 * q] = puck[3 * a] + t * (puck[3 * b] - puck[3 * a])
+                    puck[3 * q + 1] = puck[3 * a + 1] + t * (puck[3 * b + 1] - puck[3 * a + 1])
+            i = max(j, i + 1)
+        else:
+            i += 1
+    for b in range(1, n - 1):
+        if not loose[b] or how[b - 1] not in HELD:
+            continue
+        if ((puck[3 * b] - puck[3 * b - 3]) ** 2 + (puck[3 * b + 1] - puck[3 * b - 2]) ** 2) ** 0.5 < jump:
+            continue
+        c = next((q for q in range(b + 1, min(n, b + 5)) if loose[q]), None)
+        if c is None:
+            continue
+        vx, vy = (puck[3 * c] - puck[3 * b]) / (c - b), (puck[3 * c + 1] - puck[3 * b + 1]) / (c - b)
+        if (vx * vx + vy * vy) ** 0.5 < 1.0:
+            continue
+        best, start = None, b
+        for j in range(b - 1, max(-1, b - back - 1), -1):
+            if how[j] not in HELD:
+                break
+            d = ((puck[3 * b] - vx * (b - j) - puck[3 * j]) ** 2 + (puck[3 * b + 1] - vy * (b - j) - puck[3 * j + 1]) ** 2) ** 0.5
+            if best is None or d < best:
+                best, start = d, j
+            elif d > best + 6:
+                break
+        for j in range(start + 1, b):
+            puck[3 * j] = puck[3 * b] - vx * (b - j)
+            puck[3 * j + 1] = puck[3 * b + 1] - vy * (b - j)
+            owner[j] = -1
+
+
 def build(truth, vf, rows, maps, q0, q1):
     """The pseudo match over samples q0..q1: each sample takes the read frame nearest its video frame."""
     by_fi = {r["fi"]: r for r in rows}
@@ -127,6 +181,7 @@ def build(truth, vf, rows, maps, q0, q1):
     slot_of, last, votes = {}, {k: (0.0, 0.0) for k in range(12)}, {}
     pad_track = {}
     prev_p, hist = None, []
+    how = [None] * n                               # the puck tracker's state at each sample (flight_fill)
     for i in range(n):
         q = q0 + i
         r = by_fi.get(int(round(vf[q]))) if vf[q] == vf[q] else None
@@ -183,7 +238,8 @@ def build(truth, vf, rows, maps, q0, q1):
                     arr[(i * 12 + k) * w:(i * 12 + k) * w + w] = arr[((i - 1) * 12 + k) * w:((i - 1) * 12 + k) * w + w]
             pos[(i * 12 + k) * 2:(i * 12 + k) * 2 + 2] = [float(last[k][0]), float(last[k][1])]
         if r["puck"] is not None:
-            sy, sx, z, how = r["puck"]
+            sy, sx, z, how_i = r["puck"]
+            how[i] = how_i
             zz = Z_SCALE[0] * z + Z_SCALE[1] if z > 0 else 0.0   # the shadow gap in screen rows, as game height
             P = [float(sx - 128 + hpos), float(112 - sy + vpos), round(zz, 1)]
             puck[3 * i:3 * i + 3] = P
@@ -218,6 +274,8 @@ def build(truth, vf, rows, maps, q0, q1):
                 if star in fr_s and int(tid_s) in slot_of:
                     pad_track[star] = int(tid_s)
         ctrl[i] = sum(1 << slot_of[tid] for tid in pad_track.values() if tid in slot_of)
+    if FLIGHT_FILL:
+        flight_fill(puck, owner, how, n)
     # the clock, period and score from the score box where the reader read it (hud_read), carried forward over frames
     # it couldn't read; the recorded values stay only where no read frame has come yet
     clock, period, score = list(m["clock"]), list(m["period"]), list(m["score"])

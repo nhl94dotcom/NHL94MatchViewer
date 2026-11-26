@@ -503,12 +503,13 @@ def read_puck(reader, img, bg, pred=None, R=3, near=12, raw=None):
     separate thing: a dark sliver inside a skate or stick doesn't count). Its shadow (394) is then looked for
     straight below, 0-60 rows down: the gap is the height (no shadow: on the ice, the shadow under the puck).
     raw (2026-11-26, PUCK_EDGE, off by default): the frame without the puck's ignore mask. A puck half or more on the read area is
-    matched on all its pixels, the ignored ones taken from raw (a puck sliding along the boards, or raised near them,
+    matched on all its pixels, the ignored ones taken from raw where reader.puck_soft allows (off the ice only) (a puck sliding along the boards, or raised near them,
     lies partly over them: 8 of its 12 pixels counted, under the 80% it needs, and a shot's flight went unseen).
     Returns (sy of the ice point, sx, frame, z, share matched) or None."""
     if not hasattr(reader, "_puck"):
         reader._puck = [(fr, ys, xs, cs) + _ring(ys, xs) for fr, ys, xs, cs in puck_templates(reader.S)]
     drawn = getattr(reader, "drawn", np.zeros(img.shape, bool))
+    soft = getattr(reader, "puck_soft", None)       # ignored pixels a puck may be matched through (off the ice only)
     H, W = img.shape
 
     def search(pts, rad):
@@ -526,7 +527,7 @@ def read_puck(reader, img, bg, pred=None, R=3, near=12, raw=None):
                 X3 = xs[None, :k3] + grid[:, 1:]
                 ok3 = (Y3 >= 0) & (Y3 < H) & (X3 >= 0) & (X3 < W)
                 Y3c, X3c = Y3.clip(0, H - 1), X3.clip(0, W - 1)
-                hit3 = (((img[Y3c, X3c] == cs[None, :k3]) | ((raw[Y3c, X3c] == cs[None, :k3]) if raw is not None and PUCK_EDGE else False)) & ok3 & ~drawn[Y3c, X3c]).any(1)
+                hit3 = (((img[Y3c, X3c] == cs[None, :k3]) | (((raw[Y3c, X3c] == cs[None, :k3]) & soft[Y3c, X3c]) if raw is not None and PUCK_EDGE and soft is not None else False)) & ok3 & ~drawn[Y3c, X3c]).any(1)
                 grid = grid[hit3]
                 if not len(grid):
                     continue
@@ -534,9 +535,9 @@ def read_puck(reader, img, bg, pred=None, R=3, near=12, raw=None):
                 X = xs[None, :] + grid[:, 1:]
                 ok = (Y >= 0) & (Y < H) & (X >= 0) & (X < W)
                 v = img[Y.clip(0, H - 1), X.clip(0, W - 1)]
-                if raw is not None and PUCK_EDGE:
+                if raw is not None and PUCK_EDGE and soft is not None:
                     on = (v != -1).mean(1) >= 0.5
-                    v = np.where((v == -1) & on[:, None], raw[Y.clip(0, H - 1), X.clip(0, W - 1)], v)
+                    v = np.where((v == -1) & on[:, None] & soft[Y.clip(0, H - 1), X.clip(0, W - 1)], raw[Y.clip(0, H - 1), X.clip(0, W - 1)], v)
                 m = ((v == cs) & ok & ~drawn[Y.clip(0, H - 1), X.clip(0, W - 1)]).sum(1) / len(cs)
                 RY = ry[None, :] + grid[:, :1]
                 RX = rx[None, :] + grid[:, 1:]

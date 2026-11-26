@@ -185,6 +185,16 @@ def view_puck(fi):
     return ign | INV.box_mask(ign.shape)
 
 
+def view_puck_soft(fi):
+    """Where the puck's ignore mask is there only because the pixel is off the ice (not a static sprite, not the score
+    box): a puck half on the ice may be matched through these (inverse.read_puck's PUCK_EDGE; 2026-11-26: through the
+    score box's mask too, it "saw" 700-900 pucks a game along the bottom of the picture)."""
+    hpos, vpos = int(cam[fi][1]), int(cam[fi][2])
+    u, v = hpos + RINK_DX + C.PAD, 256 - vpos + C.PAD
+    off = ~ICE_PUCK[v:v + INV.H_PLAY, u:u + 256]
+    return off & ~st[v:v + INV.H_PLAY, u:u + 256] & ~INV.box_mask(off.shape)
+
+
 # the teams from colour coverage (the first frame with blobs)
 teams = genesis.read_teams(ROMP)
 _pool = [g for g in os.environ.get("NHL94_INV_TRANS_GAMES", "").split(",") if g]

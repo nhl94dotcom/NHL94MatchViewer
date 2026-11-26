@@ -2335,7 +2335,25 @@ box score (the user's point), so two ways to more were tried on the games alread
     (the ice alone), so 8 of its 12 pixels count and it falls under the 80% it needs. Counting a puck that is half
     or more on the ice from the unmasked frame (NHL94_INV_PUCK_EDGE=1) finds it in those frames, and the puck is
     "seen" in a fifth more frames of the swing stretches; but the shots get worse: **59 of 84 found for 62, the
-    dangerous 19 for 23, 10 unmatched for 8**. Left off. What else it lets in at the ice's edge wasn't looked at.
+    dangerous 19 for 23, 10 unmatched for 8**. Left off. What it let in: 700-900 "pucks" a game along the bottom of
+    the picture, read through the score box's mask (so the rule now reads through off-ice pixels only:
+    `track_test.view_puck_soft`; replayed again, result below when in).
+  - **The puck is mostly followed already.** In the 12 samples from each recorded shot's release the stored reads
+    have the puck within 8 pixels of its true screen point in 83-87% of the frames (80 of 84 shots in half their
+    frames or more), "coasting" and "same carrier" frames included. Filling the unseen gaps with straight lines in
+    the pseudo match (`pseudo_match.flight_fill`, NHL94_PM_FLIGHT=1: between two loose sightings, and back from a
+    sighting that appears away from a puck held unseen at a blade) changes nothing that counts: fresh games 64 of
+    84 with 7 unmatched (63, 9), the nine earlier reads 222 of 275 with 31 (223, 31). Left off.
+  - **xG from video: where its error comes from** (all twelve games; `reader/xg_calib.py`). A team's xG for a game
+    is off by 1.1 on average (sd 1.3), the margin between the teams by sd 2.2, and the wrong side is ahead in 3 of
+    the 11 games the recording has 0.5 or more apart. Three parts of about the same size: the shots found get
+    another value than the recording's (sd 0.21 a shot, 0.8 a team a game: the game's xG is exact geometry and the
+    video's spot, speed, aim and goalie are approximate; 55 of 286 matched shots are 0.2 or more off, the goalie
+    not read at the shot in 51); the shots missed (about 1.2 a game for both teams); the unmatched calls (0.4 a
+    team a game). A calibrated value (a small model from the video's own measurements to the recording's xG, each
+    game left out in turn) is no better: a shot's error sd 0.21 for 0.24, the same three games wrong. **So xG and
+    "deserve to win" from video stay unreported; possession, zone time, passes, entries and hits never put the
+    wrong side ahead in the fresh games.**
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).

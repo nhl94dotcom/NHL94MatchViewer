@@ -522,6 +522,11 @@ def test(model_path, read_path):
                 tot[team] += v
                 d = dict(f=int(f), team=team, video=round(v, 3), rec=(pair[jf].get("xg") if jf in pair else None), matched=jf in pair,
                          kind=sh["kind"], rec_kind=pair[jf]["kind"] if jf in pair else None)
+                # the video's own inputs for every call (2026-11-26: for a calibrated xG, xg_calib.py)
+                gxy = xy(pm, f, gk) if gk is not None else None
+                d.update(v_spot=[round(sh["x"], 1), round(sh["y"], 1)], v_speed=sh["speed"], v_human=sh["human"], v_side=side, v_gl=gl,
+                         v_goalie=[round(c, 1) for c in gxy] if gxy else None, v_gframe=frame_of(pm, f, gk) if gk is not None else 0,
+                         v_gctl=bool(gk is not None and pm["ctrl"][f] >> gk & 1), v_pr=round(float(p), 3), v_carried=int(carried))
                 if jf in pair:                               # each input beside the recording's
                     t = pair[jf]
                     tf = t["f"]

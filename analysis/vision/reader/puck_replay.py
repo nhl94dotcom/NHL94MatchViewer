@@ -97,6 +97,7 @@ for fi, fr in T.frames(min(fis), max(fis) - min(fis) + 1):
     drawn |= reader.feet_marks(np.where(ign, -1, img), bg)
     reader.drawn = drawn
     img_m = np.where(ign, -1, img)
+    reader.puck_soft = T.view_puck_soft(fi)
     pk = pt.step(np.where(T.view_puck(fi), -1, img) if T.GROW else img_m, bg, (hpos, vpos), raw=img)
     new = None if pk is None else (int(pk[0]), int(pk[1]), int(pk[3]) if isinstance(pk[3], (int, np.integer)) else 0, pk[5])
     old = r.get("puck")
