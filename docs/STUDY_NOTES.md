@@ -8778,7 +8778,7 @@ that runs in play, not for code that runs at a game's start (those booted throug
     original and back off the post outside it; on the build a goal for x -22..22 (the posts' five units a side).
   - No icing: iflags' armed bit came up 157-419 times a game on the original (5 calls in 8 games), never on the
     build (8 games, three of them 10-minute periods). The goalie's play of such a puck not looked at.
-  - No penalty shots: not seen in play. The change is PenShotChk's second branch ($9EC07E D0 03 -> D0 08: a
+  - No penalty shots: not seen in play. The change is PenShotChk's second branch ($9EC063 D0 03 -> D0 08: a
     breakaway now also returns 0), so Bcheck and checkcheck go on to their ordinary penalty rolls. No penalty shot
     came up on either ROM in the 16 games, and a forced case (a person's defenceman checking a carrier alone in front
     of him, `breakaway` held at 1) gave none on the original either, so there was nothing to compare.
