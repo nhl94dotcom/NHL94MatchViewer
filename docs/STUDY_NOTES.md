@@ -8712,6 +8712,16 @@ pages through `gen_forum_options_test.to_play`.
   - Edit Lines matches players (3259E8DC): on the ice one value a player (Desjardins -1, Schneider 0); Edit Lines
     shows that one value on every rating (Desjardins 69, 51, 51, 69: -3 each).
   All four confirmed.
+- **The attempt clock, found** (NOSE4Web: shootoutclock $FFD454, set to 25 as an attempt starts; my search had
+  stopped at $D3FF). Awarded penalty shots (four a ROM): 25 counting down at 24 frames a second on the original, 60
+  on nhl94_real_time. Shootout mode (play mode 4: RIGHT three times on Game Setup's first line): the same, 24 and
+  60. No attempt ran to 0 (the computer shoots with 12-22 left), so the time-out itself wasn't seen.
+- **Wide ratings without bonuses** (nhl94_wide_ratings_no_bonuses 904AD89A; NOSE4Web's overall: (4 Wgt + 8 Agl + 10
+  Spd + 6 OfA + 6 DfA + 8 ShP + 4 Chk + 6 StH + 6 ShA + 2 End + 6 Pas) / 8, rounded down: 70, 69, 58, 41, 57, 64 for
+  Montreal's first six defencemen, which the roster's nibbles give here too). Edit Lines shows **70, 69, 58, 45,
+  57, 64: Haller 45 for 41.** And the single ratings it shows aren't 7 a point throughout: a stored 10 shows 70 and
+  8 shows 56, but 5 shows 42 and 3 shows 35 (Haller's Agility and Speed 5: 42; his Shot Power and Stickhandling 3:
+  35). Given to NOSE4Web. No goalie checked.
 
 ## A fighter hurt in a fight skates again after his penalty: the 5-minute test in FightCoincidental (SNES, 2026-11-23)
 
