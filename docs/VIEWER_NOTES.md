@@ -2272,6 +2272,25 @@ box score (the user's point), so two ways to more were tried on the games alread
     false 25 for 35: the 565 extra swings in the fit made it warier. Not kept.
   - The release sought for as long as he stays on his shooting frames (`NHL94_SWING_LOOK`, 240 samples; the 40 it
     had stopped at): **221 of 275 found, 78 of 95, 35 false, team xG off by 0.93** (216, 78, 35, 1.02). Kept.
+- **Three games never read, the whole pipeline as it stands** (2026-11-25: BOS-WPG games 2-4 of the 2026-10-18
+  video; the read area grown 10 with the puck sought on the ice alone, the star pass, the shot finder fitted on the
+  base and all nine reads; `story_compare.py` for the report's own numbers).
+  - Events, the three together: the carrier's team right on 88.6% of carried samples; zone entries 158 of 174 (171
+    read), turnovers 134 of 145 (188 read), hits 141 of 185 (166), passes 231 of 289 (279), faceoffs 46 of 48 (53).
+    As on the nine tuning reads, but for the turnovers read with no recorded one (54 for 115 over nine).
+  - **Shots: 58 of 84 found (69%; xG 0.3+: 20 of 26), 9 false**, by game 16 of 24, 18 of 29, 24 of 31; the nine
+    tuning reads cross-checked had 80%. The recordings' own slices through the same finder: 74 of 84, 8 false.
+  - The report's numbers, the recording's / the video's, home first: game 2 xG 5.72 / 1.53 and 4.06 / 2.14
+    (agrees; 9 of 11 lines agree, none flips); game 4 xG 3.71 / 3.94 and 5.28 / 3.57 (a level game read as the home
+    team's; nothing else flips); **game 3 xG 4.23 / 2.54 and 2.37 / 4.77: the wrong team ahead** (deserve to win 75
+    / 22 read as 4 / 96; dangerous shots 5 / 3 as 3 / 6). Possession, zone time, passes, hits and entries agree or
+    are level in all three.
+  - Game 3's flip, shot by shot: the away team's 4.77 holds 2.56 from four calls with no recorded shot: one is a
+    real goal 15 samples on that the recording lists as kind "other" with no xG (0.81: the comparison's loss, not the
+    video's); one a recorded wide shot of the home team's given to the away team (0.67 for 0.0); one with nothing
+    near it (0.76); one a second call 200 samples before a real one-timer (0.33). And the home team's 11 missed shots
+    (5 with no swing read near the shooter) took 1.9 from its side. So one game's xG verdict can turn on two or
+    three calls: the team totals are safe to within about 2, not closer.
 - **A real stream, first try** (2026-11-23): a league playoff game from a Twitch video of 2021 (908 x 512 at 30
   frames a second, the game inside a TV-frame overlay; a league ROM, 2 MB, its own teams, score box and centre-ice
   logo; no recording: the league database has the game's totals).
