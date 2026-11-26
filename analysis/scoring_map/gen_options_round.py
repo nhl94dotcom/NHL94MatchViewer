@@ -381,13 +381,19 @@ def stars(rom, out, wait=0, agg=False, lines="linesOff"):
             from systems import genesis
             teams = genesis.read_teams(Path(rom))
             ids = [e.b(0xC6F7), e.b(0xCA5B)]
+            weights = dict(VALUES[lines])
+            if lines == "linesOff":                          # the two weights the retest builds of 2026-11-26 change, from the ROM
+                rb = Path(rom).read_bytes()
+                weights["check"] = int.from_bytes(rb[0x186CA:0x186CC], "big")
+                weights["sa"] = int.from_bytes(rb[0x18706:0x18708], "big")
+                print("weights from the ROM: check", weights["check"], "shot against", weights["sa"], flush=True)
             best = None
             for goalies in ((2, 2), (3, 3), (2, 3), (3, 2), (1, 1)):
                 for need in (0, 1, 100000):
                     for t in (0, 1):
                         st[t]["goalies"] = goalies[t]
                     st[0]["need"] = need
-                    want = star_formula(st, VALUES[lines])
+                    want = star_formula(st, weights)
                     bad = [i for i in range(52) if got[i] != want[i] and got[i] != 0]
                     if best is None or len(bad) < len(best[0]):
                         best = (bad, want, goalies, need)
@@ -408,6 +414,16 @@ def stars(rom, out, wait=0, agg=False, lines="linesOff"):
                 print("   ", who(i), flush=True)
             for i in bad:
                 print("    differs:", i, got[i], want[i], who(i), flush=True)
+            for t in (0, 1):                                 # the same game by the first build's weights (a shot faced 4,000, +$102 x 500)
+                st[t]["goalies"] = goalies[t]
+            st[0]["need"] = need
+            was = star_formula(st, VALUES[lines])
+            order0 = sorted(range(52), key=lambda i: (-was[i], i))[:3]
+            isg = lambda i: i % 26 < goalies[i // 26]
+            res["goalie_top3"] = [isg(i) for i in order]
+            res["goalie_top3_first_build"] = [isg(i) for i in order0]
+            print("    goalies in the top three (first, second, third):", res["goalie_top3"], "; by the first build's weights:",
+                  res["goalie_top3_first_build"], order0, flush=True)
             print("    bodycheck count in this ROM:", Path(rom).read_bytes()[0x12302:0x12306].hex() == "4e714e71",
                   "; players with a count at +$102:", [who(i) for i in range(52) if st[i // 26]["c"][i % 26]], flush=True)
             e.run(30)

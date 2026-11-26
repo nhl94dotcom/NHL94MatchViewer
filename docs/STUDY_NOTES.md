@@ -8762,6 +8762,30 @@ menu's own settings (10-minute periods, penalties Off, line changes Off) but whe
   30 a game second for 9 (every quartile 30). Shifts' median 74 game seconds for 163; players reached 0 in the first
   period (the original's lowest 1,571).
 
+#### Chunk 2's retest (2026-11-26): the second builds
+
+NOSE4Web's own versions after chunk 2 (nhl94_stars_plusminus_v2 33BDD38A; _v2_bodychecks 6BE2559C, with the
+bodycheck count): the goal hook skips goals while the highlight bit is set (btst #4,$C2EA); the clear at $17136 is a
+call that clears the team blocks, and the log unless its caller is StartHL2 (return address $135D8); a shot faced is
+worth 900 ($18706; 4,000 before) and the +$102 term 0 without the bodycheck count, 500 with it ($186CA). The harness
+now reads those two weights from the ROM and prints the top three by the first build's weights for the same game.
+30 computer games a ROM (18 on the menu's settings, 12 with penalties On and Aggression 15).
+
+- **Plus-minus log**: 332 goals in the 60 games, every entry the twelve on the ice, 27 with a side short; the
+  length 14 x goals at every game's end, 0 at every first frame. One game a ROM had intermission highlights (four
+  each): the length the same through each and on coming back (28 and 14 bytes kept), the later goals added after
+  them. A second game from the same power-on: length 0 and the old bytes zeroed in the 56 games where the harness
+  reached one (in four overtime games it didn't: the old score still up, nothing to read).
+- **Three stars**: every score equal to the formula with the ROM's weights in all 60 games. v2 with penalties On: 6.75
+  players a game with penalty minutes at +$102, no score moved by them. The bodychecks ROM: 10-12 players a game
+  with a count, 500 each in their scores.
+- **Goalies**: first star in 12 of the 60 games and among the three in 19 (never both); by the first build's weights
+  on the same games, first in 59, among the three in all 60 and both in 59. Goalie places of the three: 19 of 180
+  for 119 of 180. By ROM: v2 7 first and 11 among in 30, bodychecks 5 and 8 in 30.
+- The original's rule stands and isn't in the formula check: in an overtime game the scorer of the last goal is
+  given $7FFFFFFF (CalcStarScores), so he is first star whatever his score (one game where that put a fourth-best
+  score among the three).
+
 ### Chunk 3 (2026-11-25): the SNES options, hands-on
 
 Builds from NHL94.smc (and the SA-1 build for the goalie line), each against the original. `snes_gen_settings_check.py`
