@@ -9457,3 +9457,53 @@ Each played against retail (or a control with the build's checksum changes) in t
     The intermission after a Boston-home highlight now has a grey frame. Not seen: the penalty side-on view (no
     penalty came up; the bit has no other set or clear in retail).
 
+
+## Picture editors' questions: the Genesis title screen and the SNES Game Setup background (2026-11-27, for NOSE4Web)
+
+NOSE4Web plans two export / edit / import picture editors (the title picture, NHL '94 and NHL '95 Genesis; the SNES
+Game Setup background) and asked what the screens use, before sending test ROMs. Measured on the retail ROMs.
+
+- **Genesis title** (`analysis/scoring_map/gen_title_screen_check.py ROM OUT [94|95]`: power-on, every title frame
+  from the core's state; then Game Setup left until the demo, a press, and a soft reset):
+  - Layout, both games: window $F000 (WINX 0, WINY $17: rows 0-22), plane B $A000 (128 x 32), plane A $C000 (the
+    credits, vertically scrolled), sprites $F800, scroll table $FC00, 32-cell mode, line scroll. The picture's rows
+    0-22 are window cells (priority 0), rows 23-27 plane B cells (priority 0). NHL '94's shield, NHLPA logo and title
+    lettering are priority plane B cells (rows 1-7, 14-19) over the window; NHL '95's title lettering likewise (rows
+    11-14); NHL '95's shield and NHLPA logo are part of its picture. The credits (plane A) show only in rows 23-27.
+  - The slide-in is plane B's line scroll on lines 0-177 only; plane B there holds nothing but the logos and
+    lettering (every other cell, all 128 columns, blank), and the window doesn't scroll: no picture moves. Lines
+    178-223 never scroll. No sprites at any frame (Sattsize 0, the table empty).
+  - Tiles: NHL '94 picture 0-525, shield 526-565, NHLPA 566-604, title 605-755, small font 756 ($2F4) to $351 (the
+    highest non-zero tile below $A000); NHL '95 picture 0-1012 (the map names 0-884), lettering 1013-1088, font 1089
+    ($441) to $49E. Free below plane B: $352-$4FF (NHL '94, 430 tiles) and $49F-$4FF (NHL '95, 97). $E000-$EFFF is
+    all zero on NHL '94 (plane A ends at $DFFF). An all-different 32 x 28 picture (896 tiles) would still fit NHL
+    '94 below $A000 with everything after it (font ending $4C1).
+  - Colours: the fade-in is 21 colour states over about 45 frames, then nothing changes. The final rows 0-2 are
+    the picture's own, row 3 the lettering's (TitleImg, loaded last with d5 = 8). The credits draw in row 1 colours
+    1 and 13 (both games). NHL '94: the shield uses row 1 colours 1-10 and 13, the NHLPA logo 1-7, 9, 13 and 15, the
+    lettering row 3; the picture rows 0-2 (row 1: all but 8). NHL '95: the lettering uses row 3 colours 1-5 and 15 and
+    row 1 colours 7 and 13; the picture uses all four rows, row 3 in 30 cells of its top 7 rows, where retail already
+    shows the lettering's row 3 (equal to the picture's except colours 6, E00 shown as A00, and 15).
+  - The title comes back only through Begin (power-on, reset): a soft reset gave the same VRAM, colours, registers
+    and screen at the same frame. NHL '94's demo (after $5460 frames on Game Setup) played and a press ended it
+    into Game Setup (ExitToOpening jumps to Opening2), the title's handler never seen. NHL '95 gave no demo in 33,000
+    idle frames on Game Setup (the player cards kept cycling); its ExitToOpening also goes to Opening2.
+- **SNES Game Setup background** (`analysis/scoring_map/snes_setup_back_check.py ROM OUT`: the screen walked,
+  idle, every line's choices stepped and back, 223 samples; video and colour memory, maps, and BG2 poked to find
+  where it shows). Retail, the SA-1 original and nhl94_2026 (32 teams) are alike:
+  - VRAM (words): BG2 map $0400, BG2 tiles from $1000 (MenuBack 0-103, the picture 105-299: $1680-$22BF, 195
+    tiles), BG1 tiles named 256-490 ($3000-$3EAF; the photos from picchars 407, $3970, the only VRAM that changes
+    while the screen runs), sprites $6000+. Nothing names $22C0-$2FFF at any sample (it holds left-over data that
+    doesn't change). So BG2 tiles 105-512 ($1680-$2FFF, 408 tiles) are the picture's to use; BG2 tile 513 would be
+    $3010, BG1's first named tile is 256 ($3000). A 408-tile picture unpacks to $7F0000-$7F32FF (unpackbuf), below
+    colourbuf $7F7500, but over statspage $7F2780 (not checked whether Game Setup uses it).
+  - Colours: rows 2, 3 and 4 never change while the screen runs (all three builds). Row 1 colours 13 and 15 and row
+    5 colours 13-15 change; rows 6 and 7 are the team blocks' (BG1 cells, palettes 6 and 7) and change with the
+    teams: not free. On the SA-1 builds BG1 also names palette 4 (nhl94_2026's gold menu frame), so row 4 is shared.
+  - Covered cells (at rest, Regular Season): BG2 always shows whole in rows 0, 13, 17, 21, 27 and most of 15, 19,
+    23, 25; the team name blocks hide row 11 columns 1-9 and 22-30 completely; the photos, the GAME SETUP box and
+    the menu text cover their cells in part. nhl94_2026 adds the menu frame (columns 1 and 30, rows 11-25) and covers
+    rows 1-12 in part everywhere. Maps in the review folder (`*_bg2_cells.png`).
+  - The brightening band: colour math adds the fixed colour to BG2 inside x $40-$BF on lines 16-47 only: +3 of 31 on
+    lines 16-17, +7 on 18-45, +15 on 46-47 (a pure blue $7C00 showed as 24/57/123 grey added). It is what lights the
+    GAME SETUP box; a picture's own cells there get the same lift. Left zero, those cells keep MenuBack's box.
