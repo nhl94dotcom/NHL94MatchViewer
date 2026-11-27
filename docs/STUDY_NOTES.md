@@ -9441,4 +9441,19 @@ Each played against retail (or a control with the build's checksum changes) in t
   voices on $19, the song heard about 18 s then silence; Anaheim, Boston, Calgary and Toronto as before, play as
   retail. List 1 on top of list 0 doesn't quite fit: $49 (an effect) isn't uploaded (harmless there; a driver
   restart with list 1 alone, as the period start does, would be cleaner: not tested).
+- **Retests (2026-11-27, later):**
+  - **NHL_95_pregame_v3 (D64C6B0B):** our routine at $1A72C6 (the 56 bytes as listed; lea (pc) to the table at
+    $1A72FE; SoundCmd $676D8 as retail). Buffalo's $37 is heard frames 311-1149, then 0 until START. Anaheim,
+    Boston, Calgary and Toronto are as v1. Play starts as retail (song 2 at 6960, the organ at 7190, the same
+    screenshot). A scratch copy with Chicago's entry set to $32: heard, with patches $0C and $19 loaded.
+  - **nhl94_pregame_v2 (55ACEF90):** Boston is exact silence from frame 105 (the screen opens at 99; 99-104 is the
+    screen change's own sound, as for every team), with no song in any slot. The other teams are as v1; play as
+    retail. After START the audio varies from run to run even on retail (Boston's opening organ ended at 7580 in one
+    run and 8069 in another): that explains the earlier "retail Buffalo organ stopped at 11 s".
+  - **nhl94_arena_colours_v2 (8FC61E65):** the side-on bit's one set ($12B98 -> jsr $FFAFC: the rink's own colours
+    5 and 9 into palfadenew) and one clear ($12B44 -> jsr $FFB18: the team colours back) are hooked; the table is at
+    $FFB2A. Team colours are as v1 in play. The pause and intermission scoreboard is in retail's colours ($0AAA /
+    $088E) for Boston, Montreal and Toronto: the frame is grey; Chicago's pause screens match the control exactly.
+    The intermission after a Boston-home highlight now has a grey frame. Not seen: the penalty side-on view (no
+    penalty came up; the bit has no other set or clear in retail).
 
