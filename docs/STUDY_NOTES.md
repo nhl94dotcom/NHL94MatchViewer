@@ -9519,3 +9519,34 @@ Game Setup background) and asked what the screens use, before sending test ROMs.
   there, MenuBack's tiles, BG1's map and tiles but the photos, colour rows but 2, the rows that change, the band, the
   hidden cells) and a side-by-side sheet. Retail against itself passes everything; a scratch NHL '94 with two row 1
   colours changed (the ROM's long sum kept: the game checks it at power-on) fails only the row 1 line.
+
+## Song 1 ($30) replaceable, played (2026-11-27, for NOSE4Web; nhl94_song1.bin FF99D3D3)
+
+NOSE4Web's way to replace song $30, the first song, whose stream start is stop_current_song's (and the organ resume's)
+test for "a song": the table entry stays at $2CEF2, the stream's first 6 bytes become an end event with a loop pointer
+(00 00 000FFAC0), and the new song (song 6's 305 events, with an extra first event so song 6's opening delay of $14
+ticks survives the jump, which skips the target's own first delay) sits in free room past $30's stream. Retail
+checked first: $1A314 is `movea.l ($2C708).l,a0`; no sound below $30 has a stream at or past $30's, and no song past
+it one below; ProcessOneMusicTrack's status-0 event with a non-negative data word loads the long and runs on at once.
+Song $30 is reached only through TeamSongs (Boston's slot 2, the faceoff tune); RandomSongs doesn't hold it and
+nothing starts it directly.
+
+The build: the bytes differ from retail only at the checksum word, the checksum call NOPed at $300, $2CEF2 and
+$FFAC0-$FFFA5, so Boston's TeamSongs row ($FE5B6) is still retail's ($31 $32 $30 0 $5A $31), not six $30s as its notes
+say. Played (`analysis/scoring_map/gen_song1_check.py`) against a control playing song 6 ($35) at the same moments
+(scratch copies with Boston's six bytes all $35 / all $30; the build as it is too), Boston and Chicago at home, five
+cases (period start, goal, power-play faceoff, late 3rd, pause):
+- Song 1 is song 6 frame for frame: the same picks, the same event index in every frame of every case, the same
+  start and stop frames (period 391-1420, goal 123-1152, power play 123-1424, late 18-943), one song at a time, the
+  same channels on after it stops (the goal's 5 frames of 1, the power play's 0). The sound: 0.1 s (real) windows
+  line up at a lag of 0-4 samples (44.1 kHz) with a median correlation of 0.98-1.00; not sample-identical, because
+  the jump is one more event in the vblank and moves the sound chip's writes by a few samples (the control against
+  itself is sample-identical). Over 600-1650 frames the play itself drifts apart for the same reason.
+- A change (a scratch copy with song 1 as the goal song and $32 at the next faceoff): song 1's slot freed and $32
+  started in the same frame, no channel left on.
+- Pause (retail has no organ resume): the song stops at the pause as song 6 does. With the organ resume (a scratch of
+  nhl94_organ_resume.bin with a shortened song 1 at $FFBB0: the resume hack already uses $FFAC0-$FFBAD and the full
+  song's 1,253 bytes don't fit in the 1,106 left in 1 MB), song 1 comes back in the resume, stats and replay cases
+  (the voices the same, the next 54-59 pointers as the unpaused game's), a delayed song starts after the pause through
+  the jump, and 40 pauses leave nothing stuck and the stack no deeper.
+- Chicago: every case sample-identical to the control.
