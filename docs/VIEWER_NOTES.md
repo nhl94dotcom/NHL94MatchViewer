@@ -2410,3 +2410,16 @@ box score (the user's point), so two ways to more were tried on the games alread
     screen pixels), compared with the video in RGB: a lone Calgary skater's best is his own team, the pose and place
     right by eye, residual 23.1 against 28.6 for the next template and 51 for the median (45.7 with no sprite). So a
     stream needs the reader's scoring rebuilt on blurred RGB templates, not a tolerance.
+
+## Dekes, one-timer xG and goalie takeovers in the stats (2026-11-26)
+
+From docs/WHAT_WINS.md's findings. The converter (export_match.add_shot_moves) gives each ordinary shot a `move`
+(cross-crease, deke, in close, slot, farther: analysis/scoring_moves.py's rules, moved into the converter as
+shot_move) and any shot at a goalie the computer had at the release that a person took over before it was settled a
+`gTake` (samples to the takeover). Summaries (season.py VERSION 40): `dekes` and `oneTimerXg` [tries, goals, xG],
+`gTake` [shots against, goals against, xG]. Viewer team stats: "Dekes (G / att · xG)" and "One-timers (G / att · xG)"
+under Shooting, "Goalie taken over mid-shot (GA / shots · xG)" under Goaltending (STAT_HELP for each). Season page:
+DEK (deke goals / dekes · goals above xG), 1T± (one-timer goals above xG), TKO (goals against / shots taken over ·
+goals kept out against xG), each shown where any game has them (HEAD_HELP). Library re-converted; check_matches,
+check_season, viewer_smoke and viewer_stat_sums clean.
+

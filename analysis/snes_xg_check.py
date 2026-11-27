@@ -6,6 +6,11 @@ xG overall and by group (the model's xG band, kind, distance, the angle, who was
 origin, its aim, the goalie off the shot line, the build, and whether the people's games), each with the
 difference's standard error (sum of p(1-p)); the groups furthest from their xG first.
 
+Then the takeover correction checked (tools/xg_snes.TAKEOVER): the shots it scaled (those with `xgRaw`), by its
+distance bands, goals against the model's own value and against the corrected one, and the factor the games now
+give (goals / xgRaw, with a standard error) beside the one in use. Re-run every 20 or so new SNES games; refit
+TAKEOVER if a band's factor moves by more than about two standard errors.
+
 python analysis/snes_xg_check.py [--people]   (--people: games with a person on both sides only)"""
 import ast
 import json
@@ -14,6 +19,8 @@ import os
 import sys
 from collections import defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 
@@ -103,6 +110,17 @@ def main():
             print(f"   {str(k):22s} shots {n:4d}  goals {gg:4d}  xG {xx:6.1f}  goals - xG {gg - xx:+6.1f} (z {z:+.1f})  rate {100 * gg / max(1, n):4.1f}% / {100 * xx / max(1, n):4.1f}%")
             if n >= 15:
                 worst.append((abs(z), name, k, gg, xx, n))
+    import xg_snes
+    print("\nthe takeover correction (shots at a computer goalie a defending person could take over):")
+    lims = [0] + [lim for lim, _ in xg_snes.TAKEOVER]
+    for (lo, hi), (_, used) in zip(zip(lims, lims[1:]), xg_snes.TAKEOVER):
+        sel = [x for x in S if "xgRaw" in x and lo <= dist(x) < hi]
+        gg = sum(x["result"] == "goal" for x in sel)
+        raw = sum(x["xgRaw"] for x in sel)
+        cor = sum(x["xg"] for x in sel)
+        sd = math.sqrt(sum(x["xgRaw"] * (1 - x["xgRaw"]) for x in sel)) / raw if raw else 0
+        print(f"   {lo}-{hi} units: {len(sel)} shots, {gg} goals; the model's own xG {raw:.1f}, corrected {cor:.1f}; "
+              f"factor now {gg / raw if raw else float('nan'):.2f} ± {sd:.2f} (in use {used})")
     print("\nthe groups furthest from their xG (15+ shots):")
     for z, name, k, gg, xx, n in sorted(worst, reverse=True)[:12]:
         print(f"   {name}: {k}: {gg} goals for {xx:.1f} xG on {n} shots (z {z:.1f})")

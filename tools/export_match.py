@@ -2586,7 +2586,63 @@ def analyse(match, system, cap, rom_path):
             gx, gy = match["pos"][(sh["f"] * 12 + g) * 2], match["pos"][(sh["f"] * 12 + g) * 2 + 1]
             dx, dy = -sh["x"], ny - sh["y"]
             sh["gOff"] = round(abs((gx - sh["x"]) * dy - (gy - sh["y"]) * dx) / (math.hypot(dx, dy) or 1), 1)
+        add_shot_moves(match)
 
+
+
+DIGITS36 = "0123456789abcdefghijklmnopqrstuvwxyz"
+MOVE_CROSS_OUT, MOVE_CROSS_S, MOVE_CROSS_V = 90, 1000, 1.0     # analysis/scoring_moves.py's rules (2026-11-12)
+MOVE_DEKE_OUT, MOVE_DEKE_S = 80, 600
+
+
+def shot_move(match, sh):
+    """The kind of an ordinary shot by the shooter's movement in the moments before it (2026-11-26; the rules of
+    analysis/scoring_moves.classify): cross-crease (within 90 of the goal line, he crossed the middle of the ice in the
+    last second, moving across faster than 1 a frame at the shot), deke (within 80, not a slapshot, his facing swung
+    two or more steps of 8 in the last 0.6 s), else in close (within 60), slot (60-110) or farther."""
+    t, pos, ros, fac = match["t"], match["pos"], match["roster"], match["facing"]
+    f, team = sh["f"], sh["team"]
+    out = 264 - abs(sh["y"])
+    k = next((k for k in range(team * 6, team * 6 + 6)
+              if ros[f * 12 + k] in DIGITS36 and DIGITS36.index(ros[f * 12 + k]) == sh["idx"]), None)
+    if k is not None:
+        xy = lambda q: (pos[(q * 12 + k) * 2], pos[(q * 12 + k) * 2 + 1])  # noqa: E731
+        back = [q for q in range(max(0, f - 90), f + 1) if t[f] - t[q] <= MOVE_CROSS_S]
+        if out < MOVE_CROSS_OUT and back:
+            a = max(0, f - 4)
+            vx = (xy(f)[0] - xy(a)[0]) / max(1, (t[f] - t[a]) / (1000 / 60))
+            xs = [xy(q)[0] for q in back]
+            if min(xs) < 0 < max(xs) and abs(vx) > MOVE_CROSS_V:
+                return "cross-crease"
+        if out < MOVE_DEKE_OUT and sh.get("type") != "slapshot":
+            fs = [int(fac[q * 12 + k]) for q in range(max(0, f - 60), f + 1)
+                  if t[f] - t[q] <= MOVE_DEKE_S and fac[q * 12 + k].isdigit()]
+            if fs and max(min((a - b) % 8, (b - a) % 8) for a in fs for b in fs) >= 2:
+                return "deke"
+    return "in close" if out < 60 else "slot" if out < 110 else "farther"
+
+
+def add_shot_moves(match):
+    """Each ordinary shot's `move` (shot_move); and `gTake` on any shot at a goalie the computer had at the release
+    that a person took over before the shot was settled: the samples from the release to the takeover (2026-11-26: on
+    the SNES such shots go in about a fifth less often: tools/xg_snes.takeover_factor)."""
+    ctrl, role = match.get("ctrl"), match["role"]
+    n = len(match["t"])
+    for sh in match.get("shotList", []):
+        if sh.get("team") not in (0, 1):
+            continue
+        if sh["kind"] == "shot":
+            sh["move"] = shot_move(match, sh)
+        if not ctrl:
+            continue
+        f = sh["f"]
+        gk = next((k for k in range((1 - sh["team"]) * 6, (1 - sh["team"]) * 6 + 6) if role[f * 12 + k] == "0"), None)
+        if gk is None or ctrl[f] >> gk & 1:
+            continue
+        end = min(n, (sh.get("resolved") or f + 40) + 1)
+        took = next((q - f for q in range(f, end) if ctrl[q] >> gk & 1), None)
+        if took is not None:
+            sh["gTake"] = took
 
 
 class GrowingCapture(Capture):

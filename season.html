@@ -357,7 +357,7 @@ function standings(list) {
       r.gp++; r.seconds += g.seconds;
       if (g.humans[side]) r.humanGames++;
       for (const k of Object.keys(t)) if (k in r && typeof t[k] === 'number') r[k] += t[k];
-      for (const k of ['adv', 'advEv', 'hd', 'reb', 'flip', 'toShot', 'entries', 'xg']) if (t[k]) { r[k] = r[k] || t[k].map(() => 0); t[k].forEach((x, i) => { r[k][i] += x; }); }
+      for (const k of ['adv', 'advEv', 'hd', 'reb', 'flip', 'toShot', 'entries', 'xg', 'dekes', 'oneTimerXg', 'gTake']) if (t[k]) { r[k] = r[k] || t[k].map(() => 0); t[k].forEach((x, i) => { r[k][i] += x; }); }
       if (!g.finished) continue;
       // Deserved points (the Deserve to Win meter, tools/deserve.py): 2 a deserved win, 1 a deserved tie (no point for
       // an overtime loss, as in the user's leagues), so a game's two teams share 2
@@ -397,6 +397,8 @@ const HEAD_HELP = {
   GP: 'Games played', W: 'Wins', L: 'Losses (in regulation)', OTL: 'Overtime losses', T: 'Ties', PTS: 'Points: 2 a win, 1 a tie, none for an overtime loss (as the leagues count them)',
   GF: 'Goals for', GA: 'Goals against', 'GA/GP': 'Goals against a game', DIFF: 'Goal difference (for minus against)',
   G: 'Goals', A: 'Assists', PPG: 'Power-play goals', SHG: 'Shorthanded goals', PIM: 'Penalty minutes',
+  DEK: 'Deke goals / dekes (close-in shots with the shooter turning sharply just before), and after the dot the goals above their expected goals: SNES winners score well above it (docs/WHAT_WINS.md)',
+  '1T±': 'One-timer goals above their expected goals', TKO: 'Shots at its goalie that a person took over from the computer during the shot: goals against / shots, and after the dot the goals kept out against those shots’ expected goals',
   'S%': 'Shooting percentage: goals / shots on goal', 'SV%': 'Save percentage: saves / shots on goal against',
   'iCF/GP': 'Individual shot attempts a game (on goal, wide, blocked and not-counted saves)',
   'HDCF%': 'Share of the high-danger attempts (from the slot) in its games that were the team’s', HDGA: 'High-danger goals against (from the slot)',
@@ -629,6 +631,14 @@ function viewTeams(list, team) {
     { key: 'gv', label: 'GV', title: 'Giveaways', value: r => r.give / r.gp, show: r => per(r.give, r.gp) },
     { key: 'brk', label: 'BRK', title: 'Breakaway goals / breakaways', value: r => r.breakTried, show: r => `${r.breakGoals}/${r.breakTried}` },
     { key: 'ot', label: '1T', title: 'One-timer goals / one-timers', value: r => r.oneTimerTried, show: r => `${r.oneTimerGoals}/${r.oneTimerTried}` },
+    // 2026-11-26 (docs/WHAT_WINS.md): goals above expected on dekes and one-timers, and the goals a person's goalie
+    // takeovers kept out (expected against minus goals against on the shots taken over mid-flight)
+    ...(rows.some(r => r.dekes && r.dekes[0]) ? [{ key: 'dek', label: 'DEK', title: 'Deke goals / dekes, and goals above expected on them (after the dot)',
+      value: r => (r.dekes ? r.dekes[1] - r.dekes[2] : 0), show: r => (r.dekes ? `${r.dekes[1]}/${r.dekes[0]}<small> · ${(r.dekes[1] - r.dekes[2] >= 0 ? '+' : '') + (r.dekes[1] - r.dekes[2]).toFixed(1)}</small>` : '–') }] : []),
+    ...(rows.some(r => r.oneTimerXg && r.oneTimerXg[0]) ? [{ key: 'otx', label: '1T±', title: 'One-timer goals above expected (goals minus xG on its one-timers not blocked)',
+      value: r => (r.oneTimerXg ? r.oneTimerXg[1] - r.oneTimerXg[2] : 0), show: r => (r.oneTimerXg ? (r.oneTimerXg[1] - r.oneTimerXg[2] >= 0 ? '+' : '') + (r.oneTimerXg[1] - r.oneTimerXg[2]).toFixed(1) : '–') }] : []),
+    ...(rows.some(r => r.gTake && r.gTake[0]) ? [{ key: 'tko', label: 'TKO', title: 'Shots at its goalie a person took over from the computer mid-shot: goals against / shots, and the goals kept out against their expected goals (after the dot)',
+      value: r => (r.gTake ? r.gTake[2] - r.gTake[1] : 0), show: r => (r.gTake ? `${r.gTake[1]}/${r.gTake[0]}<small> · ${(r.gTake[2] - r.gTake[1] >= 0 ? '+' : '') + (r.gTake[2] - r.gTake[1]).toFixed(1)}</small>` : '–') }] : []),
     { key: 'pim', label: 'PIM', value: r => r.pim / r.gp, show: r => per(r.pim, r.gp) },
   ], 'gfg');
 }
