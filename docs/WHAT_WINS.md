@@ -104,6 +104,36 @@ high in these games and the split read 18 / 31 / 17 / 34%.)
   not by holding the zone (as the league data's zone time, above).
 - Whether each part repeats for the same team across a series: 4 and 6 series of four or more games, too few to say.
 
+## SNES dekes: what makes one go in (2026-11-26)
+
+`analysis/snes_deke_study.py`: the 375 dekes people took in the recorded SNES games (116 goals, 31%), the state at the
+release from the match file. The deke works when it pulls the goalie off the line from the puck to his net; the rest
+is how you get there.
+
+| at the release | dekes | scored |
+|---|---|---|
+| **goalie off the shot line** under 3 units / 3-6 / 6-10 / 10+ | 62 / 94 / 113 / 106 | **3% / 7% / 35% / 63%** |
+| the puck out past the goalie to its side: within 5 / 5-15 / 15+ units | 39 / 112 / 213 | 8% / 19% / 40% |
+| out from the goal line: 20-35 / 35-50 / 50-65 / 65-80 units | 89 / 150 / 91 / 39 | 52% / 34% / 15% / 10% |
+| skating at the goal line (1.5+ a frame) / gliding / moving away | 147 / 70 / 31 | 39% / 24% / 10% |
+| facing swing 2 steps / 3 / 4 | 268 / 93 / 14 | 33% / 29% / 7% |
+| **a person took the goalie over mid-shot** / not | 74 / 301 | **7%** / 37% |
+
+- **Do:** drive at the goal line from about 20-35 units out (7-12 ft), and swing just enough (two of the eight
+  facings) to carry the puck out past the goalie to one side, so that he's off the line to the net when you let go.
+- **Don't:** deke from 50+ units out, deke while drifting away from the net, or swing the stick all the way round (4
+  steps): those go in one time in ten or less.
+- **Against it:** a person who takes the goalie over during the deke stops all but 7% (the shooter's xG on those was
+  17%). Winners' dekes in the games between people: the goalie 10+ units off the line 31% of the time (losers' 24%),
+  skating at the line 40% (31%), taken over mid-shot 17% (30%): winners get there more often and get taken over less.
+
+Recorded examples (the viewer's own replay, `analysis/vision_free_clip.py`):
+
+![A deke that goes in: skating at the line, the goalie pulled off it](img/snes_dekes/A_goal_goalie_pulled.gif)
+![A deke stopped: the goalie square to it](img/snes_dekes/B_saved_goalie_square.gif)
+![A deke stopped by a person taking the goalie over mid-shot](img/snes_dekes/C_saved_by_takeover.gif)
+![A deke that drifts away from the net](img/snes_dekes/D_drifting_away.gif)
+
 ## Genesis (31 games, 2026-11-14)
 
 | team minus opponent | winner higher | winner - loser (mean +- SE) | rank corr. with goal diff |
