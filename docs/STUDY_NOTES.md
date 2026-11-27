@@ -9570,3 +9570,55 @@ with retail's run (`compare`):
   (+24, +56, +121 of 255 on the green). Where BG2 always shows whole the screen is the expected picture (100% on
   nhl94_2026, 99.0% on retail: the rest are the photo boxes' gold frames, MenuBack's own cells, which the editor's
   preview draws 2-3 levels lighter).
+
+## Three measuring requests: the SNES title, the rink import on NHL '95 and the SNES, per-team rink colours (2026-11-27, for NOSE4Web)
+
+**The SNES title screen** (`analysis/scoring_map/snes_title_screen_check.py ROM OUT`; NHL94.smc and nhl94_2026.sfc).
+TitleScreen (bank $9D) splits the screen with a frame hook and three IRQs. The top band (lines 0-79) is mode 9, then
+mode 1 from frame 234 (TM $17): BG1 Title94Map (the 94 puck, map $5400) and BG2 TitleNHLMap (the NHL letters, map
+$5800), both 32 x 28 Huffman maps over TitleLogoTiles (LZ, 183 4bpp tiles at $4000, BG12NBA $44); BG3 (map $5C00,
+tiles $5000) stays all zero. From line $50 BG1 is mode 7 (VRAM $0000-$3FFF: LicenceTiles, the team logos
+LoadTitleLogo writes, TitlePuckTiles); from $B0 BG1 + sprites. The flying N, H, L, the small shield and NHLPA logo,
+the copyright lines and the credits are sprites. The data is at the same file offsets in both ROMs (TitleLogoTiles
+$A0000, Title94Map $D5DC6, TitleNHLMap $D588C, TitlePalette $D4CA9, TitleSpritePalette $D60D5), each loaded by one `lda
+#bank / lda #address` pair: $EB64A, $EB673, $EB6A5, $EB5B6, $EB5CE on retail, $196 later on nhl94_2026. A new top
+picture may use BG tiles 0-255 ($4000-$4FFF), up to 319 with tile 256 left blank (its first 8 words are BG3's tile 0,
+named by every BG3 cell), with tile 0 blank (the maps' empty cells). CGRAM never changes during the title's 5,353
+frames (the fade is INIDISP brightness): the top band uses rows 0 (colour 0 the backdrop) and 2; mode 7's 8bpp colours
+fall in rows 3, 5, 6 and 7; rows 1 and 4 are unused on retail; the sprites use rows 8-12. Nothing else loads these
+pictures. nhl94_2026 adds TitleStampLoad (the '27 stamp: tiles 183-213, row 4, BG1 map words rewritten) and
+BuildVersionShow (sprite palette 1): a new picture there must skip or redo the stamp.
+
+**The rink for an import** (`gen95_rink_import_check.py ROM OUT`; `snes_rink_import_check.py ROM OUT teams|play [HOME]`).
+- NHL '95: Rinktilelist $C4A7C (468 tiles, palette $C8506, map 48 x 85 at $C8586). The sets after it follow on: EASN
+  468, energy bar 479, crowd 495, sprites 643, framer 1031, small font 1040, ExtraChars 1280; the faceoff close-up
+  (39 + 211 tiles) ends at 1529, plane B is at $C000 (tile 1536): 6 tiles to spare (a rink of up to 474; $D000-$DBFF
+  is empty but not on the chain). LoadHomeTeamGfx puts the centre-ice logo in the last 24 tiles, cells rows 42-45
+  columns 21-26 in both maps. No hidden rows (all 85 shown; only updatescroll reads the map). RevRinkTilelist
+  $16060E is a bare 48 x 85 map over the rink's tiles (2,678 cells differ), used with sflags4 bit 4. Priority: 287
+  cells, rows 64-84. References: $79F90, $7D6F0 (+0); $7D4F6, $7DD82, $7ECF6 (+8); $79FA8, $79FEE (reverse).
+- SNES (both builds): IceRinkTiles $81:8000 (613 tiles; loads at $FB6F7 and $FE7AD on retail, $FB797 and $FE8C1 on
+  2026), IceRinkMap $92:E053 (BuildRinkMap, $DC1D5 / $DC15B). The logo (18-30 tiles, 19-37 on 2026) and the sets
+  after it end at ExtraChars 1142 (1149); VRAM in use reaches $599F ($5A0F), leaving 102 (95) tiles below the sprites
+  at $6000. BG2 tiles 1-65 are the crowd's animation frames (showcrowd), named by 328 stand cells. Rows 85-112 are
+  hidden: the pause scoreboard's rink (SetHor_rink) and the replay icon (rows 85-92, columns 32-39, put on BG1 with
+  charofs -256, so its tiles must be 256 or above). The logo covers rows 44-47 columns 20-27 (2026: also 6 x 6 at rows
+  43-48 columns 21-26). No reverse angle. Team rows 2 and 3 (sprites 12, 13; benches 23 cells each); on 2026 row 5
+  (the logo) and rows 4 and 7 too. Priority: 216 cells.
+
+**Per-team rink colours** (`gen95_rink_colours_check.py ROM OUT [HOME]`; `snes_rink_colours_check.py ROM OUT`: each
+rink colour set to magenta in a copy of the state, the changed pixels split by the rink's layer).
+- NHL '95 (9 moments of vertical play, home NY Rangers, plus goal, penalty, faceoff close-up, intermission, pause,
+  replay, game end): no line 0 colour is the rink's alone (the score box, the referee box at whistles and crowd
+  sprites draw with line 0; colour 9's only other user is the referee box, 70 px). Line 1 colours 6, 8, 9, 10 and 14
+  are the rink's alone in play (8, 9, 10, 14 also drawn in the goal celebration, 6 at the game's end). setupIceRinkPal
+  $7D6F0 copies 16 longs from $C4A7C into palfadenew $FFB942 (lines 0-1); callers setupice $7DDC8, RestoreGameScreen
+  $7EC24 and $7ED0E, Create Player $98C22 and $98F46. ClrHor is never called, sfhor changes no palette, no highlights
+  (gmhl never set), forceblack restores palfadenew unchanged.
+- SNES (28 moments of play each): the rink is BG2 and only BG1 shares rows 0-7. Retail: rink-only are row 0 colour
+  11, row 1 colours 6, 8-12, 14, 15 and row 6 colours 1, 4, 8, 11, 13 (rows 6-7 are the banners' while the horizontal
+  scoreboard or pause screens are up; ClrHor sends palbuffer back). nhl94_2026: row 1 colours 6, 8-12 and row 5
+  colours 8-15 (its score-box logos use rows 4 and 7). Rows 2 and 3 are the uniforms. setupice's loop (`lda.l
+  $9AD0B6,x` to palbuffer $7E35F4 and $7E36F4) is at file $FB6DA on retail, $FB77A on nhl94_2026 (RinkPalette $D50B6 in
+  both); palbuffer is written only there in a game. StartHL2 (highlights) re-runs setplayercolors with the highlighted
+  home team but not the rink palette: per-team rink colours in highlights need the hook in SetTeamColors.
