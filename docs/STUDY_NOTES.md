@@ -9387,3 +9387,49 @@ nhl94snes_2026_blocks_row, nhl94snes_SA1_blocks_row (3 each, the f07eab7 builds)
   nopuck at 8 (puckbody's mark) but the puck already moved a step by the sample (SA-1, 60 updates a second): a body
   hit. That explains the two low unmatched counts of the earlier games too. Goalies, teammates' shots and pucks with no
   shot never counted. (These builds have no momentum code: the words at $FDF8 kept what was written there.)
+
+## NOSE4Web's round of 2026-11-27: rink import, pre-game songs, arena colours, the penalty-shot clock
+
+Each played against retail (or a control with the build's checksum changes) in the headless core.
+
+- **Rink import** (nhl94_rink_import D6B80D46; `gen_rink_import_check.py run|compare|maps|glass`):
+  - **The import shows.** In play, the stripe below the upper blue line and the black bar on the top boards are where
+    rinks_after.png has them; the reverse angle has lost its upper blue line.
+  - **Logos.** The home logos load: Boston and Montreal in their games, Vancouver and Calgary in highlights. The logo
+    cells match retail word for word (24 normal, 22 reverse).
+  - **The rest of the screen.** The replay icon and menu and the Stars of the Game box are right. Map priority bits
+    are unchanged (202 in play, 159 reverse), so players still go behind the bottom boards.
+  - **Reloads.** After about 140 horizontal scoreboard, pause and replay reloads, tiles 0-429 equal the first
+    faceoff's and plane B equals the map: no corruption.
+  - **Not compared.** The games ran apart from the first faceoff, so there's no pixel-for-pixel screenshot comparison.
+    The maps use tiles up to 410 in play and 429 reverse, against NOSE4Web's "380 of 399 / 398 of 398".
+- **Pre-game songs** (nhl94_pregame DFAB3CDF, NHL_95_pregame 4A8C9D24; `gen_pregame_song_check.py`): Game Setup's
+  team words set; the matchup screen held 110 s, then into play; driver slots and audio every frame.
+  - **NHL '94:**
+    - Anaheim plays $78 and Calgary $79, both looping. Buffalo plays O'Malley's Steps ($35) for 17 s, then silence.
+    - Others play $7A, which loops; the loudness matches retail exactly.
+    - At START, play matches retail.
+    - **Boston isn't silent:** the title music from Game Setup ($78) plays on at full loudness. The -1 starts
+      nothing, and nothing stops the song already playing.
+  - **NHL '95:**
+    - Anaheim (song 0) and Calgary (2) loop. Boston is silent. Others play song 3, which loops (settled), as retail.
+    - **Buffalo's Gypsy Spain ($37) is silent:** it steps through a sequencer slot for 14 s with the audio at 0.
+- **Per-home-team rink colours** (nhl94_arena_colours B446AC6C; `gen_arena_colours_check.py`): BOS, MTL, TOR, CHI
+  and LA at home through Game Setup.
+  - **The colours.** CRAM line 0 colours 5 / 9 are as asked at the faceoff, after a pause, after a replay and in
+    period 2. Chicago and LA match retail pixel for pixel.
+  - **What differs in play.** Only rink pixels differ: the score box, clock, EA logo and crowd are unchanged.
+  - **Colour 5 is also the horizontal scoreboard's frame** (its grey border, the clock box, the top trim and the
+    glass supports: 1,890 pixels). It turns red with Montreal at home and black with Boston.
+  - **Highlights.** A Boston-home highlight, forced through its game structure ($CE66 + 5 x 16, gsflags bit 1), is
+    in Boston's colours. The rest of that intermission keeps them until setupice at the next period.
+- **The penalty-shot clock** (NOSE4Web's answer: shootoutclock $D454, jiffy $D456; `gen_ps_clock_check.py`; retail
+  and nhl94_real_time AF5CDB50, 3 stalled and 4 computer attempts each):
+  - **The subtract.** It is $0AAA on retail and $0444 on the real-time ROM.
+  - **The count.** The clock starts at 25 and is held while gmode2 bit 7 is set (the set-up, about 470 frames). Then
+    it ticks every 24 / 60 frames exactly, and the box shows it.
+  - **A stalled attempt** ends the frame the clock reaches 0: after 577-582 / 1442-1460 frames live (9.7 / 24.2 s
+    real). BA_PS_flags went $0C00 -> 0 in one frame; bit 4 was never seen in a once-a-frame read.
+  - **The computer** shot every time (retail with 11-20 left, the real-time ROM with 22), about the same real time
+    on both.
+
