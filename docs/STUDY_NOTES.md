@@ -8707,6 +8707,38 @@ song from the finals on).
   for 3,676), the bands above 800 Hz 30% down (the deleted part); whether those instruments sound as the
   original's was not settled by measurement.
 
+## The Genesis rink for an import: video memory, run-time changes, references (2026-11-26, for NOSE4Web)
+
+nhl94.bin; the disassembly (a1e6713) and the ROM, checked in play (scripts in the runs folder, nosebuilds/rink).
+- **Video memory in play** (setupice: each set where the one before ended; RAM words $B010-$B026, read in a game):
+  rink tiles 0-453 (rinkvrcset 0); the home team's centre-ice graphics over the rink's last 24 (LoadHomeTeamGfx: d4 -
+  $18; 24 tiles for every team); EA logo 454 (EASNcset, 11 tiles); energy bar 465; crowd 483; arena animation $259
+  (+$32); sprites $28B-$3FB; framer $3FC; small font $405; big font $463; team blocks $4E7; ExtraChars $513: the
+  faceoff close-up's 55 + 179 tiles to $5FD (the largest ExtraChars load; the referees' 117, the horizontal referee's
+  100, the replay banner's 76). Plane B at $C000 is tile $600. **So 2 tiles are spare at the end**: a rink one tile
+  larger moves everything after it, and past 2 the faceoff close-up runs into plane B. The 28 free tiles ($294-$29F,
+  $3EC-$3FB) are inside the sprite area and move with it.
+- **Room inside the rink's own 454**: tiles 410-429 used by no cell (20), 4 used only in hidden rows, 17 exact
+  duplicates. The reverse rink: none unused, no duplicates.
+- **Run time**: the map is never changed (updatescroll copies each new row from ROM). Tiles: 430-453 (the centre-ice
+  graphics, again after ClrHor and ReloadRinkGraphics); on the horizontal scoreboard tiles 0-211 are the
+  horizontal rink's (IceRinkHorMap's own tiles at rinkvrcset) and the rink's are loaded again after. Watched over two
+  periods: no rink tile below 430 ever differed from the ROM's in vertical play. Crowd, arena animations (rows 29-57
+  over the benches), goal light, nets, Zamboni: sprites. The EA logo is its own tiles; no rink cell uses it.
+- **Rows**: the camera's range in play shows map rows 0-84. Rows 85-112 are bitmap sources: the replay icon (columns
+  32-39, rows 85-88, ShowReplayIcon, onto plane A at 2,2; from the reverse map in a reverse replay) and the three
+  stars box (columns 13-18, rows 91-94, ShowThreeStars: tile 10 only; always the normal map). No other code reads them.
+- **The reverse rink** (RevRinkTilelist $B5180): its own palette, 452 tiles and 48 x 113 map (973 cells differ from the
+  rink's); loaded at 0 too, its last 24 tiles getting the centre-ice graphics; with more tiles than the rink's it
+  would run into the EA logo (EASNcset is set from the rink's count).
+- **References**: Rinktilelist $5605A at $A46A (ShowReplayIcon), $15F68 (updatescroll), $16C98 (setupIceRinkPal),
+  $1856C (ShowThreeStars), $18CC6 (crash: the second palette line); Rinktiles at $9D1E (setupice), $12B56 (ClrHor),
+  $16A74 (ReloadRinkGraphics); RevRinkTilelist at $A47A, $15F78; RevRinkTiles at $9D2E, $16A84. All movea.l #absolute;
+  no other copy of the four addresses in the ROM. The header's offsets are relative.
+- **Priority**: 202 cells: rows 78-84, columns 4-43 (the bottom boards and glass) and two 3 x 2 pieces (rows 52-53
+  columns 42-44, rows 59-60 columns 3-5); the reverse map rows 78-84 only. The players' sprites have no priority bit,
+  so these cells draw over them.
+
 ## "Offer only these teams in the menu" on the 1987-88 season ROMs: menus and screens (2026-11-26)
 
 NOSE4Web's nhl94_1987_88.bin (ECFEC0B4) and NHL94_1987_88.smc (362330E9): the 21 teams of 1987-88 as teams 0-20,
