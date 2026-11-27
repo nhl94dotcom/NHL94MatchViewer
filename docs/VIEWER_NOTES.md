@@ -2367,6 +2367,18 @@ box score (the user's point), so two ways to more were tried on the games alread
     - **Over a four-game series the video's xG has the right side ahead in all three** (a game: Boston +1.29 on
       Winnipeg by the recordings, +1.86 by video; +0.43 on Toronto, +0.10; +1.28 on Chicago, +0.58; all twelve +1.00,
       +0.85). The size is loose (the video about 0.5 a team a game low); the single game stays unreported.
+  - **xG top-down, from how the game was played: tried, no** (`reader/top_down.py`, the user's go-ahead the same
+    day). A ridge model of a team's true xG from possession share, attacking-zone time, entries, passes and their
+    completion, pucks lost, the shot counts and goals (a minute of live play), fitted on the 26 recorded Genesis
+    games outside the test sessions. On those games, each left out in turn: territory alone leaves the margin off
+    by sd 3.2 (its own sd 4.3); with the shot counts 2.1; with goals 1.4-1.6 (shots and goals alone 1.65: the
+    territory adds little). On the twelve read games, which are closer contests: **from the recordings' own exact
+    measures the wrong side is ahead in 2 to 4 of 11 whichever inputs are used (the margin's error sd 1.6-1.95): the
+    method's best is no better than the video's added-up shots (3 of 11, sd 1.87)**; from the video's measures 4 of
+    11; half and half with the added-up figure 3 of 11 at best (sd 1.63). The video's measures themselves are close
+    to the recordings' (possession and zone time within 0.02, entries and shots a minute within 0.3), so the reading
+    isn't what fails: where the puck was and who had it doesn't say how good the chances were. (One score-box
+    misread in it: BOS-TOR game 1's goals read 6-7 for 3-4, held over two seconds.)
   - **Stopped here (2026-11-26, the user's decision).** Without a reliable xG for each game the analysis is
     incomplete, and a series-level figure doesn't make up for it: the video reader is discontinued until there is
     a stronger way to attempt it. Nothing is removed; the last run (the boards rule narrowed to off-ice pixels,
