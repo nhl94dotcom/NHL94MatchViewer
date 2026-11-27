@@ -9550,3 +9550,23 @@ cases (period start, goal, power-play faceoff, late 3rd, pause):
   (the voices the same, the next 54-59 pointers as the unpaused game's), a delayed song starts after the pause through
   the jump, and 40 pauses leave nothing stuck and the stack no deeper.
 - Chicago: every case sample-identical to the control.
+
+## The picture editors' test ROMs, played (2026-11-27, for NOSE4Web)
+
+nhl94_title.bin 7DDE850F and NHL_95_title.bin 4D676BFD (both 2 MB: the game's own title picture with a red border and
+a gradient block at x 64-191, y 80-143; 415 and 679 tiles), NHL94_setup_back.smc 3D5CA98C and nhl94_2026_setup_back.sfc
+FB76D82D (a test picture of 404 tiles, $1680-$2FCF, 116 cells left to MenuBack), each run by its script and compared
+with retail's run (`compare`):
+- Titles: every line passes on both (layout, line scroll, no sprites, the picture's rows, the shield, NHLPA logo,
+  lettering and font's tiles, cells and colours unchanged though they now start lower (NHL '94 from 415, NHL '95
+  from 679), row 3 and the logos' and credits' row 1 colours, highest tile $2E2 / $350, the same title after a reset,
+  never back on its own; NHL '94's demo played and ended into Game Setup). The pictures use rows 0-3, row 3 only in
+  the lettering's own colours. Every picture pixel off the logos and lettering is the editor's expected colour
+  (30,848 and 42,176 pixels, on the Genesis's 8 levels: the expected pictures use 255 for level 7, the core 238).
+- Game Setup: every line passes on both. The editor puts picture cells on palettes 3 and 4 (map words with palette
+  bits, SetupScreen's + $0800 on top: $0404 shows as palette 3) where MenuBack's fixed rows have the colours; the
+  check was taught that (a picture cell is one naming a tile past backchars) and that a cell retail's picture covered
+  may be left to MenuBack (row 11 column 9, under the team name). The band lifts the picture as it lifted retail's
+  (+24, +56, +121 of 255 on the green). Where BG2 always shows whole the screen is the expected picture (100% on
+  nhl94_2026, 99.0% on retail: the rest are the photo boxes' gold frames, MenuBack's own cells, which the editor's
+  preview draws 2-3 levels lighter).

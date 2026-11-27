@@ -225,7 +225,7 @@ def main():
              nonzero_3000_3FFF=runs(s.ever_nz, 0x3000, 0x4000),
              named_in_22C0_2FFF=sorted({o for a in range(0x22C0, 0x3000) for o in own.get(a, ())}),
              named_1680_22BF_not_picture=sorted({o for a in range(0x1000 + 16 * back, 0x22C0) for o in own.get(a, ()) if "BG2" not in o or "pal [2]" not in o}),
-             named_1680_2FFF_not_picture=sorted({o for a in range(0x1000 + 16 * back, 0x3000) for o in own.get(a, ()) if "BG2" not in o or "pal [2]" not in o}),
+             named_1680_2FFF_not_picture=sorted({o for a in range(0x1000 + 16 * back, 0x3000) for o in own.get(a, ()) if "BG2" not in o}),
              bg1_tiles=[min(s.refs["BG1"]), max(s.refs["BG1"])], bg2_tiles=[min(s.refs["BG2"]), max(s.refs["BG2"])],
              map_palettes={n: sorted({p for v in s.refs[n].values() for p in v}) for n in s.refs},
              colour_rows_changed={r: sorted(v) for r, v in sorted(s.cg_changes.items())},
@@ -277,23 +277,33 @@ def compare(ret, new, out):
     check("backchars as retail", B["backchars"] == back, str(B["backchars"]))
     pt = B["picture_tiles"] or [0, 0, 0]
     check("picture tiles within backchars + 1 .. 512 ($1680-$2FFF)", pt[0] > back and pt[1] <= 512, f"{pt} {B['picture_vram']}")
-    check("nothing but the picture names $1680-$2FFF", not B.get("named_1680_2FFF_not_picture"), str(B.get("named_1680_2FFF_not_picture")))
+    check("nothing but BG2 (the picture) names $1680-$2FFF", not B.get("named_1680_2FFF_not_picture"), str(B.get("named_1680_2FFF_not_picture")))
     check("MenuBack's tiles (BG2 0-103) unchanged", bool((va[0x1000:0x1000 + 16 * back] == vb[0x1000:0x1000 + 16 * back]).all()))
     check("BG1's map unchanged (first sample)", bool((va[0:32 * 28] == vb[0:32 * 28]).all()))
     pic0 = 0x2000 + 16 * A["log"][0]["picchars"]
     same = va[0x3000:pic0] == vb[0x3000:pic0]
     check(f"BG1's tiles $3000-${pic0 - 1:04X} unchanged (the photos from ${pic0:04X} left out)", bool(same.all()),
           f"{int((~same).sum())} words differ")
-    off = [(i, int(x), int(y)) for i, (x, y) in enumerate(zip(va[0x400:0x400 + 32 * 28], vb[0x400:0x400 + 32 * 28]))
-           if (int(x) >> 10 & 7) != 2 and (int(y) >> 10 & 7) != 2 and x != y]
-    check("BG2 cells off the picture (MenuBack, palettes 3 and 4) unchanged", not off,
-          ", ".join(f"row {i // 32} col {i % 32}" for i, _, _ in off[:8]))
+    # the picture's cells name tiles past backchars (on palette 2, or 3 / 4 when the map word carries palette bits:
+    # SetupScreen adds $0800); a cell naming a MenuBack tile must be retail's own
+    pic = lambda v: (int(v) & 0x3FF) > back  # noqa: E731
+    pairs = list(zip(va[0x400:0x400 + 32 * 28], vb[0x400:0x400 + 32 * 28]))
+    off = [i for i, (x, y) in enumerate(pairs) if not pic(x) and not pic(y) and x != y]
+    freed = [i for i, (x, y) in enumerate(pairs) if pic(x) and not pic(y)]     # retail's picture there, MenuBack now
+    check(f"BG2 cells left to MenuBack as retail's ({len(freed)} cells retail's picture covered left to MenuBack too)", not off,
+          ", ".join(f"row {i // 32} col {i % 32}" for i in off[:8]))
+    pals = sorted({int(y) >> 10 & 7 for y in vb[0x400:0x400 + 32 * 28] if pic(y)})
+    check("the picture's cells on palettes 2-4 only (rows 3 and 4 are MenuBack's, fixed on this screen)", set(pals) <= {2, 3, 4}, str(pals))
     for r in (0, 1, 3, 4, 5, 6, 7):
         check(f"colour row {r} as retail (first sample)", A["colours_first"][r] == B["colours_first"][r], " ".join(B["colours_first"][r]))
     rows = lambda R: sorted(R["colour_rows_changed"])  # noqa: E731
     check("the same colour rows change while the screen runs (rows 2-4 never)", rows(A) == rows(B) and not {"2", "3", "4"} & set(rows(B)), str(rows(B)))
-    la, lb = A["band"][0]["by_line"], B["band"][0]["by_line"]
-    check("brightening band: the same lift line by line", la == lb)
+    def lift(R):           # the colour added in the band, line by line (against the same colour outside it; 255 clips)
+        b0 = R["band"][0]
+        o = b0["outside"][0]
+        k = next(k for k in (1, 0, 2) if o[k] < 100)    # a channel low enough not to clip, green first
+        return {ln: v[0][k] - o[k] for ln, v in b0["by_line"].items()}
+    check("brightening band: the same lift line by line", lift(A) == lift(B), str(sorted(set(lift(B).values()))))
     ha, hb = A["regular_season"]["hidden_always"], B["regular_season"]["hidden_always"]
     check("the cells never showing BG2 as retail", ha == hb, str([(y, r) for y, r in enumerate(hb) if r != ha[y]]))
     out.mkdir(parents=True, exist_ok=True)
