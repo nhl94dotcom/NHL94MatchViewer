@@ -2597,12 +2597,16 @@ MOVE_DEKE_OUT, MOVE_DEKE_S = 80, 600
 
 def shot_move(match, sh):
     """The kind of an ordinary shot by the shooter's movement in the moments before it (2026-11-26; the rules of
-    analysis/scoring_moves.classify): cross-crease (within 90 of the goal line, he crossed the middle of the ice in the
+    analysis/scoring_moves.classify; 2026-11-27: out from the goal line the team attacks, not the nearer one, and an
+    EA Special (the Genesis flip) first): cross-crease (within 90 of the goal line, he crossed the middle of the ice in the
     last second, moving across faster than 1 a frame at the shot), deke (within 80, not a slapshot, his facing swung
     two or more steps of 8 in the last 0.6 s), else in close (within 60), slot (60-110) or farther."""
     t, pos, ros, fac = match["t"], match["pos"], match["roster"], match["facing"]
     f, team = sh["f"], sh["team"]
-    out = 264 - abs(sh["y"])
+    if sh.get("flip"):
+        return "EA Special"
+    # Out from the goal line the team attacks (a shot in its own half comes out over 264: farther)
+    out = abs((264 if xg.attacks_top(match, f, team) else -264) - sh["y"])
     k = next((k for k in range(team * 6, team * 6 + 6)
               if ros[f * 12 + k] in DIGITS36 and DIGITS36.index(ros[f * 12 + k]) == sh["idx"]), None)
     if k is not None:

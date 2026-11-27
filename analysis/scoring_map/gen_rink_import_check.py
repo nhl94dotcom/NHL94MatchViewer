@@ -5,7 +5,8 @@ Each ROM (retail first, the build after) from power-on: Game Setup's Home and Vi
 (gen_team_play_check.pick), the shortest periods, penalties on, the computer on both sides, one fixed seed; so the
 two games play alike frame for frame while their timing matches (checked: the frame counter, camera and puck).
 - At the first faceoff: video memory and colours saved; the whole rink drawn from the tiles in video memory, the
-  ROM's map ($5605A) and the colours (OUT/rink_normal.png); the rink tiles (0-$1C5, 0-453) kept as this game's
+  ROM's map ($5605A) and the colours (OUT/rink_normal.png); the rink tiles below the logo (0-429; the logo's 430-453 change with the highlights' home teams, so they are compared
+  across ROMs in the digest only) kept as this game's
   reference.
 - Every 60 frames: a screenshot, the screen, period, clock, camera ($BD18 / $BD1C), the frame counter, puck. Every 300
   frames of play, and after every return to play from another screen: the rink tiles against the reference (a

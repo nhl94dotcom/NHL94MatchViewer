@@ -2422,4 +2422,8 @@ under Shooting, "Goalie taken over mid-shot (GA / shots · xG)" under Goaltendin
 DEK (deke goals / dekes · goals above xG), 1T± (one-timer goals above xG), TKO (goals against / shots taken over ·
 goals kept out against xG), each shown where any game has them (HEAD_HELP). Library re-converted; check_matches,
 check_season, viewer_smoke and viewer_stat_sums clean.
+- 2026-11-27, after a review: shot `move` is measured from the goal line attacked (own-end clears were "dekes"), an
+  EA Special first (13 Genesis flips were "dekes"); `gTake` xG is the model's own (`xgRaw`, before the SNES takeover
+  correction, which averages over every shot that could have been taken over); the viewer's one-timer and takeover
+  rows count the unblocked shots with xG as season.py does. Season VERSION 41; library re-converted, checks clean.
 

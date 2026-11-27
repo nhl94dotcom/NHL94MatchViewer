@@ -212,9 +212,11 @@ the real moment of a deke (where the goalie is, his slide and save move), the mo
 - SNES (2026-11-26, corrected): a person can take a computer goalie over while the shot is in flight (a median 11
   samples after the release). In the recorded games the model was right at a person in net (115 goals, 117.2 xG) and
   at a computer goalie with the computer defending (44, 41.6), but 19% high at a computer goalie a defending person
-  could take over (136, 168.8), most from 70-100 units out. `xg_snes.takeover_factor` now scales those shots (0.89
-  under 70 units, 0.43 at 70-100; the model's own value kept as `xgRaw`), fitted on half the games and tested on the
-  other half both ways. The 39 people's games: 239 goals, 244.3 xG (275.6 before). `analysis/snes_xg_check.py` checks
+  could take over (136, 168.8), most from 70-100 units from the net's middle. `xg_snes.takeover_factor` now scales
+  those shots (0.89 under 70 units from the net, 0.43 at 70-100; the model's own value kept as `xgRaw`). Out of
+  sample (`snes_xg_check.py`, fitted on alternate games and tested on the others, both ways): 52 goals for 56.1
+  predicted (70.2 uncorrected) and 70 for 64.5 (84.3). The factor is an average over every shot a person could have
+  taken over; the shots actually taken over went in at about a third of the model's own rate (14 goals on 37.5). The 39 people's games: 239 goals, 244.3 xG (275.6 before). `analysis/snes_xg_check.py` checks
   it by group.
 
 - Genesis: a goalie **already in a save move** at the shot (often a pad stack) must be held in it: pass

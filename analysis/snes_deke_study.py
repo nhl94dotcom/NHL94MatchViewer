@@ -17,6 +17,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+import xg  # noqa: E402
+
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 DIG = "0123456789abcdefghijklmnopqrstuvwxyz"
 
@@ -33,7 +36,7 @@ def features(m, s):
     if k is None:
         return None
     xy = lambda q, r: (pos[(q * 12 + r) * 2], pos[(q * 12 + r) * 2 + 1])  # noqa: E731
-    gl = 264 if s["y"] > 0 else -264
+    gl = 264 if xg.attacks_top(m, f, team) else -264     # the goal line attacked
     sg = 1 if gl > 0 else -1
     a = max(0, f - 6)
     dt = max(1, (t[f] - t[a]) / (1000 / 60))
@@ -53,7 +56,7 @@ def features(m, s):
         gacross = (s["x"] - gx) * (1 if s["x"] >= 0 else -1)   # + the puck farther out to its side than the goalie
     ctrl = m.get("ctrl")
     gperson = bool(ctrl and gk is not None and ctrl[f] >> gk & 1)
-    return dict(out=264 - abs(s["y"]), across=abs(s["x"]), speed=sp, toward=toward, tomid=acrossmid, swing=swing, last=last,
+    return dict(out=abs(gl - s["y"]), across=abs(s["x"]), speed=sp, toward=toward, tomid=acrossmid, swing=swing, last=last,
                 gout=gout, gacross=gacross, goff=s.get("gOff"), gperson=gperson, gtake="gTake" in s,
                 aim=(s.get("aim") or {}).get("d"), net="top" if gl > 0 else "bottom", xg=s.get("xg") or 0.0,
                 goal=s["result"] == "goal", game=m["name"], t=t[f], f=f, period=m["period"][f], clock=m["clock"][f])
@@ -76,6 +79,8 @@ BANDS = {
 def band(v, cuts):
     if v is None:
         return "?"
+    if v < cuts[0]:
+        return f"<{cuts[0]}"
     for lo, hi in zip(cuts, cuts[1:]):
         if lo <= v < hi:
             return f"{lo}-{hi}"

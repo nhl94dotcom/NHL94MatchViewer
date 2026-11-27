@@ -9432,4 +9432,13 @@ Each played against retail (or a control with the build's checksum changes) in t
     real). BA_PS_flags went $0C00 -> 0 in one frame; bit 4 was never seen in a once-a-frame read.
   - **The computer** shot every time (retail with 11-20 left, the real-time ROM with 22), about the same real time
     on both.
+- **Why NHL '95's Buffalo pre-game organ song is silent** (`gen95_pregame_organ_trace.py tables|fix|z80`): the Z80
+  plays only patches uploaded through a load list (SoundCmd 7). ScoutingReport loads list 0 (the front-end patches,
+  $0B $0D $0E $11 $13-$16 $18 $1B-$1D); every organ song ($32-$38) needs $19 (and $32 / $35 $0C), which are only in
+  list 1 ($00-$0A $0C $19 $33-$49), which StartGame and each period start load. On the matchup screen song $37
+  steps through slot 0 with every FM voice's patch byte ($79-$7E) at 00. A scratch copy whose hook (the jsr at
+  $9F5E4, to a new routine at $1A7340) loads list 1 on top first for songs $32 and up: 42 patches loaded, the
+  voices on $19, the song heard about 18 s then silence; Anaheim, Boston, Calgary and Toronto as before, play as
+  retail. List 1 on top of list 0 doesn't quite fit: $49 (an effect) isn't uploaded (harmless there; a driver
+  restart with list 1 alone, as the period start does, would be cleaner: not tested).
 

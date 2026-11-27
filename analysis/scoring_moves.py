@@ -22,6 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "analysis"))
 from recorded_coaches import ratings  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "tools"))
+import xg  # noqa: E402
+
 HOME = Path(os.environ.get("NHL94_HOME", Path.home() / "Documents" / "NHL94 Viewer")) / "matches"
 DIG = "0123456789abcdefghijklmnopqrstuvwxyz"
 CROSS_OUT, CROSS_S, CROSS_V = 90, 1000, 1.0
@@ -37,9 +40,10 @@ def load(f):
 def classify(m, s):
     t, pos, ros, fac = m["t"], m["pos"], m["roster"], m["facing"]
     f, team = s["f"], s["team"]
-    out = 264 - abs(s["y"])
     if s.get("flip"):
         return "EA Special"
+    # Out from the goal line the team attacks (2026-11-27: was the nearer one, so own-end clears counted as dekes)
+    out = abs((264 if xg.attacks_top(m, f, team) else -264) - s["y"])
     k = next((k for k in range(team * 6, team * 6 + 6)
               if ros[f * 12 + k] in DIG and DIG.index(ros[f * 12 + k]) == s["idx"]), None)
     if k is not None:

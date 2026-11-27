@@ -19,6 +19,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+import xg  # noqa: E402
+
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 GOAL_LINE = 264
 
@@ -42,9 +45,7 @@ def features(m, s, passes):
     f, team = s["f"], s["team"]
     p = next((e for e in reversed(passes) if e["team"] == team and e.get("to") == s["idx"] and e["f"] <= f
               and e.get("result") == "one-timer" and f - e["f"] < 120), None)
-    if p is None:
-        return None
-    gl = GOAL_LINE if s["y"] > 0 else -GOAL_LINE
+    gl = GOAL_LINE if xg.attacks_top(m, f, team) else -GOAL_LINE    # the goal line attacked
     xy = lambda q, r: (pos[(q * 12 + r) * 2], pos[(q * 12 + r) * 2 + 1])  # noqa: E731
     gk = next((r for r in range((1 - team) * 6, (1 - team) * 6 + 6) if role[f * 12 + r] == "0"), None)
     gout = gslide = gneed = None
@@ -54,14 +55,18 @@ def features(m, s, passes):
         dt = max(1, (t[f] - t[a]) / (1000 / 60))
         gout = abs(gl) - abs(gy)
         gslide = abs(gx - xy(a, gk)[0]) / dt
-        pf = max(0, min(len(t) - 1, p["f"]))
-        gneed = abs(s["x"] - xy(pf, gk)[0])          # how far across he had to go since the pass left
-    pout = GOAL_LINE - abs(p["y0"]) if (p["y0"] > 0) == (s["y"] > 0) else GOAL_LINE + abs(p["y0"])
-    return dict(out=GOAL_LINE - abs(s["y"]), across=abs(s["x"]),
-                plen=math.hypot(p["x1"] - p["x0"], p["y1"] - p["y0"]), pacross=abs(p["x1"] - p["x0"]),
-                pcross=(p["x0"] > 0) != (p["x1"] > 0) and abs(p["x0"]) > 8 and abs(p["x1"]) > 8,
-                ptime=t[min(f, len(t) - 1)] - t[max(0, min(len(t) - 1, p["f"]))], pout=pout,
-                pfrom="behind the net" if pout < 0 else "low (under 80)" if pout < 80 else "high (80+)",
+        if p is not None:
+            pf = max(0, min(len(t) - 1, p["f"]))
+            gneed = abs(s["x"] - xy(pf, gk)[0])          # how far across he had to go since the pass left
+    # One-timers whose pass the converter didn't match (4 of 220 on 2026-11-27) keep their shot and goalie figures,
+    # with the pass's as None ("?" in the tables)
+    pout = None if p is None else (gl - p["y0"]) * (1 if gl > 0 else -1)   # out from the attacked goal line; < 0 behind it
+    return dict(out=abs(gl - s["y"]), across=abs(s["x"]),
+                plen=None if p is None else math.hypot(p["x1"] - p["x0"], p["y1"] - p["y0"]),
+                pacross=None if p is None else abs(p["x1"] - p["x0"]),
+                pcross=None if p is None else (p["x0"] > 0) != (p["x1"] > 0) and abs(p["x0"]) > 8 and abs(p["x1"]) > 8,
+                ptime=None if p is None else t[min(f, len(t) - 1)] - t[max(0, min(len(t) - 1, p["f"]))], pout=pout,
+                pfrom=None if p is None else "behind the net" if pout < 0 else "low (under 80)" if pout < 80 else "high (80+)",
                 goff=s.get("gOff"), gout=gout, gslide=gslide, gneed=gneed, speed=s.get("speed"),
                 aim=(s.get("aim") or {}).get("d"), gctl=s.get("gctl"), net="top" if gl > 0 else "bottom",
                 xg=s.get("xg") or 0.0, goal=s["result"] == "goal", result=s["result"], game=m["name"], t=t[f], team=team)
@@ -84,6 +89,8 @@ BANDS = {
 def band(v, cuts):
     if v is None:
         return "?"
+    if v < cuts[0]:
+        return f"<{cuts[0]}"
     for lo, hi in zip(cuts, cuts[1:]):
         if lo <= v < hi:
             return f"{lo}-{hi}"
@@ -101,7 +108,8 @@ def collect():
         m = load(p)
         hum = val(g.get("humans"))
         sc = val(g.get("score"))
-        both = isinstance(hum, list) and all(hum) and val(g.get("finished")) is True
+        both = (isinstance(hum, list) and all(hum) and val(g.get("finished")) is True
+                and val(g.get("fromStart")) is True)              # as finishing_by_move / recorded_what_wins
         win = (0 if sc[0] > sc[1] else 1) if both and sc[0] != sc[1] else None
         passes = m.get("passes", [])
         for x in m["shotList"]:

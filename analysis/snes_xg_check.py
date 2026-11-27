@@ -8,7 +8,8 @@ difference's standard error (sum of p(1-p)); the groups furthest from their xG f
 
 Then the takeover correction checked (tools/xg_snes.TAKEOVER): the shots it scaled (those with `xgRaw`), by its
 distance bands, goals against the model's own value and against the corrected one, and the factor the games now
-give (goals / xgRaw, with a standard error) beside the one in use. Re-run every 20 or so new SNES games; refit
+give (goals / xgRaw, with a standard error) beside the one in use, and out of sample: fitted on alternate games
+and tested on the others, both ways. Re-run every 20 or so new SNES games; refit
 TAKEOVER if a band's factor moves by more than about two standard errors.
 
 python analysis/snes_xg_check.py [--people]   (--people: games with a person on both sides only)"""
@@ -21,6 +22,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+import xg  # noqa: E402
 
 HOME = Path(os.environ.get("NHL94_HOME") or Path.home() / "Documents" / "NHL94 Viewer")
 
@@ -56,7 +58,10 @@ def shots(people_only):
         for x in m.get("shotList", []):
             if x.get("xg") is None or x.get("result") == "blocked" or x.get("kind") not in ("shot", "one-timer", "pass shot"):
                 continue
-            x = dict(x, game=p.stem, rom=m.get("rom"), people=both)
+            f = x["f"]                       # the distance xg_snes.takeover_factor used: the puck to the attacked net
+            ty = 264 if xg.attacks_top(m, f, x["team"]) else -264
+            x = dict(x, game=p.stem, rom=m.get("rom"), people=both,
+                     tdist=math.hypot(m["puck"][3 * f], ty - m["puck"][3 * f + 1]))
             out.append(x)
     return out
 
@@ -114,13 +119,25 @@ def main():
     print("\nthe takeover correction (shots at a computer goalie a defending person could take over):")
     lims = [0] + [lim for lim, _ in xg_snes.TAKEOVER]
     for (lo, hi), (_, used) in zip(zip(lims, lims[1:]), xg_snes.TAKEOVER):
-        sel = [x for x in S if "xgRaw" in x and lo <= dist(x) < hi]
+        sel = [x for x in S if "xgRaw" in x and lo <= x["tdist"] < hi]
         gg = sum(x["result"] == "goal" for x in sel)
         raw = sum(x["xgRaw"] for x in sel)
         cor = sum(x["xg"] for x in sel)
         sd = math.sqrt(sum(x["xgRaw"] * (1 - x["xgRaw"]) for x in sel)) / raw if raw else 0
         print(f"   {lo}-{hi} units: {len(sel)} shots, {gg} goals; the model's own xG {raw:.1f}, corrected {cor:.1f}; "
               f"factor now {gg / raw if raw else float('nan'):.2f} ± {sd:.2f} (in use {used})")
+    # Out of sample: the factors fitted on alternate games (by name) and tested on the others, both ways
+    games = sorted({x["game"] for x in S})
+    halves = [set(games[0::2]), set(games[1::2])]
+    for a, b in ((0, 1), (1, 0)):
+        fit = {}
+        for lo, hi in zip(lims, lims[1:]):
+            sel = [x for x in S if "xgRaw" in x and x["game"] in halves[a] and lo <= x["tdist"] < hi]
+            fit[lo] = sum(x["result"] == "goal" for x in sel) / max(1e-9, sum(x["xgRaw"] for x in sel))
+        test = [x for x in S if "xgRaw" in x and x["game"] in halves[b]]
+        pred = sum(x["xgRaw"] * next((fit[lo] for lo, hi in zip(lims, lims[1:]) if lo <= x["tdist"] < hi), 1.0) for x in test)
+        print(f"   fitted on half {a + 1} ({', '.join(f'{v:.2f}' for v in fit.values())}), tested on half {b + 1}: "
+              f"{sum(x['result'] == 'goal' for x in test)} goals, {pred:.1f} predicted, {sum(x['xgRaw'] for x in test):.1f} uncorrected")
     print("\nthe groups furthest from their xG (15+ shots):")
     for z, name, k, gg, xx, n in sorted(worst, reverse=True)[:12]:
         print(f"   {name}: {k}: {gg} goals for {xx:.1f} xG on {n} shots (z {z:.1f})")

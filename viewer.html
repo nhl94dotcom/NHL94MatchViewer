@@ -3395,9 +3395,9 @@ const STAT_HELP = {
   'Own goals (into own net)': 'Goals this team’s own skater put in its net: he had the puck last and carried it into the net’s front, which knocks it off his stick and over the line. The game credits the goal to the other team’s last player to touch it.',
   'Wrist shots (G / att)': 'Goals and attempts from wrist shots: shots wound up for less than 0.8 s (real).',
   'Slapshots (G / att)': 'Goals and attempts from slapshots: shots wound up for 0.8 s (real) or more.',
-  'Dekes (G / att · xG)': 'Goals and attempts from dekes, with their expected goals: an ordinary shot from within about 27 ft (80 units) of the goal line, not a slapshot, with the shooter’s facing turning two or more of its eight steps in the last 0.6 s (real) before it. In the recorded games between two people, SNES winners scored on their dekes well above their expected goals and losers well below; on the Genesis dekes didn’t separate them (docs/WHAT_WINS.md).',
-  'One-timers (G / att · xG)': 'Goals and attempts from one-timers, with their expected goals (the shot list’s one-timers, not blocked ones for the xG).',
-  'Goalie taken over mid-shot (GA / shots · xG)': 'Shots at the team’s goalie that the computer had when the shot was released and a person took over before it was settled: goals against out of those shots, and their expected goals. On the SNES such shots go in about a fifth less often than with the computer left in charge (more from 70-100 units out); the SNES model allows for that on average (docs/XG_MODELS.md).',
+  'Dekes (G / att · xG)': 'Goals and attempts from dekes, with their expected goals: an ordinary shot from within about 27 ft (80 units) of the goal line it attacks, not a slapshot or an EA Special, with the shooter’s facing turning two or more of its eight steps in the last 0.6 s (real) before it. In the recorded games between two people, SNES winners scored on their dekes well above their expected goals and losers well below; on the Genesis dekes didn’t separate them (docs/WHAT_WINS.md).',
+  'One-timers (G / att · xG)': 'Goals and attempts from one-timers not blocked, with their expected goals.',
+  'Goalie taken over mid-shot (GA / shots · xG)': 'Shots at the team’s goalie (not blocked) that the computer had when the shot was released and a person took over before it was settled: goals against out of those shots, and their expected goals by the model’s own reckoning (on the SNES before its takeover correction). In the recorded SNES games such shots went in at about a third of that rate; the SNES model’s correction is smaller (about a fifth, from 70-100 units from the net more) because it is an average over every shot a person could have taken over (docs/XG_MODELS.md).',
   'Aimed shots (G / att)': 'Goals and attempts by where the shooter aimed: the d-pad direction held at the release picks one of nine spots in the net (high, middle or along the ice; left, middle or right). One-timers are aimed by the game.',
   'Aimed shots (G / att)|· high': 'Shots aimed at the top of the net (up held at the release, any side).',
   'Aimed shots (G / att)|· middle': 'Shots aimed at mid-height (left or right held at the release, or nothing).',
@@ -3648,9 +3648,11 @@ function fillTeamStats(snap) {
   // Goals / attempts of the team's shots that pass a test (shot type, aim ...), as the shot list has them so far.
   const goalsOf = (team, test) => { const mine = list.filter(sh => sh.team === team && test(sh)); return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length; };
   // Goals / attempts and the expected goals of the team's shots that pass a test (2026-11-26: dekes, one-timers)
-  const goalsXg = (team, test) => {
-    const mine = list.filter(sh => sh.team === team && test(sh));
-    const xg = mine.reduce((t, sh) => t + (sh.xg !== undefined && sh.result !== 'blocked' ? sh.xg : 0), 0);
+  // (as tools/season.py counts them: `unblocked` keeps only the unblocked shots with xG; `raw` the model's own xG,
+  // before the SNES takeover correction)
+  const goalsXg = (team, test, unblocked, raw) => {
+    const mine = list.filter(sh => sh.team === team && test(sh) && (!unblocked || (sh.xg !== undefined && sh.result !== 'blocked')));
+    const xg = mine.reduce((t, sh) => t + (sh.xg !== undefined && sh.result !== 'blocked' ? (raw && sh.xgRaw !== undefined ? sh.xgRaw : sh.xg) : 0), 0);
     return mine.filter(sh => sh.result === 'goal').length + '/' + mine.length + (mine.some(sh => sh.xg !== undefined) ? ' · ' + xg.toFixed(1) + ' xG' : '');
   };
   const posts = team => list.filter(sh => sh.team === team && sh.result === 'post').length;
@@ -3733,7 +3735,7 @@ function fillTeamStats(snap) {
       ['Wrist shots (G / att)', goalsOf(0, sh => sh.type === 'wrist shot'), goalsOf(1, sh => sh.type === 'wrist shot')],
       ['Slapshots (G / att)', goalsOf(0, sh => sh.type === 'slapshot'), goalsOf(1, sh => sh.type === 'slapshot')],
       ...(list.some(sh => sh.move) ? [['Dekes (G / att · xG)', goalsXg(0, sh => sh.move === 'deke'), goalsXg(1, sh => sh.move === 'deke')]] : []),
-      ...(list.some(sh => sh.kind === 'one-timer' && sh.xg !== undefined) ? [['One-timers (G / att · xG)', goalsXg(0, sh => sh.kind === 'one-timer'), goalsXg(1, sh => sh.kind === 'one-timer')]] : []),
+      ...(list.some(sh => sh.kind === 'one-timer' && sh.xg !== undefined) ? [['One-timers (G / att · xG)', goalsXg(0, sh => sh.kind === 'one-timer', true), goalsXg(1, sh => sh.kind === 'one-timer', true)]] : []),
     ] : []),
     ...(h.breakTried === undefined ? [] : [
       ['One-timers', h.oneTimerGoals + '/' + h.oneTimerTried, a.oneTimerGoals + '/' + a.oneTimerTried],
@@ -3843,7 +3845,7 @@ function fillTeamStats(snap) {
     })() : []),
     // Shots at the team's goalie that a person took over from the computer while the shot was on its way (gTake):
     // goals against / shots and their expected goals (on the SNES the model allows for it: XG_MODELS "Known gaps")
-    ...(list.some(sh => sh.gTake !== undefined) ? [['Goalie taken over mid-shot (GA / shots · xG)', goalsXg(1, sh => sh.gTake !== undefined), goalsXg(0, sh => sh.gTake !== undefined)]] : []),
+    ...(list.some(sh => sh.gTake !== undefined) ? [['Goalie taken over mid-shot (GA / shots · xG)', goalsXg(1, sh => sh.gTake !== undefined, true, true), goalsXg(0, sh => sh.gTake !== undefined, true, true)]] : []),
     section('Puck control'),
     ...(held ? [['Possession', secondsText(1000 * held[0]) + share(0), secondsText(1000 * held[1]) + share(1)],
       // Each team's possession by where the puck was, in its own view; the three add up to its possession.

@@ -3,7 +3,7 @@
 
 The recorded games (the season summaries: finished, recorded from the start, a person on both sides, no bot) have
 expected goals. Each decided game's margin, for the winner, split exactly into four parts:
-    more attempts        (his unblocked attempts - the loser's) x the games' mean xG per attempt
+    more attempts        (his attempts, blocked too, - the loser's) x the games' mean xG per attempt
     better chances       his xG - the loser's xG, less the part above (the xG each attempt was worth)
     finishing            his goals - his xG
     keeping them out     the loser's xG - the loser's goals (on the Genesis the person plays goal; on the SNES the

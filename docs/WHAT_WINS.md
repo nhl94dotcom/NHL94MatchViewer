@@ -91,12 +91,15 @@ high in these games and the split read 18 / 31 / 17 / 34%.)
   side with more xG won 27 of 29.
 - **SNES: more than half of it is finishing and keeping the puck out, and above all dekes.** By kind of shot
   (`analysis/finishing_by_move.py`; dekes by `scoring_moves.classify`: close in, the facing swung two steps in the
-  last moments): the winners' dekes went in 68 times on 52.5 xG (+15.5 ± 4.5), the losers' 27 times on 39.0
-  (-12.0 ± 4.1); dekes are 30% of the winners' attempts and two thirds of their goals above xG. One-timers next
-  (+6.5 and -9.0); cross-crease, other close-in shots and the slot about even. Over both sides the model is right on
-  dekes (95 goals, 91.5 xG): the gap is between the players, not in the model. On the Genesis no kind separates them
-  (the winners' dekes -2.4, one-timers -4.7). Keeping them out on the SNES also takes the goalie: a person who takes a
-  computer goalie over during the shot cuts the goals by about a fifth on average, more from 70-100 units out.
+  last moments, from the goal line attacked): the winners' dekes went in 67 times on 52.3 xG (+14.7 ± 4.5), the
+  losers' 27 times on 39.0 (-12.0 ± 4.1); dekes are 30% of the winners' attempts and about three fifths of their goals
+  above xG. One-timers next (+6.5 and -9.0); the winners' slot shots +5.6 ± 1.8 (on 47); cross-crease and other
+  close-in shots about even. Over both sides the model is right on dekes (94 goals, 91.3 xG): the gap is between the
+  players, not in the model. On the Genesis no kind separates them (the winners' dekes -2.1, one-timers -4.7).
+  Keeping them out on the SNES also takes the goalie. Over every shot at a computer goalie that a defending person
+  could have taken over, goals fall by about a fifth (more from 70-100 units from the net). On the shots actually
+  taken over mid-shot they went in at about a third of the model's own rate (14 goals on 37.5 xG; the rest 110 on
+  119.4).
 - **What goes with better chances** (xG per attempt across team-games, rank correlation): Genesis one-timers tried
   +0.46, attempts off a pass +0.39, entries that led to an attempt +0.39, rush attempts +0.38, passes completed +0.36;
   sustained pressure -0.15. SNES high-danger share +0.37, passes completed +0.21, one-timers +0.20; attempts off the
@@ -106,26 +109,26 @@ high in these games and the split read 18 / 31 / 17 / 34%.)
 
 ## SNES dekes: what makes one go in (2026-11-26)
 
-`analysis/snes_deke_study.py`: the 375 dekes people took in the recorded SNES games (116 goals, 31%), the state at the
+`analysis/snes_deke_study.py`: the 369 dekes people took in the recorded SNES games (115 goals, 31%), the state at the
 release from the match file. The deke works when it pulls the goalie off the line from the puck to his net; the rest
 is how you get there.
 
 | at the release | dekes | scored |
 |---|---|---|
-| **goalie off the shot line** under 3 units / 3-6 / 6-10 / 10+ | 62 / 94 / 113 / 106 | **3% / 7% / 35% / 63%** |
-| the puck out past the goalie to its side: within 5 / 5-15 / 15+ units | 39 / 112 / 213 | 8% / 19% / 40% |
-| out from the goal line: 20-35 / 35-50 / 50-65 / 65-80 units | 89 / 150 / 91 / 39 | 52% / 34% / 15% / 10% |
-| skating at the goal line (1.5+ a frame) / gliding / moving away | 147 / 70 / 31 | 39% / 24% / 10% |
-| facing swing 2 steps / 3 / 4 | 268 / 93 / 14 | 33% / 29% / 7% |
-| **a person took the goalie over mid-shot** / not | 74 / 301 | **7%** / 37% |
+| **goalie off the shot line** under 3 units / 3-6 / 6-10 / 10+ | 59 / 92 / 112 / 106 | **3% / 8% / 35% / 63%** |
+| the puck out past the goalie to its side: within 5 / 5-15 / 15+ units | 38 / 110 / 210 | 8% / 18% / 40% |
+| out from the goal line: 20-35 / 35-50 / 50-65 / 65-80 units | 89 / 147 / 89 / 38 | 52% / 34% / 16% / 11% |
+| skating at the goal line (1.5+ a frame) / gliding / moving away | 146 / 69 / 30 | 40% / 25% / 10% |
+| facing swing 2 steps / 3 / 4 | 264 / 92 / 13 | 33% / 28% / 8% |
+| **a person took the goalie over mid-shot** / not | 73 / 296 | **7%** / 37% |
 
 - **Do:** drive at the goal line from about 20-35 units out (7-12 ft), and swing just enough (two of the eight
   facings) to carry the puck out past the goalie to one side, so that he's off the line to the net when you let go.
 - **Don't:** deke from 50+ units out, deke while drifting away from the net, or swing the stick all the way round (4
   steps): those go in one time in ten or less.
 - **Against it:** a person who takes the goalie over during the deke stops all but 7% (the shooter's xG on those was
-  17%). Winners' dekes in the games between people: the goalie 10+ units off the line 31% of the time (losers' 24%),
-  skating at the line 40% (31%), taken over mid-shot 17% (30%): winners get there more often and get taken over less.
+  20%, the model's own). Winners' dekes in the games between people: the goalie 10+ units off the line 32% of the time
+  (losers' 24%), skating at the line 41% (30%), taken over mid-shot 17% (30%): winners get there more often and get taken over less.
 
 Recorded examples (the viewer's own replay, `analysis/vision_free_clip.py`):
 
@@ -136,25 +139,26 @@ Recorded examples (the viewer's own replay, `analysis/vision_free_clip.py`):
 
 ## Genesis one-timers: what makes one go in (2026-11-27)
 
-`analysis/gen_one_timer_study.py`: the 216 one-timers people took in the recorded Genesis games (not blocked; 80
-goals, 37%), each with its pass and the state at the release from the match file. Each figure has about ±5-8 points
+`analysis/gen_one_timer_study.py`: the 220 one-timers people took in the recorded Genesis games (not blocked; 83
+goals, 38%), each with its pass (4 had none matched: in the pass rows only as unknown) and the state at the release from the
+match file; the winners and losers from games recorded from the start. Each figure has about ±5-8 points
 of sampling error.
 
 | at the release | one-timers | scored |
 |---|---|---|
-| out from the goal line: under 40 / 40-70 / 70-100 / 100-140 units | 32 / 66 / 69 / 41 | 16% / **52% / 51%** / 12% |
-| across from the middle: under 50 / 50+ units | 174 / 42 | 40-46% / 12% |
+| out from the goal line: under 40 / 40-70 / 70-100 / 100-140 units | 35 / 68 / 69 / 42 | 14% / **53% / 51%** / 14% |
+| across from the middle: under 50 / 50+ units | 178 / 42 | 41-47% / 12% |
 | pass time (real): under 0.3 s / 0.3-0.5 / 0.5-0.8 | 111 / 68 / 33 | 41% / 37% / 24% |
 | pass length: under 100 / 100-150 units | 159 / 48 | 40-43% / 23% |
 | the goalie's slide needed (from where he was at the pass): under 40 / 40-70 / 70+ | 148 / 45 / 23 | 41-49% / 24% / 13% |
-| the goalie sliding at the release: still / sliding / sliding fast | 90 / 117 / 9 | 47% / 32% / 11% |
-| **the goalie off the shot line**: under 10 / 10+ units | 134 / 82 | 19-30% / **57%** |
-| shot speed 20,000+ / 17,000-20,000 | 118 / 86 | 44% / 31% |
-| a person in net / the computer | 45 / 171 | 53% / 33% |
+| the goalie sliding at the release: still / sliding / sliding fast | 93 / 118 / 9 | 48% / 31% / 11% |
+| **the goalie off the shot line**: under 10 / 10+ units | 137 / 83 | 19-34% / **57%** |
+| shot speed 20,000+ / 17,000-20,000 | 119 / 89 | 45% / 33% |
+| a person in net / the computer | 45 / 175 | 53% / 34% |
 
 - **The spot:** the slot from about 13 to 33 ft out (40-100 units), within about 17 ft (50 units) of the middle.
-  Right on top of the crease (under 40 units) the one-timer goes in only 16% of the time. That's lower than the
-  model's 28%.
+  Right on top of the crease (under 40 units) the one-timer goes in only 14% of the time. That's lower than the
+  model's 30%.
 - **The pass:** short and quick beats long and cross-ice. A pass that arrives within 0.3 s (real) and is under
   about 33 ft scores twice as often as a long cross-ice pass. The pass length, the pass time and the goalie's slide
   are largely one finding: a long pass gives the goalie time to slide over and get square. That goes against the
@@ -165,9 +169,9 @@ of sampling error.
   sliding.
 - **The shot:** hard ones (Shot Power) go in more.
 - **People in net** let in more one-timers than the computer goalie (53% to 33%, on only 45 shots).
-- **Winners against losers** (the decided games between people): winners took 133 one-timers to losers' 77. They
-  scored on 43% to 29%, with xG of 44% to 37%. That is more one-timers, slightly better ones, and finishing at the
-  expected rate where losers fell 8 points short.
+- **Winners against losers** (the decided games between people): winners took 135 one-timers to losers' 78. They
+  scored on 44% to 28%, with xG of 44% to 38%. That is more one-timers, slightly better ones, and finishing at the
+  expected rate where losers fell 10 points short.
 
 Recorded examples (the viewer's own replay of the attacked half, `analysis/vision_free_clip.py ... top|bottom`):
 
