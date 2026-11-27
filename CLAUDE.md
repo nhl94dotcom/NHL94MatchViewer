@@ -13,7 +13,7 @@ for the user's online league community (RetroArch 1.17, Genesis Plus GX and Snes
   models' inputs, units and use outside the project).
 - Studies: `SHOOTING_STUDY.md`; `LEAGUE_RESULTS.md` (the league result databases); the scoring maps, shots played in the
   real game (`SCORING_MAP.md` the overview, `SCORING_GENESIS.md`, `SCORING_GENESIS_DEKES.md`, `SCORING_GENESIS_EA.md`,
-  `SCORING_SNES.md`); `FACEOFF_PLACEMENT.md` (where faceoffs are held and where the rules put them); `WHAT_WINS.md` (the stats that separate winners from losers in the people's games: `analysis/what_wins.py`; in 124,000 league games: `analysis/league_what_wins.py`; the margin split into attempts, chance quality, finishing and goaltending: `analysis/recorded_what_wins.py`); `RATING_VALUES.md` (what a rating step is worth in league play: the
+  `SCORING_SNES.md`); `FACEOFF_PLACEMENT.md` (where faceoffs are held and where the rules put them); `WHAT_WINS.md` (the stats that separate winners from losers in the people's games: `analysis/what_wins.py`; in 124,000 league games: `analysis/league_what_wins.py`; the margin split into attempts, chance quality, finishing and goaltending: `analysis/recorded_what_wins.py`; what makes an SNES deke or a Genesis one-timer go in: `analysis/snes_deke_study.py`, `analysis/gen_one_timer_study.py`, GIFs by `analysis/vision_free_clip.py`); `RATING_VALUES.md` (what a rating step is worth in league play: the
   ledger, then the played gaps and a league value; for NOSE4Web).
 - Plans: `DEFENCE_PLAN.md` (the defence studies), `BOT_PLAN.md` (the scripted bot), `GAME_VARIABLES_PLAN.md`
   (the forum's "game variables": what's known, what to study). Open questions for the user:

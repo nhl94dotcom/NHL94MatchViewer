@@ -2,7 +2,9 @@
 takes the viewer (the game folder's viewer.html) at successive times, zoomed and following the puck, and the frames
 are cropped and joined. No emulator: it shows the recording as the viewer replays it.
 
-python analysis/vision_free_clip.py MATCH_NAME START_S END_S OUT.gif [STEP_S] [ZOOM]"""
+python analysis/vision_free_clip.py MATCH_NAME START_S END_S OUT.gif [STEP_S] [ZOOM | top | bottom]
+(top / bottom: the whole rink at zoom 1, cropped to that half, so the net and the play leading to it are always in
+view; a zoom number follows the puck instead.)"""
 import os
 import subprocess
 import sys
@@ -17,7 +19,7 @@ EDGE = next((p for p in (Path(os.environ.get("ProgramFiles(x86)", "")) / "Micros
 
 
 def shot(name, t, out, zoom, w=640, h=520):
-    url = (HOME / "viewer.html").as_uri() + f"?match={name}&t={t:.3f}&zoom={zoom}&follow=1"
+    url = (HOME / "viewer.html").as_uri() + f"?match={name}&t={t:.3f}&zoom={zoom}" + ("&follow=1" if zoom != 1 else "")
     subprocess.run([str(EDGE), "--headless=new", "--disable-gpu", "--hide-scrollbars", f"--window-size={w},{h}",
                     f"--screenshot={out}", "--virtual-time-budget=4000", url], capture_output=True, timeout=60)
 
@@ -25,16 +27,20 @@ def shot(name, t, out, zoom, w=640, h=520):
 def main():
     name, t0, t1, out = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), Path(sys.argv[4])
     step = float(sys.argv[5]) if len(sys.argv) > 5 else 0.05
-    zoom = float(sys.argv[6]) if len(sys.argv) > 6 else 2.2
+    arg = sys.argv[6] if len(sys.argv) > 6 else "2.2"
+    half = arg if arg in ("top", "bottom") else None
+    zoom = 1 if half else float(arg)
+    size = (640, 1100) if half else (640, 520)
+    box = {"top": (100, 75, 540, 440), "bottom": (100, 400, 540, 765)}.get(half, (100, 68, 540, 356))
     frames = []
     with tempfile.TemporaryDirectory() as d:
         t = t0
         i = 0
         while t <= t1 + 1e-9:
             p = Path(d) / f"{i:03d}.png"
-            shot(name, t, p, zoom)
+            shot(name, t, p, zoom, *size)
             if p.exists():
-                frames.append(Image.open(p).convert("RGB").crop((100, 68, 540, 356)).copy())
+                frames.append(Image.open(p).convert("RGB").crop(box).copy())
             t += step
             i += 1
     if not frames:

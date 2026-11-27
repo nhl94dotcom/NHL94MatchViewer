@@ -134,6 +134,48 @@ Recorded examples (the viewer's own replay, `analysis/vision_free_clip.py`):
 ![A deke stopped by a person taking the goalie over mid-shot](img/snes_dekes/C_saved_by_takeover.gif)
 ![A deke that drifts away from the net](img/snes_dekes/D_drifting_away.gif)
 
+## Genesis one-timers: what makes one go in (2026-11-27)
+
+`analysis/gen_one_timer_study.py`: the 216 one-timers people took in the recorded Genesis games (not blocked; 80
+goals, 37%), each with its pass and the state at the release from the match file. Each figure has about ±5-8 points
+of sampling error.
+
+| at the release | one-timers | scored |
+|---|---|---|
+| out from the goal line: under 40 / 40-70 / 70-100 / 100-140 units | 32 / 66 / 69 / 41 | 16% / **52% / 51%** / 12% |
+| across from the middle: under 50 / 50+ units | 174 / 42 | 40-46% / 12% |
+| pass time (real): under 0.3 s / 0.3-0.5 / 0.5-0.8 | 111 / 68 / 33 | 41% / 37% / 24% |
+| pass length: under 100 / 100-150 units | 159 / 48 | 40-43% / 23% |
+| the goalie's slide needed (from where he was at the pass): under 40 / 40-70 / 70+ | 148 / 45 / 23 | 41-49% / 24% / 13% |
+| the goalie sliding at the release: still / sliding / sliding fast | 90 / 117 / 9 | 47% / 32% / 11% |
+| **the goalie off the shot line**: under 10 / 10+ units | 134 / 82 | 19-30% / **57%** |
+| shot speed 20,000+ / 17,000-20,000 | 118 / 86 | 44% / 31% |
+| a person in net / the computer | 45 / 171 | 53% / 33% |
+
+- **The spot:** the slot from about 13 to 33 ft out (40-100 units), within about 17 ft (50 units) of the middle.
+  Right on top of the crease (under 40 units) the one-timer goes in only 16% of the time. That's lower than the
+  model's 28%.
+- **The pass:** short and quick beats long and cross-ice. A pass that arrives within 0.3 s (real) and is under
+  about 33 ft scores twice as often as a long cross-ice pass. The pass length, the pass time and the goalie's slide
+  are largely one finding: a long pass gives the goalie time to slide over and get square. That goes against the
+  usual hockey idea of "move the goalie side to side", and the reason is probably that the Genesis goalie gets
+  across faster than the pass does.
+- **The goalie:** what matters is that he's already off the line when the pass comes, not that he's moving. One-timers
+  with him 10+ units off the shot line went in 57% of the time. With him still, they went in more often than with him
+  sliding.
+- **The shot:** hard ones (Shot Power) go in more.
+- **People in net** let in more one-timers than the computer goalie (53% to 33%, on only 45 shots).
+- **Winners against losers** (the decided games between people): winners took 133 one-timers to losers' 77. They
+  scored on 43% to 29%, with xG of 44% to 37%. That is more one-timers, slightly better ones, and finishing at the
+  expected rate where losers fell 8 points short.
+
+Recorded examples (the viewer's own replay of the attacked half, `analysis/vision_free_clip.py ... top|bottom`):
+
+![A one-timer that goes in: a quick short pass in the slot, the goalie off the line](img/gen_one_timers/A_goal_quick_short_pass.gif)
+![A one-timer stopped: a long cross-ice pass, the goalie square by the shot](img/gen_one_timers/B_saved_long_cross_ice_pass.gif)
+![A one-timer stopped: too close, on top of the crease](img/gen_one_timers/C_saved_too_close.gif)
+![A one-timer stopped: too wide](img/gen_one_timers/D_saved_too_wide.gif)
+
 ## Genesis (31 games, 2026-11-14)
 
 | team minus opponent | winner higher | winner - loser (mean +- SE) | rank corr. with goal diff |
