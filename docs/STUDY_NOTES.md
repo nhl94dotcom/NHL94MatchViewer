@@ -9622,3 +9622,30 @@ rink colour set to magenta in a copy of the state, the changed pixels split by t
   $9AD0B6,x` to palbuffer $7E35F4 and $7E36F4) is at file $FB6DA on retail, $FB77A on nhl94_2026 (RinkPalette $D50B6 in
   both); palbuffer is written only there in a game. StartHL2 (highlights) re-runs setplayercolors with the highlighted
   home team but not the rink palette: per-team rink colours in highlights need the hook in SetTeamColors.
+
+## NOSE4Web's NHL '95 rink import and per-home-team crowd colours, played (2026-11-27)
+
+- **NHL_95_rink_import.bin (D01E2B17).** The import treats both maps together: the squares are reordered, so both
+  maps' words are renumbered (356 and 2,336 bytes); the tile count stays 468; the palette, header, the seven
+  references and the logo tiles (444-467) are unchanged; the checksum call at $692 is NOPed. Both maps start with a
+  width / height pair (0030 0055): their cells begin at $C858A and $160612 (the rink-import notes above gave the
+  headers' addresses). Drawn from ROM, the normal rink differs from retail only in rows 37-38, columns 12-15 and
+  32-35, each patch an exact copy of the crowd at x 8-39, y 8-23; the reverse rink in no pixel; priority bits as
+  retail in both. Played against a control (retail with the build's checksum changes, so both power on alike;
+  `gen95_rink_import_check.py`, now with `teams` and `compare`): screens differ only by the two patches (1,024
+  pixels), the five reverse-angle screens are identical, the tiles from 468 to plane B identical at all 228 checks,
+  the logo tiles identical for home teams 1, 5, 12, 20 and 25.
+- **Crowd colours** (`analysis/scoring_map/crowd_colours_check.py BASE BUILD OUT [TEAM ...]`).
+  - SNES (NHL94_crowd.smc C3C91C98, nhl94_2026_crowd.sfc 34ACFAB3): setplayercolors' `jsl SetTeamColors` ($9F:B901;
+    file $FB901 / $FB9A9) calls a hook in free room ($80:FDAE / $B5:FEAE) that calls SetTeamColors, then by HomeTeam
+    writes palbuffer row 1 colours 8-11 and their sprite copy (row 9) from 4 words a team ($FFFF keeps the base);
+    setplayercolors sends all 256 colours, and runs from setupice, ExitStatsScreen and StartHL2. With home teams 1,
+    10, 21, 27 (retail) and 1, 10, 21, 31 (2026), through play, replay, stats, the period's end and period 2,
+    palbuffer and colour memory hold the table's values and nothing else in palbuffer differs. Redrawn with the 8
+    entries put back, only crowd figures change (the animated crowd tiles 1-65 and the static crowd in the corner and
+    bottom stands and on the pause scoreboard); nothing draws with the row 9 copy. 17 retail table words have bit 15
+    set (ignored by the console). Highlights weren't seen (exhibition games); covered through setplayercolors.
+  - NHL_95_crowd.bin (BB527F78): crashes at the game's start. setupIceRinkPal ($7D6F0) jumps to a hook at $1A72C6
+    whose four `move.w (0,a0,d0.w),dest` (31F0 0000) lack their destination word: the next 0C70 is taken as it and
+    either path reaches $FFFF at $1A72F2, a line-F exception through a $FFFFFFFF vector. With $7D6F0 put back the
+    ROM plays normally.

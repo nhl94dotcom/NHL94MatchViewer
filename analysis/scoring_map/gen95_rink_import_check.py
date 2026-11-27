@@ -18,7 +18,9 @@ the opening faceoff's. Moments: play, Instant Replay and its reverse angle (sfla
 RevRinkTilelist), the pause menu's other screens (RestoreGameScreen), the end of period 1 (intermission screens) and
 the start of period 2. Screenshots at each.
 
-python gen95_rink_import_check.py ROM OUT"""
+python gen95_rink_import_check.py ROM OUT
+python gen95_rink_import_check.py teams ROM OUT HOME   (the centre-ice logo's tiles for one home team)
+python gen95_rink_import_check.py compare RETAIL_OUT BUILD_OUT OUT   (a rink import build against retail: compare())"""
 import json
 import struct
 import sys
@@ -96,6 +98,7 @@ class Watch:
         self.play_vb = None
         self.flags = set()
         self.hi_at = None
+        self.after = []                         # (what, the tiles from the rink's end to plane B) at each check
 
     def check(self, what):
         e, M = self.e, self.M
@@ -117,6 +120,7 @@ class Watch:
         self.views[view] = self.views.get(view, 0) + 1
         if view not in ("vertical", "replay"):       # the pause scoreboard and other screens load their own tiles
             return
+        self.after.append((what, tiles[M["count"]:0x600].copy()))
         if self.ref is None:
             self.ref = tiles[:M["count"]].copy()
         d = np.nonzero((tiles[:M["count"]] != self.ref).any(axis=1))[0]
@@ -240,11 +244,102 @@ def main():
     R["vram_D000_DBFF_nonzero_words"] = int(np.count_nonzero(vram(e)[0xD000 >> 1:0xDC00 >> 1]))
     R["chars_seen"] = sorted({json.dumps(x["vars"], sort_keys=True) for x in W.log})
     (out / "rink95.json").write_text(json.dumps(R, indent=1, default=list))
+    np.savez_compressed(out / "after_tiles.npz", tiles=np.array([t for _, t in W.after]),
+                        labels=np.array([w for w, _ in W.after]))
     print(json.dumps({k: R[k] for k in ("count", "map", "vdp", "chars_at_faceoff", "highest_nonzero_tile_below_planeB",
                                         "vpos_range", "rows_seen", "rev_cells_differ", "references")}, indent=1))
     for k in ("rink", "rev"):
         print(k, {x: R[k][x] for x in ("tiles_named", "highest", "priority", "logo", "palettes")}, "unused", len(R[k]["unused"]))
 
 
+def teams(rom_path, out, home):
+    """`teams`: the opening faceoff with HOME at home: the centre-ice logo's tiles (the rink's last 24) in VRAM and
+    a screenshot (one team a process: the core is a single DLL)."""
+    out.mkdir(parents=True, exist_ok=True)
+    M = maps(Path(rom_path).read_bytes())
+    e = RL.opening(rom_path, home, 1 if home != 1 else 2)
+    if e is None:
+        raise SystemExit("no opening faceoff")
+    e.run(60)
+    tiles = vram(e)[:0xC000 >> 1].reshape(-1, 16)
+    np.save(out / f"logo_{home:02d}.npy", tiles[M["count"] - 24:M["count"]])
+    e.screenshot(out / f"logo_{home:02d}.png")
+
+
+def compare(ret, new, out):
+    """A rink import build's runs against retail's (main and teams on each, the same presses; the retail side a scratch
+    copy with the build's checksum changes, so both power on alike and play the same frames): pass / fail lines.
+    Plane B as the build's own maps in every check (normal and reverse); the tiles from the rink's end to plane B (EASN,
+    energy bar, crowd, sprites, framer, fonts, the faceoff close-up and the other ExtraChars) as retail's check by
+    check; the centre-ice logo's 24 tiles as retail's for each home team run; the screenshots: the pixels that differ
+    from retail's, as 8 x 8 cells grouped into boxes (only the edited squares may differ, and nothing in the reverse
+    angle or off the rink)."""
+    from PIL import Image
+    A, B = (json.loads((d / "rink95.json").read_text()) for d in (ret, new))
+    res = []
+
+    def check(name, ok, detail=""):
+        res.append(("PASS" if ok else "FAIL", name, detail))
+    check("tile count as retail", A["count"] == B["count"], str(B["count"]))
+    # (retail itself has a few: the check catches period 2's start while the screen is being rebuilt)
+    key = lambda x: [y[:4] for y in x]  # noqa: E731
+    check("plane B as the build's own maps in every check, or where retail's is not its own too",
+          key(B["plane_cells_unlike_map"]) == key(A["plane_cells_unlike_map"]),
+          str(B["plane_cells_unlike_map"][:3]))
+    check("reverse angle seen", "rev" in B["rows_seen"] and bool(B["rows_seen"]["rev"]), str(B["rows_seen"]))
+    check("rink tiles changed only where retail's did", B["rink_tile_changes"] == A["rink_tile_changes"], str(B["rink_tile_changes"][:2]))
+    check("priority cells as retail (both maps)", A["rink"]["priority"] == B["rink"]["priority"] and A["rev"]["priority"] == B["rev"]["priority"])
+    ta, tb = (np.load(d / "after_tiles.npz") for d in (ret, new))
+    same_n = len(ta["tiles"]) == len(tb["tiles"])
+    bad = [i for i in range(min(len(ta["tiles"]), len(tb["tiles"]))) if not (ta["tiles"][i] == tb["tiles"][i]).all()]
+    check(f"tiles after the rink as retail's, check by check ({len(tb['tiles'])} checks)", same_n and not bad,
+          f"differ at {[str(tb['labels'][i]) for i in bad[:5]]}")
+    logos = sorted(p.name for p in ret.glob("logo_*.npy") if (new / p.name).exists())
+    lbad = [n for n in logos if not (np.load(ret / n) == np.load(new / n)).all()]
+    check(f"centre-ice logo tiles as retail's ({len(logos)} home teams)", logos and not lbad, str(lbad))
+    shots = sorted(p.name for p in ret.glob("*.png") if (new / p.name).exists())
+    rows = []
+    for n in shots:
+        a = np.asarray(Image.open(ret / n).convert("RGB")).astype(int)
+        b = np.asarray(Image.open(new / n).convert("RGB")).astype(int)
+        if a.shape != b.shape:                                # a different screen mode (H32 / H40): not the same moment
+            rows.append((n, -1, [("size", a.shape[1], b.shape[1])]))
+            continue
+        d = (a != b).any(axis=2)
+        cells = {(int(y) // 8, int(x) // 8) for y, x in zip(*np.nonzero(d))}
+        boxes = []                                            # 8 x 8 cells joined into boxes (4-neighbours)
+        left = set(cells)
+        while left:
+            stack, comp = [left.pop()], []
+            while stack:
+                c = stack.pop()
+                comp.append(c)
+                for nb in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1)):
+                    if nb in left:
+                        left.remove(nb)
+                        stack.append(nb)
+            ys, xs = [c[0] for c in comp], [c[1] for c in comp]
+            boxes.append((8 * (max(xs) - min(xs) + 1), 8 * (max(ys) - min(ys) + 1), 8 * min(xs), 8 * min(ys)))
+        rows.append((n, int(d.sum()), boxes))
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "screens.json").write_text(json.dumps(rows, indent=1))
+    rev_bad = [r for r in rows if r[0].startswith("reverse") and r[1]]
+    other_bad = [r for r in rows if r[1] > 0 and not r[0].startswith("reverse") and any(w > 40 or h > 24 for w, h, _, _ in r[2])]
+    sized = [r for r in rows if r[1] < 0]
+    check("every screenshot pair the same screen mode", not sized, str(sized[:4]))
+    check(f"reverse-angle screenshots identical to retail's ({sum(r[0].startswith('reverse') for r in rows)})", not rev_bad, str(rev_bad[:2]))
+    check("other screenshots differ only in patch-sized boxes (up to 40 x 24: a 32 x 16 square off the 8-pixel grid)",
+          not other_bad, str(other_bad[:2]))
+    lines = [f"{a}  {b}" + (f"  [{c}]" if c and a == "FAIL" else "") for a, b, c in res]
+    lines.append("screens that differ: " + ", ".join(f"{n} {px} px {[(w, h) for w, h, _, _ in bx]}" for n, px, bx in rows if px > 0))
+    (out / "compare.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1] == "compare":
+        compare(Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4]))
+    elif sys.argv[1] == "teams":
+        teams(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]))
+    else:
+        main()
