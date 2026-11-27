@@ -67,6 +67,35 @@ both together 48-51%: half of a single game's margin is neither who played nor w
 and chance. Between the same two people in a league (10+ games), their win rate spreads 16-18 points around, of which
 chance alone gives 14: most of a pair's ups and downs are chance.
 
+## Where the margin comes from, with shot quality (the recorded games, 2026-11-26)
+
+`analysis/recorded_what_wins.py [genesis|snes]`: the recorded games between two people (31 Genesis, 39 SNES), each
+decided game's margin split for the winner into **more attempts** (the attempt difference at the games' mean xG per
+attempt, 0.25), **better chances** (the rest of the xG difference), **finishing** (goals minus xG) and **keeping
+them out** (the other's xG minus his goals). Attempts include blocked ones; xG and its goals don't: the split is
+close, not exact.
+
+| share of the winner's margin | Genesis (29 decided) | SNES (36 decided) |
+|---|---|---|
+| more attempts | 32% (favoured him in 72%) | 18% (56%) |
+| better chances | **56%** (79%) | 31% (72%) |
+| finishing | 3% (45%) | 17% (53%) |
+| keeping them out | 9% (62%) | **34%** (81%) |
+| won with more xG | 93% of games | 72% |
+
+- **Genesis: the half of the edge the league data put in "finishing and defending" is chance quality.** Winners make
+  better chances, not luckier ones: goals above xG are a coin flip (favoured the winner in 45% of games), and the
+  side with more xG won 27 of 29.
+- **SNES: more is left to finishing and the goals let in.** The winner let in fewer than his xG against in 81% of
+  games. Part of that is the SNES xG model's known weakness (low on walk-ins: Known gaps in CLAUDE.md), so on the SNES
+  the split leans less firmly; 28% of games went to the side with less xG.
+- **What goes with better chances** (xG per attempt across team-games, rank correlation): Genesis one-timers tried
+  +0.46, attempts off a pass +0.39, entries that led to an attempt +0.39, rush attempts +0.38, passes completed +0.36;
+  sustained pressure -0.15. SNES high-danger share +0.37, passes completed +0.21, one-timers +0.20; attempts off the
+  other side's giveaways were the weaker ones (-0.38). The chances that win are made by the pass and on the rush,
+  not by holding the zone (as the league data's zone time, above).
+- Whether each part repeats for the same team across a series: 4 and 6 series of four or more games, too few to say.
+
 ## Genesis (31 games, 2026-11-14)
 
 | team minus opponent | winner higher | winner - loser (mean +- SE) | rank corr. with goal diff |
