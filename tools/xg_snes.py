@@ -27,6 +27,7 @@ no target: vertical speed 0 to $FFF, SNES_MECHANICS 6.1). Deflections and kind '
 """
 import copy
 import json
+import math
 import random
 import struct
 
@@ -383,6 +384,27 @@ def touch_timer(m, f, gk, frames=10):
     return 0
 
 
+# A person can take a computer goalie over during the shot (2026-11-26, analysis/snes_xg_check.py): in the recorded
+# games, shots at a goalie the computer had at the release went in as the model says when the defending side was the
+# computer (44 goals for 41.6 xG), and at a person in net (115 for 117.2), but 19% less when a person on the defending
+# side could take him over (136 for 168.8: 0.89 of the model's under 70 units out, 0.43 at 70-100, as it says beyond;
+# the takeover comes a median 11 samples after the release). Fitted on half the games and tested on the other half
+# both ways, it lowered the log loss each time. The model's own value is kept as xgRaw.
+TAKEOVER = ((70, 0.89), (100, 0.43))
+
+
+def takeover_factor(m, f, team, gk, dist):
+    """The correction for a shot by `team` at sample f: below 1 when the goalie (record gk) is the computer's at the
+    release and a person controlled one of the defending side's players in the second before it."""
+    ctrl = m.get("ctrl")
+    if not ctrl or gk is None or f >= len(ctrl) or ctrl[f] >> gk & 1:
+        return 1.0
+    side = range((1 - team) * 6, (1 - team) * 6 + 6)
+    if not any(ctrl[q] >> k & 1 for q in range(max(0, f - 60), f + 1) for k in side):
+        return 1.0
+    return next((v for lim, v in TAKEOVER if dist < lim), 1.0)
+
+
 def add_expected_goals(m, rom, notouch=False, internals=None):
     """Each shot, one-timer and pass shot of an SNES match gets `xg` (rom: the ROM's bytes, for the goalie's
     frames). notouch: the goalie's no-touch timer from the recording (touch_timer). internals: {sample: the goalie's
@@ -450,8 +472,11 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
         key = (m.get('name', ''), f, team, sh['idx'], px, py, tx, ty, tz, pp, sha,
                (gx, gy, gvx, gvy, int(m["facing"][f * 12 + gk]), frame, *gw[:4], goalie.nopuck) if goalie else None,
                sh["kind"], launch, json.dumps(internals.get(f), sort_keys=True) if internals else None, step)
+        take = takeover_factor(m, f, team, gk, math.hypot(px, ty - py))
         if key in _CACHE:
-            sh["xg"] = _CACHE[key]
+            sh["xg"] = round(_CACHE[key] * take, 3)
+            if take != 1.0:
+                sh["xgRaw"] = _CACHE[key]
             continue
         rng = random.Random(f"{m.get('name', '')}:{f}:{team}:{sh['idx']}")
 
@@ -459,7 +484,10 @@ def add_expected_goals(m, rom, notouch=False, internals=None):
             return aimed(launch, rng, rng.randrange(0x1000)) if launch else None
         goals = sum(play_out(px, py, tx, ty, tz, pp, sha, perfect, goalie, rng, launch=start(), step=step) == "goal"
                     for _ in range(N_SAMPLES))
-        sh["xg"] = _CACHE[key] = round(goals / N_SAMPLES, 3)
+        _CACHE[key] = round(goals / N_SAMPLES, 3)
+        sh["xg"] = round(_CACHE[key] * take, 3)
+        if take != 1.0:
+            sh["xgRaw"] = _CACHE[key]
 
 
 def set_spot(px, py, top):

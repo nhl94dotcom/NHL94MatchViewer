@@ -288,4 +288,4 @@ export_match.py).
 
 - Settled, don't redo: SNES faceoffs (timing, SNES_MECHANICS 9), SNES pass speed (by distance, no rocket pass), SNES
   hooks / holds / pokes (7.3), upends (7.2), goalie poke / dive (5.3), puck physics (7.8), the crowd (both systems).
-- Open: the open-questions sections of both mechanics docs; some studies need more games; the SNES xG model is low on walk-ins (both builds).
+- Open: the open-questions sections of both mechanics docs; some studies need more games; the SNES xG model is right on average only with its takeover correction (2026-11-26: a person taking a computer goalie over during the shot; tools/xg_snes.TAKEOVER, fitted on 39 people's games; refit as games accumulate: analysis/snes_xg_check.py).

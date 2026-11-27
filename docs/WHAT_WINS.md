@@ -77,18 +77,26 @@ close, not exact.
 
 | share of the winner's margin | Genesis (29 decided) | SNES (36 decided) |
 |---|---|---|
-| more attempts | 32% (favoured him in 72%) | 18% (56%) |
-| better chances | **56%** (79%) | 31% (72%) |
-| finishing | 3% (45%) | 17% (53%) |
-| keeping them out | 9% (62%) | **34%** (81%) |
-| won with more xG | 93% of games | 72% |
+| more attempts | 32% (favoured him in 72%) | 16% (56%) |
+| better chances | **56%** (79%) | 27% (72%) |
+| finishing | 3% (45%) | 27% (67%) |
+| keeping them out | 9% (62%) | 30% (75%) |
+| won with more xG | 93% of games | 75% |
+
+(SNES after the model's takeover correction of 2026-11-26: XG_MODELS "Known gaps". Before it the SNES model was 15%
+high in these games and the split read 18 / 31 / 17 / 34%.)
 
 - **Genesis: the half of the edge the league data put in "finishing and defending" is chance quality.** Winners make
   better chances, not luckier ones: goals above xG are a coin flip (favoured the winner in 45% of games), and the
   side with more xG won 27 of 29.
-- **SNES: more is left to finishing and the goals let in.** The winner let in fewer than his xG against in 81% of
-  games. Part of that is the SNES xG model's known weakness (low on walk-ins: Known gaps in CLAUDE.md), so on the SNES
-  the split leans less firmly; 28% of games went to the side with less xG.
+- **SNES: more than half of it is finishing and keeping the puck out, and above all dekes.** By kind of shot
+  (`analysis/finishing_by_move.py`; dekes by `scoring_moves.classify`: close in, the facing swung two steps in the
+  last moments): the winners' dekes went in 68 times on 52.5 xG (+15.5 ± 4.5), the losers' 27 times on 39.0
+  (-12.0 ± 4.1); dekes are 30% of the winners' attempts and two thirds of their goals above xG. One-timers next
+  (+6.5 and -9.0); cross-crease, other close-in shots and the slot about even. Over both sides the model is right on
+  dekes (95 goals, 91.5 xG): the gap is between the players, not in the model. On the Genesis no kind separates them
+  (the winners' dekes -2.4, one-timers -4.7). Keeping them out on the SNES also takes the goalie: a person who takes a
+  computer goalie over during the shot cuts the goals by about a fifth on average, more from 70-100 units out.
 - **What goes with better chances** (xG per attempt across team-games, rank correlation): Genesis one-timers tried
   +0.46, attempts off a pass +0.39, entries that led to an attempt +0.39, rush attempts +0.38, passes completed +0.36;
   sustained pressure -0.15. SNES high-danger share +0.37, passes completed +0.21, one-timers +0.20; attempts off the
