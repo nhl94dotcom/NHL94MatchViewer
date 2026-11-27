@@ -11,6 +11,62 @@ itself, goals inside lists and the mirrored "against" halves left out), and repo
 higher, the mean winner-minus-loser difference, and the rank correlation with the goal difference. Then a small
 logistic model on the strongest stats shows which carry weight with the others known.
 
+## The leagues: 87,000 Genesis and 36,000 SNES games (2026-11-26)
+
+`analysis/league_what_wins.py [wins|better|luck]` on the league result databases (every league game since 2013,
+simulated games left out; aggregates only). The databases have no shot quality (no xG, no shot spots): shots, one-timers
+and breakaways tried, passes, attacking-zone time, checks, faceoffs, penalties. Ratings: each person's rating before
+the game (LEAGUE_RESULTS "Player ratings"), games between people with 30+ rated games.
+
+**What the winner does** (winner higher, share of games / the logistic model's weight per standard deviation with the
+ratings known):
+
+| | Genesis | SNES |
+|---|---|---|
+| shot share | 73% / **+1.45** | 74% / **+1.64** |
+| passes completed | 62% / +0.52 | 59% / +0.62 |
+| breakaways tried | 59% / +0.33 | 59% / +0.32 |
+| one-timers tried | 64% / +0.17 | 60% / 0.00 |
+| attacking-zone time share | 60% / **-0.35** | 59% / **-0.46** |
+| checks | 50% / -0.17 | 51% / -0.31 |
+| pass completion % | 62% / -0.13 | 54% / -0.25 |
+| faceoff share | 54% / +0.01 | 55% / +0.03 |
+| penalty minutes, power plays | 48%, 52% / about 0 | 48%, 52% / about 0 |
+
+- **Shots decide most.** The team with more shots wins 73-74% of games; outshot by 3-5 the team loses 27-29%, by 6-9
+  14-16%, by 10+ 5-6%.
+- **Passing, not possession.** Passes completed carry weight beyond the shots; time in the attacking zone, with the
+  shots known, goes with *losing*: zone time that doesn't become shots. Completion rate counts less than volume.
+- **Breakaways** count beyond their shots (a better chance each); one-timers tried add little once the shots are
+  known (on the SNES nothing).
+- **Hitting and faceoffs don't win games**: checks go slightly with losing when the rest is known; faceoffs and
+  penalties are about even.
+- The stats explain a game better than the ratings do (log loss 0.49 / 0.48 against 0.60 / 0.59), and both together
+  best (0.455 / 0.443): how a game is played says more than who played it.
+
+**How the better player wins** (by the pre-game rating gap):
+
+| gap | wins | goal diff | shot share | shooting % for / against | passes completed % + | faceoffs |
+|---|---|---|---|---|---|---|
+| Genesis 0-50 | 53% | +0.23 | 50.9% | 32.2 / 31.3 | +0.4 | 50.1% |
+| 100-200 | 69% | +1.31 | 54.8% | 34.3 / 29.3 | +2.3 | 51.1% |
+| 300+ | 90% | +3.51 | 62.9% | 38.5 / 25.7 | +5.6 | 53.4% |
+| SNES 0-50 | 53% | +0.20 | 50.5% | 38.7 / 37.8 | +0.2 | 49.9% |
+| 100-200 | 68% | +1.34 | 54.0% | 40.3 / 34.8 | +0.9 | 51.2% |
+| 300+ | 90% | +3.93 | 62.1% | 44.1 / 29.2 | +1.4 | 52.7% |
+
+Split, the better player's goal difference comes **about 55% from more shots** (at the league's shooting %), **about
+25% from scoring on more of his shots** and **about 20% from the other side scoring on fewer of theirs** (on the
+Genesis the people play goal: that part is defence and goaltending; on the SNES the computer is in net, so it is
+the shots he allows). Better finishing and fewer good chances against: shot quality, which the databases can't see
+directly, makes up close to half the edge.
+
+**Luck in one game:** the ratings' chances hold (the better player loses 47% at a gap under 50, 31% at 100-200, 10%
+at 300+; as expected). The pre-game ratings explain 25-28% of a game's goal difference, the shot difference 42-45%,
+both together 48-51%: half of a single game's margin is neither who played nor who shot more, but finishing, saves
+and chance. Between the same two people in a league (10+ games), their win rate spreads 16-18 points around, of which
+chance alone gives 14: most of a pair's ups and downs are chance.
+
 ## Genesis (31 games, 2026-11-14)
 
 | team minus opponent | winner higher | winner - loser (mean +- SE) | rank corr. with goal diff |
