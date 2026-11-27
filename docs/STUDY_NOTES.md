@@ -8707,6 +8707,32 @@ song from the finals on).
   for 3,676), the bands above 800 Hz 30% down (the deleted part); whether those instruments sound as the
   original's was not settled by measurement.
 
+## Per-team arena colours and a home-team pre-game song: the game's reading (2026-11-26, for NOSE4Web)
+
+NHL '94 Genesis from the disassembly and played (runs folder, nosebuilds/rink: pal_users2.py, scout_song.py); NHL '95
+and the SNES from their disassemblies (read by helpers, key lines checked).
+- **Genesis '94 rink palette**: setupIceRinkPal (lines 0-1 from Rinktilelist's palette) is called by setupice (every
+  period), setupice_highlight (intermission highlights) and ReloadRinkGraphics (after pause and stats screens, and on
+  each reverse-angle switch); the reverse rink's own palette is never read. HomeTeam is set before each (GameSetUp's
+  TeamIcons from Opt1team; playoffs from the round's game); an intermission highlight sets it to the highlighted
+  game's home team before setupice_highlight, and the real game's state is restored after. Lines 0 and 1 in play
+  (every on-screen cell and sprite, play, faceoff, pause): only colours 5 and 9 of line 0 are the rink's alone; the
+  rest are shared with the small and big fonts (score box, clock, messages), the box frames and the EA logo (line 1),
+  the crowd sprites (line 1) and some sprites from the sprite tiles (lines 0-1).
+- **Genesis '94 matchup screen**: ScoutingReport starts song $7A (`move.w #SngScouting,-(sp)` / `jsr song`; a negative
+  number plays nothing), which loops (its end event jumps back to its start + 4); in play it ran until START, when $79
+  started. Organ songs end (no loop pointer) after 19-25 s. Skipped in shootouts.
+- **NHL '95**: the same setupIceRinkPal, called from setupice, RestoreGameScreen (pause, stats between periods, replay
+  exit, shootout) and the Create Player screens; HomeTeam $FFBF54. Line 0 also draws the score box, the replay icon,
+  goal banners, penalty boxes, the three stars and pause text. ScoutingReport restarts the driver and plays song 3
+  (shared with the playoff and title screens); stop_current_song at StartGame ends it. Loop not confirmed.
+- **SNES**: setupice copies RinkPalette (128 colours) into palbuffer $7E35F4 twice (BG and sprite halves); team
+  uniform rows written after; later only re-sent (after pause and stats screens, ClrHor), never re-read from ROM.
+  HomeTeam $1C98, set before StartGame; highlights switch it and restore. Palette 0 also draws the score box, the
+  clock area and the three stars box; ticker text uses palette 1. The scouting screen starts no song: the menu song
+  (or the playoff song from round 2) plays on, both looping, until setupice fades it out and loads the game driver;
+  organ songs need the game driver and samples, loaded only by setupice.
+
 ## The Genesis rink for an import: video memory, run-time changes, references (2026-11-26, for NOSE4Web)
 
 nhl94.bin; the disassembly (a1e6713) and the ROM, checked in play (scripts in the runs folder, nosebuilds/rink).
