@@ -20,7 +20,8 @@ Right held. At each step, from the core:
 - the brightening band (MenuScreenHDMA: window 1 x $40-$BF on lines $10-$2F, colour math adds the fixed colour to
   BG2 there): the colours on screen in the band against the same colour outside it.
 
-python snes_setup_back_check.py ROM OUT"""
+python snes_setup_back_check.py ROM OUT
+python snes_setup_back_check.py compare RETAIL_OUT BUILD_OUT OUT   (a picture build's run against retail's: compare())"""
 import ctypes as C
 import json
 import struct
@@ -224,6 +225,7 @@ def main():
              nonzero_3000_3FFF=runs(s.ever_nz, 0x3000, 0x4000),
              named_in_22C0_2FFF=sorted({o for a in range(0x22C0, 0x3000) for o in own.get(a, ())}),
              named_1680_22BF_not_picture=sorted({o for a in range(0x1000 + 16 * back, 0x22C0) for o in own.get(a, ()) if "BG2" not in o or "pal [2]" not in o}),
+             named_1680_2FFF_not_picture=sorted({o for a in range(0x1000 + 16 * back, 0x3000) for o in own.get(a, ()) if "BG2" not in o or "pal [2]" not in o}),
              bg1_tiles=[min(s.refs["BG1"]), max(s.refs["BG1"])], bg2_tiles=[min(s.refs["BG2"]), max(s.refs["BG2"])],
              map_palettes={n: sorted({p for v in s.refs[n].values() for p in v}) for n in s.refs},
              colour_rows_changed={r: sorted(v) for r, v in sorted(s.cg_changes.items())},
@@ -243,6 +245,7 @@ def main():
                                shown_whole_always=[[x for x in range(32) if lo[y, x] == 1] for y in range(28)],
                                least_share=[[round(float(v), 2) for v in row] for row in lo])
     (out / "setup_back.json").write_text(json.dumps(R, indent=1, default=list))
+    np.save(out / "vram_first.npy", s.first)
     # a picture of the grid (at rest): green = BG2 shows whole at every step, yellow = in part (text, edges) or
     # at some steps only, red = never a pixel
     img = Image.open(out / "setup.png").convert("RGB").resize((512, 448), Image.NEAREST)
@@ -258,5 +261,56 @@ def main():
     print(json.dumps({k: v for k, v in R.items() if k not in ("log", "never_shows", "always_shows", "band", "regular_season", "bg2_never_seen", "bg2_always_whole", "colours_first", "colour_rows_changed", "nonzero_22C0_2FFF", "nonzero_3000_3FFF", "changed_1000_3FFF")}, indent=1, default=list))
 
 
+def compare(ret, new, out):
+    """A setup background build's run against retail's (both made by main, the same ROM family): pass / fail lines
+    for what must stay as it was, and the screens side by side. The picture may use BG2 tiles from backchars + 1 up to
+    512 ($1680-$2FFF) and colour row 2; everything else on the screen is checked against retail: MenuBack's tiles,
+    BG1's map and tiles at the first sample (the photos left out: they change with the teams), the colour rows but 2,
+    which rows change while the screen runs, the brightening band, and the cells the picture can't show in."""
+    A, B = (json.loads((d / "setup_back.json").read_text()) for d in (ret, new))
+    va, vb = (np.load(d / "vram_first.npy") for d in (ret, new))
+    res = []
+
+    def check(name, ok, detail=""):
+        res.append(("PASS" if ok else "FAIL", name, detail))
+    back = A["backchars"]
+    check("backchars as retail", B["backchars"] == back, str(B["backchars"]))
+    pt = B["picture_tiles"] or [0, 0, 0]
+    check("picture tiles within backchars + 1 .. 512 ($1680-$2FFF)", pt[0] > back and pt[1] <= 512, f"{pt} {B['picture_vram']}")
+    check("nothing but the picture names $1680-$2FFF", not B.get("named_1680_2FFF_not_picture"), str(B.get("named_1680_2FFF_not_picture")))
+    check("MenuBack's tiles (BG2 0-103) unchanged", bool((va[0x1000:0x1000 + 16 * back] == vb[0x1000:0x1000 + 16 * back]).all()))
+    check("BG1's map unchanged (first sample)", bool((va[0:32 * 28] == vb[0:32 * 28]).all()))
+    pic0 = 0x2000 + 16 * A["log"][0]["picchars"]
+    same = va[0x3000:pic0] == vb[0x3000:pic0]
+    check(f"BG1's tiles $3000-${pic0 - 1:04X} unchanged (the photos from ${pic0:04X} left out)", bool(same.all()),
+          f"{int((~same).sum())} words differ")
+    off = [(i, int(x), int(y)) for i, (x, y) in enumerate(zip(va[0x400:0x400 + 32 * 28], vb[0x400:0x400 + 32 * 28]))
+           if (int(x) >> 10 & 7) != 2 and (int(y) >> 10 & 7) != 2 and x != y]
+    check("BG2 cells off the picture (MenuBack, palettes 3 and 4) unchanged", not off,
+          ", ".join(f"row {i // 32} col {i % 32}" for i, _, _ in off[:8]))
+    for r in (0, 1, 3, 4, 5, 6, 7):
+        check(f"colour row {r} as retail (first sample)", A["colours_first"][r] == B["colours_first"][r], " ".join(B["colours_first"][r]))
+    rows = lambda R: sorted(R["colour_rows_changed"])  # noqa: E731
+    check("the same colour rows change while the screen runs (rows 2-4 never)", rows(A) == rows(B) and not {"2", "3", "4"} & set(rows(B)), str(rows(B)))
+    la, lb = A["band"][0]["by_line"], B["band"][0]["by_line"]
+    check("brightening band: the same lift line by line", la == lb)
+    ha, hb = A["regular_season"]["hidden_always"], B["regular_season"]["hidden_always"]
+    check("the cells never showing BG2 as retail", ha == hb, str([(y, r) for y, r in enumerate(hb) if r != ha[y]]))
+    out.mkdir(parents=True, exist_ok=True)
+    shots = ["setup.png"] + sorted(p.name for p in ret.glob("line_*.png")) + ["setup_end.png", "picture_cells.png"]
+    shots = [x for x in shots if (ret / x).exists() and (new / x).exists()]
+    sheet = Image.new("RGB", (2 * 512, 448 * len(shots)))
+    for i, x in enumerate(shots):
+        for j, d in enumerate((ret, new)):
+            sheet.paste(Image.open(d / x).convert("RGB").resize((512, 448), Image.NEAREST), (512 * j, 448 * i))
+    sheet.save(out / "setup_compare.png")
+    lines = [f"{a}  {b}" + (f"  [{c}]" if c and a == "FAIL" else "") for a, b, c in res]
+    (out / "setup_compare.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1] == "compare":
+        compare(Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4]))
+    else:
+        main()

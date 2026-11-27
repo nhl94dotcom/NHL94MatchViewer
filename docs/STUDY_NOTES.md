@@ -9496,7 +9496,12 @@ Game Setup background) and asked what the screens use, before sending test ROMs.
     while the screen runs), sprites $6000+. Nothing names $22C0-$2FFF at any sample (it holds left-over data that
     doesn't change). So BG2 tiles 105-512 ($1680-$2FFF, 408 tiles) are the picture's to use; BG2 tile 513 would be
     $3010, BG1's first named tile is 256 ($3000). A 408-tile picture unpacks to $7F0000-$7F32FF (unpackbuf), below
-    colourbuf $7F7500, but over statspage $7F2780 (not checked whether Game Setup uses it).
+    colourbuf $7F7500. Checked since: statspage ($7F2780) is only the stats screens' print buffer (PrintToStatsPage,
+    the Fill*Page and Draw*Page routines, filled before use); the bank $7F heap is unused (HeapStart7F 0). The
+    visitors' matchup photos are kept from $7F2D00 (home $7F5100) and read again while the photos cycle: junk put
+    there on Game Setup showed in the visitors' photo box. But setoptions clears phototeams before it calls
+    SetupScreen, so both teams' photos are unpacked again after the picture every time Game Setup opens (after an
+    Exit Game too: tested). A 408-tile picture is safe.
   - Colours: rows 2, 3 and 4 never change while the screen runs (all three builds). Row 1 colours 13 and 15 and row
     5 colours 13-15 change; rows 6 and 7 are the team blocks' (BG1 cells, palettes 6 and 7) and change with the
     teams: not free. On the SA-1 builds BG1 also names palette 4 (nhl94_2026's gold menu frame), so row 4 is shared.
@@ -9507,3 +9512,10 @@ Game Setup background) and asked what the screens use, before sending test ROMs.
   - The brightening band: colour math adds the fixed colour to BG2 inside x $40-$BF on lines 16-47 only: +3 of 31 on
     lines 16-17, +7 on 18-45, +15 on 46-47 (a pure blue $7C00 showed as 24/57/123 grey added). It is what lights the
     GAME SETUP box; a picture's own cells there get the same lift. Left zero, those cells keep MenuBack's box.
+- **Checking the test ROMs** (2026-11-27): both scripts take `compare RETAIL_OUT BUILD_OUT OUT` (each run made by
+  the script first): pass / fail lines for what must stay as retail (the title: VDP layout, line scroll, no
+  sprites, the picture's rows, every other piece's tiles, cells and colours, row 3 and the logos' and credits' row 1
+  colours, nothing past $4FF, the reset; Game Setup: backchars, the picture within $1680-$2FFF and nothing else named
+  there, MenuBack's tiles, BG1's map and tiles but the photos, colour rows but 2, the rows that change, the band, the
+  hidden cells) and a side-by-side sheet. Retail against itself passes everything; a scratch NHL '94 with two row 1
+  colours changed (the ROM's long sum kept: the game checks it at power-on) fails only the row 1 line.

@@ -19,7 +19,8 @@ Then START (the title ends) and Game Setup is waited out until the demo starts a
 Opening2, not Opening), then a soft reset (retro_reset) back to the title: the title's VRAM, colours and screen against
 the first time.
 
-python gen_title_screen_check.py ROM OUT [94|95]"""
+python gen_title_screen_check.py ROM OUT [94|95]
+python gen_title_screen_check.py compare RETAIL_OUT BUILD_OUT OUT   (a picture build's run against retail's: compare())"""
 import json
 import struct
 import sys
@@ -182,8 +183,10 @@ def main():
                     hs_moving[ln].add("A")
                 if hs[2 * ln + 1] & 0x3FF:
                     hs_moving[ln].add("B")
-        k = f - started
-        if k == 300:
+        if "setup_done" not in R:
+            continue
+        k = f - R["setup_done"]         # frames counted from the end of the setup: a build that takes longer to
+        if k == 300:                    # unpack still compares frame for frame
             first = (vr.copy(), cram, reg)
             e.screenshot(out / "first_300.png")
         if (k < 400 and k % 20 == 0) or k % 300 == 0:
@@ -273,5 +276,64 @@ def main():
     print(json.dumps({k: R[k] for k in ("handler", "d4", "title_from", "title_to", "pieces_guess", "plane_tiles_max", "highest_nonzero_vram_below_A000", "vscroll_max", "after_title", "reset")}, default=list))
 
 
+def compare(ret, new, out):
+    """A picture build's run against retail's (both made by main): what must stay as it was, and the screens side by side.
+    Pass / fail lines: the same registers, line scroll lines and no sprites; the picture in window rows 0-22 and plane
+    B rows 23-27 only; every other piece's tiles (the same bytes, wherever they now start) and cells (the same layout,
+    relative to the piece's start); the colours the other pieces use unchanged (row 3, and the row 1 colours of the
+    logos and credits); nothing in VRAM past $4FF; the same title after a reset; the title never after it ends."""
+    A, B = (json.loads((d / "title.json").read_text()) for d in (ret, new))
+    va, vb_ = (np.load(d / "title_vram.npy") for d in (ret, new))
+    res = []
+
+    def check(name, ok, detail=""):
+        res.append(("PASS" if ok else "FAIL", name, detail))
+    strip = lambda regs: [(r["A"], r["W"], r["B"], r["SAT"], r["HS"], r["winx"], r["winy"], r["mode3"], r["h40"]) for r in regs]  # noqa: E731
+    check("VDP layout (planes, window split, scroll mode) as retail", strip(A["regs"])[-1] == strip(B["regs"])[-1], str(strip(B["regs"])[-1]))
+    check("line scroll: plane B lines 0-177 only, plane A never", A["hscroll_lines"] == B["hscroll_lines"],
+          f"B {B['hscroll_lines']['B'][:1]}..{B['hscroll_lines']['B'][-1:]} ({len(B['hscroll_lines']['B'])}), A {len(B['hscroll_lines']['A'])}")
+    check("no sprites", not B["sprites"], str(B["sprites"][:2]))
+    pic = B["piece_cells"].get("picture (TitleScreenImg)", {})
+    wrows = pic.get("W", {}).get("rows", [None, None])
+    check("picture: window rows from 0, plane B rows 23-27", wrows[0] == 0 and pic.get("B", {}).get("rows") == [23, 27], str(pic))
+    pa, pb = {p[0]: p for p in A["pieces_guess"]}, {p[0]: p for p in B["pieces_guess"]}
+    hi_b = int(B["highest_nonzero_vram_below_A000"].split("tile $")[1].rstrip(")"), 16)
+    for i, (name, lo, hi) in enumerate(A["pieces_guess"][1:], 1):
+        nb = B["pieces_guess"][i]
+        hi = hi if hi is not None else int(A["highest_nonzero_vram_below_A000"].split("tile $")[1].rstrip(")"), 16)
+        n = hi - lo + 1
+        ta = va[16 * lo:16 * (lo + n)]
+        tb = vb_[16 * nb[1]:16 * (nb[1] + n)]
+        check(f"{name}: tiles unchanged ({n}, from {lo} now {nb[1]})", len(ta) == len(tb) and bool((ta == tb).all()))
+        ca, cb = A["piece_cells"].get(name), B["piece_cells"].get(nb[0])
+        check(f"{name}: cells in the same place", ca == cb, f"{cb}")
+        cola, colb = A["piece_colours"].get(name), B["piece_colours"].get(nb[0])
+        check(f"{name}: drawn with the same (row, colour) pairs", cola == colb)
+    fa = [[int(x, 16) for x in row] for row in A["cram"][-1]["rows"]]
+    fb = [[int(x, 16) for x in row] for row in B["cram"][-1]["rows"]]
+    check("palette row 3 (the lettering) unchanged", fa[3] == fb[3], " ".join(f"{c:03X}" for c in fb[3]))
+    need = sorted({c for name, pairs in A["piece_colours"].items() if not name.startswith("picture") for r, c in pairs if r == 1})
+    bad = [c for c in need if fa[1][c] != fb[1][c]]
+    check(f"row 1 colours the logos and credits use ({need}) unchanged", not bad, f"changed: {bad}")
+    check("nothing past tile $4FF (plane B starts at $A000)", hi_b < 0x500, f"highest tile ${hi_b:X}")
+    r = B.get("reset", {})
+    check("after a reset: the same title", r.get("vram_words_differ") == 0 and r.get("cram_same") and r.get("pixels_differ") == 0, str(r))
+    check("the title never comes back on its own", B["after_title"]["title_handler_seen"] == 0)
+    out.mkdir(parents=True, exist_ok=True)
+    shots = sorted(p.name for p in ret.glob("title_*.png") if (new / p.name).exists())
+    w, h = Image.open(ret / shots[0]).size
+    sheet = Image.new("RGB", (2 * w, h * len(shots)))
+    for i, s in enumerate(shots):
+        sheet.paste(Image.open(ret / s).convert("RGB"), (0, i * h))
+        sheet.paste(Image.open(new / s).convert("RGB"), (w, i * h))
+    sheet.save(out / "title_compare.png")
+    lines = [f"{a}  {b}" + (f"  [{c}]" if c and a == "FAIL" else "") for a, b, c in res]
+    (out / "title_compare.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1] == "compare":
+        compare(Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4]))
+    else:
+        main()
