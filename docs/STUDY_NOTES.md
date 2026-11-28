@@ -9706,3 +9706,21 @@ intermission and a penalty's side-on view.
   rows 98-102 show. DrawHorTeams replaces colour rows 6-7 with the banners (BG1); the board's cells use palettes 0
   and 1 only. An edit must keep the replay icon (rows 85-92, columns 32-39, tiles 435-530), the 81 crowd cells in rows
   98-101 naming tiles 1-65 (showcrowd runs here too) and the pixels of the 44 tiles rows 85-112 share with rows 0-84.
+
+## NOSE4Web's side-on scoreboard ads, played (2026-11-27; genesis_nhl94_hor_ad.bin 17E6CA14, NHL94_hor_ad.smc 4C6FACD4, nhl94_2026_hor_ad.sfc A78E79ED)
+
+- NHL 94: a new IceRinkHorMap jim at $FFAC0 (190 raw tiles, retail's 64 colours, map at $10130A, lines 0-1, no
+  priority) over the old checksum routine; SetHor's operands $12BBE / $12BC8 repointed; the checksum call NOPed; the
+  ROM grown to 2 MB. Drawn from ROM it differs from retail only in rows 18-20, columns 8-23. Played against a control
+  (retail with the NOPs) with `gen_hor_board_check.py ads` / `compare` (planes drawn from each run's video memory:
+  the smaller unpack moves the games apart a little): at the pause menu, a penalty's side-on view and the
+  intermission plane B differs only in the panel's cells, which are the expected picture, and planes A and W are the
+  control's (but for the clock and penalty text of a different call); after each return to play ClrHor's 454 rink
+  tiles are the control's.
+- SNES (both builds): IceRinkTiles and IceRinkMap re-packed and repointed (retail $A0:D3B7 / $A1:EEA6, grown to 2 MB;
+  2026 $B5:D3B7 / $B6:EEA6), the old data left, the rink 2 tiles bigger with every later set 2 later and unchanged.
+  `snes_hor_board_check.py ads` / `compare`: rinkmapbuf differs only in the panel's 70 cells (rows 93-95, columns
+  2-29) and rows 85-112 are the expected picture; the replay icon, the 405 crowd cells and rows 0-84 as the base; BG2
+  on the pause, penalty and intermission boards the base's but the panel; the replay icon and rows 0-84 as the base
+  after a replay; the crowd animates on the boards as on the base (in bursts; on 2026 neither ROM animated on the
+  penalty board within 300 frames).

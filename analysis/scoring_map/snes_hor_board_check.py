@@ -25,7 +25,9 @@ animated tiles (1-65), tiles 256 and up (the replay icon must keep those), and t
 Outputs: hor.json, screenshots of each moment, cells.png (the rink rows 85-112 x columns 0-47 over the scoreboard:
 green shown whole at every moment seen, yellow in part or at some, red never, grey not on screen).
 
-python snes_hor_board_check.py ROM OUT"""
+python snes_hor_board_check.py ROM OUT
+python snes_hor_board_check.py ads ROM OUT   (a side-on board build's moments, and the base's: ads())
+python snes_hor_board_check.py compare BASE_OUT BUILD_OUT OUT [EXPECTED.png]   (compare())"""
 import ctypes as C
 import json
 import sys
@@ -275,5 +277,197 @@ def main():
                                        "cells_shown_part", "bg1_rows", "bg1_palettes")}, sorted(set(M["vram_rows"].values()))[:3])
 
 
+def ads(rom, out):
+    """For a side-on board build: the moments saved (snes_rink_import_check.dump: video and colour memory,
+    rinkmapbuf, character bases; and a screenshot): the opening faceoff, the pause scoreboard, the instant replay (the
+    icon), play after it, a penalty's side-on view (penalties set on: retail's menu leaves them Off; up to 20,000
+    frames of play) and the intermission; the crowd's tiles 1-65 watched for 300 frames on each board. Home team 1."""
+    from snes_rink_import_check import dump
+    out.mkdir(parents=True, exist_ok=True)
+    s = Snes(rom)
+    e = s.e
+    s.to_setup()
+    n = 32 if is_sa1(rom) and Path(rom).stat().st_size > 0x180000 else 28
+    e.setw(HOMETEAM, 1)
+    e.setw(VISTEAM, 2 % n)
+    e.setw(0x34C4, 2)                                     # Penalties On, No Offside (snes_60fps_cvc.OPTPEN)
+    e.run(30)
+    if not s.into_play():
+        raise SystemExit("not into play")
+    got = {}
+
+    def snap(tag):
+        dump(s, out, tag)
+        e.screenshot(out / f"{tag}.png")
+        got[tag] = True
+
+    def board():
+        return [int(x) for x in s.words()[0x400:0x420]] == s.rmap()[ROW0 * W:ROW0 * W + 32]
+
+    def crowd_watch(tag):
+        """The crowd's tiles 1-65 for 300 frames while the board shows: which are rewritten (showcrowd)."""
+        ref = s.words()[0x1000:0x1000 + 16 * 66].reshape(-1, 16).copy()
+        changed, n = set(), 0
+        for _ in range(30):
+            e.run(10)
+            if not (e.w(SFHOR) and board()):          # only samples with the board up count
+                continue
+            n += 1
+            now = s.words()[0x1000:0x1000 + 16 * 66].reshape(-1, 16)
+            changed |= {int(t) for t in np.nonzero((now != ref).any(1))[0]}
+        got[f"{tag}_crowd_tiles_changed"] = sorted(changed)
+        got[f"{tag}_crowd_samples"] = n
+    snap("faceoff")
+    e.run(300)
+    s.press("START", 180)
+    snap("pause")
+    raw = s.raw()
+    crowd_watch("pause")
+    s.load(raw)
+    for _ in range(40):                                   # the instant replay (item 1): its icon on BG1
+        if e.w(PSITEM) == 1:
+            break
+        s.press("DOWN", 20)
+    s.press("A", 300)
+    snap("replay")
+    for k in range(10):
+        s.press("START" if k % 2 == 0 else "A", 200)
+        if e.w(SFLAGS) & 1 and not e.w(SFLAGS) & 0x0800 and board():
+            break
+    s.press("START", 120)
+    e.run(300)
+    snap("play")
+    in_play = s.raw()
+    for f in range(20000):                                # a penalty's side-on view
+        e.run(1)
+        if f % 10 == 0 and e.w(SFHOR) and not e.w(SFLAGS) & 1 and board():
+            e.run(60)
+            if not (e.w(SFHOR) and board()):
+                continue
+            snap("penalty")
+            crowd_watch("penalty")
+            got["penalty_frame"] = f
+            break
+    s.load(in_play)                                       # the end of period 1 from play: the intermission's board
+    e.setw(CLOCK, 3)
+    p0 = e.w(GSP)
+    for f in range(12000):
+        e.run(1)
+        if f % 30 == 0 and e.w(SFHOR) and board() and (e.w(CLOCK) == 0 or e.w(GSP) != p0):
+            e.run(60)
+            snap("intermission")
+            crowd_watch("intermission")
+            break
+    (out / "ads.json").write_text(json.dumps(dict(rom=Path(rom).name, got=got)))
+    print(Path(rom).name, got, flush=True)
+
+
+def compare(base, build, out, expected=None, panel=((93, 96), (2, 30))):
+    """A side-on board build's `ads` run against the base ROM's, each drawn from its own data (the two games need not
+    stay in step): rinkmapbuf cell by cell (only the panel's cells, rows 93-95 columns 2-29, may differ; the replay icon,
+    the crowd's cells, the logo and rows 0-84 drawn as the base; the palette and priority bits as the base); the sets after
+    the rink by content; at each board moment BG2's 32 x 28 (only the panel's cells may differ; BG1 noted); the panel
+    against the editor's expected picture of rows 85-112 (SNES levels); the replay icon (BG1); the crowd's tiles
+    animating on the penalty's board; the highest video memory below the sprites."""
+    from snes_rink_import_check import render, cells_differ
+    out.mkdir(parents=True, exist_ok=True)
+    res = []
+
+    def check(name, ok, detail=""):
+        res.append(("PASS" if ok else "FAIL", name, detail))
+    (r0, r1), (c0, c1) = panel
+    pan = {(r, c) for r in range(r0, r1) for c in range(c0, c1)}
+    L = lambda d, tag: np.load(d / f"dump_{tag}.npz")  # noqa: E731
+    ga, gb = (json.loads((d / "ads.json").read_text())["got"] for d in (base, build))
+    fa, fb = L(base, "faceoff"), L(build, "faceoff")
+    ca, cb = json.loads(str(fa["chars"])), json.loads(str(fb["chars"]))
+    grow = cb["centericechars"] - ca["centericechars"]
+    check(f"rink tiles {ca['centericechars']} -> {cb['centericechars']} (+{grow}); every set after it {grow} later",
+          all(cb[k] - ca[k] == grow for k in ca if k not in ("charofs", "centericechars")))
+    sa, sb = fa["vram"], fb["vram"]
+    for k in ("centericechars", "faceoffvrcset", "EASNcset", "refcharshor", "refchars", "smallfontchars", "framercset",
+              "BigFontchars", "scorechars"):
+        nxt = sorted(v for kk, v in ca.items() if kk != "charofs" and v > ca[k])
+        m = (nxt[0] if nxt else ca[k] + 16) - ca[k]
+        a, b = sa[0x1000 + 16 * ca[k]:0x1000 + 16 * (ca[k] + m)], sb[0x1000 + 16 * cb[k]:0x1000 + 16 * (cb[k] + m)]
+        check(f"set {k} ({m} tiles, from {ca[k]} now {cb[k]}) unchanged", len(a) == len(b) and bool((a == b).all()))
+    ra, rb = fa["rmap"], fb["rmap"]
+    ia = render(fa["vram"], fa["cgram"], ra, W, H, 0x1000)
+    ib = render(fb["vram"], fb["cgram"], rb, W, H, 0x1000)
+    diff = cells_differ(ia, ib, W, H, ra, rb)
+    check(f"rinkmapbuf: only the panel's cells differ ({len(diff)} cells differ)", set(diff) <= pan,
+          str(sorted(set(diff) - pan)[:8]))
+    check("rows 0-84 (the play rink) drawn as the base", not [c for c in diff if c[0] < 85])
+    check("the replay icon's cells (rows 85-92, columns 32-39) drawn as the base and on tiles 256 and up",
+          not [c for c in diff if c in set(ICON)] and min(int(rb[r * W + c]) & 0x3FF for r, c in ICON) >= 256)
+    crowd = {(i // W, i % W) for i in range(W * H) if int(ra[i]) & 0x3FF in CROWD}
+    check(f"the crowd's {len(crowd)} cells still name tiles 1-65 (the same words as the base)",
+          all(int(ra[r * W + c]) == int(rb[r * W + c]) for r, c in crowd))
+    bits = [(i // W, i % W) for i in range(W * H) if (int(ra[i]) & 0x3C00) != (int(rb[i]) & 0x3C00) and (i // W, i % W) not in pan]
+    check("palette and priority bits as the base outside the panel", not bits, str(bits[:8]))
+    if expected:
+        ex = np.asarray(Image.open(expected).convert("RGB")).astype(np.int64)
+        part = ib[8 * ROW0:8 * H, 0:8 * min(W, ex.shape[1] // 8)]
+        h_, w_ = min(part.shape[0], ex.shape[0]), min(part.shape[1], ex.shape[1])
+        a, e_ = part[:h_, :w_], ex[:h_, :w_]
+        opaque = (a >= 0).all(axis=2)
+        lv = lambda x: np.rint(x * 31 / 255)  # noqa: E731
+        bad = opaque & (np.abs(lv(a) - lv(e_)) > 1).any(axis=2)
+        pb_ = np.zeros_like(bad)
+        pb_[8 * (r0 - ROW0):8 * (r1 - ROW0), 8 * c0:8 * c1] = True
+        team = np.zeros_like(bad)                     # cells on palettes 2 / 3 (the teams', set at run time)
+        for i in range(ROW0 * W, H * W):
+            if int(rb[i]) >> 10 & 7 in (2, 3) and i % W < w_ // 8:
+                y, x = divmod(i - ROW0 * W, W)
+                team[8 * y:8 * y + 8, 8 * x:8 * x + 8] = True
+        check("rows 85-112 as the expected picture (the panel)", not (bad & pb_).any(), f"{int((bad & pb_).sum())} px in the panel")
+        check("rows 85-112 as the expected picture (outside the panel, team-coloured cells aside)", not (bad & ~pb_ & ~team).any(),
+              f"{int((bad & ~pb_ & ~team).sum())} px")
+    for tag in ("pause", "penalty", "intermission"):
+        if tag not in ga or tag not in gb:
+            check(f"{tag}: reached on both", False, f"base {tag in ga}, build {tag in gb}")
+            continue
+        da, db = L(base, tag), L(build, tag)
+        ea, eb = da["vram"][0x400:0x400 + 32 * 28], db["vram"][0x400:0x400 + 32 * 28]
+        A = render(da["vram"], da["cgram"], ea, 32, 28, 0x1000)
+        B = render(db["vram"], db["cgram"], eb, 32, 28, 0x1000)
+        d = cells_differ(A, B, 32, 28, ea, eb)
+        span = {(r - ROW0, c) for r, c in pan}
+        check(f"{tag}: BG2 (the board) as the base but the panel's cells", set(d) <= span, str(sorted(set(d) - span)[:8]))
+        check(f"{tag}: the panel's cells differ (the ad is there)", bool(set(d) & span), f"{len(set(d) & span)} cells")
+        # BG1's text: its tiles sit past the rink (BG1 tile t is BG2 tile t + 256), so they move with the rink's growth
+        sh = lambda v: (int(v) & ~0x3FF) | ((int(v) & 0x3FF) + (grow if (int(v) & 0x3FF) + 256 >= ca["centericechars"] else 0)) & 0x3FF  # noqa: E731
+        b1 = [(i // 32, i % 32) for i, (x, y) in enumerate(zip(da["bg1"], db["bg1"])) if sh(x) != int(y)]
+        res.append(("INFO", f"{tag}: BG1 (scoreboard text) cells differing, the tiles' shift allowed for (the clock, a penalty's player: the games part)",
+                    f"{len(b1)} {b1[:6]}"))
+        Image.fromarray(np.clip(np.concatenate([A, B], axis=1), 0, 255).astype(np.uint8)).save(out / f"{tag}_board_base_build.png")
+        sa_, sb_ = (np.asarray(Image.open(d_ / f"{tag}.png").convert("RGB")) for d_ in (base, build))
+        Image.fromarray(np.concatenate([sa_, sb_], 1)).save(out / f"{tag}_screens_base_build.png")
+    da, db = L(base, "replay"), L(build, "replay")
+    idx = [y * 32 + x for y in range(2, 10) for x in range(2, 10)]
+    A = render(da["vram"], da["cgram"], da["vram"][0:0x400][idx], 8, 8, 0x2000)
+    B = render(db["vram"], db["cgram"], db["vram"][0:0x400][idx], 8, 8, 0x2000)
+    d = cells_differ(A, B, 8, 8)
+    check("the replay icon (BG1, 8 x 8) drawn as the base", not d, str(d[:8]))
+    pa_, pb2 = L(base, "play"), L(build, "play")
+    pr_a = render(pa_["vram"], pa_["cgram"], pa_["rmap"], W, 85, 0x1000)
+    pr_b = render(pb2["vram"], pb2["cgram"], pb2["rmap"], W, 85, 0x1000)
+    dp = cells_differ(pr_a, pr_b, W, 85, pa_["rmap"], pb2["rmap"])
+    check("in play after the replay: rows 0-84 drawn as the base", not dp, str(dp[:8]))
+    for tag in ("pause", "penalty", "intermission"):
+        na, nb = (len(g.get(f"{tag}_crowd_tiles_changed") or []) for g in (ga, gb))
+        sa2, sb2 = (g.get(f"{tag}_crowd_samples") for g in (ga, gb))
+        check(f"{tag}: the crowd's tiles 1-65 animate on the board as on the base (base {na} tiles rewritten in {sa2} samples "
+              f"with the board up, build {nb} in {sb2}; bursts: a fail only if the base animates and the build not)", nb > 0 or na == 0)
+    lines = [f"{a}  {b}" + (f"  [{c}]" if c and a != "PASS" else "") for a, b, c in res]
+    (out / "compare.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1] == "ads":
+        ads(sys.argv[2], Path(sys.argv[3]))
+    elif sys.argv[1] == "compare":
+        compare(Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4]), sys.argv[5] if len(sys.argv) > 5 else None)
+    else:
+        main()

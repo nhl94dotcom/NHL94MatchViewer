@@ -24,7 +24,9 @@ otherwise (the instant replay's exit calls SetHor too, back to the same pause sc
 NHL '95 has no IceRinkHor (sfhor only picks the side-on referee's tiles): its static search finds nothing and its pause
 screen is shot for the record.
 
-python gen_hor_board_check.py ROM OUT [94|95]"""
+python gen_hor_board_check.py ROM OUT [94|95]
+python gen_hor_board_check.py ads ROM OUT   (a picture build's moments, and a control's: ads())
+python gen_hor_board_check.py compare CONTROL_OUT BUILD_OUT OUT [EXPECTED.png]   (compare())"""
 import json
 import struct
 import sys
@@ -345,5 +347,172 @@ def main():
     (out / "hor_board.json").write_text(json.dumps(R, indent=1, default=list))
 
 
+def ads(rom, out):
+    """For a side-on picture build (NHL '94): the same moments on a ROM, each saved (screenshot; video memory, colour
+    memory, registers): the pause menu and play 300 frames after it (ClrHor's reload), a penalty's side-on view (called
+    as main does) and play after it, the intermission (the clock set to 0:03) and period 2. A build is compared with a
+    control (the base with the build's changes outside the picture: its checksum call NOPed), so both play alike."""
+    out.mkdir(parents=True, exist_ok=True)
+    e = Emu(rom)
+    G.to_setup(e, out)
+    e.setw(OPTPEN, 0)
+    G.into_play(e)
+    e.run(120)
+    got = []
+
+    def snap(tag):
+        st = bytes(e.serialize())
+        np.savez_compressed(out / f"dump_{tag}.npz", vram=np.frombuffer(st[VRAM_AT:VRAM_AT + 0x10000], dtype="<u2"),
+                            cram=np.frombuffer(st[VRAM_AT + 0x10000:VRAM_AT + 0x10080], dtype="<u2"),
+                            reg=np.frombuffer(st[VRAM_AT + 0x10100:VRAM_AT + 0x10120], dtype=np.uint8),
+                            sfhor=e.b(SFLAGS) >> 7 & 1, rinkvrcset=e.w(CHAIN["rinkvrcset"]))
+        e.screenshot(out / f"{tag}.png")
+        got.append(tag)
+
+    base = e.serialize()
+    press(e, "START", 150)
+    snap("pause_menu")
+    press(e, "START", 60)
+    e.run(300)
+    snap("play_after_pause")
+    e.unserialize(base)                                      # a penalty called, as main does
+    for _ in range(40):
+        e.run(30)
+        k = e.w(0xB7AA)
+        if 0 <= k < 12 and not e.b(SFLAGS) & 0x80:
+            e.setw(0xC3A4, 0x1E << 8 | k)
+            e.setw(0xC3A6, 0)
+            e.setw(0xC2EA, e.w(0xC2EA) & ~0x0D00)
+            for f in range(1500):
+                e.run(1)
+                if e.b(SFLAGS) & 0x80:
+                    e.run(90)
+                    snap("penalty_side_on")
+                    for _ in range(3000):
+                        e.run(1)
+                        if not e.b(SFLAGS) & 0x80:
+                            break
+                    e.run(300)
+                    snap("play_after_penalty")
+                    break
+            break
+    e.unserialize(base)                                      # the intermission, then period 2
+    e.setw(CLOCK, 3)
+    g0, inter, c_last = e.w(GSP), False, None
+    for f in range(15000):
+        hor = e.b(SFLAGS) >> 7 & 1
+        e.run(1, hold=["START"] if inter and hor and f % 200 == 0 else [])
+        if not inter and e.b(SFLAGS) & 0x80 and (e.w(CLOCK) == 0 or e.w(GSP) != g0):
+            e.run(90)
+            snap("intermission")
+            inter = True
+        if inter and e.w(GSP) != g0 and not e.b(SFLAGS) & 0x80 and f % 60 == 0:
+            c = e.w(CLOCK)
+            if c_last is not None and 0 < c < c_last:          # period 2's clock running
+                e.run(300)
+                snap("period2")
+                break
+            c_last = c
+    (out / "ads.json").write_text(json.dumps(dict(rom=Path(rom).name, moments=got)))
+    print(Path(rom).name, got, flush=True)
+
+
+def layers(dmp):
+    """Planes B, A and the window (32 x 28 cells from the top left, no scroll: the side-on screen) drawn from a dump's
+    video and colour memory, colour 0 left black; RGB in steps of 36 (a Genesis level)."""
+    vr, cram, reg = dmp["vram"], dmp["cram"], dmp["reg"]
+    pw = {0: 32, 1: 64, 3: 128}.get(int(reg[16]) & 3, 32)
+    rgb = np.array([[(int(c) & 7) * 36, (int(c) >> 3 & 7) * 36, (int(c) >> 6 & 7) * 36] for c in cram])
+    out = {}
+    for name, addr, w in (("B", (int(reg[4]) & 7) << 13, pw), ("A", (int(reg[2]) & 0x38) << 10, pw),
+                          ("W", (int(reg[3]) & 0x3E) << 10, 32)):
+        img = np.zeros((224, 256, 3), int)
+        for y in range(28):
+            for x in range(32):
+                c = int(vr[(addr >> 1) + y * w + x])
+                t, line, hf, vf = c & 0x7FF, c >> 13 & 3, c >> 11 & 1, c >> 12 & 1
+                words = vr[(32 * t >> 1):(32 * t >> 1) + 16].astype(int)
+                px = np.array([[w_ >> (12 - 4 * k) & 15 for w_ in words[2 * r:2 * r + 2] for k in range(4)] for r in range(8)])
+                if hf:
+                    px = px[:, ::-1]
+                if vf:
+                    px = px[::-1]
+                col = rgb[16 * line + px]
+                col[px == 0] = 0
+                img[8 * y:8 * y + 8, 8 * x:8 * x + 8] = col
+        out[name] = img
+    return out
+
+
+def compare(base, build, out, panel=(64, 144, 192, 168), expected=None):
+    """A side-on picture build's `ads` run against the control's: each side-on moment's screen pixel for pixel outside
+    the panel (x0, y0, x1, y1), the panel against the editor's expected picture (Genesis levels: 255 / 7 a step there,
+    the core's 252 / 7), and in play after each (ClrHor's reload) the vertical rink's tiles (0 to the rink's count) and
+    the screen as the control's."""
+    out.mkdir(parents=True, exist_ok=True)
+    res = []
+
+    def check(name, ok, detail=""):
+        res.append(("PASS" if ok else "FAIL", name, detail))
+    x0, y0, x1, y1 = panel
+    ex = np.asarray(Image.open(expected).convert("RGB")).astype(int) if expected else None
+    tags = json.loads((base / "ads.json").read_text())["moments"]
+    tb = json.loads((build / "ads.json").read_text())["moments"]
+    check("the same moments reached", tags == tb, f"{tags} / {tb}")
+    rink_tiles = 454                       # ClrHor's vertical rink (Rinktiles $56062, count $1C6)
+    for tag in tags:
+        if tag not in tb:
+            continue
+        a = np.asarray(Image.open(base / f"{tag}.png").convert("RGB")).astype(int)
+        b = np.asarray(Image.open(build / f"{tag}.png").convert("RGB")).astype(int)
+        d = (a != b).any(2)
+        da, db = np.load(base / f"dump_{tag}.npz"), np.load(build / f"dump_{tag}.npz")
+        if int(da["sfhor"]):
+            # the picture's plane (B) and the text planes (A, window) drawn from each run's own video and colour
+            # memory, sprites left out (the two games part a little: the build unpacks fewer tiles); cell by cell
+            pa, pb = layers(da), layers(db)
+            for name in ("B", "A", "W"):
+                cells = sorted({(y // 8, x // 8) for y, x in zip(*np.nonzero((pa[name] != pb[name]).any(2)))})
+                inside = [c for c in cells if y0 // 8 <= c[0] < y1 // 8 and x0 // 8 <= c[1] < x1 // 8]
+                if name == "B":
+                    # cells where both runs name tiles past the vertical rink's room (USBoard's text over the picture:
+                    # the clock, a penalty's number) are the game's state, not the picture
+                    regB = lambda dd: ((int(dd["reg"][4]) & 7) << 13 >> 1, {0: 32, 1: 64, 3: 128}.get(int(dd["reg"][16]) & 3, 32))  # noqa: E731
+                    (aa, wa), (ab, wb) = regB(da), regB(db)
+                    text = [c for c in cells if (int(da["vram"][aa + c[0] * wa + c[1]]) & 0x7FF) >= rink_tiles
+                            and (int(db["vram"][ab + c[0] * wb + c[1]]) & 0x7FF) >= rink_tiles]
+                    pic = [c for c in cells if c not in inside and c not in text]
+                    check(f"{tag}: plane B (the picture) as the control's outside the panel's cells", not pic, str(pic[:8]))
+                    if text:
+                        res.append(("INFO", f"{tag}: plane B text cells differing (USBoard's clock / penalty lines: the games part a little)", str(text[:8])))
+                    check(f"{tag}: the panel's cells differ (the ad is there)", bool(inside), f"{len(inside)} cells")
+                else:
+                    check(f"{tag}: plane {name} (text, blocks, boxes) as the control's", not cells, str(cells[:8]))
+            vis = d.copy()
+            vis[y0:y1, x0:x1] = False
+            res.append(("INFO", f"{tag}: screenshot pixels differing outside the panel (sprites: the games part a little)",
+                        f"{int(vis.sum())} px"))
+            if ex is not None:
+                same = (np.rint(ex[y0:y1, x0:x1] * 7 / 255) == np.rint(pb["B"][y0:y1, x0:x1] / 36)).all(2)
+                check(f"{tag}: plane B's panel is the expected picture (Genesis levels)", bool(same.all()), f"{100 * same.mean():.2f}% of pixels")
+                shown = (np.rint(ex[y0:y1, x0:x1] * 7 / 255) == np.rint(b[y0:y1, x0:x1] * 7 / 252)).all(2)
+                res.append(("INFO", f"{tag}: on screen, the panel's pixels as expected (sprites may cover some)", f"{100 * shown.mean():.2f}%"))
+        else:
+            n = 16 * rink_tiles
+            same = bool((da["vram"][:n] == db["vram"][:n]).all())
+            check(f"{tag}: the vertical rink's {rink_tiles} tiles as the control's (ClrHor's reload)", same,
+                  f"{int((da['vram'][:n] != db['vram'][:n]).reshape(-1, 16).any(1).sum())} tiles differ")
+            res.append(("INFO", f"{tag}: screenshot pixels differing (the games part a little)", f"{int(d.sum())} px"))
+        Image.fromarray(np.concatenate([a, b], 1).astype(np.uint8)).save(out / f"{tag}_control_build.png")
+    lines = [f"{a}  {b}" + (f"  [{c}]" if c and a != "PASS" else "") for a, b, c in res]
+    (out / "compare.txt").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1] == "ads":
+        ads(sys.argv[2], Path(sys.argv[3]))
+    elif sys.argv[1] == "compare":
+        compare(Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4]), expected=sys.argv[5] if len(sys.argv) > 5 else None)
+    else:
+        main()
