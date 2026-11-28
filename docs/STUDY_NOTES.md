@@ -9649,3 +9649,30 @@ rink colour set to magenta in a copy of the state, the changed pixels split by t
     whose four `move.w (0,a0,d0.w),dest` (31F0 0000) lack their destination word: the next 0C70 is taken as it and
     either path reaches $FFFF at $1A72F2, a line-F exception through a $FFFFFFFF vector. With $7D6F0 put back the
     ROM plays normally.
+
+## NOSE4Web's SNES rink import and NHL '95 crowd colours v2, played (2026-11-27)
+
+- **SNES rink import** (NHL94_rink_small.smc F58A49A2, NHL94_rink_heavy.smc C7CFF63D, nhl94_2026_rink_small.sfc
+  8863CF91, nhl94_2026_rink_heavy.sfc 9E8F5407; `snes_rink_import_check.py`, now with `logos`, `compare`, `goal` and
+  `compare-goal`). IceRinkTiles and IceRinkMap re-packed into free space and the three load sequences repointed
+  (retail $FB6F7, $FE7AD, $DC1D5 into banks $A0-$A1, the ROM grown to 2 MB, header size byte $0A to $0B; 2026
+  $FB797, $FE8C1, $DC15B into $B5-$B6); the old data left in place. Each ROM's rink drawn from its own rinkmapbuf,
+  tiles and colour memory and compared cell by cell: the rink grows by 1 or 68 tiles and every set after it starts
+  that much later with the same content; only the cells the expected pictures change differ, and each matches its
+  picture; palette and priority bits as the base (flip bits differ only in edited cells, squares reused flipped);
+  rows 85-112, the pause scoreboard's BG2 and the replay icon as the base; the logo's tiles and cells for four home
+  teams a ROM (2026's 6 x 6 among them); 53 crowd tiles animating as in the base. With 68 extra tiles VRAM peaks at
+  $5DDF (retail) and $5E4F (2026) at pause item 4: 34 and 27 tiles below the sprites (at the 95-tile limit 2026 would
+  end at $5FFF exactly). A forced home goal on both heavy builds: no new tiles for the goal display, the faceoff after
+  as the base but the edit, VRAM $5B9F / $5CCF through it.
+- **NHL '95 crowd colours v2** (NHL_95_crowd_v2.bin 9BD314A2; `crowd_colours_check.py`, Genesis path). The hook is
+  well formed: the rink palette copy as before, then `move.w ($BF54).w,d0; lsl.w #3,d0; lea $1A731E(pc),a0` and four
+  14-byte blocks writing palfadenew line 1 colours 14, 9, 8 and 6 from 28 teams x 4 words; only the checksum word and
+  call ($691) changed besides. With home teams 1, 4, 10, 14 and 21, palfadenew holds the table at every rink moment
+  (play, replay and reverse angle, stats, goal celebration, period end, period 2, game end) and nothing else differs
+  from the control; the pause and three-stars screens load their own palettes, and the colours come back after each.
+  Redrawn with the 4 colours put back, the changed pixels are the stand art (plane B, 1,429-4,576 px a team) and the
+  crowd sprites (line 1, tiles 495-635, 101-421 px); none on plane A or the window. The rink-colour study's "other"
+  users of colours 8, 9, 10, 14 in the goal celebration and 6 at the game's end are these crowd sprites, now in the
+  team's colours. The hook's extra cycles change the game's course against a control, so screens aren't compared
+  pixel for pixel.

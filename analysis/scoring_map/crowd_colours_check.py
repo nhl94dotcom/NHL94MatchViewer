@@ -18,8 +18,16 @@ Run time, each (ROM, home team) in its own process (one core a process):
   a crowd tile, 1-65 (showcrowd's frames), is put on an all-zero tile). At one play moment the colour poke: each of
   the 8 entries the hook writes set to magenta in a copy of the state, the frame drawn: the pixels that change, split
   by the crowd's pixels, the rest of BG2 (the ice) and everything else (BG1, sprites).
-- Genesis: Game Setup with the home team set, START until the clock runs: whether play is reached (the clock
-  counting down, HomeTeam the team), palfadenew and colour memory lines 0-3.
+- Genesis (Gen95, run_gen95; the base replaced by a control: the base with the build's checksum word and call, so
+  both power on alike; they still part in play, the hook's extra cycles moving the game's course, so the screens
+  aren't compared pixel for pixel: the hook's pixels come from the build's own frames): Game Setup with the home team set, START until the clock runs; moments: play, the
+  pause screen, the instant replay and its reverse angle, back, the stats tab and back, a home goal's celebration,
+  period 1's end and period 2, the end of the game; at each palfadenew and colour memory lines 0-3 and a screenshot,
+  and on the build the pixels the hook changes (the frame drawn again with the 4 hooked colour memory entries put back
+  to the base's rink palette), split by layer and tile (plane B's rink tiles or crowd frames, else plane A, the
+  window or sprites; *_hook.png marks them; only where colour memory holds the table's words, i.e. the rink palette is
+  on: the pause and three-stars screens load their own). Compared with the control: palfadenew line 1 colours 14, 9,
+  8, 6 as the table's 4 words for the home team (the table found from the hook's lea) and nothing else differing.
 Then each build against its base, team by team: the colour entries that differ at each moment (expected: only the 8,
 holding the table's values or the base's where $FFFF), the screenshots' differing pixels inside and outside the
 crowd's pixels, and whether the two games ran alike (the moments' flags and clock).
@@ -90,6 +98,11 @@ def static(base, build):
                     break
                 pc += ins.size
             R["hook"] = lines
+            lea = next((pc for pc in range(tgt, tgt + 0x60, 2) if b[pc:pc + 2] == bytes([0x41, 0xFA])), None)    # lea table(pc),a0
+            if lea is not None:
+                tbl = lea + 2 + struct.unpack_from(">h", b, lea + 2)[0]
+                R["table_at"] = f"${tbl:X}"
+                R["table"] = [list(struct.unpack_from(">4H", b, tbl + 8 * t)) for t in range(28)]
             R["vectors"] = {"line-F $2C": f"${struct.unpack_from('>I', b, 0x2C)[0]:08X}", "illegal $10": f"${struct.unpack_from('>I', b, 0x10)[0]:08X}"}
     return R
 
@@ -265,28 +278,211 @@ def run_snes(rom, out, team, restore=None):
 
 
 # ------------------------------------------------------------------ Genesis (NHL '95)
-def run_gen95(rom, out, team):
-    from emu import Emu
+G95_PAL, G95_HOME, G95_GSP, G95_CLOCK, G95_SFLAGS, G95_SFLAGS2, G95_OPTPEN = 0xB942, 0xBF54, 0xC020, 0xC022, 0xBEF2, 0xBEF4, 0xCC5A
+G95_RINK = 0xC4A7C                       # Rinktilelist: its first long is the offset of the rink palette (lines 0-1)
+G95_HOOKED = (14, 9, 8, 6)               # line 1 colours the v2 hook writes, in its table's word order
+
+
+def g95_rink_line1(data):
+    """The rink palette's line 1 (16 words, $0BGR) from a ROM."""
+    pal = G95_RINK + struct.unpack_from(">I", data, G95_RINK)[0]
+    return [struct.unpack_from(">H", data, pal + 32 + 2 * c)[0] for c in range(16)]
+
+
+def to9(w):
+    """A $0BGR colour word as Genesis Plus GX's 9-bit colour memory value (BBBGGGRRR)."""
+    return (w >> 1 & 7) | (w >> 5 & 7) << 3 | (w >> 9 & 7) << 6
+
+
+class Gen95:
+    """One NHL '95 game, home team `team`: moments, each with the palettes, a screenshot and, with `restore` (the base's
+    line 1 values of the hooked colours), the pixels the hook changes: the frame drawn again with those 4 colour memory
+    entries put back, split by layer (plane B's pixels: those that change with every plane B cell on a blank tile; on
+    plane B, by the cell's tile: the rink's (below EASNcset) or the crowd's animation frames (crowd base $FFAC2C up to the
+    sprites' $FFAC36), else plane A, the window or sprites; both frames of that test with the backdrop magenta, since a
+    plane B pixel may be the backdrop's own black)."""
+
+    def __init__(self, rom, out, team, restore=None):
+        from emu import Emu
+        self.e, self.out, self.team, self.restore = Emu(rom), out, team, restore
+        self.moments = []
+
+    def flags(self):
+        e = self.e
+        return dict(gsp=e.w(G95_GSP), clock=e.w(G95_CLOCK), paused=bool(e.w(G95_SFLAGS) & 0x100),
+                    hor=bool(e.w(G95_SFLAGS) & 0x8000), replay=bool(e.w(G95_SFLAGS2) & 0x0800), home=e.w(G95_HOME))
+
+    def press(self, b, after):
+        self.e.run(6, hold=[b])
+        self.e.run(after)
+
+    def frame(self, st):
+        self.e.unserialize(st)
+        p = self.out / "_shot.png"
+        self.e.screenshot(p)
+        return np.asarray(Image.open(p).convert("RGB")).astype(int)
+
+    def moment(self, tag):
+        from gen_score_logo_check import VRAM_AT
+        from gen_title_screen_check import gen_word, state, tables
+        e = self.e
+        n = len(self.moments)
+        st = bytes(e.serialize())
+        vr, cram, reg, vs = state(e)
+        m = dict(n=n, tag=tag, **self.flags(), palfadenew=[f"{e.w(G95_PAL + 2 * i):03X}" for i in range(64)],
+                 cgram=[f"{gen_word(c):03X}" for c in cram[:64]])
+        shot = self.frame(st)
+        Image.fromarray(shot.astype(np.uint8)).save(self.out / f"{n:02d}_{tag.replace(' ', '_')}.png")
+        if self.restore:
+            T = tables(reg)
+            s2 = bytearray(st)
+            for c, w in self.restore.items():
+                o = VRAM_AT + 0x10000 + 2 * (16 + c)
+                s2[o:o + 2] = to9(w).to_bytes(2, "little")
+            put = self.frame(bytes(s2))
+            changed = (put != shot).any(axis=2)
+            # plane B's pixels: the frame with every plane B cell on a blank tile against the frame as it is, both with
+            # the backdrop (line 0 colour 0) magenta, so a plane B pixel of the backdrop's own colour still counts
+            zero = next(t for t in range(0x7FF) if not vr[16 * t:16 * t + 16].any())
+            bg = VRAM_AT + 0x10000 + 2 * (reg[7] & 0x3F)
+            s4 = bytearray(st)
+            s4[bg:bg + 2] = (0x1C7).to_bytes(2, "little")
+            s3 = bytearray(s4)
+            for k in range(T["pw"] * T["ph"]):
+                o = VRAM_AT + T["B"] + 2 * k
+                s3[o:o + 2] = zero.to_bytes(2, "little")
+            f4 = self.frame(bytes(s4))
+            bpx = (self.frame(bytes(s3)) != f4).any(axis=2)
+            s5 = bytearray(s4)                          # plane A and the window likewise
+            for base_, n_ in ((T["A"], T["pw"] * T["ph"]), (T["W"], T["wwidth"] * 32)):
+                for k in range(n_):
+                    o = VRAM_AT + ((base_ + 2 * k) & 0xFFFF)
+                    s5[o:o + 2] = zero.to_bytes(2, "little")
+            apx = (self.frame(bytes(s5)) != f4).any(axis=2)
+            rink_end, crowd0, spr0 = e.w(0xAC32), e.w(0xAC2C), e.w(0xAC36)
+            kindmap = np.zeros(changed.shape, dtype=np.int8)        # plane B cell's tile: 1 rink, 2 crowd frames, 3 other
+            mode = T["mode3"] & 3
+            for y in range(changed.shape[0]):
+                hl = 0 if mode == 0 else (y & ~7 if mode == 2 else y)
+                hs = int(vr[(T["HS"] >> 1) + 2 * hl + 1]) & 0x3FF
+                row = ((y + (vs[1] & 0x3FF)) // 8) % T["ph"]
+                for x in range(changed.shape[1]):
+                    t = int(vr[(T["B"] >> 1) + row * T["pw"] + ((x - hs) // 8) % T["pw"]]) & 0x7FF
+                    kindmap[y, x] = 1 if t < rink_end else 2 if crowd0 <= t < spr0 else 3
+            box = lambda msk: None if not msk.any() else [int(v) for v in (np.nonzero(msk)[1].min(), np.nonzero(msk)[0].min(), np.nonzero(msk)[1].max(), np.nonzero(msk)[0].max())]  # noqa: E731
+            groups = {"plane B, rink tiles": changed & bpx & (kindmap == 1), "plane B, crowd frames": changed & bpx & (kindmap == 2),
+                      "plane B, other tiles": changed & bpx & (kindmap == 3), "plane A or window": changed & ~bpx & apx,
+                      "sprites (neither plane)": changed & ~bpx & ~apx}
+            # the sprites on line 1 on screen, by the tile set their tiles are in (the RAM tile bases)
+            bases = {"crowd": crowd0, "sprites (players ...)": spr0, "rink": e.w(0xAC2A), "EA logo": rink_end, "framer": e.w(0xAC30),
+                     "faceoff close-up": e.w(0xAC2E), "energy bar": e.w(0xAC28), "ExtraChars": e.w(0xAC38)}
+            on1, link, k, rects = {}, 0, 0, []
+            while k < 80:
+                o = (T["SAT"] >> 1) + 4 * link
+                y, sl, at, x = int(vr[o]) & 0x3FF, int(vr[o + 1]), int(vr[o + 2]), int(vr[o + 3]) & 0x1FF
+                if at >> 13 & 3 == 1 and 128 - 32 < y < 128 + 224 and 128 - 32 < x < 128 + 256:
+                    t = at & 0x7FF
+                    kd = max((b_ for b_ in bases.items() if b_[1] <= t), key=lambda b_: b_[1], default=("below every base", 0))[0]
+                    on1[kd] = on1.get(kd, 0) + 1
+                    wd, ht = (sl >> 10 & 3) + 1, (sl >> 8 & 3) + 1
+                    rects.append((x - 128, y - 128, 8 * wd, 8 * ht, kd, t))
+                link = sl & 0x7F
+                k += 1
+                if not link:
+                    break
+            m["line1_sprites_by_set"] = on1
+            sp = changed & ~bpx & ~apx              # the hooked sprite pixels, by the line-1 sprite over each (the first)
+            by = {}
+            for yy, xx in zip(*np.nonzero(sp)):
+                hit = next((r_ for r_ in rects if r_[0] <= xx < r_[0] + r_[2] and r_[1] <= yy < r_[1] + r_[3]), None)
+                kd = f"{hit[4]} (tile {hit[5]})" if hit else "no line-1 sprite there"
+                by[kd] = by.get(kd, 0) + 1
+            m["hooked_sprite_px_by_sprite"] = by
+            m["hook_px"] = {k: int(v.sum()) for k, v in groups.items()}
+            m["hook_box"] = {k: box(v) for k, v in groups.items()}
+            mark = shot.copy()
+            mark[changed] = [255, 0, 255]
+            Image.fromarray(mark.astype(np.uint8)).save(self.out / f"{n:02d}_{tag.replace(' ', '_')}_hook.png")
+        e.unserialize(st)
+        self.moments.append(m)
+
+
+def run_gen95(rom, out, team, restore=None):
+    """Game Setup (penalties on), into play, then: play; the pause screen, the instant replay and back; the stats tab
+    and back; period 1's end, the intermission and period 2 (the other ends); a home goal's celebration; the end of
+    the game (a lead, the clock run out in the 3rd) and its screens. No pad input in live play (a press in a stoppage
+    can end the game here, gen95_rink_colours_check)."""
+    import gen95_shootout_check as S
     from gen95_fight_check import to_setup, ROW
-    from gen_title_screen_check import gen_word, state
-    e = Emu(rom)
+    g = Gen95(rom, out, team, restore)
+    e = g.e
     to_setup(e)
     e.setb(ROW + 1, team)
     e.setb(ROW + 2, (team + 1) % 26)
+    e.setw(G95_OPTPEN, 1)
     e.run(30)
-    last, f = None, 0
+    last = None
     for f in range(60 * 120):
         e.run(1, hold=["START"] if f % 240 == 0 else [])
-        c = e.w(0xC022)
-        if e.w(0xC020) == 0 and last is not None and 0 < c < last:
+        c = e.w(G95_CLOCK)
+        if e.w(G95_GSP) == 0 and last is not None and 0 < c < last:
             break
         last = c
-    reached = e.w(0xC020) == 0 and last is not None and 0 < e.w(0xC022) <= 600
+    S0 = e.serialize()
+    for k in range(10):                      # play: the stands show only at the screen's edges, as the camera goes
+        e.run(300)
+        g.moment(f"play {k}")
+    g.press("START", 150)
+    g.moment("pause")
+    g.press("DOWN", 30)
+    g.press("C", 300)
+    g.moment("replay")
+    g.press("START", 60)
+    g.press("C", 150)
+    g.moment("replay reverse")
+    for b, a in (("START", 90), ("UP", 30), ("C", 300)):
+        g.press(b, a)
+    g.moment("after the replay")
+    g.press("START", 150)
+    g.press("RIGHT", 150)
+    g.moment("stats tab")
+    g.press("LEFT", 60)
+    g.press("C", 300)
+    g.moment("after the stats")
+    e.unserialize(S0)
+    e.run(120)
+    S.put_goal(e, True)
+    for k in range(12):
+        e.run(30)
+        g.moment(f"goal celebration {k}")
+    e.unserialize(S0)
     e.run(300)
-    _, cram, _, _ = state(e)
-    e.screenshot(out / "00_play.png")
-    return [dict(n=0, tag="play", frame=f, reached_play=bool(reached), home=e.w(0xBF54), clock=e.w(0xC022),
-                 palfadenew=[f"{e.w(0xB942 + 2 * i):03X}" for i in range(64)], cgram=[f"{gen_word(c):03X}" for c in cram[:64]])]
+    e.setw(G95_CLOCK, 2)
+    shots = 0
+    for f in range(60 * 30):                  # the intermission; the next period opens on the menu (C: Resume Game)
+        e.run(1, hold=["C"] if e.w(G95_GSP) == 1 and e.w(G95_CLOCK) == 600 and f % 120 < 4 else [])
+        if f % 300 == 150 and shots < 4:
+            g.moment(f"period end {shots}")
+            shots += 1
+        if e.w(G95_GSP) == 1 and e.w(G95_CLOCK) < 597 and not e.w(G95_SFLAGS) & 0x100:
+            break
+    for f in range(60 * 60):                  # on through the intermission's screens until period 2's clock runs
+        if e.w(G95_GSP) == 1 and 0 < e.w(G95_CLOCK) < 590 and not e.w(G95_SFLAGS) & 0x100:
+            break
+        e.run(1, hold=["C"] if f % 120 < 4 else [])
+    e.run(300)
+    g.moment("period 2")
+    S1 = e.serialize()
+    e.unserialize(S1)
+    S.put_goal(e, True)                       # a lead, so the game ends rather than going to overtime
+    e.run(600)
+    e.setw(G95_GSP, 2)
+    e.setw(G95_CLOCK, 2)
+    for f in range(60 * 40):                  # the end of the game: the three stars (C through its screens)
+        e.run(1, hold=["C"] if f > 600 and f % 240 < 4 else [])
+        if f % 480 == 240:
+            g.moment(f"game end {f // 480}")
+    return g.moments
 
 
 def compare(base_dir, build_dir, st):
@@ -323,7 +519,22 @@ def compare(base_dir, build_dir, st):
             if "poke" in b:
                 r["poke"] = b["poke"]
         else:
-            r.update(reached_play=b.get("reached_play"), base_reached_play=a.get("reached_play"), home=b.get("home"))
+            # NHL '95: palfadenew line 1 colours 14, 9, 8, 6 hold the table's words (team * 8); nothing else differs
+            # from the control; colour memory likewise while the rink palette is on; the screens' differing pixels
+            ham = [16 + c for c in G95_HOOKED]
+            r["palfadenew_differs_outside_the_4"] = [i for i in range(64) if a["palfadenew"][i] != b["palfadenew"][i] and i not in ham]
+            if "table" in st and b.get("home") is not None and b["home"] < len(st["table"]):
+                tw = st["table"][b["home"]]
+                r["not_as_table"] = {f"palfadenew 1,{i - 16}": [b["palfadenew"][i], f"{w:03X}"] for i, w in zip(ham, tw)
+                                     if w != 0xFFFF and int(b["palfadenew"][i], 16) != w}
+                r["cram_as_table"] = all(int(b["cgram"][i], 16) == w for i, w in zip(ham, tw) if w != 0xFFFF)
+            if r["same_moment"]:
+                r["cram_differs_outside_the_4"] = [i for i in range(64) if a["cgram"][i] != b["cgram"][i] and i not in ham]
+            if r.get("cram_as_table"):
+                for k in ("hook_px", "hook_box", "line1_sprites_by_set", "hooked_sprite_px_by_sprite"):
+                    r[k] = b.get(k)
+            else:
+                r["hook_px"] = "the rink palette isn't on (this screen loads its own)"
         rows.append(r)
     return rows
 
@@ -333,7 +544,7 @@ def main():
         rom, out, tag, team = sys.argv[2], Path(sys.argv[3]), sys.argv[4], int(sys.argv[5])
         out.mkdir(parents=True, exist_ok=True)
         restore = {int(k): v for k, v in json.loads(sys.argv[6]).items()} if len(sys.argv) > 6 else None
-        M = run_snes(rom, out, team, restore) if rom.lower().endswith((".smc", ".sfc")) else run_gen95(rom, out, team)
+        M = run_snes(rom, out, team, restore) if rom.lower().endswith((".smc", ".sfc")) else run_gen95(rom, out, team, restore)
         (out / "moments.json").write_text(json.dumps(M))
         return
     base, build, out = sys.argv[1], sys.argv[2], Path(sys.argv[3])
@@ -341,6 +552,16 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     st = static(base, build)
     (out / "static.json").write_text(json.dumps(st, indent=1))
+    if not base.lower().endswith((".smc", ".sfc")):
+        # NHL '95: the base runs its checksum at power-on and the build doesn't (its call NOPed), so the two would play
+        # different frames: the control is the base with the build's changes below $1000 (the checksum word and call)
+        a, b = bytearray(Path(base).read_bytes()), Path(build).read_bytes()
+        for x, n in runs(a, b):
+            if x < 0x1000:
+                a[x:x + n] = b[x:x + n]
+        base = str(out / "control.bin")
+        Path(base).write_bytes(a)
+        st["control"] = "the base with the build's checksum word and call"
     res = {}
     for team in teams:
         restore = []
@@ -349,6 +570,9 @@ def main():
             a = Path(base).read_bytes()
             pal = 0xD50B6
             restore = [json.dumps({str(r * 16 + c): struct.unpack_from("<H", a, pal + 2 * (16 + c))[0] for r in (1, 9) for c in range(8, 12)})]
+        else:
+            line1 = g95_rink_line1(Path(base).read_bytes())
+            restore = [json.dumps({str(c): line1[c] for c in G95_HOOKED})]
         procs = [subprocess.Popen([sys.executable, __file__, "run", rom, str(out / f"{tag}_{team}"), tag, str(team)] + (restore if tag == "build" else []))
                  for tag, rom in (("base", base), ("build", build))]
         for p in procs:
