@@ -9781,3 +9781,32 @@ intermission and a penalty's side-on view.
   plus the 30 bars exactly (0 pixels off), 30 cells of map row 6, rink tiles 613 -> 622, every set after 9 later,
   video memory's top $5A6F (89 tiles spare), logos for home teams 1, 11, 22 as the base. In play the bars show along
   the top boards in the ice colour (colour 0: black in the editor's drawing, the ice in the game).
+
+## NOSE4Web's goal sounds by home team, played (2026-11-28; nhl94_goal_sounds.bin 76EE874B, nhl95_goal_sounds.bin AFB0F984)
+
+checkgoal's siren (`move.w #SFXsiren,-(sp)` + the sfx call, NHL 94 $1484A, NHL '95 $8C3B0) becomes a jsr to code at
+$FFAC0 / $1A72C6 that takes the scorer as checkgoal does (Ypos(a3) not negative XOR gmdir: home, matching
+collide94.asm's `.9` / `.addg`) and plays a word from a table by HomeTeam, or the visitors' word; sfx skips a negative
+one (both games test the sign before playing). Table on both: Anaheim the horn ($4), Boston the cheer ($B), Buffalo
+nothing, everyone else the siren; visitors the cheer. `gen_goal_sounds_check.py` (the control: the build with the
+hook's original bytes back, so the same frames; each ROM in its own process, since two Emu in one process share one
+core):
+- **Both periods, both nets, home teams 0-3** (32 goals, both games; goals forced with the goalies moved aside): every
+  goal credited to the same team as the control and the sound wanted. Sounds read from the driver: NHL 94's
+  fm_track_slots (every sound is one stream starting at its table entry at $2C648, effects 0-$2F too, so a pointer
+  names its sound), NHL '95's SndSeqId (SfxTable: siren $26, horn $16, cheer $10).
+- **The game's own cheer:** both games start a crowd cheer of their own at a home goal (the control: siren + cheer;
+  a visitors' goal the siren alone). So Boston's home goals give two cheers, and Buffalo's "nothing" still gives that
+  cheer. NHL '95's siren ($26) also stops a song above $31 first; a goal while song $51 played (period 2's faceoff
+  song) had it stopped a frame before the goal on both ROMs, by something else, so no song carried on in the build.
+- **Songs:** the goal song picked as the control at every goal (the same song, the same frame), never two songs at
+  once.
+- **Penalty shots** (NHL 94; ps_fixes_test's awards, the puck put in once the shooter has it; build and control in
+  their own processes, the same seed): 5 goals, sflags4 bit 5 set, all home shooters in period 1: the horn for Anaheim,
+  the siren for Calgary, the game's cheer as the control. **Shootout mode** (NHL '95, gen95_shootout_mode_check, every
+  attempt in): 11 goals as wanted (home team 14 the siren, visitors the cheer); the 12th's sound fell after the run's
+  end.
+- **Loudness** (mean over the first second after the goal): NHL 94 siren about 5,300-5,600, the cheer about the same,
+  the horn with the game's cheer about 9,300; NHL '95 siren 2,700-3,000, cheer 2,300, horn with cheer 4,100. The horn
+  is about 1.7 times the siren's level. All effect slots free after the goal: NHL 94 357 frames with the siren, 241
+  without it (the horn and the cheers are shorter than the siren); NHL '95 333-336 frames either way.
