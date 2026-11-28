@@ -9676,3 +9676,33 @@ rink colour set to magenta in a copy of the state, the changed pixels split by t
   users of colours 8, 9, 10, 14 in the goal celebration and 6 at the game's end are these crowd sprites, now in the
   team's colours. The hook's extra cycles change the game's course against a control, so screens aren't compared
   pixel for pixel.
+
+## The side-on scoreboard screen's picture, for ads (2026-11-27, for NOSE4Web)
+
+`analysis/scoring_map/gen_hor_board_check.py ROM OUT [94|95]`, `snes_hor_board_check.py ROM OUT`: the picture's tiles
+filled with test colours, then every cell of its plane pointed at one filled tile, over the pause menu, the
+intermission and a penalty's side-on view.
+- **NHL '95 has no such picture**: no IceRinkHor and no SetHor; sfhor only picks the side-on referee tiles. ClrHor
+  is not unreferenced, whatever the disassembly's comment says: faceoff95 calls it at every faceoff. It reloads the
+  rink tiles (Rinktilelist+8), LoadHomeTeamGfx's logo and the EASN map, and no palette (the rink-colour notes above
+  said it was never called; per-team colours are unaffected, as the crowd v2 run showed).
+- **NHL '94**: IceRinkHorMap $BC05C, a jim (palette +$1A8A, never loaded since SetHor passes d5 = 0, its lines 0-1
+  equal the rink's; map +$1B0A, 32 x 28, lines 0-1, no priority, 154 flipped cells; tiles +8, $D4 = 212 raw). The only
+  references are SetHor's movea.l pair at $12BBC / $12BC6 (operands +2). Its tiles start at rinkvrcset 0; ClrHor
+  reloads the 454-tile vertical rink and EASN sits at 454, and nothing names 212-453 on these screens: up to 454
+  tiles. Rows 0-1, 6-11 and 18-27 show the picture whole (the boards and glass, about rows 17-21, whole but for the
+  menu box's bottom edge and sprites); rows 2-5 are printscores1's team blocks, scores and clock; the window covers
+  the menu box (rows 12-17, columns 5-26), the intermission ticker (rows 23-27, columns 3-28) and the penalty name bar
+  (row 11); USBoard's penalty lines are rows 8-10. The picture draws with line 0 colours 1-15 and line 1 colours
+  1-15, the rink's palette, shared with the text (line 0 colours 3, 4, 7, 14; line 1 colours 1-4, 7-9, 12-15); colour
+  memory doesn't change while it shows. SetHor is called for the pause menu, the replay's exit, the penalty view and
+  the intermission; no other picture is used.
+- **SNES** (retail and nhl94_2026 alike but for 2026's menu box a column wider each side): SetHor (Pausemode,
+  chkprogress, PeriodOver, ExitStatsScreen, ReplayMode, SaveRegsStartHL2) sets Hscroll 0 and Vscroll -1;
+  SetHor_rink copies rows 85-112 columns 0-31 to BG2 $400 and 16-47 to $800, and only the $400 half ever shows.
+  Covered always: the team blocks (rows 87-88, columns 3-11 and 20-28) and the menu box's inside (rows 98-102,
+  columns 6-25); partly: rows 89-90 (scores, penalty lines), 97-103 (the box's frame), 105-112 (the other-scores box,
+  the zamboni, players); whole: the rest of rows 85-104 (glass, stands, boards). The penalty scene's one-line box lets
+  rows 98-102 show. DrawHorTeams replaces colour rows 6-7 with the banners (BG1); the board's cells use palettes 0
+  and 1 only. An edit must keep the replay icon (rows 85-92, columns 32-39, tiles 435-530), the 81 crowd cells in rows
+  98-101 naming tiles 1-65 (showcrowd runs here too) and the pixels of the 44 tiles rows 85-112 share with rows 0-84.
