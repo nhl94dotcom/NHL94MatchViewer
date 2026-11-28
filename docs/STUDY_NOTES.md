@@ -9752,3 +9752,11 @@ intermission and a penalty's side-on view.
   2), Crowdlevel and the noise as before; the stands at the top boards show the snow and pines / the empty seats
   with nothing over them. The side-on scoreboard still shows a full crowd: that is IceRinkHorMap's own painted crowd
   (the themes don't touch it), so a theme would need that picture too.
+- **v3** (nhl94_theme_outdoor_v3.bin 2F0EBBAA, nhl94_theme_empty_v3.bin EB695F19, 2 MB): against v2 only the header and
+  checksum, SetHor's operands ($FFAC0 / $FFAC8) and a new side-on jim from $FFAC0 changed: the rinks are v2's byte for
+  byte. On the pause, penalty and intermission screens (`gen_hor_board_check.py ads`, against the retail control) the
+  side-on picture differs in 106 cells, all line-1 crowd squares of rows 12-17 in retail (86 now on line 0, 20 still
+  line 1); rows 9-11's penalty-box people and every other cell as retail; planes A and W as the control's (the
+  compare's ad-panel lines don't apply here). The stands show the snow and pines / the empty seats and stairs with no
+  painted fans, as the expected pictures. After each return to play the rink tiles in VRAM are the ROM's own (Rinktiles
+  $56062, 454) but for the 24 logo tiles LoadHomeTeamGfx writes per home team.
