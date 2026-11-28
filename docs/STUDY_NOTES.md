@@ -9744,3 +9744,11 @@ intermission and a penalty's side-on view.
   the intermission (retail up to 18-29); the penalty-box player stays; the other sprites drawn; Crowdlevel and the
   crowd noise as before; the goal celebration's jumping fans (loud-crowd frames 19-25) go too, its sound stays. The
   saved CPU time moves the beam-timed randomness, so a patched game soon plays differently from an unpatched one.
+- **v2** (nhl94_theme_outdoor_v2.bin FC6368D5, nhl94_theme_empty_v2.bin 735B996B, both with $16216 = 4E 75): a theme
+  now redraws only the stands reached from the picture's edge. Drawn from ROM, 841 normal and 839 reverse cells
+  differ (4 fewer than v1): the crease cells (rows 14 and 77, columns 23-24) are retail's in both rinks, no changed
+  cell lies inside the boards (rows 6-79, columns 11-36), and everything kept stays as retail. Played: no crowd
+  sprites in play, the replay, the penalty scene, the side-on view or the intermission (only the boxed player, up to
+  2), Crowdlevel and the noise as before; the stands at the top boards show the snow and pines / the empty seats
+  with nothing over them. The side-on scoreboard still shows a full crowd: that is IceRinkHorMap's own painted crowd
+  (the themes don't touch it), so a theme would need that picture too.
