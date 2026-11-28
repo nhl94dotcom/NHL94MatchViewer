@@ -9668,7 +9668,7 @@ rink colour set to magenta in a copy of the state, the changed pixels split by t
 - **NHL '95 crowd colours v2** (NHL_95_crowd_v2.bin 9BD314A2; `crowd_colours_check.py`, Genesis path). The hook is
   well formed: the rink palette copy as before, then `move.w ($BF54).w,d0; lsl.w #3,d0; lea $1A731E(pc),a0` and four
   14-byte blocks writing palfadenew line 1 colours 14, 9, 8 and 6 from 28 teams x 4 words; only the checksum word and
-  call ($691) changed besides. With home teams 1, 4, 10, 14 and 21, palfadenew holds the table at every rink moment
+  call ($691) changed besides. With five home teams (Game Setup team rows 1, 4, 10, 14 and 21; the table indexed by the HomeTeam each gave), palfadenew holds the table at every rink moment
   (play, replay and reverse angle, stats, goal celebration, period end, period 2, game end) and nothing else differs
   from the control; the pause and three-stars screens load their own palettes, and the colours come back after each.
   Redrawn with the 4 colours put back, the changed pixels are the stand art (plane B, 1,429-4,576 px a team) and the

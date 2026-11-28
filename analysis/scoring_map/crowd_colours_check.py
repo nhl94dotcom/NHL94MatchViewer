@@ -533,6 +533,8 @@ def compare(base_dir, build_dir, st):
             if r.get("cram_as_table"):
                 for k in ("hook_px", "hook_box", "line1_sprites_by_set", "hooked_sprite_px_by_sprite"):
                     r[k] = b.get(k)
+            elif "table" not in st:
+                r["hook_px"] = "no hook in the build (nothing to attribute)"
             else:
                 r["hook_px"] = "the rink palette isn't on (this screen loads its own)"
         rows.append(r)
@@ -578,7 +580,8 @@ def main():
         for p in procs:
             p.wait()
         res[team] = compare(out / f"base_{team}", out / f"build_{team}", st)
-        print(f"team {team}:", flush=True)
+        homes = sorted({r.get("home") for r in res[team] if r.get("home") is not None})
+        print(f"team {team} (HomeTeam in play: {homes}; on NHL '95 the argument is Game Setup's team row):", flush=True)
         for r in res[team]:
             print("  ", json.dumps({k: v for k, v in r.items() if k != "poke"}), flush=True)
             if "poke" in r:
