@@ -14,7 +14,8 @@ audio: a WAV per run and its loudness every 0.5 s. HomeTeam read on the matchup 
 NHL '95's boot presses START until the screen matches a Game Setup screenshot (env PREGAME95_SETUP: the retail
 ROM's checksum check makes it miss presses the build takes), and goes through Controller Setup to the matchup screen.
 
-python gen_pregame_song_check.py OUT RETAIL BUILD TEAM [TEAM ...]   (the system by the ROM's size: 2 MB NHL '95)"""
+python gen_pregame_song_check.py OUT RETAIL BUILD TEAM [TEAM ...]   (the system by the ROM: 2 MB without "'94" in the
+header is NHL '95; a 2 MB NHL '94, e.g. nhl94_title_is_scouting_v3.bin, stays NHL '94)"""
 import json
 import os
 import struct
@@ -186,7 +187,7 @@ def main():
     allres = {}
     for name, rom in (("retail", retail), ("build", build)):
         data = Path(rom).read_bytes()
-        sysm = Sys95() if len(data) > 0x100000 else Sys94(data)
+        sysm = Sys95() if len(data) > 0x100000 and b"'94" not in data[0x150:0x180] else Sys94(data)
         e = Emu(rom)
         e._pcm = capture(e)
         sysm.boot(e)

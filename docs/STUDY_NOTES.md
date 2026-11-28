@@ -9760,3 +9760,24 @@ intermission and a penalty's side-on view.
   compare's ad-panel lines don't apply here). The stands show the snow and pines / the empty seats and stairs with no
   painted fans, as the expected pictures. After each return to play the rink tiles in VRAM are the ROM's own (Rinktiles
   $56062, 454) but for the 24 logo tiles LoadHomeTeamGfx writes per home team.
+
+## NOSE4Web's two build fixes, played (2026-11-28; nhl94_oddend_pregame_arena.bin 0A9F19E8, nhl94_2026_30_strokes.sfc 545F11A9)
+
+- **NHL 94, used space ending at an odd address** (nhl94_title_is_scouting_v3.bin, whose last used byte is $101AD6,
+  plus pre-game songs and each home team's rink colours): every hook now lands on an even address (pre-game $101AD6
+  from $FCC86, rink colours $101B3E from $16C96, the side-on returns $101B96 / $101B7A from $12B44 / $12B98); the
+  base's closing `60 FE` moved after the new code ($101C20). Played against the base (`gen_pregame_song_check.py`,
+  home teams 1, 4, 11, 22; the script now tells a 2 MB NHL '94 from NHL '95 by the header): the odd teams' matchup
+  screen silent, the even teams' song $7A as the base, all eight runs into play on the same frame. Rink colours
+  (`gen_arena_colours_check.py`, BOS, MTL, TOR, CHI, LA at home): each team's two colours at the faceoff, after a
+  pause, after an instant replay and through the intermission (retail's on the side-on screens, the team's back
+  after them), and in period 2's play (Montreal at 9:09 of the 2nd).
+- **SNES nhl94_2026, 30 strokes in Edit the rink** (the file's CRC is 545F11A9, not crc.txt's 5F594A76; crc.txt and the
+  expected PNG are from an earlier run with the bars on rows 40-43, while the ROM has the build script's rows 52-55):
+  one copy of the rink in free space (tiles 11,430 bytes at $B5:D35A, map 4,429 bytes at $B6:EEB3; the three loaders'
+  pointers and the header checksum the only other changes), nothing left behind per stroke; $FF bytes 539,358 ->
+  524,025, the largest free blocks 240 KB and 46 KB as before. `snes_rink_import_check.py` play / logos / compare
+  against nhl94_2026.sfc: all pass but the two expected-picture lines (the stale PNG); the build's rink is the base's
+  plus the 30 bars exactly (0 pixels off), 30 cells of map row 6, rink tiles 613 -> 622, every set after 9 later,
+  video memory's top $5A6F (89 tiles spare), logos for home teams 1, 11, 22 as the base. In play the bars show along
+  the top boards in the ice colour (colour 0: black in the editor's drawing, the ice in the game).
