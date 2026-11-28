@@ -22,6 +22,8 @@ whether plane B followed them; a sheet of differing pairs.
 python gen_rink_import_check.py run ROM OUT HOME VISITOR [FRAMES_AFTER]
 python gen_rink_import_check.py compare OUT_RETAIL OUT_BUILD SHEET.png
 python gen_rink_import_check.py maps RETAIL BUILD OUT   (the two ROMs' maps and priority bits, cell by cell)
+python gen_rink_import_check.py static RETAIL BUILD OUT [EXPECTED.png]   (both rinks drawn from each ROM: the cells
+  that look different, the hidden rows, the logo, attributes, against the expected picture: static())
 python gen_rink_import_check.py glass ROM OUT   (a skater and the puck held at the bottom boards, and at the top, by
   pokes each frame: screenshots, to see him pass behind the glass)"""
 import hashlib
@@ -245,6 +247,98 @@ def maps(retail, build, out):
     (out / "maps.json").write_text(json.dumps(res, indent=1))
 
 
+def rom_rink(rom, at):
+    """A rink drawn straight from the ROM: its jim's raw tiles (count word at +8, 32 bytes a tile from +10), its own
+    palette (64 words at +palette offset, $0BGR) and map. Returns (tiles as bytes, palette, w, h, words)."""
+    p, m = struct.unpack(">II", rom[at:at + 8])
+    n = struct.unpack(">H", rom[at + 8:at + 10])[0]
+    assert not n & 0x8000, "packed tiles"
+    tiles = rom[at + 10:at + 10 + 32 * n]
+    pal = list(struct.unpack(">64H", rom[at + p:at + p + 128]))
+    w, h, words = rom_map(rom, at)
+    return tiles, pal, w, h, words
+
+
+def draw_rom_rink(tiles, pal, w, h, words, rows=None):
+    """The rink's pixels (RGB, colour 0 black) from rom_rink's pieces: rows (default all)."""
+    rows = rows or range(h)
+    im = Image.new("RGB", (8 * w, 8 * len(rows)))
+    px = im.load()
+    lv = lambda v: (v & 0xE) * 18  # noqa: E731
+    for k, r in enumerate(rows):
+        for c in range(w):
+            v = words[r * w + c]
+            t, line, hf, vf = v & 0x7FF, (v >> 13) & 3, v >> 11 & 1, v >> 12 & 1
+            for y in range(8):
+                for x in range(8):
+                    yy, xx = (7 - y if vf else y), (7 - x if hf else x)
+                    b = tiles[32 * t + 4 * yy + xx // 2] if 32 * t + 4 * yy + xx // 2 < len(tiles) else 0
+                    ci = (b >> 4) if xx % 2 == 0 else (b & 15)
+                    col = pal[16 * line + ci]
+                    px[8 * c + x, 8 * k + y] = (lv(col), lv(col >> 4), lv(col >> 8)) if ci else (0, 0, 0)
+    return im
+
+
+# Rows 85-112 are bitmap sources (the replay icon, columns 32-39 rows 85-88; the three stars box, columns 13-18 rows
+# 91-94); the centre-ice logo is the last 24 tiles (430-453 of the rink, 428-451 of the reverse)
+KEPT_BOXES = {"replay icon": (85, 89, 32, 40), "three stars box": (91, 95, 13, 19)}
+
+
+def static(base, build, out, expected=None):
+    """Both rinks of a build drawn from its ROM against the base's, cell by cell by pixels (the maps may be
+    renumbered): the cells that look different, by row; the hidden rows (85-112, the replay icon and the stars box)
+    and the logo's tiles and cells, which must be the base's; palette lines, priority bits and flips of every cell;
+    the palettes; and the build's rows 0-84 against the expected picture (normal rink left, reverse right)."""
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    a, b = Path(base).read_bytes(), Path(build).read_bytes()
+    res = {}
+    exp = Image.open(expected).convert("RGB") if expected else None
+    for k, (name, at) in enumerate((("normal", 0x5605A), ("reverse", 0xB5180))):
+        ta, pa, w, h, ma = rom_rink(a, at)
+        tb, pb, w2, h2, mb = rom_rink(b, at)
+        ia, ib = draw_rom_rink(ta, pa, w, h, ma), draw_rom_rink(tb, pb, w2, h2, mb)
+        ia.save(out / f"{name}_base.png")
+        ib.save(out / f"{name}_build.png")
+        A, B = ia.load(), ib.load()
+        looks = [(r, c) for r in range(h) for c in range(w)
+                 if any(A[8 * c + x, 8 * r + y] != B[8 * c + x, 8 * r + y] for y in range(8) for x in range(8))]
+        n = len(ta) // 32
+        logo = range(n - 24, n)
+        logo_cells = [i for i, v in enumerate(ma) if (v & 0x7FF) in logo]
+        r = dict(size=[w, h, w2, h2], tiles=[n, len(tb) // 32], palette_same=pa == pb,
+                 cells_looking_different=len(looks), rows=sorted({r for r, _ in looks}),
+                 hidden_rows_85_112_differ=[(r, c) for r, c in looks if r >= 85],
+                 kept_boxes_differ={k2: [(r, c) for r, c in looks if r0 <= r < r1 and c0 <= c < c1] for k2, (r0, r1, c0, c1) in KEPT_BOXES.items()},
+                 logo_tiles_same=ta[32 * (n - 24):] == tb[32 * (n - 24):],
+                 logo_cells_same=all(ma[i] == mb[i] for i in logo_cells) and [i for i, v in enumerate(mb) if (v & 0x7FF) in logo] == logo_cells,
+                 attributes_differ=[(i // w, i % w) for i in range(w * h) if (ma[i] ^ mb[i]) & 0xE000],
+                 flips_differ=sum(1 for i in range(w * h) if (ma[i] ^ mb[i]) & 0x1800))
+        # the look by area: columns of the playing surface (the boards' inner columns) found from the base's priority
+        if exp is not None:
+            ex = exp.crop((384 * k, 0, 384 * k + 384, 680))
+            bb = ib.crop((0, 0, 384, 680))
+            E, Bp = ex.load(), bb.load()
+            same = sum(1 for y in range(680) for x in range(384) if all(abs(E[x, y][j] - Bp[x, y][j]) <= 40 for j in range(3)))
+            r["expected_pixels_matching"] = f"{100 * same / (384 * 680):.2f}%"
+            bad = [(r2, c) for r2 in range(85) for c in range(48)
+                   if any(any(abs(E[8 * c + x, 8 * r2 + y][j] - Bp[8 * c + x, 8 * r2 + y][j]) > 40 for j in range(3)) for y in range(8) for x in range(8))]
+            r["expected_cells_off"] = bad[:40]
+            r["expected_cells_off_n"] = len(bad)
+        # a mask of the cells that look different over the base's drawing
+        m = ia.copy()
+        mp = m.load()
+        for rr, cc in looks:
+            for y in range(8):
+                for x in range(8):
+                    p = mp[8 * cc + x, 8 * rr + y]
+                    mp[8 * cc + x, 8 * rr + y] = (min(255, p[0] // 2 + 128), p[1] // 2, p[2] // 2)
+        m.save(out / f"{name}_changed.png")
+        res[name] = r
+        print(name, json.dumps({k2: (v if not isinstance(v, list) or len(v) < 12 else f"{len(v)} items") for k2, v in r.items()}))
+    (out / "static.json").write_text(json.dumps(res, indent=1, default=list))
+
+
 def compare(ra, rb, sheet):
     from PIL import ImageChops
     ra, rb = Path(ra), Path(rb)
@@ -323,6 +417,8 @@ if __name__ == "__main__":
         sys.exit()
     if sys.argv[1] == "run":
         run(sys.argv[2], Path(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]) if len(sys.argv) > 6 else 4000)
+    elif sys.argv[1] == "static":
+        static(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else None)
     elif sys.argv[1] == "maps":
         maps(sys.argv[2], sys.argv[3], sys.argv[4])
     else:

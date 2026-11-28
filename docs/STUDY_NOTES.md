@@ -9724,3 +9724,23 @@ intermission and a penalty's side-on view.
   on the pause, penalty and intermission boards the base's but the panel; the replay icon and rows 0-84 as the base
   after a replay; the crowd animates on the boards as on the base (in bursts; on 2026 neither ROM animated on the
   penalty board within 300 frames).
+
+## NOSE4Web's NHL 94 rink themes, and no fans in the stands (2026-11-27; nhl94_theme_outdoor.bin 4AE8ACE0, nhl94_theme_empty.bin 7C3AF3C0)
+
+- Both rinks' tiles and maps rewritten in place; the palettes, tile counts (454 / 452), logo tiles and cells,
+  palette lines, priority bits and rows 85-112 (replay icon, three-stars box) as retail; the checksum call NOPed.
+  Drawn from ROM (`gen_rink_import_check.py static`): 845 normal and 843 reverse cells differ, almost all in the
+  stands, and match the expected pictures but for the bench cells and the logo. But rows 14 and 77, columns 23-24 (the
+  ice in front of each net, retail's plain ice tiles $AF / $B0) carry a stand piece in both themes and both rinks,
+  visible beside the net in play; the expected pictures have it too, so it comes from the theme data. Played against
+  a control (retail with the builds' checksum bytes) the games stayed in step through 5 periods; the rinks in video
+  memory differ in exactly those cells, and plane B, the logo tiles and every tile from 454 up match at all 465 checks
+  (play, replay and reverse angle, about 300 returns to play, intermission, period 2).
+- No fans: showcrowd (video94, from setvideo) draws the penalty-box players (PBnum, frames 26+ / 29+), then the two
+  Crowdframe frames ($FFB89A / B). An rts at $16216 (10 38 B8 9A -> 4E 75 B8 9A, the first Crowdframe load) skips the
+  crowd only; showcrowd saves no registers, and the game already leaves the crowd out this way in reverse-angle
+  replays. Played (`gen_crowd_off_check.py`, on retail and the outdoor theme, both with the checksum call NOPed): no
+  crowd sprites in play, replays, the penalty scene, the side-on scoreboard (its fans are the same frames + 31) or
+  the intermission (retail up to 18-29); the penalty-box player stays; the other sprites drawn; Crowdlevel and the
+  crowd noise as before; the goal celebration's jumping fans (loud-crowd frames 19-25) go too, its sound stays. The
+  saved CPU time moves the beam-timed randomness, so a patched game soon plays differently from an unpatched one.
